@@ -1,0 +1,48 @@
+/**
+ * Public V0 contract surface.
+ */
+
+export {
+  CanonicalizationError,
+  canonicalDigest,
+  canonicalJsonBytes,
+  type JsonValue,
+} from "./canonical.js";
+export { DatetimeFormatError, canonicalDatetime, isoformatDatetime } from "./datetime.js";
+export {
+  ContractError,
+  EVIDENCE_PREDICATES,
+  EVENT_TYPES,
+  attemptReportDigestOf,
+  canonicalizeEventPayload,
+  computeEventDigest,
+  computeRequestDigest,
+  normalizeEventPayload,
+  parseAllowedCommand,
+  parseAttemptReport,
+  parseDecision,
+  parseEvidenceAtom,
+  parseNetworkEndpoint,
+  parseNewEvent,
+  parseProjectIr,
+  parseRequirement,
+  parseRuntimeMetadata,
+  parseSchedulerEvent,
+  parseTaskEnvelope,
+  parseTaskSpec,
+  projectIrDigestOf,
+  type AllowedCommand,
+  type AttemptReport,
+  type Decision,
+  type EvidenceAtom,
+  type EvidencePredicate,
+  type EventType,
+  type NetworkEndpoint,
+  type NewEvent,
+  type ProjectIr,
+  type Requirement,
+  type RuntimeMetadata,
+  type SchedulerEvent,
+  type TaskEnvelope,
+  type TaskSpec,
+} from "./models.js";

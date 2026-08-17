@@ -1,0 +1,515 @@
+{
+  "fixture_version": 1,
+  "scenario": "phase0-2-two-candidate-batch-retry-exhaustion",
+  "events": [
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "PROJECT_CREATED",
+      "payload_version": 1,
+      "entity_type": "project",
+      "entity_id": "scheduler-project",
+      "payload": {
+        "project_ir": {
+          "schema_version": 1,
+          "project_id": "scheduler-project",
+          "revision": 0,
+          "digest": "826a571e9c337dc523cfc8a24f2401e2aced4347bc4b9658d4d3312a29d09742",
+          "parent_revision": null,
+          "parent_digest": null,
+          "goal": "Prove deterministic scheduler semantics.",
+          "requirements": [],
+          "decisions": [],
+          "tasks": [
+            {
+              "task_id": "task-1",
+              "objective": "Complete task-1.",
+              "depends_on": [],
+              "write_paths": [
+                "src/task-1.py"
+              ],
+              "required_artifacts": [
+                "src/task-1.py"
+              ]
+            }
+          ],
+          "head_commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "committed_at": "2026-08-13T00:00:00Z"
+        }
+      },
+      "causation_id": null,
+      "correlation_id": "scheduler-project-create",
+      "idempotency_key": "3fbb18f86cd16844deeafa9bd842ca323e8e9e9244ef91b0ef2b2500aa215cfe",
+      "expected_project_revision": null,
+      "event_id": 1,
+      "project_sequence": 1,
+      "request_digest": "c3da0e00d25ce3aec7fefcacf5d69c9132f29f2f6741526b63ba94b5a2880e02",
+      "previous_event_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+      "event_digest": "45bb54a3a6fc4ce8278651ead76b85f71b1a85e93c1c2882be29f878b4be0e25",
+      "committed_at": "2026-08-13T00:00:01Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "TASK_CREATED",
+      "payload_version": 1,
+      "entity_type": "task",
+      "entity_id": "task-1",
+      "payload": {
+        "task_envelope": {
+          "schema_version": 1,
+          "project_id": "scheduler-project",
+          "task_id": "task-1",
+          "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+          "project_revision": 0,
+          "project_digest": "826a571e9c337dc523cfc8a24f2401e2aced4347bc4b9658d4d3312a29d09742",
+          "base_commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "objective": "Complete task-1.",
+          "read_paths": [
+            "src"
+          ],
+          "write_paths": [
+            "src/task-1.py"
+          ],
+          "required_artifacts": [
+            "src/task-1.py"
+          ],
+          "allowed_commands": [
+            {
+              "executable": "python",
+              "argv_prefix": [
+                "-m",
+                "pytest"
+              ]
+            }
+          ],
+          "network_policy": "deny",
+          "network_allowlist": [],
+          "timeout_s": 60,
+          "lease_s": 10,
+          "attempt_limit": 3,
+          "candidate_limit": 2,
+          "idempotency_key": "298b08e7534a3255f46607f0e06fcad0f28df82a8095739b428e7559f1ddd13d"
+        },
+        "initial_state": "READY",
+        "policy_id": "trusted-default",
+        "policy_digest": "24ba81685217b190b8f0e660d73f68a2186579f88ac2ed826fca091bb99a5d25"
+      },
+      "causation_id": null,
+      "correlation_id": "task:task-1",
+      "idempotency_key": "298b08e7534a3255f46607f0e06fcad0f28df82a8095739b428e7559f1ddd13d",
+      "expected_project_revision": 0,
+      "event_id": 2,
+      "project_sequence": 2,
+      "request_digest": "8eb4335930df827b185d6eb0ea3860a0508376b575cd39f80ed7271d83568b89",
+      "previous_event_digest": "45bb54a3a6fc4ce8278651ead76b85f71b1a85e93c1c2882be29f878b4be0e25",
+      "event_digest": "b45408b34a3c146596ac897e423ad7321af13fd97900e76f2553a3000c08b24c",
+      "committed_at": "2026-08-13T00:00:02Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "TASK_STARTED",
+      "payload_version": 1,
+      "entity_type": "task",
+      "entity_id": "task-1",
+      "payload": {
+        "previous_state": "READY",
+        "new_state": "ACTIVE",
+        "reason": "deterministic batch activation",
+        "planned_candidate_count": 2,
+        "first_attempt_no": 1
+      },
+      "causation_id": 2,
+      "correlation_id": "task:task-1:batch:1",
+      "idempotency_key": "0f8301318f22644f8d306fc84fba6aede03b6357325425a3f01a415898fa8a91",
+      "expected_project_revision": 0,
+      "event_id": 3,
+      "project_sequence": 3,
+      "request_digest": "25b45baae741718f5266dbec4772e195ce5a92304082908cbe4810030542b94d",
+      "previous_event_digest": "b45408b34a3c146596ac897e423ad7321af13fd97900e76f2553a3000c08b24c",
+      "event_digest": "eafa8d97067d98c41c90bcc3b27731396eb937dc4dd0e2ad0fcb9dc8b358387b",
+      "committed_at": "2026-08-13T00:00:03Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_CREATED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-69f3830bb457b1b000f2d9c7db81b470",
+      "payload": {
+        "task_id": "task-1",
+        "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+        "attempt_no": 1
+      },
+      "causation_id": 3,
+      "correlation_id": "task:task-1:batch:3",
+      "idempotency_key": "69f3830bb457b1b000f2d9c7db81b47073d92182df687dc52a5e0b85281fbcc2",
+      "expected_project_revision": 0,
+      "event_id": 4,
+      "project_sequence": 4,
+      "request_digest": "1a4d470b64b807dabb12f503e8640456d61f29a7923d2b7b4c9cad1018e9d3ef",
+      "previous_event_digest": "eafa8d97067d98c41c90bcc3b27731396eb937dc4dd0e2ad0fcb9dc8b358387b",
+      "event_digest": "2345f8f4b22325b083d71c25a3f8844b6bfe40b779e5bbb01f0da4d81f6870f8",
+      "committed_at": "2026-08-13T00:00:04Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_CREATED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-348b0be971282095890efa56d8f600f2",
+      "payload": {
+        "task_id": "task-1",
+        "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+        "attempt_no": 2
+      },
+      "causation_id": 3,
+      "correlation_id": "task:task-1:batch:3",
+      "idempotency_key": "348b0be971282095890efa56d8f600f2dc2bd77776a82a3a33492877c2794bdb",
+      "expected_project_revision": 0,
+      "event_id": 5,
+      "project_sequence": 5,
+      "request_digest": "4dffb366e68bc9523e72898ac5b8f06da8af0fa5ba28f8cc0d7db0ebff436105",
+      "previous_event_digest": "2345f8f4b22325b083d71c25a3f8844b6bfe40b779e5bbb01f0da4d81f6870f8",
+      "event_digest": "3a89f658ece0ead6ff0d2d24e843bf764d5ecc8d414396286352ea91dd2f11d7",
+      "committed_at": "2026-08-13T00:00:05Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_STARTED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-69f3830bb457b1b000f2d9c7db81b470",
+      "payload": {
+        "previous_state": "CREATED",
+        "new_state": "RUNNING",
+        "lease_generation": null,
+        "reason": "Phase 2 deterministic mock start"
+      },
+      "causation_id": 4,
+      "correlation_id": "attempt:attempt-69f3830bb457b1b000f2d9c7db81b470",
+      "idempotency_key": "e2cba1a4c19724f9e6bf8c6b89f7e1296e6de5e4676dc3871ed3b4a82bea12f1",
+      "expected_project_revision": 0,
+      "event_id": 6,
+      "project_sequence": 6,
+      "request_digest": "2528b8f8b58a420a40189ebd64a0664ec2fedd776b2e99d4dd99c47cc21aa81b",
+      "previous_event_digest": "3a89f658ece0ead6ff0d2d24e843bf764d5ecc8d414396286352ea91dd2f11d7",
+      "event_digest": "b974b1cb5e3fc27711c2cf40773e58a59d2205d6d7fc6ac1cc497b71d4b13892",
+      "committed_at": "2026-08-13T00:00:06Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_STARTED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-348b0be971282095890efa56d8f600f2",
+      "payload": {
+        "previous_state": "CREATED",
+        "new_state": "RUNNING",
+        "lease_generation": null,
+        "reason": "Phase 2 deterministic mock start"
+      },
+      "causation_id": 5,
+      "correlation_id": "attempt:attempt-348b0be971282095890efa56d8f600f2",
+      "idempotency_key": "39787f16a19dbc096c1e1f152616be25fa983f5f4479de518ed167132953697a",
+      "expected_project_revision": 0,
+      "event_id": 7,
+      "project_sequence": 7,
+      "request_digest": "6074e3093b2a471d77f2afda2fe42df0dda0e829cfd5418c89ff680e796c1fad",
+      "previous_event_digest": "b974b1cb5e3fc27711c2cf40773e58a59d2205d6d7fc6ac1cc497b71d4b13892",
+      "event_digest": "46bfd42f440081ad4e04cbdbf1a9955761ee3115508c3051e1dd7747a21b28a3",
+      "committed_at": "2026-08-13T00:00:07Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_FAILED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-69f3830bb457b1b000f2d9c7db81b470",
+      "payload": {
+        "previous_state": "RUNNING",
+        "new_state": "FAILED",
+        "lease_generation": null,
+        "reason": "deterministic callback",
+        "attempt_report": {
+          "schema_version": 1,
+          "project_id": "scheduler-project",
+          "attempt_id": "attempt-69f3830bb457b1b000f2d9c7db81b470",
+          "task_id": "task-1",
+          "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+          "input_project_revision": 0,
+          "input_project_digest": "826a571e9c337dc523cfc8a24f2401e2aced4347bc4b9658d4d3312a29d09742",
+          "base_commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "worktree_id": "worktree-db81b470",
+          "result_commit": null,
+          "worker_status": "failed",
+          "summary": "mock failed",
+          "changed_files": [],
+          "produced_artifacts": [],
+          "started_at": "2026-08-13T00:00:00Z",
+          "finished_at": "2026-08-13T00:00:01Z",
+          "runtime_metadata": {
+            "runner": "phase2-mock",
+            "runner_version": "1",
+            "argv": [
+              "mock",
+              "failed"
+            ],
+            "exit_code": 1,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          }
+        }
+      },
+      "causation_id": 6,
+      "correlation_id": "attempt:attempt-69f3830bb457b1b000f2d9c7db81b470",
+      "idempotency_key": "b98535417a97e0e7e536ddd0d87ba7f90a03471ca3c918ed04353312c7f68267",
+      "expected_project_revision": 0,
+      "event_id": 8,
+      "project_sequence": 8,
+      "request_digest": "b2bd17748ac6df0721436c553bbaf959fc664a78b3afd5c1d53fa9a6b7c334ff",
+      "previous_event_digest": "46bfd42f440081ad4e04cbdbf1a9955761ee3115508c3051e1dd7747a21b28a3",
+      "event_digest": "1cb194854f1be7dbf5d94d4219d3eaca6a64fec1b703c816c3056c2a1597dd96",
+      "committed_at": "2026-08-13T00:00:08Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_FAILED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-348b0be971282095890efa56d8f600f2",
+      "payload": {
+        "previous_state": "RUNNING",
+        "new_state": "FAILED",
+        "lease_generation": null,
+        "reason": "deterministic callback",
+        "attempt_report": {
+          "schema_version": 1,
+          "project_id": "scheduler-project",
+          "attempt_id": "attempt-348b0be971282095890efa56d8f600f2",
+          "task_id": "task-1",
+          "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+          "input_project_revision": 0,
+          "input_project_digest": "826a571e9c337dc523cfc8a24f2401e2aced4347bc4b9658d4d3312a29d09742",
+          "base_commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "worktree_id": "worktree-d8f600f2",
+          "result_commit": null,
+          "worker_status": "failed",
+          "summary": "mock failed",
+          "changed_files": [],
+          "produced_artifacts": [],
+          "started_at": "2026-08-13T00:00:00Z",
+          "finished_at": "2026-08-13T00:00:01Z",
+          "runtime_metadata": {
+            "runner": "phase2-mock",
+            "runner_version": "1",
+            "argv": [
+              "mock",
+              "failed"
+            ],
+            "exit_code": 1,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          }
+        }
+      },
+      "causation_id": 7,
+      "correlation_id": "attempt:attempt-348b0be971282095890efa56d8f600f2",
+      "idempotency_key": "29b894e03f32d3ea33ccd64b9682140a3630d1c49a68f8d407214b534c2b95b6",
+      "expected_project_revision": 0,
+      "event_id": 9,
+      "project_sequence": 9,
+      "request_digest": "93def2d321ca0a0974e959433c5fe79e830c4e48610057640b4c6873c74f2d08",
+      "previous_event_digest": "1cb194854f1be7dbf5d94d4219d3eaca6a64fec1b703c816c3056c2a1597dd96",
+      "event_digest": "be16d930a97981bcc440847733cdde3a523adeea78f323680329dfc4463da87e",
+      "committed_at": "2026-08-13T00:00:09Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "TASK_READY",
+      "payload_version": 1,
+      "entity_type": "task",
+      "entity_id": "task-1",
+      "payload": {
+        "previous_state": "ACTIVE",
+        "new_state": "READY",
+        "reason": "batch failed with attempt budget remaining",
+        "batch_activation_event_id": 3
+      },
+      "causation_id": 3,
+      "correlation_id": "task:task-1",
+      "idempotency_key": "6e4ad0bb92ba3103f04286b7dff57f3c46c080967b63064c2354fe1730d5b9a6",
+      "expected_project_revision": 0,
+      "event_id": 10,
+      "project_sequence": 10,
+      "request_digest": "5b722da3bf40a2973ed5f5c972b8ec5b2afe45b5e83a9d0e95e4b66e32b80f38",
+      "previous_event_digest": "be16d930a97981bcc440847733cdde3a523adeea78f323680329dfc4463da87e",
+      "event_digest": "6a2b7a2d0145bb97f36faf60b2eed9a2bd8ac754d8ac62713fd0e6791732e990",
+      "committed_at": "2026-08-13T00:00:10Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "TASK_STARTED",
+      "payload_version": 1,
+      "entity_type": "task",
+      "entity_id": "task-1",
+      "payload": {
+        "previous_state": "READY",
+        "new_state": "ACTIVE",
+        "reason": "deterministic batch activation",
+        "planned_candidate_count": 1,
+        "first_attempt_no": 3
+      },
+      "causation_id": 10,
+      "correlation_id": "task:task-1:batch:3",
+      "idempotency_key": "ef720f5e0adc98cc0f8b5c662a71fe186fbdcd86aae2c3eb78085b1dee793b52",
+      "expected_project_revision": 0,
+      "event_id": 11,
+      "project_sequence": 11,
+      "request_digest": "37e57eaad2813574da7d7633155b051889111f1bd425cbaee5c98e82605d0e44",
+      "previous_event_digest": "6a2b7a2d0145bb97f36faf60b2eed9a2bd8ac754d8ac62713fd0e6791732e990",
+      "event_digest": "1855e56230176bfa20b93828a657b90389f7000663324e53521056ad4e218f2e",
+      "committed_at": "2026-08-13T00:00:11Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_CREATED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-e2c0c57283141857edb429fbfe243dfd",
+      "payload": {
+        "task_id": "task-1",
+        "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+        "attempt_no": 3
+      },
+      "causation_id": 11,
+      "correlation_id": "task:task-1:batch:11",
+      "idempotency_key": "e2c0c57283141857edb429fbfe243dfd654d0c14015f38a8cb7c778b6e7c53e2",
+      "expected_project_revision": 0,
+      "event_id": 12,
+      "project_sequence": 12,
+      "request_digest": "01071895fe87301f4dde1ef2db8dca8461c857787e64fbd048723d3fab60569b",
+      "previous_event_digest": "1855e56230176bfa20b93828a657b90389f7000663324e53521056ad4e218f2e",
+      "event_digest": "948324c65af2c9e1bb97af8c0e93b818a678de123bad8afd6c24e55d9ce648cc",
+      "committed_at": "2026-08-13T00:00:12Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_STARTED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-e2c0c57283141857edb429fbfe243dfd",
+      "payload": {
+        "previous_state": "CREATED",
+        "new_state": "RUNNING",
+        "lease_generation": null,
+        "reason": "Phase 2 deterministic mock start"
+      },
+      "causation_id": 12,
+      "correlation_id": "attempt:attempt-e2c0c57283141857edb429fbfe243dfd",
+      "idempotency_key": "1ff707a6d8c9b7e825de3a30a5f06419999eb5eff867ef0a0e95274fc0a769b4",
+      "expected_project_revision": 0,
+      "event_id": 13,
+      "project_sequence": 13,
+      "request_digest": "48f3eddfe614f7803bc9c65acf307c1d9825e1956ab87380a50621129b07f343",
+      "previous_event_digest": "948324c65af2c9e1bb97af8c0e93b818a678de123bad8afd6c24e55d9ce648cc",
+      "event_digest": "db01d6810ca6f80829b83a3d1ada502276ca19f568624df217bcabcd742ac0cb",
+      "committed_at": "2026-08-13T00:00:13Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "ATTEMPT_FAILED",
+      "payload_version": 1,
+      "entity_type": "attempt",
+      "entity_id": "attempt-e2c0c57283141857edb429fbfe243dfd",
+      "payload": {
+        "previous_state": "RUNNING",
+        "new_state": "FAILED",
+        "lease_generation": null,
+        "reason": "deterministic callback",
+        "attempt_report": {
+          "schema_version": 1,
+          "project_id": "scheduler-project",
+          "attempt_id": "attempt-e2c0c57283141857edb429fbfe243dfd",
+          "task_id": "task-1",
+          "envelope_id": "envelope-5dd00f272006c887ac4ad96b5b732e17",
+          "input_project_revision": 0,
+          "input_project_digest": "826a571e9c337dc523cfc8a24f2401e2aced4347bc4b9658d4d3312a29d09742",
+          "base_commit": "cccccccccccccccccccccccccccccccccccccccc",
+          "worktree_id": "worktree-fe243dfd",
+          "result_commit": null,
+          "worker_status": "failed",
+          "summary": "mock failed",
+          "changed_files": [],
+          "produced_artifacts": [],
+          "started_at": "2026-08-13T00:00:00Z",
+          "finished_at": "2026-08-13T00:00:01Z",
+          "runtime_metadata": {
+            "runner": "phase2-mock",
+            "runner_version": "1",
+            "argv": [
+              "mock",
+              "failed"
+            ],
+            "exit_code": 1,
+            "duration_ms": 1,
+            "environment_digest": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "stdout_artifact": null,
+            "stderr_artifact": null
+          }
+        }
+      },
+      "causation_id": 13,
+      "correlation_id": "attempt:attempt-e2c0c57283141857edb429fbfe243dfd",
+      "idempotency_key": "79735eb7c14c7843f1199e9072215a8bd3570e2ccf6440e526044c18f198c378",
+      "expected_project_revision": 0,
+      "event_id": 14,
+      "project_sequence": 14,
+      "request_digest": "e2b89672e9c0e573e3b323e5241e74a4739a98b0ebd5b2a59c8aa4a8839079be",
+      "previous_event_digest": "db01d6810ca6f80829b83a3d1ada502276ca19f568624df217bcabcd742ac0cb",
+      "event_digest": "d45695a7b563a6bdcba5a16cadc7fc6a7401007f51fe4ac4c369e08477d2a097",
+      "committed_at": "2026-08-13T00:00:14Z"
+    },
+    {
+      "schema_version": 1,
+      "project_id": "scheduler-project",
+      "event_type": "TASK_FAILED",
+      "payload_version": 1,
+      "entity_type": "task",
+      "entity_id": "task-1",
+      "payload": {
+        "previous_state": "ACTIVE",
+        "new_state": "FAILED",
+        "reason": "attempt limit exhausted",
+        "batch_activation_event_id": 11
+      },
+      "causation_id": 11,
+      "correlation_id": "task:task-1",
+      "idempotency_key": "e9f2341abe173d1796141d74b848471697828a6787b26ba3c990a68f51854ee9",
+      "expected_project_revision": 0,
+      "event_id": 15,
+      "project_sequence": 15,
+      "request_digest": "447e3902af7668aa1e0220664cc1d3736372677b68305433f8a5a5eef2d90f43",
+      "previous_event_digest": "d45695a7b563a6bdcba5a16cadc7fc6a7401007f51fe4ac4c369e08477d2a097",
+      "event_digest": "ff859df2cd42dc75ad40e8c48229588946d4ec3d4416692835fd422beb62054c",
+      "committed_at": "2026-08-13T00:00:15Z"
+    }
+  ],
+  "snapshot_digest": "b4d1106e3c41d4e7e0f54e86acb7ae2465434aa2c9cd5acc485012d23ed15045"
+}
