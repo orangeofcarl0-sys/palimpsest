@@ -11,7 +11,7 @@ export {
   StateStoreError,
 } from "./errors.js";
 export { APPLICATION_ID, MIGRATIONS, applyMigrations, validateMigrationHistory } from "./migrations.js";
-export { defaultStatePath, openDatabase } from "./database.js";
+export { defaultStatePath, dshDefaultStatePath, openDatabase } from "./database.js";
 export {
   EventStore,
   EMPTY_PREVIOUS_EVENT_DIGEST,

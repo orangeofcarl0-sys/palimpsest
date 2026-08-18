@@ -34,6 +34,7 @@
 | `palimpsest.git.commit.reconcile` 以 worktree 提交存在性为查询键 | 真实部署中以 git 查询端口暴露；P1 用 `git.contains` 近似，语义（absent→retrySafe）一致 |
 | FakeGitPort merge 为双亲提交（parents=[head, source]） | 与 `git merge --no-ff` 的祖先语义一致，是 Crash B reconcile 识别的前提 |
 | `createPalimpsestEffects` 暴露 `leaseMs` | 测试用 ManualClock 驱动 lease 过期以模拟崩溃重启；生产默认 30s 不变 |
+| 新增 `dshDefaultStatePath()`（`$DSH_HOME/palimpsest/palimpsest.sqlite`） | Python 基线的 `defaultStatePath` 是仓库相对路径（保留）；DSH 部署形态下编排账与 Ordarium 账同宿于 `$DSH_HOME`（双存储拓扑，docs/01 §4） |
 
 ## 5. P1 起的来源
 
