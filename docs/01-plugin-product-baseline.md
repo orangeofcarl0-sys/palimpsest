@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-2`
-> 状态：P0 + P1 已交付（合同核心 + 确定性调度 + Ordarium effects 接线），P2–P3 规划冻结。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-3`
+> 状态：P0 + P1 + P2 已交付（合同核心 + 调度 + effects + DSH 工具面 + 12 项故障验收），P3 规划冻结。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -31,8 +31,8 @@ src/scheduler  确定性"下一步"决策；只能请求 Event append           
 src/effects    Ordarium Safe Actions（五 effect 映射）+ 共享 ledger runtime       【P1 ✅】
 src/effects    GitPort 抽象（Fake/CLI）+ PromotionManager（Crash A/B 恢复）      【P1 ✅】
 src/executors  执行器抽象：claim/report 协议 + 命令执行器 + mock                  【P1 ✅】
-src/tools      DSH 工具面（7 工具）+ 用户友好渲染                                 【P2】
-src/install    installPalimpsest(ctx, options) 黄金路径                          【P2】
+src/tools      DSH 工具面（7 工具）+ ProjectController + 用户友好渲染           【P2 ✅】
+src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：claim/report 并发、角色槽位、2–4 候选、独立 verifier、基础预算    【P3】
 ```
 
@@ -85,7 +85,7 @@ palimpsest_status   人可读项目状态（用户友好渲染）
 |---|---|---|
 | **P0** ✅ | 合同核心移植 | digest/事件链/snapshot 与 Python fixture 逐字节 parity；migration 身份一致；tsc + 测试全绿 |
 | **P1** ✅ | scheduler 决策 + Ordarium effects + 执行器 | 五 action 各自通过 `@ordarium/testing` 故障注入（FaultInjector + ManualClock + lease 过期恢复）；Promotion Crash A/B → reconcile 语义验收；TS scheduler 从零复现 Python fixture 全 15 事件（digest 逐字节一致） |
-| **P2** | DSH 工具面 + install + mock worker 端到端 | 12 项故障验收场景（docs/05 §3）在插件形态全部通过 |
+| **P2** ✅ | DSH 工具面（7 工具）+ installPalimpsest + ProjectController | 12 项故障验收场景（docs/05 §3）在插件形态全部通过（pause/resume、crash recovery、snapshot rebuild、local retry、lease expiry、late result、revision change、evidence invalidation、write escape、promotion happy path、event idempotency；Crash A/B 由 P1 套件机器验收） |
 | **P3** | 多 agent 并行 | 角色槽位并发下 stale isolation / late result 不回归；强默认零配置 |
 
 ## 8. 非目标

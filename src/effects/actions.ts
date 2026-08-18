@@ -252,10 +252,10 @@ export function defineEffects(git: GitPort) {
           throw new TypeError("input must be an object");
         }
         const record = input as Record<string, unknown>;
-        if (typeof record.exitCode !== "number" || !Number.isInteger(record.exitCode)) {
-          throw new TypeError("exitCode must be an integer");
+        if (record.exitCode !== null && (typeof record.exitCode !== "number" || !Number.isInteger(record.exitCode))) {
+          throw new TypeError("exitCode must be an integer or null");
         }
-        return { exitCode: record.exitCode };
+        return { exitCode: record.exitCode as number | null };
       },
     },
     effect: effects.readOnly(),

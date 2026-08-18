@@ -36,6 +36,10 @@
 | `createPalimpsestEffects` 暴露 `leaseMs` | 测试用 ManualClock 驱动 lease 过期以模拟崩溃重启；生产默认 30s 不变 |
 | 新增 `dshDefaultStatePath()`（`$DSH_HOME/palimpsest/palimpsest.sqlite`） | Python 基线的 `defaultStatePath` 是仓库相对路径（保留）；DSH 部署形态下编排账与 Ordarium 账同宿于 `$DSH_HOME`（双存储拓扑，docs/01 §4） |
 
+| 新增 ProjectController / 7 工具 / installPalimpsest | P2 把 claim/report 协议、gate→EvidenceAtom、pause/resume（control generation fencing）收束为宿主可注册的工具面；结构性 DSH 宿主合同（tools/dsh_types.ts）镜像 @ordarium/dsh，待真实 DSH manifest 发布后合同零改动切换（G9 遗留项） |
+| controller.gate 的 evidence 幂等键 = actionKey("evidence-v1", {project_id, attempt_id, predicate, command}) | gate 结果可安全重放；subject_digest 绑定 attempt+command |
+| gate.command 输出允许 exitCode=null | readOnly 记录真实执行结果，未知结果（如进程被终止）如实为 null 而非伪造整数 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

@@ -171,3 +171,53 @@ export function tempStatePath(): string {
   const directory = mkdtempSync(join(tmpdir(), "palimpsest-p1-"));
   return join(directory, "palimpsest.db");
 }
+
+/** Minimal in-memory DSH host: registers tool definitions and records them. */
+export class MockHost {
+  readonly definitions = new Map<string, any>();
+  readonly tools = {
+    register: (definition: any) => {
+      this.definitions.set(definition.name, definition);
+      return () => {
+        this.definitions.delete(definition.name);
+      };
+    },
+  };
+
+  async call(name: string, args: unknown): Promise<unknown> {
+    const definition = this.definitions.get(name);
+    if (definition === undefined) {
+      throw new Error(`unknown tool ${name}`);
+    }
+    return definition.execute(args, {
+      callId: `call-${name}`,
+      rootCallId: `root-${name}`,
+      name,
+      arguments: args,
+      agent: { session: { id: "session-1" } },
+      signal: new AbortController().signal,
+    });
+  }
+}
+
+/** Install helper for the P2 suites: temp ledgers, fake git, fixed clocks. */
+export async function installForTests(options: {
+  projectId?: string;
+  databasePath?: string;
+  ordariumDatabasePath?: string;
+  git?: import("../src/effects/index.js").GitPort;
+} = {}) {
+  const { installPalimpsest } = await import("../src/install.js");
+  const { FakeGitPort } = await import("../src/effects/index.js");
+  const host = new MockHost();
+  const installed = installPalimpsest(host as never, {
+    projectId: options.projectId ?? "scheduler-project",
+    databasePath: options.databasePath ?? tempStatePath(),
+    ordariumDatabasePath:
+      options.ordariumDatabasePath ??
+      join(mkdtempSync(join(tmpdir(), "palimpsest-p2-")), "operations.sqlite"),
+    git: options.git ?? new FakeGitPort("c".repeat(40)),
+    clock: () => "2026-08-13T00:00:00Z",
+  });
+  return { host, installed, controller: installed.controller };
+}
