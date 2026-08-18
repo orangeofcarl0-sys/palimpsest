@@ -40,6 +40,10 @@
 | controller.gate 的 evidence 幂等键 = actionKey("evidence-v1", {project_id, attempt_id, predicate, command}) | gate 结果可安全重放；subject_digest 绑定 attempt+command |
 | gate.command 输出允许 exitCode=null | readOnly 记录真实执行结果，未知结果（如进程被终止）如实为 null 而非伪造整数 |
 
+| TaskSpec.role 为可选字段（P3 扩展） | 缺席时按 implementer 处理；canonical digest 只含 present 字段，故冻结 fixture 的 digest 逐字节不变（parity 测试全绿）；Python 线已冻结，无对应实现 |
+| candidate_limit 放宽为 1\|2\|4（P3 扩展） | docs/02 冻结值为 1\|2；2 仍在合法集故 fixture 兼容；aggregate/scheduler 的 planned 计算逻辑不变 |
+| RoleSlotPolicy / BudgetLedger 为宿主层准入（P3） | 不改 Event 语义与 aggregate：槽位与预算只在 controller.claim 时检查，超限抛 DomainValidationError；默认值来自 Sparse Cognitive Parallelism 结论（implementer 2、硬上限 20） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

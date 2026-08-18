@@ -35,6 +35,8 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
+import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
 import { PromotionManager, type PromoteResult } from "../effects/promotion.js";
@@ -88,7 +90,12 @@ export interface ControllerStatusView {
   headCommit: string;
   schedulerState: "RUNNING" | "PAUSED";
   generation: number;
-  tasks: Array<{ task_id: string; state: string; last_event_id: number }>;
+  tasks: Array<{
+    task_id: string;
+    state: string;
+    last_event_id: number;
+    role?: string;
+  }>;
   attempts: Array<{
     attempt_id: string;
     task_id: string | null;
@@ -97,6 +104,7 @@ export interface ControllerStatusView {
   }>;
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
+  parallel: { admittedAttempts: number; rejectedClaims: number };
 }
 
 export interface ProjectControllerOptions {
@@ -105,6 +113,8 @@ export interface ProjectControllerOptions {
   projectId: string;
   policy: TaskPolicy;
   clock?: (() => string) | undefined;
+  /** P3: role-slot admission and attempt budget (defaults: strong, zero-config). */
+  parallel?: ParallelOptions | undefined;
 }
 
 export class ProjectController {
@@ -114,6 +124,8 @@ export class ProjectController {
   readonly policy: TaskPolicy;
   readonly scheduler: Scheduler;
   readonly promotions: PromotionManager;
+  readonly slots: RoleSlotPolicy;
+  readonly budget: BudgetLedger;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -124,6 +136,8 @@ export class ProjectController {
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId);
+    this.slots = options.parallel?.slots ?? new RoleSlotPolicy();
+    this.budget = options.parallel?.budget ?? new BudgetLedger();
     this.#clock = options.clock ?? (() => new Date().toISOString());
   }
 
@@ -288,6 +302,10 @@ export class ProjectController {
   /** Claim an attempt: create its worktree and mark it RUNNING. */
   async claim(attemptId: string): Promise<{ worktreePath: string }> {
     const project = this.#project();
+    const role = this.#roleOf(attemptId);
+    const runningRoles = this.#runningRoles();
+    this.slots.assertAdmissible(role, runningRoles);
+    this.budget.admit();
     const worktree = await this.effects.invoke(
       this.effects.actions.worktreeCreate,
       { worktreeId: attemptId, baseCommit: project.head_commit },
@@ -519,15 +537,23 @@ export class ProjectController {
     if (control === undefined) {
       throw new DomainValidationError("scheduler control projection is missing");
     }
+    const roles = new Map<string, string>();
+    for (const task of project.tasks) {
+      if (task.role !== undefined) roles.set(task.task_id, task.role);
+    }
     const tasks = (
       this.store.connection
         .prepare("SELECT task_id, state, last_event_id FROM tasks WHERE project_id=?")
         .all(this.projectId) as Array<Record<string, unknown>>
-    ).map((row) => ({
-      task_id: String(row.task_id),
-      state: String(row.state),
-      last_event_id: Number(row.last_event_id),
-    }));
+    ).map((row) => {
+      const taskId = String(row.task_id);
+      return {
+        task_id: taskId,
+        state: String(row.state),
+        last_event_id: Number(row.last_event_id),
+        ...(roles.has(taskId) ? { role: roles.get(taskId) as string } : {}),
+      };
+    });
     const attempts = (
       this.store.connection
         .prepare(
@@ -570,12 +596,46 @@ export class ProjectController {
       attempts,
       evidence,
       promotions,
+      parallel: {
+        admittedAttempts: this.budget.admitted,
+        rejectedClaims: this.budget.rejected,
+      },
     };
   }
 
   // -------------------------------------------------------------------------
   // Internals
   // -------------------------------------------------------------------------
+
+  /** Role of the task owning this attempt (absent role means implementer). */
+  #roleOf(attemptId: string): TaskRole {
+    const row = this.store.connection
+      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { task_id: string } | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError("attempt does not exist");
+    }
+    const project = this.#project();
+    const task = project.tasks.find((item) => item.task_id === row.task_id);
+    return task?.role ?? "implementer";
+  }
+
+  /** Roles of attempts still occupying a slot (CREATED/LEASED/RUNNING). */
+  #runningRoles(): TaskRole[] {
+    // Only claimed attempts (LEASED/RUNNING) occupy a slot; CREATED
+    // candidates are created by the scheduler but not yet running.
+    const rows = this.store.connection
+      .prepare(
+        "SELECT task_id FROM attempts WHERE project_id=? AND state IN ('LEASED','RUNNING')",
+      )
+      .all(this.projectId) as Array<{ task_id: string }>;
+    const project = this.#project();
+    const roles = new Map<string, TaskRole>();
+    for (const task of project.tasks) {
+      roles.set(task.task_id, task.role ?? "implementer");
+    }
+    return rows.map((row) => roles.get(row.task_id) ?? "implementer");
+  }
 
   #project(): ProjectIr {
     const row = this.store.connection

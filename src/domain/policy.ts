@@ -26,7 +26,7 @@ export interface TaskPolicyInput {
   timeout_s: number;
   lease_s: number;
   attempt_limit: number;
-  candidate_limit: 1 | 2;
+  candidate_limit: 1 | 2 | 4;
 }
 
 /**
@@ -43,7 +43,7 @@ export class TaskPolicy {
   readonly timeout_s: number;
   readonly lease_s: number;
   readonly attempt_limit: number;
-  readonly candidate_limit: 1 | 2;
+  readonly candidate_limit: 1 | 2 | 4;
 
   constructor(input: TaskPolicyInput) {
     this.policy_id = input.policy_id;

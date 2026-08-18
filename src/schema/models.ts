@@ -225,18 +225,30 @@ export function parseDecision(value: unknown): Decision {
   });
 }
 
+export const TASK_ROLES = [
+  "implementer",
+  "tester",
+  "verifier",
+  "scout",
+  "analyst",
+] as const;
+
+export type TaskRole = (typeof TASK_ROLES)[number];
+
 export interface TaskSpec {
   task_id: string;
   objective: string;
   depends_on: string[];
   write_paths: string[];
   required_artifacts: string[];
+  /** Optional role for slot-aware concurrency (P3); absent means "implementer". */
+  role?: TaskRole | undefined;
 }
 
 export function parseTaskSpec(value: unknown): TaskSpec {
   const raw = expectObject(value);
   requireFields(raw, "task_id", "objective", "depends_on", "write_paths", "required_artifacts");
-  return Object.freeze({
+  const spec: TaskSpec = {
     task_id: field(raw.task_id, "task_id", (inner) => validateIdentifier(expectString(inner))),
     objective: field(raw.objective, "objective", (inner) => nonEmpty(expectString(inner))),
     depends_on: field(raw.depends_on, "depends_on", (inner) =>
@@ -248,7 +260,15 @@ export function parseTaskSpec(value: unknown): TaskSpec {
     required_artifacts: field(raw.required_artifacts, "required_artifacts", (inner) =>
       unique(expectArray(inner).map((item) => validateProjectPath(expectString(item)))),
     ),
-  });
+  };
+  if (raw.role !== undefined && raw.role !== null) {
+    const role = field(raw.role, "role", expectString);
+    if (!TASK_ROLES.includes(role as TaskRole)) {
+      throw new ContractError("role: invalid literal");
+    }
+    spec.role = role as TaskRole;
+  }
+  return Object.freeze(spec);
 }
 
 export interface AllowedCommand {
@@ -458,7 +478,7 @@ export interface TaskEnvelope {
   timeout_s: number;
   lease_s: number;
   attempt_limit: number;
-  candidate_limit: 1 | 2;
+  candidate_limit: 1 | 2 | 4;
   idempotency_key: string;
 }
 
@@ -497,8 +517,8 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
     return inner;
   };
   const candidateLimit = field(raw.candidate_limit, "candidate_limit", expectInt);
-  if (candidateLimit !== 1 && candidateLimit !== 2) {
-    throw new ContractError("candidate_limit must be 1 or 2");
+  if (candidateLimit !== 1 && candidateLimit !== 2 && candidateLimit !== 4) {
+    throw new ContractError("candidate_limit must be 1, 2 or 4");
   }
   const envelope: TaskEnvelope = {
     schema_version: 1,
@@ -534,7 +554,7 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
     timeout_s: positive("timeout_s"),
     lease_s: positive("lease_s"),
     attempt_limit: positive("attempt_limit"),
-    candidate_limit: candidateLimit as 1 | 2,
+    candidate_limit: candidateLimit as 1 | 2 | 4,
     idempotency_key: field(raw.idempotency_key, "idempotency_key", (inner) =>
       validateDigest(expectString(inner)),
     ),
@@ -962,7 +982,7 @@ export function normalizeEventPayload(
         "first_attempt_no",
       );
       const planned = field(raw.planned_candidate_count, "planned_candidate_count", expectInt);
-      if (planned < 1 || planned > 2) {
+      if (planned < 1 || planned > 4) {
         throw new ContractError("planned_candidate_count must be between 1 and 2");
       }
       const first = field(raw.first_attempt_no, "first_attempt_no", expectInt);

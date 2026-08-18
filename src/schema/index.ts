@@ -44,5 +44,7 @@ export {
   type RuntimeMetadata,
   type SchedulerEvent,
   type TaskEnvelope,
+  type TaskRole,
   type TaskSpec,
+  TASK_ROLES,
 } from "./models.js";
