@@ -4,10 +4,24 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@ordarium/core': link:vendor/ordarium/dist/core
+  '@ordarium/ledger-sqlite': link:vendor/ordarium/dist/ledger-sqlite
+
 importers:
 
   .:
+    dependencies:
+      '@ordarium/core':
+        specifier: link:vendor/ordarium/dist/core
+        version: link:vendor/ordarium/dist/core
+      '@ordarium/ledger-sqlite':
+        specifier: link:vendor/ordarium/dist/ledger-sqlite
+        version: link:vendor/ordarium/dist/ledger-sqlite
     devDependencies:
+      '@ordarium/testing':
+        specifier: link:vendor/ordarium/dist/testing
+        version: link:vendor/ordarium/dist/testing
       '@types/node':
         specifier: 26.2.0
         version: 26.2.0

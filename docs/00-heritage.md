@@ -28,7 +28,15 @@
 | `Error.cause` 以消息内联方式表达 | 运行时目标环境的 Error 构造器限制；错误类型与消息文本保持与 Python 对齐 |
 | canonical int64 范围额外受 `Number.isSafeInteger` 收窄 | JS number 无法精确表示完整 int64；拒绝而非静默截断，失败关闭 |
 | TaskPolicy 为 class 而非 pydantic model | TS 无隐式模型校验；digest 覆盖相同字段集，fixture 中 `trusted-default` policy digest 已验证一致 |
+| `AggregateValidator.currentBatch` 公开（Python `_current_batch`） | Scheduler 需要按 causation 查询批次锚点；语义与行为不变 |
+| Scheduler 方法为 camelCase（`registerTask`/`startAttempt`/`recordCallback`） | TS 命名约定；调用序列与 fixture 生成脚本一致（fixture 从零重放逐事件验证） |
+| 新增 PromotionManager / 执行器 / GitPort（Python 基线无对应物） | P1 将"注入的 PROMOTION_COMMITTED 事实"升级为真实执行流：PREPARED → `palimpsest.git.promote`（Ordarium reconcilable）→ COMMITTED；执行器抽象（claim/report、command、mock）是 P2 工具面的地基 |
+| `palimpsest.git.commit.reconcile` 以 worktree 提交存在性为查询键 | 真实部署中以 git 查询端口暴露；P1 用 `git.contains` 近似，语义（absent→retrySafe）一致 |
+| FakeGitPort merge 为双亲提交（parents=[head, source]） | 与 `git merge --no-ff` 的祖先语义一致，是 Crash B reconcile 识别的前提 |
+| `createPalimpsestEffects` 暴露 `leaseMs` | 测试用 ManualClock 驱动 lease 过期以模拟崩溃重启；生产默认 30s 不变 |
 
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
+
+P1 依赖安装路径（`link:` + workspace overrides，五 tarball 自洽）即 Ordarium 记录在案的分发方式二；`tools/sync-ordarium.mjs` 打包自同级 checkout，公共发布后切换为 GitHub Release URL。

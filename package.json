@@ -24,7 +24,12 @@
     "check": "pnpm run test",
     "sync:ordarium": "node tools/sync-ordarium.mjs"
   },
+  "dependencies": {
+    "@ordarium/core": "link:vendor/ordarium/dist/core",
+    "@ordarium/ledger-sqlite": "link:vendor/ordarium/dist/ledger-sqlite"
+  },
   "devDependencies": {
+    "@ordarium/testing": "link:vendor/ordarium/dist/testing",
     "@types/node": "26.2.0",
     "typescript": "7.0.2",
     "vitest": "4.1.10"

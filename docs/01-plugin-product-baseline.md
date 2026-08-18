@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-1`
-> 状态：P0 已交付（合同核心），P1–P3 规划冻结。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-2`
+> 状态：P0 + P1 已交付（合同核心 + 确定性调度 + Ordarium effects 接线），P2–P3 规划冻结。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -27,9 +27,10 @@ Palimpsest DSH 插件是 **Ordarium 的典型产品**：一个用户友好的多
 src/schema     五 Schema + canonical digest + 28 EventType + payload 规范化     【P0 ✅】
 src/domain     状态机转换表 / aggregate 权威校验 / 受信 TaskPolicy / 稳定身份    【P0 ✅】
 src/state      EventStore（node:sqlite, PLMP）/ 投影 / 快照 / migration          【P0 ✅】
-src/scheduler  确定性"下一步"决策；只能请求 Event append                          【P1】
-src/effects    Ordarium Safe Actions（五 effect 映射）                            【P1】
-src/executors  执行器抽象：claim/report 协议（先行）+ 命令执行器（gate 内部）      【P1】
+src/scheduler  确定性"下一步"决策；只能请求 Event append                          【P1 ✅】
+src/effects    Ordarium Safe Actions（五 effect 映射）+ 共享 ledger runtime       【P1 ✅】
+src/effects    GitPort 抽象（Fake/CLI）+ PromotionManager（Crash A/B 恢复）      【P1 ✅】
+src/executors  执行器抽象：claim/report 协议 + 命令执行器 + mock                  【P1 ✅】
 src/tools      DSH 工具面（7 工具）+ 用户友好渲染                                 【P2】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2】
 多 agent 并行：claim/report 并发、角色槽位、2–4 候选、独立 verifier、基础预算    【P3】
@@ -46,17 +47,19 @@ src/install    installPalimpsest(ctx, options) 黄金路径                     
 
 两个库各管一件事：Palimpsest 管"项目应当发生什么"，Ordarium 管"副作用真的发生了什么、是否恰好一次"。
 
-## 5. Ordarium effect 映射（P1 落地）
+## 5. Ordarium effect 映射（P1 已落地）
 
 | 插件动作 | Action 名 | Effect profile | 依据 |
 |---|---|---|---|
 | 创建 worktree | `palimpsest.worktree.create` | `idempotent(durable)` | 同键重复创建可安全复用 |
 | Attempt 提交 | `palimpsest.git.commit` | `reconcilable` | 可按 commit hash 查询 |
-| 晋升合并 | `palimpsest.git.promote` | `reconcilable` | Promotion Crash A/B → uncertain + reconcile，不盲重试 |
+| 晋升合并 | `palimpsest.git.promote` | `reconcilable` | Promotion Crash A/B → reconcile 恢复，不盲重试 |
 | Gate 命令执行 | `palimpsest.gate.command` | `readOnly` | 一次性 worktree 内重跑，无外部副作用 |
 | 外部 worker dispatch | `palimpsest.worker.dispatch` | `guarded` | dispatch 后结果不明保持 uncertain |
 
-插件直接依赖 `@ordarium/core` + `@ordarium/ledger-sqlite`（宿主/框架作者路径，docs/12 §5），不重复注册 Ordarium 运维工具面。
+插件直接依赖 `@ordarium/core` + `@ordarium/ledger-sqlite`（宿主/框架作者路径，docs/12 §5），不重复注册 Ordarium 运维工具面。依赖经 `tools/sync-ordarium.mjs` 从同级 Ordarium checkout 打包五 tarball，以 `link:` + workspace overrides 解析（单包 git 依赖的 `workspace:*` 限制是 Ordarium 记录在案的已知问题）。
+
+**P1 恢复语义（机器验收）**：`git.promote` 在 execute 前后两个崩溃窗口由 reconcilable 恢复——Crash A（合并前）reconcile 见 head 未变 → `absent(retrySafe)` → 重启后重放 execute，合并恰好一次；Crash B（合并落地、账本未记）reconcile 见 source 已是 head 祖先 → `succeeded`，绝不二次合并。`worker.dispatch` 崩溃后保持 `uncertain`（`UncertainOperationError`），不盲重试。readOnly 的 `gate.command` 同 identity 崩溃窗口后拒绝盲重试，新 identity（新 operation）正常重做。PromotionManager 对崩溃/不确定错误不落 `PROMOTION_FAILED` 终态，只有确定性失败才终态化。
 
 ## 6. 工具面（P2 冻结）
 
@@ -80,8 +83,8 @@ palimpsest_status   人可读项目状态（用户友好渲染）
 
 | 阶段 | 交付 | Exit 门 |
 |---|---|---|
-| **P0**（本文档） | 合同核心移植 | digest/事件链/snapshot 与 Python fixture 逐字节 parity；migration 身份一致；tsc + 测试全绿 |
-| **P1** | scheduler 决策 + Ordarium effects + 执行器 | 五 action 各自通过 `@ordarium/testing` 故障注入；Promotion Crash A/B → reconcile 语义验收 |
+| **P0** ✅ | 合同核心移植 | digest/事件链/snapshot 与 Python fixture 逐字节 parity；migration 身份一致；tsc + 测试全绿 |
+| **P1** ✅ | scheduler 决策 + Ordarium effects + 执行器 | 五 action 各自通过 `@ordarium/testing` 故障注入（FaultInjector + ManualClock + lease 过期恢复）；Promotion Crash A/B → reconcile 语义验收；TS scheduler 从零复现 Python fixture 全 15 事件（digest 逐字节一致） |
 | **P2** | DSH 工具面 + install + mock worker 端到端 | 12 项故障验收场景（docs/05 §3）在插件形态全部通过 |
 | **P3** | 多 agent 并行 | 角色槽位并发下 stale isolation / late result 不回归；强默认零配置 |
 

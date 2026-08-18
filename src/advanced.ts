@@ -1,9 +1,9 @@
 /**
- * palimpsest-dsh/advanced — reserved for P1/P2 surfaces.
+ * palimpsest-dsh/advanced — P1/P2 surfaces.
  *
- * Planned: Ordarium effect bindings, DSH tool registration, custom
- * executors (claim/report protocol), and operations wiring. The P0 contract
- * core (schema / domain / state) lives in the root entry.
+ * Ordarium effect wiring, git ports, promotion manager and attempt
+ * executors. The DSH tool registration surface arrives in P2; this entry is
+ * the explicit opt-in path for embedding and framework authors.
  */
 
-export {};
+export * from "./effects/index.js";

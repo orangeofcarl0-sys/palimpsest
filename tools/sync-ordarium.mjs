@@ -14,7 +14,7 @@
  *   (default: ../Palimpsest/ordarium, then ../ordarium)
  */
 
-import { execFileSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs";
 import { join, resolve } from "node:path";
 
@@ -41,14 +41,20 @@ const outDir = resolve(process.cwd(), "vendor/ordarium");
 mkdirSync(outDir, { recursive: true });
 
 console.log(`Packing Ordarium packages from ${root} ...`);
-execFileSync("pnpm", ["run", "build"], { cwd: root, stdio: "inherit" });
+// pnpm is managed via corepack in this environment (corepack.cmd shim on
+// Windows); run through a shell so the shim resolves. A node_modules purge
+// may be requested without a TTY, so run non-interactively.
+const pnpm = process.platform === "win32" ? "corepack pnpm" : "pnpm";
+const env = { ...process.env, CI: "true" };
+execSync(`${pnpm} run build`, { cwd: root, stdio: "inherit", env });
 
 for (const pkg of readdirSync(join(root, "packages"))) {
   const pkgDir = join(root, "packages", pkg);
   if (!existsSync(join(pkgDir, "package.json"))) continue;
-  execFileSync("pnpm", ["pack", "--pack-destination", outDir], {
+  execSync(`${pnpm} pack --pack-destination "${outDir}"`, {
     cwd: pkgDir,
     stdio: "inherit",
+    env,
   });
 }
 

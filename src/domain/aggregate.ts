@@ -329,7 +329,8 @@ export class AggregateValidator {
     return row as Row;
   }
 
-  #currentBatch(
+  /** Batch anchor + attempts by causation; public for the Scheduler (Python _current_batch). */
+  currentBatch(
     connection: DatabaseSync,
     row: Row,
   ): [number, Row, Row[]] {
@@ -398,7 +399,7 @@ export class AggregateValidator {
   }
 
   #validateBatchSettlement(connection: DatabaseSync, event: NewEvent, row: Row): void {
-    const [activationId, activation, attempts] = this.#currentBatch(connection, row);
+    const [activationId, activation, attempts] = this.currentBatch(connection, row);
     const activationPayload = decodeJsonBlob(activation.payload_json);
     if (event.payload.batch_activation_event_id !== activationId) {
       throw new DomainValidationError("settlement references a stale batch");
@@ -469,7 +470,7 @@ export class AggregateValidator {
     ) {
       throw new DomainValidationError("promotion does not identify a completed Task candidate");
     }
-    const [activationId, , attempts] = this.#currentBatch(connection, row);
+    const [activationId, , attempts] = this.currentBatch(connection, row);
     if (!attempts.some((item) => rowStr(item, "attempt_id") === payload.attempt_id)) {
       throw new DomainValidationError("promotion Attempt is not in the current batch");
     }
@@ -528,7 +529,7 @@ export class AggregateValidator {
     }
     const batchId = event.payload.batch_activation_event_id as number | null;
     if (TASK_ACTIVE_STATES.has(rowStr(row, "state"))) {
-      const [currentId] = this.#currentBatch(connection, row);
+      const [currentId] = this.currentBatch(connection, row);
       if (batchId !== currentId) {
         throw new DomainValidationError("active Task stale Event references wrong batch");
       }
@@ -557,7 +558,7 @@ export class AggregateValidator {
     if (event.payload.envelope_id !== envelope.envelope_id) {
       throw new DomainValidationError("Attempt envelope does not match Task");
     }
-    const [activationId, activation, attempts] = this.#currentBatch(connection, task as Row);
+    const [activationId, activation, attempts] = this.currentBatch(connection, task as Row);
     if (event.causation_id !== activationId) {
       throw new DomainValidationError("Attempt must be caused by current TASK_STARTED");
     }
