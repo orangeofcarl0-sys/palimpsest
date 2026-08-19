@@ -232,7 +232,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
     tool({
       name: "palimpsest_gate",
       description:
-        "Run one deterministic gate on an attempt and record the evidence atom (tests_pass / process_exit_zero / lint_pass / expected_files_exist / write_scope_valid)",
+        "Run one deterministic gate on an attempt and record the evidence atom; with a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
       properties: {
         attemptId: { type: "string" },
         predicate: {
@@ -248,30 +248,42 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
         },
         command: { type: "array", items: { type: "string" } },
         exitCode: { type: "number" },
+        gateId: { type: "string" },
       },
-      required: ["attemptId", "predicate", "command", "exitCode"],
+      required: ["attemptId"],
       execute: async (args) => {
+        const attemptId = stringField(args, "attemptId");
+        const gateId = optionalString(args, "gateId");
         const exitCode = args.exitCode;
-        if (typeof exitCode !== "number" || !Number.isInteger(exitCode)) {
-          throw new TypeError("exitCode must be an integer");
-        }
         const command = stringArray(args, "command") ?? [];
-        if (command.length === 0) throw new TypeError("command must be non-empty");
-        const predicate = stringField(args, "predicate") as
+        const predicate = optionalString(args, "predicate") as
           | "process_exit_zero"
           | "tests_pass"
           | "tests_fail"
           | "lint_pass"
           | "expected_files_exist"
-          | "write_scope_valid";
-        const event = await controller.gate({
-          attemptId: stringField(args, "attemptId"),
-          predicate,
-          command,
-          exitCode,
-        });
-        const evidence = event.payload.evidence as { evidence_id: string; status: string };
-        return { evidenceId: evidence.evidence_id, status: evidence.status };
+          | "write_scope_valid"
+          | undefined;
+        let result: Record<string, unknown> = {};
+        if (predicate !== undefined) {
+          if (typeof exitCode !== "number" || !Number.isInteger(exitCode)) {
+            throw new TypeError("exitCode must be an integer");
+          }
+          if (command.length === 0) throw new TypeError("command must be non-empty");
+          const event = await controller.gate({
+            attemptId,
+            predicate,
+            command,
+            exitCode,
+          });
+          const evidence = event.payload.evidence as { evidence_id: string; status: string };
+          result = { evidenceId: evidence.evidence_id, status: evidence.status };
+        }
+        if (gateId !== undefined) {
+          const verdict = controller.evaluateGate(gateId, "attempt", attemptId);
+          result = { ...result, gateVerdict: verdict.verdict, nextEvidenceNeeded: verdict.next_evidence_needed };
+        }
+        return result;
       },
     }),
 

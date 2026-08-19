@@ -48,6 +48,8 @@
 
 | computeInvalidationSet / classifyLateResult（R2） | 语义兼容演算（预算.txt §23–32）：changed 实体自身 + 沿敏感于该 change_class 的依赖边传播；metadata_only/backward_compatible 不失效任何下游；迟到结果分四类（current/compatible/stale_but_informative/unsafe_stale）。controller.plan 可选 changeClass/changedIds 触发，省略即原行为（无失效） |
 
+| ProjectController.gates + evaluateGate（R3） | 控制器持有 GateEngine；palimpsest_gate 工具可选 gateId：无 gateId 保持证据注入原行为，有 gateId 追加返回 verdict 与缺失证据；gate command 的 Ordarium callId 含 predicate+command 摘要，避免同 attempt 多次门禁触发 OperationConflictError |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

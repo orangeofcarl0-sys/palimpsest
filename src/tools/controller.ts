@@ -37,6 +37,7 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
+import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
@@ -120,6 +121,8 @@ export interface ProjectControllerOptions {
   clock?: (() => string) | undefined;
   /** P3: role-slot admission and attempt budget (defaults: strong, zero-config). */
   parallel?: ParallelOptions | undefined;
+  /** R1: registered gates evaluated by evaluateGate (empty default). */
+  gates?: readonly GateDefinition[] | undefined;
 }
 
 export class ProjectController {
@@ -131,6 +134,7 @@ export class ProjectController {
   readonly promotions: PromotionManager;
   readonly slots: RoleSlotPolicy;
   readonly budget: BudgetLedger;
+  readonly gates: GateEngine;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -143,6 +147,10 @@ export class ProjectController {
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId);
     this.slots = options.parallel?.slots ?? new RoleSlotPolicy();
     this.budget = options.parallel?.budget ?? new BudgetLedger();
+    this.gates = new GateEngine();
+    for (const gate of options.gates ?? []) {
+      this.gates.register(gate);
+    }
     this.#clock = options.clock ?? (() => new Date().toISOString());
   }
 
@@ -474,7 +482,13 @@ export class ProjectController {
         executable: input.command[0],
         argv: input.command.slice(1),
       },
-      { scope: this.projectId, callId: `gate:${input.attemptId}` },
+      {
+        scope: this.projectId,
+        callId: `gate:${input.attemptId}:${canonicalDigest({
+          predicate: input.predicate,
+          command: input.command,
+        }).slice(0, 16)}`,
+      },
     );
     const evidenceId = stableEntityId(
       "evidence",
@@ -578,6 +592,18 @@ export class ProjectController {
         expected_project_revision: this.#project().revision,
       }),
     );
+  }
+
+  /**
+   * Evaluate a registered gate against the Evidence projection for one
+   * subject (R1): return the verdict and the evidence demand.
+   */
+  evaluateGate(
+    gateId: string,
+    subjectType: GateDefinition["subject_type"],
+    subjectId: string,
+  ): GateResult {
+    return this.gates.evaluate(this.store, this.projectId, subjectType, subjectId, gateId);
   }
 
   /** Invalidate evidence bound to a superseded subject (revision change). */
