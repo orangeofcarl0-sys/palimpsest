@@ -650,6 +650,38 @@ export class ProjectController {
     return this.promotions.promote({ attemptId, sourceCommit, expectedHeadCommit });
   }
 
+  /** Promotion gated by a registered gate (R8): only a PASS may be promoted. */
+  async promoteWhenGatePasses(
+    attemptId: string,
+    sourceCommit: string,
+    expectedHeadCommit: string,
+    gateId: string,
+  ): Promise<
+    | { readonly promoted: true; readonly result: PromoteResult }
+    | {
+        readonly promoted: false;
+        readonly gateId: string;
+        readonly verdict: GateResult["verdict"];
+        readonly nextEvidenceNeeded: readonly string[];
+      }
+  > {
+    // Fail closed on an unregistered gate: callers that do not want a gate
+    // use promote() directly.
+    const check = this.evaluateGate(gateId, "attempt", attemptId);
+    if (check.verdict !== "PASS") {
+      return {
+        promoted: false,
+        gateId,
+        verdict: check.verdict,
+        nextEvidenceNeeded: check.next_evidence_needed,
+      };
+    }
+    return {
+      promoted: true,
+      result: await this.promote(attemptId, sourceCommit, expectedHeadCommit),
+    };
+  }
+
   /** R5: the deterministic allocation for one task from a six-dimensional estimate. */
   allocateFor(
     taskId: string,

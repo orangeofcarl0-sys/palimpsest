@@ -58,6 +58,8 @@
 
 | ClaimGraph / claimStatus（R7） | 预算.txt §27/§23：claim 状态是派生值（SUPPORTED/PARTIALLY_SUPPORTED/CONTRADICTED/INCONCLUSIVE/STALE），非可编辑字段；边合法性失败关闭（仅 evidence 可支持/反驳 claim）；provenance 只沿产生性边（produced_by/configured_by/committed_in/derived_from），不沿评价边 |
 
+| promoteWhenGatePasses（R8） | 把 R1 的 GateEngine 接到晋升决策：evaluateGate 非 PASS 返回 { promoted:false, verdict, nextEvidenceNeeded } 且不落 PROMOTION_COMMITTED；未注册 gate 失败关闭（不想门禁者显式用 promote）；保留原 promote 不变量 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

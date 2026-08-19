@@ -28,7 +28,7 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（108 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（111 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
@@ -42,6 +42,7 @@ corepack pnpm exec vitest run
 10. **自适应计算分配（R5）**：六维估计（uncertainty/impact/verifiability/evidence deficit/criticality/cost）→ 规则表输出候选拔/验证者数与模型升级建议——U×V 象限防盲目扩样本、critical 强制独立验证、GPU 昂贵激进预筛——7 项机器验收。
 11. **模型能力统计表（R6）**：按 task_type+model 累计成功/成本并估算预期成功成本（Gamma 平滑防除零），bestModel 选 C_success 最低者——强模型单次贵但成功率高时可能更省（§43）——6 项机器验收。
 12. **科研 evidence graph（R7）**：CLAIM→EVIDENCE→EXPERIMENT→CONFIG→COMMIT→DATA 证明链；claim 状态派生（supported/contradicted/inconclusive/stale）、证据失效自动 STALE、非法边失败关闭、provenance 只沿产生性边——7 项机器验收。
+13. **gate 门控晋升（R8）**：promoteWhenGatePasses——注册门禁非 PASS 拒绝晋升并回报缺失证据（INCOMPLETE/FAIL 不落 PROMOTION_COMMITTED）、PASS 才放行；未注册门禁失败关闭——3 项机器验收。
 
 ## 依赖 Ordarium
 

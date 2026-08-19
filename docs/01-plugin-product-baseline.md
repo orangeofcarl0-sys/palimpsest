@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-11`
-> 状态：P0–P3 已交付 + Research 线 R1–R7（Gate DSL / typed invalidation / gate 工具集成 / pairwise tournament / 自适应计算分配 / 模型能力统计表 / 科研 evidence graph）已落地。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-12`
+> 状态：P0–P3 已交付 + Research 线 R1–R8（Gate DSL / typed invalidation / gate 工具集成 / pairwise tournament / 自适应计算分配 / 模型能力统计表 / 科研 evidence graph / gate 门控晋升）已落地。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -39,6 +39,7 @@ src/select     pairwise tournament：递归两两淘汰候选（judge 只见 id+
 src/allocate   自适应计算分配：六维估计 → 规则表（候选数/验证者/升级）          【R5 ✅】
 src/telemetry  模型能力统计表：按 task_type+model 累计并估算预期成功成本          【R6 ✅】
 src/evidence  科研 evidence graph：CLAIM→EVIDENCE→EXPERIMENT→CONFIG→COMMIT→DATA 证明链  【R7 ✅】
+src/tools     promoteWhenGatePasses：门禁 PASS 才放行晋升（verdict 驱动）      【R8 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```
