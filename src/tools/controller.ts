@@ -36,6 +36,8 @@ import {
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
 import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
+import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
+import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
@@ -63,6 +65,9 @@ export interface PlanInput {
   tasks: readonly TaskSpec[];
   reason?: string | undefined;
   committedAt?: string | undefined;
+  /** R2 typed invalidation: the class and logical ids this revision changes. */
+  changeClass?: ChangeClass | undefined;
+  changedIds?: readonly string[] | undefined;
 }
 
 export interface ReportInput {
@@ -217,7 +222,7 @@ export class ProjectController {
       "plan",
       actionKey("plan-revision-v1", { project_id: this.projectId, revision }),
     );
-    return this.store.append(
+    const event = this.store.append(
       parseNewEvent({
         schema_version: 1,
         project_id: this.projectId,
@@ -235,6 +240,88 @@ export class ProjectController {
         expected_project_revision: current.revision,
       }),
     );
+    if (input.changeClass !== undefined) {
+      this.#applyTypedInvalidation({
+        changeClass: input.changeClass,
+        changedIds: input.changedIds ?? input.tasks.map((task) => task.task_id),
+        from: current.revision,
+        to: revision,
+      });
+    }
+    return event;
+  }
+
+  /** R2: compute and apply the typed invalidation closure for a plan revision. */
+  #applyTypedInvalidation(arg: {
+    changeClass: ChangeClass;
+    changedIds: readonly string[];
+    from: number;
+    to: number;
+  }): void {
+    const project = this.#project(); // new revision is now current
+    const edges: DependencyEdge[] = [];
+    for (const task of project.tasks) {
+      for (const dependency of task.depends_on) {
+        edges.push({
+          from: dependency,
+          to: task.task_id,
+          sensitive_to: ["behavior_change", "contract_breaking"],
+        });
+      }
+    }
+    const affected = computeInvalidationSet(
+      {
+        from: arg.from,
+        to: arg.to,
+        change_class: arg.changeClass,
+        changed_ids: arg.changedIds,
+      },
+      edges,
+    );
+    if (affected.size === 0 && !changeClassInvalidates(arg.changeClass)) {
+      return;
+    }
+    for (const taskId of affected) {
+      const row = this.store.connection
+        .prepare("SELECT state FROM tasks WHERE project_id=? AND task_id=?")
+        .get(this.projectId, taskId) as { state: string } | undefined;
+      if (row === undefined || row.state === "STALE" || row.state === "FAILED" || row.state === "SATISFIED") {
+        continue;
+      }
+      this.invalidateTask(taskId, `typed invalidation (${arg.changeClass}) on revision ${arg.to}`);
+    }
+    // Evidence bound to the affected tasks (or their attempts) loses authority.
+    const scope: string[] = [];
+    for (const taskId of affected) {
+      scope.push(taskId);
+      for (const attempt of this.store.connection
+        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=?")
+        .all(this.projectId, taskId) as Array<{ attempt_id: string }>) {
+        scope.push(attempt.attempt_id);
+      }
+    }
+    if (scope.length === 0) return;
+    const holders = this.store.connection
+      .prepare(
+        "SELECT evidence_id FROM evidence WHERE project_id=? AND status='active'",
+      )
+      .all(this.projectId) as Array<{ evidence_id: string }>;
+    for (const holder of holders) {
+      const evidence = JSON.parse(
+        new TextDecoder().decode(
+          (
+            this.store.connection
+              .prepare("SELECT evidence_json FROM evidence WHERE project_id=? AND evidence_id=?")
+              .get(this.projectId, holder.evidence_id) as { evidence_json: Uint8Array }
+          ).evidence_json,
+        ),
+      ) as { subject_id?: string };
+      if (evidence.subject_id !== undefined && scope.includes(evidence.subject_id)) {
+        this.store.connection
+          .prepare("UPDATE evidence SET status='stale' WHERE project_id=? AND evidence_id=?")
+          .run(this.projectId, holder.evidence_id);
+      }
+    }
   }
 
   // -------------------------------------------------------------------------

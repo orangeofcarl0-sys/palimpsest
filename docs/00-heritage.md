@@ -46,6 +46,8 @@
 
 | GateEngine / parseGateDefinition（Research 线 R1） | 声明式门禁（预算.txt §13–22）：纯查询、无副作用；evidence 投影表无 subject 列，按 evidence_json 内 subject 的 json_extract 过滤查证；未登记 gate 与 subject 类型不匹配失败关闭 |
 
+| computeInvalidationSet / classifyLateResult（R2） | 语义兼容演算（预算.txt §23–32）：changed 实体自身 + 沿敏感于该 change_class 的依赖边传播；metadata_only/backward_compatible 不失效任何下游；迟到结果分四类（current/compatible/stale_but_informative/unsafe_stale）。controller.plan 可选 changeClass/changedIds 触发，省略即原行为（无失效） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

@@ -8,3 +8,15 @@ export {
   type GateDefinition,
   type GateResult,
 } from "./gate_dsl.js";
+export {
+  CHANGE_CLASSES,
+  changeClassInvalidates,
+  classifyLateResult,
+  computeInvalidationSet,
+} from "./invalidation.js";
+export type {
+  ChangeClass,
+  DependencyEdge,
+  LateResultClass,
+  RevisionDelta,
+} from "./invalidation.js";
