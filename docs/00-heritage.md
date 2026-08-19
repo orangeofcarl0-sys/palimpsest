@@ -50,6 +50,8 @@
 
 | ProjectController.gates + evaluateGate（R3） | 控制器持有 GateEngine；palimpsest_gate 工具可选 gateId：无 gateId 保持证据注入原行为，有 gateId 追加返回 verdict 与缺失证据；gate command 的 Ordarium callId 含 predicate+command 摘要，避免同 attempt 多次门禁触发 OperationConflictError |
 
+| runTournament / selectCandidate（R4） | 递归两两淘汰（raw-notes §23/§36）：n-1 次比较、tie 确定性取先者、rounds 完整审计；controller.selectCandidate 只向 judge 暴露 id+summary（从 report_json 取），完整 AttemptReport 永不泄漏给 judge |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

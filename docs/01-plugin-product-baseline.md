@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-7`
-> 状态：P0–P3 已交付 + Research 线 Gate DSL（R1）、typed invalidation（R2）、gate 工具集成（R3）已落地。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-8`
+> 状态：P0–P3 已交付 + Research 线 Gate DSL（R1）、typed invalidation（R2）、gate 工具集成（R3）、pairwise tournament（R4）已落地。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -35,6 +35,7 @@ src/tools      DSH 工具面（7 工具）+ ProjectController + 用户友好渲�
 src/evidence   Gate DSL：声明式定义 + 确定性求值（all/any/exists/count/not + where）【R1 ✅】
 src/evidence   typed invalidation：语义兼容演算（change_class × 依赖边敏感度）        【R2 ✅】
 src/tools      palimpsest_gate 支持按注册 gate 求值（verdict + nextEvidenceNeeded）  【R3 ✅】
+src/select     pairwise tournament：递归两两淘汰候选（judge 只见 id+summary）      【R4 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

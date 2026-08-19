@@ -38,6 +38,7 @@ import { DomainValidationError } from "../domain/errors.js";
 import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
+import { runTournament, type PairwiseJudge, type TournamentEntry, type TournamentResult } from "../select/tournament.js";
 import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
@@ -640,6 +641,33 @@ export class ProjectController {
     expectedHeadCommit: string,
   ): Promise<PromoteResult> {
     return this.promotions.promote({ attemptId, sourceCommit, expectedHeadCommit });
+  }
+
+  /**
+   * Recursive pairwise tournament over the completed candidates of the
+   * current batch (R4). The judge only ever sees id + summary — never the
+   * full AttemptReport — and the winner is the candidate presented for
+   * promotion.
+   */
+  async selectCandidate(judge: PairwiseJudge): Promise<TournamentResult> {
+    const rows = this.store.connection
+      .prepare(
+        "SELECT attempt_id, report_json FROM attempts WHERE project_id=? AND state='COMPLETED'",
+      )
+      .all(this.projectId) as Array<{ attempt_id: string; report_json: Uint8Array | null }>;
+    if (rows.length === 0) {
+      throw new DomainValidationError("no completed candidates to select from");
+    }
+    const entries: TournamentEntry[] = rows.map((row) => {
+      // The judge gets the report summary — the report itself never leaks.
+      const report = row.report_json === null ? null : decodeJsonBlob(row.report_json);
+      return {
+        id: row.attempt_id,
+        summary:
+          report === null ? "completed candidate" : String(report.summary ?? "completed candidate"),
+      };
+    });
+    return runTournament(entries, judge);
   }
 
   status(): ControllerStatusView {
