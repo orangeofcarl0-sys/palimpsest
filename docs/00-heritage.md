@@ -52,6 +52,8 @@
 
 | runTournament / selectCandidate（R4） | 递归两两淘汰（raw-notes §23/§36）：n-1 次比较、tie 确定性取先者、rounds 完整审计；controller.selectCandidate 只向 judge 暴露 id+summary（从 report_json 取），完整 AttemptReport 永不泄漏给 judge |
 
+| allocate / allocateFor（R5） | 预算.txt §33–43/§51 规则表：U×V 象限（高不确定+弱验证 → 强推理+判别实验，绝不扩样本）、critical/high-impact 加独立验证、GPU 昂贵时激进预筛；纯函数、无副作用；controller.allocateFor 只校验任务存在 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

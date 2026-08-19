@@ -39,6 +39,7 @@ import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.j
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import { runTournament, type PairwiseJudge, type TournamentEntry, type TournamentResult } from "../select/tournament.js";
+import { allocate, type Allocation, type AllocationEstimates } from "../allocate/allocator.js";
 import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
@@ -641,6 +642,20 @@ export class ProjectController {
     expectedHeadCommit: string,
   ): Promise<PromoteResult> {
     return this.promotions.promote({ attemptId, sourceCommit, expectedHeadCommit });
+  }
+
+  /** R5: the deterministic allocation for one task from a six-dimensional estimate. */
+  allocateFor(
+    taskId: string,
+    estimates: AllocationEstimates,
+  ): Allocation {
+    const row = this.store.connection
+      .prepare("SELECT task_id FROM tasks WHERE project_id=? AND task_id=?")
+      .get(this.projectId, taskId);
+    if (row === undefined) {
+      throw new DomainValidationError("task does not exist");
+    }
+    return allocate(estimates);
   }
 
   /**

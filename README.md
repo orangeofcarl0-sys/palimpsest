@@ -28,7 +28,7 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（88 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（95 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
@@ -39,6 +39,7 @@ corepack pnpm exec vitest run
 7. **typed invalidation（R2）**：语义兼容演算——change_class（metadata_only/backward_compatible/behavior_change/contract_breaking）× 依赖边敏感度精确传播失效；metadata_only 计划不动依赖链与证据、contract_breaking 传播链式 STALE；迟到结果四分类——7 项机器验收。
 8. **gate 工具集成（R3）**：palimpsest_gate 可按注册 gate 求值并回报 verdict 与缺失证据（旁边保持证据注入的向后兼容路径）——5 项机器验收。
 9. **pairwise tournament（R4）**：候选以递归两两淘汰方式选出晋升者——n-1 次比较、tie 确定性、rounds 审计、judge 只见 id+summary（完整报告永不泄漏）——5 项机器验收。
+10. **自适应计算分配（R5）**：六维估计（uncertainty/impact/verifiability/evidence deficit/criticality/cost）→ 规则表输出候选拔/验证者数与模型升级建议——U×V 象限防盲目扩样本、critical 强制独立验证、GPU 昂贵激进预筛——7 项机器验收。
 
 ## 依赖 Ordarium
 
