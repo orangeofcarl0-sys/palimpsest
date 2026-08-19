@@ -28,13 +28,14 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（61 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（71 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
 3. **effects 故障注入（P1）**：五 action 各过 `@ordarium/testing` FaultInjector 崩溃检查点（after-claim / after-dispatch）+ ManualClock 驱动 lease 过期重启；Promotion Crash A（合并前崩溃恢复后恰好合并一次）与 Crash B（合并落地后崩溃，reconcile 恢复且绝不二次合并）均机器验收。
 4. **12 项故障验收场景（P2）**：docs/05 §3 的 pause/resume、crash recovery、snapshot rebuild、local retry、lease expiry、late result、revision change、evidence invalidation、write escape、promotion happy path、event idempotency 在插件形态全部通过。
 5. **多 agent 并行（P3）**：4-candidate 批次并行、角色槽位准入（默认 implementer 2、硬上限 20）、attempt 预算耗尽拒绝、并发下 stale/late 不回归——7 项机器验收。
+6. **Gate DSL（R1）**：声明式、确定性、版本化的门禁定义与求值——缺失证据记 INCOMPLETE（absence ≠ evidence of absence）、`not` 分支一票否决 FAIL、next_evidence_needed 生成证据需求——10 项机器验收。
 
 ## 依赖 Ordarium
 

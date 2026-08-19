@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-4`
-> 状态：P0–P3 已交付（合同核心 + 调度 + effects + DSH 工具面 + 12 项故障验收 + 多 agent 并行），后续为产品演进线。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-5`
+> 状态：P0–P3 已交付 + Research 线第一步（Gate DSL）已落地。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -32,6 +32,7 @@ src/effects    Ordarium Safe Actions（五 effect 映射）+ 共享 ledger runti
 src/effects    GitPort 抽象（Fake/CLI）+ PromotionManager（Crash A/B 恢复）      【P1 ✅】
 src/executors  执行器抽象：claim/report 协议 + 命令执行器 + mock                  【P1 ✅】
 src/tools      DSH 工具面（7 工具）+ ProjectController + 用户友好渲染           【P2 ✅】
+src/evidence   Gate DSL：声明式定义 + 确定性求值（all/any/exists/count/not + where）【R1 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

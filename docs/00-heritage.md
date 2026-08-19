@@ -44,6 +44,8 @@
 | candidate_limit 放宽为 1\|2\|4（P3 扩展） | docs/02 冻结值为 1\|2；2 仍在合法集故 fixture 兼容；aggregate/scheduler 的 planned 计算逻辑不变 |
 | RoleSlotPolicy / BudgetLedger 为宿主层准入（P3） | 不改 Event 语义与 aggregate：槽位与预算只在 controller.claim 时检查，超限抛 DomainValidationError；默认值来自 Sparse Cognitive Parallelism 结论（implementer 2、硬上限 20） |
 
+| GateEngine / parseGateDefinition（Research 线 R1） | 声明式门禁（预算.txt §13–22）：纯查询、无副作用；evidence 投影表无 subject 列，按 evidence_json 内 subject 的 json_extract 过滤查证；未登记 gate 与 subject 类型不匹配失败关闭 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
