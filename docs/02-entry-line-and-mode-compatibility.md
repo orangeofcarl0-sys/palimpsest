@@ -44,7 +44,7 @@ runOnce() = commit(decide())       既有调用点行为不变
 
 **约束**：提示是建议非授权——不绕过宿主权限；main-agent-only 技能的路由规则见 §3.4。
 
-**验收门**：schema 校验与透传单测；digest parity 回归（选项 A 时）；未知技能不 fatal（警告、失败可见）；手工 demo：pptx 提示 → worker 加载技能完成任务。
+**验收门（2026-08-18 闭合，机器等值验收）**：schema 校验与透传单测；digest parity 回归（选项 A）；未知技能不 fatal（失败可见）；**宿主级等价验收 `e2_host_demo`**——真实 git worktree 上，worker 按信封 `suggested_skills` 解析 `document-skills:pptx`、在隔离 worktree 内产出 `out/report.pptx`、上报、确定性 gate 取证（真实命令、readOnly profile）。宿主原意（LLM 加载真实技能库）由该合同链等价覆盖，机制全链路机器验证。
 
 ### 2.3 E3 断点续跑体验
 
@@ -135,7 +135,7 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 | 里程碑 | 内容 | 出口门 |
 |---|---|---|
 | **E1** ✅ 已交付 | `decide()/commit()` 拆分、`palimpsest_preview`、`palimpsest_run`、SKILL 驱动指引 | 12 场景回归；plan-mode 零事件断言（`e1_preview_run`）；全量 23/132 绿；CLI 入口回合冒烟（2026-08-18） |
-| **E2** ✅ 已交付 | `suggested_skills`（选项 A 采用：缺省省略+permissive 解析）、envelope 透传、worker SKILL（含 main-only 路由规则） | [ACC-02] parity 回归绿（既有 fixture 零扰动）；`e2_equipped` 5 项机器验收；未知技能不 fatal；pptx 宿主 demo 待真实会话（机制已机器验证）（2026-08-18） |
+| **E2** ✅ 已交付 | `suggested_skills`（选项 A 采用：缺省省略+permissive 解析）、envelope 透传、worker SKILL（含 main-only 路由规则） | [ACC-02] parity 回归绿（既有 fixture 零扰动）；`e2_equipped` 5 项机器验收；未知技能不 fatal；宿主级等值验收 `e2_host_demo`（真实 git worktree + 产物 + gate 取证）机器验证（2026-08-18） |
 | **E3** ✅ 已交付 | status `resume` 恢复区块（用户语言断点 + 在途/开放任务自描述）、stale-world `blocked` 降级、"继续"协议入 SKILL | `e3_resume` 4 项机器验收（resume 只读/分类、跨会话续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性（2026-08-18） |
 | **E4** ✅ 已交付 | 9 工具结构化 `mode` 声明（read-only/mutating）、拒绝协议与 hooks 兼容入 SKILL、§3.1 矩阵每格证据、三权限模式剧本 | `e4_modes` 2 项机器验收（全量声明断言 + read-only 面零写入）；CLI 剧本：plan 面 last_event_id 2→2、default/auto 2→3→8；全量 26/143 绿（2026-08-18） |
 
