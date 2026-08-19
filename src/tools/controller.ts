@@ -697,6 +697,50 @@ export class ProjectController {
   }
 
   /**
+   * R9: the full verified -> selected -> gated-promoted chain. Run the
+   * tournament over completed candidates, read the winner's result commit,
+   * and promote it only when the registered gate passes.
+   */
+  async selectAndPromoteWhenGatePasses(
+    judge: PairwiseJudge,
+    gateId: string,
+    expectedHeadCommit: string,
+  ): Promise<{
+    readonly tournament: TournamentResult;
+    readonly outcome:
+      | { readonly promoted: true; readonly result: PromoteResult }
+      | {
+          readonly promoted: false;
+          readonly gateId: string;
+          readonly verdict: GateResult["verdict"];
+          readonly nextEvidenceNeeded: readonly string[];
+        };
+  }> {
+    const tournament = await this.selectCandidate(judge);
+    if (tournament.winner === undefined) {
+      throw new DomainValidationError("no completed candidates to promote");
+    }
+    const row = this.store.connection
+      .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, tournament.winner) as { report_json: Uint8Array | null } | undefined;
+    if (row === undefined || row.report_json === null) {
+      throw new DomainValidationError("selected candidate has no attempt report");
+    }
+    const report = decodeJsonBlob(row.report_json);
+    const resultCommit = report.result_commit;
+    if (typeof resultCommit !== "string") {
+      throw new DomainValidationError("selected candidate has no result commit");
+    }
+    const outcome = await this.promoteWhenGatePasses(
+      tournament.winner,
+      resultCommit,
+      expectedHeadCommit,
+      gateId,
+    );
+    return { tournament, outcome };
+  }
+
+  /**
    * Recursive pairwise tournament over the completed candidates of the
    * current batch (R4). The judge only ever sees id + summary — never the
    * full AttemptReport — and the winner is the candidate presented for
