@@ -56,6 +56,8 @@
 
 | ModelPerformanceTable / bestModel（R6） | 预算.txt §43：按 task_type+model 累计 attempts/successes/cost；C_success = C_attempt / P(success)，成功率以 Gamma 先验平滑（小样本不致 0 成本）；bestModel 选预期成功成本最低模型，冷启动用调用方先验 |
 
+| ClaimGraph / claimStatus（R7） | 预算.txt §27/§23：claim 状态是派生值（SUPPORTED/PARTIALLY_SUPPORTED/CONTRADICTED/INCONCLUSIVE/STALE），非可编辑字段；边合法性失败关闭（仅 evidence 可支持/反驳 claim）；provenance 只沿产生性边（produced_by/configured_by/committed_in/derived_from），不沿评价边 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

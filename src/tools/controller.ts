@@ -41,6 +41,7 @@ import { GateEngine, type GateDefinition, type GateResult } from "../evidence/ga
 import { runTournament, type PairwiseJudge, type TournamentEntry, type TournamentResult } from "../select/tournament.js";
 import { allocate, type Allocation, type AllocationEstimates } from "../allocate/allocator.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
+import { ClaimGraph } from "../evidence/graph.js";
 import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
@@ -140,6 +141,8 @@ export class ProjectController {
   readonly gates: GateEngine;
   /** R6: telemetry the host records into (success/cost per task_type+model). */
   readonly telemetry = new ModelPerformanceTable();
+  /** R7: scientific evidence graph recording claims/evidence/experiments. */
+  readonly claims = new ClaimGraph();
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
