@@ -64,6 +64,8 @@
 
 | allocateFor 返回 { allocation, concurrency }（R10） | R5 纯分配结果叠加 P3 槽位校准：concurrentLimit = min(slotOfRole - occupied, hardCap - totalRunning)，宿主可据此分批认领候选（batch 宽度仍在计划层）；改 RETURN 形状（调用方需解包 allocation）已登记 |
 
+| palimpsest_telemetry 扩展表 / writeTelemetry / rebuildTelemetry（R11） | 累计数据持久化到编排 SQLite 的独立表（CREATE TABLE IF NOT EXISTS，不属 schema migration 身份）；该表不进 PROJECTION_TABLES/snapshot/rebuild，故冻结 fixture parity 不受影响（测试断言 snapshot digest 不变）；持久化为快照式（可重入、有序），最新一次 persistTelemetry 即持久态 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
