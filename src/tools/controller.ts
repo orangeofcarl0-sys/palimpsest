@@ -673,6 +673,79 @@ export class ProjectController {
   }
 
   // -------------------------------------------------------------------------
+  // Command-executor automation (R12)
+  // -------------------------------------------------------------------------
+
+  /**
+   * Fully-automated attempt: claim (worktree + RUNNING), run the envelope's
+   * first allowed gate command, and map the exit code to a terminal report.
+   * A deterministic gate is the source of truth, never a worker claim.
+   */
+  async runAttemptWithCommandExecutor(
+    attemptId: string,
+  ): Promise<{ exitCode: number | null; reportEvent: SchedulerEvent["event_type"] }> {
+    await this.claim(attemptId);
+    const [, envelope] = this.#attemptContext(attemptId);
+    const command = envelope.allowed_commands[0];
+    if (command === undefined) {
+      const reportEvent = this.report(attemptId, {
+        workerStatus: "completed",
+        summary: "no gate command configured; accepted by policy",
+      });
+      return { exitCode: null, reportEvent: reportEvent.event_type };
+    }
+    const outcome = await this.effects.invoke(
+      this.effects.actions.gateCommand,
+      { worktreeId: attemptId, executable: command.executable, argv: command.argv_prefix },
+      { scope: this.projectId, callId: `gate:auto:${attemptId}` },
+    );
+    const exitCode = outcome.exitCode as number | null;
+    const passed = exitCode === 0;
+    const reportEvent = this.report(attemptId, {
+      workerStatus: passed ? "completed" : "failed",
+      summary: `${command.executable} ${command.argv_prefix.join(" ")} -> exit ${String(exitCode)}`,
+    });
+    return { exitCode, reportEvent: reportEvent.event_type };
+  }
+
+  /**
+   * Drive batches fully automatically: dispatch and execute each created
+   * attempt via the command executor until a terminal state (VERIFYING /
+   * SATISFIED / FAILED / STALE) or a bounded step count is reached. A
+   * failing attempt settles its batch back to READY and the next batch
+   * retries — up to the envelope's attempt budget.
+   */
+  async pumpCommandAttempts(options: { maxSteps?: number } = {}): Promise<{
+    lastEvent: SchedulerEvent | null;
+    attemptsRun: number;
+    exits: (number | null)[];
+  }> {
+    const maxSteps = options.maxSteps ?? 50;
+    const exits: (number | null)[] = [];
+    let attemptsRun = 0;
+    let event: SchedulerEvent | null = null;
+    for (let step = 0; step < maxSteps; step += 1) {
+      event = this.step();
+      if (event === null) break;
+      if (event.event_type === "ATTEMPT_CREATED") {
+        const outcome = await this.runAttemptWithCommandExecutor(event.entity_id);
+        attemptsRun += 1;
+        exits.push(outcome.exitCode);
+        continue;
+      }
+      if (
+        event.event_type === "TASK_VERIFYING" ||
+        event.event_type === "TASK_SATISFIED" ||
+        event.event_type === "TASK_FAILED" ||
+        event.event_type === "TASK_STALE"
+      ) {
+        break;
+      }
+    }
+    return { lastEvent: event, attemptsRun, exits };
+  }
+
+  // -------------------------------------------------------------------------
   // Promotion and status
   // -------------------------------------------------------------------------
 

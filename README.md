@@ -28,7 +28,7 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（122 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（126 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
@@ -46,6 +46,7 @@ corepack pnpm exec vitest run
 14. **验证→选择→门控晋升（R9）**：selectAndPromoteWhenGatePasses——tournament 从 4 个已验证候选选出胜者、读其 result_commit、经 gate 校验后实际晋升（PASS→PROMOTION_COMMITTED→TASK_SATISFIED；缺证据→拒绝且零 PROMOTION 事件；无候选失败关闭）——3 项机器验收。
 15. **分配×槽位联动（R10）**：allocateFor 在纯规则建议上叠加 P3 并发校准——高不确定建议 8 候选时按 implementer 槽位 2 收束（concurrentLimit 2）、verifier 槽位 1 得 1、占用增长时 concurrentLimit 收紧至 0、硬上限吃紧时再收——5 项机器验收。
 16. **telemetry 持久化（R11）**：模型能力累计量快照写入编排库独立扩展表，重启后 rebuildTelemetry 重建与内存一致；扩展表不进投影/snapshot，fixture parity 不受影响——3 项机器验收。
+17. **命令执行器自动化接线（R12）**：pump 自动执行 claim→gate 命令→退出码映射 report；失败批次自动 settle→READY→重试直到成功（停于 VERIFYING）或预算耗尽（TASK_FAILED）；FakeGitPort 顺序 gate 队列支持‘先败后成’脚本化——4 项机器验收。
 
 ## 依赖 Ordarium
 

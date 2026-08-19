@@ -66,6 +66,8 @@
 
 | palimpsest_telemetry 扩展表 / writeTelemetry / rebuildTelemetry（R11） | 累计数据持久化到编排 SQLite 的独立表（CREATE TABLE IF NOT EXISTS，不属 schema migration 身份）；该表不进 PROJECTION_TABLES/snapshot/rebuild，故冻结 fixture parity 不受影响（测试断言 snapshot digest 不变）；持久化为快照式（可重入、有序），最新一次 persistTelemetry 即持久态 |
 
+| runAttemptWithCommandExecutor / pumpCommandAttempts（R12） | 自动化把 claim 与 report 协议串起来：认领后执行 envelope 首个允许命令、退出码 0→completed/其他→failed、失败批次 settle 回 READY 自动重试直到预算耗尽；FakeGitPort 增加顺序 gate 队列（queueGateOutcome）用以脚本化‘先败后成’ |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

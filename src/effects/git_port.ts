@@ -97,6 +97,7 @@ export class FakeGitPort implements GitPort {
   readonly #worktrees = new Map<string, string>(); // worktreeId -> worktree commit
   readonly #commits = new Map<string, FakeCommit>();
   readonly #gateOutcomes = new Map<string, number | null>();
+  readonly #gateQueue: Array<{ executable: string; argv: readonly string[]; exitCode: number | null }> = [];
   #head: string;
 
   constructor(initialCommit = "0".repeat(40)) {
@@ -181,11 +182,25 @@ export class FakeGitPort implements GitPort {
   }
 
   async runGate(input: GateCommandInput): Promise<{ exitCode: number | null }> {
+    // Sequential queue first (consumed in order of execution); unit-tests use
+    // this to script "first attempt fails, second succeeds".
+    const queued = this.#gateQueue.findIndex(
+      (entry) => entry.executable === input.executable && arraysEqual(entry.argv, input.argv),
+    );
+    if (queued >= 0) {
+      const [entry] = this.#gateQueue.splice(queued, 1);
+      return { exitCode: entry!.exitCode };
+    }
     const key = `${input.worktreeId}:${input.executable}:${input.argv.join(" ")}`;
     if (this.#gateOutcomes.has(key)) {
       return { exitCode: this.#gateOutcomes.get(key) ?? null };
     }
     return { exitCode: null };
+  }
+
+  /** Test seam: enqueue one gate outcome, consumed by the next matching run. */
+  queueGateOutcome(executable: string, argv: readonly string[], exitCode: number | null): void {
+    this.#gateQueue.push({ executable, argv: [...argv], exitCode });
   }
 
   /** Test seam: pre-script a gate outcome for an executable+argv. */
@@ -198,6 +213,10 @@ export class FakeGitPort implements GitPort {
     const key = `${worktreeId}:${executable}:${argv.join(" ")}`;
     this.#gateOutcomes.set(key, exitCode);
   }
+}
+
+function arraysEqual(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((item, index) => item === right[index]);
 }
 
 function nextFakeCommitId(): string {
