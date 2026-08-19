@@ -78,6 +78,17 @@ status                                   人可读项目视图（tasks/attempts/
 2. 按 `resume.action` 继续，所有需要的 ID 在该区块自描述。
 3. **在途 attempt 不是你的**：`LEASED/RUNNING` 可能还占着上一会话 worker 的槽位——别重复 claim；若其永不返回，迟到结果按 STALE 记录（合同 3）并重派。
 
+## 拒绝 ≠ 错误（E4：权限与 hooks 兼容）
+
+工具的调用运行在 DSH 权限模式之后；**一次拒绝＝用户否决，不是系统故障**：
+
+- 被拒后**绝不原样重试**同一调用（宿主原则：调整，不逐字重试）；
+- 处置：受影响 attempt 以 cancelled/expired 上报，或 `plan` 修订绕开被拒动作；
+- 被拒轮次的迟到结果同样不可提交（合同 3）；
+- hooks（PreToolUse / PermissionRequest / PostToolUse）可能拦截或审计 palimpsest 工具：被拦走同上拒绝路径；工具输出保持结构化 JSON，供外部治理直接消费。
+
+**工具 mode 声明（读写面）**：9 个工具均声明结构化 mode——`[read-only]`（`palimpsest_status` / `palimpsest_preview`，plan 模式下的全部勘察面）与 `[mutating]`（其余 7 个，plan 模式应被宿主权限层拒绝）。开工前若处于 plan 模式：只使用 read-only 面勘察（status/preview/gate 评估），把真正推进留给获批后的执行阶段。
+
 ## 进阶：带证据的完整晋升（演示验证→选择→门控晋升）
 
 ```bash

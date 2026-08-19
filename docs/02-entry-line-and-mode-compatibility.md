@@ -86,6 +86,12 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 
 **原则：plan mode 下插件必须零事件**——与宿主语义一致。SKILL 教勘察协议：plan mode 里只用 status/preview/评估，把"开工"放进获批后的执行阶段。
 
+**实现状态（E4 收口）**：9 个工具在 `DshToolDefinition` 上声明结构化 `mode`（`read-only`/`mutating`，`e4_modes` 机器验收）：read-only 面＝status + preview；其余 7 个 mutating。宿主权限层可直接以该字段决定 plan-mode 放行/拒绝，无需解析描述文本；描述里同样镜像标记供人读。
+
+**三权限模式剧本（2026-08-18 CLI 证据，last_event_id）**：
+- **plan**（只读面）：对既有项目反复 `preview`+`status` → `2 → 2`（零事件）；
+- **default / auto**（mutating 面）：`next` → `2 → 3`（+1）；`run 3` → `3 → 8`（机械回合推进）。
+
 ### 3.2 权限提示前置与聚批
 
 - 回合制 run（§2.1）天然把授权聚成小批：每回合的机械动作在回合意图明确后一次推进。
@@ -131,7 +137,7 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 | **E1** ✅ 已交付 | `decide()/commit()` 拆分、`palimpsest_preview`、`palimpsest_run`、SKILL 驱动指引 | 12 场景回归；plan-mode 零事件断言（`e1_preview_run`）；全量 23/132 绿；CLI 入口回合冒烟（2026-08-18） |
 | **E2** ✅ 已交付 | `suggested_skills`（选项 A 采用：缺省省略+permissive 解析）、envelope 透传、worker SKILL（含 main-only 路由规则） | [ACC-02] parity 回归绿（既有 fixture 零扰动）；`e2_equipped` 5 项机器验收；未知技能不 fatal；pptx 宿主 demo 待真实会话（机制已机器验证）（2026-08-18） |
 | **E3** ✅ 已交付 | status `resume` 恢复区块（用户语言断点 + 在途/开放任务自描述）、stale-world `blocked` 降级、"继续"协议入 SKILL | `e3_resume` 4 项机器验收（resume 只读/分类、跨会话续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性（2026-08-18） |
-| **E4** 模式矩阵收口 | 工具描述声明 mode-safety、拒绝协议入 SKILL、hooks 说明、§3.1 矩阵每格测试或文档证据 | 矩阵全格有证据；三个权限模式（plan/default/auto）各走一遍手工剧本 |
+| **E4** ✅ 已交付 | 9 工具结构化 `mode` 声明（read-only/mutating）、拒绝协议与 hooks 兼容入 SKILL、§3.1 矩阵每格证据、三权限模式剧本 | `e4_modes` 2 项机器验收（全量声明断言 + read-only 面零写入）；CLI 剧本：plan 面 last_event_id 2→2、default/auto 2→3→8；全量 26/143 绿（2026-08-18） |
 
 每个里程碑退出时同提交更新：docs、SKILL（仓库内与已安装副本同步）、测试。
 

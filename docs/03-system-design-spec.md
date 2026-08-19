@@ -1,9 +1,9 @@
 # Palimpsest 系统设计规格（System Design Spec）
 
-> **Spec ID**：`PLMP-SDS-5` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
-> **代码基线**：commit `3163394` 起 E1–E3 已交付：25 个测试文件 / 141 项测试
+> **Spec ID**：`PLMP-SDS-6` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
+> **代码基线**：commit `3163394` 起 E1–E4 已交付：26 个测试文件 / 143 项测试
 > **文档权威序**：本文＝系统设计权威；docs/01＝产品基线；docs/02＝E 线计划与模式兼容细则（§5.2 引其为规范）；docs/00＝传承与非权威来源。冲突时以本文为准。
-> **修订记录**：`SDS-2`＝完善度扩充；`SDS-3`＝E1；`SDS-4`＝E2（含 §9.2 加法可选字段例外）；`SDS-5`＝E3——status 增 `resume` 恢复区块（用户语言断点 + 在途/开放任务自描述）、stale-world 时诚实的 `blocked` 降级（观察永不因推进性校验崩溃）、跨会话续跑至晋升的双会话 E2E、测试基线 25/141。
+> **修订记录**：`SDS-2`＝完善度扩充；`SDS-3`＝E1；`SDS-4`＝E2（含 §9.2 例外）；`SDS-5`＝E3（resume 恢复区块 + blocked 降级）；`SDS-6`＝E4——工具面结构化 `mode` 声明（read-only/mutating，宿主权限层可直接消费）、拒绝≠错误协议与 hooks 兼容入 SKILL、三权限模式剧本取证、测试基线 26/143。E 线（docs/02 §4）至此全量交付。
 
 ## 0. 规格约定
 
@@ -209,7 +209,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | **E1** ✅ | decide/commit 拆分、preview、run 回合、SKILL 驱动 | 全量 24/137 测试绿；replay/parity 逐字节回归；`e1_preview_run`；CLI 入口回合冒烟 | |
 | **E2** ✅ | `suggested_skills`（选项 A 缺省省略）、envelope 透传、worker SKILL、main-only 路由 | [ACC-02] parity 回归绿（可选字段零扰动）；`e2_equipped`（schema/透传/未知不 fatal）；pptx 宿主 demo 待真实会话（机制已机器验证） | |
 | **E3** ✅ | status `resume` 恢复区块、stale-world `blocked` 降级、"继续"协议、跨会话续跑 | `e3_resume`（resume 只读/分类、杀会话后续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性 | |
-| **E4** | 模式矩阵收口 | 矩阵每格证据；三权限模式手工剧本 | ⏳ |
+| **E4** ✅ | 工具结构化 `mode` 声明、拒绝协议入 SKILL、hooks 兼容说明、三权限模式剧本 | `e4_modes`（9 工具全量 mode 声明、read-only 面零写入、mutating 面标记）；CLI 剧本：只读面 last_event_id 2→2、mutating 2→3→8 | |
 | **S** | SDK 拆包/多宿主 | 另立提案（§2 纪律已预埋） | 📋 提案制 |
 
 ---
@@ -218,7 +218,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 
 ### 8.1 机器验收（CI 绿 = 必要不充分）
 
-| 测试文件（25/141 项） | 证明 |
+| 测试文件（26/143 项） | 证明 |
 |---|---|
 | `contracts` / `parity.fixture` / `state.replay` | 合同与跨语言 parity（`[INV-02/05/17]`） |
 | `scheduler.replay` | 调度确定性 parity |
@@ -230,6 +230,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | `e1_preview_run` | E1 入口回合：preview 零写入、paused 安全、与 next 字节一致（INV-08）；runTurn 阶段判定（needs_worker/needs_promotion/terminal） |
 | `e2_equipped` | E2 装备化：`suggested_skills` 缺省省略 / envelope 透传 / 未知技能不致命（SDS-11） |
 | `e3_resume` | E3 恢复：resume 只读分类、跨会话续跑事件序列、paused 跨会话、stale-world `blocked` 不崩（SDS-18/23） |
+| `e4_modes` | E4 模式矩阵：9 工具全量 `mode` 声明（read-only/mutating）、read-only 面零写入、mutating 面标记（SDS-13） |
 
 ### 8.2 验收矩阵 [ACC-01..05]
 

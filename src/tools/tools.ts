@@ -86,13 +86,17 @@ function textBlock(value: unknown): ReturnType<NonNullable<DshToolDefinition["ou
 function tool(options: {
   name: string;
   description: string;
+  mode: "read-only" | "mutating";
   properties: JsonObject;
   required: readonly string[];
   execute: (args: JsonObject) => Promise<unknown> | unknown;
 }): DshToolDefinition {
   return {
     name: options.name,
-    description: options.description,
+    // The mode marker is structural, not prose: hosts gate tools on it, and
+    // it is mirrored in the description so a plain-language reader sees it too.
+    description: `${options.description} — [${options.mode}]`,
+    mode: options.mode,
     parameters: {
       type: "object",
       properties: options.properties,
@@ -113,6 +117,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
   return [
     tool({
       name: "palimpsest_start",
+      mode: "mutating",
       description:
         "Compile a one-sentence goal into a durable project (ProjectIR revision 0) and register its task graph",
       properties: {
@@ -150,6 +155,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_plan",
+      mode: "mutating",
       description: "Revise the project's task graph (new ProjectIR revision; history is preserved)",
       properties: {
         tasks: {
@@ -182,6 +188,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_next",
+      mode: "mutating",
       description:
         "Ask the scheduler for its deterministic next decision (at most one event per call); returns the created attempt/task or nothing to do",
       properties: {},
@@ -202,6 +209,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_preview",
+      mode: "read-only",
       description:
         "Read-only, plan-mode-safe: what the scheduler would do next, without doing it. No event is written; identical to the next palimpsest_next outcome",
       properties: {},
@@ -211,6 +219,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_run",
+      mode: "mutating",
       description:
         "Advance exactly one turn of the project: run bounded mechanical steps (auto gate commands + batch retries), then report the phase and what the host must judge next — dispatch a worker (needs_worker), gate + promote a verified batch (needs_promotion), or done (terminal)",
       properties: { maxMechanicalSteps: { type: "number" } },
@@ -227,6 +236,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_claim",
+      mode: "mutating",
       description:
         "Claim one attempt: create its isolated worktree and mark it RUNNING; the claiming agent then does the work",
       properties: { attemptId: { type: "string" } },
@@ -240,6 +250,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_report",
+      mode: "mutating",
       description:
         "Submit the attempt report. Claims in the report are never evidence; only deterministic gates produce evidence",
       properties: {
@@ -273,6 +284,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_gate",
+      mode: "mutating",
       description:
         "Run one deterministic gate on an attempt and record the evidence atom; with a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
       properties: {
@@ -331,6 +343,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
 
     tool({
       name: "palimpsest_status",
+      mode: "read-only",
       description: "Human-readable project status: revision, scheduler, tasks, attempts, evidence, promotions",
       properties: {},
       required: [],

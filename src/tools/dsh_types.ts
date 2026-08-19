@@ -39,6 +39,9 @@ export interface DshToolDefinition {
   };
   readonly timeoutMs?: number | undefined;
   isConcurrencySafe?(args: unknown): boolean;
+  /** E4 mode declaration: a host permission layer can gate tools on this.
+   *  read-only tools (status/preview) are the entire plan-mode-safe surface. */
+  readonly mode?: "read-only" | "mutating" | undefined;
   execute(args: unknown, context: DshToolRunContext): Promise<unknown>;
 }
 
