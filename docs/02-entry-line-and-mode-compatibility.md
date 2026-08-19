@@ -52,7 +52,7 @@ runOnce() = commit(decide())       既有调用点行为不变
 - `palimpsest_status` 输出增加**恢复区块**：当前断点（下一步该做什么、哪个 attempt 挂在 RUNNING、租约是否过期）、全部恢复所需 ID 自描述——status 单独一屏即可重建全部上下文（§3.5 的锚点）。
 - SKILL 增"继续"协议：新会话中用户说"继续/palimpsest 还在跑吗" → `status` → 恢复区块 → 从断点续跑；租约过期的 attempt 走 stale 作废与重派，不复活旧结果（合同 3）。
 
-**验收门**：双会话 CLI E2E 测试——会话 1 推进至 VERIFYING 后 kill；会话 2 从 status 恢复至 promote，断言完整事件序列与终态。
+**验收门**：双会话 E2E——会话 1 推进至 VERIFYING 后关闭（等同 kill）；会话 2 重开同一 SQLite 文件，从 `resume` 恢复至 promote 并断言完整事件序列与终态（机器验收，2026-08-18）。
 
 ### 2.4 SDK 预埋纪律（非里程碑）
 
@@ -130,7 +130,7 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 |---|---|---|
 | **E1** ✅ 已交付 | `decide()/commit()` 拆分、`palimpsest_preview`、`palimpsest_run`、SKILL 驱动指引 | 12 场景回归；plan-mode 零事件断言（`e1_preview_run`）；全量 23/132 绿；CLI 入口回合冒烟（2026-08-18） |
 | **E2** ✅ 已交付 | `suggested_skills`（选项 A 采用：缺省省略+permissive 解析）、envelope 透传、worker SKILL（含 main-only 路由规则） | [ACC-02] parity 回归绿（既有 fixture 零扰动）；`e2_equipped` 5 项机器验收；未知技能不 fatal；pptx 宿主 demo 待真实会话（机制已机器验证）（2026-08-18） |
-| **E3** 断点续跑 | status 恢复区块、租约过期处理、"继续"协议 | 双会话 CLI E2E 测试断言事件序列 |
+| **E3** ✅ 已交付 | status `resume` 恢复区块（用户语言断点 + 在途/开放任务自描述）、stale-world `blocked` 降级、"继续"协议入 SKILL | `e3_resume` 4 项机器验收（resume 只读/分类、跨会话续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性（2026-08-18） |
 | **E4** 模式矩阵收口 | 工具描述声明 mode-safety、拒绝协议入 SKILL、hooks 说明、§3.1 矩阵每格测试或文档证据 | 矩阵全格有证据；三个权限模式（plan/default/auto）各走一遍手工剧本 |
 
 每个里程碑退出时同提交更新：docs、SKILL（仓库内与已安装副本同步）、测试。

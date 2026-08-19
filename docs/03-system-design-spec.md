@@ -1,9 +1,9 @@
 # Palimpsest 系统设计规格（System Design Spec）
 
-> **Spec ID**：`PLMP-SDS-4` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
-> **代码基线**：commit `3163394` 起 E1/E2 已交付：24 个测试文件 / 137 项测试
+> **Spec ID**：`PLMP-SDS-5` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
+> **代码基线**：commit `3163394` 起 E1–E3 已交付：25 个测试文件 / 141 项测试
 > **文档权威序**：本文＝系统设计权威；docs/01＝产品基线；docs/02＝E 线计划与模式兼容细则（§5.2 引其为规范）；docs/00＝传承与非权威来源。冲突时以本文为准。
-> **修订记录**：`SDS-2`＝SDS-1 完善度审计扩充；`SDS-3`＝E1 交付同步（INV-08 升机器证据、工具 7→9、runTurn、23/132）；`SDS-4`＝E2 交付同步——TaskSpec/TaskEnvelope 增加法可选字段 `suggested_skills`（缺省省略、permissive 解析、[ACC-02] parity 证明零扰动、§9.2 例外记录）、装备化 worker 协议入 SKILL、测试基线 24/137、追溯矩阵 SDS-11 升机器证据。
+> **修订记录**：`SDS-2`＝完善度扩充；`SDS-3`＝E1；`SDS-4`＝E2（含 §9.2 加法可选字段例外）；`SDS-5`＝E3——status 增 `resume` 恢复区块（用户语言断点 + 在途/开放任务自描述）、stale-world 时诚实的 `blocked` 降级（观察永不因推进性校验崩溃）、跨会话续跑至晋升的双会话 E2E、测试基线 25/141。
 
 ## 0. 规格约定
 
@@ -208,8 +208,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | CLI+skill | 安装型命令面 | 本机 DSH 发现 + E2E 冒烟 | ✅ `3163394` |
 | **E1** ✅ | decide/commit 拆分、preview、run 回合、SKILL 驱动 | 全量 24/137 测试绿；replay/parity 逐字节回归；`e1_preview_run`；CLI 入口回合冒烟 | |
 | **E2** ✅ | `suggested_skills`（选项 A 缺省省略）、envelope 透传、worker SKILL、main-only 路由 | [ACC-02] parity 回归绿（可选字段零扰动）；`e2_equipped`（schema/透传/未知不 fatal）；pptx 宿主 demo 待真实会话（机制已机器验证） | |
-| **E2** | suggested_skills + 路由 | parity 回归硬门；schema/透传单测；pptx demo | ⏳ |
-| **E3** | 断点续跑 | 双会话 CLI E2E 事件序列断言 | ⏳ |
+| **E3** ✅ | status `resume` 恢复区块、stale-world `blocked` 降级、"继续"协议、跨会话续跑 | `e3_resume`（resume 只读/分类、杀会话后续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性 | |
 | **E4** | 模式矩阵收口 | 矩阵每格证据；三权限模式手工剧本 | ⏳ |
 | **S** | SDK 拆包/多宿主 | 另立提案（§2 纪律已预埋） | 📋 提案制 |
 
@@ -219,7 +218,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 
 ### 8.1 机器验收（CI 绿 = 必要不充分）
 
-| 测试文件（24/137 项） | 证明 |
+| 测试文件（25/141 项） | 证明 |
 |---|---|
 | `contracts` / `parity.fixture` / `state.replay` | 合同与跨语言 parity（`[INV-02/05/17]`） |
 | `scheduler.replay` | 调度确定性 parity |
@@ -230,6 +229,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | `performance_table` / `telemetry_persistence` / `command_automation` | R6/R11/R12 |
 | `e1_preview_run` | E1 入口回合：preview 零写入、paused 安全、与 next 字节一致（INV-08）；runTurn 阶段判定（needs_worker/needs_promotion/terminal） |
 | `e2_equipped` | E2 装备化：`suggested_skills` 缺省省略 / envelope 透传 / 未知技能不致命（SDS-11） |
+| `e3_resume` | E3 恢复：resume 只读分类、跨会话续跑事件序列、paused 跨会话、stale-world `blocked` 不崩（SDS-18/23） |
 
 ### 8.2 验收矩阵 [ACC-01..05]
 
@@ -256,7 +256,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | SDS-15/16（耐久/确定） | 机器：`acceptance`（crash/snapshot/rebuild）＋ parity 全系 |
 | SDS-17/18/19（安全默认/用户语言/错误模型） | 机器：`acceptance`（失败与重试路径）、`paths`（零配置默认）；渲染措辞与错误分类为评审证据（渲染层核对） |
 | SDS-22、INV-15（安全信任/受信 policy） | 机器：`contracts`（policy digest）；白名单/写域行为在 `acceptance`、`command_automation` 内核验 |
-| SDS-21/23/24（并发/可观测/保留） | 机器：`state.replay`（WAL/管线）；其余为评审证据（`database.ts` 常量核对） |
+| SDS-21/23/24（并发/可观测/保留） | 机器：`state.replay`（WAL/管线）+ `e3_resume`（status 恢复主面/跨会话续跑）；其余为评审证据（`database.ts` 常量核对） |
 | INV-01/16/18（分层/两级面/三面同源） | 评审：tsc 构建 + 依赖方向核对 |
 | INV-08（decide/commit 纯决策） | 机器：`e1_preview_run`（重复 preview 零 append、与 step 一致） |
 | SDS-10（run 回合·E1） | 机器：`e1_preview_run`（runTurn 阶段判定）；评审：CLI/SKILL 冒烟 |

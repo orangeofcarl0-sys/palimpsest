@@ -70,6 +70,14 @@ status                                   人可读项目视图（tasks/attempts/
 
 **失败可见**：技能加载失败/不存在不是 fatal——任务按正常失败路径上报（failed + 原因），由批次重试或计划修订消化。
 
+## 断点续跑（E3）
+
+崩溃、杀会话、重启都是正常路径。新会话中说"继续 / palimpsest 还在跑吗"：
+
+1. **先 `palimpsest_status`**——永远不要信任记忆里的 ID（长会话可能被摘要）。status 的 `resume` 区块告诉你断点：`progress`（机械推进中，用 `run` 推）、`dispatch_worker`（派 worker 认领并交付）、`gate_and_promote`（对 VERIFYING 批次记录证据 + `promote`）、`awaiting_worker`（在途 attempt 未解决）、`paused`（先 `resume`）、`idle`（已终局）。
+2. 按 `resume.action` 继续，所有需要的 ID 在该区块自描述。
+3. **在途 attempt 不是你的**：`LEASED/RUNNING` 可能还占着上一会话 worker 的槽位——别重复 claim；若其永不返回，迟到结果按 STALE 记录（合同 3）并重派。
+
 ## 进阶：带证据的完整晋升（演示验证→选择→门控晋升）
 
 ```bash

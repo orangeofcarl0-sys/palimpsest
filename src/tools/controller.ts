@@ -126,6 +126,20 @@ export interface ControllerStatusView {
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
   parallel: { admittedAttempts: number; rejectedClaims: number };
+  /** E3 resume block: where the project is, what the host must do next. */
+  resume: {
+    action:
+      | "blocked"
+      | "paused"
+      | "progress"
+      | "dispatch_worker"
+      | "gate_and_promote"
+      | "awaiting_worker"
+      | "idle";
+    detail: string;
+    inFlightAttemptIds: string[];
+    openTasks: Array<{ task_id: string; state: string }>;
+  };
 }
 
 export interface ProjectControllerOptions {
@@ -1038,6 +1052,99 @@ export class ProjectController {
         admittedAttempts: this.budget.admitted,
         rejectedClaims: this.budget.rejected,
       },
+      resume: this.#resumeOverview(),
+    };
+  }
+
+  /**
+   * E3: the cross-session resume block. Read-only (uses scheduler.decide, so
+   * it never appends). Answers, in user language, "where is the project and
+   * what should the host do next" — the "继续" entry point after any crash or
+   * session close.
+   */
+  #resumeOverview(): ControllerStatusView["resume"] {
+    const control = this.store.connection
+      .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
+      .get(this.projectId) as { state: string } | undefined;
+    if (control?.state === "PAUSED") {
+      return {
+        action: "paused",
+        detail: "the scheduler is paused; resume it to continue",
+        inFlightAttemptIds: [],
+        openTasks: [],
+      };
+    }
+    const taskRows = this.store.connection
+      .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+      .all(this.projectId) as Array<{ task_id: string; state: string }>;
+    const openTasks = taskRows
+      .filter((row) => !["SATISFIED", "FAILED"].includes(String(row.state)))
+      .map((row) => ({ task_id: String(row.task_id), state: String(row.state) }));
+    const inFlightAttemptIds = (
+      this.store.connection
+        .prepare(
+          "SELECT attempt_id FROM attempts WHERE project_id=? AND state IN ('LEASED','RUNNING')",
+        )
+        .all(this.projectId) as Array<{ attempt_id: string }>
+    ).map((row) => String(row.attempt_id));
+
+    let decision: ReturnType<Scheduler["decide"]> = null;
+    let blocked: string | null = null;
+    try {
+      decision = this.scheduler.decide();
+    } catch (error) {
+      // The scheduler refuses to advance (e.g. an ACTIVE task authorized under
+      // an older project revision — R2 stale input world). That is the correct
+      // fail-closed stance for committing, but pure observation (status) must
+      // not crash: surface the block honestly instead.
+      blocked = (error as Error).message;
+    }
+    if (blocked !== null) {
+      return {
+        action: "blocked",
+        detail: `the scheduler cannot advance: ${blocked}`,
+        inFlightAttemptIds,
+        openTasks,
+      };
+    }
+    if (decision !== null) {
+      return {
+        action: decision.event_type === "ATTEMPT_CREATED" ? "dispatch_worker" : "progress",
+        detail: `${decision.event_type} ${decision.entity_id}`,
+        inFlightAttemptIds,
+        openTasks,
+      };
+    }
+    if (openTasks.length === 0) {
+      return {
+        action: "idle",
+        detail: "no unresolved work — the project is complete or failed",
+        inFlightAttemptIds,
+        openTasks,
+      };
+    }
+    if (openTasks.some((task) => task.state === "VERIFYING")) {
+      return {
+        action: "gate_and_promote",
+        detail: "a verified batch awaits a gate verdict, then promotion",
+        inFlightAttemptIds,
+        openTasks,
+      };
+    }
+    if (inFlightAttemptIds.length > 0) {
+      return {
+        action: "awaiting_worker",
+        detail:
+          "attempts are claimed but not resolved; resume them or they will be recorded stale",
+        inFlightAttemptIds,
+        openTasks,
+      };
+    }
+    return {
+      action: "dispatch_worker",
+      detail: "unresolved work needs a worker to claim and complete it",
+      inFlightAttemptIds,
+      openTasks,
     };
   }
 
