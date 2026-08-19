@@ -184,6 +184,31 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
     }),
 
     tool({
+      name: "palimpsest_preview",
+      description:
+        "Read-only, plan-mode-safe: what the scheduler would do next, without doing it. No event is written; identical to the next palimpsest_next outcome",
+      properties: {},
+      required: [],
+      execute: () => controller.preview(),
+    }),
+
+    tool({
+      name: "palimpsest_run",
+      description:
+        "Advance exactly one turn of the project: run bounded mechanical steps (auto gate commands + batch retries), then report the phase and what the host must judge next — dispatch a worker (needs_worker), gate + promote a verified batch (needs_promotion), or done (terminal)",
+      properties: { maxMechanicalSteps: { type: "number" } },
+      required: [],
+      execute: async (args) => {
+        const raw = args.maxMechanicalSteps;
+        const maxSteps =
+          typeof raw === "number" && Number.isFinite(raw)
+            ? Math.max(1, Math.floor(raw))
+            : undefined;
+        return controller.runTurn(maxSteps === undefined ? {} : { maxSteps });
+      },
+    }),
+
+    tool({
       name: "palimpsest_claim",
       description:
         "Claim one attempt: create its isolated worktree and mark it RUNNING; the claiming agent then does the work",

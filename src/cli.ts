@@ -11,6 +11,8 @@
  *   new   <projectId> "<goal>"            create a durable project + task-1
  *   plan  <changeClass>                   revise the task graph (metadata_only|behavior_change|contract_breaking)
  *   next                                  one scheduler decision
+ *   preview                               read-only next-decision (plan-mode safe, writes nothing)
+ *   run    [maxSteps]                     one turn: mechanical progress + phase
  *   claim <attemptId>                     claim + worktree
  *   gate  <attemptId> <predicate> <exit> [cmd...]
  *   report <attemptId> completed|failed "<summary>"
@@ -92,7 +94,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|claim|gate|report|promote|pump|status> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|status> …");
 
   const db = arg(parsed.options, "--db");
   const ops = arg(parsed.options, "--ops");
@@ -148,6 +150,18 @@ async function main() {
             ? "{}"
             : JSON.stringify({ eventType: event.event_type, entityId: event.entity_id }),
         );
+        break;
+      }
+      case "preview": {
+        console.log(JSON.stringify(controller.preview()));
+        break;
+      }
+      case "run": {
+        const maxSteps = Number(a1);
+        const result = await controller.runTurn(
+          Number.isNaN(maxSteps) ? {} : { maxSteps },
+        );
+        console.log(JSON.stringify(result));
         break;
       }
       case "claim": {

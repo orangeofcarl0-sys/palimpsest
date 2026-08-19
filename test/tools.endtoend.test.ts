@@ -5,7 +5,7 @@ import { installForTests, makeProject, taskSpec } from "./helpers.js";
 const HEAD = "c".repeat(40);
 
 describe("Palimpsest tool surface (P2 golden path)", () => {
-  it("registers exactly the seven curated tools", async () => {
+  it("registers exactly the nine curated tools", async () => {
     const { host, installed } = await installForTests();
     try {
       expect([...host.definitions.keys()].sort()).toEqual([
@@ -13,7 +13,9 @@ describe("Palimpsest tool surface (P2 golden path)", () => {
         "palimpsest_gate",
         "palimpsest_next",
         "palimpsest_plan",
+        "palimpsest_preview",
         "palimpsest_report",
+        "palimpsest_run",
         "palimpsest_start",
         "palimpsest_status",
       ]);

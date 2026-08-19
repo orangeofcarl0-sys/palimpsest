@@ -100,6 +100,8 @@ palimpsest_status   人可读项目状态（用户友好渲染）
 | **P2** ✅ | DSH 工具面（7 工具）+ installPalimpsest + ProjectController | 12 项故障验收场景（docs/05 §3）在插件形态全部通过（pause/resume、crash recovery、snapshot rebuild、local retry、lease expiry、late result、revision change、evidence invalidation、write escape、promotion happy path、event idempotency；Crash A/B 由 P1 套件机器验收） |
 | **P3** ✅ | 多 agent 并行 | 角色槽位（默认 implementer 2、全局硬上限 20）与 attempt 预算（默认无限）在 claim 时准入；4-candidate 批次并行；并发下 stale/late 不回归（测试套件机器验收）；强默认零配置 |
 
+P0–P3 之后的入口产品线（E1–E4：一句话闭环、装备化 worker、断点续跑、DSH 工作模式兼容收口）规划冻结于 [`02-entry-line-and-mode-compatibility.md`](02-entry-line-and-mode-compatibility.md)。
+
 ## 8. 非目标
 
 - 不做 DSH 已有职责：Agent Loop、审批、凭证、沙箱、会话、渲染引擎；

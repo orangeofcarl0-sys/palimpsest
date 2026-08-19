@@ -33,12 +33,16 @@ node "$CLI" status --db "$DEMO/palimpsest.sqlite" --ops "$DEMO/ops.sqlite"
 
 `pump` 自动完成：派发 attempt → 执行允许的 gate 命令 → 退出码映射 completed/failed → 失败自动批次重试 → 成功停于 VERIFYING 或预算耗尽 TASK_FAILED。这是完全确定性的过程（不经 LLM）。
 
+`preview` 与 `run` 构成入口循环：plan 模式 / 勘察阶段用 `preview`（零事件）；需要推进时用 `run`——机械部分自动跑掉，返回的阶段告诉你下一步必须由你（宿主 agent）判断：`needs_worker`（派出子 agent 认领并干活、交回 report）、`needs_promotion`（对 VERIFYING 批次做 gate + promote）、`terminal`（无剩事）。
+
 ## 命令语义
 
 ```text
 new   <projectId> "<goal>"              编译目标 → 耐久项目 + task-1
 plan  <changeClass>                     修订任务图（metadata_only|behavior_change|contract_breaking）
 next                                     一次确定性调度决策
+preview                                  只读预判"下一步会做什么"（零事件；plan 模式下可安全勘察）
+run    [maxSteps]                       一次回合：机械推进（自动 gate 命令+批次重试）+ 阶段判定（needs_worker / needs_promotion / terminal / paused）
 claim <attemptId>                        认领 attempt（隔离工作区 + 租约）
 gate  <attemptId> <predicate> <exit> [cmd...]   确定性门禁 → 证据原子
 report <attemptId> completed|failed "<summary>"  上报（自述 ≠ 证据）

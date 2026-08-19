@@ -25,6 +25,7 @@ import {
   parseNewEvent,
   type AttemptReport,
   type EventType,
+  type NewEvent,
   type ProjectIr,
   type SchedulerEvent,
   type TaskEnvelope,
@@ -120,6 +121,18 @@ export class Scheduler {
   }
 
   runOnce(): SchedulerEvent | null {
+    const decision = this.decide();
+    return decision === null ? null : this.commit(decision);
+  }
+
+  /**
+   * Pure scheduler decision (E1, docs/02 §3.1): inspects projections and
+   * returns the *prepared* next event — exactly what commit() would persist —
+   * or null when idle. It never writes. The plan-mode preview surface and the
+   * run loop both ride on this, so a preview is byte-identical to the next
+   * committed event.
+   */
+  decide(): NewEvent | null {
     const validator: AggregateValidator = this.store.aggregateValidator;
     validator.validateGlobalInvariants(this.connection, this.projectId);
     const control = this.connection
@@ -180,7 +193,12 @@ export class Scheduler {
     return null;
   }
 
-  #activate(task: Row): SchedulerEvent {
+  /** Commit a prepared decision through the normal append pipeline. */
+  commit(decision: NewEvent): SchedulerEvent {
+    return this.store.append(decision);
+  }
+
+  #activate(task: Row): NewEvent {
     const envelope = parseTaskEnvelope(decodeJsonBlob(task.envelope_json));
     const count = Number(
       (
@@ -204,11 +222,10 @@ export class Scheduler {
       first_attempt_no: first,
       planned_candidate_count: planned,
     });
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "TASK_STARTED",
+    return parseNewEvent({
+      schema_version: 1,
+      project_id: this.projectId,
+      event_type: "TASK_STARTED",
         payload_version: 1,
         entity_type: "task",
         entity_id: task.task_id,
@@ -219,15 +236,14 @@ export class Scheduler {
           planned_candidate_count: planned,
           first_attempt_no: first,
         },
-        causation_id: task.last_event_id,
-        correlation_id: `task:${task.task_id}:batch:${first}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
-    );
+      causation_id: task.last_event_id,
+      correlation_id: `task:${task.task_id}:batch:${first}`,
+      idempotency_key: key,
+      expected_project_revision: envelope.project_revision,
+    });
   }
 
-  #advanceActive(task: Row): SchedulerEvent | null {
+  #advanceActive(task: Row): NewEvent | null {
     const [activationId, activation, attempts] = this.#currentBatch(task);
     const activationPayload = decodeJsonBlob(activation.payload_json);
     const planned = Number(activationPayload.planned_candidate_count);
@@ -282,7 +298,7 @@ export class Scheduler {
     activationId: number,
     activationPayload: Row,
     batchCount: number,
-  ): SchedulerEvent {
+  ): NewEvent {
     const envelope = parseTaskEnvelope(decodeJsonBlob(task.envelope_json));
     const attemptNo = Number(activationPayload.first_attempt_no) + batchCount;
     const key = actionKey("attempt-create-v1", {
@@ -294,11 +310,10 @@ export class Scheduler {
       batch_activation_event_id: activationId,
       attempt_no: attemptNo,
     });
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "ATTEMPT_CREATED",
+    return parseNewEvent({
+      schema_version: 1,
+      project_id: this.projectId,
+      event_type: "ATTEMPT_CREATED",
         payload_version: 1,
         entity_type: "attempt",
         entity_id: stableEntityId("attempt", key),
@@ -307,12 +322,11 @@ export class Scheduler {
           envelope_id: envelope.envelope_id,
           attempt_no: attemptNo,
         },
-        causation_id: activationId,
-        correlation_id: `task:${task.task_id}:batch:${activationId}`,
-        idempotency_key: key,
-        expected_project_revision: envelope.project_revision,
-      }),
-    );
+      causation_id: activationId,
+      correlation_id: `task:${task.task_id}:batch:${activationId}`,
+      idempotency_key: key,
+      expected_project_revision: envelope.project_revision,
+    });
   }
 
   #taskTransition(
@@ -324,7 +338,7 @@ export class Scheduler {
       key: string;
       causationId?: number | null;
     },
-  ): SchedulerEvent {
+  ): NewEvent {
     const targets: Partial<Record<EventType, string>> = {
       TASK_READY: "READY",
       TASK_VERIFYING: "VERIFYING",
@@ -332,11 +346,10 @@ export class Scheduler {
       TASK_FAILED: "FAILED",
     };
     const envelope = parseTaskEnvelope(decodeJsonBlob(task.envelope_json));
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: options.eventType,
+    return parseNewEvent({
+      schema_version: 1,
+      project_id: this.projectId,
+      event_type: options.eventType,
         payload_version: 1,
         entity_type: "task",
         entity_id: task.task_id,
@@ -346,15 +359,14 @@ export class Scheduler {
           reason: options.reason,
           batch_activation_event_id: options.batchActivationEventId,
         },
-        causation_id: options.causationId ?? task.last_event_id,
-        correlation_id: `task:${task.task_id}`,
-        idempotency_key: options.key,
-        expected_project_revision: envelope.project_revision,
-      }),
-    );
+      causation_id: options.causationId ?? task.last_event_id,
+      correlation_id: `task:${task.task_id}`,
+      idempotency_key: options.key,
+      expected_project_revision: envelope.project_revision,
+    });
   }
 
-  #advanceVerifying(task: Row): SchedulerEvent | null {
+  #advanceVerifying(task: Row): NewEvent | null {
     const [activationId, , attempts] = this.#currentBatch(task);
     const completedIds = new Set(
       attempts

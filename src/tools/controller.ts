@@ -383,6 +383,77 @@ export class ProjectController {
     return this.scheduler.runOnce();
   }
 
+  /**
+   * E1, plan-mode-safe surface (docs/02 §3.1): the deterministic decision the
+   * next step() would commit, without writing a single event. A preview is
+   * byte-identical to what step() would append (preview uses scheduler.decide,
+   * step uses scheduler.runOnce = commit(decide)).
+   */
+  preview(): {
+    decision: "idle" | "paused" | "next";
+    eventType?: string;
+    entityId?: string;
+    projectRevision?: number | null;
+  } {
+    const control = this.store.connection
+      .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
+      .get(this.projectId) as { state: string } | undefined;
+    if (control?.state === "PAUSED") return { decision: "paused" };
+    const decision = this.scheduler.decide();
+    if (decision === null) return { decision: "idle" };
+    return {
+      decision: "next",
+      eventType: decision.event_type,
+      entityId: decision.entity_id,
+      projectRevision: decision.expected_project_revision,
+    };
+  }
+
+  /**
+   * E1, one turn of the entry loop (docs/02 §2.1): drive bounded mechanical
+   * progress (auto gate commands, batch retries) via pumpCommandAttempts, then
+   * read the next decision and classify what the host agent alone can supply:
+   * dispatch a worker (needs_worker), gate+promote a verified batch
+   * (needs_promotion), or nothing left (terminal/paused).
+   */
+  async runTurn(options: { maxSteps?: number } = {}): Promise<{
+    phase: "terminal" | "paused" | "needs_worker" | "needs_promotion" | "progress";
+    mechanical: { attemptsRun: number; exits: (number | null)[] };
+    next?: { eventType: string; entityId: string; projectRevision: number | null };
+  }> {
+    const maxSteps = options.maxSteps ?? 50;
+    const mechanical = await this.pumpCommandAttempts({ maxSteps });
+    const control = this.store.connection
+      .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
+      .get(this.projectId) as { state: string } | undefined;
+    if (control?.state === "PAUSED") {
+      return { phase: "paused", mechanical };
+    }
+    const decision = this.scheduler.decide();
+    if (decision !== null) {
+      const next = {
+        eventType: decision.event_type,
+        entityId: decision.entity_id,
+        projectRevision: decision.expected_project_revision,
+      };
+      const phase =
+        decision.event_type === "ATTEMPT_CREATED" ? "needs_worker" : "progress";
+      return { phase, mechanical, next };
+    }
+    const rows = this.store.connection
+      .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+      .all(this.projectId) as { task_id: string; state: string }[];
+    const states = new Map(rows.map((row) => [String(row.task_id), String(row.state)]));
+    const unresolved = this.#project().tasks.filter(
+      (task) => !["SATISFIED", "FAILED"].includes(states.get(task.task_id) ?? ""),
+    );
+    if (unresolved.length === 0) return { phase: "terminal", mechanical };
+    if (unresolved.some((task) => states.get(task.task_id) === "VERIFYING")) {
+      return { phase: "needs_promotion", mechanical };
+    }
+    return { phase: "needs_worker", mechanical };
+  }
+
   pause(reason: string): SchedulerEvent {
     return this.store.append(
       parseNewEvent({
