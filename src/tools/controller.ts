@@ -94,6 +94,16 @@ export interface GateInput {
   observedArtifacts?: readonly string[] | undefined;
 }
 
+export interface AllocationCalibration {
+  readonly role: TaskRole;
+  readonly slotOfRole: number;
+  readonly occupied: number;
+  readonly totalRunning: number;
+  readonly hardCap: number;
+  /** How many candidates of this role may run concurrently right now. */
+  readonly concurrentLimit: number;
+}
+
 export interface ControllerStatusView {
   projectId: string;
   revision: number;
@@ -682,18 +692,40 @@ export class ProjectController {
     };
   }
 
-  /** R5: the deterministic allocation for one task from a six-dimensional estimate. */
+  /**
+   * R5 + R10: the deterministic allocation for one task, calibrated against
+   * the current concurrency picture - role slot, hard cap and occupancy -
+   * so an allocator's candidate suggestion never exceeds what the P3 slot
+   * policy can actually run concurrently.
+   */
   allocateFor(
     taskId: string,
     estimates: AllocationEstimates,
-  ): Allocation {
+  ): { allocation: Allocation; concurrency: AllocationCalibration } {
     const row = this.store.connection
       .prepare("SELECT task_id FROM tasks WHERE project_id=? AND task_id=?")
       .get(this.projectId, taskId);
     if (row === undefined) {
       throw new DomainValidationError("task does not exist");
     }
-    return allocate(estimates);
+    const role = this.#taskRole(taskId);
+    const runningRoles = this.#runningRoles();
+    const occupied = runningRoles.filter((running) => running === role).length;
+    const slotOfRole = this.slots.slotOf(role);
+    const totalRunning = runningRoles.length;
+    const hardCapRemaining = this.slots.hardCapRemaining(totalRunning);
+    const concurrentLimit = Math.max(0, Math.min(slotOfRole - occupied, hardCapRemaining));
+    return {
+      allocation: allocate(estimates),
+      concurrency: {
+        role,
+        slotOfRole,
+        occupied,
+        totalRunning,
+        hardCap: this.slots.hardCap,
+        concurrentLimit,
+      },
+    };
   }
 
   /**
@@ -844,6 +876,12 @@ export class ProjectController {
   // -------------------------------------------------------------------------
   // Internals
   // -------------------------------------------------------------------------
+
+  /** Role of a task by id (absent role means implementer). */
+  #taskRole(taskId: string): TaskRole {
+    const project = this.#project();
+    return project.tasks.find((item) => item.task_id === taskId)?.role ?? "implementer";
+  }
 
   /** Role of the task owning this attempt (absent role means implementer). */
   #roleOf(attemptId: string): TaskRole {

@@ -106,7 +106,10 @@ describe("dynamic compute allocator (R5)", () => {
       });
       expect(
         controller.allocateFor("task-1", { ...BASE, uncertainty: "high" }),
-      ).toMatchObject({ candidates: 8 });
+      ).toMatchObject({
+        allocation: { candidates: 8 },
+        concurrency: { role: "implementer", concurrentLimit: 2 },
+      });
     } finally {
       await effects.close();
       store.close();

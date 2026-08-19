@@ -62,6 +62,8 @@
 
 | selectAndPromoteWhenGatePasses（R9） | 把 R4 选择与 R8 门控晋升串联：tournament 胜者读 report_json.result_commit，再经 promoteWhenGatePasses 晋升；无候选/无 report/无 result_commit 失败关闭——形成 验证→选择→门控晋升 端到端 |
 
+| allocateFor 返回 { allocation, concurrency }（R10） | R5 纯分配结果叠加 P3 槽位校准：concurrentLimit = min(slotOfRole - occupied, hardCap - totalRunning)，宿主可据此分批认领候选（batch 宽度仍在计划层）；改 RETURN 形状（调用方需解包 allocation）已登记 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

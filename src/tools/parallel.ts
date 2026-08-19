@@ -42,6 +42,15 @@ export class RoleSlotPolicy {
     return this.#slots[role];
   }
 
+  get hardCap(): number {
+    return this.#hardCap;
+  }
+
+  /** Headroom left under the global cap after `running` attempts are in flight. */
+  hardCapRemaining(running: number): number {
+    return Math.max(0, this.#hardCap - running);
+  }
+
   /**
    * Admission check at claim time. `running` maps each attempt id to its
    * role; only open attempts (CREATED/LEASED/RUNNING) occupy a slot.

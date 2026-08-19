@@ -1,7 +1,7 @@
 # Palimpsest DSH 插件产品基线
 
-> Product revision：`PALIMPSEST-PLUGIN-13`
-> 状态：P0–P3 已交付 + Research 线 R1–R9（…/ gate 门控晋升 / 验证→选择→门控晋升链路）已落地。本文是插件形态的产品与工程权威说明。
+> Product revision：`PALIMPSEST-PLUGIN-14`
+> 状态：P0–P3 已交付 + Research 线 R1–R10（…/ 验证→选择→门控晋升链路 / 分配×槽位联动）已落地。本文是插件形态的产品与工程权威说明。
 
 ## 1. 产品定义
 
@@ -41,6 +41,7 @@ src/telemetry  模型能力统计表：按 task_type+model 累计并估算预期
 src/evidence  科研 evidence graph：CLAIM→EVIDENCE→EXPERIMENT→CONFIG→COMMIT→DATA 证明链  【R7 ✅】
 src/tools     promoteWhenGatePasses：门禁 PASS 才放行晋升（verdict 驱动）      【R8 ✅】
 src/tools     selectAndPromoteWhenGatePasses：tournament 胜者 → 门控晋升全链路  【R9 ✅】
+src/tools     allocateFor 并发校准：候选数建议 ↔ 角色槽位/硬上限联动             【R10 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

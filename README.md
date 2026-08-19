@@ -28,7 +28,7 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（114 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（119 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
@@ -44,6 +44,7 @@ corepack pnpm exec vitest run
 12. **科研 evidence graph（R7）**：CLAIM→EVIDENCE→EXPERIMENT→CONFIG→COMMIT→DATA 证明链；claim 状态派生（supported/contradicted/inconclusive/stale）、证据失效自动 STALE、非法边失败关闭、provenance 只沿产生性边——7 项机器验收。
 13. **gate 门控晋升（R8）**：promoteWhenGatePasses——注册门禁非 PASS 拒绝晋升并回报缺失证据（INCOMPLETE/FAIL 不落 PROMOTION_COMMITTED）、PASS 才放行；未注册门禁失败关闭——3 项机器验收。
 14. **验证→选择→门控晋升（R9）**：selectAndPromoteWhenGatePasses——tournament 从 4 个已验证候选选出胜者、读其 result_commit、经 gate 校验后实际晋升（PASS→PROMOTION_COMMITTED→TASK_SATISFIED；缺证据→拒绝且零 PROMOTION 事件；无候选失败关闭）——3 项机器验收。
+15. **分配×槽位联动（R10）**：allocateFor 在纯规则建议上叠加 P3 并发校准——高不确定建议 8 候选时按 implementer 槽位 2 收束（concurrentLimit 2）、verifier 槽位 1 得 1、占用增长时 concurrentLimit 收紧至 0、硬上限吃紧时再收——5 项机器验收。
 
 ## 依赖 Ordarium
 
