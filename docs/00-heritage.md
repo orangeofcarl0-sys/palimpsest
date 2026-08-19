@@ -54,6 +54,8 @@
 
 | allocate / allocateFor（R5） | 预算.txt §33–43/§51 规则表：U×V 象限（高不确定+弱验证 → 强推理+判别实验，绝不扩样本）、critical/high-impact 加独立验证、GPU 昂贵时激进预筛；纯函数、无副作用；controller.allocateFor 只校验任务存在 |
 
+| ModelPerformanceTable / bestModel（R6） | 预算.txt §43：按 task_type+model 累计 attempts/successes/cost；C_success = C_attempt / P(success)，成功率以 Gamma 先验平滑（小样本不致 0 成本）；bestModel 选预期成功成本最低模型，冷启动用调用方先验 |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

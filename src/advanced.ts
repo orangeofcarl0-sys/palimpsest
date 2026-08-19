@@ -11,6 +11,7 @@ export * from "./effects/index.js";
 export * from "./evidence/index.js";
 export * from "./select/index.js";
 export * from "./allocate/index.js";
+export * from "./telemetry/index.js";
 export * from "./tools/index.js";
 export { installPalimpsest, trustedDefaultPolicy } from "./install.js";
 export type { InstallPalimpsestOptions, InstalledPalimpsest } from "./install.js";
