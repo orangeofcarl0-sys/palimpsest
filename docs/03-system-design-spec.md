@@ -1,9 +1,9 @@
 # Palimpsest 系统设计规格（System Design Spec）
 
-> **Spec ID**：`PLMP-SDS-3` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
-> **代码基线**：commit `3163394` 起 E1（入口回合）已交付：23 个测试文件 / 132 项测试
+> **Spec ID**：`PLMP-SDS-4` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
+> **代码基线**：commit `3163394` 起 E1/E2 已交付：24 个测试文件 / 137 项测试
 > **文档权威序**：本文＝系统设计权威；docs/01＝产品基线；docs/02＝E 线计划与模式兼容细则（§5.2 引其为规范）；docs/00＝传承与非权威来源。冲突时以本文为准。
-> **修订记录**：`SDS-2`＝SDS-1 完善度审计扩充（§3.5/§4.7/§5.1 API 清单/§5.4/§6/SDS-19..25/§8.3/§9.4/§10）；`SDS-3`＝E1 交付同步——`decide()/commit()` 落地（INV-08 从评审级升为机器证据）、工具面 7→9（+`palimpsest_preview`/`palimpsest_run`）、`runTurn` 阶段判定、测试基线 23/132、E 线追溯矩阵行更新。
+> **修订记录**：`SDS-2`＝SDS-1 完善度审计扩充；`SDS-3`＝E1 交付同步（INV-08 升机器证据、工具 7→9、runTurn、23/132）；`SDS-4`＝E2 交付同步——TaskSpec/TaskEnvelope 增加法可选字段 `suggested_skills`（缺省省略、permissive 解析、[ACC-02] parity 证明零扰动、§9.2 例外记录）、装备化 worker 协议入 SKILL、测试基线 24/137、追溯矩阵 SDS-11 升机器证据。
 
 ## 0. 规格约定
 
@@ -206,7 +206,8 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | P3 | 并行 | 槽位/预算/4 候选/stale 不回归 | ✅ `abd7f01` |
 | R1–R12 | Gate DSL、invalidation、gate 工具、tournament、allocator、性能表、证据图、门控晋升、选晋链、槽位联动、telemetry 持久化、命令自动化 | 各 3–10 项机器验收（README §验证 6–17） | ✅ `8e66dff`–`650105e` |
 | CLI+skill | 安装型命令面 | 本机 DSH 发现 + E2E 冒烟 | ✅ `3163394` |
-| **E1** | decide/commit 拆分、preview、run 回合、SKILL 驱动 | 全量 23 文件/132 测试绿；replay/parity 逐字节回归；`e1_preview_run`（preview 零写入 / paused 安全 / 与 step 一致、runTurn 三阶段）；CLI 入口回合冒烟 | ✅ |
+| **E1** ✅ | decide/commit 拆分、preview、run 回合、SKILL 驱动 | 全量 24/137 测试绿；replay/parity 逐字节回归；`e1_preview_run`；CLI 入口回合冒烟 | |
+| **E2** ✅ | `suggested_skills`（选项 A 缺省省略）、envelope 透传、worker SKILL、main-only 路由 | [ACC-02] parity 回归绿（可选字段零扰动）；`e2_equipped`（schema/透传/未知不 fatal）；pptx 宿主 demo 待真实会话（机制已机器验证） | |
 | **E2** | suggested_skills + 路由 | parity 回归硬门；schema/透传单测；pptx demo | ⏳ |
 | **E3** | 断点续跑 | 双会话 CLI E2E 事件序列断言 | ⏳ |
 | **E4** | 模式矩阵收口 | 矩阵每格证据；三权限模式手工剧本 | ⏳ |
@@ -218,7 +219,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 
 ### 8.1 机器验收（CI 绿 = 必要不充分）
 
-| 测试文件（23/132 项） | 证明 |
+| 测试文件（24/137 项） | 证明 |
 |---|---|
 | `contracts` / `parity.fixture` / `state.replay` | 合同与跨语言 parity（`[INV-02/05/17]`） |
 | `scheduler.replay` | 调度确定性 parity |
@@ -228,6 +229,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | `gate_dsl` / `gate_tool` / `invalidation` / `evidence_graph` / `promotion_gate` / `select_promote` / `tournament` | §4.3–4.4 |
 | `performance_table` / `telemetry_persistence` / `command_automation` | R6/R11/R12 |
 | `e1_preview_run` | E1 入口回合：preview 零写入、paused 安全、与 next 字节一致（INV-08）；runTurn 阶段判定（needs_worker/needs_promotion/terminal） |
+| `e2_equipped` | E2 装备化：`suggested_skills` 缺省省略 / envelope 透传 / 未知技能不致命（SDS-11） |
 
 ### 8.2 验收矩阵 [ACC-01..05]
 
@@ -258,7 +260,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | INV-01/16/18（分层/两级面/三面同源） | 评审：tsc 构建 + 依赖方向核对 |
 | INV-08（decide/commit 纯决策） | 机器：`e1_preview_run`（重复 preview 零 append、与 step 一致） |
 | SDS-10（run 回合·E1） | 机器：`e1_preview_run`（runTurn 阶段判定）；评审：CLI/SKILL 冒烟 |
-| SDS-11（装备化·E2） | 规划门：parity 硬门 + pptx demo |
+| SDS-11（装备化·E2） | 机器：`e2_equipped`（缺省省略/透传/未知不 fatal）+ `[ACC-02]` parity 回归；宿主 demo（pptx）待真实会话 |
 | SDS-13（模式兼容） | 规划门：docs/02 §3 矩阵每格证据 + `[ACC-05]` |
 
 ---
@@ -266,7 +268,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 ## 9. 变更控制
 
 1. 本规格由里程碑出口时同步修订并 bump `PLMP-SDS-n`；已交付条目只可改描述不可改语义。
-2. 合同触点（§3.1/3.2 序列化、字段、digest 规则）变更：必须 bump `schema_version`/`payload_version` + 过 `[ACC-02]` + 迁移路径，三者缺一即缺陷。
+2. 合同触点（§3.1/3.2 序列化、字段、digest 规则）变更：必须 bump `schema_version`/`payload_version` + 过 `[ACC-02]` + 迁移路径，三者缺一即缺陷。**例外（E2 确立，SDS-4 审计）**：**加法式**可选字段、缺省省略序列化（缺省即字面等于旧数据）、解析器 permissive（未知可选字段保留不丢弃）且经 `[ACC-02]` 证明对既有事件零扰动——可不 bump 版本，但必须在修订记录与审计中明示字段与理由（`suggested_skills` 即此例）。
 3. 新模块须先入本文 §2（职责/接口/不变量）再实现；不变量新增须绑定验收编号。
 4. **阶段出口审计**（制度化）：每个里程碑出口必须执行——(a) §8.3 追溯矩阵逐行核对证据仍成立（新增/重命名测试须同步矩阵）；(b) 不变量→验收绑定无悬空；(c) 本阶段触碰序列化/合同则 `[ACC-02]` 重跑并记录逐字节结果；(d) 本规格同步修订并 bump Spec ID；(e) 审计发现的缺口与处置写入里程碑提交说明。审计不通过不得宣布阶段完成。
 

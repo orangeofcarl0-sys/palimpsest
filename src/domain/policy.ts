@@ -106,6 +106,7 @@ export class TaskPolicy {
         read_paths: this.read_paths,
         write_paths: task.write_paths,
         required_artifacts: task.required_artifacts,
+        suggested_skills: task.suggested_skills,
         allowed_commands: this.allowed_commands,
         network_policy: this.network_policy,
         network_allowlist: this.network_allowlist,

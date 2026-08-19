@@ -28,7 +28,7 @@ corepack pnpm run build
 corepack pnpm exec vitest run
 ```
 
-测试套件（132 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
+测试套件（137 项）以 `fixtures/replay/baseline-v1.json` 为黄金基准，分三层机器证明：
 
 1. **合同 parity（P0）**：fixture 全部事件重算 request/event digest、重放进真实 SQLite 并比对 snapshot digest，逐字节一致。
 2. **调度器 parity（P1）**：TS Scheduler 从零复现 Python `populate()` 调用序列，重新生成的 15 事件 Event Log（含 committed_at、哈希链、双摘要）与 fixture 逐字节一致。
@@ -48,6 +48,7 @@ corepack pnpm exec vitest run
 16. **telemetry 持久化（R11）**：模型能力累计量快照写入编排库独立扩展表，重启后 rebuildTelemetry 重建与内存一致；扩展表不进投影/snapshot，fixture parity 不受影响——3 项机器验收。
 17. **命令执行器自动化接线（R12）**：pump 自动执行 claim→gate 命令→退出码映射 report；失败批次自动 settle→READY→重试直到成功（停于 VERIFYING）或预算耗尽（TASK_FAILED）；FakeGitPort 顺序 gate 队列支持‘先败后成’脚本化——4 项机器验收。
 18. **入口回合（E1）**：`palimpsest_preview` 零写入、paused 安全、与下一步 `palimpsest_next` 字节一致（plan-mode 勘察面）；`palimpsest_run` 一回合机械推进 + 阶段判定（needs_worker/needs_promotion/terminal）——6 项机器验收。
+19. **装备化 worker（E2）**：TaskSpec/TaskEnvelope 增加法可选字段 `suggested_skills`（缺省省略、permissive 解析、既有 fixture digest 逐字节零扰动）；policy 授权信封透传；未知技能不 fatal——5 项机器验收。
 
 ## 依赖 Ordarium
 

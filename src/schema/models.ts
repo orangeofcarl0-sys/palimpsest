@@ -243,6 +243,8 @@ export interface TaskSpec {
   required_artifacts: string[];
   /** Optional role for slot-aware concurrency (P3); absent means "implementer". */
   role?: TaskRole | undefined;
+  /** Optional skill/plugin hints the claiming worker should load (E2); absent means no hint. */
+  suggested_skills?: string[] | undefined;
 }
 
 export function parseTaskSpec(value: unknown): TaskSpec {
@@ -267,6 +269,11 @@ export function parseTaskSpec(value: unknown): TaskSpec {
       throw new ContractError("role: invalid literal");
     }
     spec.role = role as TaskRole;
+  }
+  if (raw.suggested_skills !== undefined && raw.suggested_skills !== null) {
+    spec.suggested_skills = field(raw.suggested_skills, "suggested_skills", (inner) =>
+      unique(expectArray(inner).map((item) => nonEmpty(expectString(item)))),
+    );
   }
   return Object.freeze(spec);
 }
@@ -480,6 +487,8 @@ export interface TaskEnvelope {
   attempt_limit: number;
   candidate_limit: 1 | 2 | 4;
   idempotency_key: string;
+  /** Skill/plugin hints for the claiming worker (E2); absent means no hint. */
+  suggested_skills?: string[] | undefined;
 }
 
 export function parseTaskEnvelope(value: unknown): TaskEnvelope {
@@ -573,6 +582,11 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
   }
   unique(envelope.allowed_commands.map((command) => JSON.stringify(command)));
   unique(envelope.network_allowlist.map((endpoint) => JSON.stringify(endpoint)));
+  if (raw.suggested_skills !== undefined && raw.suggested_skills !== null) {
+    envelope.suggested_skills = field(raw.suggested_skills, "suggested_skills", (inner) =>
+      unique(expectArray(inner).map((item) => nonEmpty(expectString(item)))),
+    );
+  }
   return Object.freeze(envelope);
 }
 

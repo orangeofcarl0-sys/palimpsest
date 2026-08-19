@@ -39,8 +39,8 @@ runOnce() = commit(decide())       既有调用点行为不变
 **形态**：`TaskSpec` 增可选字段 `suggested_skills?: string[]`，经 ProjectIR 透传至 TaskEnvelope；worker agent 认领后按提示加载技能（SKILL 教此协议）。"配合相关插件"从口号变成机制：派一个"转换 50 份文档"任务并提示 `document-skills:pptx`，worker 子 agent 自带装备。
 
 **合同安全（决策点，出口前必须二选一并记录）**：
-- **选项 A（首选）**：`suggested_skills` 作为 TaskSpec 可选字段，序列化**缺省省略、不补默认**——对既有事件 digest 零影响。出口门：`fixtures/replay/baseline-v1.json` digest parity 逐字节回归必须仍通过（这是回归门，不是风格偏好）。
-- **选项 B（退路）**：若实现发现 payload normalization 强制补默认值导致 parity 破坏，则把提示放 TaskEnvelope 的 advisory 层（不参与 digest），ProjectIR 合同不动。
+- **选项 A（已采用，2026-08-18）**：`suggested_skills` 作为 TaskSpec 可选字段，序列化**缺省省略、不补默认**——对既有事件 digest 零影响。已实现并经 `[ACC-02]` parity 回归证明（fixture 逐字节不变）；`parseTaskSpec`/`parseTaskEnvelope` 均缺省省略 + permissive（未知可选字段保留），§9 例外条款已入 specs/03。
+- **选项 B（退路，未启用）**：若实现发现 payload normalization 强制补默认值导致 parity 破坏，则把提示放 TaskEnvelope 的 advisory 层（不参与 digest），ProjectIR 合同不动。
 
 **约束**：提示是建议非授权——不绕过宿主权限；main-agent-only 技能的路由规则见 §3.4。
 
@@ -129,7 +129,7 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 | 里程碑 | 内容 | 出口门 |
 |---|---|---|
 | **E1** ✅ 已交付 | `decide()/commit()` 拆分、`palimpsest_preview`、`palimpsest_run`、SKILL 驱动指引 | 12 场景回归；plan-mode 零事件断言（`e1_preview_run`）；全量 23/132 绿；CLI 入口回合冒烟（2026-08-18） |
-| **E2** 装备化 worker | `suggested_skills`（选项 A/B 决策落地）、envelope 透传、worker SKILL、main-only 路由 | digest parity 回归（A 时）；schema/透传单测；pptx 手工 demo |
+| **E2** ✅ 已交付 | `suggested_skills`（选项 A 采用：缺省省略+permissive 解析）、envelope 透传、worker SKILL（含 main-only 路由规则） | [ACC-02] parity 回归绿（既有 fixture 零扰动）；`e2_equipped` 5 项机器验收；未知技能不 fatal；pptx 宿主 demo 待真实会话（机制已机器验证）（2026-08-18） |
 | **E3** 断点续跑 | status 恢复区块、租约过期处理、"继续"协议 | 双会话 CLI E2E 测试断言事件序列 |
 | **E4** 模式矩阵收口 | 工具描述声明 mode-safety、拒绝协议入 SKILL、hooks 说明、§3.1 矩阵每格测试或文档证据 | 矩阵全格有证据；三个权限模式（plan/default/auto）各走一遍手工剧本 |
 
@@ -141,7 +141,7 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 - 不程序化判定或绕过宿主权限系统（main-only 技能清单以知识维护，失败可见）；
 - 不在本线做 SDK 拆包与多宿主移植（§2.4 只预埋纪律）；
 - 不做图形 UI——渲染保持文本块（docs/01 §9）；
-- 不改变 P0–P3 已冻结的合同语义；唯一允许的合同触点是 E2 且必须过 digest parity 回归门。
+- 不改变 P0–P3 已冻结的合同语义；唯一允许的合同触点是 E2 且必须过 digest parity 回归门——已落地（选项 A，§9.2 例外条款记录于 docs/03）。
 
 ## 6. 风险与对冲
 
@@ -150,4 +150,4 @@ E 线期间禁止让 DSH 渲染/宿主概念渗入 controller 与 scheduler（�
 | 平台风险：宿主 someday 原生吸收此能力 | SDK 预埋纪律（§2.4）保持核心可移植；Ordarium ledger/effect authority 深度是护城河 |
 | 宿主权限/模式语义漂移 | §3.0 事实清单版本化于本文；宿主升级时重审矩阵（E4 出口即审） |
 | 回合制循环的 manager 质量随宿主模型浮动 | 合同兜底：坏决策不污染 canonical 状态（事件校验、gate、stale 隔离） |
-| E2 合同触点破坏跨语言 parity | 选项 A 首选 + parity 回归硬门；不行退选项 B 零合同扰动 |
+| E2 合同触点破坏跨语言 parity | 已关闭：选项 A（缺省省略+permissive）落地，`[ACC-02]` parity 全绿；退路选项 B 未启用 |

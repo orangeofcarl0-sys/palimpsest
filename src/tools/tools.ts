@@ -44,6 +44,19 @@ function stringArray(args: JsonObject, key: string): string[] | undefined {
   return value as string[];
 }
 
+/** Optional skill hints (E2); absent or null means no hint, invalid entries fail closed. */
+function optionalSkillArray(args: JsonObject, key: string): string[] | undefined {
+  const value = args[key];
+  if (value === undefined || value === null) return undefined;
+  if (
+    !Array.isArray(value) ||
+    !value.every((item) => typeof item === "string" && item.length > 0)
+  ) {
+    throw new TypeError(`${key} must be an array of non-empty strings`);
+  }
+  return value as string[];
+}
+
 function parseTaskSpecs(args: JsonObject): TaskSpec[] {
   const raw = args.tasks;
   if (!Array.isArray(raw)) {
@@ -54,12 +67,14 @@ function parseTaskSpecs(args: JsonObject): TaskSpec[] {
       throw new TypeError("each task must be an object");
     }
     const task = item as JsonObject;
+    const suggestedSkills = optionalSkillArray(task, "suggested_skills");
     return {
       task_id: stringField(task, "task_id"),
       objective: stringField(task, "objective"),
       depends_on: stringArray(task, "depends_on") ?? [],
       write_paths: stringArray(task, "write_paths") ?? [],
       required_artifacts: stringArray(task, "required_artifacts") ?? [],
+      ...(suggestedSkills === undefined ? {} : { suggested_skills: suggestedSkills }),
     };
   });
 }
@@ -113,6 +128,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
               depends_on: { type: "array", items: { type: "string" } },
               write_paths: { type: "array", items: { type: "string" } },
               required_artifacts: { type: "array", items: { type: "string" } },
+              suggested_skills: { type: "array", items: { type: "string" } },
             },
             required: ["task_id", "objective"],
           },
@@ -146,6 +162,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
               depends_on: { type: "array", items: { type: "string" } },
               write_paths: { type: "array", items: { type: "string" } },
               required_artifacts: { type: "array", items: { type: "string" } },
+              suggested_skills: { type: "array", items: { type: "string" } },
             },
             required: ["task_id", "objective"],
           },
