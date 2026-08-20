@@ -5,7 +5,27 @@
 
 Palimpsest 把一句话目标编译成耐久项目（ProjectIR + Task DAG），Attempt 在隔离与证据门禁下推进，只有通过确定性 Gate 的工作才被晋升到 canonical 状态；全部外部副作用经姊妹工程 **Ordarium**（Safe Action SDK + Effect Authority，https://github.com/orangeofcarl0-sys/ordarium）以 Safe Action 执行在共享本地 ledger 上。
 
-## 当前状态（P0 + P1）
+## 用户快速上手（一分钟）
+
+把一句话目标变成"崩不了、忘不了、只收验证过成果"的耐久项目：任务图、并行 worker、证据门禁、版本化晋升都在后台自动完成。
+
+三句话记牢：
+1. **一句话目标 → 耐久项目**——进程崩溃、杀会话都能"继续说"；
+2. **worker 说"完成了"不算数**——只有确定性验证（gate）过的东西才晋升；
+3. **新版本不覆盖历史**——旧证据自动失效，全程可审计回放。
+
+命令行试跑（构建后）：
+
+```bash
+CLI="本仓库根/dist/src/cli.js"
+node "$CLI" new p "把这份文档转成 pptx" --skills '["document-skills:pptx"]'
+node "$CLI" run 20        # 机械部分全自动；剩余阶段会告诉你下一步
+node "$CLI" status        # 随时看项目在哪、下一步做什么
+```
+
+对 DSH 用户：本机安装后，对 agent 说一句"用 palimpsest 把 X 做完"即可——宿主 agent 按已安装的 palimpsest 技能驱动完整循环；崩溃/关会话后说"继续"就恢复。
+
+## 当前状态（E1–E4 已交付）
 
 | 层 | 状态 |
 |---|---|
@@ -18,7 +38,7 @@ Palimpsest 把一句话目标编译成耐久项目（ProjectIR + Task DAG），A
 | DSH 工具面（7 工具）+ `installPalimpsest` + ProjectController | ✅ P2 |
 | 多 agent 并行（角色槽位、2–4 候选、基础预算） | ✅ P3 |
 
-系统设计规格（模块/合同/行为/非功能规范、设计推导链、阶段与验收矩阵）见 [`docs/03-system-design-spec.md`](docs/03-system-design-spec.md)；产品定义、分层架构、Ordarium effect 映射与阶段门见 [`docs/01-plugin-product-baseline.md`](docs/01-plugin-product-baseline.md)；入口产品线（E 线：一句话闭环、装备化 worker、断点续跑）与 DSH 工作模式兼容基线见 [`docs/02-entry-line-and-mode-compatibility.md`](docs/02-entry-line-and-mode-compatibility.md)；设计传承与权威来源声明见 [`docs/00-heritage.md`](docs/00-heritage.md)。
+系统设计规格（模块/合同/行为/非功能规范、设计推导链、阶段与验收矩阵）见 [`docs/03-system-design-spec.md`](docs/03-system-design-spec.md)；**开发者 SDK 指南**见 [`docs/04-sdk-developer-guide.md`](docs/04-sdk-developer-guide.md)（概念/嵌入/执行器/确定性/错误模型/Ordarium 集成），**API 参考**见 [`docs/05-api-reference.md`](docs/05-api-reference.md)；产品定义、分层架构、Ordarium effect 映射与阶段门见 [`docs/01-plugin-product-baseline.md`](docs/01-plugin-product-baseline.md)；入口产品线（E 线：一句话闭环、装备化 worker、断点续跑）与 DSH 工作模式兼容基线见 [`docs/02-entry-line-and-mode-compatibility.md`](docs/02-entry-line-and-mode-compatibility.md)；设计传承与权威来源声明见 [`docs/00-heritage.md`](docs/00-heritage.md)。
 
 ## 验证
 
