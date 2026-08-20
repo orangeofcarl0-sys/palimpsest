@@ -51,7 +51,7 @@ pump  [maxSteps]                          全自动命令执行循环
 status                                   人可读项目视图（tasks/attempts/evidence/promotions）
 ```
 
-常用选项：`--db <path>`（编排库，默认 `$DSH_HOME/palimpsest/palimpsest.sqlite` 或 `~/.dsh/…`）；`--ops <path>`（Ordarium 副作用账，默认 `$DSH_HOME/ordarium/operations.sqlite`）；`--repo <path>`（改用真实 git CLI 端口）；`--gate <file.json>`（注册一个或多个 GateDefinition）。
+常用选项：`--db <path>`（编排库，默认 `$DSH_HOME/palimpsest/palimpsest.sqlite` 或 `~/.dsh/…`）；`--ops <path>`（Ordarium 副作用账，默认 `$DSH_HOME/ordarium/operations.sqlite`）；`--repo <path>`（改用真实 git CLI 端口）；`--gate <file.json>`（注册一个或多个 GateDefinition）；`--skills '<json>'`（E2：给 task-1 声明技能提示，如 `--skills '["document-skills:pptx"]'`，`claim` 时 worker 从信封读到该提示）。
 
 ## 三句不可违背的合同
 

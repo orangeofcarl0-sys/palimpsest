@@ -25,6 +25,7 @@
  *   --ops <path>  Ordarium ledger (default $DSH_HOME/ordarium/…)
  *   --repo <path> use the real git CLI port rooted there (default: embedded fake port)
  *   --gate <file> path to a JSON file of GateDefinition to register
+ *   --skills <json> E2: JSON array of skill hints for task-1 (new/plan)
  */
 
 import { readFileSync } from "node:fs";
@@ -67,14 +68,31 @@ function arg(options: Map<string, string>, flag: string): string | undefined {
   return options.get(flag);
 }
 
-function taskSpec(goal: string) {
-  return {
+function taskSpec(goal: string, skills?: string[]) {
+  const spec = {
     task_id: "task-1",
     objective: `Complete: ${goal}`,
     depends_on: [],
     write_paths: [],
     required_artifacts: [],
   };
+  return {
+    ...spec,
+    ...(skills === undefined || skills.length === 0 ? {} : { suggested_skills: skills }),
+  };
+}
+
+/** Parse the --skills JSON-array option (E2): absent means no hint. */
+function skillHints(value: string | undefined): string[] | undefined {
+  if (value === undefined) return undefined;
+  const parsed: unknown = JSON.parse(value);
+  if (
+    !Array.isArray(parsed) ||
+    !parsed.every((item) => typeof item === "string" && item.length > 0)
+  ) {
+    throw new Error("--skills must be a JSON array of non-empty strings");
+  }
+  return parsed as string[];
 }
 
 function policy() {
@@ -124,7 +142,7 @@ async function main() {
         const event = controller.start({
           projectId: controller.projectId,
           goal,
-          tasks: [taskSpec(goal)],
+          tasks: [taskSpec(goal, skillHints(arg(parsed.options, "--skills")))],
         });
         console.log(JSON.stringify({ created: event.event_type, projectId: event.project_id }));
         break;
@@ -136,7 +154,12 @@ async function main() {
           | "behavior_change"
           | "contract_breaking";
         const event = controller.plan({
-          tasks: [taskSpec(controller.status().tasks[0]?.state === undefined ? "plan" : "plan-rev")],
+          tasks: [
+            taskSpec(
+              controller.status().tasks[0]?.state === undefined ? "plan" : "plan-rev",
+              skillHints(arg(parsed.options, "--skills")),
+            ),
+          ],
           changeClass,
           changedIds: ["task-1"],
         });
@@ -168,7 +191,26 @@ async function main() {
         const attemptId = a1 ?? (await controller.selectCandidate({ compare: () => "tie" })).winner;
         if (attemptId === undefined) throw new Error("no attempt to claim");
         const { worktreePath } = await controller.claim(attemptId);
-        console.log(JSON.stringify({ claimed: attemptId, worktreePath }));
+        // E2: surface the skill hints the claiming worker must load, straight
+        // from the attempt's task envelope (the DSH worker reads these).
+        const attemptRow = store.connection
+          .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
+          .get("project", attemptId) as { task_id: string } | undefined;
+        let skillHintsField: string[] = [];
+        if (attemptRow !== undefined) {
+          const envRow = store.connection
+            .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
+            .get("project", attemptRow.task_id) as { envelope_json: Uint8Array } | undefined;
+          if (envRow !== undefined) {
+            const envelope = JSON.parse(new TextDecoder().decode(envRow.envelope_json)) as {
+              suggested_skills?: string[];
+            };
+            skillHintsField = envelope.suggested_skills ?? [];
+          }
+        }
+        console.log(
+          JSON.stringify({ claimed: attemptId, worktreePath, skillHints: skillHintsField }),
+        );
         break;
       }
       case "gate": {
