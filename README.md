@@ -5,7 +5,7 @@
 
 Palimpsest 把一句话目标编译成耐久项目（ProjectIR + Task DAG），Attempt 在隔离与证据门禁下推进，只有通过确定性 Gate 的工作才被晋升到 canonical 状态；全部外部副作用经姊妹工程 **Ordarium**（Safe Action SDK + Effect Authority，https://github.com/orangeofcarl0-sys/ordarium）以 Safe Action 执行在共享本地 ledger 上。
 
-**源码（GitHub）**：https://github.com/orangeofcarl0-sys/palimpsest-plugin（私有，与 Ordarium 同属一条工程线；版本锚点 tag `palimpsest-v0.1.0`）。
+**源码（GitHub）**：https://github.com/orangeofcarl0-sys/palimpsest-plugin（公开，与 Ordarium 同属一条工程线；版本锚点 tag `palimpsest-v0.1.1`）。
 
 ## 用户快速上手（一分钟）
 
@@ -76,14 +76,13 @@ corepack pnpm exec vitest run
 
 ## 依赖 Ordarium
 
-P0 的 schema/domain/state 零外部依赖（仅 `node:sqlite` 内置）。P1 接入 Ordarium 五包（实际使用 core / ledger-sqlite / testing）：
+P0 的 schema/domain/state 零外部依赖（仅 `node:sqlite` 内置）。P1 起接入 Ordarium 三包（core / ledger-sqlite / testing），**直接从 Ordarium 的公开 GitHub Release 拉取**（tag `ordarium-v1.0.0`）：
 
 ```bash
-corepack pnpm run sync:ordarium   # 从同级 Ordarium checkout 打包五 tarball 入 vendor/ordarium/dist/
-corepack pnpm install             # link: + workspace overrides 解析（pnpm-workspace.yaml）
+corepack pnpm install    # 依赖 = GitHub Release tarball URL；pnpm.overrides 保证转置精确版本解析
 ```
 
-（单包 git 依赖因 `workspace:*` 无法解析是 Ordarium 记录在案的已知限制；五 tarball 自洽性即其 `test:package` 验证的内容。公共发布后切换为 GitHub Release URL。）
+接线说明：三个 tarball 内部以**精确版本**互相引用（如 `"@ordarium/core": "1.0.0"`）；pnpm 不会用顶层 tarball URL 依赖去满足转置的精确版本，因此 `package.json` 的 `pnpm.overrides` 把三个 `@ordarium/*` 名字钉在同一 Release 的 tarball 上——五包成套即 Ordarium `test:package` 验证的消费单元。单包 `github:...` 依赖因 `workspace:*` 无法解析是 Ordarium 记录在案的已知限制；仓库内 `tools/sync-ordarium.mjs` 保留为离线/本地 vendoring 的回退路径。
 
 ## 三句不可违背的合同
 
