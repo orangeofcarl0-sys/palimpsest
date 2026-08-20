@@ -5,6 +5,8 @@
 
 Palimpsest 把一句话目标编译成耐久项目（ProjectIR + Task DAG），Attempt 在隔离与证据门禁下推进，只有通过确定性 Gate 的工作才被晋升到 canonical 状态；全部外部副作用经姊妹工程 **Ordarium**（Safe Action SDK + Effect Authority，https://github.com/orangeofcarl0-sys/ordarium）以 Safe Action 执行在共享本地 ledger 上。
 
+**源码（GitHub）**：https://github.com/orangeofcarl0-sys/palimpsest-plugin（私有，与 Ordarium 同属一条工程线；版本锚点 tag `palimpsest-v0.1.0`）。
+
 ## 用户快速上手（一分钟）
 
 把一句话目标变成"崩不了、忘不了、只收验证过成果"的耐久项目：任务图、并行 worker、证据门禁、版本化晋升都在后台自动完成。
