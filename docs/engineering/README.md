@@ -9,6 +9,7 @@
 | `02-entry-line-and-mode-compatibility.md` | E 线规划与 DSH 工作模式兼容矩阵（含逐阶段审计记录） |
 | `03-system-design-spec.md` | 系统设计规格 PLMP-SDS（需求/不变量/追溯矩阵，修订流水在此） |
 | `04-sdk-developer-guide.md` / `05-api-reference.md` | 早期 SDK 文档版本（现行版在 `docs/sdk-guide.md`、`docs/api-reference.md`） |
+| `06-audit-remediation-design-spec.md` | **H 线设计规格（冻结）**：审计修复与架构上链——恢复器官、声明制判官、门禁/角色/阶段上链、自重构合同 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
