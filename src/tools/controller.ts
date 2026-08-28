@@ -35,7 +35,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
+import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import {
@@ -53,6 +53,11 @@ import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
+import {
+  DEFAULT_HARD_CAP,
+  DEFAULT_ROLE_SLOTS,
+  type ParallelOptions,
+} from "./parallel.js";
 import { PromotionManager, type PromoteResult } from "../effects/promotion.js";
 import {
   createPromotionRecoveryService,
@@ -161,11 +166,9 @@ export interface ProjectControllerOptions {
   effects: PalimpsestEffectsRuntime;
   projectId: string;
   policy: TaskPolicy;
+  /** Runtime attempt metering (not on-chain state); inject for budget tests. */
+  budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
-  /** P3: role-slot admission and attempt budget (defaults: strong, zero-config). */
-  parallel?: ParallelOptions | undefined;
-  /** R1: registered gates evaluated by evaluateGate (empty default). */
-  gates?: readonly GateDefinition[] | undefined;
 }
 
 export class ProjectController {
@@ -173,11 +176,31 @@ export class ProjectController {
   readonly effects: PalimpsestEffectsRuntime;
   readonly projectId: string;
   readonly policy: TaskPolicy;
+  /** Runtime attempt metering (not on-chain state); inject for budget tests. */
+  readonly budget: BudgetLedger;
   readonly scheduler: Scheduler;
   readonly promotions: PromotionManager;
   readonly recovery: PromotionRecoveryService;
-  readonly slots: RoleSlotPolicy;
-  readonly budget: BudgetLedger;
+  /**
+   * H1 §3.4 D-2: the slot policy is read from the declared role table on every
+   * use - the declaration on the log is the single source of truth. Missing
+   * declaration fails closed (claims only exist after genesis).
+   */
+  get slots(): RoleSlotPolicy {
+    const row = this.store.connection
+      .prepare("SELECT table_json FROM role_tables WHERE project_id=?")
+      .get(this.projectId) as { table_json: Uint8Array } | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError("no role table declared for this project");
+    }
+    const declared = JSON.parse(new TextDecoder().decode(row.table_json)) as {
+      roles: Array<{ role: string; slots: number }>;
+      hard_cap: number;
+    };
+    const slots: Record<string, number> = {};
+    for (const entry of declared.roles) slots[entry.role] = entry.slots;
+    return new RoleSlotPolicy({ slots, hardCap: declared.hard_cap });
+  }
   readonly gates: GateEngine;
   /** R6: telemetry the host records into (success/cost per task_type+model). */
   readonly telemetry = new ModelPerformanceTable();
@@ -221,12 +244,8 @@ export class ProjectController {
       effects: options.effects,
       projectId: options.projectId,
     });
-    this.slots = options.parallel?.slots ?? new RoleSlotPolicy();
-    this.budget = options.parallel?.budget ?? new BudgetLedger();
+    this.budget = options.budget ?? new BudgetLedger();
     this.gates = new GateEngine();
-    for (const gate of options.gates ?? []) {
-      this.gates.register(gate);
-    }
     this.#clock = options.clock ?? (() => new Date().toISOString());
   }
 
@@ -237,6 +256,62 @@ export class ProjectController {
   // -------------------------------------------------------------------------
   // Goal compilation and planning
   // -------------------------------------------------------------------------
+
+  /** H1 §3.4 D-1: declare (or supersede) one gate on the log. */
+  declareGate(gate: GateDefinition, declaredBy: string): SchedulerEvent {
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "GATE_DEFINED",
+        payload_version: 1,
+        entity_type: "gate",
+        entity_id: gate.gate_id,
+        payload: { gate, declared_by: declaredBy },
+        causation_id: null,
+        correlation_id: `gate:${gate.gate_id}`,
+        idempotency_key: actionKey("gate-defined-v1", {
+          project_id: this.projectId,
+          gate_id: gate.gate_id,
+          version: gate.version,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
+
+  /** H1 §3.4 D-2: declare (or supersede) the project role table on the log. */
+  declareRoleTable(
+    input: {
+      roles: Array<{ role: string; slots: number }>;
+      hardCap: number;
+      declaredBy: string;
+    },
+  ): SchedulerEvent {
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "ROLE_TABLE_DEFINED",
+        payload_version: 1,
+        entity_type: "role-table",
+        entity_id: this.projectId,
+        payload: {
+          roles: input.roles,
+          hard_cap: input.hardCap,
+          declared_by: input.declaredBy,
+        },
+        causation_id: null,
+        correlation_id: `roles:${this.projectId}`,
+        idempotency_key: actionKey("role-table-defined-v1", {
+          project_id: this.projectId,
+          roles: input.roles.map((role) => `${role.role}:${role.slots}`).join(","),
+          hard_cap: input.hardCap,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
 
   start(input: StartProjectInput): SchedulerEvent {
     if (input.projectId !== this.projectId) {
@@ -268,6 +343,13 @@ export class ProjectController {
         expected_project_revision: null,
       }),
     );
+    // H1 §3.4 genesis: the default role table is itself a declaration on the
+    // log, so the previous hardcoded defaults remain replayable facts.
+    this.declareRoleTable({
+      roles: Object.entries(DEFAULT_ROLE_SLOTS).map(([role, slots]) => ({ role, slots })),
+      hardCap: DEFAULT_HARD_CAP,
+      declaredBy: "genesis",
+    });
     for (const task of input.tasks) {
       this.scheduler.registerTask(this.policy.authorize(project, task.task_id));
     }
@@ -1182,7 +1264,7 @@ export class ProjectController {
     const attempts = (
       this.store.connection
         .prepare(
-          "SELECT attempt_id, task_id, state, state_json FROM attempts WHERE project_id=?",
+          "SELECT attempt_id, task_id, state, state_json FROM attempts WHERE project_id=? ORDER BY last_event_id ASC",
         )
         .all(this.projectId) as Array<Record<string, unknown>>
     ).map((row) => {

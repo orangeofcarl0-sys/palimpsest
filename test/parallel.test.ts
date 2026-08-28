@@ -31,7 +31,7 @@ function makeController(options: {
   policy?: TaskPolicy;
   slots?: RoleSlotPolicy;
   budget?: BudgetLedger;
-} = {}, slotOverrides?: Partial<Record<string, number>>) {
+} = {}) {
   const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
   const effects = createPalimpsestEffects({
     databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-p3-")), "ops.sqlite"),
@@ -53,10 +53,7 @@ function makeController(options: {
       candidate_limit: 4,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    parallel: {
-      slots: options.slots ?? new RoleSlotPolicy({ slots: slotOverrides }),
-      budget: options.budget,
-    },
+    budget: options.budget,
   });
   return {
     store,
@@ -69,15 +66,22 @@ function makeController(options: {
 }
 
 /** start a project with role-annotated tasks; returns the attempt id of the first batch. */
-function startProject(controller: ProjectController, tasks: Parameters<ProjectController["start"]>[0]["tasks"]) {
+function startProject(
+  controller: ProjectController,
+  tasks: Parameters<ProjectController["start"]>[0]["tasks"],
+  slots?: RoleSlotPolicy,
+) {
   controller.start({ projectId: "scheduler-project", goal: "parallel", tasks });
+  if (slots !== undefined) {
+    controller.declareRoleTable({ roles: slots.table(), hardCap: slots.hardCap, declaredBy: "h1-test" });
+  }
 }
 
 describe("Palimpsest Parallel (P3)", () => {
   it("a 4-candidate batch runs four attempts in parallel and settles to VERIFYING", async () => {
-    const { controller, cleanup } = makeController({}, { implementer: 4 });
+    const { controller, cleanup } = makeController();
     try {
-      startProject(controller, [taskSpec("task-1")]);
+      startProject(controller, [taskSpec("task-1")], new RoleSlotPolicy({ slots: { ...DEFAULT_ROLE_SLOTS, implementer: 4 } }));
       const activation = controller.step()!;
       expect(activation.event_type).toBe("TASK_STARTED");
       expect(activation.payload.planned_candidate_count).toBe(4);
@@ -132,7 +136,7 @@ describe("Palimpsest Parallel (P3)", () => {
     const slots = new RoleSlotPolicy({ slots: { implementer: 30 }, hardCap: 3 });
     const { controller, cleanup } = makeController({ slots });
     try {
-      startProject(controller, [{ ...taskSpec("task-1"), role: "implementer" }]);
+      startProject(controller, [{ ...taskSpec("task-1"), role: "implementer" }], slots);
       controller.step();
       const attempts = [controller.step()!, controller.step()!, controller.step()!, controller.step()!];
       await controller.claim(attempts[0]!.entity_id);
@@ -149,9 +153,9 @@ describe("Palimpsest Parallel (P3)", () => {
 
   it("the attempt budget rejects claims beyond maxAttempts", async () => {
     const budget = new BudgetLedger({ maxAttempts: 2 });
-    const { controller, cleanup } = makeController({ budget }, { implementer: 4 });
+    const { controller, cleanup } = makeController({ budget });
     try {
-      startProject(controller, [{ ...taskSpec("task-1"), role: "implementer" }]);
+      startProject(controller, [{ ...taskSpec("task-1"), role: "implementer" }], new RoleSlotPolicy({ slots: { ...DEFAULT_ROLE_SLOTS, implementer: 4 } }));
       controller.step();
       const attempts = [controller.step()!, controller.step()!, controller.step()!, controller.step()!];
       await controller.claim(attempts[0]!.entity_id);

@@ -78,6 +78,12 @@ export class CoreProjector {
       case "JUDGE_DECLARED":
         this.#applyJudgeDeclared(connection, event);
         break;
+      case "GATE_DEFINED":
+        this.#applyGateDefined(connection, event);
+        break;
+      case "ROLE_TABLE_DEFINED":
+        this.#applyRoleTableDefined(connection, event);
+        break;
       case "CANDIDATE_SELECTED":
         this.#applyCandidateSelected(connection, event);
         break;
@@ -411,6 +417,61 @@ export class CoreProjector {
         JSON.stringify(event.payload).length > 0
           ? new TextEncoder().encode(JSON.stringify(event.payload))
           : new TextEncoder().encode("{}"),
+        event.event_id,
+        event.committed_at,
+      );
+  }
+
+  #applyGateDefined(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as {
+      gate: { gate_id: string; version: number };
+      declared_by: string;
+    };
+    connection
+      .prepare(
+        `
+        INSERT INTO gate_registry(
+            project_id, gate_id, version, definition_json, declared_by,
+            last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(project_id, gate_id) DO UPDATE SET
+            version=excluded.version,
+            definition_json=excluded.definition_json,
+            declared_by=excluded.declared_by,
+            last_event_id=excluded.last_event_id,
+            updated_at=excluded.updated_at
+        `,
+      )
+      .run(
+        event.project_id,
+        String(payload.gate.gate_id),
+        Number(payload.gate.version),
+        new TextEncoder().encode(JSON.stringify(payload.gate)),
+        String(payload.declared_by),
+        event.event_id,
+        event.committed_at,
+      );
+  }
+
+  #applyRoleTableDefined(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as { roles: unknown; declared_by: string };
+    connection
+      .prepare(
+        `
+        INSERT INTO role_tables(
+            project_id, table_json, declared_by, last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(project_id) DO UPDATE SET
+            table_json=excluded.table_json,
+            declared_by=excluded.declared_by,
+            last_event_id=excluded.last_event_id,
+            updated_at=excluded.updated_at
+        `,
+      )
+      .run(
+        event.project_id,
+        new TextEncoder().encode(JSON.stringify(payload)),
+        String(payload.declared_by),
         event.event_id,
         event.committed_at,
       );

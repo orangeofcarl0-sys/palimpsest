@@ -56,8 +56,8 @@ function makeRig(withGates = false) {
       candidate_limit: 4,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    ...(withGates ? { gates: [GATE_PASS, GATE_TESTS_ONLY] } : {}),
   });
+  withGatesFlag = withGates === true;
   return {
     store,
     controller,
@@ -68,12 +68,18 @@ function makeRig(withGates = false) {
   };
 }
 
+let withGatesFlag = false;
+
 async function driveAttempt(controller: ProjectController) {
   controller.start({
     projectId: "scheduler-project",
     goal: "g",
     tasks: [taskSpec("task-1")],
   });
+  if (withGatesFlag) {
+    controller.declareGate(GATE_PASS, "h1-test");
+    controller.declareGate(GATE_TESTS_ONLY, "h1-test");
+  }
   controller.step();
   const created = controller.step()!;
   await controller.claim(created.entity_id);
@@ -107,7 +113,7 @@ describe("Gate DSL integration (R3)", () => {
     try {
       const attemptId = await driveAttempt(controller);
       expect(() => controller.evaluateGate("missing", "attempt", attemptId)).toThrow(
-        /not registered/,
+        /not declared/,
       );
       expect(() => controller.evaluateGate("gate-pass", "task", "task-1")).toThrow(
         /expects subject_type attempt/,

@@ -27,12 +27,7 @@ const GATE = parseGateDefinition({
  * FakeGitPort models the persistent repository; orchestration truth lives in
  * the DB files and is reopened on every session.
  */
-function openSession(
-  dbPath: string,
-  opsPath: string,
-  git: FakeGitPort,
-  gates?: readonly GateDefinition[],
-) {
+function openSession(dbPath: string, opsPath: string, git: FakeGitPort) {
   const store = new EventStore(dbPath, { clock: new FakeClock().next });
   const effects = createPalimpsestEffects({ databasePath: opsPath, git });
   const controller = new ProjectController({
@@ -51,7 +46,6 @@ function openSession(
       candidate_limit: 1,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    gates,
   });
   return {
     store,
@@ -85,6 +79,7 @@ describe("E3 resume: status block and cross-session continue", () => {
     const s = openSession(join(dir, "p.sqlite"), join(dir, "o.sqlite"), new FakeGitPort(HEAD));
     try {
       s.controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      s.controller.declareGate(GATE, "h1-test");
       // A fresh READY task: the next decision is TASK_STARTED -> progress.
       const before = countEvents(s.controller);
       expect(s.controller.status().resume).toMatchObject({ action: "progress" });
@@ -114,6 +109,7 @@ describe("E3 resume: status block and cross-session continue", () => {
     {
       const s = openSession(dbPath, opsPath, git);
       s.controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      s.controller.declareGate(GATE, "h1-test");
       s.controller.step(); // TASK_STARTED
       const created = s.controller.step()!; // ATTEMPT_CREATED
       await s.controller.claim(created.entity_id);
@@ -135,7 +131,8 @@ describe("E3 resume: status block and cross-session continue", () => {
 
     // ---- Session 2: reopen the same files and continue from the resume block ----
     {
-      const s = openSession(dbPath, opsPath, git, [GATE]);
+      const s = openSession(dbPath, opsPath, git);
+      s.controller.declareGate(GATE, "h1-test");
       try {
         const resumed = s.controller.status();
         expect(resumed.tasks[0]).toMatchObject({ task_id: "task-1", state: "VERIFYING" });
@@ -190,6 +187,7 @@ describe("E3 resume: status block and cross-session continue", () => {
     {
       const s = openSession(dbPath, opsPath, git);
       s.controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      s.controller.declareGate(GATE, "h1-test");
       s.controller.pause("audit hold");
       await s.close();
     }
@@ -207,6 +205,7 @@ describe("E3 resume: status block and cross-session continue", () => {
     const s = openSession(join(dir, "p.sqlite"), join(dir, "o.sqlite"), new FakeGitPort(HEAD));
     try {
       s.controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      s.controller.declareGate(GATE, "h1-test");
       s.controller.step(); // TASK_STARTED
       const created = s.controller.step()!; // ATTEMPT_CREATED
       await s.controller.claim(created.entity_id); // RUNNING, in flight

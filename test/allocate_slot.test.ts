@@ -45,7 +45,6 @@ function makeController(slots: RoleSlotPolicy) {
       candidate_limit: 4,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    parallel: { slots },
   });
   return {
     store,
@@ -59,7 +58,7 @@ function makeController(slots: RoleSlotPolicy) {
 
 describe("allocator-slot interplay (R10)", () => {
   it("a wide candidate suggestion is capped by the role slot (implementer 2)", async () => {
-    const { controller, cleanup } = makeController(new RoleSlotPolicy());
+    const { controller, cleanup } = makeController(RoleSlotPolicy.defaults());
     try {
       controller.start({
         projectId: "scheduler-project",
@@ -83,7 +82,7 @@ describe("allocator-slot interplay (R10)", () => {
   });
 
   it("a single-slot role (verifier 1) yields a concurrent limit of 1", async () => {
-    const { controller, cleanup } = makeController(new RoleSlotPolicy());
+    const { controller, cleanup } = makeController(RoleSlotPolicy.defaults());
     try {
       controller.start({
         projectId: "scheduler-project",
@@ -102,12 +101,17 @@ describe("allocator-slot interplay (R10)", () => {
   });
 
   it("the concurrent limit shrinks as the role's occupancy grows", async () => {
-    const { controller, cleanup } = makeController(new RoleSlotPolicy());
+    const { controller, cleanup } = makeController(RoleSlotPolicy.defaults());
     try {
       controller.start({
         projectId: "scheduler-project",
         goal: "g",
         tasks: [{ ...taskSpec("task-1"), role: "implementer" }],
+      });
+      controller.declareRoleTable({
+        roles: [{ role: "implementer", slots: 8 }],
+        hardCap: 2,
+        declaredBy: "h1-test",
       });
       controller.step();
       const first = controller.step()!;
@@ -131,6 +135,11 @@ describe("allocator-slot interplay (R10)", () => {
         projectId: "scheduler-project",
         goal: "g",
         tasks: [{ ...taskSpec("task-1"), role: "implementer" }],
+      });
+      controller.declareRoleTable({
+        roles: [{ role: "implementer", slots: 8 }],
+        hardCap: 2,
+        declaredBy: "h1-test",
       });
       controller.step();
       const first = controller.step()!;

@@ -87,13 +87,38 @@ function seedEvidence(
   }
 }
 
-function gateOf(clauses: GateClause[]): GateDefinition {
+function gateOf(
+  chain: GateClause[],
+  version = 1,
+): GateDefinition {
   return parseGateDefinition({
     gate_id: "g-1",
-    version: 1,
+    version,
     subject_type: "attempt",
-    require: { all: clauses },
+    require: { all: chain },
   });
+}
+
+/**
+ * H1 D-1: gates are declared on the log; the projection table is what the
+ * engine reads. Tests seed the projection the same way the projector would.
+ */
+function declareInRegistry(
+  store: EventStore,
+  projectId: string,
+  gate: GateDefinition,
+): void {
+  store.connection
+    .prepare(
+      "INSERT INTO gate_registry (project_id, gate_id, version, definition_json, declared_by, last_event_id, updated_at) VALUES (?, ?, ?, ?, 'test', 0, ?) ON CONFLICT(project_id, gate_id) DO UPDATE SET version=excluded.version, definition_json=excluded.definition_json",
+    )
+    .run(
+      projectId,
+      gate.gate_id,
+      gate.version,
+      new TextEncoder().encode(JSON.stringify(gate)),
+      "2026-08-29T00:00:00Z",
+    );
 }
 
 describe("Gate DSL (Research line)", () => {
@@ -134,7 +159,7 @@ describe("Gate DSL (Research line)", () => {
       seedEvidence(store, "scheduler-project", "attempt-1", "tests_pass", 0);
       seedEvidence(store, "scheduler-project", "attempt-1", "lint_pass", 0);
       const engine = new GateEngine();
-      engine.register(
+      declareInRegistry(store, "scheduler-project", 
         gateOf([
           { exists: { predicate: "tests_pass" } },
           { exists: { predicate: "lint_pass" } },
@@ -155,7 +180,7 @@ describe("Gate DSL (Research line)", () => {
       seedEvidence(store, "scheduler-project", "attempt-1", "tests_pass", 0);
       seedEvidence(store, "scheduler-project", "attempt-1", "tests_fail", 1);
       const engine = new GateEngine();
-      engine.register(
+      declareInRegistry(store, "scheduler-project", 
         gateOf([
           { exists: { predicate: "tests_pass" } },
           { not: { exists: { predicate: "tests_fail" } } },
@@ -173,7 +198,7 @@ describe("Gate DSL (Research line)", () => {
     const { store, cleanup } = makeRig();
     try {
       const engine = new GateEngine();
-      engine.register(gateOf([{ exists: { predicate: "tests_pass" } }]));
+      declareInRegistry(store, "scheduler-project", gateOf([{ exists: { predicate: "tests_pass" } }]));
       const result = engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1");
       expect(result.verdict).toBe("INCOMPLETE");
       expect(result.next_evidence_needed).toEqual(["exists(tests_pass)"]);
@@ -188,15 +213,11 @@ describe("Gate DSL (Research line)", () => {
     try {
       seedEvidence(store, "scheduler-project", "attempt-1", "process_exit_zero", 0);
       const engine = new GateEngine();
-      engine.register(
-        gateOf([{ exists: { predicate: "process_exit_zero", where: { exit_code: 0 } } }]),
-      );
+      declareInRegistry(store, "scheduler-project", gateOf([{ exists: { predicate: "process_exit_zero", where: { exit_code: 0 } } }]));
       expect(
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1").verdict,
       ).toBe("PASS");
-      engine.register(
-        gateOf([{ exists: { predicate: "process_exit_zero", where: { exit_code: 1 } } }]),
-      );
+      declareInRegistry(store, "scheduler-project", gateOf([{ exists: { predicate: "process_exit_zero", where: { exit_code: 1 } } }], 2));
       expect(
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1").verdict,
       ).toBe("INCOMPLETE");
@@ -210,11 +231,11 @@ describe("Gate DSL (Research line)", () => {
     try {
       seedEvidence(store, "scheduler-project", "attempt-1", "tests_pass", 0, "active", 2);
       const engine = new GateEngine();
-      engine.register(gateOf([{ count: { predicate: "tests_pass", gte: 2 } }]));
+      declareInRegistry(store, "scheduler-project", gateOf([{ count: { predicate: "tests_pass", gte: 2 } }]));
       expect(
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1").verdict,
       ).toBe("PASS");
-      engine.register(gateOf([{ count: { predicate: "tests_pass", gte: 3 } }]));
+      declareInRegistry(store, "scheduler-project", gateOf([{ count: { predicate: "tests_pass", gte: 3 } }], 2));
       expect(
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1").verdict,
       ).toBe("INCOMPLETE");
@@ -228,7 +249,7 @@ describe("Gate DSL (Research line)", () => {
     try {
       seedEvidence(store, "scheduler-project", "attempt-1", "tests_pass", 0, "stale");
       const engine = new GateEngine();
-      engine.register(gateOf([{ exists: { predicate: "tests_pass" } }]));
+      declareInRegistry(store, "scheduler-project", gateOf([{ exists: { predicate: "tests_pass" } }]));
       const result = engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1");
       expect(result.verdict).toBe("INCOMPLETE");
     } finally {
@@ -247,7 +268,7 @@ describe("Gate DSL (Research line)", () => {
         require: { any: [{ exists: { predicate: "tests_pass" } }, { exists: { predicate: "tests_fail" } }] },
       });
       const engine = new GateEngine();
-      engine.register(gate);
+      declareInRegistry(store, "scheduler-project", gate);
       expect(
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-1").verdict,
       ).toBe("PASS");
@@ -275,12 +296,10 @@ describe("Gate DSL (Research line)", () => {
         exitCode: 0,
       });
       const engine = new GateEngine();
-      engine.register(
-        gateOf([
+      declareInRegistry(controller.store, "scheduler-project", gateOf([
           { exists: { predicate: "tests_pass" } },
           { exists: { predicate: "write_scope_valid" } },
-        ]),
-      );
+        ]));
       const result = engine.evaluate(
         controller.store,
         controller.projectId,
@@ -301,14 +320,14 @@ describe("Gate DSL (Research line)", () => {
       const engine = new GateEngine();
       expect(() =>
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "missing"),
-      ).toThrow(/not registered/);
+      ).toThrow(/not declared/);
       const taskGate = parseGateDefinition({
         gate_id: "g-task",
         version: 1,
         subject_type: "task",
         require: { all: [{ exists: { predicate: "tests_pass" } }] },
       });
-      engine.register(taskGate);
+      declareInRegistry(store, "scheduler-project", taskGate);
       expect(() =>
         engine.evaluate(store, "scheduler-project", "attempt", "attempt-1", "g-task"),
       ).toThrow(/expects subject_type task/);

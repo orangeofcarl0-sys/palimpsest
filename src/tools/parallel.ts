@@ -24,7 +24,8 @@ export const DEFAULT_HARD_CAP = 20;
 export const DEFAULT_SOFT_CAP = 8;
 
 export interface RoleSlotOptions {
-  slots?: Partial<Record<TaskRole, number>> | undefined;
+  /** The COMPLETE declared table - there is no silent default merge here. */
+  slots: Record<TaskRole, number>;
   /** Absolute ceiling across roles (hard cap); claims beyond it fail closed. */
   hardCap?: number | undefined;
 }
@@ -33,13 +34,35 @@ export class RoleSlotPolicy {
   readonly #slots: Record<TaskRole, number>;
   readonly #hardCap: number;
 
-  constructor(options: RoleSlotOptions = {}) {
-    this.#slots = { ...DEFAULT_ROLE_SLOTS, ...options.slots };
+  constructor(options: RoleSlotOptions) {
+    this.#slots = { ...options.slots };
     this.#hardCap = options.hardCap ?? DEFAULT_HARD_CAP;
   }
 
+  /** The genesis table (H1 §3.4): the previously hardcoded defaults, declared. */
+  static defaults(): RoleSlotPolicy {
+    return new RoleSlotPolicy({ slots: { ...DEFAULT_ROLE_SLOTS }, hardCap: DEFAULT_HARD_CAP });
+  }
+
+  /** The declared table, for re-declaration through declareRoleTable. */
+  table(): Array<{ role: string; slots: number }> {
+    return Object.entries(this.#slots).map(([role, slots]) => ({ role, slots }));
+  }
+
+  get softCap(): number {
+    return DEFAULT_SOFT_CAP;
+  }
+
+  /**
+   * H1 §3.4 D-2: roles come from the declared table; an undeclared role fails
+   * closed instead of silently falling back to a default.
+   */
   slotOf(role: TaskRole): number {
-    return this.#slots[role];
+    const slots = this.#slots[role];
+    if (slots === undefined) {
+      throw new DomainValidationError(`role "${role}" is not declared in the role table`);
+    }
+    return slots;
   }
 
   get hardCap(): number {
@@ -64,10 +87,9 @@ export class RoleSlotPolicy {
       occupied.set(running, (occupied.get(running) ?? 0) + 1);
     }
     const current = occupied.get(role) ?? 0;
-    if (current >= this.#slots[role]) {
-      throw new DomainValidationError(
-        `role slot exhausted for ${role} (${current}/${this.#slots[role]})`,
-      );
+    const slot = this.slotOf(role);
+    if (current >= slot) {
+      throw new DomainValidationError(`role slot exhausted for ${role} (${current}/${slot})`);
     }
     if (runningRoles.length >= this.#hardCap) {
       throw new DomainValidationError(

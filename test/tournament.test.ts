@@ -41,7 +41,6 @@ function makeController() {
       candidate_limit: 4,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    parallel: { slots: new RoleSlotPolicy({ slots: { implementer: 4 } }) },
   });
   return {
     store,
@@ -56,6 +55,17 @@ function makeController() {
 /** Drive N parallel completed candidates in one batch. */
 async function driveCompleted(controller: ProjectController, count: number) {
   controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+  controller.declareRoleTable({
+    roles: [
+      { role: "implementer", slots: 4 },
+      { role: "tester", slots: 1 },
+      { role: "verifier", slots: 1 },
+      { role: "scout", slots: 2 },
+      { role: "analyst", slots: 2 },
+    ],
+    hardCap: 20,
+    declaredBy: "h1-test",
+  });
   controller.step();
   const attempts = Array.from({ length: count }, () => controller.step()!);
   for (const attempt of attempts) {

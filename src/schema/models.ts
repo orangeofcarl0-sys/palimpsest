@@ -233,7 +233,12 @@ export const TASK_ROLES = [
   "analyst",
 ] as const;
 
-export type TaskRole = (typeof TASK_ROLES)[number];
+/**
+ * H1 §3.4 D-2: roles are declared data (ROLE_TABLE_DEFINED on the log), not a
+ * schema-level literal union. The name is kept for the (now string-typed)
+ * role field on envelopes and slot tables.
+ */
+export type TaskRole = string;
 
 export interface TaskSpec {
   task_id: string;
@@ -265,8 +270,10 @@ export function parseTaskSpec(value: unknown): TaskSpec {
   };
   if (raw.role !== undefined && raw.role !== null) {
     const role = field(raw.role, "role", expectString);
-    if (!TASK_ROLES.includes(role as TaskRole)) {
-      throw new ContractError("role: invalid literal");
+    // H1 §3.4 D-2: role literals retired - validity is enforced against the
+    // declared role table at allocation/claim time (fail-closed there).
+    if (role !== undefined) {
+      spec.role = role;
     }
     spec.role = role as TaskRole;
   }
@@ -866,6 +873,8 @@ export const EVENT_TYPES = [
   "PROMOTION_FAILED",
   "JUDGE_DECLARED",
   "CANDIDATE_SELECTED",
+  "GATE_DEFINED",
+  "ROLE_TABLE_DEFINED",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -1116,6 +1125,31 @@ export function normalizeEventPayload(
         risk_summary: field(raw.risk_summary, "risk_summary", (inner) =>
           nonEmpty(expectString(inner)),
         ),
+      };
+    }
+    case "GATE_DEFINED": {
+      requireFields(raw, "gate", "declared_by");
+      const gate = expectObject(raw.gate);
+      requireFields(gate, "gate_id", "version", "subject_type", "require");
+      return {
+        gate: raw.gate,
+        declared_by: field(raw.declared_by, "declared_by", expectString),
+      };
+    }
+    case "ROLE_TABLE_DEFINED": {
+      requireFields(raw, "roles", "hard_cap", "declared_by");
+      const roles = expectArray(raw.roles);
+      return {
+        roles: roles.map((entry) => {
+          const item = expectObject(entry);
+          requireFields(item, "role", "slots");
+          return {
+            role: field(item.role, "role", expectString),
+            slots: field(item.slots, "slots", expectInt),
+          };
+        }),
+        hard_cap: field(raw.hard_cap, "hard_cap", expectInt),
+        declared_by: field(raw.declared_by, "declared_by", expectString),
       };
     }
     case "JUDGE_DECLARED": {

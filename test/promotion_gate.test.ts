@@ -44,7 +44,6 @@ function makeRig() {
       candidate_limit: 1,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    gates: [GATE],
   });
   return {
     store,
@@ -59,6 +58,7 @@ function makeRig() {
 /** Drive one completed attempt with committed work, returning its commit + id. */
 async function driveCompleted(controller: ProjectController) {
   controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+  controller.declareGate(GATE, "h1-test");
   controller.step();
   const created = controller.step()!;
   await controller.claim(created.entity_id);
@@ -128,7 +128,7 @@ describe("gate-gated promotion (R8)", () => {
         exitCode: 1,
       });
       // A release gate that insists on tests_pass now sees a contradiction.
-      controller.gates.register(
+      controller.declareGate(
         parseGateDefinition({
           gate_id: "gate-no-fail",
           version: 1,
@@ -140,6 +140,7 @@ describe("gate-gated promotion (R8)", () => {
             ],
           },
         }),
+        "h1-test",
       );
       const result = await controller.promoteWhenGatePasses(
         attemptId,
@@ -169,7 +170,7 @@ describe("gate-gated promotion (R8)", () => {
       controller.step();
       await expect(
         controller.promoteWhenGatePasses(attemptId, commit, HEAD, "missing-gate"),
-      ).rejects.toThrow(/not registered/);
+      ).rejects.toThrow(/not declared/);
     } finally {
       await cleanup();
     }

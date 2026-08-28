@@ -132,14 +132,28 @@ interface EvidenceView {
 }
 
 export class GateEngine {
-  readonly #gates = new Map<string, GateDefinition>();
-
-  register(gate: GateDefinition): void {
-    this.#gates.set(gate.gate_id, gate);
+  /**
+   * H1 §3.4 D-1: the registry lives on the log (GATE_DEFINED) and is read
+   * from the gate_registry projection. In-memory registration is gone - a
+   * gate exists iff a declaration event says so, and the latest declaration
+   * wins (older versions are superseded, never merged).
+   */
+  private static definitionOf(
+    store: EventStore,
+    projectId: string,
+    gateId: string,
+  ): GateDefinition | undefined {
+    const row = store.connection
+      .prepare(
+        "SELECT definition_json FROM gate_registry WHERE project_id=? AND gate_id=?",
+      )
+      .get(projectId, gateId) as { definition_json: Uint8Array } | undefined;
+    if (row === undefined) return undefined;
+    return JSON.parse(new TextDecoder().decode(row.definition_json)) as GateDefinition;
   }
 
-  get(gateId: string): GateDefinition | undefined {
-    return this.#gates.get(gateId);
+  get(store: EventStore, projectId: string, gateId: string): GateDefinition | undefined {
+    return GateEngine.definitionOf(store, projectId, gateId);
   }
 
   /**
@@ -154,9 +168,9 @@ export class GateEngine {
     subjectId: string,
     gateId: string,
   ): GateResult {
-    const gate = this.#gates.get(gateId);
+    const gate = GateEngine.definitionOf(store, projectId, gateId);
     if (gate === undefined) {
-      throw new DomainValidationError(`gate ${gateId} is not registered`);
+      throw new DomainValidationError(`gate ${gateId} is not declared`);
     }
     if (gate.subject_type !== subjectType) {
       throw new DomainValidationError(

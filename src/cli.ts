@@ -131,7 +131,7 @@ async function main() {
   });
   if (gateFile !== undefined) {
     for (const raw of JSON.parse(readFileSync(gateFile, "utf8"))) {
-      controller.gates.register(parseGateDefinition(raw));
+      controller.declareGate(parseGateDefinition(raw), "cli");
     }
   }
 

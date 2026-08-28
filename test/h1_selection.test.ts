@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ProjectController, RoleSlotPolicy } from "../src/tools/index.js";
+import { ProjectController } from "../src/tools/index.js";
 import { DomainValidationError } from "../src/domain/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
@@ -37,7 +37,6 @@ function makeRig() {
       candidate_limit: 4,
     }),
     clock: () => "2026-08-13T00:00:00Z",
-    parallel: { slots: new RoleSlotPolicy({ slots: { implementer: 4 } }) },
   });
   return {
     store,
@@ -63,10 +62,23 @@ async function driveCompleted(controller: ProjectController, count: number, summ
   return attempts;
 }
 
-describe("H1-C: declared-judge selection (spec §3.3)", () => {
+function declareWideSlots(controller: ProjectController): void {
+  controller.declareRoleTable({
+    roles: [
+      { role: "implementer", slots: 4 },
+      { role: "tester", slots: 1 },
+      { role: "verifier", slots: 1 },
+      { role: "scout", slots: 2 },
+      { role: "analyst", slots: 2 },
+    ],
+    hardCap: 20,
+    declaredBy: "h1-test",
+  });
+}
+
+describe("H1-C: declared-judge selection (spec 3.3)", () => {
   it("H1-C1: a declared rubric judge is deterministic and replayable across identical rigs", async () => {
     const winners: string[] = [];
-    const digests: string[] = [];
     for (let run = 0; run < 2; run += 1) {
       const { store, controller, cleanup } = makeRig();
       try {
@@ -75,6 +87,7 @@ describe("H1-C: declared-judge selection (spec §3.3)", () => {
           goal: "g",
           tasks: [taskSpec("task-1")],
         });
+        declareWideSlots(controller);
         controller.step();
         await driveCompleted(controller, 3, "candidate {n}");
         controller.declareJudge({ judgeId: "rubric-v1", kind: "rubric", declaredBy: "h1-test" });
@@ -88,13 +101,12 @@ describe("H1-C: declared-judge selection (spec §3.3)", () => {
           .get("scheduler-project") as { attempt_id: string; replayable: number } | undefined;
         expect(row).toBeDefined();
         expect(row!.replayable).toBe(1);
-        digests.push(row!.attempt_id);
+        expect(row!.attempt_id).toBe(result.winner);
       } finally {
         await cleanup();
       }
     }
     expect(winners[0]).toBe(winners[1]);
-    expect(digests[0]).toBe(digests[1]);
   });
 
   it("H1-C2: selection without a declared judge fails closed (the tie-judge default is gone)", async () => {
@@ -122,6 +134,7 @@ describe("H1-C: declared-judge selection (spec §3.3)", () => {
         goal: "g",
         tasks: [taskSpec("task-1")],
       });
+      declareWideSlots(controller);
       controller.step();
       await driveCompleted(controller, 3, "candidate {n}");
       controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
@@ -131,8 +144,8 @@ describe("H1-C: declared-judge selection (spec §3.3)", () => {
         },
       });
       const row = store.connection
-        .prepare("SELECT payload_json, event_type FROM events WHERE event_type='CANDIDATE_SELECTED'")
-        .get() as { payload_json: Uint8Array; event_type: string };
+        .prepare("SELECT payload_json FROM events WHERE event_type='CANDIDATE_SELECTED'")
+        .get() as { payload_json: Uint8Array };
       const payload = JSON.parse(new TextDecoder().decode(row.payload_json)) as {
         rounds: Array<{ left: string; right: string; winner: string; tie: boolean }>;
         judge: { id: string; kind: string; replayable: boolean };
@@ -156,6 +169,7 @@ describe("H1-C: declared-judge selection (spec §3.3)", () => {
         goal: "g",
         tasks: [taskSpec("task-1")],
       });
+      declareWideSlots(controller);
       controller.step();
       const attempts = await driveCompleted(controller, 2, "x".repeat(5000));
       controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
