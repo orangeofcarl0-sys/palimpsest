@@ -75,6 +75,12 @@ export class CoreProjector {
       case "PROMOTION_FAILED":
         this.#applyPromotion(connection, event);
         break;
+      case "JUDGE_DECLARED":
+        this.#applyJudgeDeclared(connection, event);
+        break;
+      case "CANDIDATE_SELECTED":
+        this.#applyCandidateSelected(connection, event);
+        break;
       case "MANUAL_APPROVAL_RECORDED":
         break;
     }
@@ -377,6 +383,63 @@ export class CoreProjector {
         `,
       )
       .run(event.event_id, isoformatDatetime(event.committed_at), event.project_id);
+  }
+
+  #applyJudgeDeclared(connection: DatabaseSync, event: SchedulerEvent): void {
+    connection
+      .prepare(
+        `
+        INSERT INTO judge_declarations(
+            project_id, judge_id, kind, version, declared_by, state_json,
+            last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(project_id, judge_id) DO UPDATE SET
+            kind=excluded.kind,
+            version=excluded.version,
+            declared_by=excluded.declared_by,
+            state_json=excluded.state_json,
+            last_event_id=excluded.last_event_id,
+            updated_at=excluded.updated_at
+        `,
+      )
+      .run(
+        event.project_id,
+        String(event.payload.judge_id),
+        String(event.payload.kind),
+        Number(event.payload.version),
+        String(event.payload.declared_by ?? ""),
+        JSON.stringify(event.payload).length > 0
+          ? new TextEncoder().encode(JSON.stringify(event.payload))
+          : new TextEncoder().encode("{}"),
+        event.event_id,
+        event.committed_at,
+      );
+  }
+
+  #applyCandidateSelected(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as {
+      task_id: string | null;
+      winner: string;
+      judge: { id: string; replayable: boolean };
+    };
+    connection
+      .prepare(
+        `
+        INSERT INTO selections(
+            project_id, task_id, attempt_id, judge_id, replayable,
+            last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        event.project_id,
+        payload.task_id === null ? null : String(payload.task_id),
+        String(payload.winner),
+        String(payload.judge.id),
+        payload.judge.replayable === true ? 1 : 0,
+        event.event_id,
+        event.committed_at,
+      );
   }
 
   #applyPromotion(connection: DatabaseSync, event: SchedulerEvent): void {

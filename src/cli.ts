@@ -188,7 +188,7 @@ async function main() {
         break;
       }
       case "claim": {
-        const attemptId = a1 ?? (await controller.selectCandidate({ compare: () => "tie" })).winner;
+        const attemptId = a1 ?? (await controller.selectCandidate()).winner;
         if (attemptId === undefined) throw new Error("no attempt to claim");
         const { worktreePath } = await controller.claim(attemptId);
         // E2: surface the skill hints the claiming worker must load, straight

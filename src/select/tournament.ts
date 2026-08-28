@@ -1,17 +1,29 @@
 /**
  * Recursive pairwise tournament (Research line R4, raw-notes build-system §23,
  * §36). Candidates are compared two at a time in a bracket — never 32 at once
- * in front of a judge — and the judge only ever sees a compact entry (id +
- * summary), never the full trajectory. The winner is picked deterministically:
- * ties resolve to the first candidate so replay is stable.
+ * in front of a judge — and the judge only ever sees the judge-facing view
+ * (structured digest + capped untrusted commentary), never the full
+ * trajectory. The winner is picked deterministically: ties resolve to the
+ * first candidate so replay with a deterministic judge is stable.
  */
 
 import { DomainValidationError } from "../domain/errors.js";
 
+/** Imported type (kept structural here to avoid a cycle): judge-facing view. */
 export interface TournamentEntry {
   readonly id: string;
-  /** The compact view a judge sees: summary, never the full transcript. */
-  readonly summary: string;
+  /** The judge-facing view: structured digest + capped untrusted commentary. */
+  readonly view: {
+    structured: {
+      attempt_id: string;
+      worker_status: string;
+      result_commit: string | null;
+      changed_files: number;
+      produced_artifacts: number;
+      duration_ms: number | null;
+    };
+    commentary: { text: string; origin: "worker-self-report" } | null;
+  };
 }
 
 export interface TournamentRound {

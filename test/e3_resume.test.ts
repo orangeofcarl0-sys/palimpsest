@@ -154,6 +154,7 @@ describe("E3 resume: status block and cross-session continue", () => {
           command: ["pytest"],
           exitCode: 0,
         });
+        s.controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
         const outcome = await s.controller.selectAndPromoteWhenGatePasses(
           preferred("winner"),
           "gate-release",

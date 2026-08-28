@@ -38,7 +38,13 @@ import { DomainValidationError } from "../domain/errors.js";
 import { RoleSlotPolicy, BudgetLedger, type ParallelOptions } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
-import { runTournament, type PairwiseJudge, type TournamentEntry, type TournamentResult } from "../select/tournament.js";
+import {
+  runTournament,
+  type PairwiseJudge,
+  type TournamentEntry,
+  type TournamentResult,
+} from "../select/tournament.js";
+import { capWorkerSummary, judgeCommentary, rubricCompare } from "../select/declared.js";
 import { allocate, type Allocation, type AllocationEstimates } from "../allocate/allocator.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
 import { rebuildTelemetry, writeTelemetry } from "../telemetry/persistence.js";
@@ -597,6 +603,7 @@ export class ProjectController {
 
   #buildReport(attemptId: string, input: ReportInput): AttemptReport {
     const [row, envelope] = this.#attemptContext(attemptId);
+    const summary = capWorkerSummary(input.summary);
     const completed = input.workerStatus === "completed";
     return {
       schema_version: 1,
@@ -615,7 +622,7 @@ export class ProjectController {
             : null
           : input.resultCommit,
       worker_status: input.workerStatus,
-      summary: input.summary,
+      summary,
       changed_files: [...(input.changedFiles ?? [])],
       produced_artifacts: [...(input.producedArtifacts ?? envelope.required_artifacts)],
       started_at: input.startedAt ?? "2026-08-13T00:00:00Z",
@@ -995,12 +1002,71 @@ export class ProjectController {
   }
 
   /**
-   * Recursive pairwise tournament over the completed candidates of the
-   * current batch (R4). The judge only ever sees id + summary — never the
-   * full AttemptReport — and the winner is the candidate presented for
-   * promotion.
+   * Declare the project's selection judge (H1 spec §3.3): a governed event on
+   * the hash-chained log. Re-declaring with the same judge_id bumps version.
    */
-  async selectCandidate(judge: PairwiseJudge): Promise<TournamentResult> {
+  declareJudge(input: {
+    judgeId: string;
+    kind: "rubric" | "llm" | "manual";
+    declaredBy: string;
+  }): SchedulerEvent {
+    const existing = this.store.connection
+      .prepare(
+        "SELECT version FROM judge_declarations WHERE project_id=? AND judge_id=?",
+      )
+      .get(this.projectId, input.judgeId) as { version: number } | undefined;
+    const version = (existing?.version ?? 0) + 1;
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "JUDGE_DECLARED",
+        payload_version: 1,
+        entity_type: "judge",
+        entity_id: input.judgeId,
+        payload: {
+          judge_id: input.judgeId,
+          kind: input.kind,
+          version,
+          declared_by: input.declaredBy,
+        },
+        causation_id: null,
+        correlation_id: `judge:${input.judgeId}`,
+        idempotency_key: actionKey("judge-declared-v1", {
+          project_id: this.projectId,
+          judge_id: input.judgeId,
+          version,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
+
+  #declaredJudge(): { judge_id: string; kind: "rubric" | "llm" | "manual"; version: number } {
+    const row = this.store.connection
+      .prepare(
+        "SELECT judge_id, kind, version FROM judge_declarations WHERE project_id=? ORDER BY last_event_id DESC LIMIT 1",
+      )
+      .get(this.projectId) as
+      | { judge_id: string; kind: "rubric" | "llm" | "manual"; version: number }
+      | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError(
+        "no selection judge declared: declare one with declareJudge (rubric | llm | manual)",
+      );
+    }
+    return row;
+  }
+
+  /**
+   * Recursive pairwise tournament over the completed candidates of the
+   * current batch (R4), under the project's DECLARED judge (H1 spec §3.3).
+   * The judge sees the structured digest as the formal signal and a
+   * length-capped, explicitly untrusted worker summary; the full report never
+   * leaks. Every decision lands on the log as CANDIDATE_SELECTED.
+   */
+  async selectCandidate(judge?: PairwiseJudge): Promise<TournamentResult> {
+    const declared = this.#declaredJudge();
     const rows = this.store.connection
       .prepare(
         "SELECT attempt_id, report_json FROM attempts WHERE project_id=? AND state='COMPLETED'",
@@ -1010,15 +1076,82 @@ export class ProjectController {
       throw new DomainValidationError("no completed candidates to select from");
     }
     const entries: TournamentEntry[] = rows.map((row) => {
-      // The judge gets the report summary — the report itself never leaks.
       const report = row.report_json === null ? null : decodeJsonBlob(row.report_json);
+      const workerStatus = String(report?.worker_status ?? "completed");
+      const resultCommit =
+        report !== null && typeof report.result_commit === "string" ? report.result_commit : null;
       return {
         id: row.attempt_id,
-        summary:
-          report === null ? "completed candidate" : String(report.summary ?? "completed candidate"),
+        view: {
+          structured: {
+            attempt_id: row.attempt_id,
+            worker_status: workerStatus,
+            result_commit: resultCommit,
+            changed_files: Array.isArray(report?.changed_files) ? report.changed_files.length : 0,
+            produced_artifacts: Array.isArray(report?.produced_artifacts)
+              ? report.produced_artifacts.length
+              : 0,
+            duration_ms:
+              report !== null &&
+              typeof report.started_at === "string" &&
+              typeof report.finished_at === "string"
+                ? Math.max(0, Date.parse(report.finished_at) - Date.parse(report.started_at))
+                : null,
+          },
+          commentary: judgeCommentary(
+            report === null ? null : typeof report.summary === "string" ? report.summary : null,
+          ),
+        },
       };
     });
-    return runTournament(entries, judge);
+
+    let decision: PairwiseJudge;
+    if (declared.kind === "rubric") {
+      decision = { compare: (left, right) => rubricCompare(left.view, right.view) };
+    } else {
+      // llm / manual: the host supplies the decision maker; the declaration
+      // alone never picks a winner.
+      if (judge === undefined) {
+        throw new DomainValidationError(
+          `declared judge '${declared.judge_id}' (${declared.kind}) requires a host-supplied decision`,
+        );
+      }
+      decision = judge;
+    }
+
+    const result = await runTournament(entries, decision);
+    const replayable = declared.kind === "rubric";
+    const winner = result.winner ?? null;
+    this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "CANDIDATE_SELECTED",
+        payload_version: 1,
+        entity_type: "selection",
+        entity_id: winner ?? "none",
+        payload: {
+          task_id: null,
+          candidates: entries.map((entry) => entry.id),
+          rounds: result.rounds,
+          judge: { id: declared.judge_id, kind: declared.kind, replayable },
+          winner,
+          entries_digest: canonicalDigest(
+            entries.map((entry) => ({ id: entry.id, view: entry.view })),
+          ),
+        },
+        causation_id: null,
+        correlation_id: `selection:${this.projectId}`,
+        idempotency_key: actionKey("candidate-selected-v1", {
+          project_id: this.projectId,
+          candidates: entries.map((entry) => entry.id).join(","),
+          judge_id: declared.judge_id,
+          judge_version: declared.version,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+    return result;
   }
 
   status(): ControllerStatusView {

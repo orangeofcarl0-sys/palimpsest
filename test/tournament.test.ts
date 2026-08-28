@@ -71,7 +71,20 @@ async function driveCompleted(controller: ProjectController, count: number) {
 }
 
 function entries(ids: string[]): TournamentEntry[] {
-  return ids.map((id) => ({ id, summary: `summary of ${id}` }));
+  return ids.map((id) => ({
+    id,
+    view: {
+      structured: {
+        attempt_id: id,
+        worker_status: "completed",
+        result_commit: null,
+        changed_files: 0,
+        produced_artifacts: 0,
+        duration_ms: null,
+      },
+      commentary: { text: `summary of ${id}`, origin: "worker-self-report" as const },
+    },
+  }));
 }
 
 describe("recursive pairwise tournament (R4)", () => {
@@ -119,10 +132,11 @@ describe("recursive pairwise tournament (R4)", () => {
     const { controller, cleanup } = makeController();
     try {
       const attempts = await driveCompleted(controller, 4);
+      controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
       const summaries: string[] = [];
       const result = await controller.selectCandidate({
         compare(left, right) {
-          summaries.push(left.summary, right.summary);
+          summaries.push(left.view.commentary?.text ?? "", right.view.commentary?.text ?? "");
           return left.id < right.id ? "left" : "right";
         },
       });

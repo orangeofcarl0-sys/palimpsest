@@ -97,12 +97,19 @@ describe("verified -> selected -> gated-promoted chain (R9)", () => {
         });
       }
       // The judge always prefers the lexicographically last candidate.
+      controller.declareJudge({
+        judgeId: "host-llm",
+        kind: "llm",
+        declaredBy: "h1-test",
+      });
       const winnerJudge = {
         compare(
-          left: { id: string; summary: string },
-          right: { id: string; summary: string },
+          left: { id: string; view: { structured: { attempt_id: string } } },
+          right: { id: string; view: { structured: { attempt_id: string } } },
         ) {
-          return left.id > right.id ? "left" : "right";
+          return left.view.structured.attempt_id > right.view.structured.attempt_id
+            ? "left"
+            : "right";
         },
       };
       const chain = await controller.selectAndPromoteWhenGatePasses(
@@ -125,6 +132,7 @@ describe("verified -> selected -> gated-promoted chain (R9)", () => {
     const { controller, cleanup } = makeRig();
     try {
       await driveFourCompleted(controller);
+      controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
       // No evidence recorded at all -> the winner verdict is INCOMPLETE.
       const chain = await controller.selectAndPromoteWhenGatePasses(
         preferred("winner"),
@@ -155,6 +163,7 @@ describe("verified -> selected -> gated-promoted chain (R9)", () => {
         tasks: [taskSpec("task-1")],
       });
       controller.step(); // TASK_STARTED, no attempts yet
+      controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
       await expect(
         controller.selectAndPromoteWhenGatePasses(preferred("x"), "gate-release", HEAD),
       ).rejects.toThrow(/no completed candidates/);

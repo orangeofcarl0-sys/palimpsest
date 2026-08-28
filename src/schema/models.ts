@@ -864,6 +864,8 @@ export const EVENT_TYPES = [
   "PROMOTION_GIT_COMPLETED",
   "PROMOTION_COMMITTED",
   "PROMOTION_FAILED",
+  "JUDGE_DECLARED",
+  "CANDIDATE_SELECTED",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -1114,6 +1116,52 @@ export function normalizeEventPayload(
         risk_summary: field(raw.risk_summary, "risk_summary", (inner) =>
           nonEmpty(expectString(inner)),
         ),
+      };
+    }
+    case "JUDGE_DECLARED": {
+      requireFields(raw, "judge_id", "kind", "version", "declared_by");
+      const kind = expectString(raw.kind);
+      if (kind !== "rubric" && kind !== "llm" && kind !== "manual") {
+        throw new ContractError(`judge kind: invalid literal`);
+      }
+      return {
+        judge_id: field(raw.judge_id, "judge_id", (inner) => validateIdentifier(expectString(inner))),
+        kind,
+        version: field(raw.version, "version", (inner) => { const n = expectInt(inner); if (n <= 0) throw new ContractError(`version must be > 0`); return n; }),
+        declared_by: field(raw.declared_by, "declared_by", expectString),
+      };
+    }
+    case "CANDIDATE_SELECTED": {
+      requireFields(raw, "candidates", "rounds", "judge", "winner", "entries_digest");
+      const judge = expectObject(raw.judge);
+      const judgeKind = expectString(judge.kind);
+      if (judgeKind !== "rubric" && judgeKind !== "llm" && judgeKind !== "manual") {
+        throw new ContractError(`judge kind: invalid literal`);
+      }
+      const candidates = expectArray(raw.candidates);
+      const rounds = expectArray(raw.rounds);
+      return {
+        task_id: raw.task_id === null || raw.task_id === undefined ? null : expectString(raw.task_id),
+        candidates: candidates.map((inner) => validateIdentifier(expectString(inner))),
+        rounds: rounds.map((round) => {
+          const entry = expectObject(round);
+          return {
+            left: validateIdentifier(expectString(entry.left)),
+            right: validateIdentifier(expectString(entry.right)),
+            winner: validateIdentifier(expectString(entry.winner)),
+            tie: entry.tie === true,
+          };
+        }),
+        judge: {
+          id: field(judge.id, "judge.id", (inner) => validateIdentifier(expectString(inner))),
+          kind: judgeKind,
+          replayable: judge.replayable === true,
+        },
+        winner:
+          raw.winner === null || raw.winner === undefined
+            ? null
+            : validateIdentifier(expectString(raw.winner)),
+        entries_digest: field(raw.entries_digest, "entries_digest", expectString),
       };
     }
     case "PROMOTION_PREPARED":

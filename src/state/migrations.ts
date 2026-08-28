@@ -16,6 +16,36 @@ import { DatabaseIdentityError, MigrationError } from "./errors.js";
 
 export const APPLICATION_ID = 0x504c4d50; // ASCII "PLMP"
 
+/**
+ * H1 (docs/engineering/06 §2.2): the declared-selection organ. A judge is a
+ * project-level governed declaration (rubric / llm / manual); the projection
+ * table is the read model the selection service consults. The declaration
+ * events themselves live on the hash-chained event log.
+ */
+export const MIGRATION_2_SQL = `CREATE TABLE judge_declarations (
+    project_id TEXT NOT NULL,
+    judge_id TEXT NOT NULL,
+    kind TEXT NOT NULL CHECK (kind IN ('rubric','llm','manual')),
+    version INTEGER NOT NULL,
+    declared_by TEXT NOT NULL,
+    state_json BLOB NOT NULL,
+    last_event_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, judge_id)
+  ) STRICT;
+
+CREATE TABLE selections (
+    project_id TEXT NOT NULL,
+    task_id TEXT,
+    attempt_id TEXT NOT NULL,
+    judge_id TEXT NOT NULL,
+    replayable INTEGER NOT NULL,
+    last_event_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, last_event_id)
+  ) STRICT;
+`;
+
 export const MIGRATION_1_SQL = `CREATE TABLE schema_migrations (
     version INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
@@ -166,6 +196,7 @@ export interface Migration {
 
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
+  { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {
