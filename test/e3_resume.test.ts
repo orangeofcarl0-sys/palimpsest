@@ -120,7 +120,7 @@ describe("E3 resume: status block and cross-session continue", () => {
       const committed = await s.controller.effects.invoke(
         s.controller.effects.actions.gitCommit,
         { worktreeId: created.entity_id, message: "work" },
-        { scope: s.controller.projectId, callId: `commit:${created.entity_id}` },
+        { scope: s.controller.projectId, revision: s.controller.promotions.projectRevision(), callId: `commit:${created.entity_id}` },
       );
       s.controller.report(created.entity_id, {
         workerStatus: "completed",

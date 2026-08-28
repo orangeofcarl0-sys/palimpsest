@@ -94,15 +94,18 @@ async function prepareVerifying(
   const created = scheduler.runOnce()!;
   scheduler.startAttempt(created.entity_id);
   // The attempt commits real work through the effects layer.
+  const revision = store.connection.prepare(
+    "SELECT revision FROM projects WHERE project_id=?",
+  ).get(project.project_id) as { revision: number };
   await effects.invoke(
     effects.actions.worktreeCreate,
     { worktreeId: created.entity_id, baseCommit: project.head_commit },
-    { scope: project.project_id, callId: `worktree:${created.entity_id}` },
+    { scope: project.project_id, callId: `worktree:${created.entity_id}`, revision: revision.revision },
   );
   const committed = await effects.invoke(
     effects.actions.gitCommit,
     { worktreeId: created.entity_id, message: `attempt ${created.entity_id}` },
-    { scope: project.project_id, callId: `commit:${created.entity_id}` },
+    { scope: project.project_id, callId: `commit:${created.entity_id}`, revision: revision.revision },
   );
   const report = makeReport(store, created.entity_id, "completed");
   scheduler.recordCallback(

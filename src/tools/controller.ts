@@ -48,6 +48,12 @@ import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
 import { PromotionManager, type PromoteResult } from "../effects/promotion.js";
+import {
+  createPromotionRecoveryService,
+  type PromotionRecoveryService,
+  type RecoveryReport,
+} from "../recovery/recovery.js";
+import { runGateCommand } from "./gate_runner.js";
 import type { PalimpsestEffectsRuntime } from "../effects/runtime.js";
 import type { TaskPolicy } from "../domain/policy.js";
 import type { AttemptExecutor } from "../effects/executor.js";
@@ -139,6 +145,8 @@ export interface ControllerStatusView {
     detail: string;
     inFlightAttemptIds: string[];
     openTasks: Array<{ task_id: string; state: string }>;
+    /** Promotions sitting PREPARED without a terminal event (H1 §3.1). */
+    preparedPromotions: string[];
   };
 }
 
@@ -161,6 +169,7 @@ export class ProjectController {
   readonly policy: TaskPolicy;
   readonly scheduler: Scheduler;
   readonly promotions: PromotionManager;
+  readonly recovery: PromotionRecoveryService;
   readonly slots: RoleSlotPolicy;
   readonly budget: BudgetLedger;
   readonly gates: GateEngine;
@@ -201,6 +210,11 @@ export class ProjectController {
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId);
+    this.recovery = createPromotionRecoveryService({
+      store: options.store,
+      effects: options.effects,
+      projectId: options.projectId,
+    });
     this.slots = options.parallel?.slots ?? new RoleSlotPolicy();
     this.budget = options.parallel?.budget ?? new BudgetLedger();
     this.gates = new GateEngine();
@@ -431,11 +445,30 @@ export class ProjectController {
    * (needs_promotion), or nothing left (terminal/paused).
    */
   async runTurn(options: { maxSteps?: number } = {}): Promise<{
-    phase: "terminal" | "paused" | "needs_worker" | "needs_promotion" | "progress";
+    phase:
+      | "terminal"
+      | "paused"
+      | "needs_worker"
+      | "needs_promotion"
+      | "needs_reconcile"
+      | "progress";
     mechanical: { attemptsRun: number; exits: (number | null)[] };
     next?: { eventType: string; entityId: string; projectRevision: number | null };
+    recovery?: RecoveryReport;
   }> {
     const maxSteps = options.maxSteps ?? 50;
+    // H1 spec §3.1: reconcile PREPARED promotions before the scheduler looks
+    // at the world, so a crash between the merge and the ledger write resolves
+    // instead of stalling the pipeline. Uncertain outcomes that reconcile
+    // cannot resolve block the turn (H1-A2) instead of guessing a verdict.
+    const recovery = await this.recovery.reconcileAll();
+    if (recovery.blocked.length > 0) {
+      return {
+        phase: "needs_reconcile",
+        mechanical: { attemptsRun: 0, exits: [] },
+        recovery,
+      };
+    }
     const mechanical = await this.pumpCommandAttempts({ maxSteps });
     const control = this.store.connection
       .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
@@ -531,7 +564,11 @@ export class ProjectController {
     const worktree = await this.effects.invoke(
       this.effects.actions.worktreeCreate,
       { worktreeId: attemptId, baseCommit: project.head_commit },
-      { scope: this.projectId, callId: `worktree:${attemptId}` },
+      {
+        scope: this.projectId,
+        callId: `worktree:${attemptId}`,
+        revision: this.promotions.projectRevision(),
+      },
     );
     this.scheduler.startAttempt(attemptId);
     return { worktreePath: worktree.worktreePath };
@@ -602,21 +639,21 @@ export class ProjectController {
 
   async gate(input: GateInput): Promise<SchedulerEvent> {
     const [row, envelope] = this.#attemptContext(input.attemptId);
-    await this.effects.invoke(
-      this.effects.actions.gateCommand,
-      {
-        worktreeId: input.attemptId,
-        executable: input.command[0],
-        argv: input.command.slice(1),
-      },
-      {
-        scope: this.projectId,
-        callId: `gate:${input.attemptId}:${canonicalDigest({
-          predicate: input.predicate,
-          command: input.command,
-        }).slice(0, 16)}`,
-      },
-    );
+    const executable = input.command[0];
+    if (executable === undefined) {
+      throw new DomainValidationError("gate command must have an executable");
+    }
+    await runGateCommand(this.effects, {
+      worktreeId: input.attemptId,
+      executable,
+      argv: input.command.slice(1),
+      scope: this.projectId,
+      callId: `gate:${input.attemptId}:${canonicalDigest({
+        predicate: input.predicate,
+        command: input.command,
+      }).slice(0, 16)}`,
+      revision: this.promotions.projectRevision(),
+    });
     const evidenceId = stableEntityId(
       "evidence",
       actionKey("evidence-v1", {
@@ -779,11 +816,14 @@ export class ProjectController {
       });
       return { exitCode: null, reportEvent: reportEvent.event_type };
     }
-    const outcome = await this.effects.invoke(
-      this.effects.actions.gateCommand,
-      { worktreeId: attemptId, executable: command.executable, argv: command.argv_prefix },
-      { scope: this.projectId, callId: `gate:auto:${attemptId}` },
-    );
+    const outcome = (await runGateCommand(this.effects, {
+      worktreeId: attemptId,
+      executable: command.executable,
+      argv: command.argv_prefix,
+      scope: this.projectId,
+      callId: `gate:auto:${attemptId}`,
+      revision: this.promotions.projectRevision(),
+    })) as { exitCode: number | null };
     const exitCode = outcome.exitCode as number | null;
     const passed = exitCode === 0;
     const reportEvent = this.report(attemptId, {
@@ -1052,7 +1092,10 @@ export class ProjectController {
         admittedAttempts: this.budget.admitted,
         rejectedClaims: this.budget.rejected,
       },
-      resume: this.#resumeOverview(),
+      resume: {
+        ...this.#resumeOverview(),
+        preparedPromotions: this.#preparedPromotionIds(),
+      },
     };
   }
 
@@ -1062,7 +1105,16 @@ export class ProjectController {
    * what should the host do next" — the "继续" entry point after any crash or
    * session close.
    */
-  #resumeOverview(): ControllerStatusView["resume"] {
+  #preparedPromotionIds(): string[] {
+    const rows = this.store.connection
+      .prepare(
+        "SELECT promotion_id FROM promotions WHERE project_id=? AND state IN ('PREPARED','GIT_STARTED')",
+      )
+      .all(this.projectId) as Array<{ promotion_id: string }>;
+    return rows.map((row) => String(row.promotion_id));
+  }
+
+  #resumeOverview(): Omit<ControllerStatusView["resume"], "preparedPromotions"> {
     const control = this.store.connection
       .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
       .get(this.projectId) as { state: string } | undefined;

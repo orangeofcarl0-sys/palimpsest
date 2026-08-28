@@ -65,7 +65,7 @@ async function driveCompleted(controller: ProjectController) {
   const committed = await controller.effects.invoke(
     controller.effects.actions.gitCommit,
     { worktreeId: created.entity_id, message: "work" },
-    { scope: controller.projectId, callId: `commit:${created.entity_id}` },
+    { scope: controller.projectId, revision: controller.promotions.projectRevision(), callId: `commit:${created.entity_id}` },
   );
   controller.report(created.entity_id, {
     workerStatus: "completed",

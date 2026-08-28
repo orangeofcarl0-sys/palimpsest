@@ -3,9 +3,10 @@
 export {
   createPalimpsestEffects,
   defaultOrdariumPath,
-  ORCHESTRATOR_AUTHORIZATION,
   type PalimpsestEffectsRuntime,
   type PalimpsestEffectsRuntimeOptions,
+  type OrchestrationIntent,
+  orchestrationAuthorization,
 } from "./runtime.js";
 export {
   defineEffects,
@@ -17,6 +18,7 @@ export {
   type WorktreeCreateInput,
 } from "./actions.js";
 export { FakeGitPort, GitCliPort, type GitPort } from "./git_port.js";
+export { isTransientOperationError, isLedgerBusyError } from "./errors.js";
 export {
   PromotionManager,
   promotionIdFor,

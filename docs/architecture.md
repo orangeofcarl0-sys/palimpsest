@@ -70,6 +70,14 @@
 
 崩溃恢复语义：合并前后崩溃经 reconcile 收敛——已落地则不重做，未落地则补做，结果为恰好一次。
 
+### 6.1 隔离模型
+
+attempt 的"隔离环境"是**同机文件系统上的 git worktree**（目录级分离，`claim(attemptId)` 分配），不是操作系统级沙箱：
+
+- worker 进程以宿主用户全权运行；遏制依赖入口层的权限系统——经 DSH 工具面驱动时由 DSH 的 mode/sandbox 契约约束（见 §9），独立 CLI 用法无沙箱。
+- 证据与副作用的边界不由该隔离保证，而由门禁（§evidence）与 Ordarium effect profile 保证：worker 自述不是证据，worktree 内的提交必须经 `git.commit` Safe Action 落账。
+- 执行器协议（sdk-guide）保留了替换更强制隔离后端（如容器执行器）的接缝；替换不得绕过 Safe Action 出口。
+
 ## 7. 并发控制
 
 - 单活动任务不变量：同一时刻至多一个任务处于 ACTIVE/VERIFYING。

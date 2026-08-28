@@ -293,7 +293,7 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
       const committed = await controller.effects.invoke(
         controller.effects.actions.gitCommit,
         { worktreeId: attemptId, message: "work" },
-        { scope: controller.projectId, callId: `commit:${attemptId}` },
+        { scope: controller.projectId, revision: controller.promotions.projectRevision(), callId: `commit:${attemptId}` },
       );
       controller.report(attemptId, {
         workerStatus: "completed",

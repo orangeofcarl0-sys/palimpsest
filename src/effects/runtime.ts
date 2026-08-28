@@ -51,24 +51,41 @@ export interface PalimpsestEffectsRuntime {
   invoke<O extends JsonValue>(
     action: Action<JsonValue, O>,
     input: unknown,
-    intent: { scope: string; callId: string; lineage?: string[] },
+    intent: OrchestrationIntent,
   ): Promise<O>;
   /** Narrow-input form for actions whose schemas parse to concrete inputs. */
   invoke<I extends JsonValue, O extends JsonValue>(
     action: Action<I, O>,
     input: unknown,
-    intent: { scope: string; callId: string; lineage?: string[] },
+    intent: OrchestrationIntent,
   ): Promise<O>;
   close(): Promise<void>;
 }
 
-/** Managed writes require classified authorization evidence from a trusted host. */
-export const ORCHESTRATOR_AUTHORIZATION: AuthorizationDecision = {
-  decision: "allow",
-  kind: "policy-decision",
-  source: "palimpsest-orchestrator",
-  reason: "internal orchestration effect issued by the trusted Palimpsest controller",
-};
+/**
+ * The intent behind one internal orchestration invocation. `revision` is the
+ * project revision the effect is authorized under - the authorization evidence
+ * recorded on the Ordarium operation derives from it (H1 spec §3.5, P2-4),
+ * so every record points at the governance state that authorized it.
+ */
+export interface OrchestrationIntent {
+  scope: string;
+  callId: string;
+  revision: number;
+  lineage?: string[];
+}
+
+export function orchestrationAuthorization(
+  action: Action<JsonValue, JsonValue>,
+  intent: OrchestrationIntent,
+): AuthorizationDecision {
+  return {
+    decision: "allow",
+    kind: "policy-decision",
+    source: `plan-revision:${intent.revision}`,
+    reason: `internal orchestration effect ${action.name} under plan revision ${intent.revision}`,
+  };
+}
 
 export function createPalimpsestEffects(
   options: PalimpsestEffectsRuntimeOptions,
@@ -90,7 +107,7 @@ export function createPalimpsestEffects(
   function invoke<I extends JsonValue, O extends JsonValue>(
     action: Action<I, O>,
     input: unknown,
-    intent: { scope: string; callId: string; lineage?: string[] },
+    intent: OrchestrationIntent,
   ): Promise<O> {
     const identity: InvocationIdentity = {
       source: "palimpsest",
@@ -102,7 +119,7 @@ export function createPalimpsestEffects(
     };
     return action.run(runtime, input, {
       identity,
-      authorization: ORCHESTRATOR_AUTHORIZATION,
+      authorization: orchestrationAuthorization(action as unknown as Action<JsonValue, JsonValue>, intent),
     });
   }
 

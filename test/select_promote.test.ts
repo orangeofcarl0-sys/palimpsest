@@ -69,7 +69,7 @@ async function driveFourCompleted(controller: ProjectController) {
     const committed = await controller.effects.invoke(
       controller.effects.actions.gitCommit,
       { worktreeId: attempt.entity_id, message: `work ${attempt.entity_id}` },
-      { scope: controller.projectId, callId: `commit:${attempt.entity_id}` },
+      { scope: controller.projectId, revision: controller.promotions.projectRevision(), callId: `commit:${attempt.entity_id}` },
     );
     commits.push(committed.commit);
     controller.report(attempt.entity_id, {
