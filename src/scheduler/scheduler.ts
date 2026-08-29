@@ -6,16 +6,33 @@
  * at most one Event per decision. The promotion *execution* itself lands in
  * PromotionManager (P1) using Ordarium Safe Actions; this class consumes
  * committed PROMOTION_COMMITTED events exactly like the Python baseline.
+ *
+ * H1 (docs/engineering/06 §3.4 D-3): the decision scan is no longer hardcoded
+ * — it walks the project's *declared* stage graph (STAGE_GRAPH_DEFINED) so
+ * stage order, outflow, and guards are facts on the log. The batch mechanics
+ * (attempt creation, promotion scan, dependency scan) stay fixed kernel
+ * behavior; the graph decides *which* transition fires, in what order, and
+ * under which guards.
  */
 
 import type { DatabaseSync } from "node:sqlite";
 
 import {
   actionKey,
+  evalClause,
+  parseStageGraphDefinition,
   stableEntityId,
   ATTEMPT_OPEN_STATES,
+  STAGE_EVENT_TARGETS,
+  STAGE_TRANSITION_REASONS,
+  TASK_EVENT_TARGET,
   type AggregateValidator,
   type AuthorizedTaskEnvelope,
+  type StageGraphDefinition,
+  type StageGraphStage,
+  type StageGraphTransition,
+  type StageTransitionEvent,
+  type StageTransitionWhen,
   type TaskPolicy,
 } from "../domain/index.js";
 import {
@@ -31,6 +48,7 @@ import {
   type TaskEnvelope,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import { activeEvidenceViews } from "../evidence/gate_dsl.js";
 import type { EventStore } from "../state/index.js";
 
 type Row = Record<string, any>;
@@ -44,6 +62,16 @@ function decodeJsonBlob(raw: unknown): Row {
     throw new DomainValidationError("projection JSON must be an object");
   }
   return value as Row;
+}
+
+/**
+ * The `when` is declared data supplying the reason string. The when-registry
+ * only permits "always" on transitions out of READY, and READY outflow
+ * (TASK_STARTED) is handled by #activate with its own reason — so every
+ * transition that reaches here has a registry reason.
+ */
+function stageTransitionReason(transition: StageGraphTransition): string {
+  return STAGE_TRANSITION_REASONS[transition.when as Exclude<StageTransitionWhen, "always">];
 }
 
 export class Scheduler {
@@ -131,6 +159,13 @@ export class Scheduler {
    * or null when idle. It never writes. The plan-mode preview surface and the
    * run loop both ride on this, so a preview is byte-identical to the next
    * committed event.
+   *
+   * The scan walks the declared stage graph in declaration order (H1 §3.4
+   * D-3): ACTIVE/VERIFYING are latch stages — the first matching task owns
+   * the whole tick, and its stall ends the decision (no fall-through),
+   * matching the previous short-circuit. BLOCKED/READY are scan stages —
+   * tasks that cannot fire (no declared transition, stalled guard, unmet
+   * dependencies) are skipped in favor of the next task and stage.
    */
   decide(): NewEvent | null {
     const validator: AggregateValidator = this.store.aggregateValidator;
@@ -143,16 +178,7 @@ export class Scheduler {
     }
     if (control.state === "PAUSED") return null;
 
-    const active = this.connection
-      .prepare("SELECT * FROM tasks WHERE project_id=? AND state='ACTIVE'")
-      .get(this.projectId) as Row | undefined;
-    if (active !== undefined) return this.#advanceActive(active);
-
-    const verifying = this.connection
-      .prepare("SELECT * FROM tasks WHERE project_id=? AND state='VERIFYING'")
-      .get(this.projectId) as Row | undefined;
-    if (verifying !== undefined) return this.#advanceVerifying(verifying);
-
+    const graph = this.#stageGraph();
     const project = this.#project();
     const taskRows = new Map<string, Row>();
     for (const row of this.connection
@@ -160,35 +186,59 @@ export class Scheduler {
       .all(this.projectId) as Row[]) {
       taskRows.set(String(row.task_id), row);
     }
-    for (const task of project.tasks) {
-      const row = taskRows.get(task.task_id);
-      if (row === undefined || String(row.state) !== "BLOCKED") continue;
-      if (
-        task.depends_on.every(
-          (dependency) =>
-            taskRows.has(dependency) &&
-            String(taskRows.get(dependency)!.state) === "SATISFIED",
-        )
-      ) {
-        return this.#taskTransition(row, {
-          eventType: "TASK_READY",
-          reason: "all dependencies satisfied",
-          batchActivationEventId: null,
-          key: actionKey("task-unblock-v1", {
-            project_id: this.projectId,
-            task_id: task.task_id,
-            project_revision: project.revision,
-            project_digest: project.digest,
-          }),
-        });
-      }
-    }
 
-    for (const task of project.tasks) {
-      const row = taskRows.get(task.task_id);
-      if (row !== undefined && String(row.state) === "READY") {
-        return this.#activate(row);
+    for (const stage of graph.stages) {
+      if (stage.state === "ACTIVE" || stage.state === "VERIFYING") {
+        for (const task of project.tasks) {
+          const row = taskRows.get(task.task_id);
+          if (row === undefined || String(row.state) !== stage.state) continue;
+          return stage.state === "ACTIVE"
+            ? this.#advanceActiveStage(graph, stage, row)
+            : this.#advanceVerifyingStage(graph, stage, row);
+        }
+        continue;
       }
+      if (stage.state === "BLOCKED") {
+        for (const task of project.tasks) {
+          const row = taskRows.get(task.task_id);
+          if (row === undefined || String(row.state) !== "BLOCKED") continue;
+          const transition = this.#declaredTransition(graph, stage.id, "TASK_READY");
+          if (transition === undefined) continue;
+          if (!this.#guardsPass(graph, transition, task.task_id)) continue;
+          if (
+            task.depends_on.every(
+              (dependency) =>
+                taskRows.has(dependency) &&
+                String(taskRows.get(dependency)!.state) === "SATISFIED",
+            )
+          ) {
+            return this.#taskTransition(row, {
+              eventType: "TASK_READY",
+              reason: stageTransitionReason(transition),
+              batchActivationEventId: null,
+              key: actionKey("task-unblock-v1", {
+                project_id: this.projectId,
+                task_id: task.task_id,
+                project_revision: project.revision,
+                project_digest: project.digest,
+              }),
+            });
+          }
+        }
+        continue;
+      }
+      if (stage.state === "READY") {
+        for (const task of project.tasks) {
+          const row = taskRows.get(task.task_id);
+          if (row === undefined || String(row.state) !== "READY") continue;
+          const transition = this.#declaredTransition(graph, stage.id, "TASK_STARTED");
+          if (transition === undefined) continue;
+          if (!this.#guardsPass(graph, transition, task.task_id)) continue;
+          return this.#activate(row);
+        }
+        continue;
+      }
+      // Terminal stages carry no scheduler strategy.
     }
     return null;
   }
@@ -196,6 +246,43 @@ export class Scheduler {
   /** Commit a prepared decision through the normal append pipeline. */
   commit(decision: NewEvent): SchedulerEvent {
     return this.store.append(decision);
+  }
+
+  /** The declared stage graph (H1 §3.4 D-3), re-validated on every read. */
+  #stageGraph(): StageGraphDefinition {
+    const row = this.connection
+      .prepare("SELECT graph_json FROM stage_graphs WHERE project_id=?")
+      .get(this.projectId) as Row | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError("stage graph is not declared");
+    }
+    return parseStageGraphDefinition(decodeJsonBlob(row.graph_json));
+  }
+
+  #declaredTransition(
+    graph: StageGraphDefinition,
+    stageId: string,
+    event: StageTransitionEvent,
+  ): StageGraphTransition | undefined {
+    return graph.transitions.find(
+      (transition) => transition.from === stageId && transition.event === event,
+    );
+  }
+
+  /**
+   * Declared guards on a transition (H1 §3.4 G4): every clause must pass on
+   * the task's active evidence. Missing evidence evaluates to "unresolved" —
+   * a stall, never a pass (fail-closed).
+   */
+  #guardsPass(
+    graph: StageGraphDefinition,
+    transition: StageGraphTransition,
+    taskId: string,
+  ): boolean {
+    const clauses = graph.guards[`${transition.from}:${transition.event}:${transition.to}`] ?? [];
+    if (clauses.length === 0) return true;
+    const evidence = activeEvidenceViews(this.store, this.projectId, "task", taskId);
+    return clauses.every((clause) => evalClause(clause, evidence) === "pass");
   }
 
   #activate(task: Row): NewEvent {
@@ -243,7 +330,11 @@ export class Scheduler {
     });
   }
 
-  #advanceActive(task: Row): NewEvent | null {
+  #advanceActiveStage(
+    graph: StageGraphDefinition,
+    stage: StageGraphStage,
+    task: Row,
+  ): NewEvent | null {
     const [activationId, activation, attempts] = this.#currentBatch(task);
     const activationPayload = decodeJsonBlob(activation.payload_json);
     const planned = Number(activationPayload.planned_candidate_count);
@@ -263,32 +354,26 @@ export class Scheduler {
           .get(this.projectId, task.task_id) as Row
       ).total,
     );
-    let eventType: EventType;
-    let reason: string;
+    let eventType: StageTransitionEvent;
     if (completed) {
       eventType = "TASK_VERIFYING";
-      reason = "batch has a completed candidate";
     } else if (total < envelope.attempt_limit) {
       eventType = "TASK_READY";
-      reason = "batch failed with attempt budget remaining";
     } else {
       eventType = "TASK_FAILED";
-      reason = "attempt limit exhausted";
     }
-    const target = {
-      TASK_VERIFYING: "VERIFYING",
-      TASK_READY: "READY",
-      TASK_FAILED: "FAILED",
-    }[eventType] as string;
+    const transition = this.#declaredTransition(graph, stage.id, eventType);
+    if (transition === undefined) return null;
+    if (!this.#guardsPass(graph, transition, task.task_id)) return null;
     return this.#taskTransition(task, {
       eventType,
-      reason,
+      reason: stageTransitionReason(transition),
       batchActivationEventId: activationId,
       key: actionKey("task-batch-settle-v1", {
         project_id: this.projectId,
         task_id: task.task_id,
         batch_activation_event_id: activationId,
-        target_state: target,
+        target_state: STAGE_EVENT_TARGETS[eventType],
       }),
     });
   }
@@ -339,12 +424,6 @@ export class Scheduler {
       causationId?: number | null;
     },
   ): NewEvent {
-    const targets: Partial<Record<EventType, string>> = {
-      TASK_READY: "READY",
-      TASK_VERIFYING: "VERIFYING",
-      TASK_SATISFIED: "SATISFIED",
-      TASK_FAILED: "FAILED",
-    };
     const envelope = parseTaskEnvelope(decodeJsonBlob(task.envelope_json));
     return parseNewEvent({
       schema_version: 1,
@@ -355,7 +434,7 @@ export class Scheduler {
         entity_id: task.task_id,
         payload: {
           previous_state: task.state,
-          new_state: targets[options.eventType],
+          new_state: TASK_EVENT_TARGET[options.eventType],
           reason: options.reason,
           batch_activation_event_id: options.batchActivationEventId,
         },
@@ -366,7 +445,14 @@ export class Scheduler {
     });
   }
 
-  #advanceVerifying(task: Row): NewEvent | null {
+  #advanceVerifyingStage(
+    graph: StageGraphDefinition,
+    stage: StageGraphStage,
+    task: Row,
+  ): NewEvent | null {
+    const transition = this.#declaredTransition(graph, stage.id, "TASK_SATISFIED");
+    if (transition === undefined) return null;
+    if (!this.#guardsPass(graph, transition, task.task_id)) return null;
     const [activationId, , attempts] = this.#currentBatch(task);
     const completedIds = new Set(
       attempts
@@ -389,7 +475,7 @@ export class Scheduler {
       });
       return this.#taskTransition(task, {
         eventType: "TASK_SATISFIED",
-        reason: "matching promotion committed",
+        reason: stageTransitionReason(transition),
         batchActivationEventId: activationId,
         key,
         causationId: promotion.event_id,

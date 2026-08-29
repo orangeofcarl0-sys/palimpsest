@@ -214,6 +214,20 @@ BEGIN
 END;
 `;
 
+/**
+ * H1 (docs/engineering/06 §2.1/§3.4 D-3): the stage graph is declared, not
+ * hardcoded. One graph per project; the projection row is the read model the
+ * scheduler consults each decision tick.
+ */
+export const MIGRATION_4_SQL = `CREATE TABLE stage_graphs (
+    project_id TEXT PRIMARY KEY,
+    graph_json BLOB NOT NULL,
+    declared_by TEXT NOT NULL,
+    last_event_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL
+  ) STRICT;
+`;
+
 export interface Migration {
   version: number;
   name: string;
@@ -224,6 +238,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
   { version: 3, name: "h1 gate and role registries", sql: MIGRATION_3_SQL },
+  { version: 4, name: "h1 stage graph registry", sql: MIGRATION_4_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

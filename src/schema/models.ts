@@ -875,6 +875,7 @@ export const EVENT_TYPES = [
   "CANDIDATE_SELECTED",
   "GATE_DEFINED",
   "ROLE_TABLE_DEFINED",
+  "STAGE_GRAPH_DEFINED",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -1150,6 +1151,28 @@ export function normalizeEventPayload(
         }),
         hard_cap: field(raw.hard_cap, "hard_cap", expectInt),
         declared_by: field(raw.declared_by, "declared_by", expectString),
+      };
+    }
+    case "STAGE_GRAPH_DEFINED": {
+      requireFields(raw, "stages", "transitions", "guards", "declared_by", "reason");
+      const stages = expectArray(raw.stages);
+      const transitions = expectArray(raw.transitions);
+      // Grammar (closed when-registry, state/event agreement, guard keys)
+      // is enforced by parseStageGraphDefinition on read; the envelope only
+      // checks shape, mirroring GATE_DEFINED.
+      for (const entry of stages) {
+        requireFields(expectObject(entry), "id", "state");
+      }
+      for (const entry of transitions) {
+        requireFields(expectObject(entry), "from", "event", "to", "when");
+      }
+      expectObject(raw.guards);
+      return {
+        stages: raw.stages,
+        transitions: raw.transitions,
+        guards: raw.guards,
+        declared_by: field(raw.declared_by, "declared_by", expectString),
+        reason: field(raw.reason, "reason", expectString),
       };
     }
     case "JUDGE_DECLARED": {

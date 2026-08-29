@@ -16,6 +16,10 @@
 import {
   actionKey,
   stableEntityId,
+  DEFAULT_STAGE_GRAPH,
+  parseStageGraphDefinition,
+  validateStageGraphReachability,
+  type StageGraphDefinition,
 } from "../domain/index.js";
 import {
   attemptReportDigestOf,
@@ -313,6 +317,46 @@ export class ProjectController {
     );
   }
 
+  /**
+   * H1 §3.4 D-3 / G4: declare (or supersede) the project stage graph. Any
+   * topology change is a governance act — the new definition must parse, and
+   * every currently occupied task state must still reach a terminal state
+   * through declared transitions, all before anything is appended.
+   */
+  declareStageGraph(graph: StageGraphDefinition, version: number): SchedulerEvent {
+    const definition = parseStageGraphDefinition(graph);
+    const occupied = (
+      this.store.connection
+        .prepare("SELECT DISTINCT state FROM tasks WHERE project_id=?")
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).map((row) => String(row.state));
+    validateStageGraphReachability(definition, occupied);
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "STAGE_GRAPH_DEFINED",
+        payload_version: 1,
+        entity_type: "stage-graph",
+        entity_id: this.projectId,
+        payload: {
+          stages: definition.stages,
+          transitions: definition.transitions,
+          guards: definition.guards,
+          declared_by: definition.declared_by,
+          reason: definition.reason,
+        },
+        causation_id: null,
+        correlation_id: `stage-graph:${this.projectId}`,
+        idempotency_key: actionKey("stage-graph-v1", {
+          project_id: this.projectId,
+          version,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
+
   start(input: StartProjectInput): SchedulerEvent {
     if (input.projectId !== this.projectId) {
       throw new DomainValidationError("project id does not match the controller");
@@ -350,6 +394,9 @@ export class ProjectController {
       hardCap: DEFAULT_HARD_CAP,
       declaredBy: "genesis",
     });
+    // ...as is the default stage graph: the phase0-2 hardcoded pipeline,
+    // declared verbatim (H1 §3.4 D-3).
+    this.declareStageGraph(DEFAULT_STAGE_GRAPH, 1);
     for (const task of input.tasks) {
       this.scheduler.registerTask(this.policy.authorize(project, task.task_id));
     }

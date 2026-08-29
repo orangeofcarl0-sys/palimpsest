@@ -84,6 +84,9 @@ export class CoreProjector {
       case "ROLE_TABLE_DEFINED":
         this.#applyRoleTableDefined(connection, event);
         break;
+      case "STAGE_GRAPH_DEFINED":
+        this.#applyStageGraphDefined(connection, event);
+        break;
       case "CANDIDATE_SELECTED":
         this.#applyCandidateSelected(connection, event);
         break;
@@ -463,6 +466,30 @@ export class CoreProjector {
         ) VALUES (?, ?, ?, ?, ?)
         ON CONFLICT(project_id) DO UPDATE SET
             table_json=excluded.table_json,
+            declared_by=excluded.declared_by,
+            last_event_id=excluded.last_event_id,
+            updated_at=excluded.updated_at
+        `,
+      )
+      .run(
+        event.project_id,
+        new TextEncoder().encode(JSON.stringify(payload)),
+        String(payload.declared_by),
+        event.event_id,
+        event.committed_at,
+      );
+  }
+
+  #applyStageGraphDefined(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as { stages: unknown; declared_by: string };
+    connection
+      .prepare(
+        `
+        INSERT INTO stage_graphs(
+            project_id, graph_json, declared_by, last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(project_id) DO UPDATE SET
+            graph_json=excluded.graph_json,
             declared_by=excluded.declared_by,
             last_event_id=excluded.last_event_id,
             updated_at=excluded.updated_at

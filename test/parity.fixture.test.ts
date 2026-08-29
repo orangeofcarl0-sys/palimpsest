@@ -23,9 +23,20 @@ const fixture = JSON.parse(
 
 describe("cross-language digest parity against the Python fixture", () => {
   it("fixture contract is the unified baseline", () => {
-    expect(fixture.fixture_version).toBe(1);
+    // v2: the TS Scheduler regeneration adds the STAGE_GRAPH_DEFINED genesis
+    // declaration (H1 §3.4 D-3) right after PROJECT_CREATED.
+    expect(fixture.fixture_version).toBe(2);
     expect(fixture.scenario).toBe("phase0-2-two-candidate-batch-retry-exhaustion");
     expect(fixture.events.length).toBeGreaterThan(0);
+  });
+
+  it("the stage graph genesis is the second event on the log", () => {
+    const declared = fixture.events.map((raw) => parseSchedulerEvent(raw)).find(
+      (event) => event.event_type === "STAGE_GRAPH_DEFINED",
+    );
+    expect(declared).toBeDefined();
+    expect(declared!.entity_type).toBe("stage-graph");
+    expect(declared!.payload.declared_by).toBe("genesis");
   });
 
   it("every fixture event parses and its digests recompute byte-for-byte", () => {

@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { canonicalDigest } from "../src/schema/index.js";
 import type { AttemptReport, ProjectIr, TaskSpec } from "../src/schema/index.js";
+import { parseNewEvent } from "../src/schema/index.js";
+import { actionKey, DEFAULT_STAGE_GRAPH } from "../src/domain/index.js";
 import { TaskPolicy } from "../src/domain/policy.js";
 import { Scheduler } from "../src/scheduler/index.js";
 import { EventStore } from "../src/state/index.js";
@@ -81,6 +83,35 @@ export interface FixtureSetup {
   project: ProjectIr;
 }
 
+/**
+ * H1 §3.4 genesis: raw Scheduler setups (parity + replay) declare the default
+ * stage graph exactly like the controller's start() does, so the scheduler's
+ * declared-graph scan sees the same genesis facts on every path.
+ */
+export function declareGenesisStageGraph(store: EventStore, projectId: string): void {
+  store.append(
+    parseNewEvent({
+      schema_version: 1,
+      project_id: projectId,
+      event_type: "STAGE_GRAPH_DEFINED",
+      payload_version: 1,
+      entity_type: "stage-graph",
+      entity_id: projectId,
+      payload: {
+        stages: DEFAULT_STAGE_GRAPH.stages,
+        transitions: DEFAULT_STAGE_GRAPH.transitions,
+        guards: DEFAULT_STAGE_GRAPH.guards,
+        declared_by: DEFAULT_STAGE_GRAPH.declared_by,
+        reason: DEFAULT_STAGE_GRAPH.reason,
+      },
+      causation_id: null,
+      correlation_id: `stage-graph:${projectId}`,
+      idempotency_key: actionKey("stage-graph-v1", { project_id: projectId, version: 1 }),
+      expected_project_revision: 0,
+    }),
+  );
+}
+
 /** Create EventStore + project + policy-registered Scheduler (Python setup_scheduler). */
 export function setupScheduler(
   store: EventStore,
@@ -88,6 +119,7 @@ export function setupScheduler(
   taskPolicy: TaskPolicy,
 ): Scheduler {
   createProject(store, project);
+  declareGenesisStageGraph(store, project.project_id);
   const scheduler = new Scheduler(store, project.project_id);
   scheduler.registerPolicy(taskPolicy);
   return scheduler;
