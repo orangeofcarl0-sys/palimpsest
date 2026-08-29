@@ -97,6 +97,26 @@ export class ModelPerformanceTable {
     }
   }
 
+  /**
+   * Pooled per-task_type aggregate with the smoothed success rate
+   * (PLMP-ALC-1 §4): the allocation adapter consumes task_type-level
+   * stats, summed across models; undefined until the first record.
+   */
+  taskTypeAggregate(
+    taskType: string,
+  ): { attempts: number; successes: number; successRate: number } | undefined {
+    let attempts = 0;
+    let successes = 0;
+    for (const [key, value] of this.#attempts) {
+      const [type] = key.split("\u0000") as [string, string];
+      if (type !== taskType) continue;
+      attempts += value;
+      successes += this.#successes.get(key) ?? 0;
+    }
+    if (attempts === 0) return undefined;
+    return { attempts, successes, successRate: smoothedRate(successes, attempts) };
+  }
+
   /** Telemetry for one (task_type, model) pair; undefined until first record. */
   stat(taskType: string, model: string): ModelStat | undefined {
     const key = this.#key(taskType, model);

@@ -9,6 +9,12 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
+import {
+  adjustAllocation,
+  allocate,
+  type AllocationEstimates,
+} from "../src/allocate/index.js";
+import { ModelPerformanceTable } from "../src/telemetry/index.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
@@ -137,6 +143,167 @@ describe("telemetry attribution and evidence-faced settlement (PLMP-ALC-1 P1)", 
       await controller.pumpCommandAttempts();
       expect(controller.telemetry.snapshot().rows).toEqual([]);
       expect(controller.telemetry.snapshot().totalAttempts).toBe(0);
+    } finally {
+      await cleanup();
+    }
+  });
+});
+
+describe("conservative telemetry remap of the R5 rule table (PLMP-ALC-1 P2)", () => {
+  const EASY: AllocationEstimates = {
+    uncertainty: "medium",
+    verifiability: "easy",
+    impact: "low",
+    evidenceDeficit: 0,
+    critical: false,
+    expensiveExecution: false,
+  };
+  const WEAK: AllocationEstimates = { ...EASY, verifiability: "weak" };
+  const UV: AllocationEstimates = { ...EASY, uncertainty: "high", verifiability: "weak" };
+
+  /** Pooled stats through the production smoothing (R6 Gamma prior). */
+  function pooledStats(attempts: number, successes: number) {
+    const table = new ModelPerformanceTable();
+    table.addAggregated({ task_type: "t", model: "m", attempts, successes, cost: 0 });
+    return table.taskTypeAggregate("t")!;
+  }
+
+  it("ALC-A04: below the eligibility threshold the rule output stands untouched", () => {
+    const rule = allocate(WEAK);
+    const adjusted = adjustAllocation(rule, {
+      estimates: WEAK,
+      candidateLimit: 4,
+      // successRate 0.133 would qualify - only the attempt count gates here.
+      stats: pooledStats(11, 0),
+    });
+    expect(adjusted).toEqual(rule);
+  });
+
+  it("ALC-A05: struggling weak-verification work escalates to strong without widening", () => {
+    const rule = allocate(WEAK); // {candidates: 4, escalation: "worker"}
+    const adjusted = adjustAllocation(rule, {
+      estimates: WEAK,
+      candidateLimit: 4,
+      stats: pooledStats(20, 6), // smoothed 8/24 = 0.333
+    });
+    expect(adjusted.escalation).toBe("strong");
+    expect(adjusted.candidates).toBe(4);
+    expect(adjusted.reason).toContain("escalate to strong");
+  });
+
+  it("ALC-A06: sustained success downgrades a strong U×V rule, candidates frozen", () => {
+    const rule = allocate(UV); // {candidates: 2, escalation: "strong"}
+    const adjusted = adjustAllocation(rule, {
+      estimates: UV,
+      candidateLimit: 4,
+      stats: pooledStats(20, 19), // smoothed 21/24 = 0.875
+    });
+    expect(adjusted.escalation).toBe("worker");
+    expect(adjusted.candidates).toBe(2); // [ALC-INV-2]: the sample count never moves
+    expect(adjusted.reason).toContain("downgrade to worker");
+  });
+
+  it("ALC-A07: struggling easy-verification work widens candidates within headroom", () => {
+    const rule: Parameters<typeof adjustAllocation>[0] = {
+      candidates: 2,
+      verifiers: 1,
+      escalation: "worker",
+      reason: "rule",
+    };
+    const widened = adjustAllocation(rule, {
+      estimates: EASY,
+      candidateLimit: 4,
+      stats: pooledStats(20, 6),
+    });
+    expect(widened.candidates).toBe(4);
+    expect(widened.escalation).toBe("worker");
+
+    // No headroom: the widen branch retreats to escalation (r1 rule 2).
+    const blocked = adjustAllocation(rule, {
+      estimates: EASY,
+      candidateLimit: 2,
+      stats: pooledStats(20, 6),
+    });
+    expect(blocked.candidates).toBe(2);
+    expect(blocked.escalation).toBe("strong");
+  });
+
+  it("ALC-A08: hard invariants hold under extreme stats", () => {
+    const starving = pooledStats(100, 0); // smoothed ~0.019
+    const flawless = pooledStats(100, 100); // smoothed ~0.981
+
+    // [ALC-INV-1]: the expensive-execution pre-screen is untouchable.
+    const expensiveEstimates: AllocationEstimates = { ...EASY, expensiveExecution: true };
+    const expensiveCriticalEstimates: AllocationEstimates = {
+      ...UV,
+      expensiveExecution: true,
+      critical: true,
+    };
+    const expensive = allocate(expensiveEstimates);
+    const expensiveCritical = allocate(expensiveCriticalEstimates);
+    for (const [rule, estimates] of [
+      [expensive, expensiveEstimates],
+      [expensiveCritical, expensiveCriticalEstimates],
+    ] as const) {
+      for (const stats of [starving, flawless]) {
+        expect(adjustAllocation(rule, { estimates, candidateLimit: 4, stats })).toEqual(rule);
+      }
+    }
+
+    // [ALC-INV-3]: structural classes never remap.
+    const cheap = allocate({ ...EASY, uncertainty: "low", verifiability: "deterministic" });
+    expect(cheap.escalation).toBe("cheap");
+    const designExperiment: Parameters<typeof adjustAllocation>[0] = {
+      candidates: 1,
+      verifiers: 1,
+      escalation: "design-experiment",
+      reason: "rule",
+    };
+    for (const rule of [cheap, designExperiment]) {
+      for (const stats of [starving, flawless]) {
+        expect(adjustAllocation(rule, { estimates: EASY, candidateLimit: 4, stats })).toEqual(rule);
+      }
+    }
+
+    // [ALC-INV-2]: U×V candidates frozen below the downgrade band.
+    const uvRule = allocate(UV);
+    const adjusted = adjustAllocation(uvRule, {
+      estimates: UV,
+      candidateLimit: 4,
+      stats: starving,
+    });
+    expect(adjusted.candidates).toBe(uvRule.candidates);
+    expect(adjusted.escalation).toBe(uvRule.escalation);
+  });
+
+  it("ALC-A09: the adapter is a pure function of its inputs", () => {
+    const rule = allocate(WEAK);
+    const input = { estimates: WEAK, candidateLimit: 4, stats: pooledStats(20, 6) };
+    expect(JSON.stringify(adjustAllocation(rule, input))).toBe(
+      JSON.stringify(adjustAllocation(rule, input)),
+    );
+  });
+
+  it("ALC-A05 (wiring): allocateFor feeds the pooled task_type aggregate", async () => {
+    const { controller, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const estimates: AllocationEstimates = { ...WEAK };
+
+      // Cold table: the rule output stands.
+      expect(controller.allocateFor("task-1", estimates).allocation.escalation).toBe("worker");
+
+      // Seeded struggles: the wiring escalates through the adapter.
+      controller.telemetry.addAggregated({
+        task_type: "implementer",
+        model: "flash",
+        attempts: 20,
+        successes: 6,
+        cost: 0,
+      });
+      const { allocation } = controller.allocateFor("task-1", estimates);
+      expect(allocation.escalation).toBe("strong");
+      expect(allocation.reason).toContain("telemetry:");
     } finally {
       await cleanup();
     }

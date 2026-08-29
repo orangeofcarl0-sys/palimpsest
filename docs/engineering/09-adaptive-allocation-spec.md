@@ -89,12 +89,16 @@ adjustAllocation(rule: Allocation, input: {
 | `ESCALATE_BELOW` | 0.5 | 聚合平滑成功率 ≤ 0.5 → worker 可升 strong |
 | `DOWNGRADE_ABOVE` | 0.85 | 聚合平滑成功率 ≥ 0.85 → strong 可降 worker |
 
-### 4.3 重映射规则（顺序即优先级，首条命中即止）
+### 4.3 重映射规则（r1 修订；硬 guard 先行短路，规则按序首条命中即止）
 
-1. **escalation 升档**：资格成立 ∧ `successRate ≤ ESCALATE_BELOW` ∧ rule.escalation＝`worker` → `strong`；candidates/verifiers 不动。
-2. **escalation 降档**：资格成立 ∧ `successRate ≥ DOWNGRADE_ABOVE` ∧ rule.escalation＝`strong` → `worker`；candidates/verifiers 不动。
-3. **candidates 上调**：资格成立 ∧ `successRate < ESCALATE_BELOW` ∧ `estimates.verifiability ∈ {"deterministic","easy"}` ∧ rule.escalation＝`worker` → `candidates = min(rule.candidates × 2, candidateLimit)`。
+**硬 guard**：`estimates.expensiveExecution`＝true → 原样返回 [ALC-INV-1]；rule.escalation ∈ {`cheap`, `design-experiment`} → 原样返回 [ALC-INV-3]。guard 是 R5 规则表 §44/§35 硬分支的**刻意镜像**——规则表硬分支变动时必须同步（00-heritage 交付行登记此耦合）。
+
+1. **candidates 上调**：资格成立 ∧ `successRate < ESCALATE_BELOW` ∧ `estimates.verifiability ∈ {"deterministic","easy"}` ∧ rule.escalation＝`worker` ∧ `rule.candidates < candidateLimit`（有加宽余量）→ `candidates = min(rule.candidates × 2, candidateLimit)`，档位不动（§35：可判别的验证下，挣扎的任务加宽采样）。
+2. **escalation 升档**：资格成立 ∧ `successRate ≤ ESCALATE_BELOW` ∧ rule.escalation＝`worker`（未命中规则 1：弱验证、或无加宽余量）→ `strong`（§35：弱验证下加推理而不是加样本；无余量时退为升档）。
+3. **escalation 降档**：资格成立 ∧ `successRate ≥ DOWNGRADE_ABOVE` ∧ rule.escalation＝`strong` → `worker`；candidates 保持原样（数据充分时由遥测推翻 §35 的保守先验——这正是遥测的本义）。
 4. 其余一律原样返回。
+
+> **r1 修订理由**：初版规则 1（≤0.5 升档）先于规则 3（<0.5 加宽）且条件面包含之，规则 3 为死规则——按 §35 本义重排为分区：加宽与升档按验证可判别性互斥。同批修正初版 INV-2：整体冻结 U×V 使降档杠杆永不可达（R5 表中 strong 档仅出自 U×V），其本义收窄为 candidates 永不加宽，数据充分时的降档放行。
 
 `reason` 组合规则：规则表 reason ＋ 遥测子句（如 `"; telemetry: pooled success 0.42 over 18 attempts → escalate to strong"`）——分配决策在 reason 字符串内自解释，可审计。
 
@@ -103,7 +107,7 @@ adjustAllocation(rule: Allocation, input: {
 | # | 不变量 |
 |---|---|
 | [ALC-INV-1] | `expensiveExecution` 分支输出不可变（§44 GPU 预筛：廉价推理先行、绝不放宽 fan-out） |
-| [ALC-INV-2] | U×V 象限（high uncertainty ＋ weak verification）candidates 永不增加（§35：64 个不可验证的意见仍是不可验证） |
+| [ALC-INV-2] | U×V 象限（high uncertainty ＋ weak verification）candidates 永不增加（§35：64 个不可验证的意见仍是不可验证）；escalation 降档允许——数据充分（≥ `DOWNGRADE_ABOVE`）时由遥测推翻 §35 的保守先验 |
 | [ALC-INV-3] | `cheap` 与 `design-experiment` 档位永不重映射（结构性判断，非成功率判断） |
 | [ALC-INV-4] | candidates 永不因遥测下调（保守裁决 ALC-D2：下行省钱只走档位降级） |
 | [ALC-INV-5] | 一切输出仍受 `candidate_limit` 与 R10 并发校准钳制（既有机制，双重保险） |
@@ -126,8 +130,8 @@ adjustAllocation(rule: Allocation, input: {
 | ALC-A04 | 阈值门 | task_type 聚合 attempts < 12 → `adjustAllocation` 原样返回（reason 亦不变） |
 | ALC-A05 | 升档重映射 | 种子遥测使聚合平滑成功率 ≤ 0.5 ∧ rule＝worker → strong，candidates/verifiers 不动，reason 含遥测子句 |
 | ALC-A06 | 降档重映射 | 平滑成功率 ≥ 0.85 ∧ rule＝strong → worker |
-| ALC-A07 | candidates 上调 | 成功率 < 0.5 ∧ verifiability＝easy ∧ rule＝worker → `min(candidates×2, candidateLimit)`（含钳制命中例） |
-| ALC-A08 | 硬不变量矩阵 | [ALC-INV-1..4] 逐条：stats 取极值（0 成功/全成功/海量样本）下 expensiveExecution、U×V、cheap、design-experiment 输出与 rule 全等 |
+| ALC-A07 | candidates 上调 | 成功率 < 0.5 ∧ verifiability＝easy ∧ rule＝worker ∧ 有余量 → `min(candidates×2, candidateLimit)`；无余量 → 退为升档 |
+| ALC-A08 | 硬不变量矩阵 | [ALC-INV-1..4] 逐条：stats 取极值（0 成功/全成功/海量样本）下 expensiveExecution、cheap、design-experiment 输出与 rule 全等；U×V candidates 永不变（仅 ≥ 0.85 时允许降档） |
 | ALC-A09 | 纯函数确定性 | 同输入双调用全等；无时钟/随机依赖 |
 | ALC-A10 | 跨会话学习闭环 | 结算→flush 落 state kind→新 controller `loadTelemetryInto`→`allocateFor` 依据重建统计给出与首个进程一致的调整 |
 | ALC-A11 | flush 失败不丢不默 | 首次 flush 注入失败 → pending 浮出；下次 flush 幂等补写同一增量（恰一条主体），编排步进不中断 |
@@ -139,3 +143,4 @@ adjustAllocation(rule: Allocation, input: {
 | 日期 | 修订 |
 |---|---|
 | 2026-08-29 | 初版冻结（PLMP-ALC-1）：两项用户裁决（ALC-D1 宿主层供给、ALC-D2 保守重映射）经 AskUserQuestion 确认；三段闭环、身份段可选归因、证据面结算语义、阈值常量（12 / 0.5 / 0.85）、重映射规则与 [ALC-INV-1..6] 硬不变量、验收 ALC-A01–A11。 |
+| 2026-08-29（r1） | **§4.3/§4.4 死点修正**（P1 实现审计发现，先修规格再实现）：①规则 1 与规则 3 条件面包含致规则 3 死——按 §35 本义重排为分区（可判别验证挣扎→加宽、弱验证挣扎→升档、无余量退为升档）；②INV-2 整体冻结 U×V 使降档杠杆永不可达（strong 档仅出自 U×V）——收窄为 candidates 永不加宽，≥`DOWNGRADE_ABOVE` 时降档放行；ALC-A06/A07/A08 对应调整。另补记 §2 泵通道：`pumpCommandAttempts` 增可选 `attribution`，宿主经泵供给归因（零配置默认不变）。 |

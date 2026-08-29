@@ -50,6 +50,7 @@ import {
 } from "../select/tournament.js";
 import { capWorkerSummary, judgeCommentary, rubricCompare } from "../select/declared.js";
 import { allocate, type Allocation, type AllocationEstimates } from "../allocate/allocator.js";
+import { adjustAllocation } from "../allocate/telemetry_adapter.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
 import { TelemetryStateSync } from "../telemetry/state_persistence.js";
 import { ClaimGraph } from "../evidence/graph.js";
@@ -1116,7 +1117,11 @@ export class ProjectController {
     const hardCapRemaining = this.slots.hardCapRemaining(totalRunning);
     const concurrentLimit = Math.max(0, Math.min(slotOfRole - occupied, hardCapRemaining));
     return {
-      allocation: allocate(estimates),
+      allocation: adjustAllocation(allocate(estimates), {
+        estimates,
+        candidateLimit: this.policy.candidate_limit,
+        stats: this.telemetry.taskTypeAggregate(role),
+      }),
       concurrency: {
         role,
         slotOfRole,
