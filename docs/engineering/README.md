@@ -14,6 +14,7 @@
 | `08-telemetry-externalization-spec.md` | **telemetry 外置试点规格（PLMP-TLM）**：管理型 state kind 首消费——append-delta 主体形状、错误分类映射、无兼容层退役、验收 TLM-A01–A06 |
 | `09-adaptive-allocation-spec.md` | **遥测驱动自适应分配规格（PLMP-ALC）**：R6→R5 闭环——宿主层归因、证据面结算、保守重映射与硬不变量、验收 ALC-A01–A11 |
 | `10-model-advisory-spec.md` | **模型推荐咨询面规格（PLMP-ALC-2）**：R6 bestModel 诚实门控接线——per-model 资格、零成本弃权、先验回退标注、验收 ADV-A01–A06 |
+| `11-status-telemetry-view-spec.md` | **status 遥测视图规格（PLMP-TLM-2）**：遥测线的用户面——加法式 telemetry 节、人话格式、冷表缺席、术语隔离红线、验收 STV-A01–A03 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

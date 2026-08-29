@@ -72,6 +72,8 @@
 
 | 模型推荐咨询面（R14，PLMP-ALC-2） | `allocateFor` 可选 `modelCandidates` 入参 + `suggestedModel`/`suggestedModelReason` 加法式可选返回——纯咨询臂，宿主仍自选模型；R6 `bestModel` 排名原样复用，新增性质为诚实门控 [ADV-G1..3]（per-model ≥8 attempts、零成本候选弃权、先验回退 reason 标注 basis）；事件契约与 7 工具面零触碰；验收 ADV-A01–A06（10 规格） |
 
+| status 遥测视图（R15，PLMP-TLM-2） | `ControllerStatusView` 加法式可选 `telemetry` 节——人话格式（平滑成功率百分比、成本四位小数）、冷表缺席、术语隔离红线（七字段恰定，机器守门）；工具**集合**冻结不动，status 内容生长循 H1 `resume` 先例；验收 STV-A01–A03（11 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
