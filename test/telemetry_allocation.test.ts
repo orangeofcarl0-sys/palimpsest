@@ -14,11 +14,15 @@ import {
   allocate,
   type AllocationEstimates,
 } from "../src/allocate/index.js";
-import { ModelPerformanceTable } from "../src/telemetry/index.js";
+import { ModelPerformanceTable, TELEMETRY_NAMESPACE } from "../src/telemetry/index.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
+
+function newOperationsPath(): string {
+  return join(mkdtempSync(join(tmpdir(), "palimpsest-alc-")), "ops.sqlite");
+}
 
 // Requires the absence of failing evidence: unresolved with no evidence,
 // and a definite FAIL once a tests_fail atom exists - both verdict shapes
@@ -30,11 +34,11 @@ const GATE = parseGateDefinition({
   require: { all: [{ not: { exists: { predicate: "tests_fail" } } }] },
 });
 
-function makeRig(attemptLimit = 4, candidateLimit: 1 | 2 | 4 = 1) {
+function makeRig(attemptLimit = 4, candidateLimit: 1 | 2 | 4 = 1, operationsPath = newOperationsPath()) {
   const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
   const git = new FakeGitPort(HEAD);
   const effects = createPalimpsestEffects({
-    databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-alc-")), "ops.sqlite"),
+    databasePath: operationsPath,
     git,
   });
   const controller = new ProjectController({
@@ -58,6 +62,7 @@ function makeRig(attemptLimit = 4, candidateLimit: 1 | 2 | 4 = 1) {
     store,
     controller,
     git,
+    effects,
     cleanup: async () => {
       await effects.close();
       store.close();
@@ -304,6 +309,88 @@ describe("conservative telemetry remap of the R5 rule table (PLMP-ALC-1 P2)", ()
       const { allocation } = controller.allocateFor("task-1", estimates);
       expect(allocation.escalation).toBe("strong");
       expect(allocation.reason).toContain("telemetry:");
+    } finally {
+      await cleanup();
+    }
+  });
+});
+
+describe("durable learning loop across sessions (PLMP-ALC-1 P3)", () => {
+  const WEAK: AllocationEstimates = {
+    uncertainty: "medium",
+    verifiability: "weak",
+    impact: "low",
+    evidenceDeficit: 0,
+    critical: false,
+    expensiveExecution: false,
+  };
+
+  it("ALC-A10: durable stats drive a fresh controller's allocation", async () => {
+    const opsPath = newOperationsPath();
+    {
+      const { controller, cleanup } = makeRig(4, 1, opsPath);
+      try {
+        controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+        controller.telemetry.addAggregated({
+          task_type: "implementer",
+          model: "flash",
+          attempts: 20,
+          successes: 6,
+          cost: 0,
+        });
+        await controller.persistTelemetry();
+      } finally {
+        await cleanup();
+      }
+    }
+    {
+      const { controller, cleanup } = makeRig(4, 1, opsPath);
+      try {
+        controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+        expect(controller.telemetry.stat("implementer", "flash")).toBeUndefined();
+        await controller.loadTelemetryInto(controller.telemetry);
+        const { allocation } = controller.allocateFor("task-1", WEAK);
+        expect(allocation.escalation).toBe("strong");
+      } finally {
+        await cleanup();
+      }
+    }
+  });
+
+  it("ALC-A11: a failed flush never breaks the pump and never loses the delta", async () => {
+    const { controller, git, effects, cleanup } = makeRig();
+    try {
+      const realStore = effects.state;
+      let failuresLeft = 1;
+      (effects as { state: unknown }).state = {
+        ...realStore,
+        write: async (...args: Parameters<typeof realStore.write>) => {
+          if (failuresLeft > 0) {
+            failuresLeft -= 1;
+            throw new Error("simulated flush failure");
+          }
+          return realStore.write(...args);
+        },
+      };
+
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      git.queueGateOutcome("python", ["-m", "pytest"], 0);
+      const pump = await controller.pumpCommandAttempts({
+        attribution: { model: "flash", cost: 0.002 },
+      });
+      expect(pump.attemptsRun).toBe(1); // the loop itself is unbroken
+      expect(controller.telemetryPendingError()).toContain("simulated flush failure");
+      expect(
+        (await realStore.list({ namespace: TELEMETRY_NAMESPACE }, undefined)).records,
+      ).toHaveLength(0);
+
+      // Heal: the explicit persist retries the SAME delta exactly once.
+      (effects as { state: unknown }).state = realStore;
+      await controller.persistTelemetry();
+      expect(controller.telemetryPendingError()).toBeUndefined();
+      expect(
+        (await realStore.list({ namespace: TELEMETRY_NAMESPACE }, undefined)).records,
+      ).toHaveLength(1);
     } finally {
       await cleanup();
     }

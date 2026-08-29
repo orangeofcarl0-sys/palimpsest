@@ -225,13 +225,21 @@ export class ProjectController {
   readonly telemetry = new ModelPerformanceTable();
   /** TLM-1: durable home is the Ordarium state kind; lazily bound sync. */
   #telemetrySync: TelemetryStateSync | undefined = undefined;
+  /** ALC-1 §3: last auto-flush failure, surfaced until the next flush succeeds. */
+  #telemetryError: { message: string } | undefined = undefined;
   /** ALC-1 §2: per-attempt telemetry attribution, consumed at settlement. */
   #attemptAttribution = new Map<string, AttemptAttribution>();
+
+  /** ALC-1 §3: the pending auto-flush failure, if any (cleared on the next successful flush). */
+  telemetryPendingError(): string | undefined {
+    return this.#telemetryError?.message;
+  }
 
   /** TLM-1: append the memory table's new deltas to the shared timeline. */
   async persistTelemetry(): Promise<void> {
     this.#telemetrySync ??= await TelemetryStateSync.load(this.effects.state);
     await this.#telemetrySync.flush(this.telemetry);
+    this.#telemetryError = undefined;
   }
 
   /** TLM-1: rebuild the in-memory telemetry from the durable deltas (after a restart). */
@@ -1045,6 +1053,17 @@ export class ProjectController {
       ) {
         break;
       }
+    }
+    // ALC-1 §3: settle-flush at the pump boundary. A failed flush never
+    // breaks the orchestration loop - the TLM delta is idempotent (the
+    // baseline did not advance) and the failure stays surfaced until the
+    // next successful flush.
+    try {
+      await this.persistTelemetry();
+    } catch (error) {
+      this.#telemetryError = {
+        message: error instanceof Error ? error.message : String(error),
+      };
     }
     return { lastEvent: event, attemptsRun, exits };
   }
