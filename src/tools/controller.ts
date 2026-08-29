@@ -116,6 +116,20 @@ export interface GateInput {
   observedArtifacts?: readonly string[] | undefined;
 }
 
+/**
+ * R6→R5 (PLMP-ALC-1 §2): host-supplied telemetry attribution for one
+ * attempt. Host-layer only - the event contract stays untouched, and an
+ * attempt claimed without attribution produces no telemetry sample.
+ */
+export interface AttemptAttribution {
+  /** The model that runs this attempt (host namespace, e.g. "flash"). */
+  model: string;
+  /** Host-priced attempt cost (>= 0, finite); 0 leaves cost comparisons vacuous. */
+  cost?: number;
+  /** Telemetry task_type; defaults to the attempt task's role. */
+  taskType?: string;
+}
+
 export interface AllocationCalibration {
   readonly role: TaskRole;
   readonly slotOfRole: number;
@@ -210,6 +224,8 @@ export class ProjectController {
   readonly telemetry = new ModelPerformanceTable();
   /** TLM-1: durable home is the Ordarium state kind; lazily bound sync. */
   #telemetrySync: TelemetryStateSync | undefined = undefined;
+  /** ALC-1 §2: per-attempt telemetry attribution, consumed at settlement. */
+  #attemptAttribution = new Map<string, AttemptAttribution>();
 
   /** TLM-1: append the memory table's new deltas to the shared timeline. */
   async persistTelemetry(): Promise<void> {
@@ -684,8 +700,15 @@ export class ProjectController {
   // Claim / report protocol
   // -------------------------------------------------------------------------
 
-  /** Claim an attempt: create its worktree and mark it RUNNING. */
-  async claim(attemptId: string): Promise<{ worktreePath: string }> {
+  /**
+   * Claim an attempt: create its worktree and mark it RUNNING. An optional
+   * attribution registers the telemetry sample this attempt will settle
+   * (PLMP-ALC-1 §2); without it the attempt produces no sample.
+   */
+  async claim(
+    attemptId: string,
+    attribution?: AttemptAttribution | undefined,
+  ): Promise<{ worktreePath: string }> {
     const project = this.#project();
     const role = this.#roleOf(attemptId);
     const runningRoles = this.#runningRoles();
@@ -701,6 +724,7 @@ export class ProjectController {
       },
     );
     this.scheduler.startAttempt(attemptId);
+    if (attribution !== undefined) this.#attemptAttribution.set(attemptId, attribution);
     return { worktreePath: worktree.worktreePath };
   }
 
@@ -901,6 +925,19 @@ export class ProjectController {
     return this.gates.evaluate(this.store, this.projectId, subjectType, subjectId, gateId);
   }
 
+  /**
+   * Evaluate a registered gate on one attempt and settle its telemetry
+   * sample from the verdict (PLMP-ALC-1 §3): PASS records success, FAIL
+   * records failure, INCOMPLETE records nothing - the worker's own claim
+   * of completion never counts as success.
+   */
+  evaluateAttemptGate(gateId: string, attemptId: string): GateResult {
+    const verdict = this.evaluateGate(gateId, "attempt", attemptId);
+    if (verdict.verdict === "PASS") this.#recordAttemptOutcome(attemptId, "success");
+    if (verdict.verdict === "FAIL") this.#recordAttemptOutcome(attemptId, "failure");
+    return verdict;
+  }
+
   /** Invalidate evidence bound to a superseded subject (revision change). */
   invalidateEvidence(evidenceId: string, reason: string): SchedulerEvent {
     const revision = this.#project().revision;
@@ -936,8 +973,9 @@ export class ProjectController {
    */
   async runAttemptWithCommandExecutor(
     attemptId: string,
+    attribution?: AttemptAttribution | undefined,
   ): Promise<{ exitCode: number | null; reportEvent: SchedulerEvent["event_type"] }> {
-    await this.claim(attemptId);
+    await this.claim(attemptId, attribution);
     const [, envelope] = this.#attemptContext(attemptId);
     const command = envelope.allowed_commands[0];
     if (command === undefined) {
@@ -957,6 +995,11 @@ export class ProjectController {
     })) as { exitCode: number | null };
     const exitCode = outcome.exitCode as number | null;
     const passed = exitCode === 0;
+    // Evidence-faced settlement (PLMP-ALC-1 §3): the mechanical gate result
+    // is the sample; an unknown exit code is not a sample at all.
+    if (exitCode !== null) {
+      this.#recordAttemptOutcome(attemptId, passed ? "success" : "failure");
+    }
     const reportEvent = this.report(attemptId, {
       workerStatus: passed ? "completed" : "failed",
       summary: `${command.executable} ${command.argv_prefix.join(" ")} -> exit ${String(exitCode)}`,
@@ -971,7 +1014,11 @@ export class ProjectController {
    * failing attempt settles its batch back to READY and the next batch
    * retries — up to the envelope's attempt budget.
    */
-  async pumpCommandAttempts(options: { maxSteps?: number } = {}): Promise<{
+  async pumpCommandAttempts(options: {
+    maxSteps?: number;
+    /** Telemetry attribution applied to every attempt this pump claims (ALC-1 §2). */
+    attribution?: AttemptAttribution | undefined;
+  } = {}): Promise<{
     lastEvent: SchedulerEvent | null;
     attemptsRun: number;
     exits: (number | null)[];
@@ -984,7 +1031,7 @@ export class ProjectController {
       event = this.step();
       if (event === null) break;
       if (event.event_type === "ATTEMPT_CREATED") {
-        const outcome = await this.runAttemptWithCommandExecutor(event.entity_id);
+        const outcome = await this.runAttemptWithCommandExecutor(event.entity_id, options.attribution);
         attemptsRun += 1;
         exits.push(outcome.exitCode);
         continue;
@@ -1030,7 +1077,7 @@ export class ProjectController {
   > {
     // Fail closed on an unregistered gate: callers that do not want a gate
     // use promote() directly.
-    const check = this.evaluateGate(gateId, "attempt", attemptId);
+    const check = this.evaluateAttemptGate(gateId, attemptId);
     if (check.verdict !== "PASS") {
       return {
         promoted: false,
@@ -1478,6 +1525,23 @@ export class ProjectController {
     const project = this.#project();
     const task = project.tasks.find((item) => item.task_id === row.task_id);
     return task?.role ?? "implementer";
+  }
+
+  /**
+   * Settle one telemetry sample from an evidence-faced outcome (ALC-1 §3).
+   * Each attempt settles at most once: the attribution is consumed here, so
+   * later gate evaluations on the same attempt cannot double-count.
+   */
+  #recordAttemptOutcome(attemptId: string, outcome: "success" | "failure"): void {
+    const attribution = this.#attemptAttribution.get(attemptId);
+    if (attribution === undefined) return;
+    this.#attemptAttribution.delete(attemptId);
+    this.telemetry.record({
+      task_type: attribution.taskType ?? this.#roleOf(attemptId),
+      model: attribution.model,
+      outcome,
+      cost: attribution.cost ?? 0,
+    });
   }
 
   /** Roles of attempts still occupying a slot (CREATED/LEASED/RUNNING). */

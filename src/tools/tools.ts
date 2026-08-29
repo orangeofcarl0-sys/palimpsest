@@ -334,7 +334,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
           result = { evidenceId: evidence.evidence_id, status: evidence.status };
         }
         if (gateId !== undefined) {
-          const verdict = controller.evaluateGate(gateId, "attempt", attemptId);
+          const verdict = controller.evaluateAttemptGate(gateId, attemptId);
           result = { ...result, gateVerdict: verdict.verdict, nextEvidenceNeeded: verdict.next_evidence_needed };
         }
         return result;
