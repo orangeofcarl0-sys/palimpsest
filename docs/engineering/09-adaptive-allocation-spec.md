@@ -1,6 +1,6 @@
 # 遥测驱动自适应分配接线规格（R6→R5 闭环，管理型遥测的首个消费闭环）
 
-> **Spec ID**：`PLMP-ALC-1` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-ALC-1` ｜ 状态：**已交付**（2026-08-29 三阶段 f39c9dc / b46ba41 / f180e2b，出口 SDS-11）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；遥测持久层以 `08-telemetry-externalization-spec.md`（PLMP-TLM-1）为准；分配规则语义以本仓库 `src/allocate/allocator.ts`（R5，raw-notes 预算.txt §33–43/§51）为准；本文＝遥测→分配消费闭环的形状、权限边界与验收权威。跨仓库面无变更（消费走既有 TLM 门面），不涉 07 演进清单新项。
 > **修订记录**：`ALC-1`＝初版冻结（2026-08-29）：两项用户裁决（身份＝宿主层供给、消费＝保守重映射）经 AskUserQuestion 确认；三段闭环设计、阈值常量、硬不变量清单、验收 ALC-A01–A11。
 

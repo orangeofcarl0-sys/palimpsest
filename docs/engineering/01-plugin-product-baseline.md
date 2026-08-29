@@ -44,6 +44,7 @@ src/tools     selectAndPromoteWhenGatePasses：tournament 胜者 → 门控晋�
 src/tools     allocateFor 并发校准：候选数建议 ↔ 角色槽位/硬上限联动             【R10 ✅】
 src/telemetry  telemetry 外置持久化：管理型 state kind append-delta（重启/跨会话重建）【R11→TLM ✅】
 src/tools     CommandExecutor 自动化接线：pump 自动 claim→gate→report→批次重试 【R12 ✅】
+src/allocate  遥测驱动分配：保守重映射（加宽/升档/降档，硬不变量钳制）          【R13 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

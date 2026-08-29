@@ -68,6 +68,8 @@
 
 | runAttemptWithCommandExecutor / pumpCommandAttempts（R12） | 自动化把 claim 与 report 协议串起来：认领后执行 envelope 首个允许命令、退出码 0→completed/其他→failed、失败批次 settle 回 READY 自动重试直到预算耗尽；FakeGitPort 增加顺序 gate 队列（queueGateOutcome）用以脚本化‘先败后成’ |
 
+| 遥测驱动自适应分配（R13，PLMP-ALC-1） | claim/pump 可选归因（宿主层，事件契约零改动）+ `evaluateAttemptGate` 结算漏斗（PASS→success / FAIL→failure / INCOMPLETE 不记，自述永不计成功；归因每 attempt 恰消费一次防双记）+ `adjustAllocation` 保守重映射（加宽/升档/降档三分区；硬 guard 刻意镜像 R5 硬分支——规则表硬分支变动须同步此镜像）；`allocate()` 本体零改动，pump 边界自动 flush 失败浮出不丢增量；验收 ALC-A01–A11（09 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
