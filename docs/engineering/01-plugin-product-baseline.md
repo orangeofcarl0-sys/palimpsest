@@ -42,7 +42,7 @@ src/evidence  科研 evidence graph：CLAIM→EVIDENCE→EXPERIMENT→CONFIG→C
 src/tools     promoteWhenGatePasses：门禁 PASS 才放行晋升（verdict 驱动）      【R8 ✅】
 src/tools     selectAndPromoteWhenGatePasses：tournament 胜者 → 门控晋升全链路  【R9 ✅】
 src/tools     allocateFor 并发校准：候选数建议 ↔ 角色槽位/硬上限联动             【R10 ✅】
-src/telemetry  telemetry 持久化：独立扩展表写入编排库（重启可重建）           【R11 ✅】
+src/telemetry  telemetry 外置持久化：管理型 state kind append-delta（重启/跨会话重建）【R11→TLM ✅】
 src/tools     CommandExecutor 自动化接线：pump 自动 claim→gate→report→批次重试 【R12 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
@@ -55,7 +55,7 @@ src/install    installPalimpsest(ctx, options) 黄金路径                     
 | 存储 | 路径 | 角色 |
 |---|---|---|
 | Palimpsest 编排账 | `$DSH_HOME/palimpsest/palimpsest.sqlite` | 事件日志真相源（PLMP application_id、user_version=1、哈希链、append-only 触发器） |
-| Ordarium 共享 ledger | `$DSH_HOME/ordarium/operations.sqlite` | 与其他 DSH 插件共账的副作用执行账（共账拓扑示范） |
+| Ordarium 共享 ledger | `$DSH_HOME/ordarium/operations.sqlite` | 与其他 DSH 插件共账的副作用执行账 + 管理型状态（telemetry 外置，PLMP-TLM-1） |
 
 两个库各管一件事：Palimpsest 管"项目应当发生什么"，Ordarium 管"副作用真的发生了什么、是否恰好一次"。
 

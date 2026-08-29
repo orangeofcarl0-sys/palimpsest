@@ -64,7 +64,7 @@
 
 | allocateFor 返回 { allocation, concurrency }（R10） | R5 纯分配结果叠加 P3 槽位校准：concurrentLimit = min(slotOfRole - occupied, hardCap - totalRunning)，宿主可据此分批认领候选（batch 宽度仍在计划层）；改 RETURN 形状（调用方需解包 allocation）已登记 |
 
-| palimpsest_telemetry 扩展表 / writeTelemetry / rebuildTelemetry（R11） | 累计数据持久化到编排 SQLite 的独立表（CREATE TABLE IF NOT EXISTS，不属 schema migration 身份）；该表不进 PROJECTION_TABLES/snapshot/rebuild，故冻结 fixture parity 不受影响（测试断言 snapshot digest 不变）；持久化为快照式（可重入、有序），最新一次 persistTelemetry 即持久态 |
+| palimpsest_telemetry 扩展表 / writeTelemetry / rebuildTelemetry（R11） | 累计数据持久化到编排 SQLite 的独立表（CREATE TABLE IF NOT EXISTS，不属 schema migration 身份）；该表不进 PROJECTION_TABLES/snapshot/rebuild，故冻结 fixture parity 不受影响（测试断言 snapshot digest 不变）；持久化为快照式（可重入、有序），最新一次 persistTelemetry 即持久态。（2026-08-29 更新：该路径已被 PLMP-TLM-1 外置替代——持久层迁移至 Ordarium 管理型 state kind，writeTelemetry/rebuildTelemetry 退役，旧扩展表成孤儿不再读写；见 `08-telemetry-externalization-spec.md`） |
 
 | runAttemptWithCommandExecutor / pumpCommandAttempts（R12） | 自动化把 claim 与 report 协议串起来：认领后执行 envelope 首个允许命令、退出码 0→completed/其他→failed、失败批次 settle 回 READY 自动重试直到预算耗尽；FakeGitPort 增加顺序 gate 队列（queueGateOutcome）用以脚本化‘先败后成’ |
 
