@@ -12,6 +12,7 @@
 | `06-audit-remediation-design-spec.md` | **H 线设计规格（冻结）**：审计修复与架构上链——恢复器官、声明制判官、门禁/角色/阶段上链、自重构合同 |
 | `07-ordarium-alignment.md` | **跨仓库协调权威（PLMP-ALN）**：Ordarium 演进 × 本仓库消费——真相归属地图、演进接口清单、pin bump 升级协议、半触达监护、双边诉求登记 |
 | `08-telemetry-externalization-spec.md` | **telemetry 外置试点规格（PLMP-TLM）**：管理型 state kind 首消费——append-delta 主体形状、错误分类映射、无兼容层退役、验收 TLM-A01–A06 |
+| `09-adaptive-allocation-spec.md` | **遥测驱动自适应分配规格（PLMP-ALC）**：R6→R5 闭环——宿主层归因、证据面结算、保守重映射与硬不变量、验收 ALC-A01–A11 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
