@@ -18,6 +18,9 @@
 const PRIOR_ATTEMPTS = 4;
 const PRIOR_SUCCESS_RATE = 0.5;
 
+/** PLMP-ALC-2 §1.1: per-model data eligibility for model advice. */
+export const MODEL_MIN_ATTEMPTS = 8;
+
 export type TaskOutcome = "success" | "failure";
 
 export interface TelemetryRecord {
@@ -198,5 +201,45 @@ export class ModelPerformanceTable {
     );
     ranked.sort((a, b) => (a.costPerSuccess! - b.costPerSuccess!));
     return ranked[0]?.model;
+  }
+
+  /**
+   * PLMP-ALC-2 §1: advisory model recommendation for one task_type. The R6
+   * bestModel ranking is reused untouched - the new surface is the honesty
+   * gate: advice exists only while at least one candidate is data-backed
+   * (>= MODEL_MIN_ATTEMPTS attempts), and zero-priced candidates abstain
+   * from the ranking instead of winning it by default ([ADV-G1..3]).
+   */
+  suggestModel(
+    taskType: string,
+    candidates: readonly { model: string; cost: number; priorSuccessRate?: number }[],
+  ): { model: string; reason: string } | undefined {
+    const isDataBacked = (candidate: { model: string }): boolean => {
+      const stat = this.stat(taskType, candidate.model);
+      return stat !== undefined && stat.attempts >= MODEL_MIN_ATTEMPTS;
+    };
+    if (!candidates.some(isDataBacked)) return undefined;
+    const rankable = candidates.filter((candidate) => {
+      if (!isDataBacked(candidate)) return candidate.cost > 0;
+      return (this.stat(taskType, candidate.model)?.avgAttemptCost ?? 0) > 0;
+    });
+    const best = this.bestModel(taskType, rankable);
+    if (best === undefined) return undefined;
+    const chosen = candidates.find((candidate) => candidate.model === best)!;
+    const bestStat = this.stat(taskType, best);
+    const basis =
+      bestStat !== undefined && bestStat.attempts >= MODEL_MIN_ATTEMPTS
+        ? "data-backed"
+        : "prior-based";
+    const detail =
+      bestStat === undefined
+        ? "cold candidate"
+        : `${bestStat.attempts} attempts, smoothed success ${bestStat.successRate.toFixed(2)}`;
+    const costPerSuccess = this.expectedCostPerSuccess(taskType, [chosen])[0]!
+      .costPerSuccess as number;
+    return {
+      model: best,
+      reason: `${best}: ${detail}, cost/success ${costPerSuccess.toFixed(4)} (${basis})`,
+    };
   }
 }

@@ -1,6 +1,6 @@
 /** Telemetry: model performance table (R6) and its Ordarium state-kind persistence (PLMP-TLM-1). */
 
-export { ModelPerformanceTable } from "./performance_table.js";
+export { MODEL_MIN_ATTEMPTS, ModelPerformanceTable } from "./performance_table.js";
 export type {
   ModelStat,
   PerformanceSnapshot,
