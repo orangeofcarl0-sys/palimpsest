@@ -9,6 +9,7 @@ import {
   LedgerBusyError,
   OperationBusyError,
   SimulatedProcessCrash,
+  StateRevisionConflictError,
   UncertainOperationError,
 } from "@ordarium/core";
 
@@ -28,6 +29,15 @@ export function isTransientOperationError(error: unknown): boolean {
 /** Storage-level contention: the invocation never started; retry is safe. */
 export function isLedgerBusyError(error: unknown): boolean {
   return error instanceof LedgerBusyError;
+}
+
+/**
+ * State CAS moved under us (Ordarium 1.1.0 error family): same storage-level
+ * contention semantics as a busy ledger - retry-safe, never a verdict - so
+ * it stays outside the transient classification (PLMP-TLM-1 §2).
+ */
+export function isStateRevisionConflict(error: unknown): boolean {
+  return error instanceof StateRevisionConflictError;
 }
 
 export function sleep(ms: number): Promise<void> {

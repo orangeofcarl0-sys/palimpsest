@@ -13,10 +13,12 @@ import { join } from "node:path";
 
 import {
   OrdariumRuntime,
+  createStateStore,
   type Action,
   type AuthorizationDecision,
   type InvocationIdentity,
   type JsonValue,
+  type OrdariumStateStore,
   type RuntimeHooks,
 } from "@ordarium/core";
 import { SqliteLedger } from "@ordarium/ledger-sqlite";
@@ -47,6 +49,8 @@ export function defaultOrdariumPath(): string {
 
 export interface PalimpsestEffectsRuntime {
   readonly runtime: OrdariumRuntime;
+  /** Management-state facade (PLMP-TLM-1): the sole Ordarium state-kind surface. */
+  readonly state: OrdariumStateStore;
   readonly actions: ReturnType<typeof defineEffects>;
   invoke<O extends JsonValue>(
     action: Action<JsonValue, O>,
@@ -107,6 +111,8 @@ export function createPalimpsestEffects(
       : { allowVolatileLedger: options.allowVolatileLedger }),
   });
   const actions = defineEffects(options.git);
+  // Bound to the runtime so every state write passes the quiesce/close gates.
+  const state = createStateStore({ runtime });
 
   function invoke<I extends JsonValue, O extends JsonValue>(
     action: Action<I, O>,
@@ -129,6 +135,7 @@ export function createPalimpsestEffects(
 
   return {
     runtime,
+    state,
     actions,
     invoke,
     async close() {

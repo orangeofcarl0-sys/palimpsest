@@ -51,7 +51,7 @@ import {
 import { capWorkerSummary, judgeCommentary, rubricCompare } from "../select/declared.js";
 import { allocate, type Allocation, type AllocationEstimates } from "../allocate/allocator.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
-import { rebuildTelemetry, writeTelemetry } from "../telemetry/persistence.js";
+import { TelemetryStateSync } from "../telemetry/state_persistence.js";
 import { ClaimGraph } from "../evidence/graph.js";
 import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
@@ -208,26 +208,21 @@ export class ProjectController {
   readonly gates: GateEngine;
   /** R6: telemetry the host records into (success/cost per task_type+model). */
   readonly telemetry = new ModelPerformanceTable();
+  /** TLM-1: durable home is the Ordarium state kind; lazily bound sync. */
+  #telemetrySync: TelemetryStateSync | undefined = undefined;
 
-  /** R11: snapshot the in-memory telemetry into the orchestration SQLite. */
-  persistTelemetry(): void {
-    writeTelemetry(this.store.connection, this.telemetry);
+  /** TLM-1: append the memory table's new deltas to the shared timeline. */
+  async persistTelemetry(): Promise<void> {
+    this.#telemetrySync ??= await TelemetryStateSync.load(this.effects.state);
+    await this.#telemetrySync.flush(this.telemetry);
   }
 
-  /** R11: rebuild the in-memory telemetry from durable rows (after a restart). */
-  loadTelemetryInto(target: ModelPerformanceTable): ModelPerformanceTable {
-    const rebuilt = rebuildTelemetry(this.store.connection);
-    const snapshot = rebuilt.snapshot().rows;
-    for (const row of snapshot) {
-      for (let index = 0; index < row.attempts; index += 1) {
-        const perAttempt = row.attempts === 0 ? 0 : row.avgAttemptCost;
-        target.record({
-          task_type: row.task_type,
-          model: row.model,
-          outcome: index < row.successes ? "success" : "failure",
-          cost: perAttempt,
-        });
-      }
+  /** TLM-1: rebuild the in-memory telemetry from the durable deltas (after a restart). */
+  async loadTelemetryInto(target: ModelPerformanceTable): Promise<ModelPerformanceTable> {
+    const sync = await TelemetryStateSync.load(this.effects.state);
+    this.#telemetrySync = sync;
+    for (const row of sync.durableSnapshot().rows) {
+      target.addAggregated(row);
     }
     return target;
   }

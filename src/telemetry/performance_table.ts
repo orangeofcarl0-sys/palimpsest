@@ -32,6 +32,8 @@ export interface ModelStat {
   readonly model: string;
   readonly attempts: number;
   readonly successes: number;
+  /** Total observed attempt cost; the raw accumulator behind avgAttemptCost. */
+  readonly cost: number;
   /** Smooth estimate of P(success): (successes + prior)/(attempts + prior). */
   readonly successRate: number;
   readonly avgAttemptCost: number;
@@ -67,6 +69,7 @@ function statOf(
     model,
     attempts,
     successes,
+    cost,
     successRate,
     avgAttemptCost,
     costPerSuccess,
@@ -100,6 +103,34 @@ export class ModelPerformanceTable {
     const attempts = this.#attempts.get(key);
     if (attempts === undefined) return undefined;
     return statOf(taskType, model, attempts, this.#successes.get(key) ?? 0, this.#cost.get(key) ?? 0);
+  }
+
+  /**
+   * Inject a pre-aggregated delta (durable-telemetry replay, PLMP-TLM-1 §1).
+   * The counts land exactly as given - the durable home stores aggregated
+   * deltas, so there is no per-attempt cost split to replay.
+   */
+  addAggregated(input: {
+    task_type: string;
+    model: string;
+    attempts: number;
+    successes: number;
+    cost: number;
+  }): void {
+    const { task_type, model, attempts, successes, cost } = input;
+    if (!Number.isSafeInteger(attempts) || attempts < 1) {
+      throw new TypeError("attempts must be a positive integer");
+    }
+    if (!Number.isSafeInteger(successes) || successes < 0 || successes > attempts) {
+      throw new TypeError("successes must be an integer within [0, attempts]");
+    }
+    if (cost < 0 || !Number.isFinite(cost)) {
+      throw new TypeError("cost must be a non-negative finite number");
+    }
+    const key = this.#key(task_type, model);
+    this.#attempts.set(key, (this.#attempts.get(key) ?? 0) + attempts);
+    this.#successes.set(key, (this.#successes.get(key) ?? 0) + successes);
+    this.#cost.set(key, (this.#cost.get(key) ?? 0) + cost);
   }
 
   snapshot(): PerformanceSnapshot {

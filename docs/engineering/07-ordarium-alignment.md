@@ -3,7 +3,7 @@
 > **Spec ID**：`PLMP-ALN-1` ｜ 状态：**生效**（跨仓库协调权威）
 > **权威序**：本文＝Ordarium 演进 × Palimpsest 消费的协调权威。系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；Ordarium 合同以其仓库 docs/12–17 为准；兼容层登记以其 `evidence/compatibility-register.md`（机器校验）为准。各权威域内冲突域内裁决；跨域冲突以本文登记的裁决为准并双向同步。
 > **对侧镜像**：Ordarium `docs/18-release-compat-policy.md`（宿主中立发布纪律与消费者核对单）——本仓库的升级协议（§3）是其核对单的实例化。
-> **修订记录**：`ALN-1`＝初版冻结（2026-08-29）：真相归属地图、演进接口清单（8 项四元组）、升级协议、半触达监护、唤醒制度、双边诉求登记、纪律红线；四项裁决 ALN-1..4 经用户确认（§8）。r2（同日）＝1.1.0 bump 落地登记：升级协议①勘误、sync-ordarium.mjs 退役、busy 断言补齐、演进清单 #1/#2 唤醒（§修订流水）。
+> **修订记录**：`ALN-1`＝初版冻结（2026-08-29）：真相归属地图、演进接口清单（8 项四元组）、升级协议、半触达监护、唤醒制度、双边诉求登记、纪律红线；四项裁决 ALN-1..4 经用户确认（§8）。r2（同日）＝1.1.0 bump 落地登记：升级协议①勘误、sync-ordarium.mjs 退役、busy 断言补齐、演进清单 #1/#2 唤醒（§修订流水）。r3（同日）＝telemetry 外置试点落地（PLMP-TLM-1）：演进清单 #3/#7 唤醒、诉求③首条反馈产出。
 
 ---
 
@@ -50,11 +50,11 @@ Ordarium state-kind Stage 1 落地后，Palimpsest 的消费边界**逐一列举
 |---|---|---|---|---|---|
 | 1 | `openRetry` 默认开启（1.1.0） | **已钉住（2026-08-29 bump）**：`createPalimpsestEffects` 显式传 `{attempts:5, delayMs:100}`（`src/effects/runtime.ts`），不再依赖上游默认 | 已唤醒（1.1.0 bump 完成） | `createPalimpsestEffects` 的 ledger 构造 | **显式钉住** + 行为断言测试 + 核对单（裁决 ALN-3，§4）——三件套已落地 |
 | 2 | 账本 schema v2→v3 迁移（1.1.0） | 零代码触达（本仓库不对 operations.sqlite 做任何 PRAGMA/schema 操作）；迁移验证在册：原生 v2 fixture（`fixtures/ordarium/ledger-v2.sqlite`）+ 打开迁移断言（`test/ordarium_ledger.test.ts`） | 已唤醒（1.1.0 bump 完成）——既有 `$DSH_HOME` 账本在下次打开时自动迁移 | 无代码消费点；运行环境行为 | 迁移后全量 crash/reconcile 套件重跑（32/170 全绿）；发布说明核对（release notes §2） |
-| 3 | `STATE_REVISION_CONFLICT` / `STATE_REF_NOT_FOUND`（错误码 27–29）、state 修订、refs 反查 | 零触达（全仓 grep 0 命中；错误分类仅四类 1.0.0 类型：`UncertainOperationError`/`OperationBusyError`/`SimulatedProcessCrash`/`LedgerBusyError`，`src/effects/errors.ts:11-31`） | 裁决 ALN-1 的管理型试点落地 | telemetry 外置读写路径的乐观并发与失败分类 | 最小消费；错误按 Ordarium 分类映射进既有 transient/busy 体系，**不按数字码硬编码**；refs 反查不进恢复路径 |
+| 3 | `STATE_REVISION_CONFLICT` / `STATE_REF_NOT_FOUND`（错误码 27–29）、state 修订、refs 反查 | **已进消费面（PLMP-TLM-1，2026-08-29）**：telemetry 外置写路径消费 state CAS 与 `StateRevisionConflictError`（instanceof 映射 `isStateRevisionConflict`，归 busy 族）；`STATE_REF_NOT_FOUND`/refs 反查仍未触达（试点不用 refs） | 已唤醒（管理型试点落地） | telemetry 外置读写路径的乐观并发与失败分类（`src/telemetry/state_persistence.ts`） | 最小消费；错误按 instanceof 映射进既有 transient/busy 体系，不按数字码硬编码；refs 反查不进恢复路径（红线保持） |
 | 4 | versioned Host Adapter（Ordarium `COMPAT-PAL-001` 缝） | 零准备（本仓库无 adapter 注册/版本协商代码） | Ordarium 交付 adapter 版本协商 | `installPalimpsest` / `src/tools/dsh_types.ts` 适配层 | 首宿主 conformance 案例（诉求②）；合同冻结面（31 文件/165 测试）作验收基座 |
 | 5 | G14 模型工具独立 scope | 零触达（effects 全部 `scope: projectId`） | 出现按模型/工具拆分记账的**实证需求**（当前无；telemetry 在本仓库自持） | effects invoke 的 scope/callId 拼装 | 需求实证后才启用，不预埋 |
 | 6 | G13 通信取证 | 零触达（证据体系只认确定性命令证据） | agent 间通信需升格为可考事实 | 若唤醒：通信记录 = Ordarium 通用状态条目（宿主中立形状），语义归本仓库 | 单独裁决；与 EvidenceAtom 定义权的边界显式修订，不得静默混入 |
-| 7 | state-kind Stage 1（形状） | 零消费 | Ordarium 发布 Stage 1 | telemetry 外置试点（§1.2） | 首消费者形状评审（诉求③） |
+| 7 | state-kind Stage 1（形状） | **已消费（PLMP-TLM-1）**：append-delta 主体（`expectedRevision:0` 创建后不改写）+ `list` 聚合装载 + `createStateStore({runtime})` | 已唤醒（1.1.0 交付 + 试点落地） | telemetry 外置试点（§1.2） | 首消费者形状评审——第 1 条反馈已产出（TLM-1 §1：计数器类负载的正确形状是 append-only 主体而非覆盖式 CAS 槽位，建议对侧 G11 文档补记） |
 | 8 | 多项目共享账本（本仓库 v2 非目标，`06-audit-remediation-design-spec.md:24`） | 零触达 | Palimpsest v2 提案 | Ordarium namespace/lease/fence | v2 时另行裁决，本文不预设 |
 
 ## 3. 升级协议（pin bump 的固定流程）
@@ -109,7 +109,7 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 |---|---|---|
 | ① | release notes 必须列**消费者可见行为变化**五类：默认值 / 存储迁移 / 错误分类 / 新错误码 / 弃用面 | 已落对侧 `docs/18` §1 |
 | ② | versioned Host Adapter 交付时，Palimpsest 作为**首宿主 conformance 案例**（呼应 `COMPAT-PAL-001` 缝） | 待 Ordarium 交付 |
-| ③ | state-kind 形状评审征询首个消费者（ALN-1 最小消费裁决使本仓库成为管理型首消费者） | 待 Stage 1 评审 |
+| ③ | state-kind 形状评审征询首个消费者（ALN-1 最小消费裁决使本仓库成为管理型首消费者） | **进行中（2026-08-29）**：首条形状反馈见 `08-telemetry-externalization-spec.md` §1 决策记录 |
 
 ### Ordarium → Palimpsest
 
@@ -138,3 +138,4 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 |---|---|
 | 2026-08-29 | 初版冻结（PLMP-ALN-1）：四项裁决用户确认；演进接口清单 8 项；升级协议与复检制度生效；双边诉求登记。依赖基线：Ordarium v1.0.0（`package.json:28-32`），对侧已推进 1.1.0（Safe Action SDK + Effect Authority），本仓库尚未 bump。 |
 | 2026-08-29（r2） | **Ordarium 1.1.0 bump 落地**（§3.1 全链）：对侧发布 `ordarium-v1.1.0`（六门 verify:release 绿 + 五类行为变化清单，诉求①兑现）。①重钉：三行 pin + workspace overrides + `blockExoticSubdeps: false` 豁免，lockfile/node_modules 实装 1.1.0；②消费核对单七项完成——默认值：openRetry 显式钉住 `{attempts:5, delayMs:100}`；存储迁移：原生 v2 fixture 打开迁移断言通过；错误分类：`LedgerBusyError` 归位断言通过；新错误码 27–29 未进消费面（telemetry 试点前）；弃用面：无；死配置：`package.json` overrides 清除；半触达清单 #1/#2 更新为已唤醒；③五问复检：依赖四层一致（pin==overrides==lock==实装）；触达 grep——openRetry 已消费，错误码/state 修订/refs 反查仍 0 命中；对侧诉求①已兑现、②③待对侧交付；运行时 32/170 全绿（parity fixture v2 硬门保持）；G13/G14 无唤醒迹象。工具项：`sync-ordarium.mjs` 退役。 |
+| 2026-08-29（r3） | **telemetry 外置试点落地（PLMP-TLM-1，用户立项）**：`ModelPerformanceTable` 持久层从 orchestration SQLite 扩展表外置到管理型 state kind——append-delta 主体（`delta-<uuid>`，`expectedRevision:0` 创建后不改写）+ `list` 聚合装载；`createStateStore({runtime})` 随 `PalimpsestEffectsRuntime.state` 暴露为唯一消费门面；错误分类：`isStateRevisionConflict` 入 busy 族；无兼容层：`persistence.ts` 退役、旧扩展表成孤儿（声明在案）；演进清单 #3/#7 唤醒，诉求③首条反馈产出（计数器负载的 append-only 形状）；运行时 32/173 全绿（TLM-A01–A06，parity fixture v2 硬门保持）。五问复检：依赖 1.1.0 四层一致；effects scope 面未动（G14 不启用）；G13/G14 无唤醒迹象。 |
