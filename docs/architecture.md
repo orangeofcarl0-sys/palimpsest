@@ -11,7 +11,8 @@
 │ ProjectController（生命周期/调度/执行/证据/晋升/状态） │
 │ Scheduler（decide/commit 纯决策与提交分离）            │
 ├─ 治理层 ─────────────────────────────────────────────┤
-│ Gate DSL │ 失效演算 │ 证据图 │ 锦标赛选择 │ 分配器     │
+│ 声明治理（门禁/角色表/阶段图） │ Gate DSL │ 失效演算   │
+│ 证据图 │ 锦标赛选择 │ 分配器                          │
 ├─ 合同层 ─────────────────────────────────────────────┤
 │ schema（canonical digest） │ domain（状态机/校验）     │
 │ state（EventStore/投影/快照）                          │
@@ -37,7 +38,9 @@
 | Attempt | 任务的一次隔离执行，绑定创建时的项目版本 |
 | TaskEnvelope | 尝试的完整输入：目标、写路径、命令白名单、网络策略、租约、技能提示 |
 | EvidenceAtom | 确定性命令的证据：谓词、命令、退出码、主体摘要 |
-| GateDefinition | 声明式门禁：对证据集合的确定性布尔求值（PASS/FAIL/INCOMPLETE） |
+| GateDefinition | 声明式门禁：对证据集合的确定性布尔求值（PASS/FAIL/INCOMPLETE）；定义上链（`GATE_DEFINED`，最新声明胜出） |
+| 阶段图 / 角色表 | 治理数据全部上链声明（`STAGE_GRAPH_DEFINED`/`ROLE_TABLE_DEFINED`）：调度器与槽位准入按声明解释，最新声明胜出 |
+| SelectionJudge | 锦标赛判官必须先声明（`JUDGE_DECLARED`）；未声明 fail-closed，无隐式默认 |
 | 晋升 | 将通过门禁的候选结果合并进正式状态 |
 
 ## 4. 存储模型
@@ -54,7 +57,7 @@
 ## 5. 确定性
 
 - canonical JSON + SHA-256（键按码点排序、禁浮点、NFC、显式 null；请求与事件双摘要）。
-- 与冻结 Python 基线（`fixtures/replay/baseline-v1.json`）逐字节一致，作为持续校验的机器门。
+- 与基线 fixture（`fixtures/replay/baseline-v1.json`，v2 共 16 事件）逐字节一致，作为持续校验的机器门。v1 冻结自 Python 运行时；v2 由 TS 调度器再生，`PROJECT_CREATED` 后即 genesis 阶段图声明。
 - 时间与身份注入：不读取系统时钟；事件幂等键由 `actionKey`/`stableEntityId` 确定性生成。
 - 调度器决策拆分为纯函数 `decide()`（零写入）与 `commit()`；预览与实际提交字节一致。
 
@@ -81,8 +84,9 @@ attempt 的"隔离环境"是**同机文件系统上的 git worktree**（目录�
 ## 7. 并发控制
 
 - 单活动任务不变量：同一时刻至多一个任务处于 ACTIVE/VERIFYING。
-- 角色槽位在认领时准入（默认 implementer 2、软上限 8、硬上限 20）。
+- 角色槽位在认领时准入；槽位来自链上角色表声明（genesis：implementer 2、tester 1、verifier 1、scout 2、analyst 2、软上限 8、硬上限 20），未声明角色直接拒绝。
 - 批次激活：任务启动时按候选上限并行创建尝试；失败批次自动重试直至预算耗尽。
+- 阶段图上链：调度器解释声明的 `STAGE_GRAPH_DEFINED`（默认管线逐字声明化为 genesis）。拓扑变更 = 新声明事件 + 治理校验（占用状态仍可达终态，否则一票否决）——新增角色、重命名阶段等自发重构仅靠声明完成，不改代码。
 
 ## 8. 错误分类
 

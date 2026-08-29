@@ -45,18 +45,28 @@ new ProjectController(o: {
   projectId: string;
   policy: TaskPolicy;
   clock?: () => string;
-  parallel?: ParallelOptions;       // 角色槽位与预算（默认即强默认）
-  gates?: readonly GateDefinition[];
+  budget?: BudgetLedger;            // 运行时尝试计量（非链上状态），预算测试注入
 })
 ```
+
+门禁/角色表/阶段图/判官均为链上声明（见"治理声明"），无内存构造选项。
 
 ### 生命周期
 
 | 方法 | 说明 |
 |---|---|
-| `start(input: StartProjectInput): SchedulerEvent` | goal + tasks（TaskSpec[]）+ headCommit? |
+| `start(input: StartProjectInput): SchedulerEvent` | goal + tasks（TaskSpec[]）+ headCommit?；自动声明 genesis 角色表与默认阶段图 |
 | `plan(input: PlanInput): SchedulerEvent` | tasks + changeClass? + changedIds? + reason? |
 | `invalidateTask(taskId, reason): SchedulerEvent` | 使任务失效 |
+
+### 治理声明
+
+| 方法 | 说明 |
+|---|---|
+| `declareGate(gate: GateDefinition, declaredBy): SchedulerEvent` | 门禁定义上链（最新声明胜出） |
+| `declareRoleTable({ roles, hardCap, declaredBy }): SchedulerEvent` | 角色槽位表上链；未声明角色在认领/分配时 fail-closed |
+| `declareStageGraph(graph: StageGraphDefinition, version): SchedulerEvent` | 阶段图上链；治理校验（占用状态可达终态）一票否决 |
+| `declareJudge({ judgeId, kind, declaredBy }): SchedulerEvent` | 选拔判官上链（kind：rubric 可重放 / llm、manual 不可重放） |
 
 ### 调度
 
@@ -91,7 +101,7 @@ new ProjectController(o: {
 |---|---|
 | `promote(attemptId, sourceCommit, expectedHead): Promise<PromoteResult>` | 直接晋升 |
 | `promoteWhenGatePasses(attemptId, sourceCommit, expectedHead, gateId)` | 门禁 PASS 才晋升；否则返回缺失证据 |
-| `selectCandidate(judge: PairwiseJudge): Promise<TournamentResult>` | 锦标赛选择 |
+| `selectCandidate(judge?: PairwiseJudge): Promise<TournamentResult>` | 锦标赛选择：判官须已声明（缺声明 fail-closed）；`compare` 为调用时比较注入 |
 | `selectAndPromoteWhenGatePasses(judge, gateId, expectedHead)` | 选择 + 门控晋升链 |
 
 ### 状态
@@ -99,7 +109,7 @@ new ProjectController(o: {
 | 方法 | 说明 |
 |---|---|
 | `allocateFor(taskId, estimates)` | 分配建议（与槽位联动） |
-| `status(): ControllerStatusView` | 项目视图（含 `resume` 断点区块） |
+| `status(): ControllerStatusView` | 项目视图（含 `resume` 断点区块与 PREPARED 孤儿清点 `preparedPromotions`） |
 | `persistTelemetry()` / `loadTelemetryInto(table)` | 模型性能统计持久化 |
 
 ## 4. Scheduler

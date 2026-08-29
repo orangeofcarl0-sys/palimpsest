@@ -54,7 +54,7 @@ node "$CLI" status      # 项目状态与断点
 corepack pnpm exec vitest run
 ```
 
-测试套件包含与冻结 Python 基线的跨语言摘要校验（`fixtures/replay/baseline-v1.json`），任何涉及序列化的变更必须保持逐字节一致。
+测试套件包含基线 fixture（`fixtures/replay/baseline-v1.json`，v2 共 16 事件；v1 冻结自 Python 运行时，v2 由 TS 调度器再生并加入 genesis 阶段图声明）的摘要校验，任何涉及序列化的变更必须保持逐字节一致。
 
 ## 许可
 

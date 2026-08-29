@@ -1,9 +1,9 @@
 # Palimpsest 系统设计规格（System Design Spec）
 
-> **Spec ID**：`PLMP-SDS-7` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
-> **代码基线**：commit `3163394` 起 E1–E4 已交付：27 个测试文件 / 144 项测试
+> **Spec ID**：`PLMP-SDS-8` ｜ 状态：**生效**（对已交付部分为权威描述，对 E/S 线为规范基线）
+> **代码基线**：commit `47969bb` 起 E1–E4 与 H1 审计整改已交付：31 个测试文件 / 165 项测试
 > **文档权威序**：本文＝系统设计权威；docs/01＝产品基线；docs/02＝E 线计划与模式兼容细则（§5.2 引其为规范）；docs/00＝传承与非权威来源。冲突时以本文为准。
-> **修订记录**：`SDS-2`＝完善度扩充；`SDS-3`＝E1；`SDS-4`＝E2（含 §9.2 例外）；`SDS-5`＝E3（resume + blocked）；`SDS-6`＝E4（mode 声明 + 三权限剧本）；`SDS-7`＝E2 出口门闭合——原"pptx 宿主手工 demo"改写为可自动机器验证的等价验收 `e2_host_demo`（真实 git worktree 上 worker 按 envelope 技能提示产出产物+上报+确定性取证），宿主级合同链全链路机器验证；测试基线 27/144。
+> **修订记录**：`SDS-2`＝完善度扩充；`SDS-3`＝E1；`SDS-4`＝E2（含 §9.2 例外）；`SDS-5`＝E3（resume + blocked）；`SDS-6`＝E4（mode 声明 + 三权限剧本）；`SDS-7`＝E2 出口门闭合——原"pptx 宿主手工 demo"改写为可自动机器验证的等价验收 `e2_host_demo`（真实 git worktree 上 worker 按 envelope 技能提示产出产物+上报+确定性取证），宿主级合同链全链路机器验证；测试基线 27/144；`SDS-8`＝H1 审计整改交付（06 规格全案）——治理三层上链：`GATE_DEFINED`/`ROLE_TABLE_DEFINED`/`STAGE_GRAPH_DEFINED` 声明事件，genesis 默认角色表 + 默认阶段图随 `start()` 逐字声明；调度器解释声明图（ACTIVE/VERIFYING 锁存、BLOCKED/READY 扫描、声明 guard 复用门禁 DSL 子句、缺证据＝停摆绝不视为通过）；选拔器官声明制判官（`JUDGE_DECLARED`/`CANDIDATE_SELECTED`，未声明判官 fail-closed）；恢复器官（PromotionRecoveryService 清点 PREPARED 孤儿入 `status.resume`）；基线 fixture v2（16 事件，TS 运行时再生——`PROJECT_CREATED` 后即 genesis 阶段图声明）；构造器内存选项 `parallel`/`gates` 移除（声明即唯一真相，不留兼容层）；测试基线 27/144 → 31/165。
 
 ## 0. 规格约定
 
@@ -82,11 +82,11 @@ flowchart LR
 
 ### 3.1 实体合同 [SDS-02]
 
-五 Schema 冻结于 `schema_version=1`：**ProjectIR**（goal/requirements/decisions/tasks+revision+digest）、**TaskEnvelope**（attempt 派发单元）、**AttemptReport**（自述，永远非证据）、**EvidenceAtom**（predicate+command+exit+subject digest）、**SchedulerEvent**（28 类，payload_version=1）。字段变更必须 bump 版本并过 §9 流程。
+五 Schema 冻结于 `schema_version=1`：**ProjectIR**（goal/requirements/decisions/tasks+revision+digest）、**TaskEnvelope**（attempt 派发单元）、**AttemptReport**（自述，永远非证据）、**EvidenceAtom**（predicate+command+exit+subject digest）、**SchedulerEvent**（33 类，payload_version=1；H1 增补治理/选拔五类：`JUDGE_DECLARED`、`CANDIDATE_SELECTED`、`GATE_DEFINED`、`ROLE_TABLE_DEFINED`、`STAGE_GRAPH_DEFINED`）。字段变更必须 bump 版本并过 §9 流程。
 
 ### 3.2 摘要与幂等 [SDS-03]
 
-canonical JSON + SHA-256 双 digest（request/event）；`actionKey` + `stableEntityId` 提供跨进程跨语言稳定身份。**跨语言 parity 是机器门**：TS 实现对冻结 Python fixture（`fixtures/replay/baseline-v1.json`，15 事件）重算全部 digest、哈希链、snapshot 必须逐字节一致 `[INV-17]`——这是两运行时共享同一合同的证明，任何触碰序列化的 PR 都以此回归为硬门。
+canonical JSON + SHA-256 双 digest（request/event）；`actionKey` + `stableEntityId` 提供跨进程跨语言稳定身份。**跨语言 parity 是机器门**：TS 实现对基线 fixture（`fixtures/replay/baseline-v1.json`）重算全部 digest、哈希链、snapshot 必须逐字节一致 `[INV-17]`——这是两运行时共享同一合同的证明，任何触碰序列化的 PR 都以此回归为硬门。fixture 现为 **v2（16 事件）**：v1 冻结自 Python 运行时；v2 由 TS 调度器再生，`PROJECT_CREATED` 后即 genesis `STAGE_GRAPH_DEFINED`（H1 §3.4 D-3 默认管线逐字声明化）。
 
 ### 3.3 写入管线 [SDS-04]
 
@@ -116,9 +116,10 @@ canonical JSON + SHA-256 双 digest（request/event）；`actionKey` + `stableEn
 | canonical 规则与双 digest | `src/schema/canonical.ts`、`src/schema/datetime.ts` |
 | 五 Schema / 28 EventType / payload 规范化 | `src/schema/models.ts` |
 | 状态机转换表 | `src/domain/state_machine.ts` |
+| 阶段图 / 声明 guard 子句语法 | `src/domain/stage_graph.ts`、`src/domain/gate_clause.ts` |
 | aggregate 权威校验 | `src/domain/aggregate.ts` |
 | 受信 TaskPolicy（命令白名单/网络策略） | `src/domain/policy.ts` |
-| 跨语言 parity 基准 | `fixtures/replay/baseline-v1.json`（冻结 Python 运行时生成） |
+| 跨语言 parity 基准 | `fixtures/replay/baseline-v1.json`（v2，TS 运行时生成；v1 冻结自 Python） |
 | 库身份与 migration | `src/state/migrations.ts` + `migration_files/0001_unified_baseline.sql` |
 | effect 映射 | docs/01 §5（本文 §3.4 转载） |
 | 工具 / CLI / SKILL 面 | `src/tools/tools.ts` / `src/cli.ts` / `.zcode/skills/palimpsest/SKILL.md` |
@@ -128,9 +129,9 @@ canonical JSON + SHA-256 双 digest（request/event）；`actionKey` + `stableEn
 
 ## 4. 行为规范
 
-- **4.1 调度** `[SDS-06]`：`decide()` 只读投影产出至多一个决策；`commit()` 走 §3.3 管线。plan/revision change/lease 过期重派、批次激活均由决策表驱动，无随机、无时钟依赖（时钟注入）。
-- **4.2 claim/report** `[SDS-07]`：claim 创建隔离 worktree + RUNNING + 租约；report 四态（completed/failed/cancelled/expired），summary 永不升级为证据。预算与角色槽位在 claim 时准入（默认 implementer 2、软 8 / 硬 20、Manager 1 / Scout ≤6 / Verifier ≤3，demand-driven）。
-- **4.3 门禁与晋升** `[SDS-08]`：Gate DSL 求值确定性（`not` 一票否决、absence=INCOMPLETE、生成 next_evidence_needed）；晋升链 = 验证 → tournament 选择胜者 → 读取 result_commit → 注册门禁 PASS 才 `PROMOTION_COMMITTED`；任何非 PASS 零晋升事件。
+- **4.1 调度** `[SDS-06]`：`decide()` 只读投影产出至多一个决策；`commit()` 走 §3.3 管线。任务拓扑由链上声明的阶段图解释（`STAGE_GRAPH_DEFINED` → `stage_graphs` 投影，最新声明胜出，每次决策重新解析；未声明即拒绝，无硬编码回退）：ACTIVE/VERIFYING 为锁存阶段（首个匹配任务独占 tick，停摆即返回、不下漏），BLOCKED/READY 为扫描阶段（不可推进者跳过）；转换的声明 guard 复用门禁 DSL 子句白名单，缺证据＝unresolved＝停摆，绝不视为通过。plan/revision change/lease 过期重派、批次激活均由决策表驱动，无随机、无时钟依赖（时钟注入）。
+- **4.2 claim/report** `[SDS-07]`：claim 创建隔离 worktree + RUNNING + 租约；report 四态（completed/failed/cancelled/expired），summary 永不升级为证据。预算与角色槽位在 claim 时准入；槽位表是链上声明（`ROLE_TABLE_DEFINED`；`start()` 逐字声明 genesis：implementer 2、tester 1、verifier 1、scout 2、analyst 2、软 8 / 硬 20），未声明角色 fail-closed（`slotOf` 拒绝），再声明即生效、无重启。
+- **4.3 门禁与晋升** `[SDS-08]`：Gate DSL 求值确定性（`not` 一票否决、absence=INCOMPLETE、生成 next_evidence_needed）；门禁定义上链（`GATE_DEFINED`，最新声明胜出，旧版本失效不合并）；晋升链 = 验证 → tournament 选择胜者（判官必须已声明——`JUDGE_DECLARED`；未声明 fail-closed，无隐式默认判官）→ 读取 result_commit → 注册门禁 PASS 才 `PROMOTION_COMMITTED`；任何非 PASS 零晋升事件。
 - **4.4 失效** `[SDS-09]`：change_class（metadata_only/backward_compatible/behavior_change/contract_breaking）× 依赖边敏感度传播 STALE；迟到结果四分类处理，绝不复活。
 - **4.5 run 回合协议** `[SDS-10·E1]`：一次 `palimpsest_run` 调用 = 一个 LLM 判断点 + 回合内机械 `pump`（调度推进 / 允许的 gate 命令 / 批次重试）；无 daemon，进程随时可死，`status` 恢复。
 - **4.6 装备化** `[SDS-11·E2]`：`TaskSpec.suggested_skills?` 缺省省略序列化（选项 A，parity 硬门），透传 envelope；main-agent-only 技能路由主代理，不程序化绕行。
@@ -210,6 +211,7 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | **E2** ✅ | `suggested_skills`（选项 A 缺省省略）、envelope 透传、worker SKILL、main-only 路由 | [ACC-02] parity 回归绿（可选字段零扰动）；`e2_equipped`（schema/透传/未知不 fatal）；宿主级等值验收 `e2_host_demo`（真实 worktree + 产物 + 取证） | |
 | **E3** ✅ | status `resume` 恢复区块、stale-world `blocked` 降级、"继续"协议、跨会话续跑 | `e3_resume`（resume 只读/分类、杀会话后续跑至 promote+SATISFIED、paused 跨会话、stale blocked 不崩）；全量 25/141 绿；CLI 每命令独立进程重开库＝跨进程持久性 | |
 | **E4** ✅ | 工具结构化 `mode` 声明、拒绝协议入 SKILL、hooks 兼容说明、三权限模式剧本 | `e4_modes`（9 工具全量 mode 声明、read-only 面零写入、mutating 面标记）；CLI 剧本：只读面 last_event_id 2→2、mutating 2→3→8 | |
+| **H1** ✅ | 审计整改（06 规格全案）：恢复器官、声明制选拔、门禁/角色/阶段三层上链 + genesis、自重构 | `test/h1_*.test.ts` 全绿（A1..A4、B1..B2、C1..C4、D1..D6、E1）；parity v2 + E1–E4 硬门绿；全量 31/165 | ✅ `6bd6007`→`561e132`→`2083923`→`47969bb` |
 | **S** | SDK 拆包/多宿主 | 另立提案（§2 纪律已预埋） | 📋 提案制 |
 
 ---
@@ -294,4 +296,4 @@ docs/02 §3 全文按规范执行，要点：plan-mode 下插件**零事件**（
 | decide / commit | 调度决策的两段：纯函数决策（零事件）与事件提交（E1 拆分） |
 | 回合（turn） | 一次 `palimpsest_run` 调用：一个 LLM 判断点 + 回合内机械 pump（E1） |
 | reconcile | Ordarium 恢复语义：对 uncertain 效果查明"已落地则不重做、未落地则补做" |
-| parity | 跨语言机器门：TS 与冻结 Python 基准对同一事件序产出逐字节一致的 digest/哈希链/snapshot |
+| parity | 摘要机器门：TS 对基线 fixture（v1 冻结自 Python，v2 由 TS 再生含 genesis 阶段图）重算同一事件序的 digest/哈希链/snapshot，逐字节一致 |

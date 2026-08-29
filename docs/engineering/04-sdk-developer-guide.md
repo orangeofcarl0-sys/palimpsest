@@ -66,7 +66,7 @@ const created = controller.step(); // ATTEMPT_CREATED
 ## 4. 确定性合同（吃了这碗饭就别往锅里吐口水）
 
 - **canonical JSON + SHA-256 双 digest**：键按码点排序、禁浮点、NFC、显式 null；request/event 双摘要；哈希链。
-- **跨语言 parity 是机器门**：`fixtures/replay/baseline-v1.json`（冻结 Python 生成的 15 事件）要求 TS 实现重算的 digest/哈希链/snapshot 逐字节一致。**你碰到序列化的任何提交都必须过这个门**（`pnpm exec vitest run test/parity.fixture.test.ts`）。
+- **跨语言 parity 是机器门**：`fixtures/replay/baseline-v1.json`（v2 共 16 事件：v1 冻结自 Python，v2 由 TS 调度器再生，含 genesis 阶段图声明）要求 TS 实现重算的 digest/哈希链/snapshot 逐字节一致。**你碰到序列化的任何提交都必须过这个门**（`pnpm exec vitest run test/parity.fixture.test.ts`）。
 - **幂等**：`actionKey`/`stableEntityId` 决定论生成全部事件的幂等键；重复的 request 返回原事件而不是重复入账。细节：这是"多进程同时写"与"崩溃重放"不重复的根源。
 - **时间**：不读系统时钟——时钟注入（Palimpsest 侧 `() => string`，Ordarium 侧 `() => Date`）。细节：测试用 `ManualClock`/`FakeClock` 复现跨天/租约过期。
 - **存储并发**：WAL 强制、`busy_timeout=5000`、`synchronous=FULL`、append 单事务原子。细节：不要求单写者，但长批量机械循环请单进程进行。

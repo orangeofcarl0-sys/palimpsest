@@ -67,6 +67,19 @@ controller.step();
 - `report` 的四种终态：completed / failed / cancelled / expired；过期返回使用 `reportLate`（记录为 STALE）。
 - 证据仅由 `controller.gate` 或门禁求值产生。
 
+### 声明治理
+
+门禁、角色槽位、阶段图与选拔判官全部上链声明（构造器不再接受内存配置）；最新声明胜出，未声明即 fail-closed：
+
+| 方法 | 作用 |
+|---|---|
+| `declareGate(gate, declaredBy)` | 注册/取代门禁定义（`GATE_DEFINED`） |
+| `declareRoleTable({ roles, hardCap, declaredBy })` | 声明角色槽位表；未声明角色在认领/分配时被拒 |
+| `declareStageGraph(graph, version)` | 声明任务阶段图；占用状态必须仍可达终态，否则一票否决 |
+| `declareJudge({ judgeId, kind, declaredBy })` | 声明选拔判官；未声明时 `selectCandidate` 拒绝执行 |
+
+`start()` 自动声明 genesis 角色表与默认阶段图（现行管线逐字声明化）。更换拓扑——新增角色、重命名阶段——只需再声明一次，无需改代码。
+
 ## 4. 错误处理
 
 | 类别 | 行为 |
@@ -81,7 +94,7 @@ controller.step();
 
 - 所有写入必须经 `EventStore.append`；不要直接写业务表。
 - 时钟与身份注入；测试使用 `FakeClock`/`ManualClock` 控制时间。
-- 修改事件或序列化结构的提交必须通过 `test/parity.fixture.test.ts`（与冻结 Python 基线逐字节一致）。
+- 修改事件或序列化结构的提交必须通过 `test/parity.fixture.test.ts`（与基线 fixture v2 逐字节一致，含 genesis 阶段图声明）。
 - 新增字段遵循工程规格 §9.2 的加法可选字段规则（缺省省略序列化、解析器保留未知可选字段）。
 
 ## 6. 测试
