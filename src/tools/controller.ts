@@ -162,6 +162,18 @@ export interface ControllerStatusView {
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
   parallel: { admittedAttempts: number; rejectedClaims: number };
+  /** PLMP-TLM-2 §1: human-facing model performance summary (absent when cold). */
+  telemetry?: {
+    rows: Array<{
+      task_type: string;
+      model: string;
+      attempts: number;
+      successes: number;
+      successRate: string;
+      avgCost: string;
+      costPerSuccess: string;
+    }>;
+  };
   /** E3 resume block: where the project is, what the host must do next. */
   resume: {
     action:
@@ -1423,6 +1435,18 @@ export class ProjectController {
       promotion_id: String(row.promotion_id),
       state: String(row.state),
     }));
+    // PLMP-TLM-2 §1: the user-facing telemetry summary, in plain numbers -
+    // percentages and prices only, never internal vocabulary ([STV-A03]).
+    const telemetryRows = this.telemetry.snapshot().rows.map((row) => ({
+      task_type: row.task_type,
+      model: row.model,
+      attempts: row.attempts,
+      successes: row.successes,
+      successRate: `${Math.round(row.successRate * 100)}%`,
+      avgCost: row.avgAttemptCost.toFixed(4),
+      costPerSuccess:
+        row.costPerSuccess === undefined ? "n/a" : row.costPerSuccess.toFixed(4),
+    }));
     return {
       projectId: this.projectId,
       revision: project.revision,
@@ -1441,6 +1465,7 @@ export class ProjectController {
         ...this.#resumeOverview(),
         preparedPromotions: this.#preparedPromotionIds(),
       },
+      ...(telemetryRows.length === 0 ? {} : { telemetry: { rows: telemetryRows } }),
     };
   }
 

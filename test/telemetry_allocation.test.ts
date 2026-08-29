@@ -396,3 +396,72 @@ describe("durable learning loop across sessions (PLMP-ALC-1 P3)", () => {
     }
   });
 });
+
+describe("status telemetry view (PLMP-TLM-2)", () => {
+  it("STV-A01: samples surface as a human-readable telemetry section", async () => {
+    const { controller, git, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      git.queueGateOutcome("python", ["-m", "pytest"], 1);
+      git.queueGateOutcome("python", ["-m", "pytest"], 0);
+      await controller.pumpCommandAttempts({
+        attribution: { model: "flash", cost: 0.002 },
+      });
+
+      const view = controller.status();
+      const row = view.telemetry!.rows[0]!;
+      expect(row.task_type).toBe("implementer");
+      expect(row.model).toBe("flash");
+      expect(row.attempts).toBe(2);
+      expect(row.successes).toBe(1);
+      expect(row.successRate).toBe("50%"); // smoothed (1+2)/(2+4)
+      expect(row.avgCost).toBe("0.0020");
+      expect(row.costPerSuccess).toBe("0.0040");
+    } finally {
+      await cleanup();
+    }
+  });
+
+  it("STV-A02: a cold table leaves the telemetry key absent", async () => {
+    const { controller, git, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      git.queueGateOutcome("python", ["-m", "pytest"], 0);
+      await controller.pumpCommandAttempts(); // no attribution -> no samples
+
+      const view = controller.status();
+      expect("telemetry" in view).toBe(false);
+    } finally {
+      await cleanup();
+    }
+  });
+
+  it("STV-A03: the telemetry section speaks user language only", async () => {
+    const { controller, git, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      git.queueGateOutcome("python", ["-m", "pytest"], 0);
+      await controller.pumpCommandAttempts({
+        attribution: { model: "flash", cost: 0.002 },
+      });
+
+      const view = controller.status();
+      const row = view.telemetry!.rows[0]!;
+      expect(Object.keys(row).sort()).toEqual([
+        "attempts",
+        "avgCost",
+        "costPerSuccess",
+        "model",
+        "successRate",
+        "successes",
+        "task_type",
+      ]);
+      const serialized = JSON.stringify(view.telemetry).toLowerCase();
+      for (const banned of ["event", "digest", "hash", "gamma", "revision", "namespace"]) {
+        expect(serialized).not.toContain(banned);
+      }
+    } finally {
+      await cleanup();
+    }
+  });
+});
