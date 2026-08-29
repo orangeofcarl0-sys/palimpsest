@@ -1,7 +1,14 @@
 packages:
   - .
 
+# The @ordarium/* release-tarball strategy redirects the packed inter-deps
+# (@ordarium/core "1.1.0" declared inside the ledger-sqlite/testing tarballs)
+# to pinned GitHub release URLs, which the pnpm 11 blockExoticSubdeps default
+# rejects as exotic subdeps. Integrity stays enforced by the lockfile sha512
+# records and pnpm's supply-chain verification.
+blockExoticSubdeps: false
+
 overrides:
-  '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-core-1.0.0.tgz
-  '@ordarium/ledger-sqlite': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-ledger-sqlite-1.0.0.tgz
-  '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-testing-1.0.0.tgz
+  '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-core-1.1.0.tgz
+  '@ordarium/ledger-sqlite': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-ledger-sqlite-1.1.0.tgz
+  '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-testing-1.1.0.tgz

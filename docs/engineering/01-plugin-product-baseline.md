@@ -69,7 +69,7 @@ src/install    installPalimpsest(ctx, options) 黄金路径                     
 | Gate 命令执行 | `palimpsest.gate.command` | `readOnly` | 一次性 worktree 内重跑，无外部副作用 |
 | 外部 worker dispatch | `palimpsest.worker.dispatch` | `guarded` | dispatch 后结果不明保持 uncertain |
 
-插件直接依赖 `@ordarium/core` + `@ordarium/ledger-sqlite`（宿主/框架作者路径，docs/12 §5），不重复注册 Ordarium 运维工具面。依赖经 `tools/sync-ordarium.mjs` 从同级 Ordarium checkout 打包五 tarball，以 `link:` + workspace overrides 解析（单包 git 依赖的 `workspace:*` 限制是 Ordarium 记录在案的已知问题）。
+插件直接依赖 `@ordarium/core` + `@ordarium/ledger-sqlite`（宿主/框架作者路径，docs/12 §5），不重复注册 Ordarium 运维工具面。依赖以 GitHub release tarball URL 逐包钉死：`package.json` 三行 pin + `pnpm-workspace.yaml` overrides 重定向打包内互依赖（ledger-sqlite/testing tarball 内声明的 `@ordarium/core` 版本号在 npm 不存在，必须重定向到同 release 的 core tarball——pnpm 11 的 overrides 权威位置是 workspace yaml，该块承重不可删；`blockExoticSubdeps: false` 为此策略显式豁免，integrity 仍由 lockfile sha512 与 pnpm 供应链校验把关）。单包 git 依赖的 `workspace:*` 限制是 Ordarium 记录在案的已知问题；P1 时代的 `tools/sync-ordarium.mjs` 打包路径已退役（00-heritage §5）。
 
 **P1 恢复语义（机器验收）**：`git.promote` 在 execute 前后两个崩溃窗口由 reconcilable 恢复——Crash A（合并前）reconcile 见 head 未变 → `absent(retrySafe)` → 重启后重放 execute，合并恰好一次；Crash B（合并落地、账本未记）reconcile 见 source 已是 head 祖先 → `succeeded`，绝不二次合并。`worker.dispatch` 崩溃后保持 `uncertain`（`UncertainOperationError`），不盲重试。readOnly 的 `gate.command` 同 identity 崩溃窗口后拒绝盲重试，新 identity（新 operation）正常重做。PromotionManager 对崩溃/不确定错误不落 `PROMOTION_FAILED` 终态，只有确定性失败才终态化。
 

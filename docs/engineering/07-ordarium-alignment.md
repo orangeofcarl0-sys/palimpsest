@@ -3,7 +3,7 @@
 > **Spec ID**：`PLMP-ALN-1` ｜ 状态：**生效**（跨仓库协调权威）
 > **权威序**：本文＝Ordarium 演进 × Palimpsest 消费的协调权威。系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；Ordarium 合同以其仓库 docs/12–17 为准；兼容层登记以其 `evidence/compatibility-register.md`（机器校验）为准。各权威域内冲突域内裁决；跨域冲突以本文登记的裁决为准并双向同步。
 > **对侧镜像**：Ordarium `docs/18-release-compat-policy.md`（宿主中立发布纪律与消费者核对单）——本仓库的升级协议（§3）是其核对单的实例化。
-> **修订记录**：`ALN-1`＝初版冻结（2026-08-29）：真相归属地图、演进接口清单（8 项四元组）、升级协议、半触达监护、唤醒制度、双边诉求登记、纪律红线；四项裁决 ALN-1..4 经用户确认（§8）。
+> **修订记录**：`ALN-1`＝初版冻结（2026-08-29）：真相归属地图、演进接口清单（8 项四元组）、升级协议、半触达监护、唤醒制度、双边诉求登记、纪律红线；四项裁决 ALN-1..4 经用户确认（§8）。r2（同日）＝1.1.0 bump 落地登记：升级协议①勘误、sync-ordarium.mjs 退役、busy 断言补齐、演进清单 #1/#2 唤醒（§修订流水）。
 
 ---
 
@@ -13,6 +13,7 @@
 
 - **Ordarium ＝ 通用内核**（Safe Action SDK + Effect Authority）：内核只认宿主中立形状——Action/Effect profile/identity/lease/reconcile/状态种类；"编排、项目、证据、晋升"等 Palimpsest 概念**永不进入内核合同**。落在 Ordarium 侧的协调物只能是通用政策；Palimpsest 至多以"首宿主案例"身份被引用，不存在特例通道。
 - **Palimpsest ＝ 编排入口**（DSH 插件）：拥有"项目流程"语义（什么派发、什么算证据、什么晋升、什么作废）；**证据定义权（EvidenceAtom 体系）是本仓库所有物**。它是 Ordarium 的首个深度消费者而非唯一宿主，一切消费走公开合同面。
+- **工作区布局澄清（用户裁决 2026-08-29）**：`DSH plugin\ordarium\` 是 Ordarium 项目自管的工作副本；本仓库对 Ordarium 仅以 GitHub release tarball 运行依赖，永不引用同级副本路径，也不把它当作本仓库的清理对象。
 
 ## 1. 真相归属地图（裁决 ALN-1）
 
@@ -47,8 +48,8 @@ Ordarium state-kind Stage 1 落地后，Palimpsest 的消费边界**逐一列举
 
 | # | Ordarium 演进项 | 触达现状 | 唤醒条件 | 预定消费点 | 消费姿态 |
 |---|---|---|---|---|---|
-| 1 | `openRetry` 默认开启（1.1.0） | **半触达**：`SqliteLedger` 单参构造（`src/effects/runtime.ts:95`）不传 options，但 `deploymentCoordination: "local-multi-process"` 已声明（`:97`），`LedgerBusyError` 浮出边界已消费（`src/effects/errors.ts:29-31`） | 首次 pin bump 到 ≥1.1.0 | `createPalimpsestEffects` 的 ledger 构造 | **显式钉住**（若构造签名可配则显式传参）+ 行为断言测试 + 核对单（裁决 ALN-3，§4） |
-| 2 | 账本 schema v2→v3 迁移（1.1.0） | 零代码触达（本仓库不对 operations.sqlite 做任何 PRAGMA/schema 操作） | 首次 bump——用户既有 `$DSH_HOME` 账本在下次打开时自动迁移 | 无代码消费点；运行环境行为 | 迁移后全量 crash/reconcile 套件重跑（`test/effects.crash.test.ts` 等）；发布说明核对 |
+| 1 | `openRetry` 默认开启（1.1.0） | **已钉住（2026-08-29 bump）**：`createPalimpsestEffects` 显式传 `{attempts:5, delayMs:100}`（`src/effects/runtime.ts`），不再依赖上游默认 | 已唤醒（1.1.0 bump 完成） | `createPalimpsestEffects` 的 ledger 构造 | **显式钉住** + 行为断言测试 + 核对单（裁决 ALN-3，§4）——三件套已落地 |
+| 2 | 账本 schema v2→v3 迁移（1.1.0） | 零代码触达（本仓库不对 operations.sqlite 做任何 PRAGMA/schema 操作）；迁移验证在册：原生 v2 fixture（`fixtures/ordarium/ledger-v2.sqlite`）+ 打开迁移断言（`test/ordarium_ledger.test.ts`） | 已唤醒（1.1.0 bump 完成）——既有 `$DSH_HOME` 账本在下次打开时自动迁移 | 无代码消费点；运行环境行为 | 迁移后全量 crash/reconcile 套件重跑（32/170 全绿）；发布说明核对（release notes §2） |
 | 3 | `STATE_REVISION_CONFLICT` / `STATE_REF_NOT_FOUND`（错误码 27–29）、state 修订、refs 反查 | 零触达（全仓 grep 0 命中；错误分类仅四类 1.0.0 类型：`UncertainOperationError`/`OperationBusyError`/`SimulatedProcessCrash`/`LedgerBusyError`，`src/effects/errors.ts:11-31`） | 裁决 ALN-1 的管理型试点落地 | telemetry 外置读写路径的乐观并发与失败分类 | 最小消费；错误按 Ordarium 分类映射进既有 transient/busy 体系，**不按数字码硬编码**；refs 反查不进恢复路径 |
 | 4 | versioned Host Adapter（Ordarium `COMPAT-PAL-001` 缝） | 零准备（本仓库无 adapter 注册/版本协商代码） | Ordarium 交付 adapter 版本协商 | `installPalimpsest` / `src/tools/dsh_types.ts` 适配层 | 首宿主 conformance 案例（诉求②）；合同冻结面（31 文件/165 测试）作验收基座 |
 | 5 | G14 模型工具独立 scope | 零触达（effects 全部 `scope: projectId`） | 出现按模型/工具拆分记账的**实证需求**（当前无；telemetry 在本仓库自持） | effects invoke 的 scope/callId 拼装 | 需求实证后才启用，不预埋 |
@@ -62,14 +63,14 @@ Ordarium state-kind Stage 1 落地后，Palimpsest 的消费边界**逐一列举
 
 ```
 Ordarium release（release notes 含消费者可见行为变化清单，诉求①）
-  → ① 重钉：package.json:28/29/32 三行 + 清理死 overrides（:49-52，pnpm 已不读取）+ 重算 lockfile
+  → ① 重钉：package.json 三行 pin + `pnpm-workspace.yaml` overrides 三行 + 重算 lockfile。**勘误（r2）**：pnpm 11 的 overrides 权威位置是 workspace yaml 且**承重**——ledger-sqlite/testing tarball 内声明的 `@ordarium/core` 版本号在 npm 不存在，必须重定向到同 release 的 core tarball，不可删；`package.json` 的 `pnpm.overrides` 块才是死配置（已清除）；该策略撞 pnpm 11 默认 `blockExoticSubdeps`，仓库已显式豁免（integrity 仍由 lockfile sha512 与供应链校验把关）
   → ② 消费核对单（§3.2 逐项）
   → ③ 五问复检（§5）
   → ④ 全量 pnpm check（31 文件/165 测试 + parity fixture 硬门）
   → ⑤ 修订登记：本文 §修订流水 + 03 SDS 修订记录各一行
 ```
 
-工具项登记（实施时另行提交）：`tools/sync-ordarium.mjs` 现代化或退役——它停留在 P1 的 file: 打包路径（`tools/sync-ordarium.mjs:15-21` 注释自述），消费渠道已切 GitHub Release URL（`00-heritage.md:75` 记录的演变已完成）。
+工具项处置（2026-08-29 完成）：`tools/sync-ordarium.mjs` **退役删除**（文件与 `package.json` 的 `sync:ordarium` script 一并移除）——消费渠道早已切 GitHub Release URL，无剩余职责。
 
 ### 3.2 消费核对单
 
@@ -91,7 +92,7 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 
 **三件套**：
 1. **显式钉住**：bump 时承重 seam 显式传参固定，不吃上游默认；
-2. **测试断言**：行为边界断言（如 LedgerBusyError 浮出时机）守面——登记待办：为 busy 边界补显式断言测试；
+2. **测试断言**：行为边界断言守面——已补（`test/ordarium_ledger.test.ts`：fail-fast、有界退避越界、`LedgerBusyError` 分类面归位、非 busy 族不重试）；
 3. **核对单**：§3.2 第 1 项显式盯默认值。
 
 ## 5. 唤醒条件与复检制度
@@ -136,3 +137,4 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 | 日期 | 修订 |
 |---|---|
 | 2026-08-29 | 初版冻结（PLMP-ALN-1）：四项裁决用户确认；演进接口清单 8 项；升级协议与复检制度生效；双边诉求登记。依赖基线：Ordarium v1.0.0（`package.json:28-32`），对侧已推进 1.1.0（Safe Action SDK + Effect Authority），本仓库尚未 bump。 |
+| 2026-08-29（r2） | **Ordarium 1.1.0 bump 落地**（§3.1 全链）：对侧发布 `ordarium-v1.1.0`（六门 verify:release 绿 + 五类行为变化清单，诉求①兑现）。①重钉：三行 pin + workspace overrides + `blockExoticSubdeps: false` 豁免，lockfile/node_modules 实装 1.1.0；②消费核对单七项完成——默认值：openRetry 显式钉住 `{attempts:5, delayMs:100}`；存储迁移：原生 v2 fixture 打开迁移断言通过；错误分类：`LedgerBusyError` 归位断言通过；新错误码 27–29 未进消费面（telemetry 试点前）；弃用面：无；死配置：`package.json` overrides 清除；半触达清单 #1/#2 更新为已唤醒；③五问复检：依赖四层一致（pin==overrides==lock==实装）；触达 grep——openRetry 已消费，错误码/state 修订/refs 反查仍 0 命中；对侧诉求①已兑现、②③待对侧交付；运行时 32/170 全绿（parity fixture v2 硬门保持）；G13/G14 无唤醒迹象。工具项：`sync-ordarium.mjs` 退役。 |

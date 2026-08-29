@@ -92,7 +92,11 @@ export function createPalimpsestEffects(
 ): PalimpsestEffectsRuntime {
   const databasePath = options.databasePath ?? defaultOrdariumPath();
   const runtime = new OrdariumRuntime({
-    ledger: new SqliteLedger(databasePath),
+    // openRetry pinned at the 1.1.0 bump (ALN-3): the load-bearing seam is
+    // frozen explicitly instead of silently following upstream defaults.
+    ledger: new SqliteLedger(databasePath, {
+      openRetry: { attempts: 5, delayMs: 100 },
+    }),
     deploymentCoordination: "local-multi-process",
     clock: options.clock,
     hooks: options.hooks,

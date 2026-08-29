@@ -21,15 +21,14 @@
     "clean": "tsc -b --clean",
     "test": "pnpm run build && vitest run",
     "test:watch": "vitest",
-    "check": "pnpm run test",
-    "sync:ordarium": "node tools/sync-ordarium.mjs"
+    "check": "pnpm run test"
   },
   "dependencies": {
-    "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-core-1.0.0.tgz",
-    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-ledger-sqlite-1.0.0.tgz"
+    "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-core-1.1.0.tgz",
+    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-ledger-sqlite-1.1.0.tgz"
   },
   "devDependencies": {
-    "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-testing-1.0.0.tgz",
+    "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.1.0/ordarium-testing-1.1.0.tgz",
     "@types/node": "26.2.0",
     "typescript": "7.0.2",
     "vitest": "4.1.10"
@@ -44,12 +43,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/orangeofcarl0-sys/palimpsest.git"
-  },
-  "pnpm": {
-    "overrides": {
-      "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-core-1.0.0.tgz",
-      "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-ledger-sqlite-1.0.0.tgz",
-      "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.0.0/ordarium-testing-1.0.0.tgz"
-    }
   }
 }

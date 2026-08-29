@@ -72,4 +72,4 @@
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
 
-P1 依赖安装路径（`link:` + workspace overrides，五 tarball 自洽）即 Ordarium 记录在案的分发方式二；`tools/sync-ordarium.mjs` 打包自同级 checkout，公共发布后切换为 GitHub Release URL。
+P1 依赖安装路径（`link:` + workspace overrides，五 tarball 自洽）即 Ordarium 记录在案的分发方式二；`tools/sync-ordarium.mjs` 打包自同级 checkout，公共发布后切换为 GitHub Release URL。（该工具已于 2026-08-29 随 Ordarium 1.1.0 bump 退役：渠道切换完成后无剩余职责，文件与 `sync:ordarium` script 一并移除。）
