@@ -39,6 +39,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import { compileContextBrief, type ContextBrief } from "../context/index.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
@@ -1467,6 +1468,86 @@ export class ProjectController {
       },
       ...(telemetryRows.length === 0 ? {} : { telemetry: { rows: telemetryRows } }),
     };
+  }
+
+  /**
+   * PLMP-CTX-1 §2: the C2 context brief - a derived advisory compilation of
+   * facts (evidence 1:1, zero summarisation), interpretations (worker
+   * self-reports, marked as such) and contradicted claims (both sides
+   * listed, the R7 verdict verbatim). Read-only and never appended to the
+   * event log: context is not a source of truth ([CTX-INV-5]).
+   */
+  contextBrief(options: { taskId?: string } = {}): ContextBrief {
+    const attemptFilter =
+      options.taskId === undefined ? "" : " AND task_id=?";
+    const attemptArgs =
+      options.taskId === undefined
+        ? [this.projectId]
+        : [this.projectId, options.taskId];
+    const interpretations = (
+      this.store.connection
+        .prepare(
+          `SELECT attempt_id, task_id, report_json FROM attempts WHERE project_id=?${attemptFilter}`,
+        )
+        .all(...attemptArgs) as Array<Record<string, unknown>>
+    ).flatMap((row) => {
+      if (row.report_json === null) return [];
+      const report = decodeJsonBlob(row.report_json) as Record<string, unknown>;
+      if (
+        typeof report.summary !== "string" ||
+        typeof report.worker_status !== "string"
+      ) {
+        return [];
+      }
+      return [
+        {
+          attemptId: String(row.attempt_id),
+          taskId: row.task_id === null ? null : String(row.task_id),
+          workerStatus: report.worker_status,
+          summary: report.summary,
+        },
+      ];
+    });
+    const attemptIds = new Set(interpretations.map((entry) => entry.attemptId));
+    const evidence = (
+      this.store.connection
+        .prepare("SELECT evidence_id, status, evidence_json FROM evidence WHERE project_id=?")
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).flatMap((row) => {
+      const atom = decodeJsonBlob(row.evidence_json) as Record<string, unknown>;
+      const subjectId = typeof atom.subject_id === "string" ? atom.subject_id : null;
+      if (options.taskId !== undefined && (subjectId === null || !attemptIds.has(subjectId))) {
+        return [];
+      }
+      return [
+        {
+          evidenceId: String(row.evidence_id),
+          status: String(row.status),
+          subjectType: typeof atom.subject_type === "string" ? atom.subject_type : "",
+          subjectId: subjectId ?? "",
+          predicate: typeof atom.predicate === "string" ? atom.predicate : "",
+          exitCode: typeof atom.exit_code === "number" ? atom.exit_code : null,
+        },
+      ];
+    });
+    const claims = this.claims.snapshot().nodes
+      .filter((node) => node.kind === "claim")
+      .map((node) => {
+        const status = this.claims.claimStatus(node.id);
+        return {
+          claimId: node.id,
+          label: node.label,
+          status: status.status,
+          supportedBy: status.supportedBy,
+          contradictedBy: status.contradictedBy,
+        };
+      });
+    return compileContextBrief({
+      projectId: this.projectId,
+      evidence,
+      interpretations,
+      claims,
+    });
   }
 
   /**
