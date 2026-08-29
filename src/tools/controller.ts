@@ -1121,7 +1121,16 @@ export class ProjectController {
   allocateFor(
     taskId: string,
     estimates: AllocationEstimates,
-  ): { allocation: Allocation; concurrency: AllocationCalibration } {
+    options: {
+      /** PLMP-ALC-2 §1.3: advisory model candidates; absent = no model advice. */
+      modelCandidates?: readonly { model: string; cost: number; priorSuccessRate?: number }[];
+    } = {},
+  ): {
+    allocation: Allocation;
+    concurrency: AllocationCalibration;
+    suggestedModel?: string;
+    suggestedModelReason?: string;
+  } {
     const row = this.store.connection
       .prepare("SELECT task_id FROM tasks WHERE project_id=? AND task_id=?")
       .get(this.projectId, taskId);
@@ -1135,6 +1144,11 @@ export class ProjectController {
     const totalRunning = runningRoles.length;
     const hardCapRemaining = this.slots.hardCapRemaining(totalRunning);
     const concurrentLimit = Math.max(0, Math.min(slotOfRole - occupied, hardCapRemaining));
+    // PLMP-ALC-2 §1.3: pure advisory arm - the host still picks the model.
+    const modelAdvice =
+      options.modelCandidates === undefined
+        ? undefined
+        : this.telemetry.suggestModel(role, options.modelCandidates);
     return {
       allocation: adjustAllocation(allocate(estimates), {
         estimates,
@@ -1149,6 +1163,9 @@ export class ProjectController {
         hardCap: this.slots.hardCap,
         concurrentLimit,
       },
+      ...(modelAdvice === undefined
+        ? {}
+        : { suggestedModel: modelAdvice.model, suggestedModelReason: modelAdvice.reason }),
     };
   }
 
