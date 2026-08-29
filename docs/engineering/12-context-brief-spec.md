@@ -1,6 +1,6 @@
 # Context Brief 规格（Context Compiler C2 结构化压缩器，知识闭环的缺环）
 
-> **Spec ID**：`PLMP-CTX-1` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-CTX-1` ｜ 状态：**已交付**（2026-08-29 两阶段 8fbcd0d / 9f83af9，出口 SDS-14）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；遥测线以 `08–11`（TLM/ALC）为准；R7 ClaimGraph 语义以 `src/evidence/graph.ts` 为准；素材母体＝raw-notes 预算.txt §1–12（非权威，冲突以正式文档为准）。本文＝C2 结构化压缩器的形状、两条红线与验收权威。
 > **修订记录**：`CTX-1`＝初版冻结（2026-08-29）：立项裁决＝C2 切片（用户未应答，按既定推荐模式执行）——检索半边（预算.txt §3 requirement、§5–9 hybrid retrieval/manifest/coverage、§12 boot/pull）明确另立项；[CTX-INV-1..5] 红线；验收 CTX-A01–A06。
 

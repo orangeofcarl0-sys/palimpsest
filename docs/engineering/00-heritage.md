@@ -74,6 +74,8 @@
 
 | status 遥测视图（R15，PLMP-TLM-2） | `ControllerStatusView` 加法式可选 `telemetry` 节——人话格式（平滑成功率百分比、成本四位小数）、冷表缺席、术语隔离红线（七字段恰定，机器守门）；工具**集合**冻结不动，status 内容生长循 H1 `resume` 先例；验收 STV-A01–A03（11 规格） |
 
+| Context Brief（R16，PLMP-CTX-1） | 知识闭环第四模块（预算.txt §1–12 Context Compiler）的 C2 切片：`src/context/compressor.ts` 纯函数——facts 与证据投影 1:1（零摘要）、attempt 自述隔离为解释层（无证据 id）、被反驳 claim 双侧并列且 R7 判定直拷（冲突不平均，§11 红线）；`contextBrief(taskId?)` 只读咨询面，永不落账；检索半边（§3/§5–9/§12）与 C0/C1/C3 层明确另立项；验收 CTX-A01–A06（12 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
