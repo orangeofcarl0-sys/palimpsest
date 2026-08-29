@@ -1,6 +1,6 @@
 # 模型推荐咨询面规格（R6 bestModel 接线，ALC 闭环的咨询臂）
 
-> **Spec ID**：`PLMP-ALC-2` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-ALC-2` ｜ 状态：**已交付**（2026-08-29 两阶段 f77ecb3 / 9e434c3，出口 SDS-12）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；遥测持久层与消费闭环以 `08`（PLMP-TLM-1）/`09`（PLMP-ALC-1）为准；R6 语义以本仓库 `src/telemetry/performance_table.ts`（raw-notes 预算.txt §43）为准；本文＝模型推荐咨询面的形状、诚实门控与验收权威。
 > **修订记录**：`ALC-2`＝初版冻结（2026-08-29）：立项裁决＝A-2 纯咨询面（用户选定）；R6 `bestModel` 原样复用、新增诚实门控（per-model 资格 + 零成本静默）；验收 ADV-A01–A06。
 
