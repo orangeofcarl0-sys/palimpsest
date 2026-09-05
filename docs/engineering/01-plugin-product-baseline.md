@@ -48,6 +48,7 @@ src/allocate  遥测驱动分配：保守重映射（加宽/升档/降档，硬�
 src/telemetry  模型推荐咨询面：bestModel 诚实门控（per-model 资格 + 零成本弃权）【R14 ✅】
 src/tools     status 遥测视图：人话格式遥测节（冷表缺席、术语隔离红线）        【R15 ✅】
 src/context   Context Brief：C2 结构化压缩器（事实/解释/冲突三层，冲突不平均）  【R16 ✅】
+src/effects   Host Adapter conformance：握手钉住 + hostPort 直通 + 四场景    【R17 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

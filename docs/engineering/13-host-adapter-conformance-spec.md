@@ -1,6 +1,6 @@
 # Host Adapter conformance 规格（G18 首宿主接入，ALN-4② 兑现）
 
-> **Spec ID**：`PLMP-CONF-1` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-CONF-1` ｜ 状态：**已交付**（2026-09-06 `5baf38c`，出口 SDS-15；消费通道裁决记 07 r8）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；G18 合同以 Ordarium `evidence/G18/design-spec.md` + docs/13 §8（`HOST_CONTRACT_VERSION` exact-match）为准；接入协议以对侧确认报告 `ordarium/docs/research/palimpsest-aln4-2-confirmation-2026-09-06.md`（P1–P6）为准；本文＝Palimpsest 侧接入的形状、映射语义与验收权威。
 > **修订记录**：`CONF-1`＝初版冻结（2026-09-06）：握手字面量钉住、`hostPort` 全直通映射、runner 四场景、scratch 账本令；验收 CONF-A01–A06。
 

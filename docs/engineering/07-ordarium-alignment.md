@@ -51,11 +51,12 @@ Ordarium state-kind Stage 1 落地后，Palimpsest 的消费边界**逐一列举
 | 1 | `openRetry` 默认开启（1.1.0） | **已钉住（2026-08-29 bump）**：`createPalimpsestEffects` 显式传 `{attempts:5, delayMs:100}`（`src/effects/runtime.ts`），不再依赖上游默认 | 已唤醒（1.1.0 bump 完成） | `createPalimpsestEffects` 的 ledger 构造 | **显式钉住** + 行为断言测试 + 核对单（裁决 ALN-3，§4）——三件套已落地 |
 | 2 | 账本 schema v2→v3 迁移（1.1.0） | 零代码触达（本仓库不对 operations.sqlite 做任何 PRAGMA/schema 操作）；迁移验证在册：原生 v2 fixture（`fixtures/ordarium/ledger-v2.sqlite`）+ 打开迁移断言（`test/ordarium_ledger.test.ts`） | 已唤醒（1.1.0 bump 完成）——既有 `$DSH_HOME` 账本在下次打开时自动迁移 | 无代码消费点；运行环境行为 | 迁移后全量 crash/reconcile 套件重跑（32/170 全绿）；发布说明核对（release notes §2） |
 | 3 | `STATE_REVISION_CONFLICT` / `STATE_REF_NOT_FOUND`（错误码 27–29）、state 修订、refs 反查 | **已进消费面（PLMP-TLM-1，2026-08-29）**：telemetry 外置写路径消费 state CAS 与 `StateRevisionConflictError`（instanceof 映射 `isStateRevisionConflict`，归 busy 族）；`STATE_REF_NOT_FOUND`/refs 反查仍未触达（试点不用 refs） | 已唤醒（管理型试点落地） | telemetry 外置读写路径的乐观并发与失败分类（`src/telemetry/state_persistence.ts`） | 最小消费；错误按 instanceof 映射进既有 transient/busy 体系，不按数字码硬编码；refs 反查不进恢复路径（红线保持） |
-| 4 | versioned Host Adapter（Ordarium `COMPAT-PAL-001` 缝） | 零准备（本仓库无 adapter 注册/版本协商代码） | Ordarium 交付 adapter 版本协商 | `installPalimpsest` / `src/tools/dsh_types.ts` 适配层 | 首宿主 conformance 案例（诉求②）；合同冻结面（31 文件/165 测试）作验收基座 |
+| 4 | versioned Host Adapter（Ordarium `COMPAT-PAL-001` 缝，G18 交付） | **已消费（PLMP-CONF-1，2026-09-06）**：装配期 `assertHostContract(1)` 字面量握手 + `hostPort` 全直通映射 + `runHostAdapterConformance` 四场景全过 | 已唤醒（G18 交付 + 1.2.0 bump） | `PalimpsestEffectsRuntime.hostPort`（外部合同面；编排内 `invoke()` 不变） | 首宿主 conformance 案例（诉求②已兑现）；场景权威留 `@ordarium/testing`，palimpsest 只执行装配；`dsh_types.ts` 镜像与本案互不阻塞 |
 | 5 | G14 模型工具独立 scope | 零触达（effects 全部 `scope: projectId`） | 出现按模型/工具拆分记账的**实证需求**（当前无；telemetry 在本仓库自持） | effects invoke 的 scope/callId 拼装 | 需求实证后才启用，不预埋 |
 | 6 | G13 通信取证 | 零触达（证据体系只认确定性命令证据） | agent 间通信需升格为可考事实 | 若唤醒：通信记录 = Ordarium 通用状态条目（宿主中立形状），语义归本仓库 | 单独裁决；与 EvidenceAtom 定义权的边界显式修订，不得静默混入 |
 | 7 | state-kind Stage 1（形状） | **已消费（PLMP-TLM-1）**：append-delta 主体（`expectedRevision:0` 创建后不改写）+ `list` 聚合装载 + `createStateStore({runtime})` | 已唤醒（1.1.0 交付 + 试点落地） | telemetry 外置试点（§1.2） | 首消费者形状评审——第 1 条反馈已产出（TLM-1 §1：计数器类负载的正确形状是 append-only 主体而非覆盖式 CAS 槽位，建议对侧 G11 文档补记） |
 | 8 | 多项目共享账本（本仓库 v2 非目标，`06-audit-remediation-design-spec.md:24`） | 零触达 | Palimpsest v2 提案 | Ordarium namespace/lease/fence | v2 时另行裁决，本文不预设 |
+| 9 | host-kit 消费线（G18 新叶包 `@ordarium/host-kit`） | **已消费（PLMP-CONF-1，2026-09-06）**：依赖清单新增第四行（1.2.0），握手/映射/runner 全接 | 已唤醒（G18 交付 + 1.2.0 bump） | 装配握手 + 外部合同面（`hostPort`） | 最小消费：harness 深化留后续；升级协议 pins 自 1.2.0 起为四行（core/ledger-sqlite/host-kit/testing） |
 
 ## 3. 升级协议（pin bump 的固定流程）
 
@@ -63,7 +64,7 @@ Ordarium state-kind Stage 1 落地后，Palimpsest 的消费边界**逐一列举
 
 ```
 Ordarium release（release notes 含消费者可见行为变化清单，诉求①）
-  → ① 重钉：package.json 三行 pin + `pnpm-workspace.yaml` overrides 三行 + 重算 lockfile。**勘误（r2）**：pnpm 11 的 overrides 权威位置是 workspace yaml 且**承重**——ledger-sqlite/testing tarball 内声明的 `@ordarium/core` 版本号在 npm 不存在，必须重定向到同 release 的 core tarball，不可删；`package.json` 的 `pnpm.overrides` 块才是死配置（已清除）；该策略撞 pnpm 11 默认 `blockExoticSubdeps`，仓库已显式豁免（integrity 仍由 lockfile sha512 与供应链校验把关）
+  → ① 重钉：package.json pin 行（1.2.0 起四行，含 host-kit）+ `pnpm-workspace.yaml` overrides（同四行）+ 重算 lockfile。**勘误（r2）**：pnpm 11 的 overrides 权威位置是 workspace yaml 且**承重**——ledger-sqlite/testing tarball 内声明的 `@ordarium/core` 版本号在 npm 不存在，必须重定向到同 release 的 core tarball，不可删；`package.json` 的 `pnpm.overrides` 块才是死配置（已清除）；该策略撞 pnpm 11 默认 `blockExoticSubdeps`，仓库已显式豁免（integrity 仍由 lockfile sha512 与供应链校验把关）
   → ② 消费核对单（§3.2 逐项）
   → ③ 五问复检（§5）
   → ④ 全量 pnpm check（31 文件/165 测试 + parity fixture 硬门）
@@ -108,14 +109,14 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 | # | 诉求 | 状态 |
 |---|---|---|
 | ① | release notes 必须列**消费者可见行为变化**五类：默认值 / 存储迁移 / 错误分类 / 新错误码 / 弃用面 | 已落对侧 `docs/18` §1 |
-| ② | versioned Host Adapter 交付时，Palimpsest 作为**首宿主 conformance 案例**（呼应 `COMPAT-PAL-001` 缝） | 待 Ordarium 交付 |
+| ② | versioned Host Adapter 交付时，Palimpsest 作为**首宿主 conformance 案例**（呼应 `COMPAT-PAL-001` 缝） | **已兑现（2026-09-06，PLMP-CONF-1）**：G18 交付 + 1.2.0 bump + 握手/映射/四场景接入，`COMPAT-PAL-001` 关闭为已执行 |
 | ③ | state-kind 形状评审征询首个消费者（ALN-1 最小消费裁决使本仓库成为管理型首消费者） | **进行中（2026-08-29）**：首条形状反馈见 `08-telemetry-externalization-spec.md` §1 决策记录 |
 
 ### Ordarium → Palimpsest
 
 | # | 诉求 | 状态 |
 |---|---|---|
-| ① | Host Adapter 交付时配合 conformance 验收（合同冻结面 + 165 项测试作基座） | 待对侧交付，本仓库承诺配合 |
+| ① | Host Adapter 交付时配合 conformance 验收（合同冻结面 + 165 项测试作基座） | **已兑现（2026-09-06，PLMP-CONF-1）**：36 文件/205 测试作基座，四场景全过 |
 
 ## 7. 纪律红线
 
@@ -143,3 +144,4 @@ Ordarium release（release notes 含消费者可见行为变化清单，诉求�
 | 2026-08-29（r5） | **Palimpsest 里程碑出口（PLMP-ALC-2 模型推荐咨询面，五问复检）**：①依赖现状：1.1.0 四层一致，零依赖变更；②触达 grep：state kind 消费面不变（TLM list/CAS），refs 反查仍 0 触达；③对侧诉求：①②状态不变、③进行中（无新增对侧面——咨询臂纯宿主侧组合）；④本仓库运行时：34/193 全绿（ADV-A01–A06，parity fixture v2 硬门保持）；⑤G13/G14 唤醒迹象：无。工程侧：两阶段提交 f77ecb3 / 9e434c3，规格先于实现冻结（10 号，PLMP-ALC-2）。 |
 | 2026-08-29（r6） | **Palimpsest 里程碑出口（PLMP-TLM-2 status 遥测视图，五问复检）**：①依赖现状：1.1.0 四层一致，零依赖变更；②触达 grep：对侧面零新增（纯宿主侧渲染）；③对侧诉求状态不变；④本仓库运行时：34/196 全绿（STV-A01–A03，parity fixture v2 硬门保持）；⑤G13/G14 无唤醒迹象。**文书澄清（D 类）**：对侧 `docs/research/agent-landscape-2026-08/05-palimpsest-charter.md` "全 src/ 无 OPERATION_UNCERTAIN/reconcile 处理（待焊接缝）"已过时——H1-P1 的 `reconcileAll()`/PromotionRecoveryService + `isTransientOperationError`（UncertainOperationError 映射）即该缝，TLM/ALC 补齐 state kind 迁移面；refresh 归 Ordarium 侧。工程侧：`8405b6c`，规格先于实现冻结（11 号，PLMP-TLM-2）。 |
 | 2026-08-29（r7） | **Palimpsest 里程碑出口（PLMP-CTX-1 Context Brief，五问复检）**：①依赖现状：1.1.0 四层一致，零依赖变更；②触达 grep：对侧面零新增（纯宿主侧派生编译）；③对侧诉求状态不变；④本仓库运行时：35/202 全绿（CTX-A01–A06，parity fixture v2 硬门保持）；⑤G13/G14 无唤醒迹象。工程侧：两阶段提交 8fbcd0d / 9f83af9，规格先于实现冻结（12 号，PLMP-CTX-1）；知识闭环四模块（预算.txt §1）至此在两仓内全部有落点——Gate DSL（R1）/Invalidation（R2）/Allocator（R5+R13+ALC）/Context C2（R16），检索半边另立项。 |
+| 2026-09-06（r8） | **Palimpsest 里程碑出口（PLMP-CONF-1 Host Adapter conformance，五问复检）**：①依赖现状：1.2.0 四行 pin（新增 host-kit）四层一致；对侧 ordarium-v1.2.0 release（eee2741 + tag + 六包 tarball，六门 verify:release 绿）；②触达 grep：HOST_CONTRACT_VERSION/assertHostContract/hostPort/runHostAdapterConformance 已消费，refs 反查仍 0 触达；③对侧诉求：①②**双双兑现**（COMPAT-PAL-001 关闭 + RCP-2 + 确认报告落盘对侧仓），③进行中；④本仓库运行时：36/205 全绿（CONF-A01–A04，parity fixture v2 硬门保持）；⑤G13/G14 无唤醒迹象。**两项裁决**：ALN-4② 消费通道（用户"直接 pull 也行"→实测判死：host-kit 声明 workspace:* 互依赖、git checkout 无 dist/prepare，git 通道不可装→最小 release 1.2.0）；升级协议 pins 自 1.2.0 起为四行。工程侧：e90eb6e（bump）/ 5baf38c（conformance），规格先于实现冻结（13 号，PLMP-CONF-1）。 |

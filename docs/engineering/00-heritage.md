@@ -76,6 +76,8 @@
 
 | Context Brief（R16，PLMP-CTX-1） | 知识闭环第四模块（预算.txt §1–12 Context Compiler）的 C2 切片：`src/context/compressor.ts` 纯函数——facts 与证据投影 1:1（零摘要）、attempt 自述隔离为解释层（无证据 id）、被反驳 claim 双侧并列且 R7 判定直拷（冲突不平均，§11 红线）；`contextBrief(taskId?)` 只读咨询面，永不落账；检索半边（§3/§5–9/§12）与 C0/C1/C3 层明确另立项；验收 CTX-A01–A06（12 规格） |
 
+| Host Adapter conformance（R17，PLMP-CONF-1） | G18 首宿主接入（ALN-4② 兑现）：装配期 `assertHostContract(1)` 字面量钉住（错代数 fail-closed，无容忍层）；`PalimpsestEffectsRuntime.hostPort`＝G18 外部合同面——`HostInvocation`≡`ActionRunOptions` 全直通映射，编排内 `invoke()` 路径保持不变；`runHostAdapterConformance` 四场景（runner 权威留 `@ordarium/testing`，palimpsest 只执行装配）；scratch 账本令；验收 CONF-A01–A04（13 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
