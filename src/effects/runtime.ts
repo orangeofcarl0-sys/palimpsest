@@ -21,6 +21,7 @@ import {
   type OrdariumStateStore,
   type RuntimeHooks,
 } from "@ordarium/core";
+import { assertHostContract, type HostInvocationPort } from "@ordarium/host-kit";
 import { SqliteLedger } from "@ordarium/ledger-sqlite";
 
 import { defineEffects } from "./actions.js";
@@ -51,6 +52,8 @@ export interface PalimpsestEffectsRuntime {
   readonly runtime: OrdariumRuntime;
   /** Management-state facade (PLMP-TLM-1): the sole Ordarium state-kind surface. */
   readonly state: OrdariumStateStore;
+  /** G18 host-adapter seam (PLMP-CONF-1): the external contract surface. */
+  readonly hostPort: HostInvocationPort;
   readonly actions: ReturnType<typeof defineEffects>;
   invoke<O extends JsonValue>(
     action: Action<JsonValue, O>,
@@ -113,6 +116,17 @@ export function createPalimpsestEffects(
   const actions = defineEffects(options.git);
   // Bound to the runtime so every state write passes the quiesce/close gates.
   const state = createStateStore({ runtime });
+  // PLMP-CONF-1 §1: the host-contract generation palimpsest was built and
+  // tested against, pinned as a literal - a contract bump fails closed at
+  // assembly until this line is consciously updated.
+  assertHostContract(1);
+  // PLMP-CONF-1 §1: the G18 host-adapter seam - a total pass-through of the
+  // HostInvocation onto the action runner (the shapes are field-identical).
+  // Orchestration-internal callers keep using invoke() with its derived
+  // plan-revision authorization; the port is the external contract surface.
+  const hostPort: HostInvocationPort = {
+    invoke: (action, input, invocation) => action.run(runtime, input, invocation),
+  };
 
   function invoke<I extends JsonValue, O extends JsonValue>(
     action: Action<I, O>,
@@ -136,6 +150,7 @@ export function createPalimpsestEffects(
   return {
     runtime,
     state,
+    hostPort,
     actions,
     invoke,
     async close() {
