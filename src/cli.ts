@@ -18,6 +18,7 @@
  *   report <attemptId> completed|failed "<summary>"
  *   promote <gateId> [expectedHead]       gate-passed promotion
  *   pump  [maxSteps]                      fully-automated command executor
+ *   context <attemptId>                   compile the attempt's context manifest
  *   status                                project view
  *
  * Options:
@@ -139,10 +140,15 @@ async function main() {
     switch (command) {
       case "new": {
         const goal = a1 ?? "default goal";
+        // With a real repo the project base is the repo's actual HEAD - the
+        // DEFAULT_HEAD_COMMIT constant only matches the embedded fake port.
+        const headCommit =
+          repo === undefined ? undefined : await effects.git.head();
         const event = controller.start({
           projectId: controller.projectId,
           goal,
           tasks: [taskSpec(goal, skillHints(arg(parsed.options, "--skills")))],
+          ...(headCommit === undefined ? {} : { headCommit }),
         });
         console.log(JSON.stringify({ created: event.event_type, projectId: event.project_id }));
         break;
@@ -236,7 +242,13 @@ async function main() {
       case "report": {
         const attemptId = a1 ?? "";
         const workerStatus = (a2 ?? "completed") as "completed" | "failed" | "cancelled" | "expired";
-        const event = controller.report(attemptId, { workerStatus, summary: rest[0] ?? "reported" });
+        const event = controller.report(attemptId, {
+          workerStatus,
+          summary: rest[0] ?? "reported",
+          // --commit: the real worktree commit (GitCliPort sessions); absent
+          // falls back to the controller default for completed reports.
+          resultCommit: arg(parsed.options, "--commit"),
+        });
         console.log(JSON.stringify({ attempt: attemptId, eventType: event.event_type }));
         break;
       }
@@ -253,10 +265,13 @@ async function main() {
             ).report_json,
           ),
         );
+        // The expected head is the canonical branch's CURRENT head - with the
+        // real GitCliPort this is the live repo head, not the fake constant.
+        const expectedHead = await effects.git.head();
         const outcome = await controller.promoteWhenGatePasses(
           winner.attempt_id,
           report.result_commit ?? THE_COMMIT,
-          THE_COMMIT,
+          expectedHead,
           gateId ?? "gate-release",
         );
         console.log(JSON.stringify(outcome));
@@ -264,8 +279,31 @@ async function main() {
       }
       case "pump": {
         const maxSteps = Number(a1 ?? 20);
-        const result = await controller.pumpCommandAttempts({ maxSteps });
+        // PLMP-CTX-2 §2: optional telemetry attribution — the operator names
+        // the model (and per-attempt price) that runs the mechanical executor.
+        const model = arg(parsed.options, "--model");
+        const cost = Number(arg(parsed.options, "--cost") ?? 0);
+        const attribution =
+          model === undefined
+            ? undefined
+            : { model, cost: Number.isFinite(cost) && cost >= 0 ? cost : 0 };
+        const result = await controller.pumpCommandAttempts({
+          maxSteps: Number.isNaN(maxSteps) ? 20 : maxSteps,
+          attribution,
+        });
         console.log(JSON.stringify({ ...result, lastEventType: result.lastEvent?.event_type ?? null }));
+        break;
+      }
+      case "context": {
+        const attemptId = a1 ?? "";
+        const result = await controller.compileTaskContext(attemptId);
+        console.log(
+          JSON.stringify({
+            manifestId: result.manifest.manifest_id,
+            source: result.manifest.source,
+            coverage: result.coverage,
+          }),
+        );
         break;
       }
       case "status": {
