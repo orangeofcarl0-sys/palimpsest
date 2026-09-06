@@ -7,6 +7,8 @@
  */
 
 import { execFile } from "node:child_process";
+import { readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -55,6 +57,23 @@ interface GateCommandInput {
   readonly argv: readonly string[];
 }
 
+/** PLMP-CTX-2 §2: read-only lexical scan over a worktree's text files. */
+export interface LexicalScanInput {
+  readonly worktreeId: string;
+  readonly terms: readonly string[];
+  /** Path substring filter relative to the worktree root; absent = whole tree. */
+  readonly glob?: string | undefined;
+  /** Match cap (default 64); the scan stops as soon as the cap is reached. */
+  readonly maxMatches?: number | undefined;
+}
+
+export interface LexicalMatch {
+  readonly path: string;
+  readonly line: number;
+  readonly snippet: string;
+  readonly term: string;
+}
+
 export interface GitPort {
   /** Create (or reuse) an isolated worktree at baseCommit. */
   createWorktree(input: CreateWorktreeInput): Promise<{ worktreePath: string }>;
@@ -71,6 +90,12 @@ export interface GitPort {
   contains(commit: string): Promise<boolean>;
   /** Run a gate command inside a worktree; resolves the process outcome. */
   runGate(input: GateCommandInput): Promise<{ exitCode: number | null }>;
+  /**
+   * PLMP-CTX-2 §2: read-only lexical retrieval over worktree text files.
+   * Scans are not side effects - they are deliberately NOT Ordarium actions;
+   * the audit trail lives in the context manifest, not the operations ledger.
+   */
+  scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]>;
 }
 
 interface FakeCommit {
@@ -98,6 +123,7 @@ export class FakeGitPort implements GitPort {
   readonly #commits = new Map<string, FakeCommit>();
   readonly #gateOutcomes = new Map<string, number | null>();
   readonly #gateQueue: Array<{ executable: string; argv: readonly string[]; exitCode: number | null }> = [];
+  readonly #files = new Map<string, Map<string, string>>(); // worktreeId -> path -> content
   #head: string;
 
   constructor(initialCommit = "0".repeat(40)) {
@@ -213,10 +239,55 @@ export class FakeGitPort implements GitPort {
     const key = `${worktreeId}:${executable}:${argv.join(" ")}`;
     this.#gateOutcomes.set(key, exitCode);
   }
+
+  /** Test seam: seed in-memory worktree files for the lexical scan. */
+  seedWorktreeFiles(worktreeId: string, files: Record<string, string>): void {
+    this.#files.set(worktreeId, new Map(Object.entries(files)));
+  }
+
+  async scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]> {
+    const files = this.#files.get(input.worktreeId);
+    if (files === undefined) return [];
+    return collectLexicalMatches(
+      [...files.entries()].map(([path, content]) => ({ path, content })),
+      input,
+    );
+  }
 }
 
 function arraysEqual(left: readonly string[], right: readonly string[]): boolean {
   return left.length === right.length && left.every((item, index) => item === right[index]);
+}
+
+/**
+ * Shared term-over-line matcher (PLMP-CTX-2 §2): case-insensitive, first
+ * matching term wins per line, deterministic path/line order, capped.
+ */
+function collectLexicalMatches(
+  files: ReadonlyArray<{ path: string; content: string }>,
+  input: LexicalScanInput,
+): LexicalMatch[] {
+  const maxMatches = input.maxMatches ?? 64;
+  const terms = input.terms.map((term) => term.toLowerCase());
+  if (terms.length === 0 || maxMatches <= 0) return [];
+  const matches: LexicalMatch[] = [];
+  for (const file of [...files].sort((a, b) => (a.path < b.path ? -1 : 1))) {
+    if (matches.length >= maxMatches) break;
+    if (input.glob !== undefined && !file.path.includes(input.glob)) continue;
+    const lines = file.content.split("\n");
+    for (let index = 0; index < lines.length && matches.length < maxMatches; index += 1) {
+      const lower = lines[index]!.toLowerCase();
+      const term = terms.find((candidate) => lower.includes(candidate));
+      if (term === undefined) continue;
+      matches.push({
+        path: file.path,
+        line: index + 1,
+        snippet: lines[index]!.trim().slice(0, 200),
+        term,
+      });
+    }
+  }
+  return matches;
 }
 
 function nextFakeCommitId(): string {
@@ -287,5 +358,34 @@ export class GitCliPort implements GitPort {
 
   async runGate(input: GateCommandInput): Promise<{ exitCode: number | null }> {
     return runExecutable(input.executable, input.argv, this.worktreePath(input.worktreeId));
+  }
+
+  async scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]> {
+    const root = this.worktreePath(input.worktreeId);
+    const maxMatches = input.maxMatches ?? 64;
+    if (input.terms.length === 0 || maxMatches <= 0) return [];
+    const terms = input.terms.map((term) => term.toLowerCase());
+    const files: Array<{ path: string; content: string }> = [];
+    const walk = (directory: string): void => {
+      for (const entry of readdirSync(directory, { withFileTypes: true })) {
+        if (entry.name === ".git") continue;
+        const full = join(directory, entry.name);
+        if (entry.isDirectory()) {
+          walk(full);
+          continue;
+        }
+        try {
+          if (statSync(full).size > 1_000_000) continue;
+          files.push({
+            path: relative(root, full).split("\\").join("/"),
+            content: readFileSync(full, "utf8"),
+          });
+        } catch {
+          // Unreadable files (permissions, transient writes) are skipped.
+        }
+      }
+    };
+    walk(root);
+    return collectLexicalMatches(files, input);
   }
 }

@@ -194,4 +194,7 @@ class PromoSpyGit implements GitPort {
   async runGate(input: any): Promise<any> {
     return this.git.runGate(input);
   }
+  async scanLexical(input: any): Promise<any> {
+    return this.git.scanLexical(input);
+  }
 }

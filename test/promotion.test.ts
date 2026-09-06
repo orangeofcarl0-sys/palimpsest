@@ -41,6 +41,9 @@ class PromoCrashGit implements GitPort {
   runGate(input: Parameters<GitPort["runGate"]>[0]) {
     return this.git.runGate(input);
   }
+  scanLexical(input: Parameters<GitPort["scanLexical"]>[0]) {
+    return this.git.scanLexical(input);
+  }
 }
 
 import {
