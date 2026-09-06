@@ -132,11 +132,13 @@ export function App() {
             editable={mode === "draft"}
             onSelect={setSelectedKey}
             onConnect={(from, to) => {
+              const sourceTitle = draft.tasks.find((task) => task.key === from)?.title;
+              if (sourceTitle === undefined) return;
               setDraft({
                 ...draft,
                 tasks: draft.tasks.map((task) =>
-                  task.key === to && !task.dependsOn.includes(from)
-                    ? { ...task, dependsOn: [...task.dependsOn, from] }
+                  task.key === to && !task.dependsOn.includes(sourceTitle)
+                    ? { ...task, dependsOn: [...task.dependsOn, sourceTitle] }
                     : task,
                 ),
               });
@@ -200,12 +202,15 @@ function draftTasksAsNodes(draft: { tasks: DraftTask[] }) {
 }
 
 function draftLinks(draft: { tasks: DraftTask[] }): Array<[number, number]> {
-  const index = new Map(draft.tasks.map((task, i) => [task.key, i]));
+  // Dependencies are titles - the proposal's own vocabulary (ARCH-3 presets
+  // and the canvas connect handler both store titles), so the link index is
+  // keyed by title too.
+  const index = new Map(draft.tasks.map((task, i) => [task.title, i]));
   const links: Array<[number, number]> = [];
   for (const task of draft.tasks) {
     for (const dependency of task.dependsOn) {
       const from = index.get(dependency);
-      const to = index.get(task.key);
+      const to = index.get(task.title);
       if (from !== undefined && to !== undefined) links.push([from, to]);
     }
   }
