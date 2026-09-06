@@ -52,6 +52,8 @@ src/effects   Host Adapter conformance：握手钉住 + hostPort 直通 + 四场
 src/context   检索半边：Requirement/词法检索/Manifest(canonical)/Coverage     【R18 ✅】
 src/context   semantic 通道：EmbeddingPort 注入 + 哈希参考实现 + cosine top-k  【R20 ✅】
 src/context   Boot/Pull 分发：distributeContext 纯派生 + fetchContext 解析     【R21 ✅】
+src/tools     可视化编排面：orchestrationGraph 投影 + 控制映射 1:1            【R22 ✅】
+src/architecture 架构三模式：pipelinePreset + 提案校验器 + 主代理架构师        【R23 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

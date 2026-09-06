@@ -86,6 +86,10 @@
 
 | Boot/Pull 上下文分发（R21，PLMP-CTX-4） | §12 working set + addressable external memory：`distributeContext` 纯派生（exact 恒 boot——合同字节计入预算但绝不溢出；source/evidence 依 manifest 序填充字节预算；溢出转 pull 句柄；缺省预算 40960 字节）+ 三类句柄语法 `@ctx/exact|source|evidence/<ref>`（excluded_stale 永不出现在两侧）+ `fetchContext` 句柄解析面（boot+handles 合并查找；evidence body 取自投影、source/exact body 取自 manifest；未知句柄 undefined——句柄是咨询索引不是合同断言）；manifest 本体零改动，分发前后事件数与 snapshotDigest 不变；验收 CTX4-A01–A05（16 规格） |
 
+| 可视化编排面（R22，PLMP-VIS-1/2） | 愿景三需求（易用/可视/可控）的内核侧基座，**一个数据契约、三个渲染器**（dshweb 图面板/dshtui ASCII 图/dsh-winui 描述符面板——适配器在客户端侧，内核零依赖）：`orchestrationGraph()` 只读投影——计划图（任务节点 + `depends_on` 信息流边）+ 每 attempt 人话时间线（重试链可见、`[SDS-18]` 术语隔离机器守门：JSON 零 event_id/哈希）+ 晋升折叠（PREPARED/COMMITTED/FAILED）+ 在途归因徽章（gate 判定恰好消费一次——报告是自述不消费）+ 不透明游标（廉价轮询即实时，内核零 SSE）；`definePalimpsestControl` 控制映射面——图上每按钮 1:1 委托既有 controller 方法（promote 复用 CLI promote 组合原样），权限留给宿主审批面；验收 VIS-A01–A07（17 规格） |
+
+| 架构三模式（R23，PLMP-ARCH-1/2） | 预设/自动/手搓共用**一个声明面**：`pipelinePreset` 流水线模板（线性阶段链、上游 writePaths 汇入下游上下文需求）+ `ProjectProposal` 共享校验器（六类诊断 fail-closed、永不落账）+ `proposalTaskSpecs` 确定性编译；声明只走既有 start/plan 通道——**架构调整即计划修订，系统只能通过自己的证据门禁重构自己**；自动架构师＝**DSH 主代理**（插件零内嵌 LLM——依赖图断言在案），CLI 增 `architect` 命令（校验→空诊断才 `--declare`）+ 架构师技能（提案先给人确认，控制权在人）；验收 ARCH-A01–A05（18 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

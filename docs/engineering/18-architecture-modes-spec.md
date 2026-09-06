@@ -1,6 +1,6 @@
 # 架构三模式规格（预设 / 自动架构师 / 手搓共用声明面）
 
-> **Spec ID**：`PLMP-ARCH-1` / `PLMP-ARCH-2` ｜ 状态：**冻结**（2026-09-07，用户裁决入场；交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-ARCH-1` / `PLMP-ARCH-2` ｜ 状态：**已交付**（2026-09-07 `3d75416`，出口 SDS-20）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；声明面以 H1 治理上链（GATE/ROLE/STAGE 声明事件）为准；架构调整通道＝对侧章程愿景句"架构调整＝一次计划修订 + 通过晋升门禁——系统只能通过自己的证据门禁重构自己"；素材母体＝六系统调研（`ordarium/docs/research/agent-landscape-2026-08/01-architecture-survey.md`：Grok Build 代码即编排 / Magentic ledger 编排器 / Manus 上下文纪律）。本文＝三种架构喂法共用的内核校验与声明面。
 > **修订记录**：`ARCH`＝初版冻结（2026-09-07）：两项用户裁决（**DSH 主代理当架构师**——插件零内嵌 LLM，宿主中立红线；首批 preset＝**流水线**）；手搓＝可视编辑器（渲染器侧）经同一校验/声明面；验收 ARCH-A01–A05。
 
@@ -95,3 +95,4 @@ function validateProjectProposal(proposal: ProjectProposal): ProposalDiagnostic[
 | 日期 | 修订 |
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-ARCH-1/2）：两项用户裁决（主代理当架构师、首批流水线 preset）；三模式共用校验/声明面、提案形状、五类诊断、验收 ARCH-A01–A05。 |
+| 2026-09-07 | 交付（`3d75416`，出口 SDS-20）：全部验收通过（41 文件 / 237 测试）；CLI 增 `architect` 命令（校验 + `--declare` 走 start/plan）；架构师技能 `.zcode/skills/palimpsest-architect/` 在仓；诊断实装六类（增 EMPTY_TITLE），03/00/01/索引登记完成。 |

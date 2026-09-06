@@ -20,6 +20,8 @@
 | `14-context-retrieval-spec.md` | **Context 检索半边规格（PLMP-CTX-2）**：Requirement 编译器、GitPort 词法检索、canonical Manifest（新事件+M5+fixture v3）、Coverage、验收 CTX2-A01–A10 |
 | `15-semantic-retrieval-spec.md` | **Semantic 检索通道规格（PLMP-CTX-3）**：EmbeddingPort 宿主注入 + 确定性哈希参考实现、collectWorktreeTexts 原料面、cosine top-k 接线、manifest.semantic 加法式字段、验收 CTX3-A01–A05 |
 | `16-boot-pull-spec.md` | **Boot/Pull 上下文分发规格（PLMP-CTX-4）**：manifest 分发视图（boot 字节预算 + pull 句柄）、句柄语法三类、fetchContext 解析面、零契约触碰、验收 CTX4-A01–A05 |
+| `17-visual-orchestration-spec.md` | **可视化编排面规格（PLMP-VIS-1/2）**：orchestrationGraph 只读投影（计划图+人话时间线，术语隔离机器守门）、控制映射 1:1、单契约三渲染器（dshweb/dshtui/dsh-winui）、验收 VIS-A01–A07 |
+| `18-architecture-modes-spec.md` | **架构三模式规格（PLMP-ARCH-1/2）**：pipelinePreset + ProjectProposal 共享校验器（六类诊断）、声明只走 start/plan、主代理当架构师（零内嵌 LLM）、CLI architect 命令、验收 ARCH-A01–A05 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
