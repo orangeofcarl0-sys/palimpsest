@@ -71,6 +71,10 @@ import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
 import {
+  buildOrchestrationGraph,
+  type OrchestrationGraph,
+} from "./graph.js";
+import {
   DEFAULT_HARD_CAP,
   DEFAULT_ROLE_SLOTS,
   type ParallelOptions,
@@ -1412,6 +1416,20 @@ export class ProjectController {
       }),
     );
     return result;
+  }
+
+  /**
+   * PLMP-VIS-1 §1.1: the read-only orchestration graph projection - plan
+   * graph (tasks + depends_on) and per-attempt run timelines, re-arranged
+   * from the existing projections. Nothing here writes.
+   */
+  orchestrationGraph(): OrchestrationGraph {
+    return buildOrchestrationGraph({
+      projectId: this.projectId,
+      project: this.#project(),
+      connection: this.store.connection,
+      attribution: this.#attemptAttribution,
+    });
   }
 
   status(): ControllerStatusView {

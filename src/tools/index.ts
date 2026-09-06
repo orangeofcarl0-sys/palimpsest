@@ -19,3 +19,19 @@ export type {
 export { definePalimpsestTools } from "./tools.js";
 export { RoleSlotPolicy, BudgetLedger, DEFAULT_ROLE_SLOTS, DEFAULT_HARD_CAP, DEFAULT_SOFT_CAP } from "./parallel.js";
 export type { BudgetOptions, ParallelOptions, RoleSlotOptions } from "./parallel.js";
+export {
+  buildOrchestrationGraph,
+} from "./graph.js";
+export type {
+  GraphAttempt,
+  GraphPromotion,
+  GraphTask,
+  OrchestrationGraph,
+} from "./graph.js";
+export {
+  definePalimpsestControl,
+} from "./control_surface.js";
+export type {
+  OrchestrationControlTarget,
+  PalimpsestControlSurface,
+} from "./control_surface.js";

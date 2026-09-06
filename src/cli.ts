@@ -21,6 +21,8 @@
  *   context <attemptId>                   compile the attempt's context manifest
  *   telemetry [--candidates JSON]         pooled telemetry view (+ optional
  *                                         model advice against a candidate set)
+ *   architect <proposal.json> [--declare] validate a ProjectProposal (PLMP-ARCH);
+ *                                         with --declare, declare it via start/plan
  *   status                                project view
  *
  * Options:
@@ -41,6 +43,11 @@ import {
 } from "./advanced.js";
 import { EventStore, dshDefaultStatePath } from "./state/index.js";
 import { ProjectController } from "./tools/index.js";
+import {
+  proposalTaskSpecs,
+  validateProjectProposal,
+  type ProjectProposal,
+} from "./architecture/index.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
 import { TaskPolicy } from "./domain/index.js";
@@ -115,7 +122,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|status> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|status> …");
 
   const db = arg(parsed.options, "--db");
   const ops = arg(parsed.options, "--ops");
@@ -324,6 +331,49 @@ async function main() {
             totalAttempts: snapshot.totalAttempts,
             totalCost: snapshot.totalCost,
             ...(advice === undefined ? {} : { advice }),
+          }),
+        );
+        break;
+      }
+      case "architect": {
+        // PLMP-ARCH: the main agent is the architect (zero in-plugin LLM).
+        // Validate the proposal first; declare only on an empty diagnostic -
+        // new projects via start, revisions via plan (both existing channels).
+        const proposal = JSON.parse(
+          readFileSync(a1 ?? "", "utf8"),
+        ) as ProjectProposal;
+        const knownGates = new Set(
+          (
+            store.connection
+              .prepare("SELECT gate_id FROM gate_registry WHERE project_id=?")
+              .all(controller.projectId) as Array<{ gate_id: string }>
+          ).map((row) => row.gate_id),
+        );
+        const diagnostics = validateProjectProposal(proposal, { knownGateIds: knownGates });
+        if (diagnostics.length > 0 || arg(parsed.options, "--declare") === undefined) {
+          console.log(JSON.stringify({ diagnostics, declared: false }));
+          break;
+        }
+        const tasks = proposalTaskSpecs(proposal);
+        const started =
+          store.connection.prepare("SELECT 1 AS ok FROM scheduler_control LIMIT 1").get() !==
+          undefined;
+        const event = started
+          ? controller.plan({
+              tasks,
+              changeClass: proposal.changeClass,
+              changedIds: tasks.map((task) => task.task_id),
+            })
+          : controller.start({
+              projectId: controller.projectId,
+              goal: proposal.goal,
+              tasks,
+            });
+        console.log(
+          JSON.stringify({
+            diagnostics: [],
+            declared: true,
+            eventType: event.event_type,
           }),
         );
         break;

@@ -1,0 +1,222 @@
+/**
+ * PLMP-VIS-1 §1.1: the read-only orchestration graph projection. A pure
+ * re-arrangement of existing projections (tasks / attempts / evidence /
+ * promotions / context manifests) into the shape a graph renderer needs -
+ * plan graph (tasks + depends_on edges) and run timeline (per-attempt
+ * human-language event sequence, retry chains visible). Zero contract
+ * touch: nothing here writes, and the JSON carries no event ids or hashes
+ * (SDS-18 terminology isolation is machine-guarded by VIS-A03).
+ */
+
+import type { DatabaseSync } from "node:sqlite";
+
+import { actionKey, stableEntityId } from "../domain/index.js";
+import type { ProjectIr } from "../schema/index.js";
+
+import type { AttemptAttribution } from "./controller.js";
+
+export interface GraphAttempt {
+  readonly attemptId: string;
+  readonly state: string;
+  readonly attribution?: { readonly model: string; readonly cost: number } | undefined;
+  readonly evidence: readonly string[];
+  readonly contextManifest?: string | undefined;
+  readonly timeline: ReadonlyArray<{ readonly at: string; readonly label: string }>;
+}
+
+export interface GraphTask {
+  readonly taskId: string;
+  readonly objective: string;
+  readonly state: string;
+  readonly role: string;
+  readonly dependsOn: readonly string[];
+  readonly writePaths: readonly string[];
+  readonly requiredArtifacts: readonly string[];
+  readonly attempts: ReadonlyArray<GraphAttempt>;
+}
+
+export interface GraphPromotion {
+  readonly promotionId: string;
+  readonly attemptId: string;
+  readonly state: "PREPARED" | "COMMITTED" | "FAILED";
+}
+
+export interface OrchestrationGraph {
+  readonly project: {
+    readonly projectId: string;
+    readonly revision: number;
+    readonly goal: string;
+    readonly paused: boolean;
+    readonly cursor: number;
+  };
+  readonly tasks: ReadonlyArray<GraphTask>;
+  readonly promotions: ReadonlyArray<GraphPromotion>;
+}
+
+/** Human-language timeline labels; anything unmapped degrades to a neutral phrase. */
+const TIMELINE_LABELS: Record<string, string> = {
+  ATTEMPT_CREATED: "尝试已创建",
+  ATTEMPT_STARTED: "已认领",
+  ATTEMPT_COMPLETED: "已报告完成",
+  ATTEMPT_FAILED: "已报告失败",
+  ATTEMPT_CANCELLED: "已取消",
+  ATTEMPT_EXPIRED: "租约过期",
+  ATTEMPT_LATE_RESULT: "迟到返回已按过期记录",
+  EVIDENCE_ADDED: "门禁证据已记录",
+  EVIDENCE_STALE: "证据已失效",
+  PROMOTION_PREPARED: "晋升已预备",
+  PROMOTION_COMMITTED: "已晋升",
+  PROMOTION_FAILED: "晋升失败",
+};
+
+export interface OrchestrationGraphInput {
+  readonly projectId: string;
+  readonly project: ProjectIr;
+  readonly connection: DatabaseSync;
+  readonly attribution: ReadonlyMap<string, AttemptAttribution>;
+}
+
+export function buildOrchestrationGraph(input: OrchestrationGraphInput): OrchestrationGraph {
+  const { projectId, project, connection, attribution } = input;
+
+  const cursorRow = connection
+    .prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events WHERE project_id=?")
+    .get(projectId) as { m: number };
+  const pausedRow = connection
+    .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
+    .get(projectId) as { state: string } | undefined;
+
+  const taskStateRows = connection
+    .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+    .all(projectId) as Array<{ task_id: string; state: string }>;
+  const taskStates = new Map(taskStateRows.map((row) => [String(row.task_id), String(row.state)]));
+
+  const attemptRows = connection
+    .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? ORDER BY last_event_id")
+    .all(projectId) as Array<{ attempt_id: string; task_id: string | null; state: string }>;
+
+  const evidenceRows = connection
+    .prepare("SELECT evidence_id, evidence_json FROM evidence WHERE project_id=?")
+    .all(projectId) as Array<{ evidence_id: string; evidence_json: Uint8Array }>;
+  const evidenceBySubject = new Map<string, string[]>();
+  for (const row of evidenceRows) {
+    const atom = JSON.parse(new TextDecoder().decode(row.evidence_json)) as { subject_id?: unknown };
+    if (typeof atom.subject_id !== "string") continue;
+    const bucket = evidenceBySubject.get(atom.subject_id) ?? [];
+    bucket.push(row.evidence_id);
+    evidenceBySubject.set(atom.subject_id, bucket);
+  }
+
+  const manifestRows = connection
+    .prepare("SELECT manifest_id FROM context_manifests WHERE project_id=?")
+    .all(projectId) as Array<{ manifest_id: string }>;
+  const manifestIds = new Set(manifestRows.map((row) => row.manifest_id));
+
+  // Fold promotion events (PREPARED → terminal) - the promotions table does
+  // not carry the attempt id, the declaration event does.
+  const promotionEventRows = connection
+    .prepare(
+      "SELECT event_type, entity_id, payload_json FROM events " +
+        "WHERE project_id=? AND event_type LIKE 'PROMOTION_%' ORDER BY event_id",
+    )
+    .all(projectId) as Array<{ event_type: string; entity_id: string; payload_json: Uint8Array }>;
+  const promotions = new Map<string, GraphPromotion>();
+  for (const row of promotionEventRows) {
+    const payload = JSON.parse(new TextDecoder().decode(row.payload_json)) as { attempt_id?: unknown };
+    if (typeof payload.attempt_id !== "string") continue;
+    const state: GraphPromotion["state"] =
+      row.event_type === "PROMOTION_COMMITTED"
+        ? "COMMITTED"
+        : row.event_type === "PROMOTION_FAILED"
+          ? "FAILED"
+          : "PREPARED";
+    promotions.set(String(row.entity_id), {
+      promotionId: String(row.entity_id),
+      attemptId: payload.attempt_id,
+      state,
+    });
+  }
+
+  // One pass over the project's events builds every attempt timeline.
+  const eventRows = connection
+    .prepare(
+      "SELECT event_type, entity_type, entity_id, payload_json, committed_at FROM events " +
+        "WHERE project_id=? ORDER BY event_id",
+    )
+    .all(projectId) as Array<{
+    event_type: string;
+    entity_type: string;
+    entity_id: string;
+    payload_json: Uint8Array;
+    committed_at: string;
+  }>;
+  const timelines = new Map<string, Array<{ at: string; label: string }>>();
+  const bump = (attemptId: string, at: string, label: string): void => {
+    const bucket = timelines.get(attemptId) ?? [];
+    bucket.push({ at, label });
+    timelines.set(attemptId, bucket);
+  };
+  for (const row of eventRows) {
+    const label = TIMELINE_LABELS[row.event_type];
+    if (label === undefined) continue;
+    if (row.entity_type === "attempt") {
+      bump(row.entity_id, row.committed_at, label);
+      continue;
+    }
+    const payload = JSON.parse(new TextDecoder().decode(row.payload_json)) as Record<string, unknown>;
+    const evidence = payload.evidence as { subject_id?: unknown } | undefined;
+    if (typeof evidence?.subject_id === "string") {
+      bump(evidence.subject_id, row.committed_at, label);
+      continue;
+    }
+    if (typeof payload.attempt_id === "string") {
+      bump(payload.attempt_id, row.committed_at, label);
+    }
+  }
+
+  const attemptsByTask = new Map<string, GraphAttempt[]>();
+  for (const row of attemptRows) {
+    const taskId = row.task_id === null ? "" : String(row.task_id);
+    const attemptId = String(row.attempt_id);
+    const manifestId = stableEntityId(
+      "context-manifest",
+      actionKey("context-manifest-v1", { project_id: projectId, attempt_id: attemptId }),
+    );
+    const attributed = attribution.get(attemptId);
+    const list = attemptsByTask.get(taskId) ?? [];
+    list.push({
+      attemptId,
+      state: String(row.state),
+      evidence: evidenceBySubject.get(attemptId) ?? [],
+      ...(manifestIds.has(manifestId) ? { contextManifest: manifestId } : {}),
+      timeline: timelines.get(attemptId) ?? [],
+      ...(attributed === undefined
+        ? {}
+        : { attribution: { model: attributed.model, cost: attributed.cost ?? 0 } }),
+    });
+    attemptsByTask.set(taskId, list);
+  }
+
+  const tasks: GraphTask[] = project.tasks.map((spec) => ({
+    taskId: spec.task_id,
+    objective: spec.objective,
+    state: taskStates.get(spec.task_id) ?? "READY",
+    role: spec.role ?? "implementer",
+    dependsOn: spec.depends_on,
+    writePaths: spec.write_paths,
+    requiredArtifacts: spec.required_artifacts,
+    attempts: attemptsByTask.get(spec.task_id) ?? [],
+  }));
+
+  return {
+    project: {
+      projectId,
+      revision: project.revision,
+      goal: project.goal,
+      paused: pausedRow?.state === "PAUSED",
+      cursor: Number(cursorRow.m),
+    },
+    tasks,
+    promotions: [...promotions.values()],
+  };
+}
