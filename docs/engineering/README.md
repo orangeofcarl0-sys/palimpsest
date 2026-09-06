@@ -23,6 +23,7 @@
 | `17-visual-orchestration-spec.md` | **可视化编排面规格（PLMP-VIS-1/2）**：orchestrationGraph 只读投影（计划图+人话时间线，术语隔离机器守门）、控制映射 1:1、单契约三渲染器（dshweb/dshtui/dsh-winui）、验收 VIS-A01–A07 |
 | `18-architecture-modes-spec.md` | **架构三模式规格（PLMP-ARCH-1/2）**：pipelinePreset + ProjectProposal 共享校验器（六类诊断）、声明只走 start/plan、主代理当架构师（零内嵌 LLM）、CLI architect 命令、验收 ARCH-A01–A05 |
 | `19-renderer-adaptation-spec.md` | **呈现适配线规格（PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1）**：serveOrchestration 附加呈现面（127.0.0.1+随机 token、廉价轮询游标、kill 零影响）、React+ReactFlow 共享图面板（live/draft 双图、手搓图上编辑）、palimpsest tui（ANSI 零依赖）、sessionPanel 路 B 描述符、验收 WEB-A01–A06 / TUI-A01 / WINUI-A01 |
+| `20-preset-library-spec.md` | **架构预设库规格（PLMP-ARCH-3）**：调研六系统→六条拓扑原型预设注册表（流水线/扇出-汇聚/角色层级/专家团/验证图/研究回路，lineage 注记名实关系）、零 LLM、角色 fail-closed、门禁只建议、serve 纯派生草稿端点 + 面板画布直出 + CLI --preset、验收 PRE-A01–A10 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

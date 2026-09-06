@@ -92,6 +92,8 @@
 
 | 呈现适配线（R24，PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1） | 愿景三需求（易用/可视/可控）的呈现侧，四件全零新编排语义（17/18 契约的适配器，事件契约零触碰）：`serveOrchestration` 附加呈现面（node:http 零框架、127.0.0.1 + 每次启动随机 bearer token、`/api/graph?cursor` 廉价轮询即实时、`/api/control/*` 1:1 委托、`/api/proposal/validate|declare`、静态面板供给 + fallback 页；kill serve 零编排影响——附加呈现面非编排守护）+ React/ReactFlow 共享图面板（live/draft 双图：图上直接编辑手搓 V1、六类诊断上墙、空诊断才可确认声明）+ `palimpsest tui`（手写 ANSI 零依赖终端双图）+ `sessionPanelFromGraph` 路 B 描述符（dsh-winui session.panel：状态＝数据、行为＝命令引用）；真实浏览器可视冒烟通过；验收 WEB-A01–A06 / TUI-A01 / WINUI-A01（19 规格） |
 
+| 架构预设库（R25，PLMP-ARCH-3） | 用户请求"调研的代表性多 agent 系统都作为可选预设"的兑现：**预设＝拓扑原型不是克隆**（六系统取证→六条目注册表，lineage 声明映射偏差；Manus＝上下文纪律已由 CTX 线承担、OpenManus＝反面教材，均不设预设只入规格注记）：`pipeline`（收编，输出与 pipelinePreset 逐字节一致）+ `fan_out` 扇出-汇聚（Grok Bot·Anthropic 深研式）+ `hierarchy` 角色层级（Kimi Swarm 写作式）+ `panel` 专家团同题多解（grok-expert 式）+ `verified_dag` 验证图逐单元门禁（Danus 式）+ `research_loop` 研究回路（Magentic 式）；红线四条机器守门——零 LLM 纯函数、角色 ∈ 已声明角色表 fail-closed（PRE-A07）、门禁只建议不落账（GATE_DEFINED 单一声明路径）、内核单源（serve `/api/presets` + `/api/preset/<id>/draft` 纯派生零写入；面板选中即画布生成可编辑草稿，客户端复制实现退役；CLI `architect --preset/--params`）；面板连线与预设草稿统一 title 依赖约定（冒烟暴露并修正）；真实浏览器可视冒烟通过；验收 PRE-A01–A10（20 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
