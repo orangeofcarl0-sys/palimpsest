@@ -48,6 +48,16 @@ export class TelemetryStateSync {
     this.#synced = synced;
   }
 
+  /**
+   * Fresh-process baseline (PLMP-TLM-1 r2): a process that records its own
+   * events starts from a ZERO baseline, so its flush lands every record as a
+   * delta - even when the durable aggregate already holds identically-shaped
+   * history from earlier processes. The aggregate merges by summation.
+   */
+  static fresh(store: OrdariumStateStore): TelemetryStateSync {
+    return new TelemetryStateSync(store, new ModelPerformanceTable());
+  }
+
   /** Aggregate every durable delta into a fresh baseline (restart path). */
   static async load(store: OrdariumStateStore): Promise<TelemetryStateSync> {
     const synced = new ModelPerformanceTable();

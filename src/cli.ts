@@ -19,6 +19,8 @@
  *   promote <gateId> [expectedHead]       gate-passed promotion
  *   pump  [maxSteps]                      fully-automated command executor
  *   context <attemptId>                   compile the attempt's context manifest
+ *   telemetry [--candidates JSON]         pooled telemetry view (+ optional
+ *                                         model advice against a candidate set)
  *   status                                project view
  *
  * Options:
@@ -302,6 +304,26 @@ async function main() {
             manifestId: result.manifest.manifest_id,
             source: result.manifest.source,
             coverage: result.coverage,
+          }),
+        );
+        break;
+      }
+      case "telemetry": {
+        // PLMP-CTX-2: the pooled telemetry view (machine-readable stat face).
+        await controller.loadTelemetryInto(controller.telemetry);
+        const snapshot = controller.telemetry.snapshot();
+        const candidatesJson = arg(parsed.options, "--candidates");
+        const taskType = arg(parsed.options, "--task-type") ?? "implementer";
+        let advice: unknown = undefined;
+        if (candidatesJson !== undefined) {
+          advice = controller.telemetry.suggestModel(taskType, JSON.parse(candidatesJson));
+        }
+        console.log(
+          JSON.stringify({
+            rows: snapshot.rows,
+            totalAttempts: snapshot.totalAttempts,
+            totalCost: snapshot.totalCost,
+            ...(advice === undefined ? {} : { advice }),
           }),
         );
         break;

@@ -177,6 +177,34 @@ describe("telemetry externalization onto the Ordarium state kind (PLMP-TLM-1)", 
     }
   });
 
+  it("TLM r2: two fresh processes with identically-shaped records both land their deltas", async () => {
+    const { store, cleanup } = makeRawStore();
+    try {
+      const first = new ModelPerformanceTable();
+      for (const outcome of ["success", "success", "failure"] as const) {
+        first.record({ task_type: "t", model: "m", outcome, cost: 1 });
+      }
+      await (await TelemetryStateSync.load(store)).flush(first); // durable: 3 attempts
+
+      // A second, fresh process records the SAME shape: its three attempts are
+      // new events and must land as another delta, not be absorbed by the
+      // durable aggregate (r2 semantics fix).
+      const table2 = new ModelPerformanceTable();
+      for (const outcome of ["success", "success", "failure"] as const) {
+        table2.record({ task_type: "t", model: "m", outcome, cost: 1 });
+      }
+      await (await TelemetryStateSync.fresh(store)).flush(table2);
+
+      const fresh = await TelemetryStateSync.load(store);
+      expect(fresh.durableSnapshot().totalAttempts).toBe(6);
+      expect(
+        (await store.list({ namespace: TELEMETRY_NAMESPACE }, undefined)).records,
+      ).toHaveLength(2);
+    } finally {
+      cleanup();
+    }
+  });
+
   it("TLM-A05: a state revision conflict classifies as busy-family, not transient", () => {
     const conflict = new StateRevisionConflictError("test");
     expect(isStateRevisionConflict(conflict)).toBe(true);

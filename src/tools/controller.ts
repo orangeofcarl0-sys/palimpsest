@@ -256,9 +256,11 @@ export class ProjectController {
     return this.#telemetryError?.message;
   }
 
-  /** TLM-1: append the memory table's new deltas to the shared timeline. */
+  /** TLM-1 r2: append the memory table's new deltas to the shared timeline. */
   async persistTelemetry(): Promise<void> {
-    this.#telemetrySync ??= await TelemetryStateSync.load(this.effects.state);
+    // Fresh-process baseline: this process's records are ALL new deltas - the
+    // durable aggregate must not be subtracted from them (r2 semantics fix).
+    this.#telemetrySync ??= TelemetryStateSync.fresh(this.effects.state);
     await this.#telemetrySync.flush(this.telemetry);
     this.#telemetryError = undefined;
   }
