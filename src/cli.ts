@@ -48,6 +48,7 @@ import {
   validateProjectProposal,
   type ProjectProposal,
 } from "./architecture/index.js";
+import { serveOrchestration } from "./serve.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
 import { TaskPolicy } from "./domain/index.js";
@@ -122,7 +123,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|status> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|status> …");
 
   const db = arg(parsed.options, "--db");
   const ops = arg(parsed.options, "--ops");
@@ -376,6 +377,27 @@ async function main() {
             eventType: event.event_type,
           }),
         );
+        break;
+      }
+      case "serve": {
+        // PLMP-WEB-1: the additive presentation face - a reader + control
+        // front over the frozen contracts. Not an orchestration daemon.
+        const portOption = arg(parsed.options, "--port");
+        const hostOption = arg(parsed.options, "--host");
+        const tokenOption = arg(parsed.options, "--token");
+        const handle = await serveOrchestration(controller, {
+          ...(portOption === undefined ? {} : { port: Number(portOption) }),
+          ...(hostOption === undefined ? {} : { host: hostOption }),
+          ...(tokenOption === undefined ? {} : { token: tokenOption }),
+        });
+        console.log(JSON.stringify({ url: handle.url, token: handle.token }));
+        await new Promise<void>((resolve) => {
+          const shutdown = (): void => {
+            void handle.close().then(resolve, resolve);
+          };
+          process.once("SIGINT", shutdown);
+          process.once("SIGTERM", shutdown);
+        });
         break;
       }
       case "status": {

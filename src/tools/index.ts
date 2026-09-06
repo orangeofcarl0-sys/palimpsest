@@ -9,6 +9,7 @@ export type {
 } from "./dsh_types.js";
 export { ProjectController, buildProjectIr, DEFAULT_HEAD_COMMIT } from "./controller.js";
 export type {
+  AttemptAttribution,
   ControllerStatusView,
   GateInput,
   PlanInput,
