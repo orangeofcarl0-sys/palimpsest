@@ -73,6 +73,9 @@ class CrashAfterMergeGit implements GitPort {
   scanLexical(input: Parameters<GitPort["scanLexical"]>[0]) {
     return this.#git.scanLexical(input);
   }
+  collectWorktreeTexts(input: Parameters<GitPort["collectWorktreeTexts"]>[0]) {
+    return this.#git.collectWorktreeTexts(input);
+  }
 }
 
 async function prepareVerifying(store: EventStore, git: GitPort, clock = new ManualClock().now) {

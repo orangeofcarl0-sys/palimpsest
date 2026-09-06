@@ -1243,6 +1243,18 @@ export function normalizeEventPayload(
             nonEmpty(expectString(item)),
           ),
           retrieval: expectArray(manifest.retrieval).map((item) => nonEmpty(expectString(item))),
+          ...(manifest.semantic === undefined
+            ? {}
+            : {
+                semantic: expectArray(manifest.semantic).map((entry) => {
+                  const item = expectObject(entry);
+                  requireFields(item, "path", "score_permille");
+                  return {
+                    path: field(item.path, "path", (inner) => nonEmpty(expectString(inner))),
+                    score_permille: field(item.score_permille, "score_permille", expectInt),
+                  };
+                }),
+              }),
           created_at: field(manifest.created_at, "created_at", (inner) =>
             nonEmpty(expectString(inner)),
           ),

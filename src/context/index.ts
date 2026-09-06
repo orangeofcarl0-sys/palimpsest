@@ -24,3 +24,15 @@ export type {
   ContextManifestInput,
   CoverageAssessment,
 } from "./manifest.js";
+export {
+  cosineSimilarity,
+  EMBEDDING_DIMENSIONS,
+  hashingEmbedder,
+} from "./embedding.js";
+export type { EmbeddingPort } from "./embedding.js";
+export {
+  DEFAULT_BOOT_BUDGET_BYTES,
+  distributeContext,
+  contextHandle,
+} from "./distribution.js";
+export type { ContextDistribution, ContextDistributionEntry } from "./distribution.js";

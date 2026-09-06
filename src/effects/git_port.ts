@@ -96,6 +96,15 @@ export interface GitPort {
    * the audit trail lives in the context manifest, not the operations ledger.
    */
   scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]>;
+  /**
+   * PLMP-CTX-3 §1.2: read-only raw text collection - the semantic channel's
+   * input material (same read-only discipline as scanLexical).
+   */
+  collectWorktreeTexts(input: {
+    worktreeId: string;
+    maxFiles?: number | undefined;
+    maxBytesPerFile?: number | undefined;
+  }): Promise<Array<{ path: string; content: string }>>;
 }
 
 interface FakeCommit {
@@ -253,6 +262,22 @@ export class FakeGitPort implements GitPort {
       input,
     );
   }
+
+  async collectWorktreeTexts(input: {
+    worktreeId: string;
+    maxFiles?: number | undefined;
+    maxBytesPerFile?: number | undefined;
+  }): Promise<Array<{ path: string; content: string }>> {
+    const files = this.#files.get(input.worktreeId);
+    if (files === undefined) return [];
+    const maxFiles = input.maxFiles ?? 64;
+    const maxBytesPerFile = input.maxBytesPerFile ?? 65_536;
+    return [...files.entries()]
+      .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+      .slice(0, maxFiles)
+      .filter(([, content]) => Buffer.byteLength(content, "utf8") <= maxBytesPerFile)
+      .map(([path, content]) => ({ path, content }));
+  }
 }
 
 function arraysEqual(left: readonly string[], right: readonly string[]): boolean {
@@ -362,11 +387,29 @@ export class GitCliPort implements GitPort {
 
   async scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]> {
     const root = this.worktreePath(input.worktreeId);
-    const maxMatches = input.maxMatches ?? 64;
-    if (input.terms.length === 0 || maxMatches <= 0) return [];
-    const terms = input.terms.map((term) => term.toLowerCase());
+    const files = this.#walkTexts(root, { maxFiles: 4_096, maxBytesPerFile: 1_000_000 });
+    return collectLexicalMatches(files, input);
+  }
+
+  async collectWorktreeTexts(input: {
+    worktreeId: string;
+    maxFiles?: number | undefined;
+    maxBytesPerFile?: number | undefined;
+  }): Promise<Array<{ path: string; content: string }>> {
+    const root = this.worktreePath(input.worktreeId);
+    return this.#walkTexts(root, {
+      maxFiles: input.maxFiles ?? 64,
+      maxBytesPerFile: input.maxBytesPerFile ?? 65_536,
+    });
+  }
+
+  #walkTexts(
+    root: string,
+    limits: { maxFiles: number; maxBytesPerFile: number },
+  ): Array<{ path: string; content: string }> {
     const files: Array<{ path: string; content: string }> = [];
     const walk = (directory: string): void => {
+      if (files.length >= limits.maxFiles) return;
       for (const entry of readdirSync(directory, { withFileTypes: true })) {
         if (entry.name === ".git") continue;
         const full = join(directory, entry.name);
@@ -375,7 +418,7 @@ export class GitCliPort implements GitPort {
           continue;
         }
         try {
-          if (statSync(full).size > 1_000_000) continue;
+          if (statSync(full).size > limits.maxBytesPerFile) continue;
           files.push({
             path: relative(root, full).split("\\").join("/"),
             content: readFileSync(full, "utf8"),
@@ -386,6 +429,6 @@ export class GitCliPort implements GitPort {
       }
     };
     walk(root);
-    return collectLexicalMatches(files, input);
+    return files;
   }
 }

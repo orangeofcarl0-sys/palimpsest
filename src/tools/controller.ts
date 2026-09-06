@@ -44,10 +44,13 @@ import {
   buildContextManifest,
   compileContextBrief,
   compileContextRequirement,
+  cosineSimilarity,
   type ContextBrief,
   type ContextManifest,
+  type ContextDistribution,
   type CoverageAssessment,
 } from "../context/index.js";
+import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
@@ -1591,6 +1594,7 @@ export class ProjectController {
   async compileTaskContext(attemptId: string): Promise<{
     manifest: ContextManifest;
     coverage: CoverageAssessment;
+    distribution: ContextDistribution;
   }> {
     const attemptRow = this.store.connection
       .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
@@ -1619,7 +1623,11 @@ export class ProjectController {
       const manifest = JSON.parse(
         new TextDecoder().decode(existing.manifest_json),
       ) as ContextManifest;
-      return { manifest, coverage: assessCoverage(manifest.requirement, manifest) };
+      return {
+        manifest,
+        coverage: assessCoverage(manifest.requirement, manifest),
+        distribution: distributeContext(manifest),
+      };
     }
 
     // Requirement inputs: prior-failure evidence and the stale set come from
@@ -1684,12 +1692,65 @@ export class ProjectController {
       worktreeId: attemptId,
       terms: [...tokens].slice(0, 8),
     });
+
+    // PLMP-CTX-3 §1.3: the semantic channel (active only with an injected
+    // embedding port) - file-level cosine ranking over the worktree texts,
+    // §6 scoring V0: cosine minus a token-weight penalty minus a duplicate
+    // penalty; D/E/F/C features stay neutral in V0.
+    let semantic: ReadonlyArray<{ path: string; score_permille: number }> | undefined;
+    if (this.effects.embedding !== undefined) {
+      const texts = await this.effects.git.collectWorktreeTexts({
+        worktreeId: attemptId,
+        maxFiles: 64,
+        maxBytesPerFile: 65_536,
+      });
+      const query = `${task.objective} ${task.required_artifacts.join(" ")}`;
+      const embeddings = await this.effects.embedding.embed([
+        query,
+        ...texts.map((file) => file.content),
+      ]);
+      const queryVector = embeddings[0] ?? [];
+      const scored = texts
+        .map((file, index) => {
+          const chunkVector = embeddings[index + 1] ?? [];
+          return {
+            path: file.path,
+            // Dot product on the raw count vectors: density reward (r2).
+            dot: queryVector.reduce(
+              (sum, value, index2) => sum + value * (chunkVector[index2] ?? 0),
+              0,
+            ),
+            cosine: cosineSimilarity(queryVector, chunkVector),
+            bytes: Buffer.byteLength(file.content, "utf8"),
+            digest: canonicalDigest(file.content),
+          };
+        })
+        .filter((entry) => entry.cosine >= 0.05)
+        .sort((a, b) => b.dot - a.dot)
+        .slice(0, 8);
+      const seen = new Set<string>();
+      semantic = scored
+        .map((entry) => ({
+          path: entry.path,
+          score_permille: Math.round(Math.max(0, Math.min(1, entry.dot)) * 1000),
+          digest: entry.digest,
+        }))
+        .filter((entry) => {
+          // Duplicate content is penalized at scoring and dropped here so the
+          // manifest never carries two entries for the same body.
+          if (seen.has(entry.digest)) return false;
+          seen.add(entry.digest);
+          return true;
+        })
+        .map(({ path, score_permille }) => ({ path, score_permille }));
+    }
     const manifest = buildContextManifest({
       manifestId,
       taskId,
       projectRevision: this.promotions.projectRevision(),
       requirement,
       source,
+      semantic,
       createdAt: this.#now(),
     });
     this.store.append(
@@ -1714,7 +1775,58 @@ export class ProjectController {
         expected_project_revision: this.#project().revision,
       }),
     );
-    return { manifest, coverage: assessCoverage(manifest.requirement, manifest) };
+    return {
+      manifest,
+      coverage: assessCoverage(manifest.requirement, manifest),
+      distribution: distributeContext(manifest),
+    };
+  }
+
+  /**
+   * PLMP-CTX-4 §1.2: resolve a `@ctx/…` handle against the latest context
+   * manifest of the attempt's task. Unknown handles resolve to undefined -
+   * handles are an advisory index, not a contract assertion.
+   */
+  async fetchContext(
+    attemptId: string,
+    handle: string,
+  ): Promise<{
+    kind: "exact" | "source" | "evidence";
+    ref: string;
+    body: unknown;
+  } | undefined> {
+    const attemptRow = this.store.connection
+      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { task_id: string } | undefined;
+    if (attemptRow === undefined) return undefined;
+    const manifestRow = this.store.connection
+      .prepare(
+        "SELECT manifest_json FROM context_manifests WHERE project_id=? AND task_id=? ORDER BY last_event_id DESC LIMIT 1",
+      )
+      .get(this.projectId, String(attemptRow.task_id)) as { manifest_json: Uint8Array } | undefined;
+    if (manifestRow === undefined) return undefined;
+    const manifest = JSON.parse(
+      new TextDecoder().decode(manifestRow.manifest_json),
+    ) as ContextManifest;
+    const distribution = distributeContext(manifest);
+    const entry = [...distribution.boot, ...distribution.handles].find(
+      (candidate) => candidate.handle === handle,
+    );
+    if (entry === undefined) return undefined;
+    if (entry.kind === "evidence") {
+      const row = this.store.connection
+        .prepare("SELECT evidence_json FROM evidence WHERE project_id=? AND evidence_id=?")
+        .get(this.projectId, entry.ref) as { evidence_json: Uint8Array } | undefined;
+      return row === undefined
+        ? undefined
+        : { kind: entry.kind, ref: entry.ref, body: JSON.parse(new TextDecoder().decode(row.evidence_json)) };
+    }
+    if (entry.kind === "source") {
+      const source = manifest.source.find((candidate) => candidate.path === entry.ref);
+      return source === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: source };
+    }
+    const exact = manifest.exact.find((candidate) => candidate.ref === entry.ref);
+    return exact === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: exact };
   }
 
   /**

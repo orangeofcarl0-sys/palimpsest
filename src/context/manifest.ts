@@ -32,6 +32,8 @@ export interface ContextManifestInput {
     readonly snippet: string;
     readonly term: string;
   }>;
+  /** PLMP-CTX-3 §1.3: semantic channel hits (absent = port not injected). */
+  readonly semantic?: ReadonlyArray<{ readonly path: string; readonly score_permille: number }> | undefined;
   readonly createdAt: string;
 }
 
@@ -48,6 +50,7 @@ export interface ContextManifest {
     readonly snippet: string;
     readonly term: string;
   }>;
+  readonly semantic?: ReadonlyArray<{ readonly path: string; readonly score_permille: number }> | undefined;
   readonly evidence: readonly string[];
   readonly excluded_stale: readonly string[];
   readonly retrieval: readonly string[];
@@ -65,9 +68,13 @@ export function buildContextManifest(input: ContextManifestInput): ContextManife
       digest: canonicalDigest(ref),
     })),
     source: [...input.source],
+    ...(input.semantic === undefined ? {} : { semantic: [...input.semantic] }),
     evidence: [...input.requirement.evidenceSubjects],
     excluded_stale: [...input.requirement.forbiddenStale],
-    retrieval: [CONTEXT_RETRIEVAL_METHOD],
+    retrieval:
+      input.semantic === undefined || input.semantic.length === 0
+        ? [CONTEXT_RETRIEVAL_METHOD]
+        : [CONTEXT_RETRIEVAL_METHOD, "semantic"],
     created_at: input.createdAt,
   };
 }
@@ -93,9 +100,17 @@ export function assessCoverage(
   const exactHits = requirement.exact.filter((ref) =>
     manifest.exact.some((entry) => entry.ref === ref),
   ).length;
-  const codeHits = requirement.codePaths.filter((path) =>
-    manifest.source.some((entry) => entry.path === path || entry.path.includes(path)),
-  ).length;
+  const codeHits = requirement.codePaths.filter((path) => {
+    const lexical = manifest.source.some(
+      (entry) => entry.path === path || entry.path.includes(path),
+    );
+    // PLMP-CTX-3: semantic hits count toward code coverage (same weight).
+    const semantic =
+      manifest.semantic?.some(
+        (entry) => entry.path === path || entry.path.includes(path),
+      ) ?? false;
+    return lexical || semantic;
+  }).length;
   const evidenceHits = requirement.evidenceSubjects.filter((subject) =>
     manifest.evidence.includes(subject),
   ).length;

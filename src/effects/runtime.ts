@@ -24,6 +24,7 @@ import {
 import { assertHostContract, type HostInvocationPort } from "@ordarium/host-kit";
 import { SqliteLedger } from "@ordarium/ledger-sqlite";
 
+import { type EmbeddingPort } from "../context/embedding.js";
 import { defineEffects } from "./actions.js";
 import type { GitPort } from "./git_port.js";
 export interface PalimpsestEffectsRuntimeOptions {
@@ -36,6 +37,8 @@ export interface PalimpsestEffectsRuntimeOptions {
   /** Default 30s; tests shorten it so crash recovery can be driven with ManualClock. */
   leaseMs?: number | undefined;
   allowVolatileLedger?: boolean | undefined;
+  /** PLMP-CTX-3 §1.1: host-injected embedding port; absent = semantic channel off. */
+  embedding?: EmbeddingPort | undefined;
 }
 
 export function defaultOrdariumPath(): string {
@@ -55,6 +58,8 @@ export interface PalimpsestEffectsRuntime {
   readonly hostPort: HostInvocationPort;
   /** PLMP-CTX-2: the git side-channel, exposed for worktree lexical scans. */
   readonly git: GitPort;
+  /** PLMP-CTX-3 §1.1: host-injected embedding port (absent = semantic off). */
+  readonly embedding?: EmbeddingPort | undefined;
   readonly actions: ReturnType<typeof defineEffects>;
   invoke<O extends JsonValue>(
     action: Action<JsonValue, O>,
@@ -153,6 +158,7 @@ export function createPalimpsestEffects(
     state,
     hostPort,
     git: options.git,
+    ...(options.embedding === undefined ? {} : { embedding: options.embedding }),
     actions,
     invoke,
     async close() {
