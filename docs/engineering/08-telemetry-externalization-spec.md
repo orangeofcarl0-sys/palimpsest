@@ -49,3 +49,4 @@
 | 日期 | 修订 |
 |---|---|
 | 2026-08-29 | 初版冻结（PLMP-TLM-1）：append-delta 主体形状、聚合装载、错误分类映射、无兼容层退役、验收 TLM-A01–A06；ALN-4③ 形状反馈第 1 条（计数器负载的 append-only 形状）。 |
+| 2026-09-06 | r2＝flush 基线语义修正（实证累积 N=12 发现）：新进程以 **fresh 基线**起算（自身记录全部为 delta），`loadTelemetryInto` 续接路径保留 durable 基线；`TelemetryStateSync.fresh()` 新增；回归测试在案（双进程同形记录均落袋）。修正前缺陷：跨进程同形计数对撞 → 后续进程样本静默丢失。 |
