@@ -1,6 +1,6 @@
 # Context Requirement / 检索 / Manifest / Coverage 规格（Context Compiler 检索半边，含词法检索与 canonical manifest）
 
-> **Spec ID**：`PLMP-CTX-2` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-CTX-2` ｜ 状态：**已交付**（2026-09-06 三阶段 a6a4a6f / b20cd19，出口 SDS-16）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；C2 压缩器以 `12`（PLMP-CTX-1）为准；invalidation 语义以 R2（`src/evidence/invalidation.ts`）为准；素材母体＝raw-notes 预算.txt §3/§5–9/§12（非权威，冲突以正式文档为准）。本文＝检索半边 V0 的形状、契约触点与验收权威。
 > **修订记录**：`CTX-2`＝初版冻结（2026-09-06）：两项用户裁决（V0 含词法检索、manifest 进 canonical 审计链）经 AskUserQuestion 确认；四器官 + schema 触点（`CONTEXT_MANIFEST_ADDED` 新事件 + AttemptReport 加法式可选字段 + fixture v3 再生）；验收 CTX2-A01–A10。
 

@@ -17,6 +17,7 @@
 | `11-status-telemetry-view-spec.md` | **status 遥测视图规格（PLMP-TLM-2）**：遥测线的用户面——加法式 telemetry 节、人话格式、冷表缺席、术语隔离红线、验收 STV-A01–A03 |
 | `12-context-brief-spec.md` | **Context Brief 规格（PLMP-CTX-1）**：知识闭环缺环的 C2 切片——事实/解释/冲突三层结构化压缩、冲突不平均红线、只读咨询面、验收 CTX-A01–A06 |
 | `13-host-adapter-conformance-spec.md` | **Host Adapter conformance 规格（PLMP-CONF-1）**：G18 首宿主接入——握手字面量钉住、hostPort 全直通映射、runner 四场景、scratch 账本令、验收 CONF-A01–A04 |
+| `14-context-retrieval-spec.md` | **Context 检索半边规格（PLMP-CTX-2）**：Requirement 编译器、GitPort 词法检索、canonical Manifest（新事件+M5+fixture v3）、Coverage、验收 CTX2-A01–A10 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

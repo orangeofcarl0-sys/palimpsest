@@ -78,6 +78,8 @@
 
 | Host Adapter conformance（R17，PLMP-CONF-1） | G18 首宿主接入（ALN-4② 兑现）：装配期 `assertHostContract(1)` 字面量钉住（错代数 fail-closed，无容忍层）；`PalimpsestEffectsRuntime.hostPort`＝G18 外部合同面——`HostInvocation`≡`ActionRunOptions` 全直通映射，编排内 `invoke()` 路径保持不变；`runHostAdapterConformance` 四场景（runner 权威留 `@ordarium/testing`，palimpsest 只执行装配）；scratch 账本令；验收 CONF-A01–A04（13 规格） |
 
+| Context 检索半边（R18，PLMP-CTX-2） | Requirement 编译器（五类结构性派生：exact/code/evidence/historical/forbidden——forbidden＝R2 stale 集直引，即 §9 excluded_stale）+ `GitPort.scanLexical`（只读词法检索，Fake 种子/CLI 真目录双实现，共享确定性 matcher，刻意非 Ordarium Action——审计责任在 manifest）+ Coverage Assessment（0.75 阈值 advisory）+ **canonical manifest**：`CONTEXT_MANIFEST_ADDED` 新事件（EVENT_TYPES 33→34、MIGRATION_5 `context_manifests` STRICT 表、进 PROJECTION_TABLES → fixture v3 再生）、`AttemptReport.context_manifest` 加法式可选字段（SDS-4 例外，worker 不感知、controller 回填）、`compileTaskContext(attemptId)` 幂等编译；检索半边 semantic/embedding/runtime 通道与 Boot/Pull 分层明确后置；验收 CTX2-A01–A10（14 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。
