@@ -49,6 +49,7 @@ import {
   type ProjectProposal,
 } from "./architecture/index.js";
 import { serveOrchestration } from "./serve.js";
+import { runTui } from "./tui.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
 import { TaskPolicy } from "./domain/index.js";
@@ -123,7 +124,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|status> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status> …");
 
   const db = arg(parsed.options, "--db");
   const ops = arg(parsed.options, "--ops");
@@ -398,6 +399,11 @@ async function main() {
           process.once("SIGINT", shutdown);
           process.once("SIGTERM", shutdown);
         });
+        break;
+      }
+      case "tui": {
+        // PLMP-TUI-1: the terminal dual view over the same VIS contracts.
+        await runTui(controller);
         break;
       }
       case "status": {
