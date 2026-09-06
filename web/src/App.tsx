@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
-import { ApiError, getGraph, getToken, health, setToken } from "./api";
+import { ApiError, getGraph, getToken, health, listPresets, setToken } from "./api";
 import { GraphView, liveLinks, liveNodes } from "./GraphView";
 import {
   ArchitectureBar,
@@ -11,7 +11,7 @@ import {
   TaskDetails,
   type DraftTask,
 } from "./Panels";
-import type { OrchestrationGraph } from "./types";
+import type { OrchestrationGraph, PresetMeta } from "./types";
 
 type Mode = "live" | "draft";
 
@@ -20,6 +20,7 @@ export function App() {
   const [tokenInput, setTokenInput] = useState("");
   const [graph, setGraph] = useState<OrchestrationGraph | null>(null);
   const [cursor, setCursor] = useState<number | undefined>(undefined);
+  const [presets, setPresets] = useState<PresetMeta[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
   const [draft, setDraft] = useState<{ goal: string; tasks: DraftTask[] }>({ goal: "", tasks: [] });
@@ -59,6 +60,13 @@ export function App() {
     void refresh();
     return () => clearInterval(timer);
   }, [authorized, refresh]);
+
+  useEffect(() => {
+    if (authorized !== true) return;
+    void listPresets()
+      .then((result) => setPresets(result.presets))
+      .catch((error) => setMessage(error instanceof Error ? error.message : String(error)));
+  }, [authorized]);
 
   if (authorized === null) {
     return <Center>连接中…</Center>;
@@ -153,6 +161,7 @@ export function App() {
               <h3 style={{ margin: 0, fontSize: 13 }}>架构</h3>
               <ArchitectureBar
                 goal={graph?.project.goal ?? ""}
+                presets={presets}
                 onMessage={setMessage}
                 onDraftChange={setDraft}
                 onHandcraft={() => setMode("draft")}

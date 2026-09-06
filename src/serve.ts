@@ -20,6 +20,8 @@ import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  presetDraft,
+  presetMeta,
   proposalTaskSpecs,
   validateProjectProposal,
   type ProjectProposal,
@@ -120,6 +122,17 @@ const FALLBACK_PAGE =
   "<h1>palimpsest serve</h1><p>共享图面板尚未构建。</p>" +
   "<p><code>pnpm build:web</code> 之后重开本页；API 已可用（<code>/api/health</code>）。</p></body>";
 
+/** Declared gate ids for this project (same source the CLI architect reads). */
+function declaredGateIds(controller: ProjectController): Set<string> {
+  return new Set(
+    (
+      controller.store.connection
+        .prepare("SELECT gate_id FROM gate_registry WHERE project_id=?")
+        .all(controller.projectId) as Array<{ gate_id: string }>
+    ).map((row) => row.gate_id),
+  );
+}
+
 export function serveOrchestration(
   controller: ProjectController,
   options: ServeOptions = {},
@@ -206,20 +219,32 @@ export function serveOrchestration(
           });
           return;
         }
+        if (request.method === "GET" && path === "/api/presets") {
+          sendJson(response, 200, { presets: presetMeta() });
+          return;
+        }
         if (request.method === "POST" && path.startsWith("/api/control/")) {
           const op = path.slice("/api/control/".length);
           const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
           sendJson(response, 200, { result: await control(op, body) });
           return;
         }
+        if (request.method === "POST" && path.startsWith("/api/preset/") && path.endsWith("/draft")) {
+          const id = path.slice("/api/preset/".length, -"/draft".length);
+          const params = (JSON.parse((await readBody(request)) || "{}") ?? {}) as Record<string, unknown>;
+          sendJson(response, 200, { proposal: presetDraft(id, params) });
+          return;
+        }
         if (request.method === "POST" && path === "/api/proposal/validate") {
           const proposal = JSON.parse(await readBody(request)) as ProjectProposal;
-          sendJson(response, 200, { diagnostics: validateProjectProposal(proposal) });
+          sendJson(response, 200, {
+            diagnostics: validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) }),
+          });
           return;
         }
         if (request.method === "POST" && path === "/api/proposal/declare") {
           const proposal = JSON.parse(await readBody(request)) as ProjectProposal;
-          const diagnostics = validateProjectProposal(proposal);
+          const diagnostics = validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) });
           if (diagnostics.length > 0) {
             sendJson(response, 200, { diagnostics, declared: false });
             return;

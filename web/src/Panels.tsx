@@ -3,12 +3,14 @@ import { useState } from "react";
 import {
   control,
   declareProposal,
+  presetDraft,
   validateProposal,
   type ProposalDiagnostic,
 } from "./api";
 import {
   stateColor,
   type GraphTask,
+  type PresetMeta,
   type ProjectProposal,
   type TaskProposal,
 } from "./types";
@@ -358,27 +360,39 @@ export function DraftEditor(props: {
 
 export function ArchitectureBar(props: {
   goal: string;
+  presets: PresetMeta[];
   onMessage(message: string): void;
   onDraftChange(draft: { goal: string; tasks: DraftTask[] }): void;
   onHandcraft(): void;
 }) {
-  const [stages, setStages] = useState("实现, 验证, 评审");
+  const [presetId, setPresetId] = useState("");
+  const selected = props.presets.find((preset) => preset.id === presetId) ?? props.presets[0] ?? null;
+  // PLMP-ARCH-3: the kernel builds the draft (single source) - the panel only
+  // maps the returned proposal onto the editable canvas. The old client-side
+  // pipeline copy is retired, not kept behind a flag.
   const applyPreset = (): void => {
-    const list = stages.split(/[，,]/).map((s) => s.trim()).filter((s) => s !== "");
-    if (list.length === 0) {
-      props.onMessage("至少一个阶段");
+    if (selected === null) {
+      props.onMessage("预设清单尚未加载");
       return;
     }
-    props.onDraftChange({
-      goal: props.goal === "" ? "新目标" : props.goal,
-      tasks: list.map((title, index) => ({
-        key: `preset-${index}-${Date.now() % 1000}`,
-        title,
-        dependsOn: index === 0 ? [] : [list[index - 1]!],
-      })),
-    });
-    props.onMessage("流水线提案已就绪（手搓模式可编辑）");
-    props.onHandcraft();
+    void (async () => {
+      try {
+        const result = await presetDraft(selected.id, {
+          goal: props.goal === "" ? "新目标" : props.goal,
+        });
+        props.onDraftChange({
+          goal: result.proposal.goal,
+          tasks: result.proposal.tasks.map((task, index) => ({
+            ...task,
+            key: `preset-${index}-${Date.now() % 1000}`,
+          })),
+        });
+        props.onMessage("预设草稿已就绪（手搓模式可编辑）");
+        props.onHandcraft();
+      } catch (error) {
+        props.onMessage(`预设草稿 ✕ ${error instanceof Error ? error.message : String(error)}`);
+      }
+    })();
   };
   const generate = (): void => {
     const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明），把阶段清单给我确认。`;
@@ -388,16 +402,22 @@ export function ArchitectureBar(props: {
   return (
     <div style={{ display: "grid", gap: 6, fontSize: 12 }}>
       <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-        <input
-          style={field}
-          placeholder="阶段（逗号分隔）"
-          value={stages}
-          onChange={(event) => setStages(event.target.value)}
-        />
+        <select
+          style={{ ...field, flex: 1 }}
+          value={selected?.id ?? ""}
+          onChange={(event) => setPresetId(event.target.value)}
+        >
+          {props.presets.map((preset) => (
+            <option key={preset.id} value={preset.id}>
+              {preset.label}
+            </option>
+          ))}
+        </select>
         <button style={button(false)} onClick={applyPreset}>
-          流水线 preset
+          生成草稿
         </button>
       </div>
+      {selected !== null && <div style={{ color: "#475569" }}>{selected.description}</div>}
       <button style={button(false)} onClick={generate}>
         从需求生成（复制架构师指令）
       </button>

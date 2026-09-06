@@ -12,3 +12,8 @@ export type {
   ProposalDiagnosticType,
   TaskProposal,
 } from "./proposal.js";
+
+/** PLMP-ARCH-3 (20 号规格): the preset library - researched systems as topology prototypes. */
+
+export { PRESETS, presetDraft, presetMeta } from "./presets.js";
+export type { PresetEntry, PresetMeta, PresetParamField } from "./presets.js";

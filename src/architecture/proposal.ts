@@ -19,6 +19,8 @@ export interface TaskProposal {
   readonly requiredArtifacts?: readonly string[];
   /** Advisory: which gate the stage's promotion should require. */
   readonly gateId?: string;
+  /** Optional slot role (PLMP-ARCH-3 presets); absent means "implementer". */
+  readonly role?: string;
 }
 
 export interface ProjectProposal {
@@ -154,5 +156,6 @@ export function proposalTaskSpecs(proposal: ProjectProposal): TaskSpec[] {
       .filter((id): id is string => id !== undefined),
     write_paths: [...(task.writePaths ?? [])],
     required_artifacts: [...(task.requiredArtifacts ?? [])],
+    ...(task.role === undefined ? {} : { role: task.role }),
   }));
 }

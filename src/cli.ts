@@ -22,6 +22,8 @@
  *   telemetry [--candidates JSON]         pooled telemetry view (+ optional
  *                                         model advice against a candidate set)
  *   architect <proposal.json> [--declare] validate a ProjectProposal (PLMP-ARCH);
+ *             or --preset <id> [--params <json|@file>] [--goal ...] build it from
+ *             the preset library (PLMP-ARCH-3); empty diagnostics only then declare
  *                                         with --declare, declare it via start/plan
  *   status                                project view
  *
@@ -44,6 +46,7 @@ import {
 import { EventStore, dshDefaultStatePath } from "./state/index.js";
 import { ProjectController } from "./tools/index.js";
 import {
+  presetDraft,
   proposalTaskSpecs,
   validateProjectProposal,
   type ProjectProposal,
@@ -341,9 +344,25 @@ async function main() {
         // PLMP-ARCH: the main agent is the architect (zero in-plugin LLM).
         // Validate the proposal first; declare only on an empty diagnostic -
         // new projects via start, revisions via plan (both existing channels).
-        const proposal = JSON.parse(
-          readFileSync(a1 ?? "", "utf8"),
-        ) as ProjectProposal;
+        // PLMP-ARCH-3: --preset builds the proposal from the preset library
+        // (kernel defaults unless --params JSON); a1 stays the file path for
+        // a hand-written proposal.
+        const presetOption = arg(parsed.options, "--preset");
+        let proposal: ProjectProposal;
+        if (presetOption !== undefined) {
+          const rawParams = arg(parsed.options, "--params");
+          const params =
+            rawParams === undefined
+              ? {}
+              : (JSON.parse(
+                  rawParams.startsWith("@") ? readFileSync(rawParams.slice(1), "utf8") : rawParams,
+                ) as Record<string, unknown>);
+          const goalOption = arg(parsed.options, "--goal");
+          if (goalOption !== undefined) params.goal = goalOption;
+          proposal = presetDraft(presetOption, params);
+        } else {
+          proposal = JSON.parse(readFileSync(a1 ?? "", "utf8")) as ProjectProposal;
+        }
         const knownGates = new Set(
           (
             store.connection

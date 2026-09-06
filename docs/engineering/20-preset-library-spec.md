@@ -31,7 +31,7 @@
 - `pipeline`：`{goal, stages:[{title, writePaths?, requiredArtifacts?, gateId?}]}`（18 号签名不变；注册表条目输出与 `pipelinePreset(...)` 逐字节一致，PRE-A10）。
 - `fan_out`：`{goal, workers?:[{title, writePaths?, requiredArtifacts?}]（默认 2：调研 A/调研 B）, synthesis?:{title?="综合", writePaths?, gateId?}}`。
 - `hierarchy`：`{goal, research?:[{title}]（默认 1：调研）, writing?:{title?="撰写", writePaths?, requiredArtifacts?, gateId?}, editing?:{title?="编辑", gateId?}}`。
-- `panel`：`{goal, question?:{title?="解题", writePaths?, requiredArtifacts?}, candidates?:number（默认 2，界 1..4；>2 并行需先经 declareRoleTable 提额，预设不代劳）, synthesis?:{title?="合成评审", gateId?}}`（候选＝"方案 A/方案 B…"）。
+- `panel`：`{goal, candidates?:number（默认 2，界 1..4；>2 并行需先经 declareRoleTable 提额，预设不代劳）, synthesis?:{title?="合成评审", gateId?}}`（候选＝"方案 A/方案 B…"；同题＝候选阶段本身承载同一 goal，无前置节点——grok-expert 聊天室无 pre-stage）。
 - `verified_dag`：`{goal, units?:[{title, dependsOn?:string[]（单元标题，环与坏引用由共享校验器兜底）, writePaths?, requiredArtifacts?, gateId?}]（默认 2：单元 A/单元 B）, review?:{title?="终审", gateId?}}`。
 - `research_loop`：`{goal, plan?:{title?="研究计划", writePaths?}, topics?:[{title, writePaths?}]（默认 2：取证 A/取证 B）, verify?:{title?="核验", gateId?}, synthesis?:{title?="综合", gateId?}}`。
 
@@ -72,3 +72,4 @@
 | 日期 | 修订 |
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-ARCH-3）：四项默认裁决（拓扑本质 5+1、门禁只建议、内核单源＋草稿直出、中性 id＋来源注记）；注册表六条目、参数形状、供给三面、红线、验收 PRE-A01–A10。 |
+| 2026-09-07 | `panel` 参数形状修正：删 `question` 子对象（同题并行＝候选阶段本身承载同一 goal，无前置节点——grok-expert 聊天室无 pre-stage，拓扑表本就如此）。 |

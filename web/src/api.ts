@@ -1,5 +1,7 @@
 /** Token-authed fetch wrapper over the PLMP-WEB-1 endpoints. */
 
+import type { OrchestrationGraph, PresetMeta, ProjectProposal, ProposalDiagnostic } from "./types";
+
 const TOKEN_KEY = "palimpsest-token";
 
 export function getToken(): string {
@@ -58,6 +60,15 @@ export const validateProposal = (
   proposal: ProjectProposal,
 ): Promise<{ diagnostics: ProposalDiagnostic[] }> =>
   call("/api/proposal/validate", { method: "POST", body: JSON.stringify(proposal) });
+
+export const listPresets = (): Promise<{ presets: PresetMeta[] }> => call("/api/presets");
+
+/** PLMP-ARCH-3: a preset draft is pure derivation - the kernel builds it, zero writes. */
+export const presetDraft = (
+  id: string,
+  params: Record<string, unknown>,
+): Promise<{ proposal: ProjectProposal }> =>
+  call(`/api/preset/${id}/draft`, { method: "POST", body: JSON.stringify(params) });
 
 export const declareProposal = (
   proposal: ProjectProposal,

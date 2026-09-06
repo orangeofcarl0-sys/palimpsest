@@ -38,6 +38,23 @@ export interface TaskProposal {
   writePaths?: string[];
   requiredArtifacts?: string[];
   gateId?: string;
+  /** Slot role from the preset (ARCH-3); absent means "implementer". */
+  role?: string;
+}
+
+/** PLMP-ARCH-3: preset metadata mirror (lineage only - no orchestration terms). */
+export interface PresetParamField {
+  name: string;
+  required: boolean;
+  description: string;
+}
+
+export interface PresetMeta {
+  id: string;
+  label: string;
+  lineage: string;
+  description: string;
+  paramSpec: PresetParamField[];
 }
 
 export interface ProjectProposal {
