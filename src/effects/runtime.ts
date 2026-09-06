@@ -26,7 +26,6 @@ import { SqliteLedger } from "@ordarium/ledger-sqlite";
 
 import { defineEffects } from "./actions.js";
 import type { GitPort } from "./git_port.js";
-
 export interface PalimpsestEffectsRuntimeOptions {
   /** Ordarium ledger path; defaults to $DSH_HOME/ordarium/operations.sqlite. */
   databasePath?: string | undefined;
@@ -54,6 +53,8 @@ export interface PalimpsestEffectsRuntime {
   readonly state: OrdariumStateStore;
   /** G18 host-adapter seam (PLMP-CONF-1): the external contract surface. */
   readonly hostPort: HostInvocationPort;
+  /** PLMP-CTX-2: the git side-channel, exposed for worktree lexical scans. */
+  readonly git: GitPort;
   readonly actions: ReturnType<typeof defineEffects>;
   invoke<O extends JsonValue>(
     action: Action<JsonValue, O>,
@@ -151,6 +152,7 @@ export function createPalimpsestEffects(
     runtime,
     state,
     hostPort,
+    git: options.git,
     actions,
     invoke,
     async close() {

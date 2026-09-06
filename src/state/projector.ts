@@ -90,10 +90,39 @@ export class CoreProjector {
       case "CANDIDATE_SELECTED":
         this.#applyCandidateSelected(connection, event);
         break;
+      case "CONTEXT_MANIFEST_ADDED":
+        this.#applyContextManifestAdded(connection, event);
+        break;
       case "MANUAL_APPROVAL_RECORDED":
         break;
     }
     this.#advanceCursor(connection, event);
+  }
+
+  #applyContextManifestAdded(connection: DatabaseSync, event: SchedulerEvent): void {
+    const manifest = event.payload.manifest as Row;
+    try {
+      connection
+        .prepare(
+          `
+          INSERT INTO context_manifests(
+              project_id, manifest_id, task_id, project_revision, manifest_json,
+              last_event_id, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          event.project_id,
+          String(manifest.manifest_id),
+          String(manifest.task_id),
+          Number(manifest.project_revision),
+          jsonBytes(manifest),
+          event.event_id,
+          isoformatDatetime(event.committed_at),
+        );
+    } catch (error) {
+      throw new ProjectionError(withCause("context manifest already exists", error));
+    }
   }
 
   #verifyCursor(connection: DatabaseSync, event: SchedulerEvent): void {

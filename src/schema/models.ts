@@ -619,12 +619,18 @@ export interface AttemptReport {
   started_at: string;
   finished_at: string;
   runtime_metadata: RuntimeMetadata;
+  /** PLMP-CTX-2: the context manifest id this attempt was compiled against (absent = none). */
+  context_manifest?: string | undefined;
 }
 
 /** Canonical digest of an AttemptReport payload object (datetimes → micro). */
 export function attemptReportDigestOf(report: AttemptReport): string {
+  const { context_manifest, ...rest } = report;
   return canonicalDigest({
-    ...report,
+    ...rest,
+    // PLMP-CTX-2: absent optional keys stay absent in canonical form, so a
+    // report without a manifest digests byte-identically to the CTX-2 shape.
+    ...(context_manifest === undefined ? {} : { context_manifest }),
     started_at: canonicalDatetime(report.started_at),
     finished_at: canonicalDatetime(report.finished_at),
   });
@@ -699,6 +705,11 @@ export function parseAttemptReport(value: unknown): AttemptReport {
   };
   if (datetimeToEpochMicros(report.finished_at) < datetimeToEpochMicros(report.started_at)) {
     throw new ContractError("finished_at must not precede started_at");
+  }
+  if (raw.context_manifest !== undefined && raw.context_manifest !== null) {
+    report.context_manifest = field(raw.context_manifest, "context_manifest", (inner) =>
+      validateIdentifier(expectString(inner)),
+    );
   }
   return Object.freeze(report);
 }
@@ -876,6 +887,7 @@ export const EVENT_TYPES = [
   "GATE_DEFINED",
   "ROLE_TABLE_DEFINED",
   "STAGE_GRAPH_DEFINED",
+  "CONTEXT_MANIFEST_ADDED",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -1173,6 +1185,68 @@ export function normalizeEventPayload(
         guards: raw.guards,
         declared_by: field(raw.declared_by, "declared_by", expectString),
         reason: field(raw.reason, "reason", expectString),
+      };
+    }
+    case "CONTEXT_MANIFEST_ADDED": {
+      requireFields(raw, "task_id", "project_revision", "manifest");
+      const manifest = expectObject(raw.manifest);
+      requireFields(
+        manifest,
+        "manifest_id",
+        "task_id",
+        "project_revision",
+        "requirement",
+        "exact",
+        "source",
+        "evidence",
+        "excluded_stale",
+        "retrieval",
+        "created_at",
+      );
+      // The requirement body is a host-derived compilation input: shape-checked
+      // as an object, its semantics belong to the compiler (PLMP-CTX-2 §1).
+      expectObject(manifest.requirement);
+      return {
+        task_id: field(raw.task_id, "task_id", (inner) => validateIdentifier(expectString(inner))),
+        project_revision: field(raw.project_revision, "project_revision", expectInt),
+        manifest: {
+          manifest_id: field(manifest.manifest_id, "manifest_id", (inner) =>
+            validateIdentifier(expectString(inner)),
+          ),
+          task_id: field(manifest.task_id, "task_id", (inner) =>
+            validateIdentifier(expectString(inner)),
+          ),
+          project_revision: field(manifest.project_revision, "project_revision", expectInt),
+          requirement: manifest.requirement,
+          exact: expectArray(manifest.exact).map((entry) => {
+            const item = expectObject(entry);
+            requireFields(item, "ref", "digest");
+            return {
+              ref: field(item.ref, "ref", (inner) => nonEmpty(expectString(inner))),
+              digest: field(item.digest, "digest", (inner) => nonEmpty(expectString(inner))),
+            };
+          }),
+          source: expectArray(manifest.source).map((entry) => {
+            const item = expectObject(entry);
+            requireFields(item, "path", "line", "snippet", "term");
+            return {
+              path: field(item.path, "path", (inner) => nonEmpty(expectString(inner))),
+              line: field(item.line, "line", expectInt),
+              snippet: field(item.snippet, "snippet", expectString),
+              term: field(item.term, "term", (inner) => nonEmpty(expectString(inner))),
+            };
+          }),
+          evidence: expectArray(manifest.evidence).map((item) =>
+            validateIdentifier(expectString(item)),
+          ),
+          excluded_stale: expectArray(manifest.excluded_stale).map((item) =>
+            nonEmpty(expectString(item)),
+          ),
+          retrieval: expectArray(manifest.retrieval).map((item) => nonEmpty(expectString(item))),
+          created_at: field(manifest.created_at, "created_at", (inner) =>
+            nonEmpty(expectString(inner)),
+          ),
+        },
       };
     }
     case "JUDGE_DECLARED": {

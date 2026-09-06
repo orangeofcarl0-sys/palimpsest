@@ -228,6 +228,23 @@ export const MIGRATION_4_SQL = `CREATE TABLE stage_graphs (
   ) STRICT;
 `;
 
+/**
+ * PLMP-CTX-2: the canonical registry of compiled context manifests (§9).
+ * Manifest bodies are event-sourced (CONTEXT_MANIFEST_ADDED) and projected
+ * here for lookup; the table participates in PROJECTION_TABLES/snapshot.
+ */
+export const MIGRATION_5_SQL = `CREATE TABLE context_manifests (
+    project_id TEXT NOT NULL,
+    manifest_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    project_revision INTEGER NOT NULL,
+    manifest_json BLOB NOT NULL,
+    last_event_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, manifest_id)
+  ) STRICT;
+`;
+
 export interface Migration {
   version: number;
   name: string;
@@ -239,6 +256,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
   { version: 3, name: "h1 gate and role registries", sql: MIGRATION_3_SQL },
   { version: 4, name: "h1 stage graph registry", sql: MIGRATION_4_SQL },
+  { version: 5, name: "context manifest registry", sql: MIGRATION_5_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

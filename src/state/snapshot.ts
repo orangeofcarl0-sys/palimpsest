@@ -12,6 +12,7 @@ export const PROJECTION_TABLES = [
   "promotions",
   "scheduler_control",
   "projection_cursors",
+  "context_manifests",
 ] as const;
 
 type Row = Record<string, any>;

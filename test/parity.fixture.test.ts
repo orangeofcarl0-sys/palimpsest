@@ -25,7 +25,7 @@ describe("cross-language digest parity against the Python fixture", () => {
   it("fixture contract is the unified baseline", () => {
     // v2: the TS Scheduler regeneration adds the STAGE_GRAPH_DEFINED genesis
     // declaration (H1 §3.4 D-3) right after PROJECT_CREATED.
-    expect(fixture.fixture_version).toBe(2);
+    expect(fixture.fixture_version).toBe(3);
     expect(fixture.scenario).toBe("phase0-2-two-candidate-batch-retry-exhaustion");
     expect(fixture.events.length).toBeGreaterThan(0);
   });

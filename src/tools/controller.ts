@@ -39,7 +39,15 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import { compileContextBrief, type ContextBrief } from "../context/index.js";
+import {
+  assessCoverage,
+  buildContextManifest,
+  compileContextBrief,
+  compileContextRequirement,
+  type ContextBrief,
+  type ContextManifest,
+  type CoverageAssessment,
+} from "../context/index.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
@@ -807,7 +815,29 @@ export class ProjectController {
         stdout_artifact: null,
         stderr_artifact: null,
       },
+      // PLMP-CTX-2 §3.2: if a context manifest was compiled for this attempt,
+      // the report references it; the worker itself never knows the id.
+      ...this.#contextManifestRef(attemptId),
     };
+  }
+
+  /**
+   * PLMP-CTX-2 §3.2: the deterministic manifest id for an attempt, resolved
+   * against the projection - absent when no manifest was compiled, which
+   * keeps the report (and its digest) byte-identical to the pre-CTX-2 shape.
+   */
+  #contextManifestRef(attemptId: string): { context_manifest: string } | Record<string, never> {
+    const manifestId = stableEntityId(
+      "context-manifest",
+      actionKey("context-manifest-v1", {
+        project_id: this.projectId,
+        attempt_id: attemptId,
+      }),
+    );
+    const row = this.store.connection
+      .prepare("SELECT manifest_id FROM context_manifests WHERE project_id=? AND manifest_id=?")
+      .get(this.projectId, manifestId) as { manifest_id: string } | undefined;
+    return row === undefined ? {} : { context_manifest: row.manifest_id };
   }
 
   // -------------------------------------------------------------------------
@@ -1548,6 +1578,141 @@ export class ProjectController {
       interpretations,
       claims,
     });
+  }
+
+  /**
+   * PLMP-CTX-2 §5: compile the context for one attempt - requirement
+   * derivation, lexical retrieval over its worktree, the canonical manifest
+   * (emitted as CONTEXT_MANIFEST_ADDED, idempotent per attempt) and the
+   * coverage assessment. The worktree must exist (claim first).
+   */
+  async compileTaskContext(attemptId: string): Promise<{
+    manifest: ContextManifest;
+    coverage: CoverageAssessment;
+  }> {
+    const attemptRow = this.store.connection
+      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { task_id: string } | undefined;
+    if (attemptRow === undefined) {
+      throw new DomainValidationError("attempt does not exist");
+    }
+    const taskId = String(attemptRow.task_id);
+    const project = this.#project();
+    const task = project.tasks.find((item) => item.task_id === taskId);
+    if (task === undefined) {
+      throw new DomainValidationError("task does not exist");
+    }
+
+    const manifestId = stableEntityId(
+      "context-manifest",
+      actionKey("context-manifest-v1", {
+        project_id: this.projectId,
+        attempt_id: attemptId,
+      }),
+    );
+    const existing = this.store.connection
+      .prepare("SELECT manifest_json FROM context_manifests WHERE project_id=? AND manifest_id=?")
+      .get(this.projectId, manifestId) as { manifest_json: Uint8Array } | undefined;
+    if (existing !== undefined) {
+      const manifest = JSON.parse(
+        new TextDecoder().decode(existing.manifest_json),
+      ) as ContextManifest;
+      return { manifest, coverage: assessCoverage(manifest.requirement, manifest) };
+    }
+
+    // Requirement inputs: prior-failure evidence and the stale set come from
+    // the projections; upstream write surfaces come from depends_on tasks.
+    const attemptRows = this.store.connection
+      .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=?")
+      .all(this.projectId) as Array<Record<string, unknown>>;
+    const evidenceRows = this.store.connection
+      .prepare("SELECT evidence_id, status, evidence_json FROM evidence WHERE project_id=?")
+      .all(this.projectId) as Array<Record<string, unknown>>;
+    const failedAttemptIds = new Set(
+      attemptRows
+        .filter((row) => String(row.task_id) === taskId && String(row.state) === "FAILED")
+        .map((row) => String(row.attempt_id)),
+    );
+    const priorFailureEvidence: string[] = [];
+    const staleRefs: string[] = [];
+    for (const row of attemptRows) {
+      if (String(row.state) === "STALE") staleRefs.push(String(row.attempt_id));
+    }
+    for (const row of evidenceRows) {
+      const atom = decodeJsonBlob(row.evidence_json) as Record<string, unknown>;
+      const subjectId = typeof atom.subject_id === "string" ? atom.subject_id : "";
+      if (String(row.status) === "stale") staleRefs.push(String(row.evidence_id));
+      if (failedAttemptIds.has(subjectId) && String(row.status) === "active") {
+        priorFailureEvidence.push(String(row.evidence_id));
+      }
+    }
+    const upstreamWritePaths = (task.depends_on ?? []).flatMap((dependency) => {
+      const upstream = project.tasks.find((item) => item.task_id === dependency);
+      return upstream?.write_paths ?? [];
+    });
+    const requirement = compileContextRequirement({
+      projectId: this.projectId,
+      taskId,
+      requiredArtifacts: task.required_artifacts,
+      writePaths: task.write_paths,
+      upstreamWritePaths,
+      priorFailureEvidence,
+      staleRefs,
+    });
+
+    // Deterministic retrieval terms: objective + artifact tokens (V0, no model).
+    const stopwords = new Set([
+      "the",
+      "and",
+      "for",
+      "with",
+      "this",
+      "that",
+      "from",
+      "into",
+      "complete",
+    ]);
+    const tokens = new Set<string>();
+    for (const token of `${task.objective} ${task.required_artifacts.join(" ")}`
+      .toLowerCase()
+      .split(/[^a-z0-9]+/)) {
+      if (token.length >= 4 && !stopwords.has(token)) tokens.add(token);
+    }
+    const source = await this.effects.git.scanLexical({
+      worktreeId: attemptId,
+      terms: [...tokens].slice(0, 8),
+    });
+    const manifest = buildContextManifest({
+      manifestId,
+      taskId,
+      projectRevision: this.promotions.projectRevision(),
+      requirement,
+      source,
+      createdAt: this.#now(),
+    });
+    this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "CONTEXT_MANIFEST_ADDED",
+        payload_version: 1,
+        entity_type: "context-manifest",
+        entity_id: manifest.manifest_id,
+        payload: {
+          task_id: manifest.task_id,
+          project_revision: manifest.project_revision,
+          manifest,
+        },
+        causation_id: null,
+        correlation_id: `task:${manifest.task_id}:context`,
+        idempotency_key: actionKey("context-manifest-v1", {
+          project_id: this.projectId,
+          attempt_id: attemptId,
+        }),
+        expected_project_revision: this.#project().revision,
+      }),
+    );
+    return { manifest, coverage: assessCoverage(manifest.requirement, manifest) };
   }
 
   /**
