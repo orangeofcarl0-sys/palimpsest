@@ -15,7 +15,7 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,7 +36,22 @@ const MIME: Record<string, string> = {
   ".json": "application/json; charset=utf-8",
 };
 
-const STATIC_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "dist", "web");
+/**
+ * The package root, found by walking up from this module: dist/src/serve.js
+ * (compiled CLI) and src/serve.ts (tests under tsx) both land on the same
+ * root, so the default static root is dist/web in either layout.
+ */
+function packageRoot(modulePath: string): string {
+  let dir = dirname(modulePath);
+  for (;;) {
+    if (existsSync(join(dir, "package.json"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return dirname(modulePath);
+    dir = parent;
+  }
+}
+
+const STATIC_ROOT = join(packageRoot(fileURLToPath(import.meta.url)), "dist", "web");
 
 export interface ServeOptions {
   /** Bind port; default 7831 (tests pass 0 for an ephemeral port). */
