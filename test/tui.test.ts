@@ -1,10 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  applyTuiKey,
-  renderTuiFrame,
-  type PalimpsestControlSurface,
-} from "../src/tui.js";
+import { applyTuiKey, renderTuiFrame } from "../src/tui.js";
+import type { PalimpsestControlSurface } from "../src/tools/index.js";
 import type { OrchestrationGraph } from "../src/tools/index.js";
 
 const GRAPH: OrchestrationGraph = {
