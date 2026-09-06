@@ -82,6 +82,10 @@
 
 | CLI `--repo` 通道修正 + Docker 最小干净环境（R19 工程修正，无规格——证据型交付） | 干净容器 E2E 暴露并修正三处 CLI 真实 git 通道缺口：`new` 注入真实 HEAD 进 ProjectIR（`start` 本就支持 headCommit）、`report` 增 `--commit`（真实工作提交进 result_commit）、`promote` 以 `git.head()` 为 expectedHead（原用 Fake 常量，真实仓必败）；另接 `pump --model/--cost` 归因与 `context` 命令；`docker/minimal/e2e.sh`＝消费者安装链（release tarball + pnpm overrides）+ 全流程（真实 git 合并晋升）+ 证据断言——生产账本首用（命题二判据②首例）与共享账本第二项目遥测样本落袋 |
 
+| semantic 检索通道（R20，PLMP-CTX-3） | §5 semantic 通道（R18 明确后置项的兑现）：`EmbeddingPort` 宿主注入边界（真实 embedding 调模型，永远来自宿主——本仓只定义端口与确定性参考实现，宿主中立红线）+ `hashingEmbedder`（64 维 token-hash 桶、原始计数向量，确定性可测）+ `GitPort.collectWorktreeTexts` 原料面（.git 跳过、1MB/64 文件/64KB 上限）+ controller 通道接线（文件级 cosine top-k、`score_permille` 整数千分位、同 body digest 去重）+ `manifest.semantic` 加法式可选字段（无 port 时键缺席、`retrieval` 仅 `["lexical"]`，事件契约零触碰）；立项数据门槛（task_type ≥12、per-model ≥8）由 R19 实证累积跨越；验收 CTX3-A01–A05（15 规格） |
+
+| Boot/Pull 上下文分发（R21，PLMP-CTX-4） | §12 working set + addressable external memory：`distributeContext` 纯派生（exact 恒 boot——合同字节计入预算但绝不溢出；source/evidence 依 manifest 序填充字节预算；溢出转 pull 句柄；缺省预算 40960 字节）+ 三类句柄语法 `@ctx/exact|source|evidence/<ref>`（excluded_stale 永不出现在两侧）+ `fetchContext` 句柄解析面（boot+handles 合并查找；evidence body 取自投影、source/exact body 取自 manifest；未知句柄 undefined——句柄是咨询索引不是合同断言）；manifest 本体零改动，分发前后事件数与 snapshotDigest 不变；验收 CTX4-A01–A05（16 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

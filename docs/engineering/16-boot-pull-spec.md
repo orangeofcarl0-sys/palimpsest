@@ -1,6 +1,6 @@
 # Boot/Pull 上下文分发规格（Context Compiler 复杂度层第二层）
 
-> **Spec ID**：`PLMP-CTX-4` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-CTX-4` ｜ 状态：**已交付**（2026-09-06 `649d3ec`，出口 SDS-18）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；manifest 以 `14`（PLMP-CTX-2）为准；素材母体＝raw-notes 预算.txt §12（Boot/Pull 分层）。本文＝上下文分发的形状、句柄语法与验收权威。
 > **修订记录**：`CTX-4`＝初版冻结（2026-09-06）：manifest 视图分类（boot 字节预算 + pull 句柄）、`fetchContext` 句柄解析面；验收 CTX4-A01–A05。
 
@@ -66,3 +66,4 @@ fetchContext(handle: string): Promise<{
 | 日期 | 修订 |
 |---|---|
 | 2026-09-06 | 初版冻结（PLMP-CTX-4）：manifest 分发视图（boot 字节预算 + pull 句柄语法三类）、`fetchContext` 解析面、验收 CTX4-A01–A05。 |
+| 2026-09-06 | 交付（`649d3ec`，出口 SDS-18）：全部验收通过（39 文件 / 224 测试），03/00/01/索引登记完成。 |

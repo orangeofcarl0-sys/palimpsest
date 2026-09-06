@@ -1,6 +1,6 @@
 # Semantic 检索通道规格（Context Compiler 复杂度层第一层）
 
-> **Spec ID**：`PLMP-CTX-3` ｜ 状态：**生效**（实现交付前为规范基线，交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-CTX-3` ｜ 状态：**已交付**（2026-09-06 `649d3ec`，出口 SDS-17）
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；检索半边以 `14`（PLMP-CTX-2）为准；素材母体＝raw-notes 预算.txt §5（混合检索）/§6（选择评分）。本文＝semantic 通道的形状、宿主注入边界与验收权威。
 > **修订记录**：`CTX-3`＝初版冻结（2026-09-06）：EmbeddingPort 宿主注入 + 确定性哈希参考实现、`collectWorktreeTexts` 原料面、§6 评分 V0（三特征可算余中性）、manifest.semantic 加法式字段；验收 CTX3-A01–A05。
 
@@ -64,3 +64,4 @@ collectWorktreeTexts(input: { worktreeId: string; maxFiles?: number; maxBytesPer
 | 日期 | 修订 |
 |---|---|
 | 2026-09-06 | 初版冻结（PLMP-CTX-3）：EmbeddingPort + hashingEmbedder 参考实现、collectWorktreeTexts 原料面、semantic 通道（cosine top-k、§6 评分 V0 三特征）、manifest.semantic 加法式字段、验收 CTX3-A01–A05。 |
+| 2026-09-06 | 交付（`649d3ec`，出口 SDS-17）：全部验收通过（39 文件 / 224 测试），03/00/01/索引登记完成。 |

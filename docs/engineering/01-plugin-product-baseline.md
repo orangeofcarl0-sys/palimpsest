@@ -50,6 +50,8 @@ src/tools     status 遥测视图：人话格式遥测节（冷表缺席、术�
 src/context   Context Brief：C2 结构化压缩器（事实/解释/冲突三层，冲突不平均）  【R16 ✅】
 src/effects   Host Adapter conformance：握手钉住 + hostPort 直通 + 四场景    【R17 ✅】
 src/context   检索半边：Requirement/词法检索/Manifest(canonical)/Coverage     【R18 ✅】
+src/context   semantic 通道：EmbeddingPort 注入 + 哈希参考实现 + cosine top-k  【R20 ✅】
+src/context   Boot/Pull 分发：distributeContext 纯派生 + fetchContext 解析     【R21 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

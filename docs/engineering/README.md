@@ -18,6 +18,8 @@
 | `12-context-brief-spec.md` | **Context Brief 规格（PLMP-CTX-1）**：知识闭环缺环的 C2 切片——事实/解释/冲突三层结构化压缩、冲突不平均红线、只读咨询面、验收 CTX-A01–A06 |
 | `13-host-adapter-conformance-spec.md` | **Host Adapter conformance 规格（PLMP-CONF-1）**：G18 首宿主接入——握手字面量钉住、hostPort 全直通映射、runner 四场景、scratch 账本令、验收 CONF-A01–A04 |
 | `14-context-retrieval-spec.md` | **Context 检索半边规格（PLMP-CTX-2）**：Requirement 编译器、GitPort 词法检索、canonical Manifest（新事件+M5+fixture v3）、Coverage、验收 CTX2-A01–A10 |
+| `15-semantic-retrieval-spec.md` | **Semantic 检索通道规格（PLMP-CTX-3）**：EmbeddingPort 宿主注入 + 确定性哈希参考实现、collectWorktreeTexts 原料面、cosine top-k 接线、manifest.semantic 加法式字段、验收 CTX3-A01–A05 |
+| `16-boot-pull-spec.md` | **Boot/Pull 上下文分发规格（PLMP-CTX-4）**：manifest 分发视图（boot 字节预算 + pull 句柄）、句柄语法三类、fetchContext 解析面、零契约触碰、验收 CTX4-A01–A05 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
