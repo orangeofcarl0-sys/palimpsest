@@ -21,17 +21,25 @@
     "clean": "tsc -b --clean",
     "test": "pnpm run build && vitest run",
     "test:watch": "vitest",
-    "check": "pnpm run test"
+    "check": "pnpm run test",
+    "build:web": "vite build --config web/vite.config.ts"
   },
   "dependencies": {
     "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz",
-    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz",
-    "@ordarium/host-kit": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz"
+    "@ordarium/host-kit": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz",
+    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz"
   },
   "devDependencies": {
     "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz",
     "@types/node": "26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^5.2.0",
+    "@xyflow/react": "^12.11.6",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "typescript": "7.0.2",
+    "vite": "^7.3.6",
     "vitest": "4.1.10"
   },
   "engines": {

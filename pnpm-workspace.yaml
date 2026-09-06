@@ -1,6 +1,9 @@
 packages:
   - .
 
+allowBuilds:
+  esbuild: true
+
 # The @ordarium/* release-tarball strategy redirects the packed inter-deps
 # (@ordarium/core "1.1.0" declared inside the ledger-sqlite/testing tarballs)
 # to pinned GitHub release URLs, which the pnpm 11 blockExoticSubdeps default

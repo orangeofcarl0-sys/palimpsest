@@ -1,6 +1,7 @@
-import { mkdtempSync } from "node:fs";
+import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
@@ -253,6 +254,42 @@ describe("serve channel face (PLMP-WEB-1)", () => {
       expect((await api(second, "/api/health")).status).toBe(200);
     } finally {
       await first.close();
+      await second.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("WEB-A06: static serving - the built bundle, or the fallback page", async () => {
+    const rig = makeRig();
+    // Mechanism: an injected static root is served verbatim.
+    const fake = mkdtempSync(join(tmpdir(), "palimpsest-webroot-"));
+    writeFileSync(join(fake, "index.html"), "<!doctype html><html><body>panel-fake</body></html>");
+    const first = await serveOrchestration(rig.controller, { port: 0, staticRoot: fake });
+    try {
+      const response = await fetch(`${first.url}/`);
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("panel-fake");
+    } finally {
+      await first.close();
+    }
+    // The real bundle (built by `pnpm build:web`) or the fallback page.
+    const second = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      const response = await fetch(`${second.url}/`);
+      const html = await response.text();
+      expect(response.status).toBe(200);
+      const built = existsSync(
+        join(fileURLToPath(new URL("../dist/web/index.html", import.meta.url))),
+      );
+      if (built) {
+        expect(html).toContain("assets/index-");
+        const asset = /assets\/index-[A-Za-z0-9_-]+\.js/.exec(html)![0]!;
+        const assetResponse = await fetch(`${second.url}/${asset}`);
+        expect(assetResponse.status).toBe(200);
+      } else {
+        expect(html).toContain("build:web");
+      }
+    } finally {
       await second.close();
       await rig.cleanup();
     }

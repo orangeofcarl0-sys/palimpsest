@@ -1,0 +1,65 @@
+/** Token-authed fetch wrapper over the PLMP-WEB-1 endpoints. */
+
+const TOKEN_KEY = "palimpsest-token";
+
+export function getToken(): string {
+  return localStorage.getItem(TOKEN_KEY) ?? "";
+}
+
+export function setToken(value: string): void {
+  localStorage.setItem(TOKEN_KEY, value);
+}
+
+export class ApiError extends Error {
+  constructor(
+    readonly status: number,
+    message: string,
+  ) {
+    super(message);
+  }
+}
+
+async function call<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(path, {
+    ...init,
+    headers: {
+      authorization: `Bearer ${getToken()}`,
+      ...(init?.body === undefined ? {} : { "content-type": "application/json" }),
+    },
+  });
+  const body: unknown = await response.json();
+  if (!response.ok) {
+    const message =
+      typeof body === "object" && body !== null && "error" in body
+        ? String((body as { error: unknown }).error)
+        : `HTTP ${response.status}`;
+    throw new ApiError(response.status, message);
+  }
+  return body as T;
+}
+
+export interface GraphResponse {
+  graph: OrchestrationGraph;
+  changed: boolean;
+}
+
+export const getGraph = (cursor?: number): Promise<GraphResponse> =>
+  call<GraphResponse>(`/api/graph${cursor === undefined ? "" : `?cursor=${cursor}`}`);
+
+export const health = (): Promise<{ ok: boolean; cursor: number }> => call("/api/health");
+
+export const control = (op: string, body?: unknown): Promise<{ result: unknown }> =>
+  call(`/api/control/${op}`, {
+    method: "POST",
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+
+export const validateProposal = (
+  proposal: ProjectProposal,
+): Promise<{ diagnostics: ProposalDiagnostic[] }> =>
+  call("/api/proposal/validate", { method: "POST", body: JSON.stringify(proposal) });
+
+export const declareProposal = (
+  proposal: ProjectProposal,
+): Promise<{ diagnostics: ProposalDiagnostic[]; declared: boolean; eventType?: string }> =>
+  call("/api/proposal/declare", { method: "POST", body: JSON.stringify(proposal) });
