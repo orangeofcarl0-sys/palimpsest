@@ -90,6 +90,8 @@
 
 | 架构三模式（R23，PLMP-ARCH-1/2） | 预设/自动/手搓共用**一个声明面**：`pipelinePreset` 流水线模板（线性阶段链、上游 writePaths 汇入下游上下文需求）+ `ProjectProposal` 共享校验器（六类诊断 fail-closed、永不落账）+ `proposalTaskSpecs` 确定性编译；声明只走既有 start/plan 通道——**架构调整即计划修订，系统只能通过自己的证据门禁重构自己**；自动架构师＝**DSH 主代理**（插件零内嵌 LLM——依赖图断言在案），CLI 增 `architect` 命令（校验→空诊断才 `--declare`）+ 架构师技能（提案先给人确认，控制权在人）；验收 ARCH-A01–A05（18 规格） |
 
+| 呈现适配线（R24，PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1） | 愿景三需求（易用/可视/可控）的呈现侧，四件全零新编排语义（17/18 契约的适配器，事件契约零触碰）：`serveOrchestration` 附加呈现面（node:http 零框架、127.0.0.1 + 每次启动随机 bearer token、`/api/graph?cursor` 廉价轮询即实时、`/api/control/*` 1:1 委托、`/api/proposal/validate|declare`、静态面板供给 + fallback 页；kill serve 零编排影响——附加呈现面非编排守护）+ React/ReactFlow 共享图面板（live/draft 双图：图上直接编辑手搓 V1、六类诊断上墙、空诊断才可确认声明）+ `palimpsest tui`（手写 ANSI 零依赖终端双图）+ `sessionPanelFromGraph` 路 B 描述符（dsh-winui session.panel：状态＝数据、行为＝命令引用）；真实浏览器可视冒烟通过；验收 WEB-A01–A06 / TUI-A01 / WINUI-A01（19 规格） |
+
 ## 5. P1 起的来源
 
 Ordarium 侧合同（effect profiles、Operations、live lease、reconcile 语义）以 Ordarium 仓库 docs/12–17 与 `evidence/` 为准；本仓库不复制其文本，只引用。

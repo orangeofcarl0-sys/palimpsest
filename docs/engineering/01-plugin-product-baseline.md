@@ -54,6 +54,7 @@ src/context   semantic 通道：EmbeddingPort 注入 + 哈希参考实现 + cosi
 src/context   Boot/Pull 分发：distributeContext 纯派生 + fetchContext 解析     【R21 ✅】
 src/tools     可视化编排面：orchestrationGraph 投影 + 控制映射 1:1            【R22 ✅】
 src/architecture 架构三模式：pipelinePreset + 提案校验器 + 主代理架构师        【R23 ✅】
+src/serve     呈现适配线：serveOrchestration 附加面 + React 面板 + tui + 描述符【R24 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

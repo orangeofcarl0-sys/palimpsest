@@ -1,6 +1,6 @@
 # 呈现适配线规格（serve 通道面 + 共享图面板 + 终端图 + WinUI 描述符契约）
 
-> **Spec ID**：`PLMP-WEB-1` / `PLMP-WEB-2` / `PLMP-TUI-1` / `PLMP-WINUI-1` ｜ 状态：**冻结**（2026-09-07，五项用户裁决入场；交付时按 03 §8.3 出口审计 bump SDS）
+> **Spec ID**：`PLMP-WEB-1` / `PLMP-WEB-2` / `PLMP-TUI-1` / `PLMP-WINUI-1` ｜ 状态：**已交付**（2026-09-07 `bd14dcc`+`82a829f`+`7a938fe`+`8d90881`，出口 SDS-26）
 > **权威序**：数据/控制契约以 `17-visual-orchestration-spec.md`（PLMP-VIS-1/2）为准；架构提案面以 `18-architecture-modes-spec.md`（PLMP-ARCH）为准；宿主接入模型以 dsh-winui `EXTENDING.md` 三路模型（路 A 命令/工具/网关端点、路 B 数据描述符、路 C 回退打开插件 Web 界面）与 `audits/alpha5-contract-analysis.md` 通道契约为准；术语隔离红线 `[SDS-18]` 延伸到全部呈现面。
 > **修订记录**：`WEB/TUI/WINUI`＝初版冻结（2026-09-07）：五项用户裁决（**serve 先行＋宿主内通路并行**、**React + React Flow**、**手搓 V1＝图上直接编辑**、交付顺序**面板→TUI→WinUI**、自动架构入口＝向主代理会话预填架构师指令〔设计定案〕）；验收 WEB-A01–A06 / TUI-A01 / WINUI-A01。
 
@@ -99,3 +99,4 @@ palimpsest serve [--port N] [--host H] [--token T]
 | 日期 | 修订 |
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1）：五项用户裁决（serve 先行＋宿主并行、React+ReactFlow、手搓 V1 图上直接编辑、面板→TUI→WinUI、自动架构入口＝主代理会话预填）；端点形状、面板蓝图、验收 WEB-A01–A06 / TUI-A01 / WINUI-A01。 |
+| 2026-09-07 | 交付（`bd14dcc` serve + `82a829f` 面板 + `7a938fe` tui + `8d90881` 描述符，出口 SDS-26）：全部验收通过（44 文件 / 246 测试），真实浏览器可视冒烟通过（token 门→图面 SATISFIED 节点→人话时间线→晋升折叠→手搓草稿与六类诊断双分支），03/00/01/索引登记完成。出口前修正：serve 缺省静态根按 package 根解析（src/ 与 dist/src/ 双布局一致，`313c76c`——真实浏览器冒烟暴露 dist/dist/web 失配）。 |
