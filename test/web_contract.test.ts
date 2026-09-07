@@ -56,4 +56,40 @@ describe("web mirror contract (WEB-FRESH-A01/A02, WEB-CONTRACT-A01)", () => {
     expect(panels).toMatch(/锚状态/);
     expect(panels).toMatch(/未锚定/);
   });
+
+  it("WEB-V3-A01: the v3 identity mirrors are present and pinned (PLMP-CANVAS-7)", () => {
+    const types = read("types.ts");
+    // The doc mirror is v3: edges[] is the one edge truth, identity rides
+    // the doc, payload dependsOn is gone.
+    expect(types).toMatch(/version: 3/);
+    expect(types).toMatch(/CanvasEdge/);
+    expect(types).toMatch(/CanvasIdentityState/);
+    expect(types).toMatch(/namespace: string/);
+    expect(types).toMatch(/nextNode: number/);
+    expect(types).toMatch(/nextEdge: number/);
+    const canvasTypes = types.slice(types.indexOf("CanvasTaskPayload"));
+    expect(canvasTypes).not.toMatch(/\bdependsOn\b/);
+    // The explicit v2→v3 converter mirror exists (node keys preserved).
+    const upgrade = read("canvasV3.ts");
+    expect(upgrade).toMatch(/upgradeCanvasV2ToV3/);
+    expect(upgrade).toMatch(/allocateCanvasNodeId/);
+    expect(upgrade).toMatch(/allocateCanvasEdgeId/);
+    expect(upgrade).toMatch(/randomCanvasNamespace/);
+    // The restore guard covers identity + edge + member integrity (the v2
+    // members blind spot is closed).
+    const integrity = read("canvasIntegrity.ts");
+    expect(integrity).toMatch(/version !== 3/);
+    expect(integrity).toMatch(/identity\.namespace/);
+    expect(integrity).toMatch(/引用未知成员/);
+    // Node deletion cleans incident edges + membership (no parser-invalid
+    // docs from first-party mutations).
+    const panels = read("Panels.tsx");
+    expect(panels).not.toMatch(/genKey/);
+    expect(panels).toMatch(/edges\.filter\(\(edge\) => edge\.source !== key && edge\.target !== key\)/);
+    // Connections append fresh edge records.
+    const app = read("App.tsx");
+    expect(app).toMatch(/upgradeCanvasV2ToV3/);
+    expect(app).toMatch(/allocateCanvasEdgeId/);
+    expect(app).toMatch(/画布草稿已从 v2 升级到 v3/);
+  });
 });

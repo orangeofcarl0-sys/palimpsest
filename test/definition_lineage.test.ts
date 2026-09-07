@@ -17,7 +17,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
-import { makeProject, taskSpec } from "./helpers.js";
+import { docV3From, makeProject, taskSpec } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
@@ -54,15 +54,10 @@ async function lineageRig() {
 
 describe("definition identity lineage (PLMP-GRAPH-4)", () => {
   it("ID-A01: the canvas node id survives declaration as the definition identity", async () => {
-    const doc = parseCanvasDoc({
-      version: 2,
-      goal: "g",
-      nodes: [
-        { key: "n17", type: "task", title: "Research", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
-        { key: "n18", type: "task", title: "Write", x: 10, y: 0, z: "root", task: { dependsOn: ["n17"] } },
-      ],
-      groups: [],
-    });
+    const doc = docV3From([
+      { key: "n17", type: "task", title: "Research", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+      { key: "n18", type: "task", title: "Write", x: 10, y: 0, z: "root", task: { dependsOn: ["n17"] } },
+    ]);
     const proposal = canvasCompile(doc);
     expect(proposal.tasks.map((task) => task.definitionId)).toEqual(["n17", "n18"]);
     const specs = proposalTaskSpecs(proposal);

@@ -4,12 +4,13 @@
 - 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）、G9-B2（31 号闭合修订，`1a8d688`）与 **G9-B3（31 号跨层闭合修订；母体＝`G9-B3-CROSS-LAYER-ASSESSMENT.md`、交付报告＝`G9-B3-DELIVERY-REPORT.md`）** 退出门均已通过；测试基线 57 文件 / 354 项全绿。
 - **批次顺序更新（G9-B3 §27 裁决）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
 - **G9-E 新增设计前置（G9-B3 §18/§19）**：ArchitectureRevision 必须是**原子治理动作**——`plan(topology)` + `declareStageGraph` + `declareRoleTable` 三次独立 durable append 之间存在崩溃窗口，会产生"新拓扑 + 旧执行治理"的半个修订。G9-E 开工前必须比较至少三案（A 单一复合事件 ARCHITECTURE_REVISED / B pending→activate 协议 / C EventStore 原子事件批）并裁决；本轮不实现 multi-event transaction（触及事件序/哈希链/幂等/游标/fault injection/replay，需独立设计）。
+- **编号与顺序纠偏（G9-D §42，2026-09-08）**：执行顺序 D→C→E→F→G 对应规格 **32＝G9-D（PLMP-CANVAS-7）**、**33＝G9-C（PLMP-CANVAS-8）**、34＝G9-E、35＝G9-F、36＝G9-G；原计划的 32＝C/33＝D 编号错位已在交付时纠正，无冲突覆盖（交付时 32 空闲）。
 - G9-B2 交付（2026-09-07）：`baseGraphDigest`/`STALE_GRAPH_BASE` 草稿新鲜度锚、`agentGraphSemanticDigest`、`parseProjectProposal` 输入合同（四 first-party 边界）、patch 语法同构 + `EMPTY_UPDATE`/`NO_OP_OPERATION` no-op 裁决 + accepted⇒digest 必变不变量、`runtime.controls.holds[]` 治理投影、LEGACY 方案 C（M8 回填、NULL=stale）、SCHEMA-AUDIT tripwire。
 - 本文件只做计划与裁决预留，不实现。各批次开工时仍以"审计 → 规格冻结 → 实现 → 回归 → 登记"的纪律推进；规格编号从 32 起顺延（已核对 main 无冲突）。
 
 ---
 
-## G9-C — Canvas 语义保全（规格 32，PLMP-CANVAS-7）
+## G9-C — Canvas 语义保全（规格 33，PLMP-CANVAS-8；编号纠偏见 G9-D §42）
 
 **问题**（审计 F-E）：patch apply 经 `unloadToCanvasDoc` 重建整 doc——未传 positions 时坐标全落确定性网格、`groups: []` 清空视觉分组。自由画布的组织成果被顺手清零。
 
@@ -25,16 +26,18 @@
 
 ---
 
-## G9-D — 稳定边身份 / CanvasDoc v3（规格 33，PLMP-CANVAS-8）
+## G9-D — CanvasDoc v3 / 稳定图身份生命周期（规格 32，PLMP-CANVAS-7）✅ 会话 1 已交付（2026-09-08）
 
 **问题**（审计 F-F）：边身份在 IR↔Canvas 往返中丢失（`pe7 → dependsOn → e1`）；GraphPatch 已支持 `removeEdges/updateEdges(id)` 而 canvas 无从保边 id；G9-B 的表达门只能做语义投影等价（31 号登记差异）。
 
 **优先级升级（G9-B3 §27）**：本批次从"未来功能增强"升级为**新鲜度正确性依赖**——语义 digest 含边 id 而 v2 往返再生边 id；排在 G9-C 之前。
 
+**已交付（会话 1＝D0–D5，规格 32；母体＝`G9-D-STABLE-GRAPH-IDENTITY-ASSESSMENT.md`）**：正式名称与范围升级为 Stable Graph Identity＝Node Identity + Edge Identity + Identity Lifecycle + Mutation Integrity；v3 单格式（edges[] 唯一边真相 + identity 单调家族）、显式 converter（节点 key 逐字保留红线）、IDENTITY_REUSE、kind 变更方案 B、UNSUPPORTED_PARALLEL_DATA_EDGE、B3 relift bridge 退役、lift∘unload 严格全等、web 镜像 v3；测试基线 57/354 → 58/370。**会话 2（D6–D10）**：中心化 mutation 助手（MUT-INV-1 + CANVAS-MUT-A01..A03 + reconnect 操作面）、identity-aware diff（DIFF-ID-A01..A03 + changed fields +title）、`/api/canvas/anchor`（ANCHOR-A01..A04 + Full/Partial/Unanchored 三态）、Web 全面接线 + 浏览器冒烟、PROP-DECL-A01（EMPTY_GOAL）、交付报告（母体 §54 十五问）。
+
 **设计裁决（开工前先审计再定）**：
 
 1. CanvasDoc **v3 单格式**：`edges: CanvasEdge[] {id, source, target, kind}` 成为 authoring truth；`task.dependsOn` 退役为编译输出（或由解析器拒绝）——**禁止两套边真相**（G2 v1→v2 同款纪律：响亮拒绝 v2 文档、无自动升级 shim、无双解析）。
-2. v2→v3 迁移策略两案审计后裁决：一次性显式 converter（面板导入/localStorage 恢复路径）vs 直接拒绝（重画成本极低，画布本就是草稿）。裁决与理由必须登记于 33 号修订流水。
+2. ~~v2→v3 迁移策略两案审计后裁决~~ **已裁决（32 号 §2.5）**：显式 converter `upgradeCanvasV2ToV3`（唯一 v2 入口、非 dual parse、节点 key 逐字保留——v2 已可能对应 canonical definition_id，拒绝重画会丢 lineage）。
 3. 短期只允许 `kind = "data"`（画布表达边界不变，31 号门继续有效）；id 稳定 ⇒ `lift(unload(g)) === g` 严格全等（含边 id）达成，G9-B 表达门升级为全等断言。
 4. `patchFromFragment`/`canvasInsertFragment` 的边 id 生成纪律（去重扫描）随 v3 收敛到 doc 层。
 

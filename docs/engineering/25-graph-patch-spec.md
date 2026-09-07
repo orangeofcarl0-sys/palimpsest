@@ -72,6 +72,7 @@ patch 持久化/历史（草稿面零服务端状态红线不变）、patch 合�
 
 | 日期 | 修订 |
 |---|---|
+| 2026-09-08 | G9-D（32 号 PLMP-CANVAS-7）修订：**kind 变更配方改判**——节点 kind 是定义类型（实体类型变化），换 kind ＝ remove 旧节点 + add **新身份**节点；旧"remove + add 同 id"配方与身份生命周期互斥，同 patch remove+add 同 id（node/edge）现为 `IDENTITY_REUSE` 拒绝；`patchFromFragment` 的 id 家族改 `n:sys:<k>`/`e:sys:<k>`（与 doc 身份家族一致，legacy `nK` 不相交）。 |
 | 2026-09-07 | 初版冻结（PLMP-GRAPH-2，G4）：patch 形状（无坐标、baseRevision 新鲜度）、确定性应用序、九类 fail-closed 诊断、三入口接线（preset=patchFromFragment / auto=粘贴 patch / manual=doc 直改不中转）、单端点 `/api/canvas/patch` + unloadToCanvasDoc round-trip；与规划初稿"manual 也走 patch"的差异（不做形式统一）在此登记。 |
 | 2026-09-07 | **交付**：`src/graph/patch.ts`（GraphPatch、固定应用序、十类诊断〔SCOPE_CYCLE 每次校验只报首个环——环成员各自报告同一破坏，噪声省略〕、diffGraphPatch 人话预览、patchFromFragment）+ `unloadToCanvasDoc`（lift∘unload≡identity、确定性网格摆位）+ serve `/api/canvas/patch`（live revision STALE_BASE 判定、零写入、compileError 诚实字段）+ 面板 GraphPatch 预览/应用双段交互 + 架构师指令补 patch 协议；PATCH-A01–A05 全绿；浏览器冒烟通过（＋Agent 验证者 / ±改名 / ＋边 预览上墙，应用后边挂载、角色徽章正确）。 |
 | 2026-09-07 | G9-B（31 号 PLMP-GRAPH-5）修订：validate 从"局部操作检查 + apply 重解析兜底"升级为**结果图验证**（单一结果构造，validate PASS ⇒ apply 结构性必成）；EDGE_ENDPOINT_UNKNOWN 语义修正为结果节点集（原实现错用 base+adds，被移除节点侥幸通过）；`unloadToCanvasDoc` 对 unsupported kind 的静默降级被 31 号应用门拒绝（原"capability-clean graphs unload back"的措辞由 31 号 §2.3 表达门取代）；诊断集加法式扩至 17 类。 |

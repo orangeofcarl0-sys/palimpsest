@@ -365,18 +365,18 @@ export function serveOrchestration(
           } catch (error) {
             compileError = error instanceof Error ? error.message : String(error);
           }
-          // PLMP-GRAPH-5 §B3-A: the freshness anchor is the graph the CLIENT
-          // will actually hold - digest(lift(returnedDoc)), not digest(patched).
-          // CanvasDoc v2 regenerates patch-introduced edge ids on the way back
-          // (bridge hotfix until CanvasDoc v3 / G9-D closes edge identity).
-          const returnedDoc = unloadToCanvasDoc(patched);
-          const returnedGraph = liftToAgentGraph(returnedDoc);
+          // PLMP-CANVAS-7 (32 号 §3.10): with stable edge identity the strong
+          // invariant lift(unload(g)) === g holds again - the G9-B3 bridge
+          // (digesting the RELIFTED doc) is retired. The submitted draft's
+          // identity state rides through so patch round-trips never rewind
+          // the monotonic counters.
+          const returnedDoc = unloadToCanvasDoc(patched, { identity: doc.identity });
           sendJson(response, 200, {
             applied: true,
             doc: returnedDoc,
             preview,
             diagnostics: proposalDiagnostics,
-            graphDigest: agentGraphSemanticDigest(returnedGraph),
+            graphDigest: agentGraphSemanticDigest(patched),
             ...(compileError === null ? {} : { compileError }),
           });
           return;

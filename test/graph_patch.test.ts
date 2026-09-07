@@ -22,7 +22,7 @@ import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
 import type { ProjectProposal } from "../src/architecture/index.js";
 
-import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
+import { docV3From, FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
@@ -235,38 +235,34 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
     };
     const base = baseGraph();
     const patch = patchFromFragment(base, proposal);
-    expect(patch.addNodes.map((node) => node.id)).toEqual(["n1", "n2", "n3"]);
-    expect(patch.addEdges.map((edge) => [edge.source, edge.target])).toEqual([
-      ["n1", "n2"],
-      ["n1", "n3"],
-      ["n2", "n3"],
+    // PLMP-CANVAS-7: fragment ids come from the kernel "sys" family.
+    expect(patch.addNodes.map((node) => node.id)).toEqual(["n:sys:1", "n:sys:2", "n:sys:3"]);
+    expect(patch.addEdges.map((edge) => [edge.id, edge.source, edge.target])).toEqual([
+      ["e:sys:1", "n:sys:1", "n:sys:2"],
+      ["e:sys:2", "n:sys:1", "n:sys:3"],
+      ["e:sys:3", "n:sys:2", "n:sys:3"],
     ]);
     const patched = applyGraphPatch(base, patch);
     const compiled = compileAgentGraph(patched);
     expect(compiled.tasks.slice(0, 2).map((task) => task.title)).toEqual(["调研", "综合"]);
-    expect(compiled.tasks.slice(2).map((task) => task.definitionId)).toEqual(["n1", "n2", "n3"]);
+    expect(compiled.tasks.slice(2).map((task) => task.definitionId)).toEqual(["n:sys:1", "n:sys:2", "n:sys:3"]);
     expect(
       compiled.tasks.slice(2).map(({ definitionId: _definitionId, ...rest }) => rest),
     ).toEqual(proposal.tasks);
   });
 
   it("PATCH-A04: unload round-trips the IR (lift∘unload ≡ identity) with deterministic grid", () => {
-    const doc = parseCanvasDoc({
-      version: 2,
-      goal: "g",
-      nodes: [
-        { key: "a", type: "task", title: "A", x: 10, y: 20, z: "root", task: { dependsOn: [] } },
-        { key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root" },
-        { key: "m", type: "task", title: "M", x: 30, y: 40, z: "s1", task: { dependsOn: ["a"], role: "scout" } },
-        { key: "note", type: "annotation", title: "备注", x: 50, y: 60, z: "root", text: "hi" },
-      ],
-      groups: [],
-    });
+    const doc = docV3From([
+      { key: "a", type: "task", title: "A", x: 10, y: 20, z: "root", task: { dependsOn: [] } },
+      { key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root" },
+      { key: "m", type: "task", title: "M", x: 30, y: 40, z: "s1", task: { dependsOn: ["a"], role: "scout" } },
+      { key: "note", type: "annotation", title: "备注", x: 50, y: 60, z: "root", text: "hi" },
+    ]);
     const graph = liftToAgentGraph(doc);
     const unloaded = unloadToCanvasDoc(graph);
     expect(liftToAgentGraph(unloaded)).toEqual(graph);
     // Positions: kept via the map, deterministic grid otherwise.
-    const placed = unloadToCanvasDoc(graph, new Map([["a", { x: 500, y: 400 }]]));
+    const placed = unloadToCanvasDoc(graph, { positions: new Map([["a", { x: 500, y: 400 }]]) });
     expect(placed.nodes.find((node) => node.key === "a")!.x).toBe(500);
     const grid = unloadToCanvasDoc(graph);
     expect(grid.nodes.map((node) => [node.x, node.y])).toEqual([
@@ -286,12 +282,9 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
         goal: "g",
         tasks: [taskSpec("task-1")],
       });
-      const doc = {
-        version: 2,
-        goal: "g",
-        nodes: [{ key: "n1", type: "task", title: "已有", x: 0, y: 0, z: "root", task: { dependsOn: [] } }],
-        groups: [],
-      };
+      const doc = docV3From([
+        { key: "n1", type: "task", title: "已有", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+      ]);
       const patch = {
         removeEdges: [],
         removeNodes: [],
@@ -310,7 +303,9 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
       expect(applied.json.diagnostics).toEqual([]);
       const nextDoc = applied.json.doc as Json;
       expect((nextDoc.nodes as Json[]).map((node) => node.title)).toEqual(["已有", "新增"]);
-      expect(((nextDoc.nodes as Json[])[1] as Json).task).toEqual({ dependsOn: ["n1"] });
+      // PLMP-CANVAS-7: the dependency is the edge record, not a payload field.
+      expect(((nextDoc.nodes as Json[])[1] as Json).task).toEqual({});
+      expect(nextDoc.edges).toEqual([{ id: "pe1", source: "n1", target: "n9", kind: "data" }]);
       expect(applied.json.preview).toEqual([
         { op: "add", target: "node", id: "n9", detail: "Agent 新增" },
         { op: "add", target: "edge", id: "pe1", detail: "边 已有 → 新增" },

@@ -82,6 +82,11 @@ export type GraphPatchDiagnosticType =
   | "SCOPE_OWNER_REMOVED"
   | "SCOPE_OWNER_INVALID"
   | "ILLEGAL_NODE_UPDATE"
+  // PLMP-CANVAS-7 (32 号 §3.3): identity lifecycle - a same-patch remove+add
+  // of one id is identity resurrection, not a mutation. addNodes cannot
+  // resurrect an identity removed in the same patch; kind changes must go
+  // through "remove old + add NEW identity".
+  | "IDENTITY_REUSE"
   // PLMP-GRAPH-5 §B2-C: preview honesty - a mutation that changes nothing is
   // refused, never silently normalized away.
   | "NO_OP_OPERATION"
@@ -179,7 +184,9 @@ function parseNodeUpdate(value: unknown): GraphPatchNodeUpdate {
   }
   const id = patchIdentifier(raw["id"], "updateNodes.id");
   // kind is deliberately absent: node kinds are immutable in patches - a
-  // different kind means remove + add a new node, never an in-place morph.
+  // different kind is a different definition type (32 号 §3.2, verdict B):
+  // remove the old node and add a NEW node with a NEW identity, never an
+  // in-place morph and never a same-id remove+add (IDENTITY_REUSE).
   const label = raw["label"] === undefined ? undefined : patchString(raw["label"], "updateNodes.label");
   const text = raw["text"] === undefined ? undefined : patchString(raw["text"], "updateNodes.text");
   const task = raw["task"] === undefined ? undefined : parseAgentTaskPayload(raw["task"]);
@@ -391,6 +398,30 @@ export function validateGraphPatch(
         type: "CONFLICTING_EDGE_OPERATION",
         id: update.id,
         detail: `edge "${update.id}" is removed and updated by the same patch`,
+      });
+    }
+  }
+  // -- identity lifecycle (32 号 §3.3): remove+add of the same id in one
+  // patch is identity resurrection. It could mean replacement, revival, or
+  // an unrelated new entity - all four readings are semantic guesses, so the
+  // patch is refused outright. Kind changes go through "remove old + add
+  // NEW identity"; a genuine restore/revival would need an explicit
+  // restoreNode operation, not this back door.
+  for (const node of patch.addNodes) {
+    if (removedNodes.has(node.id)) {
+      diagnostics.push({
+        type: "IDENTITY_REUSE",
+        id: node.id,
+        detail: `node "${node.id}" is removed and re-added by the same patch - identity resurrection is refused (use a fresh id; kind changes mean remove old + add new)`,
+      });
+    }
+  }
+  for (const edge of patch.addEdges) {
+    if (removedEdges.has(edge.id)) {
+      diagnostics.push({
+        type: "IDENTITY_REUSE",
+        id: edge.id,
+        detail: `edge "${edge.id}" is removed and re-added by the same patch - endpoints are part of edge identity, so a reconnect takes a fresh id`,
       });
     }
   }
@@ -705,16 +736,20 @@ export function diffGraphPatch(base: AgentGraph, patch: GraphPatch): GraphPatchP
 
 /**
  * Preset / fragment entry: a proposal (the fragment generator's vocabulary)
- * as a patch over `base`. Fresh node ids are scanned against the base; the
- * proposal's title dependencies map onto the fresh ids (proposals are
- * validated closed, so the mapping is total).
+ * as a patch over `base`. Fresh node ids come from the kernel-side "sys"
+ * identity family (32 号 §3.4) scanned against the base - the legacy `nK`
+ * keyspace is disjoint, and the scan skips same-family ids already present;
+ * the proposal's title dependencies map onto the fresh ids (proposals are
+ * validated closed, so the mapping is total). Cross-call reuse of a retired
+ * "sys" id is the same registered limitation as AI-provided explicit ids
+ * (no persistent tombstone registry this round).
  */
 export function patchFromFragment(base: AgentGraph, proposal: ProjectProposal): GraphPatch {
   const usedIds = new Set(base.nodes.map((node) => node.id));
   let next = 1;
   const freshId = (): string => {
-    while (usedIds.has(`n${next}`)) next += 1;
-    const id = `n${next}`;
+    while (usedIds.has(`n:sys:${next}`)) next += 1;
+    const id = `n:sys:${next}`;
     usedIds.add(id);
     return id;
   };
@@ -737,8 +772,8 @@ export function patchFromFragment(base: AgentGraph, proposal: ProjectProposal): 
   const edgeIds = new Set(base.edges.map((edge) => edge.id));
   const addEdges = proposal.tasks.flatMap((task, index) =>
     task.dependsOn.map((title) => {
-      let id = `pe${(edgeCounter += 1)}`;
-      while (edgeIds.has(id)) id = `pe${(edgeCounter += 1)}`;
+      let id = `e:sys:${(edgeCounter += 1)}`;
+      while (edgeIds.has(id)) id = `e:sys:${(edgeCounter += 1)}`;
       edgeIds.add(id);
       const source = idByTitle.get(title);
       if (source === undefined) {

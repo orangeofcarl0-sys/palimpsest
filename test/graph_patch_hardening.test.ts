@@ -32,7 +32,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
-import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
+import { docV3From, FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
@@ -342,15 +342,10 @@ describe("graph patch endpoint gate (PLMP-GRAPH-5 PATCH-H06)", () => {
       return { status: response.status, json: (await response.json()) as Record<string, unknown> };
     };
     try {
-      const doc = parseCanvasDoc({
-        version: 2,
-        goal: "g",
-        nodes: [
-          { key: "a", type: "task", title: "调研", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
-          { key: "b", type: "task", title: "综合", x: 10, y: 0, z: "root", task: { dependsOn: ["a"] } },
-        ],
-        groups: [],
-      });
+      const doc = docV3From([
+        { key: "a", type: "task", title: "调研", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+        { key: "b", type: "task", title: "综合", x: 10, y: 0, z: "root", task: { dependsOn: ["a"] } },
+      ]);
       // A patch that introduces a Tool node and a message edge: the strict
       // parser accepts them (IR-legal), validation passes, and the canvas
       // gate refuses the lossy unload instead of degrading.
@@ -380,7 +375,7 @@ describe("graph patch endpoint gate (PLMP-GRAPH-5 PATCH-H06)", () => {
           updateNodes: [],
           addEdges: [],
           removeEdges: [],
-          updateEdges: [{ id: "e1", kind: "control" }],
+          updateEdges: [{ id: "e:test:1", kind: "control" }],
           moveScope: [],
         },
       });
@@ -430,15 +425,10 @@ describe("draft freshness and patch grammar closure (PLMP-GRAPH-5 §B2)", () => 
 
   it("PATCH-FRESH-A02: pure layout movement never changes the semantic digest", () => {
     const docAt = (x: number, y: number) =>
-      parseCanvasDoc({
-        version: 2,
-        goal: "g",
-        nodes: [
-          { key: "a", type: "task", title: "调研", x, y, z: "root", task: { dependsOn: [] } },
-          { key: "b", type: "task", title: "综合", x: x + 10, y, z: "root", task: { dependsOn: ["a"] } },
-        ],
-        groups: [],
-      });
+      docV3From([
+        { key: "a", type: "task", title: "调研", x, y, z: "root", task: { dependsOn: [] } },
+        { key: "b", type: "task", title: "综合", x: x + 10, y, z: "root", task: { dependsOn: ["a"] } },
+      ]);
     const graphA = liftToAgentGraph(docAt(0, 0));
     const graphB = liftToAgentGraph(docAt(500, 300));
     expect(agentGraphSemanticDigest(graphA)).toBe(agentGraphSemanticDigest(graphB));
@@ -575,18 +565,14 @@ describe("response integrity and grammar symmetry (PLMP-GRAPH-5 §B3-A/E)", () =
       return { status: response.status, json: (await response.json()) as any };
     };
     try {
-      const doc = parseCanvasDoc({
-        version: 2,
-        goal: "g",
-        nodes: [
-          { key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
-          { key: "b", type: "task", title: "B", x: 10, y: 0, z: "root", task: { dependsOn: ["a"] } },
-        ],
-        groups: [],
-      });
-      // The pre-fix bug: digest(patched) counts patch-introduced pe* edge ids
-      // that lift(returnedDoc) regenerates - the anchor pointed at a graph
-      // the client could never rebuild.
+      const doc = docV3From([
+        { key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+        { key: "b", type: "task", title: "B", x: 10, y: 0, z: "root", task: { dependsOn: ["a"] } },
+      ]);
+      // Since CanvasDoc v3 (32 号) edge ids survive the round-trip, the
+      // strong invariant digest(patched) === digest(lift(returnedDoc)) holds
+      // by construction - the v2 bridge (relift digest) is retired, this
+      // test stays as the belt.
       const result = await post({
         doc,
         patch: {
@@ -648,12 +634,9 @@ describe("response integrity and grammar symmetry (PLMP-GRAPH-5 §B3-A/E)", () =
       return { status: response.status, json: (await response.json()) as any };
     };
     try {
-      let doc = parseCanvasDoc({
-        version: 2,
-        goal: "g",
-        nodes: [{ key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } }],
-        groups: [],
-      });
+      let doc = docV3From([
+        { key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+      ]);
       // patch 1: add B with a fresh pe edge id, chain the returned anchor.
       const first = await post({
         doc,

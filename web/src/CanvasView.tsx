@@ -195,6 +195,11 @@ export function CanvasView(props: CanvasViewProps) {
     byOwner.set(node.z, bucket);
   }
   const membersOf = (key: string): CanvasNode[] => byOwner.get(key) ?? [];
+  // PLMP-CANVAS-7: dependency badges count incoming edge records.
+  const incomingCount = new Map<string, number>();
+  for (const edge of doc.edges) {
+    incomingCount.set(edge.target, (incomingCount.get(edge.target) ?? 0) + 1);
+  }
   const descendantsAbs = (key: string): CanvasNode[] => {
     const out: CanvasNode[] = [];
     for (const member of membersOf(key)) {
@@ -319,7 +324,7 @@ export function CanvasView(props: CanvasViewProps) {
         extent: relOwner === null ? undefined : "parent",
         data: {
           node,
-          depCount: node.task?.dependsOn.length ?? 0,
+          depCount: incomingCount.get(node.key) ?? 0,
           ...(added.has(node.title) ? { diff: "added" as const } : changed.has(node.title) ? { diff: "changed" as const } : {}),
         },
         selected: node.key === selectedKey,
@@ -354,25 +359,25 @@ export function CanvasView(props: CanvasViewProps) {
     } as Node);
   }
 
-  // PLMP-CANVAS-6: dependencies are node keys - edges resolve key→visible task.
+  // PLMP-CANVAS-7: edges[] is the one edge truth - dependency records
+  // resolve key→visible task; ids stay stable for React Flow.
   const visibleTasks = doc.nodes.filter(
     (node) => node.type === "task" && ancestorsExpanded(node.key),
   );
   const visibleByKey = new Map(visibleTasks.map((node) => [node.key, node]));
   const flowEdges: Edge[] = [];
-  for (const node of visibleTasks) {
-    for (const dep of node.task?.dependsOn ?? []) {
-      const from = visibleByKey.get(dep);
-      if (from === undefined) continue;
-      flowEdges.push({
-        id: `e-${from.key}-${node.key}`,
-        source: idOf(from.key),
-        target: idOf(node.key),
-        animated: true,
-        zIndex: 3,
-        style: { stroke: "#475569" },
-      });
-    }
+  for (const edge of doc.edges) {
+    const from = visibleByKey.get(edge.source);
+    const to = visibleByKey.get(edge.target);
+    if (from === undefined || to === undefined) continue;
+    flowEdges.push({
+      id: `e-${edge.id}`,
+      source: idOf(from.key),
+      target: idOf(to.key),
+      animated: true,
+      zIndex: 3,
+      style: { stroke: "#475569" },
+    });
   }
 
   return (

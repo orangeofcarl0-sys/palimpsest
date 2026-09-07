@@ -66,14 +66,18 @@ function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
   const roots = doc.nodes.filter((node) => node.z === ROOT_Z && node.type !== "annotation");
   const byKey = new Map(roots.map((node) => [node.key, node]));
   const docKeys = new Map(doc.nodes.map((node) => [node.key, node]));
-  // PLMP-CANVAS-6: dependencies are node keys; only dependencies that land
-  // on a root node shape the root layout (nested members follow their
-  // subflow's translation).
+  // PLMP-CANVAS-7: the layout dependency graph reads doc.edges[] (the one
+  // edge truth); only edges that land on a root node shape the root layout
+  // (nested members follow their subflow's translation).
+  const incoming = new Map<string, string[]>();
+  for (const edge of doc.edges) {
+    if (!docKeys.has(edge.source) || !docKeys.has(edge.target)) continue;
+    const bucket = incoming.get(edge.target) ?? [];
+    bucket.push(edge.source);
+    incoming.set(edge.target, bucket);
+  }
   const depsOf = (node: CanvasNode): string[] =>
-    (node.task?.dependsOn ?? [])
-      .map((key) => docKeys.get(key))
-      .filter((dep): dep is CanvasNode => dep !== undefined && byKey.has(dep.key))
-      .map((dep) => dep.key);
+    (incoming.get(node.key) ?? []).filter((key) => byKey.has(key));
   const depth = new Map<string, number>();
   const visit = (key: string, level: number): void => {
     const known = depth.get(key);
@@ -112,12 +116,10 @@ function force(doc: CanvasDoc): CanvasDoc {
   if (roots.length === 0) return doc;
   const index = new Map(roots.map((node, i) => [node.key, i]));
   const links: Array<[number, number]> = [];
-  for (const node of roots) {
-    for (const key of node.task?.dependsOn ?? []) {
-      const from = index.get(key);
-      const to = index.get(node.key);
-      if (from !== undefined && to !== undefined) links.push([from, to]);
-    }
+  for (const edge of doc.edges) {
+    const from = index.get(edge.source);
+    const to = index.get(edge.target);
+    if (from !== undefined && to !== undefined) links.push([from, to]);
   }
   // Deterministic force-directed relaxation (repulsion + springs + centering).
   const count = roots.length;

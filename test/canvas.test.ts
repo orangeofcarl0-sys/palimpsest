@@ -12,10 +12,11 @@ import {
   canvasLayout,
   emptyCanvasDoc,
   parseCanvasDoc,
-  proposalFragment,
   satelliteAttempts,
   traceRows,
+  upgradeCanvasV2ToV3,
   type CanvasDoc,
+  type CanvasEdge,
 } from "../src/canvas/index.js";
 import { serveOrchestration, type ServeHandle } from "../src/serve.js";
 import { ProjectController } from "../src/tools/index.js";
@@ -28,12 +29,46 @@ import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
-function docWith(...nodes: CanvasDoc["nodes"]): CanvasDoc {
-  return { version: 2, goal: "g", nodes, groups: [] };
-}
-
+/**
+ * PLMP-CANVAS-7 authoring helpers: nodes are declared with legacy-style
+ * `task.dependsOn` for readability, and `docWith` materializes the v3 doc -
+ * dependsOn flattens into `doc.edges[]` (ids `e:test:<k>`, node declaration
+ * × dependency order, exactly the v2 lift order) and the identity namespace
+ * is "test".
+ */
 function taskNode(key: string, title: string, x: number, y: number, z = "root", dependsOn: string[] = []) {
   return { key, type: "task" as const, title, x, y, z, task: { dependsOn } };
+}
+
+type AuthoringNode = object;
+
+function docWith(...authoring: AuthoringNode[]): CanvasDoc {
+  const nodes = authoring.map((node) => {
+    const { task, ...rest } = node as { task?: { dependsOn?: string[] } & Record<string, unknown> };
+    if (task === undefined) return { ...rest };
+    const { dependsOn: _dependsOn, ...payload } = task;
+    void _dependsOn;
+    return { ...rest, task: payload };
+  });
+  let edgeCounter = 0;
+  const edges: CanvasEdge[] = authoring.flatMap((node) =>
+    ((node as { task?: { dependsOn?: string[] } }).task?.dependsOn ?? []).map((source) => {
+      edgeCounter += 1;
+      return { id: `e:test:${edgeCounter}`, source, target: (node as { key: string }).key, kind: "data" as const };
+    }),
+  );
+  return {
+    version: 3,
+    goal: "g",
+    identity: { namespace: "test", nextNode: 1, nextEdge: edgeCounter + 1 },
+    nodes: nodes as unknown as CanvasDoc["nodes"],
+    edges,
+    groups: [],
+  };
+}
+
+function docWithGroups(groups: CanvasDoc["groups"], ...authoring: AuthoringNode[]): CanvasDoc {
+  return { ...docWith(...authoring), groups };
 }
 
 function makeRig() {
@@ -152,7 +187,7 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
   it("CANVAS-A01: parse is fail-closed on shape errors and unknown fields, clean docs round-trip", () => {
     const doc = docWith(taskNode("n1", "调研", 10, 20));
     expect(parseCanvasDoc(JSON.parse(JSON.stringify(doc)))).toEqual(doc);
-    expect(() => parseCanvasDoc({ ...doc, version: 1 })).toThrow(/v2 .* only format|title-keyed/);
+    expect(() => parseCanvasDoc({ ...doc, version: 2 })).toThrow(/upgradeCanvasV2ToV3/);
     expect(() => parseCanvasDoc({ ...doc, version: 9 })).toThrow(/version/);
     expect(() => parseCanvasDoc({ ...doc, extra: 1 })).toThrow(/unknown document field/);
     expect(() =>
@@ -164,8 +199,16 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     expect(() =>
       parseCanvasDoc(docWith(taskNode("n4", "a", 0, 0), taskNode("n4", "b", 1, 1))),
     ).toThrow(/duplicate node key/);
-    expect(() => parseCanvasDoc(docWith({ ...taskNode("n5", "x", 0, 0), g: "nope" }))).toThrow(
-      /unknown group/,
+    // PLMP-CANVAS-7: the visual-group second encoding (node.g) is retired -
+    // it is an unknown node field now, not a silently ignored alternative.
+    expect(() =>
+      parseCanvasDoc(docWith({ ...taskNode("n5", "x", 0, 0), g: "nope" } as unknown as CanvasDoc["nodes"][number])),
+    ).toThrow(/unknown node field "g"/);
+    expect(() => parseCanvasDoc({ ...doc, identity: { namespace: "test", nextNode: 0, nextEdge: 1 } })).toThrow(
+      /integer >= 1/,
+    );
+    expect(() => parseCanvasDoc({ ...doc, identity: { namespace: "bad:ns", nextNode: 1, nextEdge: 1 } })).toThrow(
+      /identity\.namespace/,
     );
     const nested = docWith(
       { key: "s1", type: "subflow", title: "研究", x: 0, y: 0, z: "root" },
@@ -173,19 +216,16 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     );
     expect(parseCanvasDoc(JSON.parse(JSON.stringify(nested)))).toEqual(nested);
     expect(emptyCanvasDoc("x").nodes).toEqual([]);
+    expect(emptyCanvasDoc("x").identity).toEqual({ namespace: "sys", nextNode: 1, nextEdge: 1 });
   });
 
   it("CANVAS-A02: compile flattens to the same proposal a hand would write", () => {
-    const doc: CanvasDoc = {
-      version: 2,
-      goal: "g",
-      nodes: [
-        taskNode("n1", "调研", 0, 0),
-        { key: "a1", type: "annotation", title: "备注", x: 0, y: 0, z: "root", text: "todo" },
-        { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"], role: "analyst", suggestedSkills: ["web"] } },
-      ],
-      groups: [{ id: "g1", label: "框", members: ["n1", "a1"] }],
-    };
+    const doc = docWithGroups(
+      [{ id: "g1", label: "框", members: ["n1", "a1"] }],
+      taskNode("n1", "调研", 0, 0),
+      { key: "a1", type: "annotation", title: "备注", x: 0, y: 0, z: "root", text: "todo" },
+      { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"], role: "analyst", suggestedSkills: ["web"] } },
+    );
     const proposal = canvasCompile(doc);
     expect(proposal.goal).toBe("g");
     expect(proposal.changeClass).toBe("behavior_change");
@@ -228,8 +268,11 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       tasks: [{ title: "A", dependsOn: [] }, { title: "B", dependsOn: ["A"] }],
     });
     expect(seed.goal).toBe("新目标");
-    expect(seed.nodes.map((node) => node.key)).toEqual(["n1", "n2"]);
-    expect(seed.nodes[1]!.task!.dependsOn).toEqual(["n1"]);
+    // PLMP-CANVAS-7: the sys family, monotonic - and B's dependency is an
+    // edge record, not a payload field.
+    expect(seed.nodes.map((node) => node.key)).toEqual(["n:sys:1", "n:sys:2"]);
+    expect(seed.edges).toEqual([{ id: "e:sys:1", source: "n:sys:1", target: "n:sys:2", kind: "data" }]);
+    expect(seed.identity).toEqual({ namespace: "sys", nextNode: 3, nextEdge: 2 });
     const mixed = docWith(taskNode("n1", "已有", 0, 0), taskNode("n2", "已有二", 0, 0));
     const withFragment = canvasInsertFragment(mixed, {
       goal: "另目标",
@@ -237,7 +280,9 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       tasks: [{ title: "插入", dependsOn: [] }],
     });
     expect(withFragment.goal).toBe("g");
-    expect(withFragment.nodes.map((node) => node.key)).toEqual(["n1", "n2", "n3"]);
+    // Legacy keys are outside the doc family - the fresh id starts the
+    // family at 1 and can never collide with (or reuse) a legacy key.
+    expect(withFragment.nodes.map((node) => node.key)).toEqual(["n1", "n2", "n:test:1"]);
     const inserted = withFragment.nodes[2]!;
     expect(inserted.title).toBe("插入");
     expect(inserted.x).toBeGreaterThan(0);
@@ -295,19 +340,29 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       const before = eventCount(rig.store);
       const compiled = await api(handle, "/api/canvas/compile", {
         method: "POST",
-        body: { doc: { version: 2, goal: "g", nodes: [taskNode("n1", "调研", 0, 0)], groups: [] } },
+        body: { doc: JSON.parse(JSON.stringify(docWith(taskNode("n1", "调研", 0, 0)))) },
       });
       expect(compiled.status).toBe(200);
       expect((compiled.json.proposal as Json).goal).toBe("g");
       expect(compiled.json.diagnostics).toEqual([]);
       const bad = await api(handle, "/api/canvas/compile", {
         method: "POST",
-        body: { doc: { version: 9, goal: "", nodes: [], groups: [] } },
+        body: { doc: { version: 9, goal: "", nodes: [], edges: [], groups: [], identity: { namespace: "t", nextNode: 1, nextEdge: 1 } } },
       });
       expect(bad.status).toBe(400);
+      const v2Doc = await api(handle, "/api/canvas/compile", {
+        method: "POST",
+        body: { doc: { version: 2, goal: "g", nodes: [], groups: [] } },
+      });
+      expect(v2Doc.status).toBe(400);
+      expect(((v2Doc.json.error as string) ?? "")).toMatch(/upgradeCanvasV2ToV3/);
       const diff = await api(handle, "/api/canvas/diff", {
         method: "POST",
-        body: { doc: { version: 2, goal: "g", nodes: [taskNode("n1", "调研", 0, 0), taskNode("n2", "新阶段", 0, 120)], groups: [] } },
+        body: {
+          doc: JSON.parse(
+            JSON.stringify(docWith(taskNode("n1", "调研", 0, 0), taskNode("n2", "新阶段", 0, 120))),
+          ),
+        },
       });
       expect(diff.status).toBe(200);
       const diffBody = diff.json.diff as Json;
@@ -324,7 +379,10 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       expect(Array.isArray(runtime!.traces)).toBe(true);
       const laid = await api(handle, "/api/canvas/layout", {
         method: "POST",
-        body: { doc: { version: 2, goal: "g", nodes: [taskNode("n1", "调研", 500, 500)], groups: [] }, layout: "flow_lr" },
+        body: {
+          doc: JSON.parse(JSON.stringify(docWith(taskNode("n1", "调研", 500, 500)))),
+          layout: "flow_lr",
+        },
       });
       expect((laid.json.doc as Json).nodes).toHaveLength(1);
       expect(eventCount(rig.store)).toBe(before);
@@ -345,12 +403,14 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     });
     expect(withSkills[0]!.suggested_skills).toEqual(["web", "shell"]);
     expect(Object.hasOwn(withSkills[1] as object, "suggested_skills")).toBe(false);
-    const fragment = proposalFragment({
+    // The fragment path is canvasInsertFragment (proposalFragment retired
+    // with the v3 single-truth discipline).
+    const inserted = canvasInsertFragment(emptyCanvasDoc(""), {
       goal: "g",
       changeClass: "behavior_change",
       tasks: [{ title: "A", dependsOn: [], suggestedSkills: ["web"] }],
     });
-    expect(canvasCompile(docWith(...fragment)).tasks[0]!.suggestedSkills).toEqual(["web"]);
+    expect(canvasCompile(inserted).tasks[0]!.suggestedSkills).toEqual(["web"]);
   });
 
   it("CANVAS-A08: trace rows derive spans with durations and chronological order", () => {
@@ -452,34 +512,34 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
   });
 
   it("CANVAS-A14: INV-C4 - group nesting must be acyclic", () => {
-    const docWithGroups = (groups: CanvasDoc["groups"]): CanvasDoc => ({
-      version: 2,
-      goal: "g",
-      nodes: [taskNode("n1", "A", 0, 0)],
-      groups,
-    });
     expect(() =>
-      parseCanvasDoc(docWithGroups([{ id: "g1", label: "G1", g: "g1", members: ["n1"] }])),
+      parseCanvasDoc(docWithGroups([{ id: "g1", label: "G1", g: "g1", members: ["n1"] }], taskNode("n1", "A", 0, 0))),
     ).toThrow(/group nesting cycle/);
     expect(() =>
       parseCanvasDoc(
-        docWithGroups([
-          { id: "g1", label: "G1", g: "g2", members: ["n1"] },
-          { id: "g2", label: "G2", g: "g1", members: [] },
-        ]),
+        docWithGroups(
+          [
+            { id: "g1", label: "G1", g: "g2", members: ["n1"] },
+            { id: "g2", label: "G2", g: "g1", members: [] },
+          ],
+          taskNode("n1", "A", 0, 0),
+        ),
       ),
     ).toThrow(/group nesting cycle/);
-    const legal = docWithGroups([
-      { id: "g2", label: "G2", members: [] },
-      { id: "g1", label: "G1", g: "g2", members: ["n1"] },
-    ]);
+    const legal = docWithGroups(
+      [
+        { id: "g2", label: "G2", members: [] },
+        { id: "g1", label: "G1", g: "g2", members: ["n1"] },
+      ],
+      taskNode("n1", "A", 0, 0),
+    );
     expect(parseCanvasDoc(JSON.parse(JSON.stringify(legal)))).toEqual(legal);
   });
 
   it("CANVAS-A15: INV-C5 - payload fields match the node type; round-trip is faithful", () => {
     expect(() =>
       parseCanvasDoc(
-        docWith({ key: "a1", type: "annotation", title: "注", x: 0, y: 0, z: "root", text: "t", task: { dependsOn: [] } } as unknown as CanvasDoc["nodes"][number]),
+        docWith({ key: "a1", type: "annotation", title: "注", x: 0, y: 0, z: "root", text: "t", task: {} } as unknown as CanvasDoc["nodes"][number]),
       ),
     ).toThrow(/must not carry field "task"/);
     expect(() =>
@@ -490,6 +550,11 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
         docWith({ key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root", text: "hi" } as unknown as CanvasDoc["nodes"][number]),
       ),
     ).toThrow(/must not carry field "text"/);
+    // The retired dependsOn payload field is an unknown task field now
+    // (raw literal - docWith deliberately strips it while authoring).
+    const rawDoc = JSON.parse(JSON.stringify(docWith(taskNode("n1", "A", 0, 0)))) as Record<string, unknown>;
+    (rawDoc["nodes"] as Array<Record<string, unknown>>)[0]!["task"] = { dependsOn: [] };
+    expect(() => parseCanvasDoc(rawDoc)).toThrow(/unknown node.task field "dependsOn"/);
     const doc = docWith(
       taskNode("n1", "A", 0, 0),
       { key: "a1", type: "annotation", title: "注", x: 1, y: 1, z: "root", text: "t" },
@@ -531,18 +596,22 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       for (const path of ["/api/canvas/compile", "/api/canvas/layout", "/api/canvas/diff"]) {
         const rejected = await api(handle, path, {
           method: "POST",
-          body: path === "/api/canvas/layout" ? { doc: cyclic, layout: "flow_lr" } : { doc: cyclic },
+          body: path === "/api/canvas/layout" ? { doc: JSON.parse(JSON.stringify(cyclic)), layout: "flow_lr" } : { doc: JSON.parse(JSON.stringify(cyclic)) },
         });
         expect(rejected.status).toBe(400);
       }
       const selfOwned = await api(handle, "/api/canvas/compile", {
         method: "POST",
-        body: { doc: docWith(taskNode("n1", "A", 0, 0, "n1")) },
+        body: { doc: JSON.parse(JSON.stringify(docWith(taskNode("n1", "A", 0, 0, "n1")))) },
       });
       expect(selfOwned.status).toBe(400);
       const taskOwned = await api(handle, "/api/canvas/compile", {
         method: "POST",
-        body: { doc: docWith(taskNode("n1", "A", 0, 0), taskNode("n2", "B", 1, 1, "n1")) },
+        body: {
+          doc: JSON.parse(
+            JSON.stringify(docWith(taskNode("n1", "A", 0, 0), taskNode("n2", "B", 1, 1, "n1"))),
+          ),
+        },
       });
       expect(taskOwned.status).toBe(400);
       expect(eventCount(rig.store)).toBe(before);
@@ -552,25 +621,27 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     }
   });
 
-  // PLMP-CANVAS-6 (23 号规格): stable graph identity - deps are node keys,
-  // titles are display metadata; v2 is the single format (no v1 shim).
+  // PLMP-CANVAS-6/7 (23/32 号): stable graph identity - edges are edge
+  // records between node keys, titles are display metadata; v3 is the
+  // single format (v1/v2 rejected, explicit converter only).
 
-  it("CANVAS-A18: renaming a title never breaks an edge; dependency references fail closed", () => {
+  it("CANVAS-A18: renaming a title never breaks an edge; edge references fail closed", () => {
     const doc = docWith(
       taskNode("n1", "调研", 0, 0),
       { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"] } },
     );
+    expect(doc.edges).toEqual([{ id: "e:test:1", source: "n1", target: "n2", kind: "data" }]);
     expect(canvasCompile(doc).tasks[1]!.dependsOn).toEqual(["调研"]);
     const renamed = docWith(
       taskNode("n1", "调研（改名）", 0, 0),
       { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"] } },
     );
     expect(canvasCompile(renamed).tasks[1]!.dependsOn).toEqual(["调研（改名）"]);
-    // INV-D1: dangling dependency key.
+    // INV-D1: dangling edge source key.
     expect(() =>
       parseCanvasDoc(docWith({ ...taskNode("n3", "X", 0, 0), task: { dependsOn: ["ghost"] } })),
-    ).toThrow(/unknown key "ghost"/);
-    // INV-D2: dependencies must target task nodes.
+    ).toThrow(/unknown source "ghost"/);
+    // INV-D2: edge targets must be task nodes.
     expect(() =>
       parseCanvasDoc(
         docWith(
@@ -579,10 +650,21 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
         ),
       ),
     ).toThrow(/not a task/);
-    // v1 is the retired format - rejected everywhere, no dual parse.
-    const v1 = JSON.parse(JSON.stringify(doc)) as Record<string, unknown>;
-    v1["version"] = 1;
-    expect(() => parseCanvasDoc(v1 as unknown as CanvasDoc)).toThrow(/only format/);
+    // Self-loops are refused at the grammar level (same discipline as IR).
+    expect(() =>
+      parseCanvasDoc(docWith({ ...taskNode("n5", "X", 0, 0), task: { dependsOn: ["n5"] } })),
+    ).toThrow(/to itself/);
+    // v1 and v2 are retired formats - rejected everywhere, explicit
+    // converter only.
+    for (const version of [1, 2]) {
+      const legacy = JSON.parse(JSON.stringify(doc)) as Record<string, unknown>;
+      legacy["version"] = version;
+      delete legacy["identity"];
+      delete legacy["edges"];
+      expect(() => parseCanvasDoc(legacy as unknown as CanvasDoc)).toThrow(
+        version === 2 ? /upgradeCanvasV2ToV3/ : /only format/,
+      );
+    }
   });
 
   it("CANVAS-A19: fragment insert remaps proposal title deps onto fresh keys, compile-equal", () => {
@@ -597,13 +679,22 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     };
     const mixed = docWith(taskNode("n1", "已有", 0, 0), taskNode("n2", "已有二", 5, 5));
     const inserted = canvasInsertFragment(mixed, proposal);
-    expect(inserted.nodes.map((node) => node.key)).toEqual(["n1", "n2", "n3", "n4", "n5"]);
+    expect(inserted.nodes.map((node) => node.key)).toEqual(["n1", "n2", "n:test:1", "n:test:2", "n:test:3"]);
     const [a, b, c] = inserted.nodes.slice(2);
-    expect(a!.task!.dependsOn).toEqual([]);
-    expect(b!.task!.dependsOn).toEqual([a!.key]);
-    expect(c!.task!.dependsOn).toEqual([a!.key, b!.key]);
+    expect("dependsOn" in (a!.task as unknown as object)).toBe(false);
+    // Dependencies are edge records with fresh monotonic ids.
+    expect(inserted.edges).toEqual([
+      { id: "e:test:1", source: a!.key, target: b!.key, kind: "data" },
+      { id: "e:test:2", source: a!.key, target: c!.key, kind: "data" },
+      { id: "e:test:3", source: b!.key, target: c!.key, kind: "data" },
+    ]);
+    expect(inserted.identity).toEqual({ namespace: "test", nextNode: 4, nextEdge: 4 });
     const compiledInserted = canvasCompile(inserted).tasks;
-    expect(compiledInserted.slice(2).map((task) => task.definitionId)).toEqual(["n3", "n4", "n5"]);
+    expect(compiledInserted.slice(2).map((task) => task.definitionId)).toEqual([
+      "n:test:1",
+      "n:test:2",
+      "n:test:3",
+    ]);
     expect(
       compiledInserted.slice(2).map(({ definitionId: _definitionId, ...rest }) => rest),
     ).toEqual(proposal.tasks);
@@ -611,13 +702,11 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       "已有",
       "已有二",
     ]);
-    // Standalone fragment follows the same remap discipline.
-    const fragment = proposalFragment(proposal, { x: 0, y: 0 });
-    const fragmentCompiled = canvasCompile(docWith(...fragment)).tasks;
-    expect(fragmentCompiled.map((task) => task.definitionId)).toEqual(
-      fragment.map((node) => node.key),
-    );
-    expect(fragmentCompiled.map(({ definitionId: _definitionId, ...rest }) => rest)).toEqual(
+    // A fragment inserted into an empty doc compiles back to the proposal.
+    const empty = canvasInsertFragment(emptyCanvasDoc(""), proposal);
+    const emptyCompiled = canvasCompile(empty).tasks;
+    expect(emptyCompiled.map((task) => task.definitionId)).toEqual(empty.nodes.map((node) => node.key));
+    expect(emptyCompiled.map(({ definitionId: _definitionId, ...rest }) => rest)).toEqual(
       proposal.tasks,
     );
   });
@@ -648,7 +737,7 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     }
   });
 
-  it("CANVAS-A21: serve keeps v2 behavior and refuses v1 docs at the gate", async () => {
+  it("CANVAS-A21: serve keeps v3 behavior and refuses legacy docs at the gate", async () => {
     const rig = makeRig();
     const handle = await serveOrchestration(rig.controller, { port: 0 });
     try {
@@ -656,15 +745,11 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       const compiled = await api(handle, "/api/canvas/compile", {
         method: "POST",
         body: {
-          doc: {
-            version: 2,
-            goal: "g",
-            nodes: [
-              taskNode("n1", "调研", 0, 0),
-              { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"] } },
-            ],
-            groups: [],
-          },
+          doc: JSON.parse(
+            JSON.stringify(
+              docWith(taskNode("n1", "调研", 0, 0), { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["n1"] } }),
+            ),
+          ),
         },
       });
       expect(compiled.status).toBe(200);
@@ -672,18 +757,72 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
         { title: "调研", dependsOn: [], definitionId: "n1" },
         { title: "综合", dependsOn: ["调研"], definitionId: "n2" },
       ]);
-      const v1 = await api(handle, "/api/canvas/compile", {
+      const v2 = await api(handle, "/api/canvas/compile", {
         method: "POST",
         body: {
-          doc: { version: 1, goal: "g", nodes: [taskNode("n1", "调研", 0, 0)], groups: [] },
+          doc: { version: 2, goal: "g", nodes: [], groups: [] },
         },
       });
-      expect(v1.status).toBe(400);
-      expect(((v1.json.error as string) ?? "")).toMatch(/only format/);
+      expect(v2.status).toBe(400);
+      expect(((v2.json.error as string) ?? "")).toMatch(/upgradeCanvasV2ToV3/);
       expect(eventCount(rig.store)).toBe(before);
     } finally {
       await handle.close();
       await rig.cleanup();
     }
+  });
+
+  // PLMP-CANVAS-7 (32 号, G9-D): the explicit v2→v3 converter - node keys
+  // preserved verbatim (definition lineage), dependsOn flattened to edges,
+  // node.g folded into members.
+
+  it("CANVAS-V3-MIG: upgradeCanvasV2ToV3 preserves node keys, folds g, flattens edges", () => {
+    const v2 = {
+      version: 2,
+      goal: "老目标",
+      nodes: [
+        { key: "n1", type: "task", title: "调研", x: 1, y: 2, z: "root", g: "G1", task: { dependsOn: [] } },
+        { key: "n2", type: "task", title: "综合", x: 3, y: 4, z: "root", task: { dependsOn: ["n1"] } },
+        { key: "n17", type: "subflow", title: "子图", x: 5, y: 6, z: "root" },
+        {
+          key: "m",
+          type: "task",
+          title: "成员",
+          x: 7,
+          y: 8,
+          z: "n17",
+          g: "G1",
+          task: { dependsOn: ["n1", "n2"], role: "scout" },
+        },
+      ],
+      groups: [{ id: "G1", label: "框", members: [] }],
+    };
+    const v3 = upgradeCanvasV2ToV3(v2, "abc123def456");
+    // V3-MIG-A01: every legacy key survives verbatim.
+    expect(v3.nodes.map((node) => node.key)).toEqual(["n1", "n2", "n17", "m"]);
+    // Edges flatten in node declaration × dependency order, deterministic ids.
+    expect(v3.edges).toEqual([
+      { id: "e:abc123def456:1", source: "n1", target: "n2", kind: "data" },
+      { id: "e:abc123def456:2", source: "n1", target: "m", kind: "data" },
+      { id: "e:abc123def456:3", source: "n2", target: "m", kind: "data" },
+    ]);
+    // node.g folded into members (the single membership truth); node.g gone.
+    expect(v3.groups).toEqual([{ id: "G1", label: "框", members: ["n1", "m"] }]);
+    expect(v3.nodes[0] && "g" in v3.nodes[0]).toBe(false);
+    expect("dependsOn" in (v3.nodes[0]!.task as unknown as object)).toBe(false);
+    expect(v3.nodes[3]?.task?.role).toBe("scout");
+    expect(v3.goal).toBe("老目标");
+    // The upgraded doc parses clean and the identity counters sit at the
+    // family floor.
+    expect(parseCanvasDoc(JSON.parse(JSON.stringify(v3)))).toEqual(v3);
+    expect(v3.identity).toEqual({ namespace: "abc123def456", nextNode: 1, nextEdge: 4 });
+    // V3-MIG-A02: fresh allocations can never collide with preserved keys.
+    const proposal: ProjectProposal = { goal: "x", changeClass: "behavior_change", tasks: [{ title: "新", dependsOn: [] }] };
+    const inserted = canvasInsertFragment(v3, proposal);
+    expect(inserted.nodes[4]!.key).toBe("n:abc123def456:1");
+    expect(inserted.nodes.map((node) => node.key).slice(0, 4)).toEqual(["n1", "n2", "n17", "m"]);
+    // Fail-closed: malformed v2 is refused by the converter too.
+    expect(() => upgradeCanvasV2ToV3({ ...v2, nodes: "nope" }, "abc123def456")).toThrow(/nodes must be an array/);
+    expect(() => upgradeCanvasV2ToV3(v2, "bad:ns")).toThrow(/identity\.namespace/);
   });
 });

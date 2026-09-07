@@ -29,6 +29,7 @@ import type {
   TraceRow,
 } from "./types";
 import { canvasDocShapeError, descendantKeys } from "./canvasIntegrity";
+import { allocateCanvasEdgeId, newCanvasDoc, randomCanvasNamespace, upgradeCanvasV2ToV3 } from "./canvasV3";
 
 type Mode = "live" | "draft";
 
@@ -41,7 +42,10 @@ const LAYOUTS: Array<{ id: CanvasLayoutName; label: string }> = [
 ];
 
 function emptyDoc(): CanvasDoc {
-  return { version: 2, goal: "", nodes: [], groups: [] };
+  // PLMP-CANVAS-7: each draft gets its own random identity namespace once -
+  // allocations are monotonic from there and can never collide with legacy
+  // `nK` keys or another draft's family.
+  return newCanvasDoc();
 }
 
 export function App() {
@@ -105,6 +109,8 @@ export function App() {
   }, [authorized]);
 
   // PLMP-CANVAS-1: the doc is client-side scratch - localStorage + import/export.
+  // PLMP-CANVAS-7: v2 drafts migrate through the explicit converter (node
+  // keys preserved verbatim); the upgrade is announced, never silent.
   useEffect(() => {
     if (projectId === null || docLoadedFor.current === projectId) return;
     docLoadedFor.current = projectId;
@@ -112,6 +118,15 @@ export function App() {
     if (raw !== null) {
       try {
         const parsed = JSON.parse(raw) as CanvasDoc;
+        if ((parsed as { version?: number } | null)?.version === 2) {
+          try {
+            setDoc(upgradeCanvasV2ToV3(parsed, randomCanvasNamespace()));
+            setMessage("画布草稿已从 v2 升级到 v3（节点身份原样保留，依赖改为边记录）");
+          } catch (error) {
+            setMessage(`本地画布草稿被拒绝：${error instanceof Error ? error.message : String(error)}`);
+          }
+          return;
+        }
         // PLMP-CANVAS-5 INV-C9: local docs never crossed the kernel parser -
         // a malformed/cyclic doc is refused instead of rendered.
         const shapeError = canvasDocShapeError(parsed);
@@ -207,6 +222,12 @@ export function App() {
     void (async () => {
       try {
         const parsed = JSON.parse(await file.text()) as CanvasDoc;
+        if ((parsed as { version?: number } | null)?.version === 2) {
+          const upgraded = upgradeCanvasV2ToV3(parsed, randomCanvasNamespace());
+          setDoc(upgraded);
+          setMessage(`已导入 v2 画布并升级到 v3（${upgraded.nodes.length} 节点，身份原样保留）`);
+          return;
+        }
         // PLMP-CANVAS-5 INV-C9: imports run the same shape guard as restore.
         const shapeError = canvasDocShapeError(parsed);
         if (shapeError !== null) throw new Error(shapeError);
@@ -295,16 +316,18 @@ export function App() {
                   const source = doc.nodes.find((node) => node.key === fromKey);
                   const target = doc.nodes.find((node) => node.key === toKey);
                   if (source === undefined || target?.task === undefined || source.type !== "task") return;
-                  // PLMP-CANVAS-6: dependencies reference node keys - renaming
-                  // a title never rewires the graph.
-                  if (target.task.dependsOn.includes(source.key)) return;
+                  // PLMP-CANVAS-7: edges[] is the one edge truth - a
+                  // connection appends a fresh edge record (exact duplicates
+                  // are declined here; the capability gate names any other
+                  // parallel edge at compile time).
+                  if (doc.edges.some((edge) => edge.source === fromKey && edge.target === toKey)) return;
+                  const allocated = allocateCanvasEdgeId(doc);
                   setDoc({
-                    ...doc,
-                    nodes: doc.nodes.map((node) =>
-                      node.key === toKey && node.task !== undefined
-                        ? { ...node, task: { ...node.task, dependsOn: [...node.task.dependsOn, source.key] } }
-                        : node,
-                    ),
+                    ...allocated.doc,
+                    edges: [
+                      ...allocated.doc.edges,
+                      { id: allocated.id, source: fromKey, target: toKey, kind: "data" },
+                    ],
                   });
                 }}
                 onMove={(key, x, y) => {

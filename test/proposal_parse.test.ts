@@ -24,7 +24,7 @@ import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
 import { parseTaskSpec } from "../src/schema/index.js";
 import { proposalTaskSpecs } from "../src/architecture/index.js";
-import { FakeClock, tempStatePath } from "./helpers.js";
+import { docV3From, FakeClock, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
@@ -122,12 +122,9 @@ describe("ProjectProposal input contract (PLMP-GRAPH-5 §B2-B)", () => {
       expect(declare.status).toBe(400);
       expect(String(declare.json.error)).toMatch(/unknown proposal field "typoField"/);
       const insert = await post("/api/canvas/insert", {
-        doc: {
-          version: 2,
-          goal: "g",
-          nodes: [{ key: "a", type: "task", title: "已有", x: 0, y: 0, z: "root", task: { dependsOn: [] } }],
-          groups: [],
-        },
+        doc: docV3From([
+          { key: "a", type: "task", title: "已有", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+        ]),
         proposal: { goal: "g", changeClas: "behavior_change", tasks: [] },
       });
       expect(insert.status).toBe(400);

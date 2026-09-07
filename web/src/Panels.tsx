@@ -22,6 +22,7 @@ import {
   type ProjectProposal,
   type ProposalDiagnostic,
 } from "./types";
+import { allocateCanvasNodeId } from "./canvasV3";
 
 const PREDICATES = ["tests_pass", "process_exit_zero", "lint_pass", "tests_fail", "expected_files_exist", "write_scope_valid"];
 
@@ -302,24 +303,20 @@ export function CanvasEditor(props: {
     if (node?.task === undefined) return;
     patchNode(key, { task: { ...node.task, ...patch } });
   };
-  const genKey = (): string => {
-    let max = 0;
-    for (const node of doc.nodes) {
-      const match = /^n(\d+)$/.exec(node.key);
-      if (match !== null) max = Math.max(max, Number(match[1]));
-    }
-    return `n${max + 1}`;
-  };
+  // PLMP-CANVAS-7 (32 号 §23): the renderer never invents definition
+  // identity - node creation allocates through the doc's monotonic family
+  // (mirror of the kernel allocator), so a deleted key can never resurface.
   const addNode = (type: CanvasNode["type"]): void => {
-    const key = genKey();
+    const allocated = allocateCanvasNodeId(doc);
+    const key = allocated.id;
     const base = { key, x: 120 + (doc.nodes.length % 4) * 40, y: 80 + doc.nodes.length * 24, z: "root" };
     const node: CanvasNode =
       type === "task"
-        ? { ...base, type, title: `新任务 ${doc.nodes.filter((n) => n.type === "task").length + 1}`, task: { dependsOn: [] } }
+        ? { ...base, type, title: `新任务 ${doc.nodes.filter((n) => n.type === "task").length + 1}`, task: {} }
         : type === "subflow"
           ? { ...base, type, title: `子图 ${doc.nodes.filter((n) => n.type === "subflow").length + 1}` }
           : { ...base, type, title: "注记", text: "备注…" };
-    props.onDocChange({ ...doc, nodes: [...doc.nodes, node] });
+    props.onDocChange({ ...allocated.doc, nodes: [...allocated.doc.nodes, node] });
     props.onSelect(key);
   };
 
@@ -462,7 +459,16 @@ export function CanvasEditor(props: {
           <button
             style={button(false)}
             onClick={() => {
-              props.onDocChange({ ...doc, groups: doc.groups.filter((group) => group.id !== selectedGroup.id) });
+              // PLMP-CANVAS-7: deleting a group reparents nested child
+              // groups to the top level, so no dangling `g` reference is
+              // left behind and the result still parses.
+              const gid = selectedGroup.id;
+              props.onDocChange({
+                ...doc,
+                groups: doc.groups
+                  .filter((group) => group.id !== gid)
+                  .map((group) => (group.g === gid ? { ...group, g: undefined } : group)),
+              });
               props.onSelect(null);
             }}
           >
@@ -561,32 +567,43 @@ export function CanvasEditor(props: {
                 }
               />
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                {selected.task.dependsOn.map((dep) => (
-                  <span key={dep} style={{ background: "#1e293b", borderRadius: 6, padding: "2px 6px" }}>
-                    ← {titleByKey.get(dep) ?? dep}
-                    <button
-                      style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", marginLeft: 4 }}
-                      onClick={() =>
-                        patchTask(selected.key, { dependsOn: selected.task!.dependsOn.filter((entry) => entry !== dep) })
-                      }
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+                {doc.edges
+                  .filter((edge) => edge.target === selected.key)
+                  .map((edge) => (
+                    <span key={edge.id} style={{ background: "#1e293b", borderRadius: 6, padding: "2px 6px" }}>
+                      ← {titleByKey.get(edge.source) ?? edge.source}
+                      <button
+                        style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", marginLeft: 4 }}
+                        onClick={() =>
+                          props.onDocChange({ ...doc, edges: doc.edges.filter((entry) => entry.id !== edge.id) })
+                        }
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
               </div>
             </>
           )}
           <button
             style={button(false)}
             onClick={() => {
+              const key = selected.key;
+              // PLMP-CANVAS-7: identity-preserving cleanup - incident edges
+              // and group membership go with the node, so the result still
+              // parses (MUT discipline; the central kernel mutation API
+              // lands in D6).
               const nodes =
                 selected.type === "subflow"
                   ? doc.nodes
-                      .filter((node) => node.key !== selected.key)
-                      .map((node) => (node.z === selected.key ? { ...node, z: "root" } : node))
-                  : doc.nodes.filter((node) => node.key !== selected.key);
-              props.onDocChange({ ...doc, nodes });
+                      .filter((node) => node.key !== key)
+                      .map((node) => (node.z === key ? { ...node, z: "root" } : node))
+                  : doc.nodes.filter((node) => node.key !== key);
+              const edges = doc.edges.filter((edge) => edge.source !== key && edge.target !== key);
+              const groups = doc.groups.map((group) =>
+                group.members.includes(key) ? { ...group, members: group.members.filter((m) => m !== key) } : group,
+              );
+              props.onDocChange({ ...doc, nodes, edges, groups });
               props.onSelect(null);
             }}
           >

@@ -49,5 +49,6 @@ GraphEdge 类型/typed edges（G3）、GraphPatch（G4）、服务端任何状�
 
 | 日期 | 修订 |
 |---|---|
+| 2026-09-08 | G9-D（32 号 PLMP-CANVAS-7）修订：v2 退役为显式转换入口——`parseCanvasDoc` 只接受 v3（edges[] 唯一边真相 + identity 单调家族）；本规格的 INV-D1/D2 语义在 v3 中由边记录承载（source 必须 task＝只能依赖 task），节点 key 不变（定义身份红线）；v2 文档迁移走 `upgradeCanvasV2ToV3`（非 dual parse，节点 key 逐字保留）。 |
 | 2026-09-07 | 初版冻结（PLMP-CANVAS-6，G2）：依赖词汇 title→key、CanvasDoc v2 单格式（v1 响亮拒绝，无 shim）、INV-D1/D2 引用完整性、编译器 key→title 映射、fragment key 重映射、面板 key 化；与 NEXT-GRAPH-EVOLUTION-PLAN §1"v1 兜底升级"的差异（改为 v2-only）及其理由（禁止兼容层）在此登记。 |
 | 2026-09-07 | **交付**：doc/compile/layout 内核 v2 + 面板连线/chip/守卫 v2；A18–A21 全绿（46 文件 / 277 测试，G1 的 A01–A17 原样通过＝零编排漂移）；浏览器冒烟：注入 v2 双任务文档→选中改名→边保持（依赖 1）、chip 显示"← 起点（已改名）"、校验通过（声明预览"起点（已改名） → 终点"）；A20 由深层嵌套跨边界 key 依赖的 rename + 四布局纯度断言覆盖。 |

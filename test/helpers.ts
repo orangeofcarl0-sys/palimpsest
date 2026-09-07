@@ -1,4 +1,6 @@
 import { mkdtempSync } from "node:fs";
+
+import type { CanvasDoc } from "../src/canvas/index.js";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -252,4 +254,40 @@ export async function installForTests(options: {
     clock: () => "2026-08-13T00:00:00Z",
   });
   return { host, installed, controller: installed.controller };
+}
+
+/**
+ * PLMP-CANVAS-7 (32 号): materialize a v3 canvas doc from authoring nodes -
+ * `task.dependsOn` flattens to `doc.edges[]` (ids `e:<ns>:<k>` in node
+ * declaration × dependency order, exactly the old lift order) and the
+ * identity namespace defaults to "test". Tests declare the legacy-style
+ * payload for readability; the produced doc is the real v3 grammar.
+ */
+export function docV3From(
+  authoring: ReadonlyArray<object>,
+  options?: { goal?: string; namespace?: string; groups?: CanvasDoc["groups"] },
+): CanvasDoc {
+  const namespace = options?.namespace ?? "test";
+  const nodes = authoring.map((node) => {
+    const { task, ...rest } = node as { task?: { dependsOn?: string[] } & Record<string, unknown> };
+    if (task === undefined) return rest;
+    const { dependsOn: _dependsOn, ...payload } = task;
+    void _dependsOn;
+    return { ...rest, task: payload };
+  });
+  let edgeCounter = 0;
+  const edges = authoring.flatMap((node) =>
+    ((node as { task?: { dependsOn?: string[] } }).task?.dependsOn ?? []).map((source) => {
+      edgeCounter += 1;
+      return { id: `e:${namespace}:${edgeCounter}`, source, target: (node as { key: string }).key, kind: "data" as const };
+    }),
+  );
+  return {
+    version: 3,
+    goal: options?.goal ?? "g",
+    identity: { namespace, nextNode: 1, nextEdge: edgeCounter + 1 },
+    nodes: nodes as unknown as CanvasDoc["nodes"],
+    edges,
+    groups: options?.groups ?? [],
+  };
 }

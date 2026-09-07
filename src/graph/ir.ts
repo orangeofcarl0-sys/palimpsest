@@ -104,6 +104,7 @@ export type AgentGraphDiagnosticType =
   | "UNSUPPORTED_NODE_KIND"
   | "UNSUPPORTED_EDGE_KIND"
   | "UNSUPPORTED_EDGE_ENDPOINT"
+  | "UNSUPPORTED_PARALLEL_DATA_EDGE"
   | "UNSUPPORTED_RUNTIME_CYCLE";
 
 export interface AgentGraphDiagnostic {
@@ -317,6 +318,7 @@ export function agentGraphCapabilities(graph: AgentGraph): AgentGraphDiagnostic[
   }
   const byId = new Map(graph.nodes.map((node) => [node.id, node]));
   const dataEdges: AgentGraphEdge[] = [];
+  const seenDataPairs = new Set<string>();
   for (const edge of graph.edges) {
     if (edge.kind !== "data") {
       diagnostics.push({
@@ -336,6 +338,20 @@ export function agentGraphCapabilities(graph: AgentGraph): AgentGraphDiagnostic[
       });
       continue;
     }
+    // PLMP-CANVAS-7 (32 号 §3.6): the IR is a multigraph, but the current
+    // DAG runtime has no multiplicity semantics - TaskSpec.depends_on is
+    // unique - so identical parallel data edges must be named here instead
+    // of silently collapsing into a repeated dependsOn title downstream.
+    const pair = `${edge.source}->${edge.target}`;
+    if (seenDataPairs.has(pair)) {
+      diagnostics.push({
+        type: "UNSUPPORTED_PARALLEL_DATA_EDGE",
+        edge: edge.id,
+        detail: `parallel data edge "${edge.id}" duplicates an existing ${pair} data edge`,
+      });
+      continue;
+    }
+    seenDataPairs.add(pair);
     dataEdges.push(edge);
   }
   const cyclic = findCycle(graph.nodes, dataEdges);

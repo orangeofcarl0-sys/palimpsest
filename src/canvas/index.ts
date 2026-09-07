@@ -3,19 +3,25 @@
  * orchestration-contract touch; the ledger stays the only server truth. */
 
 export {
+  allocateCanvasEdgeId,
+  allocateCanvasNodeId,
   emptyCanvasDoc,
+  familyCountersOf,
   parseCanvasDoc,
   ROOT_Z,
+  upgradeCanvasV2ToV3,
 } from "./doc.js";
 export type {
   CanvasDoc,
+  CanvasEdge,
   CanvasGroup,
+  CanvasIdentityState,
   CanvasNode,
   CanvasNodeType,
   CanvasTaskPayload,
 } from "./doc.js";
 
-export { canvasCompile, canvasInsertFragment, proposalFragment } from "./compile.js";
+export { canvasCompile, canvasInsertFragment } from "./compile.js";
 
 export { canvasRoundTripDiff, liftToAgentGraph, unloadToCanvasDoc } from "./lift.js";
 

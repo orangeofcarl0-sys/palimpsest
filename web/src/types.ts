@@ -94,10 +94,11 @@ export const TASK_COLORS: Record<string, string> = {
 
 export const stateColor = (state: string): string => TASK_COLORS[state] ?? "#64748b";
 
-/** PLMP-CANVAS: canvas doc mirrors (client-side authoring scratchpad). */
+/** PLMP-CANVAS: canvas doc mirrors (client-side authoring scratchpad).
+ * v3 (PLMP-CANVAS-7, 32 号): edges[] is the one edge truth; identity state
+ * rides the doc; task payloads no longer carry dependsOn. */
 
 export interface CanvasTaskPayload {
-  dependsOn: string[];
   writePaths?: string[];
   requiredArtifacts?: string[];
   gateId?: string;
@@ -112,11 +113,23 @@ export interface CanvasNode {
   x: number;
   y: number;
   z: string;
-  g?: string;
   /** PLMP-GRAPH-3: subflows only - absent means editorial. */
   mode?: "runtime";
   task?: CanvasTaskPayload;
   text?: string;
+}
+
+export interface CanvasEdge {
+  id: string;
+  source: string;
+  target: string;
+  kind: "data";
+}
+
+export interface CanvasIdentityState {
+  namespace: string;
+  nextNode: number;
+  nextEdge: number;
 }
 
 export interface CanvasGroup {
@@ -127,10 +140,13 @@ export interface CanvasGroup {
 }
 
 export interface CanvasDoc {
-  /** v2 (PLMP-CANVAS-6): task dependencies reference node keys. */
-  version: 2;
+  /** v3 (PLMP-CANVAS-7): edges[] + identity state; v2 migrates via the
+   * explicit upgradeCanvasV2ToV3 converter only. */
+  version: 3;
   goal: string;
+  identity: CanvasIdentityState;
   nodes: CanvasNode[];
+  edges: CanvasEdge[];
   groups: CanvasGroup[];
 }
 

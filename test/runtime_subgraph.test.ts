@@ -28,12 +28,12 @@ import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
 
-import { FakeClock, tempStatePath } from "./helpers.js";
+import { docV3From, FakeClock, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
 
-function docWith(...nodes: CanvasDoc["nodes"]): CanvasDoc {
-  return { version: 2, goal: "g", nodes, groups: [] };
+function docWith(...nodes: Array<object>): CanvasDoc {
+  return docV3From(nodes);
 }
 
 function task(key: string) {

@@ -9,9 +9,10 @@ import {
 import { canvasCompile, canvasLayout, liftToAgentGraph, parseCanvasDoc } from "../src/canvas/index.js";
 import { validateProjectProposal } from "../src/architecture/index.js";
 import type { CanvasDoc } from "../src/canvas/index.js";
+import { docV3From } from "./helpers.js";
 
-function docWith(...nodes: CanvasDoc["nodes"]): CanvasDoc {
-  return { version: 2, goal: "g", nodes, groups: [] };
+function docWith(...nodes: Array<Record<string, unknown>>): CanvasDoc {
+  return docV3From(nodes as unknown as Array<Record<string, unknown>>);
 }
 
 function taskNode(key: string, title: string, x: number, y: number, z = "root", dependsOn: string[] = []) {
@@ -134,9 +135,11 @@ describe("agent graph IR (PLMP-GRAPH-1)", () => {
       ["m2", "agent", "s1"],
       ["note", "annotation", "root"],
     ]);
+    // PLMP-CANVAS-7: edge ids are doc-owned and lift preserves them
+    // verbatim (the old lift-generated e1..eN regeneration is retired).
     expect(graph.edges).toEqual([
-      { id: "e1", source: "out", target: "m1", kind: "data" },
-      { id: "e2", source: "m1", target: "m2", kind: "data" },
+      { id: "e:test:1", source: "out", target: "m1", kind: "data" },
+      { id: "e:test:2", source: "m1", target: "m2", kind: "data" },
     ]);
     expect(agentGraphCapabilities(graph)).toEqual([]);
     const viaIr = compileAgentGraph(graph);
