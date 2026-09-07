@@ -22,6 +22,7 @@ import {
 } from "../schema/index.js";
 import { actionKey, stableEntityId } from "./idempotency.js";
 import { TaskPolicy } from "./policy.js";
+import { parseStageGraphDefinition } from "./stage_graph.js";
 import {
   ATTEMPT_ALLOWED_SOURCES,
   ATTEMPT_EVENT_TARGET,
@@ -284,13 +285,26 @@ export class AggregateValidator {
   }
 
   #validateTaskStarted(connection: DatabaseSync, event: NewEvent, row: Row): void {
+    // PLMP-SCHED-1: the single-active invariant reads its bound from the
+    // DECLARED stage graph (the ACTIVE stage's concurrency; default 1 is the
+    // frozen baseline). No declared projection keeps the strictest reading.
     const active = connection
       .prepare(
         "SELECT task_id FROM tasks WHERE project_id=? AND state IN ('ACTIVE','VERIFYING')",
       )
       .all(event.project_id) as Row[];
-    if (active.length > 0) {
-      throw new SchedulerInvariantError("a project may have only one active logical Task");
+    const graphRow = connection
+      .prepare("SELECT graph_json FROM stage_graphs WHERE project_id=?")
+      .get(event.project_id) as Row | undefined;
+    let capacity = 1;
+    if (graphRow !== undefined) {
+      const graph = parseStageGraphDefinition(decodeNullableJsonBlob(graphRow.graph_json));
+      capacity = graph.stages.find((stage) => stage.state === "ACTIVE")?.concurrency ?? 1;
+    }
+    if (active.length >= capacity) {
+      throw new SchedulerInvariantError(
+        `the declared ACTIVE concurrency is ${capacity}; ${active.length} task(s) already occupy it`,
+      );
     }
     const envelope = parseTaskEnvelope(decodeNullableJsonBlob(row.envelope_json));
     const count = rowInt(
@@ -658,8 +672,20 @@ export class AggregateValidator {
         "SELECT * FROM tasks WHERE project_id=? AND state IN ('ACTIVE','VERIFYING')",
       )
       .all(projectId) as Row[];
-    if (active.length > 1) {
-      throw new SchedulerInvariantError("multiple ACTIVE/VERIFYING Tasks detected");
+    // PLMP-SCHED-1: the occupancy ceiling is the DECLARED ACTIVE concurrency
+    // (default 1 = the frozen single-task baseline).
+    const graphRow = connection
+      .prepare("SELECT graph_json FROM stage_graphs WHERE project_id=?")
+      .get(projectId) as Row | undefined;
+    let capacity = 1;
+    if (graphRow !== undefined) {
+      const graph = parseStageGraphDefinition(decodeNullableJsonBlob(graphRow.graph_json));
+      capacity = graph.stages.find((stage) => stage.state === "ACTIVE")?.concurrency ?? 1;
+    }
+    if (active.length > capacity) {
+      throw new SchedulerInvariantError(
+        `${active.length} ACTIVE/VERIFYING Tasks exceed the declared concurrency ${capacity}`,
+      );
     }
     for (const task of active) {
       const envelope = parseTaskEnvelope(decodeNullableJsonBlob(task.envelope_json));

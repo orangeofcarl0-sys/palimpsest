@@ -100,6 +100,9 @@ export interface StartProjectInput {
   tasks: readonly TaskSpec[];
   headCommit?: string | undefined;
   committedAt?: string | undefined;
+  /** PLMP-SCHED-1: optional declared stage graph (e.g. latch concurrency);
+   * absent means the verbatim genesis pipeline. */
+  stageGraph?: StageGraphDefinition | undefined;
 }
 
 export interface PlanInput {
@@ -411,6 +414,9 @@ export class ProjectController {
     if (input.projectId !== this.projectId) {
       throw new DomainValidationError("project id does not match the controller");
     }
+    // PLMP-SCHED-1: validate the declared stage graph BEFORE anything is
+    // appended - a bad declaration must not leave a half-started project.
+    const declaredGraph = parseStageGraphDefinition(input.stageGraph ?? DEFAULT_STAGE_GRAPH);
     const project = buildProjectIr({
       projectId: this.projectId,
       goal: input.goal,
@@ -445,8 +451,8 @@ export class ProjectController {
       declaredBy: "genesis",
     });
     // ...as is the default stage graph: the phase0-2 hardcoded pipeline,
-    // declared verbatim (H1 §3.4 D-3).
-    this.declareStageGraph(DEFAULT_STAGE_GRAPH, 1);
+    // declared verbatim (H1 §3.4 D-3) unless the caller declares its own.
+    this.declareStageGraph(declaredGraph, 1);
     for (const task of input.tasks) {
       this.scheduler.registerTask(this.policy.authorize(project, task.task_id));
     }

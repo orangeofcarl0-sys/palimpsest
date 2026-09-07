@@ -30,6 +30,7 @@
 | `24-agent-graph-ir-spec.md` | **AgentGraph IR 规格（PLMP-GRAPH-1，G3）**：`src/graph/` 渲染器/运行时双解耦图 IR（9 节点 kind 分层 runtime-semantic vs advisory、9 边 kind、scope compound 同款无环纪律、IR 层环合法）、capability 门四诊断 fail-closed（UNSUPPORTED_NODE_KIND/EDGE_KIND/EDGE_ENDPOINT/RUNTIME_CYCLE——画出来≠能跑）、**单编译路径** CanvasDoc→lift→IR→ProjectProposal（旧 flatten 删除、输出逐字节同形）、布局纯度推广（四布局后 lift 结构全等）；验收 GRAPH-A01–A05 |
 | `25-graph-patch-spec.md` | **GraphPatch 规格（PLMP-GRAPH-2，G4）**：AgentGraph IR 上的正式编辑协议（语义操作、无坐标、baseRevision 新鲜度锚定）、固定应用序 + 十类 fail-closed 诊断（显式删边不级联、结果图重解析兜底）、人话预览 diffGraphPatch、patchFromFragment 统一 preset/fragment 入口（manual 保持 doc 直改不中转）、serve `/api/canvas/patch` 纯派生（STALE_BASE 对 live revision）+ 面板预览→应用双段交互；验收 PATCH-A01–A05 + 浏览器冒烟 |
 | `26-runtime-subgraph-spec.md` | **Runtime Subgraph v1 规格（PLMP-GRAPH-3，G5）**：subflow/subgraph `mode:"runtime"`（缺省 editorial，单一编码）、编译就近 runtime 祖先归属（editorial 嵌套不改归属）、`TaskProposal.scopeId`→`TaskSpec.scope_id`（SDS-4 加法式可选：缺省省略、键序 canonical、无迁移、digest 零扰动）、`GraphTask.scopeId` 投影、面板运行时徽章/mode 切换/scope 行；并发 policy 明确留 G6；验收 RSUB-A01–A05 + 浏览器冒烟 |
+| `27-ready-set-scheduler-spec.md` | **Ready-Set 调度规格（PLMP-SCHED-1，G6）**：ACTIVE 阶段声明式 `concurrency`（加法式可选、缺省 1＝逐字节现状、无迁移/无 fixture 再生）、锁存有界穿透、READY 激活双道容量（任务级声明 + 既有角色表同源）、聚合校验器单活跃不变量改读声明容量、`start/declare` 可选 stageGraph（先验证后落账）、每 decide 恒一事件；三种并行性开始分流（task 并发由声明解锁）；验收 SCHED-A01–A06 + live 冒烟 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

@@ -187,7 +187,7 @@ describe("serve channel face (PLMP-WEB-1)", () => {
       };
       const invalid = await api(handle, "/api/proposal/declare", {
         method: "POST",
-        body: bad,
+        body: { proposal: bad },
       });
       expect(invalid.json.declared).toBe(false);
       expect((invalid.json.diagnostics as Json[]).map((d) => d.type)).toContain("MISSING_WRITE_PATHS");
@@ -208,7 +208,7 @@ describe("serve channel face (PLMP-WEB-1)", () => {
       });
       const declared = await api(handle, "/api/proposal/declare", {
         method: "POST",
-        body: good,
+        body: { proposal: good },
       });
       expect(declared.json).toMatchObject({ declared: true, eventType: "PROJECT_CREATED" });
       expect(rig.controller.orchestrationGraph().tasks.map((task) => task.taskId)).toEqual([

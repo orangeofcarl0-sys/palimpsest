@@ -112,8 +112,12 @@ export const deriveCanvas = (): Promise<{
 
 export const declareProposal = (
   proposal: ProjectProposal,
+  stageGraph?: unknown,
 ): Promise<{ diagnostics: ProposalDiagnostic[]; declared: boolean; eventType?: string }> =>
-  call("/api/proposal/declare", { method: "POST", body: JSON.stringify(proposal) });
+  call("/api/proposal/declare", {
+    method: "POST",
+    body: JSON.stringify({ proposal, ...(stageGraph === undefined ? {} : { stageGraph }) }),
+  });
 
 /** PLMP-GRAPH-2: patch review face - validate/preview/apply to the draft, zero writes. */
 export interface CanvasPatchPreviewEntry {

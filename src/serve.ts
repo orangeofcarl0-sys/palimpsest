@@ -45,6 +45,7 @@ import {
   validateGraphPatch,
   type GraphPatch,
 } from "./graph/index.js";
+import type { StageGraphDefinition } from "./domain/index.js";
 import type { AttemptAttribution, ProjectController } from "./tools/index.js";
 import { definePalimpsestControl, type PalimpsestControlSurface } from "./tools/index.js";
 
@@ -352,7 +353,13 @@ export function serveOrchestration(
           return;
         }
         if (request.method === "POST" && path === "/api/proposal/declare") {
-          const proposal = JSON.parse(await readBody(request)) as ProjectProposal;
+          // PLMP-SCHED-1: the request is {proposal, stageGraph?} - the optional
+          // declared stage graph applies on the start branch only.
+          const body = JSON.parse(await readBody(request)) as {
+            proposal: ProjectProposal;
+            stageGraph?: StageGraphDefinition;
+          };
+          const proposal = body.proposal;
           const diagnostics = validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) });
           if (diagnostics.length > 0) {
             sendJson(response, 200, { diagnostics, declared: false });
@@ -373,6 +380,9 @@ export function serveOrchestration(
                 projectId: controller.projectId,
                 goal: proposal.goal,
                 tasks,
+                // PLMP-SCHED-1: optional declared stage graph on genesis
+                // (e.g. latch concurrency); parse failure fails the request.
+                ...(body.stageGraph === undefined ? {} : { stageGraph: body.stageGraph }),
               });
           sendJson(response, 200, { diagnostics: [], declared: true, eventType: event.event_type });
           return;

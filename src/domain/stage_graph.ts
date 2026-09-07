@@ -87,6 +87,14 @@ export const STAGE_TRANSITION_REASONS: Readonly<Record<Exclude<StageTransitionWh
 export interface StageGraphStage {
   id: string;
   state: string;
+  /**
+   * PLMP-SCHED-1: latch stages only. The declared task-level concurrency
+   * bound - how many tasks may occupy this state before the scan stops
+   * falling through. Absent means 1: the baseline single-task latch,
+   * byte-identical. On the ACTIVE stage this is also the activation capacity
+   * (READY -> ACTIVE admission); on VERIFYING it governs scan fall-through.
+   */
+  concurrency?: number;
 }
 
 export interface StageGraphTransition {
@@ -133,7 +141,24 @@ export function parseStageGraphDefinition(value: unknown): StageGraphDefinition 
     if (stageIds.has(id)) throw new TypeError(`duplicate stage id '${id}'`);
     if (stageByState.has(state)) throw new TypeError(`duplicate stage state '${state}'`);
     stageIds.add(id);
-    const declared = { id, state };
+    // PLMP-SCHED-1: concurrency is a latch-stage declaration; elsewhere it
+    // has no meaning and is refused instead of silently ignored.
+    const rawConcurrency = stage.concurrency;
+    let concurrency: number | undefined;
+    if (rawConcurrency !== undefined) {
+      if (
+        (state !== "ACTIVE" && state !== "VERIFYING") ||
+        typeof rawConcurrency !== "number" ||
+        !Number.isInteger(rawConcurrency) ||
+        rawConcurrency < 1
+      ) {
+        throw new TypeError(
+          `stage '${id}': concurrency must be a positive integer declared on a latch stage (ACTIVE/VERIFYING)`,
+        );
+      }
+      concurrency = rawConcurrency;
+    }
+    const declared: StageGraphStage = { id, state, ...(concurrency === undefined ? {} : { concurrency }) };
     stages.push(declared);
     stageByState.set(state, declared);
   }

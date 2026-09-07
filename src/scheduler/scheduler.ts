@@ -189,13 +189,22 @@ export class Scheduler {
 
     for (const stage of graph.stages) {
       if (stage.state === "ACTIVE" || stage.state === "VERIFYING") {
+        const rows: Row[] = [];
         for (const task of project.tasks) {
           const row = taskRows.get(task.task_id);
           if (row === undefined || String(row.state) !== stage.state) continue;
-          return stage.state === "ACTIVE"
+          rows.push(row);
+        }
+        for (const row of rows) {
+          const decision = stage.state === "ACTIVE"
             ? this.#advanceActiveStage(graph, stage, row)
             : this.#advanceVerifyingStage(graph, stage, row);
+          if (decision !== null) return decision;
         }
+        // PLMP-SCHED-1: bounded fall-through. With the default concurrency of
+        // 1 the condition is never true once a task occupies the stage - the
+        // baseline latch is byte-identical.
+        if (rows.length >= (stage.concurrency ?? 1)) return null;
         continue;
       }
       if (stage.state === "BLOCKED") {
@@ -228,12 +237,23 @@ export class Scheduler {
         continue;
       }
       if (stage.state === "READY") {
+        const transition = this.#declaredTransition(graph, stage.id, "TASK_STARTED");
+        if (transition === undefined) continue;
+        // PLMP-SCHED-1: activation rides two declared capacity gates - the
+        // ACTIVE stage's task-level concurrency and the declared role table.
+        const { occupancy, taskCap, roleOccupancy, roleSlots } = this.#activationCapacity(
+          graph,
+          project,
+          taskRows,
+        );
         for (const task of project.tasks) {
           const row = taskRows.get(task.task_id);
           if (row === undefined || String(row.state) !== "READY") continue;
-          const transition = this.#declaredTransition(graph, stage.id, "TASK_STARTED");
-          if (transition === undefined) continue;
+          if (occupancy >= taskCap) break;
           if (!this.#guardsPass(graph, transition, task.task_id)) continue;
+          const role = task.role ?? "implementer";
+          const slots = roleSlots.get(role);
+          if (slots !== undefined && (roleOccupancy.get(role) ?? 0) >= slots) continue;
           return this.#activate(row);
         }
         continue;
@@ -241,6 +261,58 @@ export class Scheduler {
       // Terminal stages carry no scheduler strategy.
     }
     return null;
+  }
+
+  /**
+   * PLMP-SCHED-1: the activation admission read - latch-stage occupancy vs
+   * the ACTIVE stage's declared concurrency, and per-role occupancy vs the
+   * declared role table (H1 D-2, the same source claim-time admission
+   * enforces). Pure read; deterministic.
+   */
+  #activationCapacity(
+    graph: StageGraphDefinition,
+    project: ProjectIr,
+    taskRows: Map<string, Row>,
+  ): {
+    occupancy: number;
+    taskCap: number;
+    roleOccupancy: Map<string, number>;
+    roleSlots: Map<string, number>;
+  } {
+    const stateCounts = new Map<string, number>();
+    for (const row of taskRows.values()) {
+      const state = String(row.state);
+      stateCounts.set(state, (stateCounts.get(state) ?? 0) + 1);
+    }
+    const occupancy = (stateCounts.get("ACTIVE") ?? 0) + (stateCounts.get("VERIFYING") ?? 0);
+    const activeStage = graph.stages.find((stage) => stage.state === "ACTIVE");
+    const taskCap = activeStage?.concurrency ?? 1;
+    const roleOccupancy = new Map<string, number>();
+    for (const spec of project.tasks) {
+      const row = taskRows.get(spec.task_id);
+      if (row === undefined) continue;
+      const state = String(row.state);
+      if (state !== "ACTIVE" && state !== "VERIFYING") continue;
+      const role = spec.role ?? "implementer";
+      roleOccupancy.set(role, (roleOccupancy.get(role) ?? 0) + 1);
+    }
+    const tableRow = this.connection
+      .prepare("SELECT table_json FROM role_tables WHERE project_id=?")
+      .get(this.projectId) as Row | undefined;
+    if (tableRow === undefined) {
+      // No declared table = the pre-role-table baseline: the role gate adds
+      // nothing. A declared table (genesis always declares one) enforces.
+      return { occupancy, taskCap, roleOccupancy, roleSlots: new Map() };
+    }
+    const declared = JSON.parse(new TextDecoder().decode(tableRow.table_json as Uint8Array)) as {
+      roles: Array<{ role: string; slots: number }>;
+    };
+    return {
+      occupancy,
+      taskCap,
+      roleOccupancy,
+      roleSlots: new Map(declared.roles.map((entry) => [entry.role, entry.slots])),
+    };
   }
 
   /** Commit a prepared decision through the normal append pipeline. */
