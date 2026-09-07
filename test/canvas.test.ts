@@ -391,4 +391,157 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       attribution: { model: "m1", cost: 0.5 },
     });
   });
+
+  // PLMP-CANVAS-5 (22 号规格): canvas integrity - ownership invariants,
+  // transitive layout translation, fail-closed serve gating.
+
+  it("CANVAS-A11: INV-C1 - a z owner must be a subflow node", () => {
+    expect(() =>
+      parseCanvasDoc(docWith(taskNode("n1", "A", 0, 0), taskNode("n2", "B", 1, 1, "n1"))),
+    ).toThrow(/must be a subflow/);
+    expect(() =>
+      parseCanvasDoc(
+        docWith(
+          taskNode("n1", "A", 0, 0),
+          { key: "a1", type: "annotation", title: "注", x: 0, y: 0, z: "root", text: "t" },
+          taskNode("n2", "B", 1, 1, "a1"),
+        ),
+      ),
+    ).toThrow(/must be a subflow/);
+    const legal = docWith(
+      { key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root" },
+      taskNode("m", "M", 5, 5, "s1"),
+    );
+    expect(parseCanvasDoc(JSON.parse(JSON.stringify(legal)))).toEqual(legal);
+  });
+
+  it("CANVAS-A12: INV-C2 - self-parent is rejected", () => {
+    expect(() =>
+      parseCanvasDoc(docWith({ key: "s", type: "subflow", title: "S", x: 0, y: 0, z: "s" })),
+    ).toThrow(/cannot own itself/);
+    // A task owning itself is already refused by the owner-type invariant.
+    expect(() => parseCanvasDoc(docWith(taskNode("n1", "A", 0, 0, "n1")))).toThrow(
+      /must be a subflow/,
+    );
+  });
+
+  it("CANVAS-A13: INV-C3 - ownership cycles rejected at any depth, deep legal chains pass", () => {
+    expect(() =>
+      parseCanvasDoc(
+        docWith(
+          { key: "s1", type: "subflow", title: "S1", x: 0, y: 0, z: "s3" },
+          { key: "s2", type: "subflow", title: "S2", x: 0, y: 0, z: "s1" },
+          { key: "s3", type: "subflow", title: "S3", x: 0, y: 0, z: "s2" },
+        ),
+      ),
+    ).toThrow(/ownership cycle/);
+    const deep = docWith(
+      { key: "s1", type: "subflow", title: "S1", x: 0, y: 0, z: "root" },
+      { key: "s2", type: "subflow", title: "S2", x: 0, y: 0, z: "s1" },
+      { key: "s3", type: "subflow", title: "S3", x: 0, y: 0, z: "s2" },
+      taskNode("m", "M", 5, 5, "s3"),
+    );
+    expect(parseCanvasDoc(JSON.parse(JSON.stringify(deep)))).toEqual(deep);
+  });
+
+  it("CANVAS-A14: INV-C4 - group nesting must be acyclic", () => {
+    const docWithGroups = (groups: CanvasDoc["groups"]): CanvasDoc => ({
+      version: 1,
+      goal: "g",
+      nodes: [taskNode("n1", "A", 0, 0)],
+      groups,
+    });
+    expect(() =>
+      parseCanvasDoc(docWithGroups([{ id: "g1", label: "G1", g: "g1", members: ["n1"] }])),
+    ).toThrow(/group nesting cycle/);
+    expect(() =>
+      parseCanvasDoc(
+        docWithGroups([
+          { id: "g1", label: "G1", g: "g2", members: ["n1"] },
+          { id: "g2", label: "G2", g: "g1", members: [] },
+        ]),
+      ),
+    ).toThrow(/group nesting cycle/);
+    const legal = docWithGroups([
+      { id: "g2", label: "G2", members: [] },
+      { id: "g1", label: "G1", g: "g2", members: ["n1"] },
+    ]);
+    expect(parseCanvasDoc(JSON.parse(JSON.stringify(legal)))).toEqual(legal);
+  });
+
+  it("CANVAS-A15: INV-C5 - payload fields match the node type; round-trip is faithful", () => {
+    expect(() =>
+      parseCanvasDoc(
+        docWith({ key: "a1", type: "annotation", title: "注", x: 0, y: 0, z: "root", text: "t", task: { dependsOn: [] } } as unknown as CanvasDoc["nodes"][number]),
+      ),
+    ).toThrow(/must not carry field "task"/);
+    expect(() =>
+      parseCanvasDoc(docWith({ ...taskNode("n1", "A", 0, 0), text: "hi" } as unknown as CanvasDoc["nodes"][number])),
+    ).toThrow(/must not carry field "text"/);
+    expect(() =>
+      parseCanvasDoc(
+        docWith({ key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root", text: "hi" } as unknown as CanvasDoc["nodes"][number]),
+      ),
+    ).toThrow(/must not carry field "text"/);
+    const doc = docWith(
+      taskNode("n1", "A", 0, 0),
+      { key: "a1", type: "annotation", title: "注", x: 1, y: 1, z: "root", text: "t" },
+      { key: "s1", type: "subflow", title: "S", x: 2, y: 2, z: "root" },
+    );
+    expect(parseCanvasDoc(JSON.parse(JSON.stringify(doc)))).toEqual(doc);
+  });
+
+  it("CANVAS-A16: INV-C6 - layout translates depth-2+ descendants with their root ancestor", () => {
+    const doc = docWith(
+      { key: "s1", type: "subflow", title: "S1", x: 500, y: 500, z: "root" },
+      { key: "s2", type: "subflow", title: "S2", x: 520, y: 560, z: "s1" },
+      taskNode("m", "M", 540, 620, "s2"),
+    );
+    const baseline = canvasCompile(doc);
+    for (const layout of ["flow_lr", "flow_tb", "force", "compact"] as const) {
+      const laid = canvasLayout(doc, layout);
+      expect(canvasCompile(laid)).toEqual(baseline);
+      const s1 = laid.nodes.find((node) => node.key === "s1")!;
+      const d = { x: s1.x - 500, y: s1.y - 500 };
+      const s2 = laid.nodes.find((node) => node.key === "s2")!;
+      const m = laid.nodes.find((node) => node.key === "m")!;
+      expect(s2.x - 520).toBe(d.x);
+      expect(s2.y - 560).toBe(d.y);
+      expect(m.x - 540).toBe(d.x);
+      expect(m.y - 620).toBe(d.y);
+    }
+  });
+
+  it("CANVAS-A17: serve endpoints fail closed on malformed ownership (400, zero events)", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      const before = eventCount(rig.store);
+      const cyclic = docWith(
+        { key: "s1", type: "subflow", title: "S1", x: 0, y: 0, z: "s2" },
+        { key: "s2", type: "subflow", title: "S2", x: 0, y: 0, z: "s1" },
+      );
+      for (const path of ["/api/canvas/compile", "/api/canvas/layout", "/api/canvas/diff"]) {
+        const rejected = await api(handle, path, {
+          method: "POST",
+          body: path === "/api/canvas/layout" ? { doc: cyclic, layout: "flow_lr" } : { doc: cyclic },
+        });
+        expect(rejected.status).toBe(400);
+      }
+      const selfOwned = await api(handle, "/api/canvas/compile", {
+        method: "POST",
+        body: { doc: docWith(taskNode("n1", "A", 0, 0, "n1")) },
+      });
+      expect(selfOwned.status).toBe(400);
+      const taskOwned = await api(handle, "/api/canvas/compile", {
+        method: "POST",
+        body: { doc: docWith(taskNode("n1", "A", 0, 0), taskNode("n2", "B", 1, 1, "n1")) },
+      });
+      expect(taskOwned.status).toBe(400);
+      expect(eventCount(rig.store)).toBe(before);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
 });

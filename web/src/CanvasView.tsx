@@ -10,6 +10,9 @@ import type { CanvasDoc, CanvasDiffResult, CanvasNode } from "./types";
  * clamps their drags, and a collapsed subflow folds its members away.
  * Groups are pure visual bounds boxes behind everything; annotations are
  * sticky notes. All semantics (deps = titles) live in the doc, never here.
+ * PLMP-CANVAS-5 INV-C7: visibility is a FULL ancestor-chain property - a
+ * node renders only when every subflow ancestor is expanded, so a collapsed
+ * grandparent hides everything beneath it (no root-level leaks).
  */
 
 interface TaskData extends Record<string, unknown> {
@@ -186,6 +189,18 @@ export function CanvasView(props: CanvasViewProps) {
     }
     return out;
   };
+  // INV-C7: every subflow ancestor of `key` must be expanded. The seen-set
+  // makes the walk terminate (and fail closed) even on a malformed chain.
+  const ancestorsExpanded = (key: string): boolean => {
+    const seen = new Set<string>([key]);
+    let current = nodesByKey.get(key);
+    while (current !== undefined && current.z !== "root") {
+      if (seen.has(current.z) || !expanded.has(current.z)) return false;
+      seen.add(current.z);
+      current = nodesByKey.get(current.z);
+    }
+    return true;
+  };
 
   const added = new Set(diff?.added.map((entry) => entry.title) ?? []);
   const changed = new Set(diff?.changed.map((entry) => entry.title) ?? []);
@@ -196,7 +211,7 @@ export function CanvasView(props: CanvasViewProps) {
   // Expanded subflows first: their bounds derive from members.
   const boundsOf = new Map<string, { x: number; y: number; width: number; height: number }>();
   for (const sub of doc.nodes.filter((node) => node.type === "subflow" && expanded.has(node.key))) {
-    const members = descendantsAbs(sub.key).filter((node) => expanded.has(node.z));
+    const members = descendantsAbs(sub.key).filter((node) => ancestorsExpanded(node.key));
     if (members.length === 0) {
       boundsOf.set(sub.key, { x: sub.x, y: sub.y, width: 190, height: 48 });
       continue;
@@ -217,10 +232,11 @@ export function CanvasView(props: CanvasViewProps) {
   };
 
   for (const node of doc.nodes) {
+    // INV-C7: a collapsed ancestor anywhere up the chain hides the node -
+    // subflow summaries included, so an expanded child of a collapsed
+    // subflow cannot leak back at root coordinates.
+    if (!ancestorsExpanded(node.key)) continue;
     const owner = node.z === "root" ? null : (nodesByKey.get(node.z) ?? null);
-    const hiddenByCollapse =
-      owner !== null && owner.type === "subflow" && !expanded.has(owner.key) && node.key !== owner.key;
-    if (hiddenByCollapse && node.type === "task") continue;
     if (node.type === "subflow") {
       const isExpanded = expanded.has(node.key);
       if (!isExpanded) {
@@ -237,7 +253,7 @@ export function CanvasView(props: CanvasViewProps) {
         );
       } else {
         const bounds = boundsOf.get(node.key)!;
-        const ownerOfSub = node.z === "root" ? null : (nodesByKey.get(node.z) ?? null);
+        const ownerOfSub = owner;
         const parentExpanded = ownerOfSub === null || expanded.has(ownerOfSub.key);
         pushNode(
           {
@@ -263,7 +279,6 @@ export function CanvasView(props: CanvasViewProps) {
       }
       continue;
     }
-    if (hiddenByCollapse) continue;
     const relOwner = owner !== null && owner.type === "subflow" && expanded.has(owner.key) ? owner : null;
     const position =
       relOwner === null
@@ -302,9 +317,12 @@ export function CanvasView(props: CanvasViewProps) {
     );
   }
 
-  // Group boxes behind everything (pure visuals).
+  // Group boxes behind everything (pure visuals) - bounds from chain-visible
+  // members only, and no box at all when every member is hidden.
   for (const group of doc.groups) {
-    const members = doc.nodes.filter((node) => group.members.includes(node.key));
+    const members = doc.nodes.filter(
+      (node) => group.members.includes(node.key) && ancestorsExpanded(node.key),
+    );
     if (members.length === 0) continue;
     const minX = Math.min(...members.map((node) => node.x)) - 14;
     const minY = Math.min(...members.map((node) => node.y)) - 34;
@@ -323,7 +341,7 @@ export function CanvasView(props: CanvasViewProps) {
   }
 
   const visibleTasks = doc.nodes.filter(
-    (node) => node.type === "task" && !(node.z !== "root" && !expanded.has(node.z)),
+    (node) => node.type === "task" && ancestorsExpanded(node.key),
   );
   const titleToVisible = new Map(visibleTasks.map((node) => [node.title, node]));
   const flowEdges: Edge[] = [];
@@ -370,10 +388,15 @@ export function CanvasView(props: CanvasViewProps) {
           onMove(key, absX, absY);
           if (docNode.type !== "task") return;
           // Drop-into-subflow: center inside another subflow's area reassigns z.
+          // INV-C8: candidates are rendered (chain-visible) subflows only -
+          // dropping into a hidden subflow is not a user-visible act. The
+          // cycle guard (own-descendant rejection) lives in App.onDropInto.
           const centerX = absX + 95;
           const centerY = absY + 24;
           let target: string | null = null;
-          for (const sub of doc.nodes.filter((n) => n.type === "subflow" && n.key !== key && n.key !== docNode.z)) {
+          for (const sub of doc.nodes.filter(
+            (n) => n.type === "subflow" && n.key !== key && n.key !== docNode.z && ancestorsExpanded(n.key),
+          )) {
             const bounds = expanded.has(sub.key)
               ? (boundsOf.get(sub.key) ?? { x: sub.x, y: sub.y, width: 190, height: 48 })
               : { x: sub.x, y: sub.y, width: 190, height: 48 };

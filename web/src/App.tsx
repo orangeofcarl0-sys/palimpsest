@@ -28,6 +28,7 @@ import type {
   SatelliteAttempt,
   TraceRow,
 } from "./types";
+import { canvasDocShapeError, descendantKeys } from "./canvasIntegrity";
 
 type Mode = "live" | "draft";
 
@@ -111,7 +112,14 @@ export function App() {
     if (raw !== null) {
       try {
         const parsed = JSON.parse(raw) as CanvasDoc;
-        if (parsed.version === 1 && Array.isArray(parsed.nodes)) setDoc(parsed);
+        // PLMP-CANVAS-5 INV-C9: local docs never crossed the kernel parser -
+        // a malformed/cyclic doc is refused instead of rendered.
+        const shapeError = canvasDocShapeError(parsed);
+        if (shapeError !== null) {
+          setMessage(`本地画布草稿被拒绝：${shapeError}`);
+        } else {
+          setDoc(parsed);
+        }
       } catch {
         setMessage("本地画布草稿解析失败，已从空白开始");
       }
@@ -201,7 +209,9 @@ export function App() {
     void (async () => {
       try {
         const parsed = JSON.parse(await file.text()) as CanvasDoc;
-        if (parsed.version !== 1 || !Array.isArray(parsed.nodes)) throw new Error("不是画布文档（version 1）");
+        // PLMP-CANVAS-5 INV-C9: imports run the same shape guard as restore.
+        const shapeError = canvasDocShapeError(parsed);
+        if (shapeError !== null) throw new Error(shapeError);
         setDoc(parsed);
         setMessage(`已导入画布（${parsed.nodes.length} 节点）`);
       } catch (error) {
@@ -304,6 +314,22 @@ export function App() {
                   });
                 }}
                 onDropInto={(key, ownerKey) => {
+                  // PLMP-CANVAS-5 INV-C8: re-parenting must not create an
+                  // ownership cycle - that is only possible when a subflow
+                  // lands inside its own subtree (a task can never own).
+                  // Kernel parse refuses such docs; the UI refuses first.
+                  if (ownerKey !== null) {
+                    const ownerNode = doc.nodes.find((node) => node.key === ownerKey);
+                    const dragged = doc.nodes.find((node) => node.key === key);
+                    if (ownerNode === undefined || ownerNode.type !== "subflow") {
+                      setMessage("归入失败：目标不是子图");
+                      return;
+                    }
+                    if (dragged !== undefined && dragged.type === "subflow" && descendantKeys(doc, key).has(ownerKey)) {
+                      setMessage("归入失败：不能把子图移入它自己的后代");
+                      return;
+                    }
+                  }
                   setDoc({
                     ...doc,
                     nodes: doc.nodes.map((node) =>

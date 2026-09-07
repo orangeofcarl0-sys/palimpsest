@@ -23,15 +23,34 @@ const NODE_H = 48;
 const GAP_X = 90;
 const GAP_Y = 70;
 
-function descendantsByRoot(doc: CanvasDoc): Map<string, string[]> {
-  const byOwner = new Map<string, string[]>();
+/**
+ * PLMP-CANVAS-5 INV-C6: the TRANSITIVE descendant set per owner key. The
+ * parser guarantees the z forest is acyclic, so the memoized walk is finite;
+ * the pre-seeded cache is defense-in-depth that degrades to a partial set
+ * instead of hanging if a cyclic doc ever got here unparsed.
+ */
+function descendantsByOwner(doc: CanvasDoc): Map<string, string[]> {
+  const children = new Map<string, string[]>();
   for (const node of doc.nodes) {
     if (node.z === ROOT_Z) continue;
-    const bucket = byOwner.get(node.z) ?? [];
+    const bucket = children.get(node.z) ?? [];
     bucket.push(node.key);
-    byOwner.set(node.z, bucket);
+    children.set(node.z, bucket);
   }
-  return byOwner;
+  const closed = new Map<string, string[]>();
+  const walk = (key: string): string[] => {
+    const cached = closed.get(key);
+    if (cached !== undefined) return cached;
+    closed.set(key, []);
+    const acc: string[] = [];
+    for (const child of children.get(key) ?? []) {
+      acc.push(child, ...walk(child));
+    }
+    closed.set(key, acc);
+    return acc;
+  };
+  for (const key of children.keys()) walk(key);
+  return closed;
 }
 
 /** Move a root node and translate its whole descendant subtree by the delta. */
@@ -70,7 +89,7 @@ function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
   }
   const sorted = [...layers.keys()].sort((a, b) => a - b);
   let nodes: readonly CanvasNode[] = doc.nodes;
-  const descendants = descendantsByRoot(doc);
+  const descendants = descendantsByOwner(doc);
   for (const level of sorted) {
     const bucket = layers.get(level)!;
     bucket.forEach((node, index) => {
@@ -145,7 +164,7 @@ function force(doc: CanvasDoc): CanvasDoc {
     }
   }
   let nodes: readonly CanvasNode[] = doc.nodes;
-  const descendants = descendantsByRoot(doc);
+  const descendants = descendantsByOwner(doc);
   roots.forEach((node, i) => {
     nodes = applyMove(nodes, node.key, Math.round(xs[i]!) - node.x, Math.round(ys[i]!) - node.y, descendants);
   });
@@ -155,7 +174,7 @@ function force(doc: CanvasDoc): CanvasDoc {
 function compact(doc: CanvasDoc): CanvasDoc {
   const roots = doc.nodes.filter((node) => node.z === ROOT_Z && node.type !== "annotation");
   let nodes: readonly CanvasNode[] = doc.nodes;
-  const descendants = descendantsByRoot(doc);
+  const descendants = descendantsByOwner(doc);
   roots.forEach((node, i) => {
     const column = i % 3;
     const row = Math.floor(i / 3);

@@ -9,7 +9,11 @@
  * and what the canvas draws as a subflow boundary is editorial only.
  *
  * Parsing is fail-closed on shape errors and unknown fields (client-authored
- * JSON: a typo must fail loudly, not silently drop a task).
+ * JSON: a typo must fail loudly, not silently drop a task). PLMP-CANVAS-5
+ * adds the ownership invariants: a `z` owner must be a subflow, chains are
+ * self-parent-free and acyclic (group `g` nesting too), and payload fields
+ * are never silently dropped - cycles would hang every renderer-side walk,
+ * so they are refused here before any renderer or compiler sees the doc.
  */
 
 import type { ProjectProposal } from "../architecture/index.js";
@@ -116,6 +120,11 @@ function parseNode(value: unknown): CanvasNode {
   if (!NODE_TYPES.has(type)) fail(`unknown node type "${type}"`);
   const key = str(raw["key"], "node.key");
   if (key.trim() === "") fail("node.key must be non-blank");
+  // PLMP-CANVAS-5 INV-C5: type-mismatched payload fields fail loudly - the
+  // parser never silently drops a field it accepted (round-trip must be
+  // faithful, client-authored typos must not vanish).
+  if (type !== "task" && raw["task"] !== undefined) fail(`node "${key}" must not carry field "task"`);
+  if (type !== "annotation" && raw["text"] !== undefined) fail(`node "${key}" must not carry field "text"`);
   const node: CanvasNode = {
     key,
     type: type as CanvasNodeType,
@@ -128,7 +137,6 @@ function parseNode(value: unknown): CanvasNode {
     ...(type === "annotation" ? { text: str(raw["text"], "node.text") } : {}),
   };
   if (type === "task" && node.task === undefined) fail("task node needs node.task");
-  if (type === "subflow" && raw["task"] !== undefined) fail("subflow node must not carry node.task");
   return node;
 }
 
@@ -160,26 +168,54 @@ export function parseCanvasDoc(value: unknown): CanvasDoc {
   if (!Array.isArray(raw["nodes"])) fail("nodes must be an array");
   if (!Array.isArray(raw["groups"])) fail("groups must be an array");
   const nodes = raw["nodes"].map(parseNode);
-  const keys = new Set(nodes.map((node) => node.key));
-  if (keys.size !== nodes.length) fail("duplicate node key");
+  const groups = raw["groups"].map(parseGroup);
+  const byKey = new Map(nodes.map((node) => [node.key, node]));
+  if (byKey.size !== nodes.length) fail("duplicate node key");
+  const groupIds = new Set(groups.map((group) => group.id));
+  if (groupIds.size !== groups.length) fail("duplicate group id");
+  // PLMP-CANVAS-5 INV-C1..C4: ownership integrity - a `z` chain must walk
+  // subflow owners only, never itself, and terminate at the root; group `g`
+  // nesting must terminate too. Cycles would hang every renderer-side walk
+  // (member collection, bounds, visibility), so they are refused here,
+  // before the doc reaches any renderer or compiler.
   for (const node of nodes) {
-    if (node.z !== ROOT_Z && !keys.has(node.z)) {
-      fail(`node "${node.key}" references unknown owner "${node.z}"`);
+    if (node.z === ROOT_Z) continue;
+    const owner = byKey.get(node.z);
+    if (owner === undefined) fail(`node "${node.key}" references unknown owner "${node.z}"`);
+    if (owner.type !== "subflow") fail(`node "${node.key}" owner "${node.z}" must be a subflow node`);
+    if (owner.key === node.key) fail(`node "${node.key}" cannot own itself`);
+  }
+  for (const node of nodes) {
+    const seen = new Set<string>([node.key]);
+    let current = byKey.get(node.key)!;
+    while (current.z !== ROOT_Z) {
+      const owner = byKey.get(current.z)!;
+      if (seen.has(owner.key)) fail(`ownership cycle detected at "${owner.key}"`);
+      seen.add(owner.key);
+      current = owner;
     }
   }
-  const groups = raw["groups"].map(parseGroup);
-  const groupIds = new Set(groups.map((group) => group.id));
   for (const node of nodes) {
     if (node.g !== undefined && !groupIds.has(node.g)) {
       fail(`node "${node.key}" references unknown group "${node.g}"`);
     }
   }
+  const groupById = new Map(groups.map((group) => [group.id, group]));
   for (const group of groups) {
     if (group.g !== undefined && !groupIds.has(group.g)) {
       fail(`group "${group.id}" references unknown group "${group.g}"`);
     }
     for (const member of group.members) {
-      if (!keys.has(member)) fail(`group "${group.id}" references unknown member "${member}"`);
+      if (!byKey.has(member)) fail(`group "${group.id}" references unknown member "${member}"`);
+    }
+  }
+  for (const group of groups) {
+    const seen = new Set<string>([group.id]);
+    let current = groupById.get(group.id)!;
+    while (current.g !== undefined) {
+      if (seen.has(current.g)) fail(`group nesting cycle detected at "${current.g}"`);
+      seen.add(current.g);
+      current = groupById.get(current.g)!;
     }
   }
   return { version: 1, goal: str(raw["goal"], "goal"), nodes, groups };
