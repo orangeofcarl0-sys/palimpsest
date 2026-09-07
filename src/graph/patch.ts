@@ -9,6 +9,7 @@
 import type { AgentGraph, AgentGraphEdge, AgentGraphNode, AgentTaskPayload } from "./ir.js";
 import {
   AGENT_EDGE_KINDS,
+  agentGraphSemanticDigest,
   parseAgentGraph,
   parseAgentGraphEdge,
   parseAgentGraphNode,
@@ -16,6 +17,7 @@ import {
   ROOT_SCOPE,
 } from "./ir.js";
 import type { ProjectProposal } from "../architecture/index.js";
+import { canonicalDigest } from "../schema/index.js";
 
 export interface GraphPatchNodeUpdate {
   readonly id: string;
@@ -47,6 +49,11 @@ export interface GraphPatchMoveScope {
 
 export interface GraphPatch {
   readonly baseRevision?: number;
+  /** PLMP-GRAPH-5 §B2-A: authoring semantic freshness - the digest of the
+   * draft AgentGraph the patch was written against (agentGraphSemanticDigest).
+   * Independent from baseRevision (canonical project freshness); either
+   * mismatch refuses the patch. */
+  readonly baseGraphDigest?: string;
   readonly addNodes: readonly AgentGraphNode[];
   readonly removeNodes: readonly string[];
   readonly updateNodes: readonly GraphPatchNodeUpdate[];
@@ -58,6 +65,7 @@ export interface GraphPatch {
 
 export type GraphPatchDiagnosticType =
   | "STALE_BASE"
+  | "STALE_GRAPH_BASE"
   | "UNKNOWN_NODE"
   | "UNKNOWN_EDGE"
   | "DUPLICATE_NODE_ID"
@@ -74,6 +82,9 @@ export type GraphPatchDiagnosticType =
   | "SCOPE_OWNER_REMOVED"
   | "SCOPE_OWNER_INVALID"
   | "ILLEGAL_NODE_UPDATE"
+  // PLMP-GRAPH-5 §B2-C: preview honesty - a mutation that changes nothing is
+  // refused, never silently normalized away.
+  | "NO_OP_OPERATION"
   // Emitted ONLY by the canvas apply gate (serve face) - never by the
   // IR-level validator: the IR legitimately holds semantics the canvas
   // cannot express; the gate refuses lossy unload instead of degrading.
@@ -110,6 +121,7 @@ export const EMPTY_PATCH: GraphPatch = {
 
 const PATCH_FIELDS: ReadonlySet<string> = new Set([
   "baseRevision",
+  "baseGraphDigest",
   "addNodes",
   "removeNodes",
   "updateNodes",
@@ -118,6 +130,8 @@ const PATCH_FIELDS: ReadonlySet<string> = new Set([
   "updateEdges",
   "moveScope",
 ]);
+
+const GRAPH_DIGEST_PATTERN = /^[0-9a-f]{64}$/;
 
 function failPatch(message: string): never {
   throw new Error(`graph patch: ${message}`);
@@ -130,10 +144,18 @@ function patchObject(value: unknown, what: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function patchId(value: unknown, what: string): string {
+/** Identity-like strings: node/edge ids and move targets (non-blank). */
+function patchIdentifier(value: unknown, what: string): string {
   if (typeof value !== "string" || value.trim() === "") {
     failPatch(`${what} must be a non-blank string`);
   }
+  return value;
+}
+
+/** Free-value strings: label/text - exactly as permissive as the AgentGraph
+ * grammar for the same field (31 号 §B2-E: add and update share one grammar). */
+function patchString(value: unknown, what: string): string {
+  if (typeof value !== "string") failPatch(`${what} must be a string`);
   return value;
 }
 
@@ -141,7 +163,7 @@ function patchStringList(value: unknown, what: string): string[] {
   if (!Array.isArray(value)) failPatch(`${what} must be an array of node ids`);
   const seen = new Set<string>();
   return value.map((entry, index) => {
-    const id = patchId(entry, `${what}[${index}]`);
+    const id = patchIdentifier(entry, `${what}[${index}]`);
     if (seen.has(id)) failPatch(`duplicate ${what} entry "${id}"`);
     seen.add(id);
     return id;
@@ -155,12 +177,17 @@ function parseNodeUpdate(value: unknown): GraphPatchNodeUpdate {
       failPatch(`unknown updateNodes field "${field}"`);
     }
   }
-  const id = patchId(raw["id"], "updateNodes.id");
+  const id = patchIdentifier(raw["id"], "updateNodes.id");
   // kind is deliberately absent: node kinds are immutable in patches - a
   // different kind means remove + add a new node, never an in-place morph.
-  const label = raw["label"] === undefined ? undefined : patchId(raw["label"], "updateNodes.label");
-  const text = raw["text"] === undefined ? undefined : patchId(raw["text"], "updateNodes.text");
+  const label = raw["label"] === undefined ? undefined : patchString(raw["label"], "updateNodes.label");
+  const text = raw["text"] === undefined ? undefined : patchString(raw["text"], "updateNodes.text");
   const task = raw["task"] === undefined ? undefined : parseAgentTaskPayload(raw["task"]);
+  if (label === undefined && task === undefined && text === undefined) {
+    // Syntactic no-op: a mutation entry with nothing to mutate is an input
+    // error, not an edit (31 号 §B2-C EMPTY_UPDATE).
+    failPatch(`updateNodes entry "${id}" mutates nothing (EMPTY_UPDATE)`);
+  }
   return {
     id,
     ...(label === undefined ? {} : { label }),
@@ -174,8 +201,8 @@ function parseEdgeUpdate(value: unknown): GraphPatchEdgeUpdate {
   for (const field of Object.keys(raw)) {
     if (!["id", "kind"].includes(field)) failPatch(`unknown updateEdges field "${field}"`);
   }
-  const id = patchId(raw["id"], "updateEdges.id");
-  const kind = raw["kind"] === undefined ? undefined : patchId(raw["kind"], "updateEdges.kind");
+  const id = patchIdentifier(raw["id"], "updateEdges.id");
+  const kind = raw["kind"] === undefined ? undefined : patchString(raw["kind"], "updateEdges.kind");
   if (kind !== undefined && !AGENT_EDGE_KINDS.has(kind)) {
     failPatch(`unknown updateEdges kind "${kind}"`);
   }
@@ -189,8 +216,8 @@ function parseMoveScope(value: unknown): GraphPatchMoveScope {
   for (const field of Object.keys(raw)) {
     if (!["id", "scope"].includes(field)) failPatch(`unknown moveScope field "${field}"`);
   }
-  const id = patchId(raw["id"], "moveScope.id");
-  const scope = patchId(raw["scope"], "moveScope.scope");
+  const id = patchIdentifier(raw["id"], "moveScope.id");
+  const scope = patchIdentifier(raw["scope"], "moveScope.scope");
   return { id, scope };
 }
 
@@ -217,6 +244,14 @@ export function parseGraphPatch(value: unknown): GraphPatch {
     }
     baseRevision = rawBaseRevision;
   }
+  const rawBaseGraphDigest = raw["baseGraphDigest"];
+  let baseGraphDigest: string | undefined;
+  if (rawBaseGraphDigest !== undefined) {
+    if (typeof rawBaseGraphDigest !== "string" || !GRAPH_DIGEST_PATTERN.test(rawBaseGraphDigest)) {
+      failPatch("baseGraphDigest must be a lowercase hex SHA-256 digest (agentGraphSemanticDigest)");
+    }
+    baseGraphDigest = rawBaseGraphDigest;
+  }
   for (const list of ["addNodes", "removeNodes", "updateNodes", "addEdges", "removeEdges", "updateEdges", "moveScope"]) {
     if (!Array.isArray(raw[list])) failPatch(`${list} must be an array (omit nothing - send [] like EMPTY_PATCH)`);
   }
@@ -226,6 +261,7 @@ export function parseGraphPatch(value: unknown): GraphPatch {
   const moveScope = parseUniqueTargets(list("moveScope").map(parseMoveScope), "moveScope");
   return {
     ...(baseRevision === undefined ? {} : { baseRevision }),
+    ...(baseGraphDigest === undefined ? {} : { baseGraphDigest }),
     addNodes: list("addNodes").map(parseAgentGraphNode),
     removeNodes: patchStringList(list("removeNodes"), "removeNodes"),
     updateNodes,
@@ -298,6 +334,15 @@ export function validateGraphPatch(
       detail: `patch anchors revision ${patch.baseRevision}, live is ${options.liveRevision}`,
     });
   }
+  // PLMP-GRAPH-5 §B2-A: authoring freshness - independent of the project
+  // revision anchor. Either mismatch refuses the patch; neither overrides
+  // the other.
+  if (patch.baseGraphDigest !== undefined && patch.baseGraphDigest !== agentGraphSemanticDigest(base)) {
+    diagnostics.push({
+      type: "STALE_GRAPH_BASE",
+      detail: `patch anchors graph digest ${patch.baseGraphDigest.slice(0, 12)}…, current draft digest is ${agentGraphSemanticDigest(base).slice(0, 12)}…`,
+    });
+  }
   const nodeIds = new Set(base.nodes.map((node) => node.id));
   const edgeIds = new Set(base.edges.map((edge) => edge.id));
   // -- operation reference checks ------------------------------------------
@@ -367,6 +412,60 @@ export function validateGraphPatch(
         type: "ILLEGAL_NODE_UPDATE",
         id: update.id,
         detail: `node "${update.id}" is a ${node.kind}; text only applies to annotation nodes`,
+      });
+    }
+  }
+  // -- semantic no-op checks (31 号 §B2-C): a mutation that does not change
+  // the graph is refused, because preview would claim an edit that the
+  // result does not contain. AI-produced no-ops are input errors worth
+  // naming, not something to normalize away.
+  for (const update of patch.updateNodes) {
+    const node = baseNodeById.get(update.id);
+    if (node === undefined) continue; // already reported as UNKNOWN_NODE
+    if (update.label !== undefined && update.label === node.label) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        id: update.id,
+        detail: `node "${update.id}" label is already "${update.label}"`,
+      });
+    }
+    if (update.text !== undefined && update.text === node.text) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        id: update.id,
+        detail: `node "${update.id}" text is unchanged`,
+      });
+    }
+    if (
+      update.task !== undefined &&
+      node.task !== undefined &&
+      canonicalDigest(update.task) === canonicalDigest(node.task)
+    ) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        id: update.id,
+        detail: `node "${update.id}" task payload is unchanged`,
+      });
+    }
+  }
+  for (const update of patch.updateEdges) {
+    const edge = base.edges.find((entry) => entry.id === update.id);
+    if (edge !== undefined && update.kind === edge.kind) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        id: update.id,
+        detail: `edge "${update.id}" kind is already "${edge.kind}"`,
+      });
+    }
+  }
+  for (const move of patch.moveScope) {
+    const currentScope =
+      baseNodeById.get(move.id)?.scope ?? patch.addNodes.find((node) => node.id === move.id)?.scope;
+    if (currentScope !== undefined && move.scope === currentScope) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        id: move.id,
+        detail: `node "${move.id}" is already scoped to "${move.scope}"`,
       });
     }
   }
@@ -508,6 +607,31 @@ export function validateGraphPatch(
         current = scopeById.get(current);
       }
       if (cyclic) break;
+    }
+  }
+  // Belt for the accepted-patch invariant (31 号 §B2-C): a non-empty patch
+  // that survives every check must still change the semantic graph - this
+  // catches combinations of individually-meaningful ops that cancel out.
+  const opCount =
+    patch.addNodes.length +
+    patch.removeNodes.length +
+    patch.updateNodes.length +
+    patch.addEdges.length +
+    patch.removeEdges.length +
+    patch.updateEdges.length +
+    patch.moveScope.length;
+  if (opCount > 0 && diagnostics.length === 0) {
+    const resultDigest = agentGraphSemanticDigest({
+      version: 1,
+      goal: base.goal,
+      nodes: result.nodes,
+      edges: result.edges,
+    });
+    if (resultDigest === agentGraphSemanticDigest(base)) {
+      diagnostics.push({
+        type: "NO_OP_OPERATION",
+        detail: "patch changes nothing - accepted patches must change the semantic graph",
+      });
     }
   }
   return diagnostics;

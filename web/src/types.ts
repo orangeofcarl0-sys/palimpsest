@@ -174,9 +174,22 @@ export interface SatelliteAttempt {
   attribution?: { model: string; cost: number };
 }
 
+/** PLMP-GRAPH-5 §B2-D: one debugger hold as governance state - survives
+ * task renumbering (stale) and removal (orphan). */
+export interface HoldControlView {
+  taskId: string;
+  setAtRevision: number | null;
+  currentRevision: number;
+  status: "active" | "stale" | "orphan";
+  reason: string;
+  declaredBy: string;
+  definitionId?: string;
+}
+
 /** PLMP-RUNTIME-1: one canonical graph, three projections. */
 export interface RuntimeView {
   satellites: SatelliteAttempt[];
   traces: TraceRow[];
   roleOccupancy?: Array<{ role: string; occupied: number; slots: number }>;
+  controls?: { holds: HoldControlView[] };
 }

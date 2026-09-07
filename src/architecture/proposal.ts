@@ -81,9 +81,119 @@ export function pipelinePreset(input: {
   };
 }
 
+// ---------------------------------------------------------------------------
+// PLMP-GRAPH-5 §B2-B (31 号修订): the strict input contract. First-party
+// proposal JSON passes through THIS before validateProjectProposal - shape,
+// types and unknown fields here; semantic invariants (cycles, unknown
+// dependencies/gates, duplicate definition ids, missing write paths) stay in
+// the validator. No layer absorbs the other's job.
+// ---------------------------------------------------------------------------
+
+const PROPOSAL_FIELDS: ReadonlySet<string> = new Set(["goal", "changeClass", "tasks"]);
+
+const TASK_PROPOSAL_FIELDS: ReadonlySet<string> = new Set([
+  "title",
+  "dependsOn",
+  "writePaths",
+  "requiredArtifacts",
+  "gateId",
+  "role",
+  "suggestedSkills",
+  "scopeId",
+  "definitionId",
+]);
+
+const CHANGE_CLASSES: ReadonlySet<string> = new Set([
+  "metadata_only",
+  "backward_compatible",
+  "behavior_change",
+  "contract_breaking",
+]);
+
+function failProposal(message: string): never {
+  throw new Error(`project proposal: ${message}`);
+}
+
+function proposalObject(value: unknown, what: string): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    failProposal(`${what} must be an object`);
+  }
+  return value as Record<string, unknown>;
+}
+
+function proposalString(value: unknown, what: string): string {
+  if (typeof value !== "string") failProposal(`${what} must be a string`);
+  return value;
+}
+
+function proposalStringArray(value: unknown, what: string): string[] {
+  if (!Array.isArray(value)) failProposal(`${what} must be an array of strings`);
+  return value.map((entry, index) => proposalString(entry, `${what}[${index}]`));
+}
+
+function parseTaskProposal(value: unknown): TaskProposal {
+  const raw = proposalObject(value, "task");
+  for (const field of Object.keys(raw)) {
+    if (!TASK_PROPOSAL_FIELDS.has(field)) failProposal(`unknown task field "${field}"`);
+  }
+  if (!Object.hasOwn(raw, "title")) failProposal("title: field is required");
+  if (!Object.hasOwn(raw, "dependsOn")) failProposal("dependsOn: field is required");
+  const title = proposalString(raw["title"], "title");
+  const dependsOn = proposalStringArray(raw["dependsOn"], "dependsOn");
+  const writePaths =
+    raw["writePaths"] === undefined ? undefined : proposalStringArray(raw["writePaths"], "writePaths");
+  const requiredArtifacts =
+    raw["requiredArtifacts"] === undefined
+      ? undefined
+      : proposalStringArray(raw["requiredArtifacts"], "requiredArtifacts");
+  const gateId = raw["gateId"] === undefined ? undefined : proposalString(raw["gateId"], "gateId");
+  const role = raw["role"] === undefined ? undefined : proposalString(raw["role"], "role");
+  const suggestedSkills =
+    raw["suggestedSkills"] === undefined
+      ? undefined
+      : proposalStringArray(raw["suggestedSkills"], "suggestedSkills");
+  const scopeId = raw["scopeId"] === undefined ? undefined : proposalString(raw["scopeId"], "scopeId");
+  const definitionId =
+    raw["definitionId"] === undefined ? undefined : proposalString(raw["definitionId"], "definitionId");
+  return {
+    title,
+    dependsOn,
+    ...(writePaths === undefined ? {} : { writePaths }),
+    ...(requiredArtifacts === undefined ? {} : { requiredArtifacts }),
+    ...(gateId === undefined ? {} : { gateId }),
+    ...(role === undefined ? {} : { role }),
+    ...(suggestedSkills === undefined ? {} : { suggestedSkills }),
+    ...(scopeId === undefined ? {} : { scopeId }),
+    ...(definitionId === undefined ? {} : { definitionId }),
+  };
+}
+
+/** Strict parse of an untrusted ProjectProposal (the architect input boundary). */
+export function parseProjectProposal(value: unknown): ProjectProposal {
+  const raw = proposalObject(value, "proposal");
+  for (const field of Object.keys(raw)) {
+    if (!PROPOSAL_FIELDS.has(field)) failProposal(`unknown proposal field "${field}"`);
+  }
+  if (!Object.hasOwn(raw, "goal")) failProposal("goal: field is required");
+  if (!Object.hasOwn(raw, "changeClass")) failProposal("changeClass: field is required");
+  if (!Object.hasOwn(raw, "tasks")) failProposal("tasks: field is required");
+  const goal = proposalString(raw["goal"], "goal");
+  const changeClass = proposalString(raw["changeClass"], "changeClass");
+  if (!CHANGE_CLASSES.has(changeClass)) {
+    failProposal(
+      `changeClass must be one of ${[...CHANGE_CLASSES].join("/")}, got "${changeClass}"`,
+    );
+  }
+  if (!Array.isArray(raw["tasks"])) failProposal("tasks must be an array");
+  return {
+    goal,
+    changeClass: changeClass as ProjectProposal["changeClass"],
+    tasks: raw["tasks"].map(parseTaskProposal),
+  };
+}
+
 /** ARCH §1.2: the shared proposal validator (fail-closed; never writes). */
-export function validateProjectProposal(
-  proposal: ProjectProposal,
+export function validateProjectProposal(  proposal: ProjectProposal,
   options?: { readonly knownGateIds?: ReadonlySet<string> },
 ): ProposalDiagnostic[] {
   const diagnostics: ProposalDiagnostic[] = [];

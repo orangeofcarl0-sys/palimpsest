@@ -13,6 +13,7 @@
  */
 
 import type { ProjectProposal, TaskProposal } from "../architecture/index.js";
+import { canonicalDigest } from "../schema/index.js";
 
 export const ROOT_SCOPE = "root";
 
@@ -260,6 +261,40 @@ export function parseAgentGraph(value: unknown): AgentGraph {
     }
   }
   return { version: 1, goal: str(raw["goal"], "goal"), nodes, edges };
+}
+
+/**
+ * PLMP-GRAPH-5 §B2-A (31 号修订): the semantic graph digest - the authoring
+ * freshness anchor for GraphPatch (`baseGraphDigest`). Covers every semantic
+ * input to the compile (version, goal, node identity/kind/label/scope/mode/
+ * payload, edge id/endpoints/kind) in declaration order - node order decides
+ * task-id order and edge order decides dependsOn order, so order IS semantic
+ * and is faithfully included. Visual state (positions, viewport, group
+ * boxes, selection) is not representable in the IR and therefore structurally
+ * excluded: dragging a node 20px never stales a patch. Object key order and
+ * Unicode normalization ride the shared canonicalDigest discipline.
+ */
+export function agentGraphSemanticDigest(graph: AgentGraph): string {
+  return canonicalDigest({
+    kind: "agent-graph-semantic-v1",
+    version: graph.version,
+    goal: graph.goal,
+    nodes: graph.nodes.map((node) => ({
+      id: node.id,
+      kind: node.kind,
+      label: node.label,
+      scope: node.scope,
+      ...(node.mode === undefined ? {} : { mode: node.mode }),
+      ...(node.task === undefined ? {} : { task: node.task }),
+      ...(node.text === undefined ? {} : { text: node.text }),
+    })),
+    edges: graph.edges.map((edge) => ({
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      kind: edge.kind,
+    })),
+  });
 }
 
 /**

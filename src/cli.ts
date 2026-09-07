@@ -46,6 +46,7 @@ import {
 import { EventStore, dshDefaultStatePath } from "./state/index.js";
 import { ProjectController } from "./tools/index.js";
 import {
+  parseProjectProposal,
   presetDraft,
   proposalTaskSpecs,
   validateProjectProposal,
@@ -359,9 +360,12 @@ async function main() {
                 ) as Record<string, unknown>);
           const goalOption = arg(parsed.options, "--goal");
           if (goalOption !== undefined) params.goal = goalOption;
+          // Kernel-generated: the trusted producer (contract conformance is
+          // machine-asserted in the preset tests, not re-parsed on this path).
           proposal = presetDraft(presetOption, params);
         } else {
-          proposal = JSON.parse(readFileSync(a1 ?? "", "utf8")) as ProjectProposal;
+          // PLMP-GRAPH-5 §B2-B: hand-written proposal JSON is untrusted input.
+          proposal = parseProjectProposal(JSON.parse(readFileSync(a1 ?? "", "utf8")));
         }
         const knownGates = new Set(
           (

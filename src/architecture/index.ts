@@ -1,6 +1,7 @@
 /** PLMP-ARCH (18 号规格): the three architecture modes' shared proposal face. */
 
 export {
+  parseProjectProposal,
   pipelinePreset,
   proposalTaskSpecs,
   validateProjectProposal,

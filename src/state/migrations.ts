@@ -276,6 +276,21 @@ export const MIGRATION_6_SQL = `CREATE TABLE task_holds (
  */
 export const MIGRATION_7_SQL = `ALTER TABLE task_holds ADD COLUMN project_revision INTEGER;`;
 
+/**
+ * PLMP-GRAPH-5 §B2-D (31 号修订): provable backfill of pre-anchor hold rows.
+ * Every HOLD_SET event row carries `expected_project_revision` (the exact
+ * revision the caller saw, enforced by the append precondition), and
+ * task_holds.last_event_id points at the latest HOLD_SET - so the revision is
+ * RECOVERABLE from the ledger, never guessed. After this migration a NULL
+ * project_revision means "unprovable" and the scheduler treats it as stale
+ * (fail-closed: an old control must never silently gate a new semantic task).
+ */
+export const MIGRATION_8_SQL = `UPDATE task_holds SET project_revision = (
+    SELECT e.expected_project_revision FROM events e
+    WHERE e.project_id = task_holds.project_id AND e.event_id = task_holds.last_event_id
+)
+WHERE project_revision IS NULL;`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
@@ -284,6 +299,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 5, name: "context manifest registry", sql: MIGRATION_5_SQL },
   { version: 6, name: "debugger task holds", sql: MIGRATION_6_SQL },
   { version: 7, name: "hold revision anchoring", sql: MIGRATION_7_SQL },
+  { version: 8, name: "hold revision backfill from the ledger", sql: MIGRATION_8_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

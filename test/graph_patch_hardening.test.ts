@@ -13,6 +13,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   applyGraphPatch,
+  agentGraphSemanticDigest,
   EMPTY_PATCH,
   parseAgentGraph,
   parseGraphPatch,
@@ -20,7 +21,12 @@ import {
   type AgentGraph,
   type GraphPatch,
 } from "../src/graph/index.js";
-import { canvasRoundTripDiff, liftToAgentGraph, parseCanvasDoc } from "../src/canvas/index.js";
+import {
+  canvasRoundTripDiff,
+  liftToAgentGraph,
+  parseCanvasDoc,
+  unloadToCanvasDoc,
+} from "../src/canvas/index.js";
 import { serveOrchestration, type ServeHandle } from "../src/serve.js";
 import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
@@ -219,8 +225,8 @@ describe("graph patch hardening (PLMP-GRAPH-5)", () => {
       {
         ...EMPTY_PATCH,
         updateNodes: [{ id: "a", label: "改名" }, { id: "m", task: { role: "tester" } }],
-        updateEdges: [{ id: "e1", kind: "data" }],
-        moveScope: [{ id: "b", scope: "s" }, { id: "n1", scope: "s" }],
+        updateEdges: [{ id: "e1", kind: "control" }],
+        moveScope: [{ id: "b", scope: "s" }, { id: "n1", scope: "root" }],
         addNodes: [agentNode("n1", "新成员", "s")],
       },
       {
@@ -387,5 +393,145 @@ describe("graph patch endpoint gate (PLMP-GRAPH-5 PATCH-H06)", () => {
       await effects.close();
       store.close();
     }
+  });
+});
+/**
+ * PLMP-GRAPH-5 (31 号): GraphPatch hardening. The patch is a fail-closed
+ * input protocol (strict parse, no `as` casts) and the validator checks the
+ * RESULT graph - the hard invariant is validate=PASS ⇒ apply cannot fail
+ * structurally (PATCH-H04). The apply-to-canvas gate refuses lossy
+ * conversion (PATCH-H06) instead of degrading unsupported IR silently.
+ */
+describe("draft freshness and patch grammar closure (PLMP-GRAPH-5 §B2)", () => {
+  it("PATCH-FRESH-A01: a patch anchored to an older draft is refused as STALE_GRAPH_BASE", () => {
+    const before = parseAgentGraph(baseGraph());
+    const digest = agentGraphSemanticDigest(before);
+    const patch: GraphPatch = {
+      baseGraphDigest: digest,
+      ...EMPTY_PATCH,
+      updateNodes: [{ id: "a", label: "改名" }],
+    };
+    expect(validateGraphPatch(before, patch)).toEqual([]);
+    // The user edits the draft (project revision unchanged) - the anchor breaks.
+    const after = applyGraphPatch(before, patch);
+    expect(agentGraphSemanticDigest(after)).not.toBe(digest);
+    // Re-running the same patch against the edited draft is doubly dishonest:
+    // stale anchor AND a mutation that is now a no-op.
+    expect(validateGraphPatch(after, patch).map((d) => d.type)).toEqual([
+      "STALE_GRAPH_BASE",
+      "NO_OP_OPERATION",
+    ]);
+    // Omitting the anchor does not save a stale edit: the label is already
+    // 改名, so the no-op verdict refuses it independently.
+    expect(
+      validateGraphPatch(after, { ...EMPTY_PATCH, updateNodes: [{ id: "a", label: "改名" }] }).map((d) => d.type),
+    ).toEqual(["NO_OP_OPERATION"]);
+  });
+
+  it("PATCH-FRESH-A02: pure layout movement never changes the semantic digest", () => {
+    const docAt = (x: number, y: number) =>
+      parseCanvasDoc({
+        version: 2,
+        goal: "g",
+        nodes: [
+          { key: "a", type: "task", title: "调研", x, y, z: "root", task: { dependsOn: [] } },
+          { key: "b", type: "task", title: "综合", x: x + 10, y, z: "root", task: { dependsOn: ["a"] } },
+        ],
+        groups: [],
+      });
+    const graphA = liftToAgentGraph(docAt(0, 0));
+    const graphB = liftToAgentGraph(docAt(500, 300));
+    expect(agentGraphSemanticDigest(graphA)).toBe(agentGraphSemanticDigest(graphB));
+    // A patch anchored to the pre-move digest stays fresh after the move.
+    const patch: GraphPatch = {
+      baseGraphDigest: agentGraphSemanticDigest(graphA),
+      ...EMPTY_PATCH,
+      updateNodes: [{ id: "b", label: "综合（改）" }],
+    };
+    expect(validateGraphPatch(graphB, patch)).toEqual([]);
+  });
+
+  it("PATCH-FRESH-A03: project-stale and graph-stale are independently diagnosed", () => {
+    const base = parseAgentGraph(baseGraph());
+    const patch: GraphPatch = {
+      baseRevision: 99,
+      baseGraphDigest: "0".repeat(64),
+      ...EMPTY_PATCH,
+      updateNodes: [{ id: "a", label: "改名" }],
+    };
+    const types = validateGraphPatch(base, patch, { liveRevision: 5 }).map((d) => d.type);
+    expect(types).toContain("STALE_BASE");
+    expect(types).toContain("STALE_GRAPH_BASE");
+  });
+
+  it("PATCH-GRAMMAR-A01: annotation text '' has the same legality under add and update", () => {
+    // add with empty text is IR-legal (24 号 grammar).
+    const withEmpty = parseAgentGraph({
+      version: 1,
+      goal: "g",
+      nodes: [{ id: "t", kind: "annotation", label: "注", scope: "root", text: "" }],
+      edges: [],
+    });
+    expect(withEmpty.nodes[0]!.text).toBe("");
+    // update with empty text parses under the same grammar (was non-blank
+    // before the §B2-E grammar unification).
+    const parsed = parseGraphPatch({
+      addNodes: [],
+      removeNodes: [],
+      updateNodes: [{ id: "t", text: "" }],
+      addEdges: [],
+      removeEdges: [],
+      updateEdges: [],
+      moveScope: [],
+    });
+    expect(parsed.updateNodes[0]!.text).toBe("");
+    // On a node whose text is already "" the update is a semantic no-op.
+    expect(validateGraphPatch(withEmpty, parsed).map((d) => d.type)).toEqual(["NO_OP_OPERATION"]);
+  });
+
+  it("PATCH-GRAMMAR-A02: updateNodes with nothing to mutate is refused at parse (EMPTY_UPDATE)", () => {
+    expect(() =>
+      parseGraphPatch({
+        addNodes: [],
+        removeNodes: [],
+        updateNodes: [{ id: "a" }],
+        addEdges: [],
+        removeEdges: [],
+        updateEdges: [],
+        moveScope: [],
+      }),
+    ).toThrow(/EMPTY_UPDATE/);
+  });
+
+  it("PATCH-GRAMMAR-A03: semantic no-ops are refused as NO_OP_OPERATION (verdict A)", () => {
+    const base = parseAgentGraph(baseGraph());
+    const sameLabel: GraphPatch = { ...EMPTY_PATCH, updateNodes: [{ id: "a", label: "调研" }] };
+    expect(validateGraphPatch(base, sameLabel).map((d) => d.type)).toEqual(["NO_OP_OPERATION"]);
+    const sameKind: GraphPatch = { ...EMPTY_PATCH, updateEdges: [{ id: "e1", kind: "data" }] };
+    expect(validateGraphPatch(base, sameKind).map((d) => d.type)).toEqual(["NO_OP_OPERATION"]);
+    const sameScope: GraphPatch = { ...EMPTY_PATCH, moveScope: [{ id: "a", scope: "root" }] };
+    expect(validateGraphPatch(base, sameScope).map((d) => d.type)).toEqual(["NO_OP_OPERATION"]);
+    const sameTask: GraphPatch = { ...EMPTY_PATCH, updateNodes: [{ id: "a", task: {} }] };
+    expect(validateGraphPatch(base, sameTask).map((d) => d.type)).toEqual(["NO_OP_OPERATION"]);
+    expect(() => applyGraphPatch(base, sameLabel)).toThrow(/NO_OP_OPERATION/);
+  });
+
+  it("PATCH-GRAMMAR-A04: every accepted non-empty patch changes the semantic digest", () => {
+    const base = parseAgentGraph(baseGraph());
+    const baseDigest = agentGraphSemanticDigest(base);
+    const accepted: GraphPatch[] = [
+      { ...EMPTY_PATCH, addNodes: [agentNode("n1", "新")] },
+      { ...EMPTY_PATCH, removeNodes: ["b"], removeEdges: ["e1"] },
+      { ...EMPTY_PATCH, updateNodes: [{ id: "a", label: "改名" }] },
+      { ...EMPTY_PATCH, updateEdges: [{ id: "e1", kind: "control" }] },
+      { ...EMPTY_PATCH, moveScope: [{ id: "b", scope: "s" }] },
+    ];
+    for (const patch of accepted) {
+      expect(validateGraphPatch(base, patch)).toEqual([]);
+      const patched = applyGraphPatch(base, patch);
+      expect(agentGraphSemanticDigest(patched)).not.toBe(baseDigest);
+    }
+    // The EMPTY_PATCH is the only zero-op patch and applies trivially.
+    expect(applyGraphPatch(base, EMPTY_PATCH)).toEqual(base);
   });
 });

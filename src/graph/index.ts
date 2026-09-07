@@ -7,6 +7,7 @@ export {
   AGENT_NODE_KINDS,
   ROOT_SCOPE,
   agentGraphCapabilities,
+  agentGraphSemanticDigest,
   compileAgentGraph,
   parseAgentGraph,
   parseAgentGraphEdge,

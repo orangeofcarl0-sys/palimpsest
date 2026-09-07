@@ -59,3 +59,4 @@
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-GRAPH-4，G9-A）：definition identity 全链 + hold 修订锚定（取代 29 号 §1.1 跨修订存活裁决）；长期 definitionId-rebase 语义登记不做。 |
 | 2026-09-07 | **交付**：TaskProposal/TaskSpec/GraphTask/卫星/Trace 加法式字段 + compileAgentGraph 恒输出 definitionId + DUPLICATE_DEFINITION_ID + HOLD_SET payload revision + M7 + 调度闸门修订消费（stale 惰性/active/legacy-NULL 回退）+ GraphTask.held 两态 + 面板 stale 徽章与 definition 行；ID-A01–A03 + DBG-REV-A01–A02 全绿（53 文件 / 310 测试，既有 305 项除五处 compile 断言更新外原样绿）。 |
+| 2026-09-07 | G9-B2（31 号 §B2-D）**修订本规格 §2.2 的 legacy NULL 裁决**：原"NULL=active 保守回退"保留误阻断风险。实测 `events.expected_project_revision` 恒为设置时修订（append 前置条件保证）⇒ 回填可证明而非推测：projector 派生 + M8 存量回填走完后，NULL 仅剩不可证明行 ⇒ **NULL=stale**（宁可断点失效也不误阻断新语义任务；HOLD-LEGACY-A01 双路机证）。 |

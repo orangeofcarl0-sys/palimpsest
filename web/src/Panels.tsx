@@ -17,6 +17,7 @@ import {
   type CanvasNode,
   type CanvasDiffResult,
   type GraphTask,
+  type HoldControlView,
   type PresetMeta,
   type ProjectProposal,
   type ProposalDiagnostic,
@@ -162,8 +163,34 @@ export function PromoteForm(props: { onMessage(message: string): void; refresh()
   );
 }
 
-export function TaskDetails(props: {
-  task: GraphTask;
+/** PLMP-GRAPH-5 §B2-D: every debugger hold as governance state - stale and
+ * orphan controls stay observable even when the task graph moved on. */
+export function ControlsPanel(props: { holds: readonly HoldControlView[] }) {
+  if (props.holds.length === 0) return null;
+  const statusColor = (status: HoldControlView["status"]): string =>
+    status === "active" ? "#f87171" : status === "stale" ? "#fbbf24" : "#94a3b8";
+  return (
+    <div style={{ display: "grid", gap: 6, fontSize: 12 }}>
+      <div style={{ color: "#94a3b8" }}>治理挂起（全部 hold，含过期与孤儿）</div>
+      {props.holds.map((hold) => (
+        <div key={hold.taskId}>
+          <code style={{ color: "#7dd3fc" }}>{hold.taskId}</code>{" "}
+          <b style={{ color: statusColor(hold.status) }}>{hold.status}</b>
+          <span style={{ color: "#94a3b8" }}>
+            {" "}
+            · 锚定 r{hold.setAtRevision ?? "?"} / 现 r{hold.currentRevision} · {hold.reason}（
+            {hold.declaredBy}）
+          </span>
+          {hold.definitionId !== undefined && (
+            <span style={{ color: "#475569" }}> · def {hold.definitionId}</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function TaskDetails(props: {  task: GraphTask;
   onMessage?(message: string): void;
   refresh?(): void;
 }) {

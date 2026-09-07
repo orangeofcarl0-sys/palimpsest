@@ -1,7 +1,8 @@
 # G9-C–G 实施计划（下一批次）
 
 - 日期：2026-09-07
-- 前置：G9-A（30 号，`b321d06`）与 G9-B（31 号，`e81c4c3`）退出门已通过（定义身份全链机器可验证；validate PASS ⇒ apply 结构性必成；无损应用门闭合），测试基线 54 文件 / 319 项全绿。
+- 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）与 **G9-B2（31 号闭合修订，输入/新鲜度/治理闭合；母体＝`G9-B2-CLOSURE-ASSESSMENT.md`）** 退出门均已通过；测试基线 56 文件 / 337 项全绿。
+- G9-B2 交付（2026-09-07）：`baseGraphDigest`/`STALE_GRAPH_BASE` 草稿新鲜度锚、`agentGraphSemanticDigest`、`parseProjectProposal` 输入合同（四 first-party 边界）、patch 语法同构 + `EMPTY_UPDATE`/`NO_OP_OPERATION` no-op 裁决 + accepted⇒digest 必变不变量、`runtime.controls.holds[]` 治理投影、LEGACY 方案 C（M8 回填、NULL=stale）、SCHEMA-AUDIT tripwire。
 - 本文件只做计划与裁决预留，不实现。各批次开工时仍以"审计 → 规格冻结 → 实现 → 回归 → 登记"的纪律推进；规格编号从 32 起顺延（已核对 main 无冲突）。
 
 ---
@@ -53,11 +54,12 @@
 
 ## G9-F — Parser 纪律 + 运行时性能（规格 35，PLMP-PARSE-1）
 
-**问题**（审计 F-H①②③，已核验）：
+**问题**（审计 F-H①②③，已核验；scope 依 G9-B2 SCHEMA-AUDIT 矩阵重定）：
 
-1. `parseStageGraphDefinition` 三层（根/stage/transition）都无未知字段白名单：`"concurency":8` 静默当缺省 1（PARSE-H01）。
+1. `parseStageGraphDefinition` 三层（根/stage/transition）都无未知字段白名单：`"concurency":8` 静默当缺省 1（PARSE-H01；tripwire 在册）。
 2. canvas `parseTaskPayload` 不拒未知字段：`{"rol":"scout"}` 静默丢弃——与 ir.ts 同名 parser（有白名单）不一致（PARSE-H02）。统一规则：**author-authored JSON 永不静默丢字段**。
-3. `/api/graph?cursor` 无快路径：未变化也全量 `buildOrchestrationGraph()`（WEB-H01）。`SELECT MAX(event_id)` 廉价先行，`cursor == currentCursor` 直接 `{changed:false, cursor}`；不引入 WebSocket/SSE。
+3. **models.ts 全族 13 个 canonical parser（parseProjectIr/parseTaskSpec/parseTaskEnvelope/parseAttemptReport/parseEvidenceAtom/parseNewEvent 等）"必填严/未知字段容"**——G9-B2 审计证实与文件头 fail-closed 声称不符，是最大缺口。涉及冻结 wire 合同/历史 fixture/前向兼容，必须逐合同独立裁决（白名单化或显式登记容留），严禁 `requireFields` 全局一刀切。
+4. `/api/graph?cursor` 无快路径：未变化也全量 `buildOrchestrationGraph()`（WEB-H01）。`SELECT MAX(event_id)` 廉价先行，`cursor == currentCursor` 直接 `{changed:false, cursor}`；不引入 WebSocket/SSE。
 
 **验收**：PARSE-H01/H02 + WEB-H01（未变 cursor 请求不建全图，可观测计数器断言）。
 

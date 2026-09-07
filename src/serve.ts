@@ -20,6 +20,7 @@ import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  parseProjectProposal,
   presetDraft,
   presetMeta,
   proposalTaskSpecs,
@@ -38,6 +39,7 @@ import {
   type CanvasLayoutName,
 } from "./canvas/index.js";
 import {
+  agentGraphSemanticDigest,
   applyGraphPatch,
   compileAgentGraph,
   diffGraphPatch,
@@ -259,7 +261,8 @@ export function serveOrchestration(
           return;
         }
         if (request.method === "POST" && path === "/api/proposal/validate") {
-          const proposal = JSON.parse(await readBody(request)) as ProjectProposal;
+          // PLMP-GRAPH-5 §B2-B: strict input contract before semantic checks.
+          const proposal = parseProjectProposal(JSON.parse(await readBody(request)));
           sendJson(response, 200, {
             diagnostics: validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) }),
           });
@@ -278,6 +281,9 @@ export function serveOrchestration(
           sendJson(response, 200, {
             proposal,
             diagnostics: validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) }),
+            // PLMP-GRAPH-5 §B2-A: the authoring freshness anchor for patches
+            // built against this draft.
+            graphDigest: agentGraphSemanticDigest(liftToAgentGraph(doc)),
           });
           return;
         }
@@ -285,7 +291,7 @@ export function serveOrchestration(
           const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
           const proposal =
             body["doc"] === undefined
-              ? (body["proposal"] as ProjectProposal)
+              ? parseProjectProposal(body["proposal"])
               : canvasCompile(parseCanvasDoc(body["doc"]));
           const graph = controller.orchestrationGraph();
           const titleById = new Map(graph.tasks.map((task) => [task.taskId, task.objective]));
@@ -308,7 +314,7 @@ export function serveOrchestration(
         if (request.method === "POST" && path === "/api/canvas/insert") {
           const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
           const doc = parseCanvasDoc(body["doc"]);
-          const proposal = body["proposal"] as ProjectProposal;
+          const proposal = parseProjectProposal(body["proposal"]);
           sendJson(response, 200, { doc: canvasInsertFragment(doc, proposal) });
           return;
         }
@@ -326,7 +332,13 @@ export function serveOrchestration(
           const diagnostics = validateGraphPatch(graph, patch, { liveRevision });
           const preview = diffGraphPatch(graph, patch);
           if (diagnostics.length > 0) {
-            sendJson(response, 200, { applied: false, diagnostics, preview });
+            sendJson(response, 200, {
+              applied: false,
+              diagnostics,
+              preview,
+              // The current draft's anchor so a stale patch can be re-based.
+              graphDigest: agentGraphSemanticDigest(graph),
+            });
             return;
           }
           const patched = applyGraphPatch(graph, patch);
@@ -339,6 +351,7 @@ export function serveOrchestration(
               applied: false,
               diagnostics: [{ type: "UNREPRESENTABLE_IN_CANVAS", detail: losses.join("; ") }],
               preview,
+              graphDigest: agentGraphSemanticDigest(graph),
             });
             return;
           }
@@ -357,6 +370,8 @@ export function serveOrchestration(
             doc: unloadToCanvasDoc(patched),
             preview,
             diagnostics: proposalDiagnostics,
+            // The new draft's freshness anchor for the next patch.
+            graphDigest: agentGraphSemanticDigest(patched),
             ...(compileError === null ? {} : { compileError }),
           });
           return;
@@ -364,11 +379,12 @@ export function serveOrchestration(
         if (request.method === "POST" && path === "/api/proposal/declare") {
           // PLMP-SCHED-1: the request is {proposal, stageGraph?} - the optional
           // declared stage graph applies on the start branch only.
+          // PLMP-GRAPH-5 §B2-B: strict input contract before semantic checks.
           const body = JSON.parse(await readBody(request)) as {
-            proposal: ProjectProposal;
+            proposal: unknown;
             stageGraph?: StageGraphDefinition;
           };
-          const proposal = body.proposal;
+          const proposal = parseProjectProposal(body.proposal);
           const diagnostics = validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) });
           if (diagnostics.length > 0) {
             sendJson(response, 200, { diagnostics, declared: false });

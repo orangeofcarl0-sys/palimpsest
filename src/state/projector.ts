@@ -112,6 +112,15 @@ export class CoreProjector {
       declared_by: string;
       project_revision?: number;
     };
+    // PLMP-GRAPH-5 §B2-D: legacy payloads (pre-anchor) still carry a provable
+    // revision - the event's own expected_project_revision, enforced against
+    // the current revision at append time. NULL only if both are absent.
+    const revision =
+      typeof payload.project_revision === "number"
+        ? payload.project_revision
+        : typeof event.expected_project_revision === "number"
+          ? event.expected_project_revision
+          : null;
     connection
       .prepare(
         `
@@ -133,7 +142,7 @@ export class CoreProjector {
         String(payload.declared_by),
         event.event_id,
         isoformatDatetime(event.committed_at),
-        typeof payload.project_revision === "number" ? payload.project_revision : null,
+        revision,
       );
   }
 

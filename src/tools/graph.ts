@@ -51,6 +51,23 @@ export interface GraphPromotion {
   readonly state: "PREPARED" | "COMMITTED" | "FAILED";
 }
 
+/** PLMP-GRAPH-5 §B2-D (31 号修订): one debugger hold as governance state -
+ * independent of the current task graph, so stale/orphan controls stay
+ * observable. Every field is derived from the ledger (task_holds + the
+ * HOLD_SET event's proven revision + the current ProjectIR); nothing is
+ * invented. `status`: active = revision matches; stale = the hold anchors an
+ * earlier revision (or its revision is unprovable); orphan = the task no
+ * longer exists in the current ProjectIR. */
+export interface HoldControlView {
+  readonly taskId: string;
+  readonly setAtRevision: number | null;
+  readonly currentRevision: number;
+  readonly status: "active" | "stale" | "orphan";
+  readonly reason: string;
+  readonly declaredBy: string;
+  readonly definitionId?: string;
+}
+
 export interface OrchestrationGraph {
   readonly project: {
     readonly projectId: string;
@@ -72,6 +89,12 @@ export interface OrchestrationGraph {
       readonly occupied: number;
       readonly slots: number;
     }>;
+    /** PLMP-GRAPH-5 §B2-D: the debugger control state as first-class
+     * governance projection - includes holds whose task has since been
+     * renumbered (stale) or removed (orphan). */
+    readonly controls?: {
+      readonly holds: ReadonlyArray<HoldControlView>;
+    };
   };
 }
 
@@ -219,19 +242,44 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     attemptsByTask.set(taskId, list);
   }
 
-  // PLMP-GRAPH-4 (30 号规格): holds carry their plan revision; a hold set on
-  // an earlier revision is stale - surfaced, but no longer a scheduling gate.
+  // PLMP-GRAPH-4 (30 号规格) + §B2-D: holds carry their plan revision; a
+  // hold set on an earlier revision is stale - surfaced, but no longer a
+  // scheduling gate. The same rows drive the controls projection below, so
+  // stale/orphan state stays observable even when GraphTask can't show it.
   const heldRows = connection
-    .prepare("SELECT task_id, project_revision FROM task_holds WHERE project_id=?")
-    .all(projectId) as Array<{ task_id: string; project_revision: number | null }>;
+    .prepare(
+      "SELECT task_id, reason, declared_by, project_revision FROM task_holds WHERE project_id=? ORDER BY task_id",
+    )
+    .all(projectId) as Array<{
+    task_id: string;
+    reason: string;
+    declared_by: string;
+    project_revision: number | null;
+  }>;
   const heldByTask = new Map<string, "active" | "stale">();
+  const controls: HoldControlView[] = [];
   for (const row of heldRows) {
-    heldByTask.set(
-      String(row.task_id),
-      row.project_revision === null || row.project_revision === project.revision
-        ? "active"
-        : "stale",
-    );
+    const taskId = String(row.task_id);
+    const definitionId = project.tasks.find((spec) => spec.task_id === taskId)?.definition_id;
+    const setAtRevision = row.project_revision === null ? null : Number(row.project_revision);
+    const status: HoldControlView["status"] = !project.tasks.some(
+      (spec) => spec.task_id === taskId,
+    )
+      ? "orphan"
+      : setAtRevision === null || setAtRevision !== project.revision
+        ? "stale"
+        : "active";
+    controls.push({
+      taskId,
+      setAtRevision,
+      currentRevision: project.revision,
+      status,
+      reason: String(row.reason),
+      declaredBy: String(row.declared_by),
+      ...(definitionId === undefined ? {} : { definitionId }),
+    });
+    if (status === "active") heldByTask.set(taskId, "active");
+    else heldByTask.set(taskId, "stale");
   }
   const tasks: GraphTask[] = project.tasks.map((spec) => {
     const held = heldByTask.get(spec.task_id);
@@ -293,6 +341,7 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
       satellites: satelliteAttempts(graph),
       traces: traceRows(graph),
       ...(roleOccupancy === undefined ? {} : { roleOccupancy }),
+      controls: { holds: controls },
     },
   };
 }

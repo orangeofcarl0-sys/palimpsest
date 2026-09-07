@@ -15,6 +15,7 @@ import {
   ArchitectureBar,
   CanvasEditor,
   ControlBar,
+  ControlsPanel,
   GateForm,
   PromoteForm,
   TaskDetails,
@@ -444,6 +445,9 @@ export function App() {
                 <div style={{ color: "#475569" }}>点选图上任务节点。</div>
               ) : (
                 <TaskDetails task={selectedTask} onMessage={setMessage} refresh={() => void refresh()} />
+              )}
+              {graph !== null && graph.runtime?.controls !== undefined && (
+                <ControlsPanel holds={graph.runtime.controls.holds} />
               )}
             </section>
           </>

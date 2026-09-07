@@ -200,11 +200,13 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
       { id: "e3", source: "c", target: "a", kind: "data" },
     ]);
     // Update + move + remove compose; removal of edges precedes node removal.
+    // (The edge kind mutation is real: same-kind updates are NO_OP refusals
+    // since the 31 号 §B2-C no-op verdict.)
     const composed = applyGraphPatch(once, {
       removeEdges: ["e3", "e2"],
       removeNodes: ["c"],
       updateNodes: [],
-      updateEdges: [{ id: "e1", kind: "data" }],
+      updateEdges: [{ id: "e1", kind: "control" }],
       moveScope: [{ id: "b", scope: "s" }],
       addNodes: [],
       addEdges: [],
@@ -214,7 +216,7 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
       ["b", "s"],
       ["s", "root"],
     ]);
-    expect(composed.edges).toEqual([{ id: "e1", source: "a", target: "b", kind: "data" }]);
+    expect(composed.edges).toEqual([{ id: "e1", source: "a", target: "b", kind: "control" }]);
     // Preview lines follow the apply order.
     const preview = diffGraphPatch(base, patch);
     expect(preview.map((entry) => entry.op)).toEqual(["add", "add", "update", "add", "add"]);

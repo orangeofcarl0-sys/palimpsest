@@ -8,7 +8,9 @@ import { serveOrchestration, type ServeHandle } from "../src/serve.js";
 import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
-import { parseGateDefinition, TaskPolicy, type StageGraphDefinition } from "../src/domain/index.js";
+import { actionKey, parseGateDefinition, TaskPolicy, type StageGraphDefinition } from "../src/domain/index.js";
+import { parseNewEvent } from "../src/schema/index.js";
+import { MIGRATION_8_SQL } from "../src/state/migrations.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
@@ -315,7 +317,8 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
       await staleRig.cleanup();
     }
 
-    // Legacy rows (pre-anchor, NULL revision) keep the always-active fallback.
+    // Unprovable rows (NULL revision - only possible for hand-seeded or
+    // corrupted data after M8) are STALE too: fail-closed, never gate.
     const legacyRig = makeRig();
     try {
       legacyRig.controller.start({
@@ -327,11 +330,185 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
         .prepare(
           "INSERT INTO task_holds(project_id, task_id, reason, declared_by, last_event_id, updated_at, project_revision) VALUES (?,?,?,?,?,?,NULL)",
         )
-        .run("scheduler-project", "task-1", "旧账本断点", "legacy", 0, "2026-01-01T00:00:00Z");
-      expect(legacyRig.controller.scheduler.runOnce()).toBeNull();
-      expect(legacyRig.controller.orchestrationGraph().tasks[0]!.held).toBe("active");
+        .run("scheduler-project", "task-1", "无法证明的旧行", "legacy", 0, "2026-01-01T00:00:00Z");
+      const event = legacyRig.controller.scheduler.runOnce();
+      expect(event?.event_type).toBe("TASK_STARTED");
+      expect(legacyRig.controller.orchestrationGraph().tasks[0]!.held).toBe("stale");
+      expect(
+        legacyRig.controller.orchestrationGraph().runtime?.controls?.holds[0]!.status,
+      ).toBe("stale");
     } finally {
       await legacyRig.cleanup();
+    }
+  });
+});
+
+describe("hold governance projection (PLMP-GRAPH-5 §B2-D)", () => {
+  it("HOLD-GOV-A01: a stale hold is attributed to the revision it was set at, not the current task", async () => {
+    const rig = makeRig();
+    const { store, controller } = rig;
+    try {
+      controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])],
+      });
+      controller.setHold("task-1", { reason: "A 的断点", declaredBy: "panel" });
+      // Active at the set revision: the projection carries provenance.
+      const active = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
+      expect(active).toMatchObject({
+        taskId: "task-1",
+        setAtRevision: 0,
+        currentRevision: 0,
+        status: "active",
+        reason: "A 的断点",
+        declaredBy: "panel",
+      });
+      controller.plan({
+        tasks: [
+          { ...taskSpec("task-1"), objective: "X" },
+          { ...taskSpec("task-2"), objective: "A" },
+          { ...taskSpec("task-3", ["task-2"]), objective: "B" },
+        ],
+      });
+      const stale = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
+      // The hold belongs to revision 0 (the old semantic task) - it must NOT
+      // read as if the current task-1 (X) was historically held.
+      expect(stale).toMatchObject({
+        taskId: "task-1",
+        setAtRevision: 0,
+        currentRevision: 1,
+        status: "stale",
+      });
+      void store;
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("HOLD-GOV-A02: a hold whose task disappears stays observable as orphan governance state", async () => {
+    const rig = makeRig();
+    const { controller } = rig;
+    try {
+      controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1"), taskSpec("task-2")],
+      });
+      controller.setHold("task-2", { reason: "即将消失的任务", declaredBy: "panel" });
+      // r2 removes task-2 entirely.
+      controller.plan({ tasks: [{ ...taskSpec("task-1"), objective: "X" }] });
+      const graph = controller.orchestrationGraph();
+      expect(graph.tasks.some((task) => task.taskId === "task-2")).toBe(false);
+      const orphan = graph.runtime?.controls?.holds[0]!;
+      expect(orphan).toMatchObject({
+        taskId: "task-2",
+        status: "orphan",
+        setAtRevision: 0,
+        currentRevision: 1,
+        reason: "即将消失的任务",
+      });
+      expect(orphan.definitionId).toBeUndefined();
+      // No GraphTask face exists for it - the controls projection is the
+      // only place this state is observable.
+      expect(graph.tasks.every((task) => task.held === undefined)).toBe(true);
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("HOLD-LEGACY-A01: legacy holds recover their revision provably - from replay and from the M8 backfill", async () => {
+    // (1) Replay path: a pre-anchor HOLD_SET event (payload without
+    // project_revision) derives its revision from the event's own
+    // expected_project_revision - provable, never guessed.
+    const replayRig = makeRig();
+    const { store, controller } = replayRig;
+    try {
+      controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1")],
+      });
+      store.append(
+        parseNewEvent({
+          schema_version: 1,
+          project_id: "scheduler-project",
+          event_type: "HOLD_SET",
+          payload_version: 1,
+          entity_type: "task",
+          entity_id: "task-1",
+          payload: { task_id: "task-1", reason: "旧事件", declared_by: "legacy" },
+          causation_id: null,
+          correlation_id: "task:task-1",
+          idempotency_key: actionKey("task-hold-v1", {
+            project_id: "scheduler-project",
+            task_id: "task-1",
+            reason: "旧事件",
+          }),
+          expected_project_revision: 0,
+        }),
+      );
+      const derived = store.connection
+        .prepare("SELECT project_revision AS r FROM task_holds WHERE task_id='task-1'")
+        .get() as { r: number | null };
+      expect(derived.r).toBe(0); // derived from the event, not the payload
+      expect(controller.orchestrationGraph().runtime?.controls?.holds[0]!.status).toBe("active");
+    } finally {
+      await replayRig.cleanup();
+    }
+
+    // (2) Existing-DB path: M8 restores the revision from the ledger for
+    // rows persisted before the anchor existed.
+    const dbPath = tempStatePath();
+    const upgradeEffects = createPalimpsestEffects({
+      databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-hold-")), "ops.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const upgradeStore = new EventStore(dbPath, { clock: new FakeClock().next });
+    const upgradeController = new ProjectController({
+      store: upgradeStore,
+      effects: upgradeEffects,
+      projectId: "scheduler-project",
+      policy: new TaskPolicy({
+        policy_id: "trusted-default",
+        read_paths: ["src"],
+        allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+        network_policy: "deny",
+        network_allowlist: [],
+        timeout_s: 60,
+        lease_s: 10,
+        attempt_limit: 3,
+        candidate_limit: 1,
+      }),
+      clock: () => "2026-09-07T00:00:00Z",
+    });
+    try {
+      upgradeController.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1")],
+      });
+      upgradeController.setHold("task-1", { reason: "升级前断点", declaredBy: "panel" });
+      // Simulate a pre-M8 projection row (NULL column, event row intact).
+      upgradeStore.connection
+        .prepare("UPDATE task_holds SET project_revision=NULL WHERE task_id='task-1'")
+        .run();
+      upgradeStore.close();
+      const reopened = new EventStore(dbPath, {});
+      try {
+        // The DB is already at v8 (migrations are append-only), so simulate
+        // the upgrade by executing the shipped M8 statement itself - the
+        // exact SQL a v7 database receives on open.
+        reopened.connection.exec(MIGRATION_8_SQL);
+        const restored = reopened.connection
+          .prepare("SELECT project_revision AS r FROM task_holds WHERE task_id='task-1'")
+          .get() as { r: number | null };
+        expect(restored.r).toBe(0); // M8 backfilled from the HOLD_SET event
+      } finally {
+        reopened.close();
+      }
+    } finally {
+      await upgradeEffects.close();
     }
   });
 });
