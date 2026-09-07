@@ -35,8 +35,8 @@ function descendantsByRoot(doc: CanvasDoc): Map<string, string[]> {
 }
 
 /** Move a root node and translate its whole descendant subtree by the delta. */
-function applyMove(nodes: CanvasNode[], key: string, dx: number, dy: number, descendants: Map<string, string[]>): CanvasNode[] {
-  if (dx === 0 && dy === 0) return nodes;
+function applyMove(nodes: readonly CanvasNode[], key: string, dx: number, dy: number, descendants: Map<string, string[]>): CanvasNode[] {
+  if (dx === 0 && dy === 0) return [...nodes];
   const moving = new Set([key, ...(descendants.get(key) ?? [])]);
   return nodes.map((node) =>
     moving.has(node.key) ? { ...node, x: node.x + dx, y: node.y + dy } : node,
@@ -69,7 +69,7 @@ function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
     layers.set(level, bucket);
   }
   const sorted = [...layers.keys()].sort((a, b) => a - b);
-  let nodes = doc.nodes;
+  let nodes: readonly CanvasNode[] = doc.nodes;
   const descendants = descendantsByRoot(doc);
   for (const level of sorted) {
     const bucket = layers.get(level)!;
@@ -84,8 +84,8 @@ function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
   return { ...doc, nodes };
 }
 
-function titleKey(doc: CanvasDoc, title: string): string | undefined {
-  return doc.nodes.find((node) => node.type !== "annotation" && node.title === title)?.key;
+function titleKey(doc: CanvasDoc, title: string): string {
+  return doc.nodes.find((node) => node.type !== "annotation" && node.title === title)?.key ?? "";
 }
 
 function force(doc: CanvasDoc): CanvasDoc {
@@ -109,8 +109,7 @@ function force(doc: CanvasDoc): CanvasDoc {
   const height = 620;
   for (let tick = 0; tick < 300; tick += 1) {
     const fx = new Array<number>(count).fill(0);
-    const fy = new Array<number>(count).fill(0);
-    for (let a = 0; a < count; a += 1) {
+    const fy = new Array<number>(count).fill(0);    for (let a = 0; a < count; a += 1) {
       for (let b = a + 1; b < count; b += 1) {
         let dx = xs[a]! - xs[b]!;
         let dy = ys[a]! - ys[b]!;
@@ -145,7 +144,7 @@ function force(doc: CanvasDoc): CanvasDoc {
       ys[i] = ys[i]! + Math.max(-24, Math.min(24, fy[i]!));
     }
   }
-  let nodes = doc.nodes;
+  let nodes: readonly CanvasNode[] = doc.nodes;
   const descendants = descendantsByRoot(doc);
   roots.forEach((node, i) => {
     nodes = applyMove(nodes, node.key, Math.round(xs[i]!) - node.x, Math.round(ys[i]!) - node.y, descendants);
@@ -155,7 +154,7 @@ function force(doc: CanvasDoc): CanvasDoc {
 
 function compact(doc: CanvasDoc): CanvasDoc {
   const roots = doc.nodes.filter((node) => node.z === ROOT_Z && node.type !== "annotation");
-  let nodes = doc.nodes;
+  let nodes: readonly CanvasNode[] = doc.nodes;
   const descendants = descendantsByRoot(doc);
   roots.forEach((node, i) => {
     const column = i % 3;

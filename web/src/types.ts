@@ -79,3 +79,82 @@ export const TASK_COLORS: Record<string, string> = {
 };
 
 export const stateColor = (state: string): string => TASK_COLORS[state] ?? "#64748b";
+
+/** PLMP-CANVAS: canvas doc mirrors (client-side authoring scratchpad). */
+
+export interface CanvasTaskPayload {
+  dependsOn: string[];
+  writePaths?: string[];
+  requiredArtifacts?: string[];
+  gateId?: string;
+  role?: string;
+  suggestedSkills?: string[];
+}
+
+export interface CanvasNode {
+  key: string;
+  type: "task" | "subflow" | "annotation";
+  title: string;
+  x: number;
+  y: number;
+  z: string;
+  g?: string;
+  task?: CanvasTaskPayload;
+  text?: string;
+}
+
+export interface CanvasGroup {
+  id: string;
+  label: string;
+  g?: string;
+  members: string[];
+}
+
+export interface CanvasDoc {
+  version: 1;
+  goal: string;
+  nodes: CanvasNode[];
+  groups: CanvasGroup[];
+}
+
+export const CANVAS_ROLES = ["implementer", "tester", "verifier", "scout", "analyst"];
+
+export type CanvasLayoutName = "manual" | "flow_lr" | "flow_tb" | "force" | "compact";
+
+export interface CanvasDiffEntry {
+  title: string;
+}
+
+export interface CanvasDiffChanged {
+  title: string;
+  fields: string[];
+}
+
+export interface CanvasDiffResult {
+  added: CanvasDiffEntry[];
+  removed: CanvasDiffEntry[];
+  changed: CanvasDiffChanged[];
+}
+
+export interface TraceSpan {
+  label: string;
+  start: string;
+  end: string;
+}
+
+export interface TraceRow {
+  attemptId: string;
+  taskTitle: string;
+  role: string;
+  state: string;
+  spans: TraceSpan[];
+}
+
+export interface SatelliteAttempt {
+  attemptId: string;
+  taskId: string;
+  taskTitle: string;
+  role: string;
+  state: string;
+  attribution?: { model: string; cost: number };
+}

@@ -1,6 +1,15 @@
 /** Token-authed fetch wrapper over the PLMP-WEB-1 endpoints. */
 
-import type { OrchestrationGraph, PresetMeta, ProjectProposal, ProposalDiagnostic } from "./types";
+import type {
+  CanvasDiffResult,
+  CanvasDoc,
+  OrchestrationGraph,
+  PresetMeta,
+  ProjectProposal,
+  ProposalDiagnostic,
+  SatelliteAttempt,
+  TraceRow,
+} from "./types";
 
 const TOKEN_KEY = "palimpsest-token";
 
@@ -69,6 +78,37 @@ export const presetDraft = (
   params: Record<string, unknown>,
 ): Promise<{ proposal: ProjectProposal }> =>
   call(`/api/preset/${id}/draft`, { method: "POST", body: JSON.stringify(params) });
+
+/** PLMP-CANVAS: pure derivations over the canvas doc - zero server-side state. */
+
+export const compileCanvas = (
+  doc: CanvasDoc,
+  goal?: string,
+): Promise<{ proposal: ProjectProposal; diagnostics: ProposalDiagnostic[] }> =>
+  call("/api/canvas/compile", {
+    method: "POST",
+    body: JSON.stringify({ doc, ...(goal === undefined ? {} : { goal }) }),
+  });
+
+export const diffCanvas = (payload: {
+  doc?: CanvasDoc;
+  proposal?: ProjectProposal;
+}): Promise<{ diff: CanvasDiffResult }> =>
+  call("/api/canvas/diff", { method: "POST", body: JSON.stringify(payload) });
+
+export const layoutCanvas = (doc: CanvasDoc, layout: string): Promise<{ doc: CanvasDoc }> =>
+  call("/api/canvas/layout", { method: "POST", body: JSON.stringify({ doc, layout }) });
+
+export const insertProposal = (
+  doc: CanvasDoc,
+  proposal: ProjectProposal,
+): Promise<{ doc: CanvasDoc }> =>
+  call("/api/canvas/insert", { method: "POST", body: JSON.stringify({ doc, proposal }) });
+
+export const deriveCanvas = (): Promise<{
+  satellites: SatelliteAttempt[];
+  traces: TraceRow[];
+}> => call("/api/canvas/derive", { method: "POST", body: "{}" });
 
 export const declareProposal = (
   proposal: ProjectProposal,

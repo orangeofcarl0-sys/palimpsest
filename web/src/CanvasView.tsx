@@ -1,0 +1,401 @@
+import { Background, Controls, ReactFlow, type Connection, type Edge, type Node, type NodeProps, type NodeTypes } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+
+import type { CanvasDoc, CanvasDiffResult, CanvasNode } from "./types";
+
+/**
+ * PLMP-CANVAS-1 §1.3: the draft canvas. The doc is flat (z/g); the viewport
+ * maps `z` chains onto React Flow's native parent-child relation - members
+ * render inside their subflow with coordinates relative to it, extent
+ * clamps their drags, and a collapsed subflow folds its members away.
+ * Groups are pure visual bounds boxes behind everything; annotations are
+ * sticky notes. All semantics (deps = titles) live in the doc, never here.
+ */
+
+interface TaskData extends Record<string, unknown> {
+  node: CanvasNode;
+  diff?: "added" | "changed";
+  depCount: number;
+}
+interface SubflowData extends Record<string, unknown> {
+  node: CanvasNode;
+  memberCount: number;
+  expanded: boolean;
+  onToggle(key: string): void;
+}
+interface AnnotationData extends Record<string, unknown> {
+  node: CanvasNode;
+}
+interface GroupBoxData extends Record<string, unknown> {
+  label: string;
+  count: number;
+}
+
+function TaskNodeView({ data, selected }: NodeProps<Node<TaskData>>) {
+  const { node, diff, depCount } = data;
+  const ring =
+    diff === "added" ? "0 0 0 3px #22c55e66" : diff === "changed" ? "0 0 0 3px #f59e0b66" : "none";
+  return (
+    <div
+      style={{
+        width: 190,
+        borderRadius: 10,
+        border: `2px solid ${selected ? "#a78bfa" : "#7c3aed"}`,
+        boxShadow: ring,
+        background: "#171032",
+        color: "#e2e8f0",
+        fontSize: 12,
+        padding: "8px 10px",
+      }}
+    >
+      <div style={{ fontWeight: 600 }}>{node.title}</div>
+      <div style={{ color: "#94a3b8", marginTop: 2 }}>
+        依赖 {depCount}
+        {node.task?.role !== undefined ? ` · ${node.task.role}` : ""}
+        {(node.task?.suggestedSkills?.length ?? 0) > 0 ? ` · 技能 ${node.task!.suggestedSkills!.length}` : ""}
+      </div>
+    </div>
+  );
+}
+
+function SubflowNodeView({ data }: NodeProps<Node<SubflowData>>) {
+  const { node, memberCount, expanded, onToggle } = data;
+  return (
+    <div
+      style={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <div
+        style={{
+          display: "flex",
+          gap: 6,
+          alignItems: "center",
+          justifyContent: expanded ? "space-between" : "flex-start",
+          background: "#1b2540",
+          borderBottom: expanded ? "1px solid #31406b" : "none",
+          borderRadius: 10,
+          padding: "6px 10px",
+          color: "#cbd5e1",
+          fontSize: 12,
+        }}
+      >
+        <span style={{ fontWeight: 600 }}>
+          子图 {node.title}（{memberCount}）
+        </span>
+        <button
+          style={{
+            border: "1px solid #334155",
+            background: "#0f172a",
+            color: "#e2e8f0",
+            borderRadius: 6,
+            fontSize: 11,
+            padding: "2px 8px",
+            cursor: "pointer",
+          }}
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggle(node.key);
+          }}
+        >
+          {expanded ? "折叠" : "展开"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AnnotationNodeView({ data, selected }: NodeProps<Node<AnnotationData>>) {
+  return (
+    <div
+      style={{
+        width: 170,
+        border: `1px dashed ${selected ? "#facc15" : "#65601f"}`,
+        background: "#31300f",
+        color: "#e7d97c",
+        fontSize: 12,
+        borderRadius: 8,
+        padding: 8,
+        whiteSpace: "pre-wrap",
+      }}
+    >
+      {data.node.text}
+    </div>
+  );
+}
+
+function GroupBoxView({ data }: NodeProps<Node<GroupBoxData>>) {
+  return (
+    <div
+      style={{
+        height: "100%",
+        border: "1px dashed #31406b",
+        borderRadius: 12,
+        background: "#0b122233",
+        color: "#64748b",
+        fontSize: 11,
+        padding: "6px 10px",
+      }}
+    >
+      ▢ {data.label}（{data.count}）
+    </div>
+  );
+}
+
+const nodeTypes: NodeTypes = {
+  canvasTask: TaskNodeView,
+  canvasSubflow: SubflowNodeView,
+  canvasAnnotation: AnnotationNodeView,
+  canvasGroup: GroupBoxView,
+};
+
+export interface CanvasViewProps {
+  doc: CanvasDoc;
+  expanded: ReadonlySet<string>;
+  selectedKey: string | null;
+  diff: CanvasDiffResult | null;
+  onSelect(key: string | null): void;
+  onConnect(fromKey: string, toKey: string): void;
+  onMove(key: string, x: number, y: number): void;
+  onDropInto(key: string, ownerKey: string | null): void;
+  onToggleSubflow(key: string): void;
+}
+
+const MEMBER_SIZE = { width: 190, height: 56 };
+
+export function CanvasView(props: CanvasViewProps) {
+  const { doc, expanded, selectedKey, diff, onSelect, onConnect, onMove, onDropInto, onToggleSubflow: onToggle } = props;
+
+  const nodesByKey = new Map(doc.nodes.map((node) => [node.key, node]));
+  const byOwner = new Map<string, CanvasNode[]>();
+  for (const node of doc.nodes) {
+    const bucket = byOwner.get(node.z) ?? [];
+    bucket.push(node);
+    byOwner.set(node.z, bucket);
+  }
+  const membersOf = (key: string): CanvasNode[] => byOwner.get(key) ?? [];
+  const descendantsAbs = (key: string): CanvasNode[] => {
+    const out: CanvasNode[] = [];
+    for (const member of membersOf(key)) {
+      out.push(member);
+      if (member.type === "subflow") out.push(...descendantsAbs(member.key));
+    }
+    return out;
+  };
+
+  const added = new Set(diff?.added.map((entry) => entry.title) ?? []);
+  const changed = new Set(diff?.changed.map((entry) => entry.title) ?? []);
+
+  const flowNodes: Node[] = [];
+  const idOf = (key: string): string => `k-${key}`;
+
+  // Expanded subflows first: their bounds derive from members.
+  const boundsOf = new Map<string, { x: number; y: number; width: number; height: number }>();
+  for (const sub of doc.nodes.filter((node) => node.type === "subflow" && expanded.has(node.key))) {
+    const members = descendantsAbs(sub.key).filter((node) => expanded.has(node.z));
+    if (members.length === 0) {
+      boundsOf.set(sub.key, { x: sub.x, y: sub.y, width: 190, height: 48 });
+      continue;
+    }
+    const minX = Math.min(sub.x, ...members.map((node) => node.x));
+    const minY = Math.min(sub.y, ...members.map((node) => node.y));
+    const maxX = Math.max(sub.x + 190, ...members.map((node) => node.x + MEMBER_SIZE.width));
+    const maxY = Math.max(sub.y + 60, ...members.map((node) => node.y + MEMBER_SIZE.height));
+    boundsOf.set(sub.key, { x: minX, y: minY, width: maxX - minX + 24, height: maxY - minY + 24 });
+  }
+
+  const pushNode = (node: Omit<Node, "id">, key: string, parentId?: string): void => {
+    flowNodes.push({
+      id: idOf(key),
+      ...(parentId === undefined ? {} : { parentId }),
+      ...node,
+    } as Node);
+  };
+
+  for (const node of doc.nodes) {
+    const owner = node.z === "root" ? null : (nodesByKey.get(node.z) ?? null);
+    const hiddenByCollapse =
+      owner !== null && owner.type === "subflow" && !expanded.has(owner.key) && node.key !== owner.key;
+    if (hiddenByCollapse && node.type === "task") continue;
+    if (node.type === "subflow") {
+      const isExpanded = expanded.has(node.key);
+      if (!isExpanded) {
+        pushNode(
+          {
+            type: "canvasSubflow",
+            position: { x: node.x, y: node.y },
+            data: { node, memberCount: membersOf(node.key).length, expanded: false, onToggle },
+            selected: node.key === selectedKey,
+            zIndex: 1,
+            style: { width: 190, borderRadius: 10 },
+          },
+          node.key,
+        );
+      } else {
+        const bounds = boundsOf.get(node.key)!;
+        const ownerOfSub = node.z === "root" ? null : (nodesByKey.get(node.z) ?? null);
+        const parentExpanded = ownerOfSub === null || expanded.has(ownerOfSub.key);
+        pushNode(
+          {
+            type: "canvasSubflow",
+            position:
+              ownerOfSub === null || !parentExpanded
+                ? { x: bounds.x, y: bounds.y }
+                : { x: bounds.x - ownerOfSub.x, y: bounds.y - ownerOfSub.y },
+            data: { node, memberCount: membersOf(node.key).length, expanded: true, onToggle },
+            selected: node.key === selectedKey,
+            zIndex: 1,
+            style: {
+              width: bounds.width,
+              height: bounds.height,
+              border: "1px solid #31406b",
+              borderRadius: 12,
+              background: "#0b1222",
+            },
+          },
+          node.key,
+          ownerOfSub !== null && parentExpanded ? idOf(ownerOfSub.key) : undefined,
+        );
+      }
+      continue;
+    }
+    if (hiddenByCollapse) continue;
+    const relOwner = owner !== null && owner.type === "subflow" && expanded.has(owner.key) ? owner : null;
+    const position =
+      relOwner === null
+        ? { x: node.x, y: node.y }
+        : { x: node.x - relOwner.x, y: node.y - relOwner.y };
+    if (node.type === "annotation") {
+      pushNode(
+        {
+          type: "canvasAnnotation",
+          position,
+          data: { node },
+          selected: node.key === selectedKey,
+          zIndex: 2,
+        },
+        node.key,
+        relOwner === null ? undefined : idOf(relOwner.key),
+      );
+      continue;
+    }
+    pushNode(
+      {
+        type: "canvasTask",
+        position,
+        extent: relOwner === null ? undefined : "parent",
+        data: {
+          node,
+          depCount: node.task?.dependsOn.length ?? 0,
+          ...(added.has(node.title) ? { diff: "added" as const } : changed.has(node.title) ? { diff: "changed" as const } : {}),
+        },
+        selected: node.key === selectedKey,
+        zIndex: 2,
+        style: { width: 190 },
+      },
+      node.key,
+      relOwner === null ? undefined : idOf(relOwner.key),
+    );
+  }
+
+  // Group boxes behind everything (pure visuals).
+  for (const group of doc.groups) {
+    const members = doc.nodes.filter((node) => group.members.includes(node.key));
+    if (members.length === 0) continue;
+    const minX = Math.min(...members.map((node) => node.x)) - 14;
+    const minY = Math.min(...members.map((node) => node.y)) - 34;
+    const maxX = Math.max(...members.map((node) => node.x + 190)) + 14;
+    const maxY = Math.max(...members.map((node) => node.y + 56)) + 14;
+    flowNodes.push({
+      id: `g-${group.id}`,
+      type: "canvasGroup",
+      position: { x: minX, y: minY },
+      data: { label: group.label, count: members.length },
+      draggable: false,
+      selectable: false,
+      zIndex: -1,
+      style: { width: maxX - minX, height: maxY - minY },
+    } as Node);
+  }
+
+  const visibleTasks = doc.nodes.filter(
+    (node) => node.type === "task" && !(node.z !== "root" && !expanded.has(node.z)),
+  );
+  const titleToVisible = new Map(visibleTasks.map((node) => [node.title, node]));
+  const flowEdges: Edge[] = [];
+  for (const node of visibleTasks) {
+    for (const dep of node.task?.dependsOn ?? []) {
+      const from = titleToVisible.get(dep);
+      if (from === undefined) continue;
+      flowEdges.push({
+        id: `e-${from.key}-${node.key}`,
+        source: idOf(from.key),
+        target: idOf(node.key),
+        animated: true,
+        zIndex: 3,
+        style: { stroke: "#475569" },
+      });
+    }
+  }
+
+  return (
+    <div style={{ height: "100%", minHeight: 420 }}>
+      <ReactFlow
+        nodes={flowNodes}
+        edges={flowEdges}
+        nodeTypes={nodeTypes}
+        fitView
+        onNodeClick={(_, node) => {
+          const key = node.id.slice(2);
+          if (node.type === "canvasGroup") return;
+          onSelect(key);
+        }}
+        onConnect={(connection: Connection) => {
+          if (connection.source && connection.target && connection.source !== connection.target) {
+            onConnect(connection.source.slice(2), connection.target.slice(2));
+          }
+        }}
+        onNodeDragStop={(_, node) => {
+          const key = node.id.slice(2);
+          const docNode = nodesByKey.get(key);
+          if (docNode === undefined || node.type === "canvasGroup") return;
+          const owner = docNode.z === "root" ? null : (nodesByKey.get(docNode.z) ?? null);
+          const relOwner = owner !== null && expanded.has(owner.key) ? owner : null;
+          const absX = relOwner === null ? node.position.x : relOwner.x + node.position.x;
+          const absY = relOwner === null ? node.position.y : relOwner.y + node.position.y;
+          onMove(key, absX, absY);
+          if (docNode.type !== "task") return;
+          // Drop-into-subflow: center inside another subflow's area reassigns z.
+          const centerX = absX + 95;
+          const centerY = absY + 24;
+          let target: string | null = null;
+          for (const sub of doc.nodes.filter((n) => n.type === "subflow" && n.key !== key && n.key !== docNode.z)) {
+            const bounds = expanded.has(sub.key)
+              ? (boundsOf.get(sub.key) ?? { x: sub.x, y: sub.y, width: 190, height: 48 })
+              : { x: sub.x, y: sub.y, width: 190, height: 48 };
+            if (centerX >= bounds.x && centerX <= bounds.x + bounds.width && centerY >= bounds.y && centerY <= bounds.y + bounds.height) {
+              target = sub.key;
+              break;
+            }
+          }
+          const insideOwnOwner =
+            docNode.z !== "root" &&
+            (() => {
+              const own = nodesByKey.get(docNode.z)!;
+              const bounds = expanded.has(own.key)
+                ? (boundsOf.get(own.key) ?? { x: own.x, y: own.y, width: 190, height: 48 })
+                : { x: own.x, y: own.y, width: 190, height: 48 };
+              return centerX >= bounds.x && centerX <= bounds.x + bounds.width && centerY >= bounds.y && centerY <= bounds.y + bounds.height;
+            })();
+          if (target !== null) onDropInto(key, target);
+          else if (docNode.z !== "root" && !insideOwnOwner) onDropInto(key, null);
+        }}
+      >
+        <Background color="#1e293b" gap={18} />
+      <Controls />
+      </ReactFlow>
+    </div>
+  );
+}

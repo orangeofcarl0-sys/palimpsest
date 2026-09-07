@@ -16,10 +16,10 @@ import {
   satelliteAttempts,
   traceRows,
   type CanvasDoc,
-  type OrchestrationGraph,
 } from "../src/canvas/index.js";
 import { serveOrchestration, type ServeHandle } from "../src/serve.js";
 import { ProjectController } from "../src/tools/index.js";
+import type { OrchestrationGraph } from "../src/tools/graph.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
@@ -154,9 +154,9 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     expect(parseCanvasDoc(JSON.parse(JSON.stringify(doc)))).toEqual(doc);
     expect(() => parseCanvasDoc({ ...doc, version: 2 })).toThrow(/version/);
     expect(() => parseCanvasDoc({ ...doc, extra: 1 })).toThrow(/unknown document field/);
-    expect(() => parseCanvasDoc(docWith({ ...taskNode("n2", "x", 0, 0), wat: 1 }))).toThrow(
-      /unknown node field/,
-    );
+    expect(() =>
+      parseCanvasDoc(docWith({ ...taskNode("n2", "x", 0, 0), wat: 1 } as unknown as CanvasDoc["nodes"][number])),
+    ).toThrow(/unknown node field/);
     expect(() => parseCanvasDoc(docWith({ ...taskNode("n3", "x", 0, 0), z: "ghost" }))).toThrow(
       /unknown owner/,
     );
@@ -175,12 +175,16 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
   });
 
   it("CANVAS-A02: compile flattens to the same proposal a hand would write", () => {
-    const doc = docWith(
-      taskNode("n1", "调研", 0, 0),
-      { key: "a1", type: "annotation", title: "备注", x: 0, y: 0, z: "root", text: "todo" },
-      { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["调研"], role: "analyst", suggestedSkills: ["web"] } },
-    );
-    doc.groups.push({ id: "g1", label: "框", members: ["n1", "a1"] });
+    const doc: CanvasDoc = {
+      version: 1,
+      goal: "g",
+      nodes: [
+        taskNode("n1", "调研", 0, 0),
+        { key: "a1", type: "annotation", title: "备注", x: 0, y: 0, z: "root", text: "todo" },
+        { ...taskNode("n2", "综合", 10, 10), task: { dependsOn: ["调研"], role: "analyst", suggestedSkills: ["web"] } },
+      ],
+      groups: [{ id: "g1", label: "框", members: ["n1", "a1"] }],
+    };
     const proposal = canvasCompile(doc);
     expect(proposal.goal).toBe("g");
     expect(proposal.changeClass).toBe("behavior_change");

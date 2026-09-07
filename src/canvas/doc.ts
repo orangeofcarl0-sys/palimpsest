@@ -89,13 +89,18 @@ const NODE_TYPES: ReadonlySet<string> = new Set(["task", "subflow", "annotation"
 function parseTaskPayload(value: unknown): CanvasTaskPayload {
   if (typeof value !== "object" || value === null) fail("node.task must be an object");
   const raw = value as Record<string, unknown>;
+  const writePaths = optStrArray(raw["writePaths"], "task.writePaths");
+  const requiredArtifacts = optStrArray(raw["requiredArtifacts"], "task.requiredArtifacts");
+  const gateId = optStr(raw["gateId"], "task.gateId");
+  const role = optStr(raw["role"], "task.role");
+  const suggestedSkills = optStrArray(raw["suggestedSkills"], "task.suggestedSkills");
   return {
     dependsOn: strArray(raw["dependsOn"], "task.dependsOn"),
-    writePaths: optStrArray(raw["writePaths"], "task.writePaths"),
-    requiredArtifacts: optStrArray(raw["requiredArtifacts"], "task.requiredArtifacts"),
-    gateId: optStr(raw["gateId"], "task.gateId"),
-    role: optStr(raw["role"], "task.role"),
-    suggestedSkills: optStrArray(raw["suggestedSkills"], "task.suggestedSkills"),
+    ...(writePaths === undefined ? {} : { writePaths }),
+    ...(requiredArtifacts === undefined ? {} : { requiredArtifacts }),
+    ...(gateId === undefined ? {} : { gateId }),
+    ...(role === undefined ? {} : { role }),
+    ...(suggestedSkills === undefined ? {} : { suggestedSkills }),
   };
 }
 
@@ -118,7 +123,7 @@ function parseNode(value: unknown): CanvasNode {
     x: num(raw["x"], "node.x"),
     y: num(raw["y"], "node.y"),
     z: str(raw["z"], "node.z"),
-    ...(raw["g"] === undefined ? {} : { g: optStr(raw["g"], "node.g") }),
+    ...(raw["g"] === undefined ? {} : { g: str(raw["g"], "node.g") }),
     ...(type === "task" ? { task: parseTaskPayload(raw["task"]) } : {}),
     ...(type === "annotation" ? { text: str(raw["text"], "node.text") } : {}),
   };
@@ -138,7 +143,7 @@ function parseGroup(value: unknown): CanvasGroup {
   return {
     id: str(raw["id"], "group.id"),
     label: str(raw["label"], "group.label"),
-    ...(raw["g"] === undefined ? {} : { g: optStr(raw["g"], "group.g") }),
+    ...(raw["g"] === undefined ? {} : { g: str(raw["g"], "group.g") }),
     members: strArray(raw["members"], "group.members"),
   };
 }

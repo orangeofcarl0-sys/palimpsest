@@ -4,9 +4,9 @@ import { Background, Controls, ReactFlow, type Connection, type Edge, type Node 
 import "@xyflow/react/dist/style.css";
 
 import { forceLayout } from "./forceLayout";
-import { stateColor } from "./types";
+import { stateColor, type SatelliteAttempt } from "./types";
 
-export interface GraphNodeData {
+export interface GraphNodeData extends Record<string, unknown> {
   key: string;
   label: string;
   sub: string;
@@ -18,11 +18,12 @@ interface Props {
   links: Array<[number, number]>;
   selectedKey: string | null;
   editable: boolean;
-  onSelect(key: string): void;
+  satellites?: SatelliteAttempt[];
+  onSelect(key: string | null): void;
   onConnect?(from: string, to: string): void;
 }
 
-export function GraphView({ nodes, links, selectedKey, editable, onSelect, onConnect }: Props) {
+export function GraphView({ nodes, links, selectedKey, editable, satellites, onSelect, onConnect }: Props) {
   const layout = useMemo(
     () => forceLayout(nodes.length, links, 900, 620),
     // The layout only re-runs when the shape changes; dragging stays put.
@@ -30,27 +31,56 @@ export function GraphView({ nodes, links, selectedKey, editable, onSelect, onCon
     [nodes.length, JSON.stringify(links)],
   );
 
-  const flowNodes: Node<GraphNodeData>[] = nodes.map((node, index) => ({
-    id: node.key,
-    position: layout[index] ?? { x: 80, y: 80 },
-    data: node,
-    selected: node.key === selectedKey,
-    style: {
-      width: 190,
-      borderRadius: 10,
-      border: `2px solid ${node.color}`,
-      background: "#0f172a",
-      color: "#e2e8f0",
-      fontSize: 12,
-      padding: 10,
-    },
-  }));
+  const flowNodes: Node[] = [];
+  nodes.forEach((node, index) => {
+    flowNodes.push({
+      id: node.key,
+      position: layout[index] ?? { x: 80, y: 80 },
+      data: node,
+      selected: node.key === selectedKey,
+      zIndex: 1,
+      style: {
+        width: 190,
+        borderRadius: 10,
+        border: `2px solid ${node.color}`,
+        background: "#0f172a",
+        color: "#e2e8f0",
+        fontSize: 12,
+        padding: 10,
+      },
+    } as Node);
+  });
+  // PLMP-CANVAS-3: in-flight attempts as dashed satellites beside their task.
+  for (const satellite of satellites ?? []) {
+    const taskIndex = nodes.findIndex((node) => node.key === satellite.taskId);
+    if (taskIndex < 0) continue;
+    const cost = satellite.attribution === undefined ? "" : ` · ${satellite.attribution.model}`;
+    flowNodes.push({
+      id: `sat-${satellite.attemptId}`,
+      parentId: satellite.taskId,
+      extent: undefined,
+      position: { x: 200, y: 18 },
+      data: { label: `${satellite.role} · ${satellite.state}${cost}` },
+      selectable: true,
+      zIndex: 2,
+      style: {
+        width: 150,
+        borderRadius: 8,
+        border: "1px dashed #64748b",
+        background: "#0b1222",
+        color: "#94a3b8",
+        fontSize: 11,
+        padding: 6,
+      },
+    } as Node);
+  }
 
   const flowEdges: Edge[] = links.map(([from, to]) => ({
     id: `e-${nodes[from]!.key}-${nodes[to]!.key}`,
     source: nodes[from]!.key,
     target: nodes[to]!.key,
     animated: true,
+    zIndex: 3,
     style: { stroke: "#475569" },
   }));
 
@@ -60,7 +90,7 @@ export function GraphView({ nodes, links, selectedKey, editable, onSelect, onCon
         nodes={flowNodes}
         edges={flowEdges}
         fitView
-        onNodeClick={(_, node) => onSelect(node.id)}
+        onNodeClick={(_, node) => onSelect(node.id.startsWith("sat-") ? null : node.id)}
         onConnect={(connection: Connection) => {
           if (editable && onConnect && connection.source && connection.target && connection.source !== connection.target) {
             onConnect(connection.source, connection.target);
