@@ -15,6 +15,10 @@ export interface SatelliteAttempt {
   readonly taskTitle: string;
   readonly role: string;
   readonly state: string;
+  /** PLMP-RUNTIME-1: scope membership (G5) and the ephemeral identity face. */
+  readonly scopeId?: string;
+  readonly origin: "scheduler-activation";
+  readonly createdAt?: string;
   readonly attribution?: { readonly model: string; readonly cost: number };
 }
 
@@ -29,6 +33,9 @@ export function satelliteAttempts(graph: OrchestrationGraph): SatelliteAttempt[]
         taskTitle: task.objective,
         role: task.role,
         state: attempt.state,
+        ...(task.scopeId === undefined ? {} : { scopeId: task.scopeId }),
+        origin: "scheduler-activation",
+        ...(attempt.timeline.length > 0 ? { createdAt: attempt.timeline[0]!.at } : {}),
         ...(attempt.attribution === undefined ? {} : { attribution: attempt.attribution }),
       });
     }
@@ -47,6 +54,8 @@ export interface TraceRow {
   readonly taskTitle: string;
   readonly role: string;
   readonly state: string;
+  /** PLMP-RUNTIME-1: scope membership (G5). */
+  readonly scopeId?: string;
   readonly spans: readonly TraceSpan[];
 }
 
@@ -68,6 +77,7 @@ export function traceRows(graph: OrchestrationGraph): TraceRow[] {
         taskTitle: task.objective,
         role: task.role,
         state: attempt.state,
+        ...(task.scopeId === undefined ? {} : { scopeId: task.scopeId }),
         spans,
       });
     }

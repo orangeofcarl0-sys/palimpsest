@@ -7,8 +7,6 @@ import type {
   PresetMeta,
   ProjectProposal,
   ProposalDiagnostic,
-  SatelliteAttempt,
-  TraceRow,
 } from "./types";
 
 const TOKEN_KEY = "palimpsest-token";
@@ -104,11 +102,6 @@ export const insertProposal = (
   proposal: ProjectProposal,
 ): Promise<{ doc: CanvasDoc }> =>
   call("/api/canvas/insert", { method: "POST", body: JSON.stringify({ doc, proposal }) });
-
-export const deriveCanvas = (): Promise<{
-  satellites: SatelliteAttempt[];
-  traces: TraceRow[];
-}> => call("/api/canvas/derive", { method: "POST", body: "{}" });
 
 export const declareProposal = (
   proposal: ProjectProposal,

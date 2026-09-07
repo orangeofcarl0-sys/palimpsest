@@ -312,10 +312,15 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       const diffBody = diff.json.diff as Json;
       expect(diffBody.added).toEqual([{ title: "调研" }, { title: "新阶段" }]);
       expect(diffBody.removed).toEqual([{ title: "Complete task-1." }]);
+      // PLMP-RUNTIME-1: the derive face is retired - satellites/traces ride
+      // the graph poll; the retired endpoint answers 404.
       const derived = await api(handle, "/api/canvas/derive", { method: "POST", body: {} });
-      expect(derived.status).toBe(200);
-      expect(Array.isArray(derived.json.satellites)).toBe(true);
-      expect(Array.isArray(derived.json.traces)).toBe(true);
+      expect(derived.status).toBe(404);
+      const graphView = await api(handle, "/api/graph");
+      const runtime = ((graphView.json.graph as Json).runtime ?? null) as Json | null;
+      expect(runtime).not.toBeNull();
+      expect(Array.isArray(runtime!.satellites)).toBe(true);
+      expect(Array.isArray(runtime!.traces)).toBe(true);
       const laid = await api(handle, "/api/canvas/layout", {
         method: "POST",
         body: { doc: { version: 2, goal: "g", nodes: [taskNode("n1", "调研", 500, 500)], groups: [] }, layout: "flow_lr" },

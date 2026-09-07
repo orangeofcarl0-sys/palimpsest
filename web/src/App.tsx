@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   ApiError,
-  deriveCanvas,
   getGraph,
   getToken,
   health,
@@ -135,15 +134,13 @@ export function App() {
     }
   }, [doc, projectId]);
 
+  // PLMP-RUNTIME-1: satellites/traces ride the graph poll (one canonical
+  // graph, one derivation) - the separate derive poll is retired.
   useEffect(() => {
-    if (authorized !== true || mode !== "live" || (!satellitesOn && !traceOn)) return;
-    void deriveCanvas()
-      .then((result) => {
-        setSatellites(result.satellites);
-        setTraces(result.traces);
-      })
-      .catch((error) => setMessage(error instanceof Error ? error.message : String(error)));
-  }, [authorized, mode, satellitesOn, traceOn, cursor]);
+    if (graph === null || graph.runtime === undefined) return;
+    setSatellites(graph.runtime.satellites);
+    setTraces(graph.runtime.traces);
+  }, [graph]);
 
   if (authorized === null) {
     return <Center>连接中…</Center>;

@@ -33,8 +33,6 @@ import {
   canvasLayout,
   liftToAgentGraph,
   parseCanvasDoc,
-  satelliteAttempts,
-  traceRows,
   unloadToCanvasDoc,
   type CanvasLayoutName,
 } from "./canvas/index.js";
@@ -307,14 +305,6 @@ export function serveOrchestration(
           const doc = parseCanvasDoc(body["doc"]);
           const proposal = body["proposal"] as ProjectProposal;
           sendJson(response, 200, { doc: canvasInsertFragment(doc, proposal) });
-          return;
-        }
-        if (request.method === "POST" && path === "/api/canvas/derive") {
-          const graph = controller.orchestrationGraph();
-          sendJson(response, 200, {
-            satellites: satelliteAttempts(graph),
-            traces: traceRows(graph),
-          });
           return;
         }
         // PLMP-GRAPH-2: the patch review face - validate against the live

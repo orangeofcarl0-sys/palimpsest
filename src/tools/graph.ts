@@ -14,6 +14,7 @@ import { actionKey, stableEntityId } from "../domain/index.js";
 import type { ProjectIr } from "../schema/index.js";
 
 import type { AttemptAttribution } from "./controller.js";
+import { satelliteAttempts, traceRows } from "../canvas/derive.js";
 
 export interface GraphAttempt {
   readonly attemptId: string;
@@ -53,6 +54,18 @@ export interface OrchestrationGraph {
   };
   readonly tasks: ReadonlyArray<GraphTask>;
   readonly promotions: ReadonlyArray<GraphPromotion>;
+  /** PLMP-RUNTIME-1: the runtime/trace projections over the same graph -
+   * ephemeral attempt instances, span rows, and the declared role capacity
+   * view. Absent only in hand-built fixtures predating the node. */
+  readonly runtime?: {
+    readonly satellites: ReturnType<typeof satelliteAttempts>;
+    readonly traces: ReturnType<typeof traceRows>;
+    readonly roleOccupancy?: ReadonlyArray<{
+      readonly role: string;
+      readonly occupied: number;
+      readonly slots: number;
+    }>;
+  };
 }
 
 /** Human-language timeline labels; anything unmapped degrades to a neutral phrase. */
@@ -211,7 +224,7 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     attempts: attemptsByTask.get(spec.task_id) ?? [],
   }));
 
-  return {
+  const graph: OrchestrationGraph = {
     project: {
       projectId,
       revision: project.revision,
@@ -221,5 +234,39 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     },
     tasks,
     promotions: [...promotions.values()],
+  };
+  // PLMP-RUNTIME-1: one canonical graph, three projections. The satellite/
+  // trace derivations ride the same payload as the definition graph, and the
+  // declared role capacity view (G6) comes from the same ledger.
+  const tableRow = connection
+    .prepare("SELECT table_json FROM role_tables WHERE project_id=?")
+    .get(projectId) as { table_json: Uint8Array } | undefined;
+  let roleOccupancy: Array<{ role: string; occupied: number; slots: number }> | undefined;
+  if (tableRow !== undefined) {
+    const declared = JSON.parse(new TextDecoder().decode(tableRow.table_json)) as {
+      roles: Array<{ role: string; slots: number }>;
+    };
+    const occupied = new Map<string, number>();
+    for (const spec of project.tasks) {
+      const state = taskStates.get(spec.task_id);
+      if (state !== "ACTIVE" && state !== "VERIFYING") continue;
+      const role = spec.role ?? "implementer";
+      occupied.set(role, (occupied.get(role) ?? 0) + 1);
+    }
+    roleOccupancy = declared.roles
+      .map((entry) => ({
+        role: entry.role,
+        occupied: occupied.get(entry.role) ?? 0,
+        slots: entry.slots,
+      }))
+      .sort((a, b) => a.role.localeCompare(b.role));
+  }
+  return {
+    ...graph,
+    runtime: {
+      satellites: satelliteAttempts(graph),
+      traces: traceRows(graph),
+      ...(roleOccupancy === undefined ? {} : { roleOccupancy }),
+    },
   };
 }

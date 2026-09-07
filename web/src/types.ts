@@ -31,6 +31,7 @@ export interface OrchestrationGraph {
   project: { projectId: string; revision: number; goal: string; paused: boolean; cursor: number };
   tasks: GraphTask[];
   promotions: GraphPromotion[];
+  runtime?: RuntimeView;
 }
 
 export interface TaskProposal {
@@ -151,6 +152,7 @@ export interface TraceRow {
   taskTitle: string;
   role: string;
   state: string;
+  scopeId?: string;
   spans: TraceSpan[];
 }
 
@@ -160,5 +162,15 @@ export interface SatelliteAttempt {
   taskTitle: string;
   role: string;
   state: string;
+  scopeId?: string;
+  origin: "scheduler-activation";
+  createdAt?: string;
   attribution?: { model: string; cost: number };
+}
+
+/** PLMP-RUNTIME-1: one canonical graph, three projections. */
+export interface RuntimeView {
+  satellites: SatelliteAttempt[];
+  traces: TraceRow[];
+  roleOccupancy?: Array<{ role: string; occupied: number; slots: number }>;
 }
