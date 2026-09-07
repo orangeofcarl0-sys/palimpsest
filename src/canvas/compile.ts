@@ -1,64 +1,24 @@
 /**
- * PLMP-CANVAS-1 §1.2 + PLMP-CANVAS-6 (23 号规格): compilation. Inside the
- * doc, task dependencies reference NODE KEYS (the stable graph identity -
- * renaming a title never breaks an edge). Compiling to a ProjectProposal
- * maps key→title: titles stay the proposal's dependency vocabulary, so the
- * flatten across the `z` chain is where the vocabulary switch happens - the
- * subflow boundary is editorial, and its inputs/outputs are just the members
- * an outside task depends on / that outside tasks depend on. Groups are
+ * PLMP-CANVAS-1 §1.2 + PLMP-CANVAS-6 + PLMP-GRAPH-1 §1.3: compilation is a
+ * single path - CanvasDoc v2 lifts into the AgentGraph IR (node keys become
+ * data edges; the subflow boundary is editorial), and the IR's capability-
+ * gated compiler produces the ProjectProposal. Inside the doc, dependencies
+ * reference NODE KEYS (the stable graph identity - renaming a title never
+ * breaks an edge); titles stay the proposal's dependency vocabulary, so the
+ * vocabulary switch happens exactly once, in the IR compile. Groups are
  * transparent and annotations are dropped.
- *
- * Structural authoring errors fail closed here (before the shared proposal
- * validator runs): duplicate titles would silently corrupt the title-keyed
- * dependency graph downstream, so the compile refuses them outright; a
- * dependency key that survived without parsing cannot be resolved and is
- * refused too.
  */
 
-import type { ProjectProposal, TaskProposal } from "../architecture/index.js";
+import { compileAgentGraph } from "../graph/index.js";
+import type { ProjectProposal } from "../architecture/index.js";
 import { ROOT_Z, type CanvasDoc, type CanvasNode } from "./doc.js";
-
-function taskProposalOf(node: CanvasNode, titleByKey: Map<string, string>): TaskProposal {
-  const task = node.task!;
-  return {
-    title: node.title,
-    dependsOn: task.dependsOn.map((key) => {
-      const title = titleByKey.get(key);
-      if (title === undefined) failUnresolvable(node.key, key);
-      return title;
-    }),
-    ...(task.writePaths === undefined ? {} : { writePaths: [...task.writePaths] }),
-    ...(task.requiredArtifacts === undefined ? {} : { requiredArtifacts: [...task.requiredArtifacts] }),
-    ...(task.gateId === undefined ? {} : { gateId: task.gateId }),
-    ...(task.role === undefined ? {} : { role: task.role }),
-    ...(task.suggestedSkills === undefined ? {} : { suggestedSkills: [...task.suggestedSkills] }),
-  };
-}
+import { liftToAgentGraph } from "./lift.js";
 
 export function canvasCompile(
   doc: CanvasDoc,
   options?: { readonly goal?: string; readonly changeClass?: ProjectProposal["changeClass"] },
 ): ProjectProposal {
-  const taskNodes = doc.nodes.filter((node) => node.type === "task");
-  const titleByKey = new Map(taskNodes.map((node) => [node.key, node.title]));
-  const seen = new Set<string>();
-  for (const title of taskNodes.map((node) => node.title)) {
-    if (seen.has(title)) failDuplicate(title);
-    seen.add(title);
-  }
-  return {
-    goal: options?.goal ?? doc.goal,
-    changeClass: options?.changeClass ?? "behavior_change",
-    tasks: taskNodes.map((node) => taskProposalOf(node, titleByKey)),
-  };
-}
-
-function failDuplicate(title: string): never {
-  throw new Error(`canvas doc: duplicate task title "${title}" - titles are the dependency key in the compiled proposal`);
-}
-
-function failUnresolvable(key: string, dependency: string): never {
-  throw new Error(`canvas doc: node "${key}" depends on unresolvable key "${dependency}"`);
+  return compileAgentGraph(liftToAgentGraph(doc), options);
 }
 
 /**

@@ -198,7 +198,7 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       suggestedSkills: ["web"],
     });
     expect(() => canvasCompile(docWith(taskNode("n1", "同名", 0, 0), taskNode("n2", "同名", 1, 1)))).toThrow(
-      /duplicate task title/,
+      /duplicate agent label/,
     );
   });
 
