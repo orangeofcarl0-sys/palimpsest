@@ -21,6 +21,9 @@ export interface TaskProposal {
   readonly gateId?: string;
   /** Optional slot role (PLMP-ARCH-3 presets); absent means "implementer". */
   readonly role?: string;
+  /** Optional skill hints for the claiming worker (PLMP-CANVAS-2); compiles
+   * to the existing TaskSpec.suggested_skills channel - zero event touch. */
+  readonly suggestedSkills?: readonly string[];
 }
 
 export interface ProjectProposal {
@@ -157,5 +160,6 @@ export function proposalTaskSpecs(proposal: ProjectProposal): TaskSpec[] {
     write_paths: [...(task.writePaths ?? [])],
     required_artifacts: [...(task.requiredArtifacts ?? [])],
     ...(task.role === undefined ? {} : { role: task.role }),
+    ...(task.suggestedSkills === undefined ? {} : { suggested_skills: [...task.suggestedSkills] }),
   }));
 }

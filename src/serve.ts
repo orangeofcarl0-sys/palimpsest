@@ -26,6 +26,16 @@ import {
   validateProjectProposal,
   type ProjectProposal,
 } from "./architecture/index.js";
+import {
+  canvasCompile,
+  canvasDiff,
+  canvasInsertFragment,
+  canvasLayout,
+  parseCanvasDoc,
+  satelliteAttempts,
+  traceRows,
+  type CanvasLayoutName,
+} from "./canvas/index.js";
 import type { AttemptAttribution, ProjectController } from "./tools/index.js";
 import { definePalimpsestControl, type PalimpsestControlSurface } from "./tools/index.js";
 
@@ -239,6 +249,61 @@ export function serveOrchestration(
           const proposal = JSON.parse(await readBody(request)) as ProjectProposal;
           sendJson(response, 200, {
             diagnostics: validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) }),
+          });
+          return;
+        }
+        // PLMP-CANVAS: pure derivations over the canvas doc - compile to the
+        // existing proposal face, diff against the live projection, layout
+        // (positions only), fragment insert, runtime/trace derivation.
+        // None of these write; the ledger stays the only server-side truth.
+        if (request.method === "POST" && path === "/api/canvas/compile") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const doc = parseCanvasDoc(body["doc"]);
+          const proposal = canvasCompile(doc, {
+            ...(typeof body["goal"] === "string" ? { goal: body["goal"] } : {}),
+          });
+          sendJson(response, 200, {
+            proposal,
+            diagnostics: validateProjectProposal(proposal, { knownGateIds: declaredGateIds(controller) }),
+          });
+          return;
+        }
+        if (request.method === "POST" && path === "/api/canvas/diff") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const proposal =
+            body["doc"] === undefined
+              ? (body["proposal"] as ProjectProposal)
+              : canvasCompile(parseCanvasDoc(body["doc"]));
+          const graph = controller.orchestrationGraph();
+          const titleById = new Map(graph.tasks.map((task) => [task.taskId, task.objective]));
+          const live = graph.tasks.map((task) => ({
+            objective: task.objective,
+            dependsOn: task.dependsOn.map((id) => titleById.get(id) ?? id),
+            writePaths: task.writePaths,
+            requiredArtifacts: task.requiredArtifacts,
+            role: task.role,
+          }));
+          sendJson(response, 200, { diff: canvasDiff(proposal.tasks, live) });
+          return;
+        }
+        if (request.method === "POST" && path === "/api/canvas/layout") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const doc = parseCanvasDoc(body["doc"]);
+          sendJson(response, 200, { doc: canvasLayout(doc, body["layout"] as CanvasLayoutName) });
+          return;
+        }
+        if (request.method === "POST" && path === "/api/canvas/insert") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const doc = parseCanvasDoc(body["doc"]);
+          const proposal = body["proposal"] as ProjectProposal;
+          sendJson(response, 200, { doc: canvasInsertFragment(doc, proposal) });
+          return;
+        }
+        if (request.method === "POST" && path === "/api/canvas/derive") {
+          const graph = controller.orchestrationGraph();
+          sendJson(response, 200, {
+            satellites: satelliteAttempts(graph),
+            traces: traceRows(graph),
           });
           return;
         }
