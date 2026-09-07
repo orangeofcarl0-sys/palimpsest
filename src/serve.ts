@@ -31,11 +31,20 @@ import {
   canvasDiff,
   canvasInsertFragment,
   canvasLayout,
+  liftToAgentGraph,
   parseCanvasDoc,
   satelliteAttempts,
   traceRows,
+  unloadToCanvasDoc,
   type CanvasLayoutName,
 } from "./canvas/index.js";
+import {
+  applyGraphPatch,
+  compileAgentGraph,
+  diffGraphPatch,
+  validateGraphPatch,
+  type GraphPatch,
+} from "./graph/index.js";
 import type { AttemptAttribution, ProjectController } from "./tools/index.js";
 import { definePalimpsestControl, type PalimpsestControlSurface } from "./tools/index.js";
 
@@ -304,6 +313,41 @@ export function serveOrchestration(
           sendJson(response, 200, {
             satellites: satelliteAttempts(graph),
             traces: traceRows(graph),
+          });
+          return;
+        }
+        // PLMP-GRAPH-2: the patch review face - validate against the live
+        // revision, preview in plain language, apply to the DRAFT doc. Pure
+        // derivation, zero writes; declaration still rides start/plan.
+        if (request.method === "POST" && path === "/api/canvas/patch") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const doc = parseCanvasDoc(body["doc"]);
+          const patch = body["patch"] as GraphPatch;
+          const graph = liftToAgentGraph(doc);
+          const liveRevision = controller.orchestrationGraph().project.revision;
+          const diagnostics = validateGraphPatch(graph, patch, { liveRevision });
+          const preview = diffGraphPatch(graph, patch);
+          if (diagnostics.length > 0) {
+            sendJson(response, 200, { applied: false, diagnostics, preview });
+            return;
+          }
+          const patched = applyGraphPatch(graph, patch);
+          let proposalDiagnostics: ReturnType<typeof validateProjectProposal> = [];
+          let compileError: string | null = null;
+          try {
+            const proposal = compileAgentGraph(patched);
+            proposalDiagnostics = validateProjectProposal(proposal, {
+              knownGateIds: declaredGateIds(controller),
+            });
+          } catch (error) {
+            compileError = error instanceof Error ? error.message : String(error);
+          }
+          sendJson(response, 200, {
+            applied: true,
+            doc: unloadToCanvasDoc(patched),
+            preview,
+            diagnostics: proposalDiagnostics,
+            ...(compileError === null ? {} : { compileError }),
           });
           return;
         }

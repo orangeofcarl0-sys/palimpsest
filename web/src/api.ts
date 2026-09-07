@@ -114,3 +114,28 @@ export const declareProposal = (
   proposal: ProjectProposal,
 ): Promise<{ diagnostics: ProposalDiagnostic[]; declared: boolean; eventType?: string }> =>
   call("/api/proposal/declare", { method: "POST", body: JSON.stringify(proposal) });
+
+/** PLMP-GRAPH-2: patch review face - validate/preview/apply to the draft, zero writes. */
+export interface CanvasPatchPreviewEntry {
+  op: "add" | "remove" | "update" | "move";
+  target: "node" | "edge";
+  id: string;
+  detail: string;
+}
+
+export interface CanvasPatchDiagnostic {
+  type: string;
+  id?: string;
+  detail: string;
+}
+
+export interface CanvasPatchResult {
+  applied: boolean;
+  doc?: CanvasDoc;
+  preview: CanvasPatchPreviewEntry[];
+  diagnostics: CanvasPatchDiagnostic[];
+  compileError?: string;
+}
+
+export const patchCanvas = (doc: CanvasDoc, patch: unknown): Promise<CanvasPatchResult> =>
+  call("/api/canvas/patch", { method: "POST", body: JSON.stringify({ doc, patch }) });

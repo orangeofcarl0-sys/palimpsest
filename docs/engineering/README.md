@@ -28,6 +28,7 @@
 | `22-canvas-integrity-spec.md` | **Canvas 完整性规格（PLMP-CANVAS-5，G1）**：所有权不变量（z owner 必须是 subflow、self-parent/z 链/group 链无环、类型-字段纪律全 fail-closed）、布局传递子孙平移（深度 ≥2 不断链）、面板全祖先链可见性（折叠祖父全隐藏）+ drop 环守卫 + 恢复/导入形状守卫；验收 CANVAS-A11–A17 + 三层嵌套浏览器冒烟；零事件/零 ProjectIR/零调度漂移；G0 审计＝`audits/CURRENT-STATE-ASSESSMENT.md`，G2–G8 规划＝`audits/NEXT-GRAPH-EVOLUTION-PLAN.md` |
 | `23-stable-graph-identity-spec.md` | **稳定图身份规格（PLMP-CANVAS-6，G2）**：CanvasDoc v2 单格式——任务依赖从 title 改为 node key（key＝图身份、title＝显示元数据），v1 响亮拒绝无双解析路径（禁止兼容层）、依赖引用完整性 INV-D1/D2（悬空 key/非 task 目标即拒）、编译器 key→title 映射（提案合同不变）、fragment key 重映射、面板连线/依赖 chip/守卫全 key 化；验收 CANVAS-A18–A21 + 改名浏览器冒烟 |
 | `24-agent-graph-ir-spec.md` | **AgentGraph IR 规格（PLMP-GRAPH-1，G3）**：`src/graph/` 渲染器/运行时双解耦图 IR（9 节点 kind 分层 runtime-semantic vs advisory、9 边 kind、scope compound 同款无环纪律、IR 层环合法）、capability 门四诊断 fail-closed（UNSUPPORTED_NODE_KIND/EDGE_KIND/EDGE_ENDPOINT/RUNTIME_CYCLE——画出来≠能跑）、**单编译路径** CanvasDoc→lift→IR→ProjectProposal（旧 flatten 删除、输出逐字节同形）、布局纯度推广（四布局后 lift 结构全等）；验收 GRAPH-A01–A05 |
+| `25-graph-patch-spec.md` | **GraphPatch 规格（PLMP-GRAPH-2，G4）**：AgentGraph IR 上的正式编辑协议（语义操作、无坐标、baseRevision 新鲜度锚定）、固定应用序 + 十类 fail-closed 诊断（显式删边不级联、结果图重解析兜底）、人话预览 diffGraphPatch、patchFromFragment 统一 preset/fragment 入口（manual 保持 doc 直改不中转）、serve `/api/canvas/patch` 纯派生（STALE_BASE 对 live revision）+ 面板预览→应用双段交互；验收 PATCH-A01–A05 + 浏览器冒烟 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

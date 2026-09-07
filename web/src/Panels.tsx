@@ -6,7 +6,9 @@ import {
   declareProposal,
   diffCanvas,
   insertProposal,
+  patchCanvas,
   presetDraft,
+  type CanvasPatchResult,
 } from "./api";
 import {
   CANVAS_ROLES,
@@ -218,6 +220,9 @@ export function CanvasEditor(props: {
   const [diagnostics, setDiagnostics] = useState<ProposalDiagnostic[] | null>(null);
   const [diff, setDiff] = useState<CanvasDiffResult | null>(null);
   const [confirming, setConfirming] = useState<ProjectProposal | null>(null);
+  // PLMP-GRAPH-2: the patch review face - preview first, apply on confirm.
+  const [patchText, setPatchText] = useState<string | null>(null);
+  const [patchReview, setPatchReview] = useState<CanvasPatchResult | null>(null);
 
   const patchNode = (key: string, patch: Partial<CanvasNode>): void => {
     props.onDocChange({
@@ -274,6 +279,29 @@ export function CanvasEditor(props: {
       }
     })();
   };
+
+  const reviewPatch = (): void => {
+    void (async () => {
+      try {
+        const patch = JSON.parse(patchText ?? "") as unknown;
+        const result = await patchCanvas(doc, patch);
+        setPatchReview(result);
+      } catch (error) {
+        props.onMessage(`Patch ✕ ${error instanceof Error ? error.message : String(error)}`);
+      }
+    })();
+  };
+
+  const applyPatch = (): void => {
+    if (patchReview?.doc === undefined) return;
+    props.onDocChange(patchReview.doc);
+    setPatchReview(null);
+    setPatchText(null);
+    props.onMessage("Patch 已应用到草稿");
+  };
+
+  const patchPreviewColor = (op: string): string =>
+    op === "add" ? "#22c55e" : op === "remove" ? "#ef4444" : op === "move" ? "#38bdf8" : "#f59e0b";
 
   return (
     <div style={{ display: "grid", gap: 8, fontSize: 12 }}>
@@ -493,7 +521,58 @@ export function CanvasEditor(props: {
           <button style={button(false)} onClick={showDiff}>
             对照实时
           </button>
+          <button
+            style={button(false)}
+            onClick={() => {
+              setPatchText(patchText === null ? "" : null);
+              setPatchReview(null);
+            }}
+          >
+            GraphPatch
+          </button>
         </div>
+        {patchText !== null && (
+          <div style={{ display: "grid", gap: 4 }}>
+            <textarea
+              style={{ ...field, minHeight: 96, fontFamily: "monospace" }}
+              placeholder='粘贴 GraphPatch JSON（主代理产出；{"addNodes":[…],"addEdges":[…]}）'
+              value={patchText}
+              onChange={(event) => setPatchText(event.target.value)}
+            />
+            <div style={{ display: "flex", gap: 6 }}>
+              <button style={button(false)} disabled={patchText.trim() === ""} onClick={reviewPatch}>
+                预览 Patch
+              </button>
+              {patchReview !== null && patchReview.doc !== undefined && (
+                <button style={button(true)} onClick={applyPatch}>
+                  应用到草稿
+                </button>
+              )}
+            </div>
+            {patchReview !== null && (
+              <div style={{ display: "grid", gap: 2 }}>
+                <div style={{ color: "#94a3b8" }}>
+                  {patchReview.applied ? "Patch 可应用（预览如下）" : "Patch 被拒绝"}
+                </div>
+                {patchReview.preview.map((entry, index) => (
+                  <div key={index} style={{ color: patchPreviewColor(entry.op) }}>
+                    {entry.op === "add" ? "＋" : entry.op === "remove" ? "－" : entry.op === "move" ? "⇒" : "±"}{" "}
+                    {entry.detail}
+                  </div>
+                ))}
+                {patchReview.diagnostics.map((d, index) => (
+                  <div key={index} style={{ color: "#f59e0b" }}>
+                    {d.type}
+                    {d.id === undefined ? "" : `（${d.id}）`}： {d.detail}
+                  </div>
+                ))}
+                {patchReview.compileError !== undefined && (
+                  <div style={{ color: "#f59e0b" }}>编译： {patchReview.compileError}</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
         {diagnostics !== null && (
           <div>
             {diagnostics.length === 0 ? (
@@ -595,7 +674,7 @@ export function ArchitectureBar(props: {
     })();
   };
   const generate = (): void => {
-    const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明），把阶段清单给我确认。`;
+    const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明）；若要修改当前画布草稿，产出 GraphPatch JSON（addNodes/addEdges/updateNodes/removeNodes/removeEdges/moveScope，可带 baseRevision），交我在画布 GraphPatch 面预览应用。`;
     void navigator.clipboard?.writeText(instruction).catch(() => undefined);
     props.onMessage("架构师指令已复制——粘贴给主代理会话");
   };

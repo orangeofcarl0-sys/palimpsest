@@ -20,3 +20,20 @@ export type {
   AgentGraphNodeKind,
   AgentTaskPayload,
 } from "./ir.js";
+
+export {
+  EMPTY_PATCH,
+  applyGraphPatch,
+  diffGraphPatch,
+  patchFromFragment,
+  validateGraphPatch,
+} from "./patch.js";
+export type {
+  GraphPatch,
+  GraphPatchDiagnostic,
+  GraphPatchDiagnosticType,
+  GraphPatchEdgeUpdate,
+  GraphPatchMoveScope,
+  GraphPatchNodeUpdate,
+  GraphPatchPreviewEntry,
+} from "./patch.js";
