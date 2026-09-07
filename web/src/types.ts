@@ -111,7 +111,8 @@ export interface CanvasGroup {
 }
 
 export interface CanvasDoc {
-  version: 1;
+  /** v2 (PLMP-CANVAS-6): task dependencies reference node keys. */
+  version: 2;
   goal: string;
   nodes: CanvasNode[];
   groups: CanvasGroup[];

@@ -65,10 +65,14 @@ function applyMove(nodes: readonly CanvasNode[], key: string, dx: number, dy: nu
 function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
   const roots = doc.nodes.filter((node) => node.z === ROOT_Z && node.type !== "annotation");
   const byKey = new Map(roots.map((node) => [node.key, node]));
+  const docKeys = new Map(doc.nodes.map((node) => [node.key, node]));
+  // PLMP-CANVAS-6: dependencies are node keys; only dependencies that land
+  // on a root node shape the root layout (nested members follow their
+  // subflow's translation).
   const depsOf = (node: CanvasNode): string[] =>
     (node.task?.dependsOn ?? [])
-      .map((title) => byKey.get(titleKey(doc, title)))
-      .filter((dep): dep is CanvasNode => dep !== undefined)
+      .map((key) => docKeys.get(key))
+      .filter((dep): dep is CanvasNode => dep !== undefined && byKey.has(dep.key))
       .map((dep) => dep.key);
   const depth = new Map<string, number>();
   const visit = (key: string, level: number): void => {
@@ -103,19 +107,14 @@ function layered(doc: CanvasDoc, horizontal: boolean): CanvasDoc {
   return { ...doc, nodes };
 }
 
-function titleKey(doc: CanvasDoc, title: string): string {
-  return doc.nodes.find((node) => node.type !== "annotation" && node.title === title)?.key ?? "";
-}
-
 function force(doc: CanvasDoc): CanvasDoc {
   const roots = doc.nodes.filter((node) => node.z === ROOT_Z && node.type !== "annotation");
   if (roots.length === 0) return doc;
   const index = new Map(roots.map((node, i) => [node.key, i]));
   const links: Array<[number, number]> = [];
   for (const node of roots) {
-    for (const title of node.task?.dependsOn ?? []) {
-      const key = titleKey(doc, title);
-      const from = key === undefined ? undefined : index.get(key);
+    for (const key of node.task?.dependsOn ?? []) {
+      const from = index.get(key);
       const to = index.get(node.key);
       if (from !== undefined && to !== undefined) links.push([from, to]);
     }

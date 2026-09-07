@@ -41,7 +41,7 @@ const LAYOUTS: Array<{ id: CanvasLayoutName; label: string }> = [
 ];
 
 function emptyDoc(): CanvasDoc {
-  return { version: 1, goal: "", nodes: [], groups: [] };
+  return { version: 2, goal: "", nodes: [], groups: [] };
 }
 
 export function App() {
@@ -297,12 +297,14 @@ export function App() {
                   const source = doc.nodes.find((node) => node.key === fromKey);
                   const target = doc.nodes.find((node) => node.key === toKey);
                   if (source === undefined || target?.task === undefined || source.type !== "task") return;
-                  if (target.task.dependsOn.includes(source.title)) return;
+                  // PLMP-CANVAS-6: dependencies reference node keys - renaming
+                  // a title never rewires the graph.
+                  if (target.task.dependsOn.includes(source.key)) return;
                   setDoc({
                     ...doc,
                     nodes: doc.nodes.map((node) =>
                       node.key === toKey && node.task !== undefined
-                        ? { ...node, task: { ...node.task, dependsOn: [...node.task.dependsOn, source.title] } }
+                        ? { ...node, task: { ...node.task, dependsOn: [...node.task.dependsOn, source.key] } }
                         : node,
                     ),
                   });

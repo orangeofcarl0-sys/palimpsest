@@ -212,6 +212,9 @@ export function CanvasEditor(props: {
   const { doc, selectedKey } = props;
   const selected = doc.nodes.find((node) => node.key === selectedKey) ?? null;
   const selectedGroup = doc.groups.find((group) => group.id === selectedKey) ?? null;
+  // PLMP-CANVAS-6: dependencies are node keys; chips display the resolved
+  // title (a dangling key shows raw - honest).
+  const titleByKey = new Map(doc.nodes.map((node) => [node.key, node.title]));
   const [diagnostics, setDiagnostics] = useState<ProposalDiagnostic[] | null>(null);
   const [diff, setDiff] = useState<CanvasDiffResult | null>(null);
   const [confirming, setConfirming] = useState<ProjectProposal | null>(null);
@@ -451,7 +454,7 @@ export function CanvasEditor(props: {
               <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                 {selected.task.dependsOn.map((dep) => (
                   <span key={dep} style={{ background: "#1e293b", borderRadius: 6, padding: "2px 6px" }}>
-                    ← {dep}
+                    ← {titleByKey.get(dep) ?? dep}
                     <button
                       style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", marginLeft: 4 }}
                       onClick={() =>

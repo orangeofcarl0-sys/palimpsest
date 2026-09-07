@@ -1,17 +1,18 @@
 import type { CanvasDoc } from "./types";
 
 /**
- * PLMP-CANVAS-5 INV-C9: local shape guard for docs that never crossed the
- * kernel parser - localStorage restore and JSON import. It mirrors the
- * kernel ownership invariants (owner must be a subflow, no self-parent,
- * acyclic z/group chains) so a malformed doc can neither render wrong nor
- * recurse forever. The kernel `parseCanvasDoc` stays the only authority:
- * serve endpoints parse every doc; this is renderer-side stop-gap on an
- * independent build chain, not copied compilation logic.
+ * PLMP-CANVAS-5 INV-C9 + PLMP-CANVAS-6: local shape guard for docs that
+ * never crossed the kernel parser - localStorage restore and JSON import.
+ * It mirrors the kernel invariants (owner must be a subflow, no self-parent,
+ * acyclic z/group chains, dependencies reference existing task keys) so a
+ * malformed doc can neither render wrong nor recurse forever. The kernel
+ * `parseCanvasDoc` stays the only authority: serve endpoints parse every
+ * doc; this is renderer-side stop-gap on an independent build chain, not
+ * copied compilation logic.
  */
 export function canvasDocShapeError(doc: CanvasDoc): string | null {
-  if (doc === null || typeof doc !== "object" || doc.version !== 1) {
-    return "不是画布文档（version 1）";
+  if (doc === null || typeof doc !== "object" || doc.version !== 2) {
+    return "不是画布文档（version 2，key 依赖）";
   }
   if (!Array.isArray(doc.nodes) || !Array.isArray(doc.groups)) {
     return "不是画布文档（nodes/groups 缺失）";
@@ -32,6 +33,14 @@ export function canvasDocShapeError(doc: CanvasDoc): string | null {
       if (seen.has(current.z)) return `归属环：${current.z}`;
       seen.add(current.z);
       current = byKey.get(current.z);
+    }
+  }
+  // PLMP-CANVAS-6 INV-D1/D2: dependencies reference existing task keys.
+  for (const node of doc.nodes) {
+    for (const dependency of node.task?.dependsOn ?? []) {
+      const target = byKey.get(dependency);
+      if (target === undefined) return `节点 ${node.key} 依赖未知 key ${dependency}`;
+      if (target.type !== "task") return `节点 ${node.key} 的依赖 ${dependency} 不是任务`;
     }
   }
   const byId = new Map(doc.groups.map((group) => [group.id, group]));

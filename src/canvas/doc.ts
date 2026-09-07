@@ -1,19 +1,18 @@
 /**
- * PLMP-CANVAS-1 (21 号规格): the canvas definition layer. A CanvasDoc is the
- * client-side authoring scratchpad - the orchestration ledger stays the only
- * server-side truth. The format follows Node-RED's flat-array contract with
- * ownership fields instead of nesting: `z` names the owning subflow (root
- * nodes say "root"), `g` the visual group; depth comes from `z` chains, so
- * arbitrary nesting serializes as a flat list. Dependencies are TITLES - the
- * proposal's own vocabulary - so compiling to a ProjectProposal is a flatten,
- * and what the canvas draws as a subflow boundary is editorial only.
+ * PLMP-CANVAS-1 + PLMP-CANVAS-6 (23 号规格): the canvas definition layer. A
+ * CanvasDoc is the client-side authoring scratchpad - the orchestration ledger
+ * stays the only server-side truth. The format follows Node-RED's flat-array
+ * contract with ownership fields instead of nesting: `z` names the owning
+ * subflow (root nodes say "root"), `g` the visual group; depth comes from `z`
+ * chains, so arbitrary nesting serializes as a flat list. Since CANVAS-6 (v2)
+ * task dependencies reference NODE KEYS - the stable graph identity - while
+ * titles are display metadata; compiling to a ProjectProposal maps
+ * key→title, so renaming a node never breaks an edge.
  *
- * Parsing is fail-closed on shape errors and unknown fields (client-authored
- * JSON: a typo must fail loudly, not silently drop a task). PLMP-CANVAS-5
- * adds the ownership invariants: a `z` owner must be a subflow, chains are
- * self-parent-free and acyclic (group `g` nesting too), and payload fields
- * are never silently dropped - cycles would hang every renderer-side walk,
- * so they are refused here before any renderer or compiler sees the doc.
+ * Parsing is fail-closed on shape errors, unknown fields, ownership
+ * integrity (PLMP-CANVAS-5) and dependency references (CANVAS-6 INV-D1/D2).
+ * Version 1 (title-keyed dependencies) is not accepted anywhere - v2 is the
+ * single format, no dual-parse path.
  */
 
 import type { ProjectProposal } from "../architecture/index.js";
@@ -51,7 +50,8 @@ export interface CanvasGroup {
 }
 
 export interface CanvasDoc {
-  readonly version: 1;
+  /** v2 (PLMP-CANVAS-6): dependencies are node keys. v1 is not accepted. */
+  readonly version: 2;
   readonly goal: string;
   readonly nodes: readonly CanvasNode[];
   readonly groups: readonly CanvasGroup[];
@@ -164,7 +164,11 @@ export function parseCanvasDoc(value: unknown): CanvasDoc {
       fail(`unknown document field "${field}"`);
     }
   }
-  if (raw["version"] !== 1) fail(`unsupported version ${JSON.stringify(raw["version"])}`);
+  if (raw["version"] !== 2) {
+    fail(
+      `unsupported version ${JSON.stringify(raw["version"])} - canvas doc v2 (key-keyed dependencies) is the only format; v1 title-keyed docs are not accepted`,
+    );
+  }
   if (!Array.isArray(raw["nodes"])) fail("nodes must be an array");
   if (!Array.isArray(raw["groups"])) fail("groups must be an array");
   const nodes = raw["nodes"].map(parseNode);
@@ -218,9 +222,23 @@ export function parseCanvasDoc(value: unknown): CanvasDoc {
       current = groupById.get(current.g)!;
     }
   }
-  return { version: 1, goal: str(raw["goal"], "goal"), nodes, groups };
+  // PLMP-CANVAS-6 INV-D1/D2: task dependencies reference existing TASK node
+  // keys - same reference-integrity discipline as owners/groups/members.
+  // Cycles are the shared proposal validator's job (DEPENDENCY_CYCLE).
+  for (const node of nodes) {
+    for (const dependency of node.task?.dependsOn ?? []) {
+      const target = byKey.get(dependency);
+      if (target === undefined) {
+        fail(`node "${node.key}" depends on unknown key "${dependency}"`);
+      }
+      if (target.type !== "task") {
+        fail(`node "${node.key}" depends on "${dependency}" which is not a task`);
+      }
+    }
+  }
+  return { version: 2, goal: str(raw["goal"], "goal"), nodes, groups };
 }
 
 export function emptyCanvasDoc(goal = ""): CanvasDoc {
-  return { version: 1, goal, nodes: [], groups: [] };
+  return { version: 2, goal, nodes: [], groups: [] };
 }

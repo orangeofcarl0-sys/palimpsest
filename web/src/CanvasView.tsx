@@ -340,14 +340,15 @@ export function CanvasView(props: CanvasViewProps) {
     } as Node);
   }
 
+  // PLMP-CANVAS-6: dependencies are node keys - edges resolve key→visible task.
   const visibleTasks = doc.nodes.filter(
     (node) => node.type === "task" && ancestorsExpanded(node.key),
   );
-  const titleToVisible = new Map(visibleTasks.map((node) => [node.title, node]));
+  const visibleByKey = new Map(visibleTasks.map((node) => [node.key, node]));
   const flowEdges: Edge[] = [];
   for (const node of visibleTasks) {
     for (const dep of node.task?.dependsOn ?? []) {
-      const from = titleToVisible.get(dep);
+      const from = visibleByKey.get(dep);
       if (from === undefined) continue;
       flowEdges.push({
         id: `e-${from.key}-${node.key}`,
