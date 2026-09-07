@@ -121,3 +121,4 @@ Group  { id, label, g?, members: key[] }   // 纯视觉，编译透明
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-CANVAS-1/2/3/4）：三项用户裁决（就地嵌套视口、本地＋导入导出、卫星节点叠加）；CanvasDoc v1 契约（z/g 变体、title 依赖）、编译期展开与边界自动推导、suggestedSkills 提案面加法字段、Inspector/diff/卫星/Trace 四件、红线六条、验收 CANVAS-A01–A10；素材母体＝`audits/agent-canvas-teardown-2026-09.md`。 |
 | 2026-09-07 | **交付**（`6a9598f` 内核 + `f4406a7` 面板 + `ea84098` 冒烟修正）：A01–A10 全绿（46 文件/266 测试）；浏览器冒烟全项通过——边挂载（Handle 修正）、drop-into-subflow 归入、就地嵌套视口（成员渲染于父框内）、校验→确认声明（PROJECT_REVISED rev 0→1）、对照实时 diff（＋未声明任务）、布局流式→（根层重排+子孙随迁+边保持）、卫星 RUNNING attempt 叠加、Trace span 抽屉；§7 补记 plan/declare 新任务注册边界（冒烟实证）。 |
+| 2026-09-07 | **完整性硬化**（PLMP-CANVAS-5，22 号规格，G1 轮）：§1.2 `parseCanvasDoc` 加法式收紧——z owner 必须是 subflow、self-parent/z 链/group 链无环、类型-字段纪律（annotation 禁带 task、非 annotation 禁带 text）；§1.4 布局纯度推广到深层（传递子孙平移，A16）；面板全祖先链可见性（折叠祖父下孙图/成员/边全隐藏，修复单层判定的根层泄漏）+ 恢复/导入形状守卫 + drop 环守卫；验收 CANVAS-A11–A17；本规格 A01–A10 原样全绿（零漂移）。 |

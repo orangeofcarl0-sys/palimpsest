@@ -25,6 +25,7 @@
 | `19-renderer-adaptation-spec.md` | **呈现适配线规格（PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1）**：serveOrchestration 附加呈现面（127.0.0.1+随机 token、廉价轮询游标、kill 零影响）、React+ReactFlow 共享图面板（live/draft 双图、手搓图上编辑）、palimpsest tui（ANSI 零依赖）、sessionPanel 路 B 描述符、验收 WEB-A01–A06 / TUI-A01 / WINUI-A01 |
 | `20-preset-library-spec.md` | **架构预设库规格（PLMP-ARCH-3）**：调研六系统→六条拓扑原型预设注册表（流水线/扇出-汇聚/角色层级/专家团/验证图/研究回路，lineage 注记名实关系）、零 LLM、角色 fail-closed、门禁只建议、serve 纯派生草稿端点 + 面板画布直出 + CLI --preset、验收 PRE-A01–A10 |
 | `21-agent-canvas-spec.md` | **Agent 画布规格（PLMP-CANVAS-1..4）**：CanvasDoc v1（Node-RED z/g 扁平契约变体、title 依赖、fail-closed 解析）、编译期展开→既有提案通道（零新事件类型）、就地嵌套视口（React Flow parentNode 链）、Inspector/字段级 diff/布局纯度（A09）/卫星 attempt 叠加/Trace span 抽屉、localStorage＋导入导出（服务端零新增状态）、验收 CANVAS-A01–A10；拆解素材＝`audits/agent-canvas-teardown-2026-09.md` |
+| `22-canvas-integrity-spec.md` | **Canvas 完整性规格（PLMP-CANVAS-5，G1）**：所有权不变量（z owner 必须是 subflow、self-parent/z 链/group 链无环、类型-字段纪律全 fail-closed）、布局传递子孙平移（深度 ≥2 不断链）、面板全祖先链可见性（折叠祖父全隐藏）+ drop 环守卫 + 恢复/导入形状守卫；验收 CANVAS-A11–A17 + 三层嵌套浏览器冒烟；零事件/零 ProjectIR/零调度漂移；G0 审计＝`audits/CURRENT-STATE-ASSESSMENT.md`，G2–G8 规划＝`audits/NEXT-GRAPH-EVOLUTION-PLAN.md` |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
