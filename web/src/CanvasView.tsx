@@ -1,4 +1,4 @@
-import { Background, Controls, ReactFlow, type Connection, type Edge, type Node, type NodeProps, type NodeTypes } from "@xyflow/react";
+import { Background, Controls, Handle, Position, ReactFlow, type Connection, type Edge, type Node, type NodeProps, type NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import type { CanvasDoc, CanvasDiffResult, CanvasNode } from "./types";
@@ -48,12 +48,14 @@ function TaskNodeView({ data, selected }: NodeProps<Node<TaskData>>) {
         padding: "8px 10px",
       }}
     >
+      <Handle type="target" position={Position.Left} style={{ background: "#475569", border: "none", width: 7, height: 7 }} />
       <div style={{ fontWeight: 600 }}>{node.title}</div>
       <div style={{ color: "#94a3b8", marginTop: 2 }}>
         依赖 {depCount}
         {node.task?.role !== undefined ? ` · ${node.task.role}` : ""}
         {(node.task?.suggestedSkills?.length ?? 0) > 0 ? ` · 技能 ${node.task!.suggestedSkills!.length}` : ""}
       </div>
+      <Handle type="source" position={Position.Right} style={{ background: "#475569", border: "none", width: 7, height: 7 }} />
     </div>
   );
 }
