@@ -56,6 +56,8 @@ src/tools     可视化编排面：orchestrationGraph 投影 + 控制映射 1:1 
 src/architecture 架构三模式：pipelinePreset + 提案校验器 + 主代理架构师        【R23 ✅】
 src/serve     呈现适配线：serveOrchestration 附加面 + React 面板 + tui + 描述符【R24 ✅】
 src/architecture/presets.ts 预设库：六系统拓扑原型注册表（零 LLM、角色 fail-closed）【R25 ✅】
+src/canvas     Agent 画布：CanvasDoc 契约/编译/diff/布局/卫星/Trace 纯函数族【R26 ✅】
+web/src        画布面板：嵌套视口 + Inspector/diff + 布局 + 导入导出 + 叠加    【R26 ✅】
 src/install    installPalimpsest(ctx, options) 黄金路径                          【P2 ✅】
 多 agent 并行：角色槽位（RoleSlotPolicy）+ 2–4 候选 + 基础预算（BudgetLedger）  【P3 ✅】
 ```

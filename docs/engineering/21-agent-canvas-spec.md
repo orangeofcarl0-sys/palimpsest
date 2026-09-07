@@ -1,6 +1,6 @@
 # Agent 画布规格（定义层 + Inspector/diff + 运行时叠加 + Trace）
 
-> **Spec ID**：`PLMP-CANVAS-1` / `PLMP-CANVAS-2` / `PLMP-CANVAS-3` / `PLMP-CANVAS-4` ｜ 状态：**冻结**（2026-09-07，三项用户裁决：① subflow 进入子图＝**就地嵌套视口**；② 画布文档持久化＝**本地 localStorage＋显式导入/导出 JSON**；③ 运行时叠加＝**卫星 attempt 节点**）
+> **Spec ID**：`PLMP-CANVAS-1` / `PLMP-CANVAS-2` / `PLMP-CANVAS-3` / `PLMP-CANVAS-4` ｜ 状态：**已交付**（2026-09-07；`6a9598f` 内核 + `f4406a7` 面板 + `ea84098` 冒烟修正；验收 CANVAS-A01–A10 全绿〔46 文件 / 266 测试〕+ 真实浏览器冒烟通过；冻结时三项用户裁决：① subflow 进入子图＝**就地嵌套视口**；② 画布文档持久化＝**本地 localStorage＋显式导入/导出 JSON**；③ 运行时叠加＝**卫星 attempt 节点**）
 > **权威序**：数据/控制契约以 `17-visual-orchestration-spec.md`（VIS）、`18-architecture-modes-spec.md`（ARCH）、`20-preset-library-spec.md`（ARCH-3）为准；呈现面先例以 `19-renderer-adaptation-spec.md` 为准；系统设计以 03 为准；素材母体＝`audits/agent-canvas-teardown-2026-09.md`（四系统拆解 + 本仓取用裁决）与用户愿景方案（2026-09-07："Agent Canvas / 复合 Agent 图 / 三张图叠加 / GraphPatch 统一 / IDE Debugger 式人工控制"）；术语隔离红线 `[SDS-18]` 延伸到画布全部人话面。
 > **总纲**：愿景文档的"三张图"在 palimpsest **已经是投影关系而非三个系统**——Definition＝ProjectIR（账本）、Runtime＝orchestrationGraph 投影、Trace＝事件时间线投影；本规格只做**画布侧的编辑与叠加呈现**，全部能力零编排合同触碰。
 
@@ -113,8 +113,11 @@ Group  { id, label, g?, members: key[] }   // 纯视觉，编译透明
 
 调试器控制面（断点/bypass/force route/inject message/kill activation——hooks 拦截范式为交互蓝本）；真运行时嵌套（嵌套实体 + attempt 树 + 嵌套 HITL——本仓单一账本天然规避四家的 `NESTED_HITL_UNSUPPORTED` 互斥）；typed edges 与每边 policy；Router 条件边；多写者并发编辑；OTel 导出 + 宿主 span 关联；promote-ephemeral。每项走完整合同纪律（schema bump + ACC-02 + 迁移 + fixture 再生），加法式扩展，不推倒既有 IR。
 
+**交付时实证的既有边界（非本规格缺口，H1 声明式管线）**：已启动项目经 plan/declare 追加**新任务**只进 ProjectIR，不落 `TASK_CREATED` 行——任务行注册是宿主授权路径（`scheduler.registerTask(policy.authorize(...))`，仅 `start()` 内建），调度器扫描以 tasks 表为准，故冒烟中新任务不派发（单步空转）。画布"声明即运行"的最后一公里＝把 plan 修订的新任务走一次授权注册，记入上方扩展队列（或由宿主代理承担，与 DSH worker 自举一致）。
+
 ## 8. 修订流水
 
 | 日期 | 修订 |
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-CANVAS-1/2/3/4）：三项用户裁决（就地嵌套视口、本地＋导入导出、卫星节点叠加）；CanvasDoc v1 契约（z/g 变体、title 依赖）、编译期展开与边界自动推导、suggestedSkills 提案面加法字段、Inspector/diff/卫星/Trace 四件、红线六条、验收 CANVAS-A01–A10；素材母体＝`audits/agent-canvas-teardown-2026-09.md`。 |
+| 2026-09-07 | **交付**（`6a9598f` 内核 + `f4406a7` 面板 + `ea84098` 冒烟修正）：A01–A10 全绿（46 文件/266 测试）；浏览器冒烟全项通过——边挂载（Handle 修正）、drop-into-subflow 归入、就地嵌套视口（成员渲染于父框内）、校验→确认声明（PROJECT_REVISED rev 0→1）、对照实时 diff（＋未声明任务）、布局流式→（根层重排+子孙随迁+边保持）、卫星 RUNNING attempt 叠加、Trace span 抽屉；§7 补记 plan/declare 新任务注册边界（冒烟实证）。 |

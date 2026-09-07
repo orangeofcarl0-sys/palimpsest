@@ -24,6 +24,7 @@
 | `18-architecture-modes-spec.md` | **架构三模式规格（PLMP-ARCH-1/2）**：pipelinePreset + ProjectProposal 共享校验器（六类诊断）、声明只走 start/plan、主代理当架构师（零内嵌 LLM）、CLI architect 命令、验收 ARCH-A01–A05 |
 | `19-renderer-adaptation-spec.md` | **呈现适配线规格（PLMP-WEB-1/2 + PLMP-TUI-1 + PLMP-WINUI-1）**：serveOrchestration 附加呈现面（127.0.0.1+随机 token、廉价轮询游标、kill 零影响）、React+ReactFlow 共享图面板（live/draft 双图、手搓图上编辑）、palimpsest tui（ANSI 零依赖）、sessionPanel 路 B 描述符、验收 WEB-A01–A06 / TUI-A01 / WINUI-A01 |
 | `20-preset-library-spec.md` | **架构预设库规格（PLMP-ARCH-3）**：调研六系统→六条拓扑原型预设注册表（流水线/扇出-汇聚/角色层级/专家团/验证图/研究回路，lineage 注记名实关系）、零 LLM、角色 fail-closed、门禁只建议、serve 纯派生草稿端点 + 面板画布直出 + CLI --preset、验收 PRE-A01–A10 |
+| `21-agent-canvas-spec.md` | **Agent 画布规格（PLMP-CANVAS-1..4）**：CanvasDoc v1（Node-RED z/g 扁平契约变体、title 依赖、fail-closed 解析）、编译期展开→既有提案通道（零新事件类型）、就地嵌套视口（React Flow parentNode 链）、Inspector/字段级 diff/布局纯度（A09）/卫星 attempt 叠加/Trace span 抽屉、localStorage＋导入导出（服务端零新增状态）、验收 CANVAS-A01–A10；拆解素材＝`audits/agent-canvas-teardown-2026-09.md` |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
