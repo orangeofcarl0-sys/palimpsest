@@ -174,6 +174,7 @@ export function TaskDetails({ task }: { task: GraphTask }) {
           状态 <b style={{ color: stateColor(task.state) }}>{task.state}</b> · 角色 {task.role}
         </div>
         <div style={{ color: "#94a3b8" }}>写域 {task.writePaths.join(", ") || "—"}</div>
+        {task.scopeId !== undefined && <div style={{ color: "#94a3b8" }}>scope {task.scopeId}</div>}
         <div style={{ color: "#94a3b8" }}>产物 {task.requiredArtifacts.join(", ") || "—"}</div>
       </div>
       {task.attempts.map((attempt) => (
@@ -422,6 +423,20 @@ export function CanvasEditor(props: {
                 onChange={(event) => patchNode(selected.key, { title: event.target.value })}
               />
             </>
+          )}
+          {selected.type === "subflow" && (
+            <select
+              style={field}
+              value={selected.mode === "runtime" ? "runtime" : "editorial"}
+              onChange={(event) =>
+                patchNode(selected.key, {
+                  mode: event.target.value === "runtime" ? "runtime" : undefined,
+                })
+              }
+            >
+              <option value="editorial">编辑期子图（编译展开）</option>
+              <option value="runtime">运行时子图（scope 归属）</option>
+            </select>
           )}
           {selected.type === "task" && selected.task !== undefined && (
             <>

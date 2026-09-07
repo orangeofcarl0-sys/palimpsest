@@ -78,6 +78,9 @@ export interface AgentGraphNode {
   readonly label: string;
   /** Owning subgraph node id, or ROOT_SCOPE. */
   readonly scope: string;
+  /** PLMP-GRAPH-3: subgraph only - "runtime" declares a runtime subgraph;
+   * absent means editorial (compile-time flatten). */
+  readonly mode?: "runtime";
   readonly task?: AgentTaskPayload;
   readonly text?: string;
 }
@@ -159,7 +162,7 @@ function parseNode(value: unknown): AgentGraphNode {
   if (typeof value !== "object" || value === null) fail("node must be an object");
   const raw = value as Record<string, unknown>;
   for (const field of Object.keys(raw)) {
-    if (!["id", "kind", "label", "scope", "task", "text"].includes(field)) {
+    if (!["id", "kind", "label", "scope", "mode", "task", "text"].includes(field)) {
       fail(`unknown node field "${field}"`);
     }
   }
@@ -171,11 +174,17 @@ function parseNode(value: unknown): AgentGraphNode {
   if (kind !== "annotation" && raw["text"] !== undefined) fail(`node "${id}" must not carry field "text"`);
   if (kind === "agent" && raw["task"] === undefined) fail(`agent node "${id}" needs node.task`);
   if (kind === "annotation" && raw["text"] === undefined) fail(`annotation node "${id}" needs node.text`);
+  // PLMP-GRAPH-3: mode is a subgraph-only declaration with a single encoding.
+  if (raw["mode"] !== undefined && kind !== "subgraph") fail(`node "${id}" must not carry field "mode"`);
+  if (raw["mode"] !== undefined && raw["mode"] !== "runtime") {
+    fail(`node "${id}" mode must be "runtime"`);
+  }
   return {
     id,
     kind: kind as AgentGraphNodeKind,
     label: str(raw["label"], "node.label"),
     scope: str(raw["scope"], "node.scope"),
+    ...(raw["mode"] === undefined ? {} : { mode: "runtime" as const }),
     ...(kind === "agent" ? { task: parseTaskPayload(raw["task"]) } : {}),
     ...(kind === "annotation" ? { text: str(raw["text"], "node.text") } : {}),
   };
@@ -357,8 +366,23 @@ export function compileAgentGraph(
     bucket.push(edge.source);
     incoming.set(edge.target, bucket);
   }
+  const byId = new Map(graph.nodes.map((node) => [node.id, node]));
+  const scopeIdFor = (node: AgentGraphNode): string | undefined => {
+    let current: AgentGraphNode | undefined = node;
+    const seen = new Set<string>([node.id]);
+    while (current !== undefined && current.scope !== ROOT_SCOPE) {
+      if (seen.has(current.scope)) return undefined;
+      seen.add(current.scope);
+      current = byId.get(current.scope);
+      if (current !== undefined && current.kind === "subgraph" && current.mode === "runtime") {
+        return current.id;
+      }
+    }
+    return undefined;
+  };
   const tasks: TaskProposal[] = agents.map((node) => {
     const task = node.task!;
+    const scopeId = scopeIdFor(node);
     return {
       title: node.label,
       dependsOn: (incoming.get(node.id) ?? []).map((sourceId) => byIdLabel(graph, sourceId)),
@@ -367,6 +391,7 @@ export function compileAgentGraph(
       ...(task.gateId === undefined ? {} : { gateId: task.gateId }),
       ...(task.role === undefined ? {} : { role: task.role }),
       ...(task.suggestedSkills === undefined ? {} : { suggestedSkills: [...task.suggestedSkills] }),
+      ...(scopeId === undefined ? {} : { scopeId }),
     };
   });
   return {

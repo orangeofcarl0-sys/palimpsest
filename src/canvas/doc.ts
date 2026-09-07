@@ -38,6 +38,9 @@ export interface CanvasNode {
   readonly z: string;
   /** Visual group id (groups never affect compilation). */
   readonly g?: string;
+  /** PLMP-GRAPH-3: subflows only - "runtime" declares a runtime subgraph
+   * (scope identity + boundary); absent means editorial (compile flatten). */
+  readonly mode?: "runtime";
   readonly task?: CanvasTaskPayload;
   readonly text?: string;
 }
@@ -112,7 +115,7 @@ function parseNode(value: unknown): CanvasNode {
   if (typeof value !== "object" || value === null) fail("node must be an object");
   const raw = value as Record<string, unknown>;
   for (const field of Object.keys(raw)) {
-    if (!["key", "type", "title", "x", "y", "z", "g", "task", "text"].includes(field)) {
+    if (!["key", "type", "title", "x", "y", "z", "g", "mode", "task", "text"].includes(field)) {
       fail(`unknown node field "${field}"`);
     }
   }
@@ -125,6 +128,11 @@ function parseNode(value: unknown): CanvasNode {
   // faithful, client-authored typos must not vanish).
   if (type !== "task" && raw["task"] !== undefined) fail(`node "${key}" must not carry field "task"`);
   if (type !== "annotation" && raw["text"] !== undefined) fail(`node "${key}" must not carry field "text"`);
+  // PLMP-GRAPH-3: mode is a subflow-only declaration with a single encoding.
+  if (raw["mode"] !== undefined && type !== "subflow") fail(`node "${key}" must not carry field "mode"`);
+  if (raw["mode"] !== undefined && raw["mode"] !== "runtime") {
+    fail(`node "${key}" mode must be "runtime"`);
+  }
   const node: CanvasNode = {
     key,
     type: type as CanvasNodeType,
@@ -133,6 +141,7 @@ function parseNode(value: unknown): CanvasNode {
     y: num(raw["y"], "node.y"),
     z: str(raw["z"], "node.z"),
     ...(raw["g"] === undefined ? {} : { g: str(raw["g"], "node.g") }),
+    ...(raw["mode"] === undefined ? {} : { mode: "runtime" as const }),
     ...(type === "task" ? { task: parseTaskPayload(raw["task"]) } : {}),
     ...(type === "annotation" ? { text: str(raw["text"], "node.text") } : {}),
   };

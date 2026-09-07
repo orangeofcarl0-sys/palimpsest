@@ -32,6 +32,8 @@ export interface GraphTask {
   readonly dependsOn: readonly string[];
   readonly writePaths: readonly string[];
   readonly requiredArtifacts: readonly string[];
+  /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
+  readonly scopeId?: string;
   readonly attempts: ReadonlyArray<GraphAttempt>;
 }
 
@@ -202,6 +204,7 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     objective: spec.objective,
     state: taskStates.get(spec.task_id) ?? "READY",
     role: spec.role ?? "implementer",
+    ...(spec.scope_id === undefined ? {} : { scopeId: spec.scope_id }),
     dependsOn: spec.depends_on,
     writePaths: spec.write_paths,
     requiredArtifacts: spec.required_artifacts,

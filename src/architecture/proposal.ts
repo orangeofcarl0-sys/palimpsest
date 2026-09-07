@@ -24,6 +24,8 @@ export interface TaskProposal {
   /** Optional skill hints for the claiming worker (PLMP-CANVAS-2); compiles
    * to the existing TaskSpec.suggested_skills channel - zero event touch. */
   readonly suggestedSkills?: readonly string[];
+  /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
+  readonly scopeId?: string;
 }
 
 export interface ProjectProposal {
@@ -161,5 +163,6 @@ export function proposalTaskSpecs(proposal: ProjectProposal): TaskSpec[] {
     required_artifacts: [...(task.requiredArtifacts ?? [])],
     ...(task.role === undefined ? {} : { role: task.role }),
     ...(task.suggestedSkills === undefined ? {} : { suggested_skills: [...task.suggestedSkills] }),
+    ...(task.scopeId === undefined ? {} : { scope_id: task.scopeId }),
   }));
 }

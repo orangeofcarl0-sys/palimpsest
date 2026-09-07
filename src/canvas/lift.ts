@@ -22,7 +22,13 @@ export function liftToAgentGraph(doc: CanvasDoc): AgentGraph {
       };
     }
     if (node.type === "subflow") {
-      return { id: node.key, kind: "subgraph", label: node.title, scope: node.z };
+      return {
+        id: node.key,
+        kind: "subgraph",
+        label: node.title,
+        scope: node.z,
+        ...(node.mode === undefined ? {} : { mode: node.mode }),
+      };
     }
     return { id: node.key, kind: "annotation", label: node.title, scope: node.z, text: node.text ?? "" };
   });
@@ -73,7 +79,11 @@ export function unloadToCanvasDoc(
       };
     }
     if (node.kind === "subgraph") {
-      return { ...base, type: "subflow" as const };
+      return {
+        ...base,
+        type: "subflow" as const,
+        ...(node.mode === undefined ? {} : { mode: node.mode }),
+      };
     }
     return { ...base, type: "annotation" as const, text: node.text ?? "" };
   });

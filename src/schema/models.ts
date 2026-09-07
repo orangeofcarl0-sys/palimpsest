@@ -250,6 +250,10 @@ export interface TaskSpec {
   role?: TaskRole | undefined;
   /** Optional skill/plugin hints the claiming worker should load (E2); absent means no hint. */
   suggested_skills?: string[] | undefined;
+  /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope.
+   * Additive optional (SDS-4): omitted by default, canonical JSON is
+   * key-sorted, so scope-less specs digest byte-identically. */
+  scope_id?: string | undefined;
 }
 
 export function parseTaskSpec(value: unknown): TaskSpec {
@@ -281,6 +285,9 @@ export function parseTaskSpec(value: unknown): TaskSpec {
     spec.suggested_skills = field(raw.suggested_skills, "suggested_skills", (inner) =>
       unique(expectArray(inner).map((item) => nonEmpty(expectString(item)))),
     );
+  }
+  if (raw.scope_id !== undefined && raw.scope_id !== null) {
+    spec.scope_id = field(raw.scope_id, "scope_id", (inner) => nonEmpty(expectString(inner)));
   }
   return Object.freeze(spec);
 }

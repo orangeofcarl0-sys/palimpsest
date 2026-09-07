@@ -17,6 +17,7 @@ export interface GraphTask {
   dependsOn: string[];
   writePaths: string[];
   requiredArtifacts: string[];
+  scopeId?: string;
   attempts: GraphAttempt[];
 }
 
@@ -99,6 +100,8 @@ export interface CanvasNode {
   y: number;
   z: string;
   g?: string;
+  /** PLMP-GRAPH-3: subflows only - absent means editorial. */
+  mode?: "runtime";
   task?: CanvasTaskPayload;
   text?: string;
 }

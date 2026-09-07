@@ -89,6 +89,20 @@ function SubflowNodeView({ data }: NodeProps<Node<SubflowData>>) {
       >
         <span style={{ fontWeight: 600 }}>
           子图 {node.title}（{memberCount}）
+          {node.mode === "runtime" ? (
+            <span
+              style={{
+                marginLeft: 6,
+                background: "#1e3a5f",
+                borderRadius: 6,
+                padding: "1px 6px",
+                fontSize: 10,
+                color: "#7dd3fc",
+              }}
+            >
+              运行时
+            </span>
+          ) : null}
         </span>
         <button
           style={{
