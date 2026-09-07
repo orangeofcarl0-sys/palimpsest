@@ -136,7 +136,9 @@ function optStrArray(value: unknown, what: string): string[] | undefined {
   return strArray(value, what);
 }
 
-function parseTaskPayload(value: unknown): AgentTaskPayload {
+/** Exported for the GraphPatch input protocol (25/31 号): the same strict
+ * node parser guards patch addNodes — one grammar, no second parser. */
+export function parseAgentTaskPayload(value: unknown): AgentTaskPayload {
   if (typeof value !== "object" || value === null) fail("node.task must be an object");
   const raw = value as Record<string, unknown>;
   for (const field of Object.keys(raw)) {
@@ -158,7 +160,8 @@ function parseTaskPayload(value: unknown): AgentTaskPayload {
   };
 }
 
-function parseNode(value: unknown): AgentGraphNode {
+/** Exported for the GraphPatch input protocol (25/31 号). */
+export function parseAgentGraphNode(value: unknown): AgentGraphNode {
   if (typeof value !== "object" || value === null) fail("node must be an object");
   const raw = value as Record<string, unknown>;
   for (const field of Object.keys(raw)) {
@@ -185,12 +188,13 @@ function parseNode(value: unknown): AgentGraphNode {
     label: str(raw["label"], "node.label"),
     scope: str(raw["scope"], "node.scope"),
     ...(raw["mode"] === undefined ? {} : { mode: "runtime" as const }),
-    ...(kind === "agent" ? { task: parseTaskPayload(raw["task"]) } : {}),
+    ...(kind === "agent" ? { task: parseAgentTaskPayload(raw["task"]) } : {}),
     ...(kind === "annotation" ? { text: str(raw["text"], "node.text") } : {}),
   };
 }
 
-function parseEdge(value: unknown): AgentGraphEdge {
+/** Exported for the GraphPatch input protocol (25/31 号). */
+export function parseAgentGraphEdge(value: unknown): AgentGraphEdge {
   if (typeof value !== "object" || value === null) fail("edge must be an object");
   const raw = value as Record<string, unknown>;
   for (const field of Object.keys(raw)) {
@@ -224,7 +228,7 @@ export function parseAgentGraph(value: unknown): AgentGraph {
   if (raw["version"] !== 1) fail(`unsupported version ${JSON.stringify(raw["version"])}`);
   if (!Array.isArray(raw["nodes"])) fail("nodes must be an array");
   if (!Array.isArray(raw["edges"])) fail("edges must be an array");
-  const nodes = raw["nodes"].map(parseNode);
+  const nodes = raw["nodes"].map(parseAgentGraphNode);
   const byId = new Map(nodes.map((node) => [node.id, node]));
   if (byId.size !== nodes.length) fail("duplicate node id");
   // Scope containment: same invariants as the canvas z chain.
@@ -245,7 +249,7 @@ export function parseAgentGraph(value: unknown): AgentGraph {
       current = owner;
     }
   }
-  const edges = raw["edges"].map(parseEdge);
+  const edges = raw["edges"].map(parseAgentGraphEdge);
   const edgeIds = new Set(edges.map((edge) => edge.id));
   if (edgeIds.size !== edges.length) fail("duplicate edge id");
   for (const edge of edges) {

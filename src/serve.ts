@@ -31,6 +31,7 @@ import {
   canvasDiff,
   canvasInsertFragment,
   canvasLayout,
+  canvasRoundTripDiff,
   liftToAgentGraph,
   parseCanvasDoc,
   unloadToCanvasDoc,
@@ -40,8 +41,8 @@ import {
   applyGraphPatch,
   compileAgentGraph,
   diffGraphPatch,
+  parseGraphPatch,
   validateGraphPatch,
-  type GraphPatch,
 } from "./graph/index.js";
 import type { StageGraphDefinition } from "./domain/index.js";
 import type { AttemptAttribution, ProjectController } from "./tools/index.js";
@@ -314,10 +315,12 @@ export function serveOrchestration(
         // PLMP-GRAPH-2: the patch review face - validate against the live
         // revision, preview in plain language, apply to the DRAFT doc. Pure
         // derivation, zero writes; declaration still rides start/plan.
+        // PLMP-GRAPH-5 (31 号): the patch is a fail-closed input protocol
+        // (strict parse) and the apply gate refuses lossy canvas conversion.
         if (request.method === "POST" && path === "/api/canvas/patch") {
           const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
           const doc = parseCanvasDoc(body["doc"]);
-          const patch = body["patch"] as GraphPatch;
+          const patch = parseGraphPatch(body["patch"]);
           const graph = liftToAgentGraph(doc);
           const liveRevision = controller.orchestrationGraph().project.revision;
           const diagnostics = validateGraphPatch(graph, patch, { liveRevision });
@@ -327,6 +330,18 @@ export function serveOrchestration(
             return;
           }
           const patched = applyGraphPatch(graph, patch);
+          // PLMP-GRAPH-5 §4: apply-to-canvas is allowed iff the canvas can
+          // faithfully round-trip the patched graph. No Tool degrades into an
+          // anonymous annotation, no message edge evaporates.
+          const losses = canvasRoundTripDiff(patched);
+          if (losses.length > 0) {
+            sendJson(response, 200, {
+              applied: false,
+              diagnostics: [{ type: "UNREPRESENTABLE_IN_CANVAS", detail: losses.join("; ") }],
+              preview,
+            });
+            return;
+          }
           let proposalDiagnostics: ReturnType<typeof validateProjectProposal> = [];
           let compileError: string | null = null;
           try {

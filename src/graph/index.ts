@@ -9,6 +9,9 @@ export {
   agentGraphCapabilities,
   compileAgentGraph,
   parseAgentGraph,
+  parseAgentGraphEdge,
+  parseAgentGraphNode,
+  parseAgentTaskPayload,
 } from "./ir.js";
 export type {
   AgentGraph,
@@ -25,6 +28,7 @@ export {
   EMPTY_PATCH,
   applyGraphPatch,
   diffGraphPatch,
+  parseGraphPatch,
   patchFromFragment,
   validateGraphPatch,
 } from "./patch.js";

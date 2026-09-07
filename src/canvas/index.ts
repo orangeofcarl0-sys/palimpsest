@@ -17,7 +17,7 @@ export type {
 
 export { canvasCompile, canvasInsertFragment, proposalFragment } from "./compile.js";
 
-export { liftToAgentGraph, unloadToCanvasDoc } from "./lift.js";
+export { canvasRoundTripDiff, liftToAgentGraph, unloadToCanvasDoc } from "./lift.js";
 
 export { canvasDiff } from "./diff.js";
 export type {

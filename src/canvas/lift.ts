@@ -8,7 +8,7 @@
  */
 
 import type { AgentGraph, AgentGraphNode, AgentTaskPayload } from "../graph/index.js";
-import type { CanvasDoc, CanvasNode, CanvasTaskPayload } from "./doc.js";
+import { parseCanvasDoc, type CanvasDoc, type CanvasNode, type CanvasTaskPayload } from "./doc.js";
 
 export function liftToAgentGraph(doc: CanvasDoc): AgentGraph {
   const nodes: AgentGraphNode[] = doc.nodes.map((node): AgentGraphNode => {
@@ -98,4 +98,86 @@ function agentPayloadOf(task: CanvasTaskPayload): AgentTaskPayload {
     ...(task.role === undefined ? {} : { role: task.role }),
     ...(task.suggestedSkills === undefined ? {} : { suggestedSkills: [...task.suggestedSkills] }),
   };
+}
+
+/**
+ * PLMP-GRAPH-5 (31 号 §4): the lossy-apply gate. Semantic losses that the
+ * canvas round-trip would incur for `graph`, as plain-language reasons -
+ * empty means the graph is canvas-representable. The apply gate refuses
+ * instead of degrading: no Tool becomes an anonymous annotation, no message
+ * edge evaporates. Comparison is semantic: node id/kind/label/scope/mode/
+ * task/text exactly, edges as an ordered-multiset of (kind, source, target)
+ * - edge IDs regenerate on the canvas path until CanvasDoc grows edge
+ * identity (32 号 / G9-D), which is a registered difference, not a loss.
+ */
+export function canvasRoundTripDiff(graph: AgentGraph): string[] {
+  let doc: CanvasDoc;
+  try {
+    doc = parseCanvasDoc(unloadToCanvasDoc(graph));
+  } catch (error) {
+    return [
+      `unload does not parse as a canvas doc: ${error instanceof Error ? error.message : String(error)}`,
+    ];
+  }
+  const relifted = liftToAgentGraph(doc);
+  const losses: string[] = [];
+  const mirrorById = new Map(relifted.nodes.map((node) => [node.id, node]));
+  for (const node of graph.nodes) {
+    const mirror = mirrorById.get(node.id);
+    if (mirror === undefined) {
+      losses.push(`node "${node.id}" (kind ${node.kind}) has no canvas representation`);
+      continue;
+    }
+    if (mirror.kind !== node.kind) {
+      losses.push(`node "${node.id}": kind "${node.kind}" degrades to "${mirror.kind}" in canvas`);
+    }
+    if (mirror.label !== node.label) losses.push(`node "${node.id}": label would be lost`);
+    if (mirror.scope !== node.scope) {
+      losses.push(`node "${node.id}": scope "${node.scope}" would be lost`);
+    }
+    if (mirror.mode !== node.mode) {
+      losses.push(`node "${node.id}": mode would be lost`);
+    }
+    if (node.kind === "agent" && mirror.kind === "agent") {
+      const want = node.task!;
+      const got = mirror.task;
+      const payloadFields: ReadonlyArray<keyof AgentTaskPayload> = [
+        "writePaths",
+        "requiredArtifacts",
+        "gateId",
+        "role",
+        "suggestedSkills",
+      ];
+      for (const field of payloadFields) {
+        const wantValue = want[field];
+        const gotValue = got === undefined ? undefined : got[field];
+        const same =
+          wantValue === undefined && gotValue === undefined
+            ? true
+            : JSON.stringify(wantValue ?? null) === JSON.stringify(gotValue ?? null);
+        if (!same) {
+          losses.push(`node "${node.id}": task.${field} would be lost`);
+        }
+      }
+    }
+    if (node.kind === "annotation" && mirror.kind === "annotation" && mirror.text !== node.text) {
+      losses.push(`node "${node.id}": text would be lost`);
+    }
+  }
+  const edgeSignature = (edge: { readonly kind: string; readonly source: string; readonly target: string }): string =>
+    `${edge.kind}:${edge.source}->${edge.target}`;
+  const want = graph.edges.map(edgeSignature).sort();
+  const got = relifted.edges.map(edgeSignature).sort();
+  for (const signature of want) {
+    const index = got.indexOf(signature);
+    if (index === -1) {
+      losses.push(`edge "${signature}" has no canvas representation`);
+      continue;
+    }
+    got.splice(index, 1);
+  }
+  for (const extra of got) {
+    losses.push(`edge "${extra}" would appear out of nowhere`);
+  }
+  return losses;
 }
