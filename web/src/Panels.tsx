@@ -620,6 +620,27 @@ export function CanvasEditor(props: {
               value={patchText}
               onChange={(event) => setPatchText(event.target.value)}
             />
+            {patchText.trim() !== "" && (
+              <div style={{ color: "#94a3b8" }}>
+                锚状态：
+                {(() => {
+                  try {
+                    const parsed = JSON.parse(patchText) as {
+                      baseGraphDigest?: unknown;
+                      baseRevision?: unknown;
+                    };
+                    const parts: string[] = [];
+                    if (typeof parsed.baseRevision === "number") parts.push("baseRevision");
+                    if (typeof parsed.baseGraphDigest === "string") parts.push("baseGraphDigest");
+                    return parts.length === 0
+                      ? "未锚定——丢失更新保护不生效（协议允许，但生成时应携带锚）"
+                      : `已锚定（${parts.join(" + ")}）`;
+                  } catch {
+                    return "JSON 未完成";
+                  }
+                })()}
+              </div>
+            )}
             <div style={{ display: "flex", gap: 6 }}>
               <button style={button(false)} disabled={patchText.trim() === ""} onClick={reviewPatch}>
                 预览 Patch
@@ -728,6 +749,8 @@ export function ArchitectureBar(props: {
   goal: string;
   presets: PresetMeta[];
   doc: CanvasDoc;
+  /** PLMP-GRAPH-5 §B3-B: the live canonical revision, for the freshness anchor. */
+  revision: number;
   onMessage(message: string): void;
   onDocChange(doc: CanvasDoc): void;
   onHandcraft(): void;
@@ -754,10 +777,26 @@ export function ArchitectureBar(props: {
       }
     })();
   };
+  // PLMP-GRAPH-5 §B3-B: the copied instruction carries the REAL anchors of
+  // the draft the architect will edit against - computed at generation time
+  // from the current doc, never injected later at review time.
   const generate = (): void => {
-    const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明）；若要修改当前画布草稿，产出 GraphPatch JSON（addNodes/addEdges/updateNodes/removeNodes/removeEdges/moveScope，可带 baseRevision），交我在画布 GraphPatch 面预览应用。`;
-    void navigator.clipboard?.writeText(instruction).catch(() => undefined);
-    props.onMessage("架构师指令已复制——粘贴给主代理会话");
+    void (async () => {
+      let anchorLines: string;
+      try {
+        const compiled = await compileCanvas(props.doc);
+        anchorLines = [
+          `当前画布草稿的锚（生成 patch 时必须原样携带，二者缺一即拒绝）：`,
+          `"baseRevision": ${props.revision},`,
+          `"baseGraphDigest": "${compiled.graphDigest}"`,
+        ].join("\n");
+      } catch (error) {
+        anchorLines = `当前草稿无法编译取锚（${error instanceof Error ? error.message : String(error)}）——请让用户先修正草稿，或产出未锚定 patch（丢失更新保护不生效）。`;
+      }
+      const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明）；若要修改当前画布草稿，产出 GraphPatch JSON（七个操作数组齐全，样式同 EMPTY_PATCH）并携带当前锚：\n${anchorLines}\n把 patch JSON 交我在画布 GraphPatch 面预览应用。`;
+      void navigator.clipboard?.writeText(instruction).catch(() => undefined);
+      props.onMessage("架构师指令已复制（含草稿锚）——粘贴给主代理会话");
+    })();
   };
   return (
     <div style={{ display: "grid", gap: 6, fontSize: 12 }}>

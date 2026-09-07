@@ -10,7 +10,7 @@ import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { actionKey, parseGateDefinition, TaskPolicy, type StageGraphDefinition } from "../src/domain/index.js";
 import { parseNewEvent } from "../src/schema/index.js";
-import { MIGRATION_8_SQL } from "../src/state/migrations.js";
+import { MIGRATION_8_SQL, MIGRATION_9_BACKFILL_SQL } from "../src/state/migrations.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
@@ -260,10 +260,14 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
       });
       const graph = controller.orchestrationGraph();
       expect(graph.tasks.map((task) => task.objective)).toEqual(["X", "A", "B"]);
-      const stale = graph.tasks.filter((task) => task.held === "stale");
-      expect(stale.map((task) => task.taskId)).toEqual(["task-1"]);
-      expect(stale[0]!.objective).toBe("X");
+      // §B3-C badge attribution: this scenario carries no definition
+      // identities, so the mismatched hold must NOT read as "X was held" -
+      // the stale state lives only in the governance projection.
+      expect(graph.tasks.filter((task) => task.held === "stale")).toEqual([]);
       expect(graph.tasks.filter((task) => task.held === "active")).toEqual([]);
+      const staleHold = graph.runtime?.controls?.holds[0]!;
+      expect(staleHold).toMatchObject({ taskId: "task-1", status: "stale", setAtRevision: 0 });
+      expect(staleHold.definitionId).toBeUndefined();
 
       // The stale hold stays auditable and explicit: re-anchor it at the
       // current revision (new HOLD_SET carries the live revision), or release it.
@@ -312,7 +316,12 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
       const event = staleRig.controller.scheduler.runOnce();
       expect(event?.event_type).toBe("TASK_STARTED");
       expect(event?.entity_id).toBe("task-1");
-      expect(staleRig.controller.orchestrationGraph().tasks[0]!.held).toBe("stale");
+      // Identity-absent mismatch: no convenience badge (§B3-C), the stale
+      // state is the governance projection's to show.
+      expect(staleRig.controller.orchestrationGraph().tasks[0]!.held).toBeUndefined();
+      expect(
+        staleRig.controller.orchestrationGraph().runtime?.controls?.holds[0]!.status,
+      ).toBe("stale");
     } finally {
       await staleRig.cleanup();
     }
@@ -333,7 +342,8 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
         .run("scheduler-project", "task-1", "无法证明的旧行", "legacy", 0, "2026-01-01T00:00:00Z");
       const event = legacyRig.controller.scheduler.runOnce();
       expect(event?.event_type).toBe("TASK_STARTED");
-      expect(legacyRig.controller.orchestrationGraph().tasks[0]!.held).toBe("stale");
+      // Identity-absent: no badge (§B3-C), governance projection shows stale.
+      expect(legacyRig.controller.orchestrationGraph().tasks[0]!.held).toBeUndefined();
       expect(
         legacyRig.controller.orchestrationGraph().runtime?.controls?.holds[0]!.status,
       ).toBe("stale");
@@ -509,6 +519,136 @@ describe("hold governance projection (PLMP-GRAPH-5 §B2-D)", () => {
       }
     } finally {
       await upgradeEffects.close();
+    }
+  });
+});
+
+describe("historical hold definition identity (PLMP-GRAPH-5 §B3-C)", () => {
+  const irSpecs = (definition: string | undefined) => [
+    {
+      task_id: "task-1",
+      objective: "A",
+      depends_on: [],
+      write_paths: [],
+      required_artifacts: [],
+      ...(definition === undefined ? {} : { definition_id: definition }),
+    },
+  ];
+
+  it("HOLD-ID-A01: a stale hold keeps its historical definitionId, never the current task's", async () => {
+    const rig = makeRig();
+    const { controller } = rig;
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: irSpecs("n17") });
+      controller.setHold("task-1", { reason: "r1 断点", declaredBy: "panel" });
+      // The projection carries the identity the task had at set time.
+      expect(controller.orchestrationGraph().runtime?.controls?.holds[0]).toMatchObject({
+        taskId: "task-1",
+        status: "active",
+        definitionId: "n17",
+      });
+      controller.plan({ tasks: irSpecs("n99") });
+      const graph = controller.orchestrationGraph();
+      // Historical identity is n17 - the current n99 occupant must not
+      // inherit it, neither in the projection nor as a badge.
+      expect(graph.runtime?.controls?.holds[0]).toMatchObject({
+        taskId: "task-1",
+        status: "stale",
+        setAtRevision: 0,
+        definitionId: "n17",
+      });
+      expect(graph.tasks[0]!.held).toBeUndefined();
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("HOLD-ID-A02: an orphan hold preserves its recoverable historical definitionId", async () => {
+    const rig = makeRig();
+    const { controller } = rig;
+    try {
+      controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [...irSpecs("n17"), { ...irSpecs(undefined)[0]!, task_id: "task-2", objective: "B" }],
+      });
+      controller.setHold("task-1", { reason: "即将移除", declaredBy: "panel" });
+      controller.plan({ tasks: [{ ...irSpecs(undefined)[0]!, task_id: "task-2", objective: "B" }] });
+      const graph = controller.orchestrationGraph();
+      expect(graph.tasks.some((task) => task.taskId === "task-1")).toBe(false);
+      expect(graph.runtime?.controls?.holds[0]).toMatchObject({
+        taskId: "task-1",
+        status: "orphan",
+        definitionId: "n17",
+      });
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("HOLD-ID-A03: historical definition absence stays absent - never synthesized", async () => {
+    const rig = makeRig();
+    const { controller } = rig;
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: irSpecs(undefined) });
+      controller.setHold("task-1", { reason: "spec-first 断点", declaredBy: "panel" });
+      const hold = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
+      expect(Object.hasOwn(hold, "definitionId")).toBe(false);
+      controller.plan({ tasks: irSpecs("n99") });
+      // Still absent after the current task gains an identity - no leakage
+      // of the current definition into the historical hold.
+      const after = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
+      expect(Object.hasOwn(after, "definitionId")).toBe(false);
+      expect(after.status).toBe("stale");
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("HOLD-ID-A04: the M9 backfill recovers historical identity from the ledger for pre-B3 rows", async () => {
+    const dbPath = tempStatePath();
+    const effects = createPalimpsestEffects({
+      databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-hold-")), "ops.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const store = new EventStore(dbPath, { clock: new FakeClock().next });
+    const controller = new ProjectController({
+      store,
+      effects,
+      projectId: "scheduler-project",
+      policy: new TaskPolicy({
+        policy_id: "trusted-default",
+        read_paths: ["src"],
+        allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+        network_policy: "deny",
+        network_allowlist: [],
+        timeout_s: 60,
+        lease_s: 10,
+        attempt_limit: 3,
+        candidate_limit: 1,
+      }),
+      clock: () => "2026-09-07T00:00:00Z",
+    });
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: irSpecs("n17") });
+      controller.setHold("task-1", { reason: "升级前断点", declaredBy: "panel" });
+      // Simulate a pre-B3 projection row (NULL identity column, ledger intact).
+      store.connection.prepare("UPDATE task_holds SET definition_id=NULL").run();
+      store.close();
+      const reopened = new EventStore(dbPath, {});
+      try {
+        // Already at v9, so run the shipped M9 backfill statement itself -
+        // the exact SQL the upgrade applies to pre-B3 rows.
+        reopened.connection.exec(MIGRATION_9_BACKFILL_SQL);
+        const restored = reopened.connection
+          .prepare("SELECT definition_id AS d FROM task_holds WHERE task_id='task-1'")
+          .get() as { d: string | null };
+        expect(restored.d).toBe("n17");
+      } finally {
+        reopened.close();
+      }
+    } finally {
+      await effects.close();
     }
   });
 });

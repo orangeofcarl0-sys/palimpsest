@@ -1,7 +1,9 @@
 # G9-C–G 实施计划（下一批次）
 
 - 日期：2026-09-07
-- 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）与 **G9-B2（31 号闭合修订，输入/新鲜度/治理闭合；母体＝`G9-B2-CLOSURE-ASSESSMENT.md`）** 退出门均已通过；测试基线 56 文件 / 337 项全绿。
+- 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）、G9-B2（31 号闭合修订，`1a8d688`）与 **G9-B3（31 号跨层闭合修订；母体＝`G9-B3-CROSS-LAYER-ASSESSMENT.md`、交付报告＝`G9-B3-DELIVERY-REPORT.md`）** 退出门均已通过；测试基线 57 文件 / 354 项全绿。
+- **批次顺序更新（G9-B3 §27 裁决）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
+- **G9-E 新增设计前置（G9-B3 §18/§19）**：ArchitectureRevision 必须是**原子治理动作**——`plan(topology)` + `declareStageGraph` + `declareRoleTable` 三次独立 durable append 之间存在崩溃窗口，会产生"新拓扑 + 旧执行治理"的半个修订。G9-E 开工前必须比较至少三案（A 单一复合事件 ARCHITECTURE_REVISED / B pending→activate 协议 / C EventStore 原子事件批）并裁决；本轮不实现 multi-event transaction（触及事件序/哈希链/幂等/游标/fault injection/replay，需独立设计）。
 - G9-B2 交付（2026-09-07）：`baseGraphDigest`/`STALE_GRAPH_BASE` 草稿新鲜度锚、`agentGraphSemanticDigest`、`parseProjectProposal` 输入合同（四 first-party 边界）、patch 语法同构 + `EMPTY_UPDATE`/`NO_OP_OPERATION` no-op 裁决 + accepted⇒digest 必变不变量、`runtime.controls.holds[]` 治理投影、LEGACY 方案 C（M8 回填、NULL=stale）、SCHEMA-AUDIT tripwire。
 - 本文件只做计划与裁决预留，不实现。各批次开工时仍以"审计 → 规格冻结 → 实现 → 回归 → 登记"的纪律推进；规格编号从 32 起顺延（已核对 main 无冲突）。
 
@@ -26,6 +28,8 @@
 ## G9-D — 稳定边身份 / CanvasDoc v3（规格 33，PLMP-CANVAS-8）
 
 **问题**（审计 F-F）：边身份在 IR↔Canvas 往返中丢失（`pe7 → dependsOn → e1`）；GraphPatch 已支持 `removeEdges/updateEdges(id)` 而 canvas 无从保边 id；G9-B 的表达门只能做语义投影等价（31 号登记差异）。
+
+**优先级升级（G9-B3 §27）**：本批次从"未来功能增强"升级为**新鲜度正确性依赖**——语义 digest 含边 id 而 v2 往返再生边 id；排在 G9-C 之前。
 
 **设计裁决（开工前先审计再定）**：
 

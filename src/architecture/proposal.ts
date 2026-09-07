@@ -8,7 +8,7 @@
  * revision - the system re-architects only through its own evidence gates.
  */
 
-import type { TaskSpec } from "../schema/index.js";
+import { parseTaskSpec, type TaskSpec } from "../schema/index.js";
 
 export interface TaskProposal {
   /** Human-facing stage name; also the dependency key inside the proposal. */
@@ -46,7 +46,9 @@ export type ProposalDiagnosticType =
   | "DEPENDENCY_CYCLE"
   | "MISSING_WRITE_PATHS"
   | "UNKNOWN_GATE"
-  | "DUPLICATE_DEFINITION_ID";
+  | "DUPLICATE_DEFINITION_ID"
+  | "DUPLICATE_TITLE"
+  | "TASK_SPEC_CONTRACT";
 
 export interface ProposalDiagnostic {
   readonly type: ProposalDiagnosticType;
@@ -240,6 +242,23 @@ export function validateProjectProposal(  proposal: ProjectProposal,
   }
   // Cycle detection over the title graph (only edges inside the proposal).
   const byTitle = new Map(proposal.tasks.map((task) => [task.title, task]));
+  // PLMP-GRAPH-5 §B3-D: the title IS the dependency vocabulary - a duplicate
+  // title makes dependency identity ambiguous (title→id mapping becomes
+  // last-write-wins), so it is graph identity corruption, not cosmetics.
+  const titleSeen = new Set<string>();
+  let duplicateTitle = false;
+  for (const task of proposal.tasks) {
+    if (titleSeen.has(task.title)) {
+      duplicateTitle = true;
+      diagnostics.push({
+        type: "DUPLICATE_TITLE",
+        task: task.title,
+        detail: `task title "${task.title}" is declared twice - titles are the proposal's dependency key`,
+      });
+      continue;
+    }
+    titleSeen.add(task.title);
+  }
   // Definition identity integrity: two tasks may not claim the same
   // definition node - that would alias one definition to two runtimes.
   const definitionIds = new Map<string, string>();
@@ -276,6 +295,27 @@ export function validateProjectProposal(  proposal: ProjectProposal,
     if (state.get(title) !== "done" && visit(title)) {
       diagnostics.push({ type: "DEPENDENCY_CYCLE", task: title, detail: "dependency cycle detected" });
       break;
+    }
+  }
+  // PLMP-GRAPH-5 §B3-D compilability closure: validate clean must imply the
+  // proposal compiles into canonical TaskSpecs - so the canonical contract
+  // itself is the last check. ContractErrors from parseTaskSpec become
+  // structured diagnostics (with the task's title); schema rules are reused,
+  // never re-copied. Duplicate titles abort the trial compile: with an
+  // ambiguous dependency vocabulary the mapping is not trustworthy (and
+  // DUPLICATE_TITLE already refuses the proposal).
+  if (!duplicateTitle) {
+    const specs = proposalTaskSpecs(proposal);
+    for (let index = 0; index < specs.length; index += 1) {
+      try {
+        parseTaskSpec(specs[index]!);
+      } catch (error) {
+        diagnostics.push({
+          type: "TASK_SPEC_CONTRACT",
+          task: proposal.tasks[index]!.title,
+          detail: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
   }
   return diagnostics;

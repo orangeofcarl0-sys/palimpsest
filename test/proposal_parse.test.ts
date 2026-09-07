@@ -22,6 +22,8 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
+import { parseTaskSpec } from "../src/schema/index.js";
+import { proposalTaskSpecs } from "../src/architecture/index.js";
 import { FakeClock, tempStatePath } from "./helpers.js";
 
 const HEAD = "c".repeat(40);
@@ -146,6 +148,83 @@ describe("ProjectProposal input contract (PLMP-GRAPH-5 §B2-B)", () => {
       const proposal = presetDraft(meta.id, {});
       expect(parseProjectProposal(proposal)).toEqual(proposal);
       expect(Array.isArray(proposal.tasks)).toBe(true);
+    }
+  });
+});
+
+describe("proposal compilability closure (PLMP-GRAPH-5 §B3-D)", () => {
+  const proposalWith = (tasks: ProjectProposal["tasks"]): ProjectProposal =>
+    parseProjectProposal({ goal: "g", changeClass: "behavior_change", tasks });
+
+  it("PROP-COMPILE-A01: duplicate titles are refused as DUPLICATE_TITLE", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([
+        { title: "Research", dependsOn: [] },
+        { title: "Research", dependsOn: [] },
+        { title: "C", dependsOn: ["Research"] },
+      ]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["DUPLICATE_TITLE"]);
+  });
+
+  it("PROP-COMPILE-A02: duplicate dependsOn entries never validate clean", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([
+        { title: "A", dependsOn: [] },
+        { title: "B", dependsOn: ["A", "A"] },
+      ]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["TASK_SPEC_CONTRACT"]);
+    expect(diagnostics[0]!.task).toBe("B");
+  });
+
+  it("PROP-COMPILE-A03: escaping paths are refused by the canonical contract", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([{ title: "A", dependsOn: [], writePaths: ["../escape"] }]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["TASK_SPEC_CONTRACT"]);
+    expect(diagnostics[0]!.detail).toMatch(/parent path|forbidden|POSIX/);
+  });
+
+  it("PROP-COMPILE-A04: duplicate writePaths never validate clean", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([{ title: "A", dependsOn: [], writePaths: ["out/x.md", "out/x.md"] }]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["TASK_SPEC_CONTRACT"]);
+  });
+
+  it("PROP-COMPILE-A05: empty definitionId is refused", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([{ title: "A", dependsOn: [], definitionId: "" }]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["TASK_SPEC_CONTRACT"]);
+    expect(diagnostics[0]!.detail).toMatch(/definition_id/);
+  });
+
+  it("PROP-COMPILE-A06: empty scopeId is refused", () => {
+    const diagnostics = validateProjectProposal(
+      proposalWith([{ title: "A", dependsOn: [], scopeId: "" }]),
+    );
+    expect(diagnostics.map((diagnostic) => diagnostic.type)).toEqual(["TASK_SPEC_CONTRACT"]);
+    expect(diagnostics[0]!.detail).toMatch(/scope_id/);
+  });
+
+  it("PROP-COMPILE-A07: validate clean implies every compiled TaskSpec parses (property belt)", () => {
+    const cleanProposals: ProjectProposal[] = [
+      proposalWith([
+        { title: "调研", dependsOn: [], role: "scout", definitionId: "n17", scopeId: "s1" },
+        { title: "综合", dependsOn: ["调研"], writePaths: ["out/x.md"], requiredArtifacts: ["out/x.md"], suggestedSkills: ["web"] },
+      ]),
+      { goal: "g", changeClass: "metadata_only", tasks: [{ title: "Only", dependsOn: [] }] },
+    ];
+    for (const meta of presetMeta()) {
+      cleanProposals.push(presetDraft(meta.id, {}));
+    }
+    for (const proposal of cleanProposals) {
+      expect(validateProjectProposal(proposal)).toEqual([]);
+      for (const spec of proposalTaskSpecs(proposal)) {
+        expect(() => parseTaskSpec(JSON.parse(JSON.stringify(spec)))).not.toThrow();
+      }
     }
   });
 });

@@ -82,7 +82,12 @@ export const presetDraft = (
 export const compileCanvas = (
   doc: CanvasDoc,
   goal?: string,
-): Promise<{ proposal: ProjectProposal; diagnostics: ProposalDiagnostic[] }> =>
+): Promise<{
+  proposal: ProjectProposal;
+  diagnostics: ProposalDiagnostic[];
+  /** PLMP-GRAPH-5 §B3: the draft's semantic freshness anchor. */
+  graphDigest: string;
+}> =>
   call("/api/canvas/compile", {
     method: "POST",
     body: JSON.stringify({ doc, ...(goal === undefined ? {} : { goal }) }),
@@ -132,6 +137,9 @@ export interface CanvasPatchResult {
   preview: CanvasPatchPreviewEntry[];
   diagnostics: CanvasPatchDiagnostic[];
   compileError?: string;
+  /** PLMP-GRAPH-5 §B3: freshness anchor - the returned draft on success, the
+   * requested draft on refusal (both guaranteed by the kernel contract). */
+  graphDigest: string;
 }
 
 export const patchCanvas = (doc: CanvasDoc, patch: unknown): Promise<CanvasPatchResult> =>

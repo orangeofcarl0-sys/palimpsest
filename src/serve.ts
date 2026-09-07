@@ -365,13 +365,18 @@ export function serveOrchestration(
           } catch (error) {
             compileError = error instanceof Error ? error.message : String(error);
           }
+          // PLMP-GRAPH-5 §B3-A: the freshness anchor is the graph the CLIENT
+          // will actually hold - digest(lift(returnedDoc)), not digest(patched).
+          // CanvasDoc v2 regenerates patch-introduced edge ids on the way back
+          // (bridge hotfix until CanvasDoc v3 / G9-D closes edge identity).
+          const returnedDoc = unloadToCanvasDoc(patched);
+          const returnedGraph = liftToAgentGraph(returnedDoc);
           sendJson(response, 200, {
             applied: true,
-            doc: unloadToCanvasDoc(patched),
+            doc: returnedDoc,
             preview,
             diagnostics: proposalDiagnostics,
-            // The new draft's freshness anchor for the next patch.
-            graphDigest: agentGraphSemanticDigest(patched),
+            graphDigest: agentGraphSemanticDigest(returnedGraph),
             ...(compileError === null ? {} : { compileError }),
           });
           return;

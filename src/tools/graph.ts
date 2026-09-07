@@ -242,29 +242,33 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     attemptsByTask.set(taskId, list);
   }
 
-  // PLMP-GRAPH-4 (30 号规格) + §B2-D: holds carry their plan revision; a
-  // hold set on an earlier revision is stale - surfaced, but no longer a
-  // scheduling gate. The same rows drive the controls projection below, so
-  // stale/orphan state stays observable even when GraphTask can't show it.
+  // PLMP-GRAPH-4 (30 号规格) + §B2-D + §B3-C: holds carry their plan revision
+  // AND their historical definition identity. The GraphTask badge is a
+  // convenience face with a strict attribution rule: active holds (revision
+  // unchanged ⇒ same IR) always badge; revision-mismatched holds badge only
+  // when the historical definitionId is present and still equals the current
+  // task's definition - a re-used task_id (different definition, or absent
+  // identity) must not read as "was held". The controls projection below is
+  // the honest face for every hold regardless.
   const heldRows = connection
     .prepare(
-      "SELECT task_id, reason, declared_by, project_revision FROM task_holds WHERE project_id=? ORDER BY task_id",
+      "SELECT task_id, reason, declared_by, project_revision, definition_id FROM task_holds WHERE project_id=? ORDER BY task_id",
     )
     .all(projectId) as Array<{
     task_id: string;
     reason: string;
     declared_by: string;
     project_revision: number | null;
+    definition_id: string | null;
   }>;
   const heldByTask = new Map<string, "active" | "stale">();
   const controls: HoldControlView[] = [];
   for (const row of heldRows) {
     const taskId = String(row.task_id);
-    const definitionId = project.tasks.find((spec) => spec.task_id === taskId)?.definition_id;
+    const historicalDefinitionId = row.definition_id === null ? null : String(row.definition_id);
     const setAtRevision = row.project_revision === null ? null : Number(row.project_revision);
-    const status: HoldControlView["status"] = !project.tasks.some(
-      (spec) => spec.task_id === taskId,
-    )
+    const currentSpec = project.tasks.find((spec) => spec.task_id === taskId);
+    const status: HoldControlView["status"] = currentSpec === undefined
       ? "orphan"
       : setAtRevision === null || setAtRevision !== project.revision
         ? "stale"
@@ -276,10 +280,17 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
       status,
       reason: String(row.reason),
       declaredBy: String(row.declared_by),
-      ...(definitionId === undefined ? {} : { definitionId }),
+      ...(historicalDefinitionId === null ? {} : { definitionId: historicalDefinitionId }),
     });
-    if (status === "active") heldByTask.set(taskId, "active");
-    else heldByTask.set(taskId, "stale");
+    if (currentSpec === undefined) continue; // orphan: no GraphTask face exists
+    const badgeable =
+      status === "active" ||
+      (historicalDefinitionId !== null &&
+        currentSpec.definition_id !== undefined &&
+        historicalDefinitionId === currentSpec.definition_id);
+    if (badgeable && status !== "orphan") {
+      heldByTask.set(taskId, status === "active" ? "active" : "stale");
+    }
   }
   const tasks: GraphTask[] = project.tasks.map((spec) => {
     const held = heldByTask.get(spec.task_id);

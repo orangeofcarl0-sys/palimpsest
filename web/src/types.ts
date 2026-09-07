@@ -46,6 +46,12 @@ export interface TaskProposal {
   gateId?: string;
   /** Slot role from the preset (ARCH-3); absent means "implementer". */
   role?: string;
+  /** PLMP-CANVAS-2: skill hints for the claiming worker. */
+  suggestedSkills?: string[];
+  /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
+  scopeId?: string;
+  /** PLMP-GRAPH-4: the stable definition identity (AgentGraph node id). */
+  definitionId?: string;
 }
 
 /** PLMP-ARCH-3: preset metadata mirror (lineage only - no orchestration terms). */
@@ -63,9 +69,11 @@ export interface PresetMeta {
   paramSpec: PresetParamField[];
 }
 
+export type ChangeClass = "metadata_only" | "backward_compatible" | "behavior_change" | "contract_breaking";
+
 export interface ProjectProposal {
   goal: string;
-  changeClass: string;
+  changeClass: ChangeClass;
   tasks: TaskProposal[];
 }
 

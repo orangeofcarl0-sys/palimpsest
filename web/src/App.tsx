@@ -423,6 +423,7 @@ export function App() {
                 goal={graph?.project.goal ?? ""}
                 presets={presets}
                 doc={doc}
+                revision={graph?.project.revision ?? 0}
                 onMessage={setMessage}
                 onDocChange={(next) => {
                   setDoc(next);

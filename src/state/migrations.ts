@@ -291,6 +291,32 @@ export const MIGRATION_8_SQL = `UPDATE task_holds SET project_revision = (
 )
 WHERE project_revision IS NULL;`;
 
+/**
+ * PLMP-GRAPH-5 §B3-C (31 号修订): historical hold definition identity. The
+ * hold's definitionId must be the definition the task had AT SET TIME, never
+ * the current task-id occupant. Derived projection column: #applyHoldSet
+ * reads it from the then-current ProjectIR (event order guarantees the
+ * projects row matches), and this backfill recovers it for pre-B3 rows from
+ * the historical ProjectIR payloads on the ledger - matched exactly by
+ * (revision, task_id), never guessed. Absent historical identity stays NULL
+ * (honest absence; spec-first projects).
+ */
+export const MIGRATION_9_BACKFILL_SQL = `UPDATE task_holds SET definition_id = (
+    SELECT json_extract(j.value, '$.definition_id')
+    FROM events e, json_each(CAST(e.payload_json AS TEXT), '$.project_ir.tasks') j
+    WHERE e.project_id = task_holds.project_id
+      AND e.event_type IN ('PROJECT_CREATED', 'PROJECT_REVISED')
+      AND json_extract(CAST(e.payload_json AS TEXT), '$.project_ir.revision') = task_holds.project_revision
+      AND json_extract(j.value, '$.task_id') = task_holds.task_id
+      AND json_valid(CAST(e.payload_json AS TEXT))
+    ORDER BY e.event_id DESC LIMIT 1
+)
+WHERE definition_id IS NULL AND project_revision IS NOT NULL;`;
+
+export const MIGRATION_9_SQL = `ALTER TABLE task_holds ADD COLUMN definition_id TEXT;
+
+${MIGRATION_9_BACKFILL_SQL}`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
@@ -300,6 +326,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 6, name: "debugger task holds", sql: MIGRATION_6_SQL },
   { version: 7, name: "hold revision anchoring", sql: MIGRATION_7_SQL },
   { version: 8, name: "hold revision backfill from the ledger", sql: MIGRATION_8_SQL },
+  { version: 9, name: "hold historical definition identity", sql: MIGRATION_9_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

@@ -535,3 +535,199 @@ describe("draft freshness and patch grammar closure (PLMP-GRAPH-5 §B2)", () => 
     expect(applyGraphPatch(base, EMPTY_PATCH)).toEqual(base);
   });
 });
+
+describe("response integrity and grammar symmetry (PLMP-GRAPH-5 §B3-A/E)", () => {
+  it("PATCH-FRESH-A04: response.graphDigest equals digest(lift(response.doc)) through the real endpoint", async () => {
+    const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
+    const effects = createPalimpsestEffects({
+      databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-fresh-")), "ops.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const controller = new ProjectController({
+      store,
+      effects,
+      projectId: "scheduler-project",
+      policy: new TaskPolicy({
+        policy_id: "trusted-default",
+        read_paths: ["src"],
+        allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+        network_policy: "deny",
+        network_allowlist: [],
+        timeout_s: 60,
+        lease_s: 10,
+        attempt_limit: 3,
+        candidate_limit: 1,
+      }),
+      clock: () => "2026-09-08T00:00:00Z",
+    });
+    controller.start({
+      projectId: "scheduler-project",
+      goal: "g",
+      tasks: [taskSpec("task-1")],
+    });
+    const handle = await serveOrchestration(controller, { port: 0 });
+    const post = async (body: unknown): Promise<any> => {
+      const response = await fetch(`${handle.url}/api/canvas/patch`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${handle.token}`, "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return { status: response.status, json: (await response.json()) as any };
+    };
+    try {
+      const doc = parseCanvasDoc({
+        version: 2,
+        goal: "g",
+        nodes: [
+          { key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } },
+          { key: "b", type: "task", title: "B", x: 10, y: 0, z: "root", task: { dependsOn: ["a"] } },
+        ],
+        groups: [],
+      });
+      // The pre-fix bug: digest(patched) counts patch-introduced pe* edge ids
+      // that lift(returnedDoc) regenerates - the anchor pointed at a graph
+      // the client could never rebuild.
+      const result = await post({
+        doc,
+        patch: {
+          addNodes: [{ id: "c", kind: "agent", label: "C", scope: "root", task: {} }],
+          removeNodes: [],
+          updateNodes: [],
+          addEdges: [{ id: "pe1", source: "b", target: "c", kind: "data" }],
+          removeEdges: [],
+          updateEdges: [],
+          moveScope: [],
+        },
+      });
+      expect(result.status).toBe(200);
+      expect(result.json.applied).toBe(true);
+      const returnedGraph = liftToAgentGraph(parseCanvasDoc(result.json.doc));
+      expect(result.json.graphDigest).toBe(agentGraphSemanticDigest(returnedGraph));
+    } finally {
+      await handle.close();
+      await effects.close();
+      store.close();
+    }
+  });
+
+  it("PATCH-FRESH-A05: chaining a second patch with the returned anchor does not stale", async () => {
+    const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
+    const effects = createPalimpsestEffects({
+      databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-fresh-")), "ops.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const controller = new ProjectController({
+      store,
+      effects,
+      projectId: "scheduler-project",
+      policy: new TaskPolicy({
+        policy_id: "trusted-default",
+        read_paths: ["src"],
+        allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+        network_policy: "deny",
+        network_allowlist: [],
+        timeout_s: 60,
+        lease_s: 10,
+        attempt_limit: 3,
+        candidate_limit: 1,
+      }),
+      clock: () => "2026-09-08T00:00:00Z",
+    });
+    controller.start({
+      projectId: "scheduler-project",
+      goal: "g",
+      tasks: [taskSpec("task-1")],
+    });
+    const handle = await serveOrchestration(controller, { port: 0 });
+    const post = async (body: unknown): Promise<any> => {
+      const response = await fetch(`${handle.url}/api/canvas/patch`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${handle.token}`, "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return { status: response.status, json: (await response.json()) as any };
+    };
+    try {
+      let doc = parseCanvasDoc({
+        version: 2,
+        goal: "g",
+        nodes: [{ key: "a", type: "task", title: "A", x: 0, y: 0, z: "root", task: { dependsOn: [] } }],
+        groups: [],
+      });
+      // patch 1: add B with a fresh pe edge id, chain the returned anchor.
+      const first = await post({
+        doc,
+        patch: {
+          addNodes: [{ id: "b", kind: "agent", label: "B", scope: "root", task: {} }],
+          removeNodes: [],
+          updateNodes: [],
+          addEdges: [{ id: "pe1", source: "a", target: "b", kind: "data" }],
+          removeEdges: [],
+          updateEdges: [],
+          moveScope: [],
+        },
+      });
+      expect(first.status).toBe(200);
+      expect(first.json.applied).toBe(true);
+      doc = parseCanvasDoc(first.json.doc);
+      // patch 2 anchored to response.graphDigest acts on response.doc: fresh.
+      const second = await post({
+        doc,
+        patch: {
+          baseGraphDigest: first.graphDigest,
+          addNodes: [],
+          removeNodes: [],
+          updateNodes: [{ id: "b", label: "B（改）" }],
+          addEdges: [],
+          removeEdges: [],
+          updateEdges: [],
+          moveScope: [],
+        },
+      });
+      expect(second.status).toBe(200);
+      expect(second.json.applied).toBe(true);
+      expect(second.json.diagnostics).toEqual([]);
+      // A wrong anchor on the same doc still refuses, carrying the current
+      // digest for rebasing.
+      const stale = await post({
+        doc,
+        patch: {
+          baseGraphDigest: "0".repeat(64),
+          addNodes: [],
+          removeNodes: [],
+          updateNodes: [{ id: "b", label: "再改" }],
+          addEdges: [],
+          removeEdges: [],
+          updateEdges: [],
+          moveScope: [],
+        },
+      });
+      expect(stale.json.applied).toBe(false);
+      expect((stale.json.diagnostics as Array<{ type: string }>)[0]!.type).toBe("STALE_GRAPH_BASE");
+      expect(stale.json.graphDigest).toBe(first.json.graphDigest);
+    } finally {
+      await handle.close();
+      await effects.close();
+      store.close();
+    }
+  });
+
+  it("PATCH-GRAMMAR-A05: updateEdges {id} without kind is EMPTY_UPDATE at parse", () => {
+    expect(() =>
+      parseGraphPatch({
+        addNodes: [],
+        removeNodes: [],
+        updateNodes: [],
+        addEdges: [],
+        removeEdges: [],
+        updateEdges: [{ id: "e1" }],
+        moveScope: [],
+      }),
+    ).toThrow(/EMPTY_UPDATE/);
+    // Programmatic patches without kind are refused at validation instead.
+    const base = parseAgentGraph(baseGraph());
+    expect(
+      validateGraphPatch(base, { ...EMPTY_PATCH, updateEdges: [{ id: "e1" }] }).map((d) => d.type),
+    ).toEqual(["NO_OP_OPERATION"]);
+  });
+});

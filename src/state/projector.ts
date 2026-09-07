@@ -121,18 +121,34 @@ export class CoreProjector {
         : typeof event.expected_project_revision === "number"
           ? event.expected_project_revision
           : null;
+    // PLMP-GRAPH-5 §B3-C: the hold's definition identity is the one the task
+    // had AT SET TIME - read from the projects row, which by event order
+    // reflects exactly that revision. Current-task reuse never leaks in.
+    const projectRow = connection
+      .prepare("SELECT state_json FROM projects WHERE project_id=?")
+      .get(event.project_id) as { state_json: Uint8Array } | undefined;
+    let definitionId: string | null = null;
+    if (projectRow !== undefined) {
+      const project = JSON.parse(new TextDecoder().decode(projectRow.state_json)) as {
+        tasks?: Array<{ task_id?: unknown; definition_id?: unknown }>;
+      };
+      const spec = (project.tasks ?? []).find((task) => task.task_id === payload.task_id);
+      if (typeof spec?.definition_id === "string") definitionId = spec.definition_id;
+    }
     connection
       .prepare(
         `
         INSERT INTO task_holds(
-            project_id, task_id, reason, declared_by, last_event_id, updated_at, project_revision
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            project_id, task_id, reason, declared_by, last_event_id, updated_at,
+            project_revision, definition_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(project_id, task_id) DO UPDATE SET
             reason=excluded.reason,
             declared_by=excluded.declared_by,
             last_event_id=excluded.last_event_id,
             updated_at=excluded.updated_at,
-            project_revision=excluded.project_revision
+            project_revision=excluded.project_revision,
+            definition_id=excluded.definition_id
         `,
       )
       .run(
@@ -143,6 +159,7 @@ export class CoreProjector {
         event.event_id,
         isoformatDatetime(event.committed_at),
         revision,
+        definitionId,
       );
   }
 

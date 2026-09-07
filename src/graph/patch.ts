@@ -203,12 +203,13 @@ function parseEdgeUpdate(value: unknown): GraphPatchEdgeUpdate {
   }
   const id = patchIdentifier(raw["id"], "updateEdges.id");
   const kind = raw["kind"] === undefined ? undefined : patchString(raw["kind"], "updateEdges.kind");
-  if (kind !== undefined && !AGENT_EDGE_KINDS.has(kind)) {
+  // Syntactic no-op, symmetric with updateNodes (31 号 §B3): an entry with
+  // nothing to mutate is an input error, not an edit.
+  if (kind === undefined) failPatch(`updateEdges entry "${id}" mutates nothing (EMPTY_UPDATE)`);
+  if (!AGENT_EDGE_KINDS.has(kind)) {
     failPatch(`unknown updateEdges kind "${kind}"`);
   }
-  return kind === undefined
-    ? { id }
-    : { id, kind: kind as Exclude<GraphPatchEdgeUpdate["kind"], undefined> };
+  return { id, kind: kind as Exclude<GraphPatchEdgeUpdate["kind"], undefined> };
 }
 
 function parseMoveScope(value: unknown): GraphPatchMoveScope {
@@ -450,11 +451,14 @@ export function validateGraphPatch(
   }
   for (const update of patch.updateEdges) {
     const edge = base.edges.find((entry) => entry.id === update.id);
-    if (edge !== undefined && update.kind === edge.kind) {
+    if (edge !== undefined && (update.kind === undefined || update.kind === edge.kind)) {
       diagnostics.push({
         type: "NO_OP_OPERATION",
         id: update.id,
-        detail: `edge "${update.id}" kind is already "${edge.kind}"`,
+        detail:
+          update.kind === undefined
+            ? `edge "${update.id}" update carries no kind (nothing to mutate)`
+            : `edge "${update.id}" kind is already "${edge.kind}"`,
       });
     }
   }
