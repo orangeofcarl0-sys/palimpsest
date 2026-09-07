@@ -12,6 +12,9 @@ const OPEN_STATES: ReadonlySet<string> = new Set(["CREATED", "LEASED", "RUNNING"
 export interface SatelliteAttempt {
   readonly attemptId: string;
   readonly taskId: string;
+  /** PLMP-GRAPH-4 (30 号规格): the definition identity (AgentGraph node id);
+   * absent when the project was declared from a spec-first proposal. */
+  readonly definitionId?: string;
   readonly taskTitle: string;
   readonly role: string;
   readonly state: string;
@@ -30,6 +33,7 @@ export function satelliteAttempts(graph: OrchestrationGraph): SatelliteAttempt[]
       satellites.push({
         attemptId: attempt.attemptId,
         taskId: task.taskId,
+        ...(task.definitionId === undefined ? {} : { definitionId: task.definitionId }),
         taskTitle: task.objective,
         role: task.role,
         state: attempt.state,
@@ -51,6 +55,9 @@ export interface TraceSpan {
 
 export interface TraceRow {
   readonly attemptId: string;
+  /** PLMP-GRAPH-4 (30 号规格): the definition identity; absent on
+   * spec-first projects. */
+  readonly definitionId?: string;
   readonly taskTitle: string;
   readonly role: string;
   readonly state: string;
@@ -74,6 +81,7 @@ export function traceRows(graph: OrchestrationGraph): TraceRow[] {
       spans.push({ label: last.label, start: last.at, end: last.at });
       rows.push({
         attemptId: attempt.attemptId,
+        ...(task.definitionId === undefined ? {} : { definitionId: task.definitionId }),
         taskTitle: task.objective,
         role: task.role,
         state: attempt.state,

@@ -266,6 +266,16 @@ export const MIGRATION_6_SQL = `CREATE TABLE task_holds (
   ) STRICT;
 `;
 
+/**
+ * PLMP-GRAPH-4 (30 号规格): hold revision anchoring. A hold set at revision N
+ * must not gate whatever semantic task later reuses the task_id after a plan
+ * revision - the scheduler treats a revision-mismatched hold as stale.
+ * Projection-table change only: no digest, no fixture regeneration. NULL =
+ * legacy hold (pre-anchor event), which keeps the legacy always-active
+ * semantics (documented fallback, fail-open only for pre-anchor data).
+ */
+export const MIGRATION_7_SQL = `ALTER TABLE task_holds ADD COLUMN project_revision INTEGER;`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
@@ -273,6 +283,7 @@ export const MIGRATIONS: readonly Migration[] = [
   { version: 4, name: "h1 stage graph registry", sql: MIGRATION_4_SQL },
   { version: 5, name: "context manifest registry", sql: MIGRATION_5_SQL },
   { version: 6, name: "debugger task holds", sql: MIGRATION_6_SQL },
+  { version: 7, name: "hold revision anchoring", sql: MIGRATION_7_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

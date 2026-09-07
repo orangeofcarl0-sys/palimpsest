@@ -50,3 +50,4 @@ scope 级并发/重试/记忆 policy（G6+）、scope 级 attempt 树、scope �
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-GRAPH-3，G5）：mode 三层身份链、就近 runtime 祖先归属、TaskSpec/TaskProposal/GraphTask 三处加法式可选字段（无迁移、digest 零扰动论证）、TaskEnvelope 明确不加字段、并发留 G6。 |
 | 2026-09-07 | **交付**：CanvasDoc subflow `mode?: "runtime"`（单一编码）→ IR subgraph mode → `compileAgentGraph` 就近 runtime 祖先归属（editorial 嵌套不改归属）→ `TaskProposal.scopeId`/`TaskSpec.scope_id`（SDS-4 缺省省略，canonical 键序 ⇒ 无 scope golden 逐字节断言）→ `GraphTask.scopeId` 投影；lift/unload/patch（A05：patch 建 runtime 子图编译归属正确）全链携带；面板运行时徽章 + Inspector mode 切换 + TaskDetails scope 行；RSUB-A01–A05 全绿（含 scope-less TaskSpec canonical golden 断言）；浏览器冒烟通过。 |
+| 2026-09-07 | G9-A（30 号）修订：`GraphTask` 增加 `definitionId?`（与 `scopeId` 同款加法式缺席省略）；`task_id`（运行时实体）与 definitionId（定义身份）正式分离，本规格的归属链语义不变。 |

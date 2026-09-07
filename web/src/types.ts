@@ -18,7 +18,10 @@ export interface GraphTask {
   writePaths: string[];
   requiredArtifacts: string[];
   scopeId?: string;
-  held?: boolean;
+  /** PLMP-GRAPH-4: the stable definition identity (AgentGraph node id). */
+  definitionId?: string;
+  /** PLMP-DEBUG-1 + 30: "stale" = hold anchored to an earlier plan revision. */
+  held?: "active" | "stale";
   attempts: GraphAttempt[];
 }
 
@@ -150,6 +153,7 @@ export interface TraceSpan {
 
 export interface TraceRow {
   attemptId: string;
+  definitionId?: string;
   taskTitle: string;
   role: string;
   state: string;
@@ -160,6 +164,7 @@ export interface TraceRow {
 export interface SatelliteAttempt {
   attemptId: string;
   taskId: string;
+  definitionId?: string;
   taskTitle: string;
   role: string;
   state: string;

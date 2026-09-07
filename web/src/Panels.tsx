@@ -189,18 +189,24 @@ export function TaskDetails(props: {
         </div>
         <div>
           状态 <b style={{ color: stateColor(task.state) }}>{task.state}</b> · 角色 {task.role}
-          {task.held === true ? (
+          {task.held === "active" ? (
             <span style={{ marginLeft: 6, background: "#7f1d1d", borderRadius: 6, padding: "1px 6px", fontSize: 10 }}>
               挂起
+            </span>
+          ) : null}
+          {task.held === "stale" ? (
+            <span style={{ marginLeft: 6, background: "#78350f", borderRadius: 6, padding: "1px 6px", fontSize: 10 }}>
+              挂起·已过期（修订前断点，不再拦截）
             </span>
           ) : null}
         </div>
         <div style={{ color: "#94a3b8" }}>写域 {task.writePaths.join(", ") || "—"}</div>
         {task.scopeId !== undefined && <div style={{ color: "#94a3b8" }}>scope {task.scopeId}</div>}
+        {task.definitionId !== undefined && <div style={{ color: "#94a3b8" }}>definition {task.definitionId}</div>}
         <div style={{ color: "#94a3b8" }}>产物 {task.requiredArtifacts.join(", ") || "—"}</div>
       </div>
       <div style={{ display: "flex", gap: 6 }}>
-        {task.held === true ? (
+        {task.held !== undefined ? (
           <button style={button(false)} onClick={() => void hold(false)}>
             放行（清除断点）
           </button>

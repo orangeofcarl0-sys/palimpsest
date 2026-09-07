@@ -386,6 +386,10 @@ export function compileAgentGraph(
     return {
       title: node.label,
       dependsOn: (incoming.get(node.id) ?? []).map((sourceId) => byIdLabel(graph, sourceId)),
+      // PLMP-GRAPH-4 (30 号规格): the IR node id IS the definition identity.
+      // It rides the whole chain (TaskSpec.definition_id → GraphTask →
+      // runtime lineage) instead of dying here.
+      definitionId: node.id,
       ...(task.writePaths === undefined ? {} : { writePaths: [...task.writePaths] }),
       ...(task.requiredArtifacts === undefined ? {} : { requiredArtifacts: [...task.requiredArtifacts] }),
       ...(task.gateId === undefined ? {} : { gateId: task.gateId }),

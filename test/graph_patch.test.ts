@@ -242,7 +242,10 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
     const patched = applyGraphPatch(base, patch);
     const compiled = compileAgentGraph(patched);
     expect(compiled.tasks.slice(0, 2).map((task) => task.title)).toEqual(["调研", "综合"]);
-    expect(compiled.tasks.slice(2)).toEqual(proposal.tasks);
+    expect(compiled.tasks.slice(2).map((task) => task.definitionId)).toEqual(["n1", "n2", "n3"]);
+    expect(
+      compiled.tasks.slice(2).map(({ definitionId: _definitionId, ...rest }) => rest),
+    ).toEqual(proposal.tasks);
   });
 
   it("PATCH-A04: unload round-trips the IR (lift∘unload ≡ identity) with deterministic grid", () => {

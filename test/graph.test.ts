@@ -155,8 +155,8 @@ describe("agent graph IR (PLMP-GRAPH-1)", () => {
       goal: "g",
       changeClass: "behavior_change",
       tasks: [
-        { title: "A", dependsOn: [] },
-        { title: "B", dependsOn: ["A"] },
+        { title: "A", dependsOn: [], definitionId: "a" },
+        { title: "B", dependsOn: ["A"], definitionId: "b" },
       ],
     });
     // UNSUPPORTED_NODE_KIND: advisory node kinds stay authoring-only.

@@ -26,6 +26,11 @@ export interface TaskProposal {
   readonly suggestedSkills?: readonly string[];
   /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
   readonly scopeId?: string;
+  /** PLMP-GRAPH-4 (30 号规格): stable definition identity - the AgentGraph
+   * node id this task was compiled from. Absent means the proposal did not
+   * originate from (or was not reconciled with) a stable graph IR; it is
+   * never synthesized as task_id. */
+  readonly definitionId?: string;
 }
 
 export interface ProjectProposal {
@@ -40,7 +45,8 @@ export type ProposalDiagnosticType =
   | "UNKNOWN_DEPENDENCY"
   | "DEPENDENCY_CYCLE"
   | "MISSING_WRITE_PATHS"
-  | "UNKNOWN_GATE";
+  | "UNKNOWN_GATE"
+  | "DUPLICATE_DEFINITION_ID";
 
 export interface ProposalDiagnostic {
   readonly type: ProposalDiagnosticType;
@@ -124,6 +130,22 @@ export function validateProjectProposal(
   }
   // Cycle detection over the title graph (only edges inside the proposal).
   const byTitle = new Map(proposal.tasks.map((task) => [task.title, task]));
+  // Definition identity integrity: two tasks may not claim the same
+  // definition node - that would alias one definition to two runtimes.
+  const definitionIds = new Map<string, string>();
+  for (const task of proposal.tasks) {
+    if (task.definitionId === undefined) continue;
+    const owner = definitionIds.get(task.definitionId);
+    if (owner !== undefined) {
+      diagnostics.push({
+        type: "DUPLICATE_DEFINITION_ID",
+        task: task.title,
+        detail: `definition id "${task.definitionId}" is already claimed by "${owner}"`,
+      });
+      continue;
+    }
+    definitionIds.set(task.definitionId, task.title);
+  }
   const state = new Map<string, "visiting" | "done">();
   const visit = (title: string): boolean => {
     const mark = state.get(title);
@@ -164,5 +186,6 @@ export function proposalTaskSpecs(proposal: ProjectProposal): TaskSpec[] {
     ...(task.role === undefined ? {} : { role: task.role }),
     ...(task.suggestedSkills === undefined ? {} : { suggested_skills: [...task.suggestedSkills] }),
     ...(task.scopeId === undefined ? {} : { scope_id: task.scopeId }),
+    ...(task.definitionId === undefined ? {} : { definition_id: task.definitionId }),
   }));
 }

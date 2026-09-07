@@ -106,18 +106,24 @@ export class CoreProjector {
   }
 
   #applyHoldSet(connection: DatabaseSync, event: SchedulerEvent): void {
-    const payload = event.payload as { task_id: string; reason: string; declared_by: string };
+    const payload = event.payload as {
+      task_id: string;
+      reason: string;
+      declared_by: string;
+      project_revision?: number;
+    };
     connection
       .prepare(
         `
         INSERT INTO task_holds(
-            project_id, task_id, reason, declared_by, last_event_id, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            project_id, task_id, reason, declared_by, last_event_id, updated_at, project_revision
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(project_id, task_id) DO UPDATE SET
             reason=excluded.reason,
             declared_by=excluded.declared_by,
             last_event_id=excluded.last_event_id,
-            updated_at=excluded.updated_at
+            updated_at=excluded.updated_at,
+            project_revision=excluded.project_revision
         `,
       )
       .run(
@@ -127,6 +133,7 @@ export class CoreProjector {
         String(payload.declared_by),
         event.event_id,
         isoformatDatetime(event.committed_at),
+        typeof payload.project_revision === "number" ? payload.project_revision : null,
       );
   }
 

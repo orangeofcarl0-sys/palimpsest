@@ -189,10 +189,25 @@ export class Scheduler {
     // PLMP-DEBUG-1: task-level breakpoints - a held task neither activates
     // nor unblocks; everything else scans normally (PAUSED stops the whole
     // project, a hold stops one task).
+    // PLMP-GRAPH-4 (30 号规格): holds anchor to (project_revision, task_id).
+    // A hold whose revision no longer matches the current plan revision is
+    // STALE - it must not gate whatever semantic task reuses the task_id
+    // after a re-architecture. Legacy rows (pre-anchor, NULL revision) keep
+    // the legacy always-active semantics (documented fallback).
+    const holdRevision = new Map<string, number | null>();
+    for (const row of this.connection
+      .prepare("SELECT task_id, project_revision FROM task_holds WHERE project_id=?")
+      .all(this.projectId) as Row[]) {
+      const revision = row.project_revision;
+      holdRevision.set(
+        String(row.task_id),
+        typeof revision === "number" ? revision : null,
+      );
+    }
     const held = new Set(
-      (this.connection
-        .prepare("SELECT task_id FROM task_holds WHERE project_id=?")
-        .all(this.projectId) as Row[]).map((row) => String(row.task_id)),
+      [...holdRevision.entries()]
+        .filter(([, revision]) => revision === null || revision === project.revision)
+        .map(([taskId]) => taskId),
     );
 
     for (const stage of graph.stages) {

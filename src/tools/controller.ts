@@ -462,6 +462,9 @@ export class ProjectController {
   /**
    * PLMP-DEBUG-1: task-level breakpoint. The hold is a scheduling gate, not
    * a task state - the task keeps its state, the ledger keeps the audit.
+   * PLMP-GRAPH-4 (30 号规格): the hold anchors to (project_revision, task_id)
+   * - a hold set at revision N goes stale when the plan revises, instead of
+   * mis-attaching to whatever semantic task later reuses the task_id.
    */
   setHold(taskId: string, input: { reason: string; declaredBy: string }): SchedulerEvent {
     const project = this.#project();
@@ -480,6 +483,7 @@ export class ProjectController {
           task_id: taskId,
           reason: input.reason,
           declared_by: input.declaredBy,
+          project_revision: project.revision,
         },
         causation_id: null,
         correlation_id: `task:${taskId}`,

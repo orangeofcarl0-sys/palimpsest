@@ -194,6 +194,7 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     expect(proposal.tasks[1]).toEqual({
       title: "综合",
       dependsOn: ["调研"],
+      definitionId: "n2",
       role: "analyst",
       suggestedSkills: ["web"],
     });
@@ -601,14 +602,24 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     expect(a!.task!.dependsOn).toEqual([]);
     expect(b!.task!.dependsOn).toEqual([a!.key]);
     expect(c!.task!.dependsOn).toEqual([a!.key, b!.key]);
-    expect(canvasCompile(inserted).tasks.slice(2)).toEqual(proposal.tasks);
-    expect(canvasCompile(inserted).tasks.slice(0, 2).map((task) => task.title)).toEqual([
+    const compiledInserted = canvasCompile(inserted).tasks;
+    expect(compiledInserted.slice(2).map((task) => task.definitionId)).toEqual(["n3", "n4", "n5"]);
+    expect(
+      compiledInserted.slice(2).map(({ definitionId: _definitionId, ...rest }) => rest),
+    ).toEqual(proposal.tasks);
+    expect(compiledInserted.slice(0, 2).map((task) => task.title)).toEqual([
       "已有",
       "已有二",
     ]);
     // Standalone fragment follows the same remap discipline.
     const fragment = proposalFragment(proposal, { x: 0, y: 0 });
-    expect(canvasCompile(docWith(...fragment)).tasks).toEqual(proposal.tasks);
+    const fragmentCompiled = canvasCompile(docWith(...fragment)).tasks;
+    expect(fragmentCompiled.map((task) => task.definitionId)).toEqual(
+      fragment.map((node) => node.key),
+    );
+    expect(fragmentCompiled.map(({ definitionId: _definitionId, ...rest }) => rest)).toEqual(
+      proposal.tasks,
+    );
   });
 
   it("CANVAS-A20: cross-boundary key deps survive rename and layout in deep nesting", () => {
@@ -658,8 +669,8 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
       });
       expect(compiled.status).toBe(200);
       expect((compiled.json.proposal as Json).tasks).toEqual([
-        { title: "调研", dependsOn: [] },
-        { title: "综合", dependsOn: ["调研"] },
+        { title: "调研", dependsOn: [], definitionId: "n1" },
+        { title: "综合", dependsOn: ["调研"], definitionId: "n2" },
       ]);
       const v1 = await api(handle, "/api/canvas/compile", {
         method: "POST",

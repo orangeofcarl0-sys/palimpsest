@@ -69,7 +69,7 @@ const GATE_RELEASE = parseGateDefinition({
 });
 
 function heldTasks(controller: ProjectController): string[] {
-  return controller.orchestrationGraph().tasks.filter((task) => task.held === true).map((task) => task.taskId);
+  return controller.orchestrationGraph().tasks.filter((task) => task.held === "active").map((task) => task.taskId);
 }
 
 describe("debugger holds (PLMP-DEBUG-1)", () => {
@@ -208,7 +208,7 @@ describe("debugger holds (PLMP-DEBUG-1)", () => {
       const held = await post("holdSet", { taskId: "task-2", reason: "断点" });
       expect(held.status).toBe(200);
       let graph = (await (await api(handle)).json).graph;
-      expect(graph.tasks.find((t: any) => t.taskId === "task-2").held).toBe(true);
+      expect(graph.tasks.find((t: any) => t.taskId === "task-2").held).toBe("active");
       expect(graph.tasks.find((t: any) => t.taskId === "task-1").held).toBeUndefined();
       const cleared = await post("holdClear", { taskId: "task-2", reason: "放行" });
       expect(cleared.status).toBe(200);
@@ -231,4 +231,107 @@ describe("debugger holds (PLMP-DEBUG-1)", () => {
     });
     return { json: (await response.json()) as any };
   }
+});
+
+describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
+  it("DBG-REV-A01: a hold does not rebind to whatever task reuses the task_id after a revision", async () => {
+    const rig = makeRig();
+    const { store, controller } = rig;
+    try {
+      controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])],
+      });
+      controller.setHold("task-1", { reason: "A 的断点", declaredBy: "panel" });
+      expect(heldTasks(controller)).toEqual(["task-1"]);
+      expect(controller.scheduler.runOnce()).toBeNull();
+
+      // r2: task-1 is now a semantically different node (X); A moved to
+      // task-2 and B to task-3. The r1 hold must NOT gate any of them.
+      controller.plan({
+        tasks: [
+          { ...taskSpec("task-1"), objective: "X" },
+          { ...taskSpec("task-2"), objective: "A" },
+          { ...taskSpec("task-3", ["task-2"]), objective: "B" },
+        ],
+      });
+      const graph = controller.orchestrationGraph();
+      expect(graph.tasks.map((task) => task.objective)).toEqual(["X", "A", "B"]);
+      const stale = graph.tasks.filter((task) => task.held === "stale");
+      expect(stale.map((task) => task.taskId)).toEqual(["task-1"]);
+      expect(stale[0]!.objective).toBe("X");
+      expect(graph.tasks.filter((task) => task.held === "active")).toEqual([]);
+
+      // The stale hold stays auditable and explicit: re-anchor it at the
+      // current revision (new HOLD_SET carries the live revision), or release it.
+      controller.setHold("task-1", { reason: "X 也要停", declaredBy: "panel" });
+      expect(heldTasks(controller)).toEqual(["task-1"]);
+      const revision = store.connection
+        .prepare("SELECT project_revision AS r FROM task_holds WHERE project_id=? AND task_id=?")
+        .get("scheduler-project", "task-1") as { r: number };
+      expect(revision.r).toBe(controller.orchestrationGraph().project.revision);
+      controller.clearHold("task-1", { reason: "放行" });
+      expect(
+        controller.orchestrationGraph().tasks.every((task) => task.held === undefined),
+      ).toBe(true);
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("DBG-REV-A02: the gate consumes the revision - stale inert, current active, legacy NULL active", async () => {
+    // An active hold (revision matches) gates the READY task.
+    const activeRig = makeRig();
+    try {
+      activeRig.controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1")],
+      });
+      activeRig.controller.setHold("task-1", { reason: "停", declaredBy: "panel" });
+      expect(activeRig.controller.scheduler.runOnce()).toBeNull();
+    } finally {
+      await activeRig.cleanup();
+    }
+
+    // A revision-mismatched hold is stale: the task activates.
+    const staleRig = makeRig();
+    try {
+      staleRig.controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1")],
+      });
+      staleRig.controller.setHold("task-1", { reason: "旧修订的断点", declaredBy: "panel" });
+      staleRig.store.connection
+        .prepare("UPDATE task_holds SET project_revision=? WHERE project_id=? AND task_id=?")
+        .run(999, "scheduler-project", "task-1");
+      const event = staleRig.controller.scheduler.runOnce();
+      expect(event?.event_type).toBe("TASK_STARTED");
+      expect(event?.entity_id).toBe("task-1");
+      expect(staleRig.controller.orchestrationGraph().tasks[0]!.held).toBe("stale");
+    } finally {
+      await staleRig.cleanup();
+    }
+
+    // Legacy rows (pre-anchor, NULL revision) keep the always-active fallback.
+    const legacyRig = makeRig();
+    try {
+      legacyRig.controller.start({
+        projectId: "scheduler-project",
+        goal: "g",
+        tasks: [taskSpec("task-1")],
+      });
+      legacyRig.store.connection
+        .prepare(
+          "INSERT INTO task_holds(project_id, task_id, reason, declared_by, last_event_id, updated_at, project_revision) VALUES (?,?,?,?,?,?,NULL)",
+        )
+        .run("scheduler-project", "task-1", "旧账本断点", "legacy", 0, "2026-01-01T00:00:00Z");
+      expect(legacyRig.controller.scheduler.runOnce()).toBeNull();
+      expect(legacyRig.controller.orchestrationGraph().tasks[0]!.held).toBe("active");
+    } finally {
+      await legacyRig.cleanup();
+    }
+  });
 });

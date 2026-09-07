@@ -254,6 +254,11 @@ export interface TaskSpec {
    * Additive optional (SDS-4): omitted by default, canonical JSON is
    * key-sorted, so scope-less specs digest byte-identically. */
   scope_id?: string | undefined;
+  /** PLMP-GRAPH-4 (30 号规格): stable definition identity - the AgentGraph
+   * node id this task was compiled from; task_id remains the runtime entity
+   * id. Additive optional (SDS-4): absent on legacy/spec-first projects,
+   * digest byte-identical. Never synthesized as task_id. */
+  definition_id?: string | undefined;
 }
 
 export function parseTaskSpec(value: unknown): TaskSpec {
@@ -288,6 +293,11 @@ export function parseTaskSpec(value: unknown): TaskSpec {
   }
   if (raw.scope_id !== undefined && raw.scope_id !== null) {
     spec.scope_id = field(raw.scope_id, "scope_id", (inner) => nonEmpty(expectString(inner)));
+  }
+  if (raw.definition_id !== undefined && raw.definition_id !== null) {
+    spec.definition_id = field(raw.definition_id, "definition_id", (inner) =>
+      nonEmpty(expectString(inner)),
+    );
   }
   return Object.freeze(spec);
 }
@@ -1151,11 +1161,22 @@ export function normalizeEventPayload(
     }
     case "HOLD_SET": {
       // PLMP-DEBUG-1: task-level breakpoint, audited on the log.
+      // PLMP-GRAPH-4 (30 号规格): project_revision is additive optional
+      // (SDS-4) - new holds carry it, legacy holds omit it and keep the
+      // legacy always-active semantics (documented fallback).
       requireFields(raw, "task_id", "reason", "declared_by");
+      const revision =
+        raw.project_revision === undefined || raw.project_revision === null
+          ? undefined
+          : field(raw.project_revision, "project_revision", expectInt);
+      if (revision !== undefined && revision < 0) {
+        throw new ContractError("project_revision must be >= 0");
+      }
       return {
         task_id: field(raw.task_id, "task_id", (inner) => nonEmpty(expectString(inner))),
         reason: field(raw.reason, "reason", (inner) => nonEmpty(expectString(inner))),
         declared_by: field(raw.declared_by, "declared_by", (inner) => nonEmpty(expectString(inner))),
+        ...(revision === undefined ? {} : { project_revision: revision }),
       };
     }
     case "HOLD_CLEARED": {

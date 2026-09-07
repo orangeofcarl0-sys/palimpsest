@@ -55,3 +55,4 @@
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-DEBUG-1，G8 批次①）：任务级 hold（HOLD_SET/HOLD_CLEARED + M6 task_holds + 调度门 + VIS held + 控制面两 op）；批次内其余控制（cancel=既有 report(cancelled) 路径、retry=自动回退、fork/replay/bypass/inject）的推迟裁决与理由登记。 |
 | 2026-09-07 | **交付**：EVENT_TYPES 34→36（HOLD_SET/HOLD_CLEARED + normalizeEventPayload 两 case）+ M6 `task_holds` 投影表 + projector upsert/delete + 调度 READY/BLOCKED 双门跳过 held + `controller.setHold/clearHold`（先验声明、clear 需在持）+ VIS `GraphTask.held` + 控制面/serve `holdSet/holdClear` 两 op + 面板挂起/放行按钮与徽章；DBG-A01–A05 全绿（含 store 重开重建 hold 的 crash-safe 断言、 held-BLOCKED 依赖满足仍不解锁的完整晋升驱动）；既有 301 项原样绿＝零扰动实证；浏览器冒烟通过。 |
+| 2026-09-07 | G9-A（30 号）**取代本规格 §1.1「hold 按 task_id 锚定并跨 plan 修订存活、不绑定 revision」的裁决**：plan 修订会按声明顺序重生成 task-1..N，跨修订存活会把旧断点误附着到语义不同的任务（审计复现在册）。新语义＝hold 锚定 `(project_revision, task_id)`：修订错配＝stale（惰性、可见、可放行/重挂），legacy NULL 行保活跃回退；详见 30 号 PLMP-GRAPH-4。 |

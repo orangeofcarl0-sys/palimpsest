@@ -35,8 +35,13 @@ export interface GraphTask {
   readonly requiredArtifacts: readonly string[];
   /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
   readonly scopeId?: string;
-  /** PLMP-DEBUG-1: task-level breakpoint; absent means not held. */
-  readonly held?: boolean;
+  /** PLMP-GRAPH-4 (30 号规格): the stable definition identity (AgentGraph
+   * node id) this task was compiled from; absent on spec-first projects. */
+  readonly definitionId?: string;
+  /** PLMP-DEBUG-1 + 30 号规格: task-level breakpoint state; absent means not
+   * held. "stale" = the hold was set on an earlier plan revision - it no
+   * longer gates, but it is still surfaced until explicitly cleared. */
+  readonly held?: "active" | "stale";
   readonly attempts: ReadonlyArray<GraphAttempt>;
 }
 
@@ -214,22 +219,36 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     attemptsByTask.set(taskId, list);
   }
 
+  // PLMP-GRAPH-4 (30 号规格): holds carry their plan revision; a hold set on
+  // an earlier revision is stale - surfaced, but no longer a scheduling gate.
   const heldRows = connection
-    .prepare("SELECT task_id FROM task_holds WHERE project_id=?")
-    .all(projectId) as Array<{ task_id: string }>;
-  const held = new Set(heldRows.map((row) => String(row.task_id)));
-  const tasks: GraphTask[] = project.tasks.map((spec) => ({
-    taskId: spec.task_id,
-    objective: spec.objective,
-    state: taskStates.get(spec.task_id) ?? "READY",
-    role: spec.role ?? "implementer",
-    ...(spec.scope_id === undefined ? {} : { scopeId: spec.scope_id }),
-    ...(held.has(spec.task_id) ? { held: true } : {}),
-    dependsOn: spec.depends_on,
-    writePaths: spec.write_paths,
-    requiredArtifacts: spec.required_artifacts,
-    attempts: attemptsByTask.get(spec.task_id) ?? [],
-  }));
+    .prepare("SELECT task_id, project_revision FROM task_holds WHERE project_id=?")
+    .all(projectId) as Array<{ task_id: string; project_revision: number | null }>;
+  const heldByTask = new Map<string, "active" | "stale">();
+  for (const row of heldRows) {
+    heldByTask.set(
+      String(row.task_id),
+      row.project_revision === null || row.project_revision === project.revision
+        ? "active"
+        : "stale",
+    );
+  }
+  const tasks: GraphTask[] = project.tasks.map((spec) => {
+    const held = heldByTask.get(spec.task_id);
+    return {
+      taskId: spec.task_id,
+      objective: spec.objective,
+      state: taskStates.get(spec.task_id) ?? "READY",
+      role: spec.role ?? "implementer",
+      ...(spec.scope_id === undefined ? {} : { scopeId: spec.scope_id }),
+      ...(spec.definition_id === undefined ? {} : { definitionId: spec.definition_id }),
+      ...(held === undefined ? {} : { held }),
+      dependsOn: spec.depends_on,
+      writePaths: spec.write_paths,
+      requiredArtifacts: spec.required_artifacts,
+      attempts: attemptsByTask.get(spec.task_id) ?? [],
+    };
+  });
 
   const graph: OrchestrationGraph = {
     project: {

@@ -63,3 +63,4 @@ serve 新端点（G4 的 patch 面一并考虑）、面板消费 IR（G4/G7）�
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-GRAPH-1，G3）：IR v1 形状（9 节点 kind 分层、9 边 kind、scope compound、cycle-capable）、capability 门四诊断、单编译路径（doc→lift→IR→proposal，旧 flatten 删除）、布局纯度推广；ports/multigraph 语义显式推迟 G5。 |
 | 2026-09-07 | **交付**：`src/graph/`（ir.ts：9 节点 kind 分层、9 边 kind、scope compound 解析、capability 门四诊断、compileAgentGraph fail-closed）+ `src/canvas/lift.ts`（liftToAgentGraph，确定性边 id）+ `canvasCompile` 改为 compileAgentGraph∘lift（旧 flatten 整体删除，无双路径）；GRAPH-A01–A05 全绿；布局纯度推广实证（四布局后 lift 结构全等）；环 IR 合法/capability 拒绝（A04）。 |
+| 2026-09-07 | G9-A（30 号 PLMP-GRAPH-4）修订：`compileAgentGraph` 对 agent 任务恒输出 `definitionId: node.id`（定义身份全链贯通，详见 30 号）；既有 compile 字节断言同轮更新＝有意合同变更，IR 形状与 capability 门零改动。 |

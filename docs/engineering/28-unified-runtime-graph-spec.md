@@ -54,3 +54,4 @@ VIS 投影加法式可选节（缺省省略——手工 fixture 无 runtime 键�
 |---|---|
 | 2026-09-07 | 初版冻结（PLMP-RUNTIME-1，G7）：`graph.runtime` 加法式节（satellites/traces/roleOccupancy）、attempt＝ephemeral 显式化（runtimeInstanceId/definitionId/origin 映射）、`/api/canvas/derive` 退役、Promote-to-Definition 映射 G4 patch 通道。 |
 | 2026-09-07 | **交付**：`buildOrchestrationGraph` 产出 `runtime` 节点（satellites〔origin/createdAt/scopeId ephemeral 身份〕+ traces〔scopeId〕+ roleOccupancy〔已声明角色表 × ACTIVE/VERIFYING 占用，键序确定；无声明表＝键缺席〕）；`/api/canvas/derive` 退役（panel/测试同轮迁移，404 断言在册）；panel 单轮询面（graph 轮询即得三投影）；RUNTIME-A01–A03 全绿（lineage 三面同 id 断言、确定性、术语隔离原样）；浏览器冒烟：卫星停靠 + Trace span 抽屉照常。 |
+| 2026-09-07 | G9-A（30 号）修订：卫星/Trace 增加 `definitionId?`；本规格初版 runtimeInstanceId 映射中的 definitionId 当时与 task_id 同体隐含，现显式分离为三元 `definitionId/taskId/attemptId`（satellite 与 trace 行均携带）。 |
