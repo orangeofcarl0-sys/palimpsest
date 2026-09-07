@@ -895,6 +895,8 @@ export const EVENT_TYPES = [
   "ROLE_TABLE_DEFINED",
   "STAGE_GRAPH_DEFINED",
   "CONTEXT_MANIFEST_ADDED",
+  "HOLD_SET",
+  "HOLD_CLEARED",
 ] as const;
 
 export type EventType = (typeof EVENT_TYPES)[number];
@@ -1145,6 +1147,22 @@ export function normalizeEventPayload(
         risk_summary: field(raw.risk_summary, "risk_summary", (inner) =>
           nonEmpty(expectString(inner)),
         ),
+      };
+    }
+    case "HOLD_SET": {
+      // PLMP-DEBUG-1: task-level breakpoint, audited on the log.
+      requireFields(raw, "task_id", "reason", "declared_by");
+      return {
+        task_id: field(raw.task_id, "task_id", (inner) => nonEmpty(expectString(inner))),
+        reason: field(raw.reason, "reason", (inner) => nonEmpty(expectString(inner))),
+        declared_by: field(raw.declared_by, "declared_by", (inner) => nonEmpty(expectString(inner))),
+      };
+    }
+    case "HOLD_CLEARED": {
+      requireFields(raw, "task_id", "reason");
+      return {
+        task_id: field(raw.task_id, "task_id", (inner) => nonEmpty(expectString(inner))),
+        reason: field(raw.reason, "reason", (inner) => nonEmpty(expectString(inner))),
       };
     }
     case "GATE_DEFINED": {

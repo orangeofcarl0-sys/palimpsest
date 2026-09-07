@@ -443,7 +443,7 @@ export function App() {
               {selectedTask === null ? (
                 <div style={{ color: "#475569" }}>点选图上任务节点。</div>
               ) : (
-                <TaskDetails task={selectedTask} />
+                <TaskDetails task={selectedTask} onMessage={setMessage} refresh={() => void refresh()} />
               )}
             </section>
           </>

@@ -1,6 +1,7 @@
 # NEXT-GRAPH-EVOLUTION-PLAN（G2–G8 演进规划）
 
 > 日期：2026-09-07 ｜ 母体：`audits/CURRENT-STATE-ASSESSMENT.md`（G0）+ G1 交付（PLMP-CANVAS-5，22 号规格）
+> **状态：已全部交付**（2026-09-07 当日）——G2＝23 号 / G3＝24 号 / G4＝25 号 / G5＝26 号 / G6＝27 号 / G7＝28 号 / G8 批次①＝29 号；与各阶段规划初稿的偏差（v2-only 无 shim、manual 不走 patch、无 M6/fixture 再生等）均登记于对应规格修订流水。
 > 性质：**规划文档，非冻结规格**——每阶段启动前仍须按 03 号 §9 走完整规格纪律（audit → design spec → acceptance → implementation → tests → e2e → docs registration）。
 > 总原则（03 号 + 愿景文档 §24 禁止事项）：风险递增推进；每阶段 additive 优先；合同触点变更必须 schema bump + ACC-02 + 迁移 + fixture 再生三者齐备；IR 允许表达 ≠ 当前 runtime 必须执行；React Flow 类型永不做领域模型；LLM 永不进内核；Ordarium 永不做调度。
 

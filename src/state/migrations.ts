@@ -251,12 +251,28 @@ export interface Migration {
   sql: string;
 }
 
+/**
+ * PLMP-DEBUG-1 (29 号规格): the debugger hold projection - one row per held
+ * task; the scheduling gate reads it, the ledger rebuilds it on restart.
+ */
+export const MIGRATION_6_SQL = `CREATE TABLE task_holds (
+    project_id TEXT NOT NULL,
+    task_id TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    declared_by TEXT NOT NULL,
+    last_event_id INTEGER NOT NULL,
+    updated_at TEXT NOT NULL,
+    PRIMARY KEY (project_id, task_id)
+  ) STRICT;
+`;
+
 export const MIGRATIONS: readonly Migration[] = [
   { version: 1, name: "phase0-2 unified baseline", sql: MIGRATION_1_SQL },
   { version: 2, name: "h1 judge declarations", sql: MIGRATION_2_SQL },
   { version: 3, name: "h1 gate and role registries", sql: MIGRATION_3_SQL },
   { version: 4, name: "h1 stage graph registry", sql: MIGRATION_4_SQL },
   { version: 5, name: "context manifest registry", sql: MIGRATION_5_SQL },
+  { version: 6, name: "debugger task holds", sql: MIGRATION_6_SQL },
 ];
 
 function migrationChecksum(migration: Migration): string {

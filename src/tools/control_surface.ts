@@ -34,6 +34,8 @@ export type OrchestrationControlTarget = Pick<
   | "promoteWhenGatePasses"
   | "status"
   | "orchestrationGraph"
+  | "setHold"
+  | "clearHold"
   | "projectId"
   | "store"
   | "effects"
@@ -87,6 +89,11 @@ export function definePalimpsestControl(target: OrchestrationControlTarget) {
     promote: (gateId: string) => promoteCompletedCandidate(target, gateId),
     /** 只读图投影（PLMP-VIS-1）。 */
     graph: (): OrchestrationGraph => target.orchestrationGraph(),
+    /** 任务级断点挂起 / 放行（PLMP-DEBUG-1）。 */
+    holdSet: (taskId: string, reason: string, declaredBy = "panel"): SchedulerEvent =>
+      target.setHold(taskId, { reason, declaredBy }),
+    holdClear: (taskId: string, reason: string): SchedulerEvent =>
+      target.clearHold(taskId, { reason }),
   };
 }
 

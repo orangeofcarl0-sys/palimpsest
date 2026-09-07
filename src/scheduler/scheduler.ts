@@ -186,6 +186,14 @@ export class Scheduler {
       .all(this.projectId) as Row[]) {
       taskRows.set(String(row.task_id), row);
     }
+    // PLMP-DEBUG-1: task-level breakpoints - a held task neither activates
+    // nor unblocks; everything else scans normally (PAUSED stops the whole
+    // project, a hold stops one task).
+    const held = new Set(
+      (this.connection
+        .prepare("SELECT task_id FROM task_holds WHERE project_id=?")
+        .all(this.projectId) as Row[]).map((row) => String(row.task_id)),
+    );
 
     for (const stage of graph.stages) {
       if (stage.state === "ACTIVE" || stage.state === "VERIFYING") {
@@ -211,6 +219,7 @@ export class Scheduler {
         for (const task of project.tasks) {
           const row = taskRows.get(task.task_id);
           if (row === undefined || String(row.state) !== "BLOCKED") continue;
+          if (held.has(task.task_id)) continue;
           const transition = this.#declaredTransition(graph, stage.id, "TASK_READY");
           if (transition === undefined) continue;
           if (!this.#guardsPass(graph, transition, task.task_id)) continue;
@@ -249,6 +258,7 @@ export class Scheduler {
         for (const task of project.tasks) {
           const row = taskRows.get(task.task_id);
           if (row === undefined || String(row.state) !== "READY") continue;
+          if (held.has(task.task_id)) continue;
           if (occupancy >= taskCap) break;
           if (!this.#guardsPass(graph, transition, task.task_id)) continue;
           const role = task.role ?? "implementer";

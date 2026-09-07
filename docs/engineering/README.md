@@ -32,6 +32,7 @@
 | `26-runtime-subgraph-spec.md` | **Runtime Subgraph v1 规格（PLMP-GRAPH-3，G5）**：subflow/subgraph `mode:"runtime"`（缺省 editorial，单一编码）、编译就近 runtime 祖先归属（editorial 嵌套不改归属）、`TaskProposal.scopeId`→`TaskSpec.scope_id`（SDS-4 加法式可选：缺省省略、键序 canonical、无迁移、digest 零扰动）、`GraphTask.scopeId` 投影、面板运行时徽章/mode 切换/scope 行；并发 policy 明确留 G6；验收 RSUB-A01–A05 + 浏览器冒烟 |
 | `27-ready-set-scheduler-spec.md` | **Ready-Set 调度规格（PLMP-SCHED-1，G6）**：ACTIVE 阶段声明式 `concurrency`（加法式可选、缺省 1＝逐字节现状、无迁移/无 fixture 再生）、锁存有界穿透、READY 激活双道容量（任务级声明 + 既有角色表同源）、聚合校验器单活跃不变量改读声明容量、`start/declare` 可选 stageGraph（先验证后落账）、每 decide 恒一事件；三种并行性开始分流（task 并发由声明解锁）；验收 SCHED-A01–A06 + live 冒烟 |
 | `28-unified-runtime-graph-spec.md` | **Unified Runtime Graph 规格（PLMP-RUNTIME-1，G7）**：`graph.runtime` 加法式节（ephemeral attempt 实例＝runtimeInstanceId/definitionId/origin 显式化 + Trace span 行 + 已声明角色容量视图）、单轮询面（/api/graph 即 Definition+Runtime+Trace 三投影，`/api/canvas/derive` 退役无 shim）、Promote-to-Definition＝G4 patch 通道映射；验收 RUNTIME-A01–A03 + 浏览器冒烟 |
+| `29-debugger-controls-spec.md` | **Debugger 控制面 v1 规格（PLMP-DEBUG-1，G8 批次①）**：任务级断点 hold（HOLD_SET/HOLD_CLEARED 新事件 + M6 task_holds 投影 + 调度 READY/BLOCKED 门 + VIS held + 控制面 holdSet/holdClear 1:1 委托 + 面板挂起/放行）；七问裁决表（不改状态机、事件上账、crash-safe 重建、零 Ordarium）；cancel=既有 report(cancelled)、retry=自动回退、fork/replay/bypass 推迟理由登记；验收 DBG-A01–A05 + 浏览器冒烟 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 

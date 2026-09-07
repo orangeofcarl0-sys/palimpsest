@@ -18,6 +18,7 @@ export interface GraphTask {
   writePaths: string[];
   requiredArtifacts: string[];
   scopeId?: string;
+  held?: boolean;
   attempts: GraphAttempt[];
 }
 

@@ -162,7 +162,24 @@ export function PromoteForm(props: { onMessage(message: string): void; refresh()
   );
 }
 
-export function TaskDetails({ task }: { task: GraphTask }) {
+export function TaskDetails(props: {
+  task: GraphTask;
+  onMessage?(message: string): void;
+  refresh?(): void;
+}) {
+  const { task } = props;
+  const hold = async (set: boolean): Promise<void> => {
+    try {
+      const op = set
+        ? control("holdSet", { taskId: task.taskId, reason: "调试断点" })
+        : control("holdClear", { taskId: task.taskId, reason: "调试放行" });
+      await op;
+      props.onMessage?.(set ? "已挂起 ✓" : "已放行 ✓");
+      props.refresh?.();
+    } catch (error) {
+      props.onMessage?.(`${set ? "挂起" : "放行"} ✕ ${error instanceof Error ? error.message : String(error)}`);
+    }
+  };
   return (
     <div style={{ display: "grid", gap: 8, fontSize: 12 }}>
       <div>
@@ -172,10 +189,26 @@ export function TaskDetails({ task }: { task: GraphTask }) {
         </div>
         <div>
           状态 <b style={{ color: stateColor(task.state) }}>{task.state}</b> · 角色 {task.role}
+          {task.held === true ? (
+            <span style={{ marginLeft: 6, background: "#7f1d1d", borderRadius: 6, padding: "1px 6px", fontSize: 10 }}>
+              挂起
+            </span>
+          ) : null}
         </div>
         <div style={{ color: "#94a3b8" }}>写域 {task.writePaths.join(", ") || "—"}</div>
         {task.scopeId !== undefined && <div style={{ color: "#94a3b8" }}>scope {task.scopeId}</div>}
         <div style={{ color: "#94a3b8" }}>产物 {task.requiredArtifacts.join(", ") || "—"}</div>
+      </div>
+      <div style={{ display: "flex", gap: 6 }}>
+        {task.held === true ? (
+          <button style={button(false)} onClick={() => void hold(false)}>
+            放行（清除断点）
+          </button>
+        ) : (
+          <button style={button(false)} onClick={() => void hold(true)}>
+            挂起（断点）
+          </button>
+        )}
       </div>
       {task.attempts.map((attempt) => (
         <div key={attempt.attemptId} style={{ borderTop: "1px solid #1e293b", paddingTop: 6 }}>

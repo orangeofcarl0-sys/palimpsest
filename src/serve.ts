@@ -199,6 +199,10 @@ export function serveOrchestration(
         return surface.plan(body as never);
       case "promote":
         return surface.promote(String(body.gateId));
+      case "holdSet":
+        return surface.holdSet(String(body.taskId), String(body.reason ?? "断点"));
+      case "holdClear":
+        return surface.holdClear(String(body.taskId), String(body.reason ?? "放行"));
       default:
         throw new Error(`unknown control op: ${op}`);
     }

@@ -95,8 +95,46 @@ export class CoreProjector {
         break;
       case "MANUAL_APPROVAL_RECORDED":
         break;
+      case "HOLD_SET":
+        this.#applyHoldSet(connection, event);
+        break;
+      case "HOLD_CLEARED":
+        this.#applyHoldCleared(connection, event);
+        break;
     }
     this.#advanceCursor(connection, event);
+  }
+
+  #applyHoldSet(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as { task_id: string; reason: string; declared_by: string };
+    connection
+      .prepare(
+        `
+        INSERT INTO task_holds(
+            project_id, task_id, reason, declared_by, last_event_id, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT(project_id, task_id) DO UPDATE SET
+            reason=excluded.reason,
+            declared_by=excluded.declared_by,
+            last_event_id=excluded.last_event_id,
+            updated_at=excluded.updated_at
+        `,
+      )
+      .run(
+        event.project_id,
+        String(payload.task_id),
+        String(payload.reason),
+        String(payload.declared_by),
+        event.event_id,
+        isoformatDatetime(event.committed_at),
+      );
+  }
+
+  #applyHoldCleared(connection: DatabaseSync, event: SchedulerEvent): void {
+    const payload = event.payload as { task_id: string };
+    connection
+      .prepare("DELETE FROM task_holds WHERE project_id=? AND task_id=?")
+      .run(event.project_id, String(payload.task_id));
   }
 
   #applyContextManifestAdded(connection: DatabaseSync, event: SchedulerEvent): void {

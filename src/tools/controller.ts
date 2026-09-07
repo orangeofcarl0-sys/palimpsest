@@ -459,6 +459,71 @@ export class ProjectController {
     return created;
   }
 
+  /**
+   * PLMP-DEBUG-1: task-level breakpoint. The hold is a scheduling gate, not
+   * a task state - the task keeps its state, the ledger keeps the audit.
+   */
+  setHold(taskId: string, input: { reason: string; declaredBy: string }): SchedulerEvent {
+    const project = this.#project();
+    if (project.tasks.every((task) => task.task_id !== taskId)) {
+      throw new DomainValidationError("task is not declared by ProjectIR");
+    }
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "HOLD_SET",
+        payload_version: 1,
+        entity_type: "task",
+        entity_id: taskId,
+        payload: {
+          task_id: taskId,
+          reason: input.reason,
+          declared_by: input.declaredBy,
+        },
+        causation_id: null,
+        correlation_id: `task:${taskId}`,
+        idempotency_key: actionKey("task-hold-v1", {
+          project_id: this.projectId,
+          task_id: taskId,
+          reason: input.reason,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
+
+  clearHold(taskId: string, input: { reason: string }): SchedulerEvent {
+    const row = this.store.connection
+      .prepare("SELECT 1 AS ok FROM task_holds WHERE project_id=? AND task_id=?")
+      .get(this.projectId, taskId);
+    if (row === undefined) {
+      throw new DomainValidationError("task is not held");
+    }
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "HOLD_CLEARED",
+        payload_version: 1,
+        entity_type: "task",
+        entity_id: taskId,
+        payload: {
+          task_id: taskId,
+          reason: input.reason,
+        },
+        causation_id: null,
+        correlation_id: `task:${taskId}`,
+        idempotency_key: actionKey("task-hold-clear-v1", {
+          project_id: this.projectId,
+          task_id: taskId,
+          reason: input.reason,
+        }),
+        expected_project_revision: this.promotions.projectRevision(),
+      }),
+    );
+  }
+
   /** Emit a new ProjectIR revision (palimpsest_plan). */
   plan(input: PlanInput): SchedulerEvent {
     const current = this.#project();

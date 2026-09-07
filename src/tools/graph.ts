@@ -35,6 +35,8 @@ export interface GraphTask {
   readonly requiredArtifacts: readonly string[];
   /** PLMP-GRAPH-3: runtime-subgraph membership; absent means no scope. */
   readonly scopeId?: string;
+  /** PLMP-DEBUG-1: task-level breakpoint; absent means not held. */
+  readonly held?: boolean;
   readonly attempts: ReadonlyArray<GraphAttempt>;
 }
 
@@ -212,12 +214,17 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
     attemptsByTask.set(taskId, list);
   }
 
+  const heldRows = connection
+    .prepare("SELECT task_id FROM task_holds WHERE project_id=?")
+    .all(projectId) as Array<{ task_id: string }>;
+  const held = new Set(heldRows.map((row) => String(row.task_id)));
   const tasks: GraphTask[] = project.tasks.map((spec) => ({
     taskId: spec.task_id,
     objective: spec.objective,
     state: taskStates.get(spec.task_id) ?? "READY",
     role: spec.role ?? "implementer",
     ...(spec.scope_id === undefined ? {} : { scopeId: spec.scope_id }),
+    ...(held.has(spec.task_id) ? { held: true } : {}),
     dependsOn: spec.depends_on,
     writePaths: spec.write_paths,
     requiredArtifacts: spec.required_artifacts,
