@@ -125,3 +125,76 @@ describe("schema validators fail closed", () => {
     ).toThrow(/UTC offset/);
   });
 });
+
+/**
+ * G9-F2 residual closure (spec 35 addendum): CANON-RES-A01..A04 - required
+ * CANDIDATE_SELECTED booleans parse exactly (WIRE-INV-4): presence +
+ * boolean type, never `=== true` truthiness or default-false normalization.
+ * CANON-RES-A05 (the tournament-produced round-trip) lives in
+ * h1_selection.test.ts where the real producer runs.
+ */
+describe("G9-F2 candidate booleans (CANON-RES)", () => {
+  const base = {
+    schema_version: 1,
+    project_id: "p",
+    event_type: "CANDIDATE_SELECTED",
+    payload_version: 1,
+    entity_type: "selection",
+    entity_id: "a1",
+    payload: {
+      task_id: null,
+      candidates: ["a1", "a2"],
+      rounds: [{ left: "a1", right: "a2", winner: "a1", tie: false }],
+      judge: { id: "j1", kind: "rubric", replayable: true },
+      winner: "a1",
+      entries_digest: "d".repeat(64),
+    },
+    causation_id: null,
+    correlation_id: "sel",
+    idempotency_key: "a".repeat(64),
+    expected_project_revision: 0,
+  };
+
+  it("CANON-RES-A01: missing round.tie is rejected", () => {
+    expect(() =>
+      parseNewEvent({
+        ...base,
+        payload: {
+          ...base.payload,
+          rounds: [{ left: "a1", right: "a2", winner: "a1" }],
+        },
+      }),
+    ).toThrow(/tie: field is required/);
+  });
+
+  it("CANON-RES-A02: non-boolean round.tie is rejected", () => {
+    for (const tie of ["true", 1, {}, null]) {
+      expect(() =>
+        parseNewEvent({
+          ...base,
+          payload: { ...base.payload, rounds: [{ left: "a1", right: "a2", winner: "a1", tie }] },
+        }),
+      ).toThrow(/round\.tie: expected a boolean/);
+    }
+  });
+
+  it("CANON-RES-A03: missing judge.replayable is rejected", () => {
+    expect(() =>
+      parseNewEvent({
+        ...base,
+        payload: { ...base.payload, judge: { id: "j1", kind: "rubric" } },
+      }),
+    ).toThrow(/replayable: field is required/);
+  });
+
+  it("CANON-RES-A04: non-boolean judge.replayable is rejected", () => {
+    for (const replayable of ["true", 1, {}, null]) {
+      expect(() =>
+        parseNewEvent({
+          ...base,
+          payload: { ...base.payload, judge: { id: "j1", kind: "rubric", replayable } },
+        }),
+      ).toThrow(/judge\.replayable: expected a boolean/);
+    }
+  });
+});

@@ -34,7 +34,7 @@ import {
 } from "../src/graph/index.js";
 import { applyGraphPatch, EMPTY_PATCH, validateGraphPatch, type GraphPatch } from "../src/graph/patch.js";
 import { serveOrchestration, type ServeHandle } from "../src/serve.js";
-import { ProjectController } from "../src/tools/index.js";
+import { ProjectController, parseAttemptAttribution } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
@@ -888,8 +888,9 @@ describe("view freshness (spec 35 WEB-H01 / WEB-HEALTH)", () => {
       await rigA.cleanup();
     }
     // New process over the SAME ledger: the volatile attribution map died
-    // with process A while the event cursor is unchanged - the epoch in the
-    // cursor makes cross-process equality impossible.
+    // with process A while the event cursor is unchanged - the 128-bit epoch
+    // in the cursor makes accidental cross-process equality cryptographically
+    // negligible (G9-F2 honest wording; never claimed impossible).
     const rigB = makeRigAt();
     const handleB: ServeHandle = await serveOrchestration(rigB.controller, { port: 0 });
     try {
@@ -900,6 +901,210 @@ describe("view freshness (spec 35 WEB-H01 / WEB-HEALTH)", () => {
     } finally {
       await handleB.close();
       await rigB.cleanup();
+    }
+  });
+});
+
+
+/**
+ * G9-F2 residual closure (spec 35 addendum): VIEW-RES-A01..A04 (attribution
+ * ownership + validation), VIEW-RES-C01 (viewCursor dominates the legacy
+ * cursor), HEALTH-RES-A01..A03 (project-scoped initialization).
+ */
+describe("G9-F2 residual closure (VIEW-RES / HEALTH-RES)", () => {
+  const get = async (handle: ServeHandle, suffix = ""): Promise<{ json: Record<string, unknown> }> => {
+    const response = await fetch(`${handle.url}/api/graph${suffix}`, {
+      headers: { authorization: `Bearer ${handle.token}` },
+    });
+    return { json: (await response.json()) as Record<string, unknown> };
+  };
+  const createAttempt = (rig: ReturnType<typeof makeRig>): string => {
+    rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+    rig.controller.step();
+    return rig.controller.step()!.entity_id;
+  };
+
+  it("VIEW-RES-A01: mutating the caller's object after claim() never mutates graph output", async () => {
+    const rig = makeRig();
+    try {
+      const attemptId = createAttempt(rig);
+      const attribution = { model: "model-A", cost: 1 };
+      await rig.controller.claim(attemptId, attribution);
+      const before = rig.controller.orchestrationGraph();
+      attribution.model = "model-B";
+      const after = rig.controller.orchestrationGraph();
+      const attributionOf = (graph: typeof before) =>
+        graph.tasks.find((task) => task.attempts.length > 0)?.attempts[0]?.attribution;
+      expect(attributionOf(after)).toEqual({ model: "model-A", cost: 1 });
+      expect(attributionOf(after)).toEqual(attributionOf(before));
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("VIEW-RES-A02: caller mutation cannot produce same viewCursor + different graph", async () => {
+    const rig = makeRig();
+    try {
+      const attemptId = createAttempt(rig);
+      const attribution = { model: "model-A", cost: 1 };
+      await rig.controller.claim(attemptId, attribution);
+      const cursor1 = rig.controller.viewCursor();
+      const graph1 = rig.controller.orchestrationGraph();
+      attribution.model = "model-B";
+      const cursor2 = rig.controller.viewCursor();
+      const graph2 = rig.controller.orchestrationGraph();
+      expect(cursor2).toBe(cursor1);
+      expect(JSON.stringify(graph2)).toBe(JSON.stringify(graph1));
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("VIEW-RES-A03: malformed attribution is rejected before graph-visible state (unit + controller + HTTP)", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      const attemptId = createAttempt(rig);
+      // Unit face: every malformed shape is rejected by the parser.
+      expect(() => parseAttemptAttribution({ model: 42 })).toThrow(/non-empty string/);
+      expect(() => parseAttemptAttribution({ model: "" })).toThrow(/non-empty string/);
+      expect(() => parseAttemptAttribution({ model: "m", cost: -1 })).toThrow(/>= 0/);
+      expect(() => parseAttemptAttribution({ model: "m", cost: "free" })).toThrow(/finite number/);
+      expect(() => parseAttemptAttribution({ model: "m", cost: Number.NaN })).toThrow(/finite number/);
+      expect(() => parseAttemptAttribution({ model: "m", taskType: "" })).toThrow(/non-empty string/);
+      expect(() => parseAttemptAttribution({ model: "m", junk: true })).toThrow(/unknown field 'junk'/);
+      expect(() => parseAttemptAttribution(null)).toThrow(/must be an object/);
+      // The stored snapshot is a fresh, internally owned value.
+      const owned = parseAttemptAttribution({ model: "m", cost: 1, taskType: "code" });
+      expect(owned).toEqual({ model: "m", cost: 1, taskType: "code" });
+      // Controller face: a malformed claim fails with zero partial state -
+      // no worktree side effect, attempt stays CREATED, cursor untouched.
+      const cursorBefore = rig.controller.viewCursor();
+      await expect(
+        rig.controller.claim(attemptId, { model: 42, junk: true } as never),
+      ).rejects.toThrow(/unknown field 'junk'/);
+      const attemptState = rig.controller.status().attempts.find(
+        (attempt) => attempt.attempt_id === attemptId,
+      );
+      expect(attemptState?.state).toBe("CREATED");
+      expect(rig.controller.viewCursor()).toBe(cursorBefore);
+      // HTTP face: the cast boundary is gone - the panel gets a 400.
+      const response = await fetch(`${handle.url}/api/control/claim`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${handle.token}`, "content-type": "application/json" },
+        body: JSON.stringify({ attemptId, attribution: { model: 42, cost: "free", junk: true } }),
+      });
+      expect(response.status).toBe(400);
+      const body = (await response.json()) as { error: string };
+      expect(body.error).toMatch(/unknown field 'junk'/);
+      const graph = rig.controller.orchestrationGraph();
+      const attributed = graph.tasks.find((task) => task.attempts.length > 0)?.attempts[0];
+      expect(attributed?.attribution).toBeUndefined();
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("VIEW-RES-A04: claiming without attribution does not bump the volatile view generation", async () => {
+    const rig = makeRig();
+    try {
+      const attemptId = createAttempt(rig);
+      const before = rig.controller.viewCursor().split(":");
+      await rig.controller.claim(attemptId);
+      const after = rig.controller.viewCursor().split(":");
+      // The event cursor moved (ATTEMPT_STARTED), the generation did not.
+      expect(after[3]).toBe(before[3]);
+      expect(Number(after[2])).toBeGreaterThan(Number(before[2]));
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("VIEW-RES-C01: viewCursor dominates - a mixed request never answers graph + changed:false", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      rig.controller.step();
+      const created = rig.controller.step()!;
+      const stale = rig.controller.viewCursor();
+      // Volatile graph-visible change with NO event: the event cursor stays
+      // put while the stale viewCursor goes bad.
+      await rig.controller.claim(created.entity_id, { model: "m", cost: 0 });
+      const eventCursor = rig.controller.serviceHealth().eventCursor;
+      expect(eventCursor).toBeGreaterThan(0);
+      const mixed = await get(handle, `?viewCursor=${encodeURIComponent(stale)}&cursor=${eventCursor}`);
+      expect(mixed.json.graph).toBeDefined();
+      expect(mixed.json.changed).toBe(true);
+      expect(mixed.json.viewCursor).not.toBe(stale);
+      // And the fast path still holds for the FRESH cursor.
+      const fresh = (
+        await get(handle, `?viewCursor=${encodeURIComponent(mixed.json.viewCursor as string)}`)
+      ).json;
+      expect(fresh.changed).toBe(false);
+      expect(fresh.graph).toBeUndefined();
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("HEALTH-RES-A01/A02/A03: projectInitialized is scoped to the controller's project", async () => {
+    const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
+    const effectsA = createPalimpsestEffects({
+      databasePath: join(tempStatePath(), "ops-health-a.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const effectsB = createPalimpsestEffects({
+      databasePath: join(tempStatePath(), "ops-health-b.sqlite"),
+      git: new FakeGitPort(HEAD),
+    });
+    const policy = new TaskPolicy({
+      policy_id: "trusted-default",
+      read_paths: ["src"],
+      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+      network_policy: "deny",
+      network_allowlist: [],
+      timeout_s: 60,
+      lease_s: 10,
+      attempt_limit: 3,
+      candidate_limit: 1,
+    });
+    const controllerA = new ProjectController({
+      store,
+      effects: effectsA,
+      projectId: "project-a",
+      policy,
+      clock: () => "2026-09-08T00:00:00Z",
+    });
+    // B wraps the SAME store but points at a different project identity.
+    const controllerB = new ProjectController({
+      store,
+      effects: effectsB,
+      projectId: "project-b",
+      policy,
+      clock: () => "2026-09-08T00:00:00Z",
+    });
+    const handleB: ServeHandle = await serveOrchestration(controllerB, { port: 0 });
+    try {
+      // A01: empty store - healthy, not initialized.
+      expect(controllerB.serviceHealth()).toEqual({ ok: true, projectInitialized: false, eventCursor: 0 });
+      // A02: A initialized, controller for B - B stays uninitialized, and the
+      // HTTP health face answers with B's scope, not the store's.
+      controllerA.start({ projectId: "project-a", goal: "a", tasks: [taskSpec("task-1")] });
+      expect(controllerA.serviceHealth().projectInitialized).toBe(true);
+      expect(controllerB.serviceHealth()).toEqual({ ok: true, projectInitialized: false, eventCursor: 0 });
+      const health = await fetch(`${handleB.url}/api/health`, {
+        headers: { authorization: `Bearer ${handleB.token}` },
+      });
+      expect(((await health.json()) as { projectInitialized: boolean }).projectInitialized).toBe(false);
+      // A03: once B itself is initialized, B reports it.
+      controllerB.start({ projectId: "project-b", goal: "b", tasks: [taskSpec("task-1")] });
+      expect(controllerB.serviceHealth().projectInitialized).toBe(true);
+    } finally {
+      await handleB.close();
+      await Promise.all([effectsA.close(), effectsB.close(), store.close()]);
     }
   });
 });

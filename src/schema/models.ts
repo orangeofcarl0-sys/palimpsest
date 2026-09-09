@@ -22,6 +22,12 @@
 
 import { canonicalDigest } from "./canonical.js";
 import { canonicalDatetime, datetimeToEpochMicros } from "./datetime.js";
+// G9-F2 WIRE-INV-3: the durable declaration grammars are owned by the domain
+// parsers; the payload seam imports them directly (gate_clause has zero
+// imports; stage_graph's only schema edge is a type-only import, so no
+// runtime cycle).
+import { parseCanonicalGateDefinition } from "../domain/gate_clause.js";
+import { parseStageGraphDefinition } from "../domain/stage_graph.js";
 
 const ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const SHA256_RE = /^[0-9a-f]{64}$/u;
@@ -1139,8 +1145,10 @@ function optionalPositiveInt(value: unknown, name: string): number | null {
  * normalize away. Nested CONTRACTS keep their single grammar owner:
  * project_ir \u2192 parseProjectIr, task_envelope \u2192 parseTaskEnvelope,
  * attempt_report \u2192 parseAttemptReport, evidence \u2192 parseEvidenceAtom,
- * GATE_DEFINED.gate \u2192 parseGateDefinition (enforced on read),
- * STAGE_GRAPH_DEFINED body \u2192 parseStageGraphDefinition (enforced on read).
+ * GATE_DEFINED.gate \u2192 parseCanonicalGateDefinition (durable mode/chain
+ * face, G9-F2 WIRE-INV-3), STAGE_GRAPH_DEFINED body \u2192
+ * parseStageGraphDefinition - both validated HERE, at the shared
+ * append/replay seam, before commit.
  */
 const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   PROJECT_CREATED: ["project_ir"],
@@ -1406,11 +1414,13 @@ export function normalizeEventPayload(
       };
     }
     case "GATE_DEFINED": {
+      // G9-F2 WIRE-INV-3: the durable face of a gate is the CANONICAL
+      // mode/chain form (what parseGateDefinition produces and
+      // gate_registry stores). Full clause grammar is validated here, at
+      // the shared append/replay seam - never "enforced on read" only.
       requireFields(raw, "gate", "declared_by");
-      const gate = expectObject(raw.gate);
-      requireFields(gate, "gate_id", "version", "subject_type", "require");
       return {
-        gate: raw.gate,
+        gate: parseCanonicalGateDefinition(raw.gate),
         declared_by: field(raw.declared_by, "declared_by", expectString),
       };
     }
@@ -1432,25 +1442,19 @@ export function normalizeEventPayload(
       };
     }
     case "STAGE_GRAPH_DEFINED": {
+      // G9-F2 WIRE-INV-3: the full stage-graph grammar (closed when-registry,
+      // state/event agreement, guard keys, clause chains) is validated here,
+      // at the shared append/replay seam - a malformed declaration can never
+      // reach the ledger, and the scheduler's later
+      // parseStageGraphDefinition(read) can never trip on stored data.
       requireFields(raw, "stages", "transitions", "guards", "declared_by", "reason");
-      const stages = expectArray(raw.stages);
-      const transitions = expectArray(raw.transitions);
-      // Grammar (closed when-registry, state/event agreement, guard keys)
-      // is enforced by parseStageGraphDefinition on read; the envelope only
-      // checks shape, mirroring GATE_DEFINED.
-      for (const entry of stages) {
-        requireFields(expectObject(entry), "id", "state");
-      }
-      for (const entry of transitions) {
-        requireFields(expectObject(entry), "from", "event", "to", "when");
-      }
-      expectObject(raw.guards);
+      const declared = parseStageGraphDefinition(raw);
       return {
-        stages: raw.stages,
-        transitions: raw.transitions,
-        guards: raw.guards,
-        declared_by: field(raw.declared_by, "declared_by", expectString),
-        reason: field(raw.reason, "reason", expectString),
+        stages: declared.stages,
+        transitions: declared.transitions,
+        guards: declared.guards,
+        declared_by: declared.declared_by,
+        reason: declared.reason,
       };
     }
     case "CONTEXT_MANIFEST_ADDED": {
@@ -1575,20 +1579,25 @@ export function normalizeEventPayload(
         candidates: candidates.map((inner) => validateIdentifier(expectString(inner))),
         rounds: rounds.map((round) => {
           const entry = expectObject(round);
+          requireFields(entry, "left", "right", "winner", "tie");
           rejectUnknownFields(entry, ["left", "right", "winner", "tie"], "candidate round");
           return {
             left: validateIdentifier(expectString(entry.left)),
             right: validateIdentifier(expectString(entry.right)),
             winner: validateIdentifier(expectString(entry.winner)),
-            tie: entry.tie === true,
+            // G9-F2 WIRE-INV-4: required booleans parse exactly - presence
+            // + boolean type, never truthiness or default-false
+            // normalization (missing/"true"/1/{} must all be rejected).
+            tie: field(entry.tie, "round.tie", expectBool),
           };
         }),
         judge: (() => {
+          requireFields(judge, "id", "kind", "replayable");
           rejectUnknownFields(judge, ["id", "kind", "replayable"], "candidate judge");
           return {
             id: field(judge.id, "judge.id", (inner) => validateIdentifier(expectString(inner))),
             kind: judgeKind,
-            replayable: judge.replayable === true,
+            replayable: field(judge.replayable, "judge.replayable", expectBool),
           };
         })(),
         winner:

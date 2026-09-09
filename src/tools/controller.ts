@@ -152,6 +152,43 @@ export interface AttemptAttribution {
   taskType?: string;
 }
 
+/**
+ * G9-F2 (§4-5, VIEW-INV-5): runtime validation + internal-ownership snapshot
+ * for host-supplied attribution. JSON input is never trusted to TypeScript
+ * typing: unknown fields are rejected and the returned value is a FRESH
+ * plain object, so controller-owned graph state never retains a
+ * caller-mutable alias. Public semantics stay exactly the three declared
+ * fields - nothing is widened.
+ */
+export function parseAttemptAttribution(value: unknown): AttemptAttribution {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new DomainValidationError("attribution must be an object");
+  }
+  const raw = value as Record<string, unknown>;
+  for (const key of Object.keys(raw)) {
+    if (key !== "model" && key !== "cost" && key !== "taskType") {
+      throw new DomainValidationError(`attribution: unknown field '${key}'`);
+    }
+  }
+  if (typeof raw.model !== "string" || raw.model.length === 0) {
+    throw new DomainValidationError("attribution.model must be a non-empty string");
+  }
+  const snapshot: AttemptAttribution = { model: raw.model };
+  if (raw.cost !== undefined) {
+    if (typeof raw.cost !== "number" || !Number.isFinite(raw.cost) || raw.cost < 0) {
+      throw new DomainValidationError("attribution.cost must be a finite number >= 0");
+    }
+    snapshot.cost = raw.cost;
+  }
+  if (raw.taskType !== undefined) {
+    if (typeof raw.taskType !== "string" || raw.taskType.length === 0) {
+      throw new DomainValidationError("attribution.taskType must be a non-empty string");
+    }
+    snapshot.taskType = raw.taskType;
+  }
+  return snapshot;
+}
+
 export interface AllocationCalibration {
   readonly role: TaskRole;
   readonly slotOfRole: number;
@@ -267,11 +304,13 @@ export class ProjectController {
    * polling fast path cannot lie about freshness. */
   #attemptAttribution = new Map<string, AttemptAttribution>();
 
-  /** Spec 35 §2.1: per-process nonce - a restart invalidates every viewCursor
-   * the previous process handed out (the volatile map dies with the process
-   * while the event cursor stays put, so cross-process cursor equality can
-   * never mean equal views). */
-  readonly #viewEpoch = randomUUID().slice(0, 8);
+  /** Spec 35 §2.1, G9-F2 §7-8: a FULL 128-bit per-process nonce - a restart
+   * invalidates every viewCursor the previous process handed out (the
+   * volatile map dies with the process while the event cursor stays put, so
+   * cross-process cursor equality cannot mean equal views). Honest strength
+   * wording: accidental cross-process equality is cryptographically
+   * NEGLIGIBLE, not mathematically impossible. */
+  readonly #viewEpoch = randomUUID();
 
   /** Monotonic generation of graph-visible volatile view state (attribution
    * set/delete). NOT bumped for state that never reaches the graph. */
@@ -841,6 +880,11 @@ export class ProjectController {
     attemptId: string,
     attribution?: AttemptAttribution | undefined,
   ): Promise<{ worktreePath: string }> {
+    // G9-F2 VIEW-INV-5: validate + snapshot BEFORE any side effect - a
+    // malformed attribution fails the whole claim with zero partial state,
+    // and the stored value is controller-owned (never a caller alias).
+    const ownedAttribution =
+      attribution === undefined ? undefined : parseAttemptAttribution(attribution);
     const project = this.#project();
     const role = this.#roleOf(attemptId);
     const runningRoles = this.#runningRoles();
@@ -856,8 +900,8 @@ export class ProjectController {
       },
     );
     this.scheduler.startAttempt(attemptId);
-    if (attribution !== undefined) {
-      this.#attemptAttribution.set(attemptId, attribution);
+    if (ownedAttribution !== undefined) {
+      this.#attemptAttribution.set(attemptId, ownedAttribution);
       this.#viewGeneration += 1;
     }
     return { worktreePath: worktree.worktreePath };
@@ -1545,12 +1589,14 @@ export class ProjectController {
     return `v1:${this.#viewEpoch}:${Number(cursorRow.m)}:${this.#viewGeneration}`;
   }
 
-  /** Spec 35 HEALTH-INV-1: service availability without an initialized
-   * ProjectIR - cheap state only, never a graph build. */
+  /** Spec 35 HEALTH-INV-1, G9-F2 HEALTH-INV-2: service availability without
+   * an initialized ProjectIR - cheap state only, never a graph build.
+   * projectInitialized is scoped to THIS controller's project identity: a
+   * sibling project's rows in a shared store say nothing about it. */
   serviceHealth(): { ok: boolean; projectInitialized: boolean; eventCursor: number } {
     const control = this.store.connection
-      .prepare("SELECT 1 AS ok FROM scheduler_control LIMIT 1")
-      .get();
+      .prepare("SELECT 1 AS ok FROM scheduler_control WHERE project_id=?")
+      .get(this.projectId);
     const cursorRow = this.store.connection
       .prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events WHERE project_id=?")
       .get(this.projectId) as { m: number };

@@ -67,6 +67,14 @@ export function parseClause(value: unknown): GateClause {
   if ("exists" in value) {
     const spec = value.exists as unknown;
     if (!isObject(spec)) throw new TypeError("exists clause requires an object");
+    // G9-F2 PARSE-INV-4: the inner envelope this parser owns is closed at
+    // every level - a typo like `wheer` must error, not vanish. Only the
+    // `where` MAP inside stays open (PARSE-INV-3).
+    for (const key of Object.keys(spec)) {
+      if (key !== "predicate" && key !== "where") {
+        throw new TypeError(`unknown field '${key}' inside the exists clause`);
+      }
+    }
     const predicate = spec.predicate;
     if (typeof predicate !== "string") throw new TypeError("predicate must be a string");
     if (!KNOWN_PREDICATES.has(predicate)) {
@@ -77,6 +85,11 @@ export function parseClause(value: unknown): GateClause {
   if ("count" in value) {
     const spec = value.count as unknown;
     if (!isObject(spec)) throw new TypeError("count clause requires an object");
+    for (const key of Object.keys(spec)) {
+      if (key !== "predicate" && key !== "where" && key !== "gte") {
+        throw new TypeError(`unknown field '${key}' inside the count clause`);
+      }
+    }
     const predicate = spec.predicate;
     if (typeof predicate !== "string") throw new TypeError("predicate must be a string");
     if (!KNOWN_PREDICATES.has(predicate)) {
@@ -94,16 +107,11 @@ export function parseClause(value: unknown): GateClause {
   throw new TypeError("gate clause must be exists | count | not");
 }
 
-/** Fail-closed parse of a gate definition (schema_version not required: gates are optional metadata). */
-export function parseGateDefinition(value: unknown): GateDefinition {
-  if (!isObject(value)) throw new TypeError("gate definition must be an object");
-  // Spec 35 PARSE-INV-1: closed envelope - unknown keys error, and require
-  // must declare exactly one of all|any (both would silently pick one).
-  for (const key of Object.keys(value)) {
-    if (!["gate_id", "version", "subject_type", "require"].includes(key)) {
-      throw new TypeError(`unknown gate definition field '${key}'`);
-    }
-  }
+/** Shared closed-header checks for both gate-definition faces (G9-F2 §22:
+ * one grammar owner per face, but the header belongs to both). */
+function parseGateHeader(
+  value: Record<string, unknown>,
+): { gate_id: string; version: number; subject_type: GateDefinition["subject_type"] } {
   const gateId = value.gate_id;
   if (typeof gateId !== "string" || gateId.length === 0) {
     throw new TypeError("gate_id must be a non-empty string");
@@ -116,6 +124,20 @@ export function parseGateDefinition(value: unknown): GateDefinition {
   if (subjectType !== "attempt" && subjectType !== "commit" && subjectType !== "task") {
     throw new TypeError("subject_type must be attempt | commit | task");
   }
+  return { gate_id: gateId, version, subject_type: subjectType };
+}
+
+/** Fail-closed parse of a gate definition (schema_version not required: gates are optional metadata). */
+export function parseGateDefinition(value: unknown): GateDefinition {
+  if (!isObject(value)) throw new TypeError("gate definition must be an object");
+  // Spec 35 PARSE-INV-1: closed envelope - unknown keys error, and require
+  // must declare exactly one of all|any (both would silently pick one).
+  for (const key of Object.keys(value)) {
+    if (!["gate_id", "version", "subject_type", "require"].includes(key)) {
+      throw new TypeError(`unknown gate definition field '${key}'`);
+    }
+  }
+  const header = parseGateHeader(value);
   const require = value.require;
   if (!isObject(require)) throw new TypeError("require must be an object");
   for (const key of Object.keys(require)) {
@@ -131,12 +153,50 @@ export function parseGateDefinition(value: unknown): GateDefinition {
     throw new TypeError("require must have an all or any clause array");
   }
   return {
-    gate_id: gateId,
-    version,
-    subject_type: subjectType,
+    ...header,
     require: require.all !== undefined
       ? { mode: "all", chain: clauses.map(parseClause) }
       : { mode: "any", chain: clauses.map(parseClause) },
+  };
+}
+
+/**
+ * G9-F2 (§22): the CANONICAL durable face of a gate definition —
+ * `require: {mode, chain}` exactly as stored in gate_registry and replayed
+ * from the log. One grammar owner per face: the authoring all/any syntax
+ * stays owned by parseGateDefinition above; this parser owns the normalized
+ * stored form so the durable seam (normalizeEventPayload) can enforce the
+ * full clause grammar before commit (WIRE-INV-3). Idempotent on its own
+ * output: replaying a stored canonical definition re-derives identical
+ * values, so validation never rewrites stored bytes or digests.
+ */
+export function parseCanonicalGateDefinition(value: unknown): GateDefinition {
+  if (!isObject(value)) throw new TypeError("gate definition must be an object");
+  for (const key of Object.keys(value)) {
+    if (!["gate_id", "version", "subject_type", "require"].includes(key)) {
+      throw new TypeError(`unknown gate definition field '${key}'`);
+    }
+  }
+  const header = parseGateHeader(value);
+  const require = value.require;
+  if (!isObject(require)) throw new TypeError("require must be an object");
+  for (const key of Object.keys(require)) {
+    if (key !== "mode" && key !== "chain") {
+      throw new TypeError(`unknown canonical gate require field '${key}'`);
+    }
+  }
+  if (require.mode !== "all" && require.mode !== "any") {
+    throw new TypeError("canonical gate require.mode must be 'all' | 'any'");
+  }
+  if (!Array.isArray(require.chain)) {
+    throw new TypeError("canonical gate require.chain must be a clause array");
+  }
+  return {
+    ...header,
+    require: {
+      mode: require.mode,
+      chain: (require.chain as unknown[]).map(parseClause),
+    },
   };
 }
 

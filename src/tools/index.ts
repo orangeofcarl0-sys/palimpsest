@@ -7,7 +7,12 @@ export type {
   DshToolRegistry,
   DshToolRunContext,
 } from "./dsh_types.js";
-export { ProjectController, buildProjectIr, DEFAULT_HEAD_COMMIT } from "./controller.js";
+export {
+  ProjectController,
+  buildProjectIr,
+  DEFAULT_HEAD_COMMIT,
+  parseAttemptAttribution,
+} from "./controller.js";
 export type {
   AttemptAttribution,
   ControllerStatusView,

@@ -193,3 +193,57 @@ describe("H1-C: declared-judge selection (spec 3.3)", () => {
     }
   });
 });
+
+/**
+ * G9-F2 residual closure (spec 35 addendum): CANON-RES-A05 - a real
+ * tournament-produced CANDIDATE_SELECTED round-trips and replays exactly:
+ * the canonical reader (parseSchedulerEvent, which recomputes both digests
+ * fail-closed) accepts the stored form byte-identically, with every
+ * required boolean preserved as a real boolean (WIRE-INV-4).
+ */
+describe("G9-F2 candidate round-trip (CANON-RES-A05)", () => {
+  it("the tournament-produced selection replays exactly with strict booleans", async () => {
+    const { store, controller, cleanup } = makeRig();
+    try {
+      controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
+      declareWideSlots(controller);
+      controller.step();
+      await driveCompleted(controller, 3, "candidate {n}");
+      controller.declareJudge({ judgeId: "rubric-v1", kind: "rubric", declaredBy: "h1-test" });
+      const result = await controller.selectCandidate();
+      expect(result.winner).toBeDefined();
+
+      const stored = JSON.parse(
+        new TextDecoder().decode(
+          (
+            store.connection
+              .prepare("SELECT payload_json FROM events WHERE event_type='CANDIDATE_SELECTED'")
+              .get() as { payload_json: Uint8Array }
+          ).payload_json,
+        ),
+      ) as { rounds: Array<{ tie: boolean }>; judge: { replayable: boolean } };
+      // The producer wrote REAL booleans (never undefined/1/"true").
+      for (const round of stored.rounds) expect(typeof round.tie).toBe("boolean");
+      expect(typeof stored.judge.replayable).toBe("boolean");
+      expect(stored.judge.replayable).toBe(true);
+
+      // The canonical reader accepts the stored form: parseSchedulerEvent
+      // recomputes request_digest and event_digest fail-closed, so a green
+      // read IS the round-trip proof (values byte-stable through the
+      // payload seam's strict normalization).
+      const selection = store
+        .listEvents("scheduler-project")
+        .find((event) => event.event_type === "CANDIDATE_SELECTED");
+      expect(selection).toBeDefined();
+      const payload = selection!.payload as {
+        rounds: Array<{ left: string; right: string; winner: string; tie: boolean }>;
+        judge: { id: string; kind: string; replayable: boolean };
+      };
+      expect(payload.rounds).toHaveLength(result.comparisons);
+      for (const round of payload.rounds) expect(typeof round.tie).toBe("boolean");
+      expect(payload.judge).toMatchObject({ id: "rubric-v1", kind: "rubric", replayable: true });
+    } finally {
+      await cleanup();
+    }
+  });
+});

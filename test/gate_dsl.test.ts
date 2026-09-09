@@ -10,6 +10,7 @@ import {
   type GateClause,
   type GateDefinition,
 } from "../src/evidence/index.js";
+import { parseCanonicalGateDefinition, parseClause } from "../src/domain/index.js";
 import { ProjectController } from "../src/tools/index.js";
 import { DomainValidationError } from "../src/domain/index.js";
 import { EventStore } from "../src/state/index.js";
@@ -349,5 +350,98 @@ describe("Gate DSL (Research line)", () => {
     } finally {
       await cleanup();
     }
+  });
+});
+/**
+ * G9-F2 residual closure (spec 35 addendum): PARSE-RES-A01..A05 - the
+ * clause grammar is closed at EVERY owned level (PARSE-INV-4): the exists/
+ * count inner envelopes reject typo keys, `not` recurses through the same
+ * grammar, and the `where` maps stay explicitly open (PARSE-INV-3). The
+ * canonical durable gate face (mode/chain) gets its own grammar owner.
+ */
+describe("G9-F2 GateClause nested closure (PARSE-RES)", () => {
+  it("PARSE-RES-A01: exists.wheer is rejected, not silently dropped", () => {
+    expect(() => parseClause({ exists: { predicate: "tests_pass", wheer: { runner: "pytest" } } })).toThrow(
+      /unknown field 'wheer' inside the exists clause/,
+    );
+  });
+
+  it("PARSE-RES-A02: an unknown sibling next to exists is rejected", () => {
+    expect(() =>
+      parseClause({ exists: { predicate: "tests_pass", where: {} }, when: "later" }),
+    ).toThrow(/unknown gate clause field 'when'/);
+  });
+
+  it("PARSE-RES-A03: count.gt (unknown sibling beside gte) is rejected", () => {
+    expect(() =>
+      parseClause({ count: { predicate: "tests_pass", gte: 1, gt: 2 } }),
+    ).toThrow(/unknown field 'gt' inside the count clause/);
+  });
+
+  it("PARSE-RES-A04: arbitrary legal `where` contents stay accepted (open map)", () => {
+    expect(
+      parseClause({ exists: { predicate: "tests_pass", where: { runner: "pytest", nested: { a: 1 } } } }),
+    ).toEqual({
+      exists: { predicate: "tests_pass", where: { runner: "pytest", nested: { a: 1 } } },
+    });
+    expect(
+      parseClause({ count: { predicate: "tests_pass", gte: 2, where: { anything: [1, 2, 3] } } }),
+    ).toEqual({ count: { predicate: "tests_pass", gte: 2, where: { anything: [1, 2, 3] } } });
+  });
+
+  it("PARSE-RES-A05: nested not applies the same strict grammar recursively", () => {
+    expect(() =>
+      parseClause({ not: { exists: { predicate: "tests_pass", wheer: {} } } }),
+    ).toThrow(/unknown field 'wheer' inside the exists clause/);
+    expect(parseClause({ not: { not: { exists: { predicate: "tests_pass" } } } })).toEqual({
+      not: { not: { exists: { predicate: "tests_pass" } } },
+    });
+  });
+
+  it("PARSE-RES (faces): the canonical durable gate face has its own grammar owner", () => {
+    const canonical = {
+      gate_id: "gate-release",
+      version: 1,
+      subject_type: "attempt",
+      require: { mode: "all", chain: [{ exists: { predicate: "tests_pass" } }] },
+    };
+    // The authoring parser owns all/any and REJECTS the canonical face...
+    expect(() => parseGateDefinition(canonical)).toThrow(/unknown gate require field 'mode'/);
+    // ...the canonical parser owns mode/chain and is idempotent on its own
+    // output (replay revalidation never rewrites stored bytes).
+    expect(parseCanonicalGateDefinition(canonical)).toEqual(canonical);
+    expect(parseCanonicalGateDefinition(parseCanonicalGateDefinition(canonical))).toEqual(canonical);
+    // Unknown keys and malformed modes fail closed at every level.
+    expect(() => parseCanonicalGateDefinition({ ...canonical, schema_version: 1 })).toThrow(
+      /unknown gate definition field 'schema_version'/,
+    );
+    expect(() =>
+      parseCanonicalGateDefinition({
+        ...canonical,
+        require: { mode: "some", chain: [] },
+      }),
+    ).toThrow(/require\.mode must be 'all' \| 'any'/);
+    expect(() =>
+      parseCanonicalGateDefinition({
+        ...canonical,
+        require: { mode: "all", chain: [{ exists: { predicate: "tests_pass", wheer: {} } }] },
+      }),
+    ).toThrow(/unknown field 'wheer' inside the exists clause/);
+    // The authoring face still converts to the canonical one.
+    expect(
+      parseCanonicalGateDefinition(
+        parseGateDefinition({
+          gate_id: "g",
+          version: 1,
+          subject_type: "task",
+          require: { any: [{ count: { predicate: "tests_pass", gte: 1 } }] },
+        }),
+      ),
+    ).toEqual({
+      gate_id: "g",
+      version: 1,
+      subject_type: "task",
+      require: { mode: "any", chain: [{ count: { predicate: "tests_pass", gte: 1 } }] },
+    });
   });
 });

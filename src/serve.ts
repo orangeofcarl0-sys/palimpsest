@@ -239,13 +239,25 @@ export function serveOrchestration(
           return;
         }
         if (request.method === "GET" && path === "/api/graph") {
-          // Spec 35 (VIEW-INV-1/4): EventCursor ≠ ViewCursor. A matching
-          // viewCursor proves the COMPLETE projection unchanged and skips the
-          // graph build; the legacy ?cursor= (event id) keeps its exact
-          // semantics - conservative, no unsafe early return.
+          // Spec 35 (VIEW-INV-1/4), G9-F2 VIEW-INV-6: EventCursor ≠ ViewCursor
+          // and the viewCursor verdict DOMINATES. A matching viewCursor proves
+          // the COMPLETE projection unchanged and skips the graph build; a
+          // non-matching viewCursor returns the graph with changed=true even
+          // when the legacy numeric cursor happens to be current - the mixed
+          // request must never answer "graph + changed:false". The legacy
+          // ?cursor= (event id) keeps its exact semantics on its own.
           const viewCursorParam = url.searchParams.get("viewCursor");
-          if (viewCursorParam !== null && viewCursorParam === controller.viewCursor()) {
-            sendJson(response, 200, { changed: false, viewCursor: controller.viewCursor() });
+          if (viewCursorParam !== null) {
+            if (viewCursorParam === controller.viewCursor()) {
+              sendJson(response, 200, { changed: false, viewCursor: controller.viewCursor() });
+            } else {
+              const graph = controller.orchestrationGraph();
+              sendJson(response, 200, {
+                graph,
+                changed: true,
+                viewCursor: controller.viewCursor(),
+              });
+            }
             return;
           }
           const graph = controller.orchestrationGraph();
@@ -436,10 +448,13 @@ export function serveOrchestration(
             sendJson(response, 200, { diagnostics, declared: false });
             return;
           }
+          // G9-F2 HEALTH-INV-2: started-ness is scoped to THIS controller's
+          // project - a sibling project's control row in a shared store must
+          // not route this declaration into plan() instead of start().
           const started =
             controller.store.connection
-              .prepare("SELECT 1 AS ok FROM scheduler_control LIMIT 1")
-              .get() !== undefined;
+              .prepare("SELECT 1 AS ok FROM scheduler_control WHERE project_id=?")
+              .get(controller.projectId) !== undefined;
           const tasks = proposalTaskSpecs(proposal);
           const event = started
             ? controller.plan({

@@ -22,6 +22,7 @@ export { TaskPolicy, type AuthorizedTaskEnvelope, type TaskPolicyInput } from ".
 export {
   evalClause,
   parseClause,
+  parseCanonicalGateDefinition,
   parseGateDefinition,
   type ClauseFlag,
   type GateClause,

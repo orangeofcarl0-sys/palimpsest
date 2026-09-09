@@ -10,9 +10,11 @@ G9-D ✅ COMPLETE（规格 32，会话 1+2，2026-09-08）
   ↓
 G9-C ✅ COMPLETE（规格 33，PLMP-CANVAS-8，2026-09-08）
   ↓
-G9-F（35 号）Parser 纪律 + poll 快路径    ← 当前位置
+G9-F ✅ COMPLETE（规格 35，PLMP-PARSE-1，2026-09-10）
   ↓
-G9-G（36 号）Playwright E2E
+G9-F2 ✅ COMPLETE（35 号 Closure Addendum，残差闭合，2026-09-10）
+  ↓
+G9-G（36 号）Playwright E2E    ← 当前位置
   ↓
 G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 ```
@@ -91,7 +93,13 @@ G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 3. models.ts 全族 canonical parser "必填严/未知字段容"——**已按 35 号逐合同显式闭合**（`rejectUnknownFields` 逐 parser/逐事件 case；三处显式开放映射登记例外；历史门两处调用点/声明集修正后 parity/replay 全绿；SCHEMA-AUDIT tripwire 反转钉住新态）。
 4. ~~`/api/graph` 快路径按 `MAX(event_id)` 直接判~~——**审计否决该设计**（attribution 是图可见进程易变态且 `evaluateAttemptGate` 结算零事件追加；重启更使事件游标恒等失效）：改为 **EventCursor ≠ ViewCursor**（`v1:epoch:eventCursor:viewGeneration`，安全未变路径不建图，旧 `?cursor=` 保守兼容）＋ health 空态修复（ServiceHealth ≠ ProjectInitialized）。
 
-**已交付**：验收＝PARSE-H01-A..D＋矩阵抽查＋WEB-H01-A..E（建图计数器断言）＋WEB-HEALTH-A01＋PRES-BELT ×2；测试基线 58/398 → **58/409**；浏览器冒烟 A/B/D 过（C 由 WEB-H01-C 覆盖）。**下一批＝G9-G。**
+**已交付**：验收＝PARSE-H01-A..D＋矩阵抽查＋WEB-H01-A..E（建图计数器断言）＋WEB-HEALTH-A01＋PRES-BELT ×2；测试基线 58/398 → **58/409**；浏览器冒烟 A/B/D 过（C 由 WEB-H01-C 覆盖）。**下一批＝G9-F2（后并入完成，见下）。**
+
+---
+
+## G9-F2 — 残差不变量闭合（规格 35 Closure Addendum，PLMP-PARSE-1）✅ **COMPLETE（2026-09-10；交付报告＝`G9-F2-RESIDUAL-INVARIANT-DELIVERY.md` 二十问；母体审计＝`G9-F2-RESIDUAL-INVARIANT-ASSESSMENT.md`，8/8 机器探针先行）**
+
+**已交付**：VIEW-INV-5（attribution 归一化快照＋`parseAttemptAttribution`，claim 先校验后副作用）、epoch 升完整 128 位 UUID＋"密码学可忽略"诚实措辞、VIEW-INV-6（viewCursor 裁决支配 legacy cursor）、HEALTH-INV-2（health/declare 按项目隔离）、PARSE-INV-4（exists/count 内层闭包＋not 递归、where 保持开放）、WIRE-INV-3（GATE_DEFINED canonical 面 `parseCanonicalGateDefinition`＋STAGE_GRAPH_DEFINED 全语法在共享 durable 接缝提交前校验，拒绝零残写）、WIRE-INV-4（CANDIDATE_SELECTED 必填布尔精确解析）。验收电池：VIEW-RES-A01..A04＋VIEW-RES-C01＋HEALTH-RES-A01..A03＋PARSE-RES-A01..A05＋DURABLE-PARSE-A01..A05＋CANON-RES-A01..A05；测试基线 58/409 → **59/431**；kernel/web tsc、vite build 全绿；浏览器冒烟 A/B/D 过（C 由 HEALTH-RES-A02 HTTP 面覆盖）。**下一批＝G9-G。**
 
 ---
 
@@ -99,7 +107,7 @@ G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 
 **问题**：GUI 复杂度已超人工冒烟可靠覆盖面（G2–G8 每轮冒烟都抓到过真实缺陷：Handles、rename 断边、布局断链、drop 环守卫）。
 
-**设计裁决**：引入 Playwright（或等价成熟框架）；覆盖清单按母体指令 §13：Canvas（加节点/连线/改名/删除/嵌套/三层/折叠展开/拖入拖出/分组/布局/导入导出）、GraphPatch（preview/apply/invalid/stale/坐标保持/分组保持/unsupported 拒绝）、Runtime（run/pause/resume/hold/release/卫星/trace）、Ready-Set（UI 驱动 concurrency=2 双任务同时 ACTIVE）。E2E 进 CI 纪律（headless、固定端口段、serve 生命周期托管）随规格冻结。
+**设计裁决**：引入 Playwright（或等价成熟框架）；覆盖清单按母体指令 §13：Canvas（加节点/连线/改名/删除/嵌套/三层/折叠展开/拖入拖出/分组/布局/导入导出）、GraphPatch（preview/apply/invalid/stale/坐标保持/分组保持/unsupported 拒绝）、Runtime（run/pause/resume/hold/release/卫星/trace）、Ready-Set（UI 驱动 concurrency=2 双任务同时 ACTIVE）。E2E 进 CI 纪律（headless、固定端口段、serve 生命周期托管）随规格冻结。**G9-F2 补记（§34）**：混合游标裁决、畸形 attribution HTTP 400、健康项目隔离已由 F2 内核电池钉死——E2E 只测用户可见行为（轮询稳定/暂停恢复/面板渲染），不重复低层不变量（§40）。
 
 **验收**：`E2E-H01`（nested Canvas + patch + run + hold 全路径）及上列各面用例。
 
