@@ -6,10 +6,20 @@ import { describe, expect, it } from "vitest";
 
 import { proposalTaskSpecs, validateProjectProposal, type ProjectProposal } from "../src/architecture/index.js";
 import {
+  canvasAddEdge,
+  canvasAddGroup,
+  canvasAddNode,
   canvasCompile,
   canvasDiff,
+  canvasDuplicateNode,
   canvasInsertFragment,
   canvasLayout,
+  liftToAgentGraph,
+  canvasMoveNodeScope,
+  canvasReconnectEdge,
+  canvasRemoveEdge,
+  canvasRemoveGroup,
+  canvasRemoveNode,
   emptyCanvasDoc,
   parseCanvasDoc,
   satelliteAttempts,
@@ -824,5 +834,165 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
     // Fail-closed: malformed v2 is refused by the converter too.
     expect(() => upgradeCanvasV2ToV3({ ...v2, nodes: "nope" }, "abc123def456")).toThrow(/nodes must be an array/);
     expect(() => upgradeCanvasV2ToV3(v2, "bad:ns")).toThrow(/identity\.namespace/);
+  });
+});
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-7 (32 号, G9-D D6): the centralized first-party mutation layer.
+// MUT-INV-1: parse(before)=PASS ⇒ parse(mutation(before))=PASS.
+// ---------------------------------------------------------------------------
+
+describe("canvas mutation layer (PLMP-CANVAS-7 D6)", () => {
+  const parseOk = (doc: CanvasDoc): CanvasDoc => parseCanvasDoc(JSON.parse(JSON.stringify(doc)));
+
+  it("CANVAS-MUT-A01: deleting a node removes every incident edge; the result parses", () => {
+    const doc = docWith(
+      taskNode("n1", "A", 0, 0),
+      taskNode("n2", "B", 10, 10, "root", ["n1"]),
+      taskNode("n3", "C", 20, 20, "root", ["n2"]),
+    );
+    expect(doc.edges).toHaveLength(2);
+    const after = canvasRemoveNode(doc, "n2");
+    expect(parseOk(after)).toEqual(after);
+    expect(after.nodes.map((node) => node.key).sort()).toEqual(["n1", "n3"]);
+    // n2's incoming edge (n1→n2) and outgoing edge (n2→n3) are both gone.
+    expect(after.edges).toEqual([]);
+    expect(() => canvasRemoveNode(doc, "ghost")).toThrow(/does not exist/);
+  });
+
+  it("CANVAS-MUT-A02: deleting a group member cleans membership; the result parses", () => {
+    const doc = docWithGroups(
+      [{ id: "g1", label: "框", members: ["n1", "n2"] }],
+      taskNode("n1", "A", 0, 0),
+      taskNode("n2", "B", 10, 10, "root", ["n1"]),
+    );
+    const after = canvasRemoveNode(doc, "n2");
+    expect(parseOk(after)).toEqual(after);
+    expect(after.groups[0]!.members).toEqual(["n1"]);
+    const afterN1 = canvasRemoveNode(doc, "n1");
+    expect(parseOk(afterN1)).toEqual(afterN1);
+    expect(afterN1.groups[0]!.members).toEqual(["n2"]);
+  });
+
+  it("CANVAS-MUT-A03: deleting a subgraph lifts direct children one level; nested descendants stay; identities preserved", () => {
+    const doc = docWith(
+      { key: "G1", type: "subflow", title: "外层", x: 0, y: 0, z: "root" },
+      { key: "G2", type: "subflow", title: "内层", x: 0, y: 0, z: "G1" },
+      taskNode("A", "甲", 5, 5, "G1"),
+      taskNode("B", "乙", 5, 5, "G2"),
+    );
+    const after = canvasRemoveNode(doc, "G1");
+    expect(parseOk(after)).toEqual(after);
+    // G1's direct children (A, G2) reparent to G1's parent (root); B stays
+    // under G2; no identity changes; no flattening of the nested subtree.
+    expect(after.nodes.map((node) => [node.key, node.z])).toEqual([
+      ["G2", "root"],
+      ["A", "root"],
+      ["B", "G2"],
+    ]);
+    // Deleting a mid-tree subflow lifts its children to the deleted scope's
+    // parent, not to the root.
+    const afterMid = canvasRemoveNode(doc, "G2");
+    expect(parseOk(afterMid)).toEqual(afterMid);
+    expect(afterMid.nodes.find((node) => node.key === "B")!.z).toBe("G1");
+  });
+
+  it("CANVAS-MUT-A04: reconnect retires the old edge and allocates a fresh id", () => {
+    const doc = docWith(
+      taskNode("n1", "A", 0, 0),
+      taskNode("n2", "B", 10, 10, "root", ["n1"]),
+      taskNode("n3", "C", 20, 20),
+    );
+    const [oldEdge] = doc.edges;
+    const reconnected = canvasReconnectEdge(doc, oldEdge!.id, { target: "n3" });
+    expect(reconnected.doc.edges.map((edge) => edge.id)).not.toContain(oldEdge!.id);
+    const fresh = reconnected.doc.edges[0]!;
+    expect(fresh.source).toBe("n1");
+    expect(fresh.target).toBe("n3");
+    expect(fresh.id).not.toBe(oldEdge!.id);
+    expect(parseOk(reconnected.doc)).toEqual(reconnected.doc);
+    // A reconnect that changes nothing is not an edit.
+    expect(() => canvasReconnectEdge(doc, oldEdge!.id, { target: "n2" })).toThrow(/changes nothing/);
+    // Reconnecting onto an existing duplicate pair is refused (authoring-time
+    // parallel-edge prevention; the compile gate remains the backstop).
+    const two = docWith(
+      taskNode("n1", "A", 0, 0),
+      taskNode("n2", "B", 10, 10, "root", ["n1"]),
+      taskNode("n3", "C", 20, 20, "root", ["n1"]),
+    );
+    expect(() => canvasReconnectEdge(two, "e:test:2", { target: "n2" })).toThrow(/already exists/);
+    expect(() => canvasReconnectEdge(doc, "ghost", { target: "n3" })).toThrow(/does not exist/);
+  });
+
+  it("CANVAS-MUT-A05: duplicate creates fresh node/edge identities; structure preserved; external relations excluded", () => {
+    const doc = docWith(
+      taskNode("n1", "A", 0, 0),
+      { key: "s1", type: "subflow", title: "S", x: 100, y: 100, z: "root" },
+      taskNode("m", "M", 120, 120, "s1", ["n1"]),
+      taskNode("tail", "T", 300, 0, "root", ["m"]),
+    );
+    const duplicated = canvasDuplicateNode(doc, "s1", { x: 400, y: 400 });
+    const after = duplicated.doc;
+    expect(parseOk(after)).toEqual(after);
+    const copyId = duplicated.id;
+    expect(copyId).not.toBe("s1");
+    const copyMembers = after.nodes.filter((node) => node.z === copyId || node.key === copyId);
+    // The whole subtree was copied with fresh ids: root copy + its member.
+    expect(copyMembers.map((node) => node.title).sort()).toEqual(["M", "S"]);
+    expect(copyMembers.every((node) => node.key !== "s1" && node.key !== "m")).toBe(true);
+    // The copy's dependency on the external n1 was EXCLUDED (registered
+    // fail-closed behavior): the copy carries no external edges.
+    const copyM = copyMembers.find((node) => node.title === "M")!;
+    expect(after.edges.filter((edge) => edge.target === copyM.key)).toEqual([]);
+    // Structural equivalence: copied root keeps label, sits at the source's
+    // containment level; the original subtree is untouched.
+    const copyRoot = liftToAgentGraph(after).nodes.find((node) => node.id === copyId)!;
+    expect(copyRoot.label).toBe("S");
+    expect(copyRoot.scope).toBe("root");
+    expect(after.nodes.find((node) => node.key === "s1")!.x).toBe(100);
+    // Task duplicate (no subtree): fresh id, external edges excluded.
+    const solo = canvasDuplicateNode(doc, "tail");
+    const soloNode = solo.doc.nodes.find((node) => node.key === solo.id)!;
+    expect(soloNode.title).toBe("T");
+    expect(solo.doc.edges.filter((edge) => edge.source === solo.id || edge.target === solo.id)).toEqual([]);
+    // Membership is not copied (registered fail-closed behavior).
+    const grouped = docWithGroups([{ id: "g1", label: "框", members: ["n1"] }], taskNode("n1", "A", 0, 0));
+    const groupCopy = canvasDuplicateNode(grouped, "n1");
+    expect(groupCopy.doc.groups[0]!.members).toEqual(["n1"]);
+  });
+
+  it("CANVAS-MUT-A06: add/move/group helpers keep the doc parse-valid and fail closed", () => {
+    let doc = docWith(taskNode("n1", "A", 0, 0));
+    const added = canvasAddNode(doc, { type: "task", title: "B" });
+    expect(parseOk(added.doc)).toEqual(added.doc);
+    expect(added.id).toBe("n:test:1");
+    doc = added.doc;
+    const sub = canvasAddNode(doc, { type: "subflow", title: "S" });
+    doc = sub.doc;
+    const moved = canvasMoveNodeScope(doc, added.id, sub.id);
+    expect(parseOk(moved)).toEqual(moved);
+    expect(moved.nodes.find((node) => node.key === added.id)!.z).toBe(sub.id);
+    // Cycle guard: a subflow cannot move into its own descendant (nested
+    // subflow inside it), while re-parenting under an ancestor stays legal.
+    const nested = canvasAddNode(moved, { type: "subflow", title: "S2", z: sub.id });
+    expect(() => canvasMoveNodeScope(nested.doc, sub.id, nested.id)).toThrow(/own descendant/);
+    expect(() => canvasMoveNodeScope(moved, added.id, "ghost")).toThrow(/does not exist/);
+    const deeper = canvasMoveNodeScope(nested.doc, added.id, nested.id);
+    expect(parseOk(deeper)).toEqual(deeper);
+    // Edge authoring: source must be a task, duplicates refused.
+    const edge = canvasAddEdge(moved, { source: added.id, target: "n1" });
+    expect(parseOk(edge.doc)).toEqual(edge.doc);
+    expect(() => canvasAddEdge(edge.doc, { source: added.id, target: "n1" })).toThrow(/already exists/);
+    expect(() => canvasAddEdge(moved, { source: sub.id, target: "n1" })).toThrow(/must be a task/);
+    const removedEdge = canvasRemoveEdge(edge.doc, edge.id);
+    expect(removedEdge.edges).toEqual([]);
+    expect(() => canvasRemoveEdge(moved, edge.id)).toThrow(/does not exist/);
+    // Groups: add with deterministic id, remove lifts nested children.
+    const group = canvasAddGroup(removedEdge, { label: "框" });
+    expect(group.id).toBe("grp1");
+    const nestedGroup = canvasAddGroup(group.doc, { label: "内框", g: group.id });
+    const removedGroup = canvasRemoveGroup(nestedGroup.doc, group.id);
+    expect(parseOk(removedGroup)).toEqual(removedGroup);
+    expect(removedGroup.groups).toEqual([{ id: nestedGroup.id, label: "内框", members: [] }]);
+    expect(() => canvasRemoveGroup(removedGroup, group.id)).toThrow(/does not exist/);
   });
 });

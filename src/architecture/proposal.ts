@@ -40,6 +40,7 @@ export interface ProjectProposal {
 }
 
 export type ProposalDiagnosticType =
+  | "EMPTY_GOAL"
   | "EMPTY_TASKS"
   | "EMPTY_TITLE"
   | "UNKNOWN_DEPENDENCY"
@@ -199,6 +200,14 @@ export function validateProjectProposal(  proposal: ProjectProposal,
   options?: { readonly knownGateIds?: ReadonlySet<string> },
 ): ProposalDiagnostic[] {
   const diagnostics: ProposalDiagnostic[] = [];
+  // PLMP-CANVAS-7 D10 (PROP-DECL-A01): canonical ProjectIr requires a
+  // non-empty goal (parseProjectIr throws on replay), while buildProjectIr
+  // itself accepts "" - a validated-clean empty goal would append an event
+  // the ledger cannot re-read. The closure lives HERE (the one validator),
+  // not in a declaration-specific parser.
+  if (proposal.goal.trim() === "") {
+    diagnostics.push({ type: "EMPTY_GOAL", detail: "proposal goal is blank - the canonical declaration contract requires a non-empty goal" });
+  }
   if (proposal.tasks.length === 0) {
     diagnostics.push({ type: "EMPTY_TASKS", detail: "proposal has no tasks" });
     return diagnostics;

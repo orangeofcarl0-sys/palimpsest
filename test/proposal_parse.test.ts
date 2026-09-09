@@ -18,11 +18,11 @@ import {
   type ProjectProposal,
 } from "../src/architecture/index.js";
 import { serveOrchestration } from "../src/serve.js";
-import { ProjectController } from "../src/tools/index.js";
+import { ProjectController, buildProjectIr } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
-import { parseTaskSpec } from "../src/schema/index.js";
+import { parseProjectIr, parseTaskSpec } from "../src/schema/index.js";
 import { proposalTaskSpecs } from "../src/architecture/index.js";
 import { docV3From, FakeClock, tempStatePath } from "./helpers.js";
 
@@ -224,4 +224,37 @@ describe("proposal compilability closure (PLMP-GRAPH-5 §B3-D)", () => {
       }
     }
   });
+});
+
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-7 (32 号, G9-D D10): proposal declaration closure.
+// Invariant: first-party validation clean ⇒ canonical declaration contract
+// construction succeeds (no side effects inside the validator).
+// ---------------------------------------------------------------------------
+
+it("PROP-DECL-A01: an empty goal is rejected as EMPTY_GOAL before the ledger can be poisoned", () => {
+  // The audited defect: validate({goal:"", tasks:[valid]}) was clean, then
+  // the canonical replay parseProjectIr threw "goal: must not be empty" on
+  // the appended event (a poisoned ledger entry).
+  const emptyGoal = { goal: "", changeClass: "behavior_change" as const, tasks: [{ title: "T1", dependsOn: [] }] };
+  expect(validateProjectProposal(emptyGoal)).toEqual([
+    { type: "EMPTY_GOAL", detail: expect.stringMatching(/non-empty goal/) },
+  ]);
+  expect(validateProjectProposal({ ...emptyGoal, goal: "   " })).toEqual([
+    { type: "EMPTY_GOAL", detail: expect.stringMatching(/non-empty goal/) },
+  ]);
+  // The poison point itself stays pinned: buildProjectIr accepts "", the
+  // canonical parse refuses - so validation MUST refuse upstream.
+  const built = buildProjectIr({
+    projectId: "decl-project",
+    goal: "",
+    requirements: [],
+    decisions: [],
+    tasks: proposalTaskSpecs(emptyGoal),
+    headCommit: "c".repeat(40),
+    committedAt: "2026-09-09T00:00:00Z",
+  });
+  expect(() => parseProjectIr(built as unknown as Record<string, unknown>)).toThrow(/goal: must not be empty/);
+  // Non-empty goals pass unchanged.
+  expect(validateProjectProposal({ ...emptyGoal, goal: "真实目标" })).toEqual([]);
 });

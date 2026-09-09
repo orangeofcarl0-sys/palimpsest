@@ -301,8 +301,31 @@ export function serveOrchestration(
             writePaths: task.writePaths,
             requiredArtifacts: task.requiredArtifacts,
             role: task.role,
+            // PLMP-CANVAS-7 D7: identity matching needs the live lineage ids.
+            ...(task.definitionId === undefined ? {} : { definitionId: task.definitionId }),
+            ...(task.scopeId === undefined ? {} : { scopeId: task.scopeId }),
+            // 32 号 §12: skill hints are declared Work payload - diffable.
+            ...(task.suggestedSkills === undefined ? {} : { suggestedSkills: task.suggestedSkills }),
           }));
           sendJson(response, 200, { diff: canvasDiff(proposal.tasks, live) });
+          return;
+        }
+        // PLMP-CANVAS-7 D8: the compile-independent Work-authoring anchor.
+        // Only parse → lift → semantic digest → live revision, from ONE
+        // server observation (atomic revision+digest, no client-side race
+        // window). It deliberately does NOT compile or capability-check:
+        // authoring-valid but runtime-invalid graphs (e.g. data cycles) are
+        // exactly where AI patching is most valuable and must keep lost-
+        // update protection. UAS-D-INV-2: this anchors the current Work
+        // authoring graph - it is not a future architecture anchor.
+        if (request.method === "POST" && path === "/api/canvas/anchor") {
+          const body = JSON.parse((await readBody(request)) || "{}") as Record<string, unknown>;
+          const doc = parseCanvasDoc(body["doc"]);
+          const graph = liftToAgentGraph(doc);
+          sendJson(response, 200, {
+            baseRevision: controller.orchestrationGraph().project.revision,
+            baseGraphDigest: agentGraphSemanticDigest(graph),
+          });
           return;
         }
         if (request.method === "POST" && path === "/api/canvas/layout") {

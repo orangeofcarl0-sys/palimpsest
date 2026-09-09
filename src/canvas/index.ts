@@ -23,6 +23,18 @@ export type {
 
 export { canvasCompile, canvasInsertFragment } from "./compile.js";
 
+export {
+  canvasAddEdge,
+  canvasAddGroup,
+  canvasAddNode,
+  canvasDuplicateNode,
+  canvasMoveNodeScope,
+  canvasReconnectEdge,
+  canvasRemoveEdge,
+  canvasRemoveGroup,
+  canvasRemoveNode,
+} from "./mutate.js";
+
 export { canvasRoundTripDiff, liftToAgentGraph, unloadToCanvasDoc } from "./lift.js";
 
 export { canvasDiff } from "./diff.js";

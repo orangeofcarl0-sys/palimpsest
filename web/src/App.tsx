@@ -29,7 +29,11 @@ import type {
   TraceRow,
 } from "./types";
 import { canvasDocShapeError, descendantKeys } from "./canvasIntegrity";
-import { allocateCanvasEdgeId, newCanvasDoc, randomCanvasNamespace, upgradeCanvasV2ToV3 } from "./canvasV3";
+import {
+  canvasAddEdge,
+  canvasMoveNodeScope,
+} from "./canvasMutate";
+import { newCanvasDoc, randomCanvasNamespace, upgradeCanvasV2ToV3 } from "./canvasV3";
 
 type Mode = "live" | "draft";
 
@@ -313,22 +317,14 @@ export function App() {
                 diff={null}
                 onSelect={setSelectedKey}
                 onConnect={(fromKey, toKey) => {
-                  const source = doc.nodes.find((node) => node.key === fromKey);
-                  const target = doc.nodes.find((node) => node.key === toKey);
-                  if (source === undefined || target?.task === undefined || source.type !== "task") return;
-                  // PLMP-CANVAS-7: edges[] is the one edge truth - a
-                  // connection appends a fresh edge record (exact duplicates
-                  // are declined here; the capability gate names any other
-                  // parallel edge at compile time).
-                  if (doc.edges.some((edge) => edge.source === fromKey && edge.target === toKey)) return;
-                  const allocated = allocateCanvasEdgeId(doc);
-                  setDoc({
-                    ...allocated.doc,
-                    edges: [
-                      ...allocated.doc.edges,
-                      { id: allocated.id, source: fromKey, target: toKey, kind: "data" },
-                    ],
-                  });
+                  // PLMP-CANVAS-7 D6/D9: the connection rides the mutation
+                  // mirror (fresh edge id, task-source check, duplicate
+                  // refusal) - no inline integrity logic in the component.
+                  try {
+                    setDoc(canvasAddEdge(doc, { source: fromKey, target: toKey }).doc);
+                  } catch (error) {
+                    setMessage(`连线 ✕ ${error instanceof Error ? error.message : String(error)}`);
+                  }
                 }}
                 onMove={(key, x, y) => {
                   setDoc({
@@ -353,12 +349,9 @@ export function App() {
                       return;
                     }
                   }
-                  setDoc({
-                    ...doc,
-                    nodes: doc.nodes.map((node) =>
-                      node.key === key ? { ...node, z: ownerKey ?? "root" } : node,
-                    ),
-                  });
+                  // D6/D9: the move rides the mutation mirror (owner
+                  // validation + cycle guard are the helper's job).
+                  setDoc(canvasMoveNodeScope(doc, key, ownerKey ?? "root"));
                   setMessage(ownerKey === null ? "已移出子图" : "已归入子图");
                 }}
                 onToggleSubflow={(key) => {
@@ -446,7 +439,6 @@ export function App() {
                 goal={graph?.project.goal ?? ""}
                 presets={presets}
                 doc={doc}
-                revision={graph?.project.revision ?? 0}
                 onMessage={setMessage}
                 onDocChange={(next) => {
                   setDoc(next);

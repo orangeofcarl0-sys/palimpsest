@@ -85,13 +85,17 @@ $$
 ## 3. 合同触点
 
 - `src/canvas/doc.ts`：v3 类型/解析/`emptyCanvasDoc(goal, namespace)`/`upgradeCanvasV2ToV3`/`allocateCanvasNodeId`/`allocateCanvasEdgeId`/`familyCountersOf`
+- `src/canvas/mutate.ts`（D6 新增）：中心化 mutation 助手——add/remove/duplicate node、add/remove/reconnect edge、moveScope、add/remove group；MUT-INV-1 唯一入口
+- `src/canvas/diff.ts`（D7 重写）：identity-aware diff——definitionId 优先、title fallback 仅限无身份侧、changedFields 覆盖 title/dependsOn/writePaths/requiredArtifacts/role/scope/suggestedSkills（gate 建议性不可 diff）
 - `src/canvas/lift.ts`：lift 边真相切换 + unload(identity?) + 精确边比对 gate
 - `src/canvas/compile.ts`：`canvasInsertFragment` 走分配器 + 边生成；`proposalFragment` **退役删除**（插入唯一路径）
 - `src/canvas/layout.ts`：depsOf/force 读 `doc.edges`
 - `src/graph/ir.ts`：capability 门 +`UNSUPPORTED_PARALLEL_DATA_EDGE`
 - `src/graph/patch.ts`：+`IDENTITY_REUSE`；kind 注释改方案 B；`patchFromFragment` 改 `n:sys:/e:sys:` 家族
-- `src/serve.ts`：patch 端点 digest 复原 + identity 透传
-- web（独立构建链，镜像 + tripwire 钉住）：`types.ts` v3 镜像、`canvasV3.ts`（converter/分配器/namespace 镜像）、`canvasIntegrity.ts` v3 守卫（补 members/identity/edge 盲区）、`App.tsx`（恢复/导入走显式升级＋明示、连线→边记录）、`Panels.tsx`（genKey 删除→分配器、删除节点清 incident edges+membership、依赖 chips 读边、删分组重挂嵌套子组）、`CanvasView.tsx`（边渲染/徽章计数读 `doc.edges`）
+- `src/architecture/proposal.ts`（D10）：+`EMPTY_GOAL` 诊断（canonical replay 契约）
+- `src/tools/graph.ts`（D7）：GraphTask 投影 +`suggestedSkills`（加法式可选，SDS-4；diff 的 live 侧需要已声明技能负载）
+- `src/serve.ts`：patch 端点 digest 复原 + identity 透传；+`POST /api/canvas/anchor`（D8：单次观察 parse→lift→digest→live revision，**永不编译**）；diff 端点 live 侧带 definitionId/scopeId
+- web（独立构建链，镜像 + tripwire 钉住）：`types.ts` v3 镜像、`canvasV3.ts`（converter/分配器/namespace 镜像）、`canvasMutate.ts`（D9：mutate.ts 全量镜像——9 个助手，web 变更唯一入口）、`canvasIntegrity.ts` v3 守卫（补 members/identity/edge 盲区）、`App.tsx`（恢复/导入走显式升级＋明示、连线/归入走镜像助手）、`Panels.tsx`（结构变更全部委托镜像、补丁面锚状态三态 FULL/PARTIAL/UNANCHORED、generate 走 anchorCanvas）、`CanvasView.tsx`（边渲染/徽章计数读 `doc.edges`）、`api.ts`（+anchorCanvas）
 
 ## 4. 验收（本会话 D0–D5）
 
@@ -104,7 +108,17 @@ $$
 - `CANVAS-V3-MIG`（converter 保留 n1/n2/n17、边确定性、g 折叠、新分配不碰撞 legacy）
 - `WEB-V3-A01`（web 镜像 tripwire：v3 类型/converter/守卫/genKey 退役/连线边记录）
 - 测试基线 57/354 → **58/370**（既有 354 项语义等价迁移至 v3 断言，无静默放宽）
-- **留待第二会话（D6–D10）**：中心化 kernel mutation 助手（MUT-INV-1 + CANVAS-MUT-A01..A03 + reconnect 操作面）、identity-aware diff（DIFF-ID-A01..A03）、`/api/canvas/anchor`（ANCHOR-A01..A04，Full/Partial/Unanchored）、Web 全面接线、浏览器冒烟、PROP-DECL-A01（EMPTY_GOAL）、交付报告
+
+### 4.1 第二会话（D6–D10）验收（全部已交付，2026-09-08）
+
+- `CANVAS-MUT-A01..A06`（D6）：中心化 mutation 层——MUT-INV-1（parse(before) PASS ⇒ parse(变更) PASS，全部助手逐个钉住）；删除 subflow 成员**向上提升一层到删除 scope 的 parent**（非根层）、嵌套后代随各自 scope 保留；duplicate＝子树 fresh id＋内部边 fresh，外部边与 membership 排除；reconnect＝删旧＋fresh（同端点 no-op 拒绝）；addEdge 拒非 task source/完全重复/self-loop；cycle guard＝`descendantKeys(doc, key).has(scope)`（只拒真正成环的归入）
+- `DIFF-ID-A01..A06`（D7）：identity-aware diff——live 有 definitionId ⇒ 按 id 匹配（改名＝changed(title)，非 remove+add；同题不同 id＝remove+add，题等不越身份）；title fallback 仅当**该 live 任务未被 id 认领**且 draft 无 id（spec-first live / 手写草稿混合模式不串行认领）；changedFields 覆盖 §12 全部当前可代表字段：title/dependsOn/writePaths/requiredArtifacts/role/scope/**suggestedSkills**（集合比较；`suggested_skills` 自 E2 起入 TaskSpec，本轮加法式进 GraphTask 投影与 serve diff 映射）——**gate 不可 diff**（20 号：proposal gateId 仅建议，走 declareGate 单声明路径，永不进 TaskSpec，无 live 字段可比，A06 钉死）；removed＝未被认领的 live 任务
+- `DIFF-ID-A05`（§13 要求）：纯布局移动后 compile 语义全等＋diff 为空（位置是视觉态，身份/边全不动）
+- `ANCHOR-A01..A05`（D8）：`POST /api/canvas/anchor {doc}` → `{baseRevision, baseGraphDigest}` **单次观察**（一次 parse+lift 后同时取 digest 与 live revision，无二次读取窗口）；**永不编译/永不 capability-check**（环图草稿照样 FULL 锚定）；FULL（双锚）/PARTIAL（单锚）/UNANCHORED（无锚）三态语义
+- `PROP-DECL-A01`（D10）：EMPTY_GOAL 复现链——`buildProjectIr` 接受空 goal ⇒ 事件入账 ⇒ canonical replay `parseProjectIr` 抛 "goal: must not be empty" ⇒ **毒化账本**（比"校验缺诊断"更重的缺陷）；修复收敛在唯一校验器（`validateProjectProposal` +EMPTY_GOAL），build 侧保持宽松
+- D9 Web 完成：结构变更 100% 委托 `canvasMutate.ts` 镜像（9 助手与 kernel mutate.ts 一一对应）；`WEB-V3-A01` tripwire 扩展（9 个镜像导出钉住 + 禁内联删除过滤 + App 连线/归入走镜像）；补丁面锚状态三态 + ArchitectureBar generate 用 anchorCanvas 取 FULL 锚
+- 浏览器冒烟 6 场景全过（真实浏览器、UI 驱动，证据见 `audits/G9-D-SESSION-2-DELIVERY.md` 十六问 Q11）
+- 测试基线 58/370 → **58/384**（+14：6 CANVAS-MUT + 7 DIFF-ID describe + 1 PROP-DECL）；web tsc + vite build 绿
 
 ## 5. Invariants（规格钉死）
 
@@ -118,10 +132,21 @@ GRAPH-ID-INV-6  GraphPatch 同 patch remove+add 同 id 遵循显式裁决（已�
 EDGE-INV-1      CanvasDoc 只有一个边 authoring truth：edges[]
 EDGE-INV-2      IR↔Canvas 往返边 id 逐字存续
 EDGE-INV-3      reconnect 产生新逻辑边身份
-MUT-INV-1       first-party Canvas 变更永不产出 parser-invalid CanvasDoc（本会话先达"删除面"清理，中心化助手在 D6）
+MUT-INV-1       first-party Canvas 变更永不产出 parser-invalid CanvasDoc（D6 起由中心化 mutate 层唯一入口保证，web 走镜像委托）
 ANCHOR-INV-1    草稿新鲜度身份独立于 runtime 可执行性（digest 含边 id ⇒ v3 往返恒等后成立）
+ANCHOR-INV-2    anchor 端点＝单次观察且永不编译（环图/不可编译草稿照样给出 FULL 锚，D8）
 DIFF-INV-1      definition 身份在 draft/live 比对中优先于 title（D7 实现）
 ```
+
+**UAS 语义解释红线（指令 §3/§24/§30，UAS-D-INV-1..6，全程遵守）**。两条术语澄清（§24，纯解释、零改名零 schema）：**CanvasDoc v3 是当前 Work 手搓文档（current Work-authoring document）**——只含 task/subflow/annotation/data 边，不是未来 ArchitectureCanvas；**现行 definition_id 是 legacy 图节点所代表的当前 task/work 定义的稳定标识**（canvas node key → IR node id → TaskProposal.definitionId → TaskSpec.definition_id 全链一义）。六条不变量：
+- UAS-D-INV-1　现行 definitionId ≠ 未来 AgentDefinitionId（后者在 G10 获独立身份命名空间；REDLINE-1）
+- UAS-D-INV-2　CanvasDoc v3 ＝ WorkCanvas，不向 agent instructions/models/message/handoff edges/Organization/Holon/Channel/StateDefinition 演进（REDLINE-2）
+- UAS-D-INV-3　`/api/canvas/anchor` 只锚当前 Work 手搓图新鲜度；不发明 architectureRevision/architectureDigest/bindingRevision/runRevision（REDLINE-3）
+- UAS-D-INV-4　本 diff 是 Work 定义 diff，不是 SystemGraph/ArchitectureDefinition/AgentDefinition diff（REDLINE-4）
+- UAS-D-INV-5　Attempt 语义原样未动；Attempt vs Activation vs Invocation 留 G10-A0 审计（REDLINE-5）
+- UAS-D-INV-6　role/scopeId/definitionId/dependsOn 不被偷用作未来 Binding 语义；G9 无 Binding（REDLINE-6）
+
+本轮零新增 UAS schema（指令 §27）、零 AgentGraph→WorkGraph 改名（指令 §28：只正注释与规格术语，API 原样，正式改名/适配/退役策略留 G10-A0）。
 
 ## 6. 明确非目标（本轮不碰）
 
@@ -132,3 +157,4 @@ patch 位置/分组框保全与 moveScope 位置语义（G9-C/33 号）；Archit
 | 日期 | 修订 |
 |---|---|
 | 2026-09-08 | 初版冻结（PLMP-CANVAS-7，G9-D 会话 1＝D0–D5）：v3 单格式（edges[] 唯一边真相 + identity 单调家族 + dependsOn/node.g 退役）、显式 v2→v3 converter（节点 key 逐字保留红线）、IDENTITY_REUSE 同 patch 裁决、kind 变更方案 B、UNSUPPORTED_PARALLEL_DATA_EDGE capability 门、B3 relift bridge 退役（digest(patched) 恢复）、lift∘unload 严格全等、web 镜像 v3 适配＋tripwire；母体审计 P1–P10 机器实证先行；测试基线 57/354 → 58/370。 |
+| 2026-09-08 | 会话 2（D6–D10）交付，规格完成：中心化 mutation 层 `src/canvas/mutate.ts`（MUT-INV-1 唯一入口；subflow 删除一层提升、duplicate 排除外部边、reconnect＝删旧＋fresh、cycle guard）＋ web 全量镜像 `canvasMutate.ts`（结构变更零内联完整性逻辑，tripwire 扩展钉住）；identity-aware diff（definitionId 优先、title fallback 不串认领、changedFields 覆盖 §12 可代表字段含 suggestedSkills；gate 保持建议性不可 diff）；`POST /api/canvas/anchor`（单次观察、永不编译、FULL/PARTIAL/UNANCHORED）；EMPTY_GOAL 收敛修复（PROP-DECL-A01 毒化账本实证）；浏览器冒烟 6 场景全过；UAS-D-INV-1..6 语义解释红线全登记（Work 手搓文档澄清，零新增 UAS schema、零改名）；测试基线 58/370 → 58/384。交付报告＝`audits/G9-D-SESSION-2-DELIVERY.md`。 |

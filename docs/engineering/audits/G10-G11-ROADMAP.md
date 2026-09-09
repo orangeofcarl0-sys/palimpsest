@@ -10,15 +10,15 @@
 ## G9 收尾（G10 前置，顺序确认自审计 §F）
 
 ```text
-G9-D 会话 2（D6–D10）：mutation 助手 / identity-aware diff / anchor / 冒烟 / 交付报告   ← 当前位置
+G9-D 会话 2（D6–D10）：mutation 助手 / identity-aware diff / anchor / 冒烟 / 交付报告   ✅ 2026-09-08 完成（G9-D COMPLETE，报告＝G9-D-SESSION-2-DELIVERY.md）
         ↓
-G9-C（33 号）Canvas Presentation Preservation
+G9-C（33 号）Canvas Presentation Preservation   ← 当前位置
         ↓
 G9-F（35 号）Parser 纪律 + poll 快路径
         ↓
 G9-G（36 号）Playwright E2E
         ↓
-G10-A
+G10-A0（语义实体/身份/绑定审计——纯文档，见下注）→ G10-A
 ```
 
 **旧 G9-E（34 号，Executable ArchitectureBundle）＝ DEFERRED / SUPERSEDED**：其"架构声明必须包含执行治理"的洞见保留并移入 G10-A（AgentSystemDefinition 携带 OrchestrationPolicies/GovernancePolicies——执行治理随架构走，随 G10-A 验收）；其旧载体（Proposal+StageGraph+RoleTable 打包）因把 Architecture 继续绑死在 Project 拓扑（违 UA-INV-2）而不再按原样实现。fan_out 缺省并发等可执行性发现并入 G10-A/G10-C 验收。规格编号 34 释放给 G10 轨道（见下）。
@@ -26,6 +26,35 @@ G10-A
 ---
 
 ## G10 — Universal Agent Runtime（AGT-0 结构轴落地）
+
+### G10-A0 — Semantic Entity / Identity / Binding Audit（纯文档预检闸，G9-G 与 G10-A 之间，零代码零 schema；2026-09-08 登记）
+
+**性质**：documentation-only。G10-A0 必须逐一审计**但不实现**以下实体/身份/绑定问题，并以规格裁决收编（防既有标识符被未来语义"顺势接管"）：
+
+```text
+SystemGraph ≠ WorkGraph                       （架构资产图 vs 单次 Work 编排图，两个图种）
+CanvasDoc v3 ＝ Work authoring canvas          （32 号 §5 已澄清；G10 只确认不推翻）
+现行 definition_id ＝ Work/Task Definition 身份（REDLINE-UAS-D1；不是 AgentDefinitionId 预支）
+未来 AgentDefinitionId ＝ 全新独立身份          （独立命名空间/lineage，非字段加宽）
+ArchitectureDefinition ＝ 独立规范实体
+WorkDefinition ＝ 独立规范实体
+BindingDefinition / RunDefinition              （谁拥有 run 定义——不得散落 scheduler 内联量）
+TaskGraphWork ⊂ WorkDefinition                 （现行 AgentGraph≈TaskGraphWork，是 Work 定义的子形态）
+Attempt vs Activation                          （非一般父子；UAS-D-INV-5 冻结待审）
+Invocation / Participation 关系
+scoped orchestration：RuntimeScope → OrchestrationPolicyInstance
+ExecutionPlan ＝ 派生的运行时编译目标
+```
+
+**A0 还须裁决的六个开放问题（§26）**：
+- **A. Canvas 拆分**：未来是否 ArchitectureCanvas + WorkCanvas 双面（共享 renderer/layout/identity 基建、语义 schema 分离）？预期默认：是，除非 A0 找到更干净的等价物。
+- **B. 类型化 patch 目标**：SystemPatch / WorkPatch / BindingPatch 是否架在共享类型化 patch 引擎上（现行 GraphPatch 治理纪律作底座）？
+- **C. Invocation**：AgentActivation / Attempt / Invocation / Session 如何相交而不强造假父子关系？
+- **D. 动态 agent 生成**：是否需要 AgentTemplate → EphemeralAgentSpec → Activation 的晋升前通道（晋升进规范 AgentDefinition 的治理门，呼应 G10-D）？
+- **E. capability 词汇拆分**：Agent 能力（competence）/ 运行时语义特性（feature）/ 权限授予（authority grant）三分，不再一个词三用。
+- **F. 工具/模型提供方**：逻辑需求（web_search、model policy）与具体提供方（DSH / OpenAI hosted tool / MCP / local）经 Binding 分离。
+
+现行 `AgentGraph → WorkGraph` 的正式改名/适配/退役策略也由 A0 一并决定（32 号 §5：本轮只正术语，API 原样）。
 
 ### G10-A — Agent / Task / Assignment / Activation 分离（规格 34，PLMP-UAS-1）
 
@@ -84,7 +113,7 @@ G10-A
 ## 依赖与顺序总图
 
 ```text
-G9-D(余) → G9-C → G9-F → G9-G
+G9-D ✅ → G9-C → G9-F → G9-G → G10-A0（文档）
                      ↓
    G10-A ──→ G10-B ──→ G10-C ──→ G10-D ──→ G10-E ──→ G10-F
      │          │                     │

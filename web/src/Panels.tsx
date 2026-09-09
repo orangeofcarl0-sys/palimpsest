@@ -22,7 +22,14 @@ import {
   type ProjectProposal,
   type ProposalDiagnostic,
 } from "./types";
-import { allocateCanvasNodeId } from "./canvasV3";
+import {
+  canvasAddGroup,
+  canvasAddNode,
+  canvasRemoveEdge,
+  canvasRemoveGroup,
+  canvasRemoveNode,
+} from "./canvasMutate";
+import { anchorCanvas } from "./api";
 
 const PREDICATES = ["tests_pass", "process_exit_zero", "lint_pass", "tests_fail", "expected_files_exist", "write_scope_valid"];
 
@@ -303,21 +310,22 @@ export function CanvasEditor(props: {
     if (node?.task === undefined) return;
     patchNode(key, { task: { ...node.task, ...patch } });
   };
-  // PLMP-CANVAS-7 (32 号 §23): the renderer never invents definition
-  // identity - node creation allocates through the doc's monotonic family
-  // (mirror of the kernel allocator), so a deleted key can never resurface.
+  // PLMP-CANVAS-7 D6/D9: every structural mutation goes through the
+  // centralized mutation mirror (MUT-INV-1) - no inline integrity logic.
   const addNode = (type: CanvasNode["type"]): void => {
-    const allocated = allocateCanvasNodeId(doc);
-    const key = allocated.id;
-    const base = { key, x: 120 + (doc.nodes.length % 4) * 40, y: 80 + doc.nodes.length * 24, z: "root" };
-    const node: CanvasNode =
-      type === "task"
-        ? { ...base, type, title: `新任务 ${doc.nodes.filter((n) => n.type === "task").length + 1}`, task: {} }
-        : type === "subflow"
-          ? { ...base, type, title: `子图 ${doc.nodes.filter((n) => n.type === "subflow").length + 1}` }
-          : { ...base, type, title: "注记", text: "备注…" };
-    props.onDocChange({ ...allocated.doc, nodes: [...allocated.doc.nodes, node] });
-    props.onSelect(key);
+    try {
+      const title =
+        type === "task"
+          ? `新任务 ${doc.nodes.filter((n) => n.type === "task").length + 1}`
+          : type === "subflow"
+            ? `子图 ${doc.nodes.filter((n) => n.type === "subflow").length + 1}`
+            : "注记";
+      const added = canvasAddNode(doc, { type, title, ...(type === "annotation" ? { text: "备注…" } : {}) });
+      props.onDocChange(added.doc);
+      props.onSelect(added.id);
+    } catch (error) {
+      props.onMessage(`新增 ✕ ${error instanceof Error ? error.message : String(error)}`);
+    }
   };
 
   const compileAndShow = (): void => {
@@ -384,12 +392,13 @@ export function CanvasEditor(props: {
         <button
           style={button(false)}
           onClick={() => {
-            const id = `grp${doc.groups.length + 1}-${Date.now() % 1000}`;
-            props.onDocChange({
-              ...doc,
-              groups: [...doc.groups, { id, label: `分组 ${doc.groups.length + 1}`, members: [] }],
-            });
-            props.onSelect(id);
+            try {
+              const group = canvasAddGroup(doc, { label: `分组 ${doc.groups.length + 1}` });
+              props.onDocChange(group.doc);
+              props.onSelect(group.id);
+            } catch (error) {
+              props.onMessage(`建组 ✕ ${error instanceof Error ? error.message : String(error)}`);
+            }
           }}
         >
           ＋分组
@@ -459,16 +468,9 @@ export function CanvasEditor(props: {
           <button
             style={button(false)}
             onClick={() => {
-              // PLMP-CANVAS-7: deleting a group reparents nested child
-              // groups to the top level, so no dangling `g` reference is
-              // left behind and the result still parses.
-              const gid = selectedGroup.id;
-              props.onDocChange({
-                ...doc,
-                groups: doc.groups
-                  .filter((group) => group.id !== gid)
-                  .map((group) => (group.g === gid ? { ...group, g: undefined } : group)),
-              });
+              // PLMP-CANVAS-7 D6: nested child groups lift to the top level
+              // inside the helper - no dangling `g` reference remains.
+              props.onDocChange(canvasRemoveGroup(doc, selectedGroup.id));
               props.onSelect(null);
             }}
           >
@@ -574,9 +576,7 @@ export function CanvasEditor(props: {
                       ← {titleByKey.get(edge.source) ?? edge.source}
                       <button
                         style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", marginLeft: 4 }}
-                        onClick={() =>
-                          props.onDocChange({ ...doc, edges: doc.edges.filter((entry) => entry.id !== edge.id) })
-                        }
+                        onClick={() => props.onDocChange(canvasRemoveEdge(doc, edge.id))}
                       >
                         ×
                       </button>
@@ -588,26 +588,18 @@ export function CanvasEditor(props: {
           <button
             style={button(false)}
             onClick={() => {
-              const key = selected.key;
-              // PLMP-CANVAS-7: identity-preserving cleanup - incident edges
-              // and group membership go with the node, so the result still
-              // parses (MUT discipline; the central kernel mutation API
-              // lands in D6).
-              const nodes =
-                selected.type === "subflow"
-                  ? doc.nodes
-                      .filter((node) => node.key !== key)
-                      .map((node) => (node.z === key ? { ...node, z: "root" } : node))
-                  : doc.nodes.filter((node) => node.key !== key);
-              const edges = doc.edges.filter((edge) => edge.source !== key && edge.target !== key);
-              const groups = doc.groups.map((group) =>
-                group.members.includes(key) ? { ...group, members: group.members.filter((m) => m !== key) } : group,
-              );
-              props.onDocChange({ ...doc, nodes, edges, groups });
-              props.onSelect(null);
+              try {
+                // PLMP-CANVAS-7 D6: the one mutation truth - incident edges,
+                // membership and the one-level child lift are the helper's
+                // job, not the component's.
+                props.onDocChange(canvasRemoveNode(doc, selected.key));
+                props.onSelect(null);
+              } catch (error) {
+                props.onMessage(`删除 ✕ ${error instanceof Error ? error.message : String(error)}`);
+              }
             }}
           >
-            {selected.type === "subflow" ? "删除子图（成员回到根层）" : "删除此节点"}
+            {selected.type === "subflow" ? "删除子图（成员回到上一层）" : "删除此节点"}
           </button>
         </div>
       )}
@@ -646,12 +638,15 @@ export function CanvasEditor(props: {
                       baseGraphDigest?: unknown;
                       baseRevision?: unknown;
                     };
-                    const parts: string[] = [];
-                    if (typeof parsed.baseRevision === "number") parts.push("baseRevision");
-                    if (typeof parsed.baseGraphDigest === "string") parts.push("baseGraphDigest");
-                    return parts.length === 0
-                      ? "未锚定——丢失更新保护不生效（协议允许，但生成时应携带锚）"
-                      : `已锚定（${parts.join(" + ")}）`;
+                    const hasDigest = typeof parsed.baseGraphDigest === "string";
+                    const hasRevision = typeof parsed.baseRevision === "number";
+                    // PLMP-CANVAS-7 D8 §13: FULL / PARTIAL / UNANCHORED -
+                    // a single anchor is PARTIAL, never "anchored".
+                    if (hasDigest && hasRevision) return "FULL（baseRevision + baseGraphDigest）";
+                    if (hasDigest || hasRevision) {
+                      return `PARTIAL（仅 ${hasDigest ? "baseGraphDigest" : "baseRevision"}——更新保护不完整）`;
+                    }
+                    return "UNANCHORED 未锚定——丢失更新保护不生效（协议允许，但生成时应全锚）";
                   } catch {
                     return "JSON 未完成";
                   }
@@ -766,8 +761,6 @@ export function ArchitectureBar(props: {
   goal: string;
   presets: PresetMeta[];
   doc: CanvasDoc;
-  /** PLMP-GRAPH-5 §B3-B: the live canonical revision, for the freshness anchor. */
-  revision: number;
   onMessage(message: string): void;
   onDocChange(doc: CanvasDoc): void;
   onHandcraft(): void;
@@ -794,21 +787,22 @@ export function ArchitectureBar(props: {
       }
     })();
   };
-  // PLMP-GRAPH-5 §B3-B: the copied instruction carries the REAL anchors of
-  // the draft the architect will edit against - computed at generation time
-  // from the current doc, never injected later at review time.
+  // PLMP-CANVAS-7 D8: the copied instruction carries a FULL anchor of the
+  // draft the architect will edit against - revision + digest from ONE
+  // /api/canvas/anchor observation, computed at generation time, never
+  // injected later at review time. Runtime-invalid drafts still anchor.
   const generate = (): void => {
     void (async () => {
       let anchorLines: string;
       try {
-        const compiled = await compileCanvas(props.doc);
+        const anchor = await anchorCanvas(props.doc);
         anchorLines = [
-          `当前画布草稿的锚（生成 patch 时必须原样携带，二者缺一即拒绝）：`,
-          `"baseRevision": ${props.revision},`,
-          `"baseGraphDigest": "${compiled.graphDigest}"`,
+          `当前画布草稿的锚（FULL：生成 patch 时必须原样携带，二者缺一即拒绝）：`,
+          `"baseRevision": ${anchor.baseRevision},`,
+          `"baseGraphDigest": "${anchor.baseGraphDigest}"`,
         ].join("\n");
       } catch (error) {
-        anchorLines = `当前草稿无法编译取锚（${error instanceof Error ? error.message : String(error)}）——请让用户先修正草稿，或产出未锚定 patch（丢失更新保护不生效）。`;
+        anchorLines = `当前草稿无法取锚（${error instanceof Error ? error.message : String(error)}）——请让用户先修正草稿，或产出未锚定 patch（丢失更新保护不生效）。`;
       }
       const instruction = `用 palimpsest-architect 为以下目标生成架构提案：「${props.goal}」。产出提案 JSON 后先用 architect 命令校验（空诊断才可声明）；若要修改当前画布草稿，产出 GraphPatch JSON（七个操作数组齐全，样式同 EMPTY_PATCH）并携带当前锚：\n${anchorLines}\n把 patch JSON 交我在画布 GraphPatch 面预览应用。`;
       void navigator.clipboard?.writeText(instruction).catch(() => undefined);

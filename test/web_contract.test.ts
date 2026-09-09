@@ -45,15 +45,21 @@ describe("web mirror contract (WEB-FRESH-A01/A02, WEB-CONTRACT-A01)", () => {
     expect(types).toMatch(/"contract_breaking"/);
   });
 
-  it("WEB-FRESH-A02: the architect instruction embeds generation-time anchors", () => {
+  it("WEB-FRESH-A02: the architect instruction embeds a FULL generation-time anchor", () => {
     const panels = read("Panels.tsx");
-    // The instruction is built from a fresh compile of the current draft.
+    // D8: the anchors come from ONE /api/canvas/anchor observation
+    // (revision + digest, atomic), never from a client-side revision poll
+    // plus a separate compile call.
+    expect(panels).toMatch(/anchorCanvas\(props\.doc\)/);
     expect(panels).toMatch(/baseGraphDigest/);
     expect(panels).toMatch(/baseRevision/);
-    expect(panels).toMatch(/compileCanvas\(props\.doc\)/);
     // Review-time never injects the digest silently - the patch face shows
-    // the anchor state of the SUBMITTED JSON instead.
+    // the anchor state of the SUBMITTED JSON, tri-state (a single anchor is
+    // PARTIAL, never "anchored").
     expect(panels).toMatch(/锚状态/);
+    expect(panels).toMatch(/FULL/);
+    expect(panels).toMatch(/PARTIAL/);
+    expect(panels).toMatch(/UNANCHORED/);
     expect(panels).toMatch(/未锚定/);
   });
 
@@ -81,15 +87,32 @@ describe("web mirror contract (WEB-FRESH-A01/A02, WEB-CONTRACT-A01)", () => {
     expect(integrity).toMatch(/version !== 3/);
     expect(integrity).toMatch(/identity\.namespace/);
     expect(integrity).toMatch(/引用未知成员/);
-    // Node deletion cleans incident edges + membership (no parser-invalid
-    // docs from first-party mutations).
+    // D6/D9: the centralized mutation mirror is THE web mutation truth -
+    // components delegate; no inline integrity logic may remain.
+    const mutate = read("canvasMutate.ts");
+    for (const fn of [
+      "canvasAddNode",
+      "canvasRemoveNode",
+      "canvasDuplicateNode",
+      "canvasAddEdge",
+      "canvasRemoveEdge",
+      "canvasReconnectEdge",
+      "canvasMoveNodeScope",
+      "canvasAddGroup",
+      "canvasRemoveGroup",
+    ]) {
+      expect(mutate).toMatch(new RegExp(`export function ${fn}`));
+    }
+    expect(mutate).toMatch(/one-level lift/);
     const panels = read("Panels.tsx");
     expect(panels).not.toMatch(/genKey/);
-    expect(panels).toMatch(/edges\.filter\(\(edge\) => edge\.source !== key && edge\.target !== key\)/);
-    // Connections append fresh edge records.
+    expect(panels).not.toMatch(/edges\.filter\(\(edge\) => edge\.source !== key && edge\.target !== key\)/);
+    expect(panels).toMatch(/canvasRemoveNode\(doc, selected\.key\)/);
+    // Connections ride the mirror too.
     const app = read("App.tsx");
     expect(app).toMatch(/upgradeCanvasV2ToV3/);
-    expect(app).toMatch(/allocateCanvasEdgeId/);
+    expect(app).toMatch(/canvasAddEdge\(doc, \{ source: fromKey, target: toKey \}\)/);
+    expect(app).toMatch(/canvasMoveNodeScope\(doc, key, ownerKey \?\? "root"\)/);
     expect(app).toMatch(/画布草稿已从 v2 升级到 v3/);
   });
 });

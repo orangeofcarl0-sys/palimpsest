@@ -2,7 +2,7 @@
 
 - 日期：2026-09-07
 - 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）、G9-B2（31 号闭合修订，`1a8d688`）与 **G9-B3（31 号跨层闭合修订；母体＝`G9-B3-CROSS-LAYER-ASSESSMENT.md`、交付报告＝`G9-B3-DELIVERY-REPORT.md`）** 退出门均已通过；测试基线 57 文件 / 354 项全绿。
-- **架构 rebase（2026-09-09，Universal Agent Semantics）**：PLMP-UAS-0 宪章与 `G10-G11-ROADMAP.md` 已冻结。剩余顺序重排为 **D(余)→C→F→G → G10-A**；**旧 G9-E（Executable ArchitectureBundle）SUPERSEDED——不再按原样实现**（其"架构声明必须包含执行治理"的洞见移入 G10-A 验收：执行治理随 AgentSystemDefinition 声明；其旧载体把 Architecture 继续绑死在 Project 拓扑，违 UA-INV-2）。规格 34 释放给 G10-A。
+- **架构 rebase（2026-09-09，Universal Agent Semantics）**：PLMP-UAS-0 宪章与 `G10-G11-ROADMAP.md` 已冻结。剩余顺序重排为 **D(余)→C→F→G → G10-A**；**旧 G9-E（Executable ArchitectureBundle）SUPERSEDED——不再按原样实现**（其"架构声明必须包含执行治理"的洞见移入 G10-A 验收：执行治理随 AgentSystemDefinition 声明；其旧载体把 Architecture 继续绑死在 Project 拓扑，违 UA-INV-2）。规格 34 释放给 G10-A。**（2026-09-08 更新：D(余)＝会话 2 已交付，G9-D COMPLETE，当前位置＝G9-C。）**
 - **批次顺序更新（G9-B3 §27 裁决；其 E 位由上条 superseded）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
 - **G9-E 新增设计前置（G9-B3 §18/§19）**：ArchitectureRevision 必须是**原子治理动作**——`plan(topology)` + `declareStageGraph` + `declareRoleTable` 三次独立 durable append 之间存在崩溃窗口，会产生"新拓扑 + 旧执行治理"的半个修订。G9-E 开工前必须比较至少三案（A 单一复合事件 ARCHITECTURE_REVISED / B pending→activate 协议 / C EventStore 原子事件批）并裁决；本轮不实现 multi-event transaction（触及事件序/哈希链/幂等/游标/fault injection/replay，需独立设计）。
 - **编号与顺序纠偏（G9-D §42，2026-09-08）**：执行顺序 D→C→E→F→G 对应规格 **32＝G9-D（PLMP-CANVAS-7）**、**33＝G9-C（PLMP-CANVAS-8）**、34＝G9-E、35＝G9-F、36＝G9-G；原计划的 32＝C/33＝D 编号错位已在交付时纠正，无冲突覆盖（交付时 32 空闲）。
@@ -27,13 +27,15 @@
 
 ---
 
-## G9-D — CanvasDoc v3 / 稳定图身份生命周期（规格 32，PLMP-CANVAS-7）✅ 会话 1 已交付（2026-09-08）
+## G9-D — CanvasDoc v3 / 稳定图身份生命周期（规格 32，PLMP-CANVAS-7）✅ **COMPLETE——会话 2（D6–D10）已交付（2026-09-08）**
 
 **问题**（审计 F-F）：边身份在 IR↔Canvas 往返中丢失（`pe7 → dependsOn → e1`）；GraphPatch 已支持 `removeEdges/updateEdges(id)` 而 canvas 无从保边 id；G9-B 的表达门只能做语义投影等价（31 号登记差异）。
 
 **优先级升级（G9-B3 §27）**：本批次从"未来功能增强"升级为**新鲜度正确性依赖**——语义 digest 含边 id 而 v2 往返再生边 id；排在 G9-C 之前。
 
-**已交付（会话 1＝D0–D5，规格 32；母体＝`G9-D-STABLE-GRAPH-IDENTITY-ASSESSMENT.md`）**：正式名称与范围升级为 Stable Graph Identity＝Node Identity + Edge Identity + Identity Lifecycle + Mutation Integrity；v3 单格式（edges[] 唯一边真相 + identity 单调家族）、显式 converter（节点 key 逐字保留红线）、IDENTITY_REUSE、kind 变更方案 B、UNSUPPORTED_PARALLEL_DATA_EDGE、B3 relift bridge 退役、lift∘unload 严格全等、web 镜像 v3；测试基线 57/354 → 58/370。**会话 2（D6–D10）**：中心化 mutation 助手（MUT-INV-1 + CANVAS-MUT-A01..A03 + reconnect 操作面）、identity-aware diff（DIFF-ID-A01..A03 + changed fields +title）、`/api/canvas/anchor`（ANCHOR-A01..A04 + Full/Partial/Unanchored 三态）、Web 全面接线 + 浏览器冒烟、PROP-DECL-A01（EMPTY_GOAL）、交付报告（母体 §54 十五问）。
+**已交付（会话 1＝D0–D5，规格 32；母体＝`G9-D-STABLE-GRAPH-IDENTITY-ASSESSMENT.md`）**：正式名称与范围升级为 Stable Graph Identity＝Node Identity + Edge Identity + Identity Lifecycle + Mutation Integrity；v3 单格式（edges[] 唯一边真相 + identity 单调家族）、显式 converter（节点 key 逐字保留红线）、IDENTITY_REUSE、kind 变更方案 B、UNSUPPORTED_PARALLEL_DATA_EDGE、B3 relift bridge 退役、lift∘unload 严格全等、web 镜像 v3；测试基线 57/354 → 58/370。
+
+**已交付（会话 2＝D6–D10；交付报告＝`G9-D-SESSION-2-DELIVERY.md` 十六问）**：中心化 mutation 层 `src/canvas/mutate.ts`（MUT-INV-1 唯一入口＋web 全量镜像 `canvasMutate.ts`，结构变更零内联完整性逻辑）、identity-aware diff（definitionId 优先、title fallback 不串认领、changedFields 覆盖 §12 可代表字段含 suggestedSkills；gate 保持建议性不可 diff）、`/api/canvas/anchor`（单次观察、永不编译、FULL/PARTIAL/UNANCHORED）、EMPTY_GOAL 收敛修复（账本毒化实证）、浏览器冒烟 6 场景全过、UAS-D-INV-1..6 语义解释红线登记（Work 手搓文档澄清）、测试基线 58/370 → **58/384**。**下一批次＝G9-C（33 号）。**
 
 **设计裁决（开工前先审计再定）**：
 

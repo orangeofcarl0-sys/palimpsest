@@ -38,6 +38,12 @@ export interface GraphTask {
   /** PLMP-GRAPH-4 (30 号规格): the stable definition identity (AgentGraph
    * node id) this task was compiled from; absent on spec-first projects. */
   readonly definitionId?: string;
+  /** PLMP-CANVAS-7 D7 (32 号 §12): skill hints are declared Work-definition
+   * payload, so the diff needs them on the live side too. Additive optional
+   * (SDS-4): absent on legacy specs, digest byte-identical. Proposal gateId
+   * stays advisory (20 号) - it never enters TaskSpec, so there is no live
+   * gate field to diff. */
+  readonly suggestedSkills?: readonly string[];
   /** PLMP-DEBUG-1 + 30 号规格: task-level breakpoint state; absent means not
    * held. "stale" = the hold was set on an earlier plan revision - it no
    * longer gates, but it is still surfaced until explicitly cleared. */
@@ -305,6 +311,7 @@ export function buildOrchestrationGraph(input: OrchestrationGraphInput): Orchest
       dependsOn: spec.depends_on,
       writePaths: spec.write_paths,
       requiredArtifacts: spec.required_artifacts,
+      ...(spec.suggested_skills === undefined ? {} : { suggestedSkills: spec.suggested_skills }),
       attempts: attemptsByTask.get(spec.task_id) ?? [],
     };
   });

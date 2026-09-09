@@ -16,6 +16,7 @@ import {
   allocateCanvasEdgeId,
   allocateCanvasNodeId,
   canvasCompile,
+  canvasDiff,
   canvasInsertFragment,
   canvasRoundTripDiff,
   emptyCanvasDoc,
@@ -23,6 +24,7 @@ import {
   parseCanvasDoc,
   unloadToCanvasDoc,
   type CanvasDoc,
+  type LiveTaskView,
 } from "../src/canvas/index.js";
 import {
   agentGraphSemanticDigest,
@@ -36,7 +38,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
-import type { ProjectProposal } from "../src/architecture/index.js";
+import type { ProjectProposal, TaskProposal } from "../src/architecture/index.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
@@ -367,6 +369,187 @@ describe("EDGE-H03: removeEdges/updateEdges through the canvas endpoint on stabl
       void returnedGraph;
       const patched = applyGraphPatch(liftToAgentGraph(doc), { ...EMPTY_PATCH, removeEdges: ["e:draft:1"] });
       expect(removed.json.graphDigest).toBe(agentGraphSemanticDigest(patched));
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-7 (32 号, G9-D D7): identity-aware draft/live diff.
+// DIFF-INV-1: current work-definition identity dominates title.
+// UAS-D-INV-3: this is a Work-definition diff, not a future SystemGraph diff.
+// ---------------------------------------------------------------------------
+
+describe("identity-aware draft/live diff (PLMP-CANVAS-7 D7)", () => {
+  const draft = (title: string, definitionId: string, extra: Partial<TaskProposal> = {}): TaskProposal => ({
+    title,
+    dependsOn: [],
+    definitionId,
+    ...extra,
+  });
+  const live = (objective: string, definitionId?: string, extra: Partial<LiveTaskView> = {}): LiveTaskView => ({
+    objective,
+    dependsOn: [],
+    writePaths: [],
+    requiredArtifacts: [],
+    ...(definitionId === undefined ? {} : { definitionId }),
+    ...extra,
+  });
+
+  it("DIFF-ID-A01: same definition id + renamed title is changed(title), never remove+add", () => {
+    const result = canvasDiff([draft("Investigation", "n17")], [live("Research", "n17")]);
+    expect(result.added).toEqual([]);
+    expect(result.removed).toEqual([]);
+    expect(result.changed).toEqual([{ title: "Investigation", fields: ["title"] }]);
+  });
+
+  it("DIFF-ID-A02: same title + different definition id is remove + add, never unchanged", () => {
+    const result = canvasDiff([draft("Research", "n42")], [live("Research", "n17")]);
+    expect(result.added).toEqual([{ title: "Research" }]);
+    expect(result.removed).toEqual([{ title: "Research" }]);
+    expect(result.changed).toEqual([]);
+  });
+
+  it("DIFF-ID-A03: legacy live without ids uses the documented title fallback only", () => {
+    // Spec-first live project (no definition_id): title matching is the only
+    // available identity - explicit fallback, no silent mixing.
+    const result = canvasDiff([draft("Research", "n17")], [live("Research")]);
+    expect(result).toEqual({ added: [], removed: [], changed: [] });
+    const drifted = canvasDiff([draft("Research", "n17", { role: "scout" })], [live("Research")]);
+    expect(drifted.changed).toEqual([{ title: "Research", fields: ["role"] }]);
+    // Hand-written draft without ids against an identity-carrying live side:
+    // the pair falls back to title matching too (identity unavailable on the
+    // draft side), while identity tasks still match by id.
+    const mixed = canvasDiff([draft("调研", "n1"), { title: "手写", dependsOn: [] }], [
+      live("调研", "n1"),
+      live("手写", "n2"),
+    ]);
+    expect(mixed.added).toEqual([]);
+    expect(mixed.removed).toEqual([]);
+  });
+
+  it("DIFF-ID-A04: scope move with the same identity is changed(scope), not remove/add", () => {
+    const result = canvasDiff(
+      [draft("M", "m", { scopeId: "s1" })],
+      [live("M", "m")],
+    );
+    expect(result.added).toEqual([]);
+    expect(result.removed).toEqual([]);
+    expect(result.changed).toEqual([{ title: "M", fields: ["scope"] }]);
+    // Absent on both sides means equal.
+    const same = canvasDiff([draft("M", "m")], [live("M", "m")]);
+    expect(same.changed).toEqual([]);
+  });
+
+  it("DIFF-ID-A05: pure layout move yields no semantic diff (ids and edges stable)", () => {
+    const doc = parseCanvasDoc(docOf({ ...task("n1", "A") }, { ...task("n2", "B", ["n1"]) }));
+    const baseline = canvasCompile(doc);
+    const moved: CanvasDoc = {
+      ...doc,
+      nodes: doc.nodes.map((node, index) => ({ ...node, x: 40 + 300 * index, y: 90 + 55 * index })),
+    };
+    const after = canvasCompile(moved);
+    // Positions are visual-only: the compiled Work definitions (ids included)
+    // are equal, and the diff of the moved draft against the baseline-as-live
+    // is empty.
+    expect(after).toEqual(baseline);
+    const liveView: LiveTaskView[] = baseline.tasks.map((t) => ({
+      objective: t.title,
+      dependsOn: t.dependsOn,
+      writePaths: t.writePaths ?? [],
+      requiredArtifacts: t.requiredArtifacts ?? [],
+      ...(t.definitionId === undefined ? {} : { definitionId: t.definitionId }),
+      ...(t.scopeId === undefined ? {} : { scopeId: t.scopeId }),
+    }));
+    expect(canvasDiff(after.tasks, liveView)).toEqual({ added: [], removed: [], changed: [] });
+  });
+
+  it("DIFF-ID-A06: declared skill hints are a diffable Work field (gate stays advisory)", () => {
+    // suggested_skills rides TaskSpec (E2) - set comparison, order-insensitive.
+    const sameSet = canvasDiff(
+      [draft("R", "n17", { suggestedSkills: ["web", "sql"] })],
+      [live("R", "n17", { suggestedSkills: ["sql", "web"] })],
+    );
+    expect(sameSet.changed).toEqual([]);
+    const drifted = canvasDiff(
+      [draft("R", "n17", { suggestedSkills: ["web", "sql"] })],
+      [live("R", "n17", { suggestedSkills: ["web"] })],
+    );
+    expect(drifted.changed).toEqual([{ title: "R", fields: ["suggestedSkills"] }]);
+    // gateId is advisory (20 号: gates keep their single declareGate path and
+    // never enter TaskSpec) - deliberately NOT a diff field.
+    const gateOnly = canvasDiff(
+      [draft("R", "n17", { gateId: "g1" })],
+      [live("R", "n17")],
+    );
+    expect(gateOnly.changed).toEqual([]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-7 (32 号, G9-D D8): the compile-independent Work-authoring
+// anchor. ANCHOR-INV-1 + UAS-D-INV-2: authoring freshness is independent of
+// runtime capability; this anchors the current Work graph, not a future
+// architecture anchor.
+// ---------------------------------------------------------------------------
+
+describe("compile-independent anchor endpoint (PLMP-CANVAS-7 D8)", () => {
+  it("ANCHOR-A01..A05: parse+lift+digest+revision only - cycles anchor fine, layout-stable, read-only", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const before = (rig.store.connection.prepare("SELECT COUNT(*) AS c FROM events").get() as { c: number }).c;
+      const call = async (path: string, body: unknown, token?: string): Promise<{ status: number; json: Record<string, unknown> }> => {
+        const response = await fetch(`${handle.url}${path}`, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${token ?? handle.token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+        return { status: response.status, json: (await response.json()) as Record<string, unknown> };
+      };
+      // ANCHOR-A01: a data cycle is authoring-valid, runtime-invalid - the
+      // anchor must succeed where compile refuses.
+      const cyclic = docOf(
+        { ...task("n1", "A", ["n2"]) },
+        { ...task("n2", "B", ["n1"]) },
+      );
+      const anchored = await call("/api/canvas/anchor", { doc: cyclic });
+      expect(anchored.status).toBe(200);
+      const compileAttempt = await call("/api/canvas/compile", { doc: cyclic });
+      expect(compileAttempt.status).toBe(400);
+      // ANCHOR-A02: one response, one observation - both anchors present.
+      expect(typeof anchored.json.baseRevision).toBe("number");
+      expect(typeof anchored.json.baseGraphDigest).toBe("string");
+      expect((anchored.json.baseGraphDigest as string)).toMatch(/^[0-9a-f]{64}$/);
+      // ANCHOR-A03: pure layout movement keeps the digest.
+      const moved = {
+        ...cyclic,
+        nodes: cyclic.nodes.map((node, index) => ({ ...node, x: node.x + 500 * (index + 1), y: node.y - 77 })),
+      };
+      const reAnchored = await call("/api/canvas/anchor", { doc: moved });
+      expect(reAnchored.json.baseGraphDigest).toBe(anchored.json.baseGraphDigest);
+      // ANCHOR-A04: a semantic change (rewiring an edge) moves the digest.
+      const rewired = {
+        ...cyclic,
+        edges: [
+          { id: "e:draft:1", source: "n1", target: "n2", kind: "data" as const },
+          { id: "e:draft:2", source: "n1", target: "n2", kind: "data" as const },
+        ],
+      };
+      const changedAnchor = await call("/api/canvas/anchor", { doc: rewired });
+      expect(changedAnchor.json.baseGraphDigest).not.toBe(anchored.json.baseGraphDigest);
+      // ANCHOR-A05: read-only - no events appended; token-gated like the
+      // other canvas faces.
+      const after = (rig.store.connection.prepare("SELECT COUNT(*) AS c FROM events").get() as { c: number }).c;
+      expect(after).toBe(before);
+      const unauthed = await call("/api/canvas/anchor", { doc: cyclic }, "");
+      expect(unauthed.status).toBe(401);
     } finally {
       await handle.close();
       await rig.cleanup();

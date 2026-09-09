@@ -79,6 +79,14 @@ export const presetDraft = (
 
 /** PLMP-CANVAS: pure derivations over the canvas doc - zero server-side state. */
 
+/** PLMP-CANVAS-7 D8: the compile-independent Work-authoring anchor - one
+ * server observation returns BOTH anchors (revision + digest); runtime-
+ * invalid graphs still anchor (the endpoint never compiles). */
+export const anchorCanvas = (
+  doc: CanvasDoc,
+): Promise<{ baseRevision: number; baseGraphDigest: string }> =>
+  call("/api/canvas/anchor", { method: "POST", body: JSON.stringify({ doc }) });
+
 export const compileCanvas = (
   doc: CanvasDoc,
   goal?: string,

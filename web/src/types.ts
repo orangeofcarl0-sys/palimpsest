@@ -20,6 +20,9 @@ export interface GraphTask {
   scopeId?: string;
   /** PLMP-GRAPH-4: the stable definition identity (AgentGraph node id). */
   definitionId?: string;
+  /** PLMP-CANVAS-7 D7 (32 号 §12): skill hints are declared Work payload.
+   * Proposal gateId stays advisory (20 号) - no live gate field exists. */
+  suggestedSkills?: string[];
   /** PLMP-DEBUG-1 + 30: "stale" = hold anchored to an earlier plan revision. */
   held?: "active" | "stale";
   attempts: GraphAttempt[];
