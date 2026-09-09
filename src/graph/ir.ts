@@ -10,6 +10,12 @@
  *
  * Compound containment rides the same discipline as the canvas `z` chain:
  * a scope owner must be a subgraph, chains are self-free and acyclic.
+ *
+ * PLMP-UAS-0: the `agent` node kind is today a TASK-BEARING node (the
+ * AgentDefinition / TaskDefinition split is frozen for G10-A) - agent-side
+ * semantics (instructions/model policy/tools/memory/context policy) have no
+ * fields yet, and the task payload fields on an agent node belong to the
+ * task definition side of that split.
  */
 
 import type { ProjectProposal, TaskProposal } from "../architecture/index.js";

@@ -103,6 +103,9 @@ describe("preset library (PLMP-ARCH-3)", () => {
     for (const preset of PRESETS) {
       expect(preset.label.trim()).not.toBe("");
       expect(preset.lineage.trim()).not.toBe("");
+      // PLMP-UAS-0 UA-INV-8/9: every preset is honestly labeled a topology
+      // prototype (approximate fidelity), never native equivalence.
+      expect(preset.fidelity).toBe("topology_prototype");
       expect(preset.paramSpec.length).toBeGreaterThan(0);
       const proposal = preset.build({});
       expect(proposal.goal).toBe("新目标");

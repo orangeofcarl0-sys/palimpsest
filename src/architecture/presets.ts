@@ -25,6 +25,10 @@ export interface PresetMeta {
   readonly lineage: string;
   readonly description: string;
   readonly paramSpec: readonly PresetParamField[];
+  /** PLMP-UAS-0 (UA-INV-8/9): presets are topology prototypes, not native
+   * behavioral equivalents - the fidelity label is machine-checkable so
+   * "looks like architecture X" can never be presented as "reproduces X". */
+  readonly fidelity: "topology_prototype";
 }
 
 type Params = Record<string, unknown>;
@@ -242,6 +246,7 @@ export interface PresetEntry extends PresetMeta {
 export const PRESETS: readonly PresetEntry[] = [
   {
     id: "pipeline",
+    fidelity: "topology_prototype",
     label: "流水线",
     lineage: "18 号规格 ARCH-1（首批预设）",
     description: "阶段线性链：每阶段依赖上一阶段，机械推进友好。",
@@ -252,6 +257,7 @@ export const PRESETS: readonly PresetEntry[] = [
   },
   {
     id: "fan_out",
+    fidelity: "topology_prototype",
     label: "扇出-汇聚（Grok Bot·Anthropic 深研式）",
     lineage: "Grok 类型化后台子代理 + Anthropic orchestrator-worker（+90.2% 实证）；worker 并行独立上下文，综合收敛",
     description: "N 个并行调研者扇出，一个综合者汇聚全部产出。",
@@ -263,6 +269,7 @@ export const PRESETS: readonly PresetEntry[] = [
   },
   {
     id: "hierarchy",
+    fidelity: "topology_prototype",
     label: "角色层级（Kimi Swarm 写作式）",
     lineage: "Kimi Swarm 层级写作模式：manager→调研/撰写/编辑；映射为三段角色链",
     description: "调研喂撰写、撰写喂编辑的层级分工链。",
@@ -275,6 +282,7 @@ export const PRESETS: readonly PresetEntry[] = [
   },
   {
     id: "panel",
+    fidelity: "topology_prototype",
     label: "专家团（grok-expert 同题多解式）",
     lineage: "grok-expert 聊天室协议：同模型同题并行、leader 合成（非投票共识——调研 §1.3 已澄清）",
     description: "N 个候选同题并行作答，一个合成评审汇聚定稿。",
@@ -286,6 +294,7 @@ export const PRESETS: readonly PresetEntry[] = [
   },
   {
     id: "verified_dag",
+    fidelity: "topology_prototype",
     label: "验证图（Danus 逐单元门禁式）",
     lineage: "Danus 事实图：每单元验证后才被依赖、verifier 只读终审；预设只给拓扑与门禁建议，验证语义走既有 gate 通道",
     description: "知识/工程单元按依赖成图，逐单元可挂门禁，终审收口。",
@@ -297,6 +306,7 @@ export const PRESETS: readonly PresetEntry[] = [
   },
   {
     id: "research_loop",
+    fidelity: "topology_prototype",
     label: "研究回路（Magentic ledger 式）",
     lineage: "Magentic TaskLedger/ProgressLedger：计划→结构化核验→不过走计划修订；回路边在核验 FAIL 后由主代理 plan 修订（架构调整即计划修订）",
     description: "先计划再并行取证，核验门收口后才综合。",

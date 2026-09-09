@@ -67,6 +67,9 @@ export interface PresetMeta {
   lineage: string;
   description: string;
   paramSpec: PresetParamField[];
+  /** PLMP-UAS-0: presets are topology prototypes (approximate), never
+   * presented as native behavioral equivalents. */
+  fidelity?: "topology_prototype";
 }
 
 export type ChangeClass = "metadata_only" | "backward_compatible" | "behavior_change" | "contract_breaking";

@@ -2,7 +2,8 @@
 
 - 日期：2026-09-07
 - 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）、G9-B2（31 号闭合修订，`1a8d688`）与 **G9-B3（31 号跨层闭合修订；母体＝`G9-B3-CROSS-LAYER-ASSESSMENT.md`、交付报告＝`G9-B3-DELIVERY-REPORT.md`）** 退出门均已通过；测试基线 57 文件 / 354 项全绿。
-- **批次顺序更新（G9-B3 §27 裁决）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
+- **架构 rebase（2026-09-09，Universal Agent Semantics）**：PLMP-UAS-0 宪章与 `G10-G11-ROADMAP.md` 已冻结。剩余顺序重排为 **D(余)→C→F→G → G10-A**；**旧 G9-E（Executable ArchitectureBundle）SUPERSEDED——不再按原样实现**（其"架构声明必须包含执行治理"的洞见移入 G10-A 验收：执行治理随 AgentSystemDefinition 声明；其旧载体把 Architecture 继续绑死在 Project 拓扑，违 UA-INV-2）。规格 34 释放给 G10-A。
+- **批次顺序更新（G9-B3 §27 裁决；其 E 位由上条 superseded）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
 - **G9-E 新增设计前置（G9-B3 §18/§19）**：ArchitectureRevision 必须是**原子治理动作**——`plan(topology)` + `declareStageGraph` + `declareRoleTable` 三次独立 durable append 之间存在崩溃窗口，会产生"新拓扑 + 旧执行治理"的半个修订。G9-E 开工前必须比较至少三案（A 单一复合事件 ARCHITECTURE_REVISED / B pending→activate 协议 / C EventStore 原子事件批）并裁决；本轮不实现 multi-event transaction（触及事件序/哈希链/幂等/游标/fault injection/replay，需独立设计）。
 - **编号与顺序纠偏（G9-D §42，2026-09-08）**：执行顺序 D→C→E→F→G 对应规格 **32＝G9-D（PLMP-CANVAS-7）**、**33＝G9-C（PLMP-CANVAS-8）**、34＝G9-E、35＝G9-F、36＝G9-G；原计划的 32＝C/33＝D 编号错位已在交付时纠正，无冲突覆盖（交付时 32 空闲）。
 - G9-B2 交付（2026-09-07）：`baseGraphDigest`/`STALE_GRAPH_BASE` 草稿新鲜度锚、`agentGraphSemanticDigest`、`parseProjectProposal` 输入合同（四 first-party 边界）、patch 语法同构 + `EMPTY_UPDATE`/`NO_OP_OPERATION` no-op 裁决 + accepted⇒digest 必变不变量、`runtime.controls.holds[]` 治理投影、LEGACY 方案 C（M8 回填、NULL=stale）、SCHEMA-AUDIT tripwire。
@@ -45,7 +46,11 @@
 
 ---
 
-## G9-E — 可执行架构预设（规格 34，PLMP-ARCH-4）
+## G9-E — ~~可执行架构预设~~ **SUPERSEDED（2026-09-09，不按原样实现）**
+
+> **裁定**：旧 G9-E 假设 Architecture ≈ ProjectProposal + StageGraph + RoleTable，仍把架构绑死在任务/项目编排上，与 PLMP-UAS-0 **UA-INV-2（Architecture ≠ Work）** 冲突。**保留的洞见**：架构声明必须包含执行治理——移入 **G10-A**（AgentSystemDefinition 携带 Orchestration/Governance Policies；fan_out 缺省并发随架构声明）。实现载体与批次细节见 `audits/G10-G11-ROADMAP.md`；规格编号 34 释放给 G10-A。以下原计划存档：
+
+### （存档）可执行架构预设（原规格 34，PLMP-ARCH-4）
 
 **问题**（审计 F-G）：preset 只产 ProjectProposal；GUI declare 缺省不传 stageGraph ⇒ `fan_out` 名义并发实为 ACTIVE concurrency=1 串行。拓扑像什么 ≠ 跑成什么。
 
