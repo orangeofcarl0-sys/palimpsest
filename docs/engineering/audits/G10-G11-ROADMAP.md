@@ -18,8 +18,16 @@ G9-F（35 号）Contract Discipline + View Freshness   ✅ 2026-09-10 完成（�
         ↓
 G9-F2（35 号 Closure Addendum）残差不变量闭合   ✅ 2026-09-10 完成（报告＝G9-F2-RESIDUAL-INVARIANT-DELIVERY.md）
         ↓
-G9-G（36 号）Playwright E2E   ← 当前位置
+G9-G（36 号）Real-Kernel Browser E2E   ✅ 2026-09-10 完成（报告＝G9-G-BROWSER-E2E-DELIVERY.md，21 用例 + CI 门）
+```
+
+```text
+====================
+G9 COMPLETE（2026-09-10）
+====================
+
         ↓
+
 G10-A0（语义实体/身份/绑定审计——纯文档，见下注）→ G10-A
 ```
 
@@ -121,7 +129,7 @@ ExecutionPlan ＝ 派生的运行时编译目标
 ## 依赖与顺序总图
 
 ```text
-G9-D ✅ → G9-C ✅ → G9-F ✅ → G9-F2 ✅ → G9-G → G10-A0（文档）
+G9-D ✅ → G9-C ✅ → G9-F ✅ → G9-F2 ✅ → G9-G ✅ ⇒ **G9 COMPLETE** → G10-A0（文档）
                      ↓
    G10-A ──→ G10-B ──→ G10-C ──→ G10-D ──→ G10-E ──→ G10-F
      │          │                     │

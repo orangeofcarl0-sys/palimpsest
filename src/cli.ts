@@ -380,9 +380,10 @@ async function main() {
           break;
         }
         const tasks = proposalTaskSpecs(proposal);
-        const started =
-          store.connection.prepare("SELECT 1 AS ok FROM scheduler_control LIMIT 1").get() !==
-          undefined;
+        // G9-G §5 (CLI-PROJECT-A01): started-ness is scoped to THIS project -
+        // the old global `LIMIT 1` let a sibling project in a shared store
+        // route this declaration into plan() and fail.
+        const started = controller.isProjectInitialized();
         const event = started
           ? controller.plan({
               tasks,

@@ -14,7 +14,9 @@ G9-F ✅ COMPLETE（规格 35，PLMP-PARSE-1，2026-09-10）
   ↓
 G9-F2 ✅ COMPLETE（35 号 Closure Addendum，残差闭合，2026-09-10）
   ↓
-G9-G（36 号）Playwright E2E    ← 当前位置
+G9-G ✅ COMPLETE（36 号，Real-Kernel Browser E2E，2026-09-10）
+  ↓
+====================  G9 COMPLETE（2026-09-10）  ====================
   ↓
 G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 ```
@@ -103,13 +105,9 @@ G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 
 ---
 
-## G9-G — 浏览器 E2E（规格 36，PLMP-WEB-E2E-1）
+## G9-G — Real-Kernel Browser E2E（规格 36，PLMP-WEB-E2E-1）✅ **COMPLETE（2026-09-10；交付报告＝`G9-G-BROWSER-E2E-DELIVERY.md` 二十六问；规格＝`36-browser-e2e-spec.md`；母体审计＝`G9-G-BROWSER-E2E-ASSESSMENT.md`）**
 
-**问题**：GUI 复杂度已超人工冒烟可靠覆盖面（G2–G8 每轮冒烟都抓到过真实缺陷：Handles、rename 断边、布局断链、drop 环守卫）。
-
-**设计裁决**：引入 Playwright（或等价成熟框架）；覆盖清单按母体指令 §13：Canvas（加节点/连线/改名/删除/嵌套/三层/折叠展开/拖入拖出/分组/布局/导入导出）、GraphPatch（preview/apply/invalid/stale/坐标保持/分组保持/unsupported 拒绝）、Runtime（run/pause/resume/hold/release/卫星/trace）、Ready-Set（UI 驱动 concurrency=2 双任务同时 ACTIVE）。E2E 进 CI 纪律（headless、固定端口段、serve 生命周期托管）随规格冻结。**G9-F2 补记（§34）**：混合游标裁决、畸形 attribution HTTP 400、健康项目隔离已由 F2 内核电池钉死——E2E 只测用户可见行为（轮询稳定/暂停恢复/面板渲染），不重复低层不变量（§40）。
-
-**验收**：`E2E-H01`（nested Canvas + patch + run + hold 全路径）及上列各面用例。
+**已交付**：预检热修（CLI `architect --declare` 兄弟项目 bug → `isProjectInitialized()` 三面收口，CLI-PROJECT-A01 test-first）；Playwright 引入（`@playwright/test` + `test:e2e` 系列 + `playwright.config.ts`：Chromium only / retries=0 / workers=1 / trace retain-on-failure / 临时端口）；进程内真实内核 fixture（dist/src + dist/web，FakeGitPort 唯一替身，每测试全新临时库）；六套件 **21 用例全绿**（boot-auth 4 / canvas 5 / graph-patch 6 / runtime-debugger 4 / ready-set 1 / cli-smoke 1）连续两轮；首个 CI（`.github/workflows/ci.yml` unit+e2e 双 job）；`.gitignore` 添 Playwright 产物。**产品发现×1**：`extent: "parent"` 钳制使"拖出子图"UI 路径不可达（onDropInto(key,null) 永不触发）→ 去钳制最小修复，E2E-CANVAS-03 钉住。测试基线 59/431 → **60/433** + E2E 21；干净环境重跑（clean → fresh build ×2 → 双套全绿）。**G9 COMPLETE——下一批＝G10-A0（纯文档）。**
 
 ---
 

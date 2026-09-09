@@ -40,6 +40,9 @@ function TaskNodeView({ data, selected }: NodeProps<Node<TaskData>>) {
     diff === "added" ? "0 0 0 3px #22c55e66" : diff === "changed" ? "0 0 0 3px #f59e0b66" : "none";
   return (
     <div
+      // Spec 36 §18: stable presentation-only selector - the DOM reflects the
+      // semantic key, it never OWNS identity (36 号 §19 red line).
+      data-canvas-node-key={node.key}
       style={{
         width: 190,
         borderRadius: 10,
@@ -66,13 +69,14 @@ function TaskNodeView({ data, selected }: NodeProps<Node<TaskData>>) {
 function SubflowNodeView({ data }: NodeProps<Node<SubflowData>>) {
   const { node, memberCount, expanded, onToggle } = data;
   return (
-    <div
-      style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+      <div
+        data-canvas-node-key={node.key}
+        style={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
       <div
         style={{
           display: "flex",
@@ -129,6 +133,7 @@ function SubflowNodeView({ data }: NodeProps<Node<SubflowData>>) {
 function AnnotationNodeView({ data, selected }: NodeProps<Node<AnnotationData>>) {
   return (
     <div
+      data-canvas-node-key={data.node.key}
       style={{
         width: 170,
         border: `1px dashed ${selected ? "#facc15" : "#65601f"}`,
@@ -321,7 +326,12 @@ export function CanvasView(props: CanvasViewProps) {
       {
         type: "canvasTask",
         position,
-        extent: relOwner === null ? undefined : "parent",
+        // G9-G finding: no extent clamp here. With `extent: "parent"` React
+        // Flow clamps a member's drag inside its subflow box, so the member's
+        // center could never leave the bounds and the drop-OUT reassignment
+        // (App.onDropInto → root / "已移出子图") was unreachable by dragging.
+        // Scope ownership is decided by the drop detection below, not by the
+        // render clamp; inside-own-owner releases keep membership.
         data: {
           node,
           depCount: incomingCount.get(node.key) ?? 0,

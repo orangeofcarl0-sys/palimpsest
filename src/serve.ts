@@ -448,13 +448,10 @@ export function serveOrchestration(
             sendJson(response, 200, { diagnostics, declared: false });
             return;
           }
-          // G9-F2 HEALTH-INV-2: started-ness is scoped to THIS controller's
-          // project - a sibling project's control row in a shared store must
-          // not route this declaration into plan() instead of start().
-          const started =
-            controller.store.connection
-              .prepare("SELECT 1 AS ok FROM scheduler_control WHERE project_id=?")
-              .get(controller.projectId) !== undefined;
+          // G9-F2 HEALTH-INV-2 / G9-G §5: started-ness is the single scoped
+          // read-side helper - a sibling project's control row in a shared
+          // store must not route this declaration into plan() instead of start().
+          const started = controller.isProjectInitialized();
           const tasks = proposalTaskSpecs(proposal);
           const event = started
             ? controller.plan({

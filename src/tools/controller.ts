@@ -1589,18 +1589,27 @@ export class ProjectController {
     return `v1:${this.#viewEpoch}:${Number(cursorRow.m)}:${this.#viewGeneration}`;
   }
 
+  /** G9-G §5: the ONE read-side "is this project initialized?" query, scoped
+   * to THIS controller's project identity (HEALTH-INV-2). Sibling projects in
+   * a shared store never answer for it; serviceHealth, the serve declare
+   * face, and the CLI architect face all consume this single source - the
+   * duplicated LIMIT-1 queries (one per face) drifted exactly once already. */
+  isProjectInitialized(): boolean {
+    return (
+      this.store.connection
+        .prepare("SELECT 1 AS ok FROM scheduler_control WHERE project_id=?")
+        .get(this.projectId) !== undefined
+    );
+  }
+
   /** Spec 35 HEALTH-INV-1, G9-F2 HEALTH-INV-2: service availability without
    * an initialized ProjectIR - cheap state only, never a graph build.
-   * projectInitialized is scoped to THIS controller's project identity: a
-   * sibling project's rows in a shared store say nothing about it. */
+   * projectInitialized is scoped to THIS controller's project identity. */
   serviceHealth(): { ok: boolean; projectInitialized: boolean; eventCursor: number } {
-    const control = this.store.connection
-      .prepare("SELECT 1 AS ok FROM scheduler_control WHERE project_id=?")
-      .get(this.projectId);
     const cursorRow = this.store.connection
       .prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events WHERE project_id=?")
       .get(this.projectId) as { m: number };
-    return { ok: true, projectInitialized: control !== undefined, eventCursor: Number(cursorRow.m) };
+    return { ok: true, projectInitialized: this.isProjectInitialized(), eventCursor: Number(cursorRow.m) };
   }
 
   status(): ControllerStatusView {

@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { Background, Controls, ReactFlow, type Connection, type Edge, type Node } from "@xyflow/react";
+import { Background, Controls, ReactFlow, type Connection, type Edge, type Node, type NodeProps, type NodeTypes } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
 import { forceLayout } from "./forceLayout";
@@ -10,8 +10,31 @@ export interface GraphNodeData extends Record<string, unknown> {
   key: string;
   label: string;
   sub: string;
+  state: string;
   color: string;
 }
+
+interface SatelliteData extends Record<string, unknown> {
+  attemptId: string;
+  label: string;
+}
+
+/** Spec 36 §18: stable presentation-only selectors - the DOM exposes the
+ * semantic ids/state for the browser suite, it never OWNS identity
+ * (36 号 §19 red line). Visual output is unchanged (label only). */
+function LiveNodeView({ data }: NodeProps<Node<GraphNodeData>>) {
+  return (
+    <div data-graph-node-key={data.key} data-graph-state={data.state}>
+      {data.label}
+    </div>
+  );
+}
+
+function SatelliteNodeView({ data }: NodeProps<Node<SatelliteData>>) {
+  return <div data-attempt-id={data.attemptId}>{data.label}</div>;
+}
+
+const liveNodeTypes: NodeTypes = { live: LiveNodeView, satellite: SatelliteNodeView };
 
 interface Props {
   nodes: GraphNodeData[];
@@ -35,6 +58,7 @@ export function GraphView({ nodes, links, selectedKey, editable, satellites, onS
   nodes.forEach((node, index) => {
     flowNodes.push({
       id: node.key,
+      type: "live",
       position: layout[index] ?? { x: 80, y: 80 },
       data: node,
       selected: node.key === selectedKey,
@@ -57,10 +81,11 @@ export function GraphView({ nodes, links, selectedKey, editable, satellites, onS
     const cost = satellite.attribution === undefined ? "" : ` · ${satellite.attribution.model}`;
     flowNodes.push({
       id: `sat-${satellite.attemptId}`,
+      type: "satellite",
       parentId: satellite.taskId,
       extent: undefined,
       position: { x: 200, y: 18 },
-      data: { label: `${satellite.role} · ${satellite.state}${cost}` },
+      data: { attemptId: satellite.attemptId, label: `${satellite.role} · ${satellite.state}${cost}` },
       selectable: true,
       zIndex: 2,
       style: {
@@ -89,6 +114,7 @@ export function GraphView({ nodes, links, selectedKey, editable, satellites, onS
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
+        nodeTypes={liveNodeTypes}
         fitView
         onNodeClick={(_, node) => onSelect(node.id.startsWith("sat-") ? null : node.id)}
         onConnect={(connection: Connection) => {
@@ -109,6 +135,7 @@ export function liveNodes(tasks: { taskId: string; objective: string; state: str
     key: task.taskId,
     label: task.objective,
     sub: `${task.state}${task.attempts.length > 0 ? ` · ${task.attempts.length} attempt` : ""}`,
+    state: task.state,
     color: stateColor(task.state),
   }));
 }

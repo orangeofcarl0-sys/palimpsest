@@ -181,7 +181,7 @@ export function ControlsPanel(props: { holds: readonly HoldControlView[] }) {
     <div style={{ display: "grid", gap: 6, fontSize: 12 }}>
       <div style={{ color: "#94a3b8" }}>治理挂起（全部 hold，含过期与孤儿）</div>
       {props.holds.map((hold) => (
-        <div key={hold.taskId}>
+        <div key={hold.taskId} data-hold-task-id={hold.taskId}>
           <code style={{ color: "#7dd3fc" }}>{hold.taskId}</code>{" "}
           <b style={{ color: statusColor(hold.status) }}>{hold.status}</b>
           <span style={{ color: "#94a3b8" }}>
@@ -381,6 +381,7 @@ export function CanvasEditor(props: {
         <div style={{ color: "#94a3b8" }}>目标</div>
         <input
           style={field}
+          aria-label="画布目标"
           value={doc.goal}
           onChange={(event) => props.onDocChange({ ...doc, goal: event.target.value })}
         />
@@ -485,6 +486,7 @@ export function CanvasEditor(props: {
             <>
               <textarea
                 style={{ ...field, minHeight: 64 }}
+                aria-label="注记内容"
                 value={selected.text ?? ""}
                 onChange={(event) => patchNode(selected.key, { text: event.target.value })}
               />
@@ -493,6 +495,7 @@ export function CanvasEditor(props: {
             <>
               <input
                 style={field}
+                aria-label="节点标题"
                 value={selected.title}
                 onChange={(event) => patchNode(selected.key, { title: event.target.value })}
               />

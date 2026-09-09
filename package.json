@@ -22,7 +22,11 @@
     "test": "pnpm run build && vitest run",
     "test:watch": "vitest",
     "check": "pnpm run test",
-    "build:web": "vite build --config web/vite.config.ts"
+    "build:web": "vite build --config web/vite.config.ts",
+    "pretest:e2e": "pnpm run build && pnpm run build:web",
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug"
   },
   "dependencies": {
     "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz",
@@ -31,6 +35,7 @@
   },
   "devDependencies": {
     "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz",
+    "@playwright/test": "^1.63.0",
     "@types/node": "26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

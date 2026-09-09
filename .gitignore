@@ -7,3 +7,8 @@ vendor/
 # consumer tarball artifact (docker minimal env)
 palimpsest-dsh-*.tgz
 .acc/
+
+# Playwright generated output (spec 36 §39) - source fixtures under e2e/ are NOT ignored.
+playwright-report/
+test-results/
+blob-report/

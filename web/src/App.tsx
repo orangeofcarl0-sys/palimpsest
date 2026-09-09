@@ -262,6 +262,7 @@ export function App() {
           {mode === "draft" ? (
             <>
               <select
+                aria-label="画布布局"
                 onChange={(event) => applyLayout(event.target.value as CanvasLayoutName)}
                 value=""
                 style={{ padding: "6px 12px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}
@@ -426,7 +427,7 @@ export function App() {
             </div>
           )}
         </div>
-        <div style={{ color: "#94a3b8", fontSize: 12, minHeight: 18 }}>{message}</div>
+        <div data-app-message style={{ color: "#94a3b8", fontSize: 12, minHeight: 18 }}>{message}</div>
       </div>
       <div style={{ overflow: "auto", border: "1px solid #1e293b", borderRadius: 10, padding: 12, background: "#0b1222", display: "grid", gap: 12, alignContent: "start", color: "#e2e8f0" }}>
         {mode === "draft" ? (
