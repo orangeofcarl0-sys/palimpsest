@@ -35,6 +35,7 @@ import {
   canvasRoundTripDiff,
   liftToAgentGraph,
   parseCanvasDoc,
+  reconcileCanvasPresentation,
   unloadToCanvasDoc,
   type CanvasLayoutName,
 } from "./canvas/index.js";
@@ -393,7 +394,12 @@ export function serveOrchestration(
           // (digesting the RELIFTED doc) is retired. The submitted draft's
           // identity state rides through so patch round-trips never rewind
           // the monotonic counters.
-          const returnedDoc = unloadToCanvasDoc(patched, { identity: doc.identity });
+          // PLMP-CANVAS-8 (33 号): presentation reconciliation - surviving
+          // nodes keep their x/y and VisualGroups survive; the semantic
+          // result owns identity/semantics verbatim. lift(reconciled) still
+          // equals `patched` strictly (CANVAS-H08).
+          const semanticCanvas = unloadToCanvasDoc(patched, { identity: doc.identity });
+          const returnedDoc = reconcileCanvasPresentation(doc, semanticCanvas);
           sendJson(response, 200, {
             applied: true,
             doc: returnedDoc,

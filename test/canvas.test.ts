@@ -22,12 +22,16 @@ import {
   canvasRemoveNode,
   emptyCanvasDoc,
   parseCanvasDoc,
+  reconcileCanvasPresentation,
   satelliteAttempts,
   traceRows,
+  unloadToCanvasDoc,
   upgradeCanvasV2ToV3,
   type CanvasDoc,
   type CanvasEdge,
 } from "../src/canvas/index.js";
+import { agentGraphSemanticDigest } from "../src/graph/index.js";
+import { applyGraphPatch, parseGraphPatch } from "../src/graph/patch.js";
 import { serveOrchestration, type ServeHandle } from "../src/serve.js";
 import { ProjectController } from "../src/tools/index.js";
 import type { OrchestrationGraph } from "../src/tools/graph.js";
@@ -994,5 +998,144 @@ describe("canvas mutation layer (PLMP-CANVAS-7 D6)", () => {
     expect(parseOk(removedGroup)).toEqual(removedGroup);
     expect(removedGroup.groups).toEqual([{ id: nestedGroup.id, label: "内框", members: [] }]);
     expect(() => canvasRemoveGroup(removedGroup, group.id)).toThrow(/does not exist/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-8 (33 号, G9-C): presentation preservation. A semantic
+// GraphPatch must appear INSIDE the user's existing visual organization -
+// surviving nodes keep their exact x/y, VisualGroups survive, fresh nodes
+// get deterministic collision-aware placement, identity counters never
+// rewind, and lift(reconciled) === patched graph strictly.
+// ---------------------------------------------------------------------------
+
+describe("canvas presentation preservation (PLMP-CANVAS-8, G9-C)", () => {
+  const beforeDoc = () =>
+    docWithGroups(
+      [{ id: "g1", label: "Research", members: ["n1", "n2"] }],
+      taskNode("n1", "A", 701, 113),
+      taskNode("n2", "B", 211, 628),
+    );
+  /** The same flow the serve patch endpoint runs (spec 33 §8). */
+  const patchedDoc = (doc: CanvasDoc, patch: Record<string, unknown>): CanvasDoc => {
+    const graph = liftToAgentGraph(doc);
+    const patched = applyGraphPatch(graph, parseGraphPatch(patch));
+    return reconcileCanvasPresentation(doc, unloadToCanvasDoc(patched, { identity: doc.identity }));
+  };
+  const renameOnly = { addNodes: [], removeNodes: [], updateNodes: [{ id: "n1", label: "A2" }], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [] };
+  const addNodePatch = (id: string, label: string) => ({
+    addNodes: [{ id, kind: "agent", label, scope: "root", task: {} }],
+    removeNodes: [], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [],
+  });
+
+  it("CANVAS-H01: a semantic-only patch preserves surviving positions exactly", () => {
+    const after = patchedDoc(beforeDoc(), renameOnly);
+    expect(after.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 701, y: 113, title: "A2" });
+    expect(after.nodes.find((node) => node.key === "n2")).toMatchObject({ x: 211, y: 628 });
+  });
+
+  it("CANVAS-H02: VisualGroups survive semantic patching byte-equivalent", () => {
+    const after = patchedDoc(beforeDoc(), {
+      ...renameOnly,
+      updateNodes: [{ id: "n1", task: { role: "scout" } }],
+    });
+    expect(after.groups).toEqual([{ id: "g1", label: "Research", members: ["n1", "n2"] }]);
+  });
+
+  it("CANVAS-H03: a deleted member is removed from membership only", () => {
+    const after = patchedDoc(beforeDoc(), { ...renameOnly, removeNodes: ["n1"], updateNodes: [] });
+    expect(after.groups).toEqual([{ id: "g1", label: "Research", members: ["n2"] }]);
+    expect(after.nodes.map((node) => node.key)).toEqual(["n2"]);
+  });
+
+  it("CANVAS-H04: an emptied group survives", () => {
+    const single = docWithGroups(
+      [{ id: "g1", label: "Research", members: ["n1"] }],
+      taskNode("n1", "A", 701, 113),
+    );
+    const after = patchedDoc(single, {
+      addNodes: [], removeNodes: ["n1"], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [],
+    });
+    expect(after.groups).toEqual([{ id: "g1", label: "Research", members: [] }]);
+  });
+
+  it("CANVAS-H05: new-node placement is collision-aware, deterministic, and never moves existing nodes", () => {
+    const before = docWith(taskNode("n1", "A", 80, 80)); // occupies the grid origin slot
+    const run = () => patchedDoc(before, addNodePatch("n9", "C"));
+    const first = run();
+    const c = first.nodes.find((node) => node.key === "n9")!;
+    // The grid origin slot is occupied: the allocator must skip it (row-major
+    // scan → the next free slot, here (294, 80)).
+    const clear =
+      c.x >= 80 + 190 ||
+      c.x + 190 <= 80 ||
+      c.y >= 80 + 56 ||
+      c.y + 56 <= 80;
+    expect(clear).toBe(true);
+    expect(c.x).not.toBe(80);
+    expect(first.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 80, y: 80 });
+    expect(run()).toEqual(first); // same input → byte-identical placement
+  });
+
+  it("CANVAS-H06: multiple new nodes place deterministically in declaration order", () => {
+    const before = docWith(taskNode("n1", "A", 701, 113));
+    const patch = {
+      addNodes: [
+        { id: "c1", kind: "agent", label: "C", scope: "root", task: {} },
+        { id: "c2", kind: "agent", label: "D", scope: "root", task: {} },
+        { id: "c3", kind: "agent", label: "E", scope: "root", task: {} },
+      ],
+      removeNodes: [], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [],
+    };
+    const first = patchedDoc(before, patch);
+    const second = patchedDoc(before, patch);
+    const fresh = first.nodes.filter((node) => node.key !== "n1");
+    expect(fresh.map((node) => node.title)).toEqual(["C", "D", "E"]);
+    expect(second.nodes).toEqual(first.nodes); // identical order + coordinates
+  });
+
+  it("CANVAS-H07: moveScope preserves absolute Canvas x/y", () => {
+    const before = docWith(taskNode("n1", "A", 620, 240), { key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root" });
+    const after = patchedDoc(before, {
+      addNodes: [], removeNodes: [], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [],
+      moveScope: [{ id: "n1", scope: "s1" }],
+    });
+    expect(after.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 620, y: 240, z: "s1" });
+  });
+
+  it("CANVAS-H08: reconciliation is semantically transparent - lift(reconciled) === patched graph", () => {
+    const doc = beforeDoc();
+    const graph = liftToAgentGraph(doc);
+    const patch = parseGraphPatch(renameOnly);
+    const patched = applyGraphPatch(graph, patch);
+    const after = reconcileCanvasPresentation(doc, unloadToCanvasDoc(patched, { identity: doc.identity }));
+    expect(liftToAgentGraph(after)).toEqual(patched);
+    expect(agentGraphSemanticDigest(liftToAgentGraph(after))).toBe(agentGraphSemanticDigest(patched));
+  });
+
+  it("CANVAS-H09 / PRES-ID-A01: identity counters never rewind through reconciliation", () => {
+    const before = { ...beforeDoc(), identity: { namespace: "test", nextNode: 3, nextEdge: 3 } };
+    const after = patchedDoc(before, addNodePatch("n:test:7", "C"));
+    // The patch introduced n:test:7 - the family floor lifts nextNode to >= 8,
+    // and old presentation state must not rewind it to 3.
+    expect(after.identity.nextNode).toBeGreaterThanOrEqual(8);
+    const semantic = unloadToCanvasDoc(applyGraphPatch(liftToAgentGraph(before), parseGraphPatch(addNodePatch("n:test:7", "C"))), { identity: before.identity });
+    expect(after.identity).toEqual(semantic.identity);
+  });
+
+  it("CANVAS-H10: nested VisualGroups preserve hierarchy, order, and members", () => {
+    const before = docWithGroups(
+      [
+        { id: "g1", label: "Outer", members: ["n1"] },
+        { id: "g2", label: "Inner", g: "g1", members: ["n2"] },
+      ],
+      taskNode("n1", "A", 701, 113),
+      taskNode("n2", "B", 211, 628),
+    );
+    const after = patchedDoc(before, renameOnly);
+    expect(after.groups).toEqual([
+      { id: "g1", label: "Outer", members: ["n1"] },
+      { id: "g2", label: "Inner", g: "g1", members: ["n2"] },
+    ]);
   });
 });

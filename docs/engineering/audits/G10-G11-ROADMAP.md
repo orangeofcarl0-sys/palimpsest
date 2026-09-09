@@ -12,9 +12,9 @@
 ```text
 G9-D 会话 2（D6–D10）：mutation 助手 / identity-aware diff / anchor / 冒烟 / 交付报告   ✅ 2026-09-08 完成（G9-D COMPLETE，报告＝G9-D-SESSION-2-DELIVERY.md）
         ↓
-G9-C（33 号）Canvas Presentation Preservation   ← 当前位置
+G9-C（33 号）Canvas Presentation Preservation   ✅ 2026-09-08 完成（报告＝G9-C-PRESENTATION-PRESERVATION-DELIVERY.md）
         ↓
-G9-F（35 号）Parser 纪律 + poll 快路径
+G9-F（35 号）Parser 纪律 + poll 快路径   ← 当前位置
         ↓
 G9-G（36 号）Playwright E2E
         ↓
@@ -58,6 +58,8 @@ ExecutionPlan ＝ 派生的运行时编译目标
 
 ### G10-A — Agent / Task / Assignment / Activation 分离（规格 34，PLMP-UAS-1）
 
+> **SUBJECT TO G10-A0 ADJUDICATION**：本节实现细节（Activation 与 Attempt 的挂靠关系、AgentDefinition 全新身份、Assignment/Binding 归属、orchestration policy 随架构声明的落点）凡与 A0 注册问题（SystemGraph vs WorkGraph、Binding、Invocation、ExecutionPlan、scoped orchestration、fresh AgentDefinition identity）冲突处，以 G10-A0 规格裁决为准，不得按本节临时措辞机械执行。
+
 - **目标**：`AgentDefinition / TaskDefinition / Assignment / Activation` 四概念分离（UA-INV-1/3），不破坏既有 Project/Task runtime；**加法式经显式编译层，禁止静默双真相**。
 - **范围裁决**：DefinitionGraph 增加 AgentDefinition（instructions/modelPolicy/capabilities/roles/tools/skills/bindings/contextPolicy）；TaskDefinition 保留现有 TaskSpec 语义所有权并明确剥离 agent 侧字段；Assignment 四形态（Task→Agent/Role/Group/动态 selector）枚举化；Activation 成为 attempt 的挂靠者。IR 节点 kind `agent` 的语义从"task-bearing node"升级为真正的 agent 定义位。
 - **验收**：单 agent 可独立声明执行（§35 案例 A）；同一定义多激活（案例 B 前半）；`policy.authorize` 可按 agent 粒度收窄（工具/写域边界）；fan_out 缺省并发治理随架构声明（旧 G9-E 洞见落地）。
@@ -68,6 +70,8 @@ ExecutionPlan ＝ 派生的运行时编译目标
 - **目标**：Channel（§8 归属表：边 kind＝语法位，delivery/ownership/durability 入 Channel 定义）、ContextPolicy（§9 七档枚举基准，Context Compiler 声明化）、StateDefinition/StatePolicy（§10 六作用域最小集）。
 - **核心语义**：handoff 所有权转移（UA-INV-5 的载体——OpenAI/MS handoff 合规义务见宪章 §13）；Organization/Holon schema 分离（AGT-0 §36 五对象之一部分：Organization/HolonDefinition）。
 - **验收**：handoff 合规五断言（A 持有→选 B→所有权转移→配置投影→输出归 active owner）；MetaGPT 式"role 只见声明上游"（filtered 投影）；两拓扑相同、投影不同的系统判为不同架构。
+
+> **SUBJECT TO G10-A0 ADJUDICATION**：策略作用面（Assignment 形态、scoped orchestration 的 RuntimeScope→OrchestrationPolicyInstance、manager/handoff 策略的语义归属）以 G10-A0 裁决为准。
 
 ### G10-C — 策略驱动编排（PLMP-UAS-3）
 
@@ -85,6 +89,8 @@ ExecutionPlan ＝ 派生的运行时编译目标
 
 - **目标**：ArchitectureProfile（id/lineage/semanticRequirements/compiler/conformanceSuite/fidelity 三级）；ForeignRuntimeHolon（adapter/IO interface/lifecycle/trace adapter/state bridge）；覆盖矩阵（审计附录）逐行转 conformance suite。
 - **验收**：OpenAI handoff/manager-as-tools/MetaGPT SOP/CAMEL Workforce 四套合规套件（宪章 §13 义务）；approximate 标签机器可查（UA-INV-9）；一个外来系统（LangGraph 或 CrewAI）以 Holon 桥接通过边界治理断言（§35 案例 J）。
+
+> **SUBJECT TO G10-A0 ADJUDICATION**：ArchitecturePatch 的类型化目标（SystemPatch/WorkPatch/BindingPatch 之分，§26 问题 B）与 RuntimeCapabilities 词汇（§26 问题 E）以 G10-A0 裁决为准。
 
 ### G10-F — 自动架构合成（PLMP-UAS-6）
 
@@ -105,7 +111,7 @@ ExecutionPlan ＝ 派生的运行时编译目标
 | G11-B | Commitment / Campaign（§14/15/16：Campaign≠Project） |
 | G11-C | Watchers / Dormancy / Sleep-Wake / Prospective Memory（§11–13） |
 | G11-D | Epistemic Plane：Evidence History ≠ Belief、G_prov/G_evid/G_epi/G_intent 四图、Belief Revision、假设分支（§21–28） |
-| G11-E | CampaignCompiler：LongHorizonState → ProjectIR/AgentGraph/执行策略（§56）；Project 变为可弃可重编译投影 |
+| G11-E | CampaignCompiler：LongHorizonState → ProjectIR/AgentGraph/执行策略（§56）；Project 变为可弃可重编译投影。**SUBJECT TO G10-A0 ADJUDICATION**：编译目标面（WorkGraph/ExecutionPlan 之分）以 G10-A0 裁决为准 |
 | G11-F | DurableHolon / DurableInstitution（§48/49）；AGT×PAG 交点（§50） |
 
 ---
@@ -113,7 +119,7 @@ ExecutionPlan ＝ 派生的运行时编译目标
 ## 依赖与顺序总图
 
 ```text
-G9-D ✅ → G9-C → G9-F → G9-G → G10-A0（文档）
+G9-D ✅ → G9-C ✅ → G9-F → G9-G → G10-A0（文档）
                      ↓
    G10-A ──→ G10-B ──→ G10-C ──→ G10-D ──→ G10-E ──→ G10-F
      │          │                     │

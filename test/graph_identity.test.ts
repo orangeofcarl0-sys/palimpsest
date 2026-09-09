@@ -556,3 +556,151 @@ describe("compile-independent anchor endpoint (PLMP-CANVAS-7 D8)", () => {
     }
   });
 });
+
+// ---------------------------------------------------------------------------
+// PLMP-CANVAS-8 (33 号, G9-C): endpoint-level presentation preservation
+// through POST /api/canvas/patch - surviving positions and VisualGroups
+// survive, fresh nodes place deterministically, identity counters advance.
+// ---------------------------------------------------------------------------
+
+describe("patch endpoint presentation preservation (PLMP-CANVAS-8)", () => {
+  const beforeDoc = () =>
+    parseCanvasDoc({
+      version: 3,
+      goal: "g",
+      identity: { namespace: "sys", nextNode: 3, nextEdge: 3 },
+      nodes: [
+        { key: "n1", type: "task", title: "A", x: 701, y: 113, z: "root", task: {} },
+        { key: "n2", type: "task", title: "B", x: 211, y: 628, z: "root", task: {} },
+      ],
+      edges: [{ id: "e1", source: "n1", target: "n2", kind: "data" }],
+      groups: [{ id: "g1", label: "Research", members: ["n1", "n2"] }],
+    });
+  const call = async (
+    handle: ServeHandle,
+    path: string,
+    body: unknown,
+  ): Promise<{ status: number; json: Record<string, unknown> }> => {
+    const response = await fetch(`${handle.url}${path}`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${handle.token}`, "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return { status: response.status, json: (await response.json()) as Record<string, unknown> };
+  };
+
+  it("PATCH-PRES-A01: semantic field update keeps position, group, and a correct digest", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const doc = beforeDoc();
+      const result = await call(handle, "/api/canvas/patch", {
+        doc,
+        patch: { addNodes: [], removeNodes: [], updateNodes: [{ id: "n1", label: "A2" }], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [] },
+      });
+      expect(result.status).toBe(200);
+      expect(result.json.applied).toBe(true);
+      const returned = result.json.doc as { nodes: Array<{ key: string; x: number; y: number; title: string }>; groups: unknown[] };
+      expect(returned.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 701, y: 113, title: "A2" });
+      expect(returned.groups).toEqual([{ id: "g1", label: "Research", members: ["n1", "n2"] }]);
+      // The response digest matches the RETURNED document's lifted graph -
+      // presentation reconciliation is semantically transparent.
+      expect(agentGraphSemanticDigest(liftToAgentGraph(parseCanvasDoc(result.json.doc)))).toBe(result.json.graphDigest);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("PATCH-PRES-A02: added node keeps old nodes fixed, places deterministically, advances counters", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const doc = beforeDoc();
+      const patch = {
+        addNodes: [{ id: "n:sys:7", kind: "agent", label: "C", scope: "root", task: {} }],
+        removeNodes: [], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [],
+      };
+      const result = await call(handle, "/api/canvas/patch", { doc, patch });
+      expect(result.json.applied).toBe(true);
+      const returned = result.json.doc as {
+        nodes: Array<{ key: string; x: number; y: number }>;
+        identity: { nextNode: number };
+      };
+      expect(returned.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 701, y: 113 });
+      expect(returned.nodes.find((node) => node.key === "n2")).toMatchObject({ x: 211, y: 628 });
+      const c = returned.nodes.find((node) => node.key === "n:sys:7")!;
+      const clear = (other: { x: number; y: number }) =>
+        c.x >= other.x + 190 || c.x + 190 <= other.x || c.y >= other.y + 56 || c.y + 56 <= other.y;
+      expect(clear({ x: 701, y: 113 })).toBe(true);
+      expect(clear({ x: 211, y: 628 })).toBe(true);
+      // n:sys:7 lifts the family floor: nextNode >= 8, never rewound to 3.
+      expect(returned.identity.nextNode).toBeGreaterThanOrEqual(8);
+      // Deterministic: the identical request returns identical placement.
+      const again = await call(handle, "/api/canvas/patch", { doc, patch });
+      expect((again.json.doc as { nodes: unknown[] }).nodes).toEqual(returned.nodes);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("PATCH-PRES-A03: deleted node cleans the group; the emptied group is retained", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const doc = beforeDoc();
+      const removeA = await call(handle, "/api/canvas/patch", {
+        doc,
+        patch: { addNodes: [], removeNodes: ["n1"], updateNodes: [], addEdges: [], removeEdges: ["e1"], updateEdges: [], moveScope: [] },
+      });
+      expect(removeA.json.applied).toBe(true);
+      expect((removeA.json.doc as { groups: Array<{ id: string; members: string[] }> }).groups).toEqual([
+        { id: "g1", label: "Research", members: ["n2"] },
+      ]);
+      const removeB = await call(handle, "/api/canvas/patch", {
+        doc: removeA.json.doc,
+        patch: { addNodes: [], removeNodes: ["n2"], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [] },
+      });
+      expect(removeB.json.applied).toBe(true);
+      expect((removeB.json.doc as { groups: Array<{ id: string; members: string[] }> }).groups).toEqual([
+        { id: "g1", label: "Research", members: [] },
+      ]);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("PATCH-PRES-A04: moveScope preserves absolute Canvas x/y", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const doc = parseCanvasDoc({
+        version: 3,
+        goal: "g",
+        identity: { namespace: "sys", nextNode: 3, nextEdge: 2 },
+        nodes: [
+          { key: "n1", type: "task", title: "A", x: 620, y: 240, z: "root", task: {} },
+          { key: "s1", type: "subflow", title: "S", x: 0, y: 0, z: "root" },
+        ],
+        edges: [],
+        groups: [],
+      });
+      const result = await call(handle, "/api/canvas/patch", {
+        doc,
+        patch: { addNodes: [], removeNodes: [], updateNodes: [], addEdges: [], removeEdges: [], updateEdges: [], moveScope: [{ id: "n1", scope: "s1" }] },
+      });
+      expect(result.json.applied).toBe(true);
+      const returned = result.json.doc as { nodes: Array<{ key: string; x: number; y: number; z: string }> };
+      expect(returned.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 620, y: 240, z: "s1" });
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+});

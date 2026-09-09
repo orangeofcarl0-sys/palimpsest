@@ -48,5 +48,7 @@ export type {
 export { canvasLayout } from "./layout.js";
 export type { CanvasLayoutName } from "./layout.js";
 
+export { reconcileCanvasPresentation } from "./presentation.js";
+
 export { satelliteAttempts, traceRows } from "./derive.js";
 export type { SatelliteAttempt, TraceRow, TraceSpan } from "./derive.js";

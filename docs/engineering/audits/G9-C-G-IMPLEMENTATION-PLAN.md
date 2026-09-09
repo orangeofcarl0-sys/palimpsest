@@ -2,18 +2,34 @@
 
 - 日期：2026-09-07
 - 前置：G9-A（30 号，`b321d06`）、G9-B（31 号，`e81c4c3`）、G9-B2（31 号闭合修订，`1a8d688`）与 **G9-B3（31 号跨层闭合修订；母体＝`G9-B3-CROSS-LAYER-ASSESSMENT.md`、交付报告＝`G9-B3-DELIVERY-REPORT.md`）** 退出门均已通过；测试基线 57 文件 / 354 项全绿。
-- **架构 rebase（2026-09-09，Universal Agent Semantics）**：PLMP-UAS-0 宪章与 `G10-G11-ROADMAP.md` 已冻结。剩余顺序重排为 **D(余)→C→F→G → G10-A**；**旧 G9-E（Executable ArchitectureBundle）SUPERSEDED——不再按原样实现**（其"架构声明必须包含执行治理"的洞见移入 G10-A 验收：执行治理随 AgentSystemDefinition 声明；其旧载体把 Architecture 继续绑死在 Project 拓扑，违 UA-INV-2）。规格 34 释放给 G10-A。**（2026-09-08 更新：D(余)＝会话 2 已交付，G9-D COMPLETE，当前位置＝G9-C。）**
-- **批次顺序更新（G9-B3 §27 裁决；其 E 位由上条 superseded）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。
+- **架构 rebase（2026-09-09，Universal Agent Semantics）**：PLMP-UAS-0 宪章与 `G10-G11-ROADMAP.md` 已冻结。剩余顺序重排为 **D(余)→C→F→G → G10-A0 → G10-A**；**旧 G9-E（Executable ArchitectureBundle）SUPERSEDED——不再按原样实现**（其"架构声明必须包含执行治理"的洞见移入 G10-A 验收：执行治理随 AgentSystemDefinition 声明；其旧载体把 Architecture 继续绑死在 Project 拓扑，违 UA-INV-2）。规格 34 释放给 G10-A。
+- **当前活跃序列（2026-09-08 更新，唯一有效顺序）**：
+
+```text
+G9-D ✅ COMPLETE（规格 32，会话 1+2，2026-09-08）
+  ↓
+G9-C ✅ COMPLETE（规格 33，PLMP-CANVAS-8，2026-09-08）
+  ↓
+G9-F（35 号）Parser 纪律 + poll 快路径    ← 当前位置
+  ↓
+G9-G（36 号）Playwright E2E
+  ↓
+G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
+```
+
+- **批次顺序更新（G9-B3 §27 裁决；历史记录，E 位已 superseded）**：B3→**D→C**→E→F→G——G9-B2 的语义新鲜度 digest 包含 edge id，而 CanvasDoc v2 在 IR↔Canvas 往返中再生边 id（G9-B3 只做了响应完整性 bridge hotfix），因此 **G9-D（CanvasDoc v3 / 稳定边身份）从"功能增强"升级为新鲜度正确性依赖**，排在 G9-C（表现保全）之前。（历史含 E 位的表述以此处存档为准，活跃序列见上。）
 - **G9-E 新增设计前置（G9-B3 §18/§19）**：ArchitectureRevision 必须是**原子治理动作**——`plan(topology)` + `declareStageGraph` + `declareRoleTable` 三次独立 durable append 之间存在崩溃窗口，会产生"新拓扑 + 旧执行治理"的半个修订。G9-E 开工前必须比较至少三案（A 单一复合事件 ARCHITECTURE_REVISED / B pending→activate 协议 / C EventStore 原子事件批）并裁决；本轮不实现 multi-event transaction（触及事件序/哈希链/幂等/游标/fault injection/replay，需独立设计）。
-- **编号与顺序纠偏（G9-D §42，2026-09-08）**：执行顺序 D→C→E→F→G 对应规格 **32＝G9-D（PLMP-CANVAS-7）**、**33＝G9-C（PLMP-CANVAS-8）**、34＝G9-E、35＝G9-F、36＝G9-G；原计划的 32＝C/33＝D 编号错位已在交付时纠正，无冲突覆盖（交付时 32 空闲）。
+- **编号与顺序纠偏（G9-D §42，2026-09-08；历史记录）**：当时执行顺序 D→C→E→F→G 对应规格 **32＝G9-D（PLMP-CANVAS-7）**、**33＝G9-C（PLMP-CANVAS-8）**、34＝G9-E、35＝G9-F、36＝G9-G；原计划的 32＝C/33＝D 编号错位已在交付时纠正，无冲突覆盖（交付时 32 空闲）。E 位后经 UAS rebase SUPERSEDED（活跃序列见顶部）。
 - G9-B2 交付（2026-09-07）：`baseGraphDigest`/`STALE_GRAPH_BASE` 草稿新鲜度锚、`agentGraphSemanticDigest`、`parseProjectProposal` 输入合同（四 first-party 边界）、patch 语法同构 + `EMPTY_UPDATE`/`NO_OP_OPERATION` no-op 裁决 + accepted⇒digest 必变不变量、`runtime.controls.holds[]` 治理投影、LEGACY 方案 C（M8 回填、NULL=stale）、SCHEMA-AUDIT tripwire。
 - 本文件只做计划与裁决预留，不实现。各批次开工时仍以"审计 → 规格冻结 → 实现 → 回归 → 登记"的纪律推进；规格编号从 32 起顺延（已核对 main 无冲突）。
 
 ---
 
-## G9-C — Canvas 语义保全（规格 33，PLMP-CANVAS-8；编号纠偏见 G9-D §42）
+## G9-C — Canvas 语义保全（规格 33，PLMP-CANVAS-8）✅ **COMPLETE（2026-09-08；交付报告＝`G9-C-PRESENTATION-PRESERVATION-DELIVERY.md` 十八问）**
 
 **问题**（审计 F-E）：patch apply 经 `unloadToCanvasDoc` 重建整 doc——未传 positions 时坐标全落确定性网格、`groups: []` 清空视觉分组。自由画布的组织成果被顺手清零。
+
+**已交付（超出原计划留白处均已按 33 号规格冻结后落地）**：`src/canvas/presentation.ts` `reconcileCanvasPresentation(before, semanticResult)`（Option B 显式合并原语；所有权表：semanticResult 独占语义+identity，before 仅贡献存活 x/y+groups）＋ serve patch 端点委托；PRES-INV-1..6（存活不动/组逐字存活/删员仅清 members/新节点确定性避让/identity 不回卷/lift 严格相等＝digest 表现无关）；moveScope 绝对坐标冻结；新节点避让分配器（190×56+24 行优先网格＋owner 种子）；空组/嵌套组保留；验收 CANVAS-H01..H10＋PATCH-PRES-A01..A04（PRES-ID-A01）＋浏览器冒烟 12 步；测试基线 58/384 → **58/398**。
 
 **设计裁决（先冻结再实现）**：
 
