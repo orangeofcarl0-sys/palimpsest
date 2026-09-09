@@ -48,14 +48,22 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export interface GraphResponse {
-  graph: OrchestrationGraph;
+  graph?: OrchestrationGraph;
   changed: boolean;
+  /** Spec 35 (PLMP-PARSE-1): opaque validator for the COMPLETE projection -
+   * not the canonical event cursor. Send it back for the cheap fast path. */
+  viewCursor: string;
 }
 
-export const getGraph = (cursor?: number): Promise<GraphResponse> =>
-  call<GraphResponse>(`/api/graph${cursor === undefined ? "" : `?cursor=${cursor}`}`);
+/** Spec 35: the polling protocol is viewCursor-based (same viewCursor ⇒ same
+ * complete graph; the unchanged fast path skips the graph build). The legacy
+ * numeric ?cursor= remains supported server-side but the panel uses the
+ * freshness-correct protocol. */
+export const getGraph = (viewCursor?: string): Promise<GraphResponse> =>
+  call<GraphResponse>(`/api/graph${viewCursor === undefined ? "" : `?viewCursor=${encodeURIComponent(viewCursor)}`}`);
 
-export const health = (): Promise<{ ok: boolean; cursor: number }> => call("/api/health");
+export const health = (): Promise<{ ok: boolean; projectInitialized: boolean; eventCursor: number }> =>
+  call("/api/health");
 
 export const control = (op: string, body?: unknown): Promise<{ result: unknown }> =>
   call(`/api/control/${op}`, {

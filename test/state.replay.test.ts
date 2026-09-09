@@ -70,7 +70,7 @@ describe("fixture replay through the TS EventStore", () => {
         // Validate as a committed event first (digests), then resubmit the
         // NewEvent subset through the append pipeline.
         const committed = parseSchedulerEvent(raw);
-        const replayed = store.append(parseNewEvent(committed), { committedAt: committed.committed_at });
+        const replayed = store.append(parseNewEvent(committed, "committed"), { committedAt: committed.committed_at });
         expect(replayed.event_id).toBe(committed.event_id);
         expect(replayed.event_digest).toBe(committed.event_digest);
       }
@@ -84,7 +84,7 @@ describe("fixture replay through the TS EventStore", () => {
     const store = openStore(tempPath());
     try {
       for (const raw of fixture.events) {
-        store.append(parseNewEvent(raw), { committedAt: (raw as { committed_at: string }).committed_at });
+        store.append(parseNewEvent(raw, "committed"), { committedAt: (raw as { committed_at: string }).committed_at });
       }
       expect(snapshotDigest(store.connection)).toBe(fixture.snapshot_digest);
     } finally {
@@ -95,8 +95,8 @@ describe("fixture replay through the TS EventStore", () => {
   it("append is idempotent: resubmitting a stored request returns it unchanged", () => {
     const store = openStore(tempPath());
     try {
-      const first = store.append(parseNewEvent(fixture.events[0]), { committedAt: (fixture.events[0] as { committed_at: string }).committed_at });
-      const again = store.append(parseNewEvent(fixture.events[0]), { committedAt: (fixture.events[0] as { committed_at: string }).committed_at });
+      const first = store.append(parseNewEvent(fixture.events[0], "committed"), { committedAt: (fixture.events[0] as { committed_at: string }).committed_at });
+      const again = store.append(parseNewEvent(fixture.events[0], "committed"), { committedAt: (fixture.events[0] as { committed_at: string }).committed_at });
       expect(again.event_id).toBe(first.event_id);
       expect(again.event_digest).toBe(first.event_digest);
       expect(store.listEvents()).toHaveLength(1);
@@ -112,7 +112,7 @@ describe("fixture replay through the TS EventStore", () => {
       const store = openStore(path);
       try {
         for (const raw of fixture.events.slice(0, 5)) {
-          store.append(parseNewEvent(raw), { committedAt: (raw as { committed_at: string }).committed_at });
+          store.append(parseNewEvent(raw, "committed"), { committedAt: (raw as { committed_at: string }).committed_at });
         }
         digests = store.listEvents().map((event) => event.event_digest);
       } finally {
@@ -126,7 +126,7 @@ describe("fixture replay through the TS EventStore", () => {
         reopened.verifyFull();
         // continue appending the remaining events after "restart"
         for (const raw of fixture.events.slice(5)) {
-          reopened.append(parseNewEvent(raw), { committedAt: (raw as { committed_at: string }).committed_at });
+          reopened.append(parseNewEvent(raw, "committed"), { committedAt: (raw as { committed_at: string }).committed_at });
         }
         expect(snapshotDigest(reopened.connection)).toBe(fixture.snapshot_digest);
       } finally {
@@ -139,7 +139,7 @@ describe("fixture replay through the TS EventStore", () => {
     const store = openStore(tempPath());
     try {
       for (const raw of fixture.events) {
-        store.append(parseNewEvent(raw), { committedAt: (raw as { committed_at: string }).committed_at });
+        store.append(parseNewEvent(raw, "committed"), { committedAt: (raw as { committed_at: string }).committed_at });
       }
       const before = snapshotDigest(store.connection);
       store.rebuildProjections();

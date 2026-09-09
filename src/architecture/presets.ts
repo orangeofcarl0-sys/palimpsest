@@ -324,12 +324,23 @@ export function presetMeta(): ReadonlyArray<PresetMeta> {
   return PRESETS.map(({ build: _build, ...meta }) => meta);
 }
 
-/** Build a proposal from a preset id; throws (→ serve 400) on unknown id or bad params. */
+/** Build a proposal from a preset id; throws (→ serve 400) on unknown id, bad
+ * params, or UNKNOWN param keys (spec 35 PARSE-INV-1: author-authored closed
+ * contract - a typo'd param must error, never be silently ignored). */
 export function presetDraft(id: string, params: Params): ProjectProposal {
   const preset = PRESETS.find((entry) => entry.id === id);
   if (preset === undefined) throw new Error(`unknown preset: ${id}`);
   if (params === null || typeof params !== "object" || Array.isArray(params)) {
     throw new Error("params must be a JSON object");
+  }
+  // goal/changeClass are universal declared params (every preset reads
+  // them); the paramSpec lists only the preset-specific fields.
+  const universal = new Set(["goal", "changeClass"]);
+  for (const key of Object.keys(params)) {
+    if (universal.has(key)) continue;
+    if (!preset.paramSpec.some((field) => field.name === key)) {
+      throw new Error(`unknown param "${key}" for preset "${id}"`);
+    }
   }
   return preset.build(params);
 }

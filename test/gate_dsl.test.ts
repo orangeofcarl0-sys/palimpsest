@@ -148,9 +148,24 @@ describe("Gate DSL (Research line)", () => {
         require: { all: [{ count: { predicate: "tests_pass", gte: -1 } }] },
       }),
     ).toThrow(/gte/);
+    // Spec 35: require declares exactly one of all|any (both/neither error).
     expect(() =>
       parseGateDefinition({ gate_id: "b", version: 1, subject_type: "attempt", require: {} }),
-    ).toThrow(/all or any/);
+    ).toThrow(/exactly one of all \| any/);
+    expect(() =>
+      parseGateDefinition({
+        gate_id: "b",
+        version: 1,
+        subject_type: "attempt",
+        require: {
+          all: [{ exists: { predicate: "tests_pass" } }],
+          any: [{ exists: { predicate: "lint_pass" } }],
+        },
+      }),
+    ).toThrow(/exactly one of all \| any/);
+    expect(() =>
+      parseGateDefinition({ gate_id: "b", version: 1, subject_type: "attempt", typo_field: 1, require: { all: [] } }),
+    ).toThrow(/unknown gate definition field/);
   });
 
   it("verdicts PASS when every all-branch is evidenced", async () => {

@@ -49,6 +49,21 @@ export function parseWhere(value: unknown): Record<string, unknown> | undefined 
 
 export function parseClause(value: unknown): GateClause {
   if (!isObject(value)) throw new TypeError("gate clause must be an object");
+  // Spec 35 PARSE-INV-1: the clause envelope is a closed author-authored
+  // contract - exactly one of exists|count|not and no unknown siblings (a
+  // typo like `exist` must error, not vanish). The `where` maps INSIDE stay
+  // open (PARSE-INV-3); nested clause grammar stays owned right here.
+  const variants = ["exists", "count", "not"].filter((key) => key in value);
+  if (variants.length !== 1) {
+    throw new TypeError(
+      `gate clause must be exactly one of exists | count | not, got [${variants.join(", ")}]`,
+    );
+  }
+  for (const key of Object.keys(value)) {
+    if (key !== "exists" && key !== "count" && key !== "not") {
+      throw new TypeError(`unknown gate clause field '${key}'`);
+    }
+  }
   if ("exists" in value) {
     const spec = value.exists as unknown;
     if (!isObject(spec)) throw new TypeError("exists clause requires an object");
@@ -82,6 +97,13 @@ export function parseClause(value: unknown): GateClause {
 /** Fail-closed parse of a gate definition (schema_version not required: gates are optional metadata). */
 export function parseGateDefinition(value: unknown): GateDefinition {
   if (!isObject(value)) throw new TypeError("gate definition must be an object");
+  // Spec 35 PARSE-INV-1: closed envelope - unknown keys error, and require
+  // must declare exactly one of all|any (both would silently pick one).
+  for (const key of Object.keys(value)) {
+    if (!["gate_id", "version", "subject_type", "require"].includes(key)) {
+      throw new TypeError(`unknown gate definition field '${key}'`);
+    }
+  }
   const gateId = value.gate_id;
   if (typeof gateId !== "string" || gateId.length === 0) {
     throw new TypeError("gate_id must be a non-empty string");
@@ -96,6 +118,14 @@ export function parseGateDefinition(value: unknown): GateDefinition {
   }
   const require = value.require;
   if (!isObject(require)) throw new TypeError("require must be an object");
+  for (const key of Object.keys(require)) {
+    if (key !== "all" && key !== "any") {
+      throw new TypeError(`unknown gate require field '${key}'`);
+    }
+  }
+  if (("all" in require) === ("any" in require)) {
+    throw new TypeError("require must declare exactly one of all | any");
+  }
   const clauses = require.all ?? require.any;
   if (!Array.isArray(clauses)) {
     throw new TypeError("require must have an all or any clause array");

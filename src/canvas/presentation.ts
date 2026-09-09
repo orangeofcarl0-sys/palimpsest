@@ -70,6 +70,11 @@ function placeNewNodes(
  * deleted members removed - empty groups stay; PRES-INV-4 fresh nodes get
  * deterministic collision-aware placement; PRES-INV-5 identity is the
  * semantic result's, verbatim.
+ *
+ * PRES-BELT-INV-1 (spec 35 §3): the output node array follows the
+ * semanticResult's declaration order EXACTLY, even when fresh ids interleave
+ * with surviving ones - placement order (which may process an owner before a
+ * child declared after it) is an internal concern, never the output order.
  */
 export function reconcileCanvasPresentation(before: CanvasDoc, semanticResult: CanvasDoc): CanvasDoc {
   const beforeByKey = new Map(before.nodes.map((node) => [node.key, node]));
@@ -81,7 +86,9 @@ export function reconcileCanvasPresentation(before: CanvasDoc, semanticResult: C
     if (previous === undefined) fresh.push(node);
     else kept.push({ ...node, x: previous.x, y: previous.y });
   }
-  const nodes = [...kept, ...placeNewNodes(kept, fresh)];
+  const placed = placeNewNodes(kept, fresh);
+  const finalByKey = new Map([...kept, ...placed].map((node) => [node.key, node]));
+  const nodes = semanticResult.nodes.map((node) => finalByKey.get(node.key)!);
   // Groups are presentation truth owned by `before`: declaration order,
   // id/label/g verbatim; membership keeps its original order minus nodes the
   // semantic patch deleted. A group whose members are all gone remains -

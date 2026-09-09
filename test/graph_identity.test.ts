@@ -41,6 +41,7 @@ import { TaskPolicy } from "../src/domain/index.js";
 import type { ProjectProposal, TaskProposal } from "../src/architecture/index.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
+import { parseGateDefinition } from "../src/domain/index.js";
 
 const HEAD = "c".repeat(40);
 
@@ -701,6 +702,204 @@ describe("patch endpoint presentation preservation (PLMP-CANVAS-8)", () => {
     } finally {
       await handle.close();
       await rig.cleanup();
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Spec 35 (PLMP-PARSE-1): view freshness - EventCursor ≠ ViewCursor.
+// WEB-H01-A..E through the real serve; WEB-HEALTH-A01 for the empty state.
+// ---------------------------------------------------------------------------
+
+describe("view freshness (spec 35 WEB-H01 / WEB-HEALTH)", () => {
+  const eventCursorOf = (store: EventStore): number => {
+    const row = store.connection.prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events").get() as { m: number };
+    return Number(row.m);
+  };
+  const get = async (handle: ServeHandle, suffix = ""): Promise<{ status: number; json: Record<string, unknown> }> => {
+    const response = await fetch(`${handle.url}/api/graph${suffix}`, {
+      headers: { authorization: `Bearer ${handle.token}` },
+    });
+    return { status: response.status, json: (await response.json()) as Record<string, unknown> };
+  };
+  const seedEvidenceRow = (store: EventStore, attemptId: string): void => {
+    store.connection
+      .prepare(
+        "INSERT INTO evidence(project_id, evidence_id, status, evidence_json, last_event_id, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+      )
+      .run(
+        "identity-project",
+        `evidence-${attemptId}-tests_pass-0`,
+        "active",
+        new TextEncoder().encode(
+          JSON.stringify({
+            schema_version: 1,
+            project_id: "identity-project",
+            evidence_id: `evidence-${attemptId}-tests_pass-0`,
+            subject_type: "attempt",
+            subject_id: attemptId,
+            subject_digest: "a".repeat(64),
+            predicate: "tests_pass",
+            value: {},
+            project_revision: 0,
+            input_fingerprint: "b".repeat(64),
+            command: ["python", "-m", "pytest"],
+            exit_code: 0,
+            environment_digest: "c".repeat(64),
+            dependency_digest: null,
+            observed_artifacts: [],
+            producer: "h1",
+            created_at: "2026-09-10T00:00:00Z",
+            status: "active",
+          }),
+        ),
+        1,
+        "2026-09-10T00:00:00Z",
+      );
+  };
+
+  it("WEB-HEALTH-A01: health succeeds before project initialization, without building the graph", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      const before = rig.controller.graphBuildCount();
+      const response = await fetch(`${handle.url}/api/health`, {
+        headers: { authorization: `Bearer ${handle.token}` },
+      });
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as { ok: boolean; projectInitialized: boolean; eventCursor: number };
+      expect(body).toEqual({ ok: true, projectInitialized: false, eventCursor: 0 });
+      expect(rig.controller.graphBuildCount()).toBe(before);
+      // After the project exists, health reports it - still no graph build.
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const after = (await (
+        await fetch(`${handle.url}/api/health`, { headers: { authorization: `Bearer ${handle.token}` } })
+      ).json()) as { projectInitialized: boolean };
+      expect(after.projectInitialized).toBe(true);
+      expect(rig.controller.graphBuildCount()).toBe(before);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("WEB-H01-A/B: matching viewCursor skips the build; an event invalidates it", async () => {
+    const rig = makeRig();
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      const first = await get(handle);
+      expect(first.json.changed).toBe(true);
+      const vc = first.json.viewCursor as string;
+      expect(typeof vc).toBe("string");
+      expect((first.json.graph as { project: { cursor: number } }).project.cursor).toBe(eventCursorOf(rig.store));
+      // A: same viewCursor → changed=false, no graph payload, no rebuild.
+      const builds = rig.controller.graphBuildCount();
+      const second = await get(handle, `?viewCursor=${encodeURIComponent(vc)}`);
+      expect(second.json.changed).toBe(false);
+      expect(second.json.graph).toBeUndefined();
+      expect(second.json.viewCursor).toBe(vc);
+      expect(rig.controller.graphBuildCount()).toBe(builds);
+      // B: a graph-visible canonical event invalidates the cursor.
+      rig.controller.pause("smoke");
+      const third = await get(handle, `?viewCursor=${encodeURIComponent(vc)}`);
+      expect(third.json.changed).toBe(true);
+      expect(third.json.graph).toBeDefined();
+      expect(third.json.viewCursor).not.toBe(vc);
+      expect(rig.controller.graphBuildCount()).toBe(builds + 1);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("WEB-H01-C/D: a graph-visible volatile change invalidates; a non-visible one does not", async () => {
+    const rig = makeRig();
+    try {
+      rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      rig.controller.step();
+      const created = rig.controller.step()!;
+      const attemptId = created.entity_id;
+      const gate = parseGateDefinition({
+        gate_id: "gate-pass",
+        version: 1,
+        subject_type: "attempt",
+        require: { all: [{ exists: { predicate: "tests_pass" } }] },
+      });
+      rig.controller.declareGate(gate, "test");
+      seedEvidenceRow(rig.store, attemptId);
+      // D first: gate evaluation WITHOUT attribution settles nothing - the
+      // non-visible mutation must not churn the view cursor.
+      const beforeD = rig.controller.viewCursor();
+      const verdictD = rig.controller.evaluateAttemptGate("gate-pass", attemptId);
+      expect(verdictD.verdict).toBe("PASS");
+      expect(rig.controller.viewCursor()).toBe(beforeD);
+      // C: claim WITH attribution, then the same eventless settlement - the
+      // attribution disappears from the graph while MAX(event_id) stays put;
+      // the old viewCursor must be invalidated by the generation bump.
+      await rig.controller.claim(attemptId, { model: "flash", cost: 1 });
+      seedEvidenceRow(rig.store, `${attemptId}-2`);
+      const vc = rig.controller.viewCursor();
+      const events = eventCursorOf(rig.store);
+      const verdictC = rig.controller.evaluateAttemptGate("gate-pass", attemptId);
+      expect(verdictC.verdict).toBe("PASS");
+      expect(eventCursorOf(rig.store)).toBe(events); // no event appended
+      expect(rig.controller.viewCursor()).not.toBe(vc); // but the view moved
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  it("WEB-H01-E: a stale viewCursor from a dead process never hits the fast path", async () => {
+    const statePath = tempStatePath();
+    const makeRigAt = () => {
+      const store = new EventStore(statePath, { clock: new FakeClock().next });
+      const effects = createPalimpsestEffects({
+        databasePath: join(tempStatePath(), "ops.sqlite"),
+        git: new FakeGitPort(HEAD),
+      });
+      const controller = new ProjectController({
+        store,
+        effects,
+        projectId: "identity-project",
+        policy: new TaskPolicy({
+          policy_id: "trusted-default",
+          read_paths: ["src"],
+          allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+          network_policy: "deny",
+          network_allowlist: [],
+          timeout_s: 60,
+          lease_s: 10,
+          attempt_limit: 3,
+          candidate_limit: 1,
+        }),
+        clock: () => "2026-09-10T00:00:00Z",
+      });
+      return { store, controller, cleanup: () => Promise.all([effects.close(), store.close()]) };
+    };
+    const rigA = makeRigAt();
+    const handleA: ServeHandle = await serveOrchestration(rigA.controller, { port: 0 });
+    let staleCursor = "";
+    try {
+      rigA.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
+      staleCursor = (await get(handleA)).json.viewCursor as string;
+    } finally {
+      await handleA.close();
+      await rigA.cleanup();
+    }
+    // New process over the SAME ledger: the volatile attribution map died
+    // with process A while the event cursor is unchanged - the epoch in the
+    // cursor makes cross-process equality impossible.
+    const rigB = makeRigAt();
+    const handleB: ServeHandle = await serveOrchestration(rigB.controller, { port: 0 });
+    try {
+      const response = await get(handleB, `?viewCursor=${encodeURIComponent(staleCursor)}`);
+      expect(response.json.changed).toBe(true);
+      expect(response.json.graph).toBeDefined();
+      expect(response.json.viewCursor).not.toBe(staleCursor);
+    } finally {
+      await handleB.close();
+      await rigB.cleanup();
     }
   });
 });

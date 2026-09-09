@@ -112,12 +112,29 @@ export interface StageGraphDefinition {
   reason: string;
 }
 
+/** Fail-closed unknown-key rejection for the object layers this parser owns
+ * (spec 35 PARSE-INV-1: an author-authored closed contract never silently
+ * drops a typo). Guard clause CONTENTS stay delegated to parseClause — the
+ * one grammar owner (PARSE-INV-2). */
+function rejectUnknownFields(raw: Record<string, unknown>, allowed: ReadonlySet<string>, what: string): void {
+  for (const key of Object.keys(raw)) {
+    if (!allowed.has(key)) {
+      throw new TypeError(`unknown stage graph field '${key}' on ${what}`);
+    }
+  }
+}
+
+const ROOT_FIELDS: ReadonlySet<string> = new Set(["stages", "transitions", "guards", "declared_by", "reason"]);
+const STAGE_FIELDS = new Set(["id", "state", "concurrency"]);
+const TRANSITION_FIELDS = new Set(["from", "event", "to", "when"]);
+
 /** Fail-closed parse of a stage graph declaration (guards included, clauses parsed). */
 export function parseStageGraphDefinition(value: unknown): StageGraphDefinition {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new TypeError("stage graph definition must be an object");
   }
   const raw = value as Record<string, unknown>;
+  rejectUnknownFields(raw, ROOT_FIELDS, "the stage graph root");
 
   if (!Array.isArray(raw.stages) || raw.stages.length === 0) {
     throw new TypeError("stage graph stages must be a non-empty array");
@@ -130,6 +147,7 @@ export function parseStageGraphDefinition(value: unknown): StageGraphDefinition 
       throw new TypeError("stage entry must be an object");
     }
     const stage = entry as Record<string, unknown>;
+    rejectUnknownFields(stage, STAGE_FIELDS, `stage '${String(stage.id)}'`);
     const id = stage.id;
     if (typeof id !== "string" || id.length === 0) {
       throw new TypeError("stage id must be a non-empty string");
@@ -173,6 +191,7 @@ export function parseStageGraphDefinition(value: unknown): StageGraphDefinition 
       throw new TypeError("transition entry must be an object");
     }
     const transition = entry as Record<string, unknown>;
+    rejectUnknownFields(transition, TRANSITION_FIELDS, `transition '${String(transition.from)}'`);
     const from = transition.from;
     if (typeof from !== "string" || !stageIds.has(from)) {
       throw new TypeError(`transition from '${String(from)}' is not a declared stage id`);

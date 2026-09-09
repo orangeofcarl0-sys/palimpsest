@@ -3,8 +3,17 @@
  *
  * Ported from palimpsest-repo palimpsest/schema/models.py (phase0-2 unified
  * baseline, schema_version=1 / payload_version=1). Parse functions validate
- * unknown input fail-closed and return normalized plain JSON objects, the
+ * required fields strictly and return normalized plain JSON objects, the
  * same shape the Python side produces via model_dump(exclude_unset=False).
+ *
+ * Unknown-field policy (spec 35 PLMP-PARSE-1, WIRE-INV-1): explicit per
+ * contract, never an accident of requireFields(). Closed versioned contracts
+ * reject unknown keys (rejectUnknownFields) - an unknown key means the
+ * parser does not understand this version. Explicitly OPEN containers stay
+ * open: EvidenceAtom.value contents, gate clause `where` maps (gate_clause),
+ * and the CONTEXT_MANIFEST_ADDED `requirement` body (host compilation input,
+ * PLMP-CTX-2). Future fields arrive as declared additive optionals, never as
+ * generic unknown-key tolerance.
  *
  * Datetime fields keep their wire strings here; canonical digests convert
  * them via canonicalDatetime() (see computeRequestDigest / computeEventDigest
@@ -180,6 +189,7 @@ export interface Requirement {
 export function parseRequirement(value: unknown): Requirement {
   const raw = expectObject(value);
   requireFields(raw, "requirement_id", "statement", "priority", "acceptance_refs");
+  rejectUnknownFields(raw, ["requirement_id", "statement", "priority", "acceptance_refs"], "requirement");
   const priority = field(raw.priority, "priority", expectString);
   if (!["critical", "high", "normal", "low"].includes(priority)) {
     throw new ContractError("priority: invalid literal");
@@ -209,6 +219,7 @@ export interface Decision {
 export function parseDecision(value: unknown): Decision {
   const raw = expectObject(value);
   requireFields(raw, "decision_id", "statement", "rationale", "evidence_ids", "supersedes");
+  rejectUnknownFields(raw, ["decision_id", "statement", "rationale", "evidence_ids", "supersedes"], "decision");
   return Object.freeze({
     decision_id: field(raw.decision_id, "decision_id", (inner) =>
       validateIdentifier(expectString(inner)),
@@ -264,6 +275,23 @@ export interface TaskSpec {
 export function parseTaskSpec(value: unknown): TaskSpec {
   const raw = expectObject(value);
   requireFields(raw, "task_id", "objective", "depends_on", "write_paths", "required_artifacts");
+  // SDS-4 declared additive optionals ride the allowlist; anything else is a
+  // version this parser does not understand.
+  rejectUnknownFields(
+    raw,
+    [
+      "task_id",
+      "objective",
+      "depends_on",
+      "write_paths",
+      "required_artifacts",
+      "role",
+      "suggested_skills",
+      "scope_id",
+      "definition_id",
+    ],
+    "task spec",
+  );
   const spec: TaskSpec = {
     task_id: field(raw.task_id, "task_id", (inner) => validateIdentifier(expectString(inner))),
     objective: field(raw.objective, "objective", (inner) => nonEmpty(expectString(inner))),
@@ -310,6 +338,7 @@ export interface AllowedCommand {
 export function parseAllowedCommand(value: unknown): AllowedCommand {
   const raw = expectObject(value);
   requireFields(raw, "executable", "argv_prefix");
+  rejectUnknownFields(raw, ["executable", "argv_prefix"], "allowed command");
   const executable = field(raw.executable, "executable", expectString);
   if (!COMMAND_RE.test(executable)) {
     throw new ContractError("executable: must be an executable basename, not a path");
@@ -331,6 +360,7 @@ export interface NetworkEndpoint {
 export function parseNetworkEndpoint(value: unknown): NetworkEndpoint {
   const raw = expectObject(value);
   requireFields(raw, "host", "port");
+  rejectUnknownFields(raw, ["host", "port"], "network endpoint");
   const host = field(raw.host, "host", expectString).toLowerCase();
   if (host === "localhost" || host.length > 253 || !HOST_RE.test(host)) {
     throw new ContractError("host: must be an exact non-local DNS host without wildcards");
@@ -365,6 +395,20 @@ export function parseRuntimeMetadata(value: unknown): RuntimeMetadata {
     "environment_digest",
     "stdout_artifact",
     "stderr_artifact",
+  );
+  rejectUnknownFields(
+    raw,
+    [
+      "runner",
+      "runner_version",
+      "argv",
+      "exit_code",
+      "duration_ms",
+      "environment_digest",
+      "stdout_artifact",
+      "stderr_artifact",
+    ],
+    "runtime metadata",
   );
   const durationMs = field(raw.duration_ms, "duration_ms", expectInt);
   if (durationMs < 0) throw new ContractError("duration_ms: must be >= 0");
@@ -434,6 +478,24 @@ export function parseProjectIr(value: unknown): ProjectIr {
     "tasks",
     "head_commit",
     "committed_at",
+  );
+  rejectUnknownFields(
+    raw,
+    [
+      "schema_version",
+      "project_id",
+      "revision",
+      "digest",
+      "parent_revision",
+      "parent_digest",
+      "goal",
+      "requirements",
+      "decisions",
+      "tasks",
+      "head_commit",
+      "committed_at",
+    ],
+    "project IR",
   );
   if (raw.schema_version !== 1) throw new ContractError("schema_version must be 1");
   const revision = field(raw.revision, "revision", expectInt);
@@ -538,6 +600,32 @@ export function parseTaskEnvelope(value: unknown): TaskEnvelope {
     "attempt_limit",
     "candidate_limit",
     "idempotency_key",
+  );
+  rejectUnknownFields(
+    raw,
+    [
+      "schema_version",
+      "project_id",
+      "task_id",
+      "envelope_id",
+      "project_revision",
+      "project_digest",
+      "base_commit",
+      "objective",
+      "read_paths",
+      "write_paths",
+      "required_artifacts",
+      "allowed_commands",
+      "network_policy",
+      "network_allowlist",
+      "timeout_s",
+      "lease_s",
+      "attempt_limit",
+      "candidate_limit",
+      "idempotency_key",
+      "suggested_skills",
+    ],
+    "task envelope",
   );
   if (raw.schema_version !== 1) throw new ContractError("schema_version must be 1");
   const networkPolicy = field(raw.network_policy, "network_policy", expectString);
@@ -675,6 +763,30 @@ export function parseAttemptReport(value: unknown): AttemptReport {
     "finished_at",
     "runtime_metadata",
   );
+  rejectUnknownFields(
+    raw,
+    [
+      "schema_version",
+      "project_id",
+      "attempt_id",
+      "task_id",
+      "envelope_id",
+      "input_project_revision",
+      "input_project_digest",
+      "base_commit",
+      "worktree_id",
+      "result_commit",
+      "worker_status",
+      "summary",
+      "changed_files",
+      "produced_artifacts",
+      "started_at",
+      "finished_at",
+      "runtime_metadata",
+      "context_manifest",
+    ],
+    "attempt report",
+  );
   if (raw.schema_version !== 1) throw new ContractError("schema_version must be 1");
   const workerStatus = field(raw.worker_status, "worker_status", expectString);
   if (!["completed", "failed", "cancelled", "expired"].includes(workerStatus)) {
@@ -785,6 +897,32 @@ export function parseEvidenceAtom(value: unknown): EvidenceAtom {
     "producer",
     "created_at",
     "status",
+  );
+  // `value` is an explicitly OPEN map (spec 35 PARSE-INV-3): its contents are
+  // predicate-domain data. The ENVELOPE stays closed.
+  rejectUnknownFields(
+    raw,
+    [
+      "schema_version",
+      "project_id",
+      "evidence_id",
+      "subject_type",
+      "subject_id",
+      "subject_digest",
+      "predicate",
+      "value",
+      "project_revision",
+      "input_fingerprint",
+      "command",
+      "exit_code",
+      "environment_digest",
+      "dependency_digest",
+      "observed_artifacts",
+      "producer",
+      "created_at",
+      "status",
+    ],
+    "evidence atom",
   );
   if (raw.schema_version !== 1) throw new ContractError("schema_version must be 1");
   const subjectType = field(raw.subject_type, "subject_type", expectString);
@@ -966,6 +1104,22 @@ function requireFields(raw: Record<string, unknown>, ...names: string[]): void {
   }
 }
 
+/** Spec 35 WIRE-INV-1: unknown-key rejection is each contract owner's
+ * explicit declaration (required ∪ optional ∪ open), never a global
+ * requireFields side effect. An unknown key on a closed contract means the
+ * parser does not understand this version (PARSE-INV-1/§11). */
+function rejectUnknownFields(
+  raw: Record<string, unknown>,
+  allowed: readonly string[],
+  what: string,
+): void {
+  for (const key of Object.keys(raw)) {
+    if (!allowed.includes(key)) {
+      throw new ContractError(`${what}: unknown field '${key}'`);
+    }
+  }
+}
+
 function optionalPositiveInt(value: unknown, name: string): number | null {
   const inner = expectNullableInt(value);
   if (inner !== null && inner <= 0) throw new ContractError(`${name} must be > 0`);
@@ -978,11 +1132,76 @@ function optionalPositiveInt(value: unknown, name: string): number | null {
  * field present (explicit nulls preserved), enforcing the target-state and
  * worker-status consistency rules.
  */
+/**
+ * Spec 35 (PARSE-INV-1/§13): each event payload family is a CLOSED contract
+ * owned by its case below - the allowed key list is that case's declared
+ * output keys (required \u222a optional). Unknown keys must not silently
+ * normalize away. Nested CONTRACTS keep their single grammar owner:
+ * project_ir \u2192 parseProjectIr, task_envelope \u2192 parseTaskEnvelope,
+ * attempt_report \u2192 parseAttemptReport, evidence \u2192 parseEvidenceAtom,
+ * GATE_DEFINED.gate \u2192 parseGateDefinition (enforced on read),
+ * STAGE_GRAPH_DEFINED body \u2192 parseStageGraphDefinition (enforced on read).
+ */
+const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
+  PROJECT_CREATED: ["project_ir"],
+  PROJECT_REVISED: ["project_ir", "promotion_id"],
+  TASK_CREATED: ["task_envelope", "initial_state", "policy_id", "policy_digest"],
+  TASK_BLOCKED: ["previous_state", "new_state", "reason"],
+  TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_STARTED: ["previous_state", "new_state", "reason", "planned_candidate_count", "first_attempt_no"],
+  TASK_VERIFYING: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_SATISFIED: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_FAILED: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_STALE: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  ATTEMPT_CREATED: ["task_id", "envelope_id", "attempt_no"],
+  ATTEMPT_LEASED: ["previous_state", "new_state", "lease_generation", "reason"],
+  ATTEMPT_STARTED: ["previous_state", "new_state", "lease_generation", "reason"],
+  ATTEMPT_COMPLETED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  ATTEMPT_FAILED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  ATTEMPT_EXPIRED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  ATTEMPT_CANCELLED: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  ATTEMPT_LATE_RESULT: ["previous_state", "new_state", "lease_generation", "reason", "attempt_report"],
+  EVIDENCE_ADDED: ["evidence"],
+  EVIDENCE_STALE: ["evidence_id", "reason"],
+  SCHEDULER_PAUSED: ["reason"],
+  SCHEDULER_RESUMED: ["reason", "expected_control_generation"],
+  MANUAL_APPROVAL_RECORDED: ["approver", "subject_type", "subject_id", "subject_digest", "risk_summary"],
+  PROMOTION_PREPARED: [
+    "promotion_id", "attempt_id", "source_commit",
+    "expected_head_commit", "resulting_head_commit", "reason",
+  ],
+  PROMOTION_GIT_STARTED: [
+    "promotion_id", "attempt_id", "source_commit",
+    "expected_head_commit", "resulting_head_commit", "reason",
+  ],
+  PROMOTION_GIT_COMPLETED: [
+    "promotion_id", "attempt_id", "source_commit",
+    "expected_head_commit", "resulting_head_commit", "reason",
+  ],
+  PROMOTION_COMMITTED: [
+    "promotion_id", "attempt_id", "source_commit",
+    "expected_head_commit", "resulting_head_commit", "reason",
+  ],
+  PROMOTION_FAILED: [
+    "promotion_id", "attempt_id", "source_commit",
+    "expected_head_commit", "resulting_head_commit", "reason",
+  ],
+  JUDGE_DECLARED: ["judge_id", "kind", "version", "declared_by"],
+  CANDIDATE_SELECTED: ["task_id", "candidates", "rounds", "judge", "winner", "entries_digest"],
+  GATE_DEFINED: ["gate", "declared_by"],
+  ROLE_TABLE_DEFINED: ["roles", "hard_cap", "declared_by"],
+  STAGE_GRAPH_DEFINED: ["stages", "transitions", "guards", "declared_by", "reason"],
+  CONTEXT_MANIFEST_ADDED: ["task_id", "project_revision", "manifest"],
+  HOLD_SET: ["task_id", "reason", "declared_by", "project_revision"],
+  HOLD_CLEARED: ["task_id", "reason"],
+};
+
 export function normalizeEventPayload(
   eventType: EventType,
   payload: unknown,
 ): Record<string, unknown> {
   const raw = expectObject(payload);
+  rejectUnknownFields(raw, EVENT_PAYLOAD_FIELDS[eventType], `event payload ${eventType}`);
   switch (eventType) {
     case "PROJECT_CREATED":
     case "PROJECT_REVISED": {
@@ -1202,6 +1421,7 @@ export function normalizeEventPayload(
         roles: roles.map((entry) => {
           const item = expectObject(entry);
           requireFields(item, "role", "slots");
+          rejectUnknownFields(item, ["role", "slots"], "role table entry");
           return {
             role: field(item.role, "role", expectString),
             slots: field(item.slots, "slots", expectInt),
@@ -1249,9 +1469,27 @@ export function normalizeEventPayload(
         "retrieval",
         "created_at",
       );
-      // The requirement body is a host-derived compilation input: shape-checked
-      // as an object, its semantics belong to the compiler (PLMP-CTX-2 §1).
+      // Spec 35 PARSE-INV-3: the requirement body is a host-derived
+      // compilation input and stays an OPEN object (PLMP-CTX-2 §1); the
+      // manifest envelope and its closed entry objects reject unknown keys.
       expectObject(manifest.requirement);
+      rejectUnknownFields(
+        manifest,
+        [
+          "manifest_id",
+          "task_id",
+          "project_revision",
+          "requirement",
+          "exact",
+          "source",
+          "evidence",
+          "excluded_stale",
+          "retrieval",
+          "semantic",
+          "created_at",
+        ],
+        "context manifest",
+      );
       return {
         task_id: field(raw.task_id, "task_id", (inner) => validateIdentifier(expectString(inner))),
         project_revision: field(raw.project_revision, "project_revision", expectInt),
@@ -1267,6 +1505,7 @@ export function normalizeEventPayload(
           exact: expectArray(manifest.exact).map((entry) => {
             const item = expectObject(entry);
             requireFields(item, "ref", "digest");
+            rejectUnknownFields(item, ["ref", "digest"], "manifest exact entry");
             return {
               ref: field(item.ref, "ref", (inner) => nonEmpty(expectString(inner))),
               digest: field(item.digest, "digest", (inner) => nonEmpty(expectString(inner))),
@@ -1275,6 +1514,7 @@ export function normalizeEventPayload(
           source: expectArray(manifest.source).map((entry) => {
             const item = expectObject(entry);
             requireFields(item, "path", "line", "snippet", "term");
+            rejectUnknownFields(item, ["path", "line", "snippet", "term"], "manifest source entry");
             return {
               path: field(item.path, "path", (inner) => nonEmpty(expectString(inner))),
               line: field(item.line, "line", expectInt),
@@ -1295,6 +1535,7 @@ export function normalizeEventPayload(
                 semantic: expectArray(manifest.semantic).map((entry) => {
                   const item = expectObject(entry);
                   requireFields(item, "path", "score_permille");
+                  rejectUnknownFields(item, ["path", "score_permille"], "manifest semantic entry");
                   return {
                     path: field(item.path, "path", (inner) => nonEmpty(expectString(inner))),
                     score_permille: field(item.score_permille, "score_permille", expectInt),
@@ -1334,6 +1575,7 @@ export function normalizeEventPayload(
         candidates: candidates.map((inner) => validateIdentifier(expectString(inner))),
         rounds: rounds.map((round) => {
           const entry = expectObject(round);
+          rejectUnknownFields(entry, ["left", "right", "winner", "tie"], "candidate round");
           return {
             left: validateIdentifier(expectString(entry.left)),
             right: validateIdentifier(expectString(entry.right)),
@@ -1341,11 +1583,14 @@ export function normalizeEventPayload(
             tie: entry.tie === true,
           };
         }),
-        judge: {
-          id: field(judge.id, "judge.id", (inner) => validateIdentifier(expectString(inner))),
-          kind: judgeKind,
-          replayable: judge.replayable === true,
-        },
+        judge: (() => {
+          rejectUnknownFields(judge, ["id", "kind", "replayable"], "candidate judge");
+          return {
+            id: field(judge.id, "judge.id", (inner) => validateIdentifier(expectString(inner))),
+            kind: judgeKind,
+            replayable: judge.replayable === true,
+          };
+        })(),
         winner:
           raw.winner === null || raw.winner === undefined
             ? null
@@ -1526,7 +1771,39 @@ function parseEventType(value: unknown): EventType {
 }
 
 /** Validate a new event request; returns the normalized form. */
-export function parseNewEvent(value: unknown): NewEvent {
+const EVENT_ENVELOPE_FIELDS = [
+  "schema_version",
+  "project_id",
+  "event_type",
+  "payload_version",
+  "entity_type",
+  "entity_id",
+  "payload",
+  "causation_id",
+  "correlation_id",
+  "idempotency_key",
+  "expected_project_revision",
+];
+
+/** The committed face adds the ledger-set fields (SchedulerEvent). */
+const COMMITTED_EVENT_FIELDS = [
+  "event_id",
+  "project_sequence",
+  "request_digest",
+  "previous_event_digest",
+  "event_digest",
+  "committed_at",
+];
+
+/** Face of the event envelope: "new" = the append REQUEST contract,
+ * "committed" = the ledger face with the digest-chain fields. Each face
+ * declares its own closed key set (spec 35 WIRE-INV-1). */
+export type EventEnvelopeFace = "new" | "committed";
+
+export function parseNewEvent(
+  value: unknown,
+  face: EventEnvelopeFace = "new",
+): NewEvent {
   const raw = expectObject(value);
   requireFields(
     raw,
@@ -1541,6 +1818,11 @@ export function parseNewEvent(value: unknown): NewEvent {
     "correlation_id",
     "idempotency_key",
     "expected_project_revision",
+  );
+  rejectUnknownFields(
+    raw,
+    face === "committed" ? [...EVENT_ENVELOPE_FIELDS, ...COMMITTED_EVENT_FIELDS] : EVENT_ENVELOPE_FIELDS,
+    "event envelope",
   );
   if (raw.schema_version !== 1) throw new ContractError("schema_version must be 1");
   if (raw.payload_version !== 1) throw new ContractError("payload_version must be 1");
@@ -1600,7 +1882,7 @@ export function parseNewEvent(value: unknown): NewEvent {
 
 /** Validate a committed event; recomputes both digests fail-closed. */
 export function parseSchedulerEvent(value: unknown): SchedulerEvent {
-  const base = parseNewEvent(value);
+  const base = parseNewEvent(value, "committed");
   const raw = expectObject(value);
   requireFields(
     raw,

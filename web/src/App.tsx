@@ -56,7 +56,9 @@ export function App() {
   const [authorized, setAuthorized] = useState<boolean | null>(null);
   const [tokenInput, setTokenInput] = useState("");
   const [graph, setGraph] = useState<OrchestrationGraph | null>(null);
-  const [cursor, setCursor] = useState<number | undefined>(undefined);
+  /** Spec 35: opaque ViewCursor for the freshness-correct poll fast path
+   * (distinct from graph.project.cursor, which stays the event position). */
+  const [viewCursor, setViewCursor] = useState<string | undefined>(undefined);
   const [presets, setPresets] = useState<PresetMeta[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
@@ -72,17 +74,22 @@ export function App() {
   const projectId = graph?.project.projectId ?? null;
   const refresh = useCallback(async (): Promise<void> => {
     try {
-      const response = await getGraph(cursor);
-      if (response.changed) {
+      const response = await getGraph(viewCursor);
+      if (response.changed && response.graph !== undefined) {
         setGraph(response.graph);
-        setCursor(response.graph.project.cursor);
       }
+      setViewCursor(response.viewCursor);
       setAuthorized(true);
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) setAuthorized(false);
-      else setMessage(error instanceof Error ? error.message : String(error));
+      else {
+        // Spec 35 §39-D: an uninitialized project is a normal state - keep
+        // the last graph (null) and avoid toast churn on every poll tick.
+        const text = error instanceof Error ? error.message : String(error);
+        setMessage((current) => (current === text ? current : text));
+      }
     }
-  }, [cursor]);
+  }, [viewCursor]);
 
   useEffect(() => {
     void (async () => {

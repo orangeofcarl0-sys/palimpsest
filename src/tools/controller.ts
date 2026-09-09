@@ -13,6 +13,8 @@
  *   - pause/resume uses the scheduler control generation as a fencing token.
  */
 
+import { randomUUID } from "node:crypto";
+
 import {
   actionKey,
   stableEntityId,
@@ -258,8 +260,24 @@ export class ProjectController {
   #telemetrySync: TelemetryStateSync | undefined = undefined;
   /** ALC-1 §3: last auto-flush failure, surfaced until the next flush succeeds. */
   #telemetryError: { message: string } | undefined = undefined;
-  /** ALC-1 §2: per-attempt telemetry attribution, consumed at settlement. */
+  /** ALC-1 §2: per-attempt telemetry attribution, consumed at settlement.
+   * Spec 35 (VIEW-INV-1/3): this map is GRAPH-VISIBLE controller-process
+   * volatile state - it feeds buildOrchestrationGraph but is not an event-log
+   * projection. Every graph-visible mutation bumps #viewGeneration so the
+   * polling fast path cannot lie about freshness. */
   #attemptAttribution = new Map<string, AttemptAttribution>();
+
+  /** Spec 35 §2.1: per-process nonce - a restart invalidates every viewCursor
+   * the previous process handed out (the volatile map dies with the process
+   * while the event cursor stays put, so cross-process cursor equality can
+   * never mean equal views). */
+  readonly #viewEpoch = randomUUID().slice(0, 8);
+
+  /** Monotonic generation of graph-visible volatile view state (attribution
+   * set/delete). NOT bumped for state that never reaches the graph. */
+  #viewGeneration = 0;
+
+  #graphBuilds = 0;
 
   /** ALC-1 §3: the pending auto-flush failure, if any (cleared on the next successful flush). */
   telemetryPendingError(): string | undefined {
@@ -838,7 +856,10 @@ export class ProjectController {
       },
     );
     this.scheduler.startAttempt(attemptId);
-    if (attribution !== undefined) this.#attemptAttribution.set(attemptId, attribution);
+    if (attribution !== undefined) {
+      this.#attemptAttribution.set(attemptId, attribution);
+      this.#viewGeneration += 1;
+    }
     return { worktreePath: worktree.worktreePath };
   }
 
@@ -1499,12 +1520,41 @@ export class ProjectController {
    * from the existing projections. Nothing here writes.
    */
   orchestrationGraph(): OrchestrationGraph {
+    this.#graphBuilds += 1;
     return buildOrchestrationGraph({
       projectId: this.projectId,
       project: this.#project(),
       connection: this.store.connection,
       attribution: this.#attemptAttribution,
     });
+  }
+
+  /** Test instrumentation for the freshness gate (WEB-H01-A): how many times
+   * the full graph projection has been built in this process. */
+  graphBuildCount(): number {
+    return this.#graphBuilds;
+  }
+
+  /** Spec 35 VIEW-INV-2: opaque validator for the complete user-visible
+   * projection - cheap (MAX(event_id) + in-memory generation + process
+   * epoch), never a full-graph digest. Same viewCursor ⇒ same graph. */
+  viewCursor(): string {
+    const cursorRow = this.store.connection
+      .prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events WHERE project_id=?")
+      .get(this.projectId) as { m: number };
+    return `v1:${this.#viewEpoch}:${Number(cursorRow.m)}:${this.#viewGeneration}`;
+  }
+
+  /** Spec 35 HEALTH-INV-1: service availability without an initialized
+   * ProjectIR - cheap state only, never a graph build. */
+  serviceHealth(): { ok: boolean; projectInitialized: boolean; eventCursor: number } {
+    const control = this.store.connection
+      .prepare("SELECT 1 AS ok FROM scheduler_control LIMIT 1")
+      .get();
+    const cursorRow = this.store.connection
+      .prepare("SELECT COALESCE(MAX(event_id), 0) AS m FROM events WHERE project_id=?")
+      .get(this.projectId) as { m: number };
+    return { ok: true, projectInitialized: control !== undefined, eventCursor: Number(cursorRow.m) };
   }
 
   status(): ControllerStatusView {
@@ -2055,6 +2105,7 @@ export class ProjectController {
     const attribution = this.#attemptAttribution.get(attemptId);
     if (attribution === undefined) return;
     this.#attemptAttribution.delete(attemptId);
+    this.#viewGeneration += 1;
     this.telemetry.record({
       task_type: attribution.taskType ?? this.#roleOf(attemptId),
       model: attribution.model,

@@ -82,16 +82,16 @@ G10-A0（纯文档预检，见 G10-G11-ROADMAP）→ G10-A（34 号）
 
 ---
 
-## G9-F — Parser 纪律 + 运行时性能（规格 35，PLMP-PARSE-1）
+## G9-F — Contract Discipline + View Freshness（规格 35，PLMP-PARSE-1）✅ **COMPLETE（2026-09-10；交付报告＝`G9-F-CONTRACT-VIEW-FRESHNESS-DELIVERY.md` 二十问；母体审计先行＝`G9-F-CONTRACT-VIEW-FRESHNESS-ASSESSMENT.md`）**
 
-**问题**（审计 F-H①②③，已核验；scope 依 G9-B2 SCHEMA-AUDIT 矩阵重定）：
+**原计划问题的最终核验**（机器探针，本批交付时逐条对账）：
 
-1. `parseStageGraphDefinition` 三层（根/stage/transition）都无未知字段白名单：`"concurency":8` 静默当缺省 1（PARSE-H01；tripwire 在册）。
-2. canvas `parseTaskPayload` 不拒未知字段：`{"rol":"scout"}` 静默丢弃——与 ir.ts 同名 parser（有白名单）不一致（PARSE-H02）。统一规则：**author-authored JSON 永不静默丢字段**。
-3. **models.ts 全族 13 个 canonical parser（parseProjectIr/parseTaskSpec/parseTaskEnvelope/parseAttemptReport/parseEvidenceAtom/parseNewEvent 等）"必填严/未知字段容"**——G9-B2 审计证实与文件头 fail-closed 声称不符，是最大缺口。涉及冻结 wire 合同/历史 fixture/前向兼容，必须逐合同独立裁决（白名单化或显式登记容留），严禁 `requireFields` 全局一刀切。
-4. `/api/graph?cursor` 无快路径：未变化也全量 `buildOrchestrationGraph()`（WEB-H01）。`SELECT MAX(event_id)` 廉价先行，`cursor == currentCursor` 直接 `{changed:false, cursor}`；不引入 WebSocket/SSE。
+1. `parseStageGraphDefinition` 三层（根/stage/transition）无未知键白名单——**已复现并修复**（PARSE-H01；含守卫信封）。
+2. ~~canvas `parseTaskPayload` 不拒未知字段~~——**ALREADY CLOSED**（G9-D 会话 1 allowlist；探针实证后从活跃计划移除）。统一规则冻结：**author-authored JSON 永不静默丢字段**（PARSE-INV-1，扩及 GateDefinition/GateClause 信封与 preset 参数）。
+3. models.ts 全族 canonical parser "必填严/未知字段容"——**已按 35 号逐合同显式闭合**（`rejectUnknownFields` 逐 parser/逐事件 case；三处显式开放映射登记例外；历史门两处调用点/声明集修正后 parity/replay 全绿；SCHEMA-AUDIT tripwire 反转钉住新态）。
+4. ~~`/api/graph` 快路径按 `MAX(event_id)` 直接判~~——**审计否决该设计**（attribution 是图可见进程易变态且 `evaluateAttemptGate` 结算零事件追加；重启更使事件游标恒等失效）：改为 **EventCursor ≠ ViewCursor**（`v1:epoch:eventCursor:viewGeneration`，安全未变路径不建图，旧 `?cursor=` 保守兼容）＋ health 空态修复（ServiceHealth ≠ ProjectInitialized）。
 
-**验收**：PARSE-H01/H02 + WEB-H01（未变 cursor 请求不建全图，可观测计数器断言）。
+**已交付**：验收＝PARSE-H01-A..D＋矩阵抽查＋WEB-H01-A..E（建图计数器断言）＋WEB-HEALTH-A01＋PRES-BELT ×2；测试基线 58/398 → **58/409**；浏览器冒烟 A/B/D 过（C 由 WEB-H01-C 覆盖）。**下一批＝G9-G。**
 
 ---
 

@@ -233,15 +233,27 @@ export function serveOrchestration(
       }
       try {
         if (request.method === "GET" && path === "/api/health") {
-          sendJson(response, 200, { ok: true, cursor: controller.orchestrationGraph().project.cursor });
+          // Spec 35 HEALTH-INV-1: ServiceHealth ≠ ProjectInitialized - cheap
+          // state only, never a graph build; an empty store is still healthy.
+          sendJson(response, 200, controller.serviceHealth());
           return;
         }
         if (request.method === "GET" && path === "/api/graph") {
+          // Spec 35 (VIEW-INV-1/4): EventCursor ≠ ViewCursor. A matching
+          // viewCursor proves the COMPLETE projection unchanged and skips the
+          // graph build; the legacy ?cursor= (event id) keeps its exact
+          // semantics - conservative, no unsafe early return.
+          const viewCursorParam = url.searchParams.get("viewCursor");
+          if (viewCursorParam !== null && viewCursorParam === controller.viewCursor()) {
+            sendJson(response, 200, { changed: false, viewCursor: controller.viewCursor() });
+            return;
+          }
           const graph = controller.orchestrationGraph();
           const cursorParam = url.searchParams.get("cursor");
           sendJson(response, 200, {
             graph,
             changed: cursorParam === null || Number(cursorParam) !== graph.project.cursor,
+            viewCursor: controller.viewCursor(),
           });
           return;
         }

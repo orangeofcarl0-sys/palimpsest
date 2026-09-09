@@ -1139,3 +1139,59 @@ describe("canvas presentation preservation (PLMP-CANVAS-8, G9-C)", () => {
     ]);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Spec 35 §3 (G9-C belt): PRES-BELT-INV-1 - reconciliation output order
+// follows semanticResult exactly, even when fresh ids interleave with
+// surviving ones, and when a child is declared before its owner subflow.
+// ---------------------------------------------------------------------------
+
+describe("presentation belt (spec 35 PRES-BELT-INV-1)", () => {
+  it("node order follows semanticResult even with interleaved fresh ids", () => {
+    const before = docWith(
+      taskNode("n1", "A", 701, 113),
+      taskNode("n2", "B", 211, 628),
+      taskNode("n3", "C", 400, 300),
+    );
+    // Artificial semanticResult: a FRESH node (fresh-1) interleaved between
+    // surviving nodes - the endpoint invariant only holds because the helper
+    // contract says semanticResult owns node order.
+    const semantic: CanvasDoc = {
+      ...before,
+      nodes: [
+        before.nodes[0]!,
+        { key: "fresh-1", type: "task", title: "N", x: 80, y: 80, z: "root", task: {} },
+        before.nodes[1]!,
+        before.nodes[2]!,
+      ],
+    };
+    const after = reconcileCanvasPresentation(before, semantic);
+    expect(after.nodes.map((node) => node.key)).toEqual(["n1", "fresh-1", "n2", "n3"]);
+    expect(after.nodes.find((node) => node.key === "n1")).toMatchObject({ x: 701, y: 113 });
+    expect(after.nodes.find((node) => node.key === "n2")).toMatchObject({ x: 211, y: 628 });
+  });
+
+  it("child-before-parent declaration still yields semantic order and a valid doc", () => {
+    const before = docWith(taskNode("old", "O", 701, 113));
+    // A valid CanvasDoc may declare a scoped child BEFORE its owner subflow
+    // (ownership requires existence, not declaration order).
+    const semantic: CanvasDoc = {
+      ...before,
+      nodes: [
+        before.nodes[0]!,
+        { key: "child", type: "task", title: "K", x: 80, y: 80, z: "s1", task: {} },
+        { key: "s1", type: "subflow", title: "S", x: 80, y: 80, z: "root" },
+      ],
+    };
+    const after = reconcileCanvasPresentation(before, semantic);
+    expect(after.nodes.map((node) => node.key)).toEqual(["old", "child", "s1"]);
+    // The result parses (placement produced a structurally valid doc) and the
+    // fresh pair landed without colliding with the preserved node.
+    expect(() => parseCanvasDoc(after)).not.toThrow();
+    const child = after.nodes.find((node) => node.key === "child")!;
+    const owner = after.nodes.find((node) => node.key === "s1")!;
+    const clear =
+      child.x >= owner.x + 190 || child.x + 190 <= owner.x || child.y >= owner.y + 56 || child.y + 56 <= owner.y;
+    expect(clear).toBe(true);
+  });
+});
