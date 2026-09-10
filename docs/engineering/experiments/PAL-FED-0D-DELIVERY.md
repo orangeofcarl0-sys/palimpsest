@@ -146,9 +146,10 @@ debug/compatibility surface.** MCP was not needed for the dogfood.
 clean ✅   build ✅   build:web ✅   test ✅ 66/475   test:e2e ⚠️
 ```
 
-**Remote CI (draft PR #2):** `unit => success`; `e2e => failure` (twice,
-including a rerun) on `E2E-DEBUG-01` — node present but hidden at
-`runtime-debugger.spec.ts:56`.
+**Remote CI (draft PR #2):** `unit => success` on every run. `e2e` is
+**nondeterministic** at near-identical code — observed across four runs:
+`8bf55a1` fail, fail (rerun), `1d40f08` **pass**, `040ba9c` fail — always on
+`E2E-DEBUG-01` (node present but hidden at `runtime-debugger.spec.ts:56`).
 
 **Separated from baseline exactly:** everything the browser E2E exercises is
 byte-identical to PAL-FED-0 (where remote e2e passed):
