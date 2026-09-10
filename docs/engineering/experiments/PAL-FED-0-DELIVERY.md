@@ -99,8 +99,8 @@ clean ✅   build ✅   build:web ✅   test ✅ (465)   test:e2e ⚠️ 20/21
 failure signature, identical provenance at baseline). PAL-FED-0 has no GUI and
 its integration proof is process-level, so it adds no browser E2E.
 
-**Remote CI: observed green — run
-[34529419443](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529419443):
+**Remote CI: observed green at the final HEAD —
+run [34529583002](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529583002):
 `unit => success`, `e2e => success` on draft PR #1.** The remote e2e job passing
 confirms the local `E2E-DEBUG-01` failure is a Windows/order artifact of this
 host, not a product defect and not a PAL-FED-0 regression.
@@ -138,6 +138,12 @@ GitHub credentials were available, so the experimental branch was pushed and a
 to run the existing `pull_request` workflow.
 
 ```
+run:    https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529583002  (final HEAD 29355e0)
+status: completed / success
+  unit => success
+  e2e  => success
+
+also observed at the preceding HEAD e5c54a4:
 run:    https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529419443
 status: completed / success
   unit => success
