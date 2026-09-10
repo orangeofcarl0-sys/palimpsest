@@ -73,5 +73,17 @@
     "ordariumPrimitiveRequired": false,
     "ordariumUsedContractUpdate": true
   },
-  "artifactNote": "frozenCodeSha256 covers the control-plane dist/src tree. The dogfood ran against plugin/core bytes identical to these; the only difference from the run-time artifact was compiled test files, which the artifact now excludes."
+  "artifactNote": "frozenCodeSha256 covers the control-plane dist/src tree. The dogfood ran against plugin/core bytes identical to these; the only difference from the run-time artifact was compiled test files, which the artifact now excludes.",
+  "executedArtifact": {
+    "note": "artifact loaded at run time (built from the working tree with the criterion applied, before that change was committed)",
+    "executedArtifactBuildId": "pal-fed-0d+8bf55a170d4f",
+    "executedArtifactScope": "dist (including compiled tests) \u2014 superseded by the dist/src-scoped canonical rebuild"
+  },
+  "canonicalArtifact": {
+    "note": "canonical rebuild at the committed criterion source; control-plane dist/src bytes are identical to the executed artifact",
+    "canonicalSourceCommit": "1d40f0821c16c103142c55bf05e0ab3eecd598b0",
+    "canonicalBuildId": "pal-fed-0d+1d40f0821c16",
+    "canonicalControlPlaneSha256": "cd0088fa6dac5287212efb28404299240e9808257136d95092d03d7b726c8e7c"
+  },
+  "controlPlaneByteEquivalent": true
 }

@@ -147,9 +147,15 @@ clean ✅   build ✅   build:web ✅   test ✅ 66/475   test:e2e ⚠️
 ```
 
 **Remote CI (draft PR #2):** `unit => success` on every run. `e2e` is
-**nondeterministic** at near-identical code — observed across four runs:
-`8bf55a1` fail, fail (rerun), `1d40f08` **pass**, `040ba9c` fail — always on
+**nondeterministic** at near-identical code — five observed runs:
+`fae7e34` fail, `8bf55a1` fail, fail (rerun), `1d40f08` **pass**,
+`040ba9c` fail, `4bfdec3` **pass** (`unit` + `e2e`) — always on
 `E2E-DEBUG-01` (node present but hidden at `runtime-debugger.spec.ts:56`).
+
+**Current HEAD `4bfdec3` has at least one complete remote-green run
+(`unit = success`, `e2e = success`).** The E2E flake is *not* fixed and remains
+a demonstrated nondeterministic baseline issue; the green run does not erase
+the historical failures, and no retry was added.
 
 **Separated from baseline exactly:** everything the browser E2E exercises is
 byte-identical to PAL-FED-0 (where remote e2e passed):
