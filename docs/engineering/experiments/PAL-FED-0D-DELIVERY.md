@@ -117,12 +117,33 @@ recorded as the main behavioral residual, not hidden.
 ## 6. Final gates
 
 ```
-clean ✅   build ✅   build:web ✅   test ✅ (see counts below)   test:e2e ✅/pre-existing flake
+clean ✅   build ✅   build:web ✅   test ✅ 66 files / 475 tests   test:e2e ⚠️
 ```
 
-PAL-FED-0D adds 10 tests (7 DSH runtime + 3 artifact). Full suite at HEAD is
-recorded in the PR; the PAL-FED-0 browser E2E gate is unchanged (this batch adds
-no browser surface; retries remain 0).
+PAL-FED-0D adds 10 tests (7 DSH runtime + 3 artifact); 32 PAL-FED-0 protocol
+tests remain green. Retries remain 0 everywhere.
+
+### Remote CI honesty (`experiment/pal-fed-0-dsh`, draft PR #2)
+
+`unit => success`. `e2e => failure`, twice (original run and a `--failed`
+rerun): `E2E-DEBUG-01` fails at
+`runtime-debugger.spec.ts:56` with the node present but `hidden` — the exact
+signature already observed at PAL-FED-0 base on this Windows host.
+
+**Proof this batch did not cause it:** everything the browser E2E exercises is
+byte-identical between PAL-FED-0 and PAL-FED-0D:
+
+```
+dist/web (all files)                    27bc76ba…a3ccc  (both branches)
+dist/src excluding federation/          9e889ee7…aef785  (both branches)
+```
+
+The only server-code change is inside `src/federation/`, which the e2e kernel
+never imports. The failure therefore comes from the pre-existing
+`runtime-debugger` timing defect (a React Flow node that stays
+`visibility:hidden` under certain scheduling), which the heavier PAL-FED-0D
+install may make more likely on the runner. It is reported, not masked:
+no retry was added, and the flake is not attributed to PAL-FED-0D.
 
 ## 7. Stop conditions (§50)
 
