@@ -15,7 +15,7 @@ import { decodeCollaborationEvent, encodeCollaborationEvent } from "./codec.js";
 import { FederationDecodeError } from "./errors.js";
 import { ID_PREFIX_EVENT, ID_PREFIX_THREAD, NS_CONTRACT, NS_EVENT } from "./limits.js";
 import type { PostEventInput } from "./inputs.js";
-import { federationIdentity, readNamespace, type FederationStore } from "./store.js";
+import { readNamespace, writeIdentity, type CallInvocation, type FederationStore } from "./store.js";
 import { stateRefId } from "./types.js";
 import type { CollaborationEvent } from "./types.js";
 
@@ -23,6 +23,8 @@ export interface EventContext {
   readonly fabricId: string;
   readonly selfPeer: string;
   readonly clock: () => Date;
+  /** Real host invocation provenance when the write came through a host tool. */
+  readonly invocation?: CallInvocation | undefined;
 }
 
 export function newEventId(): string {
@@ -81,7 +83,7 @@ export async function postEvent(
     expectedRevision: 0,
     value: encodeCollaborationEvent(event),
     ...(refs.length === 0 ? {} : { refs }),
-    identity: federationIdentity(context.fabricId, `post:${eventId}`, context.selfPeer),
+    identity: writeIdentity(context, `post:${eventId}`),
   });
   return { event, revision: 1, ref: stateRefId(NS_EVENT, eventId, 1) };
 }
