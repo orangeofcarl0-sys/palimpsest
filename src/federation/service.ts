@@ -9,7 +9,7 @@
  * writes, change-feed scans and cursor mutation are not exposed (§31).
  */
 
-import type { StateRecord } from "@ordarium/core";
+import type { InvocationIdentity, StateRecord } from "@ordarium/core";
 
 import {
   acceptContract,
@@ -47,13 +47,17 @@ export interface FederationService {
   readonly selfPeer: PeerRef;
   readonly fabricId: string;
   readonly marker: FederationFabricMarker;
-  /** The six model-facing operations. */
-  post(raw: unknown): Promise<PostedEvent>;
-  inbox(): Promise<InboxResult>;
-  ack(raw: unknown): Promise<AckResult>;
+  /**
+   * The six model-facing operations. Mutating operations accept optional
+   * real-host invocation provenance (PAL-FED-0D: a DSH tool call); the stable
+   * peer author always remains the configured selfPeer.
+   */
+  post(raw: unknown, invocation?: InvocationIdentity | undefined): Promise<PostedEvent>;
+  inbox(invocation?: InvocationIdentity | undefined): Promise<InboxResult>;
+  ack(raw: unknown, invocation?: InvocationIdentity | undefined): Promise<AckResult>;
   thread(raw: unknown): Promise<{ readonly threadId: string; readonly events: readonly StoredEvent[] }>;
   contractGet(raw: unknown): Promise<ContractReadResult>;
-  contractUpdate(raw: unknown): Promise<ContractMutation>;
+  contractUpdate(raw: unknown, invocation?: InvocationIdentity | undefined): Promise<ContractMutation>;
   /** Read-only operator views (§46); no new source of truth. */
   listEvents(): Promise<readonly StoredEvent[]>;
   listContracts(): Promise<readonly StateRecord[]>;
@@ -76,6 +80,8 @@ export async function openFederationService(
   }
   assertPeerInFabric(marker, selfPeer);
   const context = { fabricId: config.fabricId, selfPeer, clock };
+  const ctxFor = (invocation: InvocationIdentity | undefined) =>
+    invocation === undefined ? context : { ...context, invocation: { identity: invocation } };
 
   return {
     dbPath: config.dbPath,
@@ -83,16 +89,16 @@ export async function openFederationService(
     fabricId: config.fabricId,
     marker,
 
-    async post(raw) {
-      return postEvent(store, context, parsePostEventInput(raw, selfPeer));
+    async post(raw, invocation) {
+      return postEvent(store, ctxFor(invocation), parsePostEventInput(raw, selfPeer));
     },
-    async inbox() {
+    async inbox(invocation) {
       parseEmptyInput({}, "collab_inbox");
-      return inbox(store, context);
+      return inbox(store, ctxFor(invocation));
     },
-    async ack(raw) {
+    async ack(raw, invocation) {
       const { batchId } = parseBatchInput(raw, "collab_ack");
-      return ack(store, context, batchId);
+      return ack(store, ctxFor(invocation), batchId);
     },
     async thread(raw) {
       const { threadId } = parseThreadInput(raw);
@@ -102,11 +108,12 @@ export async function openFederationService(
       const { contractId, history } = parseContractGetInput(raw);
       return getContract(store, contractId, { history });
     },
-    async contractUpdate(raw) {
+    async contractUpdate(raw, invocation) {
       const input = parseContractUpdateInput(raw);
+      const scoped = ctxFor(invocation);
       return input.action === "propose"
-        ? proposeContract(store, context, input)
-        : acceptContract(store, context, input);
+        ? proposeContract(store, scoped, input)
+        : acceptContract(store, scoped, input);
     },
 
     async listEvents() {

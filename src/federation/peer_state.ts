@@ -29,7 +29,7 @@ import {
   PEERSTATE_CAS_RETRIES,
 } from "./limits.js";
 import type { PeerRef } from "./peers.js";
-import { federationIdentity, readNamespace, type FederationStore } from "./store.js";
+import { readNamespace, writeIdentity, type CallInvocation, type FederationStore } from "./store.js";
 import { stateRefId } from "./types.js";
 import type {
   BoundaryContract,
@@ -41,6 +41,8 @@ import type {
 export interface PeerStateContext {
   readonly fabricId: string;
   readonly selfPeer: PeerRef;
+  /** Real host invocation provenance when the write came through a host tool. */
+  readonly invocation?: CallInvocation | undefined;
 }
 
 export interface InboxEventItem {
@@ -112,7 +114,7 @@ async function writePeerState(
     key: context.selfPeer,
     expectedRevision,
     value: encodePeerInboxState(next),
-    identity: federationIdentity(context.fabricId, `peerstate:${context.selfPeer}`, context.selfPeer),
+    identity: writeIdentity(context, `peerstate:${context.selfPeer}`),
   });
 }
 

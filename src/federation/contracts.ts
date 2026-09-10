@@ -24,7 +24,7 @@ import {
 import type { AcceptContractInput, ProposeContractInput } from "./inputs.js";
 import { ID_PREFIX_CONTRACT, NS_CONTRACT, NS_EVENT } from "./limits.js";
 import { FIXED_PEERS, type PeerRef } from "./peers.js";
-import { federationIdentity, readNamespace, type FederationStore } from "./store.js";
+import { readNamespace, writeIdentity, type CallInvocation, type FederationStore } from "./store.js";
 import { stateRefId } from "./types.js";
 import type { BoundaryContract, ContractAcceptance, ContractTerms } from "./types.js";
 
@@ -32,6 +32,8 @@ export interface ContractContext {
   readonly fabricId: string;
   readonly selfPeer: PeerRef;
   readonly clock: () => Date;
+  /** Real host invocation provenance when the write came through a host tool. */
+  readonly invocation?: CallInvocation | undefined;
 }
 
 export function newContractId(): string {
@@ -116,11 +118,7 @@ export async function proposeContract(
       expectedRevision: input.expectedRevision,
       value: encodeBoundaryContract(contract),
       ...(refs.length === 0 ? {} : { refs }),
-      identity: federationIdentity(
-        context.fabricId,
-        `contract-propose:${input.contractId}`,
-        context.selfPeer,
-      ),
+      identity: writeIdentity(context, `contract-propose:${input.contractId}`),
     });
   } catch (error) {
     if (error instanceof StateRevisionConflictError) {
@@ -204,11 +202,7 @@ export async function acceptContract(
       key: input.contractId,
       expectedRevision: input.expectedRevision,
       value: encodeBoundaryContract(next),
-      identity: federationIdentity(
-        context.fabricId,
-        `contract-accept:${input.contractId}`,
-        self,
-      ),
+      identity: writeIdentity(context, `contract-accept:${input.contractId}`),
     });
   } catch (error) {
     if (error instanceof StateRevisionConflictError) {

@@ -86,6 +86,30 @@ export function recordValue(record: StateRecord): JsonValue {
 }
 
 /**
+ * Per-call invocation provenance supplied by a real host (PAL-FED-0D: DSH).
+ * The stable peer identity stays in the event/contract author field; this is
+ * only the runtime provenance of the invocation that performed the write.
+ */
+export interface CallInvocation {
+  readonly identity: InvocationIdentity;
+}
+
+/** Real host provenance when supplied, else federation's own adapter identity. */
+export function writeIdentity(
+  context: {
+    readonly fabricId: string;
+    readonly selfPeer: string;
+    readonly invocation?: CallInvocation | undefined;
+  },
+  fallbackCallId: string,
+): InvocationIdentity {
+  return (
+    context.invocation?.identity ??
+    federationIdentity(context.fabricId, fallbackCallId, context.selfPeer)
+  );
+}
+
+/**
  * The invocation identity stamped on every federation state write. It is
  * derived from trusted process configuration (the fabric scope) plus an
  * adapter-generated call id — never from model-supplied tool arguments (§12).

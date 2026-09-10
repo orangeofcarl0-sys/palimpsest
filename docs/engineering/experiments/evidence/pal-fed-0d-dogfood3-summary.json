@@ -1,0 +1,22 @@
+{
+  "fabric": "palimpsest-ordarium-0",
+  "db": "F:\\Codex_Work_Space\\Palimpsest\\pal-fed-0d-dogfood-3\\coordination.sqlite",
+  "buildId": "pal-fed-0d+8bf55a170d4f",
+  "eventCount": 2,
+  "events": [
+    {
+      "from": "palimpsest.main",
+      "to": "ordarium.main",
+      "kind": "question",
+      "threadId": "thr_99f5049e-b572-4896-a452-9dff44c86d12",
+      "body": "Boundary question: who owns low-latency peer wake — a generic Ordarium wait/change-observation primitive, or the Palimpsest/DSH collaboration adapter?\n\nCurrent state on our side: peer wake is polled ("
+    },
+    {
+      "from": "ordarium.main",
+      "to": "palimpsest.main",
+      "kind": "decision",
+      "threadId": "thr_99f5049e-b572-4896-a452-9dff44c86d12",
+      "body": "Decision: option 2 holds. Ordarium disclaims a generic wait/change-observation edge as a cross-project interface. Peer wake is entirely a Palimpsest/DSH concern — adapter push notification alongside t"
+    }
+  ]
+}
