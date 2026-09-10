@@ -133,7 +133,7 @@ async function eventCount(db: string): Promise<number> {
 }
 
 describe("PAL-FED-0D DSH runtime binding", () => {
-  it("DSH owns the peer agent: registry, session, loop and typed root", async () => {
+  it("FED-DSH-A00: DSH owns the peer agent: registry, session, loop and typed root", async () => {
     const base = await makeFabric();
     const peer = await boot(base, "probe-p", "palimpsest.main", () => ({ text: "idle" }));
 
@@ -150,7 +150,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     expect(assembly.sections.map((section) => section.name)).toContain("pal-fed:peer-collaboration");
   }, 60_000);
 
-  it("collaboration tools are agent-scoped; a subagent does not inherit them", async () => {
+  it("FED-DSH-A01: collaboration tools are agent-scoped; a subagent does not inherit them", async () => {
     const base = await makeFabric();
     const peer = await boot(base, "probe-scope", "palimpsest.main", () => ({ text: "idle" }));
 
@@ -172,7 +172,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     }
   }, 60_000);
 
-  it("a real DSH tool call records authentic invocation provenance", async () => {
+  it("FED-DSH-A02: a real DSH tool call records authentic invocation provenance", async () => {
     const base = await makeFabric();
     const peer = await boot(
       base,
@@ -210,7 +210,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     }
   }, 60_000);
 
-  it("a pending peer batch wakes the receiving DSH agent; wake is not ack", async () => {
+  it("FED-DSH-A03: a pending peer batch wakes the receiving DSH agent; wake is not ack", async () => {
     const base = await makeFabric();
     const palimpsest = await boot(
       base,
@@ -253,7 +253,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     expect(palimpsest.runtime.watcher.status().wakeCount).toBe(0);
   }, 90_000);
 
-  it("bidirectional wake: both peers notify each other without a human bus", async () => {
+  it("FED-DSH-A04: bidirectional wake: both peers notify each other without a human bus", async () => {
     const base = await makeFabric();
     let threadId: string | undefined;
     const palimpsest = await boot(
@@ -328,7 +328,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     ]);
   }, 120_000);
 
-  it("crash before ack redelivers the same batch through a DSH session resume", async () => {
+  it("FED-DSH-A05: crash before ack redelivers the same batch through a DSH session resume", async () => {
     const base = await makeFabric();
     const palimpsest = await boot(
       base,
@@ -391,7 +391,7 @@ describe("PAL-FED-0D DSH runtime binding", () => {
     expect(await eventCount(base.db)).toBe(1);
   }, 120_000);
 
-  it("loop-storm negative: a no-reply event produces no acknowledgement message", async () => {
+  it("FED-DSH-A06: loop-storm negative: a no-reply event produces no acknowledgement message", async () => {
     const base = await makeFabric();
     const palimpsest = await boot(
       base,

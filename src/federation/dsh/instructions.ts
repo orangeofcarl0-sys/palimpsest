@@ -25,6 +25,14 @@ recovery; before a public/cross-project interface decision; when a new external
 dependency appears; after a cross-project-relevant commit; when a peer contract
 is blocked; before ending a substantial session. Do not poll per edit.
 
+## When to make contact (criterion, not a rule)
+If a decision materially depends on the other project's owned interface,
+constraint, implementation state, or authority, prefer contacting that peer
+(collab_post) over guessing or asking the user to relay information. If it does
+not, do not contact it. Contact is not required on every turn, and there is no
+standing instruction to always ask the peer; it follows only from a real
+cross-project dependency you can name.
+
 ## What to send (boundary deltas only)
 \`need\`, \`proposal\`, \`constraint\`, \`question\`, \`decision\`, \`change_ready\`,
 \`evidence\`, \`blocker\`. Send the smallest durable statement the peer needs.
