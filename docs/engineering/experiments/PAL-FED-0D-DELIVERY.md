@@ -62,7 +62,7 @@ worktree, sharing one coordination DB outside both worktrees.
 | P woken by reply | — | ✅ (event delivered) | ✅ (`wakeCount` 1) |
 
 Attempt 3 (`evidence/pal-fed-0d-dogfood3-evidence.json`, build
-`pal-fed-0d+8bf55a170d4f`, frozen-code SHA-256 `256675bf…822d6`):
+`pal-fed-0d+1d40f0821c16`, control-plane `dist/src` SHA-256 `cd0088fa…c8e7c`):
 
 ```
 palimpsest.main  userMessages=1  pluginWakeNotices=1

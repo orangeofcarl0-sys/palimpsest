@@ -122,11 +122,12 @@ StateChangeFeed -> collab_inbox() -> pending batch persisted
 ```
 pal-fed-runtime/
   build-id
-  package-metadata.json      buildId, source commit, frozenCodeSha256
+  package-metadata.json      buildId, source commit, frozenCodeSha256 (dist/src)
   SHA256SUMS
   package/
     package.json
-    dist/…                   the frozen plugin + PAL-FED core bytes
+    dist/src/…               frozen plugin + PAL-FED core bytes (control plane only;
+                             compiled tests are excluded so the hash is stable)
     node_modules/            pinned dependency closure (link or copy)
 ```
 

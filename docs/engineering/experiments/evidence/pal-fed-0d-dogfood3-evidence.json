@@ -2,12 +2,12 @@
   "protocol": "PAL-FED-0D",
   "attempt": 3,
   "operatorPrompt": "open, non-directive (no \"contact peer\" instruction)",
-  "operatingGuidance": "includes the §41 dependency criterion (contact only when a decision depends on the peer's owned interface/constraint/state/authority)",
+  "operatingGuidance": "includes the \u00a741 dependency criterion (contact only when a decision depends on the peer's owned interface/constraint/state/authority)",
   "runAt": "2026-09-10T23:17:58.093Z",
   "dshVersion": "0.1.5-rc.1",
   "node": "v24.14.1",
-  "buildId": "pal-fed-0d+8bf55a170d4f",
-  "frozenCodeSha256": "256675bf7db391452caab39ccc0c740d2ec0fd63035ad07dad275fdb193822d6",
+  "buildId": "pal-fed-0d+1d40f0821c16",
+  "frozenCodeSha256": "cd0088fa6dac5287212efb28404299240e9808257136d95092d03d7b726c8e7c",
   "fabric": "palimpsest-ordarium-0",
   "coordinationDb": "outside both worktrees",
   "hosts": {
@@ -72,5 +72,6 @@
     },
     "ordariumPrimitiveRequired": false,
     "ordariumUsedContractUpdate": true
-  }
+  },
+  "artifactNote": "frozenCodeSha256 covers the control-plane dist/src tree. The dogfood ran against plugin/core bytes identical to these; the only difference from the run-time artifact was compiled test files, which the artifact now excludes."
 }

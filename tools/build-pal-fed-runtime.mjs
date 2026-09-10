@@ -43,7 +43,8 @@ const stage = join(out, "package");
 rmSync(out, { recursive: true, force: true });
 mkdirSync(stage, { recursive: true });
 
-cpSync(join(repo, "dist"), join(stage, "dist"), { recursive: true });
+// Control-plane code only: server/plugin sources, never compiled tests.
+cpSync(join(repo, "dist/src"), join(stage, "dist/src"), { recursive: true });
 const pkg = JSON.parse(readFileSync(join(repo, "package.json"), "utf8"));
 writeFileSync(
   join(stage, "package.json"),
