@@ -99,7 +99,11 @@ clean ✅   build ✅   build:web ✅   test ✅ (465)   test:e2e ⚠️ 20/21
 failure signature, identical provenance at baseline). PAL-FED-0 has no GUI and
 its integration proof is process-level, so it adds no browser E2E.
 
-**Remote CI: unverified in this report until a PR run is observed (see §9).**
+**Remote CI: observed green — run
+[34529419443](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529419443):
+`unit => success`, `e2e => success` on draft PR #1.** The remote e2e job passing
+confirms the local `E2E-DEBUG-01` failure is a Windows/order artifact of this
+host, not a product defect and not a PAL-FED-0 regression.
 
 ## 8. Stop conditions (§74)
 
@@ -129,18 +133,22 @@ discovery, collaboration graph, ProjectCell/Holon, G10-A, Ordarium changes.
 
 ## 9. Remote CI
 
-GitHub credentials are available on this host, so the experimental branch is
-pushed and a **draft PR** is opened to run the existing `pull_request` workflow
-(unit + e2e). The observed result is appended below.
+GitHub credentials were available, so the experimental branch was pushed and a
+**draft PR** opened ([#1](https://github.com/orangeofcarl0-sys/palimpsest/pull/1))
+to run the existing `pull_request` workflow.
 
 ```
-remote run: (see appended note / CI link in the PR)
+run:    https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/34529419443
+status: completed / success
+  unit => success
+  e2e  => success
 ```
 
-If the remote unit job passes and the remote e2e job shows the same
-order-dependent flake on ubuntu, that further confirms the flake is not a
-PAL-FED-0 regression. No remote-green claim is made unless the run is actually
-observed.
+Remote unit and e2e are both green at the experiment HEAD. This is the same
+workflow that runs with `retries = 0`; the e2e job passing on ubuntu confirms
+the local Windows `E2E-DEBUG-01` ordering flake is environmental, not a
+PAL-FED-0 regression. The PR stays a **draft** — PAL-FED-0 semantics are not to
+be merged into `main` as canonical UAS semantics in this batch.
 
 ## 10. The twenty dogfood questions (§60)
 
