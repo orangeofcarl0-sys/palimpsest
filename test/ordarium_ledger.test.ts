@@ -121,7 +121,10 @@ describe("Ordarium ledger seam at 1.1.0 (bump checklist)", () => {
     const ledger = new SqliteLedger(path, { openRetry: PINNED_OPEN_RETRY });
     try {
       const raw = new DatabaseSync(path);
-      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+      // Ordarium 1.3.1 schema generation: ORD-BOOT-0 added the state-change
+      // feed ordering table, moving SQLite user_version 3 -> 4. A native v2
+      // ledger still migrates forward on open.
+      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
       raw.close();
       expect((await ledger.get("fixture-proposed-0001"))?.state).toBe("proposed");
       expect((await ledger.get("fixture-succeeded-0002"))?.state).toBe("succeeded");
@@ -151,7 +154,10 @@ describe("Ordarium ledger seam at 1.1.0 (bump checklist)", () => {
       expect(elapsed).toBeGreaterThanOrEqual(200);
       expect(elapsed).toBeLessThan(5_000);
       const raw = new DatabaseSync(path);
-      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+      // Ordarium 1.3.1 schema generation: ORD-BOOT-0 added the state-change
+      // feed ordering table, moving SQLite user_version 3 -> 4. A native v2
+      // ledger still migrates forward on open.
+      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
       raw.close();
       expect((await ledger.get("fixture-succeeded-0002"))?.state).toBe("succeeded");
     } finally {

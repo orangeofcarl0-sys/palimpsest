@@ -1,0 +1,29 @@
+{
+  "$comment": "PAL-FED-0 dogfood harness configuration (EXPERIMENTAL). Copy and edit paths for the real two-Main run. The coordination DB must live OUTSIDE both source worktrees.",
+  "protocol": "PAL-FED-0",
+  "fabricId": "palimpsest-ordarium-0",
+  "coordinationDb": "F:/Codex_Work_Space/pal-fed-0/coordination.sqlite",
+  "peers": {
+    "palimpsest.main": {
+      "repository": "orangeofcarl0-sys/palimpsest",
+      "worktree": "F:/Codex_Work_Space/DSH plugin/palimpsest-repo",
+      "adapterCommand": "node dist/src/federation/cli.js serve --db <coordinationDb> --fabric <fabricId> --self palimpsest.main"
+    },
+    "ordarium.main": {
+      "repository": "orangeofcarl0-sys/ordarium",
+      "worktree": "<path to the Ordarium Main worktree>",
+      "adapterCommand": "node <palimpsest worktree>/dist/src/federation/cli.js serve --db <coordinationDb> --fabric <fabricId> --self ordarium.main"
+    }
+  },
+  "firstRealTopic": {
+    "raisedBy": "palimpsest.main",
+    "kind": "need",
+    "statement": "Checkpoint polling is the current bootstrap mechanism. Evaluate whether future low-latency peer wake requires a generic Ordarium wait/change-observation primitive.",
+    "expectedOrdariumResponse": "Inspect Ordarium's own architecture and independently respond with constraints / proposal / rejection. PAL-FED-0 must NOT implement the resulting Ordarium feature."
+  },
+  "notes": [
+    "Exactly two peers; no discovery, no registry.",
+    "Each Main Agent keeps its own local plan and worktree; messages point at commits but grant no write authority.",
+    "Record evidence in evidence/PAL-FED-0-EVIDENCE.md; do not massage the experiment to validate the theory."
+  ]
+}
