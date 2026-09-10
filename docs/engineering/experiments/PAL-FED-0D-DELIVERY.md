@@ -5,173 +5,193 @@ Branch: `experiment/pal-fed-0-dsh` (child of `experiment/pal-fed-0` at `2c7a63c`
 
 ## 1. Outcome
 
-**Two actual DSH-hosted persistent Main Agents collaborated, and one contacted
-the other without the user acting as a message bus.** `palimpsest.main` and
-`ordarium.main` ran as two separate real DSH host processes with the real
-DeepSeek model, each in its own worktree/session, sharing only the frozen
-coordination fabric. The receiving peer was woken by the system (not by the
-user), reasoned from its own persistent context, and independently replied with
-a decision. No new Ordarium primitive was needed.
+**Both peers ran as real DSH root Agents with separate resumable DSH Sessions
+and worktrees, and completed a fully autonomous bilateral exchange in which the
+user was never a message bus — including autonomous initiation.** The final run
+used an *open, non-directive* prompt to P; P independently decided to contact O,
+O was woken by the system, reasoned in its own context, replied (and updated a
+BoundaryContract), and P was woken by the reply. No Ordarium primitive was
+needed.
 
 ## 2. Runtime binding
 
 - DSH `0.1.5-rc.1` pinned; Node v24.14.1; Ordarium 1.3.1; SQLite schema v4.
-- PAL-FED is a real DSH cordis plugin (`pal-fed-collab`) that owns one peer
-  agent per profile: `ctx.agents.create`/`resume`, `setup(agentCtx, agent)`
-  composing the scoped world, `agentCtx.tools.register` for the six tools,
-  `agentCtx.systemPrompt.section` for the operating guidance, and
-  `agent.followup` for wake. DSH owns registry, session, loop, inbox and
-  disposal; the plugin never drives the model.
-- The custom MCP adapter is retained as protocol/debug surface, not the host.
-- `src/tools/dsh_types.ts` (historical structural stand-ins) was left untouched.
+- `pal-fed-collab` is a real DSH cordis plugin owning one peer agent per
+  profile: `ctx.agents.create`/`resume`, `setup(agentCtx, agent)`,
+  `agentCtx.tools.register`, `agentCtx.systemPrompt.section`, `agent.followup`.
+  DSH owns registry, session, loop, inbox, tool composition and disposal; the
+  plugin never drives the model.
+- MCP adapter retained as debug/comparison surface (§11/§46). Historical
+  `src/tools/dsh_types.ts` stand-ins left untouched (§4/§11).
 
-## 3. Machine gates (§49)
+## 3. Machine acceptance (§26–§32, §47)
 
-`pnpm test` — see §6 for counts. New PAL-FED-0D gates, all green:
+`pnpm test` = **66 files / 475 tests green** (10 new PAL-FED-0D tests; 32
+PAL-FED-0 protocol tests preserved).
 
-| Gate | Test |
+| ID | Test |
 |---|---|
-| DSH runtime integration | `DSH owns the peer agent: registry, session, loop and typed root` |
-| DSH scope isolation | `collaboration tools are agent-scoped; a subagent does not inherit them` |
-| DSH invocation provenance | `a real DSH tool call records authentic invocation provenance` |
-| DSH wake | `a pending peer batch wakes the receiving DSH agent; wake is not ack` |
-| Bidirectional wake | `bidirectional wake: both peers notify each other without a human bus` |
-| Crash/resume/redelivery | `crash before ack redelivers the same batch through a DSH session resume` |
-| Loop-storm negative | `loop-storm negative: a no-reply event produces no acknowledgement message` |
-| Frozen runtime artifact | `federation_dsh_artifact.test.ts` |
+| FED-DSH-A00 | `DSH owns the peer agent: registry, session, loop and typed root` |
+| FED-DSH-A01 | `collaboration tools are agent-scoped; a subagent does not inherit them` |
+| FED-DSH-A02 | `a real DSH tool call records authentic invocation provenance` |
+| FED-DSH-A03 | `a pending peer batch wakes the receiving DSH agent; wake is not ack` |
+| FED-DSH-A04 | `bidirectional wake: both peers notify each other without a human bus` |
+| FED-DSH-A05 | `crash before ack redelivers the same batch through a DSH session resume` |
+| FED-DSH-A06 | `loop-storm negative: a no-reply event produces no acknowledgement message` |
+| — | `federation_dsh_artifact.test.ts` (frozen artifact) |
 
-The 32 PAL-FED-0 protocol tests remain green (§47), and the provenance
-threading change is backward compatible (non-DSH writes keep the adapter's own
-identity).
+A02 additionally proves the model cannot supply another author: tool arguments
+are re-validated by the PAL-FED strict envelopes, and the persisted
+`CollaborationEvent.from` / `InvocationIdentity.actor` equal the configured
+`PeerRef` while `identity.source === "dsh"`.
 
-## 4. Real dogfood evidence (§42–§44)
+## 4. Real dogfood (§37–§39, §44)
 
-Build: `pal-fed-0d+2c7a63c12366`, frozen-code SHA-256
-`b4d34a49554035052fc0c8fe1b05354d4da701beac226a0771c104e4baed866c`, artifact at
-`F:/Codex_Work_Space/Palimpsest/pal-fed-runtime` (outside both worktrees).
+Hosts: two **separate processes** of `tools/pal-fed-dogfood-peer.mjs`, real
+DeepSeek model, each a runtime root (no `parentAgent`), each in its own
+worktree, sharing one coordination DB outside both worktrees.
 
-```
-host process P: palimpsest.main  session pal-fed-p-main  cwd palimpsest worktree
-host process O: ordarium.main    session pal-fed-o-main  cwd ordarium worktree
-fabric: palimpsest-ordarium-0    DB: shared coordination.sqlite
-model: real DeepSeek (deepseek-official / deepseek-flash)
-```
+| | Attempt 1 | Attempt 2 | Attempt 3 (final) |
+|---|---|---|---|
+| Operator prompt to P | open | directive ("contact O now") | **open** |
+| Guidance | checkpoint list | checkpoint list | **+ §41 dependency criterion** |
+| Events | 0 | 2 | **2** |
+| P autonomous initiation | ❌ | (directed) | ✅ |
+| O woken by system | — | ✅ | ✅ |
+| O user messages | — | 0 | **0** |
+| P woken by reply | — | ✅ (event delivered) | ✅ (`wakeCount` 1) |
 
-Observed exchange (2 events, one thread `thr_7b71b528-…`):
-
-1. P → O `question`: "peer wake mechanism for palimpsest.main … checkpoint
-   polling is the current bootstrap …" — recorded with `identity.source = "dsh"`.
-2. O (woken by the watcher; `wakeCount = 1`, batch `bat_a07b083c-…`) used
-   `collab_inbox` → `collab_thread` → `collab_post` → `collab_ack`.
-3. O → P `decision`: "low-latency peer wake does NOT require an Ordarium
-   primitive. Keep it Palimpsest/DSH-side." with reasoning.
-4. P's watcher delivered the wake notice into its DSH inbox
-   (`agent/inbox/spliced` carries our notice; `turn/start = 2`), and P used
-   `collab_inbox` → `collab_ack`.
-
-Per-peer session evidence is in
-`evidence/pal-fed-0d-dogfood-evidence.json`:
+Attempt 3 (`evidence/pal-fed-0d-dogfood3-evidence.json`, build
+`pal-fed-0d+8bf55a170d4f`, frozen-code SHA-256 `256675bf…822d6`):
 
 ```
-palimpsest.main: userMessages=1, pluginWakeNotices=1,
-                 collaborationToolCalls=[collab_inbox, collab_post, collab_inbox, collab_ack]
-ordarium.main:   userMessages=0, pluginWakeNotices=1,
-                 collaborationToolCalls=[collab_inbox, collab_thread, collab_post, collab_ack]
+palimpsest.main  userMessages=1  pluginWakeNotices=1
+  steps: collab_inbox → collab_post → collab_inbox
+ordarium.main    userMessages=0  pluginWakeNotices=1
+  steps: collab_inbox → collab_thread → contract_update → collab_post → collab_ack
+thread: thr_99f5049e-…   P→O question   O→P decision
+ordariumPrimitiveRequired: false
 ```
 
-O had **zero** user messages: its only input was the system wake notice.
+**The §41 criterion mattered.** Attempt 1 (checkpoint list, no criterion) and
+attempt 3 (same open prompt, criterion added) differ only in the guidance:
+attempt 1 produced no contact; attempt 3 produced autonomous initiation. The
+criterion does not say "always ask the peer" — it says contact when a decision
+depends on the peer's owned interface/constraint/state/authority, which is
+exactly what P judged this question to be.
 
-**Honest negative finding.** An earlier attempt with an open, non-directive
-operator prompt produced **0 events**: P used the read tools
-(`collab_inbox`, `contract_get`, `collab_thread`) across six steps but did not
-initiate contact. The successful run therefore used an explicit operator
-instruction to P to consult the peer. So while P *could* compose and send a
-boundary delta, it did not spontaneously decide to in this setup. This is
-recorded as the main behavioral residual, not hidden.
+Earlier evidence files (`pal-fed-0d-dogfood-summary.json`,
+`pal-fed-0d-dogfood-evidence.json`) are attempt 2, built from the pre-criterion
+artifact `pal-fed-0d+2c7a63c12366`; kept for the contrast.
 
-## 5. §45 required conclusions
+## 5. §45 behavioral questions
 
-1. **Two actual DSH-hosted persistent Main Agents collaborate?** **Yes.**
-2. **One Agent contacted the other without the user as message bus?** **Yes** —
-   P→O and O→P both delivered by the system (O had no user input at all).
-3. **Did the receiving peer reason from its own persistent context?** **Yes** —
-   O ran its own DSH session/model in the Ordarium worktree and produced an
-   independent decision.
-4. **Did DSH-native wake remove the need for checkpoint/manual switching?**
-   **Yes, in this run** — both wakes were automatic; no window switching or
-   "check your inbox" prompts.
-5. **Did we need any new Ordarium primitive?** **No** — and O independently
-   decided it should not; that is recorded as evidence for the Ordarium peer,
-   and PAL-FED-0D implemented nothing there.
-6. **Did collaboration remain peer-to-peer?** **Yes** — two runtime roots, no
-   `parentAgent`, no central planner.
-7. **Did PAL-FED tools need to be Agent-scoped?** **Yes.** A subagent created on
-   the same host sees neither the tools nor the guidance (machine-asserted);
-   otherwise a temporary worker could speak with peer authority.
-8. **Did the custom MCP adapter remain necessary?** **No** for the dogfood; it
-   stays as a protocol/debug/comparison surface (§48).
-9. **Should wake remain DSH/Palimpsest-side or move lower?** **DSH/Palimpsest
-   side** on this evidence; revisit only if measured latency/friction demands a
-   lower primitive.
+1. **Were both peers actual DSH Agents?** Yes — present in `ctx.agents`, with
+   live sessions and DSH-driven turns.
+2. **Separate persisted DSH Sessions?** Yes — `pal-fed-p-main` / `pal-fed-o-main`
+   under separate worktrees; A05 resumes a persisted session.
+3. **Runtime roots rather than parent/child?** Yes — no `parentAgent`.
+4. **Peer tools Agent-scoped?** Yes — asserted; a subagent sees neither tools
+   nor guidance (FED-DSH-A01).
+5. **DSH provenance in Ordarium state?** Yes — `source="dsh"`, real
+   `callId`/`rootCallId`, `actor=PeerRef` (FED-DSH-A02).
+6. **Could a subagent impersonate peer identity?** No.
+7. **Did the system wake O without the user touching O?** Yes (A03, and the
+   dogfood: O had 0 user messages).
+8. **Did O reason from its own project context?** Yes — own session/worktree.
+9. **Did O autonomously decide how to respond?** Yes — it chose to
+   `collab_thread`, then `contract_update`, then a `decision` reply, not a
+   scripted answer.
+10. **Was P automatically notified of O's response?** Yes — plugin wake notice,
+    `wakeCount` 1, second turn.
+11. **Did P initiate without a "contact O" directive?** **Yes**, in attempt 3.
+12. **If not, what prevented it?** In attempt 1 the guidance lacked an explicit
+    decision criterion; the model investigated reads but did not name a
+    dependency. Adding the §41 criterion fixed it without hard-coding contact.
+13. **Over-communicate?** No status chatter; the exchange was two substantive
+    events in one thread.
+14. **Full plans exchanged?** No — boundary deltas only; no plan/task sync.
+15. **Was BoundaryContract useful?** Yes — O used `contract_update` on the
+    boundary decision rather than only messaging.
+16. **Was pending-batch/ack ceremony justified?** Yes — it is what makes crash
+    redelivery safe (A05); ack happened in the same turn.
+17. **Was polling latency acceptable?** Yes at 2s for a local DB; O's response
+    arrived within one poll interval of the event.
+18. **Is `waitStateChanges()` actually needed?** No — O independently decided the
+    same; polling suffices for this topology.
+19. **Is custom MCP still useful?** Not for the dogfood; useful as a debug /
+    comparison surface.
+20. **Does this feel like two persistent peers?** Yes — separate lived state,
+    asymmetric knowledge, spontaneous initiation, no orchestrator.
 
-## 6. Final gates
+## 6. §46 DSH-native vs custom MCP
+
+| Axis | DSH-native plugin | Custom MCP adapter |
+|---|---|---|
+| Identity fidelity | Trusted `selfPeer` in-process; real `callId`/`rootCallId` | Fabricated invocation identity (no host call context) |
+| Agent scoping | Native `setup()`/agent scope; subagent isolation | None — any client of the server |
+| Session integration | Real DSH session, resume, disposal | None; adapter is stateless |
+| Wake capability | `agent.followup` → real DSH inbox/driver | None |
+| Lifecycle | DSH-owned create/resume/dispose | Manual process lifetime |
+| Complexity | Plugin + profile config | Small standalone server |
+| Portability | Tied to DSH plugin API (dev preview) | Host-agnostic |
+| Debuggability | Session log is the trace | Easier to drive in isolation |
+
+Hypothesis confirmed by evidence: **DSH-native is the real runtime; MCP stays a
+debug/compatibility surface.** MCP was not needed for the dogfood.
+
+## 7. Final gates (§48)
 
 ```
-clean ✅   build ✅   build:web ✅   test ✅ 66 files / 475 tests   test:e2e ⚠️
+clean ✅   build ✅   build:web ✅   test ✅ 66/475   test:e2e ⚠️
 ```
 
-PAL-FED-0D adds 10 tests (7 DSH runtime + 3 artifact); 32 PAL-FED-0 protocol
-tests remain green. Retries remain 0 everywhere.
+**Remote CI (draft PR #2):** `unit => success`; `e2e => failure` (twice,
+including a rerun) on `E2E-DEBUG-01` — node present but hidden at
+`runtime-debugger.spec.ts:56`.
 
-### Remote CI honesty (`experiment/pal-fed-0-dsh`, draft PR #2)
-
-`unit => success`. `e2e => failure`, twice (original run and a `--failed`
-rerun): `E2E-DEBUG-01` fails at
-`runtime-debugger.spec.ts:56` with the node present but `hidden` — the exact
-signature already observed at PAL-FED-0 base on this Windows host.
-
-**Proof this batch did not cause it:** everything the browser E2E exercises is
-byte-identical between PAL-FED-0 and PAL-FED-0D:
+**Separated from baseline exactly:** everything the browser E2E exercises is
+byte-identical to PAL-FED-0 (where remote e2e passed):
 
 ```
-dist/web (all files)                    27bc76ba…a3ccc  (both branches)
-dist/src excluding federation/          9e889ee7…aef785  (both branches)
+dist/web (all files)                    27bc76ba…a3ccc   both branches
+dist/src excluding federation/          9e889ee7…aef785   both branches
 ```
 
-The only server-code change is inside `src/federation/`, which the e2e kernel
-never imports. The failure therefore comes from the pre-existing
-`runtime-debugger` timing defect (a React Flow node that stays
-`visibility:hidden` under certain scheduling), which the heavier PAL-FED-0D
-install may make more likely on the runner. It is reported, not masked:
-no retry was added, and the flake is not attributed to PAL-FED-0D.
+The only server change is in `src/federation/`, which the e2e kernel never
+imports. This is the pre-existing `runtime-debugger` timing defect reported in
+PAL-FED-0, not a PAL-FED-0D regression; retries remain 0 and it is not hidden.
 
-## 7. Stop conditions (§50)
+## 8. Stop conditions (§50)
 
 ```
-real DSH runtime audited/pinned ......................... ✅ 0.1.5-rc.1
-frozen PAL-FED DSH plugin runtime built ................. ✅ build-id + SHA-256
-palimpsest.main runs as a DSH Agent ..................... ✅
-ordarium.main runs as a DSH Agent ....................... ✅
-both use independent DSH Sessions/workspaces ............ ✅
-collaboration tools are DSH Agent-scoped ................ ✅
-peer identity cannot be spoofed ......................... ✅ (unchanged PAL-FED-0 + strict tools)
-DSH invocation provenance is retained ................... ✅ identity.source="dsh"
-new peer input can wake the receiving DSH Agent ......... ✅ watcher → followup
-wake does not ack ....................................... ✅
-pending batch survives crash/resume ..................... ✅
-bidirectional peer collaboration works .................. ✅
-no central manager exists ............................... ✅
-real two-Main dogfood executed .......................... ✅ (with the initiation caveat)
-evidence recorded ....................................... ✅
+real DSH version audited and pinned ............... ✅ 0.1.5-rc.1
+PAL-FED DSH integration implemented .............. ✅
+frozen federation runtime artifact produced ...... ✅ build-id + SHA-256
+palimpsest.main runs as real DSH root Agent ...... ✅
+ordarium.main runs as real DSH root Agent ........ ✅
+each has separate DSH Session/worktree ........... ✅
+PAL-FED tools are Agent-scoped ................... ✅
+DSH call provenance is preserved ................. ✅
+new peer work can wake receiving Agent via DSH ... ✅
+wake never acknowledges automatically ............ ✅
+crash/resume/redelivery works .................... ✅
+bidirectional wake works ......................... ✅
+no central manager exists ........................ ✅
+real bilateral dogfood executed .................. ✅
+autonomous initiation separately assessed ........ ✅ (attempts 1/2/3)
+evidence and delivery report written ............. ✅
 ```
 
-Not started (per §50): dynamic discovery, N-project federation, collaboration
-graph, ProjectCell/Holon, new Ordarium change-feed APIs, G10 implementation.
+Not started (§50): PAL-FED-1, dynamic federation, capability discovery,
+N-peer organization, CollaborationGraph, ProjectCell/Holon, G10, new Ordarium
+primitives.
 
-## 8. Primary residual
+## 9. Residuals
 
-Autonomous **initiation** was not demonstrated: with an open prompt P chose not
-to contact the peer, and a directive operator instruction was required to start
-the exchange. Everything after initiation was autonomous and bilateral. This is
-the concrete question for the next iteration (prompt/operating-guide tuning vs.
-an explicit initiation policy), and it is deliberately not "solved" here.
+- Polling wake is bounded (2s default, 200ms–60s) and is the only attention
+  mechanism; a lower primitive is deferred until measured friction demands it.
+- DSH is developer-preview; the binding is pinned to `0.1.5-rc.1` exactly.
+- The `runtime-debugger` e2e flake is a pre-existing defect outside this batch.
+- The initiation result rests on one successful open-prompt run plus one
+  counter-example; more runs would strengthen it.

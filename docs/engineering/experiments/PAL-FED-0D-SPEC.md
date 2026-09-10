@@ -55,7 +55,11 @@ On apply the plugin:
 3. inside `setup(agentCtx, agent)`: registers the six tools via
    `agentCtx.tools.register` and the operating guidance via
    `agentCtx.systemPrompt.section` — **agent-scoped**, so a subagent inherits
-   neither;
+   neither. The guidance carries an explicit **contact criterion** (§41): if a
+   decision materially depends on the peer's owned interface, constraint,
+   implementation state or authority, prefer contacting the peer over guessing
+   or asking the user to relay; otherwise do not. It never says "always contact
+   the peer";
 4. starts the watcher;
 5. exposes readiness through `palFedReadyOf(ctx)` because DSH boot settlement
    does not itself await a plugin effect's async body;

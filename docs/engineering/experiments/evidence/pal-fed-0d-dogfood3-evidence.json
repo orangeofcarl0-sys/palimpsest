@@ -1,0 +1,76 @@
+{
+  "protocol": "PAL-FED-0D",
+  "attempt": 3,
+  "operatorPrompt": "open, non-directive (no \"contact peer\" instruction)",
+  "operatingGuidance": "includes the §41 dependency criterion (contact only when a decision depends on the peer's owned interface/constraint/state/authority)",
+  "runAt": "2026-09-10T23:17:58.093Z",
+  "dshVersion": "0.1.5-rc.1",
+  "node": "v24.14.1",
+  "buildId": "pal-fed-0d+8bf55a170d4f",
+  "frozenCodeSha256": "256675bf7db391452caab39ccc0c740d2ec0fd63035ad07dad275fdb193822d6",
+  "fabric": "palimpsest-ordarium-0",
+  "coordinationDb": "outside both worktrees",
+  "hosts": {
+    "palimpsest.main": {
+      "userMessages": 1,
+      "pluginWakeNotices": 1,
+      "toolSteps": [
+        [
+          "collab_inbox"
+        ],
+        [
+          "collab_post"
+        ],
+        [
+          "collab_inbox"
+        ]
+      ]
+    },
+    "ordarium.main": {
+      "userMessages": 0,
+      "pluginWakeNotices": 1,
+      "toolSteps": [
+        [
+          "collab_inbox"
+        ],
+        [
+          "collab_thread"
+        ],
+        [
+          "contract_update"
+        ],
+        [
+          "collab_post"
+        ],
+        [
+          "collab_ack"
+        ]
+      ]
+    }
+  },
+  "autonomy": {
+    "autonomousInitiation": true,
+    "autonomousReceipt": true,
+    "autonomousResponse": true,
+    "autonomousReplyDelivery": true
+  },
+  "invariants": {
+    "wakeIsNotAck": true,
+    "userActedAsMessageBus": false,
+    "noCentralManager": true,
+    "twoRootPeers": true,
+    "separateSessions": true
+  },
+  "exchange": {
+    "eventsObserved": 2,
+    "threadId": "thr_99f5049e-b572-4896-a452-9dff44c86d12",
+    "pToO": {
+      "kind": "question"
+    },
+    "oToP": {
+      "kind": "decision"
+    },
+    "ordariumPrimitiveRequired": false,
+    "ordariumUsedContractUpdate": true
+  }
+}
