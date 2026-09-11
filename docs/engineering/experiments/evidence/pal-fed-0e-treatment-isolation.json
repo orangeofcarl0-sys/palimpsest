@@ -1,0 +1,26 @@
+{
+  "protocol": "PAL-FED-0E",
+  "arms": {
+    "C0": {
+      "buildId": "pal-fed-0d+c0718c9f790f",
+      "controlPlaneSha256": "1f0e54fb0692c9ea1bdede20ba1c7f6ba7ffc8bec3cb9b67156628701d09291b",
+      "guidance": "absent"
+    },
+    "C1": {
+      "buildId": "pal-fed-0d+c0718c9f790f",
+      "controlPlaneSha256": "b6849a147b5d2042f67efc170f54e8423894f865f1d49aed70608b6d73efdf0b",
+      "guidance": "present"
+    }
+  },
+  "identicalFileCount": 400,
+  "differingFiles": [
+    "federation/dsh/instructions.d.ts",
+    "federation/dsh/instructions.d.ts.map",
+    "federation/dsh/instructions.js",
+    "federation/dsh/instructions.js.map"
+  ],
+  "dependenciesIdentical": true,
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "note": "Both artifacts built from the same source commit; the only control-plane source difference is src/federation/dsh/instructions.ts (the §41 criterion block)."
+}

@@ -28,6 +28,8 @@ export interface PeerWatcherOptions {
 export interface PeerWatcherStatus {
   readonly lastWakeBatchId: string | undefined;
   readonly wakeCount: number;
+  /** ISO time of the most recent wake delivery (0E latency measurement). */
+  readonly lastWakeAt: string | undefined;
 }
 
 /**
@@ -43,6 +45,7 @@ export class PeerWatcher {
   readonly #intervalMs: number;
   #timer: NodeJS.Timeout | undefined;
   #lastWakeBatchId: string | undefined;
+  #lastWakeAt: string | undefined;
   #wakeCount = 0;
   #ticking = false;
   #stopped = false;
@@ -71,7 +74,11 @@ export class PeerWatcher {
   }
 
   status(): PeerWatcherStatus {
-    return { lastWakeBatchId: this.#lastWakeBatchId, wakeCount: this.#wakeCount };
+    return {
+      lastWakeBatchId: this.#lastWakeBatchId,
+      wakeCount: this.#wakeCount,
+      lastWakeAt: this.#lastWakeAt,
+    };
   }
 
   /** One observation cycle; exposed so tests can drive it deterministically. */
@@ -85,6 +92,7 @@ export class PeerWatcher {
       if (result.batchId === null) return null;
       if (result.batchId === this.#lastWakeBatchId) return null;
       this.#lastWakeBatchId = result.batchId;
+      this.#lastWakeAt = new Date().toISOString();
       this.#wakeCount += 1;
       this.#agent.followup(this.#notice(result.batchId, result.events.length, result.contracts.length));
       return result.batchId;

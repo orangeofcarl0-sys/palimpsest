@@ -34,10 +34,34 @@ const argOf = (flag, fallback) => {
   const index = process.argv.indexOf(flag);
   return index === -1 ? fallback : resolve(process.argv[index + 1]);
 };
+/** Raw (non-path-resolved) flag value, for enum/commit tokens. */
+const rawArg = (flag, fallback) => {
+  const index = process.argv.indexOf(flag);
+  return index === -1 ? fallback : process.argv[index + 1];
+};
 const out = argOf("--out", resolve(repo, "..", "pal-fed-runtime"));
 const depsMode = argOf("--deps", "link") === "link" ? "link" : "copy";
 
-execFileSync("pnpm", ["build"], { cwd: repo, stdio: "inherit", shell: true });
+// PAL-FED-0E treatment switch (EXPERIMENT HARNESS ONLY, no product API):
+// `--guidance c0` builds from the pre-criterion operating-guidance source
+// (commit --c0-source, default 8bf55a1); `--guidance c1` (default) builds the
+// current source. The only control-plane source difference is instructions.ts.
+const guidance = rawArg("--guidance", "c1");
+const c0Source = rawArg("--c0-source", "8bf55a1");
+const instructionsPath = join(repo, "src/federation/dsh/instructions.ts");
+const originalInstructions = readFileSync(instructionsPath, "utf8");
+try {
+  if (guidance === "c0") {
+    const c0 = execFileSync("git", ["show", `${c0Source}:src/federation/dsh/instructions.ts`], {
+      cwd: repo,
+      encoding: "utf8",
+    });
+    writeFileSync(instructionsPath, c0);
+  }
+  execFileSync("pnpm", ["build"], { cwd: repo, stdio: "inherit", shell: true });
+} finally {
+  writeFileSync(instructionsPath, originalInstructions);
+}
 
 const stage = join(out, "package");
 rmSync(out, { recursive: true, force: true });
@@ -103,6 +127,7 @@ writeFileSync(
       version: pkg.version,
       frozenCodeSha256: digest,
       depsMode,
+      guidance,
       pluginEntry: "package/dist/src/federation/dsh/plugin.js",
       deterministicLlmEntry: "package/dist/src/federation/dsh/deterministic_llm.js",
       dshVersion: "0.1.5-rc.1",

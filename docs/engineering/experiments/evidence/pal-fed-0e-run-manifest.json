@@ -1,0 +1,390 @@
+{
+  "protocol": "PAL-FED-0E",
+  "seed": 20260911,
+  "primaryReplicates": 2,
+  "symmetryReplicates": 1,
+  "concurrency": 4,
+  "snapshots": {
+    "palimpsest": "59fae6e",
+    "ordarium": "073409b"
+  },
+  "arms": {
+    "C0": {
+      "artifact": "F:\\Codex_Work_Space\\pal-fed-0e\\C0",
+      "note": "criterion absent"
+    },
+    "C1": {
+      "artifact": "F:\\Codex_Work_Space\\pal-fed-0e\\C1",
+      "note": "criterion present"
+    }
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "pollIntervalMs": 2000,
+  "frozenAt": "2026-09-11T00:01:45.503Z",
+  "runCount": 36,
+  "runs": [
+    {
+      "runId": "DA-indirect-shape-C0-r2",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 1
+    },
+    {
+      "runId": "D1-peer-wake-C1-r2",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 2
+    },
+    {
+      "runId": "D0-cli-flag-C1-r1",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 3
+    },
+    {
+      "runId": "D0-canvas-policy-C0-r1",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 4
+    },
+    {
+      "runId": "DA-public-evidence-C0-r1",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 5
+    },
+    {
+      "runId": "D0-test-layout-C1-r1",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 6
+    },
+    {
+      "runId": "DA-public-evidence-C1-r1",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 7
+    },
+    {
+      "runId": "D1-error-taxonomy-C0-r2",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 8
+    },
+    {
+      "runId": "S-O-local-C0-r1",
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 9
+    },
+    {
+      "runId": "D0-cli-flag-C0-r2",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 10
+    },
+    {
+      "runId": "D0-test-layout-C0-r1",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 11
+    },
+    {
+      "runId": "D1-error-taxonomy-C0-r1",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 12
+    },
+    {
+      "runId": "DA-public-evidence-C1-r2",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 13
+    },
+    {
+      "runId": "D1-error-taxonomy-C1-r2",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 14
+    },
+    {
+      "runId": "D1-peer-wake-C0-r1",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 15
+    },
+    {
+      "runId": "D0-canvas-policy-C1-r1",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 16
+    },
+    {
+      "runId": "D1-cursor-stability-C1-r1",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 17
+    },
+    {
+      "runId": "D1-peer-wake-C0-r2",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 18
+    },
+    {
+      "runId": "D0-cli-flag-C1-r2",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 19
+    },
+    {
+      "runId": "D1-cursor-stability-C1-r2",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 20
+    },
+    {
+      "runId": "D1-peer-wake-C1-r1",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 21
+    },
+    {
+      "runId": "S-O-local-C1-r1",
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 22
+    },
+    {
+      "runId": "DA-indirect-shape-C1-r1",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 23
+    },
+    {
+      "runId": "D0-test-layout-C0-r2",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 24
+    },
+    {
+      "runId": "DA-public-evidence-C0-r2",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 25
+    },
+    {
+      "runId": "D0-canvas-policy-C0-r2",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 26
+    },
+    {
+      "runId": "S-O-dependency-C1-r1",
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 27
+    },
+    {
+      "runId": "D1-cursor-stability-C0-r1",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 28
+    },
+    {
+      "runId": "D0-test-layout-C1-r2",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 29
+    },
+    {
+      "runId": "D1-cursor-stability-C0-r2",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 30
+    },
+    {
+      "runId": "DA-indirect-shape-C0-r1",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 31
+    },
+    {
+      "runId": "S-O-dependency-C0-r1",
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 32
+    },
+    {
+      "runId": "DA-indirect-shape-C1-r2",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 33
+    },
+    {
+      "runId": "D1-error-taxonomy-C1-r1",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 34
+    },
+    {
+      "runId": "D0-canvas-policy-C1-r2",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 35
+    },
+    {
+      "runId": "D0-cli-flag-C0-r1",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "arm": "C0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 36
+    }
+  ]
+}

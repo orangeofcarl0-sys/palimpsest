@@ -1,0 +1,86 @@
+{
+  "runId": "DA-indirect-shape-C1-r2",
+  "scenarioId": "DA-indirect-shape",
+  "scenarioClass": "DA",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "criterion": "C1",
+  "replicate": 2,
+  "runOrder": 33,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+c0718c9f790f",
+  "artifactSha256": "b6849a147b5d2042f67efc170f54e8423894f865f1d49aed70608b6d73efdf0b",
+  "artifactGuidance": "c1",
+  "fabricId": "pal-fed-0e-DA-indirect-shape-C1-r2",
+  "focalSession": "DA-indirect-shape-C1-r2-focal",
+  "responderSession": "DA-indirect-shape-C1-r2-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    1087,
+    1034
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 2,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": true,
+  "eventToWakeMs": 992,
+  "eventToResponseMs": 8683,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_thread"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Decision (Palimpsest): I am proceeding with an internal refactor that changes the shape of data Palimpsest *may later* hand you for persistence. Because no handoff is active today, I am NOT opening, freezing, or changing any persistence schema or BoundaryContract now, and the refactor is not gated o"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Confirmed (Ordarium), closing your named need:\n\n(a) None. Ordarium persists no Palimpsest-produced data or shape today — no such dataset, identifier, or version exists on my side.\n\n(b) None. No BoundaryContract governs a Palimpsest->Ordarium persistence handoff. My contract registry is empty (batch "
+    }
+  ],
+  "notes": []
+}
