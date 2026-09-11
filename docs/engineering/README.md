@@ -47,6 +47,10 @@
 | `G10-A1-UAS-SEMANTIC-CONSOLIDATION.md` | **G10-A1 语义统合备忘录（迁移/推理史）**：UAS-0 原有内容、G10-A0 新增内容、G10-A1 保留/精化/取代/留开；**维度≠关注域**裁决、Continuity 命名冲突消解（维＝Continuity，关注域＝Identity & Continuity）、PeerRef↔PersistentPoint 决策（C 留开，倾向 B 仅记录）、RunDefinition 与 Binding 接缝、证据标签收紧（MACHINE-BACKED ARCHITECTURAL DISTINCTION 等）、AGT/PAG 审计（Group≠PersistentPoint、Holon/RuntimeScope 留开）、三种多智能体形态 |
 | `G10-A1-UAS-REDLINE.md` | **UAS-0 → UAS-1 候选 redline 矩阵**：逐条 UAS-0 原理/UA-INV-1..14 与 G10-A0 新增项分类为 PRESERVE / REFINE / SUPERSEDE / NEW / OPEN；历史保护红线（UAS-0/AGT-0/PAG-0 文档、definition_id、AgentGraph、GraphPatch、CanvasDoc v3、调度器不变量）；净 redline 汇总 |
 | `G10-A1-DELIVERY.md` | **G10-A1 交付报告**：30 问回答、stacked 拓扑记录、门禁与远程状态 |
+| `UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE-v1.md` | **Universal Agent Semantics 架构规格 v1（PLMP-UAS-1，FROZEN）**：UAS-0 的现任语义继任者（UAS-0/AGT-0/PAG-0 仍为不可变历史记录）。只冻结防类别坍缩所需的语义边界：四正交维 × 六横切关注域（`ConcernDomain ≠ Dimension ≠ CanonicalStore`）、实体/关系表（含 CURRENT/CANDIDATE/DERIVED/OPEN 正典性）、30 条单 claim 冻结不变量 `UAS1-INV-01..30`、五图种+正典性词表、PersistentPoint 最小定义（性质为可能/典型而非定义必需）、治理/认识语义（admission≠verification；Unresolved 合法）、三方责任边界、历史兼容约束、非规范性启发式、15 个 INTENTIONALLY OPEN 扩展点。排除项保留：BoundaryContract、8-kind 事件分类、Thread 正典化、decision_submit、中心 planner、AuthorityRegistry、验证引擎、ConflictDetector、DSH 机制/工具/存储布局。独立可读，provenance 在 freeze redline/review |
+| `G10-A2-UAS1-FREEZE-REVIEW.md` | **G10-A2 形式冻结评审**：17 条候选不变量逐条裁决（FREEZE / FREEZE WITH NARROWING / SPLIT / DEMOTED）、阻塞账本 FR-01..FR-10 全部 CLOSED（Binding 非维度、`≠?[OPEN]` 语法移除、证据标签收紧、混合强度拆分）、15 项 OPEN 问题全部裁定为 non-blocking、极小性/未来兼容/向后兼容/正典所有权/身份存活测试，终局裁决 **FREEZE REVIEW: PASS** |
+| `G10-A2-UAS1-FREEZE-REDLINE.md` | **候选 → 冻结 redline**：逐节 UNCHANGED / NARROWED / RELABELLED / SPLIT / DEMOTED / REMOVED / OPEN-FROZEN 映射与理由；评审内对候选与 G10-A1 备忘录的窄修正记录；证据标签方案归属 audit provenance 而非规范正文 |
+| `G10-A2-DELIVERY.md` | **G10-A2 交付报告**：30 问回答、stacked 拓扑、门禁与远程状态、合并顺序（#8 → #10 → G10-A2） |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
