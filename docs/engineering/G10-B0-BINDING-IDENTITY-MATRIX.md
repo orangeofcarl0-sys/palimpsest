@@ -32,7 +32,8 @@ accident.
 | `BindingDefinition` | provider / model route | Requirements yes; concrete selection no | PROPOSED boundary | Intent (need) vs RunConfiguration (selection) | `LogicalNeed ≠ ConcreteProvider`; today's model strings are runtime/advisory |
 | `BindingDefinition` | tools | Logical capability requirement yes; concrete implementation no | PROPOSED boundary | Intent vs resolution/runtime | No plugin ids in architecture semantics |
 | `BindingDefinition` | workspace | Logical locality requirement yes; host path no | PROPOSED boundary | Intent vs realization | Host paths stay runtime-side (`defaultStatePath`) |
-| `BindingDefinition` | `RunConfiguration` | Distinct siblings inside RunDefinition | PROPOSED boundary | Intent vs per-run override | Stable/revisioned association intent vs per-run parameters/policies |
+| `BindingDefinition` | `RunConfiguration` | Distinct siblings inside RunDefinition | PROPOSED boundary | Intent vs per-run override | Precedence frozen-direction (Stage-0 Closure C): RunConfiguration may **narrow**, never violate hard constraints; `Allowed(Effective) ⊆ Allowed(Definition)`; durable pin retarget is NOT a run override |
+| `RunConfiguration` | durable point pin (retarget) | **No** | — | — | **NOT A BINDING RELATION / not an override** — changing durable intent requires a new BindingDefinition revision (Stage-0 Closure C) |
 | `BindingDefinition` | `ExecutionPlan` | Input vs derived | PROPOSED | Resolution consumed by plan | Concrete Agent/Session ids live in derived/runtime artifacts, not in binding |
 | `PeerRef` | `PersistentPoint` | Frozen-open | **OPEN** (identity-vs-address; cardinality) | — | **Binding needs neither answer**; no `AgentDefinition.peerRef` shortcut is designed |
 | `BindingDefinition` | authority grant | **No** | — | — | **NOT A BINDING RELATION** — `Competence ≠ AuthorityGrant`; no `binding.authority` semantics |

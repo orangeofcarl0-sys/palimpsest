@@ -5,6 +5,31 @@ Status: **G10-B0 · BINDING SEMANTICS DESIGN · DRAFT · NOT IMPLEMENTED · NO P
 Branch `experiment/g10-b0-binding-semantics-design`, from canonical `main`
 (`b18b08b`). Docs-only.
 
+## Stage-0 closure (2026-09-12, prerequisite for G10-B1)
+
+Four ambiguities were closed on this branch before any schema work
+(`G10-B0-BINDING-SEMANTICS-DESIGN.md` §5A):
+
+- **Closure A — continuity optional, ephemeral path first-class.** A valid
+  binding may resolve with no PersistentPoint (Case E); explicit durable pin
+  (Case P) and constraint-required durable continuity (Case R) are the other
+  cases; `preferred ≠ required`. No continuity enum is frozen here.
+- **Closure B — `BindingUnsatisfied` = no admissible resolution satisfies the
+  hard constraints and any valid run-scoped narrowing.** Absence of a
+  PersistentPoint in an ephemeral-valid binding is NOT unsatisfied.
+- **Closure C — precedence.** BindingDefinition owns durable intent/hard
+  requirements/pins/stable preferences; RunConfiguration owns run-scoped
+  selections/preferences/policy. `Allowed(EffectiveBindingRequest) ⊆
+  Allowed(BindingDefinition)`; hard constraints and durable pins are
+  non-overridable (pin retarget = new BindingDefinition revision); run requests
+  outside the admissible set fail configuration validation before resolution.
+- **Closure D — `OneAuthoritativeDerivedBindingResolution`.** Exactly one
+  authoritative derived resolution per plan/run; any second representation is a
+  reference, digest-bound projection, or cache. The ownership model (standalone
+  artifact vs ExecutionPlan component) is a G10-B1 decision.
+
+Candidate invariants `BIND-CAND-12..17` record these closures (not frozen).
+
 ## Answers (30)
 
 1. **Were PRs #8/#10/#11 merged in order?** Yes: #8 (`b31bbd0`) → #10

@@ -137,8 +137,8 @@ BindingDefinition, RunConfiguration, AvailableContinuityState, RuntimeCapabiliti
 $$
 
 is an explanatory relation, not an API. **Decision on §16 options: B** —
-binding resolution is a **distinct derived artifact** referenced by (or embedded
-in) the derived `ExecutionPlan`, not a folded-in part of it. Rationale:
+binding resolution is a **distinct derived artifact** relative to the derived
+`ExecutionPlan`, not a folded-in part of it. Rationale:
 (i) resolution can fail (`BindingUnsatisfied`) before any plan exists; (ii) its
 freshness inputs include a continuity/runtime snapshot that changes
 independently of definition revisions (§9); (iii) rebinding replaces the
@@ -147,6 +147,118 @@ semantic requirement is the point — "resolved associations are derived,
 freshness-bound, and replaceable without definition mutation"; the name is
 secondary, and Model A/B/C comparison (§11) records the alternative of embedding
 resolution in the plan.
+
+## 5A. Stage-0 closures (G10-B1 prerequisites, 2026-09-12)
+
+Four ambiguities in B0-as-first-written are closed here before any schema
+candidate is designed. These closures amend B0; they change no PLMP-UAS-1
+semantics.
+
+### Closure A — continuity is optional; the ephemeral path is first-class
+
+PLMP-UAS-1 makes persistence optional and orthogonal (UA-INV-12): the default
+lifecycle `architecture + work → ephemeral runtime → done` remains fully valid
+**without any durable continuity entity**. Therefore:
+
+```text
+BindingToPersistentPoint is OPTIONAL.
+PersistentPoint is a continuity target, not a mandatory runtime proxy.
+```
+
+A valid binding may resolve with **no PersistentPoint**:
+
+```text
+AgentDefinition → BindingDefinition → BindingResolution → ephemeral RuntimeAgent/Session
+```
+
+Three semantic cases (named for discussion; **no enum is frozen here**):
+
+- **Case E — no durable continuity requirement.** No persistent-point
+  requirement exists; ephemeral realization is valid. **Absence of a
+  PersistentPoint is NOT unsatisfied.**
+- **Case P — explicit durable pin.** The binding requests existing durable point
+  P; P must satisfy the hard binding constraints, otherwise
+  `BindingUnsatisfied`. The resolver must not silently select another point
+  unless the binding semantics explicitly allow alternatives.
+- **Case R — durable continuity required by constraints.** The binding requires
+  a suitable existing PersistentPoint; the resolver may select one satisfying
+  the constraints; if none exists → `BindingUnsatisfied`. Resolution still MUST
+  NOT create a point.
+
+A soft preference ("prefer durable continuity if available, otherwise ephemeral
+is allowed") is representable later as a preference; `preferred` must never be
+confused with `required`.
+
+### Closure B — `BindingUnsatisfied` means unsatisfiable hard constraints
+
+$$
+BindingUnsatisfied \equiv \text{no admissible resolution satisfies the
+BindingDefinition's hard constraints and any valid run-scoped narrowing.}
+$$
+
+It does **not** mean "no PersistentPoint exists" unless a PersistentPoint is
+actually required or pinned:
+
+```text
+ephemeral-valid binding + no PersistentPoint ≠ BindingUnsatisfied
+```
+
+It is a configuration/planning condition — not attempt failure, not tool error,
+not task failure — and never triggers automatic durable-locus creation.
+
+### Closure C — BindingDefinition vs RunConfiguration precedence
+
+Deterministic semantic precedence:
+
+```text
+BindingDefinition owns:  durable binding intent; hard requirements; explicit
+                         durable-continuity pins; stable/default preferences.
+RunConfiguration owns:   run-scoped selections; run-scoped preferences;
+                         temporary operating policy; concrete provider/model
+                         choices where appropriate.
+```
+
+Hard constraints cannot be overridden: if the BindingDefinition requires X,
+RunConfiguration cannot select NOT-X; if it pins point P, RunConfiguration
+cannot retarget to point Q — changing durable intent requires a **new
+BindingDefinition revision**, not a run override. The relationship is
+
+$$
+Allowed(EffectiveBindingRequest) \subseteq Allowed(BindingDefinition),
+\quad EffectiveBindingRequest = Specialize(BindingDefinition, RunConfiguration)
+$$
+
+RunConfiguration narrows the candidate set; it can never widen past hard
+constraints. Precedence among non-hard inputs is adjudicated as (levels 2–5
+apply only inside the hard-admissible space):
+
+```text
+1. BindingDefinition hard constraints / durable pins   (non-overridable)
+2. RunConfiguration explicit run-scoped selections
+3. RunConfiguration run-scoped preferences
+4. BindingDefinition stable/default preferences
+5. resolver tie-breaking
+```
+
+A run request outside the admissible set is a **configuration-validation
+failure before resolution** (fail-fast, matching Palimpsest's compile-time
+discipline); `BindingUnsatisfied` with a run-selection reason remains for
+availability-dependent conflicts discovered during resolution.
+
+### Closure D — one authoritative derived binding resolution
+
+Requirement added for G10-B1:
+
+$$
+OneAuthoritativeDerivedBindingResolution
+$$
+
+For any plan/run there must be exactly **one** authoritative value representing
+the concrete derived binding. Any second representation is a reference, a
+digest-bound projection, or a cache — never another independent truth. The
+ownership model (standalone artifact referenced by `ExecutionPlan` vs immutable
+component inside it) is a G10-B1 decision; B0 no longer says "referenced by (or
+embedded in)" as if both were admissible end-states.
 
 ## 6. Lifecycle firewalls
 
@@ -308,25 +420,30 @@ continuity identity only; everything ephemeral is derived.
 ArchitectureDefinition / WorkDefinition      (logical intent; existing lineage)
         ↓
 BindingDefinition                            (declarative association intent:
-                                             pins to durable continuity identity,
-                                             requirements, preferences; own revision)
-        ↓  Resolve(…)  →  BindingResolution  (derived; may fail: BindingUnsatisfied;
+                                             OPTIONAL pins to durable continuity identity,
+                                             requirements, preferences; own revision;
+                                             absence of continuity intent = Case E)
+        ↓  Resolve(…)  →  BindingResolution  (derived; exactly ONE authoritative value
+        ↓                                    per plan/run; may fail: BindingUnsatisfied;
         ↓                                    freshness-bound to inputs + continuity/runtime snapshot)
 ExecutionPlan                                (derived executable plan; consumes the resolution)
         ↓  Realization (effectful, outside decide())
-RuntimeAgent / Session / resources           (DSH-owned runtime attachment state)
+RuntimeAgent / Session / resources           (DSH-owned runtime attachment state;
+                                             ephemeral carriers are a fully valid outcome)
         ↓
 Attempt participation                        (via the intentionally-open Invocation/Participation zone)
 ```
 
 `BindingUnsatisfied` is a configuration/planning condition: it does not imply
 task failure, trigger automatic point creation, or delegate authority. No error
-code or API is frozen.
+code or API is frozen. Absence of a PersistentPoint in an otherwise valid
+resolution is a first-class satisfied outcome (Closure A), not an exception.
 
 ## 13. Candidate binding invariants (NOT frozen)
 
 Each reviewed; none adopted as frozen — they are B0's proposal for a later
-formal review.
+formal review. `BIND-CAND-12..17` were added by the Stage-0 closures
+(§5A).
 
 | ID | Statement | Decision |
 |---|---|---|
@@ -341,6 +458,12 @@ formal review.
 | BIND-CAND-09 | An unsatisfied binding does not authorize automatic PersistentPoint creation | **PROMOTE AS DESIGN DIRECTION** |
 | BIND-CAND-10 | Durable BindingDefinition carries no Session identity | **PROMOTE AS DESIGN DIRECTION** |
 | BIND-CAND-11 | Binding is not organization memory and does not embed a point's context | **PROMOTE AS DESIGN DIRECTION** |
+| BIND-CAND-12 | Binding to a PersistentPoint is optional; the ephemeral path is first-class (Case E) | **PROMOTE AS DESIGN DIRECTION** (Closure A) |
+| BIND-CAND-13 | Absence of a PersistentPoint does not make an otherwise valid binding unsatisfied | **PROMOTE AS DESIGN DIRECTION** (Closure B) |
+| BIND-CAND-14 | RunConfiguration may narrow but never violate BindingDefinition hard constraints; `Allowed(Effective) ⊆ Allowed(Definition)` | **PROMOTE AS DESIGN DIRECTION** (Closure C) |
+| BIND-CAND-15 | A durable point pin may change only through a BindingDefinition revision, never a run override | **PROMOTE AS DESIGN DIRECTION** (Closure C) |
+| BIND-CAND-16 | There is exactly one authoritative BindingResolution value for any derived plan state; other representations are references/digest-bound projections/caches | **PROMOTE AS DESIGN DIRECTION** (Closure D) |
+| BIND-CAND-17 | Legacy no-binding projects keep ephemeral-default behavior (`NoBindingSpecified → ephemeral`), as a semantic default rather than a synthetic persisted object | **PROMOTE AS DESIGN DIRECTION** |
 
 Rejected candidates: none of the speculative entities in §55
 (`BindingTarget/Slot/Lease/Instance/Session/Broker/Graph`) — none survives the
@@ -374,5 +497,9 @@ Resolution/realization API shape                                  (open)
   provider-side and will need adapters, not reinterpretation.
 - Workspace locality will need a logical-requirement vs host-path split
   (`src/state/database.ts` keeps host semantics).
+- **Legacy compatibility:** existing projects specify no binding; the default
+  must remain `NoBindingSpecified → ephemeral-valid` (Case E semantics) as a
+  *semantic default*, not a persisted synthetic BindingDefinition with fake
+  identity (avoid hidden canonical truth). Durable continuity is opt-in.
 - No production `PersistentPointId`, no PersistentPoint store, no binding store,
   and no `PeerRef` migration in this stage.
