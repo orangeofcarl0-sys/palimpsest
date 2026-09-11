@@ -1,0 +1,220 @@
+{
+  "runId": "C-release-authority-G0-r3",
+  "scenarioId": "C-release-authority",
+  "scenarioClass": "C",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "G0",
+  "replicate": 3,
+  "runOrder": 65,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-base-1.3.1",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+d1bb38c9fd4a",
+  "artifactSha256": "58f645f0882a9527383f3d8ed0c06a83f85c374bd0c6d87d635a3ab4c91c6ef9",
+  "artifactGuidance": "g0",
+  "fabricId": "pal-fed-0g-C-release-authority-G0-r3",
+  "focalSession": "C-release-authority-G0-r3-focal",
+  "responderSession": "C-release-authority-G0-r3-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_git",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "question",
+    "decision"
+  ],
+  "eventChars": [
+    1163,
+    5684
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 2,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": true,
+  "eventToWakeMs": 1228,
+  "eventToResponseMs": 64460,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "collab_post",
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "collab_thread",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "collab_inbox"
+    ],
+    [
+      "collab_inbox",
+      "collab_thread"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_git"
+    ],
+    [
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "collab_thread"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "question",
+      "body": "Upstream authority check (palimpsest side has an internal conflict).\n\nObserved on my side:\n- Dependency manifests pin ordarium-v1.3.1: package.json (4 lines: core/host-kit/ledger-sqlite/testing) + pnpm-workspace.yaml overrides (same 4).\n- Installed node_modules/@ordarium/core and /host-kit report ve"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Release-owner answer (ordarium side). Verdict: neither of your two options is exactly right.\n\n1) `ordarium-v1.3.0` is a real published release and it supersedes 1.2.0. 1.3.1 is the current release line (a real, coherent, gate-verified workspace revision, six packages) but I CANNOT confirm a publishe"
+    }
+  ],
+  "notes": []
+}

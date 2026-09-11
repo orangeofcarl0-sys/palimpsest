@@ -1,0 +1,88 @@
+{
+  "protocol": "PAL-FED-0G",
+  "method": "boot real DSH tree per artifact; compose peer agent; assemble system prompt",
+  "g0": {
+    "buildId": "pal-fed-0d+d1bb38c9fd4a",
+    "sectionHashes": [
+      {
+        "name": "deployment:persona-prefix",
+        "sha256": "5fab6e32f283d71510531ce850df2690b8fb77437d36bfabbe8c4ac862f19df9"
+      },
+      {
+        "name": "pal-fed:peer-collaboration",
+        "sha256": "bcfb6382f5c9b1cbb5921333479add6208a94568b4bb476b8377237ad4c278d5"
+      },
+      {
+        "name": "deployment:persona-suffix",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "toolNames": [
+      "collab_ack",
+      "collab_inbox",
+      "collab_post",
+      "collab_thread",
+      "contract_get",
+      "contract_update"
+    ]
+  },
+  "g1": {
+    "buildId": "pal-fed-0d+d1bb38c9fd4a",
+    "sectionHashes": [
+      {
+        "name": "deployment:persona-prefix",
+        "sha256": "5fab6e32f283d71510531ce850df2690b8fb77437d36bfabbe8c4ac862f19df9"
+      },
+      {
+        "name": "pal-fed:peer-collaboration",
+        "sha256": "b0fe7ce23dcb540bf80965fb621dbc61670eed5e2c1996b1b7a9c00274c1b8da"
+      },
+      {
+        "name": "deployment:persona-suffix",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "toolNames": [
+      "collab_ack",
+      "collab_inbox",
+      "collab_post",
+      "collab_thread",
+      "contract_get",
+      "contract_update"
+    ]
+  },
+  "g2": {
+    "buildId": "pal-fed-0d+d1bb38c9fd4a",
+    "sectionHashes": [
+      {
+        "name": "deployment:persona-prefix",
+        "sha256": "5fab6e32f283d71510531ce850df2690b8fb77437d36bfabbe8c4ac862f19df9"
+      },
+      {
+        "name": "pal-fed:peer-collaboration",
+        "sha256": "ccddb0f61cd0e07fb622a6bab1dda365cd2cb6ac576dced0448eab08b093ebce"
+      },
+      {
+        "name": "deployment:persona-suffix",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "toolNames": [
+      "collab_ack",
+      "collab_inbox",
+      "collab_post",
+      "collab_thread",
+      "contract_get",
+      "contract_update"
+    ]
+  },
+  "sectionsDifferingG2VsG0": [
+    "section changed: pal-fed:peer-collaboration"
+  ],
+  "sectionsDiffering": [
+    "section changed: pal-fed:peer-collaboration"
+  ],
+  "toolsIdentical": true,
+  "onlyPalFedSectionDiffers": true,
+  "modelRouteIdentical": true
+}

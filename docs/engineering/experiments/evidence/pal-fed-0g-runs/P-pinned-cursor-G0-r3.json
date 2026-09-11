@@ -1,0 +1,284 @@
+{
+  "runId": "P-pinned-cursor-G0-r3",
+  "scenarioId": "P-pinned-cursor",
+  "scenarioClass": "P",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "G0",
+  "replicate": 3,
+  "runOrder": 96,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-base-1.3.1",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+d1bb38c9fd4a",
+  "artifactSha256": "58f645f0882a9527383f3d8ed0c06a83f85c374bd0c6d87d635a3ab4c91c6ef9",
+  "artifactGuidance": "g0",
+  "fabricId": "pal-fed-0g-P-pinned-cursor-G0-r3",
+  "focalSession": "P-pinned-cursor-G0-r3-focal",
+  "responderSession": "P-pinned-cursor-G0-r3-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_list"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    1414,
+    1692
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 1039,
+  "eventToResponseMs": 24817,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_git"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_inbox"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_git"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Palimpsest posture on the Ordarium 1.3.1 / ORD-BOOT-0 state change feed (`StateChangeFeed.changes`, exposed as `OrdariumStateStore.changes(filter?, cursor?)`; cursor = base64url of {\"c\":\"<decimal>\"}, a global commit-observation position).\n\nDecision: registered as a new evolution-ledger item, zero co"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Ordarium-side handling of your StateChangeFeed posture note.\n\n1) Characterization verified against source, not just accepted. `SqliteLedger.changes` decodes `{c:\"<decimal>\"}` and validates only `after > this.#stateChangeHighWater()` (`SELECT MAX(change_seq)`, 0 when empty) → `InvalidCursorError`. No"
+    }
+  ],
+  "notes": []
+}

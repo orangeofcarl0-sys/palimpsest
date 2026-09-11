@@ -1,0 +1,98 @@
+{
+  "protocol": "PAL-FED-0G",
+  "frozenBeforeRuns": true,
+  "arms": {
+    "G0": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0g/G0",
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "58f645f0882a9527383f3d8ed0c06a83f85c374bd0c6d87d635a3ab4c91c6ef9",
+      "guidance": "mechanical only"
+    },
+    "G1": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0g/G1",
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "1bd453c880120573f3512ff0929c5067859cfbb77322e2bbca46a00bbef89370",
+      "guidance": "local-first criterion"
+    },
+    "G2": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0g/G2",
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "73350e56b884bfeae264d30c8dd3def470db055b8538fd133373eec3ac1d4c7b",
+      "guidance": "qualified sufficiency criterion"
+    }
+  },
+  "isolation": {
+    "method": "hash every dist/src file across G0/G1/G2",
+    "differingFilesVsG0": [
+      "federation/dsh/instructions.js"
+    ],
+    "conclusion": "only the compiled guidance file differs"
+  },
+  "effectivePrompt": {
+    "toolsIdentical": true,
+    "onlyPalFedSectionDiffers": true,
+    "sectionsDifferingG2VsG0": [
+      "section changed: pal-fed:peer-collaboration"
+    ]
+  },
+  "runtime": {
+    "dshVersion": "0.1.5-rc.1",
+    "ordarium": "1.3.1",
+    "node": "v24.14.1",
+    "pollIntervalMs": 2000
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash",
+    "samplingControls": "not exposed; no seed honored"
+  },
+  "fixtures": {
+    "base": {
+      "path": "F:/Codex_Work_Space/pal-fed-0g/snapshots/palimpsest-base-1.3.1",
+      "declared": "1.3.1",
+      "installed": "1.3.1"
+    },
+    "stale": {
+      "path": "F:/Codex_Work_Space/pal-fed-0g/snapshots/palimpsest-stale-1.2.0",
+      "declared": "1.2.0",
+      "installed": "1.2.0",
+      "purpose": "real published-release freshness gap for class F"
+    },
+    "ordarium": {
+      "path": "F:/Codex_Work_Space/pal-fed-0g/snapshots/ordarium-073409b",
+      "commit": "073409b"
+    },
+    "coherence": "audited before runs; both palimpsest fixtures declare the version they install"
+  },
+  "readOnlyTools": {
+    "plugin": "tools/pal-fed-0g-repo-tools.mjs",
+    "tools": [
+      "repo_list",
+      "repo_read",
+      "repo_search",
+      "repo_git"
+    ],
+    "semantics": "path-jailed to the peer's own workspace; read-only git subcommands only"
+  },
+  "manifests": {
+    "scenarios": {
+      "path": "docs/engineering/experiments/PAL-FED-0G-SCENARIOS.json",
+      "sha256": "5fd2d74ae157b24d40aebc1b307610dacd1fa9e9402b3446fc127214d46c9cf3"
+    },
+    "runManifest": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0g-run-manifest.json",
+      "sha256": "3d8c974983af67f8120508c7425ee71fa778e5d643fc13a0517eb153a2a081db"
+    },
+    "isolation": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0g-treatment-isolation.json",
+      "sha256": "7ed3a38798318cd19032ee8412b2c30018b32ab29d2e31efa8708f0d686b7185"
+    },
+    "promptCapture": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0g-prompt-capture.json",
+      "sha256": "fd8a78a8563ba5b099383eff881145ee05f2adeb23df62c63f3e4943e9e7f2d5"
+    }
+  },
+  "randomization": {
+    "seed": 20260911
+  }
+}

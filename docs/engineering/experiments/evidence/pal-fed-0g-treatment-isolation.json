@@ -1,0 +1,24 @@
+{
+  "protocol": "PAL-FED-0G",
+  "arms": {
+    "G0": {
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "58f645f0882a9527383f3d8ed0c06a83f85c374bd0c6d87d635a3ab4c91c6ef9",
+      "guidance": "g0"
+    },
+    "G1": {
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "1bd453c880120573f3512ff0929c5067859cfbb77322e2bbca46a00bbef89370",
+      "guidance": "g1"
+    },
+    "G2": {
+      "buildId": "pal-fed-0d+d1bb38c9fd4a",
+      "controlPlaneSha256": "73350e56b884bfeae264d30c8dd3def470db055b8538fd133373eec3ac1d4c7b",
+      "guidance": "g2"
+    }
+  },
+  "differingFilesVsG0": [
+    "federation/dsh/instructions.js"
+  ],
+  "note": "All three artifacts share one source commit; the only control-plane difference is the compiled operating-guidance file (the criterion selector/text)."
+}

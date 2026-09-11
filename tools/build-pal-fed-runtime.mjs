@@ -42,23 +42,17 @@ const rawArg = (flag, fallback) => {
 const out = argOf("--out", resolve(repo, "..", "pal-fed-runtime"));
 const depsMode = argOf("--deps", "link") === "link" ? "link" : "copy";
 
-// PAL-FED-0F treatment switch (EXPERIMENT HARNESS ONLY, no product API):
-// `--guidance f0` empties the marker-delimited criterion export; `--guidance f1`
-// (default) keeps it. The only control-plane source difference is this text.
-const guidance = rawArg("--guidance", "f1");
+// PAL-FED-0G treatment switch (EXPERIMENT HARNESS ONLY, no product API):
+// rewrites the single selector line so G0 empties the criterion, G1/G2 select
+// their model-visible criterion text. Everything else is byte-identical.
+const guidance = rawArg("--guidance", "g1");
 const instructionsPath = join(repo, "src/federation/dsh/instructions.ts");
 const originalInstructions = readFileSync(instructionsPath, "utf8");
 try {
-  if (guidance === "f0") {
-    const marker = /\/\/ >>> PAL-FED-TREATMENT:CRITERION[\s\S]*?\/\/ <<< PAL-FED-TREATMENT:CRITERION/;
-    if (!marker.test(originalInstructions)) throw new Error("criterion marker not found in instructions.ts");
-    const replaced = originalInstructions.replace(
-      marker,
-      '// >>> PAL-FED-TREATMENT:CRITERION' + String.fromCharCode(10) +
-      'export const PAL_FED_CRITERION = "";' + String.fromCharCode(10) +
-      '// <<< PAL-FED-TREATMENT:CRITERION',
-    );
-    writeFileSync(instructionsPath, replaced);
+  if (guidance === "g0" || guidance === "g1" || guidance === "g2") {
+    const marker = 'const PAL_FED_TREATMENT: string = "g1";';
+    if (!originalInstructions.includes(marker)) throw new Error("treatment selector not found");
+    writeFileSync(instructionsPath, originalInstructions.replace(marker, `const PAL_FED_TREATMENT: string = "${guidance}";`));
   }
   execFileSync("pnpm", ["build"], { cwd: repo, stdio: "inherit", shell: true });
 } finally {
