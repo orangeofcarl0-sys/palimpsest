@@ -67,7 +67,7 @@ concerns have different natures:
 
 | Concern | Crosses |
 |---|---|
-| Definition | Architecture, Work, Binding |
+| Definition | Architecture, Work (with `BindingDefinition` as the declarative binding seam spanning Architecture/Work/Runtime/Continuity) |
 | Identity & Continuity | Continuity (binds Architecture/Runtime carriers) |
 | Execution | Runtime (binds Architecture and Work) |
 | Collaboration | Continuity, Runtime, Work, Architecture policy |

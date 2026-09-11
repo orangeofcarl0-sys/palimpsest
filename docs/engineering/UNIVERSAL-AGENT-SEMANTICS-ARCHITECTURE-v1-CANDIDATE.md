@@ -2,6 +2,12 @@
 
 Status: **PLMP-UAS-1-CANDIDATE · DRAFT · NOT FROZEN · NO PRODUCTION SCHEMA COMMITMENT**
 
+Supersession note (G10-A2 freeze review, additive): this candidate was reviewed
+and **superseded by `UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE-v1.md`
+(PLMP-UAS-1, FROZEN)**; narrow review corrections applied here are recorded in
+`G10-A2-UAS1-FREEZE-REDLINE.md`. This document is retained as the audited
+candidate record.
+
 This is a candidate semantic architecture, not a frozen specification. It
 refines and extends the frozen `UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE.md`
 (PLMP-UAS-0) using the G10-A0 evidence-grounded rebase and the PAL-FED-0D…0I
@@ -68,7 +74,7 @@ as **concern domains**, not as a new dimension set.
 
 | Concern domain | Scope | Typical dimensions crossed |
 |---|---|---|
-| **Definition** | declarative specification of architecture/work/binding | Architecture, Work, Binding |
+| **Definition** | declarative specification of architecture and work; `BindingDefinition` is the declarative binding seam | primarily Architecture and Work; `BindingDefinition` spans Architecture/Work/Runtime/Continuity |
 | **Identity & Continuity** | stable identity, locality, long-lived history | Continuity (binds Architecture/Runtime carriers) |
 | **Execution** | carriers, activations, attempts, invocations, plans | Runtime (binds Architecture and Work) |
 | **Collaboration** | boundary events, delivery, derived history, emergent relations | Continuity, Runtime, Work, Architecture policy |
@@ -180,7 +186,7 @@ PersistentPoint ≠ RuntimeAgent
 RuntimeAgent ≠ Session
 
 Activation ≠ Attempt
-Invocation ≠ Participation?                        [OPEN]
+Invocation / Participation relation model = INTENTIONALLY OPEN
 
 PeerRef ≠ runtime identity (DshAgentId / DshSessionId)
 
@@ -361,16 +367,16 @@ Each maps to UAS-0, G10-A0 or PAL-FED evidence; none is invented for symmetry.
 |---|---|---|---|
 | `UAS1-CAND-INV-01` | `Architecture ≠ Work ≠ Runtime ≠ Continuity` | UAS-0 §2 | HISTORICAL INVARIANT |
 | `UAS1-CAND-INV-02` | `AgentDefinition ≠ WorkDefinition/TaskDefinition` | UAS-0 UA-INV-1 | HISTORICAL INVARIANT |
-| `UAS1-CAND-INV-03` | `AgentDefinition ≠ PersistentPoint` | G10-A0 / PAL-FED-0D | MACHINE-BACKED DISTINCTION |
-| `UAS1-CAND-INV-04` | `PersistentPoint ≠ RuntimeAgent ≠ Session` | PAL-FED-0D machine tests | MACHINE-BACKED |
+| `UAS1-CAND-INV-03` | `AgentDefinition ≠ PersistentPoint` | G10-A0 / PAL-FED-0D | SUPPORTED ARCHITECTURAL DISTINCTION |
+| `UAS1-CAND-INV-04` | `PersistentPoint ≠ RuntimeAgent` and `PersistentPoint ≠ Session` | PAL-FED-0D machine tests (carrier/identity split) + architecture decision | SUPPORTED ARCHITECTURAL DISTINCTION (machine-backed for carrier/identity; the PersistentPoint reading is an architecture decision) |
 | `UAS1-CAND-INV-05` | `Activation ≠ Attempt` | UAS-0 UA-INV-3 / UAS-D-INV-5 | HISTORICAL INVARIANT |
 | `UAS1-CAND-INV-06` | peer identity ≠ runtime session identity | PAL-FED-0D machine tests | MACHINE-BACKED |
 | `UAS1-CAND-INV-07` | `UserFocus ≠ AuthorityRoot` | G10-A0 supported | SUPPORTED DIRECTION |
 | `UAS1-CAND-INV-08` | `WorkGraph ≠ OrganizationGraph ≠ CollaborationGraph` | UAS-0 SystemGraph≠WorkGraph + PAL-FED-0/0D | SUPPORTED DIRECTION |
-| `UAS1-CAND-INV-09` | `WorkerReport ≠ Evidence`; `CollaborationEvent ≠ Evidence` | PAL-FED-0I + construction | MACHINE-BACKED DISTINCTION |
+| `UAS1-CAND-INV-09` | `WorkerReport ≠ Evidence`; `CollaborationEvent ≠ Evidence` | PAL-FED-0I + construction | EVIDENCE-GROUNDED ARCHITECTURAL INVARIANT |
 | `UAS1-CAND-INV-10` | `PolicyAdmission ≠ TruthVerification` | PAL-FED-0I observed | SUPPORTED DIRECTION |
 | `UAS1-CAND-INV-11` | `EpistemicAdmission ≠ EffectAdmission` | PAL-FED-0I machine-backed boundary | MACHINE-BACKED ARCHITECTURAL DISTINCTION |
-| `UAS1-CAND-INV-12` | `Wake ≠ Ack`; `Attention ≠ Collaboration` | PAL-FED-0D machine tests | MACHINE-BACKED |
+| `UAS1-CAND-INV-12` | `Wake ≠ Ack`; `Attention ≠ Collaboration` | PAL-FED-0D machine tests (wake/ack); architecture decision (attention/collaboration) | SPLIT IN FREEZE REVIEW: `Wake ≠ Ack` MACHINE-BACKED; `Attention ≠ Collaboration` SUPPORTED ARCHITECTURAL BOUNDARY |
 | `UAS1-CAND-INV-13` | `Conversation ≠ Agreement`; `Assignment ≠ Commitment` | PAL-FED-0/0D + construction | SUPPORTED DIRECTION |
 | `UAS1-CAND-INV-14` | `Unresolved` is a legitimate epistemic outcome | PAL-FED-0I observed | SUPPORTED DIRECTION |
 | `UAS1-CAND-INV-15` | `Canvas/View ≠ CanonicalTruth` | UAS-0 / specs 17/21/32 | HISTORICAL INVARIANT |
