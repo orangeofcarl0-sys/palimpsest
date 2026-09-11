@@ -1,0 +1,201 @@
+{
+  "protocol": "PAL-FED-0I",
+  "frozen": true,
+  "derivedFrom": "PAL-FED-0H-SCENARIOS.json (prompts unchanged)",
+  "note": "Hidden scoring manifest — never model-visible. Ticket seed is the frozen oracle (conflictDetection=\"oracle_fixture\" for I/SO-I); Palimpsest does not detect conflicts.",
+  "primaryScenarios": [
+    {
+      "scenarioId": "V1-historical-commentary",
+      "class": "V",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "V1-manifest-vs-commentary",
+      "resolverOrdarium": "ordarium-I1",
+      "operatorPrompt": "Determine which observation-cursor behaviour applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/state.d.ts",
+      "outOfScopeSource": "docs/release-commentary-1.2.0.md",
+      "resolutionMechanism": "version/temporal scope",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "V2-legacy-error-codes",
+      "class": "V",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "V2-legacy-error-codes",
+      "resolverOrdarium": "ordarium-I3",
+      "operatorPrompt": "Determine which failure this workspace's integration should expect when a stored observation cursor is rejected, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+      "outOfScopeSource": "docs/engineering/10-legacy-error-codes.md",
+      "resolutionMechanism": "version/temporal scope",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "V3-superseded-note",
+      "class": "V",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "V3-superseded-interface-note",
+      "resolverOrdarium": "ordarium-I3",
+      "operatorPrompt": "Determine the host-contract version that applies to this workspace's integration, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/host.d.ts",
+      "outOfScopeSource": "docs/engineering/11-superseded-interface-note.md",
+      "resolutionMechanism": "explicit supersession",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "L1-precedence-cursor",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "L1-precedence-cursor",
+      "resolverOrdarium": "ordarium-I1",
+      "operatorPrompt": "Determine which observation-cursor behaviour applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/state.d.ts",
+      "outOfScopeSource": "docs/engineering/notes/cursor-note.md",
+      "resolutionMechanism": "local precedence policy",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "L2-precedence-error-code",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "L2-precedence-error-code",
+      "resolverOrdarium": "ordarium-I3",
+      "operatorPrompt": "Determine which failure this workspace's integration should expect when a stored observation cursor is rejected, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+      "outOfScopeSource": "docs/engineering/notes/error-code-note.md",
+      "resolutionMechanism": "local precedence policy",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "L3-precedence-host-contract",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "L3-precedence-host-contract",
+      "resolverOrdarium": "ordarium-I3",
+      "operatorPrompt": "Determine the host-contract version that applies to this workspace's integration, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/host.d.ts",
+      "outOfScopeSource": "docs/engineering/notes/host-contract-note.md",
+      "resolutionMechanism": "local precedence policy",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "I1-current-conflict-cursor",
+      "class": "I",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "I1-current-conflict-cursor",
+      "resolverOrdarium": "ordarium-I1",
+      "operatorPrompt": "Determine which observation-cursor behaviour applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": true,
+      "expectedContact": true,
+      "locallyResolvable": false,
+      "conflictingSources": [
+        "docs/engineering/09-observation-contract-a.md",
+        "docs/engineering/09-observation-contract-b.md"
+      ],
+      "resolutionOwner": "ordarium.main",
+      "resolutionMechanism": "none (irreducible)",
+      "ticketInitial": "OPEN"
+    },
+    {
+      "scenarioId": "I2-current-conflict-ordering",
+      "class": "I",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "I2-current-conflict-ordering",
+      "resolverOrdarium": "ordarium-I2",
+      "operatorPrompt": "Determine the ordering guarantee that applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": true,
+      "expectedContact": true,
+      "locallyResolvable": false,
+      "conflictingSources": [
+        "docs/engineering/09-ordering-contract-a.md",
+        "docs/engineering/09-ordering-contract-b.md"
+      ],
+      "resolutionOwner": "ordarium.main",
+      "resolutionMechanism": "none (irreducible)",
+      "ticketInitial": "OPEN"
+    },
+    {
+      "scenarioId": "I3-current-conflict-error",
+      "class": "I",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "I3-current-conflict-error",
+      "resolverOrdarium": "ordarium-I3",
+      "operatorPrompt": "Determine which failure this workspace's integration should expect when a stored observation cursor is rejected, and explain the decision.",
+      "syntheticOverlay": true,
+      "expectedContact": true,
+      "locallyResolvable": false,
+      "conflictingSources": [
+        "docs/engineering/09-error-contract-a.md",
+        "docs/engineering/09-error-contract-b.md"
+      ],
+      "resolutionOwner": "ordarium.main",
+      "resolutionMechanism": "none (irreducible)",
+      "ticketInitial": "OPEN"
+    },
+    {
+      "scenarioId": "N1-consistent",
+      "class": "N",
+      "focalPeer": "palimpsest.main",
+      "fixturePalimpsest": "N1-consistent",
+      "resolverOrdarium": "ordarium-I1",
+      "operatorPrompt": "Determine the exact semantics of the incremental state-observation cursor in the dependency pinned by this workspace, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "node_modules/@ordarium/core/dist/src/state.d.ts",
+      "resolutionMechanism": "single authoritative source",
+      "ticketInitial": "NONE"
+    }
+  ],
+  "symmetryScenarios": [
+    {
+      "scenarioId": "SO-V-local-ordarium",
+      "class": "V",
+      "focalPeer": "ordarium.main",
+      "fixturePalimpsest": "SO-V-local-ordarium",
+      "resolverOrdarium": "ordarium-SO-V",
+      "operatorPrompt": "Determine the ordering guarantee that applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": false,
+      "expectedContact": false,
+      "locallyResolvable": true,
+      "applicableSource": "packages/core/test/state-changes.test.ts",
+      "outOfScopeSource": "docs/release-commentary-1.2.0.md",
+      "resolutionMechanism": "version/temporal scope (reverse direction)",
+      "ticketInitial": "NONE"
+    },
+    {
+      "scenarioId": "SO-I-conflict-ordarium",
+      "class": "I",
+      "focalPeer": "ordarium.main",
+      "fixturePalimpsest": "SO-I-resolver-palimpsest",
+      "resolverOrdarium": "ordarium-SO-I",
+      "operatorPrompt": "Determine the ordering guarantee that applies to the integration represented by this workspace, and explain the decision.",
+      "syntheticOverlay": true,
+      "expectedContact": true,
+      "locallyResolvable": false,
+      "conflictingSources": [
+        "docs/engineering/09-ordering-contract-a.md",
+        "docs/engineering/09-ordering-contract-b.md"
+      ],
+      "resolutionOwner": "palimpsest.main",
+      "resolutionMechanism": "none (irreducible, reverse direction)",
+      "ticketInitial": "OPEN"
+    }
+  ]
+}

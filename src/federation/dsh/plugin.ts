@@ -98,6 +98,9 @@ export function apply(ctx: Context, rawConfig: unknown): void {
         selfPeer: config.selfPeer,
         fabricId: config.fabricId,
         sessionScope: String(agent.id),
+        ...(config.admission === undefined
+          ? {}
+          : { admission: { ...config.admission, focalPeer: config.selfPeer } }),
       });
       for (const tool of tools) {
         agentCtx.tools.register(tool);

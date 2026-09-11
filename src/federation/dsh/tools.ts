@@ -15,6 +15,7 @@ import type { FederationService } from "../service.js";
 import { ARTIFACT_LOCATOR_MAX_CHARS, EVENT_BODY_MAX_CHARS } from "../limits.js";
 import { FIXED_PEERS, type PeerRef } from "../peers.js";
 import { ARTIFACT_KINDS, EVENT_KINDS } from "../types.js";
+import { submitDecision, type AdmissionConfig } from "./admission.js";
 import { dshInvocation } from "./provenance.js";
 
 export interface PalFedToolContext {
@@ -23,6 +24,11 @@ export interface PalFedToolContext {
   readonly fabricId: string;
   /** DSH session/agent scope used for invocation provenance. */
   readonly sessionScope: string;
+  /**
+   * PAL-FED-0I experiment-only admission binding. Identical in A0/A1/A2; only
+   * the trusted mode/ticket values differ. Absent means no completion endpoint.
+   */
+  readonly admission?: AdmissionConfig | undefined;
 }
 
 function assertNotAborted(exec: ToolRunContext, tool: string): void {
@@ -185,5 +191,47 @@ export function buildPalFedTools(context: PalFedToolContext): ToolDefinition[] {
     },
   });
 
-  return [collabInbox, collabAck, collabPost, collabThread, contractGet, contractUpdate];
+  const decisionSubmit =
+    context.admission === undefined
+      ? []
+      : [
+          defineTool({
+            name: "decision_submit",
+            description:
+              "Submit your final task disposition for admission. disposition=resolved means you have concluded the question; disposition=unresolved means you cannot legitimately determine it yet. The task is complete only after this endpoint returns an admitted result.",
+            parameters: {
+              disposition: {
+                type: "string",
+                enum: ["resolved", "unresolved"],
+                required: true,
+                description: "Your task disposition.",
+              },
+              body: {
+                type: "string",
+                required: true,
+                description: "The conclusion, or the reason it cannot be determined.",
+              },
+            },
+            output: { schema: { type: "json" }, render: (_args, value) => text(value) },
+            execute: async (args) => {
+              const admission = context.admission;
+              if (admission === undefined) {
+                throw new Error("FED_ADMISSION_UNAVAILABLE: no admission binding is configured");
+              }
+              const disposition = args.disposition === "unresolved" ? "unresolved" : "resolved";
+              // Trusted host state only: the model cannot supply run/ticket/peer/
+              // owner/mode fields, and the durable events are read host-side (§40).
+              const events = await service.listEvents();
+              const { response } = submitDecision(
+                admission,
+                events,
+                disposition,
+                String(args.body ?? ""),
+              );
+              return response as unknown as JsonValue;
+            },
+          }),
+        ];
+
+  return [collabInbox, collabAck, collabPost, collabThread, contractGet, contractUpdate, ...decisionSubmit];
 }

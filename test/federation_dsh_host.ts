@@ -17,6 +17,7 @@ import { boot, loadOverlayPatches } from "@deepseek-ai/dsh-app-boot";
 import type { Context } from "@deepseek-ai/cordis";
 
 import type { PeerRef } from "../src/federation/peers.js";
+import type { AdmissionBinding } from "../src/federation/dsh/admission.js";
 import {
   palFedReadyOf,
   type PalFedRuntime,
@@ -54,6 +55,8 @@ export interface BootPeerOptions {
   readonly resume?: boolean;
   readonly watchIntervalMs?: number;
   readonly initialPrompt?: string;
+  /** PAL-FED-0I experiment-only admission binding (adds decision_submit). */
+  readonly admission?: AdmissionBinding;
 }
 
 export interface DshPeerHost {
@@ -103,6 +106,7 @@ export async function bootPeerHost(options: BootPeerOptions): Promise<DshPeerHos
           watchIntervalMs: options.watchIntervalMs ?? 60_000,
           model: { provider: TEST_PROVIDER, model: TEST_MODEL },
           ...(options.initialPrompt === undefined ? {} : { initialPrompt: options.initialPrompt }),
+          ...(options.admission === undefined ? {} : { admission: options.admission }),
         },
       },
     ],
