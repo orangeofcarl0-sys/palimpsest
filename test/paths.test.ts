@@ -1,4 +1,4 @@
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
@@ -36,6 +36,11 @@ describe("dual-store default topology (docs/01 §4)", () => {
   });
 
   it("the repository-scoped default from the frozen baseline still works", () => {
-    expect(defaultStatePath("C:\\repo")).toBe(join("C:\\repo", ".palimpsest", "palimpsest.db"));
+    // The contract is host-native: canonicalRepository is a path meaningful to
+    // the current execution host, so the expectation is built from the same
+    // resolved root the implementation uses. A foreign Windows literal is not
+    // meaningful on POSIX and must not be special-cased.
+    const root = resolve("repo-root");
+    expect(defaultStatePath(root)).toBe(join(root, ".palimpsest", "palimpsest.db"));
   });
 });
