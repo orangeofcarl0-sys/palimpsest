@@ -73,3 +73,12 @@ and the 0H guidance text.
 
 PAL-FED-1, G10 implementation, production provenance schema, authority registry,
 source precedence service, contact budget, ack guard, new Ordarium primitive.
+
+## Remote CI note
+
+Draft PR #6: e2e => success; unit => failure once on test/ordarium_ledger.test.ts
+("carries a transiently locked open across the release boundary with the pinned
+backoff"): the assertion elapsed >= 200 ms measured 84 ms on the runner. That is a
+pre-existing, timing-sensitive Ordarium bump-checklist test (lock-holder release
+vs pinned retry backoff); PAL-FED-0H changes no Ordarium, ledger or migration
+code, and the same test passes locally. Recorded, not retried away.
