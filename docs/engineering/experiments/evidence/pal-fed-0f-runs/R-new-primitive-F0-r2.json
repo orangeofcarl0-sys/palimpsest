@@ -1,0 +1,213 @@
+{
+  "runId": "R-new-primitive-F0-r2",
+  "scenarioId": "R-new-primitive",
+  "scenarioClass": "R",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "F0",
+  "replicate": 2,
+  "runOrder": 36,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+bae56f9184e4",
+  "artifactSha256": "456dd20966ea3bc41ee7c631d47e85b800f6f87980053a36b44dbfa3c24ad7be",
+  "artifactGuidance": "f0",
+  "fabricId": "pal-fed-0f-R-new-primitive-F0-r2",
+  "focalSession": "R-new-primitive-F0-r2-focal",
+  "responderSession": "R-new-primitive-F0-r2-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_git",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_list",
+    "repo_list",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    1475,
+    2499
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 1871,
+  "eventToResponseMs": 24729,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_thread",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Palimpsest position (mine to decide; no request to you in this message): we are NOT proceeding with a low-latency blocking / push observation primitive as a replacement for polling.\n\nBasis, from our own frozen+dilivered decisions:\n- Spec 17 (VIS-1/2) §2: no SSE/WebSocket in the kernel — transport be"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Ordarium position: no disagreement, and no counter-move from me. Your call stands as yours; nothing about it reaches my contract surface.\n\nConfirmed against my own frozen + delivered artifacts, not from memory:\n- The shape you describe as the only acceptable one is exactly what ORD-BOOT-0 shipped (`"
+    }
+  ],
+  "notes": []
+}

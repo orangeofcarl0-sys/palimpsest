@@ -1,0 +1,186 @@
+{
+  "runId": "A-ownership-F0-r1",
+  "scenarioId": "A-ownership",
+  "scenarioClass": "A",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "F0",
+  "replicate": 1,
+  "runOrder": 68,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+bae56f9184e4",
+  "artifactSha256": "456dd20966ea3bc41ee7c631d47e85b800f6f87980053a36b44dbfa3c24ad7be",
+  "artifactGuidance": "f0",
+  "fabricId": "pal-fed-0f-A-ownership-F0-r1",
+  "focalSession": "A-ownership-F0-r1-focal",
+  "responderSession": "A-ownership-F0-r1-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "proposal",
+    "decision"
+  ],
+  "eventChars": [
+    2478,
+    3541
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 804,
+  "eventToResponseMs": 30974,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "collab_thread"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "proposal",
+      "body": "Boundary position (palimpsest side): where cursor-invalidation recovery lives.\n\nThere are three cursor concepts in play; only one is shared.\n\n1. Palimpsest projection cursor (projection_cursors over our own hash-chained event log). Detection and recovery are already ours: verifyProjectionTails() thr"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Decision: split confirmed exactly as proposed. Detection/mechanics are ours; recovery policy is yours. No code change implied. Both confirmations answered against our published contract.\n\n**1. Stable and consumer-reliable — not a reserved implementation detail.**\n- `cursor > global high-water => INV"
+    }
+  ],
+  "notes": []
+}

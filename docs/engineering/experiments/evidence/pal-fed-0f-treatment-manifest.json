@@ -1,0 +1,85 @@
+{
+  "protocol": "PAL-FED-0F",
+  "frozenBeforeRuns": true,
+  "treatment": {
+    "F0": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0f/F0",
+      "buildId": "pal-fed-0d+bae56f9184e4",
+      "controlPlaneSha256": "456dd20966ea3bc41ee7c631d47e85b800f6f87980053a36b44dbfa3c24ad7be",
+      "guidance": "mechanical only (no contact criterion)"
+    },
+    "F1": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0f/F1",
+      "buildId": "pal-fed-0d+bae56f9184e4",
+      "controlPlaneSha256": "953f57adf0c484a9d04a4b946655f44b25fb00d30f28b11510a75d52dcf6efc7",
+      "guidance": "mechanical + local-first boundary criterion"
+    }
+  },
+  "isolation": {
+    "method": "hash every file under package/dist/src in both artifacts",
+    "identicalFileCount": 400,
+    "differingFiles": [
+      "federation/dsh/instructions.d.ts",
+      "federation/dsh/instructions.d.ts.map",
+      "federation/dsh/instructions.js",
+      "federation/dsh/instructions.js.map"
+    ],
+    "conclusion": "control plane differs only in compiled operating-guidance artifacts"
+  },
+  "effectivePrompt": {
+    "method": "boot real DSH tree per artifact; compose peer agent; assemble system prompt",
+    "sectionsDiffering": [
+      "section changed: pal-fed:peer-collaboration"
+    ],
+    "toolsIdentical": true,
+    "onlyPalFedSectionDiffers": true
+  },
+  "runtime": {
+    "dshVersion": "0.1.5-rc.1",
+    "ordarium": "1.3.1",
+    "node": "v24.14.1",
+    "pollIntervalMs": 2000
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash",
+    "samplingControls": "not exposed by DSH/provider; no seed honored"
+  },
+  "workspaces": {
+    "palimpsestSnapshot": "F:/Codex_Work_Space/pal-fed-0f/snapshots/palimpsest-59fae6e",
+    "ordariumSnapshot": "F:/Codex_Work_Space/pal-fed-0f/snapshots/ordarium-073409b",
+    "fixtureNote": "main 59fae6e sources with dependency pins rewritten to the frozen Ordarium 1.3.1 and matching installed @ordarium packages (the stale 1.2.0 lock was removed); no experiment evidence is present in either workspace."
+  },
+  "readOnlyTools": {
+    "plugin": "tools/pal-fed-0f-repo-tools.mjs",
+    "tools": [
+      "repo_list",
+      "repo_read",
+      "repo_search",
+      "repo_git"
+    ],
+    "semantics": "path-jailed to the peer's own workspace; git limited to read-only subcommands; no writes, no network"
+  },
+  "manifests": {
+    "scenarios": {
+      "path": "docs/engineering/experiments/PAL-FED-0F-SCENARIOS.json",
+      "sha256": "6dba05dc79795f662978ee1d6f9079ba21c21fc544119bd5ab17334da7e82a94"
+    },
+    "runManifest": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0f-run-manifest.json",
+      "sha256": "f7e7c3074639b2bf5e9ccd715f989bcc3fb5075dd9c463b04a65bb9b3e31af5b"
+    },
+    "isolationProof": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0f-treatment-isolation.json",
+      "sha256": "5bcadb5a53cf9e4096ae53ab1aa5844a69ba9126b8aa38de0fcc1e1ec8bdafc0"
+    },
+    "promptCapture": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0f-prompt-capture.json",
+      "sha256": "86a7246c5dc9132d3d514c3b3c695765a479c0e5c759cb683ed0ca9acb9eea58"
+    }
+  },
+  "randomization": {
+    "seed": 20260911,
+    "orderCommittedIn": "docs/engineering/experiments/evidence/pal-fed-0f-run-manifest.json"
+  }
+}

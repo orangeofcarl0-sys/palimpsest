@@ -1,0 +1,730 @@
+{
+  "protocol": "PAL-FED-0E",
+  "seed": 20260911,
+  "primaryReplicates": 3,
+  "symmetryReplicates": 2,
+  "concurrency": 5,
+  "snapshots": {
+    "palimpsest": "59fae6e",
+    "ordarium": "073409b"
+  },
+  "arms": {
+    "F0": {
+      "artifact": "F:\\Codex_Work_Space\\pal-fed-0f\\C0",
+      "note": "criterion absent"
+    },
+    "F1": {
+      "artifact": "F:\\Codex_Work_Space\\pal-fed-0f\\C1",
+      "note": "local-first criterion present"
+    }
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash"
+  },
+  "pollIntervalMs": 2000,
+  "frozenAt": "2026-09-11T09:03:47.233Z",
+  "runCount": 70,
+  "runs": [
+    {
+      "runId": "P-error-code-F1-r2",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 1
+    },
+    {
+      "runId": "P-cursor-semantics-F0-r3",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 2
+    },
+    {
+      "runId": "P-cursor-semantics-F1-r1",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 3
+    },
+    {
+      "runId": "P-host-contract-F1-r2",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 4
+    },
+    {
+      "runId": "L-test-layout-F0-r2",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 5
+    },
+    {
+      "runId": "R-future-compat-F1-r1",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 6
+    },
+    {
+      "runId": "P-cursor-semantics-F0-r1",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 7
+    },
+    {
+      "runId": "S-O-R-consumer-F1-r1",
+      "scenarioId": "S-O-R-consumer",
+      "scenarioClass": "R",
+      "focalPeer": "ordarium.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 8
+    },
+    {
+      "runId": "L-canvas-freshness-F1-r2",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 9
+    },
+    {
+      "runId": "P-error-code-F0-r2",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 10
+    },
+    {
+      "runId": "R-deployed-error-F0-r1",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 11
+    },
+    {
+      "runId": "S-O-L-ordering-F0-r2",
+      "scenarioId": "S-O-L-ordering",
+      "scenarioClass": "L",
+      "focalPeer": "ordarium.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "symmetry",
+      "runOrder": 12
+    },
+    {
+      "runId": "L-test-layout-F1-r2",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 13
+    },
+    {
+      "runId": "L-canvas-freshness-F0-r1",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 14
+    },
+    {
+      "runId": "L-parse-strictness-F0-r1",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 15
+    },
+    {
+      "runId": "R-new-primitive-F1-r1",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 16
+    },
+    {
+      "runId": "A-freshness-F0-r2",
+      "scenarioId": "A-freshness",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 17
+    },
+    {
+      "runId": "L-parse-strictness-F1-r2",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 18
+    },
+    {
+      "runId": "A-freshness-F1-r1",
+      "scenarioId": "A-freshness",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 19
+    },
+    {
+      "runId": "P-error-code-F0-r3",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 20
+    },
+    {
+      "runId": "L-canvas-freshness-F1-r1",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 21
+    },
+    {
+      "runId": "R-deployed-error-F1-r2",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 22
+    },
+    {
+      "runId": "R-new-primitive-F0-r3",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 23
+    },
+    {
+      "runId": "P-cursor-semantics-F1-r2",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 24
+    },
+    {
+      "runId": "L-parse-strictness-F0-r2",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 25
+    },
+    {
+      "runId": "P-cursor-semantics-F1-r3",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 26
+    },
+    {
+      "runId": "R-new-primitive-F1-r3",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 27
+    },
+    {
+      "runId": "P-error-code-F0-r1",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 28
+    },
+    {
+      "runId": "A-freshness-F0-r1",
+      "scenarioId": "A-freshness",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 29
+    },
+    {
+      "runId": "R-future-compat-F0-r1",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 30
+    },
+    {
+      "runId": "R-deployed-error-F0-r3",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 31
+    },
+    {
+      "runId": "R-new-primitive-F0-r1",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 32
+    },
+    {
+      "runId": "R-future-compat-F0-r2",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 33
+    },
+    {
+      "runId": "S-O-R-consumer-F1-r2",
+      "scenarioId": "S-O-R-consumer",
+      "scenarioClass": "R",
+      "focalPeer": "ordarium.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "symmetry",
+      "runOrder": 34
+    },
+    {
+      "runId": "L-canvas-freshness-F1-r3",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 35
+    },
+    {
+      "runId": "R-new-primitive-F0-r2",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 36
+    },
+    {
+      "runId": "A-ownership-F1-r1",
+      "scenarioId": "A-ownership",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 37
+    },
+    {
+      "runId": "R-future-compat-F0-r3",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 38
+    },
+    {
+      "runId": "L-parse-strictness-F1-r3",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 39
+    },
+    {
+      "runId": "L-test-layout-F0-r3",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 40
+    },
+    {
+      "runId": "R-deployed-error-F1-r3",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 41
+    },
+    {
+      "runId": "L-test-layout-F1-r3",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 42
+    },
+    {
+      "runId": "S-O-L-ordering-F1-r2",
+      "scenarioId": "S-O-L-ordering",
+      "scenarioClass": "L",
+      "focalPeer": "ordarium.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "symmetry",
+      "runOrder": 43
+    },
+    {
+      "runId": "R-deployed-error-F0-r2",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 44
+    },
+    {
+      "runId": "P-host-contract-F1-r1",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 45
+    },
+    {
+      "runId": "P-error-code-F1-r1",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 46
+    },
+    {
+      "runId": "L-parse-strictness-F1-r1",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 47
+    },
+    {
+      "runId": "S-O-R-consumer-F0-r2",
+      "scenarioId": "S-O-R-consumer",
+      "scenarioClass": "R",
+      "focalPeer": "ordarium.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "symmetry",
+      "runOrder": 48
+    },
+    {
+      "runId": "P-host-contract-F0-r1",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 49
+    },
+    {
+      "runId": "P-host-contract-F0-r3",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 50
+    },
+    {
+      "runId": "R-future-compat-F1-r2",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 51
+    },
+    {
+      "runId": "P-host-contract-F1-r3",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 52
+    },
+    {
+      "runId": "L-canvas-freshness-F0-r2",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 53
+    },
+    {
+      "runId": "R-future-compat-F1-r3",
+      "scenarioId": "R-future-compat",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 54
+    },
+    {
+      "runId": "L-test-layout-F0-r1",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 55
+    },
+    {
+      "runId": "P-cursor-semantics-F0-r2",
+      "scenarioId": "P-cursor-semantics",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 56
+    },
+    {
+      "runId": "A-ownership-F0-r2",
+      "scenarioId": "A-ownership",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 57
+    },
+    {
+      "runId": "S-O-L-ordering-F1-r1",
+      "scenarioId": "S-O-L-ordering",
+      "scenarioClass": "L",
+      "focalPeer": "ordarium.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 58
+    },
+    {
+      "runId": "L-parse-strictness-F0-r3",
+      "scenarioId": "L-parse-strictness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 59
+    },
+    {
+      "runId": "L-test-layout-F1-r1",
+      "scenarioId": "L-test-layout",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 60
+    },
+    {
+      "runId": "A-ownership-F1-r2",
+      "scenarioId": "A-ownership",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 61
+    },
+    {
+      "runId": "S-O-L-ordering-F0-r1",
+      "scenarioId": "S-O-L-ordering",
+      "scenarioClass": "L",
+      "focalPeer": "ordarium.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 62
+    },
+    {
+      "runId": "P-error-code-F1-r3",
+      "scenarioId": "P-error-code",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 63
+    },
+    {
+      "runId": "P-host-contract-F0-r2",
+      "scenarioId": "P-host-contract",
+      "scenarioClass": "P",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 64
+    },
+    {
+      "runId": "A-freshness-F1-r2",
+      "scenarioId": "A-freshness",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 65
+    },
+    {
+      "runId": "R-new-primitive-F1-r2",
+      "scenarioId": "R-new-primitive",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 2,
+      "kind": "primary",
+      "runOrder": 66
+    },
+    {
+      "runId": "R-deployed-error-F1-r1",
+      "scenarioId": "R-deployed-error",
+      "scenarioClass": "R",
+      "focalPeer": "palimpsest.main",
+      "arm": "F1",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 67
+    },
+    {
+      "runId": "A-ownership-F0-r1",
+      "scenarioId": "A-ownership",
+      "scenarioClass": "A",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "primary",
+      "runOrder": 68
+    },
+    {
+      "runId": "S-O-R-consumer-F0-r1",
+      "scenarioId": "S-O-R-consumer",
+      "scenarioClass": "R",
+      "focalPeer": "ordarium.main",
+      "arm": "F0",
+      "replicate": 1,
+      "kind": "symmetry",
+      "runOrder": 69
+    },
+    {
+      "runId": "L-canvas-freshness-F0-r3",
+      "scenarioId": "L-canvas-freshness",
+      "scenarioClass": "L",
+      "focalPeer": "palimpsest.main",
+      "arm": "F0",
+      "replicate": 3,
+      "kind": "primary",
+      "runOrder": 70
+    }
+  ]
+}

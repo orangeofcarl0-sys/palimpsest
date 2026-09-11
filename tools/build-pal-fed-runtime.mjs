@@ -42,21 +42,23 @@ const rawArg = (flag, fallback) => {
 const out = argOf("--out", resolve(repo, "..", "pal-fed-runtime"));
 const depsMode = argOf("--deps", "link") === "link" ? "link" : "copy";
 
-// PAL-FED-0E treatment switch (EXPERIMENT HARNESS ONLY, no product API):
-// `--guidance c0` builds from the pre-criterion operating-guidance source
-// (commit --c0-source, default 8bf55a1); `--guidance c1` (default) builds the
-// current source. The only control-plane source difference is instructions.ts.
-const guidance = rawArg("--guidance", "c1");
-const c0Source = rawArg("--c0-source", "8bf55a1");
+// PAL-FED-0F treatment switch (EXPERIMENT HARNESS ONLY, no product API):
+// `--guidance f0` empties the marker-delimited criterion export; `--guidance f1`
+// (default) keeps it. The only control-plane source difference is this text.
+const guidance = rawArg("--guidance", "f1");
 const instructionsPath = join(repo, "src/federation/dsh/instructions.ts");
 const originalInstructions = readFileSync(instructionsPath, "utf8");
 try {
-  if (guidance === "c0") {
-    const c0 = execFileSync("git", ["show", `${c0Source}:src/federation/dsh/instructions.ts`], {
-      cwd: repo,
-      encoding: "utf8",
-    });
-    writeFileSync(instructionsPath, c0);
+  if (guidance === "f0") {
+    const marker = /\/\/ >>> PAL-FED-TREATMENT:CRITERION[\s\S]*?\/\/ <<< PAL-FED-TREATMENT:CRITERION/;
+    if (!marker.test(originalInstructions)) throw new Error("criterion marker not found in instructions.ts");
+    const replaced = originalInstructions.replace(
+      marker,
+      '// >>> PAL-FED-TREATMENT:CRITERION' + String.fromCharCode(10) +
+      'export const PAL_FED_CRITERION = "";' + String.fromCharCode(10) +
+      '// <<< PAL-FED-TREATMENT:CRITERION',
+    );
+    writeFileSync(instructionsPath, replaced);
   }
   execFileSync("pnpm", ["build"], { cwd: repo, stdio: "inherit", shell: true });
 } finally {
