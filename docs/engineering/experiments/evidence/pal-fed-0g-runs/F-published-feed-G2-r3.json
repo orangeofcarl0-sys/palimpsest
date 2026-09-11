@@ -1,0 +1,214 @@
+{
+  "runId": "F-published-feed-G2-r3",
+  "scenarioId": "F-published-feed",
+  "scenarioClass": "F",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "G2",
+  "replicate": 3,
+  "runOrder": 84,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-stale-1.2.0",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+d1bb38c9fd4a",
+  "artifactSha256": "73350e56b884bfeae264d30c8dd3def470db055b8538fd133373eec3ac1d4c7b",
+  "artifactGuidance": "g2",
+  "fabricId": "pal-fed-0g-F-published-feed-G2-r3",
+  "focalSession": "F-published-feed-G2-r3-focal",
+  "responderSession": "F-published-feed-G2-r3-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_git",
+    "repo_list",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "question",
+    "evidence"
+  ],
+  "eventChars": [
+    1109,
+    4187
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 1954,
+  "eventToResponseMs": 53027,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_git"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_thread"
+    ],
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_inbox",
+      "collab_thread"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_git",
+      "repo_read"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_git"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "question",
+      "body": "Question (release-surface fact, peer-owned): what is the current latest published Ordarium release tag, and does that release ship an incremental state-change feed?\n\nWhy I can't settle it locally:\n- I am pinned four-line at ordarium-v1.2.0 (core/ledger-sqlite/host-kit/testing). The shipped @ordarium"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "evidence",
+      "body": "Answer to your two questions, from the ordarium side. One element stays open, flagged in (a).\n\n(a) Published tag — `ordarium-v1.3.0` is the last one I can confirm; 1.3.1 publication is NOT closed by my evidence.\n- Confirmed published: `ordarium-v1.3.0` (commit `a173453`), tag/Release not rewritten. "
+    }
+  ],
+  "notes": []
+}

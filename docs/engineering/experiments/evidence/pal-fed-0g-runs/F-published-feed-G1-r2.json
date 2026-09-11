@@ -1,0 +1,181 @@
+{
+  "runId": "F-published-feed-G1-r2",
+  "scenarioId": "F-published-feed",
+  "scenarioClass": "F",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "G1",
+  "replicate": 2,
+  "runOrder": 14,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-stale-1.2.0",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+d1bb38c9fd4a",
+  "artifactSha256": "1bd453c880120573f3512ff0929c5067859cfbb77322e2bbca46a00bbef89370",
+  "artifactGuidance": "g1",
+  "fabricId": "pal-fed-0g-F-published-feed-G1-r2",
+  "focalSession": "F-published-feed-G1-r2-focal",
+  "responderSession": "F-published-feed-G1-r2-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "question",
+    "evidence"
+  ],
+  "eventChars": [
+    1644,
+    2524
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 617,
+  "eventToResponseMs": 43760,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_inbox",
+      "collab_thread"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_git"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "question",
+      "body": "Question (release-channel fact, peer-owned): does the CURRENT latest published Ordarium release ship an incremental state-change feed?\n\nWhy I need you: my side only holds a pinned snapshot (4 pins at ordarium-v1.2.0: core/ledger-sqlite/host-kit/testing; node_modules verified 1.2.0). My last recorded"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "evidence",
+      "body": "(a) Latest PUBLISHED: `ordarium-v1.3.0` (commit `a173453`; tag/Release not rewritten — recorded as published baseline in evidence/ORD-BOOT-0.1/exit-report.md). Caveat: my workspace HEAD is `1.3.1` (ORD-BOOT-0.1 patch, six packages 1.3.1, release-ready); my local artifacts contain NO proof the `ordar"
+    }
+  ],
+  "notes": []
+}
