@@ -128,6 +128,19 @@ Branch: `experiment/g10-a0-evidence-grounded-semantic-rebase`, based on `main`
 
 ## PR / remote status
 
-A draft PR to `main` is opened for this branch. Remote CI status is recorded
-honestly from the observed run(s); no success is fabricated. This PR does not
-depend on merging the experimental PRs #1–#7.
+Draft PR **#8** to `main` (`experiment/g10-a0-evidence-grounded-semantic-rebase`
+→ `main`). It does not depend on merging experimental PRs #1–#7.
+
+Remote CI on `5fa3a6d` is recorded honestly from the observed run
+(34612462924): **`e2e` success, `unit` failure**. The unit failure is **not
+caused by G10-A0** (a docs-only diff cannot change test behaviour): it is the
+pre-existing `main` baseline defect in `test/paths.test.ts` — the
+Windows-only path assertion (`expected 'C:\repo/.palimpsest/palimpsest.db'`) that
+fails on the POSIX runner. That defect is already repaired on the PAL-FED
+lineage in a separate baseline commit (`2ef77a9`, portability repair), which was
+deliberately kept out of feature commits and never merged to `main`.
+
+Per this batch's discipline (docs-only G10-A0; keep baseline repairs separate;
+never fabricate CI success) the repair is **not** absorbed into PR #8. Remedy is
+a separate baseline commit on `main`; local Windows `pnpm test` is green
+(60/433), and remote unit fails only on that one pre-existing assertion.
