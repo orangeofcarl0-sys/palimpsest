@@ -56,6 +56,10 @@
 | `G10-B0-BINDING-IDENTITY-MATRIX.md` | **G10-B0 身份/基数矩阵**：逐关系 FROZEN / PROPOSED / OPEN / NOT A BINDING RELATION 裁决（含 Invocation/Participation、authority、organization、commitment、PeerRef 的"非绑定关系"防火墙行） |
 | `G10-B0-CURRENT-BINDING-INVENTORY.md` | **G10-B0 现状盘点**：canonical `main` 上 16 处与 Binding 相关的实现面（definition lineage、capability gate、runtime advisory model、结构化 DSH 契约、host-path workspace、调度器纯度等）；确认 `main` 无任何 Binding 概念，seam 为 greenfield |
 | `G10-B0-DELIVERY.md` | **G10-B0 交付报告**：30 问回答、canonical 出版记录、门禁与远程状态、推荐下一阶段（A：G10-B1 Binding schema/接口候选设计） |
+| `G10-B1-BINDING-SCHEMA-CANDIDATE.md` | **G10-B1 Binding schema/接口候选（DRAFT，未实现，非冻结，无生产存储承诺）**：把 B0 语义模型转成最小可评审候选契约（NON-PRODUCTION pseudo-TS，不在 src/）：新身份命名空间 BindingDefinitionId/Revision/Digest（schemaVersion≠revision）、按 ArchitectureSubjectRef 映射的 subject bindings、Strategy-B 连续性意图（pin 为硬恒等约束 / requirePersistent / preferPersistent，缺省即 Case E ephemeral 合法）、typed hard/preference 分离（runtime features/tool capabilities/workspace locality；无约束 DSL、无 Record<string,unknown> 核）、Resolution ownership **Option A**（独立不可变派生工件，ExecutionPlan 仅存 bindingResolutionRef=id+digest；"referenced by (or embedded in)" 措辞退役）、resolution 无 dshAgentId/dshSessionId 等运行时身份、七类最小 unsatisfied reasons、freshness provenance（四输入 ref+snapshot）、确定性属性、parser 纪律与 legacy ephemeral 默认；**SCHEMA CANDIDATE: READY FOR FORMAL REVIEW**，推荐下一阶段 A（G10-B2 形式评审/冻结） |
+| `G10-B1-BINDING-CONTRACT-MATRIX.md` | **G10-B1 契约矩阵**：每条候选规则（BIND-CAND-01..17 + B1-01..10）→ schema 机制 · 运行时含义 · 冻结 UAS 依赖 · 状态；被拒实体/字段清单（BindingGraph/Broker/Lease/…、负约束、cost/latency） |
+| `G10-B1-BINDING-EXAMPLES.md` | **G10-B1 示例与对抗形状**：六条必须正确解析的示例（pure ephemeral / persistent pinned / required-but-unavailable / preferred-fallback / RunConfiguration 冲突 / runtime rebinding）+ 六个被拒形状（Bad A–F：SessionId、强制 point、authority、peerRef、run 级 retarget、双 resolution truth） |
+| `G10-B1-DELIVERY.md` | **G10-B1 交付报告**：30 问回答、stacked 拓扑（基于闭合后的 B0 7435e48）、十项纸面证明、门禁与远程状态 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
