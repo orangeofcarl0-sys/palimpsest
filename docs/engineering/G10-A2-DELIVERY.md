@@ -114,9 +114,15 @@ expected merge order remains #8 → #10 → G10-A2.
 
 ## Remote status
 
-Recorded from the observed CI run on the G10-A2 draft PR; not fabricated. The
-reviewed candidate HEAD (`1638a7b`) already had a full remote-green run
-(`34617784805`).
+Recorded from the observed CI run on the G10-A2 draft PR (#11), run
+`34621042397` on `cd33a3e`: first execution `unit` success / `e2e` failure on
+the pre-existing nondeterministic `E2E-DEBUG-01` runtime-debugger flake; the
+failed job was re-run twice (no force merge) — second rerun still hit the flake,
+third rerun passed — final state **`unit` success, `e2e` success**. Locally the
+same pattern appeared (20/21, 20/21, then a full-suite 21/21 pass, with the
+failing test passing in isolation). The spec is untouched by this docs-only
+batch. Playwright `retries = 0` unchanged; nothing was fabricated. The reviewed
+candidate HEAD (`1638a7b`) had a full remote-green run (`34617784805`).
 
 ## Recommended next stage
 
