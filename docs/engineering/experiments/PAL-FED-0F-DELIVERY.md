@@ -98,11 +98,15 @@ full regression gates recorded ................... ✅ (below)
 
 ## Regression gates (§71)
 
-`pnpm run clean`, `build`, `build:web`, `test` (66 files / 475 tests) and
-`test:e2e` with Playwright `retries = 0`; the known nondeterministic
-`runtime-debugger` E2E flake is recorded, never retried away. This batch changes
-no product behaviour beyond the experiment branch's guidance text and adds only
-harness/scenario/analysis tooling (`tools/pal-fed-0f-*`).
+Local: `pnpm run clean`, `build`, `build:web`, `test` (66 files / 475 tests)
+all green; `test:e2e` **21/21** with Playwright `retries = 0`.
+
+Remote CI (draft PR #4): `unit => success`; `e2e => failure` on the already
+characterized pre-existing `E2E-DEBUG-01` /
+`runtime-debugger.spec.ts:56` visibility flake (20/21) — recorded, never
+retried away. This batch changes no product behaviour beyond the experiment
+branch's guidance text and adds only harness/scenario/analysis tooling
+(`tools/pal-fed-0f-*`).
 
 ## Not started (by instruction)
 
