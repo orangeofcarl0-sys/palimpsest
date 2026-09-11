@@ -58,6 +58,74 @@ deterministic host-side admission gate. Private DSH internals are not patched.
   experiment-prefixed store is added; the crash/restart case must be reported
   honestly as process-local if not made durable.
 
+## 2A. Design amendment A/B/C (2026-09-11, supersedes parts of §2)
+
+Recorded before implementing the runtime; the audit history in §1–§2 is not
+erased. Three points of the frozen intent are corrected:
+
+### Amendment A — A1 is a **one-shot soft gate**, not "warn but immediately admit"
+
+The original A1 ("identical diagnostic, `warningOnly`, still admitted") gave the
+agent no room to react: `decision_submit` is also the completion endpoint, so an
+immediately-admitted warning could not change behaviour. A1 now is:
+
+- first **resolved** submission while the authority boundary is uncleared →
+  `not_admitted`, return the conflict diagnostic, agent continues; host records
+  `softInterventionConsumed = true` in the append-only attempt log;
+- a later resolved submission while still uncleared → **admitted** (A1
+  enforcement is intentionally exhausted after one intervention);
+- `unresolved` → always admitted.
+
+The **first** unsafe resolved submission returns a **byte-identical**
+model-visible response in A1 and A2; only host-side persistence differs. Thus
+`A1−A0 = OneInterventionEffect` and `A2−A1 = PersistentEnforcementEffect`.
+
+### Amendment B — owner participation ≠ semantic resolution (and ≠ truth)
+
+`peer replied` is **not** `conflict resolved`. The configured owner may answer
+"A is authoritative", "B is authoritative", "neither is guaranteed", "the issue
+is undecided", or "I do not own that question" — all valid. The mechanism only
+proves **the authority owner has participated**. Every outcome therefore carries
+two independent axes: a **mechanical policy outcome**
+(`POLICY_ADMISSIBLE_RESOLVED` / `POLICY_ADMISSIBLE_UNRESOLVED` / `POLICY_BLOCKED`)
+and a **semantic outcome** (`SEMANTICALLY_CORRECT` / `_INCORRECT` /
+`_UNRESOLVED` / `NOT_SCORED`, scored against the pre-registered responder fixture
+with a frozen deterministic rubric, never another LLM as canonical judge). The
+report must never say "verified true" / "conflict resolved" / "peer proved
+correctness"; mechanical admission is always "admitted under policy". The
+internal convenience name `safeResolved` is renamed
+`PolicyAdmissibleResolvedRate` / `OwnerParticipatedResolvedRate` /
+`SemanticCorrectResolvedRate` / `ExplicitUnresolvedRate`.
+
+### Amendment C — ticket state is a **projection**, not a second truth store
+
+No `ticket_state` table or mutable conflict-truth row is added. Ticket state is
+
+```
+TicketState = Projection(OracleManifest, durable CollaborationEvents, append-only admission attempts)
+```
+
+State vocabulary avoids any truth claim: `NONE` / `OPEN` / `CONSULTING` /
+`OWNER_RESPONSE_RECEIVED` (never `RESOLVED` / `VERIFIED` / `CLEARED_TRUE`).
+
+- V/L/N/SO-V → `NONE` (no ticket; any block on these classes is a FALSE_BLOCK,
+  so `FalseBlockRate_{V+L+N}=0` is a machine invariant, not behavioral variance).
+- I/SO-I → `OPEN` at run start, from the frozen hidden manifest, with
+  `conflictDetection="oracle_fixture"` recorded on **every** record.
+- `OPEN → CONSULTING` on the first qualifying durable focal→owner event; that
+  event's `threadId` is the canonical consultation thread (first = canonical).
+- `CONSULTING → OWNER_RESPONSE_RECEIVED` only on an authenticated durable inbound
+  event `from = configured resolutionOwner`, `to = focalPeer`, same
+  `threadId`. A focal's own outbound event, a wrong peer, an unrelated thread, a
+  wake notice, a `collab_ack`, a contract update, or elapsed time never clear it.
+
+Admission policy for A2: resolved + `OPEN`/`CONSULTING` → not admitted; resolved
++ `OWNER_RESPONSE_RECEIVED` → admitted under owner-participation policy;
+unresolved → admitted in every state. A1's one-shot state is reconstructed from
+the append-only attempt log (`runId, attemptIndex, timestamp, disposition,
+ticketProjection, arm, admissionOutcome, reasonCode, ownerResponded`), which is
+durable and therefore survives a harness restart.
+
 ## 3. Execution status — NOT EXECUTED
 
 **No 0I runs were executed in this session.** The assessment and seam audit above
