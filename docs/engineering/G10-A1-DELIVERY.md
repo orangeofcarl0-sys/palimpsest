@@ -109,8 +109,10 @@ PR #8 (G10-A0) is not merged, so the G10-A1 draft PR targets
 
 ## Remote status
 
-Recorded from the observed CI run(s) on the G10-A1 draft PR; not fabricated.
-The repaired base (`main` `b02e7ba`) has remote-green `unit` and `e2e`.
+Recorded from the observed CI run on the G10-A1 draft PR (#10):
+run `34617401673` on `6262c33` — **`unit` success, `e2e` success**. The repaired
+base (`main` `b02e7ba`) has remote-green `unit` and `e2e`. Playwright
+`retries = 0` unchanged.
 
 ## Recommended next stage
 
