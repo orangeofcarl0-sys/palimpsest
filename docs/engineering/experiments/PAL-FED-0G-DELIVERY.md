@@ -89,9 +89,12 @@ changed or re-run.
 ## Regression gates (§76)
 
 Local: `clean`, `build`, `build:web`, `test` (66 files / 475 tests) and
-`test:e2e` with Playwright `retries = 0`. The known nondeterministic
-`runtime-debugger` E2E flake is recorded, never retried away. Remote CI is
-recorded separately on the draft PR.
+`test:e2e` **21/21** with Playwright `retries = 0`.
+
+Remote CI (draft PR #5): **`unit => success` and `e2e => success`** — a complete
+remote-green run at this HEAD, with retries still 0. (The known nondeterministic
+`runtime-debugger` E2E flake was not retried away; it simply did not fire on this
+run.)
 
 ## Not started (§80)
 
