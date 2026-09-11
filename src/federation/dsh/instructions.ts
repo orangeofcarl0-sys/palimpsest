@@ -44,15 +44,42 @@ Read-only repository tools are available: list, read, search, and read-only git
 inspection of your own workspace, plus your pinned dependency artifacts. Prefer
 them to reasoning from memory.`;
 
-// >>> PAL-FED-TREATMENT:CRITERION
-export const PAL_FED_CRITERION = `
+export const PAL_FED_CRITERION_G1 = `
 ## Deciding whether to contact the peer
 Before contacting the peer, inspect the authoritative evidence available in your
 own workspace and pinned dependency interfaces. Contact the peer only when a
 load-bearing fact or decision cannot be established locally at the required
 freshness or confidence, and that missing fact or authority is owned by the peer.
 Do not contact the peer merely because the topic is related to its subsystem.`;
-// <<< PAL-FED-TREATMENT:CRITERION
+
+export const PAL_FED_CRITERION_G2 = `
+## Deciding whether to contact the peer
+Inspect the local evidence before contacting the peer.
+
+For each fact or commitment that is load-bearing for the decision, local
+evidence is sufficient only if it actually covers the needed proposition, is
+fresh enough for the temporal claim being made, and has the authority required
+to establish that claim. Materially conflicting local evidence also makes the
+local basis insufficient.
+
+A pinned public artifact may settle a claim about that exact frozen version. It
+does not automatically settle current peer state, future intent, or a commitment
+owned by the peer.
+
+Contact the peer when the missing load-bearing element is fresh peer-owned
+information or peer-owned authority. Do not contact merely because the topic
+relates to the peer.`;
+
+// The experiment artifact builder rewrites the next line for G0/G1/G2.
+// Typed as string so the selector comparisons stay valid in every variant.
+const PAL_FED_TREATMENT: string = "g1";
+
+export const PAL_FED_CRITERION =
+  PAL_FED_TREATMENT === "g0"
+    ? ""
+    : PAL_FED_TREATMENT === "g2"
+      ? PAL_FED_CRITERION_G2
+      : PAL_FED_CRITERION_G1;
 
 export const PAL_FED_OPERATING_GUIDANCE =
   PAL_FED_CRITERION.length === 0
