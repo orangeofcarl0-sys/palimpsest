@@ -126,7 +126,7 @@ the append-only attempt log (`runId, attemptIndex, timestamp, disposition,
 ticketProjection, arm, admissionOutcome, reasonCode, ownerResponded`), which is
 durable and therefore survives a harness restart.
 
-## 3. Execution status — NOT EXECUTED
+## 3. Execution status at assessment time — NOT EXECUTED (historical, superseded by §3A)
 
 **No 0I runs were executed in this session.** The assessment and seam audit above
 are complete and committed; the gate, ticket machinery, 0I runner/driver and the
@@ -136,6 +136,29 @@ liveness numbers, and no evidence about A0/A1/A2.
 
 The follow-on work is fully specified by §6–§86 and requires no new design
 decisions beyond the Option B choice recorded here.
+
+## 3A. Execution status — EXECUTED (2026-09-11)
+
+The Option B experiment described in §2/§2A was implemented and run to
+completion on this branch:
+
+- admission gate + ticket projection + append-only attempt log implemented;
+  `decision_submit` Agent-scoped and identical across arms;
+- machine proof ADM-A00…A10, projection, restart reconstruction, model-spoof,
+  agent-scoping green; deterministic Fakes 1–5 green through a real DSH agent;
+  one real-model I/A2 smoke green;
+- 96-run manifest frozen/randomized (seed 20260911) and **96/96 scored runs
+  valid**; both machine invariants hold
+  (`FalseBlockRate_{V+L+N}=0`, `UnsafeResolvedAdmissionRate_{I,A2}=0`);
+- outcomes and interpretation in `PAL-FED-0I-ANALYSIS.md`, `-DELIVERY.md`,
+  `-G10-A0-INPUT.md`.
+
+Headline: the one-shot gate (A1) induced recovery in 100% of I runs versus 11%
+in pass-through (A0); persistent enforcement (A2) added **no** contact lift
+(0.00) and only a non-significant abstention increase; every A2
+owner-participated resolved answer was semantically incorrect
+(`AdmissionPolicy ≠ TruthVerification`). Pattern: Possible Results **B + E**,
+with **C not observed** (no dead-ends, all runs admitted).
 
 ## 4. Constraints preserved for the follow-on
 
