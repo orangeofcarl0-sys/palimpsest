@@ -1,0 +1,188 @@
+{
+  "runId": "R-new-primitive-F0-r1",
+  "scenarioId": "R-new-primitive",
+  "scenarioClass": "R",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "F0",
+  "replicate": 1,
+  "runOrder": 32,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+bae56f9184e4",
+  "artifactSha256": "456dd20966ea3bc41ee7c631d47e85b800f6f87980053a36b44dbfa3c24ad7be",
+  "artifactGuidance": "f0",
+  "fabricId": "pal-fed-0f-R-new-primitive-F0-r1",
+  "focalSession": "R-new-primitive-F0-r1-focal",
+  "responderSession": "R-new-primitive-F0-r1-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    2383,
+    2536
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 1052,
+  "eventToResponseMs": 29315,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_git",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_thread",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "DECISION (Palimpsest side): we will NOT proceed on the basis of a low-latency blocking observation primitive, and we are NOT filing it as an Ordarium evolution request. Please do not add kernel surface on our account.\n\nWhy (our own frozen ground):\n- Polling on the orchestration face is our designed "
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "ACK/DECISION (Ordarium side), reply to evt_a0006350.\n\n1) Accepted, no action on our side. No low-latency blocking observation primitive will be added to Ordarium kernel surface on your account: no subscribe/waitFor/long-polling/SSE/WebSocket/IPC watcher, no resident waiter, no cross-process liveness"
+    }
+  ],
+  "notes": []
+}

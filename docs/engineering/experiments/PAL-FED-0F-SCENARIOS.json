@@ -1,0 +1,187 @@
+{
+  "protocol": "PAL-FED-0F",
+  "frozen": true,
+  "note": "Frozen BEFORE any scored run. Class/expectedContact/ownershipRationale/scoringNotes are experiment-only and never model-visible; only operatorPrompt is shown. Prompts are non-directive and avoid the word 'record'.",
+  "classes": {
+    "R": "peer required — local authoritative evidence cannot decide; load-bearing fact/authority owned by the peer",
+    "L": "local sufficient — the focal project's own repository holds all authoritative evidence",
+    "P": "pinned/public contract sufficient — subject concerns the peer, but the exact fact is in the locally pinned release artifact",
+    "A": "ambiguous — incomplete/stale/conflicting local evidence or unclear ownership; exploratory"
+  },
+  "primaryScenarios": [
+    {
+      "scenarioId": "R-future-compat",
+      "class": "R",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest is considering depending on the state-observation cursor contract remaining stable across the next major Ordarium release. Assess whether that dependency is safe and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/core/dist/src/state.d.ts", "pnpm-lock.yaml"],
+      "peerEvidenceAnchors": ["Ordarium's release/roadmap intent for the cursor contract (not present in any pinned artifact)"],
+      "ownershipRationale": "Future compatibility intent is owned by Ordarium and cannot be established from the pinned 1.3.1 artifact.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": true,
+      "scoringNotes": "Pinned artifact proves only current semantics; the safety question needs the owner's intent."
+    },
+    {
+      "scenarioId": "R-new-primitive",
+      "class": "R",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest would benefit from a low-latency blocking observation primitive instead of polling. Decide whether we can proceed on that basis and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/core/dist/src/types.d.ts", "node_modules/@ordarium/ledger-sqlite/dist/src/index.d.ts"],
+      "peerEvidenceAnchors": ["Whether Ordarium will provide such a primitive, and on what terms (owner decision, unpublished)"],
+      "ownershipRationale": "Whether to add such a primitive is Ordarium's authority; the pinned release shows only the current absence.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": true,
+      "scoringNotes": "A correct answer must come from the owner, not from reading the pinned types."
+    },
+    {
+      "scenarioId": "R-deployed-error",
+      "class": "R",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "A Palimpsest design will branch on the specific error Ordarium returns when a stored observation cursor is rejected. Assess whether that branch is safe against the Ordarium version deployed by consumers today, and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/core/dist/src/errors.d.ts"],
+      "peerEvidenceAnchors": ["Ordarium's current deployed behavior/taxonomy versus the pinned release (current implementation state)"],
+      "ownershipRationale": "Deployed current state is peer-owned and may differ from the pinned artifact.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": true,
+      "scoringNotes": "Requires current state, which no pinned artifact can establish."
+    },
+    {
+      "scenarioId": "L-canvas-freshness",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Decide whether Palimpsest's canvas presentation rule can affect canonical graph freshness, using the specification and implementation in this repository, and explain your recommendation.",
+      "localEvidenceAnchors": ["docs/engineering", "src/canvas", "src/graph"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "Canvas presentation and freshness are entirely Palimpsest-internal; no peer owns any part.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Answer is fully derivable from this repository."
+    },
+    {
+      "scenarioId": "L-test-layout",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Decide how this repository should organise its federation test suites, and explain your recommendation.",
+      "localEvidenceAnchors": ["test", "vitest.config.ts"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "Local test organisation is Palimpsest-owned.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Purely local convention decision."
+    },
+    {
+      "scenarioId": "L-parse-strictness",
+      "class": "L",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Determine whether this repository's contract parsers currently reject unknown durable fields, using its own sources, and explain your recommendation.",
+      "localEvidenceAnchors": ["src/schema", "test/contracts.test.ts", "src/federation/codec.ts"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "The parsers and their tests are in this repository.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Verifiable locally by reading the codec and tests."
+    },
+    {
+      "scenarioId": "P-cursor-semantics",
+      "class": "P",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Determine the exact semantics of the incremental state-observation cursor in the Ordarium release pinned in this repository's dependencies, and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/core/dist/src/state.d.ts", "node_modules/@ordarium/core/dist/src/types.d.ts", "pnpm-lock.yaml"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "Ordarium owns the interface, but the question is only about the frozen pinned version, which is present locally.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Tests ownership != information need: the pinned artifact is authoritative for the pinned version."
+    },
+    {
+      "scenarioId": "P-host-contract",
+      "class": "P",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Determine what host-contract version the pinned Ordarium release this repository depends on requires, and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/host-kit/dist/src/index.d.ts", "node_modules/@ordarium/core/dist/src/host.d.ts"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "The value is defined by the pinned release and is readable locally.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Exact constant is in the pinned artifact."
+    },
+    {
+      "scenarioId": "P-error-code",
+      "class": "P",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Determine which Ordarium error code the pinned release raises when a stored observation cursor is rejected, and explain your recommendation.",
+      "localEvidenceAnchors": ["node_modules/@ordarium/core/dist/src/errors.d.ts", "node_modules/@ordarium/ledger-sqlite/dist/src/index.d.ts"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "The pinned release defines the code; no current-state question is asked.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Tests whether agents contact the owner despite having the authoritative answer locally."
+    },
+    {
+      "scenarioId": "A-freshness",
+      "class": "A",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "A local design is compatible with the pinned Ordarium interface, but a comment in our code suggests the dependency may evolve. Assess whether the current design is safe and explain your recommendation.",
+      "localEvidenceAnchors": ["src/federation", "node_modules/@ordarium/core/dist/src/state.d.ts"],
+      "peerEvidenceAnchors": ["Whether/how the interface will evolve (owner intent)"],
+      "ownershipRationale": "Local evidence is real but may be stale relative to evolving intent; boundary is genuinely unclear.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": null,
+      "scoringNotes": "Exploratory; both a local decision and an escalation are defensible."
+    },
+    {
+      "scenarioId": "A-ownership",
+      "class": "A",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "We need to decide whether cursor-invalidation recovery belongs in this repository or in the Ordarium package we depend on. Assess the boundary and explain your recommendation.",
+      "localEvidenceAnchors": ["src/federation/store.ts", "node_modules/@ordarium/core/dist/src/state.d.ts"],
+      "peerEvidenceAnchors": ["Ordarium's own view of where recovery belongs"],
+      "ownershipRationale": "Ownership of recovery is arguably shared and not documented locally.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": null,
+      "scoringNotes": "Exploratory; ownership-boundary question."
+    }
+  ],
+  "symmetryScenarios": [
+    {
+      "scenarioId": "S-O-R-consumer",
+      "class": "R",
+      "focalPeer": "ordarium.main",
+      "operatorPrompt": "Ordarium is considering removing an observation surface that downstream consumers may rely on. Decide whether any consumer depends on it before changing it, and explain your recommendation.",
+      "localEvidenceAnchors": ["packages/core/src/state.ts"],
+      "peerEvidenceAnchors": ["Whether Palimpsest depends on the surface (consumer-owned requirement)"],
+      "ownershipRationale": "The consumer requirement is owned by the other peer and is not in Ordarium's repository.",
+      "localEvidenceSufficient": false,
+      "peerAuthorityRequired": true,
+      "expectedContact": true,
+      "scoringNotes": "Reverse-direction R probe."
+    },
+    {
+      "scenarioId": "S-O-L-ordering",
+      "class": "L",
+      "focalPeer": "ordarium.main",
+      "operatorPrompt": "Determine the exact ordering guarantee of your own state-change feed as implemented in this repository, and explain your recommendation.",
+      "localEvidenceAnchors": ["packages/core/src/state.ts", "packages/ledger-sqlite/src/index.ts", "packages/core/test/state-changes.test.ts"],
+      "peerEvidenceAnchors": [],
+      "ownershipRationale": "Ordarium's own implementation and tests define the guarantee.",
+      "localEvidenceSufficient": true,
+      "peerAuthorityRequired": false,
+      "expectedContact": false,
+      "scoringNotes": "Reverse-direction L probe."
+    }
+  ],
+  "omittedSymmetry": {
+    "P-like for ordarium.main": "No pinned/public Palimpsest contract exists in Ordarium's dependency set, so no genuine P scenario can be authored in this direction; recorded rather than fabricated."
+  }
+}
