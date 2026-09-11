@@ -1,0 +1,247 @@
+{
+  "runId": "I3-current-conflict-error-H0-r2",
+  "scenarioId": "I3-current-conflict-error",
+  "scenarioClass": "I",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 2,
+  "runOrder": 35,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "I3-current-conflict-error",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-I3-current-conflict-error-H0-r2",
+  "focalSession": "I3-current-conflict-error-H0-r2-focal",
+  "responderSession": "I3-current-conflict-error-H0-r2-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Answer\\n\\nThe integration should expect **Ordarium's `InvalidCursorError` (`code: \\\"INVALID_CURSOR\\\"`)** — a **fail-closed, non-retryable** failure. It must **not** expect a silent reset to the start of the feed, and it must not route this into the busy/transient retry families.\\n\\nAnd on the scope conflict the two local records raise: the correct record is **A (global)** — one shared position space — not B (per-consumer independence).\\n\\n## Why\\n\\n**1. The concrete failure.** The \\\"stored observation cursor\\\" is the durable resume position a consumer keeps from Ordarium's state change feed (`StateChangeFeed.changes(filter?, cursor?)` → `StateChangePage.cursor`, the \\\"opaque, filter-independent durable position of the last delivered change\\\"). When that stored cursor is rejected:\\n\\n- `decodeStateChangeCursor` throws `InvalidCursorError` for an undecodable/foreign cursor (`@ordarium/core` `ledger.js`).\\n- `changes()` also throws `InvalidCursorError` when the position exceeds the ledger's high-water mark.\\n- The error is deliberately **distinct from `LEDGER_CORRUPT`** (\\\"invalid caller input, not damaged ledger content\\\") and \\\"**fails closed instead of silently restarting from t",
+  "inspectionBeforeContact": true,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    1998,
+    2423
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 1,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 58,
+  "eventToResponseMs": 29619,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_git"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "contract_get"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_inbox"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_ack"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Boundary delta — state change-feed cursor-rejection contract (ORD-BOOT-0).\n\nFinding: Palimpsest's engineering archive carries two mutually exclusive \"current interface records\" for the cursor-rejection error contract:\n- Record A (docs/engineering/09-error-contract-a.md): global — one position shared"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Decision — no contradiction; no doc change needed on my side (ORD-BOOT-0).\n\nMy normative docs agree with Record A. Record B (per-consumer independent position) does not appear anywhere in Ordarium's normative set.\n\nExact clauses (artifacts pinned below):\n1. docs/13 §11 (增量观测): \"cursor 不透明、全局（与 filte"
+    }
+  ],
+  "notes": []
+}

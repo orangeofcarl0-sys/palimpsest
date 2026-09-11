@@ -44,42 +44,24 @@ Read-only repository tools are available: list, read, search, and read-only git
 inspection of your own workspace, plus your pinned dependency artifacts. Prefer
 them to reasoning from memory.`;
 
-export const PAL_FED_CRITERION_G1 = `
-## Deciding whether to contact the peer
-Before contacting the peer, inspect the authoritative evidence available in your
-own workspace and pinned dependency interfaces. Contact the peer only when a
-load-bearing fact or decision cannot be established locally at the required
-freshness or confidence, and that missing fact or authority is owned by the peer.
-Do not contact the peer merely because the topic is related to its subsystem.`;
-
-export const PAL_FED_CRITERION_G2 = `
+export const PAL_FED_CRITERION_ADJUDICATION = `
 ## Deciding whether to contact the peer
 Inspect the local evidence before contacting the peer.
 
-For each fact or commitment that is load-bearing for the decision, local
-evidence is sufficient only if it actually covers the needed proposition, is
-fresh enough for the temporal claim being made, and has the authority required
-to establish that claim. Materially conflicting local evidence also makes the
-local basis insufficient.
+When relevant local sources appear to conflict, first determine whether they are
+actually co-applicable to the proposition being decided. Resolve the issue
+locally when version scope, temporal scope, explicit supersession, or a local
+source-precedence rule is sufficient.
 
-A pinned public artifact may settle a claim about that exact frozen version. It
-does not automatically settle current peer state, future intent, or a commitment
-owned by the peer.
+Contact the peer only when multiple load-bearing sources remain genuinely
+unresolved after local provenance analysis, and the peer owns the missing
+resolution or authority. Do not contact merely because two documents differ.`;
 
-Contact the peer when the missing load-bearing element is fresh peer-owned
-information or peer-owned authority. Do not contact merely because the topic
-relates to the peer.`;
-
-// The experiment artifact builder rewrites the next line for G0/G1/G2.
-// Typed as string so the selector comparisons stay valid in every variant.
-const PAL_FED_TREATMENT: string = "g1";
+// The experiment artifact builder rewrites the next line for H0/H1/H2.
+const PAL_FED_TREATMENT: string = "h1";
 
 export const PAL_FED_CRITERION =
-  PAL_FED_TREATMENT === "g0"
-    ? ""
-    : PAL_FED_TREATMENT === "g2"
-      ? PAL_FED_CRITERION_G2
-      : PAL_FED_CRITERION_G1;
+  PAL_FED_TREATMENT === "h0" ? "" : PAL_FED_CRITERION_ADJUDICATION;
 
 export const PAL_FED_OPERATING_GUIDANCE =
   PAL_FED_CRITERION.length === 0

@@ -42,17 +42,21 @@ const rawArg = (flag, fallback) => {
 const out = argOf("--out", resolve(repo, "..", "pal-fed-runtime"));
 const depsMode = argOf("--deps", "link") === "link" ? "link" : "copy";
 
-// PAL-FED-0G treatment switch (EXPERIMENT HARNESS ONLY, no product API):
-// rewrites the single selector line so G0 empties the criterion, G1/G2 select
-// their model-visible criterion text. Everything else is byte-identical.
-const guidance = rawArg("--guidance", "g1");
+// PAL-FED-0H treatment switch (EXPERIMENT HARNESS ONLY, no product API):
+// h0 empties the adjudication criterion; h1/h2 select it. H2 uses the H1
+// artifact (identical bytes) plus a model-visible provenance sidecar at run
+// time, so only the metadata differs between H1 and H2.
+const guidance = rawArg("--guidance", "h1");
 const instructionsPath = join(repo, "src/federation/dsh/instructions.ts");
 const originalInstructions = readFileSync(instructionsPath, "utf8");
 try {
-  if (guidance === "g0" || guidance === "g1" || guidance === "g2") {
-    const marker = 'const PAL_FED_TREATMENT: string = "g1";';
-    if (!originalInstructions.includes(marker)) throw new Error("treatment selector not found");
-    writeFileSync(instructionsPath, originalInstructions.replace(marker, `const PAL_FED_TREATMENT: string = "${guidance}";`));
+  if (["h0", "h1", "h2"].includes(guidance)) {
+    const marker = 'const PAL_FED_TREATMENT: string = "h1";';
+    if (originalInstructions.includes(marker)) {
+      writeFileSync(instructionsPath, originalInstructions.replace(marker, `const PAL_FED_TREATMENT: string = "${guidance}";`));
+    } else if (guidance !== "h1") {
+      throw new Error("treatment selector not found");
+    }
   }
   execFileSync("pnpm", ["build"], { cwd: repo, stdio: "inherit", shell: true });
 } finally {

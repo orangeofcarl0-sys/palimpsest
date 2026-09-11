@@ -1,0 +1,147 @@
+{
+  "runId": "SO-V-local-ordarium-H2-r1",
+  "scenarioId": "SO-V-local-ordarium",
+  "scenarioClass": "V",
+  "focalPeer": "ordarium.main",
+  "responderPeer": "palimpsest.main",
+  "treatment": "H2",
+  "replicate": 1,
+  "runOrder": 38,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "ordarium-SO-V",
+  "ordariumCommit": "SO-V-local-ordarium",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-SO-V-local-ordarium-H2-r1",
+  "focalSession": "SO-V-local-ordarium-H2-r1-focal",
+  "responderSession": "SO-V-local-ordarium-H2-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "packages/core/test/state-changes.test.ts",
+  "outOfScopeSource": "docs/release-commentary-1.2.0.md",
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\n**The ordering guarantee that applies to the integration represented by this workspace is the *durable per-ledger commit-observation order* of committed management-state revisions** — the position sequence `change_seq` exposed by `StateChangeFeed.changes()` (ORD-BOOT-0 §3, registered as SCF-INV-1…7 and hardened by ORD-BOOT-0.1 as SCF-INV-8…10).\\n\\nIt is a strictly increasing, never-reused, per-database total order over *commits*, assigned by the storage engine inside the same transaction that commits the revision. It is explicitly **not** a causal order, **not** a wall-clock order, **not** a business-priority order, and **not** an order across separate ledgers, hosts or machines.\\n\\n## What \\\"the integration\\\" is here\\n\\nThis workspace (Ordarium) participates in the Ordarium ↔ Palimpsest integration through two seams:\\n\\n| Seam | Carrier | Ordering guarantee |\\n|---|---|---|\\n| Host invocation (`HostInvocationPort`, G18 `@ordarium/host-kit`) | version handshake `HOST_CONTRACT_VERSION = 1`, port mapping, conformance runner | **None** — no ordering contract at all |\\n| Revisioned state observation (`StateChangeFeed`, ORD-BOOT-0/0.1) | `changes(filter?, cursor?)` over t",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

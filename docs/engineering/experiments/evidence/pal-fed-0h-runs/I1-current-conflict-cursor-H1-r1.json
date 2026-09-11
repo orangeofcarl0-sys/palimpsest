@@ -1,0 +1,163 @@
+{
+  "runId": "I1-current-conflict-cursor-H1-r1",
+  "scenarioId": "I1-current-conflict-cursor",
+  "scenarioClass": "I",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H1",
+  "replicate": 1,
+  "runOrder": 87,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "I1-current-conflict-cursor",
+  "ordariumCommit": "ordarium-I1",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-I1-current-conflict-cursor-H1-r1",
+  "focalSession": "I1-current-conflict-cursor-H1-r1-focal",
+  "responderSession": "I1-current-conflict-cursor-H1-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": true,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\n**The global behaviour applies** (Record A's substance): in the pinned Ordarium line this workspace is built against, the observation cursor is **one store-wide, filter‑independent durable position** in a single commit‑observation order. Record B's \\\"per‑consumer\\\" claim is not a competing definition of that contract — it is at best a statement about who stores the cursor token, and read as a definition it is exactly the misreading the shipped contract guards against.\\n\\nI did **not** open a peer thread; the conflict is resolvable locally and the two files are not load‑bearing. Details below.\\n\\n## 1. What the two conflicting files actually are\\n\\n`docs/engineering/09-observation-contract-a.md` and `…-b.md` both self‑declare \\\"normative, current scope\\\" / \\\"current pinned line\\\", and contradict each other. Their standing in this repo does not support that self‑description:\\n\\n- `docs/engineering/README.md` is the archive index. It has **no entry for either file**; the `09-` slot belongs to `09-adaptive-allocation-spec.md` (PLMP-ALC). The two files therefore also collide on record number.\\n- Every genuine record there carries a Spec ID, a date, an authority ordering (",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_search",
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_git",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

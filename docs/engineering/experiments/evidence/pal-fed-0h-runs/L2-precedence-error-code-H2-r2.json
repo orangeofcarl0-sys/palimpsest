@@ -1,0 +1,187 @@
+{
+  "runId": "L2-precedence-error-code-H2-r2",
+  "scenarioId": "L2-precedence-error-code",
+  "scenarioClass": "L",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H2",
+  "replicate": 2,
+  "runOrder": 85,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "L2-precedence-error-code",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-L2-precedence-error-code-H2-r2",
+  "focalSession": "L2-precedence-error-code-H2-r2-focal",
+  "responderSession": "L2-precedence-error-code-H2-r2-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+  "outOfScopeSource": "docs/engineering/notes/error-code-note.md",
+  "localAdjudicationCorrect": true,
+  "citesApplicable": true,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\nThe integration should expect **`InvalidCursorError`** — an `OrdariumError` subclass whose `code` is the string **`\\\"INVALID_CURSOR\\\"`** — thrown *fail-closed* from the state-observation (change-feed) surface. It should **not** expect numeric code **27**, and it must not classify the failure by any numeric code.\\n\\n## Why\\n\\n**1. The only source that says \\\"27\\\" is explicitly non-normative.**\\n`docs/engineering/notes/error-code-note.md` is the sole local place tying cursor rejection to numeric code 27, and it labels itself \\\"informational, not normative\\\". Its provenance confirms it: `sourceKind: engineering_note`, `normativeStatus: informational`. It is a historical note, not a contract.\\n\\n**2. The pinned contract resolves the question locally and normatively.**\\nThe dependency pinned in `package.json` is `@ordarium/core@1.3.1` (same for `ledger-sqlite`). Its `errors.d.ts`/`errors.js` (provenance: owner `ordarium`, `sourceKind: published_contract`, `versionScope: \\\"1.3.1\\\"`, `temporalScope: frozen_version`, `normativeStatus: normative`, `authorityDomain: ordarium-interface`) define:\\n\\n```ts\\nexport declare class InvalidCursorError extends OrdariumError {\\n  constr",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_git",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_git",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

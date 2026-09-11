@@ -1,0 +1,151 @@
+{
+  "runId": "V2-legacy-error-codes-H0-r1",
+  "scenarioId": "V2-legacy-error-codes",
+  "scenarioClass": "V",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 1,
+  "runOrder": 20,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "V2-legacy-error-codes",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-V2-legacy-error-codes-H0-r1",
+  "focalSession": "V2-legacy-error-codes-H0-r1-focal",
+  "responderSession": "V2-legacy-error-codes-H0-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+  "outOfScopeSource": "docs/engineering/10-legacy-error-codes.md",
+  "localAdjudicationCorrect": true,
+  "citesApplicable": true,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Answer\\n\\nThe integration should expect **`InvalidCursorError`** from `@ordarium/core` — an `OrdariumError` subclass whose **`code` is `\\\"INVALID_CURSOR\\\"`** — thrown by `StateStore.changes()` / the underlying ledger's `changes()`. It must **not** expect the generic ledger failure recorded in the legacy register, and it must **not** be confused with `LEDGER_CORRUPT`.\\n\\n## What \\\"stored observation cursor\\\" means here\\n\\nThe observation surface is Ordarium's state change feed:\\n\\n- `StateChangeFilter` is documented as *\\\"Restrict observation to one namespace; absent observes every namespace\\\"* (`node_modules/@ordarium/core/dist/src/types.d.ts`).\\n- `StateChangePage.cursor` is *\\\"Opaque, filter-independent durable position of the last delivered change\\\"*, and unlike other pagination surfaces it is always present so a consumer keeps a durable resume point (`types.d.ts`).\\n- `StateStore.changes()` (`dist/src/state.js`) is the fail-closed entry: it requires `capabilities.stateChangeFeed === true` and delegates to `ledger.changes(filter, cursor)`.\\n\\n## When the cursor is rejected (two paths, same error)\\n\\nIn the pinned `@ordarium/ledger-sqlite` / `@ordarium/core` artifacts:\\n\\n1. *",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

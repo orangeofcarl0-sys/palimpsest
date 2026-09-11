@@ -1,0 +1,139 @@
+{
+  "runId": "V3-superseded-note-H0-r1",
+  "scenarioId": "V3-superseded-note",
+  "scenarioClass": "V",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 1,
+  "runOrder": 18,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "V3-superseded-interface-note",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-V3-superseded-note-H0-r1",
+  "focalSession": "V3-superseded-note-H0-r1-focal",
+  "responderSession": "V3-superseded-note-H0-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/host.d.ts",
+  "outOfScopeSource": "docs/engineering/11-superseded-interface-note.md",
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Determination\\n\\n**The host-contract version in force for this workspace is generation `1`.**\\n\\nThis is the Ordarium G18 host-facing contract generation (`HOST_CONTRACT_VERSION`), not the Ordarium package version.\\n\\n## Evidence\\n\\n1. **Assembly-time handshake pinned as a literal.** `src/effects/runtime.ts` calls `assertHostContract(1);` inside `createPalimpsestEffects` (comment: *\\\"the host-contract generation palimpsest was built and tested against, pinned as a literal — a contract bump fails closed at assembly until this line is consciously updated\\\"*). The symbol is imported from `@ordarium/host-kit` (the curated host-adapter surface), not directly from core.\\n\\n2. **The engine side agrees.** `node_modules/@ordarium/core/dist/src/host.js` declares `export const HOST_CONTRACT_VERSION = 1`, and `assertHostContract(version)` throws `HostContractMismatchError` on any value `!== 1`. The installed packages are `@ordarium/core@1.3.1` and `@ordarium/host-kit@1.3.1` (which only re-exports the check from core). So handshake and engine both report v1 — assembly passes.\\n\\n3. **The conformance test closes the loop.** `test/host_conformance.test.ts` (CONF-A01) asserts `assertHostContrac",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_list"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

@@ -1,0 +1,159 @@
+{
+  "runId": "V1-historical-commentary-H2-r3",
+  "scenarioId": "V1-historical-commentary",
+  "scenarioClass": "V",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H2",
+  "replicate": 3,
+  "runOrder": 32,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "V1-manifest-vs-commentary",
+  "ordariumCommit": "ordarium-I1",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-V1-historical-commentary-H2-r3",
+  "focalSession": "V1-historical-commentary-H2-r3-focal",
+  "responderSession": "V1-historical-commentary-H2-r3-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/state.d.ts",
+  "outOfScopeSource": "docs/release-commentary-1.2.0.md",
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\n**The Ordarium 1.3.1 incremental state-change feed (\\\"observation\\\") cursor behaviour applies** — not the \\\"no change-feed cursor / no cursor-invalidation failure\\\" behaviour described in `docs/release-commentary-1.2.0.md`.\\n\\n## The two candidate sources\\n\\n| Source | Claim | Provenance |\\n|---|---|---|\\n| `docs/release-commentary-1.2.0.md` | At 1.2.0 there is \\\"no notion of a change-feed cursor and no cursor-invalidation failure\\\"; the note itself says \\\"Anything here applies only to the 1.2.0 line\\\" | `sourceId: commentary-1.2.0`, versionScope **1.2.0**, temporalScope **historical**, normativeStatus **informational** |\\n| `package.json` (+ `pnpm-workspace.yaml` overrides + installed `node_modules/@ordarium/*`) | The workspace's Ordarium integration is pinned to release tag `ordarium-v1.3.1` | `package.json` `sourceId: pin-manifest`, versionScope **1.3.1**, temporalScope **current_fixture**, descriptive; `@ordarium/core` types carry `versionScope: 1.3.1`, temporalScope **frozen_version**, normativeStatus **normative**, authorityDomain `ordarium-interface` |\\n\\n## Why they are not co-applicable (resolved locally, no peer contact needed)\\n\\n1. **Explicit version/temp",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}
