@@ -64,15 +64,20 @@ Branch: `experiment/pal-fed-0i` (child of PAL-FED-0H at `d75b59b`). Draft PR #7.
     9.4k / A2 6.8k. A2 was not slower end-to-end in this sample (small n).
 28. **Submission-attempt distribution (I):** A0 all 1; A1 all 2; A2 7×2, 1×3,
     1×5. No persistent-resubmission storm.
-29. **Policy vs semantic:** the three A2 owner-participated resolved admissions
-    were **all `SEMANTICALLY_INCORRECT`**. Semantic correctness did not improve
-    with enforcement (A0 4/9, A1 3/9, A2 1/9 correct). This is empirical
+29. **Policy vs semantic:** of the three A2 owner-participated resolved
+    admissions, **1 was `SEMANTICALLY_CORRECT` and 2 were
+    `SEMANTICALLY_INCORRECT`** (the rubric correction re-scored one; see the
+    analysis). Owner participation is **insufficient** for semantic correctness
+    — this does not establish a causal claim that it fails to improve
+    correctness. Aggregate correctness did not rise with enforcement (A0 4/9,
+    A1 3/9, A2 1/9 correct), which is empirical
     `AdmissionPolicy ≠ TruthVerification` (Possible Result E).
 30. **Hypotheses:** H1 supported (A1 100% vs A0 11% recovery); H2 **not
     supported on contact** (100% vs 100%) and only directionally on abstention
     (67% vs 44%, p=0.637, underpowered/ceiling-bound); H3 supported (no V/L/N
-    regression); H4 supported (above). Pattern: **B (one-shot is enough) + E
-    (participation ≠ verification)**; C (deadlock) not observed. G10-A0 should
+    regression); H4 supported (above). Pattern: **B (one-shot behaviourally
+    sufficient in this family; only A2 provides the hard admission invariant) +
+    E (participation ≠ verification)**; C (deadlock) not observed. G10-A0 should
     consume `PAL-FED-0I-G10-A0-INPUT.md`.
 
 ## Evidence index

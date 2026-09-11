@@ -155,8 +155,9 @@ completion on this branch:
 
 Headline: the one-shot gate (A1) induced recovery in 100% of I runs versus 11%
 in pass-through (A0); persistent enforcement (A2) added **no** contact lift
-(0.00) and only a non-significant abstention increase; every A2
-owner-participated resolved answer was semantically incorrect
+(0.00) and only a non-significant abstention increase; of the three A2
+owner-participated resolved admissions, 1 was semantically correct and 2 were
+incorrect, so owner participation is insufficient for correctness
 (`AdmissionPolicy ≠ TruthVerification`). Pattern: Possible Results **B + E**,
 with **C not observed** (no dead-ends, all runs admitted).
 

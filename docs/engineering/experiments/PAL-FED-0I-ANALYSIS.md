@@ -105,8 +105,10 @@ Explicit-unresolved A2 vs A1 = 67% vs 44% (p = 0.637, not significant at n=9).
   A1 at a 100% ceiling there is no headroom for A2 to improve.
 - **H3 — no local-autonomy regression:** supported. V/L/N false block 0,
   unnecessary contact 0, final admitted 100% in every arm.
-- **H4 — enforcement does not guarantee truth:** supported. Semantic
-  correctness did **not** improve with enforcement (see §5).
+- **H4 — enforcement does not guarantee truth:** supported. Aggregate semantic
+  correctness did not rise under enforcement (see §5), and owner-participated
+  admissions were still partly incorrect. This is an observation, not a causal
+  claim about owner participation.
 
 ## 5. Policy admission vs semantic correctness (separate axes, §8/§66/§67)
 
@@ -120,11 +122,14 @@ admitted attempt's body for I runs:
 | A2 | 1/9 | 2/9 | 6/9 |
 
 The three A2 runs admitted **resolved under owner participation** (I2-r2,
-I1-r1, I1-r3) scored **all three `SEMANTICALLY_INCORRECT`**. Owner
-participation was obtained and the policy admits; the resulting answers are
-still wrong. This is the cleanest evidence for
-`AdmissionPolicy ≠ TruthVerification` and matches Possible Result E: the next
-unsolved layer is evidence/verification admission, not authority participation.
+I1-r1, I1-r3) split **1 `SEMANTICALLY_CORRECT` / 2 `SEMANTICALLY_INCORRECT`**
+(I1-r1 was the run re-scored by the rubric correction below). Owner
+participation was obtained and the policy admits, yet 2 of the 3 resulting
+answers were still wrong: owner participation is **insufficient** for semantic
+correctness. This supports `AdmissionPolicy ≠ TruthVerification` and matches
+Possible Result E. It does **not** establish the causal claim that owner
+participation fails to improve correctness — 0I was not designed or powered to
+identify that effect — so no inference of zero epistemic value is drawn.
 
 Caveat on the A0 column: A0's "correct" answers are the model guessing the
 authoritative resolution without any legitimate basis. "Semantically correct" ≠
@@ -153,10 +158,13 @@ than A1 in this sample (small n, wide spread).
 Submission-attempt distribution (I): A0 all 1; A1 all 2; A2 7×2, 1×3, 1×5 — no
 persistent-resubmission storm.
 
-Delivery regression on the 21 contact runs: autonomous receipt 100% (21/21),
-autonomous response 95% (20/21), reply delivery 52% (11/21), ack 48% (10/21),
-pending-after-idle 100%. Reply delivery/ack remain the weakest transport links,
-unchanged from prior batches; transport was not modified.
+Delivery on the 21 contact runs — **run-horizon observations, not transport
+reliability estimates**: autonomous receipt 100% (21/21), autonomous response
+95% (20/21), reply delivery 52% (11/21), ack 48% (10/21), pending-after-idle
+100%. PAL-FED-0I did **not** modify the transport layer; its admission-driven
+early completion changed the observation window — a run may complete at
+`contact → unresolved → admitted` without waiting for the peer's reply, so these
+figures are not directly comparable with the 0F/0G delivery percentages.
 
 ## 7. Symmetry (reverse direction)
 
@@ -173,15 +181,22 @@ The gate behaves identically when the focal is `ordarium.main` and the owner is
 
 Observed pattern: **B + E**, with C not observed.
 
-- **B — the soft gate is enough.** A1's single refusal produced 100% recovery
-  (contact or abstention) and zero dead-ends; A2 added no contact lift and only a
-  small, non-significant increase in abstention/owner participation, plus two
-  repeated-block runs and a coarser unsupported-basis signal. On this evidence,
-  a deterministic **one-shot** intervention is as behaviourally effective as
-  persistent enforcement, at lower complexity.
-- **E — owner participation still produces wrong answers.** 3/3 A2
-  owner-participated resolved outcomes were semantically incorrect. Admission
-  pressure induced collaboration but did not induce verification.
+- **B — the soft gate is behaviourally sufficient in this scenario family.**
+  A1's single refusal produced 100% recovery (contact or abstention) and zero
+  dead-ends; A2 added no contact lift above A1's ceiling and only a small,
+  non-significant increase in abstention/owner participation. A one-shot
+  epistemic intervention was sufficient to induce behavioural recovery here.
+  This does **not** show that persistent enforcement has no value: A1 and A2
+  provide different guarantees. A1 changed behaviour; **only A2 mechanically
+  guarantees the admission invariant** that an unsupported resolved conclusion
+  cannot enter admitted state before policy clearance. Behavioral effectiveness
+  and formal enforcement strength are separate dimensions — do not compare the
+  arms by contact rate alone.
+- **E — owner participation is insufficient for correctness.** Of the three A2
+  owner-participated resolved admissions, 1 was semantically correct and 2 were
+  incorrect. Admission pressure induced collaboration but did not induce
+  verification. No causal claim about whether participation improves
+  correctness is made.
 - **C not observed** (no deadlock): dead-end 0% and final-admitted 100% in A2.
 - **A not supported** (no A2−A1 lift). **D not supported** (A1 already induced
   100% contact).
@@ -198,8 +213,10 @@ actually changes behaviour, or a larger n.
   semantic and unsupported-basis detectors are coarse (disclosed above).
 - Owner replies came from a real model reading the resolver fixture; they are
   participation events, not truth certificates (§5/§37).
-- Reply delivery/ack ≈ 50%, so "owner participation obtained" under-counts
-  successful transport, not owner willingness.
+- Reply delivery/ack ≈ 50% are **run-horizon** observations (§6), not transport
+  reliability: 0I's admission-driven early completion truncates the observation
+  window, so "owner participation obtained" under-counts settled transport, not
+  owner willingness.
 - `conflictDetection="oracle_fixture"` throughout: real conflict detection
   remains an open problem (§93).
 - No production surface was added; the gate and `decision_submit` are

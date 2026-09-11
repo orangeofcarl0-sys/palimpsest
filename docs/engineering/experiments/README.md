@@ -38,6 +38,14 @@ production specs (`00`–`36`) are untouched; nothing here renumbers them.
 | `PAL-FED-0H-SCENARIOS.json` | Frozen V/L/I/N provenance scenarios (hidden scoring manifest) |
 | `PAL-FED-0H-ANALYSIS.md` / `-DELIVERY.md` / `-G10-A0-INPUT.md` | 0H three-arm provenance study, 30 answers, evidence memo |
 | `evidence/pal-fed-0h-*.json(l)` | 0H run manifest, 96-run ledger, per-run results, analysis |
+| `PAL-FED-0I-ASSESSMENT.md` | DSH admission-seam audit + design amendment A/B/C (one-shot soft gate; owner participation ≠ resolution; ticket = projection) |
+| `PAL-FED-0I-SCENARIOS.json` | Frozen 0H-derived scenarios with oracle ticket seeds (prompts unchanged) |
+| `PAL-FED-0I-ANALYSIS.md` / `-DELIVERY.md` / `-G10-A0-INPUT.md` | 0I epistemic-admission study, 30 answers, evidence memo |
+| `evidence/pal-fed-0i-*.json(l)` | 0I run manifest, 96-run ledger, per-run results + admission logs, analysis, isolation proof |
+
+**PAL-FED-0D … PAL-FED-0I: evidence campaign complete.** No PAL-FED-0J. The
+experimental runtime implementation is evidence provenance only and is not
+inherited by G10-A0 (`EvidenceInheritance ≠ CodeInheritance`).
 
 Status: **EXPERIMENTAL / SUBJECT TO DOGFOOD / NOT UAS FROZEN**. Do not merge
 PAL-FED-0 semantics into `main` as canonical UAS semantics.

@@ -20,19 +20,25 @@ ADM-A09); `decision_submit`'s entire model surface is `disposition` + `body`.
 
 ## Does one-shot intervention help? `[stat]`
 
-Yes, exploratorily. A single refusal (`A1`) produced recovery in **9/9** I runs
-(contact the owner or abstain before resubmitting) versus **1/9** in A0;
-`OneShotRecoveryRate_A1 = 100%`. It also changed the *first* post-intervention
-move to owner contact in 78% of runs with no routing instruction.
+Yes, in this tested scenario family. A single refusal (`A1`) produced recovery in
+**9/9** I runs (contact the owner or abstain before resubmitting) versus **1/9**
+in A0; `OneShotRecoveryRate_A1 = 100%`. It also changed the *first*
+post-intervention move to owner contact in 78% of runs with no routing
+instruction. This shows a one-shot intervention was behaviourally sufficient
+here; it does **not** show that persistent enforcement has no value.
 
 ## Does persistent enforcement add value? `[stat]` `[unsupported]`
 
-On contact, **no**: `AdmissionInducedContactLift(A2−A1) = 0.00` (100% vs 100%,
-Fisher p = 1.000). On abstention / owner participation the direction is higher
-(67% vs 44%) but **not significant** (p = 0.637) and ceiling-bound: A1 already
-reached 100% contact, so no headroom existed. `[rejected]` the claim that hard
-enforcement is *necessary* for recovery pressure. `[unsupported]` any claim that
-it is *more* effective than the one-shot gate at this n.
+It adds a **stronger formal guarantee** but not stronger observed contact
+behaviour. On contact: `AdmissionInducedContactLift(A2−A1) = 0.00` (100% vs
+100%, Fisher p = 1.000). On abstention / owner participation the direction is
+higher (67% vs 44%) but **not significant** (p = 0.637) and ceiling-bound: A1
+already reached 100% contact, so no headroom existed. Only A2 mechanically
+guarantees the invariant that an unsupported resolved conclusion cannot enter
+admitted state before policy clearance — behavioural effectiveness and formal
+enforcement strength are separate dimensions. `[rejected]` the claim that hard
+enforcement is *necessary* for behavioural recovery. `[unsupported]` any claim
+that it is *more* effective than the one-shot gate at this n.
 
 ## Does admission pressure induce autonomous collaboration? `[observed]`
 
@@ -50,18 +56,22 @@ Yes. Abstention was always admissible, was reached in 44% (A1) / 67% (A2) of I
 runs, and `DeadEndRate_A2 = 0%` with final-admitted 100%. No Agent was trapped;
 "I cannot legitimately determine this yet" was a live, self-selected exit.
 
-## Does owner participation improve semantic correctness? `[observed]` `[rejected]`
+## Does owner participation improve semantic correctness? `[observed]` `[unsupported]` (as asked causally)
 
-No. The three A2 runs admitted resolved **under owner participation** were
-**all `SEMANTICALLY_INCORRECT`**. Aggregate semantic correctness fell rather than
-rose under enforcement (A0 4/9, A1 3/9, A2 1/9 correct; more abstention).
+0I cannot answer this causally: it was not designed or powered to identify that
+effect. What it shows is only that aggregate correctness did not rise under
+enforcement (A0 4/9, A1 3/9, A2 1/9 correct; more abstention). The causal claim
+is left open.
 
-## Is owner participation itself sufficient? `[rejected]`
+## Is owner participation sufficient for semantic correctness? `[observed]` `[rejected]`
 
-No. Participation proves only that the configured owner replied on the
-consultation thread — not that the reply was understood, incorporated, or
-correct. `OwnerParticipation ≠ SemanticResolution` and `≠ TruthCertificate`,
-now empirically as well as by design.
+No. Of the three A2 resolutions admitted **under owner participation**, 1 was
+`SEMANTICALLY_CORRECT` and 2 were `SEMANTICALLY_INCORRECT`. Participation proves
+only that the configured owner replied on the consultation thread — not that the
+reply was understood, incorporated, or correct. Owner participation is therefore
+demonstrably **insufficient**; `OwnerParticipation ≠ TruthVerification`. No
+inference of zero epistemic value is drawn — whether participation helps is an
+open causal question.
 
 ## Can ticket state remain a derived projection? `[machine]`
 
@@ -76,7 +86,8 @@ Provisional yes — as an **experimental** Palimpsest-side policy layer. It is
 stochastic-cognition-adjacent, needs no Ordarium primitive, and cleanly
 separated policy admission from semantic truth. `[unsupported]` any production
 phasing now: the headline effect (one-shot refusal inducing recovery) is real
-but modest, n=9/arm, and the gate does not improve answer correctness.
+but modest, n=9/arm, and owner-participated admissions were still partly
+incorrect.
 
 ## Does Effect Admission remain cleanly Ordarium-side? `[machine]`
 
