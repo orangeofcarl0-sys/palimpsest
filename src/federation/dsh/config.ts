@@ -11,8 +11,17 @@ import { FederationInputError } from "../errors.js";
 import { FABRIC_ID_MAX_CHARS, ID_MAX_CHARS } from "../limits.js";
 import { isPeerRef, type PeerRef } from "../peers.js";
 import { strictReader } from "../strict.js";
+import { ADMISSION_MODES, type AdmissionBinding, type AdmissionMode } from "./admission.js";
 
 const reader = strictReader((message) => new FederationInputError(message));
+
+const ADMISSION_KEYS = [
+  "mode",
+  "runId",
+  "ticketInitial",
+  "resolutionOwner",
+  "attemptLogPath",
+] as const;
 
 export interface PalFedDshModelOptions {
   readonly provider: string;
@@ -40,6 +49,13 @@ export interface PalFedDshConfig {
    * dogfood run; it is never re-delivered once the session has a turn.
    */
   readonly initialPrompt?: string | undefined;
+  /**
+   * PAL-FED-0I experiment-only epistemic admission binding. When present the
+   * focal agent also gets a `decision_submit` tool; absent means no admission
+   * surface at all. All trusted ticket/mode context is bound here, never model
+   * input.
+   */
+  readonly admission?: AdmissionBinding | undefined;
   /** Test/host hook invoked once the runtime is ready (never YAML-serializable). */
   readonly onReady?: ((runtime: unknown) => void) | undefined;
 }
@@ -54,6 +70,7 @@ const CONFIG_KEYS = [
   "model",
   "watchIntervalMs",
   "initialPrompt",
+  "admission",
   "onReady",
 ] as const;
 
@@ -121,6 +138,61 @@ export function parsePalFedDshConfig(raw: unknown): PalFedDshConfig {
     1,
     8_192,
   );
+  const admissionRaw = reader.optional(object, "admission");
+  let admission: AdmissionBinding | undefined;
+  if (admissionRaw !== undefined) {
+    const block = reader.asObject(admissionRaw, "pal-fed config.admission");
+    reader.exactKeys(block, ADMISSION_KEYS, "pal-fed config.admission");
+    const modeRaw = reader.asString(
+      reader.required(block, "mode", "pal-fed config.admission"),
+      "pal-fed config.admission.mode",
+      1,
+      2,
+    );
+    if (!(ADMISSION_MODES as readonly string[]).includes(modeRaw)) {
+      throw new FederationInputError(
+        `pal-fed config.admission.mode: expected one of ${ADMISSION_MODES.join(", ")}`,
+      );
+    }
+    const ticketRaw = reader.asString(
+      reader.required(block, "ticketInitial", "pal-fed config.admission"),
+      "pal-fed config.admission.ticketInitial",
+      1,
+      16,
+    );
+    if (ticketRaw !== "NONE" && ticketRaw !== "OPEN") {
+      throw new FederationInputError(
+        "pal-fed config.admission.ticketInitial: expected 'NONE' or 'OPEN'",
+      );
+    }
+    const resolutionOwnerRaw = reader.required(
+      block,
+      "resolutionOwner",
+      "pal-fed config.admission",
+    );
+    if (!isPeerRef(resolutionOwnerRaw)) {
+      throw new FederationInputError(
+        `pal-fed config.admission.resolutionOwner: '${String(resolutionOwnerRaw)}' is not a PAL-FED-0 peer`,
+      );
+    }
+    admission = {
+      mode: modeRaw as AdmissionMode,
+      runId: reader.asString(
+        reader.required(block, "runId", "pal-fed config.admission"),
+        "pal-fed config.admission.runId",
+        1,
+        ID_MAX_CHARS,
+      ),
+      ticketInitial: ticketRaw,
+      resolutionOwner: resolutionOwnerRaw,
+      attemptLogPath: reader.asString(
+        reader.required(block, "attemptLogPath", "pal-fed config.admission"),
+        "pal-fed config.admission.attemptLogPath",
+        1,
+        4_096,
+      ),
+    };
+  }
   const modelRaw = reader.optional(object, "model");
   let model: PalFedDshModelOptions | undefined;
   if (modelRaw !== undefined) {
@@ -155,6 +227,7 @@ export function parsePalFedDshConfig(raw: unknown): PalFedDshConfig {
     watchIntervalMs,
     ...(model === undefined ? {} : { model }),
     ...(initialPrompt === undefined ? {} : { initialPrompt }),
+    ...(admission === undefined ? {} : { admission }),
     ...(onReadyRaw === undefined ? {} : { onReady: onReadyRaw as (runtime: unknown) => void }),
   };
 }
