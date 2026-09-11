@@ -1,0 +1,235 @@
+{
+  "runId": "L2-precedence-error-code-H0-r1",
+  "scenarioId": "L2-precedence-error-code",
+  "scenarioClass": "L",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 1,
+  "runOrder": 11,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "L2-precedence-error-code",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-L2-precedence-error-code-H0-r1",
+  "focalSession": "L2-precedence-error-code-H0-r1-focal",
+  "responderSession": "L2-precedence-error-code-H0-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+  "outOfScopeSource": "docs/engineering/notes/error-code-note.md",
+  "localAdjudicationCorrect": true,
+  "citesApplicable": true,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\nThe integration should expect Ordarium's **`InvalidCursorError`**, i.e. a typed `OrdariumError` with:\\n\\n- `error.name === \\\"InvalidCursorError\\\"`\\n- `error.code === \\\"INVALID_CURSOR\\\"`\\n- message: *\\\"The change cursor is not a valid durable position; refusing to guess a resume point\\\"*\\n\\nIt should **not** expect (and must not classify by) numeric code `27`.\\n\\n## Why\\n\\n**1. The note is explicitly non-normative and cannot set the contract.**\\n`docs/engineering/notes/error-code-note.md` is the only source claiming numeric `27`, and it self-labels:\\n\\n> Status: informational, not normative.\\n\\n`docs/engineering/08-source-precedence-policy.md` fixes the order: (1) the published contract of the *exact pinned version* governs a dependency interface; (3) informational records \\\"never override 1 or 2.\\\" The cursor is an `@ordarium/core` interface, so the note loses by construction.\\n\\n**2. The pinned contract says `INVALID_CURSOR`.**\\nThe workspace pins `@ordarium/core` at release **1.3.1** (`package.json:32-37`, `pnpm-workspace.yaml:15-18`; the installed artifact's `package.json` reports `1.3.1`). In that pinned artifact:\\n\\n- `dist/src/errors.d.ts:100` declares `class I",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

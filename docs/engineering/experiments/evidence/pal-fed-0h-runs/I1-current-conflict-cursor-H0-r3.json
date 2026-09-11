@@ -1,0 +1,139 @@
+{
+  "runId": "I1-current-conflict-cursor-H0-r3",
+  "scenarioId": "I1-current-conflict-cursor",
+  "scenarioClass": "I",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 3,
+  "runOrder": 27,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "I1-current-conflict-cursor",
+  "ordariumCommit": "ordarium-I1",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-I1-current-conflict-cursor-H0-r3",
+  "focalSession": "I1-current-conflict-cursor-H0-r3-focal",
+  "responderSession": "I1-current-conflict-cursor-H0-r3-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": true,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\n**Record A applies to this integration: the observation cursor is a single, global (ledger-wide), filter‑independent position — not a per‑consumer position.** Record B is not supported by anything this workspace actually integrates with and must be treated as an erroneous/unauthorised local claim.\\n\\n## What \\\"the integration\\\" is here\\n\\nThis workspace is Palimpsest (`package.json: name = palimpsest-dsh`, README = Palimpsest), a DSH orchestration host that consumes Ordarium as its Safe‑Action / side‑effect / state kernel. The pinned contract for that integration is **Ordarium v1.3.1**:\\n\\n- `package.json:32-37` and `pnpm-workspace.yaml:15-18`: `@ordarium/core`, `@ordarium/ledger-sqlite`, `@ordarium/host-kit`, `@ordarium/testing` all resolve to `…/releases/download/ordarium-v1.3.1/…`\\n- `docs/engineering/07-ordarium-alignment.md` (PLMP-ALN-1) fixes the cross‑repo authority order: Ordarium contracts are authoritative in Ordarium's own spec line, and Palimpsest may only consume the public API face. ⇒ For deciding semantics of a *pinned dependency interface*, the pinned artifacts are the authority, not a locally authored prose record.\\n\\nThe only interface in this stack",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_git"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

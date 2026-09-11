@@ -1,0 +1,163 @@
+{
+  "runId": "I3-current-conflict-error-H1-r2",
+  "scenarioId": "I3-current-conflict-error",
+  "scenarioClass": "I",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H1",
+  "replicate": 2,
+  "runOrder": 86,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "I3-current-conflict-error",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-I3-current-conflict-error-H1-r2",
+  "focalSession": "I3-current-conflict-error-H1-r2-focal",
+  "responderSession": "I3-current-conflict-error-H1-r2-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": true,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Determination\\n\\nWhen a stored observation cursor is rejected, this workspace's integration should expect **Ordarium's `InvalidCursorError` — code `INVALID_CURSOR`**, failing closed:\\n\\n> `\\\"The change cursor is not a valid durable position; refusing to guess a resume point\\\"`\\n\\nIt is **not** `LEDGER_CORRUPT`/`LedgerCorruptError` and it is **not** a silent restart from the beginning of the feed.\\n\\nTrigger: the consumer passes back a durable position (the `cursor` from `StateChangePage`) that either cannot be decoded or exceeds the ledger's **global high-water mark** — e.g. after the ledger was restored/replaced, which lowers the mark.\\n\\n## The conflicting sources\\n\\n`docs/engineering/09-error-contract-a.md` and `09-error-contract-b.md` both claim \\\"normative, current scope\\\", and disagree:\\n\\n- **A**: the contract is **global** — one position shared by all readers of the store.\\n- **B**: the contract is **per-consumer** — each consumer holds its own independent position.\\n\\nNeither is listed in `docs/engineering/README.md`, neither is dated, and neither cites a supersession. So the tiebreak is not local doc precedence — it is the **pinned dependency artifact**, which owns thi",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

@@ -1,0 +1,149 @@
+{
+  "runId": "I1-current-conflict-cursor-H0-r2",
+  "scenarioId": "I1-current-conflict-cursor",
+  "scenarioClass": "I",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H0",
+  "replicate": 2,
+  "runOrder": 23,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "I1-current-conflict-cursor",
+  "ordariumCommit": "ordarium-I1",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "b6f37514e03f2b67b29943dcb72581f7ce26a0a720bec996a2900721fc0821f7",
+  "artifactGuidance": "h0",
+  "fabricId": "pal-fed-0h-I1-current-conflict-cursor-H0-r2",
+  "focalSession": "I1-current-conflict-cursor-H0-r2-focal",
+  "responderSession": "I1-current-conflict-cursor-H0-r2-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": true,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Determination\\n\\n**Neither record applies as written.** This workspace does not have a single \\\"observation cursor\\\" whose behaviour is either global (Record A) or per-consumer (Record B). The behaviour it actually implements and ships is a **two-cursor contract** — `EventCursor ≠ ViewCursor` — so the two records are each describing one half of the real contract while claiming to be the whole of it.\\n\\nIf the question is narrowed to the *observation* cursor proper (the token a consumer holds and sends back to observe staleness), the applicable behaviour is **per-consumer (Record B's shape)**. The global \\\"one position shared by all readers\\\" behaviour (Record A's shape) belongs to the **canonical event cursor**, which the spec explicitly declares to be a *different* thing.\\n\\n## Why this is the decision\\n\\n**1. Both `09-observation-contract-*.md` files fail the repo's own authority test.**\\n\\n- The engineering archive is registered in `docs/engineering/README.md`. Slot `09` is already occupied there by `09-adaptive-allocation-spec.md` (PLMP-ALC-1). Neither `09-observation-contract-a.md` nor `-b.md` is listed in the index — they are unregistered files colliding on an occupied slo",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read",
+      "repo_git"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

@@ -34,6 +34,10 @@ production specs (`00`–`36`) are untouched; nothing here renumbers them.
 | `PAL-FED-0G-DELIVERY.md` | Delivery report (30 §79 answers) |
 | `PAL-FED-0G-G10-A0-INPUT.md` | Evidence-labeled inputs for a future G10-A0 |
 | `evidence/pal-fed-0g-*.json(l)` | Frozen manifests, isolation/prompt proofs, 96-run ledger, analysis |
+| `PAL-FED-0G-C-REAUDIT.md` | Re-audit of 0G C-class ground truth (0G conflict-failure interpretation withdrawn) |
+| `PAL-FED-0H-SCENARIOS.json` | Frozen V/L/I/N provenance scenarios (hidden scoring manifest) |
+| `PAL-FED-0H-ANALYSIS.md` / `-DELIVERY.md` / `-G10-A0-INPUT.md` | 0H three-arm provenance study, 30 answers, evidence memo |
+| `evidence/pal-fed-0h-*.json(l)` | 0H run manifest, 96-run ledger, per-run results, analysis |
 
 Status: **EXPERIMENTAL / SUBJECT TO DOGFOOD / NOT UAS FROZEN**. Do not merge
 PAL-FED-0 semantics into `main` as canonical UAS semantics.

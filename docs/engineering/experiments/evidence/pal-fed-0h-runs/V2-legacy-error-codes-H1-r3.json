@@ -1,0 +1,199 @@
+{
+  "runId": "V2-legacy-error-codes-H1-r3",
+  "scenarioId": "V2-legacy-error-codes",
+  "scenarioClass": "V",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H1",
+  "replicate": 3,
+  "runOrder": 45,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "V2-legacy-error-codes",
+  "ordariumCommit": "ordarium-I3",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-V2-legacy-error-codes-H1-r3",
+  "focalSession": "V2-legacy-error-codes-H1-r3-focal",
+  "responderSession": "V2-legacy-error-codes-H1-r3-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/errors.d.ts",
+  "outOfScopeSource": "docs/engineering/10-legacy-error-codes.md",
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\nThe integration should expect **`InvalidCursorError`, code `INVALID_CURSOR`** — a fail‑closed rejection — not a generic ledger failure and not a silent restart of the feed.\\n\\n## Why\\n\\n**1. The “stored observation cursor” is Ordarium’s ORD‑BOOT‑0 state‑change feed cursor.**\\nIn the pinned `@ordarium/core` contract it is `StateChangePage.cursor`: the durable, filter‑independent position of the last delivered committed state revision. Unlike the optional `nextCursor` of the other read surfaces it is *always* present precisely so a consumer can persist it, reach the end of the feed, and resume later when new revisions commit (`types.d.ts`, `StateChangeFeed`, `StateStore.changes`). “Rejected” therefore means the stored position cannot be accepted as a durable resume point.\\n\\n**2. The pinned Ordarium line supplies a dedicated error for exactly that case.**\\nThe operative basis is ordarium **1.3.1**, consistent across `package.json`, the `pnpm-workspace.yaml` overrides, and the installed artifacts (`node_modules/@ordarium/core` 1.3.1, `@ordarium/ledger-sqlite` 1.3.1). In that artifact:\\n\\n- `errors.js` defines `InvalidCursorError` → code `INVALID_CURSOR`, message *“The c",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_git",
+    "repo_list",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_git",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

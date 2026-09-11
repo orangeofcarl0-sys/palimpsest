@@ -1,0 +1,155 @@
+{
+  "runId": "L1-precedence-cursor-H2-r3",
+  "scenarioId": "L1-precedence-cursor",
+  "scenarioClass": "L",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "treatment": "H2",
+  "replicate": 3,
+  "runOrder": 54,
+  "expectedContact": false,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "L1-precedence-cursor",
+  "ordariumCommit": "ordarium-I1",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-L1-precedence-cursor-H2-r3",
+  "focalSession": "L1-precedence-cursor-H2-r3-focal",
+  "responderSession": "L1-precedence-cursor-H2-r3-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": true,
+  "applicableSource": "node_modules/@ordarium/core/dist/src/state.d.ts",
+  "outOfScopeSource": "docs/engineering/notes/cursor-note.md",
+  "localAdjudicationCorrect": true,
+  "citesApplicable": true,
+  "citesOutOfScope": true,
+  "unresolvedAcknowledged": true,
+  "silentConflictCollapse": false,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\n**The global, filter‑independent observation cursor applies** — i.e. Ordarium 1.3.1's `StateChangeFeed` cursor is one durable ledger‑wide position, not a per‑subscription (per‑namespace/per‑filter) one. The `per-subscription` claim in `docs/engineering/notes/cursor-note.md` is a stale, non‑normative reading and does not govern this integration.\\n\\n## Sources inspected and their provenance\\n\\n| Source | Status | What it says |\\n|---|---|---|\\n| `package.json:32‑37`, `pnpm-workspace.yaml:15‑18`, `node_modules/@ordarium/*/package.json` | pin: `@ordarium/*` **1.3.1** (pin == overrides == installed; no lockfile in workspace) | Ordarium pinned at 1.3.1 |\\n| `node_modules/@ordarium/core/dist/src/types.d.ts` (provenance: `ordarium-1.3.1-types`, owner `ordarium`, `published_contract`, `frozen_version`, **normative**, `ordarium-interface`) | **published contract of the pinned version** | `StateChangePage.cursor`: *\\\"Opaque, **filter-independent** durable position of the last delivered change.\\\"* Contrasted explicitly with *\\\"the `nextCursor?` pagination of the other read surfaces\\\"*; `StateChangeFeed.changes(filter?, cursor?)`, `capabilities.stateChangeFeed` |\\n| `node_modules",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_list",
+    "repo_read",
+    "repo_search",
+    "repo_git",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_list",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_git"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}

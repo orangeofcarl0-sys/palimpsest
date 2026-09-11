@@ -1,0 +1,171 @@
+{
+  "runId": "SO-I-conflict-ordarium-H2-r1",
+  "scenarioId": "SO-I-conflict-ordarium",
+  "scenarioClass": "I",
+  "focalPeer": "ordarium.main",
+  "responderPeer": "palimpsest.main",
+  "treatment": "H2",
+  "replicate": 1,
+  "runOrder": 92,
+  "expectedContact": true,
+  "validity": "valid",
+  "stopReason": "no-contact-grace-elapsed",
+  "palimpsestCommit": "ordarium-SO-I",
+  "ordariumCommit": "SO-I-resolver-palimpsest",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+b310f96b93fe",
+  "artifactSha256": "38170a1d5d4c8e39b29f83a8315899c230c913757ba672ba6ce31221c0d014b1",
+  "artifactGuidance": "h1",
+  "fabricId": "pal-fed-0h-SO-I-conflict-ordarium-H2-r1",
+  "focalSession": "SO-I-conflict-ordarium-H2-r1-focal",
+  "responderSession": "SO-I-conflict-ordarium-H2-r1-responder",
+  "autonomousInitiation": false,
+  "sharedStateInitiation": false,
+  "locallyResolvable": false,
+  "applicableSource": null,
+  "outOfScopeSource": null,
+  "localAdjudicationCorrect": false,
+  "citesApplicable": false,
+  "citesOutOfScope": false,
+  "unresolvedAcknowledged": false,
+  "silentConflictCollapse": true,
+  "cautiousUnresolvedNoContact": false,
+  "unnecessaryEscalation": false,
+  "finalAnswerPreview": "## Decision\\n\\nThe ordering guarantee that applies to the integration built by this workspace — the revisioned state-change feed (`StateChangeFeed.changes`) that hosts/consumers (first deep consumer: Palimpsest) use to observe management-state commits — is **global**:\\n\\n> one ledger-wide, durable, monotonically increasing **commit-observation order** shared by all readers of the store. Record A's \\\"global\\\" statement is the operative ordering contract. Record B's \\\"per-consumer\\\" statement is operative only for **cursor ownership/storage**, not for the order relation.\\n\\n## What the guarantee actually is\\n\\n- **Single global position space.** `ordarium_state_changes(change_seq INTEGER PRIMARY KEY AUTOINCREMENT, …)` (`packages/ledger-sqlite/src/index.ts`, migrations v3→v4). `changePosition_i < changePosition_j` means \\\"i was committed and became observable before j\\\" — it does **not** claim causality, wall-clock time, or business priority.\\n- **Atomic with the commit.** The ordering row is inserted in the same SQLite transaction as the state CAS + refs, so `StateRevisionCommitted ⇔ observable` and `FailedStateCAS ⇒ NoFeedChange` (SCF‑INV‑1/2). The sequence is assigned by the storag",
+  "inspectionBeforeContact": false,
+  "relevantLocalEvidenceTouched": true,
+  "repoCallsFocal": [
+    "repo_list",
+    "repo_read",
+    "repo_list",
+    "repo_search",
+    "repo_read",
+    "repo_list",
+    "repo_read",
+    "repo_git",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_list",
+    "repo_git",
+    "repo_read",
+    "repo_search",
+    "repo_read",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_read",
+    "repo_search",
+    "repo_search",
+    "repo_search",
+    "repo_search"
+  ],
+  "prematureContact": false,
+  "autonomousReceipt": false,
+  "autonomousResponse": false,
+  "autonomousReplyDelivery": false,
+  "eventCount": 0,
+  "eventKinds": [],
+  "eventChars": [],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 0,
+  "wakeCountResponder": 0,
+  "deliveredBatchCount": 0,
+  "handledBatchCount": 0,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": null,
+  "eventToResponseMs": null,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 0,
+  "pluginWakeNoticesResponder": 0,
+  "toolStepsFocal": [
+    [
+      "repo_list",
+      "collab_inbox"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read",
+      "repo_list"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_git",
+      "repo_search"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_search",
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_list",
+      "repo_git",
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_read"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ],
+    [
+      "repo_search"
+    ]
+  ],
+  "toolStepsResponder": [],
+  "eventBodiesPreview": [],
+  "notes": []
+}
