@@ -139,4 +139,3 @@ Use only: `machine-proven`, `observed`, `replicated`, `supported in the tested
 scenario family`, `not established`, `open`, `rejected`. Do not write
 "universally proven" or "guaranteed law". Every PAL-FED claim above is traceable
 to a branch, report and tip; nothing is attributed vaguely.
-
