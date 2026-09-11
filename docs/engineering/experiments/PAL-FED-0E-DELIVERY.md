@@ -90,10 +90,15 @@ failure.
 
 ## Software regression gates (§70/§71)
 
-See the branch HEAD run: `pnpm run clean`, `build`, `build:web`, `test`
-(66 files / 475 tests, unchanged), `test:e2e` with Playwright `retries = 0`.
-The known `runtime-debugger` E2E flake remains nondeterministic and is recorded,
-not retried away.
+Local: `pnpm run clean`, `build`, `build:web`, `test` (66 files / 475 tests,
+unchanged) all green; `test:e2e` **21/21** with Playwright `retries = 0`.
+
+Remote CI (draft PR #3): `unit => success`; `e2e => failure` on the already
+characterized pre-existing `E2E-DEBUG-01` / `runtime-debugger.spec.ts:56`
+visibility flake (20/21). This batch's only server change is
+`src/federation/dsh/watcher.ts` (observability), which the e2e kernel never
+imports; the flake is recorded, not retried away, and remains nondeterministic
+across runs (it passed locally at this HEAD).
 
 ## Stop rule (§76)
 
