@@ -63,9 +63,11 @@ Branch: `experiment/pal-fed-0h` (child of PAL-FED-0G at `b310f96`).
 
 ## Regression gates
 
-`pnpm build` and `pnpm test` (66 files / 475 tests) green; `test:e2e` with
-Playwright `retries = 0`; remote CI recorded on the draft PR. This batch adds
-only experiment tooling and the 0H guidance text.
+`pnpm build` and `pnpm test` (66 files / 475 tests) green. `pnpm test:e2e` was
+20/21 locally on this run — the known pre-existing, nondeterministic
+`E2E-DEBUG-01` / `runtime-debugger.spec.ts:56` visibility flake (retries remain
+0; remote CI recorded on the draft PR). This batch adds only experiment tooling
+and the 0H guidance text.
 
 ## Not started (§80)
 
