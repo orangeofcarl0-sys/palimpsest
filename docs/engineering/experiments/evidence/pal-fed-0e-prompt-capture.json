@@ -1,0 +1,60 @@
+{
+  "protocol": "PAL-FED-0E",
+  "method": "boot real DSH tree per artifact; compose peer agent; assemble system prompt",
+  "c0": {
+    "buildId": "pal-fed-0d+c0718c9f790f",
+    "sectionHashes": [
+      {
+        "name": "deployment:persona-prefix",
+        "sha256": "5fab6e32f283d71510531ce850df2690b8fb77437d36bfabbe8c4ac862f19df9"
+      },
+      {
+        "name": "pal-fed:peer-collaboration",
+        "sha256": "4a3bb0ae15fadf8debca46b8e9c6c4a86878d0ad9dcf50baa56cf96e7ea4c214"
+      },
+      {
+        "name": "deployment:persona-suffix",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "toolNames": [
+      "collab_ack",
+      "collab_inbox",
+      "collab_post",
+      "collab_thread",
+      "contract_get",
+      "contract_update"
+    ]
+  },
+  "c1": {
+    "buildId": "pal-fed-0d+c0718c9f790f",
+    "sectionHashes": [
+      {
+        "name": "deployment:persona-prefix",
+        "sha256": "5fab6e32f283d71510531ce850df2690b8fb77437d36bfabbe8c4ac862f19df9"
+      },
+      {
+        "name": "pal-fed:peer-collaboration",
+        "sha256": "84abf01041da13ff342101ae02a7f14cfd1647ee2ec5e526ad3f6bbcf8718475"
+      },
+      {
+        "name": "deployment:persona-suffix",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "toolNames": [
+      "collab_ack",
+      "collab_inbox",
+      "collab_post",
+      "collab_thread",
+      "contract_get",
+      "contract_update"
+    ]
+  },
+  "sectionsDiffering": [
+    "section changed: pal-fed:peer-collaboration"
+  ],
+  "toolsIdentical": true,
+  "onlyPalFedSectionDiffers": true,
+  "modelRouteIdentical": true
+}

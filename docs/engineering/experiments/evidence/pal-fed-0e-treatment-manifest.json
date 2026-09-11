@@ -1,0 +1,76 @@
+{
+  "protocol": "PAL-FED-0E",
+  "frozenBeforeRuns": true,
+  "treatment": {
+    "C0": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0e/C0",
+      "buildId": "pal-fed-0d+c0718c9f790f",
+      "controlPlaneSha256": "1f0e54fb0692c9ea1bdede20ba1c7f6ba7ffc8bec3cb9b67156628701d09291b",
+      "guidance": "criterion absent"
+    },
+    "C1": {
+      "artifact": "F:/Codex_Work_Space/pal-fed-0e/C1",
+      "buildId": "pal-fed-0d+c0718c9f790f",
+      "controlPlaneSha256": "b6849a147b5d2042f67efc170f54e8423894f865f1d49aed70608b6d73efdf0b",
+      "guidance": "criterion present"
+    }
+  },
+  "isolation": {
+    "method": "hash every file under package/dist/src in both artifacts",
+    "identicalFileCount": 400,
+    "differingFiles": [
+      "federation/dsh/instructions.d.ts",
+      "federation/dsh/instructions.d.ts.map",
+      "federation/dsh/instructions.js",
+      "federation/dsh/instructions.js.map"
+    ],
+    "conclusion": "control plane differs only in compiled operating-guidance artifacts (federation/dsh/instructions.*)"
+  },
+  "effectivePrompt": {
+    "method": "boot real DSH tree per artifact; compose peer agent; assemble system prompt",
+    "sectionsDiffering": [
+      "section changed: pal-fed:peer-collaboration"
+    ],
+    "toolsIdentical": true,
+    "onlyPalFedSectionDiffers": true,
+    "modelRouteIdentical": true
+  },
+  "runtime": {
+    "dshVersion": "0.1.5-rc.1",
+    "ordarium": "1.3.1",
+    "node": "v24.14.1",
+    "pollIntervalMs": 2000
+  },
+  "model": {
+    "provider": "deepseek-official",
+    "model": "deepseek-flash",
+    "samplingControls": "not exposed by DSH/provider; no seed honored"
+  },
+  "manifests": {
+    "scenarios": {
+      "path": "docs/engineering/experiments/PAL-FED-0E-SCENARIOS.json",
+      "sha256": "51c06e459a5ec89bf75dcc6dd877ff6c247678cc70a89d09b1d8bb4f38f3431b"
+    },
+    "runManifest": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0e-run-manifest.json",
+      "sha256": "4929e6277f0bf7e6cdb030aace316cd64422fc742f03bdfc99fdb1e43c5ed728"
+    },
+    "isolationProof": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0e-treatment-isolation.json",
+      "sha256": "80c88687b09a190af64687da6d784d1340f497c5dd25ee19322c839ac8e3061b"
+    },
+    "promptCapture": {
+      "path": "docs/engineering/experiments/evidence/pal-fed-0e-prompt-capture.json",
+      "sha256": "9e858af906541718938e631d3cff55f093aa0fef2507903dfe25ef88e090d2fd"
+    }
+  },
+  "randomization": {
+    "seed": 20260911,
+    "orderCommittedIn": "docs/engineering/experiments/evidence/pal-fed-0e-run-manifest.json"
+  },
+  "workspaces": {
+    "palimpsestCommit": "59fae6e",
+    "ordariumCommit": "073409b",
+    "note": "immutable git-archive snapshots; the minimal DSH host exposes no fs/read tools, so no model write can contaminate a later replicate"
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "runId": "DA-public-evidence-C0-r1",
+  "scenarioId": "DA-public-evidence",
+  "scenarioClass": "DA",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "criterion": "C0",
+  "replicate": 1,
+  "runOrder": 5,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+c0718c9f790f",
+  "artifactSha256": "1f0e54fb0692c9ea1bdede20ba1c7f6ba7ffc8bec3cb9b67156628701d09291b",
+  "artifactGuidance": "c0",
+  "fabricId": "pal-fed-0e-DA-public-evidence-C0-r1",
+  "focalSession": "DA-public-evidence-C0-r1-focal",
+  "responderSession": "DA-public-evidence-C0-r1-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": false,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "decision"
+  ],
+  "eventChars": [
+    955,
+    1350
+  ],
+  "contractRevisionCount": 0,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 2,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": true,
+  "eventToWakeMs": 425,
+  "eventToResponseMs": 24297,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_thread"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Decision — Palimpsest: the current Ordarium-release compatibility concern is NOT answerable from public release information on the evidence available to us.\n\nBasis (falsifiable):\n1. Our shared surface carries no artifact naming the concern: inbox empty, no contracts, no thread with it.\n2. We have no"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "decision",
+      "body": "Decision — Ordarium on the Ordarium-release compatibility item (answers evt_e73a56cf).\n\nMirror of your basis, from this side: the shared surface available to me also carries no artifact naming the concern (this thread is the only trace of it; no prior thread, contract, or event names an affected int"
+    }
+  ],
+  "notes": []
+}

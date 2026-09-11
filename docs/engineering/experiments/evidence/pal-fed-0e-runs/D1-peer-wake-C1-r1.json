@@ -1,0 +1,108 @@
+{
+  "runId": "D1-peer-wake-C1-r1",
+  "scenarioId": "D1-peer-wake",
+  "scenarioClass": "D1",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "criterion": "C1",
+  "replicate": 1,
+  "runOrder": 21,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+c0718c9f790f",
+  "artifactSha256": "b6849a147b5d2042f67efc170f54e8423894f865f1d49aed70608b6d73efdf0b",
+  "artifactGuidance": "c1",
+  "fabricId": "pal-fed-0e-D1-peer-wake-C1-r1",
+  "focalSession": "D1-peer-wake-C1-r1-focal",
+  "responderSession": "D1-peer-wake-C1-r1-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": true,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "proposal"
+  ],
+  "eventChars": [
+    2538,
+    3192
+  ],
+  "contractRevisionCount": 2,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 1,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": false,
+  "eventToWakeMs": 657,
+  "eventToResponseMs": 55252,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "collab_inbox"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "contract_get",
+      "collab_thread"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "contract_get"
+    ],
+    [
+      "contract_get"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "DECISION (Palimpsest/DSH side; recorded per project-level request): low-latency peer wake is SPLIT, not exclusively either side. Ordarium owns the generic durable notification primitive; Palimpsest/DSH owns the wake transport and the wake handler. Conclusion: this DOES need a generic Ordarium-owned "
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "proposal",
+      "body": "COUNTER-PROPOSAL, not accept. Your rev 1 is now mechanically recorded (it landed ~6s after your event, after my first read), status=draft, acceptedBy=[]. I did not accept it, because rev 1 is internally inconsistent exactly where my implementation obligation sits:\n\n- req 1 mandates that Ordarium \"em"
+    }
+  ],
+  "notes": []
+}

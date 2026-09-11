@@ -19,6 +19,11 @@ production specs (`00`–`36`) are untouched; nothing here renumbers them.
 | `evidence/pal-fed-0d-dogfood-evidence.json` | Attempt 2 per-peer session/wake/tool-call evidence |
 | `evidence/pal-fed-0d-dogfood3-summary.json` | Attempt 3 (open prompt, criterion) coordination events |
 | `evidence/pal-fed-0d-dogfood3-evidence.json` | Attempt 3 per-peer autonomy/wake/tool-step evidence |
+| `PAL-FED-0E-SCENARIOS.json` | Frozen 8 primary + 2 symmetry scenarios (classes/rationale) |
+| `PAL-FED-0E-ANALYSIS.md` | Behavioral study analysis: rates, CIs, hypothesis outcomes, verdict |
+| `PAL-FED-0E-DELIVERY.md` | Delivery report (30 §73 answers) and evidence index |
+| `PAL-FED-0E-G10-A0-INPUT.md` | Evidence-labeled inputs for a future G10-A0 |
+| `evidence/pal-fed-0e-*.json(l)` | Frozen manifests, isolation/prompt proofs, run ledger, analysis |
 
 Status: **EXPERIMENTAL / SUBJECT TO DOGFOOD / NOT UAS FROZEN**. Do not merge
 PAL-FED-0 semantics into `main` as canonical UAS semantics.

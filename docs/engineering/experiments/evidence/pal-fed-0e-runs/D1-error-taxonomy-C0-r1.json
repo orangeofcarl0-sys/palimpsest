@@ -1,0 +1,104 @@
+{
+  "runId": "D1-error-taxonomy-C0-r1",
+  "scenarioId": "D1-error-taxonomy",
+  "scenarioClass": "D1",
+  "focalPeer": "palimpsest.main",
+  "responderPeer": "ordarium.main",
+  "criterion": "C0",
+  "replicate": 1,
+  "runOrder": 12,
+  "validity": "valid",
+  "stopReason": "exchange-settled",
+  "palimpsestCommit": "palimpsest-59fae6e",
+  "ordariumCommit": "ordarium-073409b",
+  "dshVersion": "0.1.5-rc.1",
+  "ordarium": "1.3.1",
+  "provider": "deepseek-official",
+  "model": "deepseek-flash",
+  "samplingConfig": "provider-exposed controls not available (no seed)",
+  "artifactBuildId": "pal-fed-0d+c0718c9f790f",
+  "artifactSha256": "1f0e54fb0692c9ea1bdede20ba1c7f6ba7ffc8bec3cb9b67156628701d09291b",
+  "artifactGuidance": "c0",
+  "fabricId": "pal-fed-0e-D1-error-taxonomy-C0-r1",
+  "focalSession": "D1-error-taxonomy-C0-r1-focal",
+  "responderSession": "D1-error-taxonomy-C0-r1-responder",
+  "autonomousInitiation": true,
+  "sharedStateInitiation": true,
+  "autonomousReceipt": true,
+  "autonomousResponse": true,
+  "autonomousReplyDelivery": true,
+  "eventCount": 2,
+  "eventKinds": [
+    "decision",
+    "proposal"
+  ],
+  "eventChars": [
+    1837,
+    2411
+  ],
+  "contractRevisionCount": 2,
+  "contractAgreement": false,
+  "contractAccepts": 0,
+  "wakeCountFocal": 1,
+  "wakeCountResponder": 1,
+  "deliveredBatchCount": 2,
+  "handledBatchCount": 1,
+  "ackedBatchCount": 0,
+  "pendingAfterIdle": true,
+  "eventToWakeMs": -14362,
+  "eventToResponseMs": 59719,
+  "userMessagesFocal": 1,
+  "userMessagesResponder": 0,
+  "pluginWakeNoticesFocal": 1,
+  "pluginWakeNoticesResponder": 1,
+  "toolStepsFocal": [
+    [
+      "collab_inbox",
+      "collab_thread"
+    ],
+    [
+      "contract_get",
+      "collab_thread"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "collab_post"
+    ],
+    [
+      "collab_inbox"
+    ]
+  ],
+  "toolStepsResponder": [
+    [
+      "collab_inbox"
+    ],
+    [
+      "contract_get",
+      "collab_thread"
+    ],
+    [
+      "contract_update"
+    ],
+    [
+      "collab_post"
+    ]
+  ],
+  "eventBodiesPreview": [
+    {
+      "from": "palimpsest.main",
+      "kind": "decision",
+      "body": "Palimpsest decision: we cannot rely on Ordarium's stored-observation-cursor rejection error as it stands. It must first be agreed with Ordarium, the project that defines it.\n\nBasis (checked before deciding): no BoundaryContract and no durable thread history exist for this error — inbox contracts emp"
+    },
+    {
+      "from": "ordarium.main",
+      "kind": "proposal",
+      "body": "Ordarium counter-proposal: `obs-cursor-rejection-error` revision 2, ref plmp.collab.contract/obs-cursor-rejection-error@2, termsDigest c3ed3fbb87bf5d2ed8792c1042d262a79a2cb142e7fe88bd6ba75cdb81713625. Revision 1 is NOT accepted. Reason: rev 1 names none of the four things it says must be fixed (iden"
+    }
+  ],
+  "notes": []
+}

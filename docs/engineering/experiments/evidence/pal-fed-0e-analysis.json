@@ -1,0 +1,979 @@
+{
+  "protocol": "PAL-FED-0E",
+  "generatedAt": "2026-09-11T00:29:38.720Z",
+  "validRuns": 36,
+  "invalidRuns": 0,
+  "invalidDetail": [],
+  "primaryTable": [
+    {
+      "scenarioClass": "D1",
+      "criterion": "C0",
+      "n": 6,
+      "successes": 6,
+      "rate": 1,
+      "lo": 0.6096657120978346,
+      "hi": 1
+    },
+    {
+      "scenarioClass": "D1",
+      "criterion": "C1",
+      "n": 6,
+      "successes": 6,
+      "rate": 1,
+      "lo": 0.6096657120978346,
+      "hi": 1
+    },
+    {
+      "scenarioClass": "D0",
+      "criterion": "C0",
+      "n": 6,
+      "successes": 3,
+      "rate": 0.5,
+      "lo": 0.1876163064826506,
+      "hi": 0.8123836935173494
+    },
+    {
+      "scenarioClass": "D0",
+      "criterion": "C1",
+      "n": 6,
+      "successes": 4,
+      "rate": 0.6666666666666666,
+      "lo": 0.299993315138392,
+      "hi": 0.9032285888942195
+    },
+    {
+      "scenarioClass": "DA",
+      "criterion": "C0",
+      "n": 4,
+      "successes": 4,
+      "rate": 1,
+      "lo": 0.5101091635454027,
+      "hi": 1
+    },
+    {
+      "scenarioClass": "DA",
+      "criterion": "C1",
+      "n": 4,
+      "successes": 3,
+      "rate": 0.75,
+      "lo": 0.3006418425824019,
+      "hi": 0.9544127391902995
+    },
+    {
+      "scenarioClass": "D1-symmetry",
+      "criterion": "C0",
+      "n": 1,
+      "successes": 1,
+      "rate": 1,
+      "lo": 0.20654931437723742,
+      "hi": 1
+    },
+    {
+      "scenarioClass": "D1-symmetry",
+      "criterion": "C1",
+      "n": 1,
+      "successes": 1,
+      "rate": 1,
+      "lo": 0.20654931437723742,
+      "hi": 1
+    },
+    {
+      "scenarioClass": "D0-symmetry",
+      "criterion": "C0",
+      "n": 1,
+      "successes": 0,
+      "rate": 0,
+      "lo": 0,
+      "hi": 0.7934506856227626
+    },
+    {
+      "scenarioClass": "D0-symmetry",
+      "criterion": "C1",
+      "n": 1,
+      "successes": 1,
+      "rate": 1,
+      "lo": 0.20654931437723742,
+      "hi": 1
+    }
+  ],
+  "primaryContrastD1": {
+    "c1": {
+      "n": 6,
+      "successes": 6,
+      "rate": 1,
+      "lo": 0.6096657120978346,
+      "hi": 1
+    },
+    "c0": {
+      "n": 6,
+      "successes": 6,
+      "rate": 1,
+      "lo": 0.6096657120978346,
+      "hi": 1
+    },
+    "delta": 0,
+    "fisherTwoSided": {
+      "oddsRatio": null,
+      "pValue": 0.9999999999999964
+    }
+  },
+  "falseContactD0C1": {
+    "n": 6,
+    "successes": 4,
+    "rate": 0.6666666666666666,
+    "lo": 0.299993315138392,
+    "hi": 0.9032285888942195
+  },
+  "secondary": {
+    "autonomousReceipt": {
+      "n": 29,
+      "successes": 29,
+      "rate": 1,
+      "lo": 0.8830302015002593,
+      "hi": 1
+    },
+    "autonomousResponse": {
+      "n": 29,
+      "successes": 27,
+      "rate": 0.9310344827586207,
+      "lo": 0.7803541984972431,
+      "hi": 0.9808787338305667
+    },
+    "replyDelivery": {
+      "n": 29,
+      "successes": 26,
+      "rate": 0.896551724137931,
+      "lo": 0.736149189092262,
+      "hi": 0.964185108649323
+    },
+    "ackRate": {
+      "n": 29,
+      "successes": 7,
+      "rate": 0.2413793103448276,
+      "lo": 0.12218422442520087,
+      "hi": 0.42107601617811335
+    },
+    "pendingAfterIdleRate": {
+      "n": 29,
+      "successes": 21,
+      "rate": 0.7241379310344828,
+      "lo": 0.5428286758313406,
+      "hi": 0.8530124489791204
+    },
+    "contractTouchedRate": {
+      "n": 29,
+      "successes": 17,
+      "rate": 0.5862068965517241,
+      "lo": 0.40737835987878585,
+      "hi": 0.744868226586776
+    },
+    "contractAgreedRate": {
+      "n": 29,
+      "successes": 0,
+      "rate": 0,
+      "lo": 0,
+      "hi": 0.11696979849974075
+    },
+    "statusChatterEvents": 0,
+    "chanChatterEvents": 0
+  },
+  "communicationVolume": {
+    "meanEventCount": 1.5555555555555556,
+    "medianEventCount": 2,
+    "maxEventCount": 3
+  },
+  "latency": {
+    "eventToWakeMs": {
+      "n": 29,
+      "min": 48,
+      "median": 977,
+      "max": 1963
+    },
+    "wakeToInboxMs": {
+      "n": 29,
+      "min": 760,
+      "median": 1104,
+      "max": 3220
+    },
+    "eventToResponseMs": {
+      "n": 26,
+      "min": 8683,
+      "median": 28300,
+      "max": 89283
+    }
+  },
+  "latencyMethod": "event->wake and wake->inbox from durable DSH session-log timestamps (first plugin notice / first collab_inbox call); event->response from durable event times. The raw per-run lastWakeAt field is not used (it is the last, not first, wake).",
+  "latencyCaveat": "change->wake uses the focal's first durable change (event or contract revision), matching what the watcher observes; wake->inbox and change->response are unaffected.",
+  "generalization": {
+    "distinctD1ScenariosWithAnyC1Contact": 3,
+    "distinctD1Scenarios": 3,
+    "scenarios": [
+      "D1-peer-wake",
+      "D1-error-taxonomy",
+      "D1-cursor-stability"
+    ]
+  },
+  "symmetry": {
+    "oToP": {
+      "n": 1,
+      "successes": 1,
+      "rate": 1,
+      "lo": 0.20654931437723742,
+      "hi": 1
+    },
+    "oLocal": {
+      "n": 1,
+      "successes": 1,
+      "rate": 1,
+      "lo": 0.20654931437723742,
+      "hi": 1
+    }
+  },
+  "eventKindFrequency": {
+    "decision": 34,
+    "question": 5,
+    "proposal": 11,
+    "blocker": 2,
+    "need": 4
+  },
+  "threadUsageRate": {
+    "n": 29,
+    "successes": 25,
+    "rate": 0.8620689655172413,
+    "lo": 0.6944100627964797,
+    "hi": 0.9450256003588804
+  },
+  "maxEventChars": 3670,
+  "oversizedBodyEvents": 21,
+  "contractDetail": {
+    "touchedRuns": 17,
+    "maxAcceptsInAnyRun": 1,
+    "agreedRuns": 0
+  },
+  "scenarioLevel": [
+    {
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C0:contact",
+        "C1:contact",
+        "C0:contact",
+        "C1:contact"
+      ]
+    },
+    {
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        0,
+        0
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C1:contact",
+        "C0:none",
+        "C1:contact",
+        "C0:none"
+      ]
+    },
+    {
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        0
+      ],
+      "c1": [
+        0,
+        0
+      ],
+      "replicas": [
+        "C1:none",
+        "C0:contact",
+        "C0:none",
+        "C1:none"
+      ]
+    },
+    {
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C1:contact",
+        "C1:contact",
+        "C0:contact",
+        "C0:contact"
+      ]
+    },
+    {
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C0:contact",
+        "C1:contact",
+        "C0:contact",
+        "C1:contact"
+      ]
+    },
+    {
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C1:contact",
+        "C0:contact",
+        "C0:contact",
+        "C1:contact"
+      ]
+    },
+    {
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        1
+      ],
+      "replicas": [
+        "C0:contact",
+        "C1:contact",
+        "C0:contact",
+        "C1:contact"
+      ]
+    },
+    {
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "c0": [
+        1,
+        1
+      ],
+      "c1": [
+        1,
+        0
+      ],
+      "replicas": [
+        "C0:contact",
+        "C1:contact",
+        "C1:none",
+        "C0:contact"
+      ]
+    },
+    {
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "c0": [
+        1
+      ],
+      "c1": [
+        1
+      ],
+      "replicas": [
+        "C1:contact",
+        "C0:contact"
+      ]
+    },
+    {
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "c0": [
+        0
+      ],
+      "c1": [
+        1
+      ],
+      "replicas": [
+        "C0:none",
+        "C1:contact"
+      ]
+    }
+  ],
+  "runByRun": [
+    {
+      "runId": "D0-canvas-policy-C0-r1",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D0-cli-flag-C1-r1",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-peer-wake-C1-r2",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-indirect-shape-C0-r2",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-public-evidence-C0-r1",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-public-evidence-C1-r1",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D0-test-layout-C1-r1",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-test-layout-C0-r1",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": true,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "S-O-local-C0-r1",
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "criterion": "C0",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-cli-flag-C0-r2",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D1-error-taxonomy-C0-r2",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-peer-wake-C0-r1",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-error-taxonomy-C1-r2",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-error-taxonomy-C0-r1",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-public-evidence-C1-r2",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-canvas-policy-C1-r1",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-cursor-stability-C1-r2",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D1-peer-wake-C0-r2",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": true,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-peer-wake-C1-r1",
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-cli-flag-C1-r2",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": false,
+      "delivery": false,
+      "ack": true,
+      "events": 1,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D1-cursor-stability-C1-r1",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": false,
+      "ack": true,
+      "events": 1,
+      "contractRevisions": 1,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "DA-indirect-shape-C1-r1",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-public-evidence-C0-r2",
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": true,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "S-O-local-C1-r1",
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "S-O-dependency-C1-r1",
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D0-canvas-policy-C0-r2",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D0-test-layout-C0-r2",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D1-cursor-stability-C0-r1",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 3,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-cursor-stability-C0-r2",
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 2,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-indirect-shape-C0-r1",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "DA-indirect-shape-C1-r2",
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D1-error-taxonomy-C1-r1",
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": true,
+      "events": 2,
+      "contractRevisions": 1,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-test-layout-C1-r2",
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "D0-canvas-policy-C1-r2",
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C1",
+      "initiation": true,
+      "receipt": true,
+      "response": true,
+      "delivery": true,
+      "ack": false,
+      "events": 2,
+      "contractRevisions": 0,
+      "pendingAfterIdle": true
+    },
+    {
+      "runId": "D0-cli-flag-C0-r1",
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "criterion": "C0",
+      "initiation": false,
+      "receipt": false,
+      "response": false,
+      "delivery": false,
+      "ack": false,
+      "events": 0,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    },
+    {
+      "runId": "S-O-dependency-C0-r1",
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "criterion": "C0",
+      "initiation": true,
+      "receipt": true,
+      "response": false,
+      "delivery": false,
+      "ack": true,
+      "events": 1,
+      "contractRevisions": 0,
+      "pendingAfterIdle": false
+    }
+  ]
+}

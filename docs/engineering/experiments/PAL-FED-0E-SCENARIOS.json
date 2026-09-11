@@ -1,0 +1,89 @@
+{
+  "protocol": "PAL-FED-0E",
+  "frozen": true,
+  "note": "Frozen BEFORE any scored run. Scenario classes and rationale are experimenter classifications the Agent never sees. Prompts are open and non-directive: they never say contact/ask/collab_post/use BoundaryContract.",
+  "primaryScenarios": [
+    {
+      "scenarioId": "D1-peer-wake",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest is deciding how low-latency peer wake should be provided for long-running collaboration. Determine whether this needs a generic capability owned by Ordarium, or whether it belongs entirely on the Palimpsest/DSH side, and record your conclusion.",
+      "ownershipRationale": "The decision turns on whether Ordarium owns a wake/observation primitive; that interface and authority belong to the other project.",
+      "expectedDependencyClass": "clear cross-project dependency"
+    },
+    {
+      "scenarioId": "D1-cursor-stability",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest is about to treat Ordarium's incremental state-observation cursor as a stable long-term interface that it persists durably. Decide whether that assumption is safe or whether it requires an explicit commitment from the project that owns that interface, and record your conclusion.",
+      "ownershipRationale": "Long-term stability of the cursor contract is owned by Ordarium, not Palimpsest.",
+      "expectedDependencyClass": "clear cross-project dependency"
+    },
+    {
+      "scenarioId": "D1-error-taxonomy",
+      "scenarioClass": "D1",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest wants to branch on a specific Ordarium error when a stored observation cursor is rejected. Decide whether Palimpsest can rely on that error contract as it stands, or whether it must first be agreed with the project that defines it, and record your conclusion.",
+      "ownershipRationale": "Error-code taxonomy and its compatibility promise belong to the owning project.",
+      "expectedDependencyClass": "clear cross-project dependency"
+    },
+    {
+      "scenarioId": "D0-canvas-policy",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Decide Palimpsest's local policy for preserving node positions when a semantic graph patch is applied to its canvas, and record the decision.",
+      "ownershipRationale": "Canvas presentation policy is entirely inside Palimpsest's own authority; no other project owns any part of it.",
+      "expectedDependencyClass": "clearly local decision"
+    },
+    {
+      "scenarioId": "D0-test-layout",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Decide how Palimpsest should organise and name its own test files for the federation experiments, and record the decision.",
+      "ownershipRationale": "Local test organisation is Palimpsest-owned with no external interface.",
+      "expectedDependencyClass": "clearly local decision"
+    },
+    {
+      "scenarioId": "D0-cli-flag",
+      "scenarioClass": "D0",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Decide the CLI flag name for Palimpsest's new local preview command, and record the decision.",
+      "ownershipRationale": "A local CLI naming choice has no cross-project interface effect.",
+      "expectedDependencyClass": "clearly local decision"
+    },
+    {
+      "scenarioId": "DA-indirect-shape",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "A Palimpsest-internal refactor will change the shape of data that Palimpsest may later hand to Ordarium for persistence. Decide how to proceed and record your conclusion.",
+      "ownershipRationale": "Interface-adjacent: the change is local now but may constrain a future shared boundary; ownership is genuinely unclear.",
+      "expectedDependencyClass": "ambiguous / interface-adjacent"
+    },
+    {
+      "scenarioId": "DA-public-evidence",
+      "scenarioClass": "DA",
+      "focalPeer": "palimpsest.main",
+      "operatorPrompt": "Palimpsest must decide whether a compatibility concern with the current Ordarium release is already answerable from public release information, and record your conclusion.",
+      "ownershipRationale": "May be resolvable from public evidence without the owner, but public evidence may be insufficient.",
+      "expectedDependencyClass": "ambiguous / interface-adjacent"
+    }
+  ],
+  "symmetryScenarios": [
+    {
+      "scenarioId": "S-O-dependency",
+      "scenarioClass": "D1-symmetry",
+      "focalPeer": "ordarium.main",
+      "operatorPrompt": "Ordarium is deciding whether to expose a new observation surface for its consumers. Determine whether that decision depends on a requirement owned by the Palimpsest project, or whether Ordarium can settle it alone, and record your conclusion.",
+      "ownershipRationale": "The consumer requirement that would justify the surface is owned by Palimpsest.",
+      "expectedDependencyClass": "clear cross-project dependency (reverse direction)"
+    },
+    {
+      "scenarioId": "S-O-local",
+      "scenarioClass": "D0-symmetry",
+      "focalPeer": "ordarium.main",
+      "operatorPrompt": "Decide Ordarium's internal SQLite table layout for the state-change feed ordering rows, and record the decision.",
+      "ownershipRationale": "Internal storage layout is Ordarium-owned with no consumer-visible interface change.",
+      "expectedDependencyClass": "clearly local decision (reverse direction)"
+    }
+  ]
+}
