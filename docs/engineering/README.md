@@ -43,6 +43,10 @@
 | `G10-A0-EVIDENCE-GROUNDED-SEMANTIC-REBASE.md` | **G10-A0 证据落地语义 rebase（DRAFT，非 UAS 冻结，无生产 schema 承诺）**：把 PAL-FED-0D…0I 证据整合为候选语义原则——六语义平面、跨平面非等价表、注册实体/身份/绑定问题裁决、Minimal Persistent Peer Core 与可选/治理/组织层、降级与驳回集、开放问题、旧→新词汇映射、DSH/Palimpsest/Ordarium 责任边界、G9/UAS-0/AGT-0/PAG-0 一致性与矛盾审计。**refines/supersedes 部分语义假设，但不改写冻结的 UAS-0**；实验分支仅按引用消费（`EvidenceInheritance ≠ CodeInheritance`） |
 | `G10-A0-EVIDENCE-MATRIX.md` | **G10-A0 证据矩阵 + 决策账本**：每条候选原则 → 来源实验（branch@tip · report 路径）· 证据类别（MACHINE/OBSERVED/STAT/SUPPORTED/OPEN/REJECTED）· 强度 · 反证/局限 · PROMOTE/DEFER/REJECT 决策 |
 | `G10-A0-DELIVERY.md` | **G10-A0 交付报告**：0I 收口核对、证据消费清单、30 问回答、门禁与远程状态记录 |
+| `UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE-v1-CANDIDATE.md` | **UAS-1 候选架构（PLMP-UAS-1-CANDIDATE，DRAFT，非冻结，无生产 schema 承诺）**：`UAS = Dimensions + ConcernDomains + Entities + Relations + Invariants`——四正交维（Architecture/Work/Runtime/Continuity）不变，G10-A0 六平面降为**横切 concern domain**（Definition / Identity&Continuity / Execution / Collaboration / Governance·Epistemic / Effect）构成维度×关注域矩阵而非层叠；含实体表、关系表（OPEN 标注）、中心非等价表、图种+正典性表、PersistentPoint 形式化、Minimal Core 分类、带 provenance 的候选不变量 `UAS1-CAND-INV-01..17`、标记为启发式而非不变量的 HEUR-1..3、Palimpsest/DSH/Ordarium 责任表、CURRENT/FUTURE 数据流与开放问题 |
+| `G10-A1-UAS-SEMANTIC-CONSOLIDATION.md` | **G10-A1 语义统合备忘录（迁移/推理史）**：UAS-0 原有内容、G10-A0 新增内容、G10-A1 保留/精化/取代/留开；**维度≠关注域**裁决、Continuity 命名冲突消解（维＝Continuity，关注域＝Identity & Continuity）、PeerRef↔PersistentPoint 决策（C 留开，倾向 B 仅记录）、RunDefinition 与 Binding 接缝、证据标签收紧（MACHINE-BACKED ARCHITECTURAL DISTINCTION 等）、AGT/PAG 审计（Group≠PersistentPoint、Holon/RuntimeScope 留开）、三种多智能体形态 |
+| `G10-A1-UAS-REDLINE.md` | **UAS-0 → UAS-1 候选 redline 矩阵**：逐条 UAS-0 原理/UA-INV-1..14 与 G10-A0 新增项分类为 PRESERVE / REFINE / SUPERSEDE / NEW / OPEN；历史保护红线（UAS-0/AGT-0/PAG-0 文档、definition_id、AgentGraph、GraphPatch、CanvasDoc v3、调度器不变量）；净 redline 汇总 |
+| `G10-A1-DELIVERY.md` | **G10-A1 交付报告**：30 问回答、stacked 拓扑记录、门禁与远程状态 |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
