@@ -55,3 +55,14 @@ Labels: **[machine]** / **[observed]** / **[stat]** / **[unsupported]** / **[rej
 - **Methodology note for future recall claims:** F/U recall here was
   prompt-salience-dependent (100% even in G0). Any future claim about freshness
   or authority recall must use scenarios where the baseline arm genuinely fails.
+
+
+---
+
+## Addendum (2026-09-11) — conflict row downgraded
+
+Following `PAL-FED-0G-C-REAUDIT.md`, the row "Conflict/provenance resolution
+needs the owner — [unsupported]" is **withdrawn as evidence**. The 0G
+`C-behavior-conflict` scenario was mis-classified (it is V, locally resolvable),
+so 0G did not test an irreducible `I` conflict at all. Treat conflict handling as
+**untested**, not as a demonstrated failure, pending PAL-FED-0H.

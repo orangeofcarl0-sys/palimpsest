@@ -157,3 +157,25 @@ to structure, not prose.
 - **Event taxonomy (§73):** the same 3 kinds (`constraint`, `change_ready`,
   `blocker`) are unused a third time → collapse in future design.
 - **Thread (§74):** 52% usage, still only a derived convenience view.
+
+
+---
+
+## Addendum (2026-09-11) — C-class ground-truth correction
+
+See `PAL-FED-0G-C-REAUDIT.md`. The frozen raw results are unchanged:
+`C-release-authority` 9/9 contact and `C-behavior-conflict` 0/9 contact in every
+arm. However, the re-audit shows `C-behavior-conflict` should have been
+classified **V (version/temporal-scope resolvable)**, not `I` (irreducible):
+the "historical record" is an authority/alignment document rather than a
+competing behavioural claim, the decision concerns the *current pinned*
+integration, and the repo's own recorded dependency-truth rule makes the pinned
+1.3.1 contract applicable. (The 1.2.0 release contains no cursor-invalidation
+error at all, so the prompt's premise was also factually unsupported.)
+
+Consequently the interpretation **"conflict/provenance resolution is the
+surviving failure" is no longer considered established**: the single scenario
+supporting it had incorrect contact ground truth, and 0G contained **no valid
+`I`-class case** at all. The statement in §"Interpretation" item 4 and in the
+verdict is hereby downgraded to *not established*; all other 0G findings
+(specificity, F/U ceiling, G2≈G1, secondary mechanics) are unaffected.
