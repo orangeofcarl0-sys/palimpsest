@@ -5,7 +5,12 @@ Status: **PLMP-UAS-1 · FROZEN**
 This specification supersedes `UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE.md`
 (PLMP-UAS-0) as the current semantic architecture. PLMP-UAS-0 remains an
 immutable historical record, as do the frozen AGT-0 and PAG-0 specifications.
-No UAS-0 invariant is revoked by this freeze; the freeze redline
+
+Publication status: the semantic freeze decision was issued by G10-A2
+(`FREEZE REVIEW: PASS`). Canonical repository adoption occurs when the approved
+semantic PR stack is merged into `main`; until then this document is the frozen
+semantic decision, not yet the canonical published baseline. No UAS-0 invariant
+is revoked by this freeze; the freeze redline
 (`G10-A2-UAS1-FREEZE-REDLINE.md`) records every decision, and provenance for
 each frozen statement lives there and in `G10-A2-UAS1-FREEZE-REVIEW.md`, not in
 this text. This document is readable standalone; no experiment history is
