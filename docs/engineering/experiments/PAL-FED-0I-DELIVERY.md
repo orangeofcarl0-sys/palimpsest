@@ -105,6 +105,7 @@ new Ordarium primitive. 0H results and the frozen manifests are unchanged.
 
 ## Remote CI note
 
-Pushed to `experiment/pal-fed-0i`; remote CI status recorded on the PR. If the
-environment cannot observe remote CI, this states local green / remote
-unverified rather than fabricating a green.
+`ci` on `experiment/pal-fed-0i` is **green** at the study commit
+(`aa45966`) and the docs/gates commit (`9145fbf`): run 34609636473 and run
+34609874604, conclusion `success`. Local `test:e2e`'s single `E2E-DEBUG-01`
+failure did not reproduce remotely (consistent with its nondeterminism).
