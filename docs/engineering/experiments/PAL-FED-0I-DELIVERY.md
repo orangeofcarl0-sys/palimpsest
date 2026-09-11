@@ -87,11 +87,15 @@ Branch: `experiment/pal-fed-0i` (child of PAL-FED-0H at `d75b59b`). Draft PR #7.
 
 ## Regression gates
 
-- `pnpm run clean`, `pnpm build`, `pnpm build:web`, `pnpm test` — see the
-  analysis/CI record.
-- `pnpm test:e2e` with Playwright `retries = 0` — known historical flakes
-  (E2E-DEBUG-01; the Ordarium ledger timing assertion) are recorded, not
-  reasons to alter 0I semantics.
+- `pnpm run clean` / `pnpm build` / `pnpm build:web` — pass.
+- `pnpm test` — **496 passed / 0 failed** (67 files), including the 21 new
+  admission tests.
+- `pnpm test:e2e` (Playwright `retries = 0`) — **20 passed, 1 failed**:
+  `E2E-DEBUG-01` (`e2e/runtime-debugger.spec.ts:56`, `liveNode` unexpectedly
+  hidden). Re-run in isolation: **passes**. This is the known historical
+  nondeterministic flake, unchanged from PAL-FED-0F/0G/0H; 0I modifies no
+  `dist/web` or non-federation source, so it is not caused by this batch. It is
+  recorded, not repaired, and retries stay 0.
 
 ## Not started (§97 stop rule)
 
