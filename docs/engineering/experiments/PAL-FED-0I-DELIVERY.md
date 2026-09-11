@@ -105,7 +105,13 @@ new Ordarium primitive. 0H results and the frozen manifests are unchanged.
 
 ## Remote CI note
 
-`ci` on `experiment/pal-fed-0i` is **green** at the study commit
-(`aa45966`) and the docs/gates commit (`9145fbf`): run 34609636473 and run
-34609874604, conclusion `success`. Local `test:e2e`'s single `E2E-DEBUG-01`
-failure did not reproduce remotely (consistent with its nondeterminism).
+`ci` on `experiment/pal-fed-0i` is **green** at the study commit `aa45966`
+(run 34609636473) and the gates commit `9145fbf` (run 34609874604): both `unit`
+and `e2e` passed. On the later docs-only commit `68cb237` (run 34610100569) the
+`unit` job passed but the `e2e` job failed on the **pre-existing
+`runtime-debugger` flake** (`E2E-DEBUG-01` at `runtime-debugger.spec.ts:56`,
+followed by `E2E-RUNTIME-03`) — the same nondeterministic failure seen locally
+and in PAL-FED-0F/0G/0H, in a file 0I does not touch. Nothing was fabricated and
+no retry was added: remote e2e is flaky for a pre-existing reason, local unit
+and remote unit are green, and this batch does not alter `main` or the web
+runtime. Playwright `retries = 0` remains.
