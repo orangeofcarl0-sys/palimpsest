@@ -60,6 +60,10 @@
 | `G10-B1-BINDING-CONTRACT-MATRIX.md` | **G10-B1 契约矩阵**：每条候选规则（BIND-CAND-01..17 + B1-01..10）→ schema 机制 · 运行时含义 · 冻结 UAS 依赖 · 状态；被拒实体/字段清单（BindingGraph/Broker/Lease/…、负约束、cost/latency） |
 | `G10-B1-BINDING-EXAMPLES.md` | **G10-B1 示例与对抗形状**：六条必须正确解析的示例（pure ephemeral / persistent pinned / required-but-unavailable / preferred-fallback / RunConfiguration 冲突 / runtime rebinding）+ 六个被拒形状（Bad A–F：SessionId、强制 point、authority、peerRef、run 级 retarget、双 resolution truth） |
 | `G10-B1-DELIVERY.md` | **G10-B1 交付报告**：30 问回答、stacked 拓扑（基于闭合后的 B0 7435e48）、十项纸面证明、门禁与远程状态 |
+| `BINDING-SEMANTIC-CONTRACT-v1.md` | **Binding 语义契约 v1（PLMP-BIND-1，FROZEN）**：PLMP-UAS-1 之下的从属契约（非 UAS-2）。只冻结 Binding 接缝的语义边界：新身份命名空间（BindingDefinitionId/Revision/Digest，identity≠digest、lineage-scoped revision）、subject-keyed 绑定（MapKey=SubjectIdentity 单一真相）、四态规范化连续性意图（Case E/prefer/require/pin，presence-only、pin 支配）、四类最小 unsatisfied reasons（确定性判定顺序）、Satisfied≠Unsatisfied 与 Current≠Stale 正交、BindingIntentSource（explicit｜implicit_ephemeral_default@1，无合成定义）、ResolutionProvenance（四输入 ref+opaque SnapshotRef+resolver policy）、Resolution ownership Option A（plan 仅存 id+digest；rebinding=新 plan state）、14 条单 claim 冻结不变量 BIND1-INV-01..14、parser 义务与规范化规则、core/deferred/rejected 分类（provider/model/tool/workspace 选择与 RunConfiguration delta 显式 DEFERRED）。独立可读，provenance 在 freeze redline/review |
+| `G10-B2-BINDING-SCHEMA-FORMAL-REVIEW.md` | **G10-B2 Binding schema 形式评审**：十项强制阻塞 BR-01..BR-10 全部 CLOSED（legacy provenance 判别源、Stale≠Unsatisfied、status 判别式、subject 单一真相、连续性规范化、Architecture/Work 纳入 admissible set、preferences 移除、多主体 run delta 缩减、rebinding 不可变 plan、revision 作用域）+ FR-A..FR-F 收缩发现、字段处置表、规则逐条裁决、freeze proofs（§99–§106），终局裁决 **BINDING SCHEMA REVIEW: PASS** |
+| `G10-B2-BINDING-CANDIDATE-REDLINE.md` | **B1 候选 → PLMP-BIND-1 redline**：逐类型/字段 UNCHANGED / NARROWED / NORMALIZED / MOVED OWNER / DEFERRED / REMOVED / NEW 映射与理由；BIND-CAND-01..17 与 B1-01..10 逐条处置；收缩摘要（冻结面小于候选） |
+| `G10-B2-DELIVERY.md` | **G10-B2 交付报告**：30 问回答、stacked 拓扑、freeze proofs、门禁与远程状态、推荐下一阶段（A：G10-B3 最小编译/解析 spike） |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
