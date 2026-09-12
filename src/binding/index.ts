@@ -27,6 +27,7 @@ export {
   compileBindingIntentSource,
   resolveBindingCore,
   materializeResolutionResult,
+  orderUnsatisfiedReasons,
 } from "./resolver.js";
 export type {
   ResolverInput,

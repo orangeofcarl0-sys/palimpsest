@@ -140,3 +140,42 @@ BINDING IMPLEMENTATION SPIKE: PASS
 ## Recommended next stage
 
 **A — G10-B4 Binding compiler / ExecutionPlan integration.** Not started.
+
+## Closure section — G10-B3C contract-conformance (2026-09-12)
+
+Post-implementation contract review identified six narrow
+implementation-conformance defects in the original spike (executable adequacy
+was PASS; conformance was not yet met). All six were reproduced with regression
+tests on the pre-fix HEAD (22 of 27 B3C tests failed there), fixed in
+implementation only, and re-proved:
+
+- BC-01 subject coverage: subset → **exact set equality** (extra binding
+  subjects rejected); centralized in `validateSubjectCoverage`, reused by the
+  resolver.
+- BC-02 reason ordering: lexical → **frozen semantic tier order** via
+  centralized `orderUnsatisfiedReasons` (pinned tier 0 → capability tier 1 →
+  continuity-absence tier 2; same-tier lexical order is an implementation
+  choice).
+- BC-03 `intentSource.binding` ↔ `explicitDefinition` coherence: id/revision/
+  digest mismatches now throw `BindingConfigurationError`; implicit source +
+  explicit definition is rejected (never silently ignored).
+- BC-04 resolver-policy provenance: the spike's actual policy
+  (`minimal.lexicographic@1`) is always recorded; omitted ⇒ recorded; foreign
+  id/version ⇒ rejected.
+- BC-05 parser canonicality: semantic sets sorted and subject map key-sorted in
+  the parsed output (digest behavior unchanged; duplicate rejection retained).
+- BC-06 immutability: contract-boundary frozen copies for provenance refs and
+  frozen continuity selections — mutating caller inputs after resolution no
+  longer changes the result; nested mutation attempts throw or fail silently
+  without effect.
+
+Audits re-run clean (purity, imports, runtime identity, authority/org, point
+creation). `BINDING-SEMANTIC-CONTRACT-v1.md` was **not** modified — no frozen
+clause was contradicted, so no contradiction report was needed. Full ledger:
+`G10-B3C-CONFORMANCE-CLOSURE.md` (verdict: **B3 CONTRACT-CONFORMANCE CLOSURE:
+PASS**).
+
+Final gates after closure: focused binding suite 83 passed (56 prior proofs
+preserved + 27 new B3C proofs); full `pnpm test` 65 files / 489+ tests green;
+build/build:web pass; e2e recorded with the documented debugger-flake sequence;
+remote CI on PR #15 recorded below — final unit/e2e green required before merge.

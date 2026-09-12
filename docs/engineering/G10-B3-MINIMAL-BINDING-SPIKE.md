@@ -150,3 +150,43 @@ BINDING IMPLEMENTATION SPIKE: PASS
 Recommended next stage (not started): **A — G10-B4 Binding compiler /
 ExecutionPlan integration** (integrate the frozen kernel into RunDefinition
 compilation, keeping PersistentPoint storage/runtime out).
+
+## 8. Contract-conformance closure (G10-B3C, 2026-09-12) — audit honesty record
+
+The initial implementation report above claimed PASS on executable adequacy. A
+subsequent code-level contract review identified **six narrow
+implementation-conformance defects** (executable adequacy PASS ≠ implementation
+conformance; no frozen-contract insufficiency was demonstrated). G10-B3C
+reproduced each defect with a regression test on the pre-fix HEAD, fixed only
+the implementation, and re-proved the contract:
+
+- **BC-01** subject coverage was subset, not the frozen exact set equality
+  (`BindingSubjects = ParticipatingArchitectureSubjects`); extra binding subjects
+  were silently ignored. Fixed: centralized exact set-equality validation.
+- **BC-02** unsatisfied reasons were lexically sorted; the frozen contract
+  orders tiers semantically (pinned → capability → continuity-absence). Fixed:
+  centralized `orderUnsatisfiedReasons` with an explicit tier map (same-tier
+  lexical order is an implementation choice; the contract does not order the
+  pinned variants).
+- **BC-03** `intentSource.binding` was never checked against the supplied
+  definition — provenance could lie. Fixed: id+revision+digest coherence
+  enforced (`BindingConfigurationError`); implicit source + explicit definition
+  rejected instead of silently ignored.
+- **BC-04** provenance could omit or misreport the resolver policy while the
+  spike always ran `minimal.lexicographic@1`. Fixed: the actual policy is always
+  recorded; unsupported caller policies are rejected.
+- **BC-05** parser output was not canonical (semantic-set order and subject-map
+  insertion order leaked into the parsed representation; only the digest hid
+  it). Fixed: parser output is canonical (sorted sets, key-sorted map).
+- **BC-06** nested provenance objects aliased caller-mutable input and
+  continuity selections were not frozen. Fixed: explicit contract-boundary
+  copies + frozen selections; no deep-freeze framework.
+
+Full ledger with regression proofs: `G10-B3C-CONFORMANCE-CLOSURE.md`. New proof
+group: **B3C-M01..M06** (`test/binding_conformance.test.ts`, 27 tests; 22 failed
+on the pre-fix HEAD). Earlier B3-M01…M14 remain intact. All audits re-run clean.
+Frozen contract unchanged.
+
+**Final B3 verdict (after B3C): `BINDING IMPLEMENTATION SPIKE: PASS`** —
+PLMP-BIND-1 is executable and the kernel now conforms to the tested frozen
+semantics.

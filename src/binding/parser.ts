@@ -84,7 +84,9 @@ export function parseBindingDefinition(raw: unknown): BindingDefinition {
   }
 
   const bindings: Record<string, SubjectBinding> = {};
-  for (const subject of subjectRefs) {
+  // Canonical subject-key order (MapKey = SubjectIdentity; parser output is
+  // canonical — do not rely on incoming JS insertion order).
+  for (const subject of subjectRefs.sort()) {
     nonEmptyString(subject, "subject key");
     bindings[subject] = parseSubjectBinding(subject, bindingsRaw[subject]);
   }
@@ -210,7 +212,7 @@ function parseHardRequirements(
   return Object.freeze(hard);
 }
 
-/** Semantic set: non-empty strings, duplicates rejected, canonical form sorted by the digest. */
+/** Semantic set: non-empty strings, duplicates rejected, canonical form sorted (BC-05: parser output itself is canonical). */
 function semanticSet(raw: unknown, label: string): readonly string[] {
   if (!Array.isArray(raw)) {
     throw new BindingParseError(`${label} must be an array of strings`);
@@ -223,7 +225,7 @@ function semanticSet(raw: unknown, label: string): readonly string[] {
     }
     seen.add(value);
   }
-  return Object.freeze([...seen]);
+  return Object.freeze([...seen].sort());
 }
 
 function asObject(raw: unknown, label: string): Record<string, unknown> {
@@ -253,20 +255,31 @@ function nonEmptyString(raw: unknown, label: string): string {
 }
 
 /**
- * PF-02 (total explicit subject coverage): with an explicit intent source, every
- * participating architecture subject must have exactly one entry. A missing
- * subject is a configuration-validation failure BEFORE resolution. Call before
- * resolving; never infer missing subjects.
+ * PF-02 (exact explicit subject coverage): with an explicit intent source, the
+ * binding subjects must EQUAL the participating subjects as sets —
+ * `Set(BindingSubjects) === Set(ParticipatingSubjects)`. A missing subject and
+ * an extra subject are both configuration-validation failures before
+ * resolution. Centralized here; the resolver reuses it so subject-set rules
+ * exist in exactly one place.
  */
 export function validateSubjectCoverage(
   participatingSubjects: readonly string[],
   definition: BindingDefinition,
 ): void {
+  const participants = new Set(participatingSubjects);
   for (const subject of participatingSubjects) {
     if (definition.bindings[subject] === undefined) {
       throw new BindingConfigurationError(
         `explicit BindingDefinition is not total: participating subject "${subject}" has no entry ` +
           `(explicit definitions must cover every participating subject; a subject may select Case E via continuity: {})`,
+      );
+    }
+  }
+  for (const subject of Object.keys(definition.bindings)) {
+    if (!participants.has(subject)) {
+      throw new BindingConfigurationError(
+        `explicit BindingDefinition is not exact: subject "${subject}" is not a participating subject ` +
+          `(BindingSubjects must equal ParticipatingArchitectureSubjects)`,
       );
     }
   }

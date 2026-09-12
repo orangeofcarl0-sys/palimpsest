@@ -45,3 +45,19 @@ spike status. No vague coverage claims: an invariant is `implemented + machine-t
 `SubjectRequirementFixture` are spike-only adapters representing resolver-
 observable facts. They are named as fixtures, not as PersistentPoint or
 RuntimeAgent entities, and the snapshot is never persisted.
+
+## Addendum — B3C conformance corrections (2026-09-12)
+
+The post-spike contract review found the original coverage table overstated five
+rows. Corrections, with the new B3C tests mapped explicitly:
+
+| Frozen rule/invariant | Previous claim | Correction | New test |
+|---|---|---|---|
+| PF-02 subject coverage (under `UAS1-INV-05`-adjacent totality) | "implemented + machine-tested" | was subset-only; now **exact set equality** | `binding_conformance` B3C-M01 (missing AND extra subjects rejected; set semantics) |
+| Frozen reason order (PLMP-BIND-1 §6) | "implemented + machine-tested" via resolver tests | was lexical sort; now **semantic tier order** via centralized `orderUnsatisfiedReasons` | `binding_conformance` B3C-M02 (cross-tier + same-tier + multi-subject) |
+| `ResolutionProvenance` = exact freshness basis (§7) | "implemented + machine-tested" | `intentSource.binding` was unchecked; now **id+revision+digest coherence** enforced | `binding_conformance` B3C-M03 |
+| Resolver-policy provenance (§9 determinism inputs) | "implemented" | provenance could omit/lie; now **actual policy always recorded, unsupported policies rejected** | `binding_conformance` B3C-M04 |
+| Canonical parser output (PLMP-BIND-1 §8) | "implemented" | parser output was non-canonical (sets/subject order); now **canonical representation** | `binding_conformance` B3C-M05 |
+| `BIND1-INV-08` immutability (rebinding) | "implemented + machine-tested" | nested provenance aliased caller input; selections unfrozen; now **contract-boundary frozen copies** | `binding_conformance` B3C-M06 |
+
+All other rows stand unchanged.

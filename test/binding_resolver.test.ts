@@ -132,19 +132,26 @@ describe("binding resolver: pin semantics (B3-M06, §69)", () => {
   });
 
   it("reports pinned_target_incompatible when P fails a hard constraint", () => {
-    const withHard: ResolverInput = {
-      ...input(),
-      explicitDefinition: authorBindingDefinition({
-        bindingDefinitionId: "b-pin",
-        revision: 0,
-        bindings: {
-          S: { continuity: { pin: "P" }, hard: { toolCapabilities: ["repo_access"] } },
-        },
+    const hardDefinition = authorBindingDefinition({
+      bindingDefinitionId: "b-pin-hard",
+      revision: 0,
+      bindings: {
+        S: { continuity: { pin: "P" }, hard: { toolCapabilities: ["repo_access"] } },
+      },
+    });
+    const withHard = input(
+      makeSnapshot({
+        persistentCandidates: [{ point: "P", available: true }],
       }),
-      // P exists and is available but lacks the required tool capability.
-      snapshot: makeSnapshot({ persistentCandidates: [{ point: "P", available: true }] }),
+    );
+    // Replace the whole input coherently: the pin now carries a hard
+    // requirement the point does not satisfy.
+    const withHardCoherent: ResolverInput = {
+      ...withHard,
+      intentSource: { kind: "explicit", binding: refOf(hardDefinition) },
+      explicitDefinition: hardDefinition,
     };
-    const result = resolveBindingCore(withHard);
+    const result = resolveBindingCore(withHardCoherent);
     expect(result.status).toBe("unsatisfied");
     if (result.status !== "unsatisfied") return;
     expect(result.reasons).toEqual(["pinned_target_incompatible"]);
@@ -183,21 +190,24 @@ describe("binding resolver: require semantics (B3-M07, §68/§72)", () => {
   });
 
   it("reports required_capability_unavailable when nothing satisfies the merged hard set (§72)", () => {
-    const withHard: ResolverInput = {
-      ...input(),
-      explicitDefinition: authorBindingDefinition({
-        bindingDefinitionId: "b-req",
-        revision: 0,
-        bindings: {
-          S: { continuity: { requirePersistent: true }, hard: { toolCapabilities: ["repo_access"] } },
-        },
-      }),
-      // The ephemeral profile and the durable candidate both lack repo_access.
-      snapshot: makeSnapshot({
-        persistentCandidates: [pointAt("P", { runtimeFeatures: ["f"] })],
-      }),
+    const hardDefinition = authorBindingDefinition({
+      bindingDefinitionId: "b-req-hard",
+      revision: 0,
+      bindings: {
+        S: { continuity: { requirePersistent: true }, hard: { toolCapabilities: ["repo_access"] } },
+      },
+    });
+    const withHardCoherent: ResolverInput = {
+      ...input(
+        makeSnapshot({
+          // The ephemeral profile and the durable candidate both lack repo_access.
+          persistentCandidates: [pointAt("P", { runtimeFeatures: ["f"] })],
+        }),
+      ),
+      intentSource: { kind: "explicit", binding: refOf(hardDefinition) },
+      explicitDefinition: hardDefinition,
     };
-    const result = resolveBindingCore(withHard);
+    const result = resolveBindingCore(withHardCoherent);
     expect(result.status).toBe("unsatisfied");
     if (result.status !== "unsatisfied") return;
     expect(result.reasons).toEqual(["required_capability_unavailable"]);

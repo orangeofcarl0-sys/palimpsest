@@ -29,7 +29,7 @@ import type {
   SatisfiedBindingResolution,
   SubjectBinding,
 } from "./contract.js";
-import { BindingConfigurationError } from "./parser.js";
+import { BindingConfigurationError, validateSubjectCoverage } from "./parser.js";
 import { computeBindingResolutionDigest } from "./digest.js";
 
 /** The one deterministic spike policy. Implementation choice, not frozen universal policy. */
@@ -37,6 +37,28 @@ export const MINIMAL_RESOLVER_POLICY: ResolverPolicyRef = {
   id: "minimal.lexicographic",
   version: "1",
 };
+
+/**
+ * Frozen semantic reason priority (PLMP-BIND-1 §6 deterministic order).
+ * Cross-tier order is frozen semantics; within a tier the lexical order is a
+ * deterministic implementation choice. Centralized so the ordering exists in
+ * exactly one place (BC-02).
+ */
+const REASON_TIER: Record<BindingUnsatisfiedReason, 0 | 1 | 2> = {
+  pinned_target_unavailable: 0,
+  pinned_target_incompatible: 0,
+  required_capability_unavailable: 1,
+  no_matching_persistent_point: 2,
+};
+
+export function orderUnsatisfiedReasons(
+  reasons: readonly BindingUnsatisfiedReason[],
+): readonly BindingUnsatisfiedReason[] {
+  return [...new Set(reasons)].sort((a, b) => {
+    const tierDelta = REASON_TIER[a] - REASON_TIER[b];
+    return tierDelta !== 0 ? tierDelta : a < b ? -1 : a > b ? 1 : 0;
+  });
+}
 
 /** Spike adapter: per-subject hard requirements from Architecture/Work. NOT a frozen schema. */
 export interface SubjectRequirementFixture {
@@ -112,29 +134,89 @@ export function compileBindingIntentSource(
  */
 export function resolveBindingCore(input: ResolverInput): SemanticResolutionResult {
   const intentSource = input.intentSource;
+  // BC-03: intent source ↔ definition coherence, and BC-04: the spike supports
+  // exactly one resolver policy, so provenance must record that policy — never
+  // a caller-claimed one. All input-validation failures are
+  // BindingConfigurationError (invalid resolver input), never
+  // BindingUnsatisfiedReason (valid-but-unsatisfiable bindings).
+  let explicitDefinition: BindingDefinition | undefined;
   if (intentSource.kind === "explicit") {
     if (input.explicitDefinition === undefined) {
       throw new BindingConfigurationError(
         "explicit intent source requires the parsed explicit BindingDefinition",
       );
     }
-    // PF-02: explicit definitions are total over participating subjects.
-    for (const subject of input.participatingSubjects) {
-      if (input.explicitDefinition.bindings[subject] === undefined) {
-        throw new BindingConfigurationError(
-          `explicit BindingDefinition is not total: participating subject "${subject}" has no entry`,
-        );
-      }
+    explicitDefinition = input.explicitDefinition;
+    const claimed = intentSource.binding;
+    const actual = {
+      bindingDefinitionId: explicitDefinition.bindingDefinitionId,
+      revision: explicitDefinition.revision,
+      digest: explicitDefinition.digest,
+    };
+    if (
+      claimed.bindingDefinitionId !== actual.bindingDefinitionId ||
+      claimed.revision !== actual.revision ||
+      claimed.digest !== actual.digest
+    ) {
+      throw new BindingConfigurationError(
+        "explicit intent source does not identify the supplied BindingDefinition " +
+          `(claimed ${claimed.bindingDefinitionId}@${claimed.revision}/${claimed.digest}, ` +
+          `actual ${actual.bindingDefinitionId}@${actual.revision}/${actual.digest})`,
+      );
     }
+  } else if (input.explicitDefinition !== undefined) {
+    throw new BindingConfigurationError(
+      "implicit_ephemeral_default intent source cannot be combined with an explicit BindingDefinition",
+    );
   }
 
+  // BC-04: the spike implements exactly MINIMAL_RESOLVER_POLICY; a caller may
+  // omit the policy (recorded as the supported one) or assert it exactly.
+  const policy = input.resolverPolicy ?? MINIMAL_RESOLVER_POLICY;
+  if (
+    policy.id !== MINIMAL_RESOLVER_POLICY.id ||
+    policy.version !== MINIMAL_RESOLVER_POLICY.version
+  ) {
+    throw new BindingConfigurationError(
+      `unsupported resolver policy ${policy.id}@${policy.version}: the spike implements ` +
+        `${MINIMAL_RESOLVER_POLICY.id}@${MINIMAL_RESOLVER_POLICY.version} only`,
+    );
+  }
+
+  // PF-02: exact subject-set equality via the centralized validation. For the
+  // implicit ephemeral default every participating subject implicitly holds
+  // Case-E semantics; for an explicit source the parsed definition's bindings
+  // are the binding subjects. (BC-01: equality, not subset.)
+  validateSubjectCoverage(
+    input.participatingSubjects,
+    intentSource.kind === "explicit" && explicitDefinition !== undefined
+      ? explicitDefinition
+      : {
+          schemaVersion: 1,
+          bindingDefinitionId: "implicit_ephemeral_default",
+          revision: 0,
+          digest: "implicit_ephemeral_default",
+          bindings: Object.fromEntries(
+            [...input.participatingSubjects].sort().map((subject) => [
+              subject,
+              Object.freeze({ continuity: Object.freeze({}) }) as SubjectBinding,
+            ]),
+          ),
+        },
+  );
+
   const provenance: ResolutionProvenance = {
-    architecture: input.architecture,
-    work: input.work,
-    intentSource,
+    // BC-06: contract-boundary copies — the frozen resolution must not alias
+    // caller-mutable input objects (readonly is not runtime immutability).
+    architecture: { ...input.architecture },
+    work: { ...input.work },
+    intentSource:
+      intentSource.kind === "explicit"
+        ? { kind: "explicit", binding: { ...intentSource.binding } }
+        : { kind: "implicit_ephemeral_default", semanticVersion: 1 },
     runConfigurationDigest: input.runConfigurationDigest,
     snapshot: { ref: input.snapshot.ref },
-    ...(input.resolverPolicy === undefined ? {} : { resolverPolicy: input.resolverPolicy }),
+    resolverPolicy: { ...policy },
   };
 
   const subjects = [...input.participatingSubjects].sort();
@@ -143,7 +225,7 @@ export function resolveBindingCore(input: ResolverInput): SemanticResolutionResu
   let satisfied = true;
 
   for (const subject of subjects) {
-    const entry = bindingEntryFor(input, subject);
+    const entry = bindingEntryFor(input, subject, intentSource, explicitDefinition);
     const hard = mergedHardRequirements(input, subject, entry);
     const intent = entry?.continuity ?? {};
 
@@ -166,7 +248,9 @@ export function resolveBindingCore(input: ResolverInput): SemanticResolutionResu
     return {
       status: "unsatisfied",
       provenance,
-      reasons: Object.freeze([...reasons].sort()),
+      // BC-02: frozen semantic priority via the centralized ordering; dedup
+      // across subjects retained (diagnostic mapping is not frozen).
+      reasons: Object.freeze(orderUnsatisfiedReasons([...reasons])),
     };
   }
   return {
@@ -209,9 +293,11 @@ export function materializeResolutionResult(
 function bindingEntryFor(
   input: ResolverInput,
   subject: string,
+  intentSource: BindingIntentSource,
+  explicitDefinition: BindingDefinition | undefined,
 ): SubjectBinding | undefined {
-  if (input.intentSource.kind === "explicit") {
-    const entry = input.explicitDefinition?.bindings[subject];
+  if (intentSource.kind === "explicit") {
+    const entry = explicitDefinition?.bindings[subject];
     if (entry === undefined) {
       // PF-02: validated before resolution; kept fail-closed here too.
       throw new BindingConfigurationError(
@@ -278,23 +364,23 @@ function resolveContinuity(
     );
     if (pinned === undefined || !pinned.available) return "pinned_target_unavailable";
     if (!satisfies(pinned, hard)) return "pinned_target_incompatible";
-    return { kind: "persistent", point: pinned.point };
+    return Object.freeze({ kind: "persistent", point: pinned.point });
   }
   if (intent.requirePersistent === true) {
     if (candidates.length > 0) {
-      return { kind: "persistent", point: lexicographicCandidate(candidates) };
+      return Object.freeze({ kind: "persistent", point: lexicographicCandidate(candidates) });
     }
     // Reason order (frozen): capability failure dominates continuity absence.
     return ephemeralSatisfiable ? "no_matching_persistent_point" : null;
   }
   if (intent.preferPersistent === true) {
     if (candidates.length > 0) {
-      return { kind: "persistent", point: lexicographicCandidate(candidates) };
+      return Object.freeze({ kind: "persistent", point: lexicographicCandidate(candidates) });
     }
-    return ephemeralSatisfiable ? { kind: "ephemeral" } : null;
+    return ephemeralSatisfiable ? Object.freeze({ kind: "ephemeral" }) : null;
   }
   // Case E: ephemeral candidates only (PF-04) — never opportunistically durable.
-  return ephemeralSatisfiable ? { kind: "ephemeral" } : null;
+  return ephemeralSatisfiable ? Object.freeze({ kind: "ephemeral" }) : null;
 }
 
 function lexicographicCandidate(
