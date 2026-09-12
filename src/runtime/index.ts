@@ -5,6 +5,7 @@
  * effects surface (Ordarium); host carriers live behind injected ports.
  */
 
+export { callbackRuntimeCarrierPort } from "./carrier_port.js";
 export {
   RuntimeRealizationError,
   continuityTargetOf,
@@ -13,6 +14,14 @@ export {
   prepareRuntimeRealization,
   runtimeRealizationKey,
 } from "./identity.js";
+export { makeRuntimeRealizationService } from "./realize.js";
+export type {
+  RealizedActivation,
+  RuntimeRealizationDeps,
+  RuntimeRealizationOutcome,
+  RuntimeRealizationRequest,
+  RuntimeRealizationScope,
+} from "./realize.js";
 export type {
   Activation,
   ActivationId,
@@ -22,3 +31,10 @@ export type {
   RuntimeContinuityTarget,
   SessionRef,
 } from "./identity.js";
+export type {
+  CallbackRuntimeCarrierPortCallbacks,
+  RuntimeCarrierPort,
+  RuntimeCarrierRealizeRequest,
+  RuntimeCarrierRealizeResult,
+  RuntimeCarrierReleaseRequest,
+} from "./carrier_port.js";
