@@ -44,6 +44,11 @@ import type { ProjectIr } from "../src/schema/index.js";
 import { parseTaskSpec, projectIrDigestOf } from "../src/schema/index.js";
 import { materializeRunConfiguration } from "../src/run/index.js";
 import { RunConfigurationParseError } from "../src/run/index.js";
+import {
+  materializeObservationSnapshot,
+  observationRefOf,
+} from "../src/binding/index.js";
+import type { BindingObservationSnapshot } from "../src/binding/index.js";
 import { authorBindingDefinition } from "./binding_helpers.js";
 
 const COMPILER_SOURCE = readFileSync(
@@ -53,6 +58,13 @@ const COMPILER_SOURCE = readFileSync(
 
 /** Comment-free source: the static firewalls bind the code, not the prose that documents them. */
 const COMPILER_CODE = COMPILER_SOURCE.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
+const OBSERVATION = (snapshotId = "obs-1"): BindingObservationSnapshot =>
+  materializeObservationSnapshot({
+    snapshotId,
+    ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
+    persistentCandidates: [],
+  });
 
 const ARCHITECTURE = () =>
   materializeArchitectureDefinition({
@@ -66,11 +78,7 @@ function compileInput(overrides: Partial<BindingPlanCompileInput> = {}): Binding
     trustedArchitectureDefinition: ARCHITECTURE(),
     work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
     trustedRunConfiguration: materializeRunConfiguration(),
-    planningSnapshot: {
-      ref: "snap-1",
-      ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
-      persistentCandidates: [],
-    },
+    trustedObservationSnapshot: OBSERVATION(),
     resolutionId: "res-1",
     ...overrides,
   };
@@ -195,6 +203,13 @@ describe("C0-M08: arbitrary caller architecture seams are removed (C0 §34-§39/
     expect(() => compileBindingPlan(withoutArchitecture)).toThrow(
       /exactly one ArchitectureDefinition source/,
     );
+  });
+
+  it("C2-M10: the ad-hoc planningSnapshot/SnapshotRef escape is removed (C2 §48)", () => {
+    expect(COMPILER_CODE).not.toContain("planningSnapshot");
+    expect(COMPILER_CODE).not.toContain("BindingPlanningSnapshot");
+    expect(COMPILER_CODE).toMatch(/rawObservationSnapshot|trustedObservationSnapshot/);
+    expect(COMPILER_CODE).toMatch(/observationRefOf/);
   });
 
   it("C1-M10: the arbitrary public runConfigurationDigest input is removed (C1 §29)", () => {
@@ -333,11 +348,11 @@ describe("C0-M10/M11: explicit binding over real subjects with exact coverage (C
       compileInput({
         trustedArchitectureDefinition: architecture,
         trustedBindingDefinition: definition,
-        planningSnapshot: {
-          ref: "snap-1",
+        trustedObservationSnapshot: materializeObservationSnapshot({
+          snapshotId: "obs-pin",
           ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
           persistentCandidates: [{ point: "P-1", available: true }],
-        },
+        }),
       }),
     );
     if (result.status !== "planned") throw new Error(`expected planned, got ${result.status}`);
@@ -491,9 +506,23 @@ describe("configuration invalid ≠ binding unsatisfied (B4 §23)", () => {
         rawRunConfiguration: { schemaVersion: 1, digest: "tampered" },
       }),
     ).toThrow(RunConfigurationParseError);
+    const { trustedObservationSnapshot: _omittedObs, ...withoutObservation } = compileInput();
+    expect(() => compileBindingPlan(withoutObservation)).toThrow(
+      /exactly one BindingObservationSnapshot source/,
+    );
+    const { trustedObservationSnapshot: _raw_obs, ...rawOnlyObs } = compileInput();
     expect(() =>
-      compileBindingPlan(compileInput({ planningSnapshot: { ref: "", ephemeralCapabilities: {} } })),
-    ).toThrow(/planningSnapshot/);
+      compileBindingPlan({
+        ...rawOnlyObs,
+        rawObservationSnapshot: {
+          schemaVersion: 1,
+          snapshotId: "obs-1",
+          digest: "tampered",
+          ephemeralCapabilities: {},
+          persistentCandidates: [],
+        },
+      }),
+    ).toThrow(/digest mismatch/);
     expect(() => compileBindingPlan(compileInput({ resolutionId: "" }))).toThrow(/resolutionId/);
   });
 
@@ -547,29 +576,25 @@ describe("stale admission and rebinding (B4 §24/§44/§59)", () => {
       work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
       intentSource: { kind: "implicit_ephemeral_default", semanticVersion: 1 } as const,
       runConfigurationDigest: materializeRunConfiguration().digest,
-      snapshot: { ref: "snap-2" },
+      snapshot: { ref: observationRefOf(OBSERVATION("obs-2")) },
       resolverPolicy: MINIMAL_RESOLVER_POLICY,
     };
     const refused = compileBindingPlan(compileInput({ admissionBasis: advancedBasis }));
     expect(refused.status).toBe("stale");
     if (refused.status !== "stale") return;
-    expect(refused.resolution.provenance.snapshot.ref).toBe("snap-1");
+    expect(refused.resolution.provenance.snapshot.ref).toBe(observationRefOf(OBSERVATION()));
     expect("resolutionId" in refused.resolution).toBe(false);
     expect("plan" in refused).toBe(false);
 
     // Re-resolve against S2 → R2 → new plan state P2; P1 untouched.
     const second = compileBindingPlan(
       compileInput({
-        planningSnapshot: {
-          ref: "snap-2",
-          ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
-          persistentCandidates: [],
-        },
+        trustedObservationSnapshot: OBSERVATION("obs-2"),
       }),
     );
     if (second.status !== "planned") throw new Error(`expected planned, got ${second.status}`);
     expect(second.plan.bindingResolution.digest).not.toBe(planP1.bindingResolution.digest);
-    expect(second.resolution.provenance.snapshot.ref).toBe("snap-2");
+    expect(second.resolution.provenance.snapshot.ref).toBe(observationRefOf(OBSERVATION("obs-2")));
     expect(JSON.stringify(planP1)).toBe(serializedP1);
   });
 
@@ -579,11 +604,7 @@ describe("stale admission and rebinding (B4 §24/§44/§59)", () => {
     const before = JSON.stringify({ plan: first.plan, resolution: first.resolution });
     compileBindingPlan(
       compileInput({
-        planningSnapshot: {
-          ref: "snap-2",
-          ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
-          persistentCandidates: [],
-        },
+        trustedObservationSnapshot: OBSERVATION("obs-2"),
       }),
     );
     expect(JSON.stringify({ plan: first.plan, resolution: first.resolution })).toBe(before);

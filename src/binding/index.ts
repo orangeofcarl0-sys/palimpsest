@@ -47,9 +47,22 @@ export {
 export type {
   BindingPlanCompileInput,
   BindingPlanCompileResult,
-  BindingPlanningPoint,
-  BindingPlanningSnapshot,
   CompiledBindingPlan,
   SatisfiedSemanticResolution,
   SubjectCapabilityProfile,
 } from "./compiler.js";
+export {
+  OBSERVATION_SNAPSHOT_DIGEST_DOMAIN,
+  OBSERVATION_SNAPSHOT_REF_DOMAIN,
+  BindingObservationSnapshotParseError,
+  computeObservationSnapshotDigest,
+  materializeObservationSnapshot,
+  observationRefOf,
+  observationSnapshotDigestContent,
+  parseObservationSnapshot,
+} from "./observation.js";
+export type {
+  BindingObservationSnapshot,
+  CapabilityProfile,
+  ObservedContinuityCandidate,
+} from "./observation.js";
