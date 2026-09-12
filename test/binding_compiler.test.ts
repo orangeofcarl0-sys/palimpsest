@@ -42,6 +42,8 @@ import type { ArchitectureDefinition } from "../src/architecture/index.js";
 import { parseProjectProposal, proposalTaskSpecs, validateProjectProposal } from "../src/architecture/index.js";
 import type { ProjectIr } from "../src/schema/index.js";
 import { parseTaskSpec, projectIrDigestOf } from "../src/schema/index.js";
+import { materializeRunConfiguration } from "../src/run/index.js";
+import { RunConfigurationParseError } from "../src/run/index.js";
 import { authorBindingDefinition } from "./binding_helpers.js";
 
 const COMPILER_SOURCE = readFileSync(
@@ -63,7 +65,7 @@ function compileInput(overrides: Partial<BindingPlanCompileInput> = {}): Binding
   return {
     trustedArchitectureDefinition: ARCHITECTURE(),
     work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
-    runConfigurationDigest: "run-config-digest",
+    trustedRunConfiguration: materializeRunConfiguration(),
     planningSnapshot: {
       ref: "snap-1",
       ephemeralCapabilities: { runtimeFeatures: [], toolCapabilities: [] },
@@ -193,6 +195,11 @@ describe("C0-M08: arbitrary caller architecture seams are removed (C0 §34-§39/
     expect(() => compileBindingPlan(withoutArchitecture)).toThrow(
       /exactly one ArchitectureDefinition source/,
     );
+  });
+
+  it("C1-M10: the arbitrary public runConfigurationDigest input is removed (C1 §29)", () => {
+    expect(COMPILER_CODE).not.toMatch(/readonly runConfigurationDigest/);
+    expect(COMPILER_CODE).toMatch(/rawRunConfiguration|trustedRunConfiguration/);
   });
 
   it("raw + trusted architecture sources simultaneously is a configuration error (C0 §38)", () => {
@@ -423,7 +430,7 @@ describe("C0-M12: architecture freshness (C0 §46)", () => {
       architecture: architectureRefOf(architectureR2),
       work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
       intentSource: { kind: "implicit_ephemeral_default", semanticVersion: 1 } as const,
-      runConfigurationDigest: "run-config-digest",
+      runConfigurationDigest: materializeRunConfiguration().digest,
       snapshot: { ref: "snap-1" },
       resolverPolicy: MINIMAL_RESOLVER_POLICY,
     };
@@ -473,9 +480,17 @@ describe("§52: Work-ID collision adversarial test", () => {
 
 describe("configuration invalid ≠ binding unsatisfied (B4 §23)", () => {
   it("missing or malformed non-architecture provenance inputs are configuration errors", () => {
-    expect(() => compileBindingPlan(compileInput({ runConfigurationDigest: "" }))).toThrow(
-      /RunConfiguration/,
+    const { trustedRunConfiguration: _omitted, ...withoutRunConfig } = compileInput();
+    expect(() => compileBindingPlan(withoutRunConfig)).toThrow(
+      /exactly one RunConfiguration source/,
     );
+    const { trustedRunConfiguration: _raw_case, ...rawOnlyConfig } = compileInput();
+    expect(() =>
+      compileBindingPlan({
+        ...rawOnlyConfig,
+        rawRunConfiguration: { schemaVersion: 1, digest: "tampered" },
+      }),
+    ).toThrow(RunConfigurationParseError);
     expect(() =>
       compileBindingPlan(compileInput({ planningSnapshot: { ref: "", ephemeralCapabilities: {} } })),
     ).toThrow(/planningSnapshot/);
@@ -531,7 +546,7 @@ describe("stale admission and rebinding (B4 §24/§44/§59)", () => {
       architecture: architectureRefOf(ARCHITECTURE()),
       work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
       intentSource: { kind: "implicit_ephemeral_default", semanticVersion: 1 } as const,
-      runConfigurationDigest: "run-config-digest",
+      runConfigurationDigest: materializeRunConfiguration().digest,
       snapshot: { ref: "snap-2" },
       resolverPolicy: MINIMAL_RESOLVER_POLICY,
     };

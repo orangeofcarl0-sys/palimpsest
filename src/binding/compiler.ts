@@ -46,6 +46,9 @@ import type {
   UnsatisfiedBindingResolution,
 } from "./contract.js";
 import { parseBindingDefinition, BindingConfigurationError } from "./parser.js";
+import { architectureRefOf, workRefOf } from "./refs.js";
+import type { RunConfiguration } from "../run/index.js";
+import { parseRunConfiguration } from "../run/index.js";
 import {
   MINIMAL_RESOLVER_POLICY,
   compileBindingIntentSource,
@@ -121,8 +124,20 @@ export interface BindingPlanCompileInput {
   readonly rawBindingDefinition?: unknown;
   /** Trusted already-parsed BindingDefinition (kernel-produced). Mutually exclusive with `rawBindingDefinition`. */
   readonly trustedBindingDefinition?: BindingDefinition;
-  /** Caller-supplied deterministic RunConfiguration digest. No production source exists yet (B4 §5; C0 §63 leaves it deferred). */
-  readonly runConfigurationDigest: string;
+  /**
+   * Untrusted raw RunConfiguration — parsed at this trust boundary via
+   * `parseRunConfiguration` (C1 §29). The digest in provenance is DERIVED
+   * from the artifact, never a caller-invented string. Mutually exclusive
+   * with `trustedRunConfiguration`.
+   */
+  readonly rawRunConfiguration?: unknown;
+  /**
+   * Trusted RunConfiguration — already produced by the run-configuration
+   * parser/materializer. Trusted API boundary, not an unforgeable capability.
+   * Mutually exclusive with `rawRunConfiguration`; exactly one source is
+   * required (C1 §29).
+   */
+  readonly trustedRunConfiguration?: RunConfiguration;
   readonly planningSnapshot: BindingPlanningSnapshot;
   readonly resolverPolicy?: ResolverPolicyRef;
   /** Artifact-layer allocation input (PF-03 / B4 §38): supplied by the caller, deterministic, never generated here. */
@@ -145,34 +160,10 @@ export type BindingPlanCompileResult =
   | { readonly status: "binding_unsatisfied"; readonly result: UnsatisfiedBindingResolution }
   | { readonly status: "stale"; readonly resolution: SatisfiedSemanticResolution };
 
-/**
- * The sanctioned Work-lineage mapping (B4 §10): the current production
- * representative of the UAS Work dimension is the ProjectIr revision chain.
- * Extracts identity/revision/digest only — never Work content, never task
- * fields, and nothing that could be mistaken for Architecture identity.
- */
-export function workRefOf(project: ProjectIr): DefinitionRevisionRef {
-  return Object.freeze({
-    definitionId: project.project_id,
-    revision: project.revision,
-    digest: project.digest,
-  });
-}
+// `workRefOf` / `architectureRefOf` live in ./refs.ts (single home for the
+// artifact→ref adapters; re-exported below for the established public surface).
+export { architectureRefOf, workRefOf } from "./refs.js";
 
-/**
- * Architecture ref adapter (C0 §31): the Binding provenance ref derived from
- * an actual ArchitectureDefinition artifact — grounded in the artifact's own
- * identity/revision/content digest, not in a caller-invented ref.
- */
-export function architectureRefOf(
-  architecture: ArchitectureDefinition,
-): DefinitionRevisionRef {
-  return Object.freeze({
-    definitionId: architecture.architectureDefinitionId,
-    revision: architecture.revision,
-    digest: architecture.digest,
-  });
-}
 
 /**
  * Architecture subject derivation (C0 §32): C0's Binding-addressable
@@ -301,14 +292,29 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
   }
   const architectureRef = architectureRefOf(architecture);
   const subjects = architectureSubjectRefsOf(architecture);
+  // C1 §29: the RunConfiguration digest is DERIVED from the artifact — the
+  // arbitrary caller-supplied digest string is gone. RunConfiguration parse
+  // errors stay distinct from binding outcomes.
   if (
-    typeof input.runConfigurationDigest !== "string" ||
-    input.runConfigurationDigest.length === 0
+    input.rawRunConfiguration !== undefined &&
+    input.trustedRunConfiguration !== undefined
   ) {
     throw new BindingConfigurationError(
-      "runConfigurationDigest: required (no production RunConfiguration exists yet — a caller-supplied deterministic digest is the only grounded source)",
+      "supply either rawRunConfiguration (parsed at this boundary) or trustedRunConfiguration, not both",
     );
   }
+  let runConfiguration: RunConfiguration;
+  if (input.rawRunConfiguration !== undefined) {
+    runConfiguration = parseRunConfiguration(input.rawRunConfiguration);
+  } else if (input.trustedRunConfiguration !== undefined) {
+    runConfiguration = input.trustedRunConfiguration;
+  } else {
+    throw new BindingConfigurationError(
+      "runConfiguration: exactly one RunConfiguration source is required " +
+        "(rawRunConfiguration or trustedRunConfiguration) — the provenance digest is derived from the artifact, never invented by the caller",
+    );
+  }
+  const runConfigurationDigest = runConfiguration.digest;
   const snapshot = toKernelSnapshot(input.planningSnapshot);
   if (typeof input.resolutionId !== "string" || input.resolutionId.length === 0) {
     throw new BindingConfigurationError(
@@ -348,7 +354,7 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
     workHard: toKernelHard(input.workHard),
     intentSource: compileBindingIntentSource(explicitDefinition),
     ...(explicitDefinition === undefined ? {} : { explicitDefinition }),
-    runConfigurationDigest: input.runConfigurationDigest,
+    runConfigurationDigest,
     snapshot,
     ...(input.resolverPolicy === undefined ? {} : { resolverPolicy: input.resolverPolicy }),
   });
@@ -376,7 +382,7 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
     architecture: architectureRef,
     work,
     intentSource: compileBindingIntentSource(explicitDefinition),
-    runConfigurationDigest: input.runConfigurationDigest,
+    runConfigurationDigest,
     snapshot: { ref: snapshot.ref },
     resolverPolicy: input.resolverPolicy ?? MINIMAL_RESOLVER_POLICY,
   };
