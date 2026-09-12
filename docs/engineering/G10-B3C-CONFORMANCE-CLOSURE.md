@@ -65,11 +65,14 @@ multi-subject case was re-specified so both subjects actually fail.)
 - Focused binding suite (`parser`, `digest`, `resolver`, `freshness`,
   `conformance`): **83 passed** (56 pre-existing proofs preserved + 27 new B3C
   proofs; earlier B3-M01…M14 all intact — §74).
-- Full `pnpm test`, `pnpm build`, `pnpm build:web`, `pnpm test:e2e` — recorded in
-  `G10-B3-DELIVERY.md` closure section (docs-only counts unchanged for the
-  contract; test count grew with the B3C group).
-- Remote CI on PR #15 after the closure commit: recorded below; final
-  unit/e2e green required before merge (§65).
+- Full `pnpm test`: **65 files / 516 tests passed** (433 canonical baseline +
+  56 spike + 27 B3C); `pnpm build` + `pnpm build:web` pass.
+- `pnpm test:e2e` (`retries = 0`): **21 passed** on the closure commit —
+  no flake re-run needed this time; prior runs on this branch recorded the
+  documented debugger-flake sequence honestly.
+- Remote CI on PR #15 after the closure commit `f48a1b3`: run `34695614333` —
+  **unit PASS, e2e PASS**. Final remote green achieved; merge may proceed
+  through normal workflow (§76).
 
 ## Verdict
 

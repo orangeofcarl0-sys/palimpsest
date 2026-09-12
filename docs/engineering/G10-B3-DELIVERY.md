@@ -179,3 +179,14 @@ Final gates after closure: focused binding suite 83 passed (56 prior proofs
 preserved + 27 new B3C proofs); full `pnpm test` 65 files / 489+ tests green;
 build/build:web pass; e2e recorded with the documented debugger-flake sequence;
 remote CI on PR #15 recorded below — final unit/e2e green required before merge.
+
+### Final closure gates (after B3C commit f48a1b3)
+
+- Focused binding suite: 83 passed (56 spike + 27 B3C proofs).
+- Full `pnpm test`: 65 files / **516 tests passed**.
+- `pnpm build`, `pnpm build:web` — pass.
+- `pnpm test:e2e` — **21 passed** (no flake re-run needed on the closure commit).
+- Remote CI on PR #15 at `f48a1b3`: run `34695614333` — **unit PASS, e2e PASS**.
+- Final verdict: **B3 CONTRACT-CONFORMANCE CLOSURE: PASS** →
+  **BINDING IMPLEMENTATION SPIKE: PASS** (frozen contract executable AND kernel
+  conformant). Recommended next stage: G10-B4 after PR #15 merges.
