@@ -117,8 +117,14 @@ preserved in this history.
   `E2E-DEBUG-01` (1 failed, the known runtime-debugger nondeterminism;
   `E2E-RUNTIME-03` passed on this run). Handled by a failed-job rerun only;
   no test, UI, or runtime code touched (B4 changes no UI/runtime code).
-- Subsequent runs on this branch are recorded below as they complete; the
-  final HEAD's own workflow must be green (B4 §77 — no ancestor-cited green).
+  Rerun: **success** (unit PASS + e2e PASS).
+- HEAD `d30a51a` (CI-history record): run **34702884010** — **first-run
+  green** (unit PASS + e2e PASS, no rerun needed).
+- Every pushed HEAD of this branch therefore has its own green workflow (or a
+  documented failed-job rerun), satisfying B4 §77 (final-head green, no
+  ancestor-cited green). The workflow on the branch tip at PR-close time is
+  cited in the PR description, which is the authoritative final-HEAD record
+  (an in-repo record always lags its own commit by one).
 
 ## Verdict
 
