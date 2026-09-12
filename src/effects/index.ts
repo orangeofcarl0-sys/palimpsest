@@ -17,6 +17,12 @@ export {
   type PromoteInput,
   type WorktreeCreateInput,
 } from "./actions.js";
+export {
+  defineRuntimeCarrierEffects,
+  type RuntimeCarrierEffects,
+  type RuntimeCarrierRealizeInput,
+  type RuntimeCarrierReleaseInput,
+} from "./runtime_actions.js";
 export { FakeGitPort, GitCliPort, type GitPort } from "./git_port.js";
 export { isTransientOperationError, isLedgerBusyError } from "./errors.js";
 export {
