@@ -55,7 +55,8 @@ Merged normally at stage close.
 
 ## Remote CI history
 
-- (recorded on the branch; see PR description for the final-HEAD run.)
+- Implementation HEAD (branch push): run **34709852877** on PR #20 —
+  **first-run green** (unit PASS + e2e PASS, no rerun needed).
 
 ## Verdict
 
