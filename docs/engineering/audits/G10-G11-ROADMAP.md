@@ -143,3 +143,8 @@ G10-A→B 强依赖（Channel/Context/State 需要 Agent/Task 分离后的定义
 ## 明确非目标
 
 见宪章 §21；另：本轮（rebase 轮）之后、G10-A 开工前**不**预写任何 G10 schema 代码；G9-G 之前不开 G10（E2E 网先行的顺序已由审计 §F 确认）。
+
+## 追加登记（2026-09-12，G10-A1/A2 + G10-B0）
+
+- **PLMP-UAS-1 已 canonically published**：语义栈 #8（G10-A0 证据落地 rebase）→ #10（G10-A1 语义统合）→ #11（G10-A2 形式冻结评审，`FREEZE REVIEW: PASS`）按序合并，canonical `main` = `b18b08b`。现任语义架构＝`docs/engineering/UNIVERSAL-AGENT-SEMANTICS-ARCHITECTURE-v1.md`（PLMP-UAS-1，FROZEN）；UAS-0/AGT-0/PAG-0 仍为不可变历史记录。原 G10-A0（实体/身份/绑定审计）已由上述三轮完成并收编进 UAS-1。
+- **G10-B0（Binding 语义与 PersistentPoint 实现设计）已交付（DRAFT，未实现）**：`docs/engineering/G10-B0-BINDING-SEMANTICS-DESIGN.md`。这是 PLMP-UAS-1 之后的**设计阶段**，裁定 `BindingDefinition = DeclarativeBindingIntent`、Intent/Resolution/Runtime-Attachment 分层、派生且 freshness-bound 的 BindingResolution、解析不创建持久点等边界。本登记不改变上表冻结的 G10-B（Channel/Context/State，PLMP-UAS-2）..G10-F 顺序；G10-B0 编号与路线图 G10-B 无冲突（B0 为 B 轨前的接缝设计）。推荐下一阶段＝G10-B1（Binding schema/接口候选设计），尚未开工。

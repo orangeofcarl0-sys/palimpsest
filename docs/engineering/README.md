@@ -51,6 +51,11 @@
 | `G10-A2-UAS1-FREEZE-REVIEW.md` | **G10-A2 形式冻结评审**：17 条候选不变量逐条裁决（FREEZE / FREEZE WITH NARROWING / SPLIT / DEMOTED）、阻塞账本 FR-01..FR-10 全部 CLOSED（Binding 非维度、`≠?[OPEN]` 语法移除、证据标签收紧、混合强度拆分）、15 项 OPEN 问题全部裁定为 non-blocking、极小性/未来兼容/向后兼容/正典所有权/身份存活测试，终局裁决 **FREEZE REVIEW: PASS** |
 | `G10-A2-UAS1-FREEZE-REDLINE.md` | **候选 → 冻结 redline**：逐节 UNCHANGED / NARROWED / RELABELLED / SPLIT / DEMOTED / REMOVED / OPEN-FROZEN 映射与理由；评审内对候选与 G10-A1 备忘录的窄修正记录；证据标签方案归属 audit provenance 而非规范正文 |
 | `G10-A2-DELIVERY.md` | **G10-A2 交付报告**：30 问回答、stacked 拓扑、门禁与远程状态、合并顺序（#8 → #10 → G10-A2） |
+| `G10-B0-CANONICAL-PUBLICATION.md` | **G10-B0 Stage 0 出版记录**：语义栈 #8 (`b31bbd0`) → #10 (`a3f759a`) → #11 (`b18b08b`) 按序合并；canonical gate（UAS-0/AGT-0/PAG-0 未动、本地 60/433 + e2e 21、远程 unit+e2e success）；**PLMP-UAS-1 已 canonically published** |
+| `G10-B0-BINDING-SEMANTICS-DESIGN.md` | **G10-B0 Binding 语义与 PersistentPoint 实现设计（DRAFT，POST-UAS-1，未实现，无生产 schema 承诺）**：`BindingDefinition = DeclarativeBindingIntent`（关联什么、强制约束 vs 偏好、对**持久**连续性身份的显式 pin；不是运行时状态、不是 provider/session 袋、不是 agent 工厂）；Intent → Resolution → Runtime Attachment 三阶段（前两个为候选概念，第三个是 DSH 既有运行时状态）；解析为派生且 freshness-bound 的独立工件（可失败：`BindingUnsatisfied`；不创建持久点、不改写定义）；provider/model/tool/workspace 的 logical need ≠ concrete provider 放置；Activation/Attempt、PeerRef、authority、organization、commitment、collaboration 六道防火墙；Model A/B/C 比较后推荐混合 Model C；候选不变量 `BIND-CAND-01..11`（未冻结）；reproducibility vs adaptivity（同一 BindingDefinition 不必同一 SessionId） |
+| `G10-B0-BINDING-IDENTITY-MATRIX.md` | **G10-B0 身份/基数矩阵**：逐关系 FROZEN / PROPOSED / OPEN / NOT A BINDING RELATION 裁决（含 Invocation/Participation、authority、organization、commitment、PeerRef 的"非绑定关系"防火墙行） |
+| `G10-B0-CURRENT-BINDING-INVENTORY.md` | **G10-B0 现状盘点**：canonical `main` 上 16 处与 Binding 相关的实现面（definition lineage、capability gate、runtime advisory model、结构化 DSH 契约、host-path workspace、调度器纯度等）；确认 `main` 无任何 Binding 概念，seam 为 greenfield |
+| `G10-B0-DELIVERY.md` | **G10-B0 交付报告**：30 问回答、canonical 出版记录、门禁与远程状态、推荐下一阶段（A：G10-B1 Binding schema/接口候选设计） |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
