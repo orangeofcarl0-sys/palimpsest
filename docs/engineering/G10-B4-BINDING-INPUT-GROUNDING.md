@@ -200,3 +200,18 @@ frozen provenance inputs**:
 Forcing COMPLETE would require inventing provenance (§2 forbids). BLOCKED does
 not apply: the frozen semantics represent every needed input; the missing
 facts are upstream production gaps, not contract contradictions.
+
+## 8. Post-G10-C0 status (added additively by G10-C0; §62/§93)
+
+```text
+Architecture DefinitionRevisionRef     GROUNDED BY ArchitectureDefinition artifact
+ArchitectureSubjectRefs                GROUNDED BY AgentDefinition membership
+RunConfiguration digest                still MISSING (not production-grounded)
+resolution snapshot                    still MISSING (not production-grounded)
+```
+
+The compiler seam now derives architecture provenance and subjects from an
+actual ArchitectureDefinition artifact (raw/trusted) — the arbitrary
+caller-supplied architecture ref and subject list were removed. Binding live
+integration remains PARTIAL, but for fewer reasons. The original §7 verdict
+above is B4's historical record and is not rewritten.
