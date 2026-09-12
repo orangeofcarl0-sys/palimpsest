@@ -355,14 +355,21 @@ describe("D2-M03/M12: structural firewalls", () => {
   });
 });
 
-describe("D2-M09/M10/M11: compatibility (no-diff + suites)", () => {
-  it("install, Work planning, and scheduler are untouched by D2 (source audits)", async () => {
+describe("D2-M09/M10/M11: compatibility (suites)", () => {
+  it("install, Work planning, and scheduler remain compatible (behavioral proof in D5 §93; suites green)", async () => {
+    // D2 added no install wiring; D5 later added the OPTIONAL runtime options
+    // additively (behavioral backward compatibility is machine-proven by the
+    // D5 §93 test: no runtime options → no runtime surface, unchanged tools).
     const { readFileSync: read } = await import("node:fs");
     const installSource = read(
       fileURLToPath(new URL("../src/install.ts", import.meta.url)),
       "utf-8",
     );
-    // D2 adds no install wiring (D5 does, additively); no port appears here yet.
-    expect(installSource).not.toMatch(/runtimeCarrierPort|RuntimeCarrierPort/);
+    expect(installSource).toMatch(/runtimeCarrierPort\?:/);
+    const schedulerSource = read(
+      fileURLToPath(new URL("../src/scheduler/scheduler.ts", import.meta.url)),
+      "utf-8",
+    );
+    expect(schedulerSource).not.toMatch(/RuntimeCarrier|runtimeCarrier|observeBindingState/);
   });
 });
