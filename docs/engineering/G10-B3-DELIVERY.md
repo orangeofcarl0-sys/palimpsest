@@ -14,6 +14,13 @@ Branch `experiment/g10-b3-minimal-binding-resolver-spike`, from canonical `main`
    failed-job re-runs only).
 2. **Final canonical `main` SHA?** `7643c77`
    (`7643c771cf83ac076a4defefa617ff13e5b3e531`).
+
+   > Terminology clarification (added additively by G10-B4, docs hygiene only;
+   > the original answer above is preserved as written at B3 delivery time):
+   > `7643c77` is the **PLMP-BIND-1 publication baseline** — the `main` SHA at
+   > the moment the frozen contract was published. The **post-G10-B3 canonical
+   > `main`** — after PR #15 (spike + B3C + B3C2 closure) merged normally — is
+   > `8ac32ed48f024962ce77cd68903f2950756b7a8f`.
 3. **Is PLMP-BIND-1 canonical?** Yes — `BINDING-SEMANTIC-CONTRACT-v1.md`
    (PLMP-BIND-1 · FROZEN) is on `main`; PLMP-UAS-1/PLMP-UAS-0/AGT-0/PAG-0 are
    untouched.
