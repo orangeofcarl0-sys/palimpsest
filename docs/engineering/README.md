@@ -64,6 +64,10 @@
 | `G10-B2-BINDING-SCHEMA-FORMAL-REVIEW.md` | **G10-B2 Binding schema 形式评审**：十项强制阻塞 BR-01..BR-10 全部 CLOSED（legacy provenance 判别源、Stale≠Unsatisfied、status 判别式、subject 单一真相、连续性规范化、Architecture/Work 纳入 admissible set、preferences 移除、多主体 run delta 缩减、rebinding 不可变 plan、revision 作用域）+ FR-A..FR-F 收缩发现、字段处置表、规则逐条裁决、freeze proofs（§99–§106），终局裁决 **BINDING SCHEMA REVIEW: PASS** |
 | `G10-B2-BINDING-CANDIDATE-REDLINE.md` | **B1 候选 → PLMP-BIND-1 redline**：逐类型/字段 UNCHANGED / NARROWED / NORMALIZED / MOVED OWNER / DEFERRED / REMOVED / NEW 映射与理由；BIND-CAND-01..17 与 B1-01..10 逐条处置；收缩摘要（冻结面小于候选） |
 | `G10-B2-DELIVERY.md` | **G10-B2 交付报告**：30 问回答、stacked 拓扑、freeze proofs、门禁与远程状态、推荐下一阶段（A：G10-B3 最小编译/解析 spike） |
+| `G10-B3-CANONICAL-PUBLICATION.md` | **G10-B3 Stage 0 出版记录**：Stage 0A 充分性预检（PF-01..PF-04：显式 Case E 可表达、显式定义主体全覆盖、resolutionId=材质化层分配≠digest、durable 严格 opt-in）+ Stage 0B 语义栈 #12 (`8eab085`) → #13 (`01a51cb`) → #14 (`7643c77`) 按序合并；canonical gate（本地 60/433 + e2e 21、远程 unit+e2e success）；**PLMP-BIND-1 已 canonically published** |
+| `G10-B3-MINIMAL-BINDING-SPIKE.md` | **G10-B3 最小 Binding 编译/解析 spike（IMPLEMENTATION VALIDATION，PASS）**：`src/binding/` 六模块内核——frozen core types、严格 parser（unknown-field/continuity/semantic-set/digest fail-closed）、canonicalization+SHA-256 domain-separated digest（B3 实现选择非契约修正）、pure deterministic resolver（Architecture+Work+Binding hard 合并、四态连续性语义、pin/require/prefer/Case E、lexicographic spike policy）、materialization（caller-supplied resolutionId≠digest）、freshness（Satisfied≠Unsatisfied 与 Current≠Stale 正交）；B3-M01..M14 机器证明表、purity/import/identity/authority 审计全净、无 storage/runtime wiring |
+| `G10-B3-CONTRACT-COVERAGE.md` | **G10-B3 契约覆盖矩阵**：BIND1-INV-01..14 与 PLMP-BIND-1 §10 parser 义务逐条 → 代码面 → 机器测试 → 状态（implemented+tested / structural / deferred）；spike fixture 非冻结 schema 声明 |
+| `G10-B3-DELIVERY.md` | **G10-B3 交付报告**：30 问回答、无契约不足发现、verdict **BINDING IMPLEMENTATION SPIKE: PASS**、推荐下一阶段（A：G10-B4 Binding compiler/ExecutionPlan integration） |
 
 面向用户与开发者的现行文档：仓库根 `README.md` → `docs/user-guide.md` → `docs/architecture.md` → `docs/sdk-guide.md` → `docs/api-reference.md`。
 
