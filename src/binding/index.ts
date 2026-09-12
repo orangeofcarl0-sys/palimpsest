@@ -44,6 +44,16 @@ export {
   compileBindingPlan,
   workRefOf,
 } from "./compiler.js";
+export {
+  compileGroundedBindingPlan,
+  evaluateGroundedPlanFreshness,
+  evaluateGroundedResolutionFreshness,
+} from "./grounded.js";
+export type {
+  GroundedBindingPlanInput,
+  GroundedBindingPlanResult,
+  GroundedPlanningState,
+} from "./grounded.js";
 export type {
   BindingPlanCompileInput,
   BindingPlanCompileResult,

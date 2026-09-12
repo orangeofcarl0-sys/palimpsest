@@ -42,8 +42,11 @@ import type { ArchitectureDefinition } from "../src/architecture/index.js";
 import { parseProjectProposal, proposalTaskSpecs, validateProjectProposal } from "../src/architecture/index.js";
 import type { ProjectIr } from "../src/schema/index.js";
 import { parseTaskSpec, projectIrDigestOf } from "../src/schema/index.js";
-import { materializeRunConfiguration } from "../src/run/index.js";
-import { RunConfigurationParseError } from "../src/run/index.js";
+import {
+  materializeRunConfiguration,
+  runDefinitionDigestOf,
+  RunConfigurationParseError,
+} from "../src/run/index.js";
 import {
   materializeObservationSnapshot,
   observationRefOf,
@@ -554,13 +557,30 @@ describe("single truth: the plan stores the resolution ref only (B4 §19/§20/§
   it("plan shape is exactly {work, bindingResolution{resolutionId, digest}} — no full-resolution copy", () => {
     const result = compileBindingPlan(compileInput());
     if (result.status !== "planned") throw new Error(`expected planned, got ${result.status}`);
-    expect(Object.keys(result.plan).sort()).toEqual(["bindingResolution", "work"]);
+    expect(Object.keys(result.plan).sort()).toEqual(["bindingResolution", "runDefinition"]);
     expect(Object.keys(result.plan.bindingResolution).sort()).toEqual(["digest", "resolutionId"]);
+    expect(Object.keys(result.plan.runDefinition).sort()).toEqual(["digest"]);
     const serialized = JSON.stringify(result.plan);
-    for (const forbidden of ["provenance", "continuity", "intentSource", "schemaVersion", "reasons"]) {
+    for (const forbidden of [
+      "provenance",
+      "continuity",
+      "intentSource",
+      "schemaVersion",
+      "reasons",
+      "definitionId",
+    ]) {
       expect(serialized).not.toContain(forbidden);
     }
-    expect(result.plan.work).toEqual({ definitionId: "proj-test", revision: 3, digest: "work-digest" });
+    // The RunDefinition ref digest covers the exact compile inputs (work ref
+    // inside it — Work staleness detectable without duplicating Work identity).
+    expect(result.plan.runDefinition).toEqual({
+      digest: runDefinitionDigestOf({
+        architecture: architectureRefOf(ARCHITECTURE()),
+        work: { definitionId: "proj-test", revision: 3, digest: "work-digest" },
+        bindingIntentSource: { kind: "implicit_ephemeral_default", semanticVersion: 1 },
+        runConfigurationDigest: materializeRunConfiguration().digest,
+      }),
+    });
   });
 });
 
@@ -618,14 +638,22 @@ describe("immutability and aliasing (B4 §60)", () => {
     if (result.status !== "planned") throw new Error(`expected planned, got ${result.status}`);
     expect(Object.isFrozen(result)).toBe(true);
     expect(Object.isFrozen(result.plan)).toBe(true);
-    expect(Object.isFrozen(result.plan.work)).toBe(true);
+    expect(Object.isFrozen(result.plan.runDefinition)).toBe(true);
     expect(Object.isFrozen(result.plan.bindingResolution)).toBe(true);
     expect(() => {
-      (result.plan as { work: unknown }).work = null;
+      (result.plan as { runDefinition: unknown }).runDefinition = null;
     }).toThrow(TypeError);
-    // Caller-side mutation of the supplied ref must not reach the plan.
+    // Caller-side mutation of the supplied work ref must not reach the plan
+    // (the RunDefinition digest was derived at compile time).
     work.revision = 99;
-    expect(result.plan.work.revision).toBe(2);
+    expect(result.plan.runDefinition.digest).toBe(
+      runDefinitionDigestOf({
+        architecture: architectureRefOf(ARCHITECTURE()),
+        work: { definitionId: "proj-alias", revision: 2, digest: "work-digest" },
+        bindingIntentSource: { kind: "implicit_ephemeral_default", semanticVersion: 1 },
+        runConfigurationDigest: materializeRunConfiguration().digest,
+      }),
+    );
   });
 });
 

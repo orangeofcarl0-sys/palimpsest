@@ -54,6 +54,8 @@ import type { BindingObservationSnapshot } from "./observation.js";
 import { architectureRefOf, workRefOf } from "./refs.js";
 import type { RunConfiguration } from "../run/index.js";
 import { parseRunConfiguration } from "../run/index.js";
+import { runDefinitionDigestOf } from "../run/definition.js";
+import type { RunDefinitionRef } from "../run/definition.js";
 import {
   MINIMAL_RESOLVER_POLICY,
   compileBindingIntentSource,
@@ -73,8 +75,13 @@ import { evaluateFreshness } from "./freshness.js";
  * resolution copy, not persisted, no runtime attachment, no authority.
  */
 export interface CompiledBindingPlan {
-  /** Authoritative Work lineage ref (identity + revision + digest). */
-  readonly work: DefinitionRevisionRef;
+  /**
+   * Ref to the authoritative RunDefinition composite (C3 §63/§64): digest
+   * only — no durable id invented. The Work ref is INSIDE the RunDefinition
+   * digest content, so Work staleness is detectable through this ref without
+   * the plan duplicating Work identity.
+   */
+  readonly runDefinition: RunDefinitionRef;
   /** The one binding truth the plan may carry: resolutionId + digest only. */
   readonly bindingResolution: BindingResolutionRef;
 }
@@ -411,10 +418,18 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
   return Object.freeze({
     status: "planned",
     resolution,
-    // Ref-only join (B4 §19/§20/§56): the plan stores resolutionId + digest,
-    // never a full resolution copy; deep-frozen, no caller-input aliasing.
+    // Ref-only join (B4 §19/§20, upgraded by C3 §63/§65): the plan stores the
+    // RunDefinition digest + the resolution id/digest — never a full
+    // resolution or RunDefinition copy; deep-frozen, no caller-input aliasing.
     plan: Object.freeze({
-      work: Object.freeze({ ...work }),
+      runDefinition: Object.freeze({
+        digest: runDefinitionDigestOf({
+          architecture: architectureRef,
+          work,
+          bindingIntentSource: compileBindingIntentSource(explicitDefinition),
+          runConfigurationDigest,
+        }),
+      }),
       bindingResolution: Object.freeze({
         resolutionId: input.resolutionId,
         digest: resolution.digest,
