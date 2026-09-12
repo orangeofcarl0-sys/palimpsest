@@ -138,6 +138,9 @@ preserved in this history.
   Rerun: **success** (unit PASS + e2e PASS).
 - HEAD `d30a51a` (CI-history record): run **34702884010** — **first-run
   green** (unit PASS + e2e PASS, no rerun needed).
+- G10-C0 Stage 0 amendment HEAD `6769570` (wording-only): run **34703783070** —
+  unit PASS, e2e FAIL (`E2E-DEBUG-01`, 20/21, the known runtime-debugger
+  nondeterminism). Handled by a failed-job rerun only; outcome recorded below.
 - Every pushed HEAD of this branch therefore has its own green workflow (or a
   documented failed-job rerun), satisfying B4 §77 (final-head green, no
   ancestor-cited green). The workflow on the branch tip at PR-close time is
