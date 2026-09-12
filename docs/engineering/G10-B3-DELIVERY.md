@@ -219,5 +219,7 @@ final outcome **unit PASS + e2e PASS** on the exact final HEAD.
 Final docs-only HEAD `f466a86` (delivery/coverage records): run
 `34698698628` — **unit PASS, e2e PASS** first-run (no re-run needed).
 Absolute-final PR HEAD `6b11ae0` (this record): run `34698903335` — **unit
-PASS, e2e PASS** first-run. Every pushed HEAD from `7cf71d4` onward has its own
-green workflow.
+PASS, e2e PASS** first-run. Merge-time branch HEAD `cdfd065` (final record
+closure): run `34699121367` — **unit PASS, e2e PASS** first-run. Every pushed
+HEAD from `7cf71d4` onward has its own green workflow; no ancestor-commit green
+was cited for any merge.
