@@ -37,6 +37,10 @@ release, then a direct read of the actual Ordarium ledger
 source is **`plan-revision:17`** — and **no** operation in the flow cites
 `plan-revision:0`. Handle immutability: deep-frozen (§13).
 
+Remote CI: implementation-HEAD run **34719450326** on PR #26 — **first-run
+green** (unit PASS + e2e PASS). The tip-at-close run is cited in the PR
+description.
+
 ## 2. D-MOD-01 — module dependency cycle (§14)
 
 The cycle `runtime/realize → effects/runtime_actions → runtime/realize` is
