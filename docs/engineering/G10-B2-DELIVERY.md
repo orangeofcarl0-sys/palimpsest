@@ -152,3 +152,14 @@ scoping; digest order-independence. All hold against the frozen contract
 **A — G10-B3 minimal compiler/resolver spike** within the §129 boundary
 (in-memory fixture catalog, pure resolver, no storage/DSH/PersistentPoint
 persistence). Not started.
+
+## Addendum — implementation-adequacy preflight (G10-B3 Stage 0A, 2026-09-12)
+
+Four implementation-level consistency points were closed as narrow
+clarifications before canonical publication (PF-01..PF-04, recorded in the frozen
+contract §5A and the review addendum): explicit Case E representable and
+digest-distinct; explicit definitions total over participating subjects
+(missing subject = pre-resolution configuration failure); resolution identity
+allocated by the materialization layer (`resolutionId ≠ digest`, no random
+policy); durable continuity strictly opt-in (Case E never opportunistically
+durable). Freeze gates re-run; verdict remains PASS.

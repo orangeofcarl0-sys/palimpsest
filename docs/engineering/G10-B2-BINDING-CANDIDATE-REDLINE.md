@@ -61,3 +61,13 @@ binding delta deferred), 3 selection families deferred
 provenance-correctness closures). No UAS-1 statement was amended; all firewalls
 survive; the legacy ephemeral path and the four continuity states are frozen
 with no redundant encodings.
+
+## Addendum — implementation-adequacy closures (G10-B3 Stage 0A)
+
+Four narrow clarifications recorded on the frozen contract before publication
+(BINDING-SEMANTIC-CONTRACT-v1.md §5A; PF-01..PF-04): explicit Case E preserved as
+a meaningful canonical value; explicit definitions total over participating
+subjects; resolution identity allocated by the materialization layer (never the
+digest, never random); durable continuity strictly opt-in. Classifications:
+`NORMALIZED` (canonicalization rule), `NARROWED` (subject-coverage validation,
+identity allocation), all within already-approved semantics.

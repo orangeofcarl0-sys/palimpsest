@@ -117,7 +117,8 @@ interface BindingHardRequirements {
   readonly toolCapabilities?: readonly ToolCapabilityRef[];   // semantic set
 }
 
-interface SubjectBinding {   // at least one of continuity/hard must be present
+interface SubjectBinding {   // at least one of continuity/hard must be present;
+                             // a present `continuity: {}` is MEANINGFUL (explicit Case E)
   readonly continuity?: ContinuityBindingIntent;
   readonly hard?: BindingHardRequirements;
 }
@@ -222,6 +223,41 @@ canonical form contains only the strongest necessary declaration):
 { pin: P }                     exact durable locus P required (implies requirement)
 ```
 
+## 5A. Implementation-adequacy closures (G10-B3 preflight, 2026-09-12)
+
+Narrow clarifications of already-approved semantics, recorded before canonical
+publication so a resolver implementation needs no semantic invention. They amend
+nothing else in this contract.
+
+**PF-01 — explicit Case E is representable.** A present `continuity: {}` is a
+**meaningful canonical value** (explicit Case E), not a meaningless empty
+structure: canonicalization normalizes a present-but-empty `hard` object to
+absent, but **preserves** a present `continuity: {}`. A subject with only
+`continuity: {}` is valid. The digest therefore distinguishes *subject present
+with explicit Case E* from *subject absent*; generic "empty object removal" must
+not collapse them.
+
+**PF-02 — explicit definitions are total over participating subjects.**
+`ExplicitBindingDefinition ⇒ BindingSubjects = ParticipatingArchitectureSubjects`:
+when the intent source is explicit, every participating architecture subject must
+have exactly one entry; a missing subject is a **configuration-validation failure
+before resolution** (fail-fast, not a resolver reason). A subject may select
+Case E explicitly (`continuity: {}`) — total coverage does not force any durable
+requirement. Legacy no-binding keeps the whole-run implicit ephemeral default;
+mixed explicit/implicit per-subject provenance is not admitted.
+
+**PF-03 — artifact identity is allocation, not resolution.** The pure resolver
+determines selections, provenance, digest, and satisfiability deterministically;
+`resolutionId` is allocated by the artifact/materialization layer from a
+caller-supplied opaque id. `resolutionId` is never the digest (artifact identity
+and content/freshness identity remain distinct), and no random/UUID policy is
+frozen. Only satisfied results receive an id.
+
+**PF-04 — durable continuity is opt-in.** Case E resolves against **ephemeral
+candidates only**; a subject never becomes durable merely because a point is
+available. Durable continuity requires explicit `preferPersistent`,
+`requirePersistent`, or `pin` intent.
+
 ## 6. Unsatisfied semantics and reason order
 
 `UnsatisfiedBindingResolution` is a **planning condition**: no admissible
@@ -275,10 +311,12 @@ resolver reason.
   timestamps, and volatile telemetry.
 - **Canonicalization:** subject maps are key-sorted by canonical serialized
   subject ref; requirement arrays are semantic **sets** (parser rejects
-  duplicates; canonical form sorted); absent preferred over present-but-empty
-  (canonicalized to absent); presence flags are `true`-only. Equivalent semantic
-  documents cannot hash differently. No serialization format is frozen beyond
-  these rules.
+  duplicates; canonical form sorted); a present-but-empty `hard` object
+  canonicalizes to absent, while a present `continuity: {}` is **preserved** as
+  the meaningful canonical Case E (PF-01); presence flags are `true`-only.
+  Equivalent semantic documents cannot hash differently, and explicit Case E
+  remains digest-distinct from subject absence. No serialization format is
+  frozen beyond these rules.
 
 ## 9. Determinism
 
@@ -298,7 +336,9 @@ reject duplicate serialized subject keys
 reject duplicate requirement entries
 require ≥1 subject entry in an explicit BindingDefinition
 require ≥1 of continuity/hard per subject entry
-canonicalize empty optional structures to absent
+preserve a present `continuity: {}` as canonical Case E (PF-01);
+  normalize a present-but-empty `hard` object to absent
+validate explicit subject coverage before resolution (PF-02)
 validate digest after canonicalization
 validate configuration narrowing before resolution
 ```

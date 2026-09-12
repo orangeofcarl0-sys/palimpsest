@@ -157,3 +157,32 @@ BINDING SCHEMA REVIEW: PASS
 Frozen artifact: `docs/engineering/BINDING-SEMANTIC-CONTRACT-v1.md`
 (**PLMP-BIND-1 · FROZEN**) — a subordinate contract under PLMP-UAS-1 (not
 UAS-2). Canonical adoption follows the stack merge (#12 → #13 → B2).
+
+## 7. Implementation-adequacy preflight addendum (G10-B3 Stage 0A, 2026-09-12)
+
+Before canonical publication, the frozen contract was reviewed as if implementing
+it (G10-B3 Stage 0A). Four implementation-level consistency points were found and
+closed as **narrow clarifications of already-approved semantics** — no new
+semantic decision was required, so the PASS verdict stands:
+
+- **PF-01**: a present `continuity: {}` is a meaningful canonical value (explicit
+  Case E); present-but-empty `hard` normalizes to absent; the digest distinguishes
+  subject-present-with-Case-E from subject-absent. (The original "empty optional
+  structures canonicalize to absent" wording would have made explicit Case E with
+  no hard requirements unrepresentable.)
+- **PF-02**: explicit BindingDefinitions are **total** over participating
+  subjects — `ExplicitBindingDefinition ⇒ BindingSubjects =
+  ParticipatingArchitectureSubjects`; a missing subject is a
+  configuration-validation failure before resolution. Case E may be selected
+  explicitly per subject; mixed per-subject explicit/implicit provenance is not
+  admitted.
+- **PF-03**: artifact identity (`resolutionId`) is allocation by the
+  materialization layer from a caller-supplied opaque id; the pure resolver
+  determines selections/provenance/digest/satisfiability deterministically;
+  `resolutionId ≠ digest`; no random/UUID policy is frozen.
+- **PF-04**: durable continuity is opt-in — Case E resolves against ephemeral
+  candidates only; a subject never becomes durable merely because a point is
+  available.
+
+These are recorded in `BINDING-SEMANTIC-CONTRACT-v1.md` §5A with matching §3/§8/§10
+clarifications. Freeze gates re-run after the corrections (see delivery).
