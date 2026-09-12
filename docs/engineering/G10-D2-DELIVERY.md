@@ -47,8 +47,8 @@ normally). Merged normally at stage close.
    scheduler, state, tools, binding kernel, run package, frozen contracts.
 9. **Gates?** Full unit **73 files / 635 tests** (post-D1 baseline 72/626);
    builds pass; `git diff --check` clean; local e2e 21/21 (after one
-   documented flake run); remote CI on the actual final HEAD recorded
-   below / in the PR description.
+   documented flake run); remote CI: implementation-HEAD run **34713249700**
+   **first-run green**. The tip-at-close run is cited in the PR description.
 
 ## Verdict
 
