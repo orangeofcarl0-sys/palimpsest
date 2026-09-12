@@ -65,8 +65,10 @@ canonical-main CI run `34706984010` success). Merged normally at stage close.
 
 ## Remote CI history
 
-- (finalized on the branch once this PR's workflows complete; the
-  tip-at-close workflow is cited in the PR description.)
+- Implementation HEAD `ea6b4e0` (branch push): run **34708046251** on PR #18 —
+  **first-run green** (unit PASS + e2e PASS, no rerun needed).
+- The tip-at-close workflow is cited in the PR description (an in-repo record
+  always lags its own commit by one).
 
 ## Verdict
 
