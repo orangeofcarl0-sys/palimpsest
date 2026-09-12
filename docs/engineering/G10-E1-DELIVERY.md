@@ -30,8 +30,9 @@ canonical run 34719676518 success). Merged normally at stage close.
    `test/participation.test.ts`, 4 docs. Untouched: scheduler, executors,
    state, runtime, binding, run, frozen contracts.
 6. **Gates?** Full unit **78 files / 670 tests** (post-E0 baseline 77/659);
-   builds pass; `git diff --check` clean; local e2e 21/21; remote CI on the
-   actual final HEAD recorded below / in the PR description.
+   builds pass; `git diff --check` clean; local e2e 21/21; remote CI:
+   implementation-HEAD run **34720447084** on PR #27 — **first-run green**.
+   The tip-at-close run is cited in the PR description.
 
 ## Verdict
 
