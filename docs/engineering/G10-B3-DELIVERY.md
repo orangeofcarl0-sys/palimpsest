@@ -217,5 +217,7 @@ e2e FAIL (`E2E-DEBUG-01`, 20/21 — task-1 remained hidden). **Final-head record
 final outcome **unit PASS + e2e PASS** on the exact final HEAD.
 
 Final docs-only HEAD `f466a86` (delivery/coverage records): run
-`34698698628` — **unit PASS, e2e PASS** first-run (no re-run needed). The
-merge SHA below corresponds to a HEAD whose workflow was green.
+`34698698628` — **unit PASS, e2e PASS** first-run (no re-run needed).
+Absolute-final PR HEAD `6b11ae0` (this record): run `34698903335` — **unit
+PASS, e2e PASS** first-run. Every pushed HEAD from `7cf71d4` onward has its own
+green workflow.
