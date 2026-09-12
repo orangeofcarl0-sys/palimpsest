@@ -15,6 +15,16 @@ export {
   runtimeRealizationKey,
 } from "./identity.js";
 export { ContinuityUnavailableError, makeRuntimeRealizationService } from "./realize.js";
+export { observeBindingState, observeAndCompileGroundedPlan } from "./observation.js";
+export type {
+  LiveCompileOutcome,
+  LiveCompileRequest,
+  ObservationDeps,
+  ObservationKnowledge,
+  ObservationOutcome,
+  PersistentPointObservation,
+  RuntimeObservationPort,
+} from "./observation.js";
 export type {
   RealizedActivation,
   RuntimeRealizationDeps,
