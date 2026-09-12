@@ -3,15 +3,17 @@
  * path: BindingSelection = ephemeral → Activation → RuntimeCarrier, with no
  * PersistentPoint anywhere (§37/§48 hard invariant).
  *
- * Flow (§47):
+ * Flow (§47/§64):
  *   1. freshness check against the caller-supplied CURRENT grounded state
  *      (G10-C `evaluateGroundedPlanFreshness` — no second algorithm); a stale
  *      plan is refused, never realized;
  *   2. semantic preparation via the D1 kernel (coherence + per-subject
  *      targets, activation ids from the allocator seam);
- *   3. carrier realization THROUGH the Ordarium action (`effects.invoke`) —
+ *   3. persistent targets: verify the selected point EXISTS in the canonical
+ *      continuity store before any effect (fail closed, §64/§65);
+ *   4. carrier realization THROUGH the Ordarium action (`effects.invoke`) —
  *      the port is never called directly by this service (§42);
- *   4. only after a successful effect: materialize Activation +
+ *   5. only after a successful effect: materialize Activation +
  *      RuntimeAttachment (host identities verbatim; session only when the
  *      host supplied one).
  *
@@ -32,6 +34,8 @@
  */
 
 import { ActionDeniedError } from "@ordarium/core";
+import type { PersistentPointStore } from "../continuity/index.js";
+import { durableContinuityRefOf } from "../continuity/index.js";
 
 import type { PalimpsestEffectsRuntime } from "../effects/index.js";
 import { defineRuntimeCarrierEffects } from "../effects/runtime_actions.js";
@@ -58,8 +62,21 @@ export type AgentDefinitionSubject = string;
 
 export interface RuntimeRealizationDeps {
   readonly effects: PalimpsestEffectsRuntime;
-  /** Effect-layer allocator seam (§21): stable UUIDs allowed here; tests inject deterministic allocators. */
-  readonly allocateActivationId: (subject: AgentDefinitionSubject) => ActivationId;
+  /**
+   * Effect-layer allocator seam (§21): stable UUIDs allowed here; tests
+   * inject deterministic allocators. The `context` distinguishes a RETRY of
+   * the same activation (same context ⇒ same ids ⇒ Ordarium idempotent dedupe)
+   * from a genuinely NEW activation such as post-release carrier replacement
+   * (new context ⇒ new ids ⇒ a fresh operation, §67).
+   */
+  readonly allocateActivationId: (subject: AgentDefinitionSubject, context: string) => ActivationId;
+  /**
+   * The canonical continuity store (D3 §64). REQUIRED for realizing
+   * persistent selections — a persistent target without a store is a
+   * configuration error at assembly, and a selected-but-unregistered point
+   * fails closed at realization (never auto-created, §59/§65).
+   */
+  readonly pointStore?: PersistentPointStore;
 }
 
 export interface RuntimeRealizationRequest {
@@ -69,6 +86,12 @@ export interface RuntimeRealizationRequest {
   readonly plan: CompiledBindingPlan;
   /** The CURRENT grounded state — the freshness basis checked immediately before preparation (§47/§84). */
   readonly current: GroundedPlanningState;
+  /**
+   * Realization context (§67): retries of the same prepared activation reuse
+   * one context (same ids, Ordarium-deduped); carrier replacement after
+   * release is a NEW context (new activation, new carrier, same point).
+   */
+  readonly activationContext?: string;
 }
 
 export interface RealizedActivation {
@@ -78,10 +101,14 @@ export interface RealizedActivation {
 
 export type RuntimeRealizationOutcome =
   | { readonly status: "realized"; readonly realizations: readonly RealizedActivation[] }
-  | { readonly status: "refused"; readonly reason: "plan_stale" | "persistent_selection"; readonly detail: string }
+  | { readonly status: "refused"; readonly reason: "plan_stale"; readonly detail: string }
   | {
       readonly status: "failed";
-      readonly reason: "runtime_realization_failed" | "effect_denied";
+      readonly reason:
+        | "runtime_realization_failed"
+        | "effect_denied"
+        | "persistent_point_missing"
+        | "continuity_unavailable";
       readonly subject: AgentDefinitionSubject;
       readonly detail: string;
     };
@@ -95,20 +122,29 @@ export interface RuntimeRealizationScope {
  * Realize the ephemeral subjects of a grounded planned result through
  * Ordarium. All-or-nothing per subject; independent across subjects.
  */
+/** Thrown by host ports when a continuity locus became unavailable before the effect (§66). */
+export class ContinuityUnavailableError extends Error {
+  constructor(readonly point: string, message?: string) {
+    super(message ?? `continuity locus "${point}" is unavailable for realization`);
+    this.name = "ContinuityUnavailableError";
+  }
+}
+
 /**
- * The production service factory: binds the carrier port's Ordarium actions
- * once (ports are fixed at assembly, §49/§92) and returns the realization
- * and release operations. The port is reachable ONLY inside the action
- * `execute` (§42).
+ * The production service factory (D3 §64 extends D2): binds the carrier
+ * port's Ordarium actions once (ports are fixed at assembly, §49/§92) and
+ * returns the realization and release operations. The port is reachable ONLY
+ * inside the action `execute` (§42). With a `pointStore`, persistent
+ * selections realize against verified existing points — fail closed on
+ * missing points (never auto-created, never downgraded to ephemeral, §65)
+ * and on loci that became unavailable after resolution (§66).
  */
-export function makeRuntimeRealizationService(deps: {
-  readonly effects: PalimpsestEffectsRuntime;
-  readonly allocateActivationId: (subject: AgentDefinitionSubject) => ActivationId;
+export function makeRuntimeRealizationService(deps: RuntimeRealizationDeps & {
   readonly port: import("./carrier_port.js").RuntimeCarrierPort;
 }) {
   const actions = defineRuntimeCarrierEffects(deps.port);
 
-  async function realizeEphemeral(
+  async function realize(
     request: RuntimeRealizationRequest,
     scope: RuntimeRealizationScope = {},
   ): Promise<RuntimeRealizationOutcome> {
@@ -121,9 +157,10 @@ export function makeRuntimeRealizationService(deps: {
       }) as RuntimeRealizationOutcome;
     }
 
+    const context = request.activationContext ?? "";
     const activationIds: Record<string, ActivationId> = {};
     for (const agent of request.architecture.agentDefinitions) {
-      activationIds[agent.agentDefinitionId] = deps.allocateActivationId(agent.agentDefinitionId);
+      activationIds[agent.agentDefinitionId] = deps.allocateActivationId(agent.agentDefinitionId, context);
     }
     let prepared: readonly PreparedRuntimeRealization[];
     try {
@@ -140,18 +177,32 @@ export function makeRuntimeRealizationService(deps: {
       throw error;
     }
 
-    const persistent = prepared.find((entry) => entry.continuityTarget.kind === "persistent");
-    if (persistent !== undefined) {
-      return Object.freeze({
-        status: "refused",
-        reason: "persistent_selection",
-        detail: `subject "${persistent.agentDefinitionId}" selected persistent continuity — persistent realization requires the continuity store (G10-D3)`,
-      }) as RuntimeRealizationOutcome;
-    }
-
     const realizations: RealizedActivation[] = [];
     const intentRevision = request.runDefinition.work.revision;
     for (const entry of prepared) {
+      // D3 §64: a persistent target must reference an EXISTING canonical
+      // point — verified before the effect. Fail closed: no auto-create
+      // (§59), no other point, no ephemeral downgrade (§65).
+      if (entry.continuityTarget.kind === "persistent") {
+        if (deps.pointStore === undefined) {
+          return Object.freeze({
+            status: "failed",
+            reason: "persistent_point_missing",
+            subject: entry.agentDefinitionId,
+            detail:
+              "persistent realization requires the canonical continuity store, which was not provided at assembly",
+          }) as RuntimeRealizationOutcome;
+        }
+        const point = await deps.pointStore.get(entry.continuityTarget.point);
+        if (point === undefined) {
+          return Object.freeze({
+            status: "failed",
+            reason: "persistent_point_missing",
+            subject: entry.agentDefinitionId,
+            detail: `BindingResolution selected point "${entry.continuityTarget.point}" but the canonical continuity store does not contain it — re-observe and re-resolve (never auto-created)`,
+          }) as RuntimeRealizationOutcome;
+        }
+      }
       try {
         const result = await deps.effects.invoke(
           actions.runtimeCarrierRealize,
@@ -172,6 +223,18 @@ export function makeRuntimeRealizationService(deps: {
             revision: intentRevision,
           },
         );
+        // §66: a not-realized typed result means the locus became unavailable
+        // before the effect — fail closed, never downgrade to ephemeral.
+        if (!result.realized || result.runtimeAdapter === null || result.agentId === null) {
+          return Object.freeze({
+            status: "failed",
+            reason: "continuity_unavailable",
+            subject: entry.agentDefinitionId,
+            detail:
+              result.reason ??
+              `continuity locus unavailable for subject "${entry.agentDefinitionId}"`,
+          }) as RuntimeRealizationOutcome;
+        }
         const activation = materializeActivation({
           activationId: entry.activationId,
           agentDefinitionId: entry.agentDefinitionId,
@@ -186,10 +249,9 @@ export function makeRuntimeRealizationService(deps: {
         });
         realizations.push(Object.freeze({ activation, attachment }));
       } catch (error) {
-        // §105: effect denial (Ordarium ActionDeniedError) is distinct from a
-        // failed realization (port/host failure, including Ordarium-wrapped
-        // OperationFailedError). Neither is a Binding unsatisfied or an
-        // Attempt failure.
+        // §105/§107: effect denial (Ordarium ActionDeniedError) and ordinary
+        // realization failures stay distinct. Neither is a Binding
+        // unsatisfied or an Attempt failure.
         const denied = error instanceof ActionDeniedError;
         return Object.freeze({
           status: "failed",
@@ -233,5 +295,5 @@ export function makeRuntimeRealizationService(deps: {
     }
   }
 
-  return { realizeEphemeral, releaseCarrier };
+  return { realize, releaseCarrier };
 }

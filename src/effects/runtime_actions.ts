@@ -27,6 +27,7 @@ import type {
   RuntimeCarrierRealizeRequest,
   RuntimeCarrierReleaseRequest,
 } from "../runtime/carrier_port.js";
+import { ContinuityUnavailableError } from "../runtime/realize.js";
 
 interface JsonRecord {
   [key: string]: JsonValue;
@@ -131,24 +132,36 @@ export function defineRuntimeCarrierEffects(port: RuntimeCarrierPort) {
       },
     },
     output: {
+      // §66: typed outcomes must survive the Ordarium JSON boundary — a locus
+      // that became unavailable is a RESULT (realized:false), never a thrown
+      // class that would be wrapped into an opaque operation failure.
       jsonSchema: objectSchema(
         {
-          runtimeAdapter: { type: "string" },
-          agentId: { type: "string" },
+          realized: { type: "boolean" },
+          runtimeAdapter: { type: ["string", "null"] },
+          agentId: { type: ["string", "null"] },
           sessionId: { type: ["string", "null"] },
+          reason: { type: ["string", "null"] },
         },
-        ["runtimeAdapter", "agentId", "sessionId"],
+        ["realized", "runtimeAdapter", "agentId", "sessionId", "reason"],
       ) as Record<string, JsonValue>,
       parse: (input) => {
-        const fields = stringFields(input, ["runtimeAdapter", "agentId"]);
-        const sessionId = (input as Record<string, unknown>).sessionId;
-        if (typeof sessionId !== "string" && sessionId !== null) {
-          throw new TypeError("sessionId must be a string or null");
+        if (typeof input !== "object" || input === null) {
+          throw new TypeError("output must be an object");
         }
-        return { ...fields, sessionId } as unknown as {
-          runtimeAdapter: string;
-          agentId: string;
+        const record = input as Record<string, unknown>;
+        if (typeof record.realized !== "boolean") throw new TypeError("realized must be a boolean");
+        for (const key of ["runtimeAdapter", "agentId", "sessionId", "reason"] as const) {
+          if (typeof record[key] !== "string" && record[key] !== null) {
+            throw new TypeError(`${key} must be a string or null`);
+          }
+        }
+        return input as unknown as {
+          realized: boolean;
+          runtimeAdapter: string | null;
+          agentId: string | null;
           sessionId: string | null;
+          reason: string | null;
         };
       },
     },
@@ -166,12 +179,30 @@ export function defineRuntimeCarrierEffects(port: RuntimeCarrierPort) {
             ? { kind: "persistent", point: input.continuityPoint as string }
             : { kind: "ephemeral" },
       };
-      const result = await port.realize(request);
-      return {
-        runtimeAdapter: result.runtimeAgent.runtimeAdapter,
-        agentId: result.runtimeAgent.agentId,
-        sessionId: result.session === undefined ? null : result.session.sessionId,
-      };
+      try {
+        const result = await port.realize(request);
+        return {
+          realized: true,
+          runtimeAdapter: result.runtimeAgent.runtimeAdapter,
+          agentId: result.runtimeAgent.agentId,
+          sessionId: result.session === undefined ? null : result.session.sessionId,
+          reason: null,
+        };
+      } catch (error) {
+        // §66: a locus that became unavailable before the effect is a typed
+        // RESULT — no silent fallback, and the distinction survives the
+        // Ordarium boundary (arbitrary thrown classes would be wrapped).
+        if (error instanceof ContinuityUnavailableError) {
+          return {
+            realized: false,
+            runtimeAdapter: null,
+            agentId: null,
+            sessionId: null,
+            reason: "continuity_unavailable",
+          };
+        }
+        throw error;
+      }
     },
   });
 

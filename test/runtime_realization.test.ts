@@ -113,7 +113,7 @@ function currentState(overrides: Partial<{ workRevision: number; snapshotId: str
 }
 
 interface Harness {
-  realize: ReturnType<typeof makeRuntimeRealizationService>["realizeEphemeral"];
+  realize: ReturnType<typeof makeRuntimeRealizationService>["realize"];
   release: ReturnType<typeof makeRuntimeRealizationService>["releaseCarrier"];
   portCalls: { realize: string[]; release: string[] };
   setRealizeBehavior(behavior: (request: RuntimeCarrierRealizeRequest) => Promise<RuntimeCarrierRealizeResult>): void;
@@ -148,7 +148,7 @@ function makeHarness(): Harness {
   const allocated = new Map<string, string>();
   const service = makeRuntimeRealizationService({
     effects,
-    allocateActivationId: (subject) => {
+    allocateActivationId: (subject: string, _context: string) => {
       const existing = allocated.get(subject);
       if (existing !== undefined) return existing;
       const id = `act-${subject}-${allocated.size + 1}`;
@@ -158,7 +158,7 @@ function makeHarness(): Harness {
     port,
   });
   return {
-    realize: service.realizeEphemeral,
+    realize: service.realize,
     release: service.releaseCarrier,
     portCalls,
     setRealizeBehavior(next) {
@@ -258,7 +258,7 @@ describe("D2-M05: failed effect → no successful Activation artifact", () => {
   });
 });
 
-describe("refusals: stale plan and persistent selection never realize (§47/§37)", () => {
+describe("refusals: stale plan never realizes; persistent never downgraded (§47/§64/§65)", () => {
   it("a stale current state is refused before any effect", async () => {
     const harness = makeHarness();
     const grounded = planned();
@@ -275,7 +275,7 @@ describe("refusals: stale plan and persistent selection never realize (§47/§37
     expect(harness.portCalls.realize).toHaveLength(0);
   });
 
-  it("a persistent selection is refused in D2 — never downgraded to ephemeral", async () => {
+  it("a persistent selection without a continuity store fails closed — never downgraded to ephemeral (D3 §65)", async () => {
     const harness = makeHarness();
     const definition = authorBindingDefinition({
       bindingDefinitionId: "b-d2-pin",
@@ -312,9 +312,9 @@ describe("refusals: stale plan and persistent selection never realize (§47/§37
         }),
       },
     });
-    expect(outcome.status).toBe("refused");
-    if (outcome.status !== "refused") return;
-    expect(outcome.reason).toBe("persistent_selection");
+    expect(outcome.status).toBe("failed");
+    if (outcome.status !== "failed") return;
+    expect(outcome.reason).toBe("persistent_point_missing");
     expect(harness.portCalls.realize).toHaveLength(0);
   });
 });
