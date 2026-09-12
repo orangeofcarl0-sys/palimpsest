@@ -36,6 +36,7 @@
 import { ActionDeniedError } from "@ordarium/core";
 import type { PersistentPointStore } from "../continuity/index.js";
 import { durableContinuityRefOf } from "../continuity/index.js";
+import { ContinuityUnavailableError } from "./errors.js";
 
 import type { PalimpsestEffectsRuntime } from "../effects/index.js";
 import { defineRuntimeCarrierEffects } from "../effects/runtime_actions.js";
@@ -47,14 +48,18 @@ import { evaluateGroundedPlanFreshness } from "../binding/index.js";
 import type { RunDefinition } from "../run/index.js";
 import type {
   Activation,
+  ActivationContextId,
   ActivationId,
   PreparedRuntimeRealization,
   RuntimeAttachment,
+  RuntimeReleaseHandle,
 } from "./identity.js";
 import {
   materializeActivation,
   materializeRuntimeAttachment,
+  materializeRuntimeReleaseHandle,
   prepareRuntimeRealization,
+  requireActivationContextId,
 } from "./identity.js";
 
 export type AgentDefinitionSubject = string;
@@ -87,16 +92,19 @@ export interface RuntimeRealizationRequest {
   /** The CURRENT grounded state — the freshness basis checked immediately before preparation (§47/§84). */
   readonly current: GroundedPlanningState;
   /**
-   * Realization context (§67): retries of the same prepared activation reuse
-   * one context (same ids, Ordarium-deduped); carrier replacement after
-   * release is a NEW context (new activation, new carrier, same point).
+   * Explicit activation context (G10-E0 D-API-01): the same context id is a
+   * retry of the same activation (Ordarium-deduped); a new context id is a
+   * genuinely new activation / carrier replacement. REQUIRED — never
+   * defaulted — so retry-vs-replacement cannot be confused by omission.
    */
-  readonly activationContext?: string;
+  readonly activationContext: ActivationContextId;
 }
 
 export interface RealizedActivation {
   readonly activation: Activation;
   readonly attachment: RuntimeAttachment;
+  /** Release authority artifact — the ONLY sanctioned argument for release (D-AUTH-01). */
+  readonly release: RuntimeReleaseHandle;
 }
 
 export type RuntimeRealizationOutcome =
@@ -122,14 +130,6 @@ export interface RuntimeRealizationScope {
  * Realize the ephemeral subjects of a grounded planned result through
  * Ordarium. All-or-nothing per subject; independent across subjects.
  */
-/** Thrown by host ports when a continuity locus became unavailable before the effect (§66). */
-export class ContinuityUnavailableError extends Error {
-  constructor(readonly point: string, message?: string) {
-    super(message ?? `continuity locus "${point}" is unavailable for realization`);
-    this.name = "ContinuityUnavailableError";
-  }
-}
-
 /**
  * The production service factory (D3 §64 extends D2): binds the carrier
  * port's Ordarium actions once (ports are fixed at assembly, §49/§92) and
@@ -157,7 +157,9 @@ export function makeRuntimeRealizationService(deps: RuntimeRealizationDeps & {
       }) as RuntimeRealizationOutcome;
     }
 
-    const context = request.activationContext ?? "";
+    // G10-E0 D-API-01: the context is REQUIRED and grammar-validated — retry
+    // vs replacement is explicit at the public boundary.
+    const context = requireActivationContextId(request.activationContext);
     const activationIds: Record<string, ActivationId> = {};
     for (const agent of request.architecture.agentDefinitions) {
       activationIds[agent.agentDefinitionId] = deps.allocateActivationId(agent.agentDefinitionId, context);
@@ -247,7 +249,17 @@ export function makeRuntimeRealizationService(deps: RuntimeRealizationDeps & {
           ...(result.sessionId === null ? {} : { session: { runtimeAdapter: result.runtimeAdapter, sessionId: result.sessionId } }),
           continuityTarget: entry.continuityTarget,
         });
-        realizations.push(Object.freeze({ activation, attachment }));
+        // D-AUTH-01: the release handle is generated HERE (only after effect
+        // success) with the authorized Work revision DERIVED from the realized
+        // RunDefinition — never caller-supplied.
+        const release = materializeRuntimeReleaseHandle({
+          realizationKey: entry.realizationKey,
+          activationId: entry.activationId,
+          runtimeAgent: attachment.runtimeAgent,
+          workRevision: request.runDefinition.work.revision,
+          runDefinition: entry.runDefinition,
+        });
+        realizations.push(Object.freeze({ activation, attachment, release }));
       } catch (error) {
         // §105/§107: effect denial (Ordarium ActionDeniedError) and ordinary
         // realization failures stay distinct. Neither is a Binding
@@ -264,24 +276,27 @@ export function makeRuntimeRealizationService(deps: RuntimeRealizationDeps & {
     return Object.freeze({ status: "realized", realizations: Object.freeze(realizations) }) as RuntimeRealizationOutcome;
   }
 
-  async function releaseCarrier(request: {
-    readonly realizationKey: string;
-    readonly activationId: ActivationId;
-    readonly runtimeAgent: { runtimeAdapter: string; agentId: string };
-  }, scope: RuntimeRealizationScope = {}): Promise<{ status: "released" } | { status: "failed"; reason: "runtime_realization_failed" | "effect_denied"; detail: string }> {
+  /**
+   * Release via the handle (G10-E0 D-AUTH-01 §11): the ONLY release API. The
+   * Ordarium intent revision is DERIVED from `handle.authorizedWorkRevision` —
+   * no caller-written authorization revision exists.
+   */
+  async function releaseCarrier(handle: RuntimeReleaseHandle, scope: RuntimeRealizationScope = {}): Promise<{ status: "released" } | { status: "failed"; reason: "runtime_realization_failed" | "effect_denied"; detail: string }> {
     try {
       await deps.effects.invoke(
         actions.runtimeCarrierRelease,
         {
-          realizationKey: request.realizationKey,
-          activationId: request.activationId,
-          runtimeAdapter: request.runtimeAgent.runtimeAdapter,
-          agentId: request.runtimeAgent.agentId,
+          realizationKey: handle.realizationKey,
+          activationId: handle.activationId,
+          runtimeAdapter: handle.runtimeAgent.runtimeAdapter,
+          agentId: handle.runtimeAgent.agentId,
         },
         {
           scope: scope.scope ?? "runtime-realization",
-          callId: `release:${request.realizationKey}`,
-          revision: 0,
+          callId: `release:${handle.realizationKey}`,
+          // D-AUTH-01 §12: the authorization evidence names the Work revision
+          // that authorized the realization — never a fabricated revision.
+          revision: handle.authorizedWorkRevision,
         },
       );
       return { status: "released" };

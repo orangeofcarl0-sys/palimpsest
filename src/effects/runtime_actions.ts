@@ -27,7 +27,7 @@ import type {
   RuntimeCarrierRealizeRequest,
   RuntimeCarrierReleaseRequest,
 } from "../runtime/carrier_port.js";
-import { ContinuityUnavailableError } from "../runtime/realize.js";
+import { ContinuityUnavailableError } from "../runtime/errors.js";
 
 interface JsonRecord {
   [key: string]: JsonValue;
