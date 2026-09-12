@@ -117,6 +117,20 @@ interface ArchitectureDefinition {
   agentDefinitionIds})`: validate → canonicalize → compute digest → freeze.
   Does not persist. Authoring and parsing remain distinct disciplines (§27).
 - Empty membership is accepted by both (documented decision, §3 above).
+- **Trusted boundary semantics (Stage 0 review, §11):** the
+  `trustedArchitectureDefinition` compiler input is a **trusted API boundary**
+  — a caller-supplied value that the compiler relies on as parser/materializer
+  output. It is not an unforgeable capability (no nominal-brand machinery;
+  TypeScript branding was reviewed and rejected as aesthetics); a caller who
+  casts an arbitrary object bypasses validation by their own choice. Tests
+  for the trusted path use actual parser/materializer outputs.
+- **Identity grammar (Stage 0 review, §10):** both id fields use the
+  repository's shared stable-identifier grammar, extracted as the semantically
+  neutral `src/schema/identifier.ts` (`[A-Za-z0-9][A-Za-z0-9._:-]{0,127}`,
+  NFC) — the same grammar canonical Work identifiers use. Accepting
+  leading/trailing whitespace, control characters, embedded newlines, or
+  path-like ids was reviewed and **rejected**; no Work model is imported to
+  reuse it.
 
 ## 6. Binding adapter and compiler rewiring (§30–§39, §62/§63/§71/§72)
 

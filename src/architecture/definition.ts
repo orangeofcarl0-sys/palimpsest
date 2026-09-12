@@ -44,9 +44,18 @@
  * set: order-independent, duplicates rejected). Deliberately excluded:
  * architectureDefinitionId, revision, timestamps, runtime/work state
  * (content-identity semantics).
+ *
+ * Identity grammar (G10-C0 Stage 0 review, §10): both id fields use the
+ * repository's shared stable-identifier grammar (`src/schema/identifier.ts` —
+ * NFC-normalized ASCII, 1–128 chars, `[A-Za-z0-9._:-]`, no whitespace/control
+ * characters/newlines/path separators). Accepting raw whitespace, control
+ * characters, embedded newlines, or path-like ids was reviewed and REJECTED:
+ * identity strings must be stable, canonical, and safe to use as identity.
+ * The validator is semantically neutral — no Work models are imported.
  */
 
 import { canonicalDigest } from "../schema/canonical.js";
+import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 
 export type ArchitectureDefinitionId = string;
 export type AgentDefinitionId = string;
@@ -130,9 +139,17 @@ function exactKeys(object: Record<string, unknown>, keys: readonly string[], wha
   }
 }
 
-function nonEmptyId(value: unknown, what: string): string {
-  if (typeof value !== "string" || value.trim() === "") fail(`${what} must be a non-empty string`);
-  return value;
+function stableId(value: unknown, what: string): string {
+  if (typeof value !== "string") fail(`${what} must be a string`);
+  const normalized = normalizeStableIdentifier(value);
+  if (!isStableIdentifier(normalized)) {
+    fail(
+      `${what} must be a stable identifier: 1-128 ASCII characters, starting ` +
+        "with an alphanumeric, then [A-Za-z0-9._:-] (no whitespace, control " +
+        "characters, newlines, or path separators)",
+    );
+  }
+  return normalized;
 }
 
 function canonicalizeMembership(
@@ -176,7 +193,7 @@ export function materializeArchitectureDefinition(input: {
   if (typeof input !== "object" || input === null) {
     fail("architecture definition input must be an object");
   }
-  const architectureDefinitionId = nonEmptyId(
+  const architectureDefinitionId = stableId(
     input.architectureDefinitionId,
     "architectureDefinitionId",
   );
@@ -192,7 +209,7 @@ export function materializeArchitectureDefinition(input: {
     fail("agentDefinitionIds must be an array");
   }
   const ids = input.agentDefinitionIds.map((id, index) =>
-    nonEmptyId(id, `agentDefinitionIds[${index}]`),
+    stableId(id, `agentDefinitionIds[${index}]`),
   );
   const seen = new Set<string>();
   for (const id of ids) {
@@ -224,7 +241,7 @@ export function parseArchitectureDefinition(raw: unknown): ArchitectureDefinitio
   const object = asObject(raw, "ArchitectureDefinition");
   exactKeys(object, DEFINITION_KEYS, "ArchitectureDefinition");
   if (object.schemaVersion !== 1) fail("ArchitectureDefinition.schemaVersion must be 1");
-  const architectureDefinitionId = nonEmptyId(
+  const architectureDefinitionId = stableId(
     object.architectureDefinitionId,
     "architectureDefinitionId",
   );
@@ -240,7 +257,7 @@ export function parseArchitectureDefinition(raw: unknown): ArchitectureDefinitio
   const agentDefinitions: AgentDefinition[] = object.agentDefinitions.map((entry, index) => {
     const agent = asObject(entry, `agentDefinitions[${index}]`);
     exactKeys(agent, AGENT_KEYS, "agentDefinitions entry");
-    const agentDefinitionId = nonEmptyId(agent.agentDefinitionId, "agentDefinitionId");
+    const agentDefinitionId = stableId(agent.agentDefinitionId, "agentDefinitionId");
     if (seen.has(agentDefinitionId)) {
       fail(`duplicate AgentDefinitionId "${agentDefinitionId}"`);
     }

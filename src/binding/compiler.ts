@@ -107,7 +107,9 @@ export interface BindingPlanCompileInput {
   readonly rawArchitectureDefinition?: unknown;
   /**
    * Trusted ArchitectureDefinition — already produced by the architecture
-   * parser/materializer (C0 §37). Mutually exclusive with
+   * parser/materializer (C0 §37). This is a trusted API boundary, NOT an
+   * unforgeable capability: callers passing arbitrary cast objects bypass
+   * validation by their own choice. Mutually exclusive with
    * `rawArchitectureDefinition`. Exactly one source is required (C0 §38).
    */
   readonly trustedArchitectureDefinition?: ArchitectureDefinition;

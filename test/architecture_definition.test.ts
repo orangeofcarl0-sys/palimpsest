@@ -106,6 +106,48 @@ describe("C0-M01: ArchitectureDefinition strict parsing (§25/§69)", () => {
   });
 });
 
+describe("C0 Stage 0 §10: identity grammar review", () => {
+  it("ids follow the shared stable-identifier grammar: whitespace, control characters, newlines, and path separators are rejected", () => {
+    for (const bad of [
+      " arch",
+      "arch ",
+      "arch\t",
+      "arch\n",
+      "arch/x",
+      "arch\\x",
+      "arch x",
+      "arch\u0000",
+      "".padEnd(129, "a"),
+      "",
+    ]) {
+      expect(() =>
+        materializeArchitectureDefinition({
+          architectureDefinitionId: bad,
+          revision: 0,
+          agentDefinitionIds: [],
+        }),
+      ).toThrow(ArchitectureDefinitionParseError);
+      expect(() =>
+        materializeArchitectureDefinition({
+          architectureDefinitionId: "arch-1",
+          revision: 0,
+          agentDefinitionIds: [bad],
+        }),
+      ).toThrow(ArchitectureDefinitionParseError);
+    }
+  });
+
+  it("typical identifiers are accepted and NFC-normalized", () => {
+    const architecture = materializeArchitectureDefinition({
+      architectureDefinitionId: "arch_1:main",
+      revision: 0,
+      agentDefinitionIds: ["Agent-A.1"],
+    });
+    expect(architecture.architectureDefinitionId).toBe("arch_1:main");
+    expect(architecture.agentDefinitions[0]?.agentDefinitionId).toBe("Agent-A.1");
+  });
+});
+
 describe("C0-M02: canonical AgentDefinition membership (§23)", () => {
   it("membership order does not change canonical content or digest", () => {
     const first = materializeArchitectureDefinition({
@@ -198,9 +240,9 @@ describe("C0-M05: firewalls and purity (§53/§54/§84/§85)", () => {
     expect(DEFINITION_CODE).not.toMatch(/from "\.\.\/binding/);
   });
 
-  it("architecture-definition code depends only on generic canonical utilities (§85)", () => {
+  it("architecture-definition code depends only on generic canonical/grammar utilities (§85, Stage 0 §10)", () => {
     const imports = [...DEFINITION_CODE.matchAll(/from "([^"]+)"/g)].map((match) => match[1]);
-    expect(imports).toEqual(["../schema/canonical.js"]);
+    expect(imports.sort()).toEqual(["../schema/canonical.js", "../schema/identifier.js"]);
   });
 
   it("Work compilation does not import ArchitectureDefinition (reverse firewall, §54)", () => {

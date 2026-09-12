@@ -28,8 +28,8 @@ import { canonicalDatetime, datetimeToEpochMicros } from "./datetime.js";
 // runtime cycle).
 import { parseCanonicalGateDefinition } from "../domain/gate_clause.js";
 import { parseStageGraphDefinition } from "../domain/stage_graph.js";
+import { STABLE_IDENTIFIER_RE } from "./identifier.js";
 
-const ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const SHA256_RE = /^[0-9a-f]{64}$/u;
 const GIT_COMMIT_RE = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/u;
 const COMMAND_RE = /^[A-Za-z0-9][A-Za-z0-9._+-]*$/u;
@@ -115,7 +115,7 @@ function nfc(value: string): string {
 
 function validateIdentifier(value: string): string {
   const normalized = nfc(value);
-  if (!ID_RE.test(normalized)) {
+  if (!STABLE_IDENTIFIER_RE.test(normalized)) {
     throw new ContractError(
       "must be a stable identifier of at most 128 ASCII characters",
     );
