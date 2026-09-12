@@ -26,8 +26,9 @@ Merged normally at stage close.
    `test/peer_identity.test.ts`, 5 docs. Untouched: coordination store,
    runtime, binding, run, scheduler, state, frozen contracts.
 5. **Gates?** Full unit **79 files / 680 tests** (post-E1 baseline 78/670);
-   builds pass; `git diff --check` clean; local e2e 21/21; remote CI on the
-   actual final HEAD recorded below / in the PR description.
+   builds pass; `git diff --check` clean; local e2e 21/21; remote CI:
+   implementation-HEAD run **34721040706** on PR #28 — **first-run green**.
+   The tip-at-close run is cited in the PR description.
 
 ## Verdict
 
