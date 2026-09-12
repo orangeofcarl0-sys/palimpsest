@@ -46,6 +46,11 @@ import type {
   UnsatisfiedBindingResolution,
 } from "./contract.js";
 import { parseBindingDefinition, BindingConfigurationError } from "./parser.js";
+import {
+  observationRefOf,
+  parseObservationSnapshot,
+} from "./observation.js";
+import type { BindingObservationSnapshot } from "./observation.js";
 import { architectureRefOf, workRefOf } from "./refs.js";
 import type { RunConfiguration } from "../run/index.js";
 import { parseRunConfiguration } from "../run/index.js";
@@ -78,25 +83,6 @@ export interface CompiledBindingPlan {
 export interface SubjectCapabilityProfile {
   readonly runtimeFeatures?: readonly string[];
   readonly toolCapabilities?: readonly string[];
-}
-
-/** One durable continuity candidate in a caller-supplied planning snapshot. NOT a PersistentPoint. */
-export interface BindingPlanningPoint {
-  readonly point: string;
-  readonly available: boolean;
-  readonly runtimeFeatures?: readonly string[];
-  readonly toolCapabilities?: readonly string[];
-}
-
-/**
- * Caller-supplied immutable planning snapshot (B4 §12): the only honest source
- * for the resolution's observation basis in this stage. Ephemeral capability
- * facts plus optional durable candidates; read-only; no hidden discovery.
- */
-export interface BindingPlanningSnapshot {
-  readonly ref: string;
-  readonly ephemeralCapabilities: SubjectCapabilityProfile;
-  readonly persistentCandidates?: readonly BindingPlanningPoint[];
 }
 
 export interface BindingPlanCompileInput {
@@ -138,7 +124,22 @@ export interface BindingPlanCompileInput {
    * required (C1 §29).
    */
   readonly trustedRunConfiguration?: RunConfiguration;
-  readonly planningSnapshot: BindingPlanningSnapshot;
+  /**
+   * Untrusted raw BindingObservationSnapshot — parsed at this trust boundary
+   * via `parseObservationSnapshot` (C2 §48). The SnapshotRef in provenance is
+   * DERIVED from the artifact (snapshotId + content digest), never a
+   * caller-invented string. Mutually exclusive with
+   * `trustedObservationSnapshot`; exactly one source is required. There is no
+   * default snapshot: unknown capability must never be evaluated as
+   * unavailable (C2 §45/§46).
+   */
+  readonly rawObservationSnapshot?: unknown;
+  /**
+   * Trusted BindingObservationSnapshot — already produced by the observation
+   * parser/materializer. Trusted API boundary, not an unforgeable capability.
+   * Mutually exclusive with `rawObservationSnapshot`.
+   */
+  readonly trustedObservationSnapshot?: BindingObservationSnapshot;
   readonly resolverPolicy?: ResolverPolicyRef;
   /** Artifact-layer allocation input (PF-03 / B4 §38): supplied by the caller, deterministic, never generated here. */
   readonly resolutionId: string;
@@ -219,32 +220,48 @@ function hardKeysWithinSubjects(
   }
 }
 
-/** Private translation boundary: production-neutral snapshot → kernel spike fixture (B4 §35). */
-function toKernelSnapshot(snapshot: BindingPlanningSnapshot): ResolverSnapshot {
-  if (typeof snapshot.ref !== "string" || snapshot.ref.length === 0) {
-    throw new BindingConfigurationError("planningSnapshot: a non-empty ref is required");
-  }
-  const seenPoints = new Set<string>();
-  for (const candidate of snapshot.persistentCandidates ?? []) {
-    if (typeof candidate.point !== "string" || candidate.point.length === 0) {
-      throw new BindingConfigurationError(
-        "planningSnapshot.persistentCandidates: every candidate needs a non-empty point ref",
-      );
-    }
-    if (seenPoints.has(candidate.point)) {
-      throw new BindingConfigurationError(
-        `planningSnapshot.persistentCandidates: duplicate point "${candidate.point}" (semantic set)`,
-      );
-    }
-    seenPoints.add(candidate.point);
-  }
-  return {
-    ref: snapshot.ref,
-    ephemeralCapabilities: snapshot.ephemeralCapabilities as SubjectRequirementFixture,
-    ...(snapshot.persistentCandidates === undefined
+// C2 §48/§49: the observation artifact is the only snapshot source; its
+// translation into the kernel's spike-fixture `ResolverSnapshot` (ref +
+// capability facts) stays a PRIVATE boundary — fixture types do not escape.
+function toKernelSnapshot(snapshot: BindingObservationSnapshot): ResolverSnapshot {
+  const persistentCandidates = snapshot.persistentCandidates.map((candidate) => ({
+    point: candidate.point,
+    available: candidate.available,
+    ...(candidate.runtimeFeatures === undefined ? {} : { runtimeFeatures: candidate.runtimeFeatures }),
+    ...(candidate.toolCapabilities === undefined
       ? {}
-      : { persistentCandidates: snapshot.persistentCandidates }),
+      : { toolCapabilities: candidate.toolCapabilities }),
+  }));
+  return {
+    ref: observationRefOf(snapshot),
+    ephemeralCapabilities: snapshot.ephemeralCapabilities as SubjectRequirementFixture,
+    persistentCandidates,
   };
+}
+
+function resolveObservationSnapshot(input: {
+  readonly rawObservationSnapshot?: unknown;
+  readonly trustedObservationSnapshot?: BindingObservationSnapshot;
+}): BindingObservationSnapshot {
+  if (
+    input.rawObservationSnapshot !== undefined &&
+    input.trustedObservationSnapshot !== undefined
+  ) {
+    throw new BindingConfigurationError(
+      "supply either rawObservationSnapshot (parsed at this boundary) or trustedObservationSnapshot, not both",
+    );
+  }
+  if (input.rawObservationSnapshot !== undefined) {
+    // Observation parse errors stay distinct from binding outcomes (C2 §42).
+    return parseObservationSnapshot(input.rawObservationSnapshot);
+  }
+  if (input.trustedObservationSnapshot !== undefined) {
+    return input.trustedObservationSnapshot;
+  }
+  throw new BindingConfigurationError(
+    "observationSnapshot: exactly one BindingObservationSnapshot source is required " +
+      "(rawObservationSnapshot or trustedObservationSnapshot) — the SnapshotRef is derived from the artifact, never invented by the caller; no default snapshot exists (unknown capability must never be evaluated as unavailable)",
+  );
 }
 
 function toKernelHard(
@@ -315,7 +332,8 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
     );
   }
   const runConfigurationDigest = runConfiguration.digest;
-  const snapshot = toKernelSnapshot(input.planningSnapshot);
+  const observation = resolveObservationSnapshot(input);
+  const snapshot = toKernelSnapshot(observation);
   if (typeof input.resolutionId !== "string" || input.resolutionId.length === 0) {
     throw new BindingConfigurationError(
       "resolutionId: required (artifact-layer allocation input, supplied by the caller — never generated inside semantic resolution)",
