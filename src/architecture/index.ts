@@ -18,3 +18,26 @@ export type {
 
 export { PRESETS, presetDraft, presetMeta } from "./presets.js";
 export type { PresetEntry, PresetMeta, PresetParamField } from "./presets.js";
+
+/**
+ * G10-C0: minimal Architecture identity (PLMP-UAS-1 implementation
+ * realization — identity only, no agent-side semantics, no Work relation,
+ * no persistence). Independent of Binding and of Work compilation.
+ */
+
+export {
+  ARCHITECTURE_DIGEST_DOMAIN,
+  architectureDefinitionDigestContent,
+  computeArchitectureDefinitionDigest,
+  materializeArchitectureDefinition,
+  parseArchitectureDefinition,
+  ArchitectureDefinitionParseError,
+} from "./definition.js";
+export type {
+  AgentDefinition,
+  AgentDefinitionId,
+  ArchitectureDefinition,
+  ArchitectureDefinitionId,
+  ArchitectureDigest,
+  ArchitectureRevision,
+} from "./definition.js";
