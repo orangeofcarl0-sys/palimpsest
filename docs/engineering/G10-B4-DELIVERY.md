@@ -106,6 +106,24 @@ Branch `experiment/g10-b4-binding-compiler-plan-integration`, from canonical
 `7643c77` = **PLMP-BIND-1 publication baseline**; post-G10-B3 canonical `main`
 = `8ac32ed48f024962ce77cd68903f2950756b7a8f`. No historical text rewritten.
 
+## G10-C0 Stage 0 amendment (wording only; no behavioral change)
+
+The original B4 docs/code implied placeholder provenance was "impossible by
+construction"; the compiler in fact only proves **structural well-formedness**
+of caller-supplied refs. Frozen distinction (now stated in the compiler header,
+the grounding matrix, and the integration record):
+
+```text
+WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance
+```
+
+A well-formed `DefinitionRevisionRef` carrying e.g. `"fake-architecture"` is
+not recognizable as fake from shape alone; authoritative live grounding must
+come from an upstream canonical producer. Code change: internal helper renamed
+`requireRef` → `requireWellFormedRef`, messages/docs reworded; zero behavior
+change (all 21 compiler proofs pass unchanged except one error-message
+assertion updated to the new wording). The B4 PARTIAL verdict is unchanged.
+
 ## Remote CI history
 
 Recorded after push; known `E2E-DEBUG-01`/`E2E-RUNTIME-03` nondeterminism is

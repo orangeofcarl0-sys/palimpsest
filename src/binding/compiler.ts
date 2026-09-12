@@ -17,12 +17,15 @@
  * ArchitectureDefinition producer — not WorkGraph, not inferred from tasks,
  * not persisted).
  *
- * No fake provenance (B4 §2): a resolution is attempted only when every
- * freshness-critical provenance input is explicitly supplied by the caller.
- * Placeholder values ("fake-architecture", "current", "unknown", "legacy")
- * are impossible by construction: missing grounded inputs are configuration
- * errors naming the missing provenance, and live resolution stays deferred
- * until real producers exist.
+ * Provenance discipline (B4 §2, clarified by G10-C0 Stage 0): a resolution is
+ * attempted only when every freshness-critical provenance input is explicitly
+ * supplied by the caller. The seam validates explicit provenance inputs
+ * STRUCTURALLY — `WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance`.
+ * A well-formed `DefinitionRevisionRef` such as one carrying the string
+ * "fake-architecture" cannot be recognized as fake from its shape alone;
+ * authoritative live grounding must come from an upstream canonical producer.
+ * Missing inputs are configuration errors naming the missing provenance, and
+ * live resolution stays deferred until real producers exist.
  *
  * The B3 spike fixture types (`ResolverInput`, `SubjectRequirementFixture`,
  * `BindingCatalogPoint`, `ResolverSnapshot`) stay kernel plumbing: this module
@@ -154,9 +157,12 @@ export function workRefOf(project: ProjectIr): DefinitionRevisionRef {
   });
 }
 
-function requireRef(value: DefinitionRevisionRef | undefined, what: string): DefinitionRevisionRef {
+function requireWellFormedRef(
+  value: DefinitionRevisionRef | undefined,
+  what: string,
+): DefinitionRevisionRef {
   if (value === undefined || typeof value !== "object") {
-    throw new BindingConfigurationError(`${what}: a grounded DefinitionRevisionRef is required`);
+    throw new BindingConfigurationError(`${what}: a well-formed DefinitionRevisionRef is required`);
   }
   if (
     typeof value.definitionId !== "string" ||
@@ -168,7 +174,8 @@ function requireRef(value: DefinitionRevisionRef | undefined, what: string): Def
     value.digest.length === 0
   ) {
     throw new BindingConfigurationError(
-      `${what}: definitionId/revision/digest must be a grounded non-empty identity (no placeholders)`,
+      `${what}: definitionId/revision/digest must be a well-formed non-empty identity ` +
+        `(structural validation only — authoritative grounding is an upstream canonical producer's responsibility)`,
     );
   }
   return value;
@@ -245,10 +252,11 @@ function toKernelHard(
  *   ref-only plan.
  */
 export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanCompileResult {
-  const work = requireRef(input.work, "work");
-  // No fake provenance: every freshness-critical input must be explicitly
-  // grounded. Messages name the missing provenance (B4 §2, §74).
-  const architecture = requireRef(input.architecture, "architecture");
+  const work = requireWellFormedRef(input.work, "work");
+  // Provenance discipline: every freshness-critical input must be explicitly
+  // supplied; messages name the missing provenance (B4 §2, §74). The seam
+  // validates structure only — authoritative grounding is upstream's job.
+  const architecture = requireWellFormedRef(input.architecture, "architecture");
   if (
     typeof input.runConfigurationDigest !== "string" ||
     input.runConfigurationDigest.length === 0

@@ -256,7 +256,7 @@ describe("configuration invalid ≠ binding unsatisfied (B4 §23)", () => {
     );
     expect(() =>
       compileBindingPlan(compileInput({ architecture: { definitionId: "a", revision: 1, digest: "" } })),
-    ).toThrow(/no placeholders/);
+    ).toThrow(/well-formed/);
     expect(() => compileBindingPlan(compileInput({ runConfigurationDigest: "" }))).toThrow(
       /RunConfiguration/,
     );

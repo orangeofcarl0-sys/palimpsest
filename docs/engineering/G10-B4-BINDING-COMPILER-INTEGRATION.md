@@ -96,7 +96,7 @@ explicitly caller-supplied facts; output is a structured planning result:
 
 ```text
 validate configuration        → BindingConfigurationError on missing/invalid
-                                grounded inputs (never collapsed into
+                                explicit inputs (never collapsed into
                                 unsatisfied, §23)
 resolve                       → frozen B3 kernel (resolveBindingCore);
                                 no semantic reimplementation (§36)
@@ -111,8 +111,8 @@ resolve                       → frozen B3 kernel (resolveBindingCore);
                                 → { status: "planned", plan, resolution }
 ```
 
-Required grounded inputs (each a named, message-precise configuration error
-when absent — no fake provenance, §2): `work` ref, `architecture` ref,
+Required explicit inputs (each a named, message-precise configuration error
+when absent — §2): `work` ref, `architecture` ref,
 `runConfigurationDigest`, `planningSnapshot` (non-empty ref), `resolutionId`.
 Optional: `participatingArchitectureSubjects` (defaults to the empty grounded
 set — adjudicated in the grounding matrix §6), `architectureHard`/`workHard`
@@ -225,6 +225,16 @@ frozen-contract provenance inputs without semantic invention:
 PARTIAL names the exact missing sources above; PASS was not forced.
 
 ## 10. Recommended next stage (§83/§84)
+
+> Terminology amendment (added additively by G10-C0 Stage 0): the B4 compiler
+> seam validates explicit provenance inputs **structurally** —
+> `WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance`. A
+> well-formed `DefinitionRevisionRef` cannot be distinguished from a fabricated
+> one by shape alone (e.g. one carrying the string `"fake-architecture"`); no
+> behavioral change was made for this amendment — the internal helper is now
+> `requireWellFormedRef` and messages/docs state the structural-vs-grounded
+> distinction. Authoritative live grounding must come from an upstream
+> canonical producer (realized for the Architecture side by G10-C0).
 
 Follow the evidence: the binding plan is blocked on **Architecture identity**,
 not on continuity storage. The smallest upstream realization stage is:

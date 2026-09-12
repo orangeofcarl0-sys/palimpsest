@@ -172,6 +172,21 @@ architecture subject is introduced.
 B4 INPUT GROUNDING: PARTIAL
 ```
 
+> Terminology amendment (added additively by G10-C0 Stage 0; the verdict above
+> is unchanged):
+>
+> ```text
+> WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance
+> ```
+>
+> The B4 compiler seam validates explicit provenance inputs **structurally**
+> (well-formed `DefinitionRevisionRef` shape, non-empty required inputs). It
+> cannot recognize a well-formed but fabricated value (e.g. a ref carrying the
+> string `"fake-architecture"`) as fake from its shape alone. Authoritative
+> live grounding must come from an upstream canonical producer — which is
+> exactly why the matrix above still records the architecture/run-configuration/
+> snapshot rows as MISSING and why live resolution stays deferred.
+
 The kernel can be integrated behind an explicit compiler seam (Work ref,
 intent sources, and resolver policy are grounded; the seam's input contract is
 definable truthfully), but **no current live path can truthfully produce all
