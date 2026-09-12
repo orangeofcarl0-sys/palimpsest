@@ -41,8 +41,9 @@ normally). Merged normally at stage close.
    frozen contracts.
 7. **Gates?** Full unit **76 files / 655 tests** (post-D4 baseline 75/652);
    builds pass; `git diff --check` clean; local e2e 21/21 (after three
-   documented flake-family runs under local load); remote CI on the actual
-   final HEAD recorded below / in the PR description.
+   documented flake-family runs under local load); remote CI:
+   implementation-HEAD run **34716175435** **first-run green**. The
+   tip-at-close run is cited in the PR description.
 
 ## Verdict
 
