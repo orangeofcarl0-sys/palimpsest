@@ -215,3 +215,19 @@ actual ArchitectureDefinition artifact (raw/trusted) — the arbitrary
 caller-supplied architecture ref and subject list were removed. Binding live
 integration remains PARTIAL, but for fewer reasons. The original §7 verdict
 above is B4's historical record and is not rewritten.
+
+## 9. G10-C campaign closure (added additively at campaign end; §96)
+
+```text
+C0 closed Architecture provenance        (ArchitectureDefinition artifact)
+C1 closed RunConfiguration provenance    (RunConfiguration artifact)
+C2 closed Snapshot provenance            (BindingObservationSnapshot artifact)
+C3 closed compiler grounding             (compileGroundedBindingPlan: artifacts in,
+                                          derived provenance, ref-only plan
+                                          {runDefinitionRef, resolutionRef})
+```
+
+Every freshness-critical Binding input is now derived from an owning semantic
+artifact; the high-level planning boundary exposes no caller-invented
+provenance. History: the §7 PARTIAL verdict and §8's intermediate status are
+preserved as written. Final state: `G10-C-RUN-GROUNDING-CAMPAIGN.md` (§2/§8).
