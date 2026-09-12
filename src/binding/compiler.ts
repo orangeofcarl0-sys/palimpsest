@@ -9,23 +9,23 @@
  * workspaces, or persists anything. The plan artifact is a derived, immutable,
  * ref-only join — never a second Work truth and never a second Binding truth.
  *
- * Identity firewall (the central B4 invariant): Work identity is never
- * reinterpreted as Architecture identity. This module does not import
+ * Identity firewall (the central B4 invariant, sharpened by C0): Work identity
+ * is never reinterpreted as Architecture identity. This module does not import
  * TaskSpec/TaskProposal/proposalTaskSpecs and has no parameter that accepts a
- * task array; Architecture subjects exist only as explicitly caller-supplied
- * `participatingArchitectureSubjects` (a typed place for a future
- * ArchitectureDefinition producer — not WorkGraph, not inferred from tasks,
- * not persisted).
+ * task array; Architecture subjects are derived solely from the supplied
+ * ArchitectureDefinition's AgentDefinition membership through an explicit
+ * adapter — never WorkGraph, never inferred from tasks, never persisted.
  *
- * Provenance discipline (B4 §2, clarified by G10-C0 Stage 0): a resolution is
- * attempted only when every freshness-critical provenance input is explicitly
- * supplied by the caller. The seam validates explicit provenance inputs
- * STRUCTURALLY — `WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance`.
- * A well-formed `DefinitionRevisionRef` such as one carrying the string
- * "fake-architecture" cannot be recognized as fake from its shape alone;
- * authoritative live grounding must come from an upstream canonical producer.
- * Missing inputs are configuration errors naming the missing provenance, and
- * live resolution stays deferred until real producers exist.
+ * Provenance discipline (B4 §2, clarified by G10-C0 Stage 0, strengthened by
+ * G10-C0 §34–§39): the seam validates explicit provenance inputs structurally —
+ * `WellFormedExplicitProvenance ≠ AuthoritativelyGroundedProvenance`. Since C0,
+ * Architecture provenance is no longer a well-formed-but-ungrounded caller ref:
+ * the compiler requires an actual ArchitectureDefinition artifact (raw parsed
+ * at this boundary, or already trusted) and DERIVES the architecture
+ * `DefinitionRevisionRef` and the participating `ArchitectureSubjectRef`s from
+ * it through explicit adapters. RunConfiguration digest and planning snapshot
+ * remain explicitly caller-supplied (their upstream producers do not exist
+ * yet); live resolution stays deferred until they do.
  *
  * The B3 spike fixture types (`ResolverInput`, `SubjectRequirementFixture`,
  * `BindingCatalogPoint`, `ResolverSnapshot`) stay kernel plumbing: this module
@@ -34,6 +34,8 @@
  */
 
 import type { ProjectIr } from "../schema/index.js";
+import type { ArchitectureDefinition } from "../architecture/index.js";
+import { parseArchitectureDefinition } from "../architecture/index.js";
 import type {
   ArchitectureSubjectRef,
   BindingDefinition,
@@ -98,20 +100,20 @@ export interface BindingPlanCompileInput {
   /** Authoritative Work lineage ref (grounded: ProjectIr via `workRefOf`). */
   readonly work: DefinitionRevisionRef;
   /**
-   * Caller-supplied Architecture lineage ref. Production Palimpsest has no
-   * ArchitectureDefinition yet (B4 grounding matrix §3), so no live path can
-   * supply this — a future producer must. Required for any resolution: the
-   * frozen provenance demands a real value, never a placeholder.
+   * Untrusted raw ArchitectureDefinition — parsed at this trust boundary via
+   * `parseArchitectureDefinition` (C0 §36). No unchecked architecture object
+   * enters provenance. Mutually exclusive with `trustedArchitectureDefinition`.
    */
-  readonly architecture: DefinitionRevisionRef;
+  readonly rawArchitectureDefinition?: unknown;
   /**
-   * Explicit caller-supplied participating Architecture subjects (B4 §30).
-   * Defaults to the empty grounded set (adjudicated in the grounding matrix
-   * §6: an empty-subject implicit resolution is permitted by the frozen
-   * kernel). Never inferred from Work tasks.
+   * Trusted ArchitectureDefinition — already produced by the architecture
+   * parser/materializer (C0 §37). This is a trusted API boundary, NOT an
+   * unforgeable capability: callers passing arbitrary cast objects bypass
+   * validation by their own choice. Mutually exclusive with
+   * `rawArchitectureDefinition`. Exactly one source is required (C0 §38).
    */
-  readonly participatingArchitectureSubjects?: readonly ArchitectureSubjectRef[];
-  /** Caller-supplied hard requirements. No production source exists — pass none unless a future contract establishes one (B4 §13). */
+  readonly trustedArchitectureDefinition?: ArchitectureDefinition;
+  /** Caller-supplied hard requirements. No production source exists — pass none unless a future architecture-semantics stage owns them (C0 §40). */
   readonly architectureHard?: Readonly<Record<string, SubjectCapabilityProfile>>;
   /** Caller-supplied hard requirements. No production source exists — pass none (B4 §13). */
   readonly workHard?: Readonly<Record<string, SubjectCapabilityProfile>>;
@@ -119,7 +121,7 @@ export interface BindingPlanCompileInput {
   readonly rawBindingDefinition?: unknown;
   /** Trusted already-parsed BindingDefinition (kernel-produced). Mutually exclusive with `rawBindingDefinition`. */
   readonly trustedBindingDefinition?: BindingDefinition;
-  /** Caller-supplied deterministic RunConfiguration digest. No production source exists yet (B4 §5). */
+  /** Caller-supplied deterministic RunConfiguration digest. No production source exists yet (B4 §5; C0 §63 leaves it deferred). */
   readonly runConfigurationDigest: string;
   readonly planningSnapshot: BindingPlanningSnapshot;
   readonly resolverPolicy?: ResolverPolicyRef;
@@ -157,6 +159,37 @@ export function workRefOf(project: ProjectIr): DefinitionRevisionRef {
   });
 }
 
+/**
+ * Architecture ref adapter (C0 §31): the Binding provenance ref derived from
+ * an actual ArchitectureDefinition artifact — grounded in the artifact's own
+ * identity/revision/content digest, not in a caller-invented ref.
+ */
+export function architectureRefOf(
+  architecture: ArchitectureDefinition,
+): DefinitionRevisionRef {
+  return Object.freeze({
+    definitionId: architecture.architectureDefinitionId,
+    revision: architecture.revision,
+    digest: architecture.digest,
+  });
+}
+
+/**
+ * Architecture subject derivation (C0 §32): C0's Binding-addressable
+ * Architecture subjects are the AgentDefinitions; their subject refs are
+ * derived solely from `AgentDefinitionId` through this explicit adapter.
+ * This is NOT a frozen universal equivalence (`ArchitectureSubjectRef ≡
+ * AgentDefinitionId`) — future Architecture schemas may add subject species
+ * (C0 §33).
+ */
+export function architectureSubjectRefsOf(
+  architecture: ArchitectureDefinition,
+): readonly ArchitectureSubjectRef[] {
+  return Object.freeze(
+    architecture.agentDefinitions.map((agent) => agent.agentDefinitionId),
+  );
+}
+
 function requireWellFormedRef(
   value: DefinitionRevisionRef | undefined,
   what: string,
@@ -181,20 +214,6 @@ function requireWellFormedRef(
   return value;
 }
 
-function requireUnique(values: readonly string[], what: string): readonly string[] {
-  const seen = new Set<string>();
-  for (const value of values) {
-    if (typeof value !== "string" || value.length === 0) {
-      throw new BindingConfigurationError(`${what}: entries must be non-empty strings`);
-    }
-    if (seen.has(value)) {
-      throw new BindingConfigurationError(`${what}: duplicate entry "${value}" (semantic set)`);
-    }
-    seen.add(value);
-  }
-  return values;
-}
-
 function hardKeysWithinSubjects(
   hard: Readonly<Record<string, SubjectCapabilityProfile>> | undefined,
   subjects: ReadonlySet<string>,
@@ -214,16 +233,19 @@ function toKernelSnapshot(snapshot: BindingPlanningSnapshot): ResolverSnapshot {
   if (typeof snapshot.ref !== "string" || snapshot.ref.length === 0) {
     throw new BindingConfigurationError("planningSnapshot: a non-empty ref is required");
   }
-  requireUnique(
-    (snapshot.persistentCandidates ?? []).map((candidate) => candidate.point),
-    "planningSnapshot.persistentCandidates",
-  );
+  const seenPoints = new Set<string>();
   for (const candidate of snapshot.persistentCandidates ?? []) {
     if (typeof candidate.point !== "string" || candidate.point.length === 0) {
       throw new BindingConfigurationError(
         "planningSnapshot.persistentCandidates: every candidate needs a non-empty point ref",
       );
     }
+    if (seenPoints.has(candidate.point)) {
+      throw new BindingConfigurationError(
+        `planningSnapshot.persistentCandidates: duplicate point "${candidate.point}" (semantic set)`,
+      );
+    }
+    seenPoints.add(candidate.point);
   }
   return {
     ref: snapshot.ref,
@@ -245,18 +267,40 @@ function toKernelHard(
  * Pure, deterministic planning compile (B4 §21 control flow):
  *
  *   validate configuration (throws BindingConfigurationError — never collapsed
- *   into unsatisfied, B4 §23) → resolve via the frozen kernel → unsatisfied
- *   returns a planning condition and NO plan (B4 §22) → freshness gate against
- *   the admission basis (B4 §24) → stale returns no plan → otherwise
- *   materialize with the caller-supplied resolutionId and construct the frozen
- *   ref-only plan.
+ *   into unsatisfied, B4 §23; architecture parse errors are distinct, C0 §74)
+ *   → resolve via the frozen kernel → unsatisfied returns a planning condition
+ *   and NO plan (B4 §22) → freshness gate against the admission basis (B4 §24)
+ *   → stale returns no plan → otherwise materialize with the caller-supplied
+ *   resolutionId and construct the frozen ref-only plan.
  */
 export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanCompileResult {
   const work = requireWellFormedRef(input.work, "work");
-  // Provenance discipline: every freshness-critical input must be explicitly
-  // supplied; messages name the missing provenance (B4 §2, §74). The seam
-  // validates structure only — authoritative grounding is upstream's job.
-  const architecture = requireWellFormedRef(input.architecture, "architecture");
+  // C0 §34–§39: Architecture provenance is DERIVED from an actual
+  // ArchitectureDefinition artifact — the arbitrary caller ref/subject seams
+  // are gone. Exactly one raw/trusted source; raw is parsed before anything
+  // else (architecture parse errors stay distinct from binding outcomes).
+  if (
+    input.rawArchitectureDefinition !== undefined &&
+    input.trustedArchitectureDefinition !== undefined
+  ) {
+    throw new BindingConfigurationError(
+      "supply either rawArchitectureDefinition (parsed at this boundary) or trustedArchitectureDefinition, not both",
+    );
+  }
+  let architecture: ArchitectureDefinition;
+  if (input.rawArchitectureDefinition !== undefined) {
+    // Architecture parse errors propagate distinct from binding outcomes (C0 §74).
+    architecture = parseArchitectureDefinition(input.rawArchitectureDefinition);
+  } else if (input.trustedArchitectureDefinition !== undefined) {
+    architecture = input.trustedArchitectureDefinition;
+  } else {
+    throw new BindingConfigurationError(
+      "architecture: exactly one ArchitectureDefinition source is required " +
+        "(rawArchitectureDefinition or trustedArchitectureDefinition) — provenance is derived from the artifact, never invented by the caller",
+    );
+  }
+  const architectureRef = architectureRefOf(architecture);
+  const subjects = architectureSubjectRefsOf(architecture);
   if (
     typeof input.runConfigurationDigest !== "string" ||
     input.runConfigurationDigest.length === 0
@@ -272,10 +316,6 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
     );
   }
 
-  const subjects = requireUnique(
-    input.participatingArchitectureSubjects ?? [],
-    "participatingArchitectureSubjects",
-  );
   hardKeysWithinSubjects(input.architectureHard, new Set(subjects), "architectureHard");
   hardKeysWithinSubjects(input.workHard, new Set(subjects), "workHard");
 
@@ -292,17 +332,17 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
   } else if (input.trustedBindingDefinition !== undefined) {
     explicitDefinition = input.trustedBindingDefinition;
   }
-  // B4 §31: an explicit definition without grounded participating subjects is
-  // a configuration failure — never a task→subject mapping.
+  // B4 §31: an explicit definition without participating subjects is a
+  // configuration failure — never a task→subject mapping.
   if (explicitDefinition !== undefined && subjects.length === 0) {
     throw new BindingConfigurationError(
-      "an explicit BindingDefinition requires grounded participating ArchitectureSubjects; none were supplied (no production Architecture identity exists yet)",
+      "an explicit BindingDefinition requires participating ArchitectureSubjects; the supplied ArchitectureDefinition contributes none",
     );
   }
 
   const semantic = resolveBindingCore({
     participatingSubjects: subjects,
-    architecture,
+    architecture: architectureRef,
     work,
     architectureHard: toKernelHard(input.architectureHard),
     workHard: toKernelHard(input.workHard),
@@ -333,7 +373,7 @@ export function compileBindingPlan(input: BindingPlanCompileInput): BindingPlanC
     throw new BindingConfigurationError("satisfied semantic resolution failed to materialize");
   }
   const ownBasis: FreshnessBasis = {
-    architecture,
+    architecture: architectureRef,
     work,
     intentSource: compileBindingIntentSource(explicitDefinition),
     runConfigurationDigest: input.runConfigurationDigest,
