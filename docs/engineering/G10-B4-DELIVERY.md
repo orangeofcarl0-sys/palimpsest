@@ -112,8 +112,13 @@ Recorded after push; known `E2E-DEBUG-01`/`E2E-RUNTIME-03` nondeterminism is
 handled by failed-job reruns exactly as in prior stages, with every failure
 preserved in this history.
 
-- (this section is finalized on the branch once the draft PR's workflows
-  complete — see the PR description for the recorded runs.)
+- HEAD `d1087b1` (implementation) + `4951ee3` (stage-0 docs) share the
+  first pushed workflow run **34702618634** on PR #16: unit PASS, e2e FAIL —
+  `E2E-DEBUG-01` (1 failed, the known runtime-debugger nondeterminism;
+  `E2E-RUNTIME-03` passed on this run). Handled by a failed-job rerun only;
+  no test, UI, or runtime code touched (B4 changes no UI/runtime code).
+- Subsequent runs on this branch are recorded below as they complete; the
+  final HEAD's own workflow must be green (B4 §77 — no ancestor-cited green).
 
 ## Verdict
 
