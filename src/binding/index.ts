@@ -38,3 +38,13 @@ export type {
 } from "./resolver.js";
 export { evaluateFreshness } from "./freshness.js";
 export type { Freshness, FreshnessBasis } from "./freshness.js";
+export { compileBindingPlan, workRefOf } from "./compiler.js";
+export type {
+  BindingPlanCompileInput,
+  BindingPlanCompileResult,
+  BindingPlanningPoint,
+  BindingPlanningSnapshot,
+  CompiledBindingPlan,
+  SatisfiedSemanticResolution,
+  SubjectCapabilityProfile,
+} from "./compiler.js";
