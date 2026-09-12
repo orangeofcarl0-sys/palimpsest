@@ -172,16 +172,13 @@ describe("§92/§94: the high-level runtime service end-to-end", () => {
         runConfiguration: materializeRunConfiguration(),
         observationSnapshot: compiled.snapshot,
       },
+      activationContext: "ctx-1",
     });
     if (outcome.status !== "realized") throw new Error(`expected realized, got ${JSON.stringify(outcome)}`);
     expect(realized).toHaveLength(1);
     expect(outcome.realizations[0]!.attachment.continuityTarget).toEqual({ kind: "ephemeral" });
 
-    const release = await runtime.release!({
-      realizationKey: "k-d5",
-      activationId: outcome.realizations[0]!.activation.activationId,
-      runtimeAgent: outcome.realizations[0]!.attachment.runtimeAgent,
-    });
+    const release = await runtime.release!(outcome.realizations[0]!.release);
     expect(release.status).toBe("released");
     await installed.dispose();
   });

@@ -7,6 +7,8 @@
 
 export { callbackRuntimeCarrierPort } from "./carrier_port.js";
 export {
+  materializeRuntimeReleaseHandle,
+  requireActivationContextId,
   RuntimeRealizationError,
   continuityTargetOf,
   materializeActivation,
@@ -14,7 +16,8 @@ export {
   prepareRuntimeRealization,
   runtimeRealizationKey,
 } from "./identity.js";
-export { ContinuityUnavailableError, makeRuntimeRealizationService } from "./realize.js";
+export { ContinuityUnavailableError } from "./errors.js";
+export { makeRuntimeRealizationService } from "./realize.js";
 export { observeBindingState, observeAndCompileGroundedPlan } from "./observation.js";
 export type {
   LiveCompileOutcome,
@@ -34,11 +37,13 @@ export type {
 } from "./realize.js";
 export type {
   Activation,
+  ActivationContextId,
   ActivationId,
   PreparedRuntimeRealization,
   RuntimeAgentRef,
   RuntimeAttachment,
   RuntimeContinuityTarget,
+  RuntimeReleaseHandle,
   SessionRef,
 } from "./identity.js";
 export type {

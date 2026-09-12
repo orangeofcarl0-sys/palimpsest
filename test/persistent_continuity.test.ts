@@ -268,6 +268,7 @@ describe("D3-M08/M09: persistent selection requires an existing point; missing n
       resolution: result.resolution,
       plan: result.plan,
       current,
+      activationContext: "ctx-1",
     });
     expect(outcome.status).toBe("failed");
     if (outcome.status !== "failed") return;
@@ -316,6 +317,7 @@ describe("D3-M10: unavailable point never silently falls back (§66)", () => {
         runConfiguration: materializeRunConfiguration(),
         observationSnapshot: snapshot(),
       },
+      activationContext: "ctx-1",
     });
     expect(outcome.status).toBe("failed");
     if (outcome.status !== "failed") return;
@@ -336,6 +338,7 @@ describe("D3-M11/§67: carrier replacement preserves point identity", () => {
       resolution: result.resolution,
       plan: result.plan,
       current,
+      activationContext: "ctx-1",
     };
 
     const first = await harness.realize(request);
@@ -382,6 +385,7 @@ describe("D3-M12/§68: ephemeral and persistent routes coexist", () => {
       resolution: result.resolution,
       plan: result.plan,
       current,
+      activationContext: "ctx-1",
     });
     if (outcome.status !== "realized") throw new Error(`expected realized, got ${outcome.status}`);
     const eph = outcome.realizations.find((entry) => entry.activation.agentDefinitionId === "eph")!;

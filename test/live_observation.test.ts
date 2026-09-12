@@ -309,6 +309,7 @@ describe("D4-M10/§84: realize re-checks grounded freshness before the effect", 
       resolution: first.resolution,
       plan: first.plan,
       current: staleCurrent,
+      activationContext: "ctx-1",
     });
     expect(outcome.status).toBe("refused");
     if (outcome.status !== "refused") return;

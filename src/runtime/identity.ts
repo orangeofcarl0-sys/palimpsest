@@ -40,10 +40,20 @@ import type {
 } from "../binding/contract.js";
 import type { CompiledBindingPlan } from "../binding/compiler.js";
 import { evaluateGroundedPlanFreshness } from "../binding/index.js";
+import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 import type { RunDefinition, RunDefinitionRef } from "../run/index.js";
 import { canonicalDigest } from "../schema/canonical.js";
 
 export type ActivationId = string;
+
+/**
+ * Explicit activation-context identity (G10-E0 D-API-01): the same context id
+ * means "retry the same activation" (same ids, Ordarium-deduped); a new
+ * context id means "genuinely new activation / carrier replacement" (new ids,
+ * new carrier, same point). REQUIRED on public realization requests — never
+ * defaulted — so retry-vs-replacement can never be confused by omission.
+ */
+export type ActivationContextId = string;
 
 /** Host-owned runtime carrier identity. Never a Palimpsest semantic id. */
 export interface RuntimeAgentRef {
@@ -73,6 +83,22 @@ export interface Activation {
   readonly agentDefinitionId: AgentDefinitionId;
   readonly runDefinition: RunDefinitionRef;
   readonly bindingResolution: BindingResolutionRef;
+}
+
+/**
+ * The release authority artifact (G10-E0 D-AUTH-01): generated ONLY after a
+ * successful realization, carrying the Work revision that authorized it —
+ * DERIVED from the realized RunDefinition (`RunDefinition.work.revision`),
+ * never caller-supplied — so every release effect truthfully answers "which
+ * Work/plan revision authorized this mutation?".
+ */
+export interface RuntimeReleaseHandle {
+  readonly schemaVersion: 1;
+  readonly realizationKey: string;
+  readonly activationId: ActivationId;
+  readonly runtimeAgent: RuntimeAgentRef;
+  readonly authorizedWorkRevision: number;
+  readonly runDefinition: RunDefinitionRef;
 }
 
 /**
@@ -156,6 +182,50 @@ export function materializeActivation(input: {
     runDefinition: Object.freeze({ ...input.runDefinition }),
     bindingResolution: Object.freeze({ ...input.bindingResolution }),
   });
+}
+
+/**
+ * Materialize the RuntimeReleaseHandle — only the realization service calls
+ * this, immediately after a successful carrier effect, deriving
+ * `authorizedWorkRevision` from the realized RunDefinition. Deep-frozen.
+ */
+export function materializeRuntimeReleaseHandle(input: {
+  readonly realizationKey: string;
+  readonly activationId: ActivationId;
+  readonly runtimeAgent: RuntimeAgentRef;
+  readonly workRevision: number;
+  readonly runDefinition: RunDefinitionRef;
+}): RuntimeReleaseHandle {
+  if (
+    typeof input.workRevision !== "number" ||
+    !Number.isSafeInteger(input.workRevision) ||
+    input.workRevision < 0
+  ) {
+    throw new RuntimeRealizationError(
+      "incoherent",
+      "authorizedWorkRevision must be derived from the realized RunDefinition's Work revision",
+    );
+  }
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    realizationKey: input.realizationKey,
+    activationId: input.activationId,
+    runtimeAgent: Object.freeze({ ...input.runtimeAgent }),
+    authorizedWorkRevision: input.workRevision,
+    runDefinition: Object.freeze({ ...input.runDefinition }),
+  });
+}
+
+/** Validate a caller-supplied activation context id (stable-identifier grammar; never empty). */
+export function requireActivationContextId(value: string): ActivationContextId {
+  const normalized = normalizeStableIdentifier(value);
+  if (!isStableIdentifier(normalized)) {
+    throw new RuntimeRealizationError(
+      "incoherent",
+      "activationContext must be a stable identifier (1-128 ASCII, [A-Za-z0-9._:-], non-empty) — retry-vs-replacement is explicit, never defaulted",
+    );
+  }
+  return normalized;
 }
 
 /** Materialize the final RuntimeAttachment. `session` is carried only when the host supplied one. Deep-frozen. */

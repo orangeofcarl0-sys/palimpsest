@@ -30,6 +30,7 @@ import type {
   RuntimeObservationPort,
   RuntimeRealizationOutcome,
   RuntimeRealizationRequest,
+  RuntimeReleaseHandle,
 } from "./runtime/index.js";
 import {
   makeRuntimeRealizationService,
@@ -81,11 +82,7 @@ export interface InstalledRuntime {
   /** Present iff a runtime carrier port was supplied. */
   readonly realize?: (request: RuntimeRealizationRequest) => Promise<RuntimeRealizationOutcome>;
   /** Present iff a runtime carrier port was supplied. */
-  readonly release?: (request: {
-    readonly realizationKey: string;
-    readonly activationId: string;
-    readonly runtimeAgent: { readonly runtimeAdapter: string; readonly agentId: string };
-  }) => Promise<
+  readonly release?: (handle: RuntimeReleaseHandle) => Promise<
     { readonly status: "released" } | { readonly status: "failed"; readonly reason: string; readonly detail: string }
   >;
 }
