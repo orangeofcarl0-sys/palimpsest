@@ -19,8 +19,8 @@ normal merge (no squash, no force, no bypass).
 | --- | --- | --- | --- | --- | --- |
 | C0 (incl. campaign Stage-0 review) | `experiment/g10-c0-minimal-architecture-identity` | #17 | `34944e6` (run 34706885164; one documented `E2E-DEBUG-01` flake + failed-job rerun on the prior HEAD cycle) | `637f153` | `637f153` — canonical CI run 34706984010 **success** |
 | C1 | `experiment/g10-c1-run-definition-grounding` | #18 | `8ca9319` (run 34708165133, first-run green) | `f9d3b83` | `f9d3b83` |
-| C2 | `experiment/g10-c2-binding-observation-grounding` | #19 | `ce72395` (run 34708980122, first-run green) | `7b50f0c` | `7b50f0c` — canonical CI: unit PASS; e2e `E2E-DEBUG-01` flake ×2 (runs 34709045262 first attempt + failed-job rerun), resolved by a further documented failed-job rerun per §89 |
-| C3 | `experiment/g10-c3-grounded-binding-plan` | #20 | recorded in `G10-C3-DELIVERY.md` / PR description | recorded at merge | recorded at merge |
+| C2 | `experiment/g10-c2-binding-observation-grounding` | #19 | `ce72395` (run 34708980122, first-run green) | `7b50f0c` | `7b50f0c` — canonical CI run 34709045262: unit PASS, e2e `E2E-DEBUG-01` flake ×2, resolved by documented failed-job reruns → **success** |
+| C3 | `experiment/g10-c3-grounded-binding-plan` | #20 | `36dada8` (run 34709964645, first-run green) | `297ffee` | `297ffee` — canonical CI run 34710038956 **success** |
 
 Historical flakes (`E2E-DEBUG-01` / `E2E-RUNTIME-03` runtime-debugger
 nondeterminism) were handled exclusively by failed-job reruns with every
@@ -143,6 +143,11 @@ runtime attachment, and effect admission remain outside (next campaign:
 ```text
 G10-C RUN GROUNDING CAMPAIGN: PASS
 ```
+
+**Campaign-final canonical gate (§97).** On canonical main `297ffee`:
+`git diff --check` clean; unit **71 files / 615 tests passed**; `pnpm build`
+and `pnpm build:web` pass; local e2e (`retries = 0`) **21 passed**; remote
+canonical-main CI run **34710038956** **success** (first run).
 
 All §99 PASS criteria hold: C0 canonical; Architecture/RunConfiguration/
 Snapshot artifact-grounded; RunDefinition implemented as a ref-only
