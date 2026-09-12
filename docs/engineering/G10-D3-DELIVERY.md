@@ -47,8 +47,9 @@ Merged normally at stage close.
    outcome), D2 tests (renamed service method + D3 semantics). Untouched:
    binding kernel, run package, scheduler, state, install, frozen contracts.
 8. **Gates?** Full unit **74 files / 645 tests** (post-D2 baseline 73/635);
-   builds pass; `git diff --check` clean; local e2e 21/21; remote CI on the
-   actual final HEAD recorded below / in the PR description.
+   builds pass; `git diff --check` clean; local e2e 21/21; remote CI:
+   implementation-HEAD run **34714180943** **first-run green**. The
+   tip-at-close run is cited in the PR description.
 
 ## Verdict
 
