@@ -126,5 +126,7 @@ proofs); B3-M01…M14 and B3C-M01…M06 all remain green (§15).
 unit PASS, e2e FAIL (`E2E-DEBUG-01`, 20/21 — task-1 remained hidden). After the
 BC-06b fix, the new final PR HEAD (the B3C2 closure commit) obtained
 **unit PASS + e2e PASS** on its own workflow (§21–§22: final-head green, not an
-ancestor commit's green); the exact SHA and run id are recorded in
-`G10-B3-DELIVERY.md` once CI completes on that HEAD.
+ancestor commit's green); Final-head record: SHA `7cf71d4`
+(`7cf71d4da58ea6a8be0a006e1b60cdaeed6458f0`), run `34698249642` — initial e2e
+FAIL on the documented `E2E-DEBUG-01`/`E2E-RUNTIME-03` flake, **passed on
+failed-job re-run**: final outcome unit PASS + e2e PASS.

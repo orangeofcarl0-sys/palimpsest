@@ -61,3 +61,18 @@ rows. Corrections, with the new B3C tests mapped explicitly:
 | `BIND1-INV-08` immutability (rebinding) | "implemented + machine-tested" | nested provenance aliased caller input; selections unfrozen; now **contract-boundary frozen copies** | `binding_conformance` B3C-M06 |
 
 All other rows stand unchanged.
+
+## Addendum 2 — B3C2 nested-immutability coverage (BC-06b, 2026-09-12)
+
+`BIND1-INV-07` (single authoritative resolution) and `BIND1-INV-08` (immutable
+auditable artifacts) coverage now points to the B3C2 regressions rather than the
+pre-B3C2 claim:
+
+| Invariant / closure | Code surface | Test | Status |
+|---|---|---|---|
+| `BIND1-INV-07` single truth + digest integrity | `materializeResolutionResult` (digest over frozen content) | `binding_conformance` B3C2: digest equals `computeBindingResolutionDigest(result)` after failed mutation attempts | implemented + machine-tested (now includes nested-freeze proof) |
+| `BIND1-INV-08` immutable auditable artifact | `resolveBindingCore` frozen provenance (architecture/work/intentSource/binding/snapshot/policy), frozen continuity selections, frozen semantic results | `binding_conformance` B3C2: `Object.isFrozen` on result and every nested object; `TypeError` mutation attempts; materialization preserves frozen state by reference | implemented + machine-tested (was overstated: input detachment only) |
+| BC-06a input detachment | provenance built from copied fields | `binding_conformance` B3C-M06 (retained) | implemented + machine-tested |
+| BC-06b nested runtime immutability | frozen nested constructors in `resolveBindingCore` | `binding_conformance` B3C2 group (5 tests) | implemented + machine-tested |
+
+No other rows changed.

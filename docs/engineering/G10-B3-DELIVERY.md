@@ -210,5 +210,8 @@ Gates after B3C2: binding suite **88 passed** (83 + 5); full `pnpm test`
 65 files / **521 tests**; build + build:web pass; `pnpm test:e2e` **21 passed**.
 
 CI history preserved (§23): HEAD `54b73bb`, run `34695840551`, unit PASS,
-e2e FAIL (`E2E-DEBUG-01`, 20/21). Final-head record: commit `54a5c8db`-placeholder
-replaced below after CI.
+e2e FAIL (`E2E-DEBUG-01`, 20/21 — task-1 remained hidden). **Final-head record
+(§21/§22):** PR HEAD `7cf71d4` (`7cf71d4da58ea6a8be0a006e1b60cdaeed6458f0`), run
+`34698249642` — initial e2e FAIL on the documented debugger flake
+(`E2E-DEBUG-01` + `E2E-RUNTIME-03`, 19/21), **passed on failed-job re-run**;
+final outcome **unit PASS + e2e PASS** on the exact final HEAD.
