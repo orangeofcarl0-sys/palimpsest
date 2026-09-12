@@ -33,7 +33,9 @@ run 34710038956 success). Merged normally at stage close.
    effects, tools, binding kernel, run package, frozen contracts.
 7. **Gates?** Full unit **72 files / 626 tests** (post-C baseline 71/615);
    `pnpm build` + `pnpm build:web` pass; `git diff --check` clean; local e2e
-   21/21; remote CI on the actual final HEAD recorded below / in the PR
+   21/21 (after two documented flake runs); remote CI: implementation-HEAD
+   run **34712171849** — unit PASS, e2e FAIL (`E2E-DEBUG-01`, known family)
+   → failed-job rerun → **success**. The tip-at-close run is cited in the PR
    description.
 
 ## Verdict
