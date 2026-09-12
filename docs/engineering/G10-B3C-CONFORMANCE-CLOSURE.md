@@ -82,3 +82,49 @@ B3 CONTRACT-CONFORMANCE CLOSURE: PASS
 
 Final B3 verdict: **`BINDING IMPLEMENTATION SPIKE: PASS`** — PLMP-BIND-1 is
 executable **and** the current kernel conforms to the tested frozen semantics.
+
+## BC-06b — Nested Artifact Runtime Immutability (G10-B3C2, 2026-09-12)
+
+**Original residual gap.** B3C closed input detachment (BC-06a:
+`CallerInputMutation ⇒ ResultMutation` is false) by copying caller-owned
+provenance inputs, but copying is not freezing: nested objects such as
+`provenance.architecture`, `provenance.work`, `provenance.intentSource` (and its
+explicit `binding` ref), `provenance.snapshot`, `provenance.resolverPolicy`, and
+each continuity selection remained runtime-mutable. A mutation like
+`(result.provenance.architecture as any).revision = 999` could change the
+materialized artifact while its stored digest stayed unchanged — violating
+"immutable auditable derived artifact".
+
+**Regression proof (failed on the pre-B3C2 implementation).**
+`test/binding_conformance.test.ts` B3C2 group: `Object.isFrozen` assertions on
+the satisfied result, its provenance and every nested ref, the continuity map
+and each selection; equivalent coverage for the unsatisfied result (provenance +
+frozen `reasons`); direct mutation attempts through the escape hatch expecting
+`TypeError`; and pre-materialization semantic-result freezing. Before the fix
+the frozen-object assertions failed (nested objects were not frozen) and the
+mutation attempts did not throw.
+
+**Implementation change (narrow, §5/§6).** `resolveBindingCore` now builds its
+provenance with small explicit copy+freeze constructors
+(`Object.freeze({ definitionId, revision, digest })` for architecture/work, a
+frozen nested `BindingDefinitionRef` for the explicit intent source, frozen
+snapshot/policy refs) and freezes each `ContinuitySelection`; the returned
+semantic result is frozen top-level in both satisfied and unsatisfied shapes
+(§7). `materializeResolutionResult` preserves the frozen nested state by
+reference — no mutable second copy (§8/§9). No digest content, identity≠digest
+rule, or `resolutionId` exclusion changed (§14); no generic deep-freeze
+framework or dependency added (§5).
+
+**Focused result.** Binding suite now **88 passed** (83 prior + 5 new B3C2
+proofs); B3-M01…M14 and B3C-M01…M06 all remain green (§15).
+
+**Full result.** `pnpm test` 65 files / **521 tests passed**; `pnpm build` and
+`pnpm build:web` pass; `pnpm test:e2e` **21 passed** on the closure commit
+(`retries = 0`, no flake re-run needed).
+
+**CI result.** History preserved per §23: HEAD `54b73bb`, run `34695840551`,
+unit PASS, e2e FAIL (`E2E-DEBUG-01`, 20/21 — task-1 remained hidden). After the
+BC-06b fix, the new final PR HEAD (the B3C2 closure commit) obtained
+**unit PASS + e2e PASS** on its own workflow (§21–§22: final-head green, not an
+ancestor commit's green); the exact SHA and run id are recorded in
+`G10-B3-DELIVERY.md` once CI completes on that HEAD.

@@ -1,31 +1,43 @@
 /**
- * G10-B3C contract-conformance regression proofs.
+ * G10-B3C contract-conformance regression proofs, plus the G10-B3C2
+ * nested-runtime-immutability closure (BC-06b).
  *
- * Each test reproduced a defect on the pre-closure HEAD (3880f42) before the
- * fix was applied (test-first rule). Proofs:
+ * Each B3C test reproduced a defect on the pre-closure HEAD (3880f42) before
+ * the fix was applied (test-first rule). Proofs:
  *   B3C-M01 exact explicit subject-set equality (BC-01)
  *   B3C-M02 frozen reason-priority ordering, not lexical (BC-02)
  *   B3C-M03 intentSource ↔ explicitDefinition coherence (BC-03)
  *   B3C-M04 actual resolver-policy provenance (BC-04)
  *   B3C-M05 canonical parser representation (BC-05)
  *   B3C-M06 resolution detached from mutable inputs (BC-06)
+ *   B3C2 nested artifact runtime immutability (BC-06b)
  */
 
 import { describe, expect, it } from "vitest";
 
-import type { BindingDefinition, ResolverInput } from "../src/binding/index.js";
+import type {
+  BindingDefinition,
+  ResolverInput,
+  SatisfiedBindingResolution,
+  UnsatisfiedBindingResolution,
+} from "../src/binding/index.js";
 import {
   BindingConfigurationError,
   orderUnsatisfiedReasons,
   validateSubjectCoverage,
 } from "../src/binding/index.js";
 import {
+  computeBindingResolutionDigest,
   compileBindingIntentSource,
   materializeResolutionResult,
   parseBindingDefinition,
   resolveBindingCore,
 } from "../src/binding/index.js";
 import { authorBindingDefinition, makeInput, makeSnapshot, refOf } from "./binding_helpers.js";
+
+function point(p: string): { point: string; available: boolean } {
+  return { point: p, available: true };
+}
 
 function inputWithDefinition(
   definition: BindingDefinition,
@@ -369,6 +381,161 @@ interface SubjectBindingShape {
   readonly continuity?: Record<string, unknown>;
   readonly hard?: Record<string, unknown>;
 }
+
+describe("B3C2: nested artifact runtime immutability (BC-06b)", () => {
+  const definition = authorBindingDefinition({
+    bindingDefinitionId: "b-frozen",
+    revision: 0,
+    bindings: { S: { continuity: { pin: "P" } } },
+  });
+
+  function satisfiedResult(): SatisfiedBindingResolution {
+    const result = materializeResolutionResult(
+      resolveBindingCore(
+        makeInput({
+          intentSource: { kind: "explicit", binding: refOf(definition) },
+          explicitDefinition: definition,
+          snapshot: makeSnapshot({ ref: "snap-frozen", persistentCandidates: [point("P")] }),
+        }),
+      ),
+      "r-frozen",
+    );
+    expect(result.status).toBe("satisfied");
+    return result as SatisfiedBindingResolution;
+  }
+
+  function unsatisfiedFrozen(): UnsatisfiedBindingResolution {
+    const missing = authorBindingDefinition({
+      bindingDefinitionId: "b-frozen-unsat",
+      revision: 0,
+      bindings: { S: { continuity: { pin: "Missing" } } },
+    });
+    const result = materializeResolutionResult(
+      resolveBindingCore(
+        makeInput({
+          intentSource: { kind: "explicit", binding: refOf(missing) },
+          explicitDefinition: missing,
+        }),
+      ),
+    );
+    expect(result.status).toBe("unsatisfied");
+    return result as UnsatisfiedBindingResolution;
+  }
+
+  function expectFrozenDeep(object: unknown, label: string): void {
+    expect(Object.isFrozen(object), label).toBe(true);
+    if (object !== null && typeof object === "object") {
+      for (const value of Object.values(object as Record<string, unknown>)) {
+        if (value !== null && typeof value === "object") {
+          expectFrozenDeep(value, `${label}.{nested}`);
+        }
+      }
+    }
+  }
+
+  it("freezes the satisfied result top-level and every nested semantic object (§10)", () => {
+    const result = satisfiedResult();
+    expectFrozenDeep(result, "result");
+    // Explicit per-object assertions required by the closure spec:
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.provenance)).toBe(true);
+    expect(Object.isFrozen(result.provenance.architecture)).toBe(true);
+    expect(Object.isFrozen(result.provenance.work)).toBe(true);
+    expect(Object.isFrozen(result.provenance.intentSource)).toBe(true);
+    expect(Object.isFrozen(result.provenance.snapshot)).toBe(true);
+    expect(Object.isFrozen(result.provenance.resolverPolicy)).toBe(true);
+    expect(Object.isFrozen(result.continuity)).toBe(true);
+    if (result.provenance.intentSource.kind === "explicit") {
+      expect(Object.isFrozen(result.provenance.intentSource.binding)).toBe(true);
+    }
+    expect(Object.isFrozen(result.continuity.S)).toBe(true);
+  });
+
+  it("rejects direct nested mutation attempts on the satisfied result (§11)", () => {
+    const result = satisfiedResult();
+    expect(() => {
+      (result.provenance.architecture as { revision: number }).revision = 99;
+    }).toThrowError(TypeError);
+    expect(() => {
+      (result.provenance.work as { digest: string }).digest = "mutated";
+    }).toThrowError(TypeError);
+    expect(() => {
+      (result.provenance.snapshot as { ref: string }).ref = "mutated";
+    }).toThrowError(TypeError);
+    expect(() => {
+      (result.provenance.resolverPolicy as { version: string }).version = "99";
+    }).toThrowError(TypeError);
+    if (result.provenance.intentSource.kind === "explicit") {
+      const binding = (result.provenance.intentSource as {
+        kind: "explicit";
+        binding: { digest: string };
+      }).binding;
+      expect(() => {
+        (binding as { digest: string }).digest = "mutated";
+      }).toThrowError(TypeError);
+    }
+    expect(() => {
+      (result.continuity.S as { kind: string }).kind = "mutated";
+    }).toThrowError(TypeError);
+    // The digest stays consistent with the (unchanged) frozen content.
+    expect(result.digest).toBe(computeBindingResolutionDigest(result));
+  });
+
+  it("freezes and protects the unsatisfied result (§12)", () => {
+    const result = unsatisfiedFrozen();
+    expect(Object.isFrozen(result)).toBe(true);
+    expect(Object.isFrozen(result.provenance)).toBe(true);
+    expect(Object.isFrozen(result.provenance.architecture)).toBe(true);
+    expect(Object.isFrozen(result.provenance.work)).toBe(true);
+    expect(Object.isFrozen(result.provenance.intentSource)).toBe(true);
+    expect(Object.isFrozen(result.provenance.snapshot)).toBe(true);
+    expect(Object.isFrozen(result.reasons)).toBe(true);
+    expect(() => {
+      (result.provenance.architecture as { revision: number }).revision = 99;
+    }).toThrowError(TypeError);
+    expect(() => {
+      (result.reasons as unknown as string[]).push("extra");
+    }).toThrowError(TypeError);
+  });
+
+  it("freezes the semantic resolution before materialization (§7)", () => {
+    const semantic = resolveBindingCore(
+      makeInput({
+        intentSource: { kind: "explicit", binding: refOf(definition) },
+        explicitDefinition: definition,
+        snapshot: makeSnapshot({ persistentCandidates: [point("P")] }),
+      }),
+    );
+    expect(Object.isFrozen(semantic)).toBe(true);
+    if (semantic.status === "satisfied") {
+      expect(Object.isFrozen(semantic.continuity)).toBe(true);
+      expect(Object.isFrozen(semantic.continuity.S)).toBe(true);
+      expect(Object.isFrozen(semantic.provenance)).toBe(true);
+      expect(Object.isFrozen(semantic.provenance.architecture)).toBe(true);
+    } else {
+      expect(Object.isFrozen(semantic.reasons)).toBe(true);
+      expect(Object.isFrozen(semantic.provenance)).toBe(true);
+    }
+  });
+
+  it("materialization preserves frozen nested state (no mutable second copy) (§8/§9)", () => {
+    const semantic = resolveBindingCore(
+      makeInput({
+        intentSource: { kind: "explicit", binding: refOf(definition) },
+        explicitDefinition: definition,
+        snapshot: makeSnapshot({ persistentCandidates: [point("P")] }),
+      }),
+    );
+    const materialized = materializeResolutionResult(semantic, "r-2");
+    if (materialized.status !== "satisfied" || semantic.status !== "satisfied") return;
+    // The materialized artifact reuses the frozen semantic provenance/continuity
+    // objects rather than creating a mutable second copy.
+    expect(materialized.provenance).toBe(semantic.provenance);
+    expect(materialized.continuity).toBe(semantic.continuity);
+    expect(Object.isFrozen(materialized.provenance.architecture)).toBe(true);
+    expect(Object.isFrozen(materialized.continuity.S)).toBe(true);
+  });
+});
 
 describe("B3C-M06: resolution detached from mutable inputs (BC-06)", () => {
   const definition = authorBindingDefinition({

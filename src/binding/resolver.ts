@@ -205,19 +205,36 @@ export function resolveBindingCore(input: ResolverInput): SemanticResolutionResu
         },
   );
 
-  const provenance: ResolutionProvenance = {
-    // BC-06: contract-boundary copies — the frozen resolution must not alias
-    // caller-mutable input objects (readonly is not runtime immutability).
-    architecture: { ...input.architecture },
-    work: { ...input.work },
+  // BC-06b: contract-boundary copies are FROZEN — the frozen resolution must
+  // neither alias caller-mutable inputs (BC-06a) nor be mutable through its own
+  // nested object graph (BC-06b). Small explicit copy+freeze constructors; no
+  // generic deep-freeze framework.
+  const provenance: ResolutionProvenance = Object.freeze({
+    architecture: Object.freeze({
+      definitionId: input.architecture.definitionId,
+      revision: input.architecture.revision,
+      digest: input.architecture.digest,
+    }),
+    work: Object.freeze({
+      definitionId: input.work.definitionId,
+      revision: input.work.revision,
+      digest: input.work.digest,
+    }),
     intentSource:
       intentSource.kind === "explicit"
-        ? { kind: "explicit", binding: { ...intentSource.binding } }
-        : { kind: "implicit_ephemeral_default", semanticVersion: 1 },
+        ? Object.freeze({
+            kind: "explicit",
+            binding: Object.freeze({
+              bindingDefinitionId: intentSource.binding.bindingDefinitionId,
+              revision: intentSource.binding.revision,
+              digest: intentSource.binding.digest,
+            }),
+          })
+        : Object.freeze({ kind: "implicit_ephemeral_default", semanticVersion: 1 }),
     runConfigurationDigest: input.runConfigurationDigest,
-    snapshot: { ref: input.snapshot.ref },
-    resolverPolicy: { ...policy },
-  };
+    snapshot: Object.freeze({ ref: input.snapshot.ref }),
+    resolverPolicy: Object.freeze({ id: policy.id, version: policy.version }),
+  });
 
   const subjects = [...input.participatingSubjects].sort();
   const reasons = new Set<BindingUnsatisfiedReason>();
@@ -245,19 +262,22 @@ export function resolveBindingCore(input: ResolverInput): SemanticResolutionResu
   }
 
   if (!satisfied) {
-    return {
+    // The semantic result is frozen before materialization so exported semantic
+    // results cannot be consumed mutably (§7); materialization preserves the
+    // frozen nested state rather than copying it again.
+    return Object.freeze({
       status: "unsatisfied",
       provenance,
       // BC-02: frozen semantic priority via the centralized ordering; dedup
       // across subjects retained (diagnostic mapping is not frozen).
       reasons: Object.freeze(orderUnsatisfiedReasons([...reasons])),
-    };
+    });
   }
-  return {
+  return Object.freeze({
     status: "satisfied",
     provenance,
     continuity: Object.freeze(sortMap(continuity)),
-  };
+  });
 }
 
 /** Materialize the frozen artifact: only satisfied results receive a resolutionId (caller-supplied, opaque). */

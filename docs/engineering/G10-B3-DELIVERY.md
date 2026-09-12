@@ -190,3 +190,25 @@ remote CI on PR #15 recorded below — final unit/e2e green required before merg
 - Final verdict: **B3 CONTRACT-CONFORMANCE CLOSURE: PASS** →
   **BINDING IMPLEMENTATION SPIKE: PASS** (frozen contract executable AND kernel
   conformant). Recommended next stage: G10-B4 after PR #15 merges.
+
+## B3C2 — nested runtime immutability + final-HEAD CI (2026-09-12)
+
+Post-B3C review found the last merge blocker: the materialized resolution was
+detached from caller inputs (BC-06a) but its **nested** objects
+(provenance refs, intent source, snapshot, policy, continuity selections) were
+not runtime-frozen, so the stored digest could diverge from mutated content.
+Closed in `src/binding/resolver.ts` with small explicit copy+freeze
+constructors — no digest semantics changed. Regression proofs added:
+`Object.isFrozen` on the satisfied result and every nested object (including the
+explicit `BindingDefinitionRef` and each continuity selection), equivalent
+unsatisfied coverage, direct `TypeError` mutation attempts, and
+pre-materialization semantic-result freezing; materialization preserves frozen
+state by reference (no mutable second copy). Final property:
+`InputDetached ∧ ArtifactRuntimeImmutable`.
+
+Gates after B3C2: binding suite **88 passed** (83 + 5); full `pnpm test`
+65 files / **521 tests**; build + build:web pass; `pnpm test:e2e` **21 passed**.
+
+CI history preserved (§23): HEAD `54b73bb`, run `34695840551`, unit PASS,
+e2e FAIL (`E2E-DEBUG-01`, 20/21). Final-head record: commit `54a5c8db`-placeholder
+replaced below after CI.
