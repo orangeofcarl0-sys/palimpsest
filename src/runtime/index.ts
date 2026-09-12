@@ -14,7 +14,7 @@ export {
   prepareRuntimeRealization,
   runtimeRealizationKey,
 } from "./identity.js";
-export { makeRuntimeRealizationService } from "./realize.js";
+export { ContinuityUnavailableError, makeRuntimeRealizationService } from "./realize.js";
 export type {
   RealizedActivation,
   RuntimeRealizationDeps,
