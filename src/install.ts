@@ -8,7 +8,10 @@
  * the git CLI port rooted at the canonical repository.
  */
 
+import { randomUUID } from "node:crypto";
 import { join } from "node:path";
+
+import { canonicalDigest } from "./schema/canonical.js";
 
 import type { RuntimeHooks } from "@ordarium/core";
 
@@ -19,6 +22,21 @@ import { TaskPolicy } from "./domain/index.js";
 import { ProjectController } from "./tools/controller.js";
 import { definePalimpsestTools } from "./tools/tools.js";
 import type { DshPluginContext, DshToolDefinition } from "./tools/dsh_types.js";
+import type {
+  LiveCompileOutcome,
+  LiveCompileRequest,
+  ObservationOutcome,
+  RuntimeCarrierPort,
+  RuntimeObservationPort,
+  RuntimeRealizationOutcome,
+  RuntimeRealizationRequest,
+} from "./runtime/index.js";
+import {
+  makeRuntimeRealizationService,
+  observeAndCompileGroundedPlan,
+  observeBindingState,
+} from "./runtime/index.js";
+import type { PersistentPointStore } from "./continuity/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -37,13 +55,61 @@ export interface InstallPalimpsestOptions {
   effectsClock?: (() => Date) | undefined;
   leaseMs?: number | undefined;
   hooks?: RuntimeHooks | undefined;
+  /** G10-D5 (additive): host-neutral runtime carrier port. Absent = no runtime surface. */
+  runtimeCarrierPort?: RuntimeCarrierPort | undefined;
+  /** G10-D5 (additive): read-only runtime/continuity observation port. */
+  runtimeObservationPort?: RuntimeObservationPort | undefined;
+  /** G10-D5 (additive): the canonical PersistentPoint store (required for persistent realization). */
+  continuityStore?: PersistentPointStore | undefined;
+  /** G10-D5 (additive): activation allocator seam; default is a deterministic digest allocator. */
+  allocateActivationId?: ((subject: string, context: string) => string) | undefined;
+  /** G10-D5 (additive): observation-instance identity allocator; default is a random UUID (effect layer). */
+  allocateSnapshotId?: (() => string) | undefined;
+}
+
+/**
+ * G10-D5: the high-level runtime service exposed when runtime wiring is
+ * supplied (§94). It coordinates local realization steps and is NOT an
+ * authority root (§98): effects stay Ordarium-admitted; observation is
+ * read-only. Operations that lack their wiring are absent — never stubbed.
+ */
+export interface InstalledRuntime {
+  /** Present iff an observation port + continuity store were supplied. */
+  readonly observe?: (scope?: { scope?: string | undefined }) => Promise<ObservationOutcome>;
+  /** Present iff an observation port + continuity store were supplied. */
+  readonly compile?: (request: LiveCompileRequest) => Promise<LiveCompileOutcome>;
+  /** Present iff a runtime carrier port was supplied. */
+  readonly realize?: (request: RuntimeRealizationRequest) => Promise<RuntimeRealizationOutcome>;
+  /** Present iff a runtime carrier port was supplied. */
+  readonly release?: (request: {
+    readonly realizationKey: string;
+    readonly activationId: string;
+    readonly runtimeAgent: { readonly runtimeAdapter: string; readonly agentId: string };
+  }) => Promise<
+    { readonly status: "released" } | { readonly status: "failed"; readonly reason: string; readonly detail: string }
+  >;
 }
 
 export interface InstalledPalimpsest {
   readonly controller: ProjectController;
   readonly tools: readonly DshToolDefinition[];
+  /** Present only when runtime wiring options are supplied (§93 backward compatibility). */
+  readonly runtime?: InstalledRuntime | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
+}
+
+/**
+ * G10-D5 default activation allocator: a domain-separated digest over
+ * (context, subject) — retry-stable (same context ⇒ same id ⇒ Ordarium
+ * idempotent dedupe), and not any forbidden identity (§21).
+ */
+export function defaultAllocateActivationId(subject: string, context: string): string {
+  return `act-${canonicalDigest({
+    domain: "palimpsest.activation-id.v1",
+    context,
+    subject,
+  }).slice(0, 32)}`;
 }
 
 export function trustedDefaultPolicy(): TaskPolicy {
@@ -88,6 +154,46 @@ export function installPalimpsest(
   });
   const tools = definePalimpsestTools(controller);
 
+  // G10-D5: the runtime service exists only when runtime wiring is supplied
+  // (§92/§93). No hidden default host behavior; the seven-tool orchestration
+  // surface is unchanged when the options are absent.
+  let runtime: InstalledRuntime | undefined;
+  if (
+    options.runtimeCarrierPort !== undefined ||
+    (options.runtimeObservationPort !== undefined && options.continuityStore !== undefined)
+  ) {
+    const observationDeps =
+      options.runtimeObservationPort !== undefined && options.continuityStore !== undefined
+        ? {
+            pointStore: options.continuityStore,
+            observationPort: options.runtimeObservationPort,
+            allocateSnapshotId: options.allocateSnapshotId ?? (() => `obs-${randomUUID()}`),
+          }
+        : undefined;
+    const realizationService =
+      options.runtimeCarrierPort === undefined
+        ? undefined
+        : makeRuntimeRealizationService({
+            effects,
+            allocateActivationId:
+              options.allocateActivationId ?? defaultAllocateActivationId,
+            port: options.runtimeCarrierPort,
+            ...(options.continuityStore === undefined ? {} : { pointStore: options.continuityStore }),
+          });
+    runtime = {
+      ...(observationDeps === undefined ? {} : { observe: () => observeBindingState(observationDeps) }),
+      ...(observationDeps === undefined
+        ? {}
+        : { compile: (request) => observeAndCompileGroundedPlan(observationDeps, request) }),
+      ...(realizationService === undefined
+        ? {}
+        : {
+            realize: (request) => realizationService.realize(request),
+            release: (request) => realizationService.releaseCarrier(request),
+          }),
+    };
+  }
+
   const disposers: (() => void)[] = [];
   for (const definition of tools) {
     const registered = context.tools.register(definition);
@@ -98,6 +204,7 @@ export function installPalimpsest(
   return {
     controller,
     tools,
+    ...(runtime === undefined ? {} : { runtime }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

@@ -140,6 +140,11 @@ runtime attachment, and effect admission remain outside (next campaign:
 
 ## 10. Final verdict
 
+> Additive closure note (added by G10-D, §116): planning was grounded at
+> canonical main `297ffee` (this campaign's endpoint). Runtime realization
+> intentionally began afterwards in the G10-D campaign — no G10-C history
+> above is rewritten.
+
 ```text
 G10-C RUN GROUNDING CAMPAIGN: PASS
 ```
