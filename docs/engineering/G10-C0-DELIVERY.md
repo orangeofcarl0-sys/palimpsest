@@ -113,6 +113,8 @@ tip-at-close workflow is cited in the PR description (an in-repo record always
 lags its own commit by one).
 
 - (finalized on the branch once the draft PR's workflows complete.)
+- Implementation HEAD (branch push): run **34705385811** on PR #17 —
+  **first-run green** (unit PASS + e2e PASS, no rerun needed).
 
 ## Verdict
 
