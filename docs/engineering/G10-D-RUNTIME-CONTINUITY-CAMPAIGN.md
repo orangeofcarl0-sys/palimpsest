@@ -20,7 +20,7 @@ review → final-head remote CI on the actual HEAD → normal merge.
 | D2 | `experiment/g10-d2-ephemeral-runtime-realization` | #22 | `df1c1d6` (run 34713349127, first-run green) | `864ff94` | `864ff94` |
 | D3 | `experiment/g10-d3-persistent-continuity` | #23 | `e7258ca` (run 34714270554, first-run green) | `ec61d74` | `ec61d74` |
 | D4 | `experiment/g10-d4-live-runtime-observation` | #24 | `45829e9` (run 34714948858) | `5d8202d` | `5d8202d` — canonical run 34715023084 **success** |
-| D5 | `experiment/g10-d5-advanced-runtime-integration` | #25 | recorded in the PR description | recorded at merge | recorded at merge |
+| D5 | `experiment/g10-d5-advanced-runtime-integration` | #25 | `39e2d1e` (run 34716269091, first-run green) | `e1a3616` | `e1a3616` — canonical run 34716352040: unit PASS, e2e `E2E-DEBUG-01` flake ×3, resolved by documented failed-job reruns → **success** |
 
 Flakes: known `E2E-DEBUG-01`/`E2E-RUNTIME-03` runtime-debugger nondeterminism
 handled exclusively by failed-job reruns with every failure preserved. One
@@ -160,10 +160,12 @@ relation between the trees.
 
 ## 13. Final verdict
 
-**Campaign-final canonical gate (§114)**: on post-D5 canonical main —
-`git diff --check` clean; unit **76 files / 655 tests**; `pnpm build` +
-`pnpm build:web` pass; local e2e **21/21**; canonical remote CI **success**
-(recorded below with the run id).
+**Campaign-final canonical gate (§114)**: on post-D5 canonical main
+`e1a3616acd6b9d9d162d9a3bcbc0f6e1fab2f403` — `git diff --check` clean; unit
+**76 files / 655 tests**; `pnpm build` + `pnpm build:web` pass; local e2e
+**21/21**; canonical remote CI run **34716352040** — unit PASS, e2e
+`E2E-DEBUG-01` flake ×3 (all preserved), resolved by documented failed-job
+reruns → **success**.
 
 All §120 PASS criteria hold: runtime authority inventory complete; identity
 boundaries executable; AgentDefinition → Activation executable with
