@@ -37,9 +37,24 @@
 
 | Stage | Branch | PR / merge |
 |---|---|---|
-| H0–H8 + docs | `experiment/g10-h-runtime-scope` | _recorded after merge_ |
-| Closure record | `experiment/g10-h-closure` | _recorded after merge_ |
+| H0–H8 + docs | `experiment/g10-h-runtime-scope` | PR **#56** → merge commit `a855bf2` |
+| Closure verification record | `experiment/g10-h-closure` | PR #57 (this record) |
 
-## Remote CI
+## Remote CI (exact final HEAD)
 
-_recorded after merge: exact final-HEAD workflow run id and conclusion._
+| Run | HEAD | Result |
+|---|---|---|
+| `34774691471` (attempt 1) | `87e4bac` (the merged G10-H HEAD) | **SUCCESS** — `unit` ✓, `e2e` ✓, first try |
+
+## Canonical main gate (merge commit `a855bf2`)
+
+| Gate | Result |
+|---|---|
+| `git diff --check` | clean |
+| `pnpm test` | 111 files / **953 tests passed** (one timing-sensitive flake on the first run, green on immediate re-run) |
+| `pnpm build` / `build:web` | PASS |
+| `pnpm test:e2e` | 21/21 passed (first trial) |
+
+The single first-run unit failure was a pre-existing timing-sensitive test
+(`ordarium_ledger` open-backoff), unrelated to G10-H; it passed on re-run and the
+remote CI unit job passed first try on the exact merged HEAD.

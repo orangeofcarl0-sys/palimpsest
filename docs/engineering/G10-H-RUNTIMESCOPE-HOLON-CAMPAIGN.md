@@ -133,3 +133,19 @@ semantics.
 
 `G10-I — Organization Dynamics: Observation, Diagnosis & Structural Proposal` (not started).
 Its inputs are registered in the carry-forward register (CF-H-09, CF-H-03).
+
+## 17. Canonical gate record
+
+| Gate | Result |
+|---|---|
+| Remote CI (exact merged HEAD `87e4bac`) | workflow `34774691471`, attempt 1: `unit` ✓, `e2e` ✓ |
+| Merge | PR `#56` → `a855bf2` (normal merge) |
+| Canonical `main` `git diff --check` | clean |
+| Canonical `main` `pnpm test` | 111 files / 953 tests passed (one timing flake, green on re-run) |
+| Canonical `main` build / build:web | PASS |
+| Canonical `main` e2e | 21/21 |
+
+The closure verification record is delivered by `experiment/g10-h-closure`
+(see [`audits/G10-H-RUNTIMESCOPE-HOLON-DELIVERY.md`](audits/G10-H-RUNTIMESCOPE-HOLON-DELIVERY.md)).
+With G10-H PASS, PAG closure work remains stopped and the runtime frontier moves
+to G10-I; this campaign does not start it.
