@@ -175,7 +175,7 @@ not obtain institution continuation authority.
 | G4 | #44 | `b7c2b50` | success first run |
 | G5 | #45 | `d79dd4c` | success first run |
 | G6 | #46 | `d328e2e` | success first run |
-| G7 | #47 | recorded on branch | recorded on branch |
+| G7 | #47 | `126c11e` | success first run (34759142111) |
 
 Known flakes `E2E-DEBUG-01` / `E2E-RUNTIME-03` used the documented failed-job
 rerun protocol; no new Campaign/Wake e2e failure was observed.
@@ -205,3 +205,15 @@ general persistent-agent architecture.
 
 `G10-H — Holon & RuntimeScope Grounding`, or `G10-H — Persistent Agent /
 Institutional Epistemic Governance`, depending on G evidence. Follow evidence.
+
+## 17. Campaign final canonical gate (§189-analogue)
+
+```text
+main SHA            126c11ed0f6718ae6550b327c0c50575e4bfa669
+git diff --check    clean
+unit                98 files / 850 tests passed
+pnpm build          PASS
+pnpm build:web      PASS
+e2e                 21/21 passed
+canonical main CI   run 34759382446 — SUCCESS (first run)
+```
