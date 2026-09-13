@@ -100,7 +100,10 @@ free of the evolution surface).
 ## 18. Carry-forward
 [`audits/G10-J-CARRY-FORWARD.md`](audits/G10-J-CARRY-FORWARD.md).
 
-## 19. Recommended next stage
+## 19. Canonical gate record
+Remote CI run `34779225213` (attempt 1) SUCCESS on the exact merged HEAD `54998f5`; PR `#60` -> `ff3c42a`; canonical main: 114 files / 981 tests, build, build:web pass; local e2e 20/21 with the documented `E2E-DEBUG-01` flake (remote e2e green).
+
+## 20. Recommended next stage
 Per the real carry-forward, the strongest candidates are Boundary Memory / LivingSpec (long-
 lived peer shared boundary state) or Runtime Structural Evolution (the deferred
 ENCAPSULATE/COLLAPSE/DISSOLVE kinds). Not started.
