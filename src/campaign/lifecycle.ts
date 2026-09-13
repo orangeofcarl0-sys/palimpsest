@@ -22,6 +22,7 @@ import type { CampaignCommitment } from "./artifacts.js";
 import type { BeliefRevision, CampaignEvidencePort, CampaignHypothesis, ClaimStandingSnapshot } from "./epistemic.js";
 import { currentBeliefStateOf } from "./epistemic.js";
 import type { CampaignProjectRef, CampaignWorkObservationPort, ProjectOperationalStanding, WorkKnowledge } from "./intervention.js";
+import { parseProjectOperationalStanding } from "./intervention.js";
 import type { CampaignWatch } from "./prospective.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
 import { CampaignStoreError } from "./store.js";
@@ -229,7 +230,10 @@ export function parseWorldSnapshot(raw: unknown, what = "CampaignWorldSnapshot")
     object.projectObservations.map((entry) => {
       const item = asRecord(entry, "projectObservation");
       exactKeys(item, ["project", "standing"], "projectObservation");
-      return Object.freeze({ project: parseProjectRef(item.project, "projectObservation.project"), standing: item.standing as ProjectOperationalStanding });
+      return Object.freeze({
+        project: parseProjectRef(item.project, "projectObservation.project"),
+        standing: parseProjectOperationalStanding(item.standing, "projectObservation.standing"),
+      });
     }),
   );
   const triggeredWatchIds = Object.freeze(object.triggeredWatchIds.map((entry) => stableId(entry, "watchId")));
@@ -244,11 +248,19 @@ function parseStanding(raw: unknown, what: string): ClaimStandingSnapshot {
   exactKeys(object, ["claim", "status", "supportingEvidenceIds", "contradictingEvidenceIds", "provenanceDigest", "digest"], what);
   const claim = asRecord(object.claim, `${what}.claim`);
   exactKeys(claim, ["claimId"], `${what}.claim`);
+  const statuses = ["SUPPORTED", "PARTIALLY_SUPPORTED", "CONTRADICTED", "INCONCLUSIVE", "STALE"];
+  if (typeof object.status !== "string" || !statuses.includes(object.status)) {
+    throw new CampaignStoreError("malformed_record", `${what}.status must be a ClaimStatus`);
+  }
+  const requireIdList = (value: unknown, field: string): readonly string[] => {
+    if (!Array.isArray(value)) throw new CampaignStoreError("malformed_record", `${what}.${field} must be an array`);
+    return Object.freeze(value.map((entry) => stableId(entry, `${what}.${field}[]`)));
+  };
   return Object.freeze({
     claim: Object.freeze({ claimId: stableId(claim.claimId, `${what}.claim.claimId`) }),
     status: object.status as ClaimStandingSnapshot["status"],
-    supportingEvidenceIds: Object.freeze((object.supportingEvidenceIds as string[]) ?? []),
-    contradictingEvidenceIds: Object.freeze((object.contradictingEvidenceIds as string[]) ?? []),
+    supportingEvidenceIds: requireIdList(object.supportingEvidenceIds, "supportingEvidenceIds"),
+    contradictingEvidenceIds: requireIdList(object.contradictingEvidenceIds, "contradictingEvidenceIds"),
     provenanceDigest: nonEmpty(object.provenanceDigest, `${what}.provenanceDigest`),
     digest: nonEmpty(object.digest, `${what}.digest`),
   });

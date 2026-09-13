@@ -89,6 +89,7 @@ export {
   makeInterventionService,
   materializeCampaignProjectRef,
   parseCampaignIntervention,
+  parseProjectOperationalStanding,
 } from "./intervention.js";
 export type {
   CampaignIntervention,
@@ -111,6 +112,7 @@ export {
   CAMPAIGN_PROSPECTIVE_EVENT_PARSERS,
   makeProspectiveService,
   parseCampaignWatch,
+  parseCampaignWatchDraft,
   parseWatchCondition,
 } from "./prospective.js";
 export type {

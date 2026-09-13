@@ -178,6 +178,16 @@ export function parseCampaignWatch(raw: unknown, what = "CampaignWatch"): Campai
   });
 }
 
+/** Strict CampaignWatchDraft parser — rejects unknown fields (§20). */
+export function parseCampaignWatchDraft(raw: unknown, what = "CampaignWatchDraft"): CampaignWatchDraft {
+  const object = asRecord(raw, what);
+  exactKeys(object, ["condition", "reason"], what);
+  return Object.freeze({
+    condition: parseWatchCondition(object.condition, `${what}.condition`),
+    reason: nonEmpty(object.reason, `${what}.reason`),
+  });
+}
+
 export interface ProspectiveServiceDeps {
   readonly store: CampaignStore;
   readonly allocateWatchId: () => WatchId;

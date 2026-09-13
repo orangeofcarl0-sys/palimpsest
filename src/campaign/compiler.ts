@@ -31,6 +31,7 @@ import type { CampaignCommitment } from "./artifacts.js";
 import type { CampaignHypothesis, CurrentBeliefState } from "./epistemic.js";
 import type { CampaignProjectRef, InterventionPurpose } from "./intervention.js";
 import type { CampaignWatchDraft } from "./prospective.js";
+import { parseCampaignWatchDraft } from "./prospective.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
 import { CampaignStoreError } from "./store.js";
 
@@ -196,11 +197,8 @@ export function parseCampaignNextActionProposal(
     if (!Array.isArray(object.watches) || object.watches.length === 0) {
       throw new CampaignStoreError("malformed_record", "a WAIT action requires at least one watch draft");
     }
-    const watches = object.watches.map((entry) => {
-      const item = asRecord(entry, "watchDraft");
-      exactKeys(item, ["condition", "reason"], "watchDraft");
-      return Object.freeze({ condition: item.condition as CampaignWatchDraft["condition"], reason: nonEmpty(item.reason, "watchDraft.reason") });
-    });
+    // §21: malformed Watch conditions must fail at compiler candidate parsing.
+    const watches = object.watches.map((entry) => parseCampaignWatchDraft(entry, "watchDraft"));
     return Object.freeze({ kind: "wait" as const, reason, watches: Object.freeze(watches) });
   }
   // §163: a compiler can never terminate a Campaign.
