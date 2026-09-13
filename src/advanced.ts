@@ -41,3 +41,10 @@ export * from "./organization/index.js";
  * authority, and authorized epoch lineage. Not the full PLMP-PAG-0 stack.
  */
 export * from "./institution/index.js";
+
+/**
+ * G10-G1: the Campaign temporal surface — advanced opt-in only. Durable
+ * long-horizon Campaign identity, commitments, and the append-only
+ * CampaignStore. Campaign ≠ Project ≠ Institution ≠ RuntimeAgent.
+ */
+export * from "./campaign/index.js";
