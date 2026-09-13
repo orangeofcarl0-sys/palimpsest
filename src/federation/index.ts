@@ -81,7 +81,7 @@ export type {
   HandoffRejectedPayload,
 } from "./commitment.js";
 export { makeCommitmentService } from "./commitment_service.js";
-export type { CommitmentDeps, CommitmentService } from "./commitment_service.js";
+export type { CommitmentDeps, CommitmentScopeGuard, CommitmentService } from "./commitment_service.js";
 export type {
   FederationMessagingDeps,
   FederationMessagingService,

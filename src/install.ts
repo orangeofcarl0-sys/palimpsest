@@ -44,6 +44,7 @@ import type {
 } from "./coordination/index.js";
 import { makeParticipationService } from "./coordination/index.js";
 import type {
+  CommitmentScope,
   FederationService,
   PeerDirectoryPort,
   PeerRef,
@@ -90,8 +91,10 @@ import type {
 import { makeRuntimeScopeService } from "./runtime_scope/index.js";
 import type { CampaignActivityObservation, CampaignActivityPort, DynamicsCollaborationPort, OrganizationDynamicsService } from "./organization_dynamics/index.js";
 import { makeOrganizationDynamicsService } from "./organization_dynamics/index.js";
-import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerPort, OrganizationEvolutionStore, OrganizationEvolutionService } from "./organization_evolution/index.js";
+import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerPort, OrganizationEvolutionStore, OrganizationEvolutionService, OrganizationFormalizationCompilerPort } from "./organization_evolution/index.js";
 import { makeOrganizationEvolutionService } from "./organization_evolution/index.js";
+import type { BoundaryArtifactTypeRegistry, BoundaryMemoryService, BoundaryMemoryStore } from "./boundary_memory/index.js";
+import { makeBoundaryMemoryService } from "./boundary_memory/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -176,6 +179,15 @@ export interface InstallPalimpsestOptions {
   organizationEvolutionAuthority?: OrganizationEvolutionAdmissionPort | undefined;
   /** G10-J (additive): institution governing the subject organization (enables the F5 path). */
   organizationEvolutionInstitutionId?: string | undefined;
+  /**
+   * G10-K (additive): the canonical Boundary Memory store. With `localPeer`, this
+   * enables `installed.boundaryMemory` — durable multi-peer shared boundary state.
+   */
+  boundaryMemoryStore?: BoundaryMemoryStore | undefined;
+  /** G10-K (additive): artifact-type registry; defaults to the builtin registry. */
+  boundaryArtifactTypes?: BoundaryArtifactTypeRegistry | undefined;
+  /** G10-K (additive): untrusted formalization compiler enabling FORMALIZE_ORGANIZATION. */
+  organizationFormalizationCompiler?: OrganizationFormalizationCompilerPort | undefined;
 }
 
 /**
@@ -218,6 +230,8 @@ export interface InstalledPalimpsest {
   readonly organizationDynamics?: InstalledDynamics | undefined;
   /** G10-J (additive): governed evolution — present iff dynamics + evolution store/compiler/authority. */
   readonly organizationEvolution?: InstalledEvolution | undefined;
+  /** G10-K (additive): boundary memory — present iff a boundary store + localPeer are supplied. */
+  readonly boundaryMemory?: InstalledBoundaryMemory | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -241,6 +255,12 @@ export interface InstalledDynamics {
 /** G10-J: the governed-evolution surface (unified mutating boundary). */
 export interface InstalledEvolution {
   readonly service: OrganizationEvolutionService;
+}
+
+/** G10-K: the collaborative boundary-memory surface (shared boundary state). */
+export interface InstalledBoundaryMemory {
+  readonly store: BoundaryMemoryStore;
+  readonly service: BoundaryMemoryService;
 }
 
 /**
@@ -470,6 +490,19 @@ export function installPalimpsest(
     };
   }
 
+  // G10-K: Boundary Memory exists only when a boundary store and a local peer are
+  // supplied (§66). Authorship derives from `localPeer`; without it there is no
+  // truthful local author, so the surface is absent — never stubbed.
+  let boundaryMemory: InstalledBoundaryMemory | undefined;
+  if (options.boundaryMemoryStore !== undefined && options.localPeer !== undefined) {
+    const service = makeBoundaryMemoryService({
+      store: options.boundaryMemoryStore,
+      localPeer: options.localPeer,
+      ...(options.boundaryArtifactTypes === undefined ? {} : { types: options.boundaryArtifactTypes }),
+    });
+    boundaryMemory = { store: options.boundaryMemoryStore, service };
+  }
+
   // G10-E5 (§132–§135): the federation service exists only when the full
   // collaboration wiring is supplied. No hidden default peers or transports;
   // the high-level service is the recommended path (never raw transport).
@@ -494,6 +527,16 @@ export function installPalimpsest(
       localPeer: options.localPeer,
       allocateCommitmentId: () => `com-${randomUUID()}`,
       allocateHandoffId: () => `ho-${randomUUID()}`,
+      // G10-K §27: only boundary memory can verify an exact accepted revision.
+      ...(boundaryMemory === undefined
+        ? {}
+        : {
+            scopeGuard: {
+              admitScope: async (scope: CommitmentScope) => {
+                if (scope.kind === "boundary_revision") await boundaryMemory!.service.admitBoundaryRevisionScope(scope.revision);
+              },
+            },
+          }),
     });
     const participation = makeParticipationService({
       store: options.coordinationStore,
@@ -744,6 +787,16 @@ export function installPalimpsest(
       ...(institution === undefined || options.organizationEvolutionInstitutionId === undefined
         ? {}
         : { institution: { institutionId: options.organizationEvolutionInstitutionId, service: institution.service, store: institution.store } }),
+      // G10-K CF-J-02: FORMALIZE_ORGANIZATION is enabled only when an accepted
+      // blueprint source (boundary memory) AND an untrusted formalization compiler exist.
+      ...(boundaryMemory === undefined || options.organizationFormalizationCompiler === undefined
+        ? {}
+        : {
+            formalization: {
+              boundary: { acceptedBlueprint: (input: { readonly workspaceId: string; readonly artifactId: string }) => boundaryMemory!.service.acceptedBlueprint(input) },
+              compiler: options.organizationFormalizationCompiler,
+            },
+          }),
     });
     organizationEvolutionInstalled = { service: organizationEvolution };
   }
@@ -766,6 +819,7 @@ export function installPalimpsest(
     ...(holons === undefined ? {} : { holons }),
     ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
     ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled }),
+    ...(boundaryMemory === undefined ? {} : { boundaryMemory }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

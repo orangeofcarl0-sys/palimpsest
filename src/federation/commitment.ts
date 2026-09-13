@@ -28,6 +28,8 @@ import { parsePeerRef } from "./peer.js";
 import type { AttemptRef } from "../coordination/index.js";
 import { CoordinationStoreError as StoreError } from "../coordination/errors.js";
 import { canonicalDigest } from "../schema/canonical.js";
+import type { AcceptedBoundaryRevisionRef } from "../boundary_memory/ref.js";
+import { parseAcceptedBoundaryRevisionRef } from "../boundary_memory/ref.js";
 import {
   asObject,
   requireBoolean,
@@ -41,7 +43,14 @@ export type HandoffId = string;
 
 export type CommitmentScope =
   | { readonly kind: "attempt_participation"; readonly attempt: AttemptRef }
-  | { readonly kind: "contact_need"; readonly contactNeedId: string };
+  | { readonly kind: "contact_need"; readonly contactNeedId: string }
+  /**
+   * G10-K §27: responsibility bound to an EXACT ACCEPTED boundary revision.
+   * A candidate revision is not representable in this position, so
+   * `candidate revision ≠ commitment scope` holds by type; boundary acceptance
+   * still does not itself create any commitment.
+   */
+  | { readonly kind: "boundary_revision"; readonly revision: AcceptedBoundaryRevisionRef };
 
 /** Canonical typed terms (§90): a statement plus its canonical digest — never arbitrary JSON. */
 export interface CommitmentTerms {
@@ -89,7 +98,8 @@ export class CommitmentError extends Error {
       | "not_current_holder"
       | "commitment_not_active"
       | "unauthenticated_acceptance"
-      | "handoff_invalid",
+      | "handoff_invalid"
+      | "unverified_scope",
     message: string,
   ) {
     super(message);
@@ -188,7 +198,18 @@ export function parseCommitmentScope(value: unknown, what = "scope"): Commitment
       contactNeedId: requireStableId(scoped.contactNeedId, `${what}.contactNeedId`),
     });
   }
-  throw new StoreError(`${what}.kind must be one of attempt_participation, contact_need`);
+  if (record.kind === "boundary_revision") {
+    const scoped = strictObject(
+      value,
+      { allowed: ["kind", "revision"], required: ["kind", "revision"] },
+      what,
+    );
+    return Object.freeze({
+      kind: "boundary_revision" as const,
+      revision: parseAcceptedBoundaryRevisionRef(scoped.revision, `${what}.revision`),
+    });
+  }
+  throw new StoreError(`${what}.kind must be one of attempt_participation, contact_need, boundary_revision`);
 }
 
 /** Strict CommitmentOffer artifact. */

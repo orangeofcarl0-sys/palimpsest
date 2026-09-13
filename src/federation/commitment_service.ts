@@ -47,11 +47,22 @@ import { CommitmentError, commitmentTermsOf, successorCommitmentIdOf } from "./c
 
 export const FEDERATION_SCOPE = "federation";
 
+/**
+ * G10-K §27: fail-closed verification of a `boundary_revision` commitment scope.
+ * Only boundary memory can answer whether a ref is an exact ACCEPTED revision, so
+ * the host injects this read-only guard. Absent ⇒ boundary scopes are refused.
+ */
+export interface CommitmentScopeGuard {
+  /** Throws to reject the scope (never silently downgrades to a weaker check). */
+  admitScope(scope: CommitmentScope): Promise<void>;
+}
+
 export interface CommitmentDeps {
   readonly store: CoordinationStore;
   readonly localPeer: PeerRef;
   readonly allocateCommitmentId: () => CommitmentId;
   readonly allocateHandoffId: () => HandoffId;
+  readonly scopeGuard?: CommitmentScopeGuard | undefined;
 }
 
 interface HistoryEntry {
@@ -171,6 +182,12 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     readonly scope: CommitmentScope;
     readonly statement: string;
   }): Promise<CommitmentOffer> {
+    if (input.scope.kind === "boundary_revision") {
+      if (deps.scopeGuard === undefined) {
+        throw new CommitmentError("unverified_scope", "a boundary_revision commitment scope requires a boundary-memory scope guard (fail closed)");
+      }
+      await deps.scopeGuard.admitScope(input.scope);
+    }
     const terms = commitmentTermsOf(input.statement);
     const offer: CommitmentOffer = Object.freeze({
       commitmentId: deps.allocateCommitmentId(),

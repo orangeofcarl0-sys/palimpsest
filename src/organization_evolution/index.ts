@@ -43,7 +43,18 @@ export { EVOLUTION_ASSESSMENT_DOMAIN, makeOrganizationEvolutionService } from ".
 export type {
   EvolutionInspection,
   EvolutionOutcome,
+  EvolutionRequest,
   OrganizationEvolutionDeps,
   OrganizationEvolutionInstitutionWiring,
   OrganizationEvolutionService,
 } from "./service.js";
+
+/** G10-K CF-J-02: governed FORMALIZE_ORGANIZATION (blueprint → genesis definition). */
+export { FORMALIZATION_CANDIDATE_DOMAIN, formalizationAssessmentDigestOf, formalizationCandidateDigestOf, parseCompleteFormalizationCandidate } from "./formalization.js";
+export type {
+  CompleteFormalizationCandidate,
+  OrganizationFormalizationBoundaryPort,
+  OrganizationFormalizationCompilerInput,
+  OrganizationFormalizationCompilerPort,
+  OrganizationFormalizationWiring,
+} from "./formalization.js";

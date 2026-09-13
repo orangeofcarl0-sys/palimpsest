@@ -313,10 +313,15 @@ describe("G10-J adversarial & firewalls", () => {
     for (const file of ["dynamics.ts", "service.ts"]) {
       expect(strip(SRC(`organization_dynamics/${file}`))).not.toMatch(/registerRevision|activateOrganizationTransformation|commitTransition/);
     }
-    // The evolution module never writes Organization definitions directly.
+    // The evolution module reuses the F3 activation path for REVISE/SPLIT/MERGE.
     const evolutionCode = strip(SRC("organization_evolution/service.ts"));
-    expect(evolutionCode).not.toMatch(/registerRevision\b/);
     expect(evolutionCode).toMatch(/activateOrganizationTransformation/); // reuses F3
+    // G10-K additive CF-J-02: FORMALIZE_ORGANIZATION genesis is a direct
+    // OrganizationStore registration (there is no F3 transformation for genesis),
+    // and it is reachable ONLY after the independent authority seam authorizes.
+    const genesisIndex = evolutionCode.indexOf("registerRevision");
+    expect(genesisIndex).toBeGreaterThan(-1);
+    expect(evolutionCode.slice(0, genesisIndex)).toMatch(/authorityOutcome\.outcome === "denied"/);
     expect(SRC("index.ts")).not.toMatch(/organization_evolution|OrganizationEvolution/);
   });
 
