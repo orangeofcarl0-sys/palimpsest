@@ -189,7 +189,15 @@ export type CampaignEventType =
   | "WATCH_INSTALLED"
   | "WATCH_TRIGGERED"
   | "WATCH_CANCELLED"
-  | "WAIT_DECIDED";
+  | "WAIT_DECIDED"
+  | "CHECKPOINT_RECORDED"
+  | "CAMPAIGN_QUIESCING"
+  | "CAMPAIGN_DORMANT"
+  | "WAKE_STARTED"
+  | "WORLD_RECONCILED"
+  | "COMMITMENTS_REVIEWED"
+  | "WAKE_COMPLETED"
+  | "CAMPAIGN_TERMINATED";
 
 export interface CommitmentOpenedPayload {
   readonly commitment: CampaignCommitment;

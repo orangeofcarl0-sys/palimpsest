@@ -127,3 +127,23 @@ export type {
   WatchId,
   WatchStatus,
 } from "./prospective.js";
+
+/** G10-G5: lifecycle, checkpoints, wake cycles, world reconciliation. */
+export {
+  CAMPAIGN_LIFECYCLE_EVENT_PARSERS,
+  makeLifecycleService,
+  parseCampaignCheckpoint,
+  parseWorldSnapshot,
+} from "./lifecycle.js";
+export type {
+  CampaignCheckpoint,
+  CampaignInstitutionEpochSource,
+  CampaignLifecycleState,
+  CampaignWakeState,
+  CampaignWorldSnapshot,
+  InstitutionEpochRefLike,
+  LifecycleService,
+  LifecycleServiceDeps,
+  WakeCycleId,
+  WorldObservationResult,
+} from "./lifecycle.js";
