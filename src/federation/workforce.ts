@@ -27,9 +27,10 @@ import type { DurableContinuityRef } from "../binding/contract.js";
 import type { CoordinationEvent, CoordinationStore } from "../coordination/store.js";
 import type { PeerAdvertisement, PeerContinuityAssociation, PeerRef } from "./peer.js";
 import type { InboxView } from "./messaging.js";
-import type { CommitmentId, CommitmentOffer } from "./commitment.js";
+import type { CommitmentOffer } from "./commitment.js";
 import type { Participation } from "../coordination/participation.js";
 import { FEDERATION_SCOPE } from "./messaging.js";
+import { activeCommitmentRecords } from "./coalition.js";
 
 export interface ManpowerPointView {
   readonly peer: PeerRef;
@@ -71,15 +72,8 @@ export async function manpowerPointView(
   const activeCommitments: CommitmentOffer[] = [];
   const activeParticipations: Participation[] = [];
 
-  const commitmentIds = new Set<CommitmentId>();
-  for (const event of events) {
-    if (event.type === "COMMITMENT_OFFERED") {
-      commitmentIds.add((event.payload as { offer: CommitmentOffer }).offer.commitmentId);
-    }
-  }
-  for (const commitmentId of commitmentIds) {
-    const state = deriveCommitment(events, commitmentId);
-    if (state?.active === true && state.holderPeerId === peer.peerId) activeCommitments.push(state.offer);
+  for (const record of activeCommitmentRecords(events)) {
+    if (record.active && record.holder.peerId === peer.peerId) activeCommitments.push(record.offer);
   }
   for (const event of events) {
     if (event.type === "PARTICIPATION_STARTED") {
@@ -109,64 +103,28 @@ export async function manpowerPointView(
   });
 }
 
-function deriveCommitment(
-  events: readonly CoordinationEvent[],
-  commitmentId: CommitmentId,
-): { active: boolean; offer: CommitmentOffer; holderPeerId: string } | undefined {
-  let offer: CommitmentOffer | undefined;
-  let holderPeerId: string | undefined;
-  let active = false;
-  for (const event of events) {
-    if (event.type === "COMMITMENT_OFFERED") {
-      const candidate = (event.payload as { offer: CommitmentOffer }).offer;
-      if (candidate.commitmentId === commitmentId) {
-        offer = candidate;
-        holderPeerId = candidate.proposedHolder.peerId;
-      }
-    } else if (event.type === "COMMITMENT_ACCEPTED") {
-      const payload = event.payload as { commitmentId: CommitmentId; acceptedBy: PeerRef };
-      if (payload.commitmentId === commitmentId && offer !== undefined) {
-        active = true;
-        holderPeerId = payload.acceptedBy.peerId;
-      }
-    } else if (
-      event.type === "COMMITMENT_REJECTED" ||
-      event.type === "COMMITMENT_RELEASED" ||
-      event.type === "COMMITMENT_SUPERSEDED"
-    ) {
-      const payload = event.payload as { commitmentId: CommitmentId };
-      if (payload.commitmentId === commitmentId) active = false;
-    }
-  }
-  if (offer === undefined || holderPeerId === undefined) return undefined;
-  return { active, offer, holderPeerId };
-}
-
 /**
  * Derived coalition view for one scope (§115/§116/§117): peers holding
  * active commitments whose scope matches. No hierarchy is inferred.
+ *
+ * This is the legacy string-scoped projection of the F1 formal coalition
+ * snapshot — it shares the ONE active-commitment derivation
+ * (`activeCommitmentRecords`) and adds no independent truth.
  */
 export async function coalitionView(
   deps: WorkforceViewDeps,
   scope: string,
 ): Promise<CoalitionView> {
   const events = await eventsOf(deps.store);
-  const commitmentIds = new Set<CommitmentId>();
-  for (const event of events) {
-    if (event.type === "COMMITMENT_OFFERED") {
-      commitmentIds.add((event.payload as { offer: CommitmentOffer }).offer.commitmentId);
-    }
-  }
   const peers = new Map<string, PeerRef>();
-  for (const commitmentId of commitmentIds) {
-    const state = deriveCommitment(events, commitmentId);
-    if (state === undefined || !state.active) continue;
+  for (const record of activeCommitmentRecords(events)) {
+    if (!record.active) continue;
     const scopeKey =
-      state.offer.scope.kind === "attempt_participation"
-        ? `${state.offer.scope.attempt.projectId}/${state.offer.scope.attempt.attemptId}`
-        : state.offer.scope.contactNeedId;
+      record.offer.scope.kind === "attempt_participation"
+        ? `${record.offer.scope.attempt.projectId}/${record.offer.scope.attempt.attemptId}`
+        : record.offer.scope.contactNeedId;
     if (scopeKey !== scope) continue;
-    peers.set(state.holderPeerId, { schemaVersion: 1, peerId: state.holderPeerId });
+    peers.set(record.holder.peerId, { schemaVersion: 1, peerId: record.holder.peerId });
   }
   return Object.freeze({
     scope,
