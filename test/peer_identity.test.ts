@@ -124,7 +124,7 @@ describe("E2-M10: unknown directory ≠ empty directory (§52)", () => {
     };
     const need = materializeContactNeed({
       contactNeedId: "need-1",
-      origin: { kind: "runtime_scope", scope: "local" },
+      origin: { kind: "runtime_scope", scope: { schemaVersion: 1, scopeId: "local" } },
       competenceTags: ["typescript"],
       reason: "r",
     });
@@ -139,7 +139,7 @@ describe("E2-M11/M12: deterministic matching; candidate ≠ assignment (§53/§5
   it("subset matching with lexical peer ordering; no candidates without a need", async () => {
     const need = materializeContactNeed({
       contactNeedId: "need-1",
-      origin: { kind: "runtime_scope", scope: "local" },
+      origin: { kind: "runtime_scope", scope: { schemaVersion: 1, scopeId: "local" } },
       competenceTags: ["typescript", "review"],
       reason: "r",
     });
@@ -172,7 +172,7 @@ describe("E2-M11/M12: deterministic matching; candidate ≠ assignment (§53/§5
     // A need with NO requested tags matches nothing (no blanket contact).
     const emptyNeed = materializeContactNeed({
       contactNeedId: "need-2",
-      origin: { kind: "runtime_scope", scope: "local" },
+      origin: { kind: "runtime_scope", scope: { schemaVersion: 1, scopeId: "local" } },
       competenceTags: [],
       reason: "r",
     });
@@ -187,7 +187,7 @@ describe("E2-M11/M12: deterministic matching; candidate ≠ assignment (§53/§5
   it("candidates are plain refs+advertisements — no assignment/commitment fields (E2-M12)", () => {
     const need = materializeContactNeed({
       contactNeedId: "need-1",
-      origin: { kind: "runtime_scope", scope: "local" },
+      origin: { kind: "runtime_scope", scope: { schemaVersion: 1, scopeId: "local" } },
       competenceTags: ["typescript"],
       reason: "r",
     });

@@ -331,3 +331,16 @@ See `docs/engineering/G10-G0-PAG-PREFLIGHT.md`.
 ## 22. Additive historical note (G10-G0/G7, §224)
 
 The G10-F architecture completed at 3f3ab6f. The F verdict above is not rewritten. G10-G later closed F-CHARTER-01, F-AUTH-01, and F-TRANSFORM-01, and built the Campaign/epistemic/wake layer on top. See docs/engineering/G10-G-CAMPAIGN-EPISTEMIC-WAKE-CAMPAIGN.md.
+
+---
+
+## 23. Additive historical note (G10-H, §246 direction)
+
+G10-H realized the runtime-organization boundary that F left deferred:
+`RuntimeScope` (typed runtime-organization identity, canonical store, membership,
+single-parent nesting, optional organization basis, lifecycle) and `Holon` (a
+derived external view — explicit `PeerRef` + boundary + provenance, no new
+durable identity). Organization remains a static immutable artifact;
+`OrganizationDefinition` never auto-creates runtime, and a runtime scope records
+its organization basis as read-only provenance. See
+[`G10-H-RUNTIMESCOPE-HOLON-CAMPAIGN.md`](G10-H-RUNTIMESCOPE-HOLON-CAMPAIGN.md).

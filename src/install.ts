@@ -79,6 +79,8 @@ import {
   makeProspectiveService,
 } from "./campaign/index.js";
 import type { CampaignProductionService, NextActionAdmissionService } from "./campaign/index.js";
+import type { HolonView, RuntimeScopeOrganizationPort, RuntimeScopeService, RuntimeScopeStore } from "./runtime_scope/index.js";
+import { makeRuntimeScopeService } from "./runtime_scope/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -144,6 +146,12 @@ export interface InstallPalimpsestOptions {
   campaignInstitutionEpochPort?: CampaignInstitutionEpochSource | undefined;
   /** G10-G7 (additive): injected campaign clock (not Date.now in materialization). */
   campaignClock?: (() => string) | undefined;
+  /**
+   * G10-H (additive): the canonical runtime-organization store. Absent = no
+   * RuntimeScope/Holon surface (never a stub). Organization grounding is
+   * verified only when an organization store is also supplied.
+   */
+  runtimeScopeStore?: RuntimeScopeStore | undefined;
 }
 
 /**
@@ -178,8 +186,23 @@ export interface InstalledPalimpsest {
   readonly institution?: InstalledInstitution | undefined;
   /** G10-G7 (additive): present only when a campaign store is supplied. */
   readonly campaign?: InstalledCampaign | undefined;
+  /** G10-H (additive): present only when a runtime-scope store is supplied. */
+  readonly runtimeScopes?: InstalledRuntimeScopes | undefined;
+  /** G10-H (additive): the derived external Holon view — present with runtimeScopes. */
+  readonly holons?: InstalledHolons | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
+}
+
+/** G10-H: the runtime-organization surface (never forces organization wiring). */
+export interface InstalledRuntimeScopes {
+  readonly store: RuntimeScopeStore;
+  readonly service: RuntimeScopeService;
+}
+
+/** G10-H: read-only external Holon projection surface. */
+export interface InstalledHolons {
+  view(scopeId: string): Promise<HolonView>;
 }
 
 /** G10-F5: the additive organization surface (never forces institution configuration). */
@@ -516,6 +539,28 @@ export function installPalimpsest(
       }),
     };
   }
+
+  // G10-H (§23): the runtime-organization surface exists only when a
+  // runtime-scope store is supplied. Organization grounding uses the same
+  // canonical organization store when present; without it a scope may still
+  // exist with NO organization association, but a supplied basis cannot be
+  // verified (fail closed).
+  let runtimeScopes: InstalledRuntimeScopes | undefined;
+  let holons: InstalledHolons | undefined;
+  if (options.runtimeScopeStore !== undefined) {
+    const organizationStore = options.organizationStore;
+    const organizations: RuntimeScopeOrganizationPort | undefined =
+      organizationStore === undefined
+        ? undefined
+        : {
+            current: async (organizationDefinitionId: string) => organizationStore.head(organizationDefinitionId),
+            exists: async (ref) => (await organizationStore.get(ref)) !== undefined,
+          };
+    const service = makeRuntimeScopeService({ store: options.runtimeScopeStore, organizations });
+    runtimeScopes = { store: options.runtimeScopeStore, service };
+    holons = { view: (scopeId) => service.holonView(scopeId) };
+  }
+
   for (const definition of tools) {
     const registered = context.tools.register(definition);
     if (typeof registered === "function") disposers.push(registered);
@@ -530,6 +575,8 @@ export function installPalimpsest(
     ...(organization === undefined ? {} : { organization }),
     ...(institution === undefined ? {} : { institution }),
     ...(campaign === undefined ? {} : { campaign }),
+    ...(runtimeScopes === undefined ? {} : { runtimeScopes }),
+    ...(holons === undefined ? {} : { holons }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

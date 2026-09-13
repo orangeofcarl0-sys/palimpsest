@@ -34,6 +34,10 @@
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 import type { ActivationRef } from "../coordination/index.js";
 import type { AttemptRef } from "../coordination/index.js";
+import { parseActivationRef, parseAttemptRef } from "../coordination/index.js";
+// G10-H H6: the runtime-scope origin is a TYPED RuntimeScopeRef, never a bare string.
+import type { RuntimeScopeRef } from "../runtime_scope/ref.js";
+import { parseRuntimeScopeRef } from "../runtime_scope/ref.js";
 
 export type PeerId = string;
 
@@ -52,6 +56,15 @@ export class PeerIdentityError extends Error {
 
 function fail(message: string): never {
   throw new PeerIdentityError(message);
+}
+
+function exactKeys(object: Record<string, unknown>, keys: readonly string[], what: string): void {
+  for (const key of Object.keys(object)) {
+    if (!keys.includes(key)) fail(`unknown ${what} field "${key}"`);
+  }
+  for (const key of keys) {
+    if (!Object.hasOwn(object, key)) fail(`${what}: field "${key}" is required`);
+  }
 }
 
 /** Materialize a PeerRef (stable-identifier grammar; deep-frozen). */
@@ -115,11 +128,34 @@ export function materializePeerAdvertisement(input: {
   });
 }
 
-/** Where a contact need came from (§48). */
+/**
+ * Where a contact need came from (§48). G10-H H6: `runtime_scope` carries a
+ * TYPED `RuntimeScopeRef` — a bare string can no longer smuggle a Work scope id
+ * or an arbitrary value into a typed provenance position.
+ */
 export type ContactNeedOrigin =
   | { readonly kind: "attempt"; readonly attempt: AttemptRef }
   | { readonly kind: "activation"; readonly activation: ActivationRef }
-  | { readonly kind: "runtime_scope"; readonly scope: string };
+  | { readonly kind: "runtime_scope"; readonly scope: RuntimeScopeRef };
+
+/** Strict parser — unknown kinds/fields and malformed refs fail closed. */
+export function parseContactNeedOrigin(raw: unknown): ContactNeedOrigin {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) fail("origin must be an object");
+  const object = raw as Record<string, unknown>;
+  if (object.kind === "attempt") {
+    exactKeys(object, ["kind", "attempt"], "origin");
+    return Object.freeze({ kind: "attempt" as const, attempt: parseAttemptRef(object.attempt, "origin.attempt") });
+  }
+  if (object.kind === "activation") {
+    exactKeys(object, ["kind", "activation"], "origin");
+    return Object.freeze({ kind: "activation" as const, activation: parseActivationRef(object.activation, "origin.activation") });
+  }
+  if (object.kind === "runtime_scope") {
+    exactKeys(object, ["kind", "scope"], "origin");
+    return Object.freeze({ kind: "runtime_scope" as const, scope: parseRuntimeScopeRef(object.scope, "origin.scope") });
+  }
+  fail(`unsupported ContactNeedOrigin kind "${String(object.kind)}"`);
+}
 
 /** An explicit semantic need to contact cognitive manpower (§48). */
 export interface ContactNeed {
@@ -145,7 +181,7 @@ export function materializeContactNeed(input: {
   return Object.freeze({
     schemaVersion: 1 as const,
     contactNeedId: input.contactNeedId,
-    origin: Object.freeze({ ...input.origin }),
+    origin: parseContactNeedOrigin(input.origin),
     competenceTags: requireTags(input.competenceTags, "competenceTags"),
     reason: input.reason,
   });
