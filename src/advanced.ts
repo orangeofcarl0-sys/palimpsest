@@ -25,3 +25,5 @@ export type { InstallPalimpsestOptions, InstalledPalimpsest, InstalledRuntime } 
  */
 export * from "./runtime/index.js";
 export * from "./continuity/index.js";
+export * from "./coordination/index.js";
+export * from "./federation/index.js";
