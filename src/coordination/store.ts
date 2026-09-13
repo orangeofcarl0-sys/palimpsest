@@ -56,7 +56,15 @@ export type CoordinationEventType =
   | "MESSAGE_DELIVERED"
   | "MESSAGE_RECEIVED"
   | "WAKE_SENT"
-  | "ACK_RECORDED";
+  | "ACK_RECORDED"
+  | "COMMITMENT_OFFERED"
+  | "COMMITMENT_ACCEPTED"
+  | "COMMITMENT_REJECTED"
+  | "COMMITMENT_RELEASED"
+  | "COMMITMENT_SUPERSEDED"
+  | "HANDOFF_OFFERED"
+  | "HANDOFF_ACCEPTED"
+  | "HANDOFF_REJECTED";
 
 export interface InvocationRecordedPayload {
   readonly invocation: Invocation;
