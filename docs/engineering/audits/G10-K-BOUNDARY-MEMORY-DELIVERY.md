@@ -65,6 +65,17 @@ K-N03 ("message ack does not accept a candidate") is structural: no message/ack 
 `acceptRevision` (the only entries are explicit authenticated peer/local peer), and the boundary
 service imports no messaging module (firewall test).
 
+## Canonical gate
+
+- Final branch HEAD `26f56c8` → PR **#62** → canonical `main` merge **`7fafe3c`**
+  (`git diff 26f56c8 7fafe3c` is empty — the tested tree IS the merged tree).
+- PR CI run `34786607850` (unit + e2e): **SUCCESS on attempt 1**.
+- Canonical main push CI run `34786679811` (unit + e2e): **SUCCESS on attempt 1**.
+- Local canonical gate: `pnpm test` 117 files / 1010 tests; `build` + `build:web` green;
+  local e2e 19/21, the two failures being the documented pre-existing flakes
+  `E2E-DEBUG-01` / `E2E-RUNTIME-03` (verified genuine flakiness: identical code passes
+  and fails across runs, and both pass in isolation).
+
 ## Honest deviations
 
 - **J1–J9 / K1–K9** are one implementation PR (plus this docs/closure PR), not one PR per stage.
