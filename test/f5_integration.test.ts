@@ -172,8 +172,8 @@ describe("F5-E2E: collaboration → coalition → organization → institution �
     expect(governed.activatedOrganizations.map((ref) => ref.revision)).toEqual([1]);
 
     // 9. Current-charter authorities approve.
-    await w.service.approve({ transitionId: governed.transition.transitionId, peer: PA });
-    await w.service.approve({ transitionId: governed.transition.transitionId, peer: PB });
+    await w.service.approveRemote({ transitionId: governed.transition.transitionId, authenticatedPeer: PA });
+    await w.service.approveRemote({ transitionId: governed.transition.transitionId, authenticatedPeer: PB });
 
     // 10. Authorized epoch advancement.
     const e1 = await w.service.advance({ transitionId: governed.transition.transitionId });
@@ -245,8 +245,8 @@ describe("F5-SPLIT: split under an institution does not fork the institution (§
       adopt: 0,
       reason: "adopt left body",
     });
-    await w.service.approve({ transitionId: governed.transition.transitionId, peer: PA });
-    await w.service.approve({ transitionId: governed.transition.transitionId, peer: PB });
+    await w.service.approveRemote({ transitionId: governed.transition.transitionId, authenticatedPeer: PA });
+    await w.service.approveRemote({ transitionId: governed.transition.transitionId, authenticatedPeer: PB });
     const epoch = await w.service.advance({ transitionId: governed.transition.transitionId });
     expect(epoch.organization.organizationDefinitionId).toBe("org-sl");
 
@@ -306,7 +306,7 @@ describe("F5-MERGE: merge under an institution does not merge institutions (§14
       assessment: merge,
       reason: "adopt merged body",
     });
-    await w.service.approve({ transitionId: governed.transition.transitionId, peer: PA });
+    await w.service.approveRemote({ transitionId: governed.transition.transitionId, authenticatedPeer: PA });
     const epoch = await w.service.advance({ transitionId: governed.transition.transitionId });
     expect(epoch.organization.organizationDefinitionId).toBe("org-merged");
     // Sources remain historical; no institution was merged.
@@ -338,8 +338,8 @@ describe("F5-MEM: 3-epoch member replacement preserves InstitutionId (§148/§16
         proposedOrganization: organizationRefOf(target),
         reason: "replace body",
       });
-      await w.service.approve({ transitionId: proposal.transitionId, peer: PA });
-      await w.service.approve({ transitionId: proposal.transitionId, peer: PB });
+      await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: PA });
+      await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: PB });
       await w.service.advance({ transitionId: proposal.transitionId });
     }
     const epochs = await w.store.epochs("inst-1");

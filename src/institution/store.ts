@@ -66,8 +66,14 @@ export class InstitutionStoreError extends Error {
 }
 
 export interface InstitutionStore {
-  /** Register a charter revision (0 for genesis, else current+1). Immutable. */
-  registerCharter(charter: InstitutionCharter): Promise<void>;
+  /**
+   * G0/F-CHARTER-01: a proposed charter revision is stored as a NON-CANONICAL
+   * candidate. It never occupies the canonical revision slot until a
+   * successful `commitTransition` registers it.
+   */
+  registerCharterCandidate(charter: InstitutionCharter): Promise<void>;
+  /** Read a candidate charter by its ref (digest-keyed). */
+  charterCandidate(ref: InstitutionCharterRef): Promise<InstitutionCharter | undefined>;
   /** Explicit genesis (§117): charter rev 0 + epoch 0 + initial organization. */
   genesis(input: { readonly charter: InstitutionCharter; readonly organization: InstitutionEpoch["organization"] }): Promise<InstitutionEpoch>;
   recordProposal(proposal: InstitutionTransitionProposal): Promise<void>;
@@ -119,6 +125,8 @@ export class SqliteInstitutionStore implements InstitutionStore {
   readonly #selectApprovalOne: Statement;
   readonly #selectHead: Statement;
   readonly #upsertHead: Statement;
+  readonly #insertCandidate: Statement;
+  readonly #selectCandidate: Statement;
 
   constructor(databasePath: string, options?: { readonly busyTimeoutMs?: number }) {
     if (databasePath !== ":memory:") {
@@ -139,7 +147,12 @@ export class SqliteInstitutionStore implements InstitutionStore {
         "transition_id TEXT NOT NULL, peer_id TEXT NOT NULL, artifact_json TEXT NOT NULL, " +
         "PRIMARY KEY (transition_id, peer_id));" +
         "CREATE TABLE IF NOT EXISTS institution_heads (" +
-        "institution_id TEXT PRIMARY KEY, epoch INTEGER NOT NULL, digest TEXT NOT NULL)",
+        "institution_id TEXT PRIMARY KEY, epoch INTEGER NOT NULL, digest TEXT NOT NULL);" +
+        // G0/F-CHARTER-01: proposed-but-unapproved charter artifacts live here,
+        // keyed by digest (so competing C@N+1 candidates coexist), NEVER in the
+        // canonical institution_charters lineage.
+        "CREATE TABLE IF NOT EXISTS institution_charter_candidates (" +
+        "candidate_digest TEXT PRIMARY KEY, institution_id TEXT NOT NULL, revision INTEGER NOT NULL, artifact_json TEXT NOT NULL)",
     );
     this.#insertCharter = this.#database.prepare(
       "INSERT INTO institution_charters (institution_id, revision, artifact_json) VALUES (?, ?, ?)",
@@ -181,6 +194,12 @@ export class SqliteInstitutionStore implements InstitutionStore {
     this.#upsertHead = this.#database.prepare(
       "INSERT INTO institution_heads (institution_id, epoch, digest) VALUES (?, ?, ?) " +
         "ON CONFLICT(institution_id) DO UPDATE SET epoch = excluded.epoch, digest = excluded.digest",
+    );
+    this.#insertCandidate = this.#database.prepare(
+      "INSERT INTO institution_charter_candidates (candidate_digest, institution_id, revision, artifact_json) VALUES (?, ?, ?, ?)",
+    );
+    this.#selectCandidate = this.#database.prepare(
+      "SELECT artifact_json FROM institution_charter_candidates WHERE candidate_digest = ?",
     );
   }
 
@@ -337,9 +356,37 @@ export class SqliteInstitutionStore implements InstitutionStore {
     this.#insertCharter.run(charter.institutionId, charter.revision, canonical);
   }
 
-  async registerCharter(charter: InstitutionCharter): Promise<void> {
-    const canonical = parseInstitutionCharter(JSON.parse(JSON.stringify(charter)));
-    this.#transactional(() => this.#insertCharterRow(canonical));
+  /**
+   * G0/F-CHARTER-01: store a proposed charter revision as a NON-CANONICAL
+   * candidate. Competing candidates for the same next revision coexist because
+   * the key is the content digest, not the revision slot.
+   */
+  async registerCharterCandidate(charter: InstitutionCharter): Promise<void> {
+    const candidate = parseInstitutionCharter(JSON.parse(JSON.stringify(charter)));
+    const json = JSON.stringify(candidate);
+    this.#transactional(() => {
+      const existing = this.#selectCandidate.get(candidate.digest) as ArtifactRow | undefined;
+      if (existing !== undefined) {
+        if (existing.artifact_json !== json) {
+          throw new InstitutionStoreError(
+            "artifact_conflict",
+            `charter candidate ${candidate.digest} already exists with different content`,
+          );
+        }
+        return;
+      }
+      this.#insertCandidate.run(candidate.digest, candidate.institutionId, candidate.revision, json);
+    });
+  }
+
+  async charterCandidate(ref: InstitutionCharterRef): Promise<InstitutionCharter | undefined> {
+    const row = this.#selectCandidate.get(ref.digest) as ArtifactRow | undefined;
+    if (row === undefined) return undefined;
+    try {
+      return parseInstitutionCharter(JSON.parse(row.artifact_json));
+    } catch (error) {
+      throw malformed("InstitutionCharter candidate", error);
+    }
   }
 
   async genesis(input: { readonly charter: InstitutionCharter; readonly organization: InstitutionEpoch["organization"] }): Promise<InstitutionEpoch> {
@@ -442,6 +489,21 @@ export class SqliteInstitutionStore implements InstitutionStore {
       } else {
         if (proposedCharter.revision !== currentCharter.revision + 1) {
           throw new InstitutionStoreError("charter_conflict", "charter revision must advance by exactly one");
+        }
+        // G0/F-CHARTER-01: only a previously-registered NON-CANONICAL candidate
+        // may become canonical at commit. A caller cannot inject an arbitrary
+        // charter artifact into the canonical lineage here.
+        const candidateRow = this.#selectCandidate.get(proposedCharter.digest) as ArtifactRow | undefined;
+        if (candidateRow === undefined) {
+          throw new InstitutionStoreError("charter_conflict", "proposed charter is not a registered candidate");
+        }
+        const candidate = parseInstitutionCharter(JSON.parse(candidateRow.artifact_json));
+        if (
+          candidate.digest !== proposedCharter.digest ||
+          candidate.institutionId !== institutionId ||
+          candidate.revision !== proposedCharter.revision
+        ) {
+          throw new InstitutionStoreError("charter_conflict", "proposed charter does not match its registered candidate");
         }
         // §111: this runs under the CURRENT charter's authority (below); the
         // new authority set cannot authorize itself into existence.

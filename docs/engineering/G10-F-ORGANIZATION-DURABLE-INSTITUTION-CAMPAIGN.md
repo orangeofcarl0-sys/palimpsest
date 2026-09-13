@@ -310,3 +310,18 @@ revision, and CampaignCompiler.
 
 Alternative: `Holon / RuntimeScope grounding`, if evidence shows organizational
 execution boundaries are now the highest-value missing layer. Follow evidence.
+
+---
+
+## 21. Additive historical note (G10-G0, §224)
+
+The G10-F architecture completed at `3f3ab6f`. The F verdict above is not
+rewritten.
+
+G10-G0 later closed three F governance gaps: F-CHARTER-01 (candidate charters
+are isolated from the canonical lineage until an approved commit),
+F-AUTH-01 (local institution approval uses a configured trusted identity, not a
+per-call caller argument), and F-TRANSFORM-01 (REVISE requires exactly
+`base.revision + 1`, matching what the organization store accepts).
+
+See `docs/engineering/G10-G0-PAG-PREFLIGHT.md`.

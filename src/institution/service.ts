@@ -33,6 +33,13 @@ export interface InstitutionServiceDeps {
   readonly store: InstitutionStore;
   readonly organizations: { get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined> };
   readonly allocateTransitionId: () => string;
+  /**
+   * G0/F-AUTH-01: the trusted LOCAL governance identity configured at
+   * assembly. `approveLocal` always uses THIS identity; a caller can never
+   * choose the local approving peer. Absent = no local approval path.
+   * Federation `localPeer` is deliberately NOT reused implicitly (§29).
+   */
+  readonly localGovernancePeer?: PeerRef | undefined;
 }
 
 export interface InstitutionService {
@@ -55,9 +62,12 @@ export interface InstitutionService {
       readonly requiredApprovals?: number;
     };
   }): Promise<InstitutionTransitionProposal>;
-  /** Explicit LOCAL approval. */
-  approve(input: { readonly transitionId: string; readonly peer: PeerRef }): Promise<InstitutionApproval>;
-  /** Remote approval — requires an authenticated peer (§119). */
+  /**
+   * G0/F-AUTH-01: explicit LOCAL approval. The approving peer is the trusted
+   * identity configured at assembly — NOT a per-call caller argument.
+   */
+  approveLocal(input: { readonly transitionId: string }): Promise<InstitutionApproval>;
+  /** Remote approval — requires an authenticated peer (§119/§30). */
   approveRemote(input: {
     readonly transitionId: string;
     readonly authenticatedPeer: PeerRef | null;
@@ -123,7 +133,9 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
         purpose: input.amendment.purpose ?? current.purpose,
         continuationAuthority: rule,
       });
-      await deps.store.registerCharter(proposedCharter);
+      // G0/F-CHARTER-01: the amendment is stored as a NON-CANONICAL candidate.
+      // It does not occupy the canonical revision slot until commit.
+      await deps.store.registerCharterCandidate(proposedCharter);
     }
     const proposal = materializeTransitionProposal({
       transitionId: deps.allocateTransitionId(),
@@ -141,8 +153,15 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
     return proposal;
   }
 
-  async function approve(input: { readonly transitionId: string; readonly peer: PeerRef }): Promise<InstitutionApproval> {
-    const approval = materializeApproval({ transitionId: input.transitionId, approvingPeer: input.peer });
+  async function approveLocal(input: { readonly transitionId: string }): Promise<InstitutionApproval> {
+    const local = deps.localGovernancePeer;
+    if (local === undefined) {
+      throw new InstitutionStoreError(
+        "invalid_registration",
+        "no local governance identity is configured — local approval is unavailable",
+      );
+    }
+    const approval = materializeApproval({ transitionId: input.transitionId, approvingPeer: local });
     await deps.store.recordApproval(approval);
     return approval;
   }
@@ -157,7 +176,14 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
         "remote institution approval requires an authenticated peer (unauthenticated input cannot approve)",
       );
     }
-    return approve({ transitionId: input.transitionId, peer: input.authenticatedPeer });
+    // The authenticated identity is asserted by the trusted transport boundary
+    // (§30); it is not cryptographic proof unless the adapter guarantees it.
+    const approval = materializeApproval({
+      transitionId: input.transitionId,
+      approvingPeer: input.authenticatedPeer,
+    });
+    await deps.store.recordApproval(approval);
+    return approval;
   }
 
   async function advance(input: {
@@ -174,7 +200,11 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
         `proposed organization ${proposal.proposedOrganization.organizationDefinitionId}@${proposal.proposedOrganization.revision} does not exist`,
       );
     }
-    const proposedCharter = await deps.store.charter(proposal.proposedCharter);
+    // G0/F-CHARTER-01: resolve the proposed charter from the canonical list
+    // (unchanged revision) or from the non-canonical candidate pool (revision).
+    const proposedCharter =
+      (await deps.store.charter(proposal.proposedCharter)) ??
+      (await deps.store.charterCandidate(proposal.proposedCharter));
     if (proposedCharter === undefined) {
       throw new InstitutionStoreError("charter_conflict", "proposed charter revision is not registered");
     }
@@ -189,5 +219,5 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
     });
   }
 
-  return { genesis, proposeTransition, approve, approveRemote, advance };
+  return { genesis, proposeTransition, approveLocal, approveRemote, advance };
 }
