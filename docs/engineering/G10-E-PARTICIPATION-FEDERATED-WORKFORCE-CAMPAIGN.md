@@ -269,3 +269,13 @@ existed is preserved here; the E verdict stands as recorded.
 
 See `docs/engineering/G10-F0-COORDINATION-INTEGRITY.md` and
 `docs/engineering/G10-F0-EVENT-PARSER-AUDIT.md`.
+
+---
+
+## 22. Additive historical note (G10-F campaign completion)
+
+The G10-F campaign (Organization, Coalition & Durable Institution Grounding)
+completed on top of the E substrate, with F0 hardening the coordination store
+first. The G10-E verdict above remains unchanged and is not rewritten.
+
+See `docs/engineering/G10-F-ORGANIZATION-DURABLE-INSTITUTION-CAMPAIGN.md`.
