@@ -50,3 +50,35 @@ export type { OrganizationFromCoalitionInput, OrganizationFromCoalitionResult } 
 
 export { declaredCapabilityIndex, roleEligibilityView } from "./eligibility.js";
 export type { RoleEligibilityBasis, RoleEligibilityEntry } from "./eligibility.js";
+
+/** G10-F3: typed organization transformation (REVISE/SPLIT/MERGE) + obligations. */
+export {
+  BOUNDARY_PORT_DIGEST_DOMAIN,
+  PROOF_OBLIGATION_DIGEST_DOMAIN,
+  activateOrganizationTransformation,
+  evaluateOrganizationTransformation,
+  planTransformationActivation,
+} from "./transformation.js";
+export type {
+  MergeNormResolution,
+  MergeProposal,
+  MergeRoleDecision,
+  MergeRoleResolution,
+  OrganizationBoundaryPort,
+  OrganizationInterfaceReport,
+  OrganizationProofObligation,
+  OrganizationProofObligationKind,
+  OrganizationTransformationAssessment,
+  OrganizationTransformationContext,
+  OrganizationTransformationKind,
+  OrganizationTransformationProposal,
+  ReviseProposal,
+  SplitNormPlacement,
+  SplitPlacement,
+  SplitProposal,
+  SplitRolePlacement,
+  SplitSuccessorSpec,
+  TransformationActivation,
+  TransformationEvidenceInspection,
+  TransformationEvidencePort,
+} from "./transformation.js";
