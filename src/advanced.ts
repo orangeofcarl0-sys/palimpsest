@@ -27,3 +27,10 @@ export * from "./runtime/index.js";
 export * from "./continuity/index.js";
 export * from "./coordination/index.js";
 export * from "./federation/index.js";
+
+/**
+ * G10-F2: the organization grounding surface — advanced opt-in only. The
+ * immutable OrganizationDefinition artifact and its canonical lineage store;
+ * no WorkGraph, coalition, runtime, or institution equivalence.
+ */
+export * from "./organization/index.js";
