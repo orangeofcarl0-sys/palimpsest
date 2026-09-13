@@ -229,3 +229,24 @@ Corrected verdict after GC PASS:
 G10-G CAMPAIGN, EPISTEMIC CONTINUITY & WAKE:
 PASS — PRODUCTION CLOSURE VERIFIED BY G10-GC
 ```
+
+---
+
+## 22. Additive historical note (G10-GC2)
+
+A second independent audit of the integrated loop reclassified G10-GC as
+`PARTIAL — WAKE ACTION PROVENANCE & PROJECT GROUNDING REQUIRED`. G10-GC2 closed
+the remaining provenance/admission gaps (exact ProjectRef grounding, mandatory
+Work completeness, canonical belief provenance, strict durable parsers,
+current-wake gating, and Project/WAIT admission bound to the exact wake). The
+original records above are not rewritten.
+
+Final corrected verdict after GC2 PASS:
+
+```text
+G10-G CAMPAIGN, EPISTEMIC CONTINUITY & WAKE:
+PASS — PRODUCTION & PROVENANCE CLOSURE VERIFIED
+```
+
+by [G10-GC](G10-GC-PAG-PRODUCTION-CLOSURE-CAMPAIGN.md) and
+[G10-GC2](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md).

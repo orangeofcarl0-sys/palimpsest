@@ -16,6 +16,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   SqliteCampaignStore,
+  inFlightWake,
+  makeCampaignProductionService,
   makeCampaignService,
   makeCompilerService,
   makeInterventionService,
@@ -59,6 +61,19 @@ function world() {
   const prospective = makeProspectiveService({ store, allocateWatchId: () => `w-${++w}`, clock: () => "2026-01-01T00:00:00Z", evidence, projects: { inspectProject: async () => ({ state: "known", value: "completed" }) } });
   const lifecycle = makeLifecycleService({ store, allocateWakeCycleId: () => `wc-${++k}`, institutions: { inspectEpoch: async () => ({ state: "known", value: EPOCH0 }) } });
   const interventions = makeInterventionService({ store, allocateInterventionId: () => `iv-${++i}`, work: { inspectProject: async () => ({ state: "known", value: "completed" }) } });
+  let pw = 0;
+  let po = 0;
+  let pr = 0;
+  const production = makeCampaignProductionService({
+    store,
+    institutions: { inspectEpoch: async () => ({ state: "known", value: EPOCH0 }) },
+    evidence,
+    work: { inspectProject: async () => ({ state: "known", value: "completed" }) },
+    allocateWakeCycleId: () => `pw-${++k}`,
+    allocateWatchId: () => `pw-${++pw}`,
+    allocateObservationId: () => `pobs-${++po}`,
+    allocateRevisionId: () => `pbr-${++pr}`,
+  });
   let cmp = 0;
   const admitted = new Map<string, CampaignProjectRef>();
   const compiler = makeCompilerService({
@@ -90,10 +105,11 @@ function world() {
         institutionEpoch: null,
         activeWatchIds: [],
         reconciliationDigest: null,
+        wakeCycleId: inFlightWake(await store.replay(campaignId)) ?? null,
       };
     },
   });
-  return { store, standings, campaign, prospective, lifecycle, interventions, compiler };
+  return { store, standings, campaign, prospective, lifecycle, interventions, compiler, production };
 }
 
 function checkpoint(store: SqliteCampaignStore) {
@@ -138,32 +154,40 @@ describe("G7-E2E/G7-EVID: the full long-horizon loop", () => {
     expect(observations.length).toBeGreaterThanOrEqual(2);
     expect((await w.campaign.currentBeliefState("camp-1")).entries[0]!.standing).toBe("contradicted");
 
-    // WAIT → dormancy.
-    await w.prospective.wait({
+    // WAIT → dormancy (canonical production path: grounded checkpoint).
+    const dormant = await w.production.admitWait({
       campaignId: "camp-1",
       reason: "no useful action now",
       watches: [{ condition: { kind: "not_before", at: "2027-01-01T00:00:00Z" }, reason: "later" }],
     });
-    await w.lifecycle.beginDormancy({ campaignId: "camp-1", checkpoint: checkpoint(w.store), reason: "wait" });
-    expect(await w.lifecycle.lifecycle("camp-1")).toBe("DORMANT");
+    expect(dormant.status).toBe("dormant");
+    expect(await w.production.lifecycleState("camp-1")).toBe("DORMANT");
 
-    // Wake → continuity check → reconcile.
-    const { wakeCycleId } = await w.lifecycle.beginWake({ campaignId: "camp-1", cause: "manual" });
-    const observed = await w.lifecycle.observeWorld({ campaignId: "camp-1", wakeCycleId });
-    if (observed.status !== "complete") throw new Error("expected complete world observation");
-    await w.lifecycle.reconcile({ campaignId: "camp-1", wakeCycleId, snapshot: observed.snapshot });
-    expect(await w.lifecycle.lifecycle("camp-1")).toBe("RECONCILING");
+    // Wake → current-world observation → reconciliation.
+    const wake = await w.production.beginWake({ campaignId: "camp-1", cause: { kind: "manual", signalId: "cli", reason: "operator" } });
+    if (wake.status !== "started") throw new Error(`expected started, got ${wake.status}`);
+    const wakeCycleId = wake.wakeCycleId;
+    const reconciled = await w.production.reconcileCurrentWorld({
+      campaignId: "camp-1",
+      wakeCycle: wakeCycleId,
+      wakeCause: { kind: "manual", signalId: "cli", reason: "operator" },
+    });
+    expect(reconciled.status).toBe("reconciled");
+    expect(await w.production.lifecycleState("camp-1")).toBe("RECONCILING");
 
-    // Compile a NEW action from the reconciled basis and admit it.
+    // Compile a NEW action from the current reconciled basis and admit it.
     const compiled = await w.compiler.compileNextAction({ campaignId: "camp-1" });
     if (compiled.status !== "compiled") throw new Error(compiled.detail);
+    expect(compiled.compiled.wake?.wakeCycleId).toBe(wakeCycleId);
     const admission = await w.compiler.admitCompiledAction({ campaignId: "camp-1", compiled: compiled.compiled });
     expect(admission.status).toBe("admitted");
+    if (admission.status !== "admitted" || admission.completion === null) throw new Error("expected a wake-bound completion ref");
 
-    await w.lifecycle.completeWake({ campaignId: "camp-1", wakeCycleId, nextAction: "project" });
-    expect(await w.lifecycle.lifecycle("camp-1")).toBe("ACTIVE");
+    await w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId, action: admission.completion });
+    expect(await w.production.lifecycleState("camp-1")).toBe("ACTIVE");
     // CampaignId survived every change.
     expect((await w.campaign.definition("camp-1"))!.campaignId).toBe("camp-1");
+    void checkpoint;
   });
 });
 

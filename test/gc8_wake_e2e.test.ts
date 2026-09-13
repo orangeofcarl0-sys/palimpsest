@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 
 import {
   SqliteCampaignStore,
+  inFlightWake,
   makeCampaignProductionService,
   makeCampaignService,
   makeCompilerService,
@@ -108,6 +109,7 @@ function worldWithMutableWorld() {
         institutionEpoch: (await institutions.inspectEpoch(definition.institutionId)).value,
         activeWatchIds: projection.watches,
         reconciliationDigest: reconciliations.length === 0 ? null : (reconciliations[reconciliations.length - 1]!.payload as { report: { digest: string } }).report.digest,
+        wakeCycleId: inFlightWake(events) ?? null,
       };
     },
   });
@@ -207,7 +209,8 @@ describe("GC8: genuine dormant-world-change long-horizon loop", () => {
     // 12. Admit the NEW project and complete the wake; old plan is not replayed.
     const admission = await w.compiler.admitCompiledAction({ campaignId: "camp-1", compiled: compiled.compiled });
     expect(admission.status).toBe("admitted");
-    await w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, nextAction: "project" });
+    if (admission.status !== "admitted" || admission.completion === null) throw new Error("expected wake-bound completion");
+    await w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, action: admission.completion });
     expect(await w.production.lifecycleState("camp-1")).toBe("ACTIVE");
     const types = (await w.store.replay("camp-1")).map((event) => event.type);
     expect(types.filter((type) => type === "PROJECT_ADMITTED")).toHaveLength(1);

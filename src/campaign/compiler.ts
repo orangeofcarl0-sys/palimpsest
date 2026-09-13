@@ -28,10 +28,15 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 import { parseProjectProposal, validateProjectProposal } from "../architecture/proposal.js";
 import type { CampaignCommitment } from "./artifacts.js";
-import type { CampaignHypothesis, CurrentBeliefState } from "./epistemic.js";
-import type { CampaignProjectRef, InterventionPurpose } from "./intervention.js";
+import type { BeliefRevision, CampaignHypothesis, CurrentBeliefState } from "./epistemic.js";
+import { currentBeliefStateOf } from "./epistemic.js";
+import type { CampaignIntervention, CampaignProjectRef, InterventionPurpose, PreBeliefStanding } from "./intervention.js";
+import { parseCampaignProjectRef } from "./intervention.js";
 import type { CampaignWatchDraft } from "./prospective.js";
 import { parseCampaignWatchDraft } from "./prospective.js";
+import type { AdmittedCampaignActionRef, ParsedWakeCycleCompleted } from "./production.js";
+import { committedReconciliationOf, inFlightWake } from "./production.js";
+import { requireCanonicalDigest } from "./digest.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
 import { CampaignStoreError } from "./store.js";
 
@@ -45,7 +50,10 @@ export interface CampaignPlanningContext {
   readonly interventionSummaries: readonly string[];
   readonly institutionEpoch: { readonly institutionId: string; readonly epoch: number; readonly digest: string } | null;
   readonly activeWatchIds: readonly string[];
+  /** GC2 §65: the EXACT committed reconciliation of the current wake, or null. */
   readonly reconciliationDigest: string | null;
+  /** GC2 §63: the WakeCycle the context was built for, when wake-origin. */
+  readonly wakeCycleId: string | null;
 }
 
 /** The untrusted planner boundary (§156/§159). Output is `unknown`. */
@@ -80,6 +88,8 @@ export interface CompiledCampaignAction {
   readonly campaignBasisThroughSeq: number;
   readonly campaignBasisDigest: string;
   readonly beliefStateDigest: string;
+  /** GC2 §63: present iff the candidate was compiled during a wake (§67). */
+  readonly wake?: { readonly wakeCycleId: string; readonly reconciliationDigest: string } | undefined;
   readonly action: ValidatedCampaignAction;
 }
 
@@ -91,31 +101,52 @@ export interface CampaignWorkAdmissionPort {
   admit(input: { readonly admissionKey: string; readonly proposal: unknown }): Promise<CampaignProjectRef>;
 }
 
+/** Required keys plus an all-or-nothing optional wake-correlation pair (§§72/§73). */
+function exactKeysWithWakeCorrelation(
+  object: Record<string, unknown>,
+  required: readonly string[],
+  what: string,
+): { readonly wakeCycleId?: string; readonly reconciliationDigest?: string } {
+  const optional = ["wakeCycleId", "reconciliationDigest"];
+  for (const key of Object.keys(object)) {
+    if (!required.includes(key) && !optional.includes(key)) {
+      throw new CampaignStoreError("malformed_record", `unknown ${what} field "${key}"`);
+    }
+  }
+  for (const key of required) {
+    if (!Object.hasOwn(object, key)) throw new CampaignStoreError("malformed_record", `${what}: field "${key}" is required`);
+  }
+  const hasWake = Object.hasOwn(object, "wakeCycleId");
+  const hasReconciliation = Object.hasOwn(object, "reconciliationDigest");
+  if (hasWake !== hasReconciliation) {
+    throw new CampaignStoreError("malformed_record", `${what}: wakeCycleId and reconciliationDigest must appear together`);
+  }
+  if (!hasWake) return {};
+  return {
+    wakeCycleId: stableId(object.wakeCycleId, `${what}.wakeCycleId`),
+    reconciliationDigest: requireCanonicalDigest(object.reconciliationDigest, `${what}.reconciliationDigest`),
+  };
+}
+
 export const CAMPAIGN_COMPILER_EVENT_PARSERS = Object.freeze({
   PROJECT_ADMISSION_PREPARED: (payload: unknown) => {
     const object = asRecord(payload, "PROJECT_ADMISSION_PREPARED");
-    exactKeys(object, ["compilationId", "admissionKey", "candidateDigest"], "PROJECT_ADMISSION_PREPARED");
+    const correlation = exactKeysWithWakeCorrelation(object, ["compilationId", "admissionKey", "candidateDigest"], "PROJECT_ADMISSION_PREPARED");
     return Object.freeze({
       compilationId: stableId(object.compilationId, "compilationId"),
       admissionKey: stableId(object.admissionKey, "admissionKey"),
-      candidateDigest: nonEmpty(object.candidateDigest, "candidateDigest"),
+      candidateDigest: requireCanonicalDigest(object.candidateDigest, "candidateDigest"),
+      ...correlation,
     });
   },
   PROJECT_ADMITTED: (payload: unknown) => {
     const object = asRecord(payload, "PROJECT_ADMITTED");
-    exactKeys(object, ["admissionKey", "project"], "PROJECT_ADMITTED");
-    const project = asRecord(object.project, "PROJECT_ADMITTED.project");
-    exactKeys(project, ["projectId", "revision", "digest"], "PROJECT_ADMITTED.project");
-    if (!Number.isSafeInteger(project.revision) || (project.revision as number) < 0) {
-      throw new CampaignStoreError("malformed_record", "project revision must be a non-negative integer");
-    }
+    const correlation = exactKeysWithWakeCorrelation(object, ["admissionKey", "compilationId", "project"], "PROJECT_ADMITTED");
     return Object.freeze({
       admissionKey: stableId(object.admissionKey, "admissionKey"),
-      project: Object.freeze({
-        projectId: stableId(project.projectId, "projectId"),
-        revision: project.revision as number,
-        digest: nonEmpty(project.digest, "digest"),
-      }),
+      compilationId: stableId(object.compilationId, "compilationId"),
+      project: parseCampaignProjectRef(object.project, "PROJECT_ADMITTED.project"),
+      ...correlation,
     });
   },
 });
@@ -219,6 +250,8 @@ export interface CampaignAdmissionState {
   readonly compilationId: string;
   readonly candidateDigest: string;
   readonly project: CampaignProjectRef | null;
+  readonly wakeCycleId: string | null;
+  readonly reconciliationDigest: string | null;
 }
 
 export interface CompilerService {
@@ -230,7 +263,15 @@ export interface CompilerService {
   admitCompiledAction(input: {
     readonly campaignId: string;
     readonly compiled: CompiledCampaignAction;
-  }): Promise<{ readonly status: "admitted"; readonly project: CampaignProjectRef } | { readonly status: "stale" | "conflict"; readonly detail: string }>;
+  }): Promise<
+    | {
+        readonly status: "admitted";
+        readonly project: CampaignProjectRef;
+        /** GC2 §73: the exact completion reference, when the admission was wake-bound. */
+        readonly completion: AdmittedCampaignActionRef | null;
+      }
+    | { readonly status: "stale" | "conflict"; readonly detail: string }
+  >;
   admissions(campaignId: string): Promise<readonly CampaignAdmissionState[]>;
 }
 
@@ -259,6 +300,18 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
     }
     const context = await deps.buildContext(input.campaignId);
     const basis = await currentBasis(input.campaignId);
+    // §64/§97: a wake-bound compile requires the CURRENT incomplete wake and its
+    // committed reconciliation — never "the latest reconciliation anywhere".
+    const events = await replay(input.campaignId);
+    const inFlight = inFlightWake(events);
+    let wake: { readonly wakeCycleId: string; readonly reconciliationDigest: string } | undefined;
+    if (inFlight !== undefined) {
+      const reconciliation = committedReconciliationOf(events, inFlight);
+      if (reconciliation === undefined) {
+        return { status: "compilation_failed" as const, detail: "the current wake has no committed reconciliation" };
+      }
+      wake = { wakeCycleId: inFlight, reconciliationDigest: reconciliation.digest };
+    }
     const raw = await deps.compiler.compile(context);
     try {
       const action = parseCampaignNextActionProposal(raw, {
@@ -272,6 +325,7 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
           campaignBasisThroughSeq: basis.throughSeq,
           campaignBasisDigest: basis.chainDigest,
           beliefStateDigest: context.beliefState.digest,
+          ...(wake === undefined ? {} : { wake }),
           action,
         }),
       };
@@ -281,12 +335,24 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
     }
   }
 
+  /** §66/§67: the admission key binds compilation, basis, AND the exact wake. */
   function admissionKeyOf(compiled: CompiledCampaignAction): string {
-    return `adm-${canonicalDigest({ domain: "palimpsest.campaign-admission.v1", compilationId: compiled.compilationId, campaignBasisDigest: compiled.campaignBasisDigest }).slice(0, 24)}`;
+    return `adm-${canonicalDigest({
+      domain: "palimpsest.campaign-admission.v1",
+      compilationId: compiled.compilationId,
+      campaignBasisDigest: compiled.campaignBasisDigest,
+      wakeCycleId: compiled.wake?.wakeCycleId ?? null,
+      reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
+    }).slice(0, 24)}`;
   }
 
   function candidateDigestOf(compiled: CompiledCampaignAction): string {
-    return canonicalDigest({ domain: "palimpsest.campaign-candidate.v1", action: compiled.action });
+    return canonicalDigest({
+      domain: "palimpsest.campaign-candidate.v1",
+      action: compiled.action,
+      wakeCycleId: compiled.wake?.wakeCycleId ?? null,
+      reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
+    });
   }
 
   async function admitCompiledAction(input: { readonly campaignId: string; readonly compiled: CompiledCampaignAction }) {
@@ -313,37 +379,129 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
     if (admitted !== undefined) {
       // Idempotent retry of a completed admission — no freshness requirement,
       // because the admission itself advanced the Campaign basis.
-      return { status: "admitted" as const, project: (admitted.payload as { project: CampaignProjectRef }).project };
+      const retried = (admitted.payload as { project: CampaignProjectRef }).project;
+      return { status: "admitted" as const, project: retried, completion: completionOf(compiled, retried, admissionKey) };
     }
     if (prepared === undefined) {
-      // §168 freshness applies only to a FIRST admission attempt.
+      // §168/§68/§69 freshness applies only to a FIRST admission attempt.
       const basis = await currentBasis(input.campaignId);
       if (basis.throughSeq !== compiled.campaignBasisThroughSeq || basis.chainDigest !== compiled.campaignBasisDigest) {
         return { status: "stale" as const, detail: "campaign_action_stale" };
       }
+      if (compiled.wake !== undefined) {
+        if (inFlightWake(events) !== compiled.wake.wakeCycleId) {
+          return { status: "stale" as const, detail: "campaign_action_stale_wake" };
+        }
+        const reconciliation = committedReconciliationOf(events, compiled.wake.wakeCycleId);
+        if (reconciliation === undefined || reconciliation.digest !== compiled.wake.reconciliationDigest) {
+          return { status: "stale" as const, detail: "campaign_action_stale_reconciliation" };
+        }
+        const belief = currentBeliefStateOf(input.campaignId, beliefRevisionsFromEvents(events));
+        if (belief.digest !== compiled.beliefStateDigest) {
+          return { status: "stale" as const, detail: "campaign_action_stale_belief" };
+        }
+      }
+      const correlation =
+        compiled.wake === undefined
+          ? {}
+          : { wakeCycleId: compiled.wake.wakeCycleId, reconciliationDigest: compiled.wake.reconciliationDigest };
       await deps.store.appendAtomic({
         expectedBasis: basis,
-        events: [request("PROJECT_ADMISSION_PREPARED", input.campaignId, { compilationId: compiled.compilationId, admissionKey, candidateDigest })],
+        events: [
+          request("PROJECT_ADMISSION_PREPARED", input.campaignId, {
+            compilationId: compiled.compilationId,
+            admissionKey,
+            candidateDigest,
+            ...correlation,
+          }),
+        ],
       });
     }
     // Idempotent external admission: a crash here is recovered by re-calling
-    // with the SAME admissionKey (§173).
-    const project = await deps.work.admit({ admissionKey, proposal: compiled.action.proposal });
-    const after = await currentBasis(input.campaignId);
+    // with the SAME admissionKey (§173/§79).
+    const rawProject = await deps.work.admit({ admissionKey, proposal: compiled.action.proposal });
+    const project = parseCampaignProjectRef(rawProject, "work admission project");
+    const correlation =
+      compiled.wake === undefined
+        ? {}
+        : { wakeCycleId: compiled.wake.wakeCycleId, reconciliationDigest: compiled.wake.reconciliationDigest };
+    // §80/§81: PROJECT_ADMITTED and the declared Intervention register together.
+    const intervention = materializeAdmissionIntervention(input.campaignId, admissionKey, project, compiled, await replay(input.campaignId));
     await deps.store.appendAtomic({
-      expectedBasis: after,
-      events: [request("PROJECT_ADMITTED", input.campaignId, { admissionKey, project })],
+      expectedBasis: (await currentBasis(input.campaignId))!,
+      events: [
+        request("PROJECT_ADMITTED", input.campaignId, { admissionKey, compilationId: compiled.compilationId, project, ...correlation }),
+        request("INTERVENTION_REGISTERED", input.campaignId, { intervention }),
+      ],
     });
-    return { status: "admitted" as const, project };
+    return { status: "admitted" as const, project, completion: completionOf(compiled, project, admissionKey) };
+  }
+
+  function beliefRevisionsFromEvents(events: readonly CampaignEvent[]): readonly BeliefRevision[] {
+    return events.filter((event) => event.type === "BELIEF_REVISED").map((event) => (event.payload as { revision: BeliefRevision }).revision);
+  }
+
+  function completionOf(compiled: CompiledCampaignAction, project?: CampaignProjectRef, admissionKey?: string): AdmittedCampaignActionRef | null {
+    if (compiled.wake === undefined) return null;
+    if (compiled.action.kind === "project" && project !== undefined && admissionKey !== undefined) {
+      return Object.freeze({
+        kind: "project" as const,
+        wakeCycleId: compiled.wake.wakeCycleId,
+        compilationId: compiled.compilationId,
+        reconciliationDigest: compiled.wake.reconciliationDigest,
+        admissionKey,
+        project,
+      });
+    }
+    return null;
+  }
+
+  function materializeAdmissionIntervention(
+    campaignId: string,
+    admissionKey: string,
+    project: CampaignProjectRef,
+    compiled: CompiledCampaignAction,
+    events: readonly CampaignEvent[],
+  ): CampaignIntervention {
+    if (compiled.action.kind !== "project") throw new CampaignStoreError("invalid_registration", "intervention requires a project action");
+    const interventionId = `iv-${canonicalDigest({
+      domain: "palimpsest.campaign-intervention.v1",
+      campaignId,
+      admissionKey,
+      project,
+    }).slice(0, 24)}`;
+    const belief = currentBeliefStateOf(campaignId, beliefRevisionsFromEvents(events));
+    const preBeliefStandings: PreBeliefStanding[] = compiled.action.intervention.targetHypothesisIds.map((hypothesisId) =>
+      Object.freeze({
+        hypothesisId,
+        standing: belief.entries.find((entry) => entry.hypothesisId === hypothesisId)?.standing ?? "inconclusive",
+      }),
+    );
+    return Object.freeze({
+      interventionId,
+      campaignId,
+      project,
+      purpose: compiled.action.intervention.purpose,
+      targetHypothesisIds: Object.freeze([...compiled.action.intervention.targetHypothesisIds]),
+      preBeliefStateDigest: belief.digest,
+      preBeliefStandings: Object.freeze(preBeliefStandings),
+    });
   }
 
   async function admissions(campaignId: string): Promise<readonly CampaignAdmissionState[]> {
     const events = await replay(campaignId);
-    const byKey = new Map<string, { admissionKey: string; compilationId: string; candidateDigest: string; project: CampaignProjectRef | null }>();
+    const byKey = new Map<string, CampaignAdmissionState>();
     for (const event of events) {
       if (event.type === "PROJECT_ADMISSION_PREPARED") {
-        const payload = event.payload as { compilationId: string; admissionKey: string; candidateDigest: string };
-        byKey.set(payload.admissionKey, { ...payload, project: null });
+        const payload = event.payload as { compilationId: string; admissionKey: string; candidateDigest: string; wakeCycleId?: string; reconciliationDigest?: string };
+        byKey.set(payload.admissionKey, {
+          admissionKey: payload.admissionKey,
+          compilationId: payload.compilationId,
+          candidateDigest: payload.candidateDigest,
+          project: null,
+          wakeCycleId: payload.wakeCycleId ?? null,
+          reconciliationDigest: payload.reconciliationDigest ?? null,
+        });
       } else if (event.type === "PROJECT_ADMITTED") {
         const payload = event.payload as { admissionKey: string; project: CampaignProjectRef };
         const existing = byKey.get(payload.admissionKey);

@@ -20,7 +20,8 @@ import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identif
 import type { CampaignEventParsers } from "./artifacts.js";
 import type { ProjectOperationalStanding, WorkKnowledge } from "./intervention.js";
 import type { CampaignProjectRef } from "./intervention.js";
-import { materializeCampaignProjectRef } from "./intervention.js";
+import { parseCampaignProjectRef } from "./intervention.js";
+import { requireCanonicalDigest } from "./digest.js";
 import type { CampaignEvidencePort, EvidenceClaimRef } from "./epistemic.js";
 import { parseEvidenceClaimRef } from "./epistemic.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
@@ -62,6 +63,43 @@ export interface CampaignProjectStandingPort {
   inspectProject(project: CampaignProjectRef): Promise<WorkKnowledge<ProjectOperationalStanding>>;
 }
 
+export type WaitAdmissionId = string;
+
+/**
+ * GC2 §84/§85: a wake-origin WAIT admission is an explicit identity bound to
+ * the exact compilation, WakeCycle, and reconciliation that produced it —
+ * independent of WatchId, WakeCycleId, and CompilationId. A historical WAIT
+ * can never satisfy a later wake because this identity is per-admission.
+ */
+export interface WaitAdmission {
+  readonly waitAdmissionId: WaitAdmissionId;
+  readonly campaignId: string;
+  readonly compilationId: string;
+  readonly wakeCycleId: string;
+  readonly reconciliationDigest: string;
+  readonly watchIds: readonly string[];
+  readonly checkpointDigest: string;
+}
+
+export function parseWaitAdmission(raw: unknown, what = "WaitAdmission"): WaitAdmission {
+  const object = asRecord(raw, what);
+  exactKeys(
+    object,
+    ["waitAdmissionId", "campaignId", "compilationId", "wakeCycleId", "reconciliationDigest", "watchIds", "checkpointDigest"],
+    what,
+  );
+  if (!Array.isArray(object.watchIds)) throw new CampaignStoreError("malformed_record", `${what}.watchIds must be an array`);
+  return Object.freeze({
+    waitAdmissionId: stableId(object.waitAdmissionId, `${what}.waitAdmissionId`),
+    campaignId: stableId(object.campaignId, `${what}.campaignId`),
+    compilationId: stableId(object.compilationId, `${what}.compilationId`),
+    wakeCycleId: stableId(object.wakeCycleId, `${what}.wakeCycleId`),
+    reconciliationDigest: requireCanonicalDigest(object.reconciliationDigest, `${what}.reconciliationDigest`),
+    watchIds: Object.freeze(object.watchIds.map((entry) => stableId(entry, "watchId")).sort()),
+    checkpointDigest: requireCanonicalDigest(object.checkpointDigest, `${what}.checkpointDigest`),
+  });
+}
+
 export type WatchStatus = "ACTIVE" | "TRIGGERED" | "CANCELLED";
 
 export type WatchEvaluation =
@@ -91,8 +129,13 @@ export const CAMPAIGN_PROSPECTIVE_EVENT_PARSERS: CampaignEventParsers = Object.f
     if (!Array.isArray(object.watchIds)) throw new CampaignStoreError("malformed_record", "watchIds must be an array");
     return Object.freeze({
       reason: nonEmpty(object.reason, "reason"),
-      watchIds: Object.freeze(object.watchIds.map((entry) => stableId(entry, "watchId"))),
+      watchIds: Object.freeze(object.watchIds.map((entry) => stableId(entry, "watchId")).sort()),
     });
+  },
+  WAIT_ADMITTED: (payload: unknown) => {
+    const object = asRecord(payload, "WAIT_ADMITTED");
+    exactKeys(object, ["waitAdmission"], "WAIT_ADMITTED");
+    return Object.freeze({ waitAdmission: parseWaitAdmission(object.waitAdmission) });
   },
 });
 
@@ -154,9 +197,7 @@ export function parseWatchCondition(raw: unknown, what = "CampaignWatchCondition
     }
     case "project_terminal": {
       exactKeys(object, ["kind", "project"], what);
-      const project = asRecord(object.project, `${what}.project`);
-      exactKeys(project, ["projectId", "revision", "digest"], `${what}.project`);
-      return Object.freeze({ kind: "project_terminal" as const, project: materializeCampaignProjectRef({ projectId: project.projectId as string, revision: project.revision as number, digest: project.digest as string }) });
+      return Object.freeze({ kind: "project_terminal" as const, project: parseCampaignProjectRef(object.project, `${what}.project`) });
     }
     case "external_signal": {
       exactKeys(object, ["kind", "signalKey"], what);

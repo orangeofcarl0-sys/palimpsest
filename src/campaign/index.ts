@@ -85,10 +85,13 @@ export type {
 /** G10-G3: epistemic intervention (operational ≠ epistemic outcome). */
 export {
   CAMPAIGN_INTERVENTION_EVENT_PARSERS,
+  campaignProjectRefsEqual,
   classifyEpistemicChange,
+  compareCampaignProjectRefs,
   makeInterventionService,
   materializeCampaignProjectRef,
   parseCampaignIntervention,
+  parseCampaignProjectRef,
   parseProjectOperationalStanding,
 } from "./intervention.js";
 export type {
@@ -113,6 +116,7 @@ export {
   makeProspectiveService,
   parseCampaignWatch,
   parseCampaignWatchDraft,
+  parseWaitAdmission,
   parseWatchCondition,
 } from "./prospective.js";
 export type {
@@ -125,10 +129,17 @@ export type {
   CampaignWatchState,
   ProspectiveService,
   ProspectiveServiceDeps,
+  WaitAdmission,
+  WaitAdmissionId,
   WatchEvaluation,
   WatchId,
   WatchStatus,
 } from "./prospective.js";
+
+/** G10-GC2: strict digest shape + exact campaign-linked Project projection. */
+export { CANONICAL_DIGEST_RE, isCanonicalDigest, requireCanonicalDigest } from "./digest.js";
+export { linkedProjectRefs, projectLinkedProjects } from "./project.js";
+export type { CampaignLinkedProject, CampaignLinkedProjects, CampaignProjectLinkSource } from "./project.js";
 
 /** G10-G5: lifecycle, checkpoints, wake cycles, world reconciliation. */
 export {
@@ -171,16 +182,24 @@ export type {
   ValidatedCampaignAction,
 } from "./compiler.js";
 
-/** G10-GC2..GC6: the grounded production loop closure. */
+/** G10-GC2..GC6: the grounded, causally auditable production loop closure. */
 export {
+  CAMPAIGN_CHECKPOINT_DIGEST_DOMAIN,
   CAMPAIGN_PRODUCTION_EVENT_PARSERS,
   CAMPAIGN_RECONCILIATION_DIGEST_DOMAIN,
+  checkpointDigestOf,
+  committedReconciliationOf,
   encodeWakeCause,
+  inFlightWake,
   makeCampaignProductionService,
+  parseAdmittedCampaignActionRef,
   parseReconciliationReport,
+  parseWakeCompletionActionRef,
+  parseWakeCycleCompleted,
   reconciliationDigestOf,
 } from "./production.js";
 export type {
+  AdmittedCampaignActionRef,
   CampaignClaimReader,
   CampaignInstitutionReader,
   CampaignProductionDeps,
@@ -189,4 +208,8 @@ export type {
   CampaignReconciliationReport,
   CampaignWakeCause,
   Knowledge,
+  ParsedWakeCycleCompleted,
+  ProjectWakeActionRef,
+  WaitWakeActionRef,
+  WakeCompletionActionRef,
 } from "./production.js";
