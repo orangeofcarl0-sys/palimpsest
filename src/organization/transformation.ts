@@ -304,14 +304,19 @@ async function evaluateRevise(
     return finalize("REVISE", [proposal.base], [proposal.candidate], [], obligations);
   }
   const sameIdentity = proposal.candidate.organizationDefinitionId === base.organizationDefinitionId;
+  // G0/F-TRANSFORM-01: the organization store only accepts current-head + 1,
+  // so the assessment requires EXACTLY base.revision + 1 — never merely
+  // "greater than". A candidate the store will always reject must not be
+  // assessed admissible.
+  const advancesByOne = proposal.candidate.revision === base.revision + 1;
   obligations.push(
     obligation(
       "revision_does_not_advance",
-      sameIdentity && proposal.candidate.revision > base.revision,
+      sameIdentity && advancesByOne,
       sameIdentity
-        ? proposal.candidate.revision > base.revision
-          ? "candidate advances the revision"
-          : `candidate revision ${proposal.candidate.revision} does not advance base ${base.revision}`
+        ? advancesByOne
+          ? "candidate advances the revision by exactly one"
+          : `candidate revision ${proposal.candidate.revision} must equal base ${base.revision} + 1`
         : "candidate changes the organization identity (revision lineage is not transferable)",
     ),
   );

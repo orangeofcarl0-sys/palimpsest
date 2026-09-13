@@ -97,6 +97,11 @@ export interface InstallPalimpsestOptions {
   institutionStore?: InstitutionStore | undefined;
   /** G10-F5 (additive): institution transition-id allocator; default is a random UUID. */
   allocateTransitionId?: (() => string) | undefined;
+  /**
+   * G0 (additive): the trusted local institution governance identity. Distinct
+   * from federation `localPeer`; required for `installed.institution.service.approveLocal`.
+   */
+  institutionGovernancePeer?: PeerRef | undefined;
 }
 
 /**
@@ -296,6 +301,7 @@ export function installPalimpsest(
         store: options.institutionStore,
         organizations: options.organizationStore,
         allocateTransitionId: options.allocateTransitionId ?? (() => `tr-${randomUUID()}`),
+        localGovernancePeer: options.institutionGovernancePeer,
       }),
     };
   }

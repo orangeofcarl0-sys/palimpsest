@@ -155,14 +155,14 @@ describe("F4-M06/M07: current authority controls its own successor (§111)", () 
       amendment: { authorities: [C, D], requiredApprovals: 1 },
     });
     // Only the NEW authorities approve.
-    await w.service.approve({ transitionId: proposal.transitionId, peer: C });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: D });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: C });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: D });
     await expect(w.service.advance({ transitionId: proposal.transitionId })).rejects.toMatchObject({
       kind: "approval_threshold_not_met",
     });
     // The CURRENT authorities approve — now it advances.
-    await w.service.approve({ transitionId: proposal.transitionId, peer: A });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: B });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: A });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: B });
     const epoch = await w.service.advance({ transitionId: proposal.transitionId });
     expect(epoch.epoch).toBe(1);
     expect(epoch.charter.revision).toBe(1);
@@ -189,16 +189,16 @@ describe("F4-M08/M09: threshold determinism and duplicate approvals", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "advance",
     });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: A });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: A });
     await expect(w.service.advance({ transitionId: proposal.transitionId })).rejects.toMatchObject({
       kind: "approval_threshold_not_met",
     });
     // A duplicate approval does not count twice.
-    await w.service.approve({ transitionId: proposal.transitionId, peer: A });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: A });
     await expect(w.service.advance({ transitionId: proposal.transitionId })).rejects.toMatchObject({
       kind: "approval_threshold_not_met",
     });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: B });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: B });
     const epoch = await w.service.advance({ transitionId: proposal.transitionId });
     expect(epoch.epoch).toBe(1);
     expect(await w.store.approvals(proposal.transitionId)).toHaveLength(2);
@@ -219,7 +219,7 @@ describe("F4-M08/M09: threshold determinism and duplicate approvals", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "advance",
     });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: D });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: D });
     await expect(w.service.advance({ transitionId: proposal.transitionId })).rejects.toMatchObject({
       kind: "approval_threshold_not_met",
     });
@@ -267,13 +267,13 @@ describe("F4-M10/M11: stale approvals and atomic advancement", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "second",
     });
-    await w.service.approve({ transitionId: first.transitionId, peer: A });
-    await w.service.approve({ transitionId: first.transitionId, peer: B });
+    await w.service.approveRemote({ transitionId: first.transitionId, authenticatedPeer: A });
+    await w.service.approveRemote({ transitionId: first.transitionId, authenticatedPeer: B });
     expect((await w.service.advance({ transitionId: first.transitionId })).epoch).toBe(1);
 
     // second was proposed against epoch 0 — now stale.
-    await w.service.approve({ transitionId: second.transitionId, peer: A });
-    await w.service.approve({ transitionId: second.transitionId, peer: B });
+    await w.service.approveRemote({ transitionId: second.transitionId, authenticatedPeer: A });
+    await w.service.approveRemote({ transitionId: second.transitionId, authenticatedPeer: B });
     await expect(w.service.advance({ transitionId: second.transitionId })).rejects.toMatchObject({
       kind: "stale_base_epoch",
     });
@@ -299,7 +299,7 @@ describe("F4-M12: charter immutable/versioned", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "no-op",
     });
-    await w.service.approve({ transitionId: noop.transitionId, peer: A });
+    await w.service.approveRemote({ transitionId: noop.transitionId, authenticatedPeer: A });
     // Same revision, different content → fail closed.
     const tainted = materializeInstitutionCharter({
       institutionId: "inst-1",
@@ -322,7 +322,7 @@ describe("F4-M12: charter immutable/versioned", () => {
       amendment: { purpose: "p2" },
     });
     expect((await w.store.currentCharter("inst-1"))?.revision).toBe(0);
-    await w.service.approve({ transitionId: amended.transitionId, peer: A });
+    await w.service.approveRemote({ transitionId: amended.transitionId, authenticatedPeer: A });
     expect((await w.service.advance({ transitionId: amended.transitionId })).charter.revision).toBe(1);
     expect((await w.store.currentCharter("inst-1"))?.revision).toBe(1);
     expect((await w.store.charters("inst-1")).map((entry) => entry.revision)).toEqual([0, 1]);
@@ -347,8 +347,8 @@ describe("F4-M13/M14: institution identity survives body and member replacement"
       proposedOrganization: organizationRefOf(o2),
       reason: "total replacement",
     });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: A });
-    await w.service.approve({ transitionId: proposal.transitionId, peer: B });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: A });
+    await w.service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: B });
     const epoch = await w.service.advance({ transitionId: proposal.transitionId });
     expect(epoch.institutionId).toBe("inst-1");
     expect(epoch.organization.organizationDefinitionId).toBe("org-2");
@@ -398,7 +398,7 @@ describe("F4 store: persistence and replay", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "r",
     });
-    await service.approve({ transitionId: proposal.transitionId, peer: A });
+    await service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: A });
     await service.advance({ transitionId: proposal.transitionId });
     store.close();
 

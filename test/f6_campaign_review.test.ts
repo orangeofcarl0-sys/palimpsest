@@ -112,8 +112,8 @@ describe("F6-X02: campaign-wide restart replay (§169)", () => {
       proposedOrganization: organizationRefOf(o1),
       reason: "no-op",
     });
-    await service.approve({ transitionId: proposal.transitionId, peer: PA });
-    await service.approve({ transitionId: proposal.transitionId, peer: PB });
+    await service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: PA });
+    await service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: PB });
     await service.advance({ transitionId: proposal.transitionId });
     organizations.close();
     institutionStore.close();
@@ -261,7 +261,7 @@ describe("F6-X07: determinism across independent worlds (§169)", () => {
         proposedOrganization: organizationRefOf(o1),
         reason: "r",
       });
-      await service.approve({ transitionId: proposal.transitionId, peer: PA });
+      await service.approveRemote({ transitionId: proposal.transitionId, authenticatedPeer: PA });
       const epoch = await service.advance({ transitionId: proposal.transitionId });
       const digest = epoch.digest;
       organizations.close();
