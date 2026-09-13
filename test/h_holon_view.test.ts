@@ -14,11 +14,19 @@ const ACT = (id: string): RuntimeScopeMember => ({
   activation: { activationId: id, agentDefinitionId: `ag-${id}`, runDefinition: { digest: `rd-${id}` }, bindingResolution: { resolutionId: `res-${id}`, digest: `rr-${id}` } },
 });
 const peer = (id: string): PeerRef => ({ schemaVersion: 1, peerId: id });
-const boundary = (id: string, exposed = true): RuntimeScopeBoundary => ({ boundaryId: id, protocol: "palimpsest.contact.v1", sourceInteractionId: "i-1", exposed });
+const boundary = (id: string, exposed = true): RuntimeScopeBoundary => ({
+  boundaryId: id,
+  protocol: "palimpsest.contact.v1",
+  source: { kind: "runtime_declared", declarationId: "d-1" },
+  exposed,
+});
+
+/** CF-H-06: external-representation mutation requires an admitted decision. */
+const allowAll = { admit: async () => ({ admitted: true as const }) };
 
 function env() {
   const store = new SqliteRuntimeScopeStore(":memory:");
-  return { store, service: makeRuntimeScopeService({ store }) };
+  return { store, service: makeRuntimeScopeService({ store, representationAdmission: allowAll }) };
 }
 
 describe("H4 Holon external view", () => {
