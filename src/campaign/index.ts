@@ -105,3 +105,25 @@ export type {
   ProjectOperationalStanding,
   WorkKnowledge,
 } from "./intervention.js";
+
+/** G10-G4: prospective memory, watchers, WAIT. */
+export {
+  CAMPAIGN_PROSPECTIVE_EVENT_PARSERS,
+  makeProspectiveService,
+  parseCampaignWatch,
+  parseWatchCondition,
+} from "./prospective.js";
+export type {
+  CampaignExternalSignalPort,
+  CampaignInstitutionEpochPort,
+  CampaignProjectStandingPort,
+  CampaignWatch,
+  CampaignWatchCondition,
+  CampaignWatchDraft,
+  CampaignWatchState,
+  ProspectiveService,
+  ProspectiveServiceDeps,
+  WatchEvaluation,
+  WatchId,
+  WatchStatus,
+} from "./prospective.js";
