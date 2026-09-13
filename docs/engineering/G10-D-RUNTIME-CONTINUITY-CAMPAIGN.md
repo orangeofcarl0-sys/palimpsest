@@ -158,6 +158,16 @@ BindingObservationSnapshot → freshness → re-resolution
 Work remains separate (WorkUnit → Attempt) with no fabricated ownership
 relation between the trees.
 
+## 12A. G10-E additive closure notes (§168)
+
+- Runtime/continuity grounded at canonical main `e1a3616` (this campaign's endpoint).
+- The G10-D release-authority provenance gap (release intents carried
+  `revision: 0`) was **closed in G10-E0** via `RuntimeReleaseHandle` +
+  `release(handle)`; the ledger now records the realized Work revision.
+- `Activation ↔ Attempt` remained intentionally OPEN until G10-E, where it was
+  realized explicitly through Invocation/Participation. No G10-D history above
+  is rewritten.
+
 ## 13. Final verdict
 
 **Campaign-final canonical gate (§114)**: on post-D5 canonical main —
