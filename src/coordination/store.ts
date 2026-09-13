@@ -40,10 +40,23 @@ function canonicalJson(value: unknown): string {
 
 export const COORDINATION_STORE_DOMAIN = "palimpsest.coordination-event.v1";
 
+/**
+ * The known coordination event types. ONE physical store, DISTINCT concern
+ * streams (§32): participation (E1) and collaboration (E3) event types share
+ * the store while remaining separate semantics with separate typed payload
+ * parsers. Per-type payload shapes are narrowed by each concern's service;
+ * the store validates through the registered parsers.
+ */
 export type CoordinationEventType =
   | "INVOCATION_RECORDED"
   | "PARTICIPATION_STARTED"
-  | "PARTICIPATION_ENDED";
+  | "PARTICIPATION_ENDED"
+  | "CONTACT_REQUESTED"
+  | "MESSAGE_PREPARED"
+  | "MESSAGE_DELIVERED"
+  | "MESSAGE_RECEIVED"
+  | "WAKE_SENT"
+  | "ACK_RECORDED";
 
 export interface InvocationRecordedPayload {
   readonly invocation: Invocation;
@@ -69,11 +82,13 @@ export interface CoordinationEvent<T extends CoordinationEventType = Coordinatio
   readonly seq: number;
   readonly projectId: string;
   readonly type: T;
-  readonly payload: T extends "INVOCATION_RECORDED"
-    ? InvocationRecordedPayload
-    : T extends "PARTICIPATION_STARTED"
-      ? ParticipationStartedPayload
-      : ParticipationEndedPayload;
+  /**
+   * The persisted payload, validated by the registered per-type parser at the
+   * store boundary and narrowed to the concern's payload type by its service.
+   * Deliberately `unknown` at the shared-store level: the store's type union
+   * spans concern domains and never imports their vocabularies (§32).
+   */
+  readonly payload: unknown;
 }
 
 export class CoordinationStoreError extends Error {
@@ -82,6 +97,10 @@ export class CoordinationStoreError extends Error {
     this.name = "CoordinationStoreError";
   }
 }
+
+/** Strict per-type payload parser (§33): parse + validate, never a generic bag. */
+export type CoordinationEventPayloadParser = (payload: unknown) => unknown;
+export type CoordinationEventParsers = Readonly<Record<string, CoordinationEventPayloadParser>>;
 
 export interface CoordinationStore {
   /**
@@ -94,7 +113,10 @@ export interface CoordinationStore {
   replay(): Promise<readonly CoordinationEvent[]>;
 }
 
-function parseStoredEvent(row: { event_id: string; seq: number; project_id: string; type: string; payload_json: string }): CoordinationEvent {
+function parseStoredEvent(
+  row: { event_id: string; seq: number; project_id: string; type: string; payload_json: string },
+  parsers: CoordinationEventParsers,
+): CoordinationEvent {
   let payload: unknown;
   try {
     payload = JSON.parse(row.payload_json);
@@ -105,39 +127,54 @@ function parseStoredEvent(row: { event_id: string; seq: number; project_id: stri
       }`,
     );
   }
-  const type = row.type as CoordinationEventType;
-  if (type === "INVOCATION_RECORDED") {
+  const parser = parsers[row.type];
+  if (parser === undefined) {
+    throw new CoordinationStoreError(`coordination event "${row.event_id}" has unknown type "${row.type}"`);
+  }
+  const typed = parser(payload);
+  return {
+    eventId: row.event_id,
+    seq: row.seq,
+    projectId: row.project_id,
+    type: row.type as CoordinationEventType,
+    payload: typed as never,
+  };
+}
+
+/** The built-in participation-event parsers (E1). */
+export const PARTICIPATION_EVENT_PARSERS: CoordinationEventParsers = Object.freeze({
+  INVOCATION_RECORDED: (payload: unknown) => {
     const typed = payload as InvocationRecordedPayload;
     if (typed?.invocation?.invocationId === undefined || typed.invocation.attempt === undefined) {
-      throw new CoordinationStoreError(`coordination event "${row.event_id}" payload is malformed`);
+      throw new CoordinationStoreError("malformed INVOCATION_RECORDED payload");
     }
-    return { eventId: row.event_id, seq: row.seq, projectId: row.project_id, type, payload: typed };
-  }
-  if (type === "PARTICIPATION_STARTED") {
+    return typed;
+  },
+  PARTICIPATION_STARTED: (payload: unknown) => {
     const typed = payload as ParticipationStartedPayload;
     if (typed?.participation?.participationId === undefined || typed.participation.attempt === undefined) {
-      throw new CoordinationStoreError(`coordination event "${row.event_id}" payload is malformed`);
+      throw new CoordinationStoreError("malformed PARTICIPATION_STARTED payload");
     }
-    return { eventId: row.event_id, seq: row.seq, projectId: row.project_id, type, payload: typed };
-  }
-  if (type === "PARTICIPATION_ENDED") {
+    return typed;
+  },
+  PARTICIPATION_ENDED: (payload: unknown) => {
     const typed = payload as ParticipationEndedPayload;
     if (typed?.participationId === undefined || typed?.endReason === undefined) {
-      throw new CoordinationStoreError(`coordination event "${row.event_id}" payload is malformed`);
+      throw new CoordinationStoreError("malformed PARTICIPATION_ENDED payload");
     }
-    return { eventId: row.event_id, seq: row.seq, projectId: row.project_id, type, payload: typed };
-  }
-  throw new CoordinationStoreError(`coordination event "${row.event_id}" has unknown type "${row.type}"`);
-}
+    return typed;
+  },
+});
 
 export type CoordinationAppendRequest = Omit<CoordinationEvent, "seq">;
 
 export class SqliteCoordinationStore implements CoordinationStore {
   readonly #database: DatabaseSync;
-  readonly #selectAll: DatabaseSync["prepare"] extends never ? never : ReturnType<DatabaseSync["prepare"]>;
+  readonly #selectAll: ReturnType<DatabaseSync["prepare"]>;
   readonly #insert: ReturnType<DatabaseSync["prepare"]>;
+  readonly #parsers: CoordinationEventParsers;
 
-  constructor(databasePath: string) {
+  constructor(databasePath: string, options?: { readonly eventParsers?: CoordinationEventParsers }) {
     if (databasePath !== ":memory:") {
       mkdirSync(dirname(databasePath), { recursive: true });
     }
@@ -156,6 +193,9 @@ export class SqliteCoordinationStore implements CoordinationStore {
     this.#insert = this.#database.prepare(
       "INSERT INTO coordination_events (event_id, seq, project_id, type, payload_json) VALUES (?, ?, ?, ?, ?)",
     );
+    // §33: strict per-type parsers — participation events built in, federation
+    // events registered at construction (extensible without a generic bag).
+    this.#parsers = { ...PARTICIPATION_EVENT_PARSERS, ...(options?.eventParsers ?? {}) };
   }
 
   async append(event: CoordinationAppendRequest): Promise<readonly CoordinationEvent[]> {
@@ -196,7 +236,7 @@ export class SqliteCoordinationStore implements CoordinationStore {
   }
 
   #stored(row: { event_id: string; seq: number; project_id: string; type: string; payload_json: string }): readonly CoordinationEvent[] {
-    return Object.freeze([parseStoredEvent(row)]);
+    return Object.freeze([parseStoredEvent(row, this.#parsers)]);
   }
 
   async replay(): Promise<readonly CoordinationEvent[]> {
@@ -207,7 +247,7 @@ export class SqliteCoordinationStore implements CoordinationStore {
         project_id: string;
         type: string;
         payload_json: string;
-      }>).map(parseStoredEvent),
+      }>).map((row) => parseStoredEvent(row, this.#parsers)),
     );
   }
 

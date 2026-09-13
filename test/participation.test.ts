@@ -276,7 +276,7 @@ describe("participation lifecycle: end reasons are participation outcomes (§30)
       participationId: participation.participationId,
       endReason: "withdrawn",
     });
-    expect(ended.payload.endReason).toBe("withdrawn");
+    expect((ended.payload as { endReason: string }).endReason).toBe("withdrawn");
     const history = await store.replay();
     expect(history.map((event) => event.type)).toEqual([
       "PARTICIPATION_STARTED",
