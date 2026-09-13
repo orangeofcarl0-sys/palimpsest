@@ -50,6 +50,9 @@ import type {
   PeerTransportPort,
 } from "./federation/index.js";
 import { makeCommitmentService, makeFederationMessagingService, makeFederationService } from "./federation/index.js";
+import type { OrganizationStore } from "./organization/index.js";
+import type { InstitutionService, InstitutionStore } from "./institution/index.js";
+import { makeInstitutionService } from "./institution/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -88,6 +91,12 @@ export interface InstallPalimpsestOptions {
   coordinationStore?: CoordinationStore | undefined;
   /** G10-E5 (additive): read-only canonical Attempt validation for participation. */
   attemptCatalog?: AttemptCatalogPort | undefined;
+  /** G10-F5 (additive): the canonical organization lineage store. Absent = no organization surface. */
+  organizationStore?: OrganizationStore | undefined;
+  /** G10-F5 (additive): the canonical institution lineage store (requires organizationStore). */
+  institutionStore?: InstitutionStore | undefined;
+  /** G10-F5 (additive): institution transition-id allocator; default is a random UUID. */
+  allocateTransitionId?: (() => string) | undefined;
 }
 
 /**
@@ -116,8 +125,23 @@ export interface InstalledPalimpsest {
   readonly runtime?: InstalledRuntime | undefined;
   /** Present only when the full federation wiring is supplied (§132–§135) — never partial. */
   readonly federation?: FederationService | undefined;
+  /** G10-F5 (additive): present only when an organization store is supplied. */
+  readonly organization?: InstalledOrganization | undefined;
+  /** G10-F5 (additive): present only when both organization + institution stores are supplied. */
+  readonly institution?: InstalledInstitution | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
+}
+
+/** G10-F5: the additive organization surface (never forces institution configuration). */
+export interface InstalledOrganization {
+  readonly store: OrganizationStore;
+}
+
+/** G10-F5: the additive institution governance surface. */
+export interface InstalledInstitution {
+  readonly store: InstitutionStore;
+  readonly service: InstitutionService;
 }
 
 /**
@@ -258,6 +282,23 @@ export function installPalimpsest(
   }
 
   const disposers: (() => void)[] = [];
+
+  // G10-F5 (§153): ADDITIVE organization/institution surfaces. Supplying no
+  // organization/institution store changes nothing (§154); institution wiring
+  // requires the organization store because an epoch references a body.
+  const organization: InstalledOrganization | undefined =
+    options.organizationStore === undefined ? undefined : { store: options.organizationStore };
+  let institution: InstalledInstitution | undefined;
+  if (options.organizationStore !== undefined && options.institutionStore !== undefined) {
+    institution = {
+      store: options.institutionStore,
+      service: makeInstitutionService({
+        store: options.institutionStore,
+        organizations: options.organizationStore,
+        allocateTransitionId: options.allocateTransitionId ?? (() => `tr-${randomUUID()}`),
+      }),
+    };
+  }
   for (const definition of tools) {
     const registered = context.tools.register(definition);
     if (typeof registered === "function") disposers.push(registered);
@@ -269,6 +310,8 @@ export function installPalimpsest(
     tools,
     ...(runtime === undefined ? {} : { runtime }),
     ...(federation === undefined ? {} : { federation }),
+    ...(organization === undefined ? {} : { organization }),
+    ...(institution === undefined ? {} : { institution }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

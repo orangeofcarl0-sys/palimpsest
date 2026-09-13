@@ -51,3 +51,6 @@ export type { InstitutionStore, InstitutionStoreErrorKind } from "./store.js";
 
 export { makeInstitutionService } from "./service.js";
 export type { InstitutionService, InstitutionServiceDeps } from "./service.js";
+
+export { activateAndGovernOrganizationChange, institutionBodyView } from "./governed.js";
+export type { GovernedAdoptionResult, InstitutionBodyView } from "./governed.js";
