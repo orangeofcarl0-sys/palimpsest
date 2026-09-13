@@ -53,6 +53,27 @@ import { makeCommitmentService, makeFederationMessagingService, makeFederationSe
 import type { OrganizationStore } from "./organization/index.js";
 import type { InstitutionService, InstitutionStore } from "./institution/index.js";
 import { makeInstitutionService } from "./institution/index.js";
+import type {
+  CampaignStore,
+  CampaignEvidencePort,
+  CampaignCompilerPort,
+  CampaignExternalSignalPort,
+  CampaignInstitutionEpochSource,
+  CampaignWorkObservationPort,
+  CampaignWorkAdmissionPort,
+  InterventionService,
+  CompilerService,
+  LifecycleService,
+  ProspectiveService,
+  CampaignService,
+} from "./campaign/index.js";
+import {
+  makeCampaignService,
+  makeCompilerService,
+  makeInterventionService,
+  makeLifecycleService,
+  makeProspectiveService,
+} from "./campaign/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -102,6 +123,22 @@ export interface InstallPalimpsestOptions {
    * from federation `localPeer`; required for `installed.institution.service.approveLocal`.
    */
   institutionGovernancePeer?: PeerRef | undefined;
+  /** G10-G7 (additive): the canonical Campaign temporal store. Absent = no campaign surface. */
+  campaignStore?: CampaignStore | undefined;
+  /** G10-G7 (additive): read-only Evidence-plane bridge for campaign hypotheses/belief. */
+  campaignEvidencePort?: CampaignEvidencePort | undefined;
+  /** G10-G7 (additive): read-only Work project standing for interventions/watches. */
+  campaignWorkPort?: CampaignWorkObservationPort | undefined;
+  /** G10-G7 (additive): idempotent Work admission boundary for compiled Projects. */
+  campaignWorkAdmissionPort?: CampaignWorkAdmissionPort | undefined;
+  /** G10-G7 (additive): untrusted planner/compiler port. */
+  campaignCompilerPort?: CampaignCompilerPort | undefined;
+  /** G10-G7 (additive): external prospective-memory signal source. */
+  campaignSignalPort?: CampaignExternalSignalPort | undefined;
+  /** G10-G7 (additive): read-only institution epoch source for watches/wake. */
+  campaignInstitutionEpochPort?: CampaignInstitutionEpochSource | undefined;
+  /** G10-G7 (additive): injected campaign clock (not Date.now in materialization). */
+  campaignClock?: (() => string) | undefined;
 }
 
 /**
@@ -134,6 +171,8 @@ export interface InstalledPalimpsest {
   readonly organization?: InstalledOrganization | undefined;
   /** G10-F5 (additive): present only when both organization + institution stores are supplied. */
   readonly institution?: InstalledInstitution | undefined;
+  /** G10-G7 (additive): present only when a campaign store is supplied. */
+  readonly campaign?: InstalledCampaign | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -141,6 +180,20 @@ export interface InstalledPalimpsest {
 /** G10-F5: the additive organization surface (never forces institution configuration). */
 export interface InstalledOrganization {
   readonly store: OrganizationStore;
+}
+
+/**
+ * G10-G7: the additive Campaign surface. Only operations whose dependencies
+ * are supplied are present — never stubbed (§187). The service coordinates
+ * Campaign semantics; it is NOT Institution/Work/Evidence/Ordarium authority.
+ */
+export interface InstalledCampaign {
+  readonly store: CampaignStore;
+  readonly campaign: CampaignService;
+  readonly prospective: ProspectiveService;
+  readonly lifecycle: LifecycleService;
+  readonly interventions?: InterventionService | undefined;
+  readonly compiler?: CompilerService | undefined;
 }
 
 /** G10-F5: the additive institution governance surface. */
@@ -286,6 +339,93 @@ export function installPalimpsest(
     });
   }
 
+  let campaign: InstalledCampaign | undefined;
+  if (options.campaignStore !== undefined) {
+    const campaignStore = options.campaignStore;
+    const campaignService = makeCampaignService({
+      store: campaignStore,
+      allocateCommitmentId: () => `cc-${randomUUID()}`,
+      evidence: options.campaignEvidencePort,
+    });
+    const prospective = makeProspectiveService({
+      store: campaignStore,
+      allocateWatchId: () => `cw-${randomUUID()}`,
+      clock: options.campaignClock ?? (() => new Date().toISOString()),
+      evidence: options.campaignEvidencePort,
+      signals: options.campaignSignalPort,
+      // Adapt the full-epoch source to the watch port's epoch-number view.
+      institutions:
+        options.campaignInstitutionEpochPort === undefined
+          ? undefined
+          : {
+              currentEpoch: async (institutionId: string) => {
+                const knowledge = await options.campaignInstitutionEpochPort!.inspectEpoch(institutionId);
+                return knowledge.state === "known"
+                  ? { state: "known" as const, value: knowledge.value.epoch }
+                  : knowledge;
+              },
+            },
+      projects: options.campaignWorkPort,
+    });
+    const lifecycle = makeLifecycleService({
+      store: campaignStore,
+      allocateWakeCycleId: () => `wc-${randomUUID()}`,
+      institutions: options.campaignInstitutionEpochPort,
+      evidence: options.campaignEvidencePort,
+      work: options.campaignWorkPort,
+    });
+    const interventions =
+      options.campaignWorkPort === undefined
+        ? undefined
+        : makeInterventionService({
+            store: campaignStore,
+            allocateInterventionId: () => `iv-${randomUUID()}`,
+            work: options.campaignWorkPort,
+            evidence: options.campaignEvidencePort,
+          });
+    const compiler =
+      options.campaignCompilerPort === undefined
+        ? undefined
+        : makeCompilerService({
+            store: campaignStore,
+            allocateCompilationId: () => `cmp-${randomUUID()}`,
+            compiler: options.campaignCompilerPort,
+            work: options.campaignWorkAdmissionPort,
+            buildContext: async (campaignId) => {
+              const definition = await campaignService.definition(campaignId);
+              if (definition === undefined) {
+                throw new Error(`campaign "${campaignId}" does not exist`);
+              }
+              const commitments = await campaignService.commitmentStates(campaignId);
+              const hypotheses = await campaignService.hypotheses(campaignId);
+              const beliefState = await campaignService.currentBeliefState(campaignId);
+              const events = await campaignStore.replay(campaignId);
+              return {
+                campaignId,
+                institutionId: definition.institutionId,
+                activeCommitments: commitments.filter((entry) => entry.state === "OPEN").map((entry) => entry.commitment),
+                activeHypotheses: hypotheses.filter((entry) => entry.state === "ACTIVE").map((entry) => entry.hypothesis),
+                beliefState,
+                recentObservationRefs: [],
+                interventionSummaries: [],
+                institutionEpoch: null,
+                activeWatchIds: events
+                  .filter((event) => event.type === "WATCH_INSTALLED")
+                  .map((event) => (event.payload as { watch: { watchId: string } }).watch.watchId),
+                reconciliationDigest: null,
+              };
+            },
+          });
+    campaign = {
+      store: campaignStore,
+      campaign: campaignService,
+      prospective,
+      lifecycle,
+      ...(interventions === undefined ? {} : { interventions }),
+      ...(compiler === undefined ? {} : { compiler }),
+    };
+  }
+
   const disposers: (() => void)[] = [];
 
   // G10-F5 (§153): ADDITIVE organization/institution surfaces. Supplying no
@@ -318,6 +458,7 @@ export function installPalimpsest(
     ...(federation === undefined ? {} : { federation }),
     ...(organization === undefined ? {} : { organization }),
     ...(institution === undefined ? {} : { institution }),
+    ...(campaign === undefined ? {} : { campaign }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

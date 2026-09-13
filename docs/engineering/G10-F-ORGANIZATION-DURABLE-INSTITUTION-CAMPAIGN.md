@@ -325,3 +325,9 @@ per-call caller argument), and F-TRANSFORM-01 (REVISE requires exactly
 `base.revision + 1`, matching what the organization store accepts).
 
 See `docs/engineering/G10-G0-PAG-PREFLIGHT.md`.
+
+---
+
+## 22. Additive historical note (G10-G0/G7, §224)
+
+The G10-F architecture completed at 3f3ab6f. The F verdict above is not rewritten. G10-G later closed F-CHARTER-01, F-AUTH-01, and F-TRANSFORM-01, and built the Campaign/epistemic/wake layer on top. See docs/engineering/G10-G-CAMPAIGN-EPISTEMIC-WAKE-CAMPAIGN.md.
