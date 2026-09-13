@@ -361,10 +361,30 @@ export function makeCampaignService(deps: CampaignServiceDeps): CampaignService 
     const latestByHypothesis = new Map<string, BeliefRevision>();
     for (const revision of previousRevisions) latestByHypothesis.set(revision.hypothesisId, revision);
 
+    // GC4 §83/§95: an EXACTLY unchanged standing is a successful no-op — no
+    // duplicate observation/revision events, no UNIQUE(event_id) collision.
+    const history = await deps.store.replay(campaignId);
+    const latestObservationDigest = new Map<string, string>();
+    for (const event of history) {
+      if (event.type === "EVIDENCE_OBSERVED") {
+        const observation = (event.payload as { observation: { hypothesisId: string; standing: { digest: string } } }).observation;
+        latestObservationDigest.set(observation.hypothesisId, observation.standing.digest);
+      }
+    }
+    const changed = gathered.filter((item) => latestObservationDigest.get(item.hypothesisId) !== item.snapshot.digest);
+    if (changed.length === 0) {
+      return Object.freeze({
+        status: "refreshed",
+        observations: Object.freeze([]),
+        revisions: Object.freeze([]),
+        beliefState: await currentBeliefState(campaignId),
+      });
+    }
+
     const observations: CampaignEvidenceObservation[] = [];
     const revisions: BeliefRevision[] = [];
     const events: CampaignAppendRequest[] = [];
-    for (const item of gathered) {
+    for (const item of changed) {
       const observationId = `obs-${canonicalDigest({
         domain: "palimpsest.campaign-observation.v1",
         campaignId,

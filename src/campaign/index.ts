@@ -170,3 +170,23 @@ export type {
   CompilerServiceDeps,
   ValidatedCampaignAction,
 } from "./compiler.js";
+
+/** G10-GC2..GC6: the grounded production loop closure. */
+export {
+  CAMPAIGN_PRODUCTION_EVENT_PARSERS,
+  CAMPAIGN_RECONCILIATION_DIGEST_DOMAIN,
+  encodeWakeCause,
+  makeCampaignProductionService,
+  parseReconciliationReport,
+  reconciliationDigestOf,
+} from "./production.js";
+export type {
+  CampaignClaimReader,
+  CampaignInstitutionReader,
+  CampaignProductionDeps,
+  CampaignProductionService,
+  CampaignProjectReader,
+  CampaignReconciliationReport,
+  CampaignWakeCause,
+  Knowledge,
+} from "./production.js";
