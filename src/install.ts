@@ -68,12 +68,14 @@ import type {
   CampaignService,
 } from "./campaign/index.js";
 import {
+  makeCampaignProductionService,
   makeCampaignService,
   makeCompilerService,
   makeInterventionService,
   makeLifecycleService,
   makeProspectiveService,
 } from "./campaign/index.js";
+import type { CampaignProductionService } from "./campaign/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -189,6 +191,8 @@ export interface InstalledOrganization {
  */
 export interface InstalledCampaign {
   readonly store: CampaignStore;
+  /** GC7: the grounded production loop (checkpoint→dormancy→wake→reconcile→admit). */
+  readonly production: CampaignProductionService;
   readonly campaign: CampaignService;
   readonly prospective: ProspectiveService;
   readonly lifecycle: LifecycleService;
@@ -395,6 +399,16 @@ export function installPalimpsest(
             work: options.campaignWorkPort,
             evidence: options.campaignEvidencePort,
           });
+    const production = makeCampaignProductionService({
+      store: campaignStore,
+      institutions: campaignInstitutionSource,
+      evidence: options.campaignEvidencePort,
+      work: options.campaignWorkPort,
+      allocateWakeCycleId: () => `wc-${randomUUID()}`,
+      allocateWatchId: () => `cw-${randomUUID()}`,
+      allocateObservationId: () => `obs-${randomUUID()}`,
+      allocateRevisionId: () => `br-${randomUUID()}`,
+    });
     const compiler =
       options.campaignCompilerPort === undefined
         ? undefined
@@ -412,24 +426,39 @@ export function installPalimpsest(
               const hypotheses = await campaignService.hypotheses(campaignId);
               const beliefState = await campaignService.currentBeliefState(campaignId);
               const events = await campaignStore.replay(campaignId);
+              const projection = production.activeIds(events);
+              const epoch = await campaignInstitutionSource.inspectEpoch(definition.institutionId);
+              const observationRefs = events
+                .filter((event) => event.type === "EVIDENCE_OBSERVED")
+                .map((event) => (event.payload as { observation: { observationId: string } }).observation.observationId);
+              const reconciliations = events.filter((event) => event.type === "RECONCILIATION_COMMITTED");
+              const reconciliationDigest =
+                reconciliations.length === 0
+                  ? null
+                  : (reconciliations[reconciliations.length - 1]!.payload as { report: { digest: string } }).report.digest;
+              const interventions = events
+                .filter((event) => event.type === "INTERVENTION_REGISTERED")
+                .map((event) => {
+                  const intervention = (event.payload as { intervention: { project: { projectId: string }; purpose: string } }).intervention;
+                  return `${intervention.project.projectId}:${intervention.purpose}`;
+                });
               return {
                 campaignId,
                 institutionId: definition.institutionId,
                 activeCommitments: commitments.filter((entry) => entry.state === "OPEN").map((entry) => entry.commitment),
                 activeHypotheses: hypotheses.filter((entry) => entry.state === "ACTIVE").map((entry) => entry.hypothesis),
                 beliefState,
-                recentObservationRefs: [],
-                interventionSummaries: [],
-                institutionEpoch: null,
-                activeWatchIds: events
-                  .filter((event) => event.type === "WATCH_INSTALLED")
-                  .map((event) => (event.payload as { watch: { watchId: string } }).watch.watchId),
-                reconciliationDigest: null,
+                recentObservationRefs: observationRefs,
+                interventionSummaries: interventions,
+                institutionEpoch: epoch.state === "known" ? epoch.value : null,
+                activeWatchIds: projection.watches,
+                reconciliationDigest,
               };
             },
           });
     campaign = {
       store: campaignStore,
+      production,
       campaign: campaignService,
       prospective,
       lifecycle,

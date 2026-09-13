@@ -205,3 +205,27 @@ general persistent-agent architecture.
 
 `G10-H — Holon & RuntimeScope Grounding`, or `G10-H — Persistent Agent /
 Institutional Epistemic Governance`, depending on G evidence. Follow evidence.
+
+---
+
+## 21. Additive historical note (G10-GC, §194)
+
+The G10-G primitives remained valid. A post-campaign audit identified production
+gaps in the integrated wake loop and reclassified it:
+
+```text
+G10-G PAG primitives: PASS
+G10-G integrated Campaign/Wake loop: PARTIAL — wake/institution grounding closure required
+```
+
+G10-GC subsequently closed those gaps (Institution grounding, grounded
+checkpoint, full current-world observation, atomic epistemic reconciliation,
+strict WakeCycle state machine, reconciled compiler context, genuine
+dormant-world-change E2E). The original G10-G record above is not rewritten.
+
+Corrected verdict after GC PASS:
+
+```text
+G10-G CAMPAIGN, EPISTEMIC CONTINUITY & WAKE:
+PASS — PRODUCTION CLOSURE VERIFIED BY G10-GC
+```
