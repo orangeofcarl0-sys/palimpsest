@@ -125,7 +125,11 @@ G10-I ORGANIZATION DYNAMICS:
 OBSERVATION, DIAGNOSIS & STRUCTURAL PROPOSAL — PASS
 ```
 
-## 23. Recommended next stage
+## 23. Canonical gate record
+Remote CI run `34777564467` (attempt 1) SUCCESS on the exact merged HEAD `0020e14`;
+PR `#58` -> `bd7ce48`; canonical main: 113 files / 970 tests, build, build:web, e2e 21/21.
+
+## 24. Recommended next stage
 `G10-J — Governed Dynamic Evolution` (not started): map a fresh `DynamicsProposal` into the
 existing OrganizationTransformation/Governance path with proof obligations and explicit
 activation. It must read this campaign, the delivery record, and the carry-forward register.
