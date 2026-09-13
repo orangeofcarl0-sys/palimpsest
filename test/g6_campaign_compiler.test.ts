@@ -66,7 +66,8 @@ function world(compiler?: CampaignCompilerPort) {
   let c = 0;
   let k = 0;
   let w = 0;
-  const campaign = makeCampaignService({ store, allocateCommitmentId: () => `cc-${++c}`, evidence: EVIDENCE });
+  const campaign = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store, allocateCommitmentId: () => `cc-${++c}`, evidence: EVIDENCE });
   const prospective = makeProspectiveService({ store, allocateWatchId: () => `w-${++w}`, clock: () => "2026-01-01T00:00:00Z" });
   void prospective;
   const work = workPort();
@@ -229,3 +230,10 @@ describe("G6: WAIT candidates are not admitted through the Work path", () => {
     expect(w.work.calls).toHaveLength(0);
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

@@ -33,6 +33,7 @@ import {
   materializeObservation,
 } from "./epistemic.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
+import type { CampaignInstitutionEpochSource } from "./lifecycle.js";
 import { CampaignStoreError } from "./store.js";
 
 export interface CampaignServiceDeps {
@@ -40,6 +41,8 @@ export interface CampaignServiceDeps {
   readonly allocateCommitmentId: () => CampaignCommitmentId;
   /** Read-only bridge to the authoritative Evidence plane (§38). */
   readonly evidence?: CampaignEvidencePort | undefined;
+  /** GC1: read-only canonical institution boundary — required for genesis grounding. */
+  readonly institutions?: CampaignInstitutionEpochSource | undefined;
 }
 
 export interface CampaignCommitmentStateEntry {
@@ -125,6 +128,21 @@ export function makeCampaignService(deps: CampaignServiceDeps): CampaignService 
     readonly institutionId: string;
     readonly statement: string;
   }) {
+    // GC1 §30/§31: genesis requires an EXISTING institution with a KNOWN
+    // current epoch. No ghost Campaign may be written.
+    if (deps.institutions === undefined) {
+      throw new CampaignStoreError(
+        "institution_unavailable",
+        "createCampaign requires a CampaignInstitutionPort — institution ownership cannot be verified",
+      );
+    }
+    const epochKnowledge = await deps.institutions.inspectEpoch(input.institutionId);
+    if (epochKnowledge.state !== "known") {
+      throw new CampaignStoreError(
+        epochKnowledge.state === "unknown" ? "institution_unknown" : "institution_error",
+        `institution "${input.institutionId}" is ${epochKnowledge.state}: ${epochKnowledge.detail}`,
+      );
+    }
     const definition = materializeCampaignDefinition({
       campaignId: input.campaignId,
       institutionId: input.institutionId,

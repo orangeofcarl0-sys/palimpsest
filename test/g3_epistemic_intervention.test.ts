@@ -51,6 +51,7 @@ function world(standings: Map<string, CampaignClaimStatus | "unknown">, work: Ca
   let c = 0;
   let i = 0;
   const campaign = makeCampaignService({
+    institutions: TEST_INSTITUTIONS,
     store,
     allocateCommitmentId: () => `cc-${++c}`,
     evidence: evidencePort(standings),
@@ -196,3 +197,10 @@ describe("G3-M09/M10: immutable history and recorded basis", () => {
     );
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

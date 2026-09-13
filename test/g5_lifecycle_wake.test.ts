@@ -27,7 +27,8 @@ function world(institutions?: CampaignInstitutionEpochSource) {
   let c = 0;
   let w = 0;
   let k = 0;
-  const campaign = makeCampaignService({ store, allocateCommitmentId: () => `cc-${++c}` });
+  const campaign = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store, allocateCommitmentId: () => `cc-${++c}` });
   const prospective = makeProspectiveService({ store, allocateWatchId: () => `w-${++w}`, clock: () => "2026-01-01T00:00:00Z" });
   const lifecycle = makeLifecycleService({ store, allocateWakeCycleId: () => `wc-${++k}`, institutions });
   return { store, campaign, prospective, lifecycle };
@@ -180,3 +181,10 @@ describe("G5-M14: termination is explicit only", () => {
     await expect(w.lifecycle.beginWake({ campaignId: "camp-1", cause: "manual" })).rejects.toThrow(/TERMINATED/);
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

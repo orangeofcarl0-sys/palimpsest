@@ -54,7 +54,8 @@ function world() {
   let w = 0;
   let k = 0;
   let i = 0;
-  const campaign = makeCampaignService({ store, allocateCommitmentId: () => `cc-${++c}`, evidence });
+  const campaign = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store, allocateCommitmentId: () => `cc-${++c}`, evidence });
   const prospective = makeProspectiveService({ store, allocateWatchId: () => `w-${++w}`, clock: () => "2026-01-01T00:00:00Z", evidence, projects: { inspectProject: async () => ({ state: "known", value: "completed" }) } });
   const lifecycle = makeLifecycleService({ store, allocateWakeCycleId: () => `wc-${++k}`, institutions: { inspectEpoch: async () => ({ state: "known", value: EPOCH0 }) } });
   const interventions = makeInterventionService({ store, allocateInterventionId: () => `iv-${++i}`, work: { inspectProject: async () => ({ state: "known", value: "completed" }) } });
@@ -201,6 +202,12 @@ describe("G7-REG: Work / runtime / federation non-regression", () => {
       clock: () => "2026-08-13T00:00:00Z",
       campaignStore: store,
       campaignClock: () => "2026-01-01T00:00:00Z",
+      campaignInstitutionEpochPort: {
+        inspectEpoch: async () => ({
+          state: "known" as const,
+          value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+        }),
+      },
     });
     expect(withCampaign.campaign?.store).toBe(store);
     expect(typeof withCampaign.campaign?.campaign.createCampaign).toBe("function");
@@ -221,3 +228,10 @@ describe("G7-ORTHO/G7-NODUP: orthogonality and no Evidence duplication", () => {
     expect(strip(SRC("campaign/lifecycle.ts"))).not.toMatch(/context|summary/i);
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

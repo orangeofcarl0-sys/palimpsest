@@ -44,6 +44,7 @@ function world() {
   const store = new SqliteCampaignStore(":memory:");
   let counter = 0;
   const service: CampaignService = makeCampaignService({
+    institutions: TEST_INSTITUTIONS,
     store,
     allocateCommitmentId: () => `cc-${++counter}`,
   });
@@ -203,7 +204,8 @@ describe("G1-M10/M11: restart replay and chain integrity", () => {
   it("a reopened store replays deterministically", async () => {
     const path = tmp("replay");
     const first = new SqliteCampaignStore(path);
-    const service = makeCampaignService({ store: first, allocateCommitmentId: (() => { let i = 0; return () => `cc-${++i}`; })() });
+    const service = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store: first, allocateCommitmentId: (() => { let i = 0; return () => `cc-${++i}`; })() });
     await service.createCampaign({ campaignId: "camp-1", institutionId: "inst-1", statement: "root" });
     await service.openCommitment({ campaignId: "camp-1", statement: "second" });
     const before = await first.replay("camp-1");
@@ -218,7 +220,8 @@ describe("G1-M10/M11: restart replay and chain integrity", () => {
   it("a tampered chain digest fails closed on replay", async () => {
     const path = tmp("corrupt");
     const store = new SqliteCampaignStore(path);
-    const service = makeCampaignService({ store, allocateCommitmentId: () => "cc-1" });
+    const service = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store, allocateCommitmentId: () => "cc-1" });
     await service.createCampaign({ campaignId: "camp-1", institutionId: "inst-1", statement: "root" });
     store.close();
     const raw = new DatabaseSync(path);
@@ -235,12 +238,14 @@ describe("G1-M12: cross-process writer safety", () => {
     const path = tmp("concurrent");
     const a = new SqliteCampaignStore(path);
     const b = new SqliteCampaignStore(path);
-    const sa = makeCampaignService({ store: a, allocateCommitmentId: () => "cc-a" });
+    const sa = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store: a, allocateCommitmentId: () => "cc-a" });
     await sa.createCampaign({ campaignId: "camp-a", institutionId: "inst-1", statement: "a" });
     await sa.createCampaign({ campaignId: "camp-b", institutionId: "inst-1", statement: "b" });
     await Promise.all([
       sa.openCommitment({ campaignId: "camp-a", statement: "a2" }),
-      makeCampaignService({ store: b, allocateCommitmentId: () => "cc-b" }).openCommitment({
+      makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store: b, allocateCommitmentId: () => "cc-b" }).openCommitment({
         campaignId: "camp-b",
         statement: "b2",
       }),
@@ -251,3 +256,10 @@ describe("G1-M12: cross-process writer safety", () => {
     b.close();
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};
