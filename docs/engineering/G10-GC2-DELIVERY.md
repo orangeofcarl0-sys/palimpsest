@@ -47,9 +47,25 @@ flakes are only ever handled by the documented failed-job rerun protocol.
 
 | Stage | Branch | PR / merge |
 |---|---|---|
-| GC2-A…H (+ docs) | `experiment/g10-gc2-project-work-grounding` | _recorded after merge_ |
-| GC2-I/J closure + verification record | `experiment/g10-gc2-pag-final-closure` | _recorded after merge_ |
+| GC2-A…H + GC2-I/J proofs + docs | `experiment/g10-gc2-project-work-grounding` | PR **#52** → merge commit `f981525` |
+| Closure verification record | `experiment/g10-gc2-pag-final-closure` | PR #53 (this record) |
 
-## Remote CI
+## Remote CI (exact final HEAD)
 
-_recorded after merge: exact final-HEAD workflow run id and conclusion._
+| Run | HEAD | Result |
+|---|---|---|
+| `34765360010` (attempt 1) | `62f073a` (the merged GC2 HEAD) | **SUCCESS** — `unit` ✓, `e2e` ✓, first try |
+
+## Canonical main gate (merge commit `f981525`)
+
+| Gate | Result |
+|---|---|
+| `git diff --check` | clean |
+| `pnpm test` | 105 files / **907 tests passed** |
+| `pnpm build` | PASS |
+| `pnpm build:web` | PASS |
+| `pnpm test:e2e` | first run failed only on the documented `E2E-DEBUG-01` flake; rerun **21/21 passed** |
+
+`E2E-DEBUG-01` is the pre-existing, documented hold/release race (proven to reproduce on
+untouched main during G10-F0); it is not a GC2 regression and was handled solely by rerun,
+with no code change. CI e2e passed first try on the exact merged HEAD.

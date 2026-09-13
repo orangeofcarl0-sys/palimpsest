@@ -230,3 +230,19 @@ PASS — PRODUCTION & PROVENANCE CLOSURE VERIFIED
 by [G10-GC](G10-GC-PAG-PRODUCTION-CLOSURE-CAMPAIGN.md) (production closure) and
 [G10-GC2](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md) (provenance & wake admission
 closure). See the additive note in the G umbrella document.
+
+---
+
+## 11. Canonical gate record
+
+| Gate | Result |
+|---|---|
+| Remote CI (exact merged HEAD `62f073a`) | workflow `34765360010`, attempt 1: `unit` ✓, `e2e` ✓ |
+| Merge | PR `#52` → `f981525` (normal merge) |
+| Canonical `main` `git diff --check` | clean |
+| Canonical `main` `pnpm test` | 105 files / 907 tests passed |
+| Canonical `main` build / build:web | PASS |
+| Canonical `main` e2e | documented `E2E-DEBUG-01` flake on the first run; rerun 21/21 |
+
+The closure verification record is delivered by
+`experiment/g10-gc2-pag-final-closure` (see [`G10-GC2-DELIVERY.md`](G10-GC2-DELIVERY.md)).
