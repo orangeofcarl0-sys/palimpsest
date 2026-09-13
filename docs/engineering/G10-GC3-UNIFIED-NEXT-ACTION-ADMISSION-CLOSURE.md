@@ -228,3 +228,22 @@ by [G10-GC](G10-GC-PAG-PRODUCTION-CLOSURE-CAMPAIGN.md),
 [G10-GC2](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md), and this GC3
 record. The original G/GC/GC2 records are preserved and only additively
 annotated.
+
+---
+
+## 15. Canonical gate record
+
+| Gate | Result |
+|---|---|
+| Remote CI (exact merged HEAD `f16055f`) | workflow `34768147435`, attempt 1: `unit` ✓, `e2e` ✓ |
+| Merge | PR `#54` → `77de168` (normal merge) |
+| Canonical `main` `git diff --check` | clean |
+| Canonical `main` `pnpm test` | 108 files / 933 tests passed |
+| Canonical `main` build / build:web | PASS |
+| Canonical `main` e2e | documented `E2E-DEBUG-01` flake; remote CI e2e passed first try |
+
+The closure verification record is delivered by
+`experiment/g10-gc3-pag-freeze` (see [`G10-GC3-DELIVERY.md`](G10-GC3-DELIVERY.md)).
+
+With GC3 PASS, **PAG closure work stops here**; the next architectural frontier is
+`G10-H — RuntimeScope & Holon Grounding`, which is NOT started by this campaign.
