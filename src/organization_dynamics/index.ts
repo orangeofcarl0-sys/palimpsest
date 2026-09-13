@@ -24,6 +24,8 @@ export {
 } from "./dynamics.js";
 export type {
   AdvisorProposalFields,
+  CampaignActivityObservation,
+  CampaignActivityPort,
   CollaborationMetrics,
   DynamicsBasis,
   DynamicsCollaborationObservation,

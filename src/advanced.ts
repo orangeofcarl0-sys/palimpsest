@@ -63,3 +63,11 @@ export * from "./runtime_scope/index.js";
  * canonical mutation authority; never in the root contract core.
  */
 export * from "./organization_dynamics/index.js";
+
+/**
+ * G10-J: Governed Dynamic Evolution — advanced opt-in only. Compiles a fresh
+ * DynamicsProposal into an F3-typed candidate, requires independent evolution
+ * authority and (where applicable) institution continuation governance, and
+ * activates through the existing F3/F5 mutation paths.
+ */
+export * from "./organization_evolution/index.js";

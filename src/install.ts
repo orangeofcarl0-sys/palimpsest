@@ -88,8 +88,10 @@ import type {
   RuntimeScopeStore,
 } from "./runtime_scope/index.js";
 import { makeRuntimeScopeService } from "./runtime_scope/index.js";
-import type { DynamicsCollaborationPort, OrganizationDynamicsService } from "./organization_dynamics/index.js";
+import type { CampaignActivityObservation, CampaignActivityPort, DynamicsCollaborationPort, OrganizationDynamicsService } from "./organization_dynamics/index.js";
 import { makeOrganizationDynamicsService } from "./organization_dynamics/index.js";
+import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerPort, OrganizationEvolutionStore, OrganizationEvolutionService } from "./organization_evolution/index.js";
+import { makeOrganizationEvolutionService } from "./organization_evolution/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -166,6 +168,14 @@ export interface InstallPalimpsestOptions {
    * representation mutation fails closed (read-only Holon observation remains).
    */
   runtimeScopeRepresentationAdmission?: RuntimeScopeRepresentationAdmissionPort | undefined;
+  /** G10-J (additive): the evolution case store (evolution governance/execution history only). */
+  organizationEvolutionStore?: OrganizationEvolutionStore | undefined;
+  /** G10-J (additive): the untrusted complete-candidate authoring seam. */
+  organizationEvolutionCompiler?: OrganizationEvolutionCompilerPort | undefined;
+  /** G10-J (additive): the independent structural-evolution authority seam. */
+  organizationEvolutionAuthority?: OrganizationEvolutionAdmissionPort | undefined;
+  /** G10-J (additive): institution governing the subject organization (enables the F5 path). */
+  organizationEvolutionInstitutionId?: string | undefined;
 }
 
 /**
@@ -206,6 +216,8 @@ export interface InstalledPalimpsest {
   readonly holons?: InstalledHolons | undefined;
   /** G10-I (additive): read-only Organization Dynamics — present iff runtimeScopeStore + organizationStore. */
   readonly organizationDynamics?: InstalledDynamics | undefined;
+  /** G10-J (additive): governed evolution — present iff dynamics + evolution store/compiler/authority. */
+  readonly organizationEvolution?: InstalledEvolution | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -224,6 +236,58 @@ export interface InstalledHolons {
 /** G10-I: read-only Organization Dynamics surface (observation/diagnosis/proposal). */
 export interface InstalledDynamics {
   readonly service: OrganizationDynamicsService;
+}
+
+/** G10-J: the governed-evolution surface (unified mutating boundary). */
+export interface InstalledEvolution {
+  readonly service: OrganizationEvolutionService;
+}
+
+/**
+ * G10-J CF-I-02: derive a read-only Campaign activity observation. Counts are mechanical
+ * facts about canonical Campaign history — never value, health, or dissolution authority.
+ */
+function campaignActivityPort(store: CampaignStore): CampaignActivityPort {
+  return {
+    observe: async (campaignId): Promise<CampaignActivityObservation> => {
+      const definition = await store.definition(campaignId);
+      if (definition === undefined) {
+        return { campaignId, exists: false, lifecycle: null, basisThroughSeq: null, chainDigest: null, semanticEventCount: 0, activeCommitmentCount: 0, activeWatchCount: 0, inFlightWake: null, state: "known" };
+      }
+      const events = await store.replay(campaignId);
+      const basis = await store.basis(campaignId);
+      const openCommitments = new Set<string>();
+      const activeWatches = new Set<string>();
+      const startedWakes = new Set<string>();
+      const endedWakes = new Set<string>();
+      let lifecycle = "ACTIVE";
+      for (const event of events) {
+        if (event.type === "CAMPAIGN_COMMITMENT_OPENED") openCommitments.add((event.payload as { commitment: { commitmentId: string } }).commitment.commitmentId);
+        else if (event.type === "CAMPAIGN_COMMITMENT_RESOLVED" || event.type === "CAMPAIGN_COMMITMENT_ABANDONED" || event.type === "CAMPAIGN_COMMITMENT_SUPERSEDED") openCommitments.delete((event.payload as { commitmentId: string }).commitmentId);
+        else if (event.type === "WATCH_INSTALLED") activeWatches.add((event.payload as { watch: { watchId: string } }).watch.watchId);
+        else if (event.type === "WATCH_TRIGGERED" || event.type === "WATCH_CANCELLED") activeWatches.delete((event.payload as { watchId: string }).watchId);
+        else if (event.type === "WAKE_STARTED") startedWakes.add((event.payload as { wakeCycleId: string }).wakeCycleId);
+        else if (event.type === "WAKE_CYCLE_COMPLETED" || event.type === "WAKE_COMPLETED") endedWakes.add((event.payload as { wakeCycleId: string }).wakeCycleId);
+        if (event.type === "CAMPAIGN_TERMINATED") lifecycle = "TERMINATED";
+        else if (event.type === "CAMPAIGN_DORMANT") lifecycle = "DORMANT";
+        else if (event.type === "WAKE_STARTED") lifecycle = "WAKING";
+        else if (event.type === "RECONCILIATION_COMMITTED") lifecycle = "RECONCILING";
+        else if (event.type === "WAKE_CYCLE_COMPLETED" || event.type === "WAKE_COMPLETED") lifecycle = "ACTIVE";
+      }
+      return {
+        campaignId,
+        exists: true,
+        lifecycle,
+        basisThroughSeq: basis?.throughSeq ?? null,
+        chainDigest: basis?.chainDigest ?? null,
+        semanticEventCount: events.length,
+        activeCommitmentCount: openCommitments.size,
+        activeWatchCount: activeWatches.size,
+        inFlightWake: [...startedWakes].some((id) => !endedWakes.has(id)),
+        state: "known",
+      };
+    },
+  };
 }
 
 /**
@@ -655,8 +719,33 @@ export function installPalimpsest(
       runtimeScopes: { store: runtimeScopes.store, service: runtimeScopes.service },
       organizations: { head: (id) => orgStore.head(id), get: (ref) => orgStore.get(ref) },
       ...(options.coordinationStore === undefined ? {} : { collaboration: coordinationObservationPort(options.coordinationStore) }),
+      ...(options.campaignStore === undefined ? {} : { campaignActivity: campaignActivityPort(options.campaignStore) }),
     });
     organizationDynamics = { service: dynamicsService };
+  }
+
+  // G10-J: governed evolution needs the read-only dynamics surface plus an explicit,
+  // trusted-authority-wired evolution case store. Missing wiring -> a read-only-absent
+  // surface, never a stub.
+  let organizationEvolutionInstalled: InstalledEvolution | undefined;
+  if (
+    organizationDynamics !== undefined &&
+    options.organizationEvolutionStore !== undefined &&
+    options.organizationEvolutionCompiler !== undefined &&
+    options.organizationEvolutionAuthority !== undefined &&
+    options.organizationStore !== undefined
+  ) {
+    const organizationEvolution = makeOrganizationEvolutionService({
+      organizations: options.organizationStore,
+      dynamics: organizationDynamics.service,
+      store: options.organizationEvolutionStore,
+      compiler: options.organizationEvolutionCompiler,
+      authority: options.organizationEvolutionAuthority,
+      ...(institution === undefined || options.organizationEvolutionInstitutionId === undefined
+        ? {}
+        : { institution: { institutionId: options.organizationEvolutionInstitutionId, service: institution.service, store: institution.store } }),
+    });
+    organizationEvolutionInstalled = { service: organizationEvolution };
   }
 
   for (const definition of tools) {
@@ -676,6 +765,7 @@ export function installPalimpsest(
     ...(runtimeScopes === undefined ? {} : { runtimeScopes }),
     ...(holons === undefined ? {} : { holons }),
     ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
+    ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

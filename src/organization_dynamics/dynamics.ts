@@ -151,6 +151,28 @@ export interface DynamicsCollaborationPort {
   observe(): Promise<DynamicsCollaborationObservation>;
 }
 
+/**
+ * G10-J CF-I-02: read-only, known/unknown/error-disciplined Campaign activity
+ * observation. Counts are mechanical facts — never value, health, or authority;
+ * inactivity never becomes dissolution authority (`dormant ≠ dead`).
+ */
+export interface CampaignActivityObservation {
+  readonly campaignId: string;
+  readonly exists: boolean;
+  readonly lifecycle: string | null;
+  readonly basisThroughSeq: number | null;
+  readonly chainDigest: string | null;
+  readonly semanticEventCount: number;
+  readonly activeCommitmentCount: number;
+  readonly activeWatchCount: number;
+  readonly inFlightWake: boolean | null;
+  readonly state: "known" | "unknown" | "error";
+}
+
+export interface CampaignActivityPort {
+  observe(campaignId: string): Promise<CampaignActivityObservation>;
+}
+
 /* ------------------------------------------------------------------ *
  * Basis + snapshot
  * ------------------------------------------------------------------ */
@@ -207,6 +229,7 @@ export interface DynamicsKnowledge {
   readonly runtime: DynamicsKnowledgeState;
   readonly organization: DynamicsKnowledgeState | "unassociated";
   readonly collaboration: DynamicsKnowledgeState;
+  readonly campaignActivity: DynamicsKnowledgeState;
 }
 
 export interface OrganizationDynamicsSnapshot {
@@ -219,6 +242,8 @@ export interface OrganizationDynamicsSnapshot {
   readonly collaboration: CollaborationMetrics | null;
   readonly declaredInteractionIds: readonly string[];
   readonly observedBoundaryInteractionIds: readonly string[];
+  /** Associated campaigns' activity — null when no campaign source is wired. */
+  readonly campaignActivity: readonly CampaignActivityObservation[] | null;
   readonly digest: string;
 }
 
@@ -243,6 +268,7 @@ export function snapshotDigestOf(input: {
   readonly collaboration: CollaborationMetrics | null;
   readonly declaredInteractionIds: readonly string[];
   readonly observedBoundaryInteractionIds: readonly string[];
+  readonly campaignActivity: readonly CampaignActivityObservation[] | null;
 }): string {
   return canonicalDigest({
     domain: DYNAMICS_SNAPSHOT_DOMAIN,
@@ -255,6 +281,7 @@ export function snapshotDigestOf(input: {
     collaboration: input.collaboration,
     declaredInteractionIds: [...input.declaredInteractionIds].sort(),
     observedBoundaryInteractionIds: [...input.observedBoundaryInteractionIds].sort(),
+    campaignActivity: input.campaignActivity,
   });
 }
 
