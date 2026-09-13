@@ -185,7 +185,11 @@ export type CampaignEventType =
   | "BELIEF_REVISED"
   | "INTERVENTION_REGISTERED"
   | "INTERVENTION_OPERATIONAL_OBSERVED"
-  | "INTERVENTION_EPISTEMIC_ASSESSED";
+  | "INTERVENTION_EPISTEMIC_ASSESSED"
+  | "WATCH_INSTALLED"
+  | "WATCH_TRIGGERED"
+  | "WATCH_CANCELLED"
+  | "WAIT_DECIDED";
 
 export interface CommitmentOpenedPayload {
   readonly commitment: CampaignCommitment;
