@@ -79,8 +79,17 @@ import {
   makeProspectiveService,
 } from "./campaign/index.js";
 import type { CampaignProductionService, NextActionAdmissionService } from "./campaign/index.js";
-import type { HolonView, RuntimeScopeOrganizationPort, RuntimeScopeService, RuntimeScopeStore } from "./runtime_scope/index.js";
+import type {
+  HolonView,
+  RuntimeScopeCampaignPort,
+  RuntimeScopeOrganizationPort,
+  RuntimeScopeRepresentationAdmissionPort,
+  RuntimeScopeService,
+  RuntimeScopeStore,
+} from "./runtime_scope/index.js";
 import { makeRuntimeScopeService } from "./runtime_scope/index.js";
+import type { DynamicsCollaborationPort, OrganizationDynamicsService } from "./organization_dynamics/index.js";
+import { makeOrganizationDynamicsService } from "./organization_dynamics/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -152,6 +161,11 @@ export interface InstallPalimpsestOptions {
    * verified only when an organization store is also supplied.
    */
   runtimeScopeStore?: RuntimeScopeStore | undefined;
+  /**
+   * G10-I CF-H-06: trusted external-representation admission. Absent ⇒ external
+   * representation mutation fails closed (read-only Holon observation remains).
+   */
+  runtimeScopeRepresentationAdmission?: RuntimeScopeRepresentationAdmissionPort | undefined;
 }
 
 /**
@@ -190,6 +204,8 @@ export interface InstalledPalimpsest {
   readonly runtimeScopes?: InstalledRuntimeScopes | undefined;
   /** G10-H (additive): the derived external Holon view — present with runtimeScopes. */
   readonly holons?: InstalledHolons | undefined;
+  /** G10-I (additive): read-only Organization Dynamics — present iff runtimeScopeStore + organizationStore. */
+  readonly organizationDynamics?: InstalledDynamics | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -203,6 +219,62 @@ export interface InstalledRuntimeScopes {
 /** G10-H: read-only external Holon projection surface. */
 export interface InstalledHolons {
   view(scopeId: string): Promise<HolonView>;
+}
+
+/** G10-I: read-only Organization Dynamics surface (observation/diagnosis/proposal). */
+export interface InstalledDynamics {
+  readonly service: OrganizationDynamicsService;
+}
+
+/**
+ * G10-I: derive a NORMALIZED collaboration observation from coordination events.
+ * Purely mechanical: exact event-type counts, plus a documented payload key scan
+ * for `peerId` / `activationId`. It never interprets messages as evidence,
+ * commitment, or authority.
+ */
+function coordinationObservationPort(store: CoordinationStore): DynamicsCollaborationPort {
+  return {
+    observe: async () => {
+      const events = await store.replay();
+      const eventCounts: Record<string, number> = {};
+      const peerIds = new Set<string>();
+      const activationIds = new Set<string>();
+      let messageEventCount = 0;
+      let commitmentAcceptedEvents = 0;
+      let handoffAcceptedEvents = 0;
+      let contactRequestEvents = 0;
+      const scan = (value: unknown): void => {
+        if (Array.isArray(value)) {
+          for (const item of value) scan(item);
+          return;
+        }
+        if (typeof value !== "object" || value === null) return;
+        for (const [key, item] of Object.entries(value)) {
+          if (key === "peerId" && typeof item === "string") peerIds.add(item);
+          else if (key === "activationId" && typeof item === "string") activationIds.add(item);
+          else scan(item);
+        }
+      };
+      for (const event of events) {
+        eventCounts[event.type] = (eventCounts[event.type] ?? 0) + 1;
+        if (event.type === "MESSAGE_PREPARED" || event.type === "MESSAGE_DELIVERED" || event.type === "MESSAGE_RECEIVED") messageEventCount += 1;
+        if (event.type === "COMMITMENT_ACCEPTED") commitmentAcceptedEvents += 1;
+        if (event.type === "HANDOFF_ACCEPTED") handoffAcceptedEvents += 1;
+        if (event.type === "CONTACT_REQUESTED") contactRequestEvents += 1;
+        scan(event.payload);
+      }
+      return {
+        eventCounts: Object.freeze(eventCounts),
+        messageEventCount,
+        distinctPeerIds: Object.freeze([...peerIds].sort()),
+        commitmentAcceptedEvents,
+        handoffAcceptedEvents,
+        contactRequestEvents,
+        participationActivationIds: Object.freeze([...activationIds].sort()),
+        coordinationHead: await store.head(),
+      };
+    },
+  };
 }
 
 /** G10-F5: the additive organization surface (never forces institution configuration). */
@@ -555,10 +627,36 @@ export function installPalimpsest(
         : {
             current: async (organizationDefinitionId: string) => organizationStore.head(organizationDefinitionId),
             exists: async (ref) => (await organizationStore.get(ref)) !== undefined,
+            definition: async (ref) => {
+              const definition = await organizationStore.get(ref);
+              return definition === undefined ? undefined : { interactions: definition.interactions };
+            },
           };
-    const service = makeRuntimeScopeService({ store: options.runtimeScopeStore, organizations });
+    // CF-H-08: campaign association is verified against the canonical campaign store.
+    const campaignStore = options.campaignStore;
+    const campaigns: RuntimeScopeCampaignPort | undefined =
+      campaignStore === undefined ? undefined : { exists: async (campaignId) => (await campaignStore.definition(campaignId)) !== undefined };
+    const service = makeRuntimeScopeService({
+      store: options.runtimeScopeStore,
+      organizations,
+      campaigns,
+      ...(options.runtimeScopeRepresentationAdmission === undefined ? {} : { representationAdmission: options.runtimeScopeRepresentationAdmission }),
+    });
     runtimeScopes = { store: options.runtimeScopeStore, service };
     holons = { view: (scopeId) => service.holonView(scopeId) };
+  }
+
+  // G10-I: the read-only Dynamics surface needs the runtime-scope and
+  // organization sources; without them it is absent (never stubbed).
+  let organizationDynamics: InstalledDynamics | undefined;
+  if (runtimeScopes !== undefined && options.organizationStore !== undefined) {
+    const orgStore = options.organizationStore;
+    const dynamicsService = makeOrganizationDynamicsService({
+      runtimeScopes: { store: runtimeScopes.store, service: runtimeScopes.service },
+      organizations: { head: (id) => orgStore.head(id), get: (ref) => orgStore.get(ref) },
+      ...(options.coordinationStore === undefined ? {} : { collaboration: coordinationObservationPort(options.coordinationStore) }),
+    });
+    organizationDynamics = { service: dynamicsService };
   }
 
   for (const definition of tools) {
@@ -577,6 +675,7 @@ export function installPalimpsest(
     ...(campaign === undefined ? {} : { campaign }),
     ...(runtimeScopes === undefined ? {} : { runtimeScopes }),
     ...(holons === undefined ? {} : { holons }),
+    ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

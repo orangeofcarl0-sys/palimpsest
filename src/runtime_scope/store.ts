@@ -50,7 +50,11 @@ export type RuntimeScopeStoreErrorKind =
   | "cycle_detected"
   | "scope_closed"
   | "peer_conflict"
-  | "boundary_conflict";
+  | "boundary_conflict"
+  // G10-I carry-forward closure (CF-H-03/06/08)
+  | "boundary_source_unverified"
+  | "representation_not_admitted"
+  | "campaign_unknown";
 
 function payloadKey(type: string, payload: unknown): string {
   return canonicalDigest({ domain: "palimpsest.runtime-scope-event.v1", type, payload });

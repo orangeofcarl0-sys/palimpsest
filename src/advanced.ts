@@ -56,3 +56,10 @@ export * from "./campaign/index.js";
  * ≠ Activation ≠ Campaign; Holon is an external view, not a new identity.
  */
 export * from "./runtime_scope/index.js";
+
+/**
+ * G10-I: Organization Dynamics — advanced opt-in only, READ-ONLY. Deterministic
+ * observation, typed structural diagnosis, and NON-canonical proposals. Zero
+ * canonical mutation authority; never in the root contract core.
+ */
+export * from "./organization_dynamics/index.js";

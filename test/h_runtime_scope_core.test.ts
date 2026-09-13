@@ -35,6 +35,7 @@ function orgPort(input: { readonly refs?: readonly OrganizationBasisRef[]; reado
   return {
     current: async () => input.head,
     exists: async (ref) => refs.some((candidate) => candidate.organizationDefinitionId === ref.organizationDefinitionId && candidate.revision === ref.revision && candidate.digest === ref.digest),
+    definition: async () => undefined,
   };
 }
 

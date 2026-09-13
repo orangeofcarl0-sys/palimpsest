@@ -43,12 +43,21 @@ export function runtimeScopeMembersEqual(a: RuntimeScopeMember, b: RuntimeScopeM
   return runtimeScopeMemberKey(a) === runtimeScopeMemberKey(b);
 }
 
-/** A runtime boundary surface — cites its declared source interaction (§14). */
+/**
+ * G10-I CF-H-03: a boundary source is a TAGGED, source-verifiable union — never a bare
+ * string. An `organization_interaction` source must be declared by the exact organization
+ * revision the scope is grounded to; a `runtime_declared` source is an honest runtime-only
+ * declaration usable when the scope has no organization basis.
+ */
+export type RuntimeScopeBoundarySource =
+  | { readonly kind: "organization_interaction"; readonly interactionId: string }
+  | { readonly kind: "runtime_declared"; readonly declarationId: string };
+
+/** A runtime boundary surface — carries a verifiable source (§14). */
 export interface RuntimeScopeBoundary {
   readonly boundaryId: string;
   readonly protocol: string;
-  /** Provenance to a declared OrganizationInteraction; not a runtime object. */
-  readonly sourceInteractionId: string;
+  readonly source: RuntimeScopeBoundarySource;
   readonly exposed: boolean;
 }
 
@@ -72,6 +81,9 @@ export type RuntimeScopeEventType =
   | "SCOPE_MEMBER_REMOVED"
   | "SCOPE_PEER_ASSOCIATED"
   | "SCOPE_BOUNDARY_DECLARED"
+  // G10-I CF-H-08: explicit, lifecycle-neutral Campaign↔RuntimeScope association.
+  | "CAMPAIGN_ASSOCIATED"
+  | "CAMPAIGN_DISASSOCIATED"
   | "SCOPE_CLOSED";
 
 /* ------------------------------------------------------------------ *
@@ -126,14 +138,27 @@ export function parseRuntimeScopeMember(raw: unknown, what = "RuntimeScopeMember
   throw new RuntimeScopeArtifactError(`${what}.kind must be "activation" or "child_scope"`);
 }
 
+export function parseRuntimeScopeBoundarySource(raw: unknown, what = "RuntimeScopeBoundarySource"): RuntimeScopeBoundarySource {
+  const object = asObject(raw, what);
+  if (object.kind === "organization_interaction") {
+    exactKeys(object, ["kind", "interactionId"], what);
+    return Object.freeze({ kind: "organization_interaction" as const, interactionId: requireStableId(object.interactionId, `${what}.interactionId`) });
+  }
+  if (object.kind === "runtime_declared") {
+    exactKeys(object, ["kind", "declarationId"], what);
+    return Object.freeze({ kind: "runtime_declared" as const, declarationId: requireStableId(object.declarationId, `${what}.declarationId`) });
+  }
+  throw new RuntimeScopeArtifactError(`${what}.kind must be "organization_interaction" or "runtime_declared"`);
+}
+
 export function parseRuntimeScopeBoundary(raw: unknown, what = "RuntimeScopeBoundary"): RuntimeScopeBoundary {
   const object = asObject(raw, what);
-  exactKeys(object, ["boundaryId", "protocol", "sourceInteractionId", "exposed"], what);
+  exactKeys(object, ["boundaryId", "protocol", "source", "exposed"], what);
   if (typeof object.exposed !== "boolean") throw new RuntimeScopeArtifactError(`${what}.exposed must be a boolean`);
   return Object.freeze({
     boundaryId: requireStableId(object.boundaryId, `${what}.boundaryId`),
     protocol: requireNonEmpty(object.protocol, `${what}.protocol`),
-    sourceInteractionId: requireStableId(object.sourceInteractionId, `${what}.sourceInteractionId`),
+    source: parseRuntimeScopeBoundarySource(object.source, `${what}.source`),
     exposed: object.exposed,
   });
 }
@@ -209,6 +234,19 @@ export const RUNTIME_SCOPE_EVENT_PARSERS: RuntimeScopeEventParsers = Object.free
     const object = asObject(payload, "SCOPE_BOUNDARY_DECLARED");
     exactKeys(object, ["boundary"], "SCOPE_BOUNDARY_DECLARED");
     return Object.freeze({ boundary: parseRuntimeScopeBoundary(object.boundary) });
+  },
+  CAMPAIGN_ASSOCIATED: (payload: unknown) => {
+    const object = asObject(payload, "CAMPAIGN_ASSOCIATED");
+    exactKeys(object, ["campaignId"], "CAMPAIGN_ASSOCIATED");
+    return Object.freeze({ campaignId: requireStableId(object.campaignId, "campaignId") });
+  },
+  CAMPAIGN_DISASSOCIATED: (payload: unknown) => {
+    const object = asObject(payload, "CAMPAIGN_DISASSOCIATED");
+    exactKeys(object, ["campaignId", "reason"], "CAMPAIGN_DISASSOCIATED");
+    return Object.freeze({
+      campaignId: requireStableId(object.campaignId, "campaignId"),
+      reason: requireNonEmpty(object.reason, "reason"),
+    });
   },
   SCOPE_CLOSED: (payload: unknown) => {
     const object = asObject(payload, "SCOPE_CLOSED");

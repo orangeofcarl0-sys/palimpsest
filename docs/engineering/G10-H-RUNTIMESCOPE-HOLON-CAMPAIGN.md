@@ -149,3 +149,16 @@ The closure verification record is delivered by `experiment/g10-h-closure`
 (see [`audits/G10-H-RUNTIMESCOPE-HOLON-DELIVERY.md`](audits/G10-H-RUNTIMESCOPE-HOLON-DELIVERY.md)).
 With G10-H PASS, PAG closure work remains stopped and the runtime frontier moves
 to G10-I; this campaign does not start it.
+
+---
+
+## 18. Additive note (G10-I)
+
+G10-I closed H's four P1 carry-forward items. One is a deliberate additive amendment to the
+H-frozen contract: `RuntimeScopeBoundary` no longer carries a bare `sourceInteractionId`.
+Its source is now a **tagged, verifiable** union —
+`organization_interaction(interactionId)` (must be declared by the exact organization revision
+the scope is grounded to, else fail closed) or `runtime_declared(declarationId)` for an
+honest runtime-only boundary. See
+[`G10-I-ORGANIZATION-DYNAMICS-CAMPAIGN.md`](G10-I-ORGANIZATION-DYNAMICS-CAMPAIGN.md) and
+[`audits/G10-I-H-CARRY-FORWARD-DISPOSITION.md`](audits/G10-I-H-CARRY-FORWARD-DISPOSITION.md).

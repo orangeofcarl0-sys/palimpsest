@@ -32,15 +32,41 @@ import { materializeRuntimeScopeRef, runtimeScopeRefsEqual } from "./ref.js";
 import type { RuntimeScopeAppendRequest, RuntimeScopeEvent, RuntimeScopeStore } from "./store.js";
 import { RuntimeScopeStoreError } from "./store.js";
 
-/** Read-only organization boundary: current head + exact-revision existence. */
+/** Read-only organization boundary: current head + exact revision + declared interactions. */
 export interface RuntimeScopeOrganizationPort {
   current(organizationDefinitionId: string): Promise<OrganizationBasisRef | undefined>;
   exists(ref: OrganizationBasisRef): Promise<boolean>;
+  /** The exact revision artifact, for boundary-source verification (CF-H-03). */
+  definition(ref: OrganizationBasisRef): Promise<{ readonly interactions: readonly { readonly interactionId: string }[] } | undefined>;
+}
+
+/**
+ * G10-I CF-H-06: the minimal external-representation authority seam. A trusted assembly
+ * supplies a deterministic admission decision; it answers ONLY "is this external
+ * representation mutation admitted?" — never "what should the organization do?". Without
+ * wiring, external-representation mutation fails closed; read-only Holon observation
+ * remains available.
+ */
+export type RuntimeScopeRepresentationMutation =
+  | { readonly kind: "associate_peer"; readonly peer: PeerRef }
+  | { readonly kind: "declare_boundary"; readonly boundary: RuntimeScopeBoundary };
+
+export interface RuntimeScopeRepresentationAdmissionPort {
+  admit(input: { readonly scopeId: string; readonly mutation: RuntimeScopeRepresentationMutation }): Promise<
+    { readonly admitted: true } | { readonly admitted: false; readonly detail: string }
+  >;
+}
+
+/** Read-only campaign existence check for lifecycle-neutral association (CF-H-08). */
+export interface RuntimeScopeCampaignPort {
+  exists(campaignId: string): Promise<boolean>;
 }
 
 export interface RuntimeScopeServiceDeps {
   readonly store: RuntimeScopeStore;
   readonly organizations?: RuntimeScopeOrganizationPort | undefined;
+  readonly representationAdmission?: RuntimeScopeRepresentationAdmissionPort | undefined;
+  readonly campaigns?: RuntimeScopeCampaignPort | undefined;
 }
 
 export type OrganizationBasisFreshness = "unassociated" | "current" | "stale" | "unknown";
@@ -54,6 +80,8 @@ export interface RuntimeScopeState {
   readonly children: readonly RuntimeScopeRef[];
   readonly peer: PeerRef | null;
   readonly boundary: RuntimeScopeBoundary | null;
+  /** Lifecycle-neutral Campaign associations (CF-H-08). */
+  readonly campaignIds: readonly string[];
   readonly basis: RuntimeScopeBasis;
 }
 
@@ -74,6 +102,10 @@ export interface RuntimeScopeService {
   removeMember(input: { readonly scopeId: string; readonly memberKey: string; readonly reason: string }): Promise<void>;
   associatePeer(input: { readonly scopeId: string; readonly peer: PeerRef }): Promise<void>;
   declareBoundary(input: { readonly scopeId: string; readonly boundary: RuntimeScopeBoundary }): Promise<void>;
+  declareBoundary(input: { readonly scopeId: string; readonly boundary: RuntimeScopeBoundary }): Promise<void>;
+  /** CF-H-08: explicit, lifecycle-neutral Campaign association (verified). */
+  associateCampaign(input: { readonly scopeId: string; readonly campaignId: string }): Promise<void>;
+  disassociateCampaign(input: { readonly scopeId: string; readonly campaignId: string; readonly reason: string }): Promise<void>;
   closeScope(input: { readonly scopeId: string; readonly reason: string }): Promise<void>;
   listScopes(): Promise<readonly RuntimeScopeRef[]>;
   scopeState(scopeId: string): Promise<RuntimeScopeState>;
@@ -88,6 +120,7 @@ interface LocalProjection {
   readonly members: Map<string, RuntimeScopeMember>;
   readonly peer: PeerRef | null;
   readonly boundary: RuntimeScopeBoundary | null;
+  readonly campaigns: Set<string>;
 }
 
 interface ScopeIndex {
@@ -106,6 +139,7 @@ function eventRequest(type: RuntimeScopeAppendRequest["type"], scopeId: string, 
 export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeScopeService {
   function projectLocal(definition: RuntimeScopeDefinition, events: readonly RuntimeScopeEvent[]): LocalProjection {
     const members = new Map<string, RuntimeScopeMember>();
+    const campaigns = new Set<string>();
     let peer: PeerRef | null = null;
     let boundary: RuntimeScopeBoundary | null = null;
     let lifecycle: RuntimeScopeLifecycle = "OPEN";
@@ -123,6 +157,12 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
         case "SCOPE_BOUNDARY_DECLARED":
           boundary = (event.payload as { boundary: RuntimeScopeBoundary }).boundary;
           break;
+        case "CAMPAIGN_ASSOCIATED":
+          campaigns.add((event.payload as { campaignId: string }).campaignId);
+          break;
+        case "CAMPAIGN_DISASSOCIATED":
+          campaigns.delete((event.payload as { campaignId: string }).campaignId);
+          break;
         case "SCOPE_CLOSED":
           lifecycle = "CLOSED";
           break;
@@ -130,7 +170,7 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
           break;
       }
     }
-    return Object.freeze({ definition, events, lifecycle, members, peer, boundary });
+    return Object.freeze({ definition, events, lifecycle, members, peer, boundary, campaigns });
   }
 
   async function buildIndex(): Promise<ScopeIndex> {
@@ -234,11 +274,24 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
     await append(input.scopeId, [eventRequest("SCOPE_MEMBER_REMOVED", input.scopeId, { memberKey: input.memberKey, reason })]);
   }
 
+  /** CF-H-06: no external-representation mutation without an admitted decision. */
+  async function requireRepresentationAdmission(scopeId: string, mutation: RuntimeScopeRepresentationMutation): Promise<void> {
+    if (deps.representationAdmission === undefined) {
+      throw new RuntimeScopeStoreError("representation_not_admitted", "no representation admission port is configured — external representation mutation fails closed");
+    }
+    const decision = await deps.representationAdmission.admit({ scopeId, mutation });
+    if (decision.admitted !== true) {
+      throw new RuntimeScopeStoreError("representation_not_admitted", `external representation mutation was not admitted: ${decision.detail}`);
+    }
+  }
+
   async function associatePeer(input: { readonly scopeId: string; readonly peer: PeerRef }): Promise<void> {
     const peer = parsePeerRef(JSON.parse(JSON.stringify(input.peer)));
     const index = await buildIndex();
     const scope = requireScope(index, input.scopeId);
     assertOpen(scope, "associate a peer");
+    // Admission is checked BEFORE any write; a denied mutation writes zero events.
+    await requireRepresentationAdmission(input.scopeId, { kind: "associate_peer", peer });
     await append(input.scopeId, [eventRequest("SCOPE_PEER_ASSOCIATED", input.scopeId, { peer })]);
   }
 
@@ -247,7 +300,54 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
     const index = await buildIndex();
     const scope = requireScope(index, input.scopeId);
     assertOpen(scope, "declare a boundary");
+    // CF-H-03: an organization_interaction source must be declared by the exact
+    // organization revision the scope is grounded to — verifiable, not a bare string.
+    const source = boundary.source;
+    if (source.kind === "organization_interaction") {
+      const interactionId = source.interactionId;
+      const basis = scope.definition.organizationBasis;
+      if (basis === null) {
+        throw new RuntimeScopeStoreError("boundary_source_unverified", "an organization_interaction boundary source requires an organization basis");
+      }
+      if (deps.organizations === undefined) {
+        throw new RuntimeScopeStoreError("boundary_source_unverified", "cannot verify an organization_interaction boundary source without an organization source");
+      }
+      const definition = await deps.organizations.definition(basis);
+      if (definition === undefined) {
+        throw new RuntimeScopeStoreError("boundary_source_unverified", `organization revision "${basis.organizationDefinitionId}@${basis.revision}" is unavailable`);
+      }
+      if (!definition.interactions.some((interaction) => interaction.interactionId === interactionId)) {
+        throw new RuntimeScopeStoreError("boundary_source_unverified", `organization revision does not declare interaction "${interactionId}"`);
+      }
+    }
+    await requireRepresentationAdmission(input.scopeId, { kind: "declare_boundary", boundary });
     await append(input.scopeId, [eventRequest("SCOPE_BOUNDARY_DECLARED", input.scopeId, { boundary })]);
+  }
+
+  async function associateCampaign(input: { readonly scopeId: string; readonly campaignId: string }): Promise<void> {
+    const index = await buildIndex();
+    const scope = requireScope(index, input.scopeId);
+    assertOpen(scope, "associate a campaign");
+    if (deps.campaigns === undefined) {
+      throw new RuntimeScopeStoreError("campaign_unknown", "no campaign source is configured — campaign association cannot be verified");
+    }
+    if (!(await deps.campaigns.exists(input.campaignId))) {
+      throw new RuntimeScopeStoreError("campaign_unknown", `campaign "${input.campaignId}" does not exist`);
+    }
+    if (scope.campaigns.has(input.campaignId)) {
+      throw new RuntimeScopeStoreError("event_conflict", `campaign "${input.campaignId}" is already associated`);
+    }
+    await append(input.scopeId, [eventRequest("CAMPAIGN_ASSOCIATED", input.scopeId, { campaignId: input.campaignId })]);
+  }
+
+  async function disassociateCampaign(input: { readonly scopeId: string; readonly campaignId: string; readonly reason: string }): Promise<void> {
+    if (typeof input.reason !== "string" || input.reason.trim() === "") throw new RuntimeScopeStoreError("invalid_registration", "reason must be a non-empty string");
+    const index = await buildIndex();
+    const scope = requireScope(index, input.scopeId);
+    if (!scope.campaigns.has(input.campaignId)) {
+      throw new RuntimeScopeStoreError("member_unknown", `campaign "${input.campaignId}" is not associated`);
+    }
+    await append(input.scopeId, [eventRequest("CAMPAIGN_DISASSOCIATED", input.scopeId, { campaignId: input.campaignId, reason: input.reason })]);
   }
 
   async function closeScope(input: { readonly scopeId: string; readonly reason: string }): Promise<void> {
@@ -276,6 +376,7 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
       children: childrenOf(index, scopeId),
       peer: scope.peer,
       boundary: scope.boundary,
+      campaignIds: Object.freeze([...scope.campaigns].sort()),
       basis,
     });
   }
@@ -311,7 +412,20 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
     return Object.freeze([...scope.members.values()]);
   }
 
-  return { openScope, addMember, removeMember, associatePeer, declareBoundary, closeScope, listScopes, scopeState, holonView, members };
+  return {
+    openScope,
+    addMember,
+    removeMember,
+    associatePeer,
+    declareBoundary,
+    associateCampaign,
+    disassociateCampaign,
+    closeScope,
+    listScopes,
+    scopeState,
+    holonView,
+    members,
+  };
 }
 
 /** True when two refs denote the same scope (never inferred from string equality elsewhere). */
