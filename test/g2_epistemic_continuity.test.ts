@@ -59,6 +59,7 @@ function world(standings: Map<string, CampaignClaimStatus | "unknown">) {
   const store = new SqliteCampaignStore(":memory:");
   let c = 0;
   const service: CampaignService = makeCampaignService({
+    institutions: TEST_INSTITUTIONS,
     store,
     allocateCommitmentId: () => `cc-${++c}`,
     evidence: portOver(standings),
@@ -217,3 +218,10 @@ describe("G2-M13/M14: deterministic replay and digest", () => {
     expect(await run()).toBe(await run());
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

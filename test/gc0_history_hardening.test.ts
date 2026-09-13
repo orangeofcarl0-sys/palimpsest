@@ -34,7 +34,8 @@ function opened(eventId: string, statement: string): CampaignAppendRequest {
 async function seededStore(path = ":memory:") {
   const store = new SqliteCampaignStore(path);
   let c = 0;
-  const service = makeCampaignService({ store, allocateCommitmentId: () => `cc-${++c}` });
+  const service = makeCampaignService({
+    institutions: TEST_INSTITUTIONS, store, allocateCommitmentId: () => `cc-${++c}` });
   await service.createCampaign({ campaignId: "camp-1", institutionId: "inst-1", statement: "root" });
   return { store, service };
 }
@@ -182,3 +183,10 @@ describe("GC0-M11/M12: replay and multi-writer safety", () => {
     b.close();
   });
 });
+
+const TEST_INSTITUTIONS = {
+  inspectEpoch: async () => ({
+    state: "known" as const,
+    value: { institutionId: "inst-1", epoch: 0, digest: "e".repeat(64) },
+  }),
+};

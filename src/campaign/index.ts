@@ -137,6 +137,7 @@ export {
   parseCampaignCheckpoint,
   parseWorldSnapshot,
 } from "./lifecycle.js";
+export type { CampaignInstitutionEpochSource as CampaignInstitutionPort } from "./lifecycle.js";
 export type {
   CampaignCheckpoint,
   CampaignInstitutionEpochSource,

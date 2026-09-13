@@ -47,6 +47,9 @@ export type CampaignStoreErrorKind =
   | "event_conflict"
   | "recovery_required"
   | "database_busy"
+  | "institution_unavailable"
+  | "institution_unknown"
+  | "institution_error"
   | "malformed_record";
 
 /** Canonical semantic payload identity for idempotent-retry comparison (§15). */

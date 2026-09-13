@@ -339,13 +339,30 @@ export function installPalimpsest(
     });
   }
 
+  // GC1 §35/§142: the installed campaign surface requires a canonical
+  // institution source; without one there is no truthful genesis boundary.
+  const campaignInstitutionSource =
+    options.campaignInstitutionEpochPort ??
+    (options.institutionStore === undefined
+      ? undefined
+      : {
+          inspectEpoch: async (institutionId: string) => {
+            const epoch = await options.institutionStore!.currentEpoch(institutionId);
+            const ref = await options.institutionStore!.head(institutionId);
+            if (epoch === undefined || ref === undefined) {
+              return { state: "unknown" as const, detail: `institution "${institutionId}" does not exist` };
+            }
+            return { state: "known" as const, value: { institutionId, epoch: ref.epoch, digest: ref.digest } };
+          },
+        });
   let campaign: InstalledCampaign | undefined;
-  if (options.campaignStore !== undefined) {
+  if (options.campaignStore !== undefined && campaignInstitutionSource !== undefined) {
     const campaignStore = options.campaignStore;
     const campaignService = makeCampaignService({
       store: campaignStore,
       allocateCommitmentId: () => `cc-${randomUUID()}`,
       evidence: options.campaignEvidencePort,
+      institutions: campaignInstitutionSource,
     });
     const prospective = makeProspectiveService({
       store: campaignStore,
@@ -354,23 +371,18 @@ export function installPalimpsest(
       evidence: options.campaignEvidencePort,
       signals: options.campaignSignalPort,
       // Adapt the full-epoch source to the watch port's epoch-number view.
-      institutions:
-        options.campaignInstitutionEpochPort === undefined
-          ? undefined
-          : {
-              currentEpoch: async (institutionId: string) => {
-                const knowledge = await options.campaignInstitutionEpochPort!.inspectEpoch(institutionId);
-                return knowledge.state === "known"
-                  ? { state: "known" as const, value: knowledge.value.epoch }
-                  : knowledge;
-              },
-            },
+      institutions: {
+        currentEpoch: async (institutionId: string) => {
+          const knowledge = await campaignInstitutionSource.inspectEpoch(institutionId);
+          return knowledge.state === "known" ? { state: "known" as const, value: knowledge.value.epoch } : knowledge;
+        },
+      },
       projects: options.campaignWorkPort,
     });
     const lifecycle = makeLifecycleService({
       store: campaignStore,
       allocateWakeCycleId: () => `wc-${randomUUID()}`,
-      institutions: options.campaignInstitutionEpochPort,
+      institutions: campaignInstitutionSource,
       evidence: options.campaignEvidencePort,
       work: options.campaignWorkPort,
     });
