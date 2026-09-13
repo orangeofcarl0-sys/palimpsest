@@ -29,6 +29,8 @@ export {
   FEDERATION_EVENT_PARSERS,
   materializePeerMessage,
   materializeThreadRef,
+  parsePeerMessage,
+  parseThreadRef,
 } from "./messages.js";
 export type {
   AckRecordedPayload,
@@ -55,6 +57,9 @@ export {
   COMMITMENT_EVENT_PARSERS,
   CommitmentError,
   commitmentTermsOf,
+  parseCommitmentOffer,
+  parseCommitmentScope,
+  parseHandoffOffer,
   successorCommitmentIdOf,
 } from "./commitment.js";
 export type {

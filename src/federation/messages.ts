@@ -12,15 +12,20 @@
  *   CONTACT_REQUESTED, MESSAGE_PREPARED, MESSAGE_DELIVERED, MESSAGE_RECEIVED,
  *   WAKE_SENT, ACK_RECORDED.
  *
+ * F0 §23–§24: every parser validates the COMPLETE semantic artifact — exact
+ * fields (nested unknown fields rejected), stable ids, enum literals, nested
+ * PeerRef/ThreadRef artifacts — never an unchecked structural cast.
+ *
  * Semantic firewalls: delivery ≠ ack (§74), wake ≠ ack (§73), ack ≠ agreement
  * (§76), conversation ≠ agreement (§77), collaboration event ≠ evidence (§82).
  */
 
 import { isStableIdentifier } from "../schema/identifier.js";
 import type { PeerRef } from "./peer.js";
-import { materializePeerRef } from "./peer.js";
+import { parsePeerRef } from "./peer.js";
 import type { CoordinationEventParsers } from "../coordination/store.js";
-import { CoordinationStoreError } from "../coordination/store.js";
+import { CoordinationStoreError } from "../coordination/errors.js";
+import { requireBoolean, requireLiteral, requireSchemaVersion, requireStableId, requireString, strictObject } from "../coordination/strict.js";
 
 export interface ThreadRef {
   readonly threadId: string;
@@ -31,6 +36,12 @@ export function materializeThreadRef(input: { readonly threadId: string }): Thre
     throw new CoordinationStoreError("threadId must be a stable identifier");
   }
   return Object.freeze({ threadId: input.threadId });
+}
+
+/** Strict ThreadRef artifact parser. */
+export function parseThreadRef(raw: unknown, what = "thread"): ThreadRef {
+  const record = strictObject(raw, { allowed: ["threadId"], required: ["threadId"] }, what);
+  return Object.freeze({ threadId: requireStableId(record.threadId, `${what}.threadId`) });
 }
 
 /** A durable collaboration message. `body ≠ Evidence` — always (§63). */
@@ -68,6 +79,24 @@ export function materializePeerMessage(input: {
   });
 }
 
+const PEER_MESSAGE_KEYS = ["schemaVersion", "messageId", "thread", "from", "to", "kind", "body"] as const;
+
+/** Strict PeerMessage artifact parser: exact fields, nested refs validated. */
+export function parsePeerMessage(raw: unknown, what = "message"): PeerMessage {
+  const record = strictObject(raw, { allowed: PEER_MESSAGE_KEYS, required: PEER_MESSAGE_KEYS }, what);
+  requireSchemaVersion(record.schemaVersion, what);
+  requireLiteral(record.kind, "message", `${what}.kind`);
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    messageId: requireStableId(record.messageId, `${what}.messageId`),
+    thread: parseThreadRef(record.thread, `${what}.thread`),
+    from: parsePeerRef(record.from),
+    to: parsePeerRef(record.to),
+    kind: "message" as const,
+    body: requireString(record.body, `${what}.body`),
+  });
+}
+
 export type ContactRequestedPayload = {
   readonly contactNeedId: string;
   readonly from: PeerRef;
@@ -94,83 +123,71 @@ export type AckRecordedPayload = {
   readonly thread: ThreadRef;
 };
 
-function asRecord(value: unknown, what: string): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new CoordinationStoreError(`malformed ${what} payload`);
-  }
-  return value as Record<string, unknown>;
-}
-
-function parseMessage(value: unknown, what: string): PeerMessage {
-  const record = asRecord(value, what);
-  const thread = asRecord(record.thread, `${what}.thread`);
-  return materializePeerMessage({
-    messageId: record.messageId as string,
-    thread: materializeThreadRef({ threadId: thread.threadId as string }),
-    from: materializePeerRef({ peerId: asRecord(record.from, `${what}.from`).peerId as string }),
-    to: materializePeerRef({ peerId: asRecord(record.to, `${what}.to`).peerId as string }),
-    body: record.body as string,
-  });
-}
-
-function requireString(value: unknown, what: string): string {
-  if (typeof value !== "string" || value.length === 0) {
-    throw new CoordinationStoreError(`${what} must be a non-empty string`);
-  }
-  return value;
-}
-
-function requirePeer(value: unknown, what: string): PeerRef {
-  return materializePeerRef({ peerId: asRecord(value, what).peerId as string });
-}
-
 /** Strict parsers for the federation event types (registered with the store). */
 export const FEDERATION_EVENT_PARSERS: CoordinationEventParsers = Object.freeze({
   CONTACT_REQUESTED: (payload) => {
-    const record = asRecord(payload, "CONTACT_REQUESTED");
-    return {
-      contactNeedId: requireString(record.contactNeedId, "contactNeedId"),
-      from: requirePeer(record.from, "from"),
-      to: requirePeer(record.to, "to"),
-    } satisfies ContactRequestedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["contactNeedId", "from", "to"], required: ["contactNeedId", "from", "to"] },
+      "CONTACT_REQUESTED",
+    );
+    return Object.freeze({
+      contactNeedId: requireStableId(record.contactNeedId, "contactNeedId"),
+      from: parsePeerRef(record.from),
+      to: parsePeerRef(record.to),
+    }) satisfies ContactRequestedPayload;
   },
   MESSAGE_PREPARED: (payload) => {
-    const record = asRecord(payload, "MESSAGE_PREPARED");
-    return { message: parseMessage(record.message, "message") } satisfies MessagePreparedPayload;
+    const record = strictObject(payload, { allowed: ["message"], required: ["message"] }, "MESSAGE_PREPARED");
+    return Object.freeze({ message: parsePeerMessage(record.message) }) satisfies MessagePreparedPayload;
   },
   MESSAGE_DELIVERED: (payload) => {
-    const record = asRecord(payload, "MESSAGE_DELIVERED");
-    return {
-      messageId: requireString(record.messageId, "messageId"),
-      ...(record.transportMessageId === undefined
+    const record = strictObject(
+      payload,
+      { allowed: ["messageId", "transportMessageId"], required: ["messageId"] },
+      "MESSAGE_DELIVERED",
+    );
+    const transportMessageId = record.transportMessageId;
+    return Object.freeze({
+      messageId: requireStableId(record.messageId, "messageId"),
+      ...(transportMessageId === undefined
         ? {}
-        : { transportMessageId: requireString(record.transportMessageId, "transportMessageId") }),
-    } satisfies MessageDeliveredPayload;
+        : { transportMessageId: requireString(transportMessageId, "transportMessageId") }),
+    }) satisfies MessageDeliveredPayload;
   },
   MESSAGE_RECEIVED: (payload) => {
-    const record = asRecord(payload, "MESSAGE_RECEIVED");
-    if (typeof record.authenticated !== "boolean") {
-      throw new CoordinationStoreError("MESSAGE_RECEIVED.authenticated must be a boolean");
-    }
-    return {
-      message: parseMessage(record.message, "message"),
-      authenticated: record.authenticated,
-    } satisfies MessageReceivedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["message", "authenticated"], required: ["message", "authenticated"] },
+      "MESSAGE_RECEIVED",
+    );
+    return Object.freeze({
+      message: parsePeerMessage(record.message),
+      authenticated: requireBoolean(record.authenticated, "MESSAGE_RECEIVED.authenticated"),
+    }) satisfies MessageReceivedPayload;
   },
   WAKE_SENT: (payload) => {
-    const record = asRecord(payload, "WAKE_SENT");
-    return {
-      wakeId: requireString(record.wakeId, "wakeId"),
-      from: requirePeer(record.from, "from"),
-      to: requirePeer(record.to, "to"),
-    } satisfies WakeSentPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["wakeId", "from", "to"], required: ["wakeId", "from", "to"] },
+      "WAKE_SENT",
+    );
+    return Object.freeze({
+      wakeId: requireStableId(record.wakeId, "wakeId"),
+      from: parsePeerRef(record.from),
+      to: parsePeerRef(record.to),
+    }) satisfies WakeSentPayload;
   },
   ACK_RECORDED: (payload) => {
-    const record = asRecord(payload, "ACK_RECORDED");
-    return {
-      messageId: requireString(record.messageId, "messageId"),
-      by: requirePeer(record.by, "by"),
-      thread: materializeThreadRef({ threadId: asRecord(record.thread, "thread").threadId as string }),
-    } satisfies AckRecordedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["messageId", "by", "thread"], required: ["messageId", "by", "thread"] },
+      "ACK_RECORDED",
+    );
+    return Object.freeze({
+      messageId: requireStableId(record.messageId, "messageId"),
+      by: parsePeerRef(record.by),
+      thread: parseThreadRef(record.thread),
+    }) satisfies AckRecordedPayload;
   },
 });

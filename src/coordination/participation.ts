@@ -33,6 +33,16 @@ import type { AgentDefinitionId } from "../architecture/index.js";
 import type { BindingResolutionRef } from "../binding/contract.js";
 import type { RunDefinitionRef } from "../run/index.js";
 import { isStableIdentifier } from "../schema/identifier.js";
+import type { CoordinationEventParsers } from "./store.js";
+import { CoordinationStoreError } from "./errors.js";
+import {
+  requireLiteral,
+  requireOneOf,
+  requireSchemaVersion,
+  requireStableId,
+  requireString,
+  strictObject,
+} from "./strict.js";
 
 export type InvocationId = string;
 export type ParticipationId = string;
@@ -151,3 +161,130 @@ export function materializeParticipation(input: {
     ...(input.invocation === undefined ? {} : { invocation: Object.freeze({ ...input.invocation }) }),
   });
 }
+
+/* ------------------------------------------------------------------------- *
+ * F0 §23–§24: artifact-domain strict parsers. These own the SEMANTIC SHAPE of
+ * persisted participation artifacts; the CoordinationStore registry delegates
+ * to them and owns only persistence/envelope/ordering/idempotency.
+ * ------------------------------------------------------------------------- */
+
+const ACTIVATION_REF_KEYS = ["activationId", "agentDefinitionId", "runDefinition", "bindingResolution"] as const;
+const ATTEMPT_REF_KEYS = ["projectId", "attemptId"] as const;
+const PARTICIPATION_END_REASONS = ["completed", "withdrawn", "cancelled", "runtime_lost"] as const;
+
+/** Strict ActivationRef: exact fields, nested run/binding refs validated. */
+export function parseActivationRef(raw: unknown, what = "activation"): ActivationRef {
+  const record = strictObject(raw, { allowed: ACTIVATION_REF_KEYS, required: ACTIVATION_REF_KEYS }, what);
+  const runDefinition = strictObject(
+    record.runDefinition,
+    { allowed: ["digest"], required: ["digest"] },
+    `${what}.runDefinition`,
+  );
+  const bindingResolution = strictObject(
+    record.bindingResolution,
+    { allowed: ["resolutionId", "digest"], required: ["resolutionId", "digest"] },
+    `${what}.bindingResolution`,
+  );
+  return Object.freeze({
+    activationId: requireStableId(record.activationId, `${what}.activationId`),
+    agentDefinitionId: requireStableId(record.agentDefinitionId, `${what}.agentDefinitionId`),
+    runDefinition: Object.freeze({
+      digest: requireString(runDefinition.digest, `${what}.runDefinition.digest`),
+    }) as RunDefinitionRef,
+    bindingResolution: Object.freeze({
+      resolutionId: requireStableId(bindingResolution.resolutionId, `${what}.bindingResolution.resolutionId`),
+      digest: requireString(bindingResolution.digest, `${what}.bindingResolution.digest`),
+    }) as BindingResolutionRef,
+  });
+}
+
+/** Strict AttemptRef: both parts must be stable identifiers (§26). */
+export function parseAttemptRef(raw: unknown, what = "attempt"): AttemptRef {
+  const record = strictObject(raw, { allowed: ATTEMPT_REF_KEYS, required: ATTEMPT_REF_KEYS }, what);
+  return Object.freeze({
+    projectId: requireStableId(record.projectId, `${what}.projectId`),
+    attemptId: requireStableId(record.attemptId, `${what}.attemptId`),
+  });
+}
+
+export function parseInvocationRef(raw: unknown, what = "invocation"): InvocationRef {
+  const record = strictObject(raw, { allowed: ["invocationId"], required: ["invocationId"] }, what);
+  return Object.freeze({ invocationId: requireStableId(record.invocationId, `${what}.invocationId`) });
+}
+
+/** Strict Invocation: exact fields, schemaVersion 1, purpose literal. */
+export function parseInvocation(raw: unknown, what = "invocation"): Invocation {
+  const record = strictObject(
+    raw,
+    {
+      allowed: ["schemaVersion", "invocationId", "activation", "attempt", "purpose"],
+      required: ["schemaVersion", "invocationId", "activation", "attempt", "purpose"],
+    },
+    what,
+  );
+  requireSchemaVersion(record.schemaVersion, what);
+  requireLiteral(record.purpose, "participate", `${what}.purpose`);
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    invocationId: requireStableId(record.invocationId, `${what}.invocationId`),
+    activation: parseActivationRef(record.activation, `${what}.activation`),
+    attempt: parseAttemptRef(record.attempt, `${what}.attempt`),
+    purpose: "participate" as const,
+  });
+}
+
+/** Strict Participation: optional invocation ref validated when present. */
+export function parseParticipation(raw: unknown, what = "participation"): Participation {
+  const record = strictObject(
+    raw,
+    {
+      allowed: ["schemaVersion", "participationId", "activation", "attempt", "invocation"],
+      required: ["schemaVersion", "participationId", "activation", "attempt"],
+    },
+    what,
+  );
+  requireSchemaVersion(record.schemaVersion, what);
+  const invocation = record.invocation;
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    participationId: requireStableId(record.participationId, `${what}.participationId`),
+    activation: parseActivationRef(record.activation, `${what}.activation`),
+    attempt: parseAttemptRef(record.attempt, `${what}.attempt`),
+    ...(invocation === undefined
+      ? {}
+      : { invocation: parseInvocationRef(invocation, `${what}.invocation`) }),
+  });
+}
+
+export function parseParticipationEndReason(raw: unknown, what = "endReason"): ParticipationEndReason {
+  return requireOneOf(raw, PARTICIPATION_END_REASONS, what);
+}
+
+/** Strict parsers for the participation event types, registered with the store. */
+export const PARTICIPATION_EVENT_PARSERS: CoordinationEventParsers = Object.freeze({
+  INVOCATION_RECORDED: (payload: unknown) => {
+    const record = strictObject(payload, { allowed: ["invocation"], required: ["invocation"] }, "INVOCATION_RECORDED");
+    return Object.freeze({ invocation: parseInvocation(record.invocation, "invocation") });
+  },
+  PARTICIPATION_STARTED: (payload: unknown) => {
+    const record = strictObject(
+      payload,
+      { allowed: ["participation"], required: ["participation"] },
+      "PARTICIPATION_STARTED",
+    );
+    return Object.freeze({ participation: parseParticipation(record.participation, "participation") });
+  },
+  PARTICIPATION_ENDED: (payload: unknown) => {
+    const record = strictObject(
+      payload,
+      { allowed: ["participationId", "endReason"], required: ["participationId", "endReason"] },
+      "PARTICIPATION_ENDED",
+    );
+    return Object.freeze({
+      participationId: requireStableId(record.participationId, "participationId"),
+      endReason: parseParticipationEndReason(record.endReason),
+    });
+  },
+});
+
+export { CoordinationStoreError };

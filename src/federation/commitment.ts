@@ -24,11 +24,17 @@
  */
 
 import type { PeerRef } from "./peer.js";
+import { parsePeerRef } from "./peer.js";
 import type { AttemptRef } from "../coordination/index.js";
-import type { CoordinationStoreError } from "../coordination/store.js";
-import { CoordinationStoreError as StoreError } from "../coordination/store.js";
-import { isStableIdentifier } from "../schema/identifier.js";
+import { CoordinationStoreError as StoreError } from "../coordination/errors.js";
 import { canonicalDigest } from "../schema/canonical.js";
+import {
+  asObject,
+  requireBoolean,
+  requireStableId,
+  requireString,
+  strictObject,
+} from "../coordination/strict.js";
 
 export type CommitmentId = string;
 export type HandoffId = string;
@@ -91,11 +97,6 @@ export class CommitmentError extends Error {
   }
 }
 
-function requireId(value: string, what: string): string {
-  if (!isStableIdentifier(value)) throw new CommitmentError("commitment_invalid", `${what} must be a stable identifier`);
-  return value;
-}
-
 /** The successor commitment id created by an accepted handoff — derived, explicit, no hidden mutation (§101). */
 export function successorCommitmentIdOf(handoffId: HandoffId, commitmentId: CommitmentId): CommitmentId {
   return `c-${canonicalDigest({ domain: "palimpsest.commitment-successor.v1", handoffId, commitmentId }).slice(0, 32)}`;
@@ -144,115 +145,158 @@ export interface HandoffRejectedPayload {
   readonly rejectedBy: PeerRef;
 }
 
-function asRecord(value: unknown, what: string): Record<string, unknown> {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new StoreError(`malformed ${what} payload`);
-  }
-  return value as Record<string, unknown>;
-}
+/* ------------------------------------------------------------------------- *
+ * F0 §23–§24: artifact-domain strict parsers for commitment/handoff
+ * artifacts. Exact fields, nested PeerRef/scope artifacts validated, stable
+ * ids and enum literals enforced — never an unchecked structural cast.
+ * ------------------------------------------------------------------------- */
 
-function requirePeer(value: unknown, what: string): PeerRef {
-  const record = asRecord(value, what);
-  return Object.freeze({ schemaVersion: 1 as const, peerId: requireId(record.peerId as string, what) });
-}
+const COMMITMENT_OFFER_KEYS = ["commitmentId", "proposer", "proposedHolder", "scope", "termsDigest"] as const;
+const HANDOFF_OFFER_KEYS = ["handoffId", "commitmentId", "from", "to", "scope"] as const;
+const ATTEMPT_REF_KEYS = ["projectId", "attemptId"] as const;
 
-function requireScope(value: unknown): CommitmentScope {
-  const record = asRecord(value, "scope");
+/** Strict CommitmentScope: discriminated union, exact fields per kind. */
+export function parseCommitmentScope(value: unknown, what = "scope"): CommitmentScope {
+  const record = asObject(value, what);
   if (record.kind === "attempt_participation") {
-    const attempt = asRecord(record.attempt, "attempt");
+    const scoped = strictObject(
+      value,
+      { allowed: ["kind", "attempt"], required: ["kind", "attempt"] },
+      what,
+    );
+    const attempt = strictObject(
+      scoped.attempt,
+      { allowed: ATTEMPT_REF_KEYS, required: ATTEMPT_REF_KEYS },
+      `${what}.attempt`,
+    );
     return Object.freeze({
       kind: "attempt_participation" as const,
       attempt: Object.freeze({
-        projectId: requireId(attempt.projectId as string, "projectId"),
-        attemptId: requireId(attempt.attemptId as string, "attemptId"),
+        projectId: requireStableId(attempt.projectId, `${what}.attempt.projectId`),
+        attemptId: requireStableId(attempt.attemptId, `${what}.attempt.attemptId`),
       }),
     });
   }
   if (record.kind === "contact_need") {
+    const scoped = strictObject(
+      value,
+      { allowed: ["kind", "contactNeedId"], required: ["kind", "contactNeedId"] },
+      what,
+    );
     return Object.freeze({
       kind: "contact_need" as const,
-      contactNeedId: requireId(record.contactNeedId as string, "contactNeedId"),
+      contactNeedId: requireStableId(scoped.contactNeedId, `${what}.contactNeedId`),
     });
   }
-  throw new StoreError("unknown commitment scope kind");
+  throw new StoreError(`${what}.kind must be one of attempt_participation, contact_need`);
+}
+
+/** Strict CommitmentOffer artifact. */
+export function parseCommitmentOffer(value: unknown, what = "offer"): CommitmentOffer {
+  const record = strictObject(value, { allowed: COMMITMENT_OFFER_KEYS, required: COMMITMENT_OFFER_KEYS }, what);
+  return Object.freeze({
+    commitmentId: requireStableId(record.commitmentId, `${what}.commitmentId`),
+    proposer: parsePeerRef(record.proposer),
+    proposedHolder: parsePeerRef(record.proposedHolder),
+    scope: parseCommitmentScope(record.scope, `${what}.scope`),
+    termsDigest: requireString(record.termsDigest, `${what}.termsDigest`),
+  });
+}
+
+/** Strict HandoffOffer artifact. */
+export function parseHandoffOffer(value: unknown, what = "offer"): HandoffOffer {
+  const record = strictObject(value, { allowed: HANDOFF_OFFER_KEYS, required: HANDOFF_OFFER_KEYS }, what);
+  return Object.freeze({
+    handoffId: requireStableId(record.handoffId, `${what}.handoffId`),
+    commitmentId: requireStableId(record.commitmentId, `${what}.commitmentId`),
+    from: parsePeerRef(record.from),
+    to: parsePeerRef(record.to),
+    scope: parseCommitmentScope(record.scope, `${what}.scope`),
+  });
 }
 
 /** Strict parsers for commitment/handoff events, registered with the store. */
 export const COMMITMENT_EVENT_PARSERS = Object.freeze({
   COMMITMENT_OFFERED: (payload: unknown) => {
-    const record = asRecord(payload, "COMMITMENT_OFFERED");
-    const offer = asRecord(record.offer, "offer");
-    return {
-      offer: Object.freeze({
-        commitmentId: requireId(offer.commitmentId as string, "commitmentId"),
-        proposer: requirePeer(offer.proposer, "proposer"),
-        proposedHolder: requirePeer(offer.proposedHolder, "proposedHolder"),
-        scope: requireScope(offer.scope),
-        termsDigest: requireId(offer.termsDigest as string, "termsDigest"),
-      }),
-    } satisfies CommitmentOfferedPayload;
+    const record = strictObject(payload, { allowed: ["offer"], required: ["offer"] }, "COMMITMENT_OFFERED");
+    return Object.freeze({ offer: parseCommitmentOffer(record.offer) }) satisfies CommitmentOfferedPayload;
   },
   COMMITMENT_ACCEPTED: (payload: unknown) => {
-    const record = asRecord(payload, "COMMITMENT_ACCEPTED");
-    if (typeof record.authenticated !== "boolean") {
-      throw new StoreError("COMMITMENT_ACCEPTED.authenticated must be a boolean");
-    }
-    return {
-      commitmentId: requireId(record.commitmentId as string, "commitmentId"),
-      acceptedBy: requirePeer(record.acceptedBy, "acceptedBy"),
-      authenticated: record.authenticated,
-    } satisfies CommitmentAcceptedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["commitmentId", "acceptedBy", "authenticated"], required: ["commitmentId", "acceptedBy", "authenticated"] },
+      "COMMITMENT_ACCEPTED",
+    );
+    return Object.freeze({
+      commitmentId: requireStableId(record.commitmentId, "commitmentId"),
+      acceptedBy: parsePeerRef(record.acceptedBy),
+      authenticated: requireBoolean(record.authenticated, "COMMITMENT_ACCEPTED.authenticated"),
+    }) satisfies CommitmentAcceptedPayload;
   },
   COMMITMENT_REJECTED: (payload: unknown) => {
-    const record = asRecord(payload, "COMMITMENT_REJECTED");
-    return {
-      commitmentId: requireId(record.commitmentId as string, "commitmentId"),
-      rejectedBy: requirePeer(record.rejectedBy, "rejectedBy"),
-    } satisfies CommitmentRejectedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["commitmentId", "rejectedBy"], required: ["commitmentId", "rejectedBy"] },
+      "COMMITMENT_REJECTED",
+    );
+    return Object.freeze({
+      commitmentId: requireStableId(record.commitmentId, "commitmentId"),
+      rejectedBy: parsePeerRef(record.rejectedBy),
+    }) satisfies CommitmentRejectedPayload;
   },
   COMMITMENT_RELEASED: (payload: unknown) => {
-    const record = asRecord(payload, "COMMITMENT_RELEASED");
-    return {
-      commitmentId: requireId(record.commitmentId as string, "commitmentId"),
-      releasedBy: requirePeer(record.releasedBy, "releasedBy"),
-    } satisfies CommitmentReleasedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["commitmentId", "releasedBy"], required: ["commitmentId", "releasedBy"] },
+      "COMMITMENT_RELEASED",
+    );
+    return Object.freeze({
+      commitmentId: requireStableId(record.commitmentId, "commitmentId"),
+      releasedBy: parsePeerRef(record.releasedBy),
+    }) satisfies CommitmentReleasedPayload;
   },
   COMMITMENT_SUPERSEDED: (payload: unknown) => {
-    const record = asRecord(payload, "COMMITMENT_SUPERSEDED");
-    return {
-      commitmentId: requireId(record.commitmentId as string, "commitmentId"),
-      handoffId: requireId(record.handoffId as string, "handoffId"),
-    } satisfies CommitmentSupersededPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["commitmentId", "handoffId"], required: ["commitmentId", "handoffId"] },
+      "COMMITMENT_SUPERSEDED",
+    );
+    return Object.freeze({
+      commitmentId: requireStableId(record.commitmentId, "commitmentId"),
+      handoffId: requireStableId(record.handoffId, "handoffId"),
+    }) satisfies CommitmentSupersededPayload;
   },
   HANDOFF_OFFERED: (payload: unknown) => {
-    const record = asRecord(payload, "HANDOFF_OFFERED");
-    const offer = asRecord(record.offer, "offer");
-    return {
-      offer: Object.freeze({
-        handoffId: requireId(offer.handoffId as string, "handoffId"),
-        commitmentId: requireId(offer.commitmentId as string, "commitmentId"),
-        from: requirePeer(offer.from, "from"),
-        to: requirePeer(offer.to, "to"),
-        scope: requireScope(offer.scope),
-      }),
-    } satisfies HandoffOfferedPayload;
+    const record = strictObject(payload, { allowed: ["offer"], required: ["offer"] }, "HANDOFF_OFFERED");
+    return Object.freeze({ offer: parseHandoffOffer(record.offer) }) satisfies HandoffOfferedPayload;
   },
   HANDOFF_ACCEPTED: (payload: unknown) => {
-    const record = asRecord(payload, "HANDOFF_ACCEPTED");
-    return {
-      handoffId: requireId(record.handoffId as string, "handoffId"),
-      commitmentId: requireId(record.commitmentId as string, "commitmentId"),
-      successorCommitmentId: requireId(record.successorCommitmentId as string, "successorCommitmentId"),
-      to: requirePeer(record.to, "to"),
-    } satisfies HandoffAcceptedPayload;
+    const record = strictObject(
+      payload,
+      {
+        allowed: ["handoffId", "commitmentId", "successorCommitmentId", "to"],
+        required: ["handoffId", "commitmentId", "successorCommitmentId", "to"],
+      },
+      "HANDOFF_ACCEPTED",
+    );
+    return Object.freeze({
+      handoffId: requireStableId(record.handoffId, "handoffId"),
+      commitmentId: requireStableId(record.commitmentId, "commitmentId"),
+      successorCommitmentId: requireStableId(record.successorCommitmentId, "successorCommitmentId"),
+      to: parsePeerRef(record.to),
+    }) satisfies HandoffAcceptedPayload;
   },
   HANDOFF_REJECTED: (payload: unknown) => {
-    const record = asRecord(payload, "HANDOFF_REJECTED");
-    return {
-      handoffId: requireId(record.handoffId as string, "handoffId"),
-      rejectedBy: requirePeer(record.rejectedBy, "rejectedBy"),
-    } satisfies HandoffRejectedPayload;
+    const record = strictObject(
+      payload,
+      { allowed: ["handoffId", "rejectedBy"], required: ["handoffId", "rejectedBy"] },
+      "HANDOFF_REJECTED",
+    );
+    return Object.freeze({
+      handoffId: requireStableId(record.handoffId, "handoffId"),
+      rejectedBy: parsePeerRef(record.rejectedBy),
+    }) satisfies HandoffRejectedPayload;
   },
 });
 
-export type { CoordinationStoreError };
+export type { CoordinationStoreError } from "../coordination/errors.js";
