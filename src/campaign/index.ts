@@ -45,3 +45,39 @@ export type {
 
 export { CAMPAIGN_EVENT_DIGEST_DOMAIN, campaignEventId, makeCampaignService } from "./service.js";
 export type { CampaignCommitmentStateEntry, CampaignService, CampaignServiceDeps } from "./service.js";
+
+/** G10-G2: hypothesis branches, EvidenceHistory observations, belief state. */
+export {
+  BELIEF_STATE_DIGEST_DOMAIN,
+  CLAIM_STANDING_DIGEST_DOMAIN,
+  CAMPAIGN_EPISTEMIC_EVENT_PARSERS,
+  CampaignEpistemicError,
+  beliefStandingOf,
+  claimStandingDigestContent,
+  currentBeliefStateOf,
+  materializeBeliefRevision,
+  materializeCampaignHypothesis,
+  materializeClaimStandingSnapshot,
+  materializeEvidenceClaimRef,
+  materializeObservation,
+  parseBeliefRevision,
+  parseCampaignHypothesis,
+  parseClaimStandingSnapshot,
+  parseEvidenceClaimRef,
+  parseObservation,
+} from "./epistemic.js";
+export type {
+  BeliefRevision,
+  BeliefRevisionRef,
+  CampaignBeliefStanding,
+  CampaignEvidenceObservation,
+  CampaignEvidencePort,
+  CampaignHypothesis,
+  ClaimStandingSnapshot,
+  CampaignClaimStatus,
+  CurrentBeliefEntry,
+  CurrentBeliefState,
+  EvidenceClaimRef,
+  EvidenceKnowledge,
+  HypothesisId,
+} from "./epistemic.js";

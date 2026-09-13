@@ -178,7 +178,11 @@ export type CampaignEventType =
   | "CAMPAIGN_COMMITMENT_OPENED"
   | "CAMPAIGN_COMMITMENT_RESOLVED"
   | "CAMPAIGN_COMMITMENT_ABANDONED"
-  | "CAMPAIGN_COMMITMENT_SUPERSEDED";
+  | "CAMPAIGN_COMMITMENT_SUPERSEDED"
+  | "HYPOTHESIS_PROPOSED"
+  | "HYPOTHESIS_RETIRED"
+  | "EVIDENCE_OBSERVED"
+  | "BELIEF_REVISED";
 
 export interface CommitmentOpenedPayload {
   readonly commitment: CampaignCommitment;
