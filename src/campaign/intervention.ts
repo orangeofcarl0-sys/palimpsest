@@ -16,6 +16,7 @@
 
 import { canonicalDigest } from "../schema/canonical.js";
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
+import { requireCanonicalDigest } from "./digest.js";
 import type { CampaignEventParsers } from "./artifacts.js";
 import type { CampaignBeliefStanding, CampaignEvidencePort, CurrentBeliefState, EvidenceClaimRef } from "./epistemic.js";
 import { currentBeliefStateOf } from "./epistemic.js";
@@ -76,8 +77,40 @@ export function materializeCampaignProjectRef(input: { readonly projectId: strin
   return Object.freeze({
     projectId: stableId(input.projectId, "projectId"),
     revision: input.revision,
-    digest: nonEmpty(input.digest, "digest"),
+    digest: requireCanonicalDigest(input.digest, "project digest"),
   });
+}
+
+/**
+ * GC2 §4/§20: the ONE strict CampaignProjectRef parser, reused by checkpoint,
+ * world snapshot, intervention, admission, watch condition, and projection.
+ * Identity is `(projectId, revision, digest)` — a projectId alone is never a
+ * reference, and a synthetic `revision: 0` / `digest: ""` fails closed.
+ */
+export function parseCampaignProjectRef(raw: unknown, what = "CampaignProjectRef"): CampaignProjectRef {
+  const object = asRecord(raw, what);
+  exactKeys(object, ["projectId", "revision", "digest"], what);
+  if (!Number.isSafeInteger(object.revision) || (object.revision as number) < 0) {
+    throw new CampaignStoreError("malformed_record", `${what}.revision must be a non-negative integer`);
+  }
+  return materializeCampaignProjectRef({
+    projectId: stableId(object.projectId, `${what}.projectId`),
+    revision: object.revision as number,
+    digest: requireCanonicalDigest(object.digest, `${what}.digest`),
+  });
+}
+
+/** Byte/semantic identity across the complete reference (never projectId alone). */
+export function campaignProjectRefsEqual(a: CampaignProjectRef, b: CampaignProjectRef): boolean {
+  return a.projectId === b.projectId && a.revision === b.revision && a.digest === b.digest;
+}
+
+/** Canonical deterministic order: projectId, then revision, then digest (§19/§31). */
+export function compareCampaignProjectRefs(a: CampaignProjectRef, b: CampaignProjectRef): number {
+  if (a.projectId !== b.projectId) return a.projectId < b.projectId ? -1 : 1;
+  if (a.revision !== b.revision) return a.revision < b.revision ? -1 : 1;
+  if (a.digest !== b.digest) return a.digest < b.digest ? -1 : 1;
+  return 0;
 }
 
 function stableId(value: unknown, what: string): string {
@@ -120,8 +153,6 @@ const INTERVENTION_KEYS = [
 export function parseCampaignIntervention(raw: unknown): CampaignIntervention {
   const object = asRecord(raw, "CampaignIntervention");
   exactKeys(object, INTERVENTION_KEYS, "CampaignIntervention");
-  const project = asRecord(object.project, "CampaignIntervention.project");
-  exactKeys(project, ["projectId", "revision", "digest"], "CampaignIntervention.project");
   const purpose = object.purpose;
   if (purpose !== "test" && purpose !== "measure" && purpose !== "explore") {
     throw new CampaignStoreError("malformed_record", "intervention purpose must be test, measure, or explore");
@@ -131,10 +162,10 @@ export function parseCampaignIntervention(raw: unknown): CampaignIntervention {
   return Object.freeze({
     interventionId: stableId(object.interventionId, "interventionId"),
     campaignId: stableId(object.campaignId, "campaignId"),
-    project: materializeCampaignProjectRef({ projectId: project.projectId as string, revision: project.revision as number, digest: project.digest as string }),
+    project: parseCampaignProjectRef(object.project, "CampaignIntervention.project"),
     purpose,
     targetHypothesisIds: Object.freeze(object.targetHypothesisIds.map((entry) => stableId(entry, "targetHypothesisId"))),
-    preBeliefStateDigest: nonEmpty(object.preBeliefStateDigest, "preBeliefStateDigest"),
+    preBeliefStateDigest: requireCanonicalDigest(object.preBeliefStateDigest, "preBeliefStateDigest"),
     preBeliefStandings: Object.freeze(
       object.preBeliefStandings.map((entry) => {
         const standing = asRecord(entry, "preBeliefStanding");

@@ -22,7 +22,12 @@ import type { CampaignCommitment } from "./artifacts.js";
 import type { BeliefRevision, CampaignEvidencePort, CampaignHypothesis, ClaimStandingSnapshot } from "./epistemic.js";
 import { currentBeliefStateOf } from "./epistemic.js";
 import type { CampaignProjectRef, CampaignWorkObservationPort, ProjectOperationalStanding, WorkKnowledge } from "./intervention.js";
-import { parseProjectOperationalStanding } from "./intervention.js";
+import {
+  compareCampaignProjectRefs,
+  parseCampaignProjectRef,
+  parseProjectOperationalStanding,
+} from "./intervention.js";
+import { requireCanonicalDigest } from "./digest.js";
 import type { CampaignWatch } from "./prospective.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
 import { CampaignStoreError } from "./store.js";
@@ -169,19 +174,6 @@ function parseEpochRef(raw: unknown, what: string): InstitutionEpochRefLike {
   });
 }
 
-function parseProjectRef(raw: unknown, what: string): CampaignProjectRef {
-  const object = asRecord(raw, what);
-  exactKeys(object, ["projectId", "revision", "digest"], what);
-  if (!Number.isSafeInteger(object.revision) || (object.revision as number) < 0) {
-    throw new CampaignStoreError("malformed_record", `${what}.revision must be a non-negative integer`);
-  }
-  return Object.freeze({
-    projectId: stableId(object.projectId, `${what}.projectId`),
-    revision: object.revision as number,
-    digest: nonEmpty(object.digest, `${what}.digest`),
-  });
-}
-
 export function parseCampaignCheckpoint(raw: unknown, what = "CampaignCheckpoint"): CampaignCheckpoint {
   const object = asRecord(raw, what);
   exactKeys(
@@ -208,13 +200,18 @@ export function parseCampaignCheckpoint(raw: unknown, what = "CampaignCheckpoint
   return Object.freeze({
     campaignId: stableId(object.campaignId, `${what}.campaignId`),
     campaignBasisThroughSeq: object.campaignBasisThroughSeq as number,
-    campaignBasisDigest: nonEmpty(object.campaignBasisDigest, `${what}.campaignBasisDigest`),
+    campaignBasisDigest: requireCanonicalDigest(object.campaignBasisDigest, `${what}.campaignBasisDigest`),
     institutionEpoch: parseEpochRef(object.institutionEpoch, `${what}.institutionEpoch`),
-    beliefStateDigest: nonEmpty(object.beliefStateDigest, `${what}.beliefStateDigest`),
-    activeCommitmentIds: Object.freeze(object.activeCommitmentIds.map((entry) => stableId(entry, "commitmentId"))),
-    activeHypothesisIds: Object.freeze(object.activeHypothesisIds.map((entry) => stableId(entry, "hypothesisId"))),
-    activeWatchIds: Object.freeze(object.activeWatchIds.map((entry) => stableId(entry, "watchId"))),
-    knownProjectRefs: Object.freeze(object.knownProjectRefs.map((entry) => parseProjectRef(entry, "knownProjectRef"))),
+    beliefStateDigest: requireCanonicalDigest(object.beliefStateDigest, `${what}.beliefStateDigest`),
+    activeCommitmentIds: Object.freeze(object.activeCommitmentIds.map((entry) => stableId(entry, "commitmentId")).sort()),
+    activeHypothesisIds: Object.freeze(object.activeHypothesisIds.map((entry) => stableId(entry, "hypothesisId")).sort()),
+    activeWatchIds: Object.freeze(object.activeWatchIds.map((entry) => stableId(entry, "watchId")).sort()),
+    // §19/§31: canonical deterministic order by COMPLETE ProjectRef.
+    knownProjectRefs: Object.freeze(
+      object.knownProjectRefs
+        .map((entry) => parseCampaignProjectRef(entry, "knownProjectRef"))
+        .sort(compareCampaignProjectRefs),
+    ),
   });
 }
 
@@ -231,13 +228,15 @@ export function parseWorldSnapshot(raw: unknown, what = "CampaignWorldSnapshot")
       const item = asRecord(entry, "projectObservation");
       exactKeys(item, ["project", "standing"], "projectObservation");
       return Object.freeze({
-        project: parseProjectRef(item.project, "projectObservation.project"),
+        project: parseCampaignProjectRef(item.project, "projectObservation.project"),
         standing: parseProjectOperationalStanding(item.standing, "projectObservation.standing"),
       });
     }),
   );
-  const triggeredWatchIds = Object.freeze(object.triggeredWatchIds.map((entry) => stableId(entry, "watchId")));
-  const digest = nonEmpty(object.digest, `${what}.digest`);
+  const triggeredWatchIds = Object.freeze(
+    [...new Set(object.triggeredWatchIds.map((entry) => stableId(entry, "watchId")))].sort(),
+  );
+  const digest = requireCanonicalDigest(object.digest, `${what}.digest`);
   const computed = canonicalDigest({ domain: "palimpsest.campaign-world-snapshot.v1", wakeCycleId: stableId(object.wakeCycleId, `${what}.wakeCycleId`), institutionEpoch, claimObservations, projectObservations, triggeredWatchIds });
   if (digest !== computed) throw new CampaignStoreError("malformed_record", `${what}.digest does not match its content`);
   return Object.freeze({ wakeCycleId: stableId(object.wakeCycleId, `${what}.wakeCycleId`), institutionEpoch, claimObservations, projectObservations, triggeredWatchIds, digest });

@@ -68,6 +68,8 @@ import type {
   CampaignService,
 } from "./campaign/index.js";
 import {
+  committedReconciliationOf,
+  inFlightWake,
   makeCampaignProductionService,
   makeCampaignService,
   makeCompilerService,
@@ -431,11 +433,12 @@ export function installPalimpsest(
               const observationRefs = events
                 .filter((event) => event.type === "EVIDENCE_OBSERVED")
                 .map((event) => (event.payload as { observation: { observationId: string } }).observation.observationId);
-              const reconciliations = events.filter((event) => event.type === "RECONCILIATION_COMMITTED");
-              const reconciliationDigest =
-                reconciliations.length === 0
-                  ? null
-                  : (reconciliations[reconciliations.length - 1]!.payload as { report: { digest: string } }).report.digest;
+              // GC2 §65: the context's reconciliation is the CURRENT wake's
+              // committed reconciliation — never "the latest one anywhere".
+              const inFlight = inFlightWake(events);
+              const reconciliation =
+                inFlight === undefined ? undefined : committedReconciliationOf(events, inFlight);
+              const reconciliationDigest = reconciliation?.digest ?? null;
               const interventions = events
                 .filter((event) => event.type === "INTERVENTION_REGISTERED")
                 .map((event) => {
@@ -453,6 +456,7 @@ export function installPalimpsest(
                 institutionEpoch: epoch.state === "known" ? epoch.value : null,
                 activeWatchIds: projection.watches,
                 reconciliationDigest,
+                wakeCycleId: inFlight ?? null,
               };
             },
           });

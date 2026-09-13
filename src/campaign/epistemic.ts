@@ -269,12 +269,18 @@ export function parseClaimStandingSnapshot(raw: unknown, what = "ClaimStandingSn
   if (status !== "SUPPORTED" && status !== "PARTIALLY_SUPPORTED" && status !== "CONTRADICTED" && status !== "INCONCLUSIVE" && status !== "STALE") {
     fail(`${what}.status must be a CampaignClaimStatus`);
   }
+  // GC2-D §52: every evidence-id array member is validated — never a blind
+  // `as string[]` (a bare string would otherwise spread into characters).
+  const requireEvidenceIds = (value: unknown, field: string): readonly string[] => {
+    if (!Array.isArray(value)) fail(`${what}.${field} must be an array`);
+    return value.map((entry) => stableId(entry, `${what}.${field}[]`));
+  };
   const snapshot = materializeClaimStandingSnapshot({
     claim: parseEvidenceClaimRef(object.claim, `${what}.claim`),
     status,
-    supportingEvidenceIds: object.supportingEvidenceIds as string[],
-    contradictingEvidenceIds: object.contradictingEvidenceIds as string[],
-    provenanceDigest: object.provenanceDigest as string,
+    supportingEvidenceIds: requireEvidenceIds(object.supportingEvidenceIds, "supportingEvidenceIds"),
+    contradictingEvidenceIds: requireEvidenceIds(object.contradictingEvidenceIds, "contradictingEvidenceIds"),
+    provenanceDigest: nonEmpty(object.provenanceDigest, `${what}.provenanceDigest`),
   });
   if (snapshot.digest !== object.digest) fail(`${what}.digest does not match its content`);
   return snapshot;

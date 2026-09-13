@@ -92,6 +92,7 @@ function world(compiler?: CampaignCompilerPort) {
       institutionEpoch: null,
       activeWatchIds: watchIds,
       reconciliationDigest: null,
+      wakeCycleId: null,
     };
   };
   const compilerService = makeCompilerService({
@@ -190,7 +191,7 @@ describe("G6-M09/M10/M11/M12: idempotent admission saga", () => {
     const compiled = await w.compilerService.compileNextAction({ campaignId: "camp-1" });
     if (compiled.status !== "compiled") throw new Error("expected compiled");
     // Simulate: Work admitted, process crashed BEFORE PROJECT_ADMITTED.
-    const admissionKey = `adm-${(await import("../src/schema/canonical.js")).canonicalDigest({ domain: "palimpsest.campaign-admission.v1", compilationId: compiled.compiled.compilationId, campaignBasisDigest: compiled.compiled.campaignBasisDigest }).slice(0, 24)}`;
+    const admissionKey = `adm-${(await import("../src/schema/canonical.js")).canonicalDigest({ domain: "palimpsest.campaign-admission.v1", compilationId: compiled.compiled.compilationId, campaignBasisDigest: compiled.compiled.campaignBasisDigest, wakeCycleId: null, reconciliationDigest: null }).slice(0, 24)}`;
     const preAdmitted = await w.work.port.admit({ admissionKey, proposal: compiled.compiled.action.kind === "project" ? compiled.compiled.action.proposal : {} });
     expect(w.work.calls).toHaveLength(1);
 

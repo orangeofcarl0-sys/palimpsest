@@ -153,6 +153,19 @@ describe("GC3: full relevant-world observation", () => {
   });
 
   it("unknown evidence blocks observation; zero hypotheses needs no Evidence port", async () => {
+    // Observation is gated on the CURRENT in-flight wake (§95): start a wake.
+    const startWake = async (prod: ReturnType<typeof world>["production"]) => {
+      const dormant = await prod.admitWait({
+        campaignId: "camp-1",
+        reason: "wait",
+        watches: [{ condition: { kind: "not_before", at: "2027-01-01T00:00:00Z" }, reason: "later" }],
+      });
+      if (dormant.status !== "dormant") throw new Error("expected dormant");
+      const started = await prod.beginWake({ campaignId: "camp-1", cause: { kind: "manual", signalId: "s", reason: "r" } });
+      if (started.status !== "started") throw new Error("expected started");
+      return started.wakeCycleId;
+    };
+
     let down = false;
     const unknownEpoch = world({
       epoch: {
@@ -161,10 +174,11 @@ describe("GC3: full relevant-world observation", () => {
       },
     });
     await unknownEpoch.campaign.createCampaign({ campaignId: "camp-1", institutionId: "inst-1", statement: "root" });
+    const wc1 = await startWake(unknownEpoch.production);
     down = true;
     const observed = await unknownEpoch.production.observeCurrentWorld({
       campaignId: "camp-1",
-      wakeCycle: "wc-x",
+      wakeCycle: wc1,
       wakeCause: { kind: "manual", signalId: "s", reason: "r" },
     });
     expect(observed.status).toBe("reconciliation_incomplete");
@@ -172,19 +186,21 @@ describe("GC3: full relevant-world observation", () => {
     let claimUnknown = false;
     const unknownClaim = world({ claimStatus: () => (claimUnknown ? "unknown" : ("SUPPORTED" as CampaignClaimStatus)) });
     await ready(unknownClaim);
+    const wc2 = await startWake(unknownClaim.production);
     claimUnknown = true;
     const obs2 = await unknownClaim.production.observeCurrentWorld({
       campaignId: "camp-1",
-      wakeCycle: "wc-x",
+      wakeCycle: wc2,
       wakeCause: { kind: "manual", signalId: "s", reason: "r" },
     });
     expect(obs2.status).toBe("reconciliation_incomplete");
 
     const noHypotheses = world();
     await noHypotheses.campaign.createCampaign({ campaignId: "camp-1", institutionId: "inst-1", statement: "root" });
+    const wc3 = await startWake(noHypotheses.production);
     const obs3 = await noHypotheses.production.observeCurrentWorld({
       campaignId: "camp-1",
-      wakeCycle: "wc-x",
+      wakeCycle: wc3,
       wakeCause: { kind: "manual", signalId: "s", reason: "r" },
     });
     expect(obs3.status).toBe("complete");
@@ -283,14 +299,22 @@ describe("GC5: strict wake state machine", () => {
       wakeCycleId: start.wakeCycleId,
     });
     expect(await w.production.resumeWake("camp-1")).toEqual({ status: "in_progress", wakeCycleId: start.wakeCycleId });
-    // Completion before reconciliation → refused.
+    const bogus = {
+      kind: "project" as const,
+      wakeCycleId: start.wakeCycleId,
+      compilationId: "cmp-bogus",
+      reconciliationDigest: "0".repeat(64),
+      admissionKey: "adm-bogus",
+      project: { projectId: "p1", revision: 0, digest: "a".repeat(64) },
+    };
+    // Completion before reconciliation → refused (no bound admission exists).
     await expect(
-      w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, nextAction: "project" }),
+      w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, action: bogus }),
     ).rejects.toBeInstanceOf(CampaignStoreError);
     await w.production.reconcileCurrentWorld({ campaignId: "camp-1", wakeCycle: start.wakeCycleId, wakeCause: { kind: "manual", signalId: "s", reason: "r" } });
     // Project completion without an admitted Project → refused.
     await expect(
-      w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, nextAction: "project" }),
-    ).rejects.toThrow(/admitted Project/);
+      w.production.completeWakeWithAction({ campaignId: "camp-1", wakeCycleId: start.wakeCycleId, action: bogus }),
+    ).rejects.toThrow(/PROJECT_ADMITTED bound to THIS wake/);
   });
 });

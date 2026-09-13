@@ -211,3 +211,28 @@ multiplicity → external unity, Holon interface/activation, composite
 participation, substitution). Alternatively Persistent Agent migration/fork/
 quarantine, if GC evidence shows PAG remains the higher-value frontier. Follow
 evidence.
+
+## 21. Additive historical note (G10-GC2, post-GC audit)
+
+The GC production loop remained valid, but an independent post-GC audit found
+remaining Project/action provenance defects in the integrated wake loop and
+reclassified it:
+
+```text
+G10-GC PAG PRODUCTION CLOSURE:
+PARTIAL — WAKE ACTION PROVENANCE & PROJECT GROUNDING REQUIRED
+```
+
+G10-GC2 subsequently closed them (exact `CampaignProjectRef` grounding, mandatory
+Work completeness, canonical belief provenance, strict production parsers,
+current-wake gating, and Project/WAIT admission bound to the exact wake). The
+original GC record above is not rewritten.
+
+Corrected verdict after GC2 PASS:
+
+```text
+G10-GC PAG PRODUCTION CLOSURE: PASS — PROVENANCE & ADMISSION CLOSURE VERIFIED BY G10-GC2
+```
+
+Verification of the exact-provenance chain is recorded in
+[`G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md`](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md).
