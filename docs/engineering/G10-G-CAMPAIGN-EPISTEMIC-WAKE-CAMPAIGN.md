@@ -250,3 +250,35 @@ PASS — PRODUCTION & PROVENANCE CLOSURE VERIFIED
 
 by [G10-GC](G10-GC-PAG-PRODUCTION-CLOSURE-CAMPAIGN.md) and
 [G10-GC2](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md).
+
+---
+
+## 23. Additive historical note (G10-GC3)
+
+A second post-campaign audit found that GC2 closed Project/action provenance but
+left a WAIT candidate-binding asymmetry: the WAIT admission still accepted
+caller-supplied `compilationId`/`reason`/`watches`/`reconciliationDigest` instead
+of a complete compiled candidate. It read:
+
+```text
+G10-GC2: PARTIAL — WAIT COMPILATION ADMISSION BINDING
+```
+
+G10-GC3 unified both admission arms behind ONE `admitCompiledNextAction` boundary
+that requires a strictly parsed, fresh `CompiledCampaignAction`, records its
+`candidateDigest` on the `WaitAdmission`, and completes the wake through admission
+alone. The original records above are not rewritten.
+
+Final corrected verdict after GC3 PASS:
+
+```text
+G10-G CAMPAIGN, EPISTEMIC CONTINUITY & WAKE:
+PASS — PRODUCTION, PROVENANCE, AND UNIFIED ADMISSION CLOSURE VERIFIED
+```
+
+by [G10-GC](G10-GC-PAG-PRODUCTION-CLOSURE-CAMPAIGN.md),
+[G10-GC2](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md), and
+[G10-GC3](G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md).
+
+The Campaign/Wake implementation baseline is now declared FROZEN (see the GC3
+umbrella §13); PLMP-PAG-0 theory itself is unchanged.

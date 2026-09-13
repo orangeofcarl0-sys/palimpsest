@@ -66,15 +66,18 @@ export interface CampaignProjectStandingPort {
 export type WaitAdmissionId = string;
 
 /**
- * GC2 §84/§85: a wake-origin WAIT admission is an explicit identity bound to
- * the exact compilation, WakeCycle, and reconciliation that produced it —
- * independent of WatchId, WakeCycleId, and CompilationId. A historical WAIT
- * can never satisfy a later wake because this identity is per-admission.
+ * GC2 §84/§85 + GC3 §48/§49: a wake-origin WAIT admission is an explicit
+ * identity bound to the exact COMPILED CANDIDATE (by digest), the WakeCycle,
+ * the reconciliation, and the newly installed watches + prospective checkpoint.
+ * A historical WAIT can never satisfy a later wake. The admission must be able
+ * to answer "which complete candidate was admitted?" — hence `candidateDigest`
+ * is mandatory.
  */
 export interface WaitAdmission {
   readonly waitAdmissionId: WaitAdmissionId;
   readonly campaignId: string;
   readonly compilationId: string;
+  readonly candidateDigest: string;
   readonly wakeCycleId: string;
   readonly reconciliationDigest: string;
   readonly watchIds: readonly string[];
@@ -85,17 +88,23 @@ export function parseWaitAdmission(raw: unknown, what = "WaitAdmission"): WaitAd
   const object = asRecord(raw, what);
   exactKeys(
     object,
-    ["waitAdmissionId", "campaignId", "compilationId", "wakeCycleId", "reconciliationDigest", "watchIds", "checkpointDigest"],
+    ["waitAdmissionId", "campaignId", "compilationId", "candidateDigest", "wakeCycleId", "reconciliationDigest", "watchIds", "checkpointDigest"],
     what,
   );
   if (!Array.isArray(object.watchIds)) throw new CampaignStoreError("malformed_record", `${what}.watchIds must be an array`);
+  // §52: WatchIds are a semantic set — valid ids, duplicates rejected, sorted.
+  const watchIds = object.watchIds.map((entry) => stableId(entry, "watchId"));
+  if (new Set(watchIds).size !== watchIds.length) {
+    throw new CampaignStoreError("malformed_record", `${what}.watchIds must not contain duplicates`);
+  }
   return Object.freeze({
     waitAdmissionId: stableId(object.waitAdmissionId, `${what}.waitAdmissionId`),
     campaignId: stableId(object.campaignId, `${what}.campaignId`),
     compilationId: stableId(object.compilationId, `${what}.compilationId`),
+    candidateDigest: requireCanonicalDigest(object.candidateDigest, `${what}.candidateDigest`),
     wakeCycleId: stableId(object.wakeCycleId, `${what}.wakeCycleId`),
     reconciliationDigest: requireCanonicalDigest(object.reconciliationDigest, `${what}.reconciliationDigest`),
-    watchIds: Object.freeze(object.watchIds.map((entry) => stableId(entry, "watchId")).sort()),
+    watchIds: Object.freeze(watchIds.sort()),
     checkpointDigest: requireCanonicalDigest(object.checkpointDigest, `${what}.checkpointDigest`),
   });
 }

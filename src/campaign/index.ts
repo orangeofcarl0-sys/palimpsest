@@ -165,10 +165,16 @@ export type {
 /** G10-G6: CampaignCompiler candidate boundary + idempotent Work admission. */
 export {
   CAMPAIGN_COMPILER_EVENT_PARSERS,
+  COMPILED_CAMPAIGN_ACTION_DIGEST_DOMAIN,
+  campaignProjectAdmissionKeyOf,
+  compiledCampaignActionDigestOf,
   makeCompilerService,
   parseCampaignNextActionProposal,
+  parseCompiledCampaignAction,
+  parseValidatedCampaignAction,
 } from "./compiler.js";
 export type {
+  CampaignActionParseOptions,
   CampaignAdmissionState,
   CampaignCompilerPort,
   CampaignNextActionProposal,
@@ -187,10 +193,13 @@ export {
   CAMPAIGN_CHECKPOINT_DIGEST_DOMAIN,
   CAMPAIGN_PRODUCTION_EVENT_PARSERS,
   CAMPAIGN_RECONCILIATION_DIGEST_DOMAIN,
+  beliefRevisionsFromEvents,
   checkpointDigestOf,
   committedReconciliationOf,
   encodeWakeCause,
+  evaluateCompiledCampaignActionFreshness,
   inFlightWake,
+  lifecycleStateFromEvents,
   makeCampaignProductionService,
   parseAdmittedCampaignActionRef,
   parseReconciliationReport,
@@ -200,6 +209,8 @@ export {
 } from "./production.js";
 export type {
   AdmittedCampaignActionRef,
+  CampaignActionFreshness,
+  CampaignActionFreshnessCandidate,
   CampaignClaimReader,
   CampaignInstitutionReader,
   CampaignProductionDeps,
@@ -213,3 +224,21 @@ export type {
   WaitWakeActionRef,
   WakeCompletionActionRef,
 } from "./production.js";
+
+/** G10-GC3: the ONE unified next-action admission boundary. */
+export {
+  CAMPAIGN_WAIT_ADMISSION_ID_DOMAIN,
+  campaignLifecycleStateOf,
+  campaignWaitAdmissionIdOf,
+  committedReconciliationFor,
+  currentIncompleteWake,
+  makeNextActionAdmissionService,
+  waitCompletionActionRef,
+} from "./next_action.js";
+export type {
+  CampaignNextActionAdmissionResult,
+  CampaignNextActionProductionPort,
+  CampaignProjectAdmissionPort,
+  NextActionAdmissionDeps,
+  NextActionAdmissionService,
+} from "./next_action.js";

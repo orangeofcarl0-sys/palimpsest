@@ -35,7 +35,7 @@ import { parseCampaignProjectRef } from "./intervention.js";
 import type { CampaignWatchDraft } from "./prospective.js";
 import { parseCampaignWatchDraft } from "./prospective.js";
 import type { AdmittedCampaignActionRef, ParsedWakeCycleCompleted } from "./production.js";
-import { committedReconciliationOf, inFlightWake } from "./production.js";
+import { committedReconciliationOf, evaluateCompiledCampaignActionFreshness, inFlightWake } from "./production.js";
 import { requireCanonicalDigest } from "./digest.js";
 import type { CampaignAppendRequest, CampaignEvent, CampaignStore } from "./store.js";
 import { CampaignStoreError } from "./store.js";
@@ -181,59 +181,158 @@ function nonEmpty(value: unknown, what: string): string {
   return value;
 }
 
+export interface CampaignActionParseOptions {
+  readonly knownHypothesisIds: ReadonlySet<string>;
+  readonly knownGateIds?: ReadonlySet<string> | undefined;
+}
+
+/** Shared Project arm validation (§165): reuse the canonical Work parser/validator. */
+function validateProjectArm(rawProposal: unknown, rawIntervention: unknown, options: CampaignActionParseOptions): ValidatedCampaignAction {
+  const intervention = asRecord(rawIntervention, "intervention");
+  exactKeys(intervention, ["purpose", "targetHypothesisIds"], "intervention");
+  if (intervention.purpose !== "test" && intervention.purpose !== "measure" && intervention.purpose !== "explore") {
+    throw new CampaignStoreError("malformed_record", "intervention purpose must be test, measure, or explore");
+  }
+  if (!Array.isArray(intervention.targetHypothesisIds)) {
+    throw new CampaignStoreError("malformed_record", "targetHypothesisIds must be an array");
+  }
+  const targetHypothesisIds = intervention.targetHypothesisIds.map((entry) => stableId(entry, "targetHypothesisId"));
+  for (const hypothesisId of targetHypothesisIds) {
+    if (!options.knownHypothesisIds.has(hypothesisId)) {
+      throw new CampaignStoreError("malformed_record", `unknown hypothesis reference "${hypothesisId}"`);
+    }
+  }
+  const proposal = parseProjectProposal(rawProposal);
+  const diagnostics = validateProjectProposal(
+    proposal,
+    options.knownGateIds === undefined ? {} : { knownGateIds: options.knownGateIds },
+  );
+  if (diagnostics.length > 0) {
+    throw new CampaignStoreError("malformed_record", `project proposal is invalid: ${diagnostics.map((d) => d.type).join(", ")}`);
+  }
+  return Object.freeze({
+    kind: "project" as const,
+    proposal,
+    intervention: Object.freeze({ purpose: intervention.purpose, targetHypothesisIds: Object.freeze(targetHypothesisIds) }),
+  });
+}
+
+/** Shared WAIT arm validation (§22). */
+function validateWaitArm(rawReason: unknown, rawWatches: unknown): ValidatedCampaignAction {
+  const reason = nonEmpty(rawReason, "reason");
+  if (!Array.isArray(rawWatches) || rawWatches.length === 0) {
+    throw new CampaignStoreError("malformed_record", "a WAIT action requires at least one watch draft");
+  }
+  // §21: malformed Watch conditions must fail at candidate parsing.
+  const watches = rawWatches.map((entry) => parseCampaignWatchDraft(entry, "watchDraft"));
+  return Object.freeze({ kind: "wait" as const, reason, watches: Object.freeze(watches) });
+}
+
 /**
  * Strict compiler-output parser (§164). Rejects unknown action kinds, unknown
  * fields, invalid hypothesis refs, empty reasons, malformed watch drafts, and a
  * ProjectProposal that the canonical Work parser/validator refuses.
  */
-export function parseCampaignNextActionProposal(
-  raw: unknown,
-  options: { readonly knownHypothesisIds: ReadonlySet<string>; readonly knownGateIds?: ReadonlySet<string> },
-): ValidatedCampaignAction {
+export function parseCampaignNextActionProposal(raw: unknown, options: CampaignActionParseOptions): ValidatedCampaignAction {
   const object = asRecord(raw, "CampaignNextActionProposal");
   if (object.kind === "project") {
     exactKeys(object, ["kind", "projectProposal", "intervention"], "CampaignProjectActionProposal");
-    const intervention = asRecord(object.intervention, "intervention");
-    exactKeys(intervention, ["purpose", "targetHypothesisIds"], "intervention");
-    if (intervention.purpose !== "test" && intervention.purpose !== "measure" && intervention.purpose !== "explore") {
-      throw new CampaignStoreError("malformed_record", "intervention purpose must be test, measure, or explore");
-    }
-    if (!Array.isArray(intervention.targetHypothesisIds)) {
-      throw new CampaignStoreError("malformed_record", "targetHypothesisIds must be an array");
-    }
-    const targetHypothesisIds = intervention.targetHypothesisIds.map((entry) => stableId(entry, "targetHypothesisId"));
-    for (const hypothesisId of targetHypothesisIds) {
-      if (!options.knownHypothesisIds.has(hypothesisId)) {
-        throw new CampaignStoreError("malformed_record", `unknown hypothesis reference "${hypothesisId}"`);
-      }
-    }
-    // §165: reuse the canonical Work parser + validator; never duplicate them.
-    const proposal = parseProjectProposal(object.projectProposal);
-    const diagnostics = validateProjectProposal(
-      proposal,
-      options.knownGateIds === undefined ? {} : { knownGateIds: options.knownGateIds },
-    );
-    if (diagnostics.length > 0) {
-      throw new CampaignStoreError("malformed_record", `project proposal is invalid: ${diagnostics.map((d) => d.type).join(", ")}`);
-    }
-    return Object.freeze({
-      kind: "project" as const,
-      proposal,
-      intervention: Object.freeze({ purpose: intervention.purpose, targetHypothesisIds: Object.freeze(targetHypothesisIds) }),
-    });
+    return validateProjectArm(object.projectProposal, object.intervention, options);
   }
   if (object.kind === "wait") {
     exactKeys(object, ["kind", "reason", "watches"], "CampaignWaitActionProposal");
-    const reason = nonEmpty(object.reason, "reason");
-    if (!Array.isArray(object.watches) || object.watches.length === 0) {
-      throw new CampaignStoreError("malformed_record", "a WAIT action requires at least one watch draft");
-    }
-    // §21: malformed Watch conditions must fail at compiler candidate parsing.
-    const watches = object.watches.map((entry) => parseCampaignWatchDraft(entry, "watchDraft"));
-    return Object.freeze({ kind: "wait" as const, reason, watches: Object.freeze(watches) });
+    return validateWaitArm(object.reason, object.watches);
   }
   // §163: a compiler can never terminate a Campaign.
   throw new CampaignStoreError("malformed_record", `unsupported campaign action kind "${String(object.kind)}"`);
+}
+
+/** Strict parser for the VALIDATED action shape carried inside a compiled candidate. */
+export function parseValidatedCampaignAction(raw: unknown, options: CampaignActionParseOptions): ValidatedCampaignAction {
+  const object = asRecord(raw, "CampaignAction");
+  if (object.kind === "project") {
+    exactKeys(object, ["kind", "proposal", "intervention"], "CampaignProjectAction");
+    return validateProjectArm(object.proposal, object.intervention, options);
+  }
+  if (object.kind === "wait") {
+    exactKeys(object, ["kind", "reason", "watches"], "CampaignWaitAction");
+    return validateWaitArm(object.reason, object.watches);
+  }
+  throw new CampaignStoreError("malformed_record", `unsupported campaign action kind "${String(object.kind)}"`);
+}
+
+/**
+ * GC3-1 §§18–23: the strict artifact parser for the admission boundary. Unknown
+ * fields are rejected, the optional wake pair is all-or-nothing, and the action
+ * is validated through the shared arm parsers (input detached, output frozen).
+ */
+export function parseCompiledCampaignAction(raw: unknown, options: CampaignActionParseOptions): CompiledCampaignAction {
+  const object = asRecord(raw, "CompiledCampaignAction");
+  const allowed = ["compilationId", "campaignBasisThroughSeq", "campaignBasisDigest", "beliefStateDigest", "wake", "action"];
+  for (const key of Object.keys(object)) {
+    if (!allowed.includes(key)) throw new CampaignStoreError("malformed_record", `unknown CompiledCampaignAction field "${key}"`);
+  }
+  for (const key of ["compilationId", "campaignBasisThroughSeq", "campaignBasisDigest", "beliefStateDigest", "action"]) {
+    if (!Object.hasOwn(object, key)) throw new CampaignStoreError("malformed_record", `CompiledCampaignAction: field "${key}" is required`);
+  }
+  const throughSeq = object.campaignBasisThroughSeq;
+  if (!Number.isSafeInteger(throughSeq) || (throughSeq as number) < 0) {
+    throw new CampaignStoreError("malformed_record", "CompiledCampaignAction.campaignBasisThroughSeq must be a non-negative integer");
+  }
+  let wake: { readonly wakeCycleId: string; readonly reconciliationDigest: string } | undefined;
+  if (Object.hasOwn(object, "wake") && object.wake !== undefined && object.wake !== null) {
+    const wakeObject = asRecord(object.wake, "CompiledCampaignAction.wake");
+    exactKeys(wakeObject, ["wakeCycleId", "reconciliationDigest"], "CompiledCampaignAction.wake");
+    wake = Object.freeze({
+      wakeCycleId: stableId(wakeObject.wakeCycleId, "CompiledCampaignAction.wake.wakeCycleId"),
+      reconciliationDigest: requireCanonicalDigest(wakeObject.reconciliationDigest, "CompiledCampaignAction.wake.reconciliationDigest"),
+    });
+  }
+  return Object.freeze({
+    compilationId: stableId(object.compilationId, "CompiledCampaignAction.compilationId"),
+    campaignBasisThroughSeq: throughSeq as number,
+    campaignBasisDigest: requireCanonicalDigest(object.campaignBasisDigest, "CompiledCampaignAction.campaignBasisDigest"),
+    beliefStateDigest: requireCanonicalDigest(object.beliefStateDigest, "CompiledCampaignAction.beliefStateDigest"),
+    ...(wake === undefined ? {} : { wake }),
+    action: parseValidatedCampaignAction(object.action, options),
+  });
+}
+
+/** GC3-1 §26: a distinct domain — never the admission-key domain. */
+export const COMPILED_CAMPAIGN_ACTION_DIGEST_DOMAIN = "palimpsest.compiled-campaign-action.v1";
+
+/**
+ * GC3-1 §§24–27: the canonical semantic identity of a compiled candidate. It
+ * includes every admission-relevant field: compilation correlation, Campaign
+ * basis, BeliefState, the optional wake pair, and the complete action content.
+ * `candidateDigest` is NOT the admission key/`waitAdmissionId` (operation
+ * identity) — they are not interchangeable.
+ */
+export function compiledCampaignActionDigestOf(compiled: CompiledCampaignAction): string {
+  return canonicalDigest({
+    domain: COMPILED_CAMPAIGN_ACTION_DIGEST_DOMAIN,
+    compilationId: compiled.compilationId,
+    campaignBasisThroughSeq: compiled.campaignBasisThroughSeq,
+    campaignBasisDigest: compiled.campaignBasisDigest,
+    beliefStateDigest: compiled.beliefStateDigest,
+    wakeCycleId: compiled.wake?.wakeCycleId ?? null,
+    reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
+    action: compiled.action,
+  });
+}
+
+/**
+ * The Project-admission operation/idempotency key (correlation identity). It is
+ * deliberately NOT the candidate digest (§27).
+ */
+export function campaignProjectAdmissionKeyOf(compiled: CompiledCampaignAction): string {
+  return `adm-${canonicalDigest({
+    domain: "palimpsest.campaign-admission.v1",
+    compilationId: compiled.compilationId,
+    campaignBasisDigest: compiled.campaignBasisDigest,
+    wakeCycleId: compiled.wake?.wakeCycleId ?? null,
+    reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
+  }).slice(0, 24)}`;
 }
 
 export interface CompilerServiceDeps {
@@ -335,36 +434,16 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
     }
   }
 
-  /** §66/§67: the admission key binds compilation, basis, AND the exact wake. */
-  function admissionKeyOf(compiled: CompiledCampaignAction): string {
-    return `adm-${canonicalDigest({
-      domain: "palimpsest.campaign-admission.v1",
-      compilationId: compiled.compilationId,
-      campaignBasisDigest: compiled.campaignBasisDigest,
-      wakeCycleId: compiled.wake?.wakeCycleId ?? null,
-      reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
-    }).slice(0, 24)}`;
-  }
-
-  function candidateDigestOf(compiled: CompiledCampaignAction): string {
-    return canonicalDigest({
-      domain: "palimpsest.campaign-candidate.v1",
-      action: compiled.action,
-      wakeCycleId: compiled.wake?.wakeCycleId ?? null,
-      reconciliationDigest: compiled.wake?.reconciliationDigest ?? null,
-    });
-  }
-
   async function admitCompiledAction(input: { readonly campaignId: string; readonly compiled: CompiledCampaignAction }) {
     const { compiled } = input;
     if (compiled.action.kind !== "project") {
-      return { status: "conflict" as const, detail: "WAIT actions are admitted through the prospective/lifecycle path" };
+      return { status: "conflict" as const, detail: "WAIT actions are admitted through unified next-action admission" };
     }
     if (deps.work === undefined) {
       return { status: "conflict" as const, detail: "no CampaignWorkAdmissionPort is configured" };
     }
-    const admissionKey = admissionKeyOf(compiled);
-    const candidateDigest = candidateDigestOf(compiled);
+    const admissionKey = campaignProjectAdmissionKeyOf(compiled);
+    const candidateDigest = compiledCampaignActionDigestOf(compiled);
     const events = await replay(input.campaignId);
     const prepared = events.find(
       (event) => event.type === "PROJECT_ADMISSION_PREPARED" && (event.payload as { admissionKey: string }).admissionKey === admissionKey,
@@ -383,24 +462,16 @@ export function makeCompilerService(deps: CompilerServiceDeps): CompilerService 
       return { status: "admitted" as const, project: retried, completion: completionOf(compiled, retried, admissionKey) };
     }
     if (prepared === undefined) {
-      // §168/§68/§69 freshness applies only to a FIRST admission attempt.
-      const basis = await currentBasis(input.campaignId);
-      if (basis.throughSeq !== compiled.campaignBasisThroughSeq || basis.chainDigest !== compiled.campaignBasisDigest) {
-        return { status: "stale" as const, detail: "campaign_action_stale" };
+      // GC3-2 §29: the ONE shared freshness evaluator (read-only; never appends).
+      const freshness = await evaluateCompiledCampaignActionFreshness({
+        store: deps.store,
+        campaignId: input.campaignId,
+        compiled,
+      });
+      if (freshness.status !== "fresh") {
+        return { status: "stale" as const, detail: freshness.detail };
       }
-      if (compiled.wake !== undefined) {
-        if (inFlightWake(events) !== compiled.wake.wakeCycleId) {
-          return { status: "stale" as const, detail: "campaign_action_stale_wake" };
-        }
-        const reconciliation = committedReconciliationOf(events, compiled.wake.wakeCycleId);
-        if (reconciliation === undefined || reconciliation.digest !== compiled.wake.reconciliationDigest) {
-          return { status: "stale" as const, detail: "campaign_action_stale_reconciliation" };
-        }
-        const belief = currentBeliefStateOf(input.campaignId, beliefRevisionsFromEvents(events));
-        if (belief.digest !== compiled.beliefStateDigest) {
-          return { status: "stale" as const, detail: "campaign_action_stale_belief" };
-        }
-      }
+      const basis = (await currentBasis(input.campaignId))!;
       const correlation =
         compiled.wake === undefined
           ? {}
