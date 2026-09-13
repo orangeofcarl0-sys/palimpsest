@@ -247,3 +247,25 @@ G10-E PARTICIPATION & FEDERATED WORKFORCE CAMPAIGN: PASS
 Recommended next major campaign (§178 — NOT started): **G10-F — Organization /
 Coalition / Durable Institution Grounding**, now that bottom-up collaboration
 is proven to work without hierarchy.
+
+---
+
+## 21. Additive historical note (G10-F0, §188)
+
+The G10-E semantic architecture was completed at `6afa292`. The historical E
+verdict above is **not rewritten**.
+
+G10-F0 later hardened the coordination substrate that E introduced:
+
+- `appendAtomic` + `expectedHeadSeq` — crash-atomic conditional batch;
+- write serialization (`BEGIN IMMEDIATE`) + bounded `busy_timeout` for
+  different-event cross-process appends;
+- complete strict artifact parsers for every persisted event type;
+- the four-event handoff transition is now ONE atomic batch.
+
+F0 exists because durable institutions must not sit on a substrate where a
+handoff can crash between "superseded" and "successor present". The reason F0
+existed is preserved here; the E verdict stands as recorded.
+
+See `docs/engineering/G10-F0-COORDINATION-INTEGRITY.md` and
+`docs/engineering/G10-F0-EVENT-PARSER-AUDIT.md`.

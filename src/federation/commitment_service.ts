@@ -1,5 +1,5 @@
 /**
- * G10-E4 commitment/handoff service — append-only events, derived state,
+ * G10-E4/F0 commitment/handoff service — append-only events, derived state,
  * explicit acceptance only.
  *
  * Acceptance rules (§91/§71):
@@ -15,9 +15,17 @@
  *     explicit successor responsibility ACTIVE for the target — no hidden
  *     in-place owner mutation.
  * No Work/scheduler interaction exists here (§87/§96).
+ *
+ * F0 §13–§21 harden this from read-then-append into head-conditional atomic
+ * transitions: every state-dependent transition captures the canonical head
+ * it read (`expectedHeadSeq`), derives its preconditions from history up to
+ * that head, and commits as ONE `appendAtomic` batch. The four-event handoff
+ * transition (SUPERSEDED + HANDOFF_ACCEPTED + successor OFFERED + successor
+ * ACCEPTED) therefore commits together or not at all — a crash can never
+ * leave "old responsibility superseded, successor absent".
  */
 
-import type { CoordinationStore } from "../coordination/store.js";
+import type { CoordinationAppendRequest, CoordinationEvent, CoordinationStore } from "../coordination/store.js";
 import { canonicalDigest } from "../schema/canonical.js";
 import type { PeerRef } from "./peer.js";
 import type {
@@ -25,20 +33,17 @@ import type {
   CommitmentId,
   CommitmentOffer,
   CommitmentOfferedPayload,
+  CommitmentReleasedPayload,
   CommitmentScope,
   CommitmentState,
+  CommitmentSupersededPayload,
   HandoffAcceptedPayload,
   HandoffId,
   HandoffOffer,
   HandoffOfferedPayload,
   HandoffRejectedPayload,
 } from "./commitment.js";
-import {
-  COMMITMENT_EVENT_PARSERS,
-  CommitmentError,
-  commitmentTermsOf,
-  successorCommitmentIdOf,
-} from "./commitment.js";
+import { CommitmentError, commitmentTermsOf, successorCommitmentIdOf } from "./commitment.js";
 
 export const FEDERATION_SCOPE = "federation";
 
@@ -95,63 +100,70 @@ export interface CommitmentService {
 }
 
 export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
-  async function append(type: string, payload: unknown): Promise<void> {
+  function eventRequest(type: string, payload: unknown): CoordinationAppendRequest {
     const eventId = canonicalDigest({
       domain: "palimpsest.coordination-event.v1",
       type,
       scope: FEDERATION_SCOPE,
       content: payload,
     });
-    await deps.store.append({ eventId, projectId: FEDERATION_SCOPE, type, payload } as never);
+    return { eventId, projectId: FEDERATION_SCOPE, type, payload } as never;
   }
 
-  async function history(commitmentId: CommitmentId) {
+  async function append(type: string, payload: unknown): Promise<void> {
+    await deps.store.append(eventRequest(type, payload));
+  }
+
+  /** Canonical history up to the CURRENT head — the precondition basis. */
+  async function snapshotAtHead(): Promise<{ readonly head: number; readonly events: readonly CoordinationEvent[] }> {
+    const head = await deps.store.head();
     const events = await deps.store.replay();
-    return events.filter((event) => {
-      switch (event.type) {
-        case "COMMITMENT_OFFERED":
-          return (event.payload as CommitmentOfferedPayload).offer.commitmentId === commitmentId;
-        case "COMMITMENT_ACCEPTED":
-          return (event.payload as CommitmentAcceptedPayload).commitmentId === commitmentId;
-        case "COMMITMENT_REJECTED":
-          return (event.payload as { commitmentId: CommitmentId }).commitmentId === commitmentId;
-        case "COMMITMENT_RELEASED":
-          return (event.payload as { commitmentId: CommitmentId }).commitmentId === commitmentId;
-        case "COMMITMENT_SUPERSEDED":
-          return (event.payload as { commitmentId: CommitmentId }).commitmentId === commitmentId;
-        default:
-          return false;
-      }
-    });
+    return { head, events: events.filter((event) => event.seq <= head) };
   }
 
-  async function commitmentState(commitmentId: CommitmentId): Promise<HistoryEntry | undefined> {
-    const events = await history(commitmentId);
+  function deriveState(events: readonly CoordinationEvent[], commitmentId: CommitmentId): HistoryEntry | undefined {
     let entry: HistoryEntry | undefined;
     for (const event of events) {
-      if (event.type === "COMMITMENT_OFFERED") {
-        const payload = event.payload as CommitmentOfferedPayload;
-        if (payload.offer.commitmentId !== commitmentId) continue;
-        entry = { state: "OFFERED", offer: payload.offer, holder: payload.offer.proposedHolder, active: false };
-      } else if (event.type === "COMMITMENT_ACCEPTED" && entry !== undefined) {
-        const payload = event.payload as CommitmentAcceptedPayload;
-        if (payload.commitmentId !== commitmentId) continue;
-        entry = { ...entry, state: "ACTIVE", holder: payload.acceptedBy, active: true };
-      } else if (event.type === "COMMITMENT_REJECTED" && entry !== undefined) {
-        const payload = event.payload as { commitmentId: CommitmentId };
-        if (payload.commitmentId !== commitmentId) continue;
-        entry = { ...entry, state: "REJECTED", active: false };
-      } else if (event.type === "COMMITMENT_RELEASED" && entry !== undefined) {
-        const payload = event.payload as { commitmentId: CommitmentId };
-        if (payload.commitmentId !== commitmentId) continue;
-        entry = { ...entry, state: "RELEASED", active: false };
-      } else if (event.type === "COMMITMENT_SUPERSEDED" && entry !== undefined) {
-        const payload = event.payload as { commitmentId: CommitmentId };
-        if (payload.commitmentId !== commitmentId) continue;
-        entry = { ...entry, state: "SUPERSEDED", active: false };
+      switch (event.type) {
+        case "COMMITMENT_OFFERED": {
+          const payload = event.payload as CommitmentOfferedPayload;
+          if (payload.offer.commitmentId !== commitmentId) continue;
+          entry = { state: "OFFERED", offer: payload.offer, holder: payload.offer.proposedHolder, active: false };
+          break;
+        }
+        case "COMMITMENT_ACCEPTED": {
+          const payload = event.payload as CommitmentAcceptedPayload;
+          if (entry === undefined || payload.commitmentId !== commitmentId) continue;
+          entry = { ...entry, state: "ACTIVE", holder: payload.acceptedBy, active: true };
+          break;
+        }
+        case "COMMITMENT_REJECTED": {
+          const payload = event.payload as { commitmentId: CommitmentId };
+          if (entry === undefined || payload.commitmentId !== commitmentId) continue;
+          entry = { ...entry, state: "REJECTED", active: false };
+          break;
+        }
+        case "COMMITMENT_RELEASED": {
+          const payload = event.payload as CommitmentReleasedPayload;
+          if (entry === undefined || payload.commitmentId !== commitmentId) continue;
+          entry = { ...entry, state: "RELEASED", active: false };
+          break;
+        }
+        case "COMMITMENT_SUPERSEDED": {
+          const payload = event.payload as CommitmentSupersededPayload;
+          if (entry === undefined || payload.commitmentId !== commitmentId) continue;
+          entry = { ...entry, state: "SUPERSEDED", active: false };
+          break;
+        }
+        default:
+          break;
       }
     }
     return entry;
+  }
+
+  async function commitmentState(commitmentId: CommitmentId): Promise<HistoryEntry | undefined> {
+    return deriveState(await deps.store.replay(), commitmentId);
   }
 
   async function offerCommitment(input: {
@@ -171,12 +183,12 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     return offer;
   }
 
-  async function assertCanAccept(
+  function assertCanAccept(
+    entry: HistoryEntry | undefined,
     commitmentId: CommitmentId,
     authenticatedPeer: PeerRef | null,
     local: boolean | undefined,
-  ): Promise<HistoryEntry> {
-    const entry = await commitmentState(commitmentId);
+  ): HistoryEntry {
     if (entry === undefined) {
       throw new CommitmentError("commitment_invalid", `commitment "${commitmentId}" was never offered`);
     }
@@ -208,13 +220,22 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     readonly authenticatedPeer: PeerRef | null;
     readonly local?: boolean;
   }): Promise<CommitmentAcceptedPayload> {
-    const entry = await assertCanAccept(input.commitmentId, input.authenticatedPeer, input.local);
+    const { head, events } = await snapshotAtHead();
+    const entry = assertCanAccept(
+      deriveState(events, input.commitmentId),
+      input.commitmentId,
+      input.authenticatedPeer,
+      input.local,
+    );
     const payload: CommitmentAcceptedPayload = {
       commitmentId: input.commitmentId,
       acceptedBy: entry.offer.proposedHolder,
       authenticated: input.local !== true,
     };
-    await append("COMMITMENT_ACCEPTED", payload);
+    await deps.store.appendAtomic({
+      expectedHeadSeq: head,
+      events: [eventRequest("COMMITMENT_ACCEPTED", payload)],
+    });
     return payload;
   }
 
@@ -223,14 +244,24 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     readonly authenticatedPeer: PeerRef | null;
     readonly local?: boolean;
   }): Promise<{ commitmentId: CommitmentId; rejectedBy: PeerRef }> {
-    const entry = await assertCanAccept(input.commitmentId, input.authenticatedPeer, input.local);
+    const { head, events } = await snapshotAtHead();
+    const entry = assertCanAccept(
+      deriveState(events, input.commitmentId),
+      input.commitmentId,
+      input.authenticatedPeer,
+      input.local,
+    );
     const payload = { commitmentId: input.commitmentId, rejectedBy: entry.offer.proposedHolder };
-    await append("COMMITMENT_REJECTED", payload);
+    await deps.store.appendAtomic({
+      expectedHeadSeq: head,
+      events: [eventRequest("COMMITMENT_REJECTED", payload)],
+    });
     return payload;
   }
 
   async function releaseCommitment(input: { readonly commitmentId: CommitmentId }): Promise<void> {
-    const entry = await commitmentState(input.commitmentId);
+    const { head, events } = await snapshotAtHead();
+    const entry = deriveState(events, input.commitmentId);
     if (entry === undefined || entry.state !== "ACTIVE") {
       throw new CommitmentError(
         "commitment_not_active",
@@ -243,19 +274,20 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
         `only the current holder "${entry.holder.peerId}" may release this commitment`,
       );
     }
-    await append("COMMITMENT_RELEASED", { commitmentId: input.commitmentId, releasedBy: deps.localPeer });
+    await deps.store.appendAtomic({
+      expectedHeadSeq: head,
+      events: [eventRequest("COMMITMENT_RELEASED", { commitmentId: input.commitmentId, releasedBy: deps.localPeer })],
+    });
   }
 
   async function offerHandoff(input: {
     readonly commitmentId: CommitmentId;
     readonly to: PeerRef;
   }): Promise<HandoffOffer> {
-    const entry = await commitmentState(input.commitmentId);
+    const { head, events } = await snapshotAtHead();
+    const entry = deriveState(events, input.commitmentId);
     if (entry === undefined || entry.state !== "ACTIVE") {
-      throw new CommitmentError(
-        "commitment_not_active",
-        "handoff requires an ACTIVE commitment (§98)",
-      );
+      throw new CommitmentError("commitment_not_active", "handoff requires an ACTIVE commitment (§98)");
     }
     if (entry.holder.peerId !== deps.localPeer.peerId) {
       throw new CommitmentError(
@@ -270,12 +302,11 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
       to: input.to,
       scope: entry.offer.scope,
     });
-    await append("HANDOFF_OFFERED", { offer });
+    await deps.store.appendAtomic({ expectedHeadSeq: head, events: [eventRequest("HANDOFF_OFFERED", { offer })] });
     return offer;
   }
 
-  async function handoffOfferById(handoffId: HandoffId): Promise<HandoffOffer | undefined> {
-    const events = await deps.store.replay();
+  function handoffOfferFrom(events: readonly CoordinationEvent[], handoffId: HandoffId): HandoffOffer | undefined {
     for (const event of events) {
       if (event.type === "HANDOFF_OFFERED") {
         const payload = event.payload as HandoffOfferedPayload;
@@ -290,11 +321,14 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     readonly authenticatedPeer: PeerRef | null;
     readonly local?: boolean;
   }): Promise<HandoffAcceptedPayload> {
-    const offer = await handoffOfferById(input.handoffId);
+    // §13/§14: read the canonical head first, derive ALL preconditions from
+    // history up to that head, then commit the whole transition atomically.
+    const { head, events } = await snapshotAtHead();
+    const offer = handoffOfferFrom(events, input.handoffId);
     if (offer === undefined) {
       throw new CommitmentError("handoff_invalid", `handoff "${input.handoffId}" was never offered`);
     }
-    const entry = await commitmentState(offer.commitmentId);
+    const entry = deriveState(events, offer.commitmentId);
     if (entry === undefined || entry.state !== "ACTIVE") {
       throw new CommitmentError("commitment_not_active", "the commitment is no longer ACTIVE");
     }
@@ -306,10 +340,7 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
       );
     }
     if (acceptor.peerId !== offer.to.peerId) {
-      throw new CommitmentError(
-        "not_proposed_holder",
-        `only the handoff target "${offer.to.peerId}" may accept`,
-      );
+      throw new CommitmentError("not_proposed_holder", `only the handoff target "${offer.to.peerId}" may accept`);
     }
     const successorCommitmentId = successorCommitmentIdOf(offer.handoffId, offer.commitmentId);
     const payload: HandoffAcceptedPayload = {
@@ -318,11 +349,6 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
       successorCommitmentId,
       to: offer.to,
     };
-    // §101: explicit transition — old SUPERSEDED (history immutable), then the
-    // successor responsibility OFFERED+ACCEPTED for the target. No hidden
-    // in-place owner mutation.
-    await append("COMMITMENT_SUPERSEDED", { commitmentId: offer.commitmentId, handoffId: offer.handoffId });
-    await append("HANDOFF_ACCEPTED", payload);
     const successorOffer: CommitmentOffer = Object.freeze({
       commitmentId: successorCommitmentId,
       proposer: offer.from,
@@ -330,11 +356,20 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
       scope: offer.scope,
       termsDigest: entry.offer.termsDigest,
     });
-    await append("COMMITMENT_OFFERED", { offer: successorOffer });
-    await append("COMMITMENT_ACCEPTED", {
-      commitmentId: successorCommitmentId,
-      acceptedBy: offer.to,
-      authenticated: input.local !== true,
+    // §19/§20: ONE atomic transition — old SUPERSEDED, handoff accepted,
+    // successor OFFERED + ACCEPTED. Commits together or not at all.
+    await deps.store.appendAtomic({
+      expectedHeadSeq: head,
+      events: [
+        eventRequest("COMMITMENT_SUPERSEDED", { commitmentId: offer.commitmentId, handoffId: offer.handoffId }),
+        eventRequest("HANDOFF_ACCEPTED", payload),
+        eventRequest("COMMITMENT_OFFERED", { offer: successorOffer }),
+        eventRequest("COMMITMENT_ACCEPTED", {
+          commitmentId: successorCommitmentId,
+          acceptedBy: offer.to,
+          authenticated: input.local !== true,
+        }),
+      ],
     });
     return payload;
   }
@@ -344,7 +379,8 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     readonly authenticatedPeer: PeerRef | null;
     readonly local?: boolean;
   }): Promise<HandoffRejectedPayload> {
-    const offer = await handoffOfferById(input.handoffId);
+    const { head, events } = await snapshotAtHead();
+    const offer = handoffOfferFrom(events, input.handoffId);
     if (offer === undefined) {
       throw new CommitmentError("handoff_invalid", `handoff "${input.handoffId}" was never offered`);
     }
@@ -352,8 +388,11 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     if (rejector === null || rejector.peerId !== offer.to.peerId) {
       throw new CommitmentError("not_proposed_holder", "only the handoff target may reject");
     }
-    const payload = { handoffId: offer.handoffId, rejectedBy: rejector };
-    await append("HANDOFF_REJECTED", payload);
+    const payload: HandoffRejectedPayload = { handoffId: offer.handoffId, rejectedBy: rejector };
+    await deps.store.appendAtomic({
+      expectedHeadSeq: head,
+      events: [eventRequest("HANDOFF_REJECTED", payload)],
+    });
     return payload;
   }
 
@@ -367,7 +406,7 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     }
     const active: CommitmentOffer[] = [];
     for (const id of ids) {
-      const entry = await commitmentState(id);
+      const entry = deriveState(events, id);
       if (entry?.active === true && entry.holder.peerId === peer.peerId) active.push(entry.offer);
     }
     return Object.freeze(active);
@@ -385,5 +424,3 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     activeCommitmentsOf,
   };
 }
-
-export { COMMITMENT_EVENT_PARSERS };
