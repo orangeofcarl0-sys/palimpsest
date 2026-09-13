@@ -34,8 +34,18 @@
 ## Branch / merge checkpoints
 | Stage | Branch | PR / merge |
 |---|---|---|
-| J0–J10 + docs | `experiment/g10-j-governed-evolution` | _recorded after merge_ |
-| Closure record | `experiment/g10-j-closure` | _recorded after merge_ |
+| J0–J10 + docs | `experiment/g10-j-governed-evolution` | PR **#60** -> merge commit `ff3c42a` |
+| Closure verification record | `experiment/g10-j-closure` | PR #61 (this record) |
 
-## Remote CI
-_recorded after merge._
+## Remote CI (exact final HEAD)
+| Run | HEAD | Result |
+|---|---|---|
+| `34779225213` (attempt 1) | `54998f5` (the merged G10-J HEAD) | **SUCCESS** — `unit` ✓, `e2e` ✓, first try |
+
+## Canonical main gate (merge commit `ff3c42a`)
+| Gate | Result |
+|---|---|
+| `git diff --check` | clean |
+| `pnpm test` | 114 files / **981 tests passed** |
+| `pnpm build` / `build:web` | PASS |
+| `pnpm test:e2e` | 20/21 locally, failing only the documented `E2E-DEBUG-01` flake (1/3 in isolation); remote e2e passed first try |
