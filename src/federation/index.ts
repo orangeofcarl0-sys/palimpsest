@@ -51,6 +51,31 @@ export type {
   PeerWakeResult,
 } from "./transport.js";
 export { FEDERATION_SCOPE, makeFederationMessagingService } from "./messaging.js";
+export {
+  COMMITMENT_EVENT_PARSERS,
+  CommitmentError,
+  commitmentTermsOf,
+  successorCommitmentIdOf,
+} from "./commitment.js";
+export type {
+  CommitmentAcceptedPayload,
+  CommitmentId,
+  CommitmentOffer,
+  CommitmentOfferedPayload,
+  CommitmentRejectedPayload,
+  CommitmentReleasedPayload,
+  CommitmentScope,
+  CommitmentState,
+  CommitmentSupersededPayload,
+  CommitmentTerms,
+  HandoffAcceptedPayload,
+  HandoffId,
+  HandoffOffer,
+  HandoffOfferedPayload,
+  HandoffRejectedPayload,
+} from "./commitment.js";
+export { makeCommitmentService } from "./commitment_service.js";
+export type { CommitmentDeps, CommitmentService } from "./commitment_service.js";
 export type {
   FederationMessagingDeps,
   FederationMessagingService,
