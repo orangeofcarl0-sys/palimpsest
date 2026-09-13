@@ -182,7 +182,10 @@ export type CampaignEventType =
   | "HYPOTHESIS_PROPOSED"
   | "HYPOTHESIS_RETIRED"
   | "EVIDENCE_OBSERVED"
-  | "BELIEF_REVISED";
+  | "BELIEF_REVISED"
+  | "INTERVENTION_REGISTERED"
+  | "INTERVENTION_OPERATIONAL_OBSERVED"
+  | "INTERVENTION_EPISTEMIC_ASSESSED";
 
 export interface CommitmentOpenedPayload {
   readonly commitment: CampaignCommitment;

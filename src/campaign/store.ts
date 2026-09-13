@@ -26,6 +26,7 @@ import type {
   CampaignEventType,
 } from "./artifacts.js";
 import { CAMPAIGN_EPISTEMIC_EVENT_PARSERS } from "./epistemic.js";
+import { CAMPAIGN_INTERVENTION_EVENT_PARSERS } from "./intervention.js";
 import {
   CAMPAIGN_COMMITMENT_EVENT_PARSERS,
   campaignBasisRefsEqual,
@@ -140,7 +141,7 @@ export class SqliteCampaignStore implements CampaignStore {
     this.#selectTail = this.#database.prepare(
       "SELECT campaign_id, seq, event_id, type, payload_json, chain_digest FROM campaign_events WHERE campaign_id = ? ORDER BY seq DESC LIMIT 1",
     );
-    this.#parsers = { ...CAMPAIGN_COMMITMENT_EVENT_PARSERS, ...CAMPAIGN_EPISTEMIC_EVENT_PARSERS, ...(options?.eventParsers ?? {}) };
+    this.#parsers = { ...CAMPAIGN_COMMITMENT_EVENT_PARSERS, ...CAMPAIGN_EPISTEMIC_EVENT_PARSERS, ...CAMPAIGN_INTERVENTION_EVENT_PARSERS, ...(options?.eventParsers ?? {}) };
   }
 
   #parse(row: StoredRow, previous: CampaignEvent | undefined): CampaignEvent {
