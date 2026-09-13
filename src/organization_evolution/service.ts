@@ -43,6 +43,9 @@ import {
 } from "./artifacts.js";
 import type { OrganizationEvolutionStore } from "./store.js";
 import { EvolutionStoreError } from "./store.js";
+import { acceptedBoundaryRevisionRefsEqual } from "../boundary_memory/ref.js";
+import type { OrganizationFormalizationWiring } from "./formalization.js";
+import { formalizationAssessmentDigestOf, parseCompleteFormalizationCandidate } from "./formalization.js";
 
 export const EVOLUTION_ASSESSMENT_DOMAIN = "palimpsest.organization-evolution-assessment.v1";
 
@@ -61,6 +64,15 @@ export interface OrganizationEvolutionDeps {
   readonly evidence?: TransformationEvidencePort | undefined;
   readonly institution?: OrganizationEvolutionInstitutionWiring | undefined;
   readonly capabilities?: readonly string[] | undefined;
+  /** G10-K CF-J-02: the read-only accepted-blueprint source + untrusted formalization compiler. */
+  readonly formalization?: OrganizationFormalizationWiring | undefined;
+}
+
+/** One evolution request. `blueprintSource` is required for FORMALIZE_ORGANIZATION only. */
+export interface EvolutionRequest {
+  readonly proposal: OrganizationDynamicsProposal;
+  readonly policy: DynamicsPolicy;
+  readonly blueprintSource?: { readonly workspaceId: string; readonly artifactId: string } | undefined;
 }
 
 export type EvolutionOutcome =
@@ -82,10 +94,10 @@ export interface EvolutionInspection {
 }
 
 export interface OrganizationEvolutionService {
-  prepareEvolution(input: { readonly proposal: OrganizationDynamicsProposal; readonly policy: DynamicsPolicy }): Promise<EvolutionOutcome>;
-  resumeEvolution(input: { readonly proposal: OrganizationDynamicsProposal; readonly policy: DynamicsPolicy }): Promise<EvolutionOutcome>;
-  advanceEvolution(input: { readonly proposal: OrganizationDynamicsProposal; readonly policy: DynamicsPolicy }): Promise<EvolutionOutcome>;
-  observeEvolutionOutcome(input: { readonly proposal: OrganizationDynamicsProposal; readonly policy: DynamicsPolicy }): Promise<EvolutionOutcome>;
+  prepareEvolution(input: EvolutionRequest): Promise<EvolutionOutcome>;
+  resumeEvolution(input: EvolutionRequest): Promise<EvolutionOutcome>;
+  advanceEvolution(input: EvolutionRequest): Promise<EvolutionOutcome>;
+  observeEvolutionOutcome(input: EvolutionRequest): Promise<EvolutionOutcome>;
   inspectEvolution(caseRef: EvolutionCaseRef): Promise<EvolutionInspection>;
   dispositionOf(kind: string): string;
 }
@@ -176,7 +188,153 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
     return { status: "activated", caseRef: input.caseRef, activated: [payload.adopted], afterSnapshotDigest };
   }
 
-  async function drive(input: { readonly proposal: OrganizationDynamicsProposal; readonly policy: DynamicsPolicy }): Promise<EvolutionOutcome> {
+  /**
+   * G10-K CF-J-02: FORMALIZE_ORGANIZATION. An accepted OrganizationBlueprint is the
+   * authoring source; a COMPLETE OrganizationDefinition (genesis) is compiled from it
+   * and must reproduce its content exactly. It still requires independent evolution
+   * authority, and it NEVER auto-creates an Institution, RuntimeScope, or Campaign.
+   */
+  async function driveFormalization(input: EvolutionRequest): Promise<EvolutionOutcome> {
+    const { proposal, policy } = input;
+    if (deps.formalization === undefined) return { status: "incomplete", detail: "no formalization boundary/compiler is configured" };
+    if (deps.authority === undefined) return { status: "incomplete", detail: "no OrganizationEvolutionAdmissionPort is configured" };
+    if (proposal.subject.kind !== "organization") {
+      return { status: "incomplete", detail: "formalization requires an organization subject naming the target organization" };
+    }
+    const source = input.blueprintSource;
+    if (source === undefined) return { status: "incomplete", detail: "formalization requires a blueprint source (workspaceId + artifactId)" };
+    const target = proposal.subject.organization;
+    let accepted;
+    try {
+      accepted = await deps.formalization.boundary.acceptedBlueprint(source);
+    } catch (error) {
+      return { status: "incomplete", detail: `cannot read the accepted blueprint: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    if (accepted === undefined) return { status: "incomplete", detail: "no accepted organization blueprint exists for that workspace artifact" };
+    if (accepted.content.organizationDefinitionId !== target.organizationDefinitionId) {
+      return { status: "incomplete", detail: "the accepted blueprint names a different organization id than the proposal subject" };
+    }
+    if (accepted.definition.digest !== target.digest) {
+      return { status: "stale_proposal", detail: "the proposal subject digest is not the accepted blueprint's organization digest" };
+    }
+    if ((await deps.organizations.head(target.organizationDefinitionId)) !== undefined) {
+      return { status: "stale_candidate", detail: "the target organization id is already registered (formalization is genesis, not revision)" };
+    }
+    let raw: unknown;
+    try {
+      raw = await deps.formalization.compiler.compile({
+        proposal,
+        blueprint: accepted.content,
+        blueprintRevision: accepted.revision,
+        blueprintContentDigest: accepted.contentDigest,
+        coalitionProvenance: null,
+        capabilities: deps.capabilities ?? [],
+      });
+    } catch (error) {
+      return { status: "incomplete", detail: `the formalization compiler failed: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    let candidate;
+    try {
+      candidate = parseCompleteFormalizationCandidate(raw);
+    } catch (error) {
+      return { status: "incomplete", detail: `compiler output is not a complete formalization candidate: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    if (candidate.proposalDigest !== proposal.digest) return { status: "incomplete", detail: "formalization candidate is not bound to this proposal" };
+    if (candidate.proposalBasisDigest !== proposal.basisDigest) return { status: "incomplete", detail: "formalization candidate basis does not match the proposal basis" };
+    if (!acceptedBoundaryRevisionRefsEqual(candidate.blueprint, accepted.revision)) {
+      return { status: "stale_candidate", detail: "formalization candidate is not bound to the exact accepted blueprint revision" };
+    }
+    if (candidate.blueprintContentDigest !== accepted.contentDigest) {
+      return { status: "incomplete", detail: "formalization candidate blueprint content digest does not match the accepted revision" };
+    }
+    if (candidate.organization.organizationDefinitionId !== target.organizationDefinitionId) {
+      return { status: "incomplete", detail: "formalization candidate targets a different organization id" };
+    }
+    if (candidate.organization.digest !== accepted.definition.digest) {
+      return { status: "incomplete", detail: "the formalization candidate does not reproduce the accepted blueprint content (roles/norms/assignments may not be invented or dropped)" };
+    }
+
+    const caseRef = evolutionCaseRefOf({ proposalDigest: proposal.digest, candidateDigest: candidate.digest });
+    if (deps.store !== undefined) {
+      const byProposal = await deps.store.caseByProposal(proposal.digest);
+      if (byProposal !== undefined && byProposal.caseRef !== caseRef) {
+        return { status: "incomplete", detail: "this proposal is already bound to a different formalization candidate" };
+      }
+      if (byProposal === undefined) {
+        await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: `organization:${target.organizationDefinitionId}` });
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_FORMALIZATION_COMPILED", caseRef, { candidate }), type: "EVOLUTION_FORMALIZATION_COMPILED", payload: { candidate } }]);
+      }
+    }
+
+    // Re-read the exact accepted blueprint before any irreversible step.
+    let reread;
+    try {
+      reread = await deps.formalization.boundary.acceptedBlueprint(source);
+    } catch (error) {
+      return { status: "stale_candidate", detail: `the accepted blueprint could not be re-read: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    if (reread === undefined || !acceptedBoundaryRevisionRefsEqual(reread.revision, accepted.revision)) {
+      return { status: "stale_candidate", detail: "the accepted blueprint advanced during formalization" };
+    }
+
+    const observed = await deps.dynamics.observe(proposal.subject, policy);
+    if (observed.status !== "observed") return { status: "incomplete", detail: `cannot build an impact report: ${observed.status}` };
+    const impact = deps.dynamics.proposalImpact(proposal, observed.snapshot);
+    const organizationRef = organizationRefOf(candidate.organization);
+    const assessmentDigest = formalizationAssessmentDigestOf({
+      proposalDigest: proposal.digest,
+      candidateDigest: candidate.digest,
+      blueprint: accepted.revision,
+      organizationDefinitionId: target.organizationDefinitionId,
+      organizationDigest: candidate.organization.digest,
+    });
+    if (deps.store !== undefined) {
+      await append(caseRef, [
+        {
+          eventId: eventIdFor("EVOLUTION_ASSESSED", caseRef, { assessmentDigest, status: "admissible" }),
+          type: "EVOLUTION_ASSESSED",
+          payload: { kind: "FORMALIZE", status: "admissible", assessmentDigest, obligations: [] },
+        },
+      ]);
+    }
+
+    const authorityOutcome = await deps.authority.admit({
+      proposalDigest: proposal.digest,
+      candidateDigest: candidate.digest,
+      assessmentDigest,
+      sourceOrganizations: Object.freeze([]),
+      kind: "FORMALIZE",
+      governance: "standalone",
+      impact,
+    });
+    if (authorityOutcome.outcome === "denied") {
+      if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_DENIED", caseRef, { detail: authorityOutcome.detail }), type: "EVOLUTION_DENIED", payload: { detail: authorityOutcome.detail } }]);
+      return { status: "denied", caseRef, detail: authorityOutcome.detail };
+    }
+    if (authorityOutcome.outcome === "unresolved") {
+      if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_AUTHORITY_UNRESOLVED", caseRef, { detail: authorityOutcome.detail }), type: "EVOLUTION_AUTHORITY_UNRESOLVED", payload: { detail: authorityOutcome.detail } }]);
+      return { status: "authority_unresolved", caseRef, detail: authorityOutcome.detail };
+    }
+    if (deps.store !== undefined) {
+      await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_AUTHORIZED", caseRef, { candidateDigest: candidate.digest, assessmentDigest, governance: "standalone" }), type: "EVOLUTION_AUTHORIZED", payload: { candidateDigest: candidate.digest, assessmentDigest, governance: "standalone" } }]);
+    }
+
+    // Genesis registration is the ONLY canonical write. No Institution/RuntimeScope/Campaign.
+    try {
+      await deps.organizations.registerRevision({ definition: candidate.organization, parent: null, expectedHeadRevision: null });
+    } catch (error) {
+      return { status: "stale_candidate", detail: `organization genesis failed: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    const activated = Object.freeze([organizationRef]);
+    if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_ACTIVATED", caseRef, { activated }), type: "EVOLUTION_ACTIVATED", payload: { activated } }]);
+    const afterSnapshotDigest = await observeAfter(proposal, policy);
+    if (afterSnapshotDigest !== null && deps.store !== undefined) {
+      await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_POST_OBSERVED", caseRef, { before: proposal.snapshotDigest, after: afterSnapshotDigest }), type: "EVOLUTION_POST_OBSERVED", payload: { beforeSnapshotDigest: proposal.snapshotDigest, afterSnapshotDigest } }]);
+    }
+    return { status: "activated", caseRef, activated, afterSnapshotDigest };
+  }
+
+  async function drive(input: EvolutionRequest): Promise<EvolutionOutcome> {
     const { proposal, policy } = input;
     const disposition = EVOLUTION_KIND_DISPOSITION[proposal.kind];
     if (disposition === undefined) return { status: "unsupported_evolution_kind", detail: `unknown proposal kind "${proposal.kind}"` };
@@ -223,6 +381,9 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
     if (disposition === "DEFERRED_UNSUPPORTED") {
       return { status: "unsupported_evolution_kind", detail: `proposal kind "${proposal.kind}" has no canonical structural mutation semantics in G10-J` };
     }
+
+    // G10-K: FORMALIZE_ORGANIZATION has its own genesis path (no F3 transformation).
+    if (disposition === "EXECUTABLE_FORMALIZE") return driveFormalization(input);
 
     // Executable path.
     if (proposal.subject.kind !== "organization") return { status: "incomplete", detail: "executable evolution requires an organization subject" };
@@ -351,6 +512,7 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
     for (const event of events) {
       switch (event.type) {
         case "EVOLUTION_CANDIDATE_COMPILED": state = "COMPILED"; break;
+        case "EVOLUTION_FORMALIZATION_COMPILED": state = "COMPILED"; break;
         case "EVOLUTION_ASSESSED": state = "COMPILED"; break;
         case "EVOLUTION_BLOCKED": state = "BLOCKED"; break;
         case "EVOLUTION_AUTHORIZED": state = "COMPILED"; break;

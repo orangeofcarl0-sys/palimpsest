@@ -71,3 +71,12 @@ export * from "./organization_dynamics/index.js";
  * activates through the existing F3/F5 mutation paths.
  */
 export * from "./organization_evolution/index.js";
+
+/**
+ * G10-K: Collaborative Boundary Memory & LivingSpec — advanced opt-in only.
+ * Durable, versioned, multi-peer shared boundary state: workspaces, typed
+ * artifacts, branching candidate revisions, explicit acceptance, immutable
+ * accepted lineage, and governed formalization. Conversation ≠ SharedBoundaryState
+ * ≠ Commitment ≠ Evidence ≠ Organization.
+ */
+export * from "./boundary_memory/index.js";

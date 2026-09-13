@@ -87,6 +87,12 @@ const ATTEMPT_REF_KEYS = ["projectId", "attemptId"] as const;
 const CONTACT_SCOPE_KEYS = ["kind", "contactNeedId"] as const;
 
 export function coalitionScopeOfCommitmentScope(scope: CommitmentScope): CoalitionScope {
+  if (scope.kind === "boundary_revision") {
+    // G10-K: a boundary-scoped commitment has NO coalition scope — coalitions are
+    // grounded in attempt participation or an explicit contact need. Fails closed
+    // rather than inventing a coalition relation from shared boundary state.
+    throw new CoordinationStoreError("a boundary_revision commitment scope has no coalition scope (coalitions require attempt_participation or contact_need)");
+  }
   return scope.kind === "attempt_participation"
     ? Object.freeze({ kind: "attempt_participation" as const, attempt: Object.freeze({ ...scope.attempt }) })
     : Object.freeze({ kind: "contact_need" as const, contactNeedId: scope.contactNeedId });
@@ -129,6 +135,9 @@ export function coalitionScopeKey(scope: CoalitionScope): string {
 
 /** Canonical matching key for a commitment scope (same grounded vocabulary). */
 export function commitmentScopeKey(scope: CommitmentScope): string {
+  if (scope.kind === "boundary_revision") {
+    return `boundary_revision:${scope.revision.workspaceId}/${scope.revision.artifactId}@${scope.revision.revision}:${scope.revision.revisionDigest}`;
+  }
   return scope.kind === "attempt_participation"
     ? `attempt:${scope.attempt.projectId}/${scope.attempt.attemptId}`
     : `contact_need:${scope.contactNeedId}`;

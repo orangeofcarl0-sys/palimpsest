@@ -119,6 +119,9 @@ export async function coalitionView(
   const peers = new Map<string, PeerRef>();
   for (const record of activeCommitmentRecords(events)) {
     if (!record.active) continue;
+    // G10-K: a boundary-scoped commitment has no coalition scope and is never a
+    // coalition member (coalitions are grounded in attempt/contact_need work).
+    if (record.offer.scope.kind === "boundary_revision") continue;
     const scopeKey =
       record.offer.scope.kind === "attempt_participation"
         ? `${record.offer.scope.attempt.projectId}/${record.offer.scope.attempt.attemptId}`

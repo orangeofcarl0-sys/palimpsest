@@ -14,6 +14,7 @@ import type { OrganizationDefinition, OrganizationDefinitionRef, OrganizationMem
 import { parseOrganizationDefinition, parseOrganizationRef } from "../organization/index.js";
 import type { OrganizationTransformationProposal, SplitPlacement, SplitRolePlacement, SplitNormPlacement, MergeRoleDecision } from "../organization/index.js";
 import type { OrganizationDynamicsProposal, ProposalImpactReport } from "../organization_dynamics/index.js";
+import { parseCompleteFormalizationCandidate } from "./formalization.js";
 
 export const EVOLUTION_CANDIDATE_DOMAIN = "palimpsest.organization-evolution-candidate.v1";
 export const EVOLUTION_CASE_DOMAIN = "palimpsest.organization-evolution-case.v1";
@@ -61,7 +62,7 @@ function literal<T extends string>(value: unknown, allowed: readonly T[], what: 
  * Candidate
  * ------------------------------------------------------------------ */
 
-export type EvolutionTargetKind = "REVISE" | "SPLIT" | "MERGE";
+export type EvolutionTargetKind = "REVISE" | "SPLIT" | "MERGE" | "FORMALIZE";
 
 export interface CompleteEvolutionCandidate {
   readonly schemaVersion: 1;
@@ -239,6 +240,7 @@ export function evolutionCaseRefOf(input: { readonly proposalDigest: string; rea
 export type EvolutionEventType =
   | "EVOLUTION_CASE_OPENED"
   | "EVOLUTION_CANDIDATE_COMPILED"
+  | "EVOLUTION_FORMALIZATION_COMPILED"
   | "EVOLUTION_ASSESSED"
   | "EVOLUTION_BLOCKED"
   | "EVOLUTION_AUTHORIZED"
@@ -277,12 +279,17 @@ export const EVOLUTION_EVENT_PARSERS: EvolutionEventParsers = Object.freeze({
     evExactKeys(o, ["candidate"], "EVOLUTION_CANDIDATE_COMPILED");
     return Object.freeze({ candidate: parseCompleteEvolutionCandidate(o.candidate) });
   },
+  EVOLUTION_FORMALIZATION_COMPILED: (payload: unknown) => {
+    const o = evObject(payload, "EVOLUTION_FORMALIZATION_COMPILED");
+    evExactKeys(o, ["candidate"], "EVOLUTION_FORMALIZATION_COMPILED");
+    return Object.freeze({ candidate: parseCompleteFormalizationCandidate(o.candidate) });
+  },
   EVOLUTION_ASSESSED: (payload: unknown) => {
     const o = evObject(payload, "EVOLUTION_ASSESSED");
     evExactKeys(o, ["kind", "status", "assessmentDigest", "obligations"], "EVOLUTION_ASSESSED");
     if (!Array.isArray(o.obligations)) fail("obligations must be an array");
     return Object.freeze({
-      kind: literal(o.kind, ["REVISE", "SPLIT", "MERGE"], "kind"),
+      kind: literal(o.kind, ["REVISE", "SPLIT", "MERGE", "FORMALIZE"], "kind"),
       status: literal(o.status, ["admissible", "blocked"], "status"),
       assessmentDigest: nonEmpty(o.assessmentDigest, "assessmentDigest"),
       obligations: Object.freeze(
@@ -354,8 +361,8 @@ export function evolutionChainDigest(input: {
   return canonicalDigest({ domain: EVOLUTION_CHAIN_DOMAIN, caseRef: input.caseRef, seq: input.seq, eventId: input.eventId, type: input.type, payload: input.payload, previous: input.previousChainDigest });
 }
 
-/** Disposition of every G10-I proposal kind (J0-Q6). */
-export type EvolutionKindDisposition = "TERMINAL_NON_MUTATING" | "EXECUTABLE_IN_J" | "DEFERRED_UNSUPPORTED";
+/** Disposition of every G10-I proposal kind (J0-Q6, additive in G10-K). */
+export type EvolutionKindDisposition = "TERMINAL_NON_MUTATING" | "EXECUTABLE_IN_J" | "EXECUTABLE_FORMALIZE" | "DEFERRED_UNSUPPORTED";
 
 export const EVOLUTION_KIND_DISPOSITION: Readonly<Record<string, EvolutionKindDisposition>> = Object.freeze({
   NO_CHANGE: "TERMINAL_NON_MUTATING",
@@ -363,7 +370,9 @@ export const EVOLUTION_KIND_DISPOSITION: Readonly<Record<string, EvolutionKindDi
   REVISE_ORGANIZATION: "EXECUTABLE_IN_J",
   SPLIT_ORGANIZATION: "EXECUTABLE_IN_J",
   MERGE_ORGANIZATIONS: "EXECUTABLE_IN_J",
-  FORMALIZE_ORGANIZATION: "DEFERRED_UNSUPPORTED",
+  // G10-K CF-J-02: executable ONLY with a fresh proposal + an EXACT accepted
+  // OrganizationBlueprint + a complete candidate + independent evolution authority.
+  FORMALIZE_ORGANIZATION: "EXECUTABLE_FORMALIZE",
   ENCAPSULATE_RUNTIME_SCOPE: "DEFERRED_UNSUPPORTED",
   COLLAPSE_RUNTIME_STRUCTURE: "DEFERRED_UNSUPPORTED",
   DISSOLVE_OR_RETIRE_CANDIDATE: "DEFERRED_UNSUPPORTED",
