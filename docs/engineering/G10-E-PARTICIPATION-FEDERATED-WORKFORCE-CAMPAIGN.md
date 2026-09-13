@@ -16,7 +16,7 @@ Umbrella record for the single-prompt G10-E campaign (§167).
 | E3 | `experiment/g10-e3-collaboration-events` | #29 | `e29d49f` (first-run green) | `05b74be` | `05b74be` |
 | E4 | `experiment/g10-e4-commitment-handoff` | #30 | `c18e543` (first-run green) | `1fdcbdd` | `1fdcbdd` |
 | E5 | `experiment/g10-e5-federated-workforce` | #31 | `a91bccd` (flake+rerun) | `d0883a3` | `d0883a3` |
-| E6 | `experiment/g10-e6-federation-campaign-closure` | #32 | recorded in the PR description | recorded at merge | recorded at merge |
+| E6 | `experiment/g10-e6-federation-campaign-closure` | #32 | branch HEAD `cf4d9e2` — run 34749561186: e2e PASS, unit job hit a runner-acquisition infrastructure failure (5 attempts, never started) → failed-job rerun → **success** | recorded at merge | recorded at merge |
 
 Known `E2E-DEBUG-01`/`E2E-RUNTIME-03` flakes were handled exclusively by
 failed-job reruns with every failure preserved. Process notes recorded
