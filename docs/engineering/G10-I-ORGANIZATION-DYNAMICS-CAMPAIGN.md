@@ -140,3 +140,14 @@ activation. It must read this campaign, the delivery record, and the carry-forwa
 G10-I ORGANIZATION DYNAMICS:
 OBSERVATION, DIAGNOSIS & STRUCTURAL PROPOSAL — PASS
 ```
+
+---
+
+## 25. Additive note (G10-J)
+
+G10-J closed CF-I-02 (a read-only `CampaignActivityObservation` port now feeds Dynamics) and
+CF-I-08 (a governed bridge compiles a fresh DynamicsProposal into an F3-typed candidate,
+requires independent evolution authority and institution governance, activates through the
+existing F3/F5 paths, and re-observes). The G10-I Proposal contract is unchanged; evolution
+case identity is derived from `proposalDigest + candidateDigest` (CF-I-06 closed). See
+[`G10-J-GOVERNED-EVOLUTION-CAMPAIGN.md`](G10-J-GOVERNED-EVOLUTION-CAMPAIGN.md).

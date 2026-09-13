@@ -7,6 +7,8 @@ import { canonicalDigest } from "../schema/canonical.js";
 import type { OrganizationDefinition, OrganizationDefinitionRef } from "../organization/definition.js";
 import type { RuntimeScopeRef, RuntimeScopeService, RuntimeScopeState, RuntimeScopeStore } from "../runtime_scope/index.js";
 import type {
+  CampaignActivityObservation,
+  CampaignActivityPort,
   CollaborationMetrics,
   DynamicsBasis,
   DynamicsCollaborationPort,
@@ -46,6 +48,8 @@ export interface OrganizationDynamicsDeps {
   readonly runtimeScopes: { readonly store: RuntimeScopeStore; readonly service: RuntimeScopeService };
   readonly organizations?: OrganizationDynamicsOrganizationPort | undefined;
   readonly collaboration?: DynamicsCollaborationPort | undefined;
+  /** G10-J CF-I-02: read-only Campaign activity observation. */
+  readonly campaignActivity?: CampaignActivityPort | undefined;
 }
 
 export type ObservationResult =
@@ -220,8 +224,23 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
         participationRuntimeCooccurrence: cooccurrence,
       });
     }
+    let campaignActivity: readonly CampaignActivityObservation[] | null = null;
+    let campaignActivityKnowledge: DynamicsKnowledge["campaignActivity"] = "unknown";
+    if (deps.campaignActivity !== undefined && parsedSubject.kind === "organization") {
+      const campaignIds = [...new Set(states.flatMap((state) => state.campaignIds))].sort();
+      const observations: CampaignActivityObservation[] = [];
+      let activityState: "known" | "unknown" | "error" = "known";
+      for (const campaignId of campaignIds) {
+        const observation = await deps.campaignActivity.observe(campaignId);
+        observations.push(observation);
+        if (observation.state === "error") activityState = "error";
+        else if (observation.state === "unknown" && activityState !== "error") activityState = "unknown";
+      }
+      campaignActivity = Object.freeze(observations);
+      campaignActivityKnowledge = activityState;
+    }
     const runtime = runtimeMetricsOf(states, events, freshness);
-    const knowledge: DynamicsKnowledge = Object.freeze({ runtime: "known", organization: organizationKnowledge, collaboration: collaborationKnowledge });
+    const knowledge: DynamicsKnowledge = Object.freeze({ runtime: "known", organization: organizationKnowledge, collaboration: collaborationKnowledge, campaignActivity: campaignActivityKnowledge });
     const after = basisDigestOf(await readBases(parsedSubject));
     if (after !== before) return { status: "observation_raced", detail: "a source basis changed during observation" };
     const fields = {
@@ -234,6 +253,7 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       collaboration,
       declaredInteractionIds: Object.freeze([...declaredInteractionIds].sort()),
       observedBoundaryInteractionIds: Object.freeze([...new Set(observedBoundaryInteractionIds)].sort()),
+      campaignActivity,
     };
     return { status: "observed", snapshot: Object.freeze({ ...fields, digest: snapshotDigestOf(fields) }) };
   }
@@ -287,7 +307,14 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
         ? { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["subject is not an organization"] }
         : collaboration === null
           ? { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["collaboration observation unavailable"] }
-          : { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["campaign activity is not observable — dormant ≠ dead"] },
+          : snapshot.knowledge.campaignActivity !== "known" || snapshot.campaignActivity === null || snapshot.campaignActivity.length === 0
+            ? { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["campaign activity is not observed for any associated campaign — dormant ≠ dead"] }
+            : snapshot.runtime.scopeCount === 0 &&
+                collaboration.messageEventCount === 0 &&
+                collaboration.commitmentAcceptedEvents === 0 &&
+                snapshot.campaignActivity.every((entry) => entry.exists && entry.semanticEventCount === 0 && entry.activeCommitmentCount === 0 && entry.activeWatchCount === 0 && entry.inFlightWake !== true)
+              ? { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "supported", evidence: [`all ${snapshot.campaignActivity.length} associated campaign(s) observed with zero activity and no runtime scope`], counterEvidence: [], unknowns: [] }
+              : { kind: "ZOMBIE_ORGANIZATION_CANDIDATE", standing: "unsupported", evidence: [], counterEvidence: ["activity or runtime scope observed"], unknowns: [] },
     );
     p.push({ kind: "MERGE_PRESSURE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["requires multi-entity evidence (distinct peers/organizations/authority domains)"] });
     p.push({ kind: "SPLIT_PRESSURE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["requires interface-compressibility evidence not observable today"] });
