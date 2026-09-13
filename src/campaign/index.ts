@@ -81,3 +81,27 @@ export type {
   EvidenceKnowledge,
   HypothesisId,
 } from "./epistemic.js";
+
+/** G10-G3: epistemic intervention (operational ≠ epistemic outcome). */
+export {
+  CAMPAIGN_INTERVENTION_EVENT_PARSERS,
+  classifyEpistemicChange,
+  makeInterventionService,
+  materializeCampaignProjectRef,
+  parseCampaignIntervention,
+} from "./intervention.js";
+export type {
+  CampaignIntervention,
+  CampaignInterventionState,
+  CampaignProjectRef,
+  CampaignWorkObservationPort,
+  EpistemicClassification,
+  EpistemicOutcome,
+  InterventionId,
+  InterventionPurpose,
+  InterventionService,
+  InterventionServiceDeps,
+  PreBeliefStanding,
+  ProjectOperationalStanding,
+  WorkKnowledge,
+} from "./intervention.js";
