@@ -93,3 +93,29 @@ export { coalitionView, manpowerPointView } from "./workforce.js";
 export type { CoalitionView, ManpowerPointView, WorkforceViewDeps } from "./workforce.js";
 export { makeFederationService } from "./federation_service.js";
 export type { FederationService, FederationServiceDeps } from "./federation_service.js";
+
+/** G10-F1: formal Coalition grounding — derived snapshots + provenance only. */
+export {
+  COALITION_BASIS_DIGEST_DOMAIN,
+  COALITION_SNAPSHOT_DIGEST_DOMAIN,
+  activeCommitmentRecords,
+  activeParticipationIdsInScope,
+  coalitionProvenanceOf,
+  coalitionScopeKey,
+  coalitionScopeOfCommitmentScope,
+  commitmentScopeKey,
+  coordinationBasisOf,
+  deriveCoalitionSnapshot,
+  isCoalitionSnapshotCurrent,
+  materializeCoalitionSnapshot,
+  parseCoalitionProvenanceRef,
+  parseCoalitionScope,
+  parseCoalitionSnapshot,
+} from "./coalition.js";
+export type {
+  ActiveCommitmentRecord,
+  CoalitionProvenanceRef,
+  CoalitionScope,
+  CoalitionSnapshot,
+  CoordinationBasisRef,
+} from "./coalition.js";

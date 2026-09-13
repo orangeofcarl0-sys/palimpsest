@@ -27,6 +27,8 @@ import type { CommitmentId, CommitmentScope } from "./commitment.js";
 import type { FederationMessagingService, InboxView, ThreadView } from "./messaging.js";
 import type { CoalitionView, ManpowerPointView } from "./workforce.js";
 import { coalitionView, manpowerPointView } from "./workforce.js";
+import type { CoalitionScope, CoalitionSnapshot } from "./coalition.js";
+import { deriveCoalitionSnapshot } from "./coalition.js";
 import type { AttemptRef } from "../coordination/index.js";
 
 export interface FederationServiceDeps {
@@ -77,7 +79,10 @@ export interface FederationService {
   thread(threadId: string): Promise<ThreadView>;
   inbox(peer: PeerRef): Promise<InboxView>;
   manpowerPoint(peer: PeerRef): Promise<ManpowerPointView>;
+  /** Legacy string-scoped derived coalition projection (E5). */
   coalition(scope: string): Promise<CoalitionView>;
+  /** G10-F1 formal coalition snapshot: derived, basis-recorded, read-only (§37/§41). */
+  coalitionSnapshot(scope: CoalitionScope): Promise<CoalitionSnapshot>;
 }
 
 export function makeFederationService(deps: FederationServiceDeps): FederationService {
@@ -138,6 +143,7 @@ export function makeFederationService(deps: FederationServiceDeps): FederationSe
       ),
     coalition: (scope) =>
       coalitionView({ store: deps.store, localPeer: deps.localPeer, inboxOf: (peer) => deps.messaging.inboxView(peer) }, scope),
+    coalitionSnapshot: (scope) => deriveCoalitionSnapshot(deps.store, scope),
   };
 }
 
