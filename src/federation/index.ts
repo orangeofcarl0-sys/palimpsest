@@ -82,3 +82,9 @@ export type {
   InboxView,
   ThreadView,
 } from "./messaging.js";
+
+/** G10-E5: federated workforce views + the high-level federation service. */
+export { coalitionView, manpowerPointView } from "./workforce.js";
+export type { CoalitionView, ManpowerPointView, WorkforceViewDeps } from "./workforce.js";
+export { makeFederationService } from "./federation_service.js";
+export type { FederationService, FederationServiceDeps } from "./federation_service.js";

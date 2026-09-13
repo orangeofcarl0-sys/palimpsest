@@ -38,6 +38,18 @@ import {
   observeBindingState,
 } from "./runtime/index.js";
 import type { PersistentPointStore } from "./continuity/index.js";
+import type {
+  AttemptCatalogPort,
+  CoordinationStore,
+} from "./coordination/index.js";
+import { makeParticipationService } from "./coordination/index.js";
+import type {
+  FederationService,
+  PeerDirectoryPort,
+  PeerRef,
+  PeerTransportPort,
+} from "./federation/index.js";
+import { makeCommitmentService, makeFederationMessagingService, makeFederationService } from "./federation/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -66,6 +78,16 @@ export interface InstallPalimpsestOptions {
   allocateActivationId?: ((subject: string, context: string) => string) | undefined;
   /** G10-D5 (additive): observation-instance identity allocator; default is a random UUID (effect layer). */
   allocateSnapshotId?: (() => string) | undefined;
+  /** G10-E5 (additive): the local collaboration peer identity. Absent = no federation surface. */
+  localPeer?: PeerRef | undefined;
+  /** G10-E5 (additive): the host-neutral peer transport port. */
+  peerTransportPort?: PeerTransportPort | undefined;
+  /** G10-E5 (additive): the read-only peer directory port. */
+  peerDirectoryPort?: PeerDirectoryPort | undefined;
+  /** G10-E5 (additive): the canonical Palimpsest-owned coordination store. */
+  coordinationStore?: CoordinationStore | undefined;
+  /** G10-E5 (additive): read-only canonical Attempt validation for participation. */
+  attemptCatalog?: AttemptCatalogPort | undefined;
 }
 
 /**
@@ -92,6 +114,8 @@ export interface InstalledPalimpsest {
   readonly tools: readonly DshToolDefinition[];
   /** Present only when runtime wiring options are supplied (§93 backward compatibility). */
   readonly runtime?: InstalledRuntime | undefined;
+  /** Present only when the full federation wiring is supplied (§132–§135) — never partial. */
+  readonly federation?: FederationService | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -191,6 +215,48 @@ export function installPalimpsest(
     };
   }
 
+  // G10-E5 (§132–§135): the federation service exists only when the full
+  // collaboration wiring is supplied. No hidden default peers or transports;
+  // the high-level service is the recommended path (never raw transport).
+  let federation: FederationService | undefined;
+  if (
+    options.localPeer !== undefined &&
+    options.coordinationStore !== undefined &&
+    options.peerTransportPort !== undefined &&
+    options.peerDirectoryPort !== undefined &&
+    options.attemptCatalog !== undefined
+  ) {
+    const messaging = makeFederationMessagingService({
+      effects,
+      store: options.coordinationStore,
+      localPeer: options.localPeer,
+      allocateMessageId: () => `msg-${randomUUID()}`,
+      allocateWakeId: () => `wake-${randomUUID()}`,
+      transportPort: options.peerTransportPort,
+    });
+    const commitments = makeCommitmentService({
+      store: options.coordinationStore,
+      localPeer: options.localPeer,
+      allocateCommitmentId: () => `com-${randomUUID()}`,
+      allocateHandoffId: () => `ho-${randomUUID()}`,
+    });
+    const participation = makeParticipationService({
+      store: options.coordinationStore,
+      attempts: options.attemptCatalog,
+      allocateInvocationId: () => `inv-${randomUUID()}`,
+      allocateParticipationId: () => `part-${randomUUID()}`,
+    });
+    federation = makeFederationService({
+      store: options.coordinationStore,
+      localPeer: options.localPeer,
+      messaging,
+      commitments,
+      participation,
+      directory: options.peerDirectoryPort,
+      allocateContactNeedId: () => `need-${randomUUID()}`,
+    });
+  }
+
   const disposers: (() => void)[] = [];
   for (const definition of tools) {
     const registered = context.tools.register(definition);
@@ -202,6 +268,7 @@ export function installPalimpsest(
     controller,
     tools,
     ...(runtime === undefined ? {} : { runtime }),
+    ...(federation === undefined ? {} : { federation }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
