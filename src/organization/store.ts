@@ -60,6 +60,8 @@ export interface OrganizationRevisionRegistration {
 export interface OrganizationStore {
   /** Register one immutable revision under the explicit lineage rules (§67). */
   registerRevision(input: OrganizationRevisionRegistration): Promise<void>;
+  /** F3 §100: register several successor revisions as ONE atomic transition. */
+  registerRevisions(inputs: readonly OrganizationRevisionRegistration[]): Promise<void>;
   get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined>;
   head(organizationDefinitionId: string): Promise<OrganizationDefinitionRef | undefined>;
   current(organizationDefinitionId: string): Promise<OrganizationDefinition | undefined>;
@@ -149,7 +151,12 @@ export class SqliteOrganizationStore implements OrganizationStore {
     return this.#selectHead.get(organizationDefinitionId) as RevisionRow | undefined;
   }
 
-  async registerRevision(input: OrganizationRevisionRegistration): Promise<void> {
+  /**
+   * Apply one registration INSIDE an open transaction (no BEGIN/COMMIT here).
+   * F3 transformation activation registers several successor revisions as one
+   * atomic batch, so transaction control lives with the caller.
+   */
+  #applyRegistration(input: OrganizationRevisionRegistration): void {
     const definition = parseOrganizationDefinition(JSON.parse(JSON.stringify(input.definition)));
     const orgId = definition.organizationDefinitionId;
     const parent = input.parent;
@@ -172,67 +179,69 @@ export class SqliteOrganizationStore implements OrganizationStore {
       }
     }
 
+    // Byte-identical re-registration is idempotent at ANY revision (including
+    // genesis) — checked BEFORE lineage rules so a retry converges even after
+    // the head has advanced.
+    const existing = this.#selectOne.get(orgId, definition.revision) as RevisionRow | undefined;
+    if (existing !== undefined) {
+      const sameParent =
+        (existing.parent_revision ?? null) === (input.parent?.revision ?? null) &&
+        (existing.parent_digest ?? null) === (input.parent?.digest ?? null);
+      if (existing.artifact_json !== artifactJson || !sameParent) {
+        throw new OrganizationStoreError(
+          "artifact_conflict",
+          `organization "${orgId}" revision ${definition.revision} already exists with different content`,
+        );
+      }
+      return;
+    }
+
+    const head = this.#headRow(orgId);
+    if (genesis) {
+      if (head !== undefined) {
+        throw new OrganizationStoreError(
+          "lineage_conflict",
+          `organization "${orgId}" already has revisions — genesis refused`,
+        );
+      }
+    } else {
+      if (head === undefined) {
+        throw new OrganizationStoreError("lineage_conflict", `organization "${orgId}" has no revisions to extend`);
+      }
+      if (head.revision !== input.expectedHeadRevision) {
+        throw new OrganizationStoreError(
+          "head_mismatch",
+          `organization "${orgId}" head is ${head.revision}, expected ${input.expectedHeadRevision}`,
+        );
+      }
+      if (definition.revision !== head.revision + 1) {
+        throw new OrganizationStoreError(
+          "invalid_registration",
+          `revision ${definition.revision} is not current-head+1 (${head.revision + 1})`,
+        );
+      }
+      const headRef = organizationRefOf(parseOrganizationDefinition(JSON.parse(head.artifact_json)));
+      if (!organizationRefsEqual(headRef, parent!)) {
+        throw new OrganizationStoreError(
+          "lineage_conflict",
+          "declared parent does not equal the current head (no silent lineage fork)",
+        );
+      }
+    }
+
+    this.#insert.run(
+      orgId,
+      definition.revision,
+      artifactJson,
+      input.parent?.revision ?? null,
+      input.parent?.digest ?? null,
+    );
+  }
+
+  #transactional(work: () => void): void {
     try {
       this.#database.exec("BEGIN IMMEDIATE");
-
-      // Byte-identical re-registration is idempotent at ANY revision (including
-      // genesis) — checked BEFORE lineage rules so a retry converges even after
-      // the head has advanced.
-      const existing = this.#selectOne.get(orgId, definition.revision) as RevisionRow | undefined;
-      if (existing !== undefined) {
-        const sameParent =
-          (existing.parent_revision ?? null) === (input.parent?.revision ?? null) &&
-          (existing.parent_digest ?? null) === (input.parent?.digest ?? null);
-        if (existing.artifact_json !== artifactJson || !sameParent) {
-          throw new OrganizationStoreError(
-            "artifact_conflict",
-            `organization "${orgId}" revision ${definition.revision} already exists with different content`,
-          );
-        }
-        this.#database.exec("COMMIT");
-        return;
-      }
-
-      const head = this.#headRow(orgId);
-      if (genesis) {
-        if (head !== undefined) {
-          throw new OrganizationStoreError(
-            "lineage_conflict",
-            `organization "${orgId}" already has revisions — genesis refused`,
-          );
-        }
-      } else {
-        if (head === undefined) {
-          throw new OrganizationStoreError("lineage_conflict", `organization "${orgId}" has no revisions to extend`);
-        }
-        if (head.revision !== input.expectedHeadRevision) {
-          throw new OrganizationStoreError(
-            "head_mismatch",
-            `organization "${orgId}" head is ${head.revision}, expected ${input.expectedHeadRevision}`,
-          );
-        }
-        if (definition.revision !== head.revision + 1) {
-          throw new OrganizationStoreError(
-            "invalid_registration",
-            `revision ${definition.revision} is not current-head+1 (${head.revision + 1})`,
-          );
-        }
-        const headRef = organizationRefOf(parseOrganizationDefinition(JSON.parse(head.artifact_json)));
-        if (!organizationRefsEqual(headRef, parent!)) {
-          throw new OrganizationStoreError(
-            "lineage_conflict",
-            "declared parent does not equal the current head (no silent lineage fork)",
-          );
-        }
-      }
-
-      this.#insert.run(
-        orgId,
-        definition.revision,
-        artifactJson,
-        input.parent?.revision ?? null,
-        input.parent?.digest ?? null,
-      );
+      work();
       this.#database.exec("COMMIT");
     } catch (error) {
       try {
@@ -246,6 +255,22 @@ export class SqliteOrganizationStore implements OrganizationStore {
         `failed to register organization revision: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  async registerRevision(input: OrganizationRevisionRegistration): Promise<void> {
+    this.#transactional(() => this.#applyRegistration(input));
+  }
+
+  /**
+   * F3 §100: register several successor revisions as ONE atomic transition —
+   * all commit or none. Used by SPLIT/MERGE activation, where a partial commit
+   * would leave one source lineage advanced and another not.
+   */
+  async registerRevisions(inputs: readonly OrganizationRevisionRegistration[]): Promise<void> {
+    if (inputs.length === 0) return;
+    this.#transactional(() => {
+      for (const input of inputs) this.#applyRegistration(input);
+    });
   }
 
   async get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined> {
