@@ -35,8 +35,18 @@
 ## Branch / merge checkpoints
 | Stage | Branch | PR / merge |
 |---|---|---|
-| I0–I8 + docs | `experiment/g10-i-organization-dynamics` | _recorded after merge_ |
-| Closure record | `experiment/g10-i-closure` | _recorded after merge_ |
+| I0–I8 + docs | `experiment/g10-i-organization-dynamics` | PR **#58** -> merge commit `bd7ce48` |
+| Closure verification record | `experiment/g10-i-closure` | PR #59 (this record) |
 
-## Remote CI
-_recorded after merge._
+## Remote CI (exact final HEAD)
+| Run | HEAD | Result |
+|---|---|---|
+| `34777564467` (attempt 1) | `0020e14` (the merged G10-I HEAD) | **SUCCESS** — `unit` ✓, `e2e` ✓, first try |
+
+## Canonical main gate (merge commit `bd7ce48`)
+| Gate | Result |
+|---|---|
+| `git diff --check` | clean |
+| `pnpm test` | 113 files / **970 tests passed** |
+| `pnpm build` / `build:web` | PASS |
+| `pnpm test:e2e` | 21/21 passed (first trial) |
