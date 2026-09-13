@@ -10,6 +10,7 @@ export {
   materializePeerAdvertisement,
   materializePeerRef,
   matchContactCandidates,
+  parseContactNeedOrigin,
   parsePeerRef,
 } from "./peer.js";
 export type {

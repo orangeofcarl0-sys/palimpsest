@@ -91,3 +91,20 @@ watchers, wake lifecycle, CampaignCompiler remain deferred — G10-G).
 At F0 (this stage) even the above is **not yet** claimable: F0 closed the
 coordination substrate only. The mapping above is the pre-implementation
 inventory.
+
+---
+
+## Additive note (G10-H)
+
+The F0 inventory above is preserved as history. `RuntimeScope` and `Holon` were
+`NOT REALIZED` at F0; G10-H now realizes them:
+
+- `RuntimeScope` — a typed runtime-organization identity with its own canonical
+  append-only store (`src/runtime_scope/`), membership, single-parent nesting,
+  optional organization basis, lifecycle, and an explicit external peer.
+- `Holon` — a derived external view over a RuntimeScope (explicit `PeerRef` +
+  boundary + provenance); **no new durable Holon identity** was added.
+
+`ContactNeedOrigin.runtime_scope` was also tightened from an opaque string to a
+typed `RuntimeScopeRef`. See
+[`G10-H-RUNTIMESCOPE-HOLON-CAMPAIGN.md`](G10-H-RUNTIMESCOPE-HOLON-CAMPAIGN.md).

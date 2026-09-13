@@ -48,3 +48,11 @@ export * from "./institution/index.js";
  * CampaignStore. Campaign ≠ Project ≠ Institution ≠ RuntimeAgent.
  */
 export * from "./campaign/index.js";
+
+/**
+ * G10-H: the runtime-organization surface — advanced opt-in only. Recursive
+ * RuntimeScope identity (canonical store) and the derived Holon view.
+ * RuntimeScope ≠ Organization ≠ Work scope ≠ PeerRef ≠ PersistentPoint
+ * ≠ Activation ≠ Campaign; Holon is an external view, not a new identity.
+ */
+export * from "./runtime_scope/index.js";

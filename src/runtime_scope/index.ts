@@ -1,0 +1,60 @@
+/**
+ * G10-H RuntimeScope & Holon — recursive runtime organization, advanced surface only.
+ *
+ *   RuntimeScope ≠ Organization ≠ Work scope ≠ PeerRef ≠ PersistentPoint
+ *   RuntimeScope ≠ Activation ≠ SessionRef ≠ Campaign ≠ Coalition
+ *   Holon ≠ Organization ≠ VisualGroup ≠ "manager + workers" ≠ PeerRef
+ */
+
+export {
+  RuntimeScopeArtifactError,
+  materializeRuntimeScopeRef,
+  parseRuntimeScopeRef,
+  requireNonEmpty,
+  requireStableId,
+  runtimeScopeRefKey,
+  runtimeScopeRefsEqual,
+} from "./ref.js";
+export type { RuntimeScopeId, RuntimeScopeRef } from "./ref.js";
+
+export {
+  RUNTIME_SCOPE_CHAIN_DOMAIN,
+  RUNTIME_SCOPE_EVENT_PARSERS,
+  RUNTIME_SCOPE_HOLON_DOMAIN,
+  asObject,
+  exactKeys,
+  holonProjectionDigest,
+  materializeRuntimeScopeDefinition,
+  parseOrganizationBasisRef,
+  parseRuntimeScopeBasis,
+  parseRuntimeScopeBoundary,
+  parseRuntimeScopeDefinition,
+  parseRuntimeScopeMember,
+  runtimeScopeChainDigest,
+  runtimeScopeMemberKey,
+  runtimeScopeMembersEqual,
+} from "./artifacts.js";
+export type {
+  OrganizationBasisRef,
+  RuntimeScopeBasis,
+  RuntimeScopeBoundary,
+  RuntimeScopeDefinition,
+  RuntimeScopeEventPayloadParser,
+  RuntimeScopeEventParsers,
+  RuntimeScopeEventType,
+  RuntimeScopeLifecycle,
+  RuntimeScopeMember,
+} from "./artifacts.js";
+
+export { RuntimeScopeStoreError, SqliteRuntimeScopeStore, defaultRuntimeScopePath } from "./store.js";
+export type { RuntimeScopeAppendRequest, RuntimeScopeEvent, RuntimeScopeStore, RuntimeScopeStoreErrorKind } from "./store.js";
+
+export { makeRuntimeScopeService, sameRuntimeScope } from "./service.js";
+export type {
+  HolonView,
+  OrganizationBasisFreshness,
+  RuntimeScopeOrganizationPort,
+  RuntimeScopeService,
+  RuntimeScopeServiceDeps,
+  RuntimeScopeState,
+} from "./service.js";
