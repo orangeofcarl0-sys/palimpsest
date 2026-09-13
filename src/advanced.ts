@@ -34,3 +34,10 @@ export * from "./federation/index.js";
  * no WorkGraph, coalition, runtime, or institution equivalence.
  */
 export * from "./organization/index.js";
+
+/**
+ * G10-F4: the durable institution continuity kernel — advanced opt-in only.
+ * Stable institution identity, versioned charter, explicit continuation
+ * authority, and authorized epoch lineage. Not the full PLMP-PAG-0 stack.
+ */
+export * from "./institution/index.js";
