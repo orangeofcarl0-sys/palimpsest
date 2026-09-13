@@ -30,6 +30,7 @@ import { CAMPAIGN_INTERVENTION_EVENT_PARSERS } from "./intervention.js";
 import { CAMPAIGN_PROSPECTIVE_EVENT_PARSERS } from "./prospective.js";
 import { CAMPAIGN_LIFECYCLE_EVENT_PARSERS } from "./lifecycle.js";
 import { CAMPAIGN_COMPILER_EVENT_PARSERS } from "./compiler.js";
+import { canonicalDigest } from "../schema/canonical.js";
 import {
   CAMPAIGN_COMMITMENT_EVENT_PARSERS,
   campaignBasisRefsEqual,
@@ -44,7 +45,14 @@ export type CampaignStoreErrorKind =
   | "unknown_campaign"
   | "basis_mismatch"
   | "event_conflict"
+  | "recovery_required"
+  | "database_busy"
   | "malformed_record";
+
+/** Canonical semantic payload identity for idempotent-retry comparison (§15). */
+function campaignEventPayloadKey(type: string, payload: unknown): string {
+  return canonicalDigest({ domain: "palimpsest.campaign-event.v1", type, payload });
+}
 
 export class CampaignStoreError extends Error {
   constructor(
@@ -185,17 +193,27 @@ export class SqliteCampaignStore implements CampaignStore {
     });
   }
 
-  #tail(campaignId: string): CampaignEvent | undefined {
-    const row = this.#selectTail.get(campaignId) as StoredRow | undefined;
-    if (row === undefined) return undefined;
-    const previousRows = this.#selectEvents.all(campaignId) as unknown as StoredRow[];
+  /** Read + verify the whole per-campaign chain (fail closed on corruption). */
+  #readAll(campaignId: string): CampaignEvent[] {
+    const rows = this.#selectEvents.all(campaignId) as unknown as StoredRow[];
+    const events: CampaignEvent[] = [];
     let previous: CampaignEvent | undefined;
-    let last: CampaignEvent | undefined;
-    for (const entry of previousRows) {
-      last = this.#parse(entry, previous);
-      previous = last;
+    let expectedSeq = 1;
+    for (const row of rows) {
+      if (row.seq !== expectedSeq) {
+        throw new CampaignStoreError("malformed_record", `campaign "${campaignId}" event sequence has a gap at ${row.seq}`);
+      }
+      const event = this.#parse(row, previous);
+      events.push(event);
+      previous = event;
+      expectedSeq += 1;
     }
-    return last;
+    return events;
+  }
+
+  #tail(campaignId: string): CampaignEvent | undefined {
+    const events = this.#readAll(campaignId);
+    return events.length === 0 ? undefined : events[events.length - 1];
   }
 
   #transactional<T>(work: () => T): T {
@@ -293,7 +311,37 @@ export class SqliteCampaignStore implements CampaignStore {
       if (definition === undefined) {
         throw new CampaignStoreError("unknown_campaign", `campaign "${expected.campaignId}" does not exist`);
       }
-      const tail = this.#tail(expected.campaignId);
+      // §12–§16: classify the requested ids against canonical history BEFORE
+      // rejecting a stale basis, so a lost-response retry converges.
+      const stored = this.#readAll(expected.campaignId);
+      const byId = new Map(stored.map((event) => [event.eventId, event]));
+      let present = 0;
+      let conflicting = false;
+      for (const entry of prepared) {
+        const row = byId.get(entry.eventId);
+        if (row === undefined) continue;
+        present += 1;
+        const equivalent =
+          row.type === entry.type &&
+          campaignEventPayloadKey(row.type, row.payload) === campaignEventPayloadKey(entry.type, entry.payload);
+        if (!equivalent) conflicting = true;
+      }
+      if (conflicting) {
+        throw new CampaignStoreError("event_conflict", "a requested eventId already exists with different content");
+      }
+      if (present === prepared.length) {
+        // All requested events already present byte-semantically identical →
+        // idempotent success; the expected basis may now be historical.
+        return Object.freeze(prepared.map((entry) => byId.get(entry.eventId)!));
+      }
+      if (present > 0) {
+        // §14: a declared-atomic batch must never be partially present.
+        throw new CampaignStoreError(
+          "recovery_required",
+          "campaign atomic batch is partially present — explicit recovery required",
+        );
+      }
+      const tail = stored.length === 0 ? undefined : stored[stored.length - 1];
       const currentBasis: CampaignBasisRef = Object.freeze({
         campaignId: expected.campaignId,
         throughSeq: tail?.seq ?? 0,
@@ -345,20 +393,7 @@ export class SqliteCampaignStore implements CampaignStore {
   }
 
   async replay(campaignId: string): Promise<readonly CampaignEvent[]> {
-    const rows = this.#selectEvents.all(campaignId) as unknown as StoredRow[];
-    const events: CampaignEvent[] = [];
-    let previous: CampaignEvent | undefined;
-    let expectedSeq = 1;
-    for (const row of rows) {
-      if (row.seq !== expectedSeq) {
-        throw new CampaignStoreError("malformed_record", `campaign "${campaignId}" event sequence has a gap at ${row.seq}`);
-      }
-      const event = this.#parse(row, previous);
-      events.push(event);
-      previous = event;
-      expectedSeq += 1;
-    }
-    return Object.freeze(events);
+    return Object.freeze(this.#readAll(campaignId));
   }
 
   async campaigns(): Promise<readonly CampaignDefinition[]> {

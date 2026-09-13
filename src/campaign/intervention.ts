@@ -164,6 +164,16 @@ function exactKeys(object: Record<string, unknown>, keys: readonly string[], wha
   }
 }
 
+export const PROJECT_OPERATIONAL_STANDINGS = ["completed", "failed", "cancelled", "partial", "running"] as const;
+
+/** Strict ProjectOperationalStanding parser — no structural cast (§23). */
+export function parseProjectOperationalStanding(raw: unknown, what = "ProjectOperationalStanding"): ProjectOperationalStanding {
+  if (typeof raw !== "string" || !(PROJECT_OPERATIONAL_STANDINGS as readonly string[]).includes(raw)) {
+    throw new CampaignStoreError("malformed_record", `${what} must be one of ${PROJECT_OPERATIONAL_STANDINGS.join(", ")}`);
+  }
+  return raw as ProjectOperationalStanding;
+}
+
 export const CAMPAIGN_INTERVENTION_EVENT_PARSERS: CampaignEventParsers = Object.freeze({
   INTERVENTION_REGISTERED: (payload: unknown) => {
     const object = asRecord(payload, "INTERVENTION_REGISTERED");
@@ -173,10 +183,21 @@ export const CAMPAIGN_INTERVENTION_EVENT_PARSERS: CampaignEventParsers = Object.
   INTERVENTION_OPERATIONAL_OBSERVED: (payload: unknown) => {
     const object = asRecord(payload, "INTERVENTION_OPERATIONAL_OBSERVED");
     exactKeys(object, ["interventionId", "knowledge", "standing"], "INTERVENTION_OPERATIONAL_OBSERVED");
+    const knowledge = object.knowledge;
+    if (knowledge !== "known" && knowledge !== "unknown" && knowledge !== "error") {
+      throw new CampaignStoreError("malformed_record", "INTERVENTION_OPERATIONAL_OBSERVED.knowledge must be known|unknown|error");
+    }
+    if (object.standing !== null && object.standing !== undefined && knowledge === "known") {
+      return Object.freeze({
+        interventionId: stableId(object.interventionId, "interventionId"),
+        knowledge,
+        standing: parseProjectOperationalStanding(object.standing, "standing"),
+      });
+    }
     return Object.freeze({
       interventionId: stableId(object.interventionId, "interventionId"),
-      knowledge: object.knowledge as string,
-      standing: (object.standing ?? null) as string | null,
+      knowledge,
+      standing: null,
     });
   },
   INTERVENTION_EPISTEMIC_ASSESSED: (payload: unknown) => {
