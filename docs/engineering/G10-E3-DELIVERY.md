@@ -32,8 +32,10 @@ Merged normally at stage close.
    Untouched: scheduler, state, runtime, binding, run, continuity, frozen
    contracts.
 6. **Gates?** Full unit **80 files / 689 tests** (post-E2 baseline 79/680);
-   builds pass; `git diff --check` clean; local e2e 21/21; remote CI on the
-   actual final HEAD recorded below / in the PR description.
+   builds pass; `git diff --check` clean; local e2e 21/21; remote CI:
+   implementation-HEAD run **34748265685** — unit PASS, e2e FAIL
+   (`E2E-DEBUG-01`, known family) → failed-job rerun → **success**. The
+   tip-at-close run is cited in the PR description.
 
 ## Verdict
 
