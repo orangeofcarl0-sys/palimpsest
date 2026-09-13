@@ -23,6 +23,7 @@ import {
   makeCampaignService,
   makeCompilerService,
   makeInterventionService,
+  makeNextActionAdmissionService,
   makeProspectiveService,
   materializeClaimStandingSnapshot,
   projectLinkedProjects,
@@ -167,7 +168,17 @@ function makeWorld(path: string, state: SharedState) {
       };
     },
   });
-  return { store, campaign, prospective, production, compiler, interventions };
+  const nextAction = makeNextActionAdmissionService({
+    store,
+    projectAdmission: { admit: (input) => compiler.admitCompiledAction(input) },
+    production: {
+      buildCurrentCampaignCheckpoint: (campaignId, productionOptions) => production.buildCurrentCampaignCheckpoint(campaignId, productionOptions),
+      completeWakeWithAction: (input) => production.completeWakeWithAction(input),
+      lifecycleState: (campaignId) => production.lifecycleState(campaignId),
+    },
+    allocateWatchId: () => `pw-${++w}`,
+  });
+  return { store, campaign, prospective, production, compiler, interventions, nextAction };
 }
 
 function newState(): SharedState {
@@ -360,16 +371,10 @@ describe("GC2-I genuine P1 → Dormant → WorkChanged → Wake → P2", () => {
     if (compileK2.status !== "compiled") throw new Error(compileK2.detail);
     if (compileK2.compiled.action.kind !== "wait") throw new Error("expected wait candidate");
     const watchesBefore = (await w.store.replay("C")).filter((e) => e.type === "WATCH_INSTALLED").length;
-    const waited = await w.production.admitWaitAction({
-      campaignId: "C",
-      wakeCycle: W2,
-      compilationId: compileK2.compiled.compilationId,
-      reconciliationDigest: R2.digest,
-      reason: compileK2.compiled.action.reason,
-      watches: compileK2.compiled.action.watches,
-    });
-    if (waited.status !== "dormant") throw new Error(`wait admission ${waited.status}`);
-    if (waited.completion.kind !== "wait") throw new Error("expected wait completion");
+    const waited = await w.nextAction.admitCompiledNextAction({ campaignId: "C", compiled: compileK2.compiled });
+    if (waited.status !== "admitted") throw new Error(`wait admission ${waited.status}: ${waited.detail}`);
+    expect(waited.lifecycle).toBe("DORMANT");
+    if (waited.action?.kind !== "wait") throw new Error("expected wait completion");
     expect(await w.production.lifecycleState("C")).toBe("DORMANT");
     expect((await w.store.replay("C")).filter((e) => e.type === "WATCH_INSTALLED").length).toBeGreaterThan(watchesBefore);
     expect((await w.store.replay("C")).filter((e) => e.type === "WAKE_CYCLE_COMPLETED")).toHaveLength(2);

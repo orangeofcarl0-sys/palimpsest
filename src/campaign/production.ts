@@ -318,7 +318,8 @@ export function committedReconciliationOf(
   return report;
 }
 
-function lifecycleStateFromEvents(events: readonly CampaignEvent[]): CampaignLifecycleState {
+/** Derived lifecycle projection from canonical events (shared with GC3 admission). */
+export function lifecycleStateFromEvents(events: readonly CampaignEvent[]): CampaignLifecycleState {
   let state: CampaignLifecycleState = "ACTIVE";
   for (const event of events) {
     switch (event.type) {
@@ -364,8 +365,63 @@ interface Projections {
   readonly definition: { readonly institutionId: string };
 }
 
-function beliefRevisionsFromEvents(events: readonly CampaignEvent[]): readonly BeliefRevision[] {
+export function beliefRevisionsFromEvents(events: readonly CampaignEvent[]): readonly BeliefRevision[] {
   return events.filter((event) => event.type === "BELIEF_REVISED").map((event) => (event.payload as { revision: BeliefRevision }).revision);
+}
+
+/* ------------------------------------------------------------------ *
+ * GC3-2: the ONE read-only freshness evaluator for both admission arms
+ * ------------------------------------------------------------------ */
+
+/** The admission-relevant fields a compiled candidate exposes (structural). */
+export interface CampaignActionFreshnessCandidate {
+  readonly campaignBasisThroughSeq: number;
+  readonly campaignBasisDigest: string;
+  readonly beliefStateDigest: string;
+  readonly wake?: { readonly wakeCycleId: string; readonly reconciliationDigest: string } | undefined;
+}
+
+export type CampaignActionFreshness =
+  | { readonly status: "fresh" }
+  | { readonly status: "stale"; readonly detail: string };
+
+/**
+ * GC3-2 §§29–33: ONE pure, read-only validator shared by the Project and WAIT
+ * arms. It never appends events. A mismatched wake correlation is stale — it is
+ * never repaired by "whatever wake is current now"; a non-wake candidate is
+ * refused while the Campaign is WAKING/RECONCILING.
+ */
+export async function evaluateCompiledCampaignActionFreshness(input: {
+  readonly store: CampaignStore;
+  readonly campaignId: string;
+  readonly compiled: CampaignActionFreshnessCandidate;
+}): Promise<CampaignActionFreshness> {
+  const basis = await input.store.basis(input.campaignId);
+  if (basis === undefined) return { status: "stale", detail: "campaign_action_stale_unknown_campaign" };
+  if (basis.throughSeq !== input.compiled.campaignBasisThroughSeq || basis.chainDigest !== input.compiled.campaignBasisDigest) {
+    return { status: "stale", detail: "campaign_action_stale" };
+  }
+  const events = await input.store.replay(input.campaignId);
+  const belief = currentBeliefStateOf(input.campaignId, beliefRevisionsFromEvents(events));
+  if (belief.digest !== input.compiled.beliefStateDigest) {
+    return { status: "stale", detail: "campaign_action_stale_belief" };
+  }
+  const state = lifecycleStateFromEvents(events);
+  if (input.compiled.wake !== undefined) {
+    if (inFlightWake(events) !== input.compiled.wake.wakeCycleId) {
+      return { status: "stale", detail: "campaign_action_stale_wake" };
+    }
+    if (state !== "RECONCILING") {
+      return { status: "stale", detail: "campaign_action_stale_lifecycle" };
+    }
+    const reconciliation = committedReconciliationOf(events, input.compiled.wake.wakeCycleId);
+    if (reconciliation === undefined || reconciliation.digest !== input.compiled.wake.reconciliationDigest) {
+      return { status: "stale", detail: "campaign_action_stale_reconciliation" };
+    }
+  } else if (state === "WAKING" || state === "RECONCILING") {
+    return { status: "stale", detail: "campaign_action_stale_unbound_during_wake" };
+  }
+  return { status: "fresh" };
 }
 
 export function makeCampaignProductionService(deps: CampaignProductionDeps) {
@@ -432,8 +488,16 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
     return currentBeliefStateOf(campaignId, beliefRevisionsFromEvents(events));
   }
 
-  /** GC2 §18/§19/§34: derive the checkpoint from canonical current state. */
-  async function buildCurrentCampaignCheckpoint(campaignId: string): Promise<Knowledge<CampaignCheckpoint>> {
+  /**
+   * GC2 §18/§19/§34 + GC3 §53–§56: derive the checkpoint from canonical current
+   * state. `additionalWatchIds` lets a WAIT admission record the watches it is
+   * ABOUT to install as already-active, so the checkpoint honestly represents the
+   * dormant Campaign (never "old active watches" while claiming otherwise).
+   */
+  async function buildCurrentCampaignCheckpoint(
+    campaignId: string,
+    options?: { readonly additionalWatchIds?: readonly string[] },
+  ): Promise<Knowledge<CampaignCheckpoint>> {
     const { basis, events, definition } = await projections(campaignId);
     const epoch = await deps.institutions.inspectEpoch(definition.institutionId);
     if (epoch.state !== "known") {
@@ -443,6 +507,11 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
     if (ids.linkedProjects.status !== "known") {
       return { state: "error", detail: ids.linkedProjects.detail };
     }
+    const additional = (options?.additionalWatchIds ?? []).map((watchId) => stableId(watchId, "additionalWatchId"));
+    const activeWatchIds =
+      additional.length === 0
+        ? ids.watches
+        : Object.freeze([...new Set([...ids.watches, ...additional])].sort());
     const belief = await currentBelief(campaignId, events);
     return {
       state: "known",
@@ -454,7 +523,7 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
         beliefStateDigest: belief.digest,
         activeCommitmentIds: ids.commitments,
         activeHypothesisIds: ids.hypotheses,
-        activeWatchIds: ids.watches,
+        activeWatchIds,
         knownProjectRefs: ids.linkedProjects.projects.map((entry) => entry.project),
       }),
     };
@@ -490,7 +559,7 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
     events.push(
       request("WAIT_DECIDED", input.campaignId, { reason: input.reason, watchIds: watches.map((w) => w.watchId) }),
       request("CHECKPOINT_RECORDED", input.campaignId, { checkpoint: checkpoint.value }),
-      request("CAMPAIGN_QUIESCING", input.campaignId, { reason: input.reason }),
+      request("CAMPAIGN_QUIESCING", input.campaignId, { reason: input.reason, checkpointBasisDigest: checkpoint.value.campaignBasisDigest }),
       request("CAMPAIGN_DORMANT", input.campaignId, { checkpointBasisDigest: checkpoint.value.campaignBasisDigest }),
     );
     await deps.store.appendAtomic({ expectedBasis: basis, events });
@@ -775,106 +844,9 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
   }
 
   // ------------------------------------------------------------------ //
-  // GC2-G: wake-origin WAIT admission, bound to THIS wake (atomic)
+  // GC3: wake-origin WAIT admission moved to next_action.ts — it now requires a
+  // complete compiled candidate (never caller-supplied semantic fields).
   // ------------------------------------------------------------------ //
-
-  async function admitWaitAction(input: {
-    readonly campaignId: string;
-    readonly wakeCycle: WakeCycleId;
-    readonly compilationId: string;
-    readonly reconciliationDigest: string;
-    readonly reason: string;
-    readonly watches: readonly CampaignWatchDraft[];
-  }): Promise<
-    | { readonly status: "dormant"; readonly completion: AdmittedCampaignActionRef }
-    | { readonly status: "wake_cycle_mismatch"; readonly detail: string }
-    | { readonly status: "checkpoint_incomplete"; readonly detail: string }
-  > {
-    if (input.watches.length === 0) {
-      throw new CampaignStoreError("invalid_registration", "a wake-origin WAIT requires at least one wake route");
-    }
-    const { events } = await projections(input.campaignId);
-    if (inFlightWake(events) !== input.wakeCycle) {
-      return { status: "wake_cycle_mismatch", detail: `WAIT admission requires the current in-flight wake "${input.wakeCycle}"` };
-    }
-    if (lifecycleStateFromEvents(events) !== "RECONCILING") {
-      return { status: "wake_cycle_mismatch", detail: "WAIT admission requires a committed reconciliation (lifecycle RECONCILING)" };
-    }
-    const reconciliation = committedReconciliationOf(events, input.wakeCycle);
-    if (reconciliation === undefined || reconciliation.digest !== input.reconciliationDigest) {
-      return { status: "wake_cycle_mismatch", detail: "WAIT admission requires the current wake's committed reconciliation" };
-    }
-    // §86: the checkpoint is NEWLY derived after reconciliation — never the
-    // checkpoint from which the Campaign woke.
-    const checkpoint = await buildCurrentCampaignCheckpoint(input.campaignId);
-    if (checkpoint.state !== "known") return { status: "checkpoint_incomplete", detail: checkpoint.detail };
-    const checkpointDigest = checkpointDigestOf(checkpoint.value);
-
-    const waitAdmissionId = `waitad-${canonicalDigest({
-      domain: "palimpsest.campaign-wait-admission-id.v1",
-      campaignId: input.campaignId,
-      compilationId: input.compilationId,
-      wakeCycleId: input.wakeCycle,
-    }).slice(0, 24)}`;
-    // §89: idempotent retry — an identical admission for this wake converges.
-    const existing = events.find(
-      (event) =>
-        event.type === "WAIT_ADMITTED" &&
-        (event.payload as { waitAdmission: WaitAdmission }).waitAdmission.waitAdmissionId === waitAdmissionId,
-    );
-    if (existing !== undefined) {
-      const admission = (existing.payload as { waitAdmission: WaitAdmission }).waitAdmission;
-      return {
-        status: "dormant",
-        completion: Object.freeze({
-          kind: "wait" as const,
-          wakeCycleId: input.wakeCycle,
-          compilationId: admission.compilationId,
-          reconciliationDigest: admission.reconciliationDigest,
-          waitAdmissionId: admission.waitAdmissionId,
-          checkpointDigest: admission.checkpointDigest,
-        }),
-      };
-    }
-
-    const drafts = input.watches.map((draft) => parseCampaignWatchDraft(draft));
-    const watches = drafts.map((draft) =>
-      Object.freeze({ watchId: deps.allocateWatchId(), campaignId: input.campaignId, condition: draft.condition, reason: draft.reason }),
-    );
-    const admission: WaitAdmission = Object.freeze({
-      waitAdmissionId,
-      campaignId: input.campaignId,
-      compilationId: input.compilationId,
-      wakeCycleId: input.wakeCycle,
-      reconciliationDigest: input.reconciliationDigest,
-      watchIds: Object.freeze(watches.map((watch) => watch.watchId).sort()),
-      checkpointDigest,
-    });
-    const batch = [
-      ...watches.map((watch) => request("WATCH_INSTALLED", input.campaignId, { watch })),
-      request("WAIT_ADMITTED", input.campaignId, { waitAdmission: admission }),
-      request("CHECKPOINT_RECORDED", input.campaignId, { checkpoint: checkpoint.value }),
-      request("CAMPAIGN_QUIESCING", input.campaignId, { reason: input.reason }),
-      request("WAKE_CYCLE_COMPLETED", input.campaignId, {
-        wakeCycleId: input.wakeCycle,
-        action: { kind: "wait" as const, compilationId: admission.compilationId, reconciliationDigest: admission.reconciliationDigest, waitAdmissionId: admission.waitAdmissionId, checkpointDigest: admission.checkpointDigest },
-      }),
-      request("CAMPAIGN_DORMANT", input.campaignId, { checkpointBasisDigest: checkpoint.value.campaignBasisDigest }),
-    ];
-    const basis = (await deps.store.basis(input.campaignId))!;
-    await deps.store.appendAtomic({ expectedBasis: basis, events: batch });
-    return {
-      status: "dormant",
-      completion: Object.freeze({
-        kind: "wait" as const,
-        wakeCycleId: input.wakeCycle,
-        compilationId: admission.compilationId,
-        reconciliationDigest: admission.reconciliationDigest,
-        waitAdmissionId: admission.waitAdmissionId,
-        checkpointDigest: admission.checkpointDigest,
-      }),
-    };
-  }
 
   // ------------------------------------------------------------------ //
   // GC2-F: completion bound to the exact admitted action
@@ -976,7 +948,6 @@ export function makeCampaignProductionService(deps: CampaignProductionDeps) {
   return {
     buildCurrentCampaignCheckpoint,
     admitWait,
-    admitWaitAction,
     observeCurrentWorld,
     reconcileCurrentWorld,
     beginWake,

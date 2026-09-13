@@ -85,8 +85,23 @@ export const CAMPAIGN_LIFECYCLE_EVENT_PARSERS: CampaignEventParsers = Object.fre
   },
   CAMPAIGN_QUIESCING: (payload: unknown) => {
     const object = asRecord(payload, "CAMPAIGN_QUIESCING");
-    exactKeys(object, ["reason"], "CAMPAIGN_QUIESCING");
-    return Object.freeze({ reason: nonEmpty(object.reason, "reason") });
+    // GC3: a quiescing transition always carries the checkpoint basis it
+    // preserves (and, for a wake-origin WAIT, its WakeCycle), so an identical
+    // reason across separate dormancies is a DISTINCT event — never a colliding
+    // eventId.
+    for (const key of Object.keys(object)) {
+      if (key !== "reason" && key !== "checkpointBasisDigest" && key !== "wakeCycleId") {
+        throw new CampaignStoreError("malformed_record", `unknown CAMPAIGN_QUIESCING field "${key}"`);
+      }
+    }
+    for (const required of ["reason", "checkpointBasisDigest"]) {
+      if (!Object.hasOwn(object, required)) throw new CampaignStoreError("malformed_record", `CAMPAIGN_QUIESCING: field "${required}" is required`);
+    }
+    return Object.freeze({
+      reason: nonEmpty(object.reason, "reason"),
+      checkpointBasisDigest: requireCanonicalDigest(object.checkpointBasisDigest, "checkpointBasisDigest"),
+      ...(Object.hasOwn(object, "wakeCycleId") ? { wakeCycleId: stableId(object.wakeCycleId, "wakeCycleId") } : {}),
+    });
   },
   CAMPAIGN_DORMANT: (payload: unknown) => {
     const object = asRecord(payload, "CAMPAIGN_DORMANT");
@@ -416,7 +431,7 @@ export function makeLifecycleService(deps: LifecycleServiceDeps): LifecycleServi
       expectedBasis: basis,
       events: [
         request("CHECKPOINT_RECORDED", input.campaignId, { checkpoint: input.checkpoint }),
-        request("CAMPAIGN_QUIESCING", input.campaignId, { reason: input.reason }),
+        request("CAMPAIGN_QUIESCING", input.campaignId, { reason: input.reason, checkpointBasisDigest: input.checkpoint.campaignBasisDigest }),
         request("CAMPAIGN_DORMANT", input.campaignId, { checkpointBasisDigest: input.checkpoint.campaignBasisDigest }),
       ],
     });

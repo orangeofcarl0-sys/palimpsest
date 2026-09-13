@@ -29,6 +29,7 @@ import {
   makeCampaignService,
   makeCompilerService,
   makeInterventionService,
+  makeNextActionAdmissionService,
   makeProspectiveService,
   materializeCampaignProjectRef,
   materializeClaimStandingSnapshot,
@@ -125,10 +126,16 @@ function world(options: WorldOptions = {}) {
       return assigned;
     },
   };
+  const mode: { value: "project" | "wait" } = { value: "project" };
   const compiler = makeCompilerService({
     store,
     allocateCompilationId: () => `cmp-${++admissionId}`,
-    compiler: { compile: async () => ({ kind: "project", projectProposal: PROPOSAL, intervention: { purpose: "test", targetHypothesisIds: [] } }) },
+    compiler: {
+      compile: async () =>
+        mode.value === "project"
+          ? { kind: "project", projectProposal: PROPOSAL, intervention: { purpose: "test", targetHypothesisIds: [] } }
+          : { kind: "wait", reason: "nothing useful now", watches: [{ condition: { kind: "external_signal", signalKey: "sig2" }, reason: "later" }] },
+    },
     work: workAdmission,
     buildContext: async (campaignId) => {
       const definition = await campaign.definition(campaignId);
@@ -150,7 +157,17 @@ function world(options: WorldOptions = {}) {
       };
     },
   });
-  return { store, campaign, prospective, interventions, production, compiler, inspected, nextProject };
+  const nextAction = makeNextActionAdmissionService({
+    store,
+    projectAdmission: { admit: (input) => compiler.admitCompiledAction(input) },
+    production: {
+      buildCurrentCampaignCheckpoint: (campaignId, productionOptions) => production.buildCurrentCampaignCheckpoint(campaignId, productionOptions),
+      completeWakeWithAction: (input) => production.completeWakeWithAction(input),
+      lifecycleState: (campaignId) => production.lifecycleState(campaignId),
+    },
+    allocateWatchId: () => `pw-${++w}`,
+  });
+  return { store, campaign, prospective, interventions, production, compiler, nextAction, mode, inspected, nextProject };
 }
 
 async function ready(w: ReturnType<typeof world>, claims: readonly string[] = ["claim-1"]) {
@@ -588,46 +605,28 @@ describe("GC2-F/G admission binding", () => {
     await dormant(w);
     const wc1 = await waking(w);
     await w.production.reconcileCurrentWorld({ campaignId: "camp-1", wakeCycle: wc1, wakeCause: { kind: "manual", signalId: "s", reason: "r" } });
-    const reconciliation = committedReconciliationOf(await w.store.replay("camp-1"), wc1)!;
-    const waited = await w.production.admitWaitAction({
-      campaignId: "camp-1",
-      wakeCycle: wc1,
-      compilationId: "cmp-wait-1",
-      reconciliationDigest: reconciliation.digest,
-      reason: "nothing to do",
-      watches: [{ condition: { kind: "external_signal", signalKey: "sig" }, reason: "wake me" }],
-    });
-    if (waited.status !== "dormant") throw new Error(`expected dormant, got ${waited.status}`);
-    expect(waited.completion.kind).toBe("wait");
+    // GC3: WAIT admission goes through the unified boundary with a compiled candidate.
+    w.mode.value = "wait";
+    const compiledWait = await w.compiler.compileNextAction({ campaignId: "camp-1" });
+    if (compiledWait.status !== "compiled") throw new Error(compiledWait.detail);
+    const waited = await w.nextAction.admitCompiledNextAction({ campaignId: "camp-1", compiled: compiledWait.compiled });
+    if (waited.status !== "admitted") throw new Error(`expected admitted, got ${waited.status}: ${waited.detail}`);
+    expect(waited.lifecycle).toBe("DORMANT");
+    if (waited.action?.kind !== "wait") throw new Error("expected wait completion");
     expect(await w.production.lifecycleState("camp-1")).toBe("DORMANT");
     const types = (await w.store.replay("camp-1")).map((e) => e.type);
     expect(types).toContain("WAIT_ADMITTED");
     expect(types.filter((t) => t === "WAKE_CYCLE_COMPLETED")).toHaveLength(1);
-    // Second WAIT wake: the historical WAIT admission must not satisfy it.
+    // Second WAIT wake: a DIFFERENT candidate is a different admission.
     const wc2 = await waking(w);
     const already = await w.production.reconcileCurrentWorld({ campaignId: "camp-1", wakeCycle: wc2, wakeCause: { kind: "manual", signalId: "s", reason: "r" } });
     if (already.status !== "reconciled") throw new Error("expected reconciled");
-    const reconciliation2 = committedReconciliationOf(await w.store.replay("camp-1"), wc2)!;
-    const stale = await w.production.admitWaitAction({
-      campaignId: "camp-1",
-      wakeCycle: wc2,
-      compilationId: "cmp-wait-1",
-      reconciliationDigest: reconciliation.digest, // OLD reconciliation
-      reason: "reuse",
-      watches: [{ condition: { kind: "external_signal", signalKey: "sig" }, reason: "wake me" }],
-    });
-    expect(stale.status).toBe("wake_cycle_mismatch");
-    const fresh = await w.production.admitWaitAction({
-      campaignId: "camp-1",
-      wakeCycle: wc2,
-      compilationId: "cmp-wait-2",
-      reconciliationDigest: reconciliation2.digest,
-      reason: "wait again",
-      watches: [{ condition: { kind: "external_signal", signalKey: "sig2" }, reason: "wake again" }],
-    });
-    expect(fresh.status).toBe("dormant");
-    if (fresh.status === "dormant" && fresh.completion.kind === "wait") {
-      expect(fresh.completion.waitAdmissionId).not.toBe(waited.completion.kind === "wait" ? waited.completion.waitAdmissionId : "");
+    const compiledWait2 = await w.compiler.compileNextAction({ campaignId: "camp-1" });
+    if (compiledWait2.status !== "compiled") throw new Error(compiledWait2.detail);
+    const fresh = await w.nextAction.admitCompiledNextAction({ campaignId: "camp-1", compiled: compiledWait2.compiled });
+    if (fresh.status !== "admitted") throw new Error(`expected admitted, got ${fresh.status}: ${fresh.detail}`);
+    if (fresh.action?.kind === "wait" && waited.action?.kind === "wait") {
+      expect(fresh.action.waitAdmissionId).not.toBe(waited.action.waitAdmissionId);
     }
   });
 });

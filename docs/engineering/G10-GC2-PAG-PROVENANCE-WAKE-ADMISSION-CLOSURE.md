@@ -246,3 +246,25 @@ closure). See the additive note in the G umbrella document.
 
 The closure verification record is delivered by
 `experiment/g10-gc2-pag-final-closure` (see [`G10-GC2-DELIVERY.md`](G10-GC2-DELIVERY.md)).
+
+---
+
+## 12. Additive historical note (G10-GC3)
+
+GC2 closed Project/action provenance but left the WAIT arm admitting
+caller-supplied semantics (`compilationId`/`reason`/`watches`/`reconciliationDigest`)
+rather than a complete compiled candidate. A post-GC2 audit therefore read
+`G10-GC2: PARTIAL — WAIT COMPILATION ADMISSION BINDING`.
+
+G10-GC3 rescoped GC2's `production.admitWaitAction` out of existence and replaced
+it with a unified `admitCompiledNextAction` that requires the complete candidate
+for BOTH arms, records its `candidateDigest` in `WaitAdmission`, and completes the
+wake through admission alone. The original GC2 record above is not rewritten.
+
+Corrected GC2 verdict:
+
+```text
+G10-GC2 PAG PROVENANCE & WAKE ADMISSION CLOSURE: PASS — UNIFIED ADMISSION CLOSURE VERIFIED BY G10-GC3
+```
+
+See [`G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md`](G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md).

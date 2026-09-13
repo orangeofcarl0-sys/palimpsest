@@ -236,3 +236,12 @@ G10-GC PAG PRODUCTION CLOSURE: PASS — PROVENANCE & ADMISSION CLOSURE VERIFIED 
 
 Verification of the exact-provenance chain is recorded in
 [`G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md`](G10-GC2-PAG-PROVENANCE-WAKE-ADMISSION-CLOSURE.md).
+
+## 22. Additive historical note (G10-GC3)
+
+GC2 itself was then found to leave a WAIT candidate-binding asymmetry (the WAIT
+admission trusted caller-supplied semantics). G10-GC3 unified the Project and
+WAIT admission arms behind one `admitCompiledNextAction` boundary requiring a
+complete, strictly parsed, fresh `CompiledCampaignAction`. The original GC record
+is not rewritten; see
+[`G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md`](G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md).

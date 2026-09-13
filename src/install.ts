@@ -75,9 +75,10 @@ import {
   makeCompilerService,
   makeInterventionService,
   makeLifecycleService,
+  makeNextActionAdmissionService,
   makeProspectiveService,
 } from "./campaign/index.js";
-import type { CampaignProductionService } from "./campaign/index.js";
+import type { CampaignProductionService, NextActionAdmissionService } from "./campaign/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -200,6 +201,13 @@ export interface InstalledCampaign {
   readonly lifecycle: LifecycleService;
   readonly interventions?: InterventionService | undefined;
   readonly compiler?: CompilerService | undefined;
+  /**
+   * GC3 §93: the RECOMMENDED application-facing compile/admit pair. Present iff
+   * a compiler port is configured. `admitNextAction` accepts ONE complete
+   * `CompiledCampaignAction` and dispatches Project/WAIT internally.
+   */
+  readonly compileNextAction?: CompilerService["compileNextAction"] | undefined;
+  readonly admitNextAction?: NextActionAdmissionService["admitCompiledNextAction"] | undefined;
 }
 
 /** G10-F5: the additive institution governance surface. */
@@ -460,6 +468,22 @@ export function installPalimpsest(
               };
             },
           });
+    // GC3 §93: the unified admission boundary is present iff a compiler is
+    // configured. It drives Project (Work saga + wake completion) and WAIT
+    // (prospective transition + wake completion) through ONE entry point.
+    const nextAction =
+      options.campaignCompilerPort === undefined
+        ? undefined
+        : makeNextActionAdmissionService({
+            store: campaignStore,
+            ...(compiler === undefined ? {} : { projectAdmission: { admit: (input) => compiler.admitCompiledAction(input) } }),
+            production: {
+              buildCurrentCampaignCheckpoint: (campaignId, options) => production.buildCurrentCampaignCheckpoint(campaignId, options),
+              completeWakeWithAction: (input) => production.completeWakeWithAction(input),
+              lifecycleState: (campaignId) => production.lifecycleState(campaignId),
+            },
+            allocateWatchId: () => `cw-${randomUUID()}`,
+          });
     campaign = {
       store: campaignStore,
       production,
@@ -468,6 +492,8 @@ export function installPalimpsest(
       lifecycle,
       ...(interventions === undefined ? {} : { interventions }),
       ...(compiler === undefined ? {} : { compiler }),
+      ...(compiler === undefined ? {} : { compileNextAction: (input) => compiler.compileNextAction(input) }),
+      ...(nextAction === undefined ? {} : { admitNextAction: (input) => nextAction.admitCompiledNextAction(input) }),
     };
   }
 
