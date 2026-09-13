@@ -147,3 +147,23 @@ export type {
   WakeCycleId,
   WorldObservationResult,
 } from "./lifecycle.js";
+
+/** G10-G6: CampaignCompiler candidate boundary + idempotent Work admission. */
+export {
+  CAMPAIGN_COMPILER_EVENT_PARSERS,
+  makeCompilerService,
+  parseCampaignNextActionProposal,
+} from "./compiler.js";
+export type {
+  CampaignAdmissionState,
+  CampaignCompilerPort,
+  CampaignNextActionProposal,
+  CampaignPlanningContext,
+  CampaignProjectActionProposal,
+  CampaignWaitActionProposal,
+  CampaignWorkAdmissionPort,
+  CompiledCampaignAction,
+  CompilerService,
+  CompilerServiceDeps,
+  ValidatedCampaignAction,
+} from "./compiler.js";

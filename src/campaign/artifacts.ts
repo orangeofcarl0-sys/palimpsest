@@ -197,7 +197,9 @@ export type CampaignEventType =
   | "WORLD_RECONCILED"
   | "COMMITMENTS_REVIEWED"
   | "WAKE_COMPLETED"
-  | "CAMPAIGN_TERMINATED";
+  | "CAMPAIGN_TERMINATED"
+  | "PROJECT_ADMISSION_PREPARED"
+  | "PROJECT_ADMITTED";
 
 export interface CommitmentOpenedPayload {
   readonly commitment: CampaignCommitment;
