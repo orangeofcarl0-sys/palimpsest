@@ -185,7 +185,7 @@ persisted values fail closed.
 | GC0 | #48 | `9e98b0c` |
 | GC1 | #49 | `d19d127` |
 | GC2–GC6 | #50 | `b417baf` |
-| GC7–GC8 | #51 | recorded on branch |
+| GC7–GC8 | #51 | `0c45ac7` |
 
 ## 18. Final verdict
 
@@ -211,3 +211,15 @@ multiplicity → external unity, Holon interface/activation, composite
 participation, substitution). Alternatively Persistent Agent migration/fork/
 quarantine, if GC evidence shows PAG remains the higher-value frontier. Follow
 evidence.
+
+## 21. Campaign final canonical gate
+
+```text
+main SHA            0c45ac7ce60dabf8349390726bc1f6dcc8480dce
+git diff --check    clean
+unit                102 files / 873 tests passed
+pnpm build          PASS
+pnpm build:web      PASS
+e2e                 21/21 passed
+canonical main CI   run 34761851034 — SUCCESS (documented E2E-DEBUG-01 flake, failed-job rerun)
+```
