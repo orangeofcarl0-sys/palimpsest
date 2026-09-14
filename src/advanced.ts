@@ -105,3 +105,14 @@ export * from "./reasoning_cell/index.js";
  */
 export * from "./application/index.js";
 export { defineApplicationTools } from "./tools/application_tools.js";
+
+/**
+ * G10-P: live federated workforce & attention loop — advanced opt-in only. A durable
+ * mechanical transport (Ordarium state + StateChangeFeed) with a deployment-local cursor
+ * and an inbound pump that strictly parses envelopes before handing them to the canonical
+ * federation/boundary services; a deterministic attention derivation; and separate host
+ * activation adapters. TransportTruth ≠ CollaborationTruth; Notification ≠ Activation.
+ */
+export * from "./transport/index.js";
+export * from "./attention/index.js";
+export * from "./deployment/index.js";

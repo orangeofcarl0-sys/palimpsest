@@ -46,11 +46,22 @@ import { makeParticipationService } from "./coordination/index.js";
 import type {
   CommitmentScope,
   FederationService,
+  PeerContinuityAssociation,
   PeerDirectoryPort,
   PeerRef,
   PeerTransportPort,
 } from "./federation/index.js";
 import { makeCommitmentService, makeFederationMessagingService, makeFederationService } from "./federation/index.js";
+import type {
+  AttentionActivationPort,
+  AttentionMarkStore,
+  AttentionPolicy,
+  AttentionService,
+  BoundaryAcceptedHead,
+  BoundaryAttentionReadPort,
+  PendingBoundaryDecision,
+} from "./attention/index.js";
+import { makeAttentionService } from "./attention/index.js";
 import type { OrganizationStore } from "./organization/index.js";
 import type { InstitutionService, InstitutionStore } from "./institution/index.js";
 import { makeInstitutionService } from "./institution/index.js";
@@ -231,6 +242,21 @@ export interface InstallPalimpsestOptions {
    * dynamics/evolution surfaces. Absent ⇒ those surfaces (and their tools/routes) are absent.
    */
   organizationDynamicsPolicy?: DynamicsPolicy | undefined;
+  /**
+   * G10-P (additive): explicit PeerRef↔PersistentPoint associations (deployment binding).
+   * Supplying them makes `manpowerPoint(peer).continuity` truthful; absent ⇒ no continuity
+   * is shown (never assumed).
+   */
+  peerContinuityAssociations?: readonly PeerContinuityAssociation[] | undefined;
+  /**
+   * G10-P (additive): the deployment attention policy. With `localPeer` + federation this
+   * enables `installed.attention`; absent ⇒ no attention surface (never a hidden default).
+   */
+  attentionPolicy?: AttentionPolicy | undefined;
+  /** G10-P (additive): deployment-local attention marks (accepted-revision dedupe). */
+  attentionMarkStore?: AttentionMarkStore | undefined;
+  /** G10-P (additive): the host activation adapter (DSH/Pi-shaped); absent ⇒ pull mode. */
+  attentionActivation?: AttentionActivationPort | undefined;
 }
 
 /**
@@ -283,6 +309,12 @@ export interface InstalledPalimpsest {
   readonly reasoningCells?: InstalledReasoningCells | undefined;
   /** G10-O (additive): the ONE composed application surface behind every tool/HTTP/UI entry. */
   readonly application: PalimpsestApplicationSurface;
+  /** G10-P (additive): this host's canonical boundary home, exposed for a durable inbound pump. */
+  readonly boundaryHome?: BoundaryHome | undefined;
+  /** G10-P (additive): semantic attention derivation — present iff policy + localPeer + federation. */
+  readonly attention?: AttentionService | undefined;
+  /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
+  readonly attentionActivation?: AttentionActivationPort | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -575,6 +607,18 @@ export function installPalimpsest(
     boundaryMemory = { store: options.boundaryMemoryStore, service };
   }
 
+  // G10-P: this host's canonical boundary home is built ONCE whenever it holds a canonical
+  // store, so a durable inbound pump can drive remote boundary operations into it even when
+  // no request/response transport is configured.
+  let boundaryHome: BoundaryHome | undefined;
+  if (boundaryMemory !== undefined && options.localPeer !== undefined) {
+    boundaryHome = makeBoundaryHome({
+      homeId: options.boundaryHomeId ?? `home-${options.localPeer.peerId}`,
+      service: boundaryMemory.service,
+      store: boundaryMemory.store,
+    });
+  }
+
   // G10-L: the federated surface exists when a local peer, a semantic transport, and a
   // workspace→home route are supplied. `home` is present only when THIS host actually
   // holds a canonical boundary store; a pure remote peer gets only the client.
@@ -588,15 +632,7 @@ export function installPalimpsest(
     });
     federatedBoundaryMemory = {
       client,
-      ...(boundaryMemory === undefined
-        ? {}
-        : {
-            home: makeBoundaryHome({
-              homeId: options.boundaryHomeId ?? `home-${options.localPeer.peerId}`,
-              service: boundaryMemory.service,
-              store: boundaryMemory.store,
-            }),
-          }),
+      ...(boundaryHome === undefined ? {} : { home: boundaryHome }),
     };
   }
 
@@ -649,6 +685,9 @@ export function installPalimpsest(
       participation,
       directory: options.peerDirectoryPort,
       allocateContactNeedId: () => `need-${randomUUID()}`,
+      ...(options.peerContinuityAssociations === undefined
+        ? {}
+        : { continuityAssociations: options.peerContinuityAssociations }),
     });
   }
 
@@ -963,6 +1002,67 @@ export function installPalimpsest(
     };
   }
 
+  // G10-P: semantic attention is a DERIVATION of the surfaces above — never a scheduler and
+  // never an authority. It exists only when a policy + local peer + federation are supplied.
+  let attention: AttentionService | undefined;
+  if (options.attentionPolicy !== undefined && options.localPeer !== undefined && federation !== undefined) {
+    const localPeer = options.localPeer;
+    const boundaryAttention: BoundaryAttentionReadPort | undefined =
+      boundaryMemory === undefined
+        ? undefined
+        : {
+            pendingDecisionsFor: async (peer) => {
+              const pending: PendingBoundaryDecision[] = [];
+              for (const definition of await boundaryMemory!.store.workspaces()) {
+                const view = await boundaryMemory!.service.workspaceView({ workspaceId: definition.workspaceId });
+                for (const artifact of view.artifacts) {
+                  for (const candidate of artifact.pending) {
+                    if (candidate.standing !== "PROPOSED" && candidate.standing !== "PARTIALLY_ACCEPTED") continue;
+                    const revision = candidate.candidate;
+                    if (!revision.requiredAcceptors.some((acceptor) => acceptor.peerId === peer.peerId)) continue;
+                    if (candidate.acceptors.some((acceptor) => acceptor.peerId === peer.peerId)) continue;
+                    if (candidate.rejectedBy.some((rejector) => rejector.peerId === peer.peerId)) continue;
+                    pending.push({
+                      workspaceId: definition.workspaceId,
+                      artifactId: revision.artifactId,
+                      candidateDigest: revision.digest,
+                      author: revision.author,
+                      intent: revision.intent,
+                    });
+                  }
+                }
+              }
+              return pending;
+            },
+            acceptedHeadsFor: async (peer) => {
+              const heads: BoundaryAcceptedHead[] = [];
+              for (const definition of await boundaryMemory!.store.workspaces()) {
+                if (!definition.participants.some((participant) => participant.peerId === peer.peerId)) continue;
+                const view = await boundaryMemory!.service.workspaceView({ workspaceId: definition.workspaceId });
+                for (const artifact of view.artifacts) {
+                  if (artifact.current === null) continue;
+                  heads.push({
+                    workspaceId: definition.workspaceId,
+                    artifactId: artifact.artifact.artifactId,
+                    acceptedRevision: artifact.current.ref.revision,
+                    candidateDigest: artifact.current.ref.candidateDigest,
+                    revisionDigest: artifact.current.ref.revisionDigest,
+                    author: artifact.current.candidate.author,
+                  });
+                }
+              }
+              return heads;
+            },
+          };
+    attention = makeAttentionService({
+      localPeer,
+      federation: { inbox: (peer) => federation!.inbox(peer), commitments: () => federation!.commitments() },
+      ...(boundaryAttention === undefined ? {} : { boundary: boundaryAttention }),
+      ...(options.attentionMarkStore === undefined ? {} : { marks: options.attentionMarkStore }),
+      policy: options.attentionPolicy,
+    });
+  }
+
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
   // HTTP both go through this; neither imports a store. Advanced application tools are registered
   // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
@@ -980,6 +1080,7 @@ export function installPalimpsest(
     ...(runtimeEvolutionInstalled === undefined ? {} : { runtimeEvolution: runtimeEvolutionInstalled.service }),
     ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
     ...(options.organizationDynamicsPolicy === undefined ? {} : { dynamicsPolicy: options.organizationDynamicsPolicy }),
+    ...(attention === undefined ? {} : { attention }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1005,6 +1106,7 @@ export function installPalimpsest(
     application.dynamics !== undefined ||
     application.evolution !== undefined ||
     application.reasoning !== undefined ||
+    application.attention !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -1031,6 +1133,9 @@ export function installPalimpsest(
     ...(reasoningCellsInstalled === undefined ? {} : { reasoningCells: reasoningCellsInstalled }),
     ...(boundaryMemory === undefined ? {} : { boundaryMemory }),
     ...(federatedBoundaryMemory === undefined ? {} : { federatedBoundaryMemory }),
+    ...(boundaryHome === undefined ? {} : { boundaryHome }),
+    ...(attention === undefined ? {} : { attention }),
+    ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
@@ -1046,6 +1151,9 @@ export function installPalimpsest(
       for (const dispose of [...disposers].reverse()) dispose();
       await controller.close();
       store.close();
+      // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
+      // deployment launcher, a host) leaks the shared operations file handle.
+      await effects.close();
     },
   };
 }

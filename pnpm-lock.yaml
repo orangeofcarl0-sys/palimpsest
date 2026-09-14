@@ -5,28 +5,28 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
-  '@ordarium/ledger-sqlite': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz
-  '@ordarium/host-kit': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz
-  '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz
+  '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
+  '@ordarium/ledger-sqlite': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz
+  '@ordarium/host-kit': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz
+  '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz
 
 importers:
 
   .:
     dependencies:
       '@ordarium/core':
-        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
-        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
+        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
+        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
       '@ordarium/host-kit':
-        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz
-        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz
+        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz
+        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz
       '@ordarium/ledger-sqlite':
-        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz
-        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz
+        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz
+        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz
     devDependencies:
       '@ordarium/testing':
-        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz
-        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz
+        specifier: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz
+        version: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz
       '@playwright/test':
         specifier: ^1.63.0
         version: 1.63.0
@@ -325,24 +325,24 @@ packages:
     os: [linux]
     libc: [glibc]
 
-  '@ordarium/core@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz':
-    resolution: {integrity: sha512-cuoLd38dFs4r+hVfT2QkMpV4U6C7JKW66kfjCXFuqqCDSkUd+rDuXnbqIAv1kCCcVBwFK4PKHa9xzICe5baHsg==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz}
-    version: 1.2.0
+  '@ordarium/core@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz':
+    resolution: {integrity: sha512-nsk+Mgxz8LUIpeL/JRsaFEK8NnJ8rNpYEEt4cCp5IPLMATuz6T3EWEl5RHsbQaXu1LCZ7GbG9h+djTvh3IF46Q==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz}
+    version: 1.3.1
     engines: {node: '>=24.0.0'}
 
-  '@ordarium/host-kit@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz':
-    resolution: {integrity: sha512-/4akioU77+BPUBfqQNY/KPhMpgg2onrM9TcQqBZovmS0UaZpuV0j8dm9na71sVxWYbXdFrAXtjyMZX9RNZH5Xw==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz}
-    version: 1.2.0
+  '@ordarium/host-kit@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz':
+    resolution: {integrity: sha512-nOtjI6PnzSkvn/L8GhrbFf+bW9FOSvMttPg5131D37cIjggHuQ4QXobVZbYLfvQCiG7fiyO26tlEoWIf3+a+Pw==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz}
+    version: 1.3.1
     engines: {node: '>=24.0.0'}
 
-  '@ordarium/ledger-sqlite@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz':
-    resolution: {integrity: sha512-GmewDARkcOV/F4g4P8TPPH9wrCdI37jF33ruArjBFGSEKlPZ3S6a0O3fmgevRAFryLH9GyrtFu37ugFoWMiTYA==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz}
-    version: 1.2.0
+  '@ordarium/ledger-sqlite@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz':
+    resolution: {integrity: sha512-5n9KSOCXuMuZwtCNJq4S7Mo28oZB7aqdkHmGXbGdGHznJgjR6pHAATWTjuo87xymhav0oXr3rorjac+c+uomHA==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz}
+    version: 1.3.1
     engines: {node: '>=24.15.0'}
 
-  '@ordarium/testing@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz':
-    resolution: {integrity: sha512-am75k5ii7FE8Sx1NpZZPx5ZseZ8vCv3hB//iHNoVcGPknSliqCYaakw6dU4HOHOBTZ02Ul7yCpBoNtjTIBcNyg==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz}
-    version: 1.2.0
+  '@ordarium/testing@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz':
+    resolution: {integrity: sha512-z8jcAu2Tk29BBTdPMBU0pjcC0zJQYZVOYDCr0O9kC9RviTn4+m+VKvyLZLwOe22x+vYIJ7KeLRzYYWaiEk495w==, tarball: https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz}
+    version: 1.3.1
     engines: {node: '>=24.0.0'}
 
   '@playwright/test@1.63.0':
@@ -1359,20 +1359,20 @@ snapshots:
   '@napi-rs/lzma-linux-x64-gnu@1.5.1':
     optional: true
 
-  '@ordarium/core@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz': {}
+  '@ordarium/core@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz': {}
 
-  '@ordarium/host-kit@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz':
+  '@ordarium/host-kit@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz':
     dependencies:
-      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
-      '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz
+      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
+      '@ordarium/testing': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz
 
-  '@ordarium/ledger-sqlite@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz':
+  '@ordarium/ledger-sqlite@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz':
     dependencies:
-      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
+      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
 
-  '@ordarium/testing@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz':
+  '@ordarium/testing@https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz':
     dependencies:
-      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz
+      '@ordarium/core': https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz
 
   '@playwright/test@1.63.0':
     dependencies:
