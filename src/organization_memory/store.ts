@@ -33,6 +33,7 @@ import {
   parseIntervention,
   parseRunResult,
   parseScenario,
+  parseScenarioFeatureAnnotation,
   parseVariant,
 } from "./artifacts.js";
 
@@ -68,7 +69,8 @@ export type OrganizationMemoryEventType =
   | "RUN_RECORDED"
   | "EVALUATION_RECORDED"
   | "CORRECTION_RECORDED"
-  | "INTERVENTION_RECORDED";
+  | "INTERVENTION_RECORDED"
+  | "SCENARIO_ANNOTATED";
 
 export interface OrganizationMemoryEventDraft {
   readonly eventId: string;
@@ -131,6 +133,7 @@ export const ORGANIZATION_MEMORY_EVENT_PARSERS: OrganizationMemoryEventParsers =
   EVALUATION_RECORDED: singleKeyParser("evaluation", parseEvaluation),
   CORRECTION_RECORDED: singleKeyParser("correction", parseCorrection),
   INTERVENTION_RECORDED: singleKeyParser("intervention", parseIntervention),
+  SCENARIO_ANNOTATED: singleKeyParser("annotation", parseScenarioFeatureAnnotation),
 });
 
 export function organizationMemoryChainDigest(input: {

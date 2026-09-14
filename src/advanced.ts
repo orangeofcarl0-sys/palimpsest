@@ -130,3 +130,20 @@ export type { ServeOptions, ServeHandle } from "./serve.js";
  */
 export * from "./organization_memory/index.js";
 export * from "./experiment/index.js";
+
+/**
+ * G10-S: recipes & the empirical architecture advisor — advanced opt-in only. Versioned in-code
+ * recipe CONFIG (no RecipeStore), a pure descriptive compiler, and a host-neutral governed
+ * execution layer; plus a READ-ONLY advisor that maps a task profile + honest capabilities onto
+ * eligible plans and one plain-language recommendation. Recipe ≠ Authority; Recommendation ≠
+ * Commitment; Suggestion ≠ Selection; no score/weight/health exists anywhere.
+ */
+export * from "./recipes/index.js";
+export * from "./advisor/index.js";
+/**
+ * `ReasoningBranchExecutionPort` is declared structurally in both `reasoning_cell` (the DSH
+ * subprocess adapter it returns) and `recipes` (the execution seam it satisfies). They are
+ * shape-compatible; pin the name to the recipe execution seam that `InstallPalimpsestOptions`
+ * accepts so the advanced barrel is unambiguous.
+ */
+export type { ReasoningBranchExecutionPort } from "./recipes/execution.js";

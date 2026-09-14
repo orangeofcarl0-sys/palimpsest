@@ -14,6 +14,7 @@ Palimpsest 是一个面向 DSH 的持久化 AI 工作体运行环境：将一句
 - **持久联邦协作**：两个独立配置的长期项目 Agent（各自的 PeerRef、PersistentPoint、语义库与 inbox）可通过 Ordarium `StateChangeFeed` 驱动的耐久传输交换语义事件、协商共享 boundary、形成显式 commitment，并在进程重启与 重复投递后收敛（`palimpsest serve --profile <file>` 可复现启动完整栈；`pnpm run dogfood:live` 运行真实双 peer 演练）。
 - **真实宿主认知**：长期项目 Agent 可由真实 DSH host 持久运行并冷恢复；Palimpsest attention 会把 durable 语义事实激活为 host agent 的一轮真实认知，Agent 通过 `palimpsest_*` 工具读取 canonical inbox/boundary/commitment 并自主决策——无需人工转发消息，也没有中心规划器（`node scripts/dogfood/real-host-federation.mjs` 运行双 OS 进程真实演练）。
 - **经验评测基础**：Palimpsest 可定义可复现的组织实验，跨显式架构变体（single-locus / 人工角色分工 / 联邦 peers / reasoning cell）运行多次隔离真实宿主试验，只采集可观测或明确分类的度量（不可得即 `unavailable`，绝不写 0），以分布与 Pareto 而非单一分数评价，保留失败与不确定性，并把架构选择与观测结果持久化到 **append-only Organization Memory**——它可**为未来组织变更提供参考，但永不授权变更**（`node scripts/experiments/run-campaign.mjs`）。
+- **意见化组织模式**：普通用户只需表达意图——**Focus**（聚焦）、**Explore**（并行探索）、**Coordinate**（与既有的独立项目协作），可选 **Verify**（更强验证）与 **Monitor**（跨时间持续关注）；系统用透明的 eligibility 规则与有限的**经验证据**（OrganizationMemory）给出建议，并展示反证与迁移限制——不发明任意 AgentGraph、不伪造 durable peer、不给出隐藏分数。Explore 使用**临时**推理分支（非 durable agent），Coordinate 只在已存在的独立 peer 之间工作。
 
 ## 安装
 

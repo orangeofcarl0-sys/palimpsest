@@ -111,6 +111,12 @@ import { makeReasoningCellService } from "./reasoning_cell/index.js";
 import type { OrganizationMemoryService, OrganizationMemoryStore } from "./organization_memory/index.js";
 import { makeOrganizationMemoryService } from "./organization_memory/index.js";
 import { evaluate } from "./experiment/index.js";
+import type { RecipeRegistry } from "./recipes/registry.js";
+import { builtinRecipeRegistry } from "./recipes/registry.js";
+import type { RecipeExecutionService, ReasoningBranchExecutionPort } from "./recipes/execution.js";
+import { makeRecipeExecutionService } from "./recipes/execution.js";
+import type { EmpiricalArchitectureAdvisor } from "./advisor/advisor.js";
+import { makeEmpiricalArchitectureAdvisor } from "./advisor/advisor.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "./application/surface.js";
 import { makePalimpsestApplicationSurface } from "./application/surface.js";
 import { defineApplicationTools } from "./tools/application_tools.js";
@@ -271,6 +277,29 @@ export interface InstallPalimpsestOptions {
    * surface (never a stub). Evaluation ≠ governance; memory ≠ authority.
    */
   organizationMemoryStore?: OrganizationMemoryStore | undefined;
+  /**
+   * G10-S (additive): the versioned recipe catalog. This is PRODUCT CONFIG in code, not canonical
+   * truth; it defaults to `builtinRecipeRegistry()`. The registry is descriptive only and grants no
+   * authority.
+   */
+  recipeRegistry?: RecipeRegistry | undefined;
+  /**
+   * G10-S (additive): already-independent sovereign peers that exist for this deployment. This is
+   * deployment wiring, never inferred; the advisor treats an empty list as "no independent peer".
+   * Absent ⇒ `[]`.
+   */
+  knownIndependentPeers?: readonly { readonly peerId: string }[] | undefined;
+  /**
+   * G10-S (additive): the configured independent verifier reference, when one exists. Absent ⇒ the
+   * advisor reports verification as unavailable (never assumed).
+   */
+  verificationCapabilityRef?: string | undefined;
+  /**
+   * G10-S (additive): the host-neutral EXPLORE branch execution seam. Supplying it makes EXPLORE
+   * execution possible; a branch is ephemeral and creates no PeerRef/PersistentPoint. Absent ⇒ the
+   * advisor reports reasoning branches unavailable and EXPLORE execution fails closed.
+   */
+  reasoningBranchExecution?: ReasoningBranchExecutionPort | undefined;
 }
 
 /**
@@ -331,6 +360,12 @@ export interface InstalledPalimpsest {
   readonly organizationMemory?: OrganizationMemoryService | undefined;
   /** G10-R (additive): the derived evaluation read model — present iff an organization-memory store is supplied. */
   readonly evaluation?: { readonly evaluate: typeof evaluate } | undefined;
+  /** G10-S (additive): the versioned in-code recipe catalog (product config, never canonical truth). */
+  readonly recipes: RecipeRegistry;
+  /** G10-S (additive): the read-only empirical architecture advisor — present iff an organization-memory store is supplied. */
+  readonly advisor?: EmpiricalArchitectureAdvisor | undefined;
+  /** G10-S (additive): governed recipe execution — present iff a local peer is supplied. */
+  readonly recipeExecution?: RecipeExecutionService | undefined;
   /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
   readonly attentionActivation?: AttentionActivationPort | undefined;
   register(context: DshPluginContext): () => void;
@@ -1028,6 +1063,42 @@ export function installPalimpsest(
       ? undefined
       : makeOrganizationMemoryService({ store: options.organizationMemoryStore });
 
+  // G10-S: recipes are versioned product CONFIG in code — no store, no authority. The registry is
+  // exposed on the install unconditionally; the application surface only carries it when the recipe
+  // layer is actually wired (so a bare Work install keeps exactly its Work tools).
+  const recipeRegistry: RecipeRegistry = options.recipeRegistry ?? builtinRecipeRegistry();
+
+  // G10-S: the advisor exists iff an empirical organization-memory store is supplied (it is a pure,
+  // read-only advisor). Capabilities derive HONESTLY from this install's wiring; nothing is assumed:
+  // an empty known-peer list is "no independent peer", absent verification/campaign/branch wiring is
+  // reported as unavailable — never padded.
+  const advisor: EmpiricalArchitectureAdvisor | undefined =
+    options.organizationMemoryStore === undefined
+      ? undefined
+      : makeEmpiricalArchitectureAdvisor({
+          registry: recipeRegistry,
+          memory: organizationMemory,
+          capabilities: {
+            independentPeers: (options.knownIndependentPeers ?? []).map((peer) => Object.freeze({ peerId: peer.peerId })),
+            ...(options.verificationCapabilityRef === undefined ? {} : { verifierRef: options.verificationCapabilityRef }),
+            campaignMonitoring: campaign !== undefined,
+            reasoningBranches: options.reasoningBranchExecution !== undefined,
+          },
+        });
+
+  // G10-S: execution is present iff a local peer exists (it always acts AS this peer; execution owns
+  // no identity). It runs the EXISTING governed services only and never admits a claim, accepts a
+  // boundary revision, evolves anything, or produces an effect on its own.
+  const recipeExecution: RecipeExecutionService | undefined =
+    options.localPeer === undefined
+      ? undefined
+      : makeRecipeExecutionService({
+          localPeer: options.localPeer,
+          reasoning: reasoningCellsInstalled?.service,
+          branchExecution: options.reasoningBranchExecution,
+          federation,
+        });
+
   // G10-P: semantic attention is a DERIVATION of the surfaces above — never a scheduler and
   // never an authority. It exists only when a policy + local peer + federation are supplied.
   let attention: AttentionService | undefined;
@@ -1089,6 +1160,17 @@ export function installPalimpsest(
     });
   }
 
+  // G10-S: the execution bindings actually wired, reported as plain boolean facts (never guessed).
+  const recipeExecutionStatus =
+    recipeExecution === undefined || options.localPeer === undefined
+      ? undefined
+      : Object.freeze({
+          localPeerId: options.localPeer.peerId,
+          reasoningCell: reasoningCellsInstalled !== undefined,
+          branchExecution: options.reasoningBranchExecution !== undefined,
+          federation: federation !== undefined,
+        });
+
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
   // HTTP both go through this; neither imports a store. Advanced application tools are registered
   // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
@@ -1108,6 +1190,13 @@ export function installPalimpsest(
     ...(options.organizationDynamicsPolicy === undefined ? {} : { dynamicsPolicy: options.organizationDynamicsPolicy }),
     ...(attention === undefined ? {} : { attention }),
     ...(organizationMemory === undefined ? {} : { organizationMemory }),
+    // G10-S: the recipe catalog is wired only when the recipe layer is actually composed, so a bare
+    // Work-only install keeps exactly the nine Work tools (the registry itself stays on the install).
+    ...(advisor === undefined && recipeExecution === undefined ? {} : { recipes: recipeRegistry }),
+    ...(advisor === undefined ? {} : { advisor }),
+    ...(recipeExecution === undefined || recipeExecutionStatus === undefined
+      ? {}
+      : { recipeExecution: { service: recipeExecution, status: recipeExecutionStatus } }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
@@ -1136,6 +1225,9 @@ export function installPalimpsest(
     application.reasoning !== undefined ||
     application.attention !== undefined ||
     application.empirical !== undefined ||
+    application.recipes !== undefined ||
+    application.advisor !== undefined ||
+    application.recipeExecution !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -1166,6 +1258,9 @@ export function installPalimpsest(
     ...(attention === undefined ? {} : { attention }),
     ...(organizationMemory === undefined ? {} : { organizationMemory }),
     ...(organizationMemory === undefined ? {} : { evaluation: { evaluate } }),
+    recipes: recipeRegistry,
+    ...(advisor === undefined ? {} : { advisor }),
+    ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
