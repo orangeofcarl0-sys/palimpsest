@@ -103,7 +103,11 @@ export interface BoundaryCollaborationTransportPort {
 
 export type BoundaryInboundHandler = (envelope: BoundaryRemoteEnvelope) => Promise<unknown>;
 
-/** A callback adapter: the host integration is the callbacks. */
+/**
+ * Embedding/test callback adapter (G10-Q DEMOTE_TEST_EMBEDDING): it can answer the request/response
+ * boundary protocol, but is NOT the default production binding. Cross-process production mutation
+ * uses the durable boundary client (`durableBoundaryClient`) with this host's canonical home.
+ */
 export function callbackBoundaryTransportPort(
   adapterId: string,
   onDeliver: (request: BoundaryTransportRequest) => Promise<BoundaryTransportResponse>,

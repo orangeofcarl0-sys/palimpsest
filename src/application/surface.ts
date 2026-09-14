@@ -26,6 +26,9 @@ import type { InstitutionService, InstitutionStore } from "../institution/index.
 import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphView, ReasoningCellView, ReasoningBranchBrief, CandidateStatus } from "../reasoning_cell/index.js";
 import type { ReasoningClaimTypeRef, ReasoningClaimRef, ExternalEvidenceRef, EvaluationOutcome, InvalidationOutcome } from "../reasoning_cell/index.js";
 import type { PeerRef } from "../federation/peer.js";
+import { materializePeerRef } from "../federation/peer.js";
+import type { DurablePeerOperation } from "../transport/envelope.js";
+import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
 import type { ProjectController } from "../tools/controller.js";
 import { definePalimpsestControl } from "../tools/control_surface.js";
 import type { ProjectionEnvelope } from "./projection_types.js";
@@ -76,6 +79,29 @@ export interface FederationApplicationSurface {
   commitmentState(commitmentId: string): Promise<CommitmentState | undefined>;
   /** G10-P (CF-O-01): read-only enumeration of every commitment with its derived state. */
   commitments(): Promise<readonly CommitmentSummary[]>;
+  /**
+   * G10-Q: communicate THIS peer's explicit decision on a commitment whose canonical record
+   * lives with another peer. Absent when no durable remote-submission port is wired.
+   */
+  submitRemoteDecision?(input: {
+    readonly to: PeerRef;
+    readonly commitmentId: string;
+    readonly decision: "accept" | "reject" | "release";
+  }): Promise<unknown>;
+}
+
+/** G10-Q: the durable remote-submission port the application needs to act as a non-home peer. */
+export interface RemoteSubmissionPort {
+  submitOperation(input: {
+    readonly to: PeerRef;
+    readonly operation: DurablePeerOperation;
+    readonly operationId?: string;
+  }): Promise<unknown>;
+  submitBoundary(input: {
+    readonly workspaceId: string;
+    readonly operation: BoundaryRemoteOperation;
+    readonly operationId?: string;
+  }): Promise<unknown>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -102,6 +128,15 @@ export interface BoundaryApplicationSurface {
   observation(workspaceId: string): Promise<BoundaryObservation | undefined>;
   proposeRevision(input: { readonly workspaceId: string; readonly artifactId: string; readonly base: unknown; readonly content: unknown; readonly requiredAcceptors: readonly PeerRef[]; readonly intent: string }): Promise<unknown>;
   decide(input: { readonly workspaceId: string; readonly artifactId: string; readonly candidateDigest: string; readonly decision: "accept" | "reject" }): Promise<unknown>;
+  /**
+   * G10-Q: submit a typed boundary mutation to the workspace's canonical home when THIS peer is
+   * not the home. Submission-only (at-least-once); the reply is a queue receipt, never acceptance.
+   */
+  submitRemote?(input: {
+    readonly workspaceId: string;
+    readonly operation: BoundaryRemoteOperation;
+    readonly operationId?: string;
+  }): Promise<unknown>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -205,11 +240,32 @@ export interface ApplicationSurfaceDeps {
   readonly boundaryWorkspaces?: BoundaryWorkspaceReadPort | undefined;
   /** G10-P (additive): the semantic attention service, when a policy and federation are wired. */
   readonly attention?: AttentionService | undefined;
+  /** G10-Q (additive): durable remote submission, needed for a non-home peer to act via tools. */
+  readonly remoteTransport?: RemoteSubmissionPort | undefined;
 }
 
 function requireLocal(deps: ApplicationSurfaceDeps): PeerRef {
   if (deps.localPeer === undefined) throw new Error("no local peer is configured for this installation");
   return deps.localPeer;
+}
+
+/**
+ * Tool/HTTP callers naturally write peer ids as bare strings. Normalize them to the canonical
+ * `PeerRef` shape here (the product boundary), so the strict wire parser still sees exact refs.
+ */
+function asPeerRef(value: unknown): PeerRef {
+  return typeof value === "string" ? materializePeerRef({ peerId: value }) : (value as PeerRef);
+}
+
+function normalizeBoundaryOperation(operation: BoundaryRemoteOperation): BoundaryRemoteOperation {
+  const raw = operation as unknown as Record<string, unknown>;
+  if (raw.kind === "submit_artifact_candidate" && Array.isArray(raw.requiredAcceptors)) {
+    return { ...raw, requiredAcceptors: (raw.requiredAcceptors as unknown[]).map(asPeerRef) } as unknown as BoundaryRemoteOperation;
+  }
+  if (raw.kind === "submit_membership_change" && raw.target !== undefined) {
+    return { ...raw, target: asPeerRef(raw.target) } as unknown as BoundaryRemoteOperation;
+  }
+  return operation;
 }
 
 export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): PalimpsestApplicationSurface {
@@ -255,6 +311,19 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
             acceptHandoff: (handoffId) => service.acceptHandoff({ handoffId, authenticatedPeer: null, local: true }),
             commitmentState: async (commitmentId) => (await service.commitmentState(commitmentId))?.state as CommitmentState | undefined,
             commitments: () => service.commitments(),
+            ...(deps.remoteTransport === undefined
+              ? {}
+              : {
+                  submitRemoteDecision: (input: {
+                    readonly to: PeerRef;
+                    readonly commitmentId: string;
+                    readonly decision: "accept" | "reject" | "release";
+                  }) =>
+                    deps.remoteTransport!.submitOperation({
+                      to: input.to,
+                      operation: { kind: `commitment_${input.decision}`, commitmentId: input.commitmentId },
+                    }),
+                }),
           };
         })();
 
@@ -277,6 +346,20 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
               input.decision === "accept"
                 ? service.acceptRevision({ workspaceId: input.workspaceId, artifactId: input.artifactId, candidateDigest: input.candidateDigest, authenticatedPeer: null, local: true })
                 : service.rejectRevision({ workspaceId: input.workspaceId, artifactId: input.artifactId, candidateDigest: input.candidateDigest, authenticatedPeer: null, local: true }),
+            ...(deps.remoteTransport === undefined
+              ? {}
+              : {
+                  submitRemote: (input: {
+                    readonly workspaceId: string;
+                    readonly operation: BoundaryRemoteOperation;
+                    readonly operationId?: string;
+                  }) =>
+                    deps.remoteTransport!.submitBoundary({
+                      workspaceId: input.workspaceId,
+                      operation: normalizeBoundaryOperation(input.operation),
+                      ...(input.operationId === undefined ? {} : { operationId: input.operationId }),
+                    }),
+                }),
           };
         })();
 

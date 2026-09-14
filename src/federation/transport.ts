@@ -57,7 +57,12 @@ export interface CallbackPeerTransportPortCallbacks {
   onWake?(request: PeerWakeRequest): Promise<PeerWakeResult>;
 }
 
-/** Production-usable callback adapter: the host integration IS the callbacks. */
+/**
+ * Embedding/host-injected callback adapter (G10-Q DEMOTE_TEST_EMBEDDING): useful when a host
+ * already owns transport, but NOT the default production binding. The default production outbound
+ * transport is the Ordarium durable transport (`peerTransportFromDurable`); do not document this
+ * callback adapter as the recommended deployment.
+ */
 export function callbackPeerTransportPort(
   adapterId: string,
   callbacks: CallbackPeerTransportPortCallbacks,
