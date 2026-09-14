@@ -95,6 +95,8 @@ import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerP
 import { makeOrganizationEvolutionService } from "./organization_evolution/index.js";
 import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralEvolutionAdmissionPort, RuntimeStructuralEvolutionCompilerPort } from "./runtime_evolution/index.js";
 import { makeRuntimeEvolutionService } from "./runtime_evolution/index.js";
+import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "./reasoning_cell/index.js";
+import { makeReasoningCellService } from "./reasoning_cell/index.js";
 import type {
   BoundaryArtifactTypeRegistry,
   BoundaryCollaborationTransportPort,
@@ -212,6 +214,14 @@ export interface InstallPalimpsestOptions {
   runtimeEvolutionCompiler?: RuntimeStructuralEvolutionCompilerPort | undefined;
   /** G10-M (additive): independent runtime-structural authority seam. */
   runtimeEvolutionAuthority?: RuntimeStructuralEvolutionAdmissionPort | undefined;
+  /** G10-N (additive): the canonical reasoning-cell store. */
+  reasoningCellStore?: ReasoningCellStore | undefined;
+  /** G10-N (additive): claim-type registry; defaults to the builtin statement/dead-end registry. */
+  reasoningClaimTypes?: ReasoningClaimTypeRegistry | undefined;
+  /** G10-N (additive): the verification policy seam (separate from admission). */
+  reasoningVerificationPolicy?: ReasoningVerificationPolicyPort | undefined;
+  /** G10-N (additive): the epistemic admission policy seam (separate from verification). */
+  reasoningAdmissionPolicy?: ReasoningEpistemicAdmissionPolicyPort | undefined;
 }
 
 /**
@@ -260,6 +270,8 @@ export interface InstalledPalimpsest {
   readonly federatedBoundaryMemory?: InstalledFederatedBoundaryMemory | undefined;
   /** G10-M (additive): runtime structural evolution — present iff runtimeScopes + dynamics + store/compiler/authority. */
   readonly runtimeEvolution?: InstalledRuntimeEvolution | undefined;
+  /** G10-N (additive): collaborative reasoning cells — present iff store + verification + admission policy. */
+  readonly reasoningCells?: InstalledReasoningCells | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -283,6 +295,12 @@ export interface InstalledDynamics {
 /** G10-J: the governed-evolution surface (unified mutating boundary). */
 export interface InstalledEvolution {
   readonly service: OrganizationEvolutionService;
+}
+
+/** G10-N: the collaborative reasoning cell surface (cell-local admitted epistemic state). */
+export interface InstalledReasoningCells {
+  readonly store: ReasoningCellStore;
+  readonly service: ReasoningCellService;
 }
 
 /** G10-M: the governed runtime structural evolution surface. */
@@ -919,6 +937,21 @@ export function installPalimpsest(
     };
   }
 
+  // G10-N: reasoning cells need a canonical store plus BOTH policy seams. Missing wiring →
+  // the surface is absent (never stubbed).
+  let reasoningCellsInstalled: InstalledReasoningCells | undefined;
+  if (options.reasoningCellStore !== undefined && options.reasoningVerificationPolicy !== undefined && options.reasoningAdmissionPolicy !== undefined) {
+    reasoningCellsInstalled = {
+      store: options.reasoningCellStore,
+      service: makeReasoningCellService({
+        store: options.reasoningCellStore,
+        verificationPolicy: options.reasoningVerificationPolicy,
+        admissionPolicy: options.reasoningAdmissionPolicy,
+        ...(options.reasoningClaimTypes === undefined ? {} : { claimTypes: options.reasoningClaimTypes }),
+      }),
+    };
+  }
+
   for (const definition of tools) {
     const registered = context.tools.register(definition);
     if (typeof registered === "function") disposers.push(registered);
@@ -938,6 +971,7 @@ export function installPalimpsest(
     ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
     ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled }),
     ...(runtimeEvolutionInstalled === undefined ? {} : { runtimeEvolution: runtimeEvolutionInstalled }),
+    ...(reasoningCellsInstalled === undefined ? {} : { reasoningCells: reasoningCellsInstalled }),
     ...(boundaryMemory === undefined ? {} : { boundaryMemory }),
     ...(federatedBoundaryMemory === undefined ? {} : { federatedBoundaryMemory }),
     register(next: DshPluginContext): () => void {
