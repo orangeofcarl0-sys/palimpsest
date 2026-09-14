@@ -64,6 +64,17 @@ Baseline: `main @ bdb935be127e6d10124fb00f805659d6b2aefa58`. Ordarium v1.3.1. Ho
 6. No MultiGraph empirical overlay (explicitly not a PASS blocker); the read surface is exposed via
    tools/HTTP.
 
-## Required CI
+## Required CI (canonical gate)
 
-See the canonical gate recorded after the implementation PR run (filled in the closure commit).
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#76** `experiment/g10-r-empirical` |
+| Tested branch HEAD | `66694de` (feature `f93a25d` + runRef-identity fix `66694de`) |
+| PR run | `34861716986` — **unit pass + e2e pass on attempt 1** (first run `34861256362` also green) |
+| Merge | `--merge` (normal) → canonical `main @ 6b19727cf03a21346396810e2c36502d47f9bed8` |
+| Tree identity | `git diff 66694de 6b19727` empty → the tested tree IS the merged tree |
+| Canonical main run | `34861922052` — **unit pass + e2e pass on attempt 1** |
+
+All required checks were GREEN before merge; no force/bypass/history rewrite; status read via
+`gh run view --json` (no shell pipeline masking exit codes). The expensive repeated real-LLM campaign
+is deliberately NOT part of required CI (spec §93); it is a separately reproducible artifact.
