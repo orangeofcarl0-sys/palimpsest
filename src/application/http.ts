@@ -9,6 +9,11 @@
 import type { PalimpsestApplicationSurface } from "./surface.js";
 import type { VariantKind } from "../organization_memory/index.js";
 import { VARIANT_KINDS } from "../organization_memory/index.js";
+import type { CompiledRecipePlan } from "../recipes/artifacts.js";
+import { parseCompiledRecipePlan, parseRecipePlan } from "../recipes/artifacts.js";
+import type { TaskProfile } from "../advisor/task_profile.js";
+import { parseTaskProfile } from "../advisor/task_profile.js";
+import type { RecipeExecutionContext } from "../recipes/execution.js";
 
 export interface ApplicationRouteResult {
   readonly status: number;
@@ -44,6 +49,15 @@ function queryRequired(query: URLSearchParams, name: string): string {
   const value = query.get(name);
   if (value === null || value === "") throw new InvalidRequest(`query parameter "${name}" is required`);
   return value;
+}
+
+/** Strict-parse a request body artifact; a malformed body is a 400, never an internal error. */
+function parseBody<T>(parse: () => T): T {
+  try {
+    return parse();
+  } catch (error) {
+    throw new InvalidRequest(error instanceof Error ? error.message : String(error));
+  }
 }
 
 function requireSurface<T>(surface: T | undefined, name: string): T {
@@ -107,6 +121,9 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       reasoning: application.reasoning !== undefined,
       attention: application.attention !== undefined,
       experiments: application.empirical !== undefined,
+      recipes: application.recipes !== undefined,
+      advisor: application.advisor !== undefined,
+      recipeExecution: application.recipeExecution !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -378,6 +395,47 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   if (pathname === "/api/memory/structural_history") {
     requireGet();
     return ok(await requireSurface(application.empirical, "experiments").structuralHistory(queryRequired(query, "subjectRef")));
+  }
+
+  /* ---- recipes / advisor (G10-S; read-only except an explicit governed start) ---- */
+  if (pathname === "/api/recipes") {
+    requireGet();
+    return ok(requireSurface(application.recipes, "recipes").list());
+  }
+  if (pathname === "/api/recipes/recipe") {
+    requireGet();
+    return ok(requireSurface(application.recipes, "recipes").inspect(queryRequired(query, "id")) ?? null);
+  }
+  if (pathname === "/api/recipes/readiness") {
+    requireGet();
+    return ok(requireSurface(application.recipes, "recipes").readiness());
+  }
+  if (pathname === "/api/recipes/compile") {
+    requirePost();
+    const recipeExecution = requireSurface(application.recipeExecution, "recipeExecution");
+    return ok(recipeExecution.compile(parseBody(() => parseRecipePlan(body, "request body"))));
+  }
+  if (pathname === "/api/recipes/execute") {
+    requirePost();
+    const recipeExecution = requireSurface(application.recipeExecution, "recipeExecution");
+    const b = bodyObject(body);
+    const hasEnvelope = Object.hasOwn(b, "compiled");
+    const compiled: CompiledRecipePlan = parseBody(() => parseCompiledRecipePlan(hasEnvelope ? b.compiled : body, "request body"));
+    const context = hasEnvelope ? b.context : undefined;
+    return ok(await recipeExecution.start(compiled, (context === undefined || context === null ? {} : context) as RecipeExecutionContext));
+  }
+  if (pathname === "/api/advisor/recommend") {
+    requirePost();
+    const b = bodyObject(body);
+    const advisor = requireSurface(application.advisor, "advisor");
+    const taskProfile: TaskProfile = parseBody(() => parseTaskProfile(b.taskProfile, "taskProfile"));
+    return ok(
+      await advisor.recommend({
+        taskProfile,
+        ...(b.preferences === undefined ? {} : { preferences: b.preferences as never }),
+        ...(typeof b.userRequestedMultiAgent === "boolean" ? { userRequestedMultiAgent: b.userRequestedMultiAgent } : {}),
+      }),
+    );
   }
 
   /* ---- projections ---- */

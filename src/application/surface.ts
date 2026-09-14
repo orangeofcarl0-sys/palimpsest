@@ -35,6 +35,16 @@ import type {
   ScenarioDefinition,
 } from "../organization_memory/index.js";
 import type { OrganizationMemoryService, SimilarRunsQuery } from "../organization_memory/index.js";
+import type { TaskFeatureName, TaskFeatureValue } from "../organization_memory/artifacts.js";
+import { TASK_FEATURE_ALLOWED_VALUES, TASK_FEATURE_NAMES } from "../organization_memory/artifacts.js";
+import type { CompiledRecipePlan, RecipeBaseMode, RecipeDefinition, RecipeModifier, RecipePlan, RecipeReadiness, RecipeRole } from "../recipes/artifacts.js";
+import { parseCompiledRecipePlan, parseRecipePlan } from "../recipes/artifacts.js";
+import type { RecipeRegistry } from "../recipes/registry.js";
+import { compileRecipePlan } from "../recipes/compiler.js";
+import type { RecipeExecutionContext, RecipeExecutionOutcome, RecipeExecutionService } from "../recipes/execution.js";
+import type { ArchitectureRecommendInput, ArchitectureRecommendation, EmpiricalArchitectureAdvisor } from "../advisor/advisor.js";
+import type { TaskProfile, TaskProfilerPort } from "../advisor/task_profile.js";
+import { applyProfilerOutput, parseTaskProfile, unknownTaskProfile, withTaskFeature } from "../advisor/task_profile.js";
 import type { PeerRef } from "../federation/peer.js";
 import { materializePeerRef } from "../federation/peer.js";
 import type { DurablePeerOperation } from "../transport/envelope.js";
@@ -238,6 +248,73 @@ export interface EmpiricalApplicationSurface {
   structuralHistory(subjectRef: string): Promise<readonly InterventionRecord[]>;
 }
 
+/* ------------------------------------------------------------------ *
+ * Recipes / advisor (G10-S; recipe layer is descriptive product config)
+ * ------------------------------------------------------------------ */
+
+/** One recipe's honest, per-capability readiness (a stated enum, never a score). */
+export interface RecipeReadinessReport {
+  readonly recipeId: string;
+  readonly role: RecipeRole;
+  readonly baseMode?: RecipeBaseMode | undefined;
+  readonly modifier?: RecipeModifier | undefined;
+  readonly readiness: RecipeReadiness;
+  readonly capabilityRequirements: readonly string[];
+  readonly limitations: readonly string[];
+}
+
+/** READ-ONLY recipe catalog. Recipes are product config, not canonical truth. */
+export interface RecipesApplicationSurface {
+  list(): readonly RecipeDefinition[];
+  inspect(recipeId: string): RecipeDefinition | undefined;
+  readiness(): readonly RecipeReadinessReport[];
+}
+
+export interface AdvisorProfileInput {
+  /** An opaque task description; only meaningful with an untrusted profiler wired. */
+  readonly task?: string | undefined;
+  /** Caller/user-declared feature values (strictly validated; the caller is the source). */
+  readonly values?: Readonly<Record<string, string>> | undefined;
+}
+
+/** The plain-language explanation portion of a recommendation (no scores/weights). */
+export interface AdvisorExplanation {
+  readonly recommendedPlan: RecipePlan;
+  readonly rationale: readonly string[];
+  readonly blockers: readonly string[];
+  readonly unavailableEvidence: readonly string[];
+}
+
+/**
+ * READ-ONLY empirical architecture advisor. `profile` may consume UNTRUSTED profiler output (strictly
+ * parsed and re-sourced) but can never select a recipe; only `recommend` maps a profile + the install's
+ * honest capabilities to eligible plans, and the human remains the chooser.
+ */
+export interface AdvisorApplicationSurface {
+  profile(input: AdvisorProfileInput): Promise<TaskProfile>;
+  recommend(input: ArchitectureRecommendInput): Promise<ArchitectureRecommendation>;
+  explain(input: ArchitectureRecommendInput): Promise<AdvisorExplanation>;
+}
+
+/** The execution bindings actually wired for this install (plain boolean facts, never guesses). */
+export interface RecipeExecutionStatus {
+  readonly localPeerId: string;
+  readonly reasoningCell: boolean;
+  readonly branchExecution: boolean;
+  readonly federation: boolean;
+}
+
+/**
+ * G10-S: descriptive compilation plus execution through the EXISTING governed services.
+ * `compile`/`status` are pure reads; `start` runs the wired ReasoningCell/Federation services and
+ * never admits a claim, accepts a boundary revision, evolves anything, or produces an effect itself.
+ */
+export interface RecipeExecutionApplicationSurface {
+  compile(plan: RecipePlan): CompiledRecipePlan;
+  start(compiled: CompiledRecipePlan, context: RecipeExecutionContext): Promise<RecipeExecutionOutcome>;
+  status(): RecipeExecutionStatus;
+}
+
 export interface PalimpsestApplicationSurface {
   readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
@@ -252,6 +329,12 @@ export interface PalimpsestApplicationSurface {
   readonly attention?: AttentionApplicationSurface | undefined;
   /** G10-R: read-only empirical history (evaluation ≠ governance; memory ≠ authority). */
   readonly empirical?: EmpiricalApplicationSurface | undefined;
+  /** G10-S: read-only recipe catalog with honest per-capability readiness. */
+  readonly recipes?: RecipesApplicationSurface | undefined;
+  /** G10-S: read-only empirical architecture advisor (suggestion only; never a chooser). */
+  readonly advisor?: AdvisorApplicationSurface | undefined;
+  /** G10-S: descriptive compile + governed execution of an existing recipe plan. */
+  readonly recipeExecution?: RecipeExecutionApplicationSurface | undefined;
   /** Derived MultiGraph projections (read-only; never a canonical graph). */
   readonly projections?: ProjectionsApplicationSurface | undefined;
 }
@@ -279,6 +362,20 @@ export interface ApplicationSurfaceDeps {
   readonly remoteTransport?: RemoteSubmissionPort | undefined;
   /** G10-R (additive): the empirical organization-memory service; absent ⇒ no empirical surface. */
   readonly organizationMemory?: OrganizationMemoryService | undefined;
+  /** G10-S (additive): the versioned recipe catalog; absent ⇒ no recipes surface. */
+  readonly recipes?: RecipeRegistry | undefined;
+  /** G10-S (additive): the read-only empirical architecture advisor; absent ⇒ no advisor surface. */
+  readonly advisor?: EmpiricalArchitectureAdvisor | undefined;
+  /** G10-S (additive): descriptive compile + governed execution deps; absent ⇒ no execution surface. */
+  readonly recipeExecution?: { readonly service: RecipeExecutionService; readonly status: RecipeExecutionStatus } | undefined;
+  /** G10-S (additive): an UNTRUSTED host profiler; its output is strict-parsed and never selects a recipe. */
+  readonly taskProfiler?: TaskProfilerPort | undefined;
+}
+
+function invalidInput(message: string): Error {
+  const error = new Error(message);
+  (error as { kind?: string }).kind = "invalid_value";
+  return error;
 }
 
 function requireLocal(deps: ApplicationSurfaceDeps): PeerRef {
@@ -551,6 +648,71 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           structuralHistory: (subjectRef) => deps.organizationMemory!.structuralHistory(subjectRef),
         };
 
+  const recipes: RecipesApplicationSurface | undefined =
+    deps.recipes === undefined
+      ? undefined
+      : {
+          list: () => deps.recipes!.list(),
+          inspect: (recipeId) => deps.recipes!.get(recipeId),
+          readiness: () =>
+            deps.recipes!.list().map((definition) =>
+              Object.freeze({
+                recipeId: definition.recipeId,
+                role: definition.role,
+                ...(definition.baseMode === undefined ? {} : { baseMode: definition.baseMode }),
+                ...(definition.modifier === undefined ? {} : { modifier: definition.modifier }),
+                readiness: definition.readiness,
+                capabilityRequirements: definition.capabilityRequirements,
+                limitations: definition.limitations,
+              }),
+            ),
+        };
+
+  const advisor: AdvisorApplicationSurface | undefined =
+    deps.advisor === undefined
+      ? undefined
+      : {
+          profile: async (input) => {
+            // A wired UNTRUSTED profiler is strict-parsed and re-sourced; it never selects a recipe.
+            if (deps.taskProfiler !== undefined && input.task !== undefined) {
+              const proposed = await deps.taskProfiler.profile({ task: input.task });
+              return applyProfilerOutput(unknownTaskProfile(), proposed);
+            }
+            let profile = unknownTaskProfile();
+            for (const [feature, value] of Object.entries(input.values ?? {})) {
+              if (!(TASK_FEATURE_NAMES as readonly string[]).includes(feature)) {
+                throw invalidInput(`unknown task feature "${feature}"`);
+              }
+              const name = feature as TaskFeatureName;
+              if (!(TASK_FEATURE_ALLOWED_VALUES[name] as readonly string[]).includes(value)) {
+                throw invalidInput(`value "${value}" is not allowed for task feature "${feature}"`);
+              }
+              profile = withTaskFeature(profile, name, value as TaskFeatureValue);
+            }
+            return profile;
+          },
+          recommend: (input) => deps.advisor!.recommend({ ...input, taskProfile: parseTaskProfile(input.taskProfile) }),
+          explain: async (input) => {
+            const recommendation = await deps.advisor!.recommend({ ...input, taskProfile: parseTaskProfile(input.taskProfile) });
+            return Object.freeze({
+              recommendedPlan: recommendation.recommendedPlan,
+              rationale: recommendation.rationale,
+              blockers: recommendation.blockers,
+              unavailableEvidence: recommendation.unavailableEvidence,
+            });
+          },
+        };
+
+  const recipeExecution: RecipeExecutionApplicationSurface | undefined =
+    deps.recipeExecution === undefined || deps.recipes === undefined
+      ? undefined
+      : {
+          // Re-parse defensively at the boundary: a raw caller-supplied plan cannot slip past its digest.
+          compile: (plan) => compileRecipePlan(parseRecipePlan(plan, "RecipePlan"), deps.recipes!),
+          start: (compiled, context) => deps.recipeExecution!.service.execute(parseCompiledRecipePlan(compiled, "CompiledRecipePlan"), context),
+          status: () => deps.recipeExecution!.status,
+        };
+
   const projections: ProjectionsApplicationSurface = {
     work: async () => {
       try {
@@ -612,6 +774,9 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(reasoning === undefined ? {} : { reasoning }),
     ...(attention === undefined ? {} : { attention }),
     ...(empirical === undefined ? {} : { empirical }),
+    ...(recipes === undefined ? {} : { recipes }),
+    ...(advisor === undefined ? {} : { advisor }),
+    ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

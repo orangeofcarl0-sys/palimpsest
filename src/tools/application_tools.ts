@@ -94,6 +94,9 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         reasoning: application.reasoning !== undefined,
         attention: application.attention !== undefined,
         experiments: application.empirical !== undefined,
+        recipes: application.recipes !== undefined,
+        advisor: application.advisor !== undefined,
+        recipeExecution: application.recipeExecution !== undefined,
         projections: application.projections !== undefined,
       }),
     }),
@@ -393,6 +396,85 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
             ...(typeof object.provider === "string" ? { provider: object.provider } : {}),
             ...(typeof object.model === "string" ? { model: object.model } : {}),
           });
+        },
+      }),
+    );
+  }
+
+  if (application.recipes !== undefined) {
+    const recipes = application.recipes;
+    tools.push(
+      tool({
+        name: "palimpsest_recipes",
+        description: "Read-only recipe catalog: the versioned modes of working, their supported modifiers, honest per-capability readiness, and stated limitations (a recipe is descriptive product config, never authority)",
+        mode: "read-only",
+        actions: ["list", "inspect", "readiness"],
+        extraProperties: { recipeId: { type: "string" } },
+        run: async (action, object) => {
+          if (action === "list") return recipes.list();
+          if (action === "readiness") return recipes.readiness();
+          return recipes.inspect(requiredString(object, "recipeId")) ?? null;
+        },
+      }),
+    );
+  }
+
+  if (application.advisor !== undefined) {
+    const advisor = application.advisor;
+    tools.push(
+      tool({
+        name: "palimpsest_advisor",
+        description: "Read-only empirical architecture advisor: profile a task and get eligible recipe plans with one plain-language recommendation, non-overridable blockers, and disclosed empirical uncertainty (a suggestion, never a chooser; no score/weight/health)",
+        mode: "read-only",
+        actions: ["profile", "recommend", "explain"],
+        extraProperties: {
+          task: { type: "string" },
+          values: { type: "object" },
+          taskProfile: { type: "object" },
+          preferences: { type: "object" },
+          userRequestedMultiAgent: { type: "boolean" },
+        },
+        run: async (action, object) => {
+          if (action === "profile") {
+            return advisor.profile({
+              ...(typeof object.task === "string" ? { task: object.task } : {}),
+              ...(object.values === undefined ? {} : { values: required(object, "values") as Readonly<Record<string, string>> }),
+            });
+          }
+          const taskProfile = required(object, "taskProfile");
+          if (typeof taskProfile !== "object" || taskProfile === null) throw new ToolArgsError("taskProfile must be an object");
+          const input = {
+            taskProfile: taskProfile as never,
+            ...(object.preferences === undefined ? {} : { preferences: object.preferences as never }),
+            ...(typeof object.userRequestedMultiAgent === "boolean" ? { userRequestedMultiAgent: object.userRequestedMultiAgent } : {}),
+          };
+          if (action === "recommend") return advisor.recommend(input);
+          return advisor.explain(input);
+        },
+      }),
+    );
+  }
+
+  if (application.recipeExecution !== undefined) {
+    const recipeExecution = application.recipeExecution;
+    tools.push(
+      tool({
+        name: "palimpsest_recipe",
+        description: "Compile a recipe plan into a descriptive plan, report the execution bindings actually wired, and START it through the EXISTING governed services (compilation grants no authority; start never admits a claim, accepts a boundary, evolves anything, or forces a peer)",
+        mode: "mutating",
+        actions: ["compile", "start", "status"],
+        extraProperties: { plan: { type: "object" }, compiled: { type: "object" }, context: { type: "object" } },
+        run: async (action, object) => {
+          if (action === "status") return recipeExecution.status();
+          if (action === "compile") {
+            const plan = required(object, "plan");
+            if (typeof plan !== "object" || plan === null) throw new ToolArgsError("plan must be an object");
+            return recipeExecution.compile(plan as never);
+          }
+          const compiled = required(object, "compiled");
+          if (typeof compiled !== "object" || compiled === null) throw new ToolArgsError("compiled must be an object");
+          const context = object.context;
+          return recipeExecution.start(compiled as never, (typeof context === "object" && context !== null ? context : {}) as never);
         },
       }),
     );

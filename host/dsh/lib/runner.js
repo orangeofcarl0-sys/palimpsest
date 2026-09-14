@@ -16,7 +16,7 @@
 // activation events and the final visible response matter to the dogfood.
 
 import { randomUUID } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 import { brandString } from '@deepseek-ai/dsh-brand';
 import { installModelSelection } from '@deepseek-ai/dsh-agent';
@@ -27,6 +27,139 @@ export const inject = ['agents', 'sessions', 'agentDefaultModel', 'palimpsestSta
 
 function userMessage(text) {
   return createUserMessage({ content: [{ type: 'text', text }], source: { kind: 'user' } });
+}
+
+/**
+ * The task text for ONE ephemeral reasoning branch. It carries everything the
+ * agent needs to act (cellId/branchId/question/frontier) and explicitly forbids
+ * the actions a branch must never take (open branch / evaluate / invalidate).
+ */
+function branchTask(brief, cellId, branchId) {
+  const objective = typeof brief.objective === 'string' ? brief.objective : '';
+  const question = typeof brief.question === 'string' ? brief.question : '';
+  return [
+    'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You may ONLY read the frozen brief and submit exactly ONE structured candidate.',
+    'Do NOT call palimpsest_reasoning with action "branch", "evaluate" or "invalidate" (they are forbidden for a branch).',
+    '',
+    `cellId: ${cellId}`,
+    `branchId: ${branchId}`,
+    `objective: ${objective}`,
+    `question: ${question}`,
+    `acceptedFrontierBasis: ${JSON.stringify(brief.frontierBasis ?? null)}`,
+    `acceptedClaims: ${JSON.stringify(brief.acceptedClaims ?? [])}`,
+    '',
+    'Do this now:',
+    `1. Call palimpsest_reasoning with action "brief", cellId "${cellId}", branchId "${branchId}" to read the frozen brief and the accepted frontier.`,
+    '2. Think briefly, then call palimpsest_reasoning with action "candidate", cellId "' +
+      cellId +
+      '", branchId "' +
+      branchId +
+      '", type {"typeId":"reasoning.statement","version":"v1"}, content {"statement":"<one concise, falsifiable statement that directly answers the question>"}. Submit EXACTLY ONE candidate. Do not try again if it succeeds or fails.',
+    '3. Reply with one short line. Do nothing else.',
+  ].join('\n');
+}
+
+/** Machine-readable line the harness parses; exactly one is printed, even on failure. */
+function printBranchResult(result) {
+  process.stdout.write(`PALIMPSEST_BRANCH_RESULT ${JSON.stringify(result)}\n`);
+}
+
+/**
+ * Run ONE ephemeral branch: create a fresh in-memory agent (no --session-file
+ * write, no resume, not kept alive), deliver the branch task, observe the single
+ * structured candidate it submitted through the real ReasoningCell service, and
+ * exit. A branch NEVER opens a durable principal, writes a session id file,
+ * creates a peer, or calls admission.
+ */
+async function runBranch(ctx, deps) {
+  const { startup, host, agents, agentOptions, setup } = deps;
+  const exitWith = (code) => {
+    const exit = ctx.get('appExit');
+    if (typeof exit === 'function') exit(code);
+    else process.exit(code);
+  };
+
+  let status = 'failed';
+  let detail = '';
+  let candidateDigest;
+  let statement;
+  let submitted = false;
+
+  try {
+    const brief = JSON.parse(readFileSync(startup.branchFile, 'utf8'));
+    const cellId = brief?.cell && typeof brief.cell.cellId === 'string' ? brief.cell.cellId : undefined;
+    const branchId = brief?.branch && typeof brief.branch.branchId === 'string' ? brief.branch.branchId : undefined;
+    if (cellId === undefined || branchId === undefined) {
+      detail = 'branch brief is missing cell/branch identity';
+    } else {
+      const handle = await agents.create({
+        sessionId: brandString(`branch-${randomUUID()}`),
+        meta: { cwd: process.cwd() },
+        agentOptions,
+        setup,
+      });
+      const agent = handle.agent;
+      await agent.whenIdle();
+
+      const fromSeq = agent.session.seq;
+      agent.followup(userMessage(branchTask(brief, cellId, branchId)));
+      await agent.whenIdle();
+
+      // Observe ONLY tool calls / results (never private reasoning) to find the
+      // one candidate submitted through palimpsest_reasoning.
+      const session = agent.session;
+      const length = session.seq;
+      const candidateCalls = new Map();
+      for (let seq = fromSeq; seq < length; seq += 1) {
+        const event = session.eventAt(seq);
+        if (event === undefined) continue;
+        if (event.type === 'tool/call' && event.data?.name === 'palimpsest_reasoning') {
+          let args;
+          try {
+            args = JSON.parse(event.data.arguments ?? '{}');
+          } catch {
+            args = {};
+          }
+          const callId = String(event.data.callId ?? '');
+          candidateCalls.set(callId, args);
+          if (args?.action === 'candidate') {
+            submitted = true;
+            if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
+          }
+        } else if (event.type === 'tool/result') {
+          const block = event.data?.message?.content?.[0];
+          if (block === undefined) continue;
+          const args = candidateCalls.get(String(block.toolCallId ?? ''));
+          if (args?.action !== 'candidate') continue;
+          const text = (block.content ?? [])
+            .filter((part) => part.type === 'text')
+            .map((part) => part.text)
+            .join('');
+          const match = /"candidateDigest"\s*:\s*"([^"]+)"/u.exec(text);
+          if (match !== null) candidateDigest = match[1];
+          if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
+        }
+      }
+      status = submitted ? 'completed' : 'failed';
+      detail = submitted ? `branch submitted a candidate through the real ReasoningCell service (${cellId}/${branchId})` : 'branch did not submit a candidate through palimpsest_reasoning';
+    }
+  } catch (error) {
+    status = 'failed';
+    detail = error?.message ?? String(error);
+  }
+
+  printBranchResult({
+    status,
+    ...(candidateDigest === undefined ? {} : { candidateDigest }),
+    ...(statement === undefined ? {} : { statement }),
+    detail,
+  });
+  try {
+    await host.deployment.close();
+  } catch {
+    /* the harness may already have closed the deployment */
+  }
+  exitWith(status === 'completed' ? 0 : 1);
 }
 
 async function run(ctx, deps) {
@@ -40,6 +173,11 @@ async function run(ctx, deps) {
   const setup = (agentCtx) => {
     installModelSelection(agentCtx, { current: selection, assembled: undefined });
   };
+
+  if (startup.mode === 'branch') {
+    await runBranch(ctx, { startup, host, agents, agentOptions, setup });
+    return;
+  }
 
   const handle =
     startup.mode === 'resume' && typeof startup.sessionId === 'string' && startup.sessionId.length > 0
