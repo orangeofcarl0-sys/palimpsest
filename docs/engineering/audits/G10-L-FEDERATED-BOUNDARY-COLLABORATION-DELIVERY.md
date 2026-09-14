@@ -47,6 +47,21 @@ others), N09, N10, N11, N12, N13, N14, N15, N16, N17 (accepted artifacts survive
 N18, N19, N20, N21, N22, N23, N24, N25 (no quality claim — diagnostics wording + firewall), N26
 (stability wording), N27, N28 (existing subjects unchanged), N29, N30, N31, N32, N33, N34, N35.
 
+## Canonical gate
+
+- Final branch HEAD `7f01fda` → PR **#64** → canonical `main` merge **`2059199`**
+  (`git diff 7f01fda 2059199` is empty — the tested tree IS the merged tree).
+- PR run `34802169133`: **unit success; e2e attempt 1 failed only on the documented
+  `E2E-DEBUG-01` flake (1 failed / 20 passed)**. The merge therefore happened while the PR check
+  was red — a discipline lapse, recorded honestly. The documented failed-job rerun
+  (`gh run rerun 34802169133 --failed`) is **success on attempt 2**.
+- Canonical main push run `34802275638` (`2059199`): **success on attempt 1** (unit + e2e).
+- G10-K closure main push run `34786883137` (previously mis-read as green because
+  `gh run watch … | tail` masked the exit status): e2e attempt 1 failed only on the documented
+  `E2E-DEBUG-01` + `E2E-RUNTIME-03` flakes; the documented rerun is **success on attempt 2**.
+- Local canonical gate: `pnpm test` 120 files / 1031 tests; `build` + `build:web` green; local
+  `pnpm test:e2e` 21/21.
+
 ## Honest deviations
 
 - **L1–L10** ship as one implementation PR plus a docs-only closure PR.
