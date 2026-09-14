@@ -49,7 +49,16 @@ export type {
 } from "./artifacts.js";
 
 export { RuntimeScopeStoreError, SqliteRuntimeScopeStore, defaultRuntimeScopePath } from "./store.js";
-export type { RuntimeScopeAppendRequest, RuntimeScopeEvent, RuntimeScopeStore, RuntimeScopeStoreErrorKind } from "./store.js";
+export type {
+  RuntimeScopeAppendRequest,
+  RuntimeScopeCreateRequest,
+  RuntimeScopeEvent,
+  RuntimeScopeStore,
+  RuntimeScopeStoreErrorKind,
+  RuntimeScopeStructuralScopeRequest,
+  RuntimeScopeStructuralTransition,
+  RuntimeScopeStructuralTransitionResult,
+} from "./store.js";
 
 export { makeRuntimeScopeService, sameRuntimeScope } from "./service.js";
 export type {

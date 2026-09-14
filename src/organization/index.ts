@@ -37,9 +37,12 @@ export {
   OrganizationStoreError,
   SqliteOrganizationStore,
   defaultOrganizationPath,
+  parseOrganizationRetirement,
 } from "./store.js";
 export type {
+  OrganizationLifecycle,
   OrganizationLineageRecord,
+  OrganizationRetirement,
   OrganizationRevisionRegistration,
   OrganizationStore,
   OrganizationStoreErrorKind,

@@ -44,6 +44,8 @@ import type { BoundaryObservation, BoundaryWorkspaceBasisRef } from "../boundary
 export interface OrganizationDynamicsOrganizationPort {
   head(organizationDefinitionId: string): Promise<OrganizationDefinitionRef | undefined>;
   get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined>;
+  /** G10-M: canonical organization lifecycle (absent ⇒ lifecycle is not observed). */
+  lifecycle?(organizationDefinitionId: string): Promise<"ACTIVE" | "RETIRED" | undefined>;
 }
 
 export interface OrganizationDynamicsDeps {
@@ -263,6 +265,10 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       campaignActivity = Object.freeze(observations);
       campaignActivityKnowledge = activityState;
     }
+    let organizationLifecycle: "ACTIVE" | "RETIRED" | "unknown" | undefined;
+    if (parsedSubject.kind === "organization" && deps.organizations?.lifecycle !== undefined) {
+      organizationLifecycle = (await deps.organizations.lifecycle(parsedSubject.organization.organizationDefinitionId)) ?? "unknown";
+    }
     const runtime = runtimeMetricsOf(states, events, freshness);
     let boundaryObservation: BoundaryObservation | null = null;
     let boundaryKnowledge: DynamicsKnowledge["boundary"];
@@ -298,6 +304,8 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       campaignActivity,
       // Additive: omitted unless a boundary observation exists.
       ...(boundaryObservation === null ? {} : { boundary: boundaryObservation }),
+      // Additive: omitted unless a lifecycle source is wired.
+      ...(organizationLifecycle === undefined ? {} : { organizationLifecycle }),
     };
     return { status: "observed", snapshot: Object.freeze({ ...fields, digest: snapshotDigestOf(fields) }) };
   }

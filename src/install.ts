@@ -93,6 +93,8 @@ import type { CampaignActivityObservation, CampaignActivityPort, DynamicsCollabo
 import { makeOrganizationDynamicsService } from "./organization_dynamics/index.js";
 import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerPort, OrganizationEvolutionStore, OrganizationEvolutionService, OrganizationFormalizationCompilerPort } from "./organization_evolution/index.js";
 import { makeOrganizationEvolutionService } from "./organization_evolution/index.js";
+import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralEvolutionAdmissionPort, RuntimeStructuralEvolutionCompilerPort } from "./runtime_evolution/index.js";
+import { makeRuntimeEvolutionService } from "./runtime_evolution/index.js";
 import type {
   BoundaryArtifactTypeRegistry,
   BoundaryCollaborationTransportPort,
@@ -204,6 +206,12 @@ export interface InstallPalimpsestOptions {
   boundaryHomeId?: string | undefined;
   /** G10-L (additive): remote operation-id allocator; default is a random UUID. */
   allocateBoundaryOperationId?: (() => string) | undefined;
+  /** G10-M (additive): the runtime evolution case store (runtime process history only). */
+  runtimeEvolutionStore?: RuntimeEvolutionStore | undefined;
+  /** G10-M (additive): untrusted complete-runtime-candidate authoring seam. */
+  runtimeEvolutionCompiler?: RuntimeStructuralEvolutionCompilerPort | undefined;
+  /** G10-M (additive): independent runtime-structural authority seam. */
+  runtimeEvolutionAuthority?: RuntimeStructuralEvolutionAdmissionPort | undefined;
 }
 
 /**
@@ -250,6 +258,8 @@ export interface InstalledPalimpsest {
   readonly boundaryMemory?: InstalledBoundaryMemory | undefined;
   /** G10-L (additive): federated boundary collaboration — present iff localPeer + transport + route. */
   readonly federatedBoundaryMemory?: InstalledFederatedBoundaryMemory | undefined;
+  /** G10-M (additive): runtime structural evolution — present iff runtimeScopes + dynamics + store/compiler/authority. */
+  readonly runtimeEvolution?: InstalledRuntimeEvolution | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -273,6 +283,11 @@ export interface InstalledDynamics {
 /** G10-J: the governed-evolution surface (unified mutating boundary). */
 export interface InstalledEvolution {
   readonly service: OrganizationEvolutionService;
+}
+
+/** G10-M: the governed runtime structural evolution surface. */
+export interface InstalledRuntimeEvolution {
+  readonly service: RuntimeEvolutionService;
 }
 
 /** G10-K: the collaborative boundary-memory surface (shared boundary state). */
@@ -791,6 +806,8 @@ export function installPalimpsest(
               const definition = await organizationStore.get(ref);
               return definition === undefined ? undefined : { interactions: definition.interactions };
             },
+            // G10-M: a RETIRED lineage cannot ground a new runtime scope.
+            lifecycle: async (organizationDefinitionId: string) => organizationStore.lifecycle(organizationDefinitionId),
           };
     // CF-H-08: campaign association is verified against the canonical campaign store.
     const campaignStore = options.campaignStore;
@@ -813,7 +830,7 @@ export function installPalimpsest(
     const orgStore = options.organizationStore;
     const dynamicsService = makeOrganizationDynamicsService({
       runtimeScopes: { store: runtimeScopes.store, service: runtimeScopes.service },
-      organizations: { head: (id) => orgStore.head(id), get: (ref) => orgStore.get(ref) },
+      organizations: { head: (id) => orgStore.head(id), get: (ref) => orgStore.get(ref), lifecycle: (id) => orgStore.lifecycle(id) },
       ...(options.coordinationStore === undefined ? {} : { collaboration: coordinationObservationPort(options.coordinationStore) }),
       ...(options.campaignStore === undefined ? {} : { campaignActivity: campaignActivityPort(options.campaignStore) }),
       // G10-L: boundary-aware observation is available whenever this host holds the store.
@@ -852,8 +869,54 @@ export function installPalimpsest(
               compiler: options.organizationFormalizationCompiler,
             },
           }),
+      // G10-M: exhaustive, read-only retirement safety ports. Absent ⇒ assessment is blocked.
+      ...(options.organizationStore === undefined
+        ? {}
+        : {
+            retirement: {
+              ...(options.institutionStore === undefined
+                ? {}
+                : { institutions: { currentBodies: async () => (await options.institutionStore!.currentBodies()).map((epoch) => epoch.organization) } }),
+              ...(runtimeScopes === undefined
+                ? {}
+                : {
+                    runtimeScopes: {
+                      openScopesGroundedTo: async (organizationDefinitionId: string) => {
+                        const ids: string[] = [];
+                        for (const ref of await runtimeScopes!.service.listScopes()) {
+                          const state = await runtimeScopes!.service.scopeState(ref.scopeId);
+                          if (state.lifecycle === "OPEN" && state.definition.organizationBasis?.organizationDefinitionId === organizationDefinitionId) ids.push(ref.scopeId);
+                        }
+                        return Object.freeze(ids);
+                      },
+                    },
+                  }),
+            },
+          }),
     });
     organizationEvolutionInstalled = { service: organizationEvolution };
+  }
+
+  // G10-M: runtime structural evolution — present iff a runtime-scope store, the dynamics
+  // surface, an evolution case store, an untrusted compiler, and an independent runtime
+  // structural authority are ALL supplied (never stubbed).
+  let runtimeEvolutionInstalled: InstalledRuntimeEvolution | undefined;
+  if (
+    runtimeScopes !== undefined &&
+    organizationDynamics !== undefined &&
+    options.runtimeEvolutionStore !== undefined &&
+    options.runtimeEvolutionCompiler !== undefined &&
+    options.runtimeEvolutionAuthority !== undefined
+  ) {
+    runtimeEvolutionInstalled = {
+      service: makeRuntimeEvolutionService({
+        runtimeScopes: { store: runtimeScopes.store, service: runtimeScopes.service },
+        dynamics: organizationDynamics.service,
+        store: options.runtimeEvolutionStore,
+        compiler: options.runtimeEvolutionCompiler,
+        authority: options.runtimeEvolutionAuthority,
+      }),
+    };
   }
 
   for (const definition of tools) {
@@ -874,6 +937,7 @@ export function installPalimpsest(
     ...(holons === undefined ? {} : { holons }),
     ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
     ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled }),
+    ...(runtimeEvolutionInstalled === undefined ? {} : { runtimeEvolution: runtimeEvolutionInstalled }),
     ...(boundaryMemory === undefined ? {} : { boundaryMemory }),
     ...(federatedBoundaryMemory === undefined ? {} : { federatedBoundaryMemory }),
     register(next: DshPluginContext): () => void {

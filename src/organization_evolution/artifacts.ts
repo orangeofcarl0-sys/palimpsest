@@ -15,6 +15,7 @@ import { parseOrganizationDefinition, parseOrganizationRef } from "../organizati
 import type { OrganizationTransformationProposal, SplitPlacement, SplitRolePlacement, SplitNormPlacement, MergeRoleDecision } from "../organization/index.js";
 import type { OrganizationDynamicsProposal, ProposalImpactReport } from "../organization_dynamics/index.js";
 import { parseCompleteFormalizationCandidate } from "./formalization.js";
+import { parseOrganizationRetirementCandidate } from "./retirement.js";
 
 export const EVOLUTION_CANDIDATE_DOMAIN = "palimpsest.organization-evolution-candidate.v1";
 export const EVOLUTION_CASE_DOMAIN = "palimpsest.organization-evolution-case.v1";
@@ -62,7 +63,7 @@ function literal<T extends string>(value: unknown, allowed: readonly T[], what: 
  * Candidate
  * ------------------------------------------------------------------ */
 
-export type EvolutionTargetKind = "REVISE" | "SPLIT" | "MERGE" | "FORMALIZE";
+export type EvolutionTargetKind = "REVISE" | "SPLIT" | "MERGE" | "FORMALIZE" | "RETIRE";
 
 export interface CompleteEvolutionCandidate {
   readonly schemaVersion: 1;
@@ -241,6 +242,7 @@ export type EvolutionEventType =
   | "EVOLUTION_CASE_OPENED"
   | "EVOLUTION_CANDIDATE_COMPILED"
   | "EVOLUTION_FORMALIZATION_COMPILED"
+  | "EVOLUTION_RETIREMENT_CANDIDATE"
   | "EVOLUTION_ASSESSED"
   | "EVOLUTION_BLOCKED"
   | "EVOLUTION_AUTHORIZED"
@@ -284,12 +286,17 @@ export const EVOLUTION_EVENT_PARSERS: EvolutionEventParsers = Object.freeze({
     evExactKeys(o, ["candidate"], "EVOLUTION_FORMALIZATION_COMPILED");
     return Object.freeze({ candidate: parseCompleteFormalizationCandidate(o.candidate) });
   },
+  EVOLUTION_RETIREMENT_CANDIDATE: (payload: unknown) => {
+    const o = evObject(payload, "EVOLUTION_RETIREMENT_CANDIDATE");
+    evExactKeys(o, ["candidate"], "EVOLUTION_RETIREMENT_CANDIDATE");
+    return Object.freeze({ candidate: parseOrganizationRetirementCandidate(o.candidate) });
+  },
   EVOLUTION_ASSESSED: (payload: unknown) => {
     const o = evObject(payload, "EVOLUTION_ASSESSED");
     evExactKeys(o, ["kind", "status", "assessmentDigest", "obligations"], "EVOLUTION_ASSESSED");
     if (!Array.isArray(o.obligations)) fail("obligations must be an array");
     return Object.freeze({
-      kind: literal(o.kind, ["REVISE", "SPLIT", "MERGE", "FORMALIZE"], "kind"),
+      kind: literal(o.kind, ["REVISE", "SPLIT", "MERGE", "FORMALIZE", "RETIRE"], "kind"),
       status: literal(o.status, ["admissible", "blocked"], "status"),
       assessmentDigest: nonEmpty(o.assessmentDigest, "assessmentDigest"),
       obligations: Object.freeze(
@@ -362,7 +369,7 @@ export function evolutionChainDigest(input: {
 }
 
 /** Disposition of every G10-I proposal kind (J0-Q6, additive in G10-K). */
-export type EvolutionKindDisposition = "TERMINAL_NON_MUTATING" | "EXECUTABLE_IN_J" | "EXECUTABLE_FORMALIZE" | "DEFERRED_UNSUPPORTED";
+export type EvolutionKindDisposition = "TERMINAL_NON_MUTATING" | "EXECUTABLE_IN_J" | "EXECUTABLE_FORMALIZE" | "EXECUTABLE_RETIREMENT" | "DEFERRED_UNSUPPORTED";
 
 export const EVOLUTION_KIND_DISPOSITION: Readonly<Record<string, EvolutionKindDisposition>> = Object.freeze({
   NO_CHANGE: "TERMINAL_NON_MUTATING",
@@ -375,7 +382,9 @@ export const EVOLUTION_KIND_DISPOSITION: Readonly<Record<string, EvolutionKindDi
   FORMALIZE_ORGANIZATION: "EXECUTABLE_FORMALIZE",
   ENCAPSULATE_RUNTIME_SCOPE: "DEFERRED_UNSUPPORTED",
   COLLAPSE_RUNTIME_STRUCTURE: "DEFERRED_UNSUPPORTED",
-  DISSOLVE_OR_RETIRE_CANDIDATE: "DEFERRED_UNSUPPORTED",
+  // G10-M: subject-disambiguated. The runtime_scope subject is routed to runtimeEvolution;
+  // the organization subject is executable append-only lifecycle retirement.
+  DISSOLVE_OR_RETIRE_CANDIDATE: "EXECUTABLE_RETIREMENT",
 });
 
 export const EVOLUTION_KIND_TO_TRANSFORMATION: Readonly<Record<string, EvolutionTargetKind>> = Object.freeze({

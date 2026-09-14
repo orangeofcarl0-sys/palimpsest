@@ -53,6 +53,7 @@ export type InstitutionStoreErrorKind =
   | "charter_conflict"
   | "artifact_conflict"
   | "projection_mismatch"
+  | "organization_retired"
   | "malformed_record";
 
 export class InstitutionStoreError extends Error {
@@ -87,6 +88,10 @@ export interface InstitutionStore {
   head(institutionId: string): Promise<InstitutionEpochRef | undefined>;
   currentEpoch(institutionId: string): Promise<InstitutionEpoch | undefined>;
   epochs(institutionId: string): Promise<readonly InstitutionEpoch[]>;
+  /** G10-M: exhaustive enumeration of institution ids known to this store. */
+  institutions(): Promise<readonly string[]>;
+  /** G10-M: the CURRENT epoch (current body) of every institution — read-only. */
+  currentBodies(): Promise<readonly InstitutionEpoch[]>;
   charter(ref: InstitutionCharterRef): Promise<InstitutionCharter | undefined>;
   currentCharter(institutionId: string): Promise<InstitutionCharter | undefined>;
   charters(institutionId: string): Promise<readonly InstitutionCharter[]>;
@@ -124,6 +129,7 @@ export class SqliteInstitutionStore implements InstitutionStore {
   readonly #selectApprovals: Statement;
   readonly #selectApprovalOne: Statement;
   readonly #selectHead: Statement;
+  readonly #selectInstitutionIds: Statement;
   readonly #upsertHead: Statement;
   readonly #insertCandidate: Statement;
   readonly #selectCandidate: Statement;
@@ -191,6 +197,7 @@ export class SqliteInstitutionStore implements InstitutionStore {
       "SELECT artifact_json FROM institution_approvals WHERE transition_id = ? AND peer_id = ?",
     );
     this.#selectHead = this.#database.prepare("SELECT epoch, digest FROM institution_heads WHERE institution_id = ?");
+    this.#selectInstitutionIds = this.#database.prepare("SELECT DISTINCT institution_id FROM institution_epochs ORDER BY institution_id");
     this.#upsertHead = this.#database.prepare(
       "INSERT INTO institution_heads (institution_id, epoch, digest) VALUES (?, ?, ?) " +
         "ON CONFLICT(institution_id) DO UPDATE SET epoch = excluded.epoch, digest = excluded.digest",
@@ -253,6 +260,21 @@ export class SqliteInstitutionStore implements InstitutionStore {
 
   async epochs(institutionId: string): Promise<readonly InstitutionEpoch[]> {
     return Object.freeze(this.#epochs(institutionId));
+  }
+
+  async institutions(): Promise<readonly string[]> {
+    const rows = this.#selectInstitutionIds.all() as unknown as { institution_id: string }[];
+    return Object.freeze(rows.map((row) => row.institution_id));
+  }
+
+  async currentBodies(): Promise<readonly InstitutionEpoch[]> {
+    const ids = await this.institutions();
+    const bodies: InstitutionEpoch[] = [];
+    for (const institutionId of ids) {
+      const list = this.#epochs(institutionId);
+      if (list.length > 0) bodies.push(list[list.length - 1]!);
+    }
+    return Object.freeze(bodies);
   }
 
   async charter(ref: InstitutionCharterRef): Promise<InstitutionCharter | undefined> {

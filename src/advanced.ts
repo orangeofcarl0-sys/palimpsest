@@ -80,3 +80,11 @@ export * from "./organization_evolution/index.js";
  * ≠ Commitment ≠ Evidence ≠ Organization.
  */
 export * from "./boundary_memory/index.js";
+
+/**
+ * G10-M: Runtime Structural Evolution & Retirement — advanced opt-in only. Governed
+ * runtime topology evolution (ENCAPSULATE/COLLAPSE/RETIRE_SCOPE) applied as atomic
+ * multi-scope transitions. RuntimeScope topology ≠ Organization transformation;
+ * close ≠ retirement; internal refactoring is cheap only while external contracts hold.
+ */
+export * from "./runtime_evolution/index.js";

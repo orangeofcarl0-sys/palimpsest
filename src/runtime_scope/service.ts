@@ -38,6 +38,8 @@ export interface RuntimeScopeOrganizationPort {
   exists(ref: OrganizationBasisRef): Promise<boolean>;
   /** The exact revision artifact, for boundary-source verification (CF-H-03). */
   definition(ref: OrganizationBasisRef): Promise<{ readonly interactions: readonly { readonly interactionId: string }[] } | undefined>;
+  /** G10-M: a RETIRED organization lineage may not ground a NEW runtime scope. */
+  lifecycle?(organizationDefinitionId: string): Promise<"ACTIVE" | "RETIRED" | undefined>;
 }
 
 /**
@@ -224,6 +226,9 @@ export function makeRuntimeScopeService(deps: RuntimeScopeServiceDeps): RuntimeS
       // Explicit association only; never auto-created from an organization.
       if (deps.organizations === undefined) {
         throw new RuntimeScopeStoreError("organization_unknown", "an organization basis was supplied but no organization source is configured");
+      }
+      if (deps.organizations.lifecycle !== undefined && (await deps.organizations.lifecycle(organizationBasis.organizationDefinitionId)) === "RETIRED") {
+        throw new RuntimeScopeStoreError("organization_retired", `organization "${organizationBasis.organizationDefinitionId}" is RETIRED — it cannot ground a new runtime scope`);
       }
       if (!(await deps.organizations.exists(organizationBasis))) {
         throw new RuntimeScopeStoreError("organization_unknown", `organization revision "${organizationBasis.organizationDefinitionId}@${organizationBasis.revision}" does not exist`);

@@ -58,3 +58,22 @@ export type {
   OrganizationFormalizationCompilerPort,
   OrganizationFormalizationWiring,
 } from "./formalization.js";
+
+/** G10-M: organization retirement (append-only lifecycle truth). */
+export {
+  ORGANIZATION_RETIREMENT_CANDIDATE_DOMAIN,
+  ORGANIZATION_RETIREMENT_ASSESSMENT_DOMAIN,
+  assessOrganizationRetirement,
+  materializeOrganizationRetirementCandidate,
+  organizationRetirementCandidateDigestOf,
+  parseOrganizationRetirementCandidate,
+} from "./retirement.js";
+export type {
+  OrganizationRetirementAssessment,
+  OrganizationRetirementCandidate,
+  OrganizationRetirementInstitutionPort,
+  OrganizationRetirementObligation,
+  OrganizationRetirementObligationKind,
+  OrganizationRetirementRuntimePort,
+  OrganizationRetirementWiring,
+} from "./retirement.js";

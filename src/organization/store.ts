@@ -26,13 +26,15 @@ import { DatabaseSync } from "node:sqlite";
 
 import type { OrganizationDefinition, OrganizationDefinitionRef } from "./definition.js";
 import { organizationRefOf, organizationRefsEqual, parseOrganizationDefinition } from "./definition.js";
+import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 
 export type OrganizationStoreErrorKind =
   | "invalid_registration"
   | "lineage_conflict"
   | "head_mismatch"
   | "artifact_conflict"
-  | "malformed_record";
+  | "malformed_record"
+  | "retired_lineage";
 
 export class OrganizationStoreError extends Error {
   constructor(
@@ -49,12 +51,74 @@ export interface OrganizationLineageRecord {
   readonly parent: OrganizationDefinitionRef | null;
 }
 
+/* ------------------------------------------------------------------ *
+ * Strict-parse helpers (G10-M retirement artifacts)
+ * ------------------------------------------------------------------ */
+
+function fail(message: string): never {
+  throw new OrganizationStoreError("invalid_registration", message);
+}
+
+function asObject(value: unknown, what: string): Record<string, unknown> {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) fail(`${what} must be an object`);
+  return value as Record<string, unknown>;
+}
+
+function exactKeys(object: Record<string, unknown>, keys: readonly string[], what: string): void {
+  for (const key of Object.keys(object)) if (!keys.includes(key)) fail(`unknown ${what} field "${key}"`);
+  for (const key of keys) if (!Object.hasOwn(object, key)) fail(`${what}: field "${key}" is required`);
+}
+
+function stableId(value: unknown, what: string): string {
+  if (typeof value !== "string") fail(`${what} must be a string`);
+  const normalized = normalizeStableIdentifier(value);
+  if (!isStableIdentifier(normalized)) fail(`${what} must be a stable identifier`);
+  return normalized;
+}
+
+function requireNonEmpty(value: unknown, what: string): string {
+  if (typeof value !== "string" || value.trim() === "") fail(`${what} must be a non-empty string`);
+  return value;
+}
+
 export interface OrganizationRevisionRegistration {
   readonly definition: OrganizationDefinition;
   /** Explicit parent ref; null ONLY for the genesis revision (revision 0). */
   readonly parent: OrganizationDefinitionRef | null;
   /** The head revision the caller believes is current; null ONLY for genesis. */
   readonly expectedHeadRevision: number | null;
+}
+
+/** G10-M §42/§44: ACTIVE | RETIRED is canonical Organization lifecycle truth. */
+export type OrganizationLifecycle = "ACTIVE" | "RETIRED";
+
+/**
+ * G10-M: an append-only, one-way (in v1) retirement record. It is lifecycle truth ONLY —
+ * it never deletes or rewrites a revision.
+ */
+export interface OrganizationRetirement {
+  readonly schemaVersion: 1;
+  readonly organizationDefinitionId: string;
+  readonly head: OrganizationDefinitionRef;
+  readonly proposalDigest: string;
+  readonly reason: string;
+}
+
+export function parseOrganizationRetirement(raw: unknown, what = "OrganizationRetirement"): OrganizationRetirement {
+  const object = asObject(raw, what);
+  exactKeys(object, ["schemaVersion", "organizationDefinitionId", "head", "proposalDigest", "reason"], what);
+  if (object.schemaVersion !== 1) fail(`${what}.schemaVersion must be 1`);
+  const head = asObject(object.head, `${what}.head`);
+  exactKeys(head, ["organizationDefinitionId", "revision", "digest"], `${what}.head`);
+  const revision = head.revision;
+  if (typeof revision !== "number" || !Number.isSafeInteger(revision) || revision < 0) fail(`${what}.head.revision must be a non-negative integer`);
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    organizationDefinitionId: stableId(object.organizationDefinitionId, `${what}.organizationDefinitionId`),
+    head: Object.freeze({ organizationDefinitionId: stableId(head.organizationDefinitionId, `${what}.head.organizationDefinitionId`), revision, digest: requireNonEmpty(head.digest, `${what}.head.digest`) }),
+    proposalDigest: requireNonEmpty(object.proposalDigest, `${what}.proposalDigest`),
+    reason: requireNonEmpty(object.reason, `${what}.reason`),
+  });
 }
 
 export interface OrganizationStore {
@@ -67,6 +131,11 @@ export interface OrganizationStore {
   current(organizationDefinitionId: string): Promise<OrganizationDefinition | undefined>;
   listRevisions(organizationDefinitionId: string): Promise<readonly OrganizationDefinition[]>;
   lineage(organizationDefinitionId: string): Promise<readonly OrganizationLineageRecord[]>;
+  /** G10-M: ACTIVE | RETIRED, or undefined when the organization does not exist. */
+  lifecycle(organizationDefinitionId: string): Promise<OrganizationLifecycle | undefined>;
+  /** G10-M: append-only one-way retirement. Idempotent on an identical retry. */
+  retire(input: { readonly organizationDefinitionId: string; readonly head: OrganizationDefinitionRef; readonly proposalDigest: string; readonly reason: string }): Promise<OrganizationRetirement>;
+  retirements(): Promise<readonly OrganizationRetirement[]>;
 }
 
 type Statement = ReturnType<DatabaseSync["prepare"]>;
@@ -113,6 +182,9 @@ export class SqliteOrganizationStore implements OrganizationStore {
   readonly #selectHead: Statement;
   readonly #selectAll: Statement;
   readonly #insert: Statement;
+  readonly #selectRetirement: Statement;
+  readonly #selectRetirements: Statement;
+  readonly #insertRetirement: Statement;
 
   constructor(databasePath: string, options?: { readonly busyTimeoutMs?: number }) {
     if (databasePath !== ":memory:") {
@@ -127,7 +199,10 @@ export class SqliteOrganizationStore implements OrganizationStore {
         "artifact_json TEXT NOT NULL, " +
         "parent_revision INTEGER, " +
         "parent_digest TEXT, " +
-        "PRIMARY KEY (organization_definition_id, revision))",
+        "PRIMARY KEY (organization_definition_id, revision));" +
+        // G10-M: append-only, one-way lifecycle truth. Never deletes a revision.
+        "CREATE TABLE IF NOT EXISTS organization_retirements (" +
+        "organization_definition_id TEXT PRIMARY KEY, artifact_json TEXT NOT NULL)",
     );
     this.#selectOne = this.#database.prepare(
       "SELECT organization_definition_id, revision, artifact_json, parent_revision, parent_digest " +
@@ -145,6 +220,9 @@ export class SqliteOrganizationStore implements OrganizationStore {
       "INSERT INTO organization_revisions " +
         "(organization_definition_id, revision, artifact_json, parent_revision, parent_digest) VALUES (?, ?, ?, ?, ?)",
     );
+    this.#selectRetirement = this.#database.prepare("SELECT artifact_json FROM organization_retirements WHERE organization_definition_id = ?");
+    this.#selectRetirements = this.#database.prepare("SELECT artifact_json FROM organization_retirements ORDER BY organization_definition_id");
+    this.#insertRetirement = this.#database.prepare("INSERT INTO organization_retirements (organization_definition_id, artifact_json) VALUES (?, ?)");
   }
 
   #headRow(organizationDefinitionId: string): RevisionRow | undefined {
@@ -197,6 +275,12 @@ export class SqliteOrganizationStore implements OrganizationStore {
     }
 
     const head = this.#headRow(orgId);
+    // G10-M §46: a RETIRED lineage can never advance. Enforced at the STORE, not only
+    // in a service. A byte-identical retry of an already-registered revision above is
+    // still idempotent; anything that would add a revision fails closed.
+    if (this.#selectRetirement.get(orgId) !== undefined) {
+      throw new OrganizationStoreError("retired_lineage", `organization "${orgId}" is RETIRED — no revision may be registered`);
+    }
     if (genesis) {
       if (head !== undefined) {
         throw new OrganizationStoreError(
@@ -297,6 +381,52 @@ export class SqliteOrganizationStore implements OrganizationStore {
   async lineage(organizationDefinitionId: string): Promise<readonly OrganizationLineageRecord[]> {
     const rows = this.#selectAll.all(organizationDefinitionId) as unknown as RevisionRow[];
     return Object.freeze(rows.map(parseRow));
+  }
+
+  async lifecycle(organizationDefinitionId: string): Promise<OrganizationLifecycle | undefined> {
+    if (this.#headRow(organizationDefinitionId) === undefined) return undefined;
+    return this.#selectRetirement.get(organizationDefinitionId) === undefined ? "ACTIVE" : "RETIRED";
+  }
+
+  async retire(input: { readonly organizationDefinitionId: string; readonly head: OrganizationDefinitionRef; readonly proposalDigest: string; readonly reason: string }): Promise<OrganizationRetirement> {
+    const headRow = this.#headRow(input.organizationDefinitionId);
+    if (headRow === undefined) throw new OrganizationStoreError("invalid_registration", `organization "${input.organizationDefinitionId}" does not exist`);
+    const headRef = organizationRefOf(parseOrganizationDefinition(JSON.parse(headRow.artifact_json)));
+    if (!organizationRefsEqual(headRef, input.head)) {
+      throw new OrganizationStoreError("head_mismatch", `organization "${input.organizationDefinitionId}" head does not match the retirement target`);
+    }
+    const retirement = parseOrganizationRetirement({
+      schemaVersion: 1,
+      organizationDefinitionId: input.organizationDefinitionId,
+      head: input.head,
+      proposalDigest: input.proposalDigest,
+      reason: input.reason,
+    });
+    const json = JSON.stringify(retirement);
+    this.#transactional(() => {
+      const existing = this.#selectRetirement.get(retirement.organizationDefinitionId) as { artifact_json: string } | undefined;
+      if (existing !== undefined) {
+        if (existing.artifact_json !== json) {
+          throw new OrganizationStoreError("artifact_conflict", `organization "${retirement.organizationDefinitionId}" is already RETIRED with a different retirement record`);
+        }
+        return;
+      }
+      this.#insertRetirement.run(retirement.organizationDefinitionId, json);
+    });
+    return retirement;
+  }
+
+  async retirements(): Promise<readonly OrganizationRetirement[]> {
+    const rows = this.#selectRetirements.all() as unknown as { artifact_json: string }[];
+    return Object.freeze(
+      rows.map((row) => {
+        try {
+          return parseOrganizationRetirement(JSON.parse(row.artifact_json));
+        } catch (error) {
+          throw new OrganizationStoreError("malformed_record", `organization store contains a malformed retirement record: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }),
+    );
   }
 
   close(): void {
