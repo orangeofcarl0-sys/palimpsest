@@ -8,6 +8,8 @@
 
 import type { DshContentBlock, DshToolDefinition, DshToolRunContext } from "./dsh_types.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
+import type { VariantKind } from "../organization_memory/index.js";
+import { VARIANT_KINDS } from "../organization_memory/index.js";
 
 function textBlock(value: unknown): DshContentBlock[] {
   return [{ type: "text", text: JSON.stringify(value, null, 2) }];
@@ -91,6 +93,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         evolution: application.evolution !== undefined,
         reasoning: application.reasoning !== undefined,
         attention: application.attention !== undefined,
+        experiments: application.empirical !== undefined,
         projections: application.projections !== undefined,
       }),
     }),
@@ -347,6 +350,49 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           }
           if (action === "evaluate") return reasoning.evaluate({ cellId: requiredString(object, "cellId"), candidateDigest: requiredString(object, "candidateDigest") });
           return reasoning.invalidate({ cellId: requiredString(object, "cellId"), targetClaimId: requiredString(object, "targetClaimId"), reason: requiredString(object, "reason") });
+        },
+      }),
+    );
+  }
+
+  if (application.empirical !== undefined) {
+    const empirical = application.empirical;
+    tools.push(
+      tool({
+        name: "palimpsest_experiments",
+        description: "Read-only empirical history: experiment/scenario/variant definitions, observed run results, derived evaluations, measurement corrections, structural interventions, and deterministic similar-run/structural-history queries (evaluation ≠ governance; memory ≠ authority)",
+        mode: "read-only",
+        actions: ["experiments", "experiment", "scenarios", "variants", "runs", "run", "evaluations", "corrections", "interventions", "similar_runs", "structural_history"],
+        extraProperties: {
+          experimentId: { type: "string" },
+          runRef: { type: "string" },
+          subjectRef: { type: "string" },
+          scenarioId: { type: "string" },
+          variantKind: { type: "string", enum: [...VARIANT_KINDS] },
+          provider: { type: "string" },
+          model: { type: "string" },
+        },
+        run: async (action, object) => {
+          if (action === "experiments") return empirical.experiments();
+          if (action === "experiment") return empirical.experiment(requiredString(object, "experimentId"));
+          if (action === "scenarios") return empirical.scenarios(requiredString(object, "experimentId"));
+          if (action === "variants") return empirical.variants(requiredString(object, "experimentId"));
+          if (action === "runs") return empirical.runs(requiredString(object, "experimentId"));
+          if (action === "run") return empirical.run(requiredString(object, "runRef"));
+          if (action === "evaluations") return empirical.evaluations(requiredString(object, "experimentId"));
+          if (action === "corrections") return empirical.corrections(requiredString(object, "experimentId"));
+          if (action === "interventions") return empirical.interventions();
+          if (action === "structural_history") return empirical.structuralHistory(requiredString(object, "subjectRef"));
+          const variantKind = object.variantKind;
+          if (variantKind !== undefined && (typeof variantKind !== "string" || !(VARIANT_KINDS as readonly string[]).includes(variantKind))) {
+            throw new ToolArgsError(`argument "variantKind" must be one of ${VARIANT_KINDS.join(", ")}`);
+          }
+          return empirical.similarRuns({
+            ...(typeof object.scenarioId === "string" ? { scenarioId: object.scenarioId } : {}),
+            ...(variantKind === undefined ? {} : { variantKind: variantKind as VariantKind }),
+            ...(typeof object.provider === "string" ? { provider: object.provider } : {}),
+            ...(typeof object.model === "string" ? { model: object.model } : {}),
+          });
         },
       }),
     );

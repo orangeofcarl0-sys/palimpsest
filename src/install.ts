@@ -108,6 +108,9 @@ import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralE
 import { makeRuntimeEvolutionService } from "./runtime_evolution/index.js";
 import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "./reasoning_cell/index.js";
 import { makeReasoningCellService } from "./reasoning_cell/index.js";
+import type { OrganizationMemoryService, OrganizationMemoryStore } from "./organization_memory/index.js";
+import { makeOrganizationMemoryService } from "./organization_memory/index.js";
+import { evaluate } from "./experiment/index.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "./application/surface.js";
 import { makePalimpsestApplicationSurface } from "./application/surface.js";
 import { defineApplicationTools } from "./tools/application_tools.js";
@@ -262,6 +265,12 @@ export interface InstallPalimpsestOptions {
    * product tools (boundary mutation submission + remote commitment decision).
    */
   remoteTransport?: RemoteSubmissionPort | undefined;
+  /**
+   * G10-R (additive): the canonical empirical organization-memory store. Supplying it enables the
+   * READ-ONLY empirical surface (experiments/runs/evaluations/interventions); absent ⇒ no empirical
+   * surface (never a stub). Evaluation ≠ governance; memory ≠ authority.
+   */
+  organizationMemoryStore?: OrganizationMemoryStore | undefined;
 }
 
 /**
@@ -318,6 +327,10 @@ export interface InstalledPalimpsest {
   readonly boundaryHome?: BoundaryHome | undefined;
   /** G10-P (additive): semantic attention derivation — present iff policy + localPeer + federation. */
   readonly attention?: AttentionService | undefined;
+  /** G10-R (additive): read-only empirical history — present iff an organization-memory store is supplied. */
+  readonly organizationMemory?: OrganizationMemoryService | undefined;
+  /** G10-R (additive): the derived evaluation read model — present iff an organization-memory store is supplied. */
+  readonly evaluation?: { readonly evaluate: typeof evaluate } | undefined;
   /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
   readonly attentionActivation?: AttentionActivationPort | undefined;
   register(context: DshPluginContext): () => void;
@@ -1007,6 +1020,14 @@ export function installPalimpsest(
     };
   }
 
+  // G10-R: the empirical organization-memory surface exists only when a canonical
+  // store is supplied; it is a pure READ model and owns no other subsystem. Evaluation
+  // ≠ governance and memory ≠ authority.
+  const organizationMemory: OrganizationMemoryService | undefined =
+    options.organizationMemoryStore === undefined
+      ? undefined
+      : makeOrganizationMemoryService({ store: options.organizationMemoryStore });
+
   // G10-P: semantic attention is a DERIVATION of the surfaces above — never a scheduler and
   // never an authority. It exists only when a policy + local peer + federation are supplied.
   let attention: AttentionService | undefined;
@@ -1086,6 +1107,7 @@ export function installPalimpsest(
     ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
     ...(options.organizationDynamicsPolicy === undefined ? {} : { dynamicsPolicy: options.organizationDynamicsPolicy }),
     ...(attention === undefined ? {} : { attention }),
+    ...(organizationMemory === undefined ? {} : { organizationMemory }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
@@ -1113,6 +1135,7 @@ export function installPalimpsest(
     application.evolution !== undefined ||
     application.reasoning !== undefined ||
     application.attention !== undefined ||
+    application.empirical !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -1141,6 +1164,8 @@ export function installPalimpsest(
     ...(federatedBoundaryMemory === undefined ? {} : { federatedBoundaryMemory }),
     ...(boundaryHome === undefined ? {} : { boundaryHome }),
     ...(attention === undefined ? {} : { attention }),
+    ...(organizationMemory === undefined ? {} : { organizationMemory }),
+    ...(organizationMemory === undefined ? {} : { evaluation: { evaluate } }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
@@ -1157,6 +1182,9 @@ export function installPalimpsest(
       for (const dispose of [...disposers].reverse()) dispose();
       await controller.close();
       store.close();
+      // G10-R: close the empirical organization-memory store only when this install was
+      // given one (it is the store it wired into the application surface).
+      options.organizationMemoryStore?.close();
       // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
       // deployment launcher, a host) leaks the shared operations file handle.
       await effects.close();
