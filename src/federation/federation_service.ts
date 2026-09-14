@@ -83,6 +83,8 @@ export interface FederationService {
   coalition(scope: string): Promise<CoalitionView>;
   /** G10-F1 formal coalition snapshot: derived, basis-recorded, read-only (§37/§41). */
   coalitionSnapshot(scope: CoalitionScope): Promise<CoalitionSnapshot>;
+  /** G10-O: derived read-only commitment state (no mutation). */
+  commitmentState(commitmentId: string): Promise<{ readonly state: string; readonly holder: PeerRef } | undefined>;
 }
 
 export function makeFederationService(deps: FederationServiceDeps): FederationService {
@@ -144,6 +146,10 @@ export function makeFederationService(deps: FederationServiceDeps): FederationSe
     coalition: (scope) =>
       coalitionView({ store: deps.store, localPeer: deps.localPeer, inboxOf: (peer) => deps.messaging.inboxView(peer) }, scope),
     coalitionSnapshot: (scope) => deriveCoalitionSnapshot(deps.store, scope),
+    commitmentState: async (commitmentId: string) => {
+      const entry = await deps.commitments.commitmentState(commitmentId);
+      return entry === undefined ? undefined : { state: entry.state, holder: entry.holder };
+    },
   };
 }
 

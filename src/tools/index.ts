@@ -23,6 +23,7 @@ export type {
   StartProjectInput,
 } from "./controller.js";
 export { definePalimpsestTools } from "./tools.js";
+export { defineApplicationTools } from "./application_tools.js";
 export { RoleSlotPolicy, BudgetLedger, DEFAULT_ROLE_SLOTS, DEFAULT_HARD_CAP, DEFAULT_SOFT_CAP } from "./parallel.js";
 export type { BudgetOptions, ParallelOptions, RoleSlotOptions } from "./parallel.js";
 export {
