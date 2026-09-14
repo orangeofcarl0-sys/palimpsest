@@ -56,6 +56,22 @@ N-N27…N-N30 (no effect/commitment/BoundaryMemory/Organization mutation — fir
 N-N31 (attribution ≠ identity), N-N32/N-N33 (no auto RuntimeScope/Peer), N-N34 (restart),
 N-N35 (corrupted history fails closed).
 
+## Canonical gate
+
+- Final branch HEAD `fbd182c` → PR **#68** → canonical `main` merge **`bf4a19e`**
+  (`git diff fbd182c bf4a19e` is empty — the tested tree IS the merged tree).
+- PR run `34824676489`: unit SUCCESS; e2e attempt 1 failed ONLY on the two documented flakes
+  `E2E-DEBUG-01` + `E2E-RUNTIME-03` (2 failed / 19 passed). The documented failed-job rerun
+  (`gh run rerun … --failed`) is **SUCCESS on attempt 2**; the merge happened only AFTER the
+  required checks were green.
+- Canonical main push run `34824993166` (`bf4a19e`): **SUCCESS on attempt 1** (unit + e2e).
+- Local gate: `pnpm test` 123 files / 1069 tests; `build` + `build:web` green; local
+  `test:e2e` **21/21** (exit 0), which is additional evidence that the PR-only failures were the
+  known flakes rather than a regression.
+
+Discipline (spec §87): every gate read from a real exit status or `gh run view --json conclusion`;
+no merge while required checks were red.
+
 ## Honest deviations
 
 - **N1–N10** ship as one implementation PR plus a docs-only closure PR.
