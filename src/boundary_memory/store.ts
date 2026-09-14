@@ -37,7 +37,12 @@ export type BoundaryStoreErrorKind =
   | "stale_candidate"
   | "unknown_candidate"
   | "candidate_conflict"
-  | "unverified_scope";
+  | "unverified_scope"
+  | "unauthenticated_author"
+  | "unknown_membership_candidate"
+  | "stale_membership"
+  | "not_required_approver"
+  | "operation_conflict";
 
 export class BoundaryMemoryStoreError extends Error {
   constructor(
@@ -87,7 +92,23 @@ export interface BoundaryMemoryStore {
   basis(workspaceId: string): Promise<BoundaryBasis | undefined>;
   exists(workspaceId: string): Promise<boolean>;
   replay(workspaceId: string): Promise<readonly BoundaryEvent[]>;
+  /** G10-L remote-op dedupe receipt (canonical home only; NOT a second semantic truth). */
+  operation(operationId: string): Promise<BoundaryOperationRecord | undefined>;
+  recordOperation(record: BoundaryOperationRecord): Promise<void>;
   close(): void;
+}
+
+/**
+ * A canonical-home dedupe receipt for one remote semantic operation. `requestDigest`
+ * binds the EXACT request; the same operationId with a different request fails closed.
+ * Storing a result here is NOT an exactly-once guarantee — the semantic commit and
+ * this receipt are not one transaction, so at-least-once delivery + semantic
+ * idempotency is the honest contract.
+ */
+export interface BoundaryOperationRecord {
+  readonly operationId: string;
+  readonly requestDigest: string;
+  readonly result: unknown;
 }
 
 type Statement = ReturnType<DatabaseSync["prepare"]>;
@@ -108,6 +129,8 @@ export class SqliteBoundaryMemoryStore implements BoundaryMemoryStore {
   readonly #insertWorkspace: Statement;
   readonly #selectEvents: Statement;
   readonly #insertEvent: Statement;
+  readonly #selectOperation: Statement;
+  readonly #insertOperation: Statement;
   readonly #parsers: BoundaryEventParsers;
 
   constructor(databasePath: string, options?: { readonly busyTimeoutMs?: number; readonly eventParsers?: BoundaryEventParsers }) {
@@ -119,7 +142,9 @@ export class SqliteBoundaryMemoryStore implements BoundaryMemoryStore {
         "workspace_id TEXT PRIMARY KEY, artifact_json TEXT NOT NULL);" +
         "CREATE TABLE IF NOT EXISTS boundary_events (" +
         "workspace_id TEXT NOT NULL, seq INTEGER NOT NULL, event_id TEXT NOT NULL UNIQUE, type TEXT NOT NULL, " +
-        "payload_json TEXT NOT NULL, chain_digest TEXT NOT NULL, PRIMARY KEY (workspace_id, seq))",
+        "payload_json TEXT NOT NULL, chain_digest TEXT NOT NULL, PRIMARY KEY (workspace_id, seq));" +
+        "CREATE TABLE IF NOT EXISTS boundary_operations (" +
+        "operation_id TEXT PRIMARY KEY, request_digest TEXT NOT NULL, result_json TEXT NOT NULL)",
     );
     this.#selectWorkspace = this.#database.prepare("SELECT artifact_json FROM boundary_workspaces WHERE workspace_id = ?");
     this.#selectWorkspaces = this.#database.prepare("SELECT artifact_json FROM boundary_workspaces ORDER BY workspace_id");
@@ -130,7 +155,32 @@ export class SqliteBoundaryMemoryStore implements BoundaryMemoryStore {
     this.#insertEvent = this.#database.prepare(
       "INSERT INTO boundary_events (workspace_id, seq, event_id, type, payload_json, chain_digest) VALUES (?, ?, ?, ?, ?, ?)",
     );
+    this.#selectOperation = this.#database.prepare("SELECT operation_id, request_digest, result_json FROM boundary_operations WHERE operation_id = ?");
+    this.#insertOperation = this.#database.prepare("INSERT INTO boundary_operations (operation_id, request_digest, result_json) VALUES (?, ?, ?)");
     this.#parsers = { ...BOUNDARY_EVENT_PARSERS, ...(options?.eventParsers ?? {}) };
+  }
+
+  async operation(operationId: string): Promise<BoundaryOperationRecord | undefined> {
+    const row = this.#selectOperation.get(operationId) as { operation_id: string; request_digest: string; result_json: string } | undefined;
+    if (row === undefined) return undefined;
+    return Object.freeze({ operationId: row.operation_id, requestDigest: row.request_digest, result: JSON.parse(row.result_json) as unknown });
+  }
+
+  async recordOperation(record: BoundaryOperationRecord): Promise<void> {
+    const existing = await this.operation(record.operationId);
+    if (existing !== undefined) {
+      if (existing.requestDigest !== record.requestDigest) {
+        throw new BoundaryMemoryStoreError("operation_conflict", `operationId "${record.operationId}" is already bound to a different request`);
+      }
+      return;
+    }
+    this.#transactional(() => {
+      try {
+        this.#insertOperation.run(record.operationId, record.requestDigest, JSON.stringify(record.result));
+      } catch (error) {
+        throw new BoundaryMemoryStoreError("operation_conflict", `operationId "${record.operationId}" conflicted: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    });
   }
 
   #parse(row: EventRow, previous: BoundaryEvent | undefined): BoundaryEvent {

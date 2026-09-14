@@ -23,6 +23,7 @@ import type { InstitutionService, InstitutionStore } from "../institution/index.
 import { activateAndGovernOrganizationChange } from "../institution/index.js";
 import type { DynamicsPolicy, OrganizationDynamicsProposal, ProposalImpactReport } from "../organization_dynamics/index.js";
 import type { OrganizationDynamicsService } from "../organization_dynamics/index.js";
+import { subjectKey } from "../organization_dynamics/index.js";
 import type {
   CompleteEvolutionCandidate,
   EvolutionCaseRef,
@@ -372,7 +373,7 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       const caseRef = evolutionCaseRefOf({ proposalDigest: proposal.digest, candidateDigest: `terminal:${kind}` });
       const existing = await deps.store.case(caseRef);
       if (existing === undefined) {
-        await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: `terminal:${kind}`, subjectKey: proposal.subject.kind === "organization" ? `organization:${proposal.subject.organization.organizationDefinitionId}` : `runtime_scope:${proposal.subject.scope.scopeId}` });
+        await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: `terminal:${kind}`, subjectKey: subjectKey(proposal.subject) });
         await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_TERMINAL_RESOLVED", caseRef, { kind }), type: "EVOLUTION_TERMINAL_RESOLVED", payload: { kind } }]);
       }
       return { status: "terminal_resolved", kind, caseRef };

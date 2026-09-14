@@ -17,6 +17,10 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 import type { OrganizationDefinition, OrganizationDefinitionRef } from "../organization/definition.js";
 import type { RuntimeScopeRef, RuntimeScopeState, HolonView, RuntimeScopeStore, RuntimeScopeService, RuntimeScopeMember } from "../runtime_scope/index.js";
+// G10-L: a BoundaryWorkspace is a first-class Dynamics subject (additive; see FB-A20/A26).
+import type { BoundaryObservation, BoundaryWorkspaceBasisRef } from "../boundary_memory/artifacts.js";
+import type { BoundaryWorkspaceRef } from "../boundary_memory/ref.js";
+import { parseBoundaryWorkspaceRef } from "../boundary_memory/ref.js";
 
 export const DYNAMICS_SNAPSHOT_DOMAIN = "palimpsest.dynamics-snapshot.v1";
 export const DYNAMICS_DIAGNOSIS_DOMAIN = "palimpsest.dynamics-diagnosis.v1";
@@ -63,7 +67,9 @@ function dynNonEmpty(value: unknown, what: string): string {
 
 export type DynamicsSubject =
   | { readonly kind: "organization"; readonly organization: OrganizationDefinitionRef }
-  | { readonly kind: "runtime_scope"; readonly scope: RuntimeScopeRef };
+  | { readonly kind: "runtime_scope"; readonly scope: RuntimeScopeRef }
+  /** G10-L CF-K-01: a BoundaryWorkspace is an observation subject in its own right. */
+  | { readonly kind: "boundary_workspace"; readonly workspace: BoundaryWorkspaceRef };
 
 export function parseDynamicsSubject(raw: unknown): DynamicsSubject {
   const object = dynObject(raw, "DynamicsSubject");
@@ -84,11 +90,22 @@ export function parseDynamicsSubject(raw: unknown): DynamicsSubject {
     if (scope.schemaVersion !== 1) fail("scope.schemaVersion must be 1");
     return Object.freeze({ kind: "runtime_scope" as const, scope: Object.freeze({ schemaVersion: 1 as const, scopeId: dynStableId(scope.scopeId, "scopeId") }) });
   }
-  fail("DynamicsSubject.kind must be organization or runtime_scope");
+  if (object.kind === "boundary_workspace") {
+    dynExactKeys(object, ["kind", "workspace"], "DynamicsSubject");
+    return Object.freeze({ kind: "boundary_workspace" as const, workspace: parseBoundaryWorkspaceRef(object.workspace, "DynamicsSubject.workspace") });
+  }
+  fail("DynamicsSubject.kind must be organization, runtime_scope, or boundary_workspace");
 }
 
 export function subjectKey(subject: DynamicsSubject): string {
-  return subject.kind === "organization" ? `organization:${subject.organization.organizationDefinitionId}` : `runtime_scope:${subject.scope.scopeId}`;
+  switch (subject.kind) {
+    case "organization":
+      return `organization:${subject.organization.organizationDefinitionId}`;
+    case "runtime_scope":
+      return `runtime_scope:${subject.scope.scopeId}`;
+    case "boundary_workspace":
+      return `boundary_workspace:${subject.workspace.workspaceId}`;
+  }
 }
 
 export interface DynamicsPolicyRef {
@@ -190,6 +207,16 @@ export interface DynamicsBasis {
   readonly coordinationHead: number;
   /** Honest label of the actual guarantee — never claimed atomic. */
   readonly synchronization: "optimistic_reread";
+  /**
+   * G10-L: the canonical boundary basis — present ONLY for a boundary_workspace
+   * subject (additive; every other subject's basis digest is unchanged).
+   */
+  readonly boundary?: BoundaryWorkspaceBasisRef | undefined;
+}
+
+/** G10-L: read-only boundary observation seam for Organization Dynamics. */
+export interface DynamicsBoundaryPort {
+  observe(workspaceId: string): Promise<BoundaryObservation | undefined>;
 }
 
 export interface RuntimeStructuralSnapshot {
@@ -230,6 +257,11 @@ export interface DynamicsKnowledge {
   readonly organization: DynamicsKnowledgeState | "unassociated";
   readonly collaboration: DynamicsKnowledgeState;
   readonly campaignActivity: DynamicsKnowledgeState;
+  /**
+   * G10-L: present ONLY for a boundary_workspace subject. Optional so existing
+   * subjects keep byte-identical snapshot digests (FB-A26).
+   */
+  readonly boundary?: DynamicsKnowledgeState | undefined;
 }
 
 export interface OrganizationDynamicsSnapshot {
@@ -244,6 +276,8 @@ export interface OrganizationDynamicsSnapshot {
   readonly observedBoundaryInteractionIds: readonly string[];
   /** Associated campaigns' activity — null when no campaign source is wired. */
   readonly campaignActivity: readonly CampaignActivityObservation[] | null;
+  /** G10-L: mechanical boundary observation — present ONLY for a boundary_workspace subject. */
+  readonly boundary?: BoundaryObservation | null | undefined;
   readonly digest: string;
 }
 
@@ -255,6 +289,8 @@ export function basisDigestOf(basis: DynamicsBasis): string {
     runtimeScopes: basis.runtimeScopes,
     coordinationHead: basis.coordinationHead,
     synchronization: basis.synchronization,
+    // Additive: omitted for every non-boundary subject, so their digests are unchanged.
+    ...(basis.boundary === undefined ? {} : { boundary: basis.boundary }),
   });
 }
 
@@ -269,6 +305,7 @@ export function snapshotDigestOf(input: {
   readonly declaredInteractionIds: readonly string[];
   readonly observedBoundaryInteractionIds: readonly string[];
   readonly campaignActivity: readonly CampaignActivityObservation[] | null;
+  readonly boundary?: BoundaryObservation | null | undefined;
 }): string {
   return canonicalDigest({
     domain: DYNAMICS_SNAPSHOT_DOMAIN,
@@ -282,6 +319,8 @@ export function snapshotDigestOf(input: {
     declaredInteractionIds: [...input.declaredInteractionIds].sort(),
     observedBoundaryInteractionIds: [...input.observedBoundaryInteractionIds].sort(),
     campaignActivity: input.campaignActivity,
+    // Additive: omitted unless a boundary observation exists.
+    ...(input.boundary === undefined || input.boundary === null ? {} : { boundary: input.boundary }),
   });
 }
 
@@ -302,7 +341,12 @@ export type DynamicsPressureKind =
   | "ZOMBIE_ORGANIZATION_CANDIDATE"
   | "MERGE_PRESSURE"
   | "SPLIT_PRESSURE"
-  | "ENCAPSULATION_CANDIDATE";
+  | "ENCAPSULATION_CANDIDATE"
+  | "BOUNDARY_REVISION_CHURN"
+  | "BOUNDARY_NEGOTIATION_BACKLOG"
+  | "BOUNDARY_STABLE_ACCEPTED_STATE"
+  | "BOUNDARY_MEMBERSHIP_CHURN"
+  | "BOUNDARY_BLUEPRINT_PRESENT";
 
 export interface StructuralPressure {
   readonly kind: DynamicsPressureKind;
