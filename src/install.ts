@@ -108,7 +108,7 @@ import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralE
 import { makeRuntimeEvolutionService } from "./runtime_evolution/index.js";
 import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "./reasoning_cell/index.js";
 import { makeReasoningCellService } from "./reasoning_cell/index.js";
-import type { PalimpsestApplicationSurface } from "./application/surface.js";
+import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "./application/surface.js";
 import { makePalimpsestApplicationSurface } from "./application/surface.js";
 import { defineApplicationTools } from "./tools/application_tools.js";
 import type { DynamicsPolicy } from "./organization_dynamics/index.js";
@@ -257,6 +257,11 @@ export interface InstallPalimpsestOptions {
   attentionMarkStore?: AttentionMarkStore | undefined;
   /** G10-P (additive): the host activation adapter (DSH/Pi-shaped); absent ⇒ pull mode. */
   attentionActivation?: AttentionActivationPort | undefined;
+  /**
+   * G10-Q (additive): durable remote submission, so a non-home peer's agent can act through the
+   * product tools (boundary mutation submission + remote commitment decision).
+   */
+  remoteTransport?: RemoteSubmissionPort | undefined;
 }
 
 /**
@@ -1081,6 +1086,7 @@ export function installPalimpsest(
     ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
     ...(options.organizationDynamicsPolicy === undefined ? {} : { dynamicsPolicy: options.organizationDynamicsPolicy }),
     ...(attention === undefined ? {} : { attention }),
+    ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {

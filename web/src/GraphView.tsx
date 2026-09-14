@@ -111,6 +111,16 @@ export function GraphView({ nodes, links, selectedKey, editable, satellites, onS
 
   return (
     <div style={{ height: "100%", minHeight: 420 }}>
+      {/*
+        Presentation-only stabilization (G10-Q): React Flow keeps a node's wrapper at
+        `visibility: hidden` until its ResizeObserver measurement lands, so a graph that is
+        re-derived on every poll can leave nodes (and their parentId satellites) invisible
+        indefinitely under load. The semantic ids/state are already in the DOM; forcing the
+        wrapper visible removes a rendering-timing race without touching any identity.
+      */}
+      <style>{"\
+        .react-flow__node { visibility: visible !important; }\
+      "}</style>
       <ReactFlow
         nodes={flowNodes}
         edges={flowEdges}
