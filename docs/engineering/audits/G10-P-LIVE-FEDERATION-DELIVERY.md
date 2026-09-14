@@ -58,8 +58,17 @@ as pre-existing in the spec and in G10-O. Evidence gathered:
    `releaseCommitment` gained optional inbound-identity parameters with defaults preserving prior
    behavior, and `listCommitments` / `commitments()` / `AttentionSignal` are read-only additions.
 
-## Required CI
+## Required CI (canonical gate)
 
-Filled in after the canonical gate (implementation PR run, canonical `main` run). Required checks
-must be GREEN before merge; the two documented flakes may be cleared only by a documented failed-job
-rerun.
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#72** `experiment/g10-p-live-federation` |
+| Tested branch HEAD | `377fe36` |
+| PR run | `34843398908` — **e2e pass, unit pass, attempt 1** (no flake; no rerun needed) |
+| Merge | `--merge` (normal) → canonical `main @ adb3f1239f2c67fcc54b8b65ea43a697bade319a` |
+| Tree identity | `git diff 377fe36 adb3f12` empty → the tested tree IS the merged tree |
+| Canonical main run | `34843586849` — **e2e pass, unit pass, attempt 1** |
+| Flake handling | none required; CI e2e ran clean, so the local `E2E-DEBUG-01`/`E2E-RUNTIME-03` observations are classified as a local-environment flake (baseline-reproduced) |
+
+All required checks were GREEN before merge; no force/bypass/history rewrite; no exit code masked by a
+shell pipeline (status/conclusion read via `gh run view --json`).
