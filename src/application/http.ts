@@ -152,6 +152,15 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     requireGet();
     return ok(await requireSurface(application.federation, "federation").commitments());
   }
+  if (pathname === "/api/federation/remote_decision") {
+    requirePost();
+    const b = bodyObject(body);
+    const federation = requireSurface(application.federation, "federation");
+    if (federation.submitRemoteDecision === undefined) throw new InvalidRequest("remote commitment decisions are not configured");
+    const decision = str(b.decision, "decision");
+    if (decision !== "accept" && decision !== "reject" && decision !== "release") throw new InvalidRequest('decision must be "accept" | "reject" | "release"');
+    return ok(await federation.submitRemoteDecision({ to: { schemaVersion: 1, peerId: str(b.to, "to") }, commitmentId: str(b.commitmentId, "commitmentId"), decision }));
+  }
 
   /* ---- attention (semantic derivation; activation is a separate host step) ---- */
   if (pathname === "/api/attention") {
@@ -193,6 +202,19 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     const decision = str(b.decision, "decision");
     if (decision !== "accept" && decision !== "reject") throw new InvalidRequest('decision must be "accept" or "reject"');
     return ok(await requireSurface(application.boundary, "boundary").decide({ workspaceId: str(b.workspaceId, "workspaceId"), artifactId: str(b.artifactId, "artifactId"), candidateDigest: str(b.candidateDigest, "candidateDigest"), decision }));
+  }
+  if (pathname === "/api/boundary/submit_remote") {
+    requirePost();
+    const b = bodyObject(body);
+    const boundary = requireSurface(application.boundary, "boundary");
+    if (boundary.submitRemote === undefined) throw new InvalidRequest("remote boundary submission is not configured");
+    const operation = b.operation;
+    if (typeof operation !== "object" || operation === null || Array.isArray(operation)) throw new InvalidRequest("operation must be an object");
+    return ok(await boundary.submitRemote({
+      workspaceId: str(b.workspaceId, "workspaceId"),
+      operation: operation as never,
+      ...(typeof b.operationId === "string" && b.operationId.length > 0 ? { operationId: b.operationId } : {}),
+    }));
   }
 
   /* ---- runtime ---- */
