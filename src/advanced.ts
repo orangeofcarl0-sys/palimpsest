@@ -88,3 +88,12 @@ export * from "./boundary_memory/index.js";
  * close ≠ retirement; internal refactoring is cheap only while external contracts hold.
  */
 export * from "./runtime_evolution/index.js";
+
+/**
+ * G10-N: Collaborative Reasoning Cells & Epistemic Admission — advanced opt-in only.
+ * A durable cell whose independent branches receive only a frozen accepted frontier,
+ * submit structured composable candidate claims, and pass explicit verification plus a
+ * SEPARATE epistemic-admission policy. Accepted claims are cell-local admitted epistemic
+ * state: never Evidence, truth, commitment, boundary acceptance, or effect authority.
+ */
+export * from "./reasoning_cell/index.js";
