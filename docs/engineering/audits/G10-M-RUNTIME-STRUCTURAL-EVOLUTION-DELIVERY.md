@@ -58,6 +58,25 @@ newly adopted), N29 (current institution body cannot retire), N30 (open runtime 
 N31 (campaign untouched), N32 (historical epoch reference remains readable), N33 (boundary
 dissolve has no fallback), N34 (Scheduler untouched — source firewall), N35 (restart).
 
+## Canonical gate
+
+- Final branch HEAD `26a4fe3` → PR **#66** → canonical `main` merge **`90b9521`**
+  (`git diff 26a4fe3 90b9521` is empty — the tested tree IS the merged tree).
+- PR run `34809419025`: unit SUCCESS; e2e attempt 1 failed ONLY on the documented
+  `E2E-DEBUG-01` (1 failed / 20 passed). The documented failed-job rerun
+  (`gh run rerun … --failed`) is **SUCCESS on attempt 2**; the merge happened only AFTER the
+  required checks were green.
+- Canonical main push run `34809661071`: e2e attempt 1 failed only on `E2E-DEBUG-01`; attempt 2
+  failed only on the two documented flakes `E2E-DEBUG-01` + `E2E-RUNTIME-03`; the documented
+  failed-job rerun is **SUCCESS on attempt 3**.
+- Local canonical gate: `pnpm test` 122 files / 1055 tests; `build` + `build:web` green; local
+  `test:e2e` 20/21 with only `E2E-DEBUG-01` (isolation-confirmed genuine flake: identical code
+  passed then failed on consecutive runs).
+
+Process discipline (corrected from G10-L, per spec §84): every gate is read from a real exit
+status or `gh run view --json conclusion` — never a piped `gh run watch … | tail` — and no merge
+occurs while required checks are red.
+
 ## Honest deviations
 
 - **M1–M10** ship as one implementation PR plus a docs-only closure PR.
