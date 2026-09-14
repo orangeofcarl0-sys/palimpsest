@@ -33,6 +33,9 @@
  *   --repo <path> use the real git CLI port rooted there (default: embedded fake port)
  *   --gate <file> path to a JSON file of GateDefinition to register
  *   --skills <json> E2: JSON array of skill hints for task-1 (new/plan)
+ *   --profile <file>  G10-P: full-stack deployment profile (serve only) — builds every
+ *                     advanced surface via installPalimpsest and serves the application
+ *   --pump <ms>       G10-P: with --profile, drain the durable mailbox on an interval
  */
 
 import { readFileSync } from "node:fs";
@@ -54,6 +57,7 @@ import {
 } from "./architecture/index.js";
 import { serveOrchestration } from "./serve.js";
 import { runTui } from "./tui.js";
+import { launchDeployment, loadDeploymentProfile } from "./deployment/index.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
 import { TaskPolicy } from "./domain/index.js";
@@ -129,6 +133,54 @@ async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
   if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status> …");
+
+  // G10-P (CF-O-02): a profile-driven full-stack launch. The profile is HOST CONFIG —
+  // it builds the services through installPalimpsest and serves the advanced application;
+  // it never carries semantic authority. This path bypasses the legacy Work-only controller.
+  const profilePath = arg(parsed.options, "--profile");
+  if (command === "serve" && profilePath !== undefined) {
+    const profile = loadDeploymentProfile(profilePath);
+    const deployment = launchDeployment(profile);
+    const pumpOption = arg(parsed.options, "--pump");
+    const portOption = arg(parsed.options, "--port");
+    const hostOption = arg(parsed.options, "--host");
+    const tokenOption = arg(parsed.options, "--token");
+    const port = portOption === undefined ? profile.serve?.port : Number(portOption);
+    const host = hostOption ?? profile.serve?.host;
+    const token = tokenOption ?? profile.serve?.token;
+    try {
+      const handle = await serveOrchestration(deployment.installed.controller, {
+        ...(port === undefined ? {} : { port }),
+        ...(host === undefined ? {} : { host }),
+        ...(token === undefined ? {} : { token }),
+        application: deployment.installed.application,
+      });
+      const interval = pumpOption === undefined ? undefined : setInterval(() => {
+        void deployment.pumpAndActivate().catch(() => undefined);
+      }, Math.max(50, Number(pumpOption)));
+      console.log(
+        JSON.stringify({
+          url: handle.url,
+          token: handle.token,
+          profile: profile.profileId,
+          surfaces: Object.keys(deployment.installed.application),
+          pump: pumpOption === undefined ? "off" : `${pumpOption}ms`,
+        }),
+      );
+      await new Promise<void>((resolve) => {
+        const shutdown = (): void => {
+          if (interval !== undefined) clearInterval(interval);
+          void handle.close().then(() => deployment.close()).then(resolve, resolve);
+        };
+        process.once("SIGINT", shutdown);
+        process.once("SIGTERM", shutdown);
+      });
+    } catch (error) {
+      await deployment.close();
+      throw error;
+    }
+    return;
+  }
 
   const db = arg(parsed.options, "--db");
   const ops = arg(parsed.options, "--ops");

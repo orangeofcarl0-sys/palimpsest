@@ -72,6 +72,19 @@ interface HistoryEntry {
   readonly active: boolean;
 }
 
+/**
+ * G10-P read-only commitment enumeration (closes CF-O-01). Derived from the ONE
+ * append-only event history — never a new store and never a mutation path.
+ */
+export interface CommitmentSummary {
+  readonly commitmentId: CommitmentId;
+  readonly state: CommitmentState;
+  readonly holder: PeerRef;
+  readonly proposer: PeerRef;
+  readonly scope: CommitmentScope;
+  readonly termsDigest: string;
+}
+
 export interface CommitmentService {
   offerCommitment(input: {
     readonly proposedHolder: PeerRef;
@@ -89,7 +102,15 @@ export interface CommitmentService {
     readonly authenticatedPeer: PeerRef | null;
     readonly local?: boolean;
   }): Promise<{ commitmentId: CommitmentId; rejectedBy: PeerRef }>;
-  releaseCommitment(input: { readonly commitmentId: CommitmentId }): Promise<void>;
+  /**
+   * Release an ACTIVE commitment. `authenticatedPeer` (with `local !== true`) is the
+   * inbound remote holder identity; absent means the configured local peer (host path).
+   */
+  releaseCommitment(input: {
+    readonly commitmentId: CommitmentId;
+    readonly authenticatedPeer?: PeerRef | null;
+    readonly local?: boolean;
+  }): Promise<void>;
   offerHandoff(input: {
     readonly commitmentId: CommitmentId;
     readonly to: PeerRef;
@@ -108,6 +129,8 @@ export interface CommitmentService {
   commitmentState(commitmentId: CommitmentId): Promise<HistoryEntry | undefined>;
   /** Active commitments held by a peer (derived). */
   activeCommitmentsOf(peer: PeerRef): Promise<readonly CommitmentOffer[]>;
+  /** Read-only enumeration of every commitment subject with its derived state (G10-P). */
+  listCommitments(): Promise<readonly CommitmentSummary[]>;
 }
 
 export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
@@ -276,7 +299,11 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     return payload;
   }
 
-  async function releaseCommitment(input: { readonly commitmentId: CommitmentId }): Promise<void> {
+  async function releaseCommitment(input: {
+    readonly commitmentId: CommitmentId;
+    readonly authenticatedPeer?: PeerRef | null;
+    readonly local?: boolean;
+  }): Promise<void> {
     const { head, events } = await snapshotAtHead();
     const entry = deriveState(events, input.commitmentId);
     if (entry === undefined || entry.state !== "ACTIVE") {
@@ -285,7 +312,18 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
         `only an ACTIVE commitment can be released (current: ${entry?.state ?? "unknown"})`,
       );
     }
-    if (entry.holder.peerId !== deps.localPeer.peerId) {
+    // Host-internal path (no inbound identity) releases as the configured local peer;
+    // a remote release must carry an authenticated holder identity and fails closed
+    // when unauthenticated (§71 — the same rule as accept/reject).
+    const releaser =
+      input.local === true || input.authenticatedPeer === undefined ? deps.localPeer : input.authenticatedPeer;
+    if (releaser === null) {
+      throw new CommitmentError(
+        "unauthenticated_acceptance",
+        "commitment release requires an authenticated holder (unauthenticated input cannot release)",
+      );
+    }
+    if (entry.holder.peerId !== releaser.peerId) {
       throw new CommitmentError(
         "not_current_holder",
         `only the current holder "${entry.holder.peerId}" may release this commitment`,
@@ -293,7 +331,7 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     }
     await deps.store.appendAtomic({
       expectedHeadSeq: head,
-      events: [eventRequest("COMMITMENT_RELEASED", { commitmentId: input.commitmentId, releasedBy: deps.localPeer })],
+      events: [eventRequest("COMMITMENT_RELEASED", { commitmentId: input.commitmentId, releasedBy: entry.holder })],
     });
   }
 
@@ -429,6 +467,32 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     return Object.freeze(active);
   }
 
+  async function listCommitments(): Promise<readonly CommitmentSummary[]> {
+    const events = await deps.store.replay();
+    const ids = new Set<CommitmentId>();
+    for (const event of events) {
+      if (event.type === "COMMITMENT_OFFERED") {
+        ids.add((event.payload as CommitmentOfferedPayload).offer.commitmentId);
+      }
+    }
+    const summaries: CommitmentSummary[] = [];
+    for (const commitmentId of [...ids].sort()) {
+      const entry = deriveState(events, commitmentId);
+      if (entry === undefined) continue;
+      summaries.push(
+        Object.freeze({
+          commitmentId,
+          state: entry.state,
+          holder: entry.holder,
+          proposer: entry.offer.proposer,
+          scope: entry.offer.scope,
+          termsDigest: entry.offer.termsDigest,
+        }),
+      );
+    }
+    return Object.freeze(summaries);
+  }
+
   return {
     offerCommitment,
     acceptCommitment,
@@ -439,5 +503,6 @@ export function makeCommitmentService(deps: CommitmentDeps): CommitmentService {
     rejectHandoff,
     commitmentState,
     activeCommitmentsOf,
+    listCommitments,
   };
 }

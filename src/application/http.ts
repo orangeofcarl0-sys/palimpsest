@@ -103,6 +103,7 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       dynamics: application.dynamics !== undefined,
       evolution: application.evolution !== undefined,
       reasoning: application.reasoning !== undefined,
+      attention: application.attention !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -146,6 +147,17 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       return ok(await federation.offerCommitment({ proposedHolder: { schemaVersion: 1, peerId: str(b.proposedHolder, "proposedHolder") }, scope: scope as never, statement: str(b.statement, "statement") }));
     }
     throw new InvalidRequest(`unsupported commitment action "${action}"`);
+  }
+  if (pathname === "/api/federation/commitments") {
+    requireGet();
+    return ok(await requireSurface(application.federation, "federation").commitments());
+  }
+
+  /* ---- attention (semantic derivation; activation is a separate host step) ---- */
+  if (pathname === "/api/attention") {
+    requireGet();
+    const attention = requireSurface(application.attention, "attention");
+    return ok({ policyId: attention.policyId, pending: await attention.pending() });
   }
 
   /* ---- boundary ---- */

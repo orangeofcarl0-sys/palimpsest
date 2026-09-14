@@ -21,9 +21,10 @@ import type { CoordinationStore } from "../coordination/store.js";
 import type { AttemptCatalogPort, ParticipationService } from "../coordination/index.js";
 import type { PeerDirectoryPort } from "./directory.js";
 import { discoverContactCandidates } from "./directory.js";
-import type { ContactNeed, PeerAdvertisement, PeerRef } from "./peer.js";
+import type { ContactNeed, PeerAdvertisement, PeerContinuityAssociation, PeerRef } from "./peer.js";
 import { materializeContactNeed, matchContactCandidates } from "./peer.js";
 import type { CommitmentId, CommitmentScope } from "./commitment.js";
+import type { CommitmentSummary } from "./commitment_service.js";
 import type { FederationMessagingService, InboxView, ThreadView } from "./messaging.js";
 import type { CoalitionView, ManpowerPointView } from "./workforce.js";
 import { coalitionView, manpowerPointView } from "./workforce.js";
@@ -39,6 +40,8 @@ export interface FederationServiceDeps {
   readonly participation: ParticipationService;
   readonly directory: PeerDirectoryPort;
   readonly allocateContactNeedId: () => string;
+  /** G10-P (additive): explicit PeerRef↔PersistentPoint associations (deployment binding). */
+  readonly continuityAssociations?: readonly PeerContinuityAssociation[] | undefined;
 }
 
 export interface FederationService {
@@ -85,6 +88,8 @@ export interface FederationService {
   coalitionSnapshot(scope: CoalitionScope): Promise<CoalitionSnapshot>;
   /** G10-O: derived read-only commitment state (no mutation). */
   commitmentState(commitmentId: string): Promise<{ readonly state: string; readonly holder: PeerRef } | undefined>;
+  /** G10-P: read-only enumeration of every commitment with its derived state (CF-O-01). */
+  commitments(): Promise<readonly CommitmentSummary[]>;
 }
 
 export function makeFederationService(deps: FederationServiceDeps): FederationService {
@@ -140,6 +145,9 @@ export function makeFederationService(deps: FederationServiceDeps): FederationSe
           store: deps.store,
           localPeer: deps.localPeer,
           inboxOf: (target) => deps.messaging.inboxView(target),
+          ...(deps.continuityAssociations === undefined
+            ? {}
+            : { continuityAssociations: deps.continuityAssociations }),
         },
         peer,
       ),
@@ -150,6 +158,7 @@ export function makeFederationService(deps: FederationServiceDeps): FederationSe
       const entry = await deps.commitments.commitmentState(commitmentId);
       return entry === undefined ? undefined : { state: entry.state, holder: entry.holder };
     },
+    commitments: () => deps.commitments.listCommitments(),
   };
 }
 
