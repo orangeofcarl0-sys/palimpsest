@@ -1,6 +1,6 @@
 # Palimpsest
 
-Palimpsest 是一个面向 DSH 的多 agent 编排插件：将一句话目标编译为耐久项目，任务在隔离环境中执行，只有通过确定性验证的工作才会被晋升为正式结果。进程与会话可在任意时刻中断，重启后从断点继续，历史完整保留。
+Palimpsest 是一个面向 DSH 的持久化 AI 工作体运行环境：将一句话目标编译为耐久项目，任务在隔离环境中执行，只有通过确定性验证的工作才会被晋升为正式结果。进程与会话可在任意时刻中断，重启后从断点继续，历史完整保留；多个长期项目 Agent 可作为独立主权主体，通过耐久语义传输协商共享边界、形成显式 commitment 并长期协作。
 
 外部副作用经姊妹工程 [Ordarium](https://github.com/orangeofcarl0-sys/ordarium)（Safe Action SDK）执行于共享本地 ledger。
 
@@ -11,6 +11,7 @@ Palimpsest 是一个面向 DSH 的多 agent 编排插件：将一句话目标编
 - **历史保留**：每次计划修订生成新版本，旧版本与旧证据按绑定关系保留并自动失效。
 - **并行执行**：角色槽位控制并发（默认 implementer 2，硬上限 20），支持多候选并行与锦标赛选择。
 - **DSH 集成**：9 个工具（含只读勘察面）、CLI、技能三条入口共享同一控制器。
+- **持久联邦协作**：两个独立配置的长期项目 Agent（各自的 PeerRef、PersistentPoint、语义库与 inbox）可通过 Ordarium `StateChangeFeed` 驱动的耐久传输交换语义事件、协商共享 boundary、形成显式 commitment，并在进程重启与 重复投递后收敛（`palimpsest serve --profile <file>` 可复现启动完整栈；`pnpm run dogfood:live` 运行真实双 peer 演练）。
 
 ## 安装
 

@@ -17,7 +17,8 @@ import type { RuntimeEvolutionService, RuntimeEvolutionOutcome } from "../runtim
 import type { RuntimeScopeService, RuntimeScopeStore, RuntimeScopeState, HolonView } from "../runtime_scope/index.js";
 import type { BoundaryMemoryService, BoundaryObservation, BoundaryWorkspaceView, CandidateView, MembershipView, AcceptedBoundaryState } from "../boundary_memory/index.js";
 import type { FederationService } from "../federation/index.js";
-import type { CommitmentScope, CommitmentState } from "../federation/index.js";
+import type { CommitmentScope, CommitmentState, CommitmentSummary } from "../federation/index.js";
+import type { AttentionService, AttentionSignal } from "../attention/index.js";
 import type { CampaignService } from "../campaign/index.js";
 import type { CampaignStore } from "../campaign/store.js";
 import type { OrganizationStore } from "../organization/index.js";
@@ -73,6 +74,18 @@ export interface FederationApplicationSurface {
   offerHandoff(input: { readonly commitmentId: string; readonly to: PeerRef }): Promise<unknown>;
   acceptHandoff(handoffId: string): Promise<unknown>;
   commitmentState(commitmentId: string): Promise<CommitmentState | undefined>;
+  /** G10-P (CF-O-01): read-only enumeration of every commitment with its derived state. */
+  commitments(): Promise<readonly CommitmentSummary[]>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Attention (semantic derivation; notification ≠ activation)
+ * ------------------------------------------------------------------ */
+
+export interface AttentionApplicationSurface {
+  readonly policyId: string;
+  /** Every currently open attention fact for this local peer (deduped, read-only). */
+  pending(): Promise<readonly AttentionSignal[]>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -167,6 +180,8 @@ export interface PalimpsestApplicationSurface {
   readonly dynamics?: DynamicsApplicationSurface | undefined;
   readonly evolution?: EvolutionApplicationSurface | undefined;
   readonly reasoning?: ReasoningApplicationSurface | undefined;
+  /** G10-P: semantic attention derivation (read-only; the host adapter activates separately). */
+  readonly attention?: AttentionApplicationSurface | undefined;
   /** Derived MultiGraph projections (read-only; never a canonical graph). */
   readonly projections?: ProjectionsApplicationSurface | undefined;
 }
@@ -188,6 +203,8 @@ export interface ApplicationSurfaceDeps {
   readonly dynamicsPolicy?: DynamicsPolicy | undefined;
   /** Optional read-only boundary workspace enumeration (collaboration projection). */
   readonly boundaryWorkspaces?: BoundaryWorkspaceReadPort | undefined;
+  /** G10-P (additive): the semantic attention service, when a policy and federation are wired. */
+  readonly attention?: AttentionService | undefined;
 }
 
 function requireLocal(deps: ApplicationSurfaceDeps): PeerRef {
@@ -237,6 +254,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
             offerHandoff: (input) => service.offerHandoff(input),
             acceptHandoff: (handoffId) => service.acceptHandoff({ handoffId, authenticatedPeer: null, local: true }),
             commitmentState: async (commitmentId) => (await service.commitmentState(commitmentId))?.state as CommitmentState | undefined,
+            commitments: () => service.commitments(),
           };
         })();
 
@@ -388,6 +406,14 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           graph: (cellId) => deps.reasoning!.claimGraph({ cellId }),
         };
 
+  const attention: AttentionApplicationSurface | undefined =
+    deps.attention === undefined
+      ? undefined
+      : {
+          policyId: deps.attention.policy.policyId,
+          pending: () => deps.attention!.pending(),
+        };
+
   const projections: ProjectionsApplicationSurface = {
     work: async () => {
       try {
@@ -414,7 +440,9 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
         }
       }
       const workspaces = deps.boundaryWorkspaces === undefined ? [] : (await deps.boundaryWorkspaces.list()).map((workspace) => ({ workspaceId: workspace.workspaceId, participants: workspace.participants.map((peer) => peer.peerId), acceptedArtifacts: workspace.acceptedArtifacts }));
-      return collaborationProjection({ localPeerId, peers: [...peers], commitments: [], workspaces });
+      // CF-O-01 CLOSED: the commitment nodes/edges come from the read-only enumeration.
+      const commitments = deps.federation === undefined ? [] : (await deps.federation.commitments()).map((commitment) => ({ commitmentId: commitment.commitmentId, holderId: commitment.holder.peerId, state: commitment.state }));
+      return collaborationProjection({ localPeerId, peers: [...peers], commitments, workspaces });
     },
     runtime: async () => {
       if (deps.runtimeScopes === undefined) throw new Error("runtime surface is not configured");
@@ -445,6 +473,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(dynamics === undefined ? {} : { dynamics }),
     ...(evolution === undefined ? {} : { evolution }),
     ...(reasoning === undefined ? {} : { reasoning }),
+    ...(attention === undefined ? {} : { attention }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

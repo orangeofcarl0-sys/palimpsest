@@ -21,7 +21,9 @@ import {
 const PINNED_OPEN_RETRY = { attempts: 5, delayMs: 100 } as const;
 
 // Native v2 ledger generated on @ordarium/ledger-sqlite 1.0.0 right before
-// the bump; the tests copy it and open it under 1.1.0.
+// the bump; the tests copy it and open it under the current pin. G10-P moved
+// the pin 1.2.0 -> 1.3.1, whose ORD-BOOT-0 change-feed table migrates the
+// on-disk schema v2 -> v3 -> v4; the assertions below pin v4.
 const FIXTURE_LEDGER_V2 = fileURLToPath(
   new URL("../fixtures/ordarium/ledger-v2.sqlite", import.meta.url),
 );
@@ -121,7 +123,7 @@ describe("Ordarium ledger seam at 1.1.0 (bump checklist)", () => {
     const ledger = new SqliteLedger(path, { openRetry: PINNED_OPEN_RETRY });
     try {
       const raw = new DatabaseSync(path);
-      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
       raw.close();
       expect((await ledger.get("fixture-proposed-0001"))?.state).toBe("proposed");
       expect((await ledger.get("fixture-succeeded-0002"))?.state).toBe("succeeded");
@@ -151,7 +153,7 @@ describe("Ordarium ledger seam at 1.1.0 (bump checklist)", () => {
       expect(elapsed).toBeGreaterThanOrEqual(200);
       expect(elapsed).toBeLessThan(5_000);
       const raw = new DatabaseSync(path);
-      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(3);
+      expect(raw.prepare("PRAGMA user_version").get()?.user_version).toBe(4);
       raw.close();
       expect((await ledger.get("fixture-succeeded-0002"))?.state).toBe("succeeded");
     } finally {

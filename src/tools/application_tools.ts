@@ -90,10 +90,28 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         dynamics: application.dynamics !== undefined,
         evolution: application.evolution !== undefined,
         reasoning: application.reasoning !== undefined,
+        attention: application.attention !== undefined,
         projections: application.projections !== undefined,
       }),
     }),
   );
+
+  if (application.attention !== undefined) {
+    const attention = application.attention;
+    tools.push(
+      tool({
+        name: "palimpsest_attention",
+        description: "What currently deserves this peer's attention (derived from canonical state): unacked inbound messages, boundary decisions required, commitment offers requiring a decision, and newly relevant accepted boundary revisions. Read-only; host activation is a separate step",
+        mode: "read-only",
+        actions: ["pending"],
+        extraProperties: {},
+        run: async (action) => {
+          if (action !== "pending") throw new ToolArgsError(`unsupported attention action "${action}"`);
+          return { policyId: attention.policyId, pending: await attention.pending() };
+        },
+      }),
+    );
+  }
 
   if (application.federation !== undefined) {
     const federation = application.federation;
@@ -102,7 +120,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         name: "palimpsest_federation",
         description: "Peer collaboration: read your inbox/threads, contact peers, exchange messages, and act on explicit commitments (local identity is derived, never supplied)",
         mode: "mutating",
-        actions: ["inbox", "thread", "message", "contact", "commitment"],
+        actions: ["inbox", "thread", "message", "contact", "commitment", "commitments"],
         extraProperties: {
           threadId: { type: "string" },
           to: { type: "string" },
@@ -118,6 +136,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         },
         run: async (action, object) => {
           if (action === "inbox") return federation.inbox();
+          if (action === "commitments") return federation.commitments();
           if (action === "thread") return federation.thread(requiredString(object, "threadId"));
           if (action === "message") return federation.sendMessage({ to: { schemaVersion: 1, peerId: requiredString(object, "to") }, threadId: requiredString(object, "threadId"), body: requiredString(object, "body") });
           if (action === "contact") return federation.findCandidates({ competenceTags: stringArray(object.competenceTags ?? [], "competenceTags"), origin: object.origin ?? { kind: "runtime_declared" }, reason: requiredString(object, "reason") });
