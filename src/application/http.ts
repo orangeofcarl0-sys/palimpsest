@@ -7,6 +7,8 @@
  */
 
 import type { PalimpsestApplicationSurface } from "./surface.js";
+import type { VariantKind } from "../organization_memory/index.js";
+import { VARIANT_KINDS } from "../organization_memory/index.js";
 
 export interface ApplicationRouteResult {
   readonly status: number;
@@ -104,6 +106,7 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       evolution: application.evolution !== undefined,
       reasoning: application.reasoning !== undefined,
       attention: application.attention !== undefined,
+      experiments: application.empirical !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -316,6 +319,65 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     requirePost();
     const b = bodyObject(body);
     return ok(await requireSurface(application.reasoning, "reasoning").invalidate({ cellId: str(b.cellId, "cellId"), targetClaimId: str(b.targetClaimId, "targetClaimId"), reason: str(b.reason, "reason") }));
+  }
+
+  /* ---- empirical memory (READ-ONLY history; evaluation ≠ governance) ---- */
+  if (pathname === "/api/experiments") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").experiments());
+  }
+  if (pathname === "/api/experiments/experiment") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").experiment(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/experiments/scenarios") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").scenarios(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/experiments/variants") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").variants(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/experiments/runs") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").runs(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/experiments/run") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").run(queryRequired(query, "runRef")));
+  }
+  if (pathname === "/api/experiments/evaluations") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").evaluations(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/experiments/corrections") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").corrections(queryRequired(query, "experimentId")));
+  }
+  if (pathname === "/api/memory/interventions") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").interventions());
+  }
+  if (pathname === "/api/memory/similar_runs") {
+    requireGet();
+    const empirical = requireSurface(application.empirical, "experiments");
+    const scenarioId = query.get("scenarioId");
+    const variantKind = query.get("variantKind");
+    const provider = query.get("provider");
+    const model = query.get("model");
+    if (variantKind !== null && !(VARIANT_KINDS as readonly string[]).includes(variantKind)) {
+      throw new InvalidRequest(`query parameter "variantKind" must be one of ${VARIANT_KINDS.join(", ")}`);
+    }
+    return ok(await empirical.similarRuns({
+      ...(scenarioId === null || scenarioId === "" ? {} : { scenarioId }),
+      ...(variantKind === null ? {} : { variantKind: variantKind as VariantKind }),
+      ...(provider === null || provider === "" ? {} : { provider }),
+      ...(model === null || model === "" ? {} : { model }),
+    }));
+  }
+  if (pathname === "/api/memory/structural_history") {
+    requireGet();
+    return ok(await requireSurface(application.empirical, "experiments").structuralHistory(queryRequired(query, "subjectRef")));
   }
 
   /* ---- projections ---- */
