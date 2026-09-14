@@ -52,6 +52,19 @@ is not rendered as an organization subordinate (separate species); a message edg
 a commitment (distinct `commitment_holder`/`commitment` semantics); a boundary accepted revision is
 not rendered as evidence (no such projection).
 
+## Canonical gate
+
+- Final branch HEAD `347406d` → PR **#70** → canonical `main` merge **`c548bff`**
+  (`git diff 347406d c548bff` is empty — the tested tree IS the merged tree).
+- PR run `34833219481`: unit + e2e **SUCCESS on attempt 1** (no flake).
+- Canonical main push run `34833381707` (`c548bff`): **SUCCESS on attempt 1** (unit + e2e).
+- Local gate: `pnpm test` 124 files / 1079 tests; `build` + `build:web` green; local
+  `test:e2e` 23/24 with only the documented `E2E-DEBUG-01` flake (isolation-confirmed earlier:
+  identical code passes and fails on consecutive runs).
+
+Discipline (spec §92): gates read from real exit statuses / `gh run view --json conclusion`;
+required checks green before merge.
+
 ## Honest deviations
 
 - **O1–O11** ship as one implementation PR plus a docs-only closure PR.
