@@ -51,6 +51,17 @@ Baseline: `main @ d1fb28a3daf6f4f2ee3dd1efdb473b911e6d0146`. Ordarium v1.3.1. Ho
 6. The R statistical/provider limits remain and are surfaced as mandatory transferability warnings; S
    does not claim to have solved them.
 
-## Required CI
+## Required CI (canonical gate)
 
-See the canonical gate recorded after the implementation PR run (filled in the closure commit).
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#78** `experiment/g10-s-recipes` |
+| Tested branch HEAD | `4b12e9d` |
+| PR run | `34870342805` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ 192e62c902f89b538cd6a130c87608b4cffcfd92` |
+| Tree identity | `git diff 4b12e9d 192e62c` empty → the tested tree IS the merged tree |
+| Canonical main run | `34870530974` — **unit pass + e2e pass on attempt 1** |
+
+All required checks were GREEN before merge; no force/bypass/history rewrite; status read via
+`gh run view --json` (no shell pipeline masking exit codes). The real Explore host E2E is a separately
+reproducible artifact, not required CI.
