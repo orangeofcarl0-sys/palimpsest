@@ -63,8 +63,17 @@ race without touching any identity. Result: the runtime-debugger spec passed 3/3
 7. `G10-Q-ANTI-WASTE-RECONCILIATION.md` found `DELETE = none`; no code was deleted, and the DEMOTE
    actions are annotations + doc/README discipline only.
 
-## Required CI
+## Required CI (canonical gate)
 
-See the canonical gate recorded after the implementation PR run (filled in the closure commit).
-Required checks must be GREEN before merge; the two documented flakes may be cleared only by a
-documented failed-job rerun.
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#74** `experiment/g10-q-real-host` |
+| Tested branch HEAD | `d02d1f8` (feature `cb6ffb0` + flake stabilization `d02d1f8`) |
+| Pre-stabilization run | `34849363206` — unit pass; e2e failed on the documented `runtime-debugger` flake family (attempts 1–3) |
+| Post-stabilization run | `34850784294` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ 8a6062db405ad93a600963e66eb70faeb121f5d4` |
+| Tree identity | `git diff d02d1f8 8a6062d` empty → the tested tree IS the merged tree |
+| Canonical main run | `34851071694` — **unit pass + e2e pass on attempt 1** |
+
+All required checks were GREEN before merge. No force/bypass/history rewrite; status read via
+`gh run view --json` (no shell pipeline masking exit codes).
