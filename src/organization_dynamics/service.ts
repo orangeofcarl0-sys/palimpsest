@@ -11,6 +11,7 @@ import type {
   CampaignActivityPort,
   CollaborationMetrics,
   DynamicsBasis,
+  DynamicsBoundaryPort,
   DynamicsCollaborationPort,
   DynamicsKnowledge,
   DynamicsPolicy,
@@ -38,6 +39,7 @@ import {
   subjectKey,
 } from "./dynamics.js";
 import type { OrganizationDynamicsAdvisorPort, OrganizationDynamicsSnapshot } from "./dynamics.js";
+import type { BoundaryObservation, BoundaryWorkspaceBasisRef } from "../boundary_memory/artifacts.js";
 
 export interface OrganizationDynamicsOrganizationPort {
   head(organizationDefinitionId: string): Promise<OrganizationDefinitionRef | undefined>;
@@ -50,6 +52,8 @@ export interface OrganizationDynamicsDeps {
   readonly collaboration?: DynamicsCollaborationPort | undefined;
   /** G10-J CF-I-02: read-only Campaign activity observation. */
   readonly campaignActivity?: CampaignActivityPort | undefined;
+  /** G10-L: read-only boundary observation (required for a boundary_workspace subject). */
+  readonly boundary?: DynamicsBoundaryPort | undefined;
 }
 
 export type ObservationResult =
@@ -93,6 +97,8 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
   const { store, service } = deps.runtimeScopes;
 
   async function scopeSet(subject: DynamicsSubject): Promise<readonly RuntimeScopeRef[]> {
+    // A boundary workspace has no RuntimeScope grounding.
+    if (subject.kind === "boundary_workspace") return Object.freeze([]);
     if (subject.kind === "runtime_scope") {
       const seen = new Set<string>();
       const queue: string[] = [subject.scope.scopeId];
@@ -113,6 +119,13 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
     return Object.freeze(relevant.sort((a, b) => (a.scopeId < b.scopeId ? -1 : 1)));
   }
 
+  async function boundaryBasisOf(subject: DynamicsSubject): Promise<BoundaryWorkspaceBasisRef | undefined> {
+    if (subject.kind !== "boundary_workspace" || deps.boundary === undefined) return undefined;
+    const observation = await deps.boundary.observe(subject.workspace.workspaceId);
+    if (observation === undefined) return undefined;
+    return Object.freeze({ workspace: subject.workspace, throughSeq: observation.throughSeq, chainDigest: observation.chainDigest });
+  }
+
   async function readBases(subject: DynamicsSubject): Promise<DynamicsBasis> {
     const scopes = await scopeSet(subject);
     const runtimeScopes: ScopeBasisRef[] = [];
@@ -131,7 +144,15 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       }
     }
     const coordinationHead = deps.collaboration === undefined ? 0 : (await deps.collaboration.observe()).coordinationHead;
-    return Object.freeze({ subject, organization, runtimeScopes: Object.freeze(runtimeScopes), coordinationHead, synchronization: "optimistic_reread" as const });
+    const boundary = await boundaryBasisOf(subject);
+    return Object.freeze({
+      subject,
+      organization,
+      runtimeScopes: Object.freeze(runtimeScopes),
+      coordinationHead,
+      synchronization: "optimistic_reread" as const,
+      ...(boundary === undefined ? {} : { boundary }),
+    });
   }
 
   function runtimeMetricsOf(states: readonly RuntimeScopeState[], events: readonly { type: string }[], orgFreshness: RuntimeStructuralSnapshot["organizationBasisFreshness"]): RuntimeStructuralSnapshot {
@@ -174,6 +195,9 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
     const parsedPolicy = parseDynamicsPolicy(JSON.parse(JSON.stringify(policy)));
     if (parsedSubject.kind === "organization" && deps.organizations === undefined) {
       return { status: "unknown_source", detail: "organization observation requires an organization source" };
+    }
+    if (parsedSubject.kind === "boundary_workspace" && deps.boundary === undefined) {
+      return { status: "unknown_source", detail: "boundary workspace observation requires a boundary source" };
     }
     const before = basisDigestOf(await readBases(parsedSubject));
     const scopes = await scopeSet(parsedSubject);
@@ -240,7 +264,25 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       campaignActivityKnowledge = activityState;
     }
     const runtime = runtimeMetricsOf(states, events, freshness);
-    const knowledge: DynamicsKnowledge = Object.freeze({ runtime: "known", organization: organizationKnowledge, collaboration: collaborationKnowledge, campaignActivity: campaignActivityKnowledge });
+    let boundaryObservation: BoundaryObservation | null = null;
+    let boundaryKnowledge: DynamicsKnowledge["boundary"];
+    if (parsedSubject.kind === "boundary_workspace") {
+      const observed = await deps.boundary!.observe(parsedSubject.workspace.workspaceId);
+      if (observed === undefined) {
+        boundaryKnowledge = "unknown";
+      } else {
+        boundaryKnowledge = "known";
+        boundaryObservation = observed;
+      }
+    }
+    const knowledge: DynamicsKnowledge = Object.freeze({
+      runtime: "known",
+      organization: organizationKnowledge,
+      collaboration: collaborationKnowledge,
+      campaignActivity: campaignActivityKnowledge,
+      // Additive: omitted for every non-boundary subject.
+      ...(boundaryKnowledge === undefined ? {} : { boundary: boundaryKnowledge }),
+    });
     const after = basisDigestOf(await readBases(parsedSubject));
     if (after !== before) return { status: "observation_raced", detail: "a source basis changed during observation" };
     const fields = {
@@ -254,6 +296,8 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
       declaredInteractionIds: Object.freeze([...declaredInteractionIds].sort()),
       observedBoundaryInteractionIds: Object.freeze([...new Set(observedBoundaryInteractionIds)].sort()),
       campaignActivity,
+      // Additive: omitted unless a boundary observation exists.
+      ...(boundaryObservation === null ? {} : { boundary: boundaryObservation }),
     };
     return { status: "observed", snapshot: Object.freeze({ ...fields, digest: snapshotDigestOf(fields) }) };
   }
@@ -320,6 +364,67 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
     p.push({ kind: "SPLIT_PRESSURE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["requires interface-compressibility evidence not observable today"] });
     p.push({ kind: "ENCAPSULATION_CANDIDATE", standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["requires cross-boundary interaction set, not observable"] });
 
+    // G10-L boundary-aware diagnostics. Mechanical counts only: never collaboration
+    // quality, alignment, trust, correctness, or a "should formalize" claim.
+    const boundary = snapshot.boundary ?? null;
+    const unavailable = (kind: StructuralPressure["kind"]): StructuralPressure => ({ kind, standing: "unresolved", evidence: [], counterEvidence: [], unknowns: ["boundary observation unavailable or the workspace does not exist"] });
+    p.push(
+      boundary === null
+        ? unavailable("BOUNDARY_REVISION_CHURN")
+        : {
+            kind: "BOUNDARY_REVISION_CHURN",
+            standing: boundary.revisionChurn >= policy.churnMinReconfigurations ? "supported" : "unsupported",
+            evidence: boundary.revisionChurn >= policy.churnMinReconfigurations ? [`accepted boundary revisions = ${boundary.revisionChurn} ≥ policy threshold`] : [],
+            counterEvidence: boundary.revisionChurn < policy.churnMinReconfigurations ? [`accepted boundary revisions = ${boundary.revisionChurn} < policy threshold`] : [],
+            unknowns: [],
+          },
+    );
+    p.push(
+      boundary === null
+        ? unavailable("BOUNDARY_MEMBERSHIP_CHURN")
+        : {
+            kind: "BOUNDARY_MEMBERSHIP_CHURN",
+            standing: boundary.membershipChurn >= policy.churnMinReconfigurations ? "supported" : "unsupported",
+            evidence: boundary.membershipChurn >= policy.churnMinReconfigurations ? [`accepted membership revisions = ${boundary.membershipChurn} ≥ policy threshold`] : [],
+            counterEvidence: boundary.membershipChurn < policy.churnMinReconfigurations ? [`accepted membership revisions = ${boundary.membershipChurn} < policy threshold`] : [],
+            unknowns: [],
+          },
+    );
+    p.push(
+      boundary === null
+        ? unavailable("BOUNDARY_NEGOTIATION_BACKLOG")
+        : {
+            kind: "BOUNDARY_NEGOTIATION_BACKLOG",
+            standing: boundary.pendingCandidateCount >= 1 ? "supported" : "unsupported",
+            evidence: boundary.pendingCandidateCount >= 1 ? [`${boundary.pendingCandidateCount} pending boundary candidate(s)`] : [],
+            counterEvidence: boundary.pendingCandidateCount === 0 ? ["no pending boundary candidates"] : [],
+            unknowns: [],
+          },
+    );
+    p.push(
+      boundary === null
+        ? unavailable("BOUNDARY_STABLE_ACCEPTED_STATE")
+        : {
+            kind: "BOUNDARY_STABLE_ACCEPTED_STATE",
+            // Stability of shared state is NOT correctness (§9/FB-A24).
+            standing: boundary.acceptedArtifactCount >= 1 && boundary.pendingCandidateCount === 0 && boundary.lifecycle === "OPEN" ? "supported" : "unsupported",
+            evidence: boundary.acceptedArtifactCount >= 1 && boundary.pendingCandidateCount === 0 && boundary.lifecycle === "OPEN" ? [`${boundary.acceptedArtifactCount} artifact(s) have an accepted revision and no pending candidate`] : [],
+            counterEvidence: boundary.acceptedArtifactCount === 0 ? ["no accepted boundary artifact"] : boundary.pendingCandidateCount > 0 ? [`${boundary.pendingCandidateCount} pending candidate(s)`] : boundary.lifecycle === "CLOSED" ? ["the workspace is closed"] : [],
+            unknowns: ["boundary stability does not establish semantic correctness"],
+          },
+    );
+    p.push(
+      boundary === null
+        ? unavailable("BOUNDARY_BLUEPRINT_PRESENT")
+        : {
+            kind: "BOUNDARY_BLUEPRINT_PRESENT",
+            standing: boundary.blueprintAccepted ? "supported" : "unsupported",
+            evidence: boundary.blueprintAccepted ? ["an organization blueprint has an accepted revision"] : [],
+            counterEvidence: boundary.blueprintAccepted ? [] : ["no accepted organization blueprint"],
+            unknowns: ["a present blueprint does NOT by itself indicate that formalization is warranted"],
+          },
+    );
+
     const compressibility = Object.freeze({
       boundaryExists: snapshot.runtime.externalBoundaryCount > 0,
       boundaryStable: snapshot.runtime.boundaryChangeCount <= 1,
@@ -367,7 +472,7 @@ export function makeOrganizationDynamicsService(deps: OrganizationDynamicsDeps):
 
   function deterministicKind(diagnosis: StructuralDiagnosis): { kind: DynamicsProposalKind; targets: readonly string[]; intent: string } {
     const standing = (kind: StructuralDiagnosis["pressures"][number]["kind"]) => diagnosis.pressures.find((pressure) => pressure.kind === kind)?.standing ?? "unresolved";
-    if (standing("STALE_ORGANIZATION_GROUNDING") === "supported") return { kind: "REVISE_ORGANIZATION", targets: diagnosis.subject.kind === "organization" ? [diagnosis.subject.organization.organizationDefinitionId] : [diagnosis.subject.scope.scopeId], intent: "rebind runtime scopes to a current organization revision" };
+    if (standing("STALE_ORGANIZATION_GROUNDING") === "supported") return { kind: "REVISE_ORGANIZATION", targets: diagnosis.subject.kind === "organization" ? [diagnosis.subject.organization.organizationDefinitionId] : diagnosis.subject.kind === "runtime_scope" ? [diagnosis.subject.scope.scopeId] : [diagnosis.subject.workspace.workspaceId], intent: "rebind runtime scopes to a current organization revision" };
     if (standing("SPLIT_PRESSURE") === "supported") return { kind: "SPLIT_ORGANIZATION", targets: [], intent: "split under interface-compressibility evidence" };
     if (standing("MERGE_PRESSURE") === "supported") return { kind: "MERGE_ORGANIZATIONS", targets: [], intent: "merge under independence-loss analysis" };
     if (standing("STABLE_FEDERATION") === "supported") return { kind: "RETAIN_FEDERATION", targets: [], intent: "retain federation as a stable form" };

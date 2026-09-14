@@ -18,8 +18,10 @@ import type {
   BoundaryArtifactDefinition,
   BoundaryArtifactTypeRegistry,
   BoundaryCandidateRevision,
+  BoundaryObservation,
   BoundaryWorkspaceDefinition,
   CandidateStanding,
+  MembershipStanding,
   OrganizationBlueprintContent,
 } from "./artifacts.js";
 import {
@@ -31,11 +33,24 @@ import {
   candidateHasAcceptor,
   canonicalPeerSet,
   defaultBoundaryArtifactTypeRegistry,
-  isWorkspaceParticipant,
   materializeBoundaryArtifactDefinition,
   materializeBoundaryWorkspaceDefinition,
   organizationDefinitionOfBlueprint,
 } from "./artifacts.js";
+import type {
+  MembershipChangeCandidate,
+  MembershipChangeKind,
+  MembershipRevisionRef,
+  WorkspaceMembershipRevision,
+} from "./membership.js";
+import {
+  applyMembershipRevision,
+  genesisMembershipRef,
+  membershipCandidateDigestOf,
+  membershipRevisionDigestOf,
+  membershipRevisionRefsEqual,
+  requiredApproversFor,
+} from "./membership.js";
 import type { AcceptedBoundaryRevisionRef, BoundaryArtifactTypeRef } from "./ref.js";
 import { acceptedBoundaryRevisionRefsEqual, boundaryArtifactTypeRefsEqual } from "./ref.js";
 import type { BoundaryAppendRequest, BoundaryBasis, BoundaryEvent, BoundaryMemoryStore } from "./store.js";
@@ -105,6 +120,35 @@ export interface RejectionOutcome {
   readonly rejectedBy: readonly PeerRef[];
 }
 
+export interface MembershipCandidateView {
+  readonly candidate: MembershipChangeCandidate;
+  readonly standing: MembershipStanding;
+  readonly approvers: readonly PeerRef[];
+  readonly rejectedBy: readonly PeerRef[];
+}
+
+export interface MembershipView {
+  readonly workspaceId: string;
+  readonly revision: number;
+  readonly revisionDigest: string;
+  readonly participants: readonly PeerRef[];
+  readonly pending: readonly MembershipCandidateView[];
+  readonly history: readonly WorkspaceMembershipRevision[];
+}
+
+export interface MembershipApprovalOutcome {
+  readonly candidateDigest: string;
+  readonly standing: MembershipStanding;
+  readonly accepted: MembershipRevisionRef | null;
+  readonly approvers: readonly PeerRef[];
+}
+
+export interface MembershipRejectionOutcome {
+  readonly candidateDigest: string;
+  readonly standing: MembershipStanding;
+  readonly rejectedBy: readonly PeerRef[];
+}
+
 export interface BoundaryMemoryService {
   openWorkspace(input: { readonly workspaceId: string; readonly participants: readonly PeerRef[]; readonly purpose: string }): Promise<BoundaryWorkspaceDefinition>;
   closeWorkspace(input: { readonly workspaceId: string; readonly reason: string }): Promise<void>;
@@ -116,6 +160,9 @@ export interface BoundaryMemoryService {
     readonly content: unknown;
     readonly requiredAcceptors: readonly PeerRef[];
     readonly intent: string;
+    /** G10-L: remote authoring. `undefined` ⇒ the configured localPeer (local behaviour). */
+    readonly authenticatedPeer?: PeerRef | null | undefined;
+    readonly local?: boolean | undefined;
   }): Promise<BoundaryCandidateRevision>;
   acceptRevision(input: {
     readonly workspaceId: string;
@@ -138,11 +185,37 @@ export interface BoundaryMemoryService {
   acceptedBlueprint(input: { readonly workspaceId: string; readonly artifactId: string }): Promise<AcceptedOrganizationBlueprint | undefined>;
   /** Fail-closed verification for a `boundary_revision` CommitmentScope. */
   admitBoundaryRevisionScope(ref: AcceptedBoundaryRevisionRef): Promise<void>;
+  proposeMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly kind: MembershipChangeKind;
+    readonly target: PeerRef;
+    readonly intent: string;
+    readonly authenticatedPeer?: PeerRef | null | undefined;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipChangeCandidate>;
+  approveMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly authenticatedPeer: PeerRef | null;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipApprovalOutcome>;
+  rejectMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly authenticatedPeer: PeerRef | null;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipRejectionOutcome>;
+  membership(input: { readonly workspaceId: string }): Promise<MembershipView>;
+  pendingMembershipChanges(input: { readonly workspaceId: string }): Promise<readonly MembershipCandidateView[]>;
+  /** G10-L mechanical boundary observation (basis-grounded; never quality/correctness). */
+  boundaryObservation(input: { readonly workspaceId: string }): Promise<BoundaryObservation | undefined>;
 }
 
 interface ArtifactState {
   readonly definition: BoundaryArtifactDefinition;
   readonly candidates: Map<string, BoundaryCandidateRevision>;
+  /** Candidate digest → the chain seq at which it was proposed (membership-basis derivation). */
+  readonly candidateSeq: Map<string, number>;
   readonly acceptances: Map<string, Set<string>>;
   readonly rejections: Map<string, Set<string>>;
   readonly revisions: AcceptedBoundaryRevision[];
@@ -153,6 +226,12 @@ interface WorkspaceState {
   closed: boolean;
   closedReason: string | null;
   readonly artifacts: Map<string, ArtifactState>;
+  readonly membershipCandidates: Map<string, MembershipChangeCandidate>;
+  readonly membershipApprovals: Map<string, Set<string>>;
+  readonly membershipRejections: Map<string, Set<string>>;
+  readonly membershipRevisions: WorkspaceMembershipRevision[];
+  /** Accepted membership revisions' chain seqs (parallel to `membershipRevisions`). */
+  readonly membershipRevisionSeq: number[];
 }
 
 function fail(kind: ConstructorParameters<typeof BoundaryMemoryStoreError>[0], message: string): never {
@@ -181,7 +260,17 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     const opened = events[0]!;
     if (opened.type !== "WORKSPACE_OPENED") fail("malformed_record", "a boundary workspace history must begin with WORKSPACE_OPENED");
     const workspace = (opened.payload as { workspace: BoundaryWorkspaceDefinition }).workspace;
-    const state: WorkspaceState = { workspace, closed: false, closedReason: null, artifacts: new Map() };
+    const state: WorkspaceState = {
+      workspace,
+      closed: false,
+      closedReason: null,
+      artifacts: new Map(),
+      membershipCandidates: new Map(),
+      membershipApprovals: new Map(),
+      membershipRejections: new Map(),
+      membershipRevisions: [],
+      membershipRevisionSeq: [],
+    };
     const artifactOfCandidate = (candidateDigest: string): ArtifactState | undefined => {
       for (const artifact of state.artifacts.values()) if (artifact.candidates.has(candidateDigest)) return artifact;
       return undefined;
@@ -195,13 +284,17 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
         case "ARTIFACT_CREATED": {
           const artifact = (event.payload as { artifact: BoundaryArtifactDefinition }).artifact;
           if (!state.artifacts.has(artifact.artifactId)) {
-            state.artifacts.set(artifact.artifactId, { definition: artifact, candidates: new Map(), acceptances: new Map(), rejections: new Map(), revisions: [] });
+            state.artifacts.set(artifact.artifactId, { definition: artifact, candidates: new Map(), candidateSeq: new Map(), acceptances: new Map(), rejections: new Map(), revisions: [] });
           }
           break;
         }
         case "CANDIDATE_PROPOSED": {
           const candidate = (event.payload as { candidate: BoundaryCandidateRevision }).candidate;
-          state.artifacts.get(candidate.artifactId)?.candidates.set(candidate.digest, candidate);
+          const artifact = state.artifacts.get(candidate.artifactId);
+          if (artifact !== undefined) {
+            artifact.candidates.set(candidate.digest, candidate);
+            artifact.candidateSeq.set(candidate.digest, event.seq);
+          }
           break;
         }
         case "CANDIDATE_ACCEPTED": {
@@ -229,12 +322,55 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
           state.artifacts.get(revision.artifactId)?.revisions.push(revision);
           break;
         }
+        case "MEMBERSHIP_PROPOSED": {
+          const candidate = (event.payload as { candidate: MembershipChangeCandidate }).candidate;
+          state.membershipCandidates.set(candidate.digest, candidate);
+          break;
+        }
+        case "MEMBERSHIP_APPROVED": {
+          const payload = event.payload as { candidateDigest: string; approvedBy: PeerRef };
+          const set = state.membershipApprovals.get(payload.candidateDigest) ?? new Set<string>();
+          set.add(payload.approvedBy.peerId);
+          state.membershipApprovals.set(payload.candidateDigest, set);
+          break;
+        }
+        case "MEMBERSHIP_REJECTED": {
+          const payload = event.payload as { candidateDigest: string; rejectedBy: PeerRef };
+          const set = state.membershipRejections.get(payload.candidateDigest) ?? new Set<string>();
+          set.add(payload.rejectedBy.peerId);
+          state.membershipRejections.set(payload.candidateDigest, set);
+          break;
+        }
+        case "MEMBERSHIP_REVISION_ACCEPTED": {
+          const revision = (event.payload as { revision: WorkspaceMembershipRevision }).revision;
+          state.membershipRevisions.push(revision);
+          state.membershipRevisionSeq.push(event.seq);
+          break;
+        }
         default:
           break;
       }
     }
     for (const artifact of state.artifacts.values()) artifact.revisions.sort((a, b) => a.revision - b.revision);
     return state;
+  }
+
+  /** The CURRENT participant set: genesis participants folded with accepted membership revisions. */
+  function participantsOf(state: WorkspaceState): readonly PeerRef[] {
+    let participants: readonly PeerRef[] = state.workspace.participants;
+    for (const revision of state.membershipRevisions) participants = applyMembershipRevision(participants, revision);
+    return participants;
+  }
+
+  function currentMembershipRef(state: WorkspaceState): MembershipRevisionRef {
+    const last = state.membershipRevisions[state.membershipRevisions.length - 1];
+    if (last === undefined) return genesisMembershipRef(state.workspace);
+    return Object.freeze({ schemaVersion: 1 as const, workspaceId: state.workspace.workspaceId, revision: last.revision, revisionDigest: last.revisionDigest });
+  }
+
+  /** Did any accepted membership revision occur strictly AFTER this chain seq? */
+  function membershipChangedAfter(state: WorkspaceState, seq: number): boolean {
+    return state.membershipRevisionSeq.some((revisionSeq) => revisionSeq > seq);
   }
 
   async function requireState(workspaceId: string): Promise<{ state: WorkspaceState; events: readonly BoundaryEvent[] }> {
@@ -253,7 +389,12 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     return candidate.base === null ? head === undefined : head !== undefined && acceptedBoundaryRevisionRefsEqual(candidate.base, acceptedRevisionRefOf(head));
   }
 
-  function standingOf(artifact: ArtifactState, candidate: BoundaryCandidateRevision): CandidateStanding {
+  /**
+   * G10-L §13: an artifact candidate is STALE once the participant set has changed
+   * after it was proposed — the required-acceptor universe it was authored against
+   * no longer exists, so it is never silently reinterpreted.
+   */
+  function standingOf(state: WorkspaceState, artifact: ArtifactState, candidate: BoundaryCandidateRevision): CandidateStanding {
     const acceptingRevision = artifact.revisions.find((revision) => revision.candidateDigest === candidate.digest);
     if (acceptingRevision !== undefined) {
       const head = headOf(artifact);
@@ -264,7 +405,23 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     );
     if (rejected) return "REJECTED";
     if (!baseMatchesHead(artifact, candidate)) return "STALE";
+    const proposedAtSeq = artifact.candidateSeq.get(candidate.digest);
+    if (proposedAtSeq !== undefined && membershipChangedAfter(state, proposedAtSeq)) return "STALE";
     return (artifact.acceptances.get(candidate.digest)?.size ?? 0) > 0 ? "PARTIALLY_ACCEPTED" : "PROPOSED";
+  }
+
+  function membershipStandingOf(state: WorkspaceState, candidate: MembershipChangeCandidate): MembershipStanding {
+    const accepting = state.membershipRevisions.find((revision) => revision.candidateDigest === candidate.digest);
+    if (accepting !== undefined) {
+      const head = state.membershipRevisions[state.membershipRevisions.length - 1];
+      return head !== undefined && head.revision === accepting.revision ? "ACCEPTED" : "SUPERSEDED";
+    }
+    const rejected = [...(state.membershipRejections.get(candidate.digest) ?? [])].some((peerId) =>
+      candidate.requiredApprovers.some((peer) => peer.peerId === peerId),
+    );
+    if (rejected) return "REJECTED";
+    if (!membershipRevisionRefsEqual(candidate.base, currentMembershipRef(state))) return "STALE";
+    return (state.membershipApprovals.get(candidate.digest)?.size ?? 0) > 0 ? "PARTIALLY_APPROVED" : "PROPOSED";
   }
 
   function acceptedStateOf(artifact: ArtifactState): AcceptedBoundaryState | null {
@@ -275,13 +432,13 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     return Object.freeze({ ref: acceptedRevisionRefOf(head), candidate, content: candidate.content, acceptors: head.acceptors });
   }
 
-  function candidateViews(artifact: ArtifactState): readonly CandidateView[] {
+  function candidateViews(state: WorkspaceState, artifact: ArtifactState): readonly CandidateView[] {
     return Object.freeze(
       [...artifact.candidates.values()]
         .map((candidate) =>
           Object.freeze({
             candidate,
-            standing: standingOf(artifact, candidate),
+            standing: standingOf(state, artifact, candidate),
             acceptors: peersOf([...(artifact.acceptances.get(candidate.digest) ?? [])]),
             rejectedBy: peersOf([...(artifact.rejections.get(candidate.digest) ?? [])]),
           }),
@@ -290,15 +447,30 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     );
   }
 
-  function artifactView(artifact: ArtifactState): ArtifactView {
+  function artifactView(state: WorkspaceState, artifact: ArtifactState): ArtifactView {
     return Object.freeze({
       artifact: artifact.definition,
       current: acceptedStateOf(artifact),
       pending: Object.freeze(
-        candidateViews(artifact).filter((view) => view.standing !== "ACCEPTED" && view.standing !== "SUPERSEDED" && view.standing !== "REJECTED"),
+        candidateViews(state, artifact).filter((view) => view.standing !== "ACCEPTED" && view.standing !== "SUPERSEDED" && view.standing !== "REJECTED"),
       ),
       revisionCount: artifact.revisions.length,
     });
+  }
+
+  function membershipCandidateViews(state: WorkspaceState): readonly MembershipCandidateView[] {
+    return Object.freeze(
+      [...state.membershipCandidates.values()]
+        .map((candidate) =>
+          Object.freeze({
+            candidate,
+            standing: membershipStandingOf(state, candidate),
+            approvers: peersOf([...(state.membershipApprovals.get(candidate.digest) ?? [])]),
+            rejectedBy: peersOf([...(state.membershipRejections.get(candidate.digest) ?? [])]),
+          }),
+        )
+        .sort((a, b) => (a.candidate.digest < b.candidate.digest ? -1 : 1)),
+    );
   }
 
   function requireOpen(state: WorkspaceState): void {
@@ -312,7 +484,10 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
   }
 
   function requireParticipant(state: WorkspaceState, peer: PeerRef, what: string): void {
-    if (!isWorkspaceParticipant(state.workspace, peer)) fail("not_a_participant", `${what} "${peer.peerId}" is not a workspace participant`);
+    const participants = participantsOf(state);
+    if (!participants.some((entry) => entry.peerId === peer.peerId)) {
+      fail("not_a_participant", `${what} "${peer.peerId}" is not a current workspace participant`);
+    }
   }
 
   function validateContent(type: BoundaryArtifactTypeRef, content: unknown): unknown {
@@ -331,6 +506,17 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     return { peer, authenticated: local !== true };
   }
 
+  /**
+   * G10-L: author identity. `authenticatedPeer === undefined` ⇒ the configured local
+   * peer (local behaviour, unchanged from G10-K). A present-but-null authenticated peer
+   * fails closed: remote authoring must be authenticated.
+   */
+  function resolveAuthor(authenticatedPeer: PeerRef | null | undefined, local: boolean | undefined): { author: PeerRef; authenticated: boolean } {
+    if (authenticatedPeer === undefined || local === true) return { author: deps.localPeer, authenticated: false };
+    if (authenticatedPeer === null) fail("unauthenticated_author", "authoring shared boundary state requires an authenticated peer");
+    return { author: authenticatedPeer, authenticated: true };
+  }
+
   async function openWorkspace(input: { readonly workspaceId: string; readonly participants: readonly PeerRef[]; readonly purpose: string }): Promise<BoundaryWorkspaceDefinition> {
     const workspace = materializeBoundaryWorkspaceDefinition({ workspaceId: input.workspaceId, participants: input.participants, purpose: input.purpose });
     await deps.store.openWorkspace(workspace);
@@ -345,6 +531,12 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     await append(input.workspaceId, [{ eventId: eventIdFor("WORKSPACE_CLOSED", input.workspaceId, payload), type: "WORKSPACE_CLOSED", payload }]);
   }
 
+  /**
+   * Artifact creation (and workspace opening) are canonical-home SCAFFOLDING steps,
+   * not remote semantic operations in v1: they declare the workspace's structural
+   * topic/type and change no shared boundary state. Ordinary authoring (candidates)
+   * and acceptance/membership remain participant-gated. `StorageHome ≠ participant`.
+   */
   async function createArtifact(input: { readonly workspaceId: string; readonly artifactId: string; readonly type: BoundaryArtifactTypeRef; readonly title: string }): Promise<BoundaryArtifactDefinition> {
     const { state } = await requireState(input.workspaceId);
     requireOpen(state);
@@ -362,14 +554,17 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     readonly content: unknown;
     readonly requiredAcceptors: readonly PeerRef[];
     readonly intent: string;
+    readonly authenticatedPeer?: PeerRef | null | undefined;
+    readonly local?: boolean | undefined;
   }): Promise<BoundaryCandidateRevision> {
     const { state } = await requireState(input.workspaceId);
     requireOpen(state);
-    requireParticipant(state, deps.localPeer, "author");
+    const { author } = resolveAuthor(input.authenticatedPeer, input.local);
+    requireParticipant(state, author, "author");
     const artifact = requireArtifact(state, input.artifactId);
     const requiredAcceptors = canonicalPeerSet(input.requiredAcceptors, "requiredAcceptors", 1);
     for (const peer of requiredAcceptors) requireParticipant(state, peer, "required acceptor");
-    if (requiredAcceptors.every((peer) => peer.peerId === deps.localPeer.peerId)) {
+    if (requiredAcceptors.every((peer) => peer.peerId === author.peerId)) {
       fail("unilateral_acceptance_unsupported", "requiredAcceptors must include at least one peer other than the author (joint acceptance only in v1)");
     }
     const head = headOf(artifact);
@@ -393,7 +588,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
       base: input.base,
       content,
       contentDigest,
-      author: deps.localPeer,
+      author,
       requiredAcceptors,
       intent: input.intent,
     };
@@ -417,7 +612,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     const { peer, authenticated } = resolveAcceptor(input.authenticatedPeer, input.local);
     requireParticipant(state, peer, "acceptor");
     if (!candidateHasAcceptor(candidate, peer)) fail("not_required_acceptor", `"${peer.peerId}" is not a required acceptor of this candidate`);
-    const standing = standingOf(artifact, candidate);
+    const standing = standingOf(state, artifact, candidate);
     const acceptingRevision = artifact.revisions.find((revision) => revision.candidateDigest === candidate.digest);
     if (acceptingRevision !== undefined) {
       // Idempotent retry of an already-advanced revision.
@@ -479,7 +674,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     const { peer } = resolveAcceptor(input.authenticatedPeer, input.local);
     requireParticipant(state, peer, "rejector");
     if (!candidateHasAcceptor(candidate, peer)) fail("not_required_acceptor", `"${peer.peerId}" is not a required acceptor of this candidate (only required acceptors may decide a candidate)`);
-    const standing = standingOf(artifact, candidate);
+    const standing = standingOf(state, artifact, candidate);
     if (standing === "ACCEPTED" || standing === "SUPERSEDED") fail("already_decided", "an accepted revision cannot be rejected");
     const rejected = artifact.rejections.get(candidate.digest) ?? new Set<string>();
     if (rejected.has(peer.peerId)) {
@@ -497,7 +692,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
 
   async function pendingCandidates(input: { readonly workspaceId: string; readonly artifactId: string }): Promise<readonly CandidateView[]> {
     const { state } = await requireState(input.workspaceId);
-    return artifactView(requireArtifact(state, input.artifactId)).pending;
+    return artifactView(state, requireArtifact(state, input.artifactId)).pending;
   }
 
   async function workspaceView(input: { readonly workspaceId: string }): Promise<BoundaryWorkspaceView> {
@@ -508,7 +703,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
       workspace: state.workspace,
       closed: state.closed,
       closedReason: state.closedReason,
-      artifacts: Object.freeze([...state.artifacts.values()].map(artifactView).sort((a, b) => (a.artifact.artifactId < b.artifact.artifactId ? -1 : 1))),
+      artifacts: Object.freeze([...state.artifacts.values()].map((artifact) => artifactView(state, artifact)).sort((a, b) => (a.artifact.artifactId < b.artifact.artifactId ? -1 : 1))),
       basis,
     });
   }
@@ -530,7 +725,7 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
         [...touched]
           .map((artifactId) => state.artifacts.get(artifactId))
           .filter((artifact): artifact is ArtifactState => artifact !== undefined)
-          .map(artifactView)
+          .map((artifact) => artifactView(state, artifact))
           .sort((a, b) => (a.artifact.artifactId < b.artifact.artifactId ? -1 : 1)),
       ),
     });
@@ -566,6 +761,222 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     if (!known) fail("unverified_scope", "a commitment may only scope to an exact accepted boundary revision (candidate revisions cannot be scoped)");
   }
 
+  /* ------------------------------------------------------------------ *
+   * G10-L membership lineage
+   * ------------------------------------------------------------------ */
+
+  function membershipRefOfRevision(revision: WorkspaceMembershipRevision): MembershipRevisionRef {
+    return Object.freeze({ schemaVersion: 1 as const, workspaceId: revision.workspaceId, revision: revision.revision, revisionDigest: revision.revisionDigest });
+  }
+
+  async function proposeMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly kind: MembershipChangeKind;
+    readonly target: PeerRef;
+    readonly intent: string;
+    readonly authenticatedPeer?: PeerRef | null | undefined;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipChangeCandidate> {
+    const { state } = await requireState(input.workspaceId);
+    requireOpen(state);
+    const { author } = resolveAuthor(input.authenticatedPeer, input.local);
+    requireParticipant(state, author, "membership author");
+    const participants = participantsOf(state);
+    if (input.kind === "ADD_PARTICIPANT" && participants.some((peer) => peer.peerId === input.target.peerId)) {
+      fail("invalid_registration", `"${input.target.peerId}" is already a participant`);
+    }
+    if (input.kind === "REMOVE_PARTICIPANT_CONSENSUAL") {
+      if (!participants.some((peer) => peer.peerId === input.target.peerId)) fail("invalid_registration", `"${input.target.peerId}" is not a participant`);
+      if (participants.length <= 2) fail("invalid_registration", "a consensual removal cannot reduce a workspace below 2 participants");
+    }
+    if (input.intent.trim() === "") fail("invalid_registration", "membership intent must be a non-empty string");
+    const fields = {
+      schemaVersion: 1 as const,
+      workspaceId: input.workspaceId,
+      base: currentMembershipRef(state),
+      kind: input.kind,
+      target: input.target,
+      author,
+      requiredApprovers: requiredApproversFor(input.kind, participants, input.target),
+      intent: input.intent,
+    };
+    const candidate: MembershipChangeCandidate = Object.freeze({ ...fields, digest: membershipCandidateDigestOf(fields) });
+    await append(input.workspaceId, [{ eventId: eventIdFor("MEMBERSHIP_PROPOSED", input.workspaceId, { candidate }), type: "MEMBERSHIP_PROPOSED", payload: { candidate } }]);
+    return candidate;
+  }
+
+  async function approveMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly authenticatedPeer: PeerRef | null;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipApprovalOutcome> {
+    const { state } = await requireState(input.workspaceId);
+    requireOpen(state);
+    const candidate = state.membershipCandidates.get(input.candidateDigest);
+    if (candidate === undefined) fail("unknown_membership_candidate", `membership candidate "${input.candidateDigest}" does not exist`);
+    const { peer, authenticated } = resolveAcceptor(input.authenticatedPeer, input.local);
+    const standing = membershipStandingOf(state, candidate);
+    const accepting = state.membershipRevisions.find((revision) => revision.candidateDigest === candidate.digest);
+    if (accepting !== undefined) {
+      return Object.freeze({ candidateDigest: candidate.digest, standing, accepted: membershipRefOfRevision(accepting), approvers: accepting.approvers });
+    }
+    if (standing === "REJECTED") fail("already_decided", "this membership change has been rejected by a required approver");
+    if (standing === "STALE") fail("stale_membership", "this membership change is based on a superseded membership revision — propose it again from the current membership");
+    if (!candidate.requiredApprovers.some((entry) => entry.peerId === peer.peerId)) {
+      fail("not_required_approver", `"${peer.peerId}" is not a required approver of this membership change`);
+    }
+    // The ADD target may approve its OWN join before becoming a participant (§14/L-N11).
+    if (peer.peerId !== candidate.target.peerId) requireParticipant(state, peer, "approver");
+    const approvals = state.membershipApprovals.get(candidate.digest) ?? new Set<string>();
+    if (approvals.has(peer.peerId)) {
+      return Object.freeze({ candidateDigest: candidate.digest, standing, accepted: null, approvers: peersOf([...approvals]) });
+    }
+    const approvers = peersOf([...approvals, peer.peerId]);
+    const approvalPayload = Object.freeze({ workspaceId: input.workspaceId, candidateDigest: candidate.digest, approvedBy: peer, authenticated });
+    const complete = candidate.requiredApprovers.every((required) => approvers.some((entry) => entry.peerId === required.peerId));
+    if (!complete) {
+      await append(input.workspaceId, [{ eventId: eventIdFor("MEMBERSHIP_APPROVED", input.workspaceId, approvalPayload), type: "MEMBERSHIP_APPROVED", payload: approvalPayload }]);
+      return Object.freeze({ candidateDigest: candidate.digest, standing: "PARTIALLY_APPROVED", accepted: null, approvers });
+    }
+    const current = participantsOf(state);
+    if (!membershipRevisionRefsEqual(candidate.base, currentMembershipRef(state))) {
+      fail("stale_membership", "the membership advanced during approval — propose the change again from the current membership");
+    }
+    const nextParticipants =
+      candidate.kind === "ADD_PARTICIPANT"
+        ? canonicalPeerSet([...current, candidate.target], "participants", 2)
+        : canonicalPeerSet(current.filter((entry) => entry.peerId !== candidate.target.peerId), "participants", 2);
+    const nextRevision = state.membershipRevisions.length + 1;
+    const revision: WorkspaceMembershipRevision = Object.freeze({
+      schemaVersion: 1 as const,
+      workspaceId: input.workspaceId,
+      revision: nextRevision,
+      revisionDigest: membershipRevisionDigestOf({
+        workspaceId: input.workspaceId,
+        revision: nextRevision,
+        kind: candidate.kind,
+        target: candidate.target,
+        candidateDigest: candidate.digest,
+        approvers,
+        participants: nextParticipants,
+        previousRevisionDigest: currentMembershipRef(state).revisionDigest,
+      }),
+      kind: candidate.kind,
+      target: candidate.target,
+      candidateDigest: candidate.digest,
+      approvers,
+      participants: nextParticipants,
+      baseRevision: candidate.base.revision,
+    });
+    await append(input.workspaceId, [
+      { eventId: eventIdFor("MEMBERSHIP_APPROVED", input.workspaceId, approvalPayload), type: "MEMBERSHIP_APPROVED", payload: approvalPayload },
+      { eventId: eventIdFor("MEMBERSHIP_REVISION_ACCEPTED", input.workspaceId, { revision }), type: "MEMBERSHIP_REVISION_ACCEPTED", payload: { revision } },
+    ]);
+    return Object.freeze({ candidateDigest: candidate.digest, standing: "ACCEPTED", accepted: membershipRefOfRevision(revision), approvers });
+  }
+
+  async function rejectMembershipChange(input: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly authenticatedPeer: PeerRef | null;
+    readonly local?: boolean | undefined;
+  }): Promise<MembershipRejectionOutcome> {
+    const { state } = await requireState(input.workspaceId);
+    requireOpen(state);
+    const candidate = state.membershipCandidates.get(input.candidateDigest);
+    if (candidate === undefined) fail("unknown_membership_candidate", `membership candidate "${input.candidateDigest}" does not exist`);
+    const { peer } = resolveAcceptor(input.authenticatedPeer, input.local);
+    if (!candidate.requiredApprovers.some((entry) => entry.peerId === peer.peerId)) {
+      fail("not_required_approver", `"${peer.peerId}" is not a required approver of this membership change`);
+    }
+    if (peer.peerId !== candidate.target.peerId) requireParticipant(state, peer, "rejector");
+    const standing = membershipStandingOf(state, candidate);
+    if (standing === "ACCEPTED" || standing === "SUPERSEDED") fail("already_decided", "an accepted membership revision cannot be rejected");
+    const rejected = state.membershipRejections.get(candidate.digest) ?? new Set<string>();
+    if (rejected.has(peer.peerId)) {
+      return Object.freeze({ candidateDigest: candidate.digest, standing, rejectedBy: peersOf([...rejected]) });
+    }
+    const payload = Object.freeze({ workspaceId: input.workspaceId, candidateDigest: candidate.digest, rejectedBy: peer, authenticated: input.local !== true });
+    await append(input.workspaceId, [{ eventId: eventIdFor("MEMBERSHIP_REJECTED", input.workspaceId, payload), type: "MEMBERSHIP_REJECTED", payload }]);
+    return Object.freeze({ candidateDigest: candidate.digest, standing: "REJECTED", rejectedBy: peersOf([...rejected, peer.peerId]) });
+  }
+
+  function pendingMembershipOf(state: WorkspaceState): readonly MembershipCandidateView[] {
+    return Object.freeze(
+      membershipCandidateViews(state).filter((view) => view.standing !== "ACCEPTED" && view.standing !== "SUPERSEDED" && view.standing !== "REJECTED"),
+    );
+  }
+
+  async function membership(input: { readonly workspaceId: string }): Promise<MembershipView> {
+    const { state } = await requireState(input.workspaceId);
+    const ref = currentMembershipRef(state);
+    return Object.freeze({
+      workspaceId: input.workspaceId,
+      revision: ref.revision,
+      revisionDigest: ref.revisionDigest,
+      participants: participantsOf(state),
+      pending: pendingMembershipOf(state),
+      history: Object.freeze([...state.membershipRevisions]),
+    });
+  }
+
+  async function pendingMembershipChanges(input: { readonly workspaceId: string }): Promise<readonly MembershipCandidateView[]> {
+    const { state } = await requireState(input.workspaceId);
+    return pendingMembershipOf(state);
+  }
+
+  async function boundaryObservation(input: { readonly workspaceId: string }): Promise<BoundaryObservation | undefined> {
+    const events = await deps.store.replay(input.workspaceId);
+    const state = derive(events);
+    if (state === undefined) return undefined;
+    const basis = await deps.store.basis(input.workspaceId);
+    if (basis === undefined) return undefined;
+    let candidateCount = 0;
+    let pendingCandidateCount = 0;
+    let staleCandidateCount = 0;
+    let rejectedCandidateCount = 0;
+    let acceptedRevisionCount = 0;
+    let acceptedArtifactCount = 0;
+    let branchCount = 0;
+    let blueprintAccepted = false;
+    for (const artifact of state.artifacts.values()) {
+      candidateCount += artifact.candidates.size;
+      acceptedRevisionCount += artifact.revisions.length;
+      if (artifact.revisions.length > 0) acceptedArtifactCount += 1;
+      if (artifact.revisions.length > 0 && boundaryArtifactTypeRefsEqual(artifact.definition.type, ORGANIZATION_BLUEPRINT_TYPE)) blueprintAccepted = true;
+      const byBase = new Map<string, number>();
+      for (const candidate of artifact.candidates.values()) {
+        const standing = standingOf(state, artifact, candidate);
+        if (standing === "STALE") staleCandidateCount += 1;
+        if (standing === "REJECTED") rejectedCandidateCount += 1;
+        if (standing !== "ACCEPTED" && standing !== "SUPERSEDED" && standing !== "REJECTED") pendingCandidateCount += 1;
+        const key = candidate.base === null ? "genesis" : candidate.base.revisionDigest;
+        byBase.set(key, (byBase.get(key) ?? 0) + 1);
+      }
+      for (const count of byBase.values()) if (count > 1) branchCount += 1;
+    }
+    return Object.freeze({
+      workspaceId: input.workspaceId,
+      throughSeq: basis.throughSeq,
+      chainDigest: basis.chainDigest,
+      lifecycle: state.closed ? "CLOSED" : ("OPEN" as const),
+      participantCount: participantsOf(state).length,
+      membershipRevision: currentMembershipRef(state).revision,
+      artifactCount: state.artifacts.size,
+      candidateCount,
+      pendingCandidateCount,
+      staleCandidateCount,
+      rejectedCandidateCount,
+      acceptedRevisionCount,
+      acceptedArtifactCount,
+      branchCount,
+      revisionChurn: acceptedRevisionCount,
+      membershipChurn: state.membershipRevisions.length,
+      blueprintAccepted,
+    });
+  }
+
   return {
     openWorkspace,
     closeWorkspace,
@@ -579,5 +990,11 @@ export function makeBoundaryMemoryService(deps: BoundaryMemoryDeps): BoundaryMem
     changesSince,
     acceptedBlueprint,
     admitBoundaryRevisionScope,
+    proposeMembershipChange,
+    approveMembershipChange,
+    rejectMembershipChange,
+    membership,
+    pendingMembershipChanges,
+    boundaryObservation,
   };
 }

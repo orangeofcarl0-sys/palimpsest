@@ -28,6 +28,7 @@ export type {
   CampaignActivityPort,
   CollaborationMetrics,
   DynamicsBasis,
+  DynamicsBoundaryPort,
   DynamicsCollaborationObservation,
   DynamicsCollaborationPort,
   DynamicsKnowledge,

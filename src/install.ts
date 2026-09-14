@@ -93,8 +93,16 @@ import type { CampaignActivityObservation, CampaignActivityPort, DynamicsCollabo
 import { makeOrganizationDynamicsService } from "./organization_dynamics/index.js";
 import type { OrganizationEvolutionAdmissionPort, OrganizationEvolutionCompilerPort, OrganizationEvolutionStore, OrganizationEvolutionService, OrganizationFormalizationCompilerPort } from "./organization_evolution/index.js";
 import { makeOrganizationEvolutionService } from "./organization_evolution/index.js";
-import type { BoundaryArtifactTypeRegistry, BoundaryMemoryService, BoundaryMemoryStore } from "./boundary_memory/index.js";
-import { makeBoundaryMemoryService } from "./boundary_memory/index.js";
+import type {
+  BoundaryArtifactTypeRegistry,
+  BoundaryCollaborationTransportPort,
+  BoundaryHome,
+  BoundaryMemoryService,
+  BoundaryMemoryStore,
+  BoundaryWorkspaceRoutePort,
+  FederatedBoundaryClient,
+} from "./boundary_memory/index.js";
+import { makeBoundaryHome, makeBoundaryMemoryService, makeFederatedBoundaryClient } from "./boundary_memory/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -188,6 +196,14 @@ export interface InstallPalimpsestOptions {
   boundaryArtifactTypes?: BoundaryArtifactTypeRegistry | undefined;
   /** G10-K (additive): untrusted formalization compiler enabling FORMALIZE_ORGANIZATION. */
   organizationFormalizationCompiler?: OrganizationFormalizationCompilerPort | undefined;
+  /** G10-L (additive): the dedicated semantic transport for remote boundary collaboration. */
+  boundaryCollaborationTransport?: BoundaryCollaborationTransportPort | undefined;
+  /** G10-L (additive): workspace→canonical-home resolution (deployment binding, not social semantics). */
+  boundaryWorkspaceRoute?: BoundaryWorkspaceRoutePort | undefined;
+  /** G10-L (additive): this host's canonical boundary home id (defaults to `home-<localPeer>`). */
+  boundaryHomeId?: string | undefined;
+  /** G10-L (additive): remote operation-id allocator; default is a random UUID. */
+  allocateBoundaryOperationId?: (() => string) | undefined;
 }
 
 /**
@@ -232,6 +248,8 @@ export interface InstalledPalimpsest {
   readonly organizationEvolution?: InstalledEvolution | undefined;
   /** G10-K (additive): boundary memory — present iff a boundary store + localPeer are supplied. */
   readonly boundaryMemory?: InstalledBoundaryMemory | undefined;
+  /** G10-L (additive): federated boundary collaboration — present iff localPeer + transport + route. */
+  readonly federatedBoundaryMemory?: InstalledFederatedBoundaryMemory | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -261,6 +279,16 @@ export interface InstalledEvolution {
 export interface InstalledBoundaryMemory {
   readonly store: BoundaryMemoryStore;
   readonly service: BoundaryMemoryService;
+}
+
+/**
+ * G10-L: the federated boundary surface. `client` lets this host act as a remote peer
+ * against whichever canonical home the route resolves; `home` is present only when this
+ * host physically holds the canonical store (`StorageHome ≠ AuthorityRoot`).
+ */
+export interface InstalledFederatedBoundaryMemory {
+  readonly client: FederatedBoundaryClient;
+  readonly home?: BoundaryHome | undefined;
 }
 
 /**
@@ -501,6 +529,31 @@ export function installPalimpsest(
       ...(options.boundaryArtifactTypes === undefined ? {} : { types: options.boundaryArtifactTypes }),
     });
     boundaryMemory = { store: options.boundaryMemoryStore, service };
+  }
+
+  // G10-L: the federated surface exists when a local peer, a semantic transport, and a
+  // workspace→home route are supplied. `home` is present only when THIS host actually
+  // holds a canonical boundary store; a pure remote peer gets only the client.
+  let federatedBoundaryMemory: InstalledFederatedBoundaryMemory | undefined;
+  if (options.localPeer !== undefined && options.boundaryCollaborationTransport !== undefined && options.boundaryWorkspaceRoute !== undefined) {
+    const client = makeFederatedBoundaryClient({
+      peer: options.localPeer,
+      transport: options.boundaryCollaborationTransport,
+      route: options.boundaryWorkspaceRoute,
+      allocateOperationId: options.allocateBoundaryOperationId ?? (() => `bop-${randomUUID()}`),
+    });
+    federatedBoundaryMemory = {
+      client,
+      ...(boundaryMemory === undefined
+        ? {}
+        : {
+            home: makeBoundaryHome({
+              homeId: options.boundaryHomeId ?? `home-${options.localPeer.peerId}`,
+              service: boundaryMemory.service,
+              store: boundaryMemory.store,
+            }),
+          }),
+    };
   }
 
   // G10-E5 (§132–§135): the federation service exists only when the full
@@ -763,6 +816,8 @@ export function installPalimpsest(
       organizations: { head: (id) => orgStore.head(id), get: (ref) => orgStore.get(ref) },
       ...(options.coordinationStore === undefined ? {} : { collaboration: coordinationObservationPort(options.coordinationStore) }),
       ...(options.campaignStore === undefined ? {} : { campaignActivity: campaignActivityPort(options.campaignStore) }),
+      // G10-L: boundary-aware observation is available whenever this host holds the store.
+      ...(boundaryMemory === undefined ? {} : { boundary: { observe: (workspaceId: string) => boundaryMemory!.service.boundaryObservation({ workspaceId }) } }),
     });
     organizationDynamics = { service: dynamicsService };
   }
@@ -820,6 +875,7 @@ export function installPalimpsest(
     ...(organizationDynamics === undefined ? {} : { organizationDynamics }),
     ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled }),
     ...(boundaryMemory === undefined ? {} : { boundaryMemory }),
+    ...(federatedBoundaryMemory === undefined ? {} : { federatedBoundaryMemory }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

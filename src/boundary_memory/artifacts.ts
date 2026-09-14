@@ -28,6 +28,7 @@ import type {
   AcceptedBoundaryRevisionRef,
   BoundaryArtifactTypeRef,
   BoundaryContentRef,
+  BoundaryWorkspaceRef,
 } from "./ref.js";
 import {
   BOUNDARY_CONTENT_DIGEST_DOMAIN,
@@ -45,6 +46,8 @@ import {
   parseBoundaryArtifactTypeRef,
   parseBoundaryContentRefs,
 } from "./ref.js";
+import type { MembershipChangeCandidate, WorkspaceMembershipRevision } from "./membership.js";
+import { parseMembershipChangeCandidate, parseWorkspaceMembershipRevision } from "./membership.js";
 
 export const BOUNDARY_WORKSPACE_DOMAIN = "palimpsest.boundary-workspace.v1";
 export const BOUNDARY_ARTIFACT_DOMAIN = "palimpsest.boundary-artifact.v1";
@@ -516,7 +519,11 @@ export type BoundaryEventType =
   | "CANDIDATE_PROPOSED"
   | "CANDIDATE_ACCEPTED"
   | "CANDIDATE_REJECTED"
-  | "REVISION_ACCEPTED";
+  | "REVISION_ACCEPTED"
+  | "MEMBERSHIP_PROPOSED"
+  | "MEMBERSHIP_APPROVED"
+  | "MEMBERSHIP_REJECTED"
+  | "MEMBERSHIP_REVISION_ACCEPTED";
 
 export interface BoundaryEventPayloads {
   readonly WORKSPACE_OPENED: { readonly workspace: BoundaryWorkspaceDefinition };
@@ -538,6 +545,20 @@ export interface BoundaryEventPayloads {
     readonly authenticated: boolean;
   };
   readonly REVISION_ACCEPTED: { readonly revision: AcceptedBoundaryRevision };
+  readonly MEMBERSHIP_PROPOSED: { readonly candidate: MembershipChangeCandidate };
+  readonly MEMBERSHIP_APPROVED: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly approvedBy: PeerRef;
+    readonly authenticated: boolean;
+  };
+  readonly MEMBERSHIP_REJECTED: {
+    readonly workspaceId: string;
+    readonly candidateDigest: string;
+    readonly rejectedBy: PeerRef;
+    readonly authenticated: boolean;
+  };
+  readonly MEMBERSHIP_REVISION_ACCEPTED: { readonly revision: WorkspaceMembershipRevision };
 }
 
 export type BoundaryEventPayloadParser = (payload: unknown) => unknown;
@@ -591,7 +612,37 @@ export const BOUNDARY_EVENT_PARSERS: BoundaryEventParsers = Object.freeze({
     bmExactKeys(object, ["revision"], "REVISION_ACCEPTED");
     return Object.freeze({ revision: parseAcceptedBoundaryRevision(object.revision) });
   },
+  MEMBERSHIP_PROPOSED: (payload: unknown) => {
+    const object = bmObject(payload, "MEMBERSHIP_PROPOSED");
+    bmExactKeys(object, ["candidate"], "MEMBERSHIP_PROPOSED");
+    return Object.freeze({ candidate: parseMembershipChangeCandidate(object.candidate) });
+  },
+  MEMBERSHIP_APPROVED: (payload: unknown) => {
+    const parsed = membershipDecisionPayload(payload, "MEMBERSHIP_APPROVED", "approvedBy");
+    return Object.freeze({ workspaceId: parsed.workspaceId, candidateDigest: parsed.candidateDigest, approvedBy: parsed.peer, authenticated: parsed.authenticated });
+  },
+  MEMBERSHIP_REJECTED: (payload: unknown) => {
+    const parsed = membershipDecisionPayload(payload, "MEMBERSHIP_REJECTED", "rejectedBy");
+    return Object.freeze({ workspaceId: parsed.workspaceId, candidateDigest: parsed.candidateDigest, rejectedBy: parsed.peer, authenticated: parsed.authenticated });
+  },
+  MEMBERSHIP_REVISION_ACCEPTED: (payload: unknown) => {
+    const object = bmObject(payload, "MEMBERSHIP_REVISION_ACCEPTED");
+    bmExactKeys(object, ["revision"], "MEMBERSHIP_REVISION_ACCEPTED");
+    return Object.freeze({ revision: parseWorkspaceMembershipRevision(object.revision) });
+  },
 });
+
+function membershipDecisionPayload(payload: unknown, what: string, peerKey: string): { workspaceId: string; candidateDigest: string; peer: PeerRef; authenticated: boolean } {
+  const object = bmObject(payload, what);
+  bmExactKeys(object, ["workspaceId", "candidateDigest", peerKey, "authenticated"], what);
+  if (typeof object.authenticated !== "boolean") bmFail(`${what}.authenticated must be a boolean`);
+  return {
+    workspaceId: bmStableId(object.workspaceId, `${what}.workspaceId`),
+    candidateDigest: bmDigest(object.candidateDigest, `${what}.candidateDigest`),
+    peer: parsePeerRef(object[peerKey]),
+    authenticated: object.authenticated,
+  };
+}
 
 export function boundaryChainDigest(input: {
   readonly workspaceId: string;
@@ -621,6 +672,42 @@ export function boundaryEventIdOf(type: string, workspaceId: string, payload: un
  * ------------------------------------------------------------------ */
 
 export type CandidateStanding = "PROPOSED" | "PARTIALLY_ACCEPTED" | "ACCEPTED" | "REJECTED" | "STALE" | "SUPERSEDED";
+
+/** Derived membership-change standing — always from append-only history. */
+export type MembershipStanding = "PROPOSED" | "PARTIALLY_APPROVED" | "ACCEPTED" | "REJECTED" | "STALE" | "SUPERSEDED";
+
+/** A basis into a workspace's canonical boundary history (for Dynamics grounding). */
+export interface BoundaryWorkspaceBasisRef {
+  readonly workspace: BoundaryWorkspaceRef;
+  readonly throughSeq: number;
+  readonly chainDigest: string;
+}
+
+/**
+ * G10-L mechanical boundary observation. Counts are MECHANICAL FACTS about
+ * canonical BoundaryMemory history — never collaboration quality, alignment,
+ * trust, correctness, or a scalar score. `commitmentRefCount` is intentionally
+ * absent: commitments are coordination truth, not boundary truth.
+ */
+export interface BoundaryObservation {
+  readonly workspaceId: string;
+  readonly throughSeq: number;
+  readonly chainDigest: string;
+  readonly lifecycle: "OPEN" | "CLOSED";
+  readonly participantCount: number;
+  readonly membershipRevision: number;
+  readonly artifactCount: number;
+  readonly candidateCount: number;
+  readonly pendingCandidateCount: number;
+  readonly staleCandidateCount: number;
+  readonly rejectedCandidateCount: number;
+  readonly acceptedRevisionCount: number;
+  readonly acceptedArtifactCount: number;
+  readonly branchCount: number;
+  readonly revisionChurn: number;
+  readonly membershipChurn: number;
+  readonly blueprintAccepted: boolean;
+}
 
 /** Canonical order of content refs for a set (used by views). */
 export function sortedContentRefKeys(refs: readonly BoundaryContentRef[]): readonly string[] {
