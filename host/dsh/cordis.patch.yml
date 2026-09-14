@@ -1,0 +1,32 @@
+# palimpsest-dsh-host bundle patch.
+#
+# Mounts three plugins over dsh-base:
+#   palimpsest-startup  parses `[message...]`, `--resume <sessionId>`, `--session-file <path>`
+#   palimpsest-tools    launches the Palimpsest deployment from a profile and registers its
+#                       tools into the REAL DSH tool registry (no stub registry)
+#   palimpsest-runner   creates or cold-resumes a persistent principal session and runs an
+#                       attention loop that wakes the SAME agent via the real agent service
+#
+# A profile overrides the palimpsest-tools config by id (see the dogfood profiles):
+#   - id: palimpsest-tools
+#     config: { palimpsestEntry: <abs dist/src/advanced.js>, deploymentProfile: <abs profile.json>, serve: true, port: 0 }
+
+- insert:
+    # PTC execution capability the base bundle does not mount on its own (same as
+    # the shipped headless bundle).
+    - id: code-runtime
+      name: '@deepseek-ai/dsh-code-runtime-worker-thread'
+
+    - id: palimpsest-startup
+      name: 'palimpsest-dsh-host/startup'
+
+    - id: palimpsest-tools
+      name: 'palimpsest-dsh-host'
+      config:
+        palimpsestEntry: ''
+        deploymentProfile: ''
+        serve: false
+        port: 0
+
+    - id: palimpsest-runner
+      name: 'palimpsest-dsh-host/runner'

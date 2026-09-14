@@ -120,7 +120,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         name: "palimpsest_federation",
         description: "Peer collaboration: read your inbox/threads, contact peers, exchange messages, and act on explicit commitments (local identity is derived, never supplied)",
         mode: "mutating",
-        actions: ["inbox", "thread", "message", "contact", "commitment", "commitments"],
+        actions: ["inbox", "thread", "message", "contact", "commitment", "commitments", "remote_decision"],
         extraProperties: {
           threadId: { type: "string" },
           to: { type: "string" },
@@ -133,13 +133,20 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           proposedHolder: { type: "string" },
           scope: { type: "object" },
           statement: { type: "string" },
+          remoteDecision: { type: "string", enum: ["accept", "reject", "release"] },
         },
         run: async (action, object) => {
           if (action === "inbox") return federation.inbox();
           if (action === "commitments") return federation.commitments();
           if (action === "thread") return federation.thread(requiredString(object, "threadId"));
           if (action === "message") return federation.sendMessage({ to: { schemaVersion: 1, peerId: requiredString(object, "to") }, threadId: requiredString(object, "threadId"), body: requiredString(object, "body") });
-          if (action === "contact") return federation.findCandidates({ competenceTags: stringArray(object.competenceTags ?? [], "competenceTags"), origin: object.origin ?? { kind: "runtime_declared" }, reason: requiredString(object, "reason") });
+          if (action === "contact") return federation.findCandidates({ competenceTags: stringArray(object.competenceTags ?? [], "competenceTags"), origin: object.origin ?? { kind: "runtime_scope", scope: { schemaVersion: 1, scopeId: "unscoped" } }, reason: requiredString(object, "reason") });
+          if (action === "remote_decision") {
+            if (federation.submitRemoteDecision === undefined) throw new ToolArgsError("remote commitment decisions are not configured for this installation");
+            const decision = requiredString(object, "remoteDecision");
+            if (decision !== "accept" && decision !== "reject" && decision !== "release") throw new ToolArgsError('remoteDecision must be "accept" | "reject" | "release"');
+            return federation.submitRemoteDecision({ to: { schemaVersion: 1, peerId: requiredString(object, "to") }, commitmentId: requiredString(object, "commitmentId"), decision });
+          }
           const commitmentAction = requiredString(object, "commitmentAction");
           if (commitmentAction === "offer") {
             const scope = required(object, "scope");
@@ -166,7 +173,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         name: "palimpsest_boundary",
         description: "Shared boundary memory: inspect a workspace/artifact, propose a candidate revision, and explicitly accept or reject an exact candidate (authorship/acceptor identity is derived)",
         mode: "mutating",
-        actions: ["view", "current", "pending", "membership", "observation", "propose", "decide"],
+        actions: ["view", "current", "pending", "membership", "observation", "propose", "decide", "submit_remote"],
         extraProperties: {
           workspaceId: { type: "string" },
           artifactId: { type: "string" },
@@ -176,6 +183,8 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           intent: { type: "string" },
           candidateDigest: { type: "string" },
           decision: { type: "string", enum: ["accept", "reject"] },
+          operation: { type: "object" },
+          operationId: { type: "string" },
         },
         run: async (action, object) => {
           if (action === "view") return boundary.view(requiredString(object, "workspaceId"));
@@ -191,6 +200,16 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
               content: required(object, "content"),
               requiredAcceptors: stringArray(object.requiredAcceptors ?? [], "requiredAcceptors").map((peerId) => ({ schemaVersion: 1 as const, peerId })),
               intent: requiredString(object, "intent"),
+            });
+          }
+          if (action === "submit_remote") {
+            if (boundary.submitRemote === undefined) throw new ToolArgsError("remote boundary submission is not configured for this installation");
+            const operation = required(object, "operation");
+            if (typeof operation !== "object" || operation === null) throw new ToolArgsError("operation must be an object");
+            return boundary.submitRemote({
+              workspaceId: requiredString(object, "workspaceId"),
+              operation: operation as never,
+              ...(typeof object.operationId === "string" && object.operationId.length > 0 ? { operationId: object.operationId } : {}),
             });
           }
           const decision = requiredString(object, "decision");

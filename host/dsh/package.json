@@ -1,0 +1,30 @@
+{
+  "name": "palimpsest-dsh-host",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Real DSH host bundle for Palimpsest: registers the palimpsest_* tools into a DSH agent and runs a persistent, resumable project principal.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./startup": "./lib/startup.js",
+    "./runner": "./lib/runner.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml"
+  ],
+  "license": "MIT",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  }
+}

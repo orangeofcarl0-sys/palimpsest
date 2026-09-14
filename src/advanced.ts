@@ -116,3 +116,7 @@ export { defineApplicationTools } from "./tools/application_tools.js";
 export * from "./transport/index.js";
 export * from "./attention/index.js";
 export * from "./deployment/index.js";
+
+/** G10-Q (additive): the launch/serve entry points a real host plugin needs. */
+export { serveOrchestration } from "./serve.js";
+export type { ServeOptions, ServeHandle } from "./serve.js";

@@ -48,6 +48,7 @@ import {
   type AttentionSignal,
 } from "../attention/index.js";
 import { staticBoundaryRoute } from "../boundary_memory/index.js";
+import type { RemoteSubmissionPort } from "../application/surface.js";
 import type { ProjectAgentDeploymentProfile } from "./profile.js";
 
 /** Optional host services; the profile selects the KIND, the host supplies the instance. */
@@ -220,6 +221,44 @@ export function launchDeployment(
       ? undefined
       : [{ peer: localPeer, point: profile.persistentPoint }];
 
+  // G10-Q: the durable remote-submission port lets a NON-home peer act through product tools
+  // (submit a boundary mutation to the home; communicate an explicit commitment decision to the
+  // owner). A queue receipt is mechanical, never an acceptance.
+  const boundaryClient =
+    profile.boundaryRoutes === undefined
+      ? undefined
+      : durableBoundaryClient(transport, {
+          localPeer,
+          route: staticBoundaryRoute(profile.boundaryRoutes),
+          allocateOperationId: () => `bop-${profile.profileId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+        });
+  let remoteOperationCounter = 0;
+  const remoteTransport: RemoteSubmissionPort = {
+    submitOperation: async (input) => {
+      const operationId = input.operationId ?? `rop-${profile.profileId}-${++remoteOperationCounter}`;
+      const result = await transport.submit({
+        operationId,
+        from: localPeer,
+        to: input.to,
+        operation: input.operation,
+      });
+      return { operationId, delivered: result.delivered };
+    },
+    submitBoundary: (input) => {
+      if (boundaryClient === undefined) {
+        throw new DeploymentLaunchError(
+          "host_service_absent",
+          "no boundary route is configured for this deployment, so no canonical home is reachable",
+        );
+      }
+      return boundaryClient.submit({
+        workspaceId: input.workspaceId,
+        operation: input.operation,
+        ...(input.operationId === undefined ? {} : { operationId: input.operationId }),
+      });
+    },
+  };
+
   const installed = installPalimpsest(context, {
     projectId: profile.projectId,
     databasePath: profile.databases.orchestration,
@@ -241,6 +280,7 @@ export function launchDeployment(
         }),
     ...(marks === undefined ? {} : { attentionMarkStore: marks }),
     ...(activation === undefined ? {} : { attentionActivation: activation }),
+    remoteTransport,
   });
 
   const pump = makeFederationInboundPump({
@@ -251,15 +291,6 @@ export function launchDeployment(
     ...(installed.federation === undefined ? {} : { federation: installed.federation }),
     ...(installed.boundaryHome === undefined ? {} : { boundaryHome: installed.boundaryHome }),
   });
-
-  const boundaryClient =
-    profile.boundaryRoutes === undefined
-      ? undefined
-      : durableBoundaryClient(transport, {
-          localPeer,
-          route: staticBoundaryRoute(profile.boundaryRoutes),
-          allocateOperationId: () => `bop-${profile.profileId}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-        });
 
   async function pumpAndActivate(input?: { readonly fromStart?: boolean }): Promise<DeploymentPumpReport> {
     const report = await pump.pumpOnce(input);
