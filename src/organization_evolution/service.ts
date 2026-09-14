@@ -47,6 +47,8 @@ import { EvolutionStoreError } from "./store.js";
 import { acceptedBoundaryRevisionRefsEqual } from "../boundary_memory/ref.js";
 import type { OrganizationFormalizationWiring } from "./formalization.js";
 import { formalizationAssessmentDigestOf, parseCompleteFormalizationCandidate } from "./formalization.js";
+import type { OrganizationRetirementWiring } from "./retirement.js";
+import { assessOrganizationRetirement, materializeOrganizationRetirementCandidate } from "./retirement.js";
 
 export const EVOLUTION_ASSESSMENT_DOMAIN = "palimpsest.organization-evolution-assessment.v1";
 
@@ -67,6 +69,8 @@ export interface OrganizationEvolutionDeps {
   readonly capabilities?: readonly string[] | undefined;
   /** G10-K CF-J-02: the read-only accepted-blueprint source + untrusted formalization compiler. */
   readonly formalization?: OrganizationFormalizationWiring | undefined;
+  /** G10-M: exhaustive read-only retirement safety ports (absent ⇒ blocked/unknown). */
+  readonly retirement?: OrganizationRetirementWiring | undefined;
 }
 
 /** One evolution request. `blueprintSource` is required for FORMALIZE_ORGANIZATION only. */
@@ -335,6 +339,86 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
     return { status: "activated", caseRef, activated, afterSnapshotDigest };
   }
 
+  /** G10-M: append-only organization retirement through the SAME evolution authority seam. */
+  async function driveRetirement(input: EvolutionRequest): Promise<EvolutionOutcome> {
+    const { proposal, policy } = input;
+    if (proposal.subject.kind !== "organization") return { status: "unsupported_evolution_kind", detail: "organization retirement requires an organization subject" };
+    if (deps.authority === undefined) return { status: "incomplete", detail: "no OrganizationEvolutionAdmissionPort is configured" };
+    const target = proposal.subject.organization;
+    const freshness = await deps.dynamics.evaluateProposal(proposal);
+    if (freshness.status !== "fresh") return { status: "stale_proposal", detail: freshness.detail };
+    const head = await deps.organizations.head(target.organizationDefinitionId);
+    const lifecycle = await deps.organizations.lifecycle(target.organizationDefinitionId);
+    const institutionBodies: readonly OrganizationDefinitionRef[] | "unknown" =
+      deps.retirement?.institutions === undefined
+        ? "unknown"
+        : await deps.retirement.institutions.currentBodies().catch(() => "unknown" as const);
+    const openScopes: readonly string[] | "unknown" =
+      deps.retirement?.runtimeScopes === undefined
+        ? "unknown"
+        : await deps.retirement.runtimeScopes.openScopesGroundedTo(target.organizationDefinitionId).catch(() => "unknown" as const);
+    const candidate = materializeOrganizationRetirementCandidate({ proposalDigest: proposal.digest, proposalBasisDigest: proposal.basisDigest, target, reason: proposal.intent });
+    const assessment = assessOrganizationRetirement(candidate, { head, lifecycle, institutionBodies, openScopes, proposalFresh: true });
+    const caseRef = evolutionCaseRefOf({ proposalDigest: proposal.digest, candidateDigest: candidate.digest });
+    if (deps.store !== undefined) {
+      const byProposal = await deps.store.caseByProposal(proposal.digest);
+      if (byProposal !== undefined && byProposal.caseRef !== caseRef) return { status: "incomplete", detail: "this proposal is already bound to a different candidate" };
+      if (byProposal === undefined) {
+        await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: subjectKey(proposal.subject) });
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_RETIREMENT_CANDIDATE", caseRef, { candidate }), type: "EVOLUTION_RETIREMENT_CANDIDATE", payload: { candidate } }]);
+      }
+    }
+    if (deps.store !== undefined) {
+      await append(caseRef, [
+        {
+          eventId: eventIdFor("EVOLUTION_ASSESSED", caseRef, { assessmentDigest: assessment.digest, status: assessment.status }),
+          type: "EVOLUTION_ASSESSED",
+          payload: { kind: "RETIRE", status: assessment.status, assessmentDigest: assessment.digest, obligations: assessment.obligations.map((obligation) => ({ obligationId: obligation.obligationId, kind: obligation.kind, status: obligation.status, detail: obligation.detail })) },
+        },
+      ]);
+    }
+    if (assessment.status !== "admissible") {
+      const unresolved = assessment.obligations.filter((obligation) => obligation.status === "unresolved").map((obligation) => obligation.obligationId);
+      if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_BLOCKED", caseRef, { unresolved }), type: "EVOLUTION_BLOCKED", payload: { unresolvedObligations: unresolved } }]);
+      return { status: "blocked", caseRef, unresolvedObligations: Object.freeze(unresolved) };
+    }
+    const observed = await deps.dynamics.observe(proposal.subject, policy);
+    if (observed.status !== "observed") return { status: "incomplete", detail: `cannot build an impact report: ${observed.status}` };
+    const impact = deps.dynamics.proposalImpact(proposal, observed.snapshot);
+    const authorityOutcome = await deps.authority.admit({
+      proposalDigest: proposal.digest,
+      candidateDigest: candidate.digest,
+      assessmentDigest: assessment.digest,
+      sourceOrganizations: Object.freeze([target]),
+      kind: "RETIRE",
+      governance: "standalone",
+      impact,
+    });
+    if (authorityOutcome.outcome === "denied") {
+      if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_DENIED", caseRef, { detail: authorityOutcome.detail }), type: "EVOLUTION_DENIED", payload: { detail: authorityOutcome.detail } }]);
+      return { status: "denied", caseRef, detail: authorityOutcome.detail };
+    }
+    if (authorityOutcome.outcome === "unresolved") {
+      if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_AUTHORITY_UNRESOLVED", caseRef, { detail: authorityOutcome.detail }), type: "EVOLUTION_AUTHORITY_UNRESOLVED", payload: { detail: authorityOutcome.detail } }]);
+      return { status: "authority_unresolved", caseRef, detail: authorityOutcome.detail };
+    }
+    if (deps.store !== undefined) {
+      await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_AUTHORIZED", caseRef, { candidateDigest: candidate.digest, assessmentDigest: assessment.digest, governance: "standalone" }), type: "EVOLUTION_AUTHORIZED", payload: { candidateDigest: candidate.digest, assessmentDigest: assessment.digest, governance: "standalone" } }]);
+    }
+    try {
+      await deps.organizations.retire({ organizationDefinitionId: target.organizationDefinitionId, head: target, proposalDigest: proposal.digest, reason: candidate.reason });
+    } catch (error) {
+      return { status: "stale_candidate", detail: `organization retirement failed closed: ${error instanceof Error ? error.message : String(error)}` };
+    }
+    const activated = Object.freeze([target]);
+    if (deps.store !== undefined) await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_ACTIVATED", caseRef, { activated }), type: "EVOLUTION_ACTIVATED", payload: { activated } }]);
+    const afterSnapshotDigest = await observeAfter(proposal, policy);
+    if (afterSnapshotDigest !== null && deps.store !== undefined) {
+      await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_POST_OBSERVED", caseRef, { before: proposal.snapshotDigest, after: afterSnapshotDigest }), type: "EVOLUTION_POST_OBSERVED", payload: { beforeSnapshotDigest: proposal.snapshotDigest, afterSnapshotDigest } }]);
+    }
+    return { status: "activated", caseRef, activated, afterSnapshotDigest };
+  }
+
   async function drive(input: EvolutionRequest): Promise<EvolutionOutcome> {
     const { proposal, policy } = input;
     const disposition = EVOLUTION_KIND_DISPOSITION[proposal.kind];
@@ -385,6 +469,15 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
 
     // G10-K: FORMALIZE_ORGANIZATION has its own genesis path (no F3 transformation).
     if (disposition === "EXECUTABLE_FORMALIZE") return driveFormalization(input);
+
+    // G10-M: DISSOLVE_OR_RETIRE is subject-disambiguated. A runtime_scope subject belongs to
+    // the runtime evolution service; here only the organization retirement path is executable.
+    if (disposition === "EXECUTABLE_RETIREMENT") {
+      if (proposal.subject.kind !== "organization") {
+        return { status: "unsupported_evolution_kind", detail: `proposal kind "${proposal.kind}" on a ${proposal.subject.kind} subject has no organization retirement semantics` };
+      }
+      return driveRetirement(input);
+    }
 
     // Executable path.
     if (proposal.subject.kind !== "organization") return { status: "incomplete", detail: "executable evolution requires an organization subject" };
@@ -514,6 +607,7 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       switch (event.type) {
         case "EVOLUTION_CANDIDATE_COMPILED": state = "COMPILED"; break;
         case "EVOLUTION_FORMALIZATION_COMPILED": state = "COMPILED"; break;
+        case "EVOLUTION_RETIREMENT_CANDIDATE": state = "COMPILED"; break;
         case "EVOLUTION_ASSESSED": state = "COMPILED"; break;
         case "EVOLUTION_BLOCKED": state = "BLOCKED"; break;
         case "EVOLUTION_AUTHORIZED": state = "COMPILED"; break;

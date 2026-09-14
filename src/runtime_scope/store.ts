@@ -54,7 +54,8 @@ export type RuntimeScopeStoreErrorKind =
   // G10-I carry-forward closure (CF-H-03/06/08)
   | "boundary_source_unverified"
   | "representation_not_admitted"
-  | "campaign_unknown";
+  | "campaign_unknown"
+  | "organization_retired";
 
 function payloadKey(type: string, payload: unknown): string {
   return canonicalDigest({ domain: "palimpsest.runtime-scope-event.v1", type, payload });
@@ -75,6 +76,36 @@ export interface RuntimeScopeAppendRequest {
   readonly payload: unknown;
 }
 
+/** One existing scope touched by a structural transition (exact-basis guarded). */
+export interface RuntimeScopeStructuralScopeRequest {
+  readonly scopeId: string;
+  readonly expectedBasis: RuntimeScopeBasis;
+  /** ≥ 1 event; an empty request is ignored (no basis requirement). */
+  readonly events: readonly RuntimeScopeAppendRequest[];
+}
+
+/** A scope created by a structural transition, with its post-open events in the same batch. */
+export interface RuntimeScopeCreateRequest {
+  readonly definition: RuntimeScopeDefinition;
+  /** Appended after `RUNTIME_SCOPE_OPENED` (seq 2..) inside the SAME transaction. */
+  readonly events: readonly RuntimeScopeAppendRequest[];
+}
+
+/**
+ * G10-M: ONE logical topology transition over MANY scopes, committed in ONE
+ * SQLite transaction so a partial canonical forest is never visible. Each scope
+ * keeps its OWN chain; there is no global runtime chain.
+ */
+export interface RuntimeScopeStructuralTransition {
+  readonly expectedScopes: readonly RuntimeScopeStructuralScopeRequest[];
+  readonly createScopes: readonly RuntimeScopeCreateRequest[];
+}
+
+export interface RuntimeScopeStructuralTransitionResult {
+  readonly created: readonly RuntimeScopeEvent[];
+  readonly appended: readonly { readonly scopeId: string; readonly events: readonly RuntimeScopeEvent[] }[];
+}
+
 export interface RuntimeScopeStore {
   open(input: { readonly definition: RuntimeScopeDefinition }): Promise<RuntimeScopeEvent>;
   appendAtomic(input: {
@@ -82,6 +113,8 @@ export interface RuntimeScopeStore {
     readonly expectedBasis: RuntimeScopeBasis;
     readonly events: readonly RuntimeScopeAppendRequest[];
   }): Promise<readonly RuntimeScopeEvent[]>;
+  /** Multi-scope all-or-none structural transition (G10-M). */
+  applyStructuralTransition(input: RuntimeScopeStructuralTransition): Promise<RuntimeScopeStructuralTransitionResult>;
   definition(scopeId: string): Promise<RuntimeScopeDefinition | undefined>;
   basis(scopeId: string): Promise<RuntimeScopeBasis | undefined>;
   replay(scopeId: string): Promise<readonly RuntimeScopeEvent[]>;
@@ -314,6 +347,185 @@ export class SqliteRuntimeScopeStore implements RuntimeScopeStore {
     } catch {
       throw new RuntimeScopeStoreError("malformed_record", `runtime scope definition "${scopeId}" is malformed`);
     }
+  }
+
+  #prepareEvents(events: readonly RuntimeScopeAppendRequest[]): { eventId: string; type: RuntimeScopeEventType; payload: unknown }[] {
+    return events.map((event) => {
+      if (typeof event.eventId !== "string" || event.eventId.length === 0) {
+        throw new RuntimeScopeStoreError("invalid_registration", "eventId must be a non-empty string");
+      }
+      const parser = this.#parsers[event.type];
+      if (parser === undefined) throw new RuntimeScopeStoreError("invalid_registration", `unknown runtime-scope event type "${event.type}"`);
+      return { eventId: event.eventId, type: event.type, payload: parser(event.payload) };
+    });
+  }
+
+  /** Canonical `RUNTIME_SCOPE_OPENED` event for a definition (identical to `open`). */
+  #openedEvent(definition: RuntimeScopeDefinition): { eventId: string; payload: unknown; chainDigest: string } {
+    const opened = this.#parsers.RUNTIME_SCOPE_OPENED!({ definition }) as { definition: RuntimeScopeDefinition };
+    const eventId = `evt-${runtimeScopeChainDigest({
+      scopeId: definition.scopeId,
+      seq: 1,
+      eventId: "open",
+      type: "RUNTIME_SCOPE_OPENED",
+      payload: opened,
+      previousChainDigest: null,
+    }).slice(0, 24)}`;
+    const chainDigest = runtimeScopeChainDigest({
+      scopeId: definition.scopeId,
+      seq: 1,
+      eventId,
+      type: "RUNTIME_SCOPE_OPENED",
+      payload: opened,
+      previousChainDigest: null,
+    });
+    return { eventId, payload: opened, chainDigest };
+  }
+
+  /**
+   * G10-M: apply one logical topology transition over MANY scopes in ONE transaction.
+   * Each existing scope is exact-basis guarded; each new scope id must be absent.
+   * All-present identical → idempotent; any partial presence → recovery_required.
+   */
+  async applyStructuralTransition(input: RuntimeScopeStructuralTransition): Promise<RuntimeScopeStructuralTransitionResult> {
+    if (input.expectedScopes.length === 0 && input.createScopes.length === 0) {
+      throw new RuntimeScopeStoreError("invalid_registration", "a structural transition requires at least one scope");
+    }
+    const creates = input.createScopes.map((request) => ({
+      definition: parseRuntimeScopeDefinition(JSON.parse(JSON.stringify(request.definition))),
+      events: this.#prepareEvents(request.events),
+    }));
+    const expected = input.expectedScopes
+      .filter((entry) => entry.events.length > 0)
+      .map((entry) => ({
+        scopeId: parseRuntimeScopeBasis(entry.expectedBasis).scopeId,
+        expectedBasis: parseRuntimeScopeBasis(entry.expectedBasis),
+        events: this.#prepareEvents(entry.events),
+      }));
+    for (const entry of expected) {
+      if (entry.scopeId !== entry.expectedBasis.scopeId) throw new RuntimeScopeStoreError("invalid_registration", "expected basis scope id mismatch");
+    }
+    const scopeIds = new Set<string>();
+    const eventIds = new Set<string>();
+    for (const entry of expected) {
+      if (scopeIds.has(entry.scopeId)) throw new RuntimeScopeStoreError("invalid_registration", `duplicate scope "${entry.scopeId}" in one transition`);
+      scopeIds.add(entry.scopeId);
+    }
+    for (const request of creates) {
+      const scopeId = request.definition.scopeId;
+      if (scopeIds.has(scopeId)) throw new RuntimeScopeStoreError("invalid_registration", `duplicate scope "${scopeId}" in one transition`);
+      scopeIds.add(scopeId);
+      for (const event of request.events) {
+        if (eventIds.has(event.eventId)) throw new RuntimeScopeStoreError("event_conflict", `duplicate eventId "${event.eventId}" in one transition`);
+        eventIds.add(event.eventId);
+      }
+    }
+    for (const entry of expected) {
+      for (const event of entry.events) {
+        if (eventIds.has(event.eventId)) throw new RuntimeScopeStoreError("event_conflict", `duplicate eventId "${event.eventId}" in one transition`);
+        eventIds.add(event.eventId);
+      }
+    }
+
+    return this.#transactional(() => {
+      // Classify new scopes: absent → pending; byte-identical → applied; different → already_exists.
+      const createStates = creates.map((request) => {
+        const definition = request.definition;
+        const json = JSON.stringify(definition);
+        const existing = this.#selectDefinition.get(definition.scopeId) as { artifact_json: string } | undefined;
+        if (existing === undefined) return { ...request, applied: false as const };
+        if (existing.artifact_json !== json) throw new RuntimeScopeStoreError("already_exists", `runtime scope "${definition.scopeId}" already exists with different content`);
+        const stored = this.#readAll(definition.scopeId);
+        const afterOpen = stored.filter((event) => event.type !== "RUNTIME_SCOPE_OPENED");
+        const matches =
+          afterOpen.length === request.events.length &&
+          afterOpen.every((storedEvent, index) => {
+            const requested = request.events[index]!;
+            return storedEvent.eventId === requested.eventId && storedEvent.type === requested.type && payloadKey(storedEvent.type, storedEvent.payload) === payloadKey(requested.type, requested.payload);
+          });
+        if (!matches) throw new RuntimeScopeStoreError("recovery_required", `runtime scope "${definition.scopeId}" already exists but does not match this transition`);
+        return { ...request, applied: true as const };
+      });
+      // Classify existing scopes: all requested events present → applied; some → recovery; none → basis check.
+      const expectedStates = expected.map((entry) => {
+        if (this.#selectDefinition.get(entry.scopeId) === undefined) throw new RuntimeScopeStoreError("unknown_scope", `runtime scope "${entry.scopeId}" does not exist`);
+        const stored = this.#readAll(entry.scopeId);
+        const byId = new Map(stored.map((event) => [event.eventId, event]));
+        let present = 0;
+        let conflicting = false;
+        for (const event of entry.events) {
+          const row = byId.get(event.eventId);
+          if (row === undefined) continue;
+          present += 1;
+          if (row.type !== event.type || payloadKey(row.type, row.payload) !== payloadKey(event.type, event.payload)) conflicting = true;
+        }
+        if (conflicting) throw new RuntimeScopeStoreError("event_conflict", "a requested eventId already exists with different content");
+        if (present === entry.events.length) return { entry, applied: true as const, stored };
+        if (present > 0) throw new RuntimeScopeStoreError("recovery_required", `scope "${entry.scopeId}" is partially present in this transition — explicit recovery required`);
+        const tail = stored.length === 0 ? undefined : stored[stored.length - 1];
+        if ((tail?.seq ?? 0) !== entry.expectedBasis.throughSeq || (tail?.chainDigest ?? "") !== entry.expectedBasis.chainDigest) {
+          throw new RuntimeScopeStoreError("basis_mismatch", `scope "${entry.scopeId}" basis is seq ${tail?.seq ?? 0}, expected ${entry.expectedBasis.throughSeq}`);
+        }
+        return { entry, applied: false as const, stored };
+      });
+
+      const anyApplied = createStates.some((state) => state.applied) || expectedStates.some((state) => state.applied);
+      const anyPending = createStates.some((state) => !state.applied) || expectedStates.some((state) => !state.applied);
+      if (anyApplied && anyPending) {
+        throw new RuntimeScopeStoreError("recovery_required", "this structural transition is partially present — explicit recovery required");
+      }
+
+      if (!anyPending) {
+        // Fully idempotent replay: reconstruct the canonical events.
+        const created = createStates.map((state) => {
+          const stored = this.#readAll(state.definition.scopeId);
+          const opened = stored.find((event) => event.type === "RUNTIME_SCOPE_OPENED");
+          if (opened === undefined) throw new RuntimeScopeStoreError("malformed_record", `scope "${state.definition.scopeId}" has no RUNTIME_SCOPE_OPENED event`);
+          return opened;
+        });
+        const appended = expectedStates.map((state) => ({
+          scopeId: state.entry.scopeId,
+          events: Object.freeze(state.entry.events.map((event) => state.stored.find((storedEvent) => storedEvent.eventId === event.eventId)!)),
+        }));
+        return Object.freeze({ created: Object.freeze(created), appended: Object.freeze(appended) });
+      }
+
+      // Apply everything, all-or-none.
+      const created: RuntimeScopeEvent[] = [];
+      for (const state of createStates) {
+        const definition = state.definition;
+        this.#insertDefinition.run(definition.scopeId, definition.organizationBasis === null ? null : JSON.stringify(definition.organizationBasis), JSON.stringify(definition));
+        const opened = this.#openedEvent(definition);
+        this.#insertEvent.run(definition.scopeId, 1, opened.eventId, "RUNTIME_SCOPE_OPENED", JSON.stringify(opened.payload), opened.chainDigest);
+        created.push(Object.freeze({ scopeId: definition.scopeId, seq: 1, eventId: opened.eventId, type: "RUNTIME_SCOPE_OPENED" as const, payload: opened.payload, chainDigest: opened.chainDigest }));
+        let seq = 1;
+        let previous = opened.chainDigest;
+        for (const event of state.events) {
+          seq += 1;
+          const chainDigest = runtimeScopeChainDigest({ scopeId: definition.scopeId, seq, eventId: event.eventId, type: event.type, payload: event.payload, previousChainDigest: previous });
+          this.#insertEvent.run(definition.scopeId, seq, event.eventId, event.type, JSON.stringify(event.payload), chainDigest);
+          previous = chainDigest;
+          created.push(Object.freeze({ scopeId: definition.scopeId, seq, eventId: event.eventId, type: event.type, payload: event.payload, chainDigest }));
+        }
+      }
+      const appended: { scopeId: string; events: readonly RuntimeScopeEvent[] }[] = [];
+      for (const state of expectedStates) {
+        const stored = state.stored;
+        const tail = stored.length === 0 ? undefined : stored[stored.length - 1];
+        let seq = tail?.seq ?? 0;
+        let previous = tail?.chainDigest ?? null;
+        const events: RuntimeScopeEvent[] = [];
+        for (const event of state.entry.events) {
+          seq += 1;
+          const chainDigest = runtimeScopeChainDigest({ scopeId: state.entry.scopeId, seq, eventId: event.eventId, type: event.type, payload: event.payload, previousChainDigest: previous });
+          this.#insertEvent.run(state.entry.scopeId, seq, event.eventId, event.type, JSON.stringify(event.payload), chainDigest);
+          previous = chainDigest;
+          events.push(Object.freeze({ scopeId: state.entry.scopeId, seq, eventId: event.eventId, type: event.type, payload: event.payload, chainDigest }));
+        }
+        appended.push({ scopeId: state.entry.scopeId, events: Object.freeze(events) });
+      }
+      return Object.freeze({ created: Object.freeze(created), appended: Object.freeze(appended) });
+    });
   }
 
   async basis(scopeId: string): Promise<RuntimeScopeBasis | undefined> {

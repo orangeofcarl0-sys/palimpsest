@@ -278,6 +278,8 @@ export interface OrganizationDynamicsSnapshot {
   readonly campaignActivity: readonly CampaignActivityObservation[] | null;
   /** G10-L: mechanical boundary observation — present ONLY for a boundary_workspace subject. */
   readonly boundary?: BoundaryObservation | null | undefined;
+  /** G10-M: canonical organization lifecycle — present ONLY when a lifecycle source is wired. */
+  readonly organizationLifecycle?: "ACTIVE" | "RETIRED" | "unknown" | undefined;
   readonly digest: string;
 }
 
@@ -306,6 +308,7 @@ export function snapshotDigestOf(input: {
   readonly observedBoundaryInteractionIds: readonly string[];
   readonly campaignActivity: readonly CampaignActivityObservation[] | null;
   readonly boundary?: BoundaryObservation | null | undefined;
+  readonly organizationLifecycle?: "ACTIVE" | "RETIRED" | "unknown" | undefined;
 }): string {
   return canonicalDigest({
     domain: DYNAMICS_SNAPSHOT_DOMAIN,
@@ -321,6 +324,8 @@ export function snapshotDigestOf(input: {
     campaignActivity: input.campaignActivity,
     // Additive: omitted unless a boundary observation exists.
     ...(input.boundary === undefined || input.boundary === null ? {} : { boundary: input.boundary }),
+    // Additive: omitted unless a lifecycle source is wired.
+    ...(input.organizationLifecycle === undefined ? {} : { organizationLifecycle: input.organizationLifecycle }),
   });
 }
 

@@ -31,7 +31,11 @@ import { InstitutionStoreError } from "./store.js";
 
 export interface InstitutionServiceDeps {
   readonly store: InstitutionStore;
-  readonly organizations: { get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined> };
+  readonly organizations: {
+    get(ref: OrganizationDefinitionRef): Promise<OrganizationDefinition | undefined>;
+    /** G10-M: lifecycle knowledge — a RETIRED lineage may not be newly adopted. */
+    lifecycle?(organizationDefinitionId: string): Promise<"ACTIVE" | "RETIRED" | undefined>;
+  };
   readonly allocateTransitionId: () => string;
   /**
    * G0/F-AUTH-01: the trusted LOCAL governance identity configured at
@@ -84,6 +88,9 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
     readonly requiredApprovals: number;
     readonly organization: OrganizationDefinitionRef;
   }): Promise<{ readonly charter: InstitutionCharter; readonly epoch: InstitutionEpoch }> {
+    if (deps.organizations.lifecycle !== undefined && (await deps.organizations.lifecycle(input.organization.organizationDefinitionId)) === "RETIRED") {
+      throw new InstitutionStoreError("organization_retired", `organization "${input.organization.organizationDefinitionId}" is RETIRED — it cannot be adopted as an institution body`);
+    }
     if ((await deps.organizations.get(input.organization)) === undefined) {
       throw new InstitutionStoreError(
         "invalid_registration",
@@ -193,6 +200,9 @@ export function makeInstitutionService(deps: InstitutionServiceDeps): Institutio
     const proposal = await deps.store.proposal(input.transitionId);
     if (proposal === undefined) {
       throw new InstitutionStoreError("unknown_transition", `transition "${input.transitionId}" was never proposed`);
+    }
+    if (deps.organizations.lifecycle !== undefined && (await deps.organizations.lifecycle(proposal.proposedOrganization.organizationDefinitionId)) === "RETIRED") {
+      throw new InstitutionStoreError("organization_retired", `organization "${proposal.proposedOrganization.organizationDefinitionId}" is RETIRED — it cannot be adopted as an institution body`);
     }
     if ((await deps.organizations.get(proposal.proposedOrganization)) === undefined) {
       throw new InstitutionStoreError(
