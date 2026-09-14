@@ -25,6 +25,14 @@ export const Config = z.object({
   port: z.number().default(0),
   host: z.string().default('127.0.0.1'),
   token: z.string().default('palimpsest-dogfood'),
+  /**
+   * Optional absolute path to the canonical SQLite ReasoningCell store. When set,
+   * this bundle also registers `palimpsest_reasoning` against that store so an
+   * EPHEMERAL branch agent can read a frozen brief and submit structured
+   * candidates. The store is SHARED with the calling harness; a branch can never
+   * admit (only the harness's own ReasoningCellService evaluates).
+   */
+  reasoningCellStore: z.string().default(''),
 });
 
 function toRealTool(definition) {
@@ -58,6 +66,67 @@ export async function apply(ctx, config) {
 
   const deployment = palimpsest.launchDeployment(profile, { context });
 
+  // Optional EPHEMERAL branch-cognition wiring. A branch is NOT a principal: it
+  // can read the frozen brief and submit structured candidates through the REAL
+  // ReasoningCell service, but it can NEVER open a branch, evaluate/admit, or
+  // invalidate. The store is shared with the calling harness, which owns
+  // verification and admission.
+  let reasoningStore;
+  if (config.reasoningCellStore.length > 0) {
+    reasoningStore = new palimpsest.SqliteReasoningCellStore(config.reasoningCellStore);
+    const verificationPolicy = {
+      verify: async ({ definition, candidate, frontierBasis }) => {
+        const base = {
+          schemaVersion: 1,
+          cell: candidate.cell,
+          candidateDigest: candidate.candidateDigest,
+          frontierBasis,
+          verificationPolicyRef: definition.verificationPolicyRef,
+          standing: 'SUPPORTED',
+          supportingEvidenceIds: [],
+          contradictingEvidenceIds: [],
+          provenanceDigest: '0'.repeat(64),
+        };
+        return { ...base, digest: palimpsest.reasoningVerificationDigestOf(base) };
+      },
+    };
+    const admissionPolicy = {
+      admit: async ({ definition, candidate, verification, frontierBasis }) => {
+        const base = {
+          schemaVersion: 1,
+          cell: candidate.cell,
+          candidateDigest: candidate.candidateDigest,
+          verificationResultDigest: verification.digest,
+          frontierBasis,
+          admissionPolicyRef: definition.admissionPolicyRef,
+          decision: 'ADMIT',
+          provenanceDigest: '1'.repeat(64),
+        };
+        return { ...base, digest: palimpsest.reasoningAdmissionDigestOf(base) };
+      },
+    };
+    const reasoningService = palimpsest.makeReasoningCellService({ store: reasoningStore, verificationPolicy, admissionPolicy });
+    const forbidden = (what) => async () => {
+      throw new Error(`EPHEMERAL_BRANCH_FORBIDDEN: a branch may not ${what}; it may only read the frozen brief and submit one candidate`);
+    };
+    const reasoningSurface = {
+      view: (cellId) => reasoningService.cellView({ cellId }),
+      frontier: (cellId) => reasoningService.frontier({ cellId }),
+      graph: (cellId) => reasoningService.claimGraph({ cellId }),
+      brief: (input) => reasoningService.branchBrief(input),
+      openBranch: forbidden('open a branch'),
+      submitCandidate: (input) => reasoningService.submitCandidate(input),
+      evaluate: forbidden('evaluate or admit'),
+      invalidate: forbidden('invalidate a claim'),
+    };
+    const reasoningDefinition = palimpsest
+      .defineApplicationTools({ reasoning: reasoningSurface })
+      .find((definition) => definition.name === 'palimpsest_reasoning');
+    if (reasoningDefinition !== undefined) {
+      context.tools.register(reasoningDefinition);
+    }
+  }
+
   let serve;
   if (config.serve === true) {
     serve = await palimpsest.serveOrchestration(deployment.installed.controller, {
@@ -84,6 +153,11 @@ export async function apply(ctx, config) {
         /* the harness may already have closed the socket */
       }
       await deployment.close();
+      try {
+        reasoningStore?.close?.();
+      } catch {
+        /* the store may already be closed */
+      }
     };
   }, 'palimpsest-host lifecycle');
 }

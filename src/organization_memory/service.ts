@@ -22,6 +22,7 @@ import type {
   OrganizationEvaluation,
   RunResult,
   ScenarioDefinition,
+  ScenarioFeatureAnnotation,
   VariantKind,
 } from "./artifacts.js";
 import type {
@@ -63,9 +64,11 @@ export interface OrganizationMemoryService {
   recordEvaluation(experimentId: string, evaluation: OrganizationEvaluation): Promise<OrganizationEvaluation>;
   recordCorrection(experimentId: string, correction: MeasurementCorrection): Promise<MeasurementCorrection>;
   recordIntervention(intervention: InterventionRecord): Promise<InterventionRecord>;
+  recordScenarioAnnotation(experimentId: string, annotation: ScenarioFeatureAnnotation): Promise<ScenarioFeatureAnnotation>;
   experiments(): Promise<readonly ExperimentDefinition[]>;
   experiment(experimentId: string): Promise<ExperimentDefinition>;
   scenarios(experimentId: string): Promise<readonly ScenarioDefinition[]>;
+  scenarioAnnotations(experimentId: string, scenarioId?: string): Promise<readonly ScenarioFeatureAnnotation[]>;
   variants(experimentId: string): Promise<readonly ArchitectureVariant[]>;
   runs(experimentId: string): Promise<readonly RunResult[]>;
   run(runRef: string): Promise<RunResult | undefined>;
@@ -160,6 +163,21 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
     return intervention;
   }
 
+  /**
+   * Append an annotation of an existing scenario. Multiple annotations for the same
+   * scenario coexist: identity is content-addressed and append-only, so a later
+   * annotation never overwrites an earlier one (no last-writer-wins).
+   */
+  async function recordScenarioAnnotation(experimentId: string, annotation: ScenarioFeatureAnnotation): Promise<ScenarioFeatureAnnotation> {
+    const events = await requireExperimentEvents(experimentId);
+    const payload = { annotation };
+    await store.appendAtomic({
+      expectedBasis: basisOf(experimentId, events),
+      events: [{ eventId: organizationMemoryEventIdOf("SCENARIO_ANNOTATED", experimentId, payload), type: "SCENARIO_ANNOTATED", payload }],
+    });
+    return annotation;
+  }
+
   async function experiments(): Promise<readonly ExperimentDefinition[]> {
     const scopes = await store.experiments();
     const definitions: ExperimentDefinition[] = [];
@@ -181,6 +199,12 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
 
   function scenarios(experimentId: string): Promise<readonly ScenarioDefinition[]> {
     return readArtifacts(experimentId, "SCENARIO_RECORDED", (event) => (event.payload as { readonly scenario: ScenarioDefinition }).scenario);
+  }
+
+  async function scenarioAnnotations(experimentId: string, scenarioId?: string): Promise<readonly ScenarioFeatureAnnotation[]> {
+    const all = await readArtifacts(experimentId, "SCENARIO_ANNOTATED", (event) => (event.payload as { readonly annotation: ScenarioFeatureAnnotation }).annotation);
+    if (scenarioId === undefined) return all;
+    return Object.freeze(all.filter((annotation) => annotation.scenarioId === scenarioId));
   }
 
   function variants(experimentId: string): Promise<readonly ArchitectureVariant[]> {
@@ -276,9 +300,11 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
     recordEvaluation,
     recordCorrection,
     recordIntervention,
+    recordScenarioAnnotation,
     experiments,
     experiment,
     scenarios,
+    scenarioAnnotations,
     variants,
     runs,
     run,
