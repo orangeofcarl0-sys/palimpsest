@@ -1,7 +1,7 @@
 {
   "name": "palimpsest-dsh",
   "version": "0.1.2",
-  "description": "User-friendly multi-agent orchestration plugin for DSH, built on Ordarium Safe Actions",
+  "description": "Palimpsest is an operating environment for persistent AI workers to coordinate work, shared boundaries, commitments, runtime organization, and long-horizon collaboration over Ordarium-safe effects",
   "private": true,
   "type": "module",
   "main": "./dist/src/index.js",
@@ -26,15 +26,16 @@
     "pretest:e2e": "pnpm run build && pnpm run build:web",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug"
+    "test:e2e:debug": "playwright test --debug",
+    "dogfood:live": "pnpm run build && node scripts/dogfood/live-federation.mjs"
   },
   "dependencies": {
-    "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-core-1.2.0.tgz",
-    "@ordarium/host-kit": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-host-kit-1.2.0.tgz",
-    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-ledger-sqlite-1.2.0.tgz"
+    "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz",
+    "@ordarium/host-kit": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-host-kit-1.3.1.tgz",
+    "@ordarium/ledger-sqlite": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-ledger-sqlite-1.3.1.tgz"
   },
   "devDependencies": {
-    "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.2.0/ordarium-testing-1.2.0.tgz",
+    "@ordarium/testing": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-testing-1.3.1.tgz",
     "@playwright/test": "^1.63.0",
     "@types/node": "26.2.0",
     "@types/react": "^19.2.18",
