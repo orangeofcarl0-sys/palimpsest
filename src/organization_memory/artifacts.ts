@@ -968,3 +968,167 @@ export function parseEvaluation(raw: unknown, what = "OrganizationEvaluation"): 
   if (evaluationDigestOf(body) !== digest) fail("invalid_value", `${what}.digest does not match its content`);
   return Object.freeze({ ...body, evaluationRef: omString(object.evaluationRef, `${what}.evaluationRef`), digest });
 }
+
+/* ------------------------------------------------------------------ *
+ * TaskProfileSnapshot / ScenarioFeatureAnnotation (S, additive)
+ *
+ * An annotation is a DISCLOSED, PROVENANCE-CARRYING description of a scenario's
+ * task features. It is empirical bookkeeping only: it never rewrites an R
+ * ScenarioDefinition, never asserts a recipe choice, and multiple annotations for
+ * the same scenario coexist (append-only, no last-writer-wins).
+ * ------------------------------------------------------------------ */
+
+export const OM_SCENARIO_ANNOTATION_DOMAIN = "palimpsest.org-memory.scenario-annotation.v1";
+
+export const TASK_FEATURE_NAMES = [
+  "decomposability",
+  "crossComponentCoupling",
+  "verifiability",
+  "contextLocality",
+  "parallelSearchBenefit",
+  "authoritySeparationNeed",
+  "timeHorizon",
+  "existingIndependentPeers",
+  "privacyLocalityNeed",
+] as const;
+export type TaskFeatureName = (typeof TASK_FEATURE_NAMES)[number];
+
+export const TASK_FEATURE_VALUES = ["LOW", "MEDIUM", "HIGH", "YES", "NO", "SHORT", "PROJECT", "LONG", "UNKNOWN"] as const;
+export type TaskFeatureValue = (typeof TASK_FEATURE_VALUES)[number];
+
+export const TASK_FEATURE_PROVENANCE_VALUES = ["USER_DECLARED", "DETERMINISTIC_DERIVATION", "UNTRUSTED_PROFILER", "UNKNOWN"] as const;
+export type TaskFeatureProvenance = (typeof TASK_FEATURE_PROVENANCE_VALUES)[number];
+
+export const TASK_ANNOTATION_METHODS = ["MANUAL", "DETERMINISTIC", "UNTRUSTED_PROFILER"] as const;
+export type TaskAnnotationMethod = (typeof TASK_ANNOTATION_METHODS)[number];
+
+/** Closed allowed-value set per feature (a value is never silently coerced across features). */
+export const TASK_FEATURE_ALLOWED_VALUES: Readonly<Record<TaskFeatureName, readonly TaskFeatureValue[]>> = Object.freeze({
+  decomposability: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  crossComponentCoupling: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  verifiability: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  contextLocality: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  parallelSearchBenefit: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  privacyLocalityNeed: Object.freeze(["LOW", "MEDIUM", "HIGH", "UNKNOWN"] as const),
+  authoritySeparationNeed: Object.freeze(["YES", "NO", "UNKNOWN"] as const),
+  existingIndependentPeers: Object.freeze(["YES", "NO", "UNKNOWN"] as const),
+  timeHorizon: Object.freeze(["SHORT", "PROJECT", "LONG", "UNKNOWN"] as const),
+});
+
+export interface TaskFeatureEntry {
+  readonly feature: TaskFeatureName;
+  readonly value: TaskFeatureValue;
+  readonly source: TaskFeatureProvenance;
+}
+
+export interface TaskProfileSnapshot {
+  readonly schemaVersion: 1;
+  readonly features: readonly TaskFeatureEntry[];
+}
+
+const TASK_PROFILE_SNAPSHOT_KEYS = ["schemaVersion", "features"] as const;
+
+/** Strict parse: exactly one entry per feature, in canonical order, value in its closed set. */
+export function parseTaskProfileSnapshot(raw: unknown, what = "TaskProfileSnapshot"): TaskProfileSnapshot {
+  const object = omObject(raw, what);
+  omKeys(object, TASK_PROFILE_SNAPSHOT_KEYS, TASK_PROFILE_SNAPSHOT_KEYS, what);
+  if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
+  if (!Array.isArray(object.features)) fail("malformed_artifact", `${what}.features must be an array`);
+  const rawFeatures = object.features as unknown[];
+  if (rawFeatures.length !== TASK_FEATURE_NAMES.length) {
+    fail("invalid_value", `${what}.features must carry exactly one entry per feature (${TASK_FEATURE_NAMES.length})`);
+  }
+  const features = rawFeatures.map((entry, index) => {
+    const item = omObject(entry, `${what}.features[${index}]`);
+    omKeys(item, ["feature", "value", "source"], ["feature", "value", "source"], `${what}.features[${index}]`);
+    const expected = TASK_FEATURE_NAMES[index]!;
+    const feature = omEnum(item.feature, TASK_FEATURE_NAMES, `${what}.features[${index}].feature`);
+    if (feature !== expected) {
+      fail("invalid_value", `${what}.features[${index}].feature must be "${expected}" (canonical order, exactly one entry per feature)`);
+    }
+    const value = omEnum(item.value, TASK_FEATURE_ALLOWED_VALUES[feature], `${what}.features[${index}].value`);
+    const source = omEnum(item.source, TASK_FEATURE_PROVENANCE_VALUES, `${what}.features[${index}].source`);
+    return Object.freeze({ feature, value, source });
+  });
+  return Object.freeze({ schemaVersion: 1 as const, features: Object.freeze(features) });
+}
+
+export function materializeTaskProfileSnapshot(input: { readonly features: readonly TaskFeatureEntry[] }): TaskProfileSnapshot {
+  if (!Array.isArray(input.features)) fail("invalid_value", "TaskProfileSnapshot.features must be an array");
+  return parseTaskProfileSnapshot({ schemaVersion: 1, features: input.features });
+}
+
+export interface ScenarioFeatureAnnotation {
+  readonly schemaVersion: 1;
+  readonly annotationRef: string;
+  readonly scenarioId: string;
+  readonly scenarioRevision: number;
+  readonly scenarioDigest: string;
+  readonly taskProfile: TaskProfileSnapshot;
+  readonly annotator: string;
+  readonly annotationMethod: TaskAnnotationMethod;
+  readonly digest: string;
+}
+
+export function scenarioAnnotationDigestOf(input: Omit<ScenarioFeatureAnnotation, "digest" | "annotationRef">): string {
+  return canonicalDigest({ domain: OM_SCENARIO_ANNOTATION_DOMAIN, annotation: input });
+}
+
+export function scenarioAnnotationRefOf(contentDigest: string): string {
+  return refDigest(OM_SCENARIO_ANNOTATION_DOMAIN, contentDigest, "anno");
+}
+
+export interface MaterializeScenarioFeatureAnnotationInput {
+  readonly scenarioId: string;
+  readonly scenarioRevision: number;
+  readonly scenarioDigest: string;
+  readonly taskProfile: TaskProfileSnapshot;
+  readonly annotator: string;
+  readonly annotationMethod: TaskAnnotationMethod;
+}
+
+export function materializeScenarioFeatureAnnotation(input: MaterializeScenarioFeatureAnnotationInput): ScenarioFeatureAnnotation {
+  const base: Omit<ScenarioFeatureAnnotation, "digest" | "annotationRef"> = {
+    schemaVersion: 1 as const,
+    scenarioId: omId(input.scenarioId, "scenarioId"),
+    scenarioRevision: omNonNegInt(input.scenarioRevision, "scenarioRevision"),
+    scenarioDigest: omDigest(input.scenarioDigest, "scenarioDigest"),
+    taskProfile: parseTaskProfileSnapshot(input.taskProfile, "taskProfile"),
+    annotator: omString(input.annotator, "annotator"),
+    annotationMethod: omEnum(input.annotationMethod, TASK_ANNOTATION_METHODS, "annotationMethod"),
+  };
+  const digest = scenarioAnnotationDigestOf(base);
+  return Object.freeze({ ...base, annotationRef: scenarioAnnotationRefOf(digest), digest });
+}
+
+const SCENARIO_FEATURE_ANNOTATION_KEYS = [
+  "schemaVersion",
+  "annotationRef",
+  "scenarioId",
+  "scenarioRevision",
+  "scenarioDigest",
+  "taskProfile",
+  "annotator",
+  "annotationMethod",
+  "digest",
+] as const;
+
+export function parseScenarioFeatureAnnotation(raw: unknown, what = "ScenarioFeatureAnnotation"): ScenarioFeatureAnnotation {
+  const object = omObject(raw, what);
+  omKeys(object, SCENARIO_FEATURE_ANNOTATION_KEYS, SCENARIO_FEATURE_ANNOTATION_KEYS, what);
+  if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
+  const base: Omit<ScenarioFeatureAnnotation, "digest" | "annotationRef"> = {
+    schemaVersion: 1 as const,
+    scenarioId: omId(object.scenarioId, `${what}.scenarioId`),
+    scenarioRevision: omNonNegInt(object.scenarioRevision, `${what}.scenarioRevision`),
+    scenarioDigest: omDigest(object.scenarioDigest, `${what}.scenarioDigest`),
+    taskProfile: parseTaskProfileSnapshot(object.taskProfile, `${what}.taskProfile`),
+    annotator: omString(object.annotator, `${what}.annotator`),
+    annotationMethod: omEnum(object.annotationMethod, TASK_ANNOTATION_METHODS, `${what}.annotationMethod`),
+  };
+  const digest = omDigest(object.digest, `${what}.digest`);
+  if (scenarioAnnotationDigestOf(base) !== digest) fail("invalid_value", `${what}.digest does not match its content`);
+  const annotationRef = omString(object.annotationRef, `${what}.annotationRef`);
+  if (annotationRef !== scenarioAnnotationRefOf(digest)) fail("invalid_value", `${what}.annotationRef must be derived from the annotation content digest`);
+  return Object.freeze({ ...base, annotationRef, digest });
+}
