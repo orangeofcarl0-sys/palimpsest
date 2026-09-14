@@ -9,6 +9,7 @@ import {
   listPresets,
   setToken,
 } from "./api";
+import { MultiGraphView } from "./MultiGraphView";
 import { CanvasView } from "./CanvasView";
 import { GraphView, liveLinks, liveNodes } from "./GraphView";
 import {
@@ -62,6 +63,7 @@ export function App() {
   const [presets, setPresets] = useState<PresetMeta[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
+  const [surface, setSurface] = useState<"work" | "multigraph">("work");
   const [doc, setDoc] = useState<CanvasDoc>(emptyDoc());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [satellitesOn, setSatellitesOn] = useState(true);
@@ -250,11 +252,21 @@ export function App() {
     })();
   };
 
+  if (surface === "multigraph") {
+    return <MultiGraphView onExit={() => setSurface("work")} />;
+  }
+
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 12, height: "100vh", boxSizing: "border-box", padding: 12, background: "#020617" }}>
       <div style={{ display: "grid", gridTemplateRows: mode === "draft" ? "auto 1fr auto" : "auto auto 1fr auto", gap: 8, minHeight: 0 }}>
         <div style={{ display: "flex", gap: 10, alignItems: "baseline", color: "#e2e8f0" }}>
           <b>palimpsest 图面</b>
+          <button
+            onClick={() => setSurface("multigraph")}
+            style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}
+          >
+            MultiGraph 调试器
+          </button>
           <span style={{ color: "#94a3b8", fontSize: 12 }}>
             {graph === null ? "—" : `${graph.project.goal} · revision ${graph.project.revision}${graph.project.paused ? " · 已暂停" : ""}`}
           </span>

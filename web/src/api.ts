@@ -160,3 +160,77 @@ export interface CanvasPatchResult {
 
 export const patchCanvas = (doc: CanvasDoc, patch: unknown): Promise<CanvasPatchResult> =>
   call("/api/canvas/patch", { method: "POST", body: JSON.stringify({ doc, patch }) });
+
+/* ------------------------------------------------------------------ *
+ * G10-O unified application surface (typed routes; same canonical state as the tools)
+ * ------------------------------------------------------------------ */
+
+export interface ApplicationSurfaceAvailability {
+  readonly work: boolean;
+  readonly federation: boolean;
+  readonly boundary: boolean;
+  readonly runtime: boolean;
+  readonly organization: boolean;
+  readonly campaign: boolean;
+  readonly dynamics: boolean;
+  readonly evolution: boolean;
+  readonly reasoning: boolean;
+  readonly projections: boolean;
+}
+
+export function applicationSurfaces(): Promise<ApplicationSurfaceAvailability> {
+  return call<ApplicationSurfaceAvailability>("/api/application/surfaces");
+}
+
+export type GraphSpecies = "work" | "organization" | "collaboration" | "runtime" | "reasoning";
+
+export interface CanonicalNodeRef {
+  readonly species: GraphSpecies;
+  readonly kind: string;
+  readonly id: string;
+}
+
+export interface ProjectionNode {
+  readonly presentationId: string;
+  readonly ref: CanonicalNodeRef;
+  readonly kind: string;
+  readonly label: string;
+  readonly state: string | null;
+}
+
+export interface ProjectionEdge {
+  readonly presentationId: string;
+  readonly from: string;
+  readonly to: string;
+  readonly kind: string;
+}
+
+export interface ProjectionEnvelope {
+  readonly schemaVersion: 1;
+  readonly species: GraphSpecies;
+  readonly knowledge: "known" | "unknown" | "error" | "stale";
+  readonly sourceBases: readonly { readonly source: string; readonly ref: string; readonly throughSeq: number | null; readonly chainDigest: string | null }[];
+  readonly nodes: readonly ProjectionNode[];
+  readonly edges: readonly ProjectionEdge[];
+  readonly projectionDigest: string;
+}
+
+export function projection(species: GraphSpecies, params: { readonly organizationDefinitionId?: string; readonly cellId?: string } = {}): Promise<ProjectionEnvelope> {
+  const search = new URLSearchParams();
+  if (params.organizationDefinitionId !== undefined) search.set("organizationDefinitionId", params.organizationDefinitionId);
+  if (params.cellId !== undefined) search.set("cellId", params.cellId);
+  const query = search.toString();
+  return call<ProjectionEnvelope>(`/api/projection/${species}${query === "" ? "" : `?${query}`}`);
+}
+
+export function reasoningEvaluate(input: { readonly cellId: string; readonly candidateDigest: string }): Promise<unknown> {
+  return call<unknown>("/api/reasoning/evaluate", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function boundaryDecide(input: { readonly workspaceId: string; readonly artifactId: string; readonly candidateDigest: string; readonly decision: "accept" | "reject" }): Promise<unknown> {
+  return call<unknown>("/api/boundary/decide", { method: "POST", body: JSON.stringify(input) });
+}
+
+export function boundaryView(workspaceId: string): Promise<unknown> {
+  return call<unknown>(`/api/boundary/workspace?workspaceId=${encodeURIComponent(workspaceId)}`);
+}

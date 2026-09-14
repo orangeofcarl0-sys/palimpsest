@@ -1,0 +1,450 @@
+/**
+ * G10-O PalimpsestApplicationSurface — ONE composed safe façade over the existing semantic
+ * services. Tools and HTTP both call THIS surface; neither imports a store.
+ *
+ *   ApplicationSurface ≠ CanonicalStore      UI/Tool/HTTP ≠ AuthorityGrant
+ *   Read model ≠ mutation path               caller ≠ caller-supplied Peer authority
+ *
+ * Only READ_ONLY and HIGH_LEVEL_SAFE_MUTATION service methods are exposed. Raw store
+ * mutators, authority/admission ports, and verification ports are never reachable here.
+ * Local actor identity is derived from installation wiring, never from a caller-supplied
+ * `from`/`acceptedBy`/`localPeer`/`authenticated` field.
+ */
+
+import type { OrganizationDynamicsService, DynamicsPolicy, OrganizationDynamicsProposal } from "../organization_dynamics/index.js";
+import type { OrganizationEvolutionService, EvolutionOutcome } from "../organization_evolution/index.js";
+import type { RuntimeEvolutionService, RuntimeEvolutionOutcome } from "../runtime_evolution/index.js";
+import type { RuntimeScopeService, RuntimeScopeStore, RuntimeScopeState, HolonView } from "../runtime_scope/index.js";
+import type { BoundaryMemoryService, BoundaryObservation, BoundaryWorkspaceView, CandidateView, MembershipView, AcceptedBoundaryState } from "../boundary_memory/index.js";
+import type { FederationService } from "../federation/index.js";
+import type { CommitmentScope, CommitmentState } from "../federation/index.js";
+import type { CampaignService } from "../campaign/index.js";
+import type { CampaignStore } from "../campaign/store.js";
+import type { OrganizationStore } from "../organization/index.js";
+import type { InstitutionService, InstitutionStore } from "../institution/index.js";
+import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphView, ReasoningCellView, ReasoningBranchBrief, CandidateStatus } from "../reasoning_cell/index.js";
+import type { ReasoningClaimTypeRef, ReasoningClaimRef, ExternalEvidenceRef, EvaluationOutcome, InvalidationOutcome } from "../reasoning_cell/index.js";
+import type { PeerRef } from "../federation/peer.js";
+import type { ProjectController } from "../tools/controller.js";
+import { definePalimpsestControl } from "../tools/control_surface.js";
+import type { ProjectionEnvelope } from "./projection_types.js";
+import { collaborationProjection, organizationProjection, reasoningProjection, runtimeProjection, workProjection } from "./projections.js";
+
+/** Read-only boundary workspace enumeration for the collaboration projection. */
+export interface BoundaryWorkspaceReadPort {
+  list(): Promise<readonly { readonly workspaceId: string; readonly participants: readonly PeerRef[]; readonly acceptedArtifacts: number }[]>;
+}
+
+export interface ProjectionsApplicationSurface {
+  work(): Promise<ProjectionEnvelope>;
+  organization(input: { readonly organizationDefinitionId: string }): Promise<ProjectionEnvelope>;
+  collaboration(): Promise<ProjectionEnvelope>;
+  runtime(): Promise<ProjectionEnvelope>;
+  reasoning(input: { readonly cellId: string }): Promise<ProjectionEnvelope>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Work
+ * ------------------------------------------------------------------ */
+
+export interface WorkApplicationSurface {
+  status(): unknown;
+  graph(): unknown;
+  preview(): unknown;
+  /** Work control verbs (pause/resume/next/run/claim/gate/report/plan/promote/holdSet/holdClear). */
+  control(op: string, args: readonly unknown[]): unknown;
+}
+
+/* ------------------------------------------------------------------ *
+ * Federation
+ * ------------------------------------------------------------------ */
+
+export interface FederationApplicationSurface {
+  readonly localPeer: PeerRef;
+  inbox(): Promise<unknown>;
+  thread(threadId: string): Promise<unknown>;
+  sendMessage(input: { readonly to: PeerRef; readonly threadId: string; readonly body: string }): Promise<unknown>;
+  declareContactNeed(input: { readonly origin: unknown; readonly competenceTags: readonly string[]; readonly reason: string }): Promise<unknown>;
+  findCandidates(input: { readonly competenceTags: readonly string[]; readonly origin: unknown; readonly reason: string }): Promise<unknown>;
+  offerCommitment(input: { readonly proposedHolder: PeerRef; readonly scope: CommitmentScope; readonly statement: string }): Promise<unknown>;
+  acceptCommitment(commitmentId: string): Promise<unknown>;
+  rejectCommitment(commitmentId: string): Promise<unknown>;
+  releaseCommitment(commitmentId: string): Promise<void>;
+  offerHandoff(input: { readonly commitmentId: string; readonly to: PeerRef }): Promise<unknown>;
+  acceptHandoff(handoffId: string): Promise<unknown>;
+  commitmentState(commitmentId: string): Promise<CommitmentState | undefined>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Boundary
+ * ------------------------------------------------------------------ */
+
+export interface BoundaryApplicationSurface {
+  readonly localPeer: PeerRef;
+  view(workspaceId: string): Promise<BoundaryWorkspaceView>;
+  currentAccepted(input: { readonly workspaceId: string; readonly artifactId: string }): Promise<AcceptedBoundaryState | null>;
+  pendingCandidates(input: { readonly workspaceId: string; readonly artifactId: string }): Promise<readonly CandidateView[]>;
+  changesSince(input: { readonly workspaceId: string; readonly sinceSeq: number }): Promise<unknown>;
+  membership(workspaceId: string): Promise<MembershipView>;
+  observation(workspaceId: string): Promise<BoundaryObservation | undefined>;
+  proposeRevision(input: { readonly workspaceId: string; readonly artifactId: string; readonly base: unknown; readonly content: unknown; readonly requiredAcceptors: readonly PeerRef[]; readonly intent: string }): Promise<unknown>;
+  decide(input: { readonly workspaceId: string; readonly artifactId: string; readonly candidateDigest: string; readonly decision: "accept" | "reject" }): Promise<unknown>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Runtime / Holon
+ * ------------------------------------------------------------------ */
+
+export interface RuntimeApplicationSurface {
+  list(): Promise<readonly { readonly scopeId: string }[]>;
+  view(scopeId: string): Promise<RuntimeScopeState>;
+  holon(scopeId: string): Promise<HolonView>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Organization / Institution
+ * ------------------------------------------------------------------ */
+
+export interface OrganizationApplicationSurface {
+  view(organizationDefinitionId: string): Promise<unknown>;
+  retirements(): Promise<unknown>;
+  institutions(): Promise<readonly string[]>;
+  institutionView(institutionId: string): Promise<unknown>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Campaign
+ * ------------------------------------------------------------------ */
+
+export interface CampaignApplicationSurface {
+  view(campaignId: string): Promise<unknown>;
+}
+
+/* ------------------------------------------------------------------ *
+ * Dynamics / evolution
+ * ------------------------------------------------------------------ */
+
+export interface DynamicsApplicationSurface {
+  observe(subject: unknown): Promise<unknown>;
+  diagnose(subject: unknown): Promise<unknown>;
+  propose(input: { readonly subject: unknown; readonly advisor?: unknown }): Promise<unknown>;
+  proposalImpact(input: { readonly proposal: unknown; readonly subject: unknown }): Promise<unknown>;
+  freshness(proposal: unknown): Promise<unknown>;
+  readonly policy: DynamicsPolicy;
+}
+
+export interface EvolutionApplicationSurface {
+  inspectOrganization(caseRef: string): Promise<unknown>;
+  prepareOrganization(proposal: OrganizationDynamicsProposal): Promise<EvolutionOutcome>;
+  advanceOrganization(proposal: OrganizationDynamicsProposal): Promise<EvolutionOutcome>;
+  inspectRuntime(caseRef: string): Promise<unknown>;
+  advanceRuntime(proposal: OrganizationDynamicsProposal): Promise<RuntimeEvolutionOutcome>;
+  readonly policy: DynamicsPolicy;
+}
+
+/* ------------------------------------------------------------------ *
+ * Reasoning
+ * ------------------------------------------------------------------ */
+
+export interface ReasoningApplicationSurface {
+  view(cellId: string): Promise<ReasoningCellView>;
+  openBranch(input: { readonly cellId: string; readonly question: string; readonly attribution?: unknown }): Promise<{ readonly branch: unknown; readonly brief: ReasoningBranchBrief }>;
+  brief(input: { readonly cellId: string; readonly branchId: string }): Promise<ReasoningBranchBrief>;
+  submitCandidate(input: { readonly cellId: string; readonly branchId: string; readonly type: ReasoningClaimTypeRef; readonly content: unknown; readonly dependencies?: readonly ReasoningClaimRef[]; readonly externalEvidenceRefs?: readonly ExternalEvidenceRef[] }): Promise<{ readonly candidate: unknown; readonly status: CandidateStatus }>;
+  evaluate(input: { readonly cellId: string; readonly candidateDigest: string }): Promise<EvaluationOutcome>;
+  invalidate(input: { readonly cellId: string; readonly targetClaimId: string; readonly reason: string }): Promise<InvalidationOutcome>;
+  frontier(cellId: string): Promise<ReasoningFrontierView>;
+  graph(cellId: string): Promise<ReasoningClaimGraphView>;
+}
+
+export interface PalimpsestApplicationSurface {
+  readonly work: WorkApplicationSurface;
+  readonly federation?: FederationApplicationSurface | undefined;
+  readonly boundary?: BoundaryApplicationSurface | undefined;
+  readonly runtime?: RuntimeApplicationSurface | undefined;
+  readonly organization?: OrganizationApplicationSurface | undefined;
+  readonly campaign?: CampaignApplicationSurface | undefined;
+  readonly dynamics?: DynamicsApplicationSurface | undefined;
+  readonly evolution?: EvolutionApplicationSurface | undefined;
+  readonly reasoning?: ReasoningApplicationSurface | undefined;
+  /** Derived MultiGraph projections (read-only; never a canonical graph). */
+  readonly projections?: ProjectionsApplicationSurface | undefined;
+}
+
+export interface ApplicationSurfaceDeps {
+  readonly controller: ProjectController;
+  readonly localPeer?: PeerRef | undefined;
+  readonly federation?: FederationService | undefined;
+  readonly boundary?: BoundaryMemoryService | undefined;
+  readonly runtimeScopes?: { readonly store: RuntimeScopeStore; readonly service: RuntimeScopeService } | undefined;
+  readonly organizations?: OrganizationStore | undefined;
+  readonly institution?: { readonly store: InstitutionStore; readonly service: InstitutionService } | undefined;
+  readonly campaign?: CampaignService | undefined;
+  readonly campaignStore?: CampaignStore | undefined;
+  readonly dynamics?: OrganizationDynamicsService | undefined;
+  readonly organizationEvolution?: OrganizationEvolutionService | undefined;
+  readonly runtimeEvolution?: RuntimeEvolutionService | undefined;
+  readonly reasoning?: ReasoningCellService | undefined;
+  readonly dynamicsPolicy?: DynamicsPolicy | undefined;
+  /** Optional read-only boundary workspace enumeration (collaboration projection). */
+  readonly boundaryWorkspaces?: BoundaryWorkspaceReadPort | undefined;
+}
+
+function requireLocal(deps: ApplicationSurfaceDeps): PeerRef {
+  if (deps.localPeer === undefined) throw new Error("no local peer is configured for this installation");
+  return deps.localPeer;
+}
+
+export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): PalimpsestApplicationSurface {
+  const work: WorkApplicationSurface = {
+    status: () => deps.controller.status(),
+    graph: () => deps.controller.orchestrationGraph(),
+    preview: () => deps.controller.preview(),
+    control: (op, args) => {
+      // Reuse the existing Work control surface — Work stays Work-scoped.
+      const surface = definePalimpsestControl(deps.controller) as unknown as Record<string, (...a: readonly unknown[]) => unknown>;
+      const verb = surface[op];
+      if (verb === undefined) throw new Error(`unknown work control verb "${op}"`);
+      return verb(...args);
+    },
+  };
+
+  const federation: FederationApplicationSurface | undefined =
+    deps.federation === undefined
+      ? undefined
+      : (() => {
+          const service = deps.federation!;
+          const localPeer = requireLocal(deps);
+          return {
+            localPeer,
+            inbox: () => service.inbox(localPeer),
+            thread: (threadId) => service.thread(threadId),
+            sendMessage: (input) => service.sendMessage({ to: input.to, threadId: input.threadId, body: input.body }),
+            declareContactNeed: async (input) => {
+              const need = await service.declareContactNeed({ origin: input.origin as never, competenceTags: input.competenceTags, reason: input.reason });
+              return need;
+            },
+            findCandidates: async (input) => {
+              const need = await service.declareContactNeed({ origin: input.origin as never, competenceTags: input.competenceTags, reason: input.reason });
+              const candidates = await service.findCandidates(need);
+              return { need, candidates };
+            },
+            offerCommitment: (input) => service.offerCommitment(input),
+            // Local actor identity is derived here — never supplied by the caller.
+            acceptCommitment: (commitmentId) => service.acceptCommitment({ commitmentId, authenticatedPeer: null, local: true }),
+            rejectCommitment: (commitmentId) => service.rejectCommitment({ commitmentId, authenticatedPeer: null, local: true }),
+            releaseCommitment: (commitmentId) => service.releaseCommitment({ commitmentId }),
+            offerHandoff: (input) => service.offerHandoff(input),
+            acceptHandoff: (handoffId) => service.acceptHandoff({ handoffId, authenticatedPeer: null, local: true }),
+            commitmentState: async (commitmentId) => (await service.commitmentState(commitmentId))?.state as CommitmentState | undefined,
+          };
+        })();
+
+  const boundary: BoundaryApplicationSurface | undefined =
+    deps.boundary === undefined
+      ? undefined
+      : (() => {
+          const service = deps.boundary!;
+          const localPeer = requireLocal(deps);
+          return {
+            localPeer,
+            view: (workspaceId) => service.workspaceView({ workspaceId }),
+            currentAccepted: (input) => service.currentAccepted(input),
+            pendingCandidates: (input) => service.pendingCandidates(input),
+            changesSince: (input) => service.changesSince({ workspaceId: input.workspaceId, throughSeq: input.sinceSeq }),
+            membership: (workspaceId) => service.membership({ workspaceId }),
+            observation: (workspaceId) => service.boundaryObservation({ workspaceId }),
+            proposeRevision: (input) => service.proposeRevision({ workspaceId: input.workspaceId, artifactId: input.artifactId, base: input.base as never, content: input.content, requiredAcceptors: input.requiredAcceptors, intent: input.intent }),
+            decide: (input) =>
+              input.decision === "accept"
+                ? service.acceptRevision({ workspaceId: input.workspaceId, artifactId: input.artifactId, candidateDigest: input.candidateDigest, authenticatedPeer: null, local: true })
+                : service.rejectRevision({ workspaceId: input.workspaceId, artifactId: input.artifactId, candidateDigest: input.candidateDigest, authenticatedPeer: null, local: true }),
+          };
+        })();
+
+  const runtime: RuntimeApplicationSurface | undefined =
+    deps.runtimeScopes === undefined
+      ? undefined
+      : {
+          list: async () => (await deps.runtimeScopes!.service.listScopes()).map((ref) => ({ scopeId: ref.scopeId })),
+          view: (scopeId) => deps.runtimeScopes!.service.scopeState(scopeId),
+          holon: (scopeId) => deps.runtimeScopes!.service.holonView(scopeId),
+        };
+
+  const organization: OrganizationApplicationSurface | undefined =
+    deps.organizations === undefined
+      ? undefined
+      : (() => {
+          const store = deps.organizations!;
+          return {
+            view: async (organizationDefinitionId: string) => {
+              const head = await store.head(organizationDefinitionId);
+              const lifecycle = await store.lifecycle(organizationDefinitionId);
+              if (head === undefined && lifecycle === undefined) {
+                const error = new Error(`organization "${organizationDefinitionId}" does not exist`);
+                (error as { kind?: string }).kind = "unknown_organization";
+                throw error;
+              }
+              const current = await store.current(organizationDefinitionId);
+              return { organizationDefinitionId, head: head ?? null, lifecycle: lifecycle ?? null, current: current ?? null, revisionCount: (await store.lineage(organizationDefinitionId)).length };
+            },
+            retirements: () => store.retirements(),
+            institutions: async () => (deps.institution === undefined ? [] : await deps.institution.store.institutions()),
+            institutionView: async (institutionId: string) => {
+              if (deps.institution === undefined) return { institutionId, known: false };
+              const head = await deps.institution.store.head(institutionId);
+              const epoch = await deps.institution.store.currentEpoch(institutionId);
+              return { institutionId, known: head !== undefined, head: head ?? null, epoch: epoch ?? null };
+            },
+          };
+        })();
+
+  const campaign: CampaignApplicationSurface | undefined =
+    deps.campaign === undefined || deps.campaignStore === undefined
+      ? undefined
+      : (() => {
+          const service = deps.campaign!;
+          const store = deps.campaignStore!;
+          return {
+            view: async (campaignId: string) => {
+              const definition = await service.definition(campaignId);
+              if (definition === undefined) return { campaignId, known: false };
+              const events = await store.replay(campaignId);
+              const basis = await service.basis(campaignId);
+              const commitments = await service.commitmentStates(campaignId);
+              const hypotheses = await service.hypotheses(campaignId);
+              let lifecycle = "ACTIVE";
+              for (const event of events) {
+                if (event.type === "CAMPAIGN_TERMINATED") lifecycle = "TERMINATED";
+                else if (event.type === "CAMPAIGN_DORMANT") lifecycle = "DORMANT";
+                else if (event.type === "WAKE_STARTED") lifecycle = "WAKING";
+                else if (event.type === "RECONCILIATION_COMMITTED") lifecycle = "RECONCILING";
+                else if (event.type === "WAKE_CYCLE_COMPLETED" || event.type === "WAKE_COMPLETED") lifecycle = "ACTIVE";
+              }
+              return { campaignId, known: true, definition, lifecycle, basis: basis ?? null, commitments, hypotheses, semanticEventCount: events.length };
+            },
+          };
+        })();
+
+  const dynamics: DynamicsApplicationSurface | undefined =
+    deps.dynamics === undefined || deps.dynamicsPolicy === undefined
+      ? undefined
+      : (() => {
+          const service = deps.dynamics!;
+          const policy = deps.dynamicsPolicy!;
+          return {
+            policy,
+            observe: (subject) => service.observe(subject as never, policy),
+            diagnose: (subject) => service.diagnose(subject as never, policy),
+            propose: (input) => service.propose({ subject: input.subject as never, policy, advisor: input.advisor as never }),
+            proposalImpact: async (input) => {
+              const observed = await service.observe(input.subject as never, policy);
+              if (observed.status !== "observed") return observed;
+              return service.proposalImpact(input.proposal as never, observed.snapshot);
+            },
+            freshness: (proposal) => service.evaluateProposal(proposal as never),
+          };
+        })();
+
+  const evolution: EvolutionApplicationSurface | undefined =
+    deps.dynamicsPolicy === undefined ||
+    (deps.organizationEvolution === undefined && deps.runtimeEvolution === undefined)
+      ? undefined
+      : {
+          policy: deps.dynamicsPolicy!,
+          inspectOrganization: async (caseRef) => {
+            if (deps.organizationEvolution === undefined) throw new Error("organization evolution is not configured");
+            return deps.organizationEvolution.inspectEvolution(caseRef);
+          },
+          prepareOrganization: async (proposal) => {
+            if (deps.organizationEvolution === undefined) throw new Error("organization evolution is not configured");
+            return deps.organizationEvolution.prepareEvolution({ proposal, policy: deps.dynamicsPolicy! });
+          },
+          advanceOrganization: async (proposal) => {
+            if (deps.organizationEvolution === undefined) throw new Error("organization evolution is not configured");
+            return deps.organizationEvolution.advanceEvolution({ proposal, policy: deps.dynamicsPolicy! });
+          },
+          inspectRuntime: async (caseRef) => {
+            if (deps.runtimeEvolution === undefined) throw new Error("runtime evolution is not configured");
+            return deps.runtimeEvolution.inspectRuntimeEvolution(caseRef);
+          },
+          advanceRuntime: async (proposal) => {
+            if (deps.runtimeEvolution === undefined) throw new Error("runtime evolution is not configured");
+            return deps.runtimeEvolution.advanceRuntimeEvolution({ proposal, policy: deps.dynamicsPolicy! });
+          },
+        };
+
+  const reasoning: ReasoningApplicationSurface | undefined =
+    deps.reasoning === undefined
+      ? undefined
+      : {
+          view: (cellId) => deps.reasoning!.cellView({ cellId }),
+          openBranch: (input) => deps.reasoning!.openBranch({ cellId: input.cellId, question: input.question, attribution: input.attribution as never }),
+          brief: (input) => deps.reasoning!.branchBrief(input),
+          submitCandidate: (input) => deps.reasoning!.submitCandidate(input),
+          evaluate: (input) => deps.reasoning!.evaluateCandidate(input),
+          invalidate: (input) => deps.reasoning!.requestInvalidation(input),
+          frontier: (cellId) => deps.reasoning!.frontier({ cellId }),
+          graph: (cellId) => deps.reasoning!.claimGraph({ cellId }),
+        };
+
+  const projections: ProjectionsApplicationSurface = {
+    work: async () => {
+      try {
+        return workProjection(deps.controller.orchestrationGraph(), deps.controller.viewCursor());
+      } catch {
+        // A source error is an ERROR projection, never an empty known graph.
+        return workProjection(null, null);
+      }
+    },
+    organization: async (input) => {
+      if (deps.organizations === undefined) throw new Error("organization surface is not configured");
+      const definition = await deps.organizations.current(input.organizationDefinitionId);
+      const lifecycle = await deps.organizations.lifecycle(input.organizationDefinitionId);
+      return organizationProjection({ organizationDefinitionId: input.organizationDefinitionId, definition: definition ?? null, lifecycle: lifecycle ?? null });
+    },
+    collaboration: async () => {
+      const localPeerId = requireLocal(deps).peerId;
+      const peers = new Set<string>();
+      if (deps.federation !== undefined) {
+        const inbox = (await deps.federation.inbox(requireLocal(deps))) as { received?: readonly { from?: { peerId?: string }; to?: { peerId?: string } }[] };
+        for (const message of inbox.received ?? []) {
+          if (message.from?.peerId !== undefined) peers.add(message.from.peerId);
+          if (message.to?.peerId !== undefined) peers.add(message.to.peerId);
+        }
+      }
+      const workspaces = deps.boundaryWorkspaces === undefined ? [] : (await deps.boundaryWorkspaces.list()).map((workspace) => ({ workspaceId: workspace.workspaceId, participants: workspace.participants.map((peer) => peer.peerId), acceptedArtifacts: workspace.acceptedArtifacts }));
+      return collaborationProjection({ localPeerId, peers: [...peers], commitments: [], workspaces });
+    },
+    runtime: async () => {
+      if (deps.runtimeScopes === undefined) throw new Error("runtime surface is not configured");
+      return runtimeProjection({ list: () => deps.runtimeScopes!.service.listScopes(), state: (scopeId) => deps.runtimeScopes!.service.scopeState(scopeId) });
+    },
+    reasoning: async (input) => {
+      if (deps.reasoning === undefined) throw new Error("reasoning surface is not configured");
+      const view = await deps.reasoning.cellView({ cellId: input.cellId });
+      const graph = await deps.reasoning.claimGraph({ cellId: input.cellId });
+      return reasoningProjection({
+        cellId: input.cellId,
+        frontierRevision: view.frontierBasis.frontierRevision,
+        frontierDigest: view.frontierBasis.frontierDigest,
+        nodes: graph.nodes.map((node) => ({ ref: { claimId: node.ref.claimId }, claim: { type: { typeId: node.claim.type.typeId }, dependencies: node.claim.dependencies.map((dependency) => ({ claimId: dependency.claimId })) }, active: node.active })),
+        candidates: view.candidates,
+        branches: view.branches.map((branch) => ({ ref: { branchId: branch.ref.branchId }, question: branch.question, closed: branch.closed })),
+      });
+    },
+  };
+
+  return {
+    work,
+    ...(federation === undefined ? {} : { federation }),
+    ...(boundary === undefined ? {} : { boundary }),
+    ...(runtime === undefined ? {} : { runtime }),
+    ...(organization === undefined ? {} : { organization }),
+    ...(campaign === undefined ? {} : { campaign }),
+    ...(dynamics === undefined ? {} : { dynamics }),
+    ...(evolution === undefined ? {} : { evolution }),
+    ...(reasoning === undefined ? {} : { reasoning }),
+    ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
+  };
+}

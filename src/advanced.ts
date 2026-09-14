@@ -97,3 +97,11 @@ export * from "./runtime_evolution/index.js";
  * state: never Evidence, truth, commitment, boundary acceptance, or effect authority.
  */
 export * from "./reasoning_cell/index.js";
+
+/**
+ * G10-O: Unified Application Surface, agent tools & MultiGraph organizational debugger —
+ * advanced opt-in only. One composed safe façade behind every product entry; no second truth
+ * store, no universal graph ontology, no authority bypass.
+ */
+export * from "./application/index.js";
+export { defineApplicationTools } from "./tools/application_tools.js";

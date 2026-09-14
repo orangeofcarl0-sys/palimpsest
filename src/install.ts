@@ -97,6 +97,10 @@ import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralE
 import { makeRuntimeEvolutionService } from "./runtime_evolution/index.js";
 import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "./reasoning_cell/index.js";
 import { makeReasoningCellService } from "./reasoning_cell/index.js";
+import type { PalimpsestApplicationSurface } from "./application/surface.js";
+import { makePalimpsestApplicationSurface } from "./application/surface.js";
+import { defineApplicationTools } from "./tools/application_tools.js";
+import type { DynamicsPolicy } from "./organization_dynamics/index.js";
 import type {
   BoundaryArtifactTypeRegistry,
   BoundaryCollaborationTransportPort,
@@ -222,6 +226,11 @@ export interface InstallPalimpsestOptions {
   reasoningVerificationPolicy?: ReasoningVerificationPolicyPort | undefined;
   /** G10-N (additive): the epistemic admission policy seam (separate from verification). */
   reasoningAdmissionPolicy?: ReasoningEpistemicAdmissionPolicyPort | undefined;
+  /**
+   * G10-O (additive): the explicit versioned Dynamics policy used by the application-level
+   * dynamics/evolution surfaces. Absent ⇒ those surfaces (and their tools/routes) are absent.
+   */
+  organizationDynamicsPolicy?: DynamicsPolicy | undefined;
 }
 
 /**
@@ -272,6 +281,8 @@ export interface InstalledPalimpsest {
   readonly runtimeEvolution?: InstalledRuntimeEvolution | undefined;
   /** G10-N (additive): collaborative reasoning cells — present iff store + verification + admission policy. */
   readonly reasoningCells?: InstalledReasoningCells | undefined;
+  /** G10-O (additive): the ONE composed application surface behind every tool/HTTP/UI entry. */
+  readonly application: PalimpsestApplicationSurface;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -509,7 +520,7 @@ export function installPalimpsest(
     policy,
     clock: options.clock,
   });
-  const tools = definePalimpsestTools(controller);
+  const baseTools = definePalimpsestTools(controller);
 
   // G10-D5: the runtime service exists only when runtime wiring is supplied
   // (§92/§93). No hidden default host behavior; the seven-tool orchestration
@@ -952,6 +963,51 @@ export function installPalimpsest(
     };
   }
 
+  // G10-O: ONE composed application surface over the services actually wired above. Tools and
+  // HTTP both go through this; neither imports a store. Advanced application tools are registered
+  // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
+  const application = makePalimpsestApplicationSurface({
+    controller,
+    ...(options.localPeer === undefined ? {} : { localPeer: options.localPeer }),
+    ...(federation === undefined ? {} : { federation }),
+    ...(boundaryMemory === undefined ? {} : { boundary: boundaryMemory.service }),
+    ...(runtimeScopes === undefined ? {} : { runtimeScopes: { store: runtimeScopes.store, service: runtimeScopes.service } }),
+    ...(options.organizationStore === undefined ? {} : { organizations: options.organizationStore }),
+    ...(institution === undefined ? {} : { institution: { store: institution.store, service: institution.service } }),
+    ...(campaign === undefined ? {} : { campaign: campaign.campaign, campaignStore: campaign.store }),
+    ...(organizationDynamics === undefined ? {} : { dynamics: organizationDynamics.service }),
+    ...(organizationEvolutionInstalled === undefined ? {} : { organizationEvolution: organizationEvolutionInstalled.service }),
+    ...(runtimeEvolutionInstalled === undefined ? {} : { runtimeEvolution: runtimeEvolutionInstalled.service }),
+    ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
+    ...(options.organizationDynamicsPolicy === undefined ? {} : { dynamicsPolicy: options.organizationDynamicsPolicy }),
+    ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
+      ? {}
+      : {
+          boundaryWorkspaces: {
+            list: async () => {
+              const definitions = await options.boundaryMemoryStore!.workspaces();
+              const listed: { workspaceId: string; participants: readonly PeerRef[]; acceptedArtifacts: number }[] = [];
+              for (const definition of definitions) {
+                const view = await boundaryMemory!.service.workspaceView({ workspaceId: definition.workspaceId });
+                listed.push({ workspaceId: definition.workspaceId, participants: definition.participants, acceptedArtifacts: view.artifacts.filter((artifact) => artifact.current !== null).length });
+              }
+              return listed;
+            },
+          },
+        }),
+  });
+  const hasAdvancedSurface =
+    application.federation !== undefined ||
+    application.boundary !== undefined ||
+    application.runtime !== undefined ||
+    application.organization !== undefined ||
+    application.campaign !== undefined ||
+    application.dynamics !== undefined ||
+    application.evolution !== undefined ||
+    application.reasoning !== undefined ||
+    application.projections !== undefined;
+  const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
+
   for (const definition of tools) {
     const registered = context.tools.register(definition);
     if (typeof registered === "function") disposers.push(registered);
@@ -960,6 +1016,7 @@ export function installPalimpsest(
 
   return {
     controller,
+    application,
     tools,
     ...(runtime === undefined ? {} : { runtime }),
     ...(federation === undefined ? {} : { federation }),

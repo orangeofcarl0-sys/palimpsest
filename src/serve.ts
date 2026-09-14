@@ -50,6 +50,7 @@ import {
 import type { StageGraphDefinition } from "./domain/index.js";
 import type { AttemptAttribution, ProjectController } from "./tools/index.js";
 import { definePalimpsestControl, type PalimpsestControlSurface } from "./tools/index.js";
+import { handleApplicationRequest } from "./application/http.js";
 
 const BODY_LIMIT_BYTES = 1_000_000;
 const MIME: Record<string, string> = {
@@ -86,6 +87,11 @@ export interface ServeOptions {
   readonly token?: string | undefined;
   /** Static panel root; default <repo>/dist/web. */
   readonly staticRoot?: string | undefined;
+  /**
+   * G10-O (additive): the composed application surface. When supplied, namespaced typed
+   * application routes are served. Absent ⇒ the legacy Work-only face is unchanged.
+   */
+  readonly application?: import("./application/surface.js").PalimpsestApplicationSurface | undefined;
 }
 
 export interface ServeHandle {
@@ -232,6 +238,30 @@ export function serveOrchestration(
         return;
       }
       try {
+        // G10-O: namespaced typed application routes (never a generic method tunnel). The
+        // bearer token only admits the request to the server — it is never semantic authority.
+        if (options.application !== undefined && path.startsWith("/api/")) {
+          const rawBody = request.method === "POST" || request.method === "PUT" || request.method === "PATCH" ? await readBody(request) : "";
+          let parsedBody: unknown;
+          if (rawBody !== "") {
+            try {
+              parsedBody = JSON.parse(rawBody);
+            } catch {
+              parsedBody = undefined;
+            }
+          }
+          const applicationResult = await handleApplicationRequest({
+            application: options.application,
+            method: request.method ?? "GET",
+            pathname: path,
+            query: url.searchParams,
+            body: parsedBody,
+          });
+          if (applicationResult !== undefined) {
+            sendJson(response, applicationResult.status, applicationResult.body);
+            return;
+          }
+        }
         if (request.method === "GET" && path === "/api/health") {
           // Spec 35 HEALTH-INV-1: ServiceHealth ≠ ProjectInitialized - cheap
           // state only, never a graph build; an empty store is still healthy.
