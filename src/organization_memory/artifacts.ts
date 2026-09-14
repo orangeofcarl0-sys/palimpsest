@@ -628,6 +628,20 @@ export function runDigestOf(input: Omit<RunResult, "digest" | "runRef">): string
   return canonicalDigest({ domain: OM_RUN_DOMAIN, run: input });
 }
 
+/**
+ * The run's IDENTITY digest excludes `validatorVerdicts`, so `runRef` can be resolved BEFORE
+ * validation and stay equal to the persisted run's ref (validators receive the final runRef).
+ * The integrity `digest` still covers the verdicts.
+ */
+export function runIdentityDigestOf(input: Omit<RunResult, "digest" | "runRef">): string {
+  const { validatorVerdicts: _verdicts, ...rest } = input;
+  return canonicalDigest({ domain: OM_RUN_DOMAIN, run: rest });
+}
+
+export function runRefOf(input: Omit<RunResult, "digest" | "runRef">): string {
+  return refDigest(OM_RUN_DOMAIN, runIdentityDigestOf(input), "run");
+}
+
 export function materializeRun(input: Omit<RunResult, "digest" | "runRef" | "schemaVersion"> & { readonly runRef?: string }): RunResult {
   if (input.outcome === "PASS" && input.failureClassification !== "NONE") {
     fail("invalid_value", "a PASS run must have failureClassification NONE");
@@ -650,9 +664,10 @@ export function materializeRun(input: Omit<RunResult, "digest" | "runRef" | "sch
     endedAt: omString(input.endedAt, "endedAt"),
   };
   const digest = runDigestOf(body);
-  // runRef is DERIVED from the content digest: a duplicate run id with divergent content is
-  // impossible by construction (R-N13), and identical content replays idempotently.
-  return Object.freeze({ ...body, runRef: refDigest(OM_RUN_DOMAIN, digest, "run"), digest });
+  // runRef is DERIVED from the identity digest (excluding verdicts), so a duplicate run id with
+  // divergent content is impossible by construction (R-N13), identical content replays
+  // idempotently, and the validator-visible runRef equals the persisted one.
+  return Object.freeze({ ...body, runRef: runRefOf(body), digest });
 }
 
 export function parseRunResult(raw: unknown, what = "RunResult"): RunResult {
@@ -703,8 +718,8 @@ export function parseRunResult(raw: unknown, what = "RunResult"): RunResult {
   const digest = omDigest(object.digest, `${what}.digest`);
   const { runRef: _ignored, ...content } = body;
   if (runDigestOf(content) !== digest) fail("invalid_value", `${what}.digest does not match its content`);
-  if (body.runRef !== refDigest(OM_RUN_DOMAIN, digest, "run")) {
-    fail("invalid_value", `${what}.runRef must be derived from the run digest (R-N13)`);
+  if (body.runRef !== runRefOf(content)) {
+    fail("invalid_value", `${what}.runRef must be derived from the run identity digest (R-N13)`);
   }
   return Object.freeze({ ...body, digest });
 }
