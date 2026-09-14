@@ -25,6 +25,16 @@ import type { OrganizationStore } from "../organization/index.js";
 import type { InstitutionService, InstitutionStore } from "../institution/index.js";
 import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphView, ReasoningCellView, ReasoningBranchBrief, CandidateStatus } from "../reasoning_cell/index.js";
 import type { ReasoningClaimTypeRef, ReasoningClaimRef, ExternalEvidenceRef, EvaluationOutcome, InvalidationOutcome } from "../reasoning_cell/index.js";
+import type {
+  ArchitectureVariant,
+  ExperimentDefinition,
+  InterventionRecord,
+  MeasurementCorrection,
+  OrganizationEvaluation,
+  RunResult,
+  ScenarioDefinition,
+} from "../organization_memory/index.js";
+import type { OrganizationMemoryService, SimilarRunsQuery } from "../organization_memory/index.js";
 import type { PeerRef } from "../federation/peer.js";
 import { materializePeerRef } from "../federation/peer.js";
 import type { DurablePeerOperation } from "../transport/envelope.js";
@@ -205,6 +215,29 @@ export interface ReasoningApplicationSurface {
   graph(cellId: string): Promise<ReasoningClaimGraphView>;
 }
 
+/* ------------------------------------------------------------------ *
+ * Empirical (read-only history; evaluation ≠ governance, memory ≠ authority)
+ * ------------------------------------------------------------------ */
+
+/**
+ * G10-R: the pure READ model over canonical empirical history. Every method
+ * re-derives from the append-only OrganizationMemory store; there is no writer,
+ * no mutator of another subsystem, and no authority reachable here.
+ */
+export interface EmpiricalApplicationSurface {
+  experiments(): Promise<readonly ExperimentDefinition[]>;
+  experiment(experimentId: string): Promise<ExperimentDefinition>;
+  scenarios(experimentId: string): Promise<readonly ScenarioDefinition[]>;
+  variants(experimentId: string): Promise<readonly ArchitectureVariant[]>;
+  runs(experimentId: string): Promise<readonly RunResult[]>;
+  run(runRef: string): Promise<RunResult | undefined>;
+  evaluations(experimentId: string): Promise<readonly OrganizationEvaluation[]>;
+  corrections(experimentId: string): Promise<readonly MeasurementCorrection[]>;
+  interventions(): Promise<readonly InterventionRecord[]>;
+  similarRuns(query: SimilarRunsQuery): Promise<readonly RunResult[]>;
+  structuralHistory(subjectRef: string): Promise<readonly InterventionRecord[]>;
+}
+
 export interface PalimpsestApplicationSurface {
   readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
@@ -217,6 +250,8 @@ export interface PalimpsestApplicationSurface {
   readonly reasoning?: ReasoningApplicationSurface | undefined;
   /** G10-P: semantic attention derivation (read-only; the host adapter activates separately). */
   readonly attention?: AttentionApplicationSurface | undefined;
+  /** G10-R: read-only empirical history (evaluation ≠ governance; memory ≠ authority). */
+  readonly empirical?: EmpiricalApplicationSurface | undefined;
   /** Derived MultiGraph projections (read-only; never a canonical graph). */
   readonly projections?: ProjectionsApplicationSurface | undefined;
 }
@@ -242,6 +277,8 @@ export interface ApplicationSurfaceDeps {
   readonly attention?: AttentionService | undefined;
   /** G10-Q (additive): durable remote submission, needed for a non-home peer to act via tools. */
   readonly remoteTransport?: RemoteSubmissionPort | undefined;
+  /** G10-R (additive): the empirical organization-memory service; absent ⇒ no empirical surface. */
+  readonly organizationMemory?: OrganizationMemoryService | undefined;
 }
 
 function requireLocal(deps: ApplicationSurfaceDeps): PeerRef {
@@ -497,6 +534,23 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           pending: () => deps.attention!.pending(),
         };
 
+  const empirical: EmpiricalApplicationSurface | undefined =
+    deps.organizationMemory === undefined
+      ? undefined
+      : {
+          experiments: () => deps.organizationMemory!.experiments(),
+          experiment: (experimentId) => deps.organizationMemory!.experiment(experimentId),
+          scenarios: (experimentId) => deps.organizationMemory!.scenarios(experimentId),
+          variants: (experimentId) => deps.organizationMemory!.variants(experimentId),
+          runs: (experimentId) => deps.organizationMemory!.runs(experimentId),
+          run: (runRef) => deps.organizationMemory!.run(runRef),
+          evaluations: (experimentId) => deps.organizationMemory!.evaluations(experimentId),
+          corrections: (experimentId) => deps.organizationMemory!.corrections(experimentId),
+          interventions: () => deps.organizationMemory!.interventions(),
+          similarRuns: (query) => deps.organizationMemory!.similarRuns(query),
+          structuralHistory: (subjectRef) => deps.organizationMemory!.structuralHistory(subjectRef),
+        };
+
   const projections: ProjectionsApplicationSurface = {
     work: async () => {
       try {
@@ -557,6 +611,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(evolution === undefined ? {} : { evolution }),
     ...(reasoning === undefined ? {} : { reasoning }),
     ...(attention === undefined ? {} : { attention }),
+    ...(empirical === undefined ? {} : { empirical }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

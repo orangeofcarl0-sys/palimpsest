@@ -120,3 +120,13 @@ export * from "./deployment/index.js";
 /** G10-Q (additive): the launch/serve entry points a real host plugin needs. */
 export { serveOrchestration } from "./serve.js";
 export type { ServeOptions, ServeHandle } from "./serve.js";
+
+/**
+ * G10-R: Empirical Organization Evaluation & Organization Memory — advanced opt-in only.
+ * Telemetry ≠ SemanticTruth; ExperimentResult ≠ OrganizationTruth; ObservedAssociation ≠
+ * Causation; HistoricalWinner ≠ FutureAuthority; Evaluation ≠ Governance. The append-only
+ * empirical history (experiment/scenario/variant definitions, run results, evaluations,
+ * corrections, structural intervention records) and the descriptive evaluation read model.
+ */
+export * from "./organization_memory/index.js";
+export * from "./experiment/index.js";
