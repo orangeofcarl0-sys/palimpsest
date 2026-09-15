@@ -163,18 +163,21 @@ import type {
 import {
   SqliteManagementActivityStore,
   SqliteWorkModePreferenceStore,
+  withMonitorRuntimeCapability,
   type UserWorkModeControlPort,
   type WorkModeCapabilityInputs,
+  linkedCampaignWakeEventSource,
 } from "./project_operating/index.js";
 import {
+  SqliteMonitorDeliveryMarkStore,
   makeCampaignMonitorDriver,
   nullCampaignWakeActivation,
   type CampaignMonitorDriver,
   type CampaignMonitorPolicy,
   type CampaignMonitorScopePort,
   type CampaignWakeActivationPort,
+  type MonitorRuntimeCapability,
   type MonitorTickSourcePort,
-  type SqliteMonitorDeliveryMarkStore,
 } from "./monitor/index.js";
 import {
   DEFAULT_MAX_STEPS_PER_RUN,
@@ -260,8 +263,12 @@ export interface InstallPalimpsestOptions {
   campaignMonitorTickSource?: MonitorTickSourcePort | undefined;
   /** G10-AC (additive): the host wake adapter. Absent ⇒ pull mode, nothing is resumed. */
   campaignMonitorActivation?: CampaignWakeActivationPort | undefined;
-  /** G10-AC (additive): deployment-local delivery marks (duplicate suppression/backoff). */
-  campaignMonitorDeliveryMarks?: SqliteMonitorDeliveryMarkStore | undefined;
+  /**
+   * G10-AC (additive): deployment-local delivery marks (duplicate suppression/backoff).
+   * G10-AC-R: when a first-party runtime is composed and this is absent, a default
+   * deployment-local store is created; `false` deliberately disables suppression.
+   */
+  campaignMonitorDeliveryMarks?: SqliteMonitorDeliveryMarkStore | false | undefined;
   /** G10-AC (additive): explicit per-tick budgets and redelivery cooldown. */
   campaignMonitorPolicy?: Partial<CampaignMonitorPolicy> | undefined;
   /**
@@ -1132,6 +1139,10 @@ export function installPalimpsest(
   }
 
   const disposers: (() => void)[] = [];
+  // G10-AC-R: `dispose()` is a no-op on a second call, so a host that disposes the
+  // install twice (or disposes after the monitor already stopped) cannot
+  // double-close the controller, stores or effects.
+  let installDisposed = false;
 
   // G10-F5 (§153): ADDITIVE organization/institution surfaces. Supplying no
   // organization/institution store changes nothing (§154); institution wiring
@@ -1464,15 +1475,19 @@ export function installPalimpsest(
   // Work Mode preference is a user default, and the activity log only REFERENCES canonical
   // owners. Both default to a file beside the orchestration store so a durable project
   // remembers its posture across sessions; an in-memory orchestration store stays in memory.
+  // G10-AB: the deployment-local operating-posture stores share ONE derived path
+  // (a file beside the orchestration store, or `:memory:`), which the monitor's
+  // DEFAULT delivery-mark store reuses below.
+  const derivedOperatingStorePath =
+    options.operatingStorePath ??
+    (options.databasePath === undefined || options.databasePath === ":memory:"
+      ? ":memory:"
+      : join(dirname(options.databasePath), "project_operating.sqlite"));
   const operatingStores:
     | { readonly workMode: UserWorkModeControlPort; readonly activity: SqliteManagementActivityStore }
     | undefined = (() => {
     if (projectWorkspace === undefined) return undefined;
-    const derived =
-      options.operatingStorePath ??
-      (options.databasePath === undefined || options.databasePath === ":memory:"
-        ? ":memory:"
-        : join(dirname(options.databasePath), "project_operating.sqlite"));
+    const derived = derivedOperatingStorePath;
     try {
       return {
         workMode: options.workModePreferenceStore ?? new SqliteWorkModePreferenceStore(derived),
@@ -1485,12 +1500,15 @@ export function installPalimpsest(
     }
   })();
 
-  // G10-AC: whether a REAL monitor runtime ends up composed. Read LIVE by the
-  // operating-posture capability seam, so MONITOR availability reflects the
-  // wiring that actually exists rather than a construction-time claim.
-  const monitorWiring = { configured: false };
+  // G10-AC-R: the LIVE monitor runtime capability. It is refreshed on every read
+  // from the driver, so `started`/`startState` can never drift from the wiring.
+  // `capability` keeps the composition-time snapshot as a fallback only.
+  const monitorWiring: { capability: MonitorRuntimeCapability | undefined } = { capability: undefined };
+  function liveMonitorCapability(): MonitorRuntimeCapability | undefined {
+    return monitor?.capability() ?? monitorWiring.capability;
+  }
 
-  const projectManagement: ProjectManagementService | undefined =
+  const projectManagementBase: ProjectManagementService | undefined =
     projectWorkspace === undefined
       ? undefined
       : makeProjectManagementService({
@@ -1501,6 +1519,19 @@ export function installPalimpsest(
           capabilities: { recipeExecution: recipeExecution !== undefined, verify: false },
           ...(operatingStores === undefined ? {} : { workMode: operatingStores.workMode, activity: operatingStores.activity }),
           registry: recipeRegistry,
+          // G10-AC-R §13: the operating history REFERENCES canonical Campaign wake
+          // events for the Campaigns this project actually links to - never a global
+          // scan, never a copied Campaign payload, never an invented event. Without a
+          // Campaign store the seam is absent and the history honestly reports zero
+          // Campaign references.
+          ...(options.campaignStore === undefined
+            ? {}
+            : {
+                campaignWakeEvents: () =>
+                  linkedCampaignWakeEventSource({ store: options.campaignStore! }).projectCampaignWakeEvents(
+                    options.projectId,
+                  ),
+              }),
           projectBasis: () => {
             // A read of the canonical ProjectIR projection - the same source the
             // management service's own `readProject()` uses. No new truth.
@@ -1517,68 +1548,124 @@ export function installPalimpsest(
             };
           },
           operatingCapabilities: () => ({
-            // G10-AC §34: MONITOR availability derives from REAL runtime wiring,
-            // read LIVE (the monitor runtime is composed after this service), not
-            // from a bare boolean. An embedder may still declare an equivalent
-            // external implementation explicitly via `monitorConditionSource`.
+            // G10-AC §34 / AC-R §5: MONITOR availability derives from REAL runtime
+            // wiring, read LIVE (the monitor runtime is composed after this
+            // service), not from a bare boolean. An embedder may still declare an
+            // equivalent external implementation explicitly via
+            // `monitorConditionSource`. `monitorRuntime` is kept for backward
+            // compatibility, but a bare `true` is no longer an availability claim.
             ...(options.operatingCapabilities ?? {}),
-            monitorRuntime: monitorWiring.configured,
+            monitorRuntime: liveMonitorCapability() !== undefined,
             monitorRuntimeProvenance: "first_party" as const,
+            monitorRuntimeCapability: liveMonitorCapability(),
           }),
         });
+
+  // G10-AC-R §5: `makeProjectManagementService` narrows the declared capability
+  // inputs to a fixed set of fields, so the LIVE monitor capability cannot ride
+  // through it. Wrap ONLY the derived read (`posture`) so the MONITOR row is
+  // recomputed from the live driver capability at call time; every other
+  // behaviour is the base service, unchanged.
+  // HONEST: this wrapper is required because `src/project_management/service.ts`
+  // (outside this fix's write scope) does not forward the new capability field.
+  const projectManagement: ProjectManagementService | undefined =
+    projectManagementBase === undefined
+      ? undefined
+      : {
+          ...projectManagementBase,
+          posture: async () =>
+            withMonitorRuntimeCapability(await projectManagementBase.posture(), liveMonitorCapability()),
+        };
 
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
   // HTTP both go through this; neither imports a store. Advanced application tools are registered
   // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
-// G10-AC: the monitor runtime is composed ONLY when the operator explicitly
-// wires a scope, and it owns no canonical store. With no scope there is no
-// driver, MONITOR degrades to PREVIEW_ONLY/UNAVAILABLE, and NOTHING runs in the
-// background. The driver never starts itself: `start()` requires a tick source.
-const monitor: CampaignMonitorDriver | undefined =
-  campaign === undefined || options.campaignMonitorScope === undefined
-    ? undefined
-    : makeCampaignMonitorDriver({
-        projectId: options.projectId,
-        // The opt-in gate is read through the SAME operator store the rest of the
-        // runtime uses. Without one the driver cannot prove an opt-in, so it
-        // refuses to scan rather than assuming MONITOR.
-        workMode: operatingStores?.workMode ?? {
-          get: async () => {
-            throw new Error("no Work Mode preference store is configured");
-          },
-          set: async () => {
-            throw new Error("no Work Mode preference store is configured");
-          },
-          history: async () => [],
-        },
-        scope: options.campaignMonitorScope,
-        prospective: {
-          scanWatches: (campaignId) => campaign.prospective.scanWatches(campaignId),
-          recordTriggers: (input) => campaign.prospective.recordTriggers(input),
-          watchStates: (campaignId) => campaign.prospective.watchStates(campaignId),
-        },
-        production: {
-          lifecycleState: (campaignId) => campaign.production.lifecycleState(campaignId),
-          beginWake: (input) => campaign.production.beginWake(input),
-          reconcileCurrentWorld: (input) => campaign.production.reconcileCurrentWorld(input),
-        },
-        history: {
-          readEvents: (campaignId) => campaign.store.replay(campaignId),
-        },
-        activation: options.campaignMonitorActivation ?? nullCampaignWakeActivation(),
-        ...(options.campaignMonitorDeliveryMarks === undefined
-          ? {}
-          : { marks: options.campaignMonitorDeliveryMarks }),
-        ...(options.campaignMonitorPolicy === undefined
-          ? {}
-          : { policy: options.campaignMonitorPolicy }),
-        ...(options.campaignMonitorTickSource === undefined
-          ? {}
-          : { tickSource: options.campaignMonitorTickSource }),
-        ...(options.campaignClock === undefined ? {} : { clock: options.campaignClock }),
-      });
+  // G10-AC: the monitor runtime is composed ONLY when the operator explicitly
+  // wires a scope, and it owns no canonical store. With no scope there is no
+  // driver, MONITOR degrades to PREVIEW_ONLY/UNAVAILABLE, and NOTHING runs in the
+  // background. A configured tick source is STARTED at the end of this function.
+  //
+  // G10-AC-R §6/§7: delivery marks suppress duplicates. When a first-party runtime
+  // is composed (a tick source is supplied) and the host supplied neither a store
+  // nor `false`, a DEFAULT deployment-local store is created at the SAME derived
+  // operating-store path the AB stores use (or `:memory:`), so a normal runtime
+  // does not re-deliver on every tick. `false` deliberately disables suppression.
+  let monitorMarks: SqliteMonitorDeliveryMarkStore | undefined;
+  let deliveryMarksSource: "default" | "supplied" | "disabled";
+  if (options.campaignMonitorDeliveryMarks === false) {
+    monitorMarks = undefined;
+    deliveryMarksSource = "disabled";
+  } else if (options.campaignMonitorDeliveryMarks !== undefined) {
+    monitorMarks = options.campaignMonitorDeliveryMarks;
+    deliveryMarksSource = "supplied";
+  } else if (options.campaignMonitorTickSource !== undefined && campaign !== undefined && options.campaignMonitorScope !== undefined) {
+    try {
+      monitorMarks = new SqliteMonitorDeliveryMarkStore(derivedOperatingStorePath);
+      deliveryMarksSource = "default";
+    } catch {
+      // An unusable mark store must not take the runtime down: suppression is
+      // simply off and the status says so.
+      monitorMarks = undefined;
+      deliveryMarksSource = "disabled";
+    }
+  } else {
+    monitorMarks = undefined;
+    deliveryMarksSource = "disabled";
+  }
 
-  monitorWiring.configured = monitor !== undefined;
+  const monitor: CampaignMonitorDriver | undefined =
+    campaign === undefined || options.campaignMonitorScope === undefined
+      ? undefined
+      : makeCampaignMonitorDriver({
+          projectId: options.projectId,
+          // The opt-in gate is read through the SAME operator store the rest of the
+          // runtime uses. Without one the driver cannot prove an opt-in, so it
+          // refuses to scan rather than assuming MONITOR.
+          workMode: operatingStores?.workMode ?? {
+            get: async () => {
+              throw new Error("no Work Mode preference store is configured");
+            },
+            set: async () => {
+              throw new Error("no Work Mode preference store is configured");
+            },
+            history: async () => [],
+          },
+          scope: options.campaignMonitorScope,
+          prospective: {
+            scanWatches: (campaignId) => campaign.prospective.scanWatches(campaignId),
+            recordTriggers: (input) => campaign.prospective.recordTriggers(input),
+            watchStates: (campaignId) => campaign.prospective.watchStates(campaignId),
+          },
+          production: {
+            lifecycleState: (campaignId) => campaign.production.lifecycleState(campaignId),
+            beginWake: (input) => campaign.production.beginWake(input),
+            reconcileCurrentWorld: (input) => campaign.production.reconcileCurrentWorld(input),
+          },
+          history: {
+            readEvents: (campaignId) => campaign.store.replay(campaignId),
+          },
+          activation: options.campaignMonitorActivation ?? nullCampaignWakeActivation(),
+          ...(monitorMarks === undefined ? {} : { marks: monitorMarks }),
+          deliveryMarksSource,
+          ...(options.campaignMonitorPolicy === undefined
+            ? {}
+            : { policy: options.campaignMonitorPolicy }),
+          ...(options.campaignMonitorTickSource === undefined
+            ? {}
+            : { tickSource: options.campaignMonitorTickSource }),
+          ...(options.campaignClock === undefined ? {} : { clock: options.campaignClock }),
+        });
+
+  monitorWiring.capability = monitor?.capability();
+
+  // G10-AC-R §8: INITIATE startup when a runtime is composed. `void monitor.start()`
+  // is not enough - the promise is kept so a host can `await installed.monitor.ready()`
+  // and so `dispose` can settle it. `ready()` never rejects (a failure becomes
+  // `startState: "FAILED"` in the driver), so there is no unhandled rejection.
+  const monitorReady = monitor === undefined ? undefined : monitor.ready();
+  void monitorReady?.catch(() => {
+    // Defensive only: `ready()` resolves even on a failed start.
+  });
 
   const application = makePalimpsestApplicationSurface({
     controller,
@@ -1697,7 +1784,18 @@ const monitor: CampaignMonitorDriver | undefined =
       };
     },
     async dispose() {
+      if (installDisposed) return;
+      installDisposed = true;
       for (const dispose of [...disposers].reverse()) dispose();
+      // G10-AC-R §8: settle the monitor startup and STOP the monitor BEFORE any
+      // store is closed. ORDER MATTERS: a tick callback must never run against a
+      // closed store, so the tick source is stopped (and its in-flight start
+      // settled) first. `monitor.dispose()` is idempotent, so a second
+      // `installed.dispose()` is a no-op.
+      if (monitor !== undefined) {
+        await monitor.ready();
+        await monitor.dispose();
+      }
       await controller.close();
       store.close();
       // G10-R: close the empirical organization-memory store only when this install was

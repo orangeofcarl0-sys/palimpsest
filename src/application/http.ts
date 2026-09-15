@@ -145,6 +145,10 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       disclosure: application.disclosure !== undefined,
       projectWorkspace: application.projectWorkspace !== undefined,
       projectManagement: application.projectManagement !== undefined,
+      // G10-AC-R §11: the read-only monitor face. It was declared on the surface
+      // and wired by the install, but this discovery list omitted it, so a client
+      // could not see whether a monitor runtime was observable at all.
+      monitor: application.monitor !== undefined,
       projections: application.projections !== undefined,
     });
   }
