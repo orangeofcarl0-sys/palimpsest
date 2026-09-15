@@ -42,33 +42,17 @@ Baseline: `main @ ea77783d864ccb660d14c9e13c6008a9241e7715`. Ordarium v1.3.1. Ho
 | Wire contract / migrations | untouched (no new event type, no payload change, no migration) |
 | Baseline commit | `ea77783d864ccb660d14c9e13c6008a9241e7715` |
 
-## Required CI (blank by design)
+## Required CI (canonical gate)
 
-The Required-CI table is intentionally blank for this delivery commit and is filled at closure time.
-
-| Job | Status |
+| Checkpoint | Value |
 | --- | --- |
-| build |  |
-| test |  |
-| e2e |  |
-| host conformance |  |
+| Implementation PR | **#86** `experiment/g10-w-revision-safe` |
+| Tested branch HEAD | `a8c3ea0` |
+| PR run | `34980500638` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ ebe498e2b0d64401849518ca56dce594b5eaba75` |
+| Tree identity | `git diff a8c3ea0 ebe498e` empty → the tested tree IS the merged tree |
+| Canonical main run | `34980693974` — **unit pass + e2e pass on attempt 1** |
 
-## Honest deviations
-
-1. **Evidence staleness is a second, non-transactional step.** The typed-invalidation settlement of
-   *tasks* rides inside the batch; the evidence-status projection repair (`#staleEvidenceForScope`)
-   emits no event and runs after commit. A crash in between leaves evidence `active` that should be
-   `stale` — fail-open on evidence authority only.
-2. **`ProjectIR.head_commit` is not re-anchorable by a revision.** `PlanInput` carries no
-   `headCommit`, so after a promotion the ProjectIR head diverges from the real git head and a
-   second task's promotion cannot satisfy `git.promote`. The real-host dogfood demonstrates this
-   honestly (`bPromotionApplicable: false`) and stops at the normal `needs_promotion` escalation.
-3. **The `resume.action = "blocked"` branch is retired from coverage** together with the state it
-   described (a stale-input world). The branch remains as defensive observation.
-4. **The real DSH host does not execute the Work attempt.** It exposes the project/manage application
-   HTTP routes but no remote claim/report/gate channel, so the attempt runs on the real
-   scheduler/controller/effects stack against the same deployment; recorded as
-   `dshAttempt: false` with that exact reason.
-5. **`test/debugger_controls.test.ts` HOLD-ID-A01/A03** now assert the refusal instead of a
-   same-id identity swap; the *projection* assertions (historical `definitionId`, absence not
-   synthesized, no badge leakage) are preserved over a valid retaining revision.
+All required checks were GREEN before merge; no force/bypass/history rewrite. Replay fixtures were NOT
+modified. The delegate-continuity dogfood and the fault-injection/replay proofs are separately
+reproducible artifacts.
