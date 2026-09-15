@@ -33,11 +33,21 @@ function userMessage(text) {
  * The task text for ONE ephemeral reasoning branch. It carries everything the
  * agent needs to act (cellId/branchId/question/frontier) and explicitly forbids
  * the actions a branch must never take (open branch / evaluate / invalidate).
+ *
+ * When an `evidenceContext` is supplied it carries the SELECTOR-ONLY materialized
+ * evidence plus the frozen allowlist: the branch may cite ONLY those evidence ids
+ * and may NOT browse the Vault or cite unrelated evidence.
  */
-function branchTask(brief, cellId, branchId) {
+function branchTask(brief, cellId, branchId, evidenceContext) {
   const objective = typeof brief.objective === 'string' ? brief.objective : '';
   const question = typeof brief.question === 'string' ? brief.question : '';
-  return [
+  const allowed = Array.isArray(evidenceContext?.allowedEvidenceRefs)
+    ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
+    : [];
+  const selections = Array.isArray(evidenceContext?.selections) ? evidenceContext.selections : [];
+  const hasEvidence = allowed.length > 0 || selections.length > 0;
+
+  const lines = [
     'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You may ONLY read the frozen brief and submit exactly ONE structured candidate.',
     'Do NOT call palimpsest_reasoning with action "branch", "evaluate" or "invalidate" (they are forbidden for a branch).',
     '',
@@ -47,16 +57,51 @@ function branchTask(brief, cellId, branchId) {
     `question: ${question}`,
     `acceptedFrontierBasis: ${JSON.stringify(brief.frontierBasis ?? null)}`,
     `acceptedClaims: ${JSON.stringify(brief.acceptedClaims ?? [])}`,
-    '',
-    'Do this now:',
-    `1. Call palimpsest_reasoning with action "brief", cellId "${cellId}", branchId "${branchId}" to read the frozen brief and the accepted frontier.`,
+  ];
+
+  if (hasEvidence) {
+    lines.push('', 'ALLOWED EVIDENCE (you may cite ONLY these evidence ids):');
+    for (const id of allowed) lines.push(`- ${id}`);
+    lines.push('', 'MATERIALIZED EVIDENCE SELECTIONS (the exact selected bytes; this is ALL you may read):');
+    for (const selection of selections) {
+      lines.push(
+        `--- evidenceId: ${String(selection?.evidenceId)} | kind: ${String(selection?.kind)} | mediaType: ${String(selection?.mediaType)} | digest: ${String(selection?.digest)} ---`,
+      );
+      lines.push(String(selection?.text ?? ''));
+    }
+    lines.push(
+      '',
+      'EVIDENCE RULES:',
+      '- You may cite ONLY evidence ids from the ALLOWED EVIDENCE list above; never invent, guess or cite any other id.',
+      '- You may NOT browse the Vault or read any other source; the materialized selections above are ALL the evidence you may use.',
+      '- Your candidate MUST include externalEvidenceRefs set to the evidence ids you actually used (an array of id strings).',
+    );
+  }
+
+  lines.push('', 'Do this now:');
+  lines.push(`1. Call palimpsest_reasoning with action "brief", cellId "${cellId}", branchId "${branchId}" to read the frozen brief and the accepted frontier.`);
+  const candidateCall =
     '2. Think briefly, then call palimpsest_reasoning with action "candidate", cellId "' +
-      cellId +
-      '", branchId "' +
-      branchId +
-      '", type {"typeId":"reasoning.statement","version":"v1"}, content {"statement":"<one concise, falsifiable statement that directly answers the question>"}. Submit EXACTLY ONE candidate. Do not try again if it succeeds or fails.',
-    '3. Reply with one short line. Do nothing else.',
-  ].join('\n');
+    cellId +
+    '", branchId "' +
+    branchId +
+    '", type {"typeId":"reasoning.statement","version":"v1"}, content {"statement":"<one concise, falsifiable statement that directly answers the question>"}' +
+    (hasEvidence ? ', externalEvidenceRefs ["<only evidence ids you actually used from the ALLOWED list>"]' : '') +
+    '. Submit EXACTLY ONE candidate. Do not try again if it succeeds or fails.';
+  lines.push(candidateCall);
+  lines.push('3. Reply with one short line. Do nothing else.');
+  return lines.join('\n');
+}
+
+/** Normalize cited evidence refs from a tool call into a de-duplicated id array. */
+function citedEvidenceRefs(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = new Set();
+  for (const entry of raw) {
+    if (typeof entry === 'string' && entry.length > 0) out.add(entry);
+    else if (entry !== null && typeof entry === 'object' && typeof entry.evidenceId === 'string' && entry.evidenceId.length > 0) out.add(entry.evidenceId);
+  }
+  return [...out].sort();
 }
 
 /** Machine-readable line the harness parses; exactly one is printed, even on failure. */
@@ -84,9 +129,19 @@ async function runBranch(ctx, deps) {
   let candidateDigest;
   let statement;
   let submitted = false;
+  let evidenceRefs = [];
 
   try {
-    const brief = JSON.parse(readFileSync(startup.branchFile, 'utf8'));
+    const payload = JSON.parse(readFileSync(startup.branchFile, 'utf8'));
+    const isEnvelope = payload !== null && typeof payload === 'object' && payload.brief !== undefined && typeof payload.brief === 'object';
+    const brief = isEnvelope ? payload.brief : payload;
+    const evidenceContext = isEnvelope ? payload.evidenceContext : undefined;
+    const allowlist = Array.isArray(evidenceContext?.allowedEvidenceRefs)
+      ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
+      : [];
+    // The allowlist is enforced ONLY when an evidence context was supplied: a
+    // non-evidence branch keeps its historical behaviour.
+    const enforceAllowlist = isEnvelope && evidenceContext !== undefined && Array.isArray(evidenceContext.allowedEvidenceRefs);
     const cellId = brief?.cell && typeof brief.cell.cellId === 'string' ? brief.cell.cellId : undefined;
     const branchId = brief?.branch && typeof brief.branch.branchId === 'string' ? brief.branch.branchId : undefined;
     if (cellId === undefined || branchId === undefined) {
@@ -102,7 +157,7 @@ async function runBranch(ctx, deps) {
       await agent.whenIdle();
 
       const fromSeq = agent.session.seq;
-      agent.followup(userMessage(branchTask(brief, cellId, branchId)));
+      agent.followup(userMessage(branchTask(brief, cellId, branchId, evidenceContext)));
       await agent.whenIdle();
 
       // Observe ONLY tool calls / results (never private reasoning) to find the
@@ -110,6 +165,7 @@ async function runBranch(ctx, deps) {
       const session = agent.session;
       const length = session.seq;
       const candidateCalls = new Map();
+      const citedRefs = new Set();
       for (let seq = fromSeq; seq < length; seq += 1) {
         const event = session.eventAt(seq);
         if (event === undefined) continue;
@@ -124,6 +180,7 @@ async function runBranch(ctx, deps) {
           candidateCalls.set(callId, args);
           if (args?.action === 'candidate') {
             submitted = true;
+            for (const ref of citedEvidenceRefs(args.externalEvidenceRefs)) citedRefs.add(ref);
             if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
           }
         } else if (event.type === 'tool/result') {
@@ -140,8 +197,19 @@ async function runBranch(ctx, deps) {
           if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
         }
       }
-      status = submitted ? 'completed' : 'failed';
-      detail = submitted ? `branch submitted a candidate through the real ReasoningCell service (${cellId}/${branchId})` : 'branch did not submit a candidate through palimpsest_reasoning';
+      evidenceRefs = [...citedRefs].sort();
+
+      const disallowed = enforceAllowlist ? evidenceRefs.filter((ref) => !allowlist.includes(ref)) : [];
+      if (disallowed.length > 0) {
+        // STRUCTURAL REJECTION: a branch may never cite evidence outside the
+        // frozen allowlist. The failed result still reports what it cited so the
+        // caller can enforce the same rule independently.
+        status = 'failed';
+        detail = `branch cited evidence outside the frozen allowlist: ${disallowed.join(', ')}`;
+      } else {
+        status = submitted ? 'completed' : 'failed';
+        detail = submitted ? `branch submitted a candidate through the real ReasoningCell service (${cellId}/${branchId})` : 'branch did not submit a candidate through palimpsest_reasoning';
+      }
     }
   } catch (error) {
     status = 'failed';
@@ -152,6 +220,7 @@ async function runBranch(ctx, deps) {
     status,
     ...(candidateDigest === undefined ? {} : { candidateDigest }),
     ...(statement === undefined ? {} : { statement }),
+    evidenceRefs,
     detail,
   });
   try {

@@ -37,6 +37,11 @@ export interface ReasoningBranchExecutionPort {
     readonly executionBudget?: unknown;
     /** Cooperative cancellation; a cancelled branch is reported, never fabricated. */
     readonly signal?: AbortSignal;
+    /**
+     * EXPLICIT, selector-only evidence material for this branch (opaque to the
+     * port). A branch may only cite evidence ids inside this context's allowlist.
+     */
+    readonly evidenceContext?: unknown;
   }): Promise<unknown>;
 }
 
@@ -49,6 +54,8 @@ export interface BranchExecutionResult {
   readonly status: "completed" | "failed" | "timeout";
   readonly candidateCount: number;
   readonly detail: string;
+  /** Evidence ids the branch actually cited (subset of the frozen allowlist). */
+  readonly evidenceRefs: readonly string[];
 }
 
 /** Machine-readable line the DSH branch process must print as its final output. */
@@ -85,10 +92,24 @@ interface RawDshOutcome {
   readonly detail?: unknown;
   readonly statement?: unknown;
   readonly candidateCount?: unknown;
+  readonly evidenceRefs?: unknown;
 }
 
 function failed(detail: string): BranchExecutionResult {
-  return { status: "failed", candidateCount: 0, detail };
+  return { status: "failed", candidateCount: 0, detail, evidenceRefs: Object.freeze([]) };
+}
+
+function normalizeEvidenceRefs(raw: unknown): readonly string[] {
+  if (!Array.isArray(raw)) return Object.freeze([]);
+  const out = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry === "string" && entry.length > 0) out.add(entry);
+    else if (typeof entry === "object" && entry !== null && typeof (entry as { readonly evidenceId?: unknown }).evidenceId === "string") {
+      const evidenceId = (entry as { readonly evidenceId: string }).evidenceId;
+      if (evidenceId.length > 0) out.add(evidenceId);
+    }
+  }
+  return Object.freeze([...out].sort());
 }
 
 function parseDshOutcome(stdout: string): RawDshOutcome | undefined {
@@ -125,10 +146,12 @@ function normalizeOutcome(raw: RawDshOutcome): DshBranchExecutionOutcome {
         ? 1
         : 0;
   const detail = typeof raw.detail === "string" && raw.detail.trim() !== "" ? raw.detail : `branch ${status}`;
+  const evidenceRefs = normalizeEvidenceRefs(raw.evidenceRefs);
   return {
     status,
     candidateCount,
     detail,
+    evidenceRefs,
     ...(candidateDigest === undefined ? {} : { candidateDigest }),
     ...(statement === undefined ? {} : { statement }),
   };
@@ -160,7 +183,11 @@ export function dshSubprocessBranchExecutionPort(
 
       let briefJson: string;
       try {
-        briefJson = JSON.stringify(runInput.brief);
+        // Backward compatible: a bare brief is written when no evidence context is
+        // supplied; otherwise the host receives `{ brief, evidenceContext }`.
+        briefJson = JSON.stringify(
+          runInput.evidenceContext === undefined ? runInput.brief : { brief: runInput.brief, evidenceContext: runInput.evidenceContext },
+        );
       } catch {
         return failed("branch brief is not JSON-serializable");
       }
@@ -206,7 +233,7 @@ export function dshSubprocessBranchExecutionPort(
             } catch {
               /* the process may already be gone */
             }
-            finish({ status: "timeout", candidateCount: 0, detail: `branch timed out after ${timeoutMs}ms` });
+            finish({ status: "timeout", candidateCount: 0, detail: `branch timed out after ${timeoutMs}ms`, evidenceRefs: Object.freeze([]) });
           }, timeoutMs);
 
           signal?.addEventListener("abort", onAbort, { once: true });
