@@ -38,6 +38,11 @@ export const OPEN_LOOP_KINDS = [
   // the promotion chain is broken. Derived from the controller's head status.
   "PROJECT_HEAD_DRIFT",
   "PROJECT_HEAD_CONFLICT",
+  // G10-Z: a promotion intent still owns an external effect, or its effect
+  // committed without ever admitting the owning Work. Derived from the canonical
+  // promotion events - a prompt to look, never an automatic action.
+  "PROMOTION_EFFECT_UNRESOLVED",
+  "PROMOTION_AWAITING_SETTLEMENT",
 ] as const;
 export type OpenLoopKind = (typeof OPEN_LOOP_KINDS)[number];
 
@@ -371,6 +376,30 @@ function openLoopsOf(sources: ProjectWorkspaceViewSources): readonly OpenLoop[] 
   }
   for (const decision of sources.boundaryDecisions ?? []) {
     loops.push(loopOf("PENDING_BOUNDARY_DECISION", decision.detail, { kind: "boundary_decision", id: decision.id }));
+  }
+
+  // G10-Z: the promotion fence loops. An unresolved intent is why a revision
+  // would be refused with `promotion_settlement_required`, so the operator can
+  // see the reason without attempting a mutation.
+  for (const row of status.promotionFence) {
+    const subject: OpenLoopSubjectRef = { kind: "task", id: row.task_id };
+    if (row.state === "PREPARED") {
+      loops.push(
+        loopOf(
+          "PROMOTION_EFFECT_UNRESOLVED",
+          `promotion ${row.promotion_id} prepared for task ${row.task_id} has an unresolved external effect; its Work cannot be retired until the effect resolves`,
+          subject,
+        ),
+      );
+    } else {
+      loops.push(
+        loopOf(
+          "PROMOTION_AWAITING_SETTLEMENT",
+          `promotion ${row.promotion_id} committed for task ${row.task_id} but its Work was never admitted; settle the Work before retiring it`,
+          subject,
+        ),
+      );
+    }
   }
 
   // G10-X: the canonical head drift/conflict loops. Derived from the

@@ -23,6 +23,8 @@ import {
 import { actionKey, stableEntityId } from "./idempotency.js";
 import { TaskPolicy } from "./policy.js";
 import { parseStageGraphDefinition } from "./stage_graph.js";
+import { assessPromotionEligibility } from "./promotion_eligibility.js";
+import { readPromotionEligibilityInput } from "./promotion_eligibility_read.js";
 import {
   ATTEMPT_ALLOWED_SOURCES,
   ATTEMPT_EVENT_TARGET,
@@ -150,6 +152,9 @@ export class AggregateValidator {
           return;
         case "EVIDENCE_STALE":
           this.#validateEvidenceStale(connection, event);
+          return;
+        case "PROMOTION_PREPARED":
+          this.#validatePromotionPrepared(connection, event);
           return;
         default:
           return;
@@ -290,6 +295,63 @@ export class AggregateValidator {
     if (status !== "active") {
       throw new DomainValidationError(
         `EVIDENCE_STALE requires active Evidence (current status is ${status})`,
+      );
+    }
+  }
+
+  /**
+   * PROMOTION_PREPARED (G10-Z §20): the durable external-effect intent. Admission
+   * proves from CANONICAL LOCAL STATE ALONE (no git, no Ordarium) that the
+   * attempt may start an effect right now:
+   *
+   *   attempt exists / COMPLETED / has a result commit
+   *   task exists / VERIFYING / envelope matches the current ProjectIR
+   *   the attempt is a candidate of the task's CURRENT batch
+   *   the report was produced against that same input world
+   *   the recorded source equals the report's result commit
+   *   the recorded expected head is the canonical one for this topology
+   *
+   * The shared assessor is the SAME one the promotion manager uses, so the log
+   * cannot admit an intent the product path would have refused.
+   */
+  #validatePromotionPrepared(connection: DatabaseSync, event: NewEvent): void {
+    const attemptId = String(event.payload.attempt_id);
+    if (String(event.payload.promotion_id) !== event.entity_id) {
+      throw new DomainValidationError(
+        "PROMOTION_PREPARED promotion_id must equal the event entity id",
+      );
+    }
+    const input = readPromotionEligibilityInput({
+      connection,
+      projectId: event.project_id,
+      attemptId,
+      currentBatch: (taskRow) => {
+        const [activationEventId, , attempts] = this.currentBatch(connection, taskRow);
+        return {
+          activationEventId,
+          attemptIds: attempts.map((item) => String(item.attempt_id)),
+        };
+      },
+      // At PREPARED time no intent exists yet, so the pending-intent blocker is
+      // not part of this fact's own admission.
+      considerPendingPromotion: false,
+    });
+    const assessment = assessPromotionEligibility(input);
+    if (!assessment.eligible) {
+      throw new DomainValidationError(
+        `PROMOTION_PREPARED refused: ${assessment.blockers
+          .map((item) => `${item.kind}: ${item.detail}`)
+          .join("; ")}`,
+      );
+    }
+    if (String(event.payload.source_commit) !== String(assessment.sourceCommit)) {
+      throw new DomainValidationError(
+        "PROMOTION_PREPARED source_commit is not the attempt's canonical result commit",
+      );
+    }
+    if (String(event.payload.expected_head_commit) !== String(input.canonicalExpectedHead)) {
+      throw new DomainValidationError(
+        "PROMOTION_PREPARED expected_head_commit is not the canonical expected head",
       );
     }
   }
