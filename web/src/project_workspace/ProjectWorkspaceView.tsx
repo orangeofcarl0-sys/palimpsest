@@ -27,11 +27,14 @@ import {
   manageStatus,
   manageStep,
   projectAssets,
+  managementActivity,
+  operatingPosture,
   projectHistory,
   projectJournal,
   projectOpenLoops,
   projectWorkspace,
   type ApplicationSurfaceAvailability,
+  type ManagementActivityRecord,
   type ManagementAssessment,
   type ManagementBoundedRun,
   type ManagementInvolvement,
@@ -39,6 +42,7 @@ import {
   type OpenLoop,
   type ProjectAssetAssociation,
   type ProjectJournalViewEntry,
+  type ProjectOperatingPostureView,
   type ProjectWorkspaceView as ProjectWorkspaceReadModel,
   type WorkspaceHistoryEntry,
 } from "../api";
@@ -609,6 +613,9 @@ function HistoryPanel(props: {
 function ManagementPanel(props: {
   readonly status: ManagementAssessment | null;
   readonly statusError: string | null;
+  readonly posture: ProjectOperatingPostureView | null;
+  readonly postureError: string | null;
+  readonly activity: readonly ManagementActivityRecord[];
   readonly surfaces: ApplicationSurfaceAvailability | null;
   readonly refreshStatus: () => Promise<void>;
   readonly onMessage: (text: string) => void;
@@ -635,10 +642,23 @@ function ManagementPanel(props: {
   if (props.status === null) return <Muted>Loading the management assessment…</Muted>;
 
   const profile = props.status.profile;
-  const advisorConfigured = props.surfaces?.advisor === true || props.surfaces?.recipes === true;
-  const workMode = advisorConfigured
-    ? "not recorded by this installation (FOCUS / EXPLORE / COORDINATE + VERIFY / MONITOR are per-task advisor recommendations, not a persisted project setting)"
-    : "not configured";
+  // G10-AB §43: the Work Mode is a REAL persisted preference now. The preferred
+  // value and its EFFECTIVE availability are shown separately, and a safe default
+  // is labelled as a default rather than presented as a user choice.
+  const preferred = props.posture?.workMode.preferred ?? null;
+  const effective = props.posture?.workMode.effectiveStatus ?? [];
+  const modifierLabel = (modifiers: readonly string[]): string =>
+    modifiers.length === 0 ? "" : ` + ${modifiers.join(" + ")}`;
+  const workMode = preferred === null
+    ? props.postureError === null
+      ? "loading the persisted Work Mode preference…"
+      : `Work Mode is not readable for this installation (${props.postureError}); the safe default is FOCUS and no preference is fabricated`
+    : preferred.source === "safe_default"
+      ? `${preferred.baseMode}${modifierLabel(preferred.modifiers)} (safe default — no stored preference is in effect${
+          preferred.degradedReason === undefined ? "" : `: ${preferred.degradedReason}`
+        })`
+      : `${preferred.baseMode}${modifierLabel(preferred.modifiers)} (persisted preference)`;
+  const lastModeChange = props.posture?.workMode.historySummary.lastChange ?? null;
   const confirmationCandidates = props.status.candidates.filter((candidate) => candidate.requiredConfirmation);
 
   const doRecommend = (): void => {
@@ -713,8 +733,36 @@ function ManagementPanel(props: {
         <Field label="Work Mode" testId="management-work-mode">
           {workMode}
         </Field>
+        {lastModeChange === null ? null : (
+          <Field label="last changed" testId="management-work-mode-changed">
+            <Mono>{lastModeChange.from}</Mono> → <Mono>{lastModeChange.to}</Mono> by{" "}
+            <Mono>{lastModeChange.updatedBy}</Mono> at <Mono>{lastModeChange.at}</Mono>
+          </Field>
+        )}
+        <Field label="effective availability" testId="management-work-mode-effective">
+          {effective.length === 0 ? (
+            <Muted>no capability status is available for this installation</Muted>
+          ) : (
+            effective.map((entry) => (
+              <div key={`${entry.role}:${entry.capability}`} data-testid="management-mode-status">
+                <Mono>{entry.capability}</Mono>
+                {entry.preferred ? " (preferred)" : ""} · {entry.availability} ·{" "}
+                <Muted>{entry.reason}</Muted>
+              </div>
+            ))
+          )}
+        </Field>
+        {props.posture !== null && props.posture.workMode.capabilityWarnings.length > 0 ? (
+          <Notice testId="management-work-mode-warnings">
+            {props.posture.workMode.capabilityWarnings.join(" · ")}
+            <br />
+            The preference is retained: an unavailable capability is never reported as active, and no peer,
+            verifier or scheduler is invented to satisfy it.
+          </Notice>
+        ) : null}
         <Muted>
           Work Mode is orthogonal to management involvement: they are two axes, and neither one determines the other.
+          A preference changes how eligible work is organised; it grants no authority and overrides no eligibility.
         </Muted>
       </Section>
 
@@ -838,7 +886,45 @@ function ManagementPanel(props: {
         )}
       </Section>
 
-      <Section title="Recent management actions (this UI session only)" testId="management-log-section">
+      <Section title="Management activity (durable, append-only)" testId="management-activity-section">
+        {props.activity.length === 0 ? (
+          <Muted testId="management-activity-empty">
+            No management activity is recorded for this project yet. The activity log is product history, never
+            authority: nothing is inferred from its absence.
+          </Muted>
+        ) : (
+          [...props.activity].reverse().map((record) => {
+            const unresolved = record.finishedAt === null;
+            return (
+              <div key={record.recordId} data-testid="management-activity-row" style={{ fontSize: 12 }}>
+                <Mono>#{record.sequence}</Mono> <b>{record.actionClass}</b> · {record.decision}
+                {record.typedReasonCode === null ? "" : ` (${record.typedReasonCode})`}
+                {unresolved ? " · unresolved/interrupted" : ""} · <Mono>{record.startedAt}</Mono>
+                <div data-testid="management-activity-reason" style={{ color: COLORS.muted }}>
+                  {record.reason}
+                </div>
+                {record.canonicalOutcomeRefs.length === 0 ? (
+                  <Muted>no canonical outcome reference (nothing canonical was mutated)</Muted>
+                ) : (
+                  <div data-testid="management-activity-refs" style={{ color: COLORS.muted }}>
+                    canonical refs:{" "}
+                    {record.canonicalOutcomeRefs
+                      .map((ref) => `${ref.kind}:${ref.ref}`)
+                      .join(", ")}{" "}
+                    — the canonical owner remains authoritative
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+        <Muted>
+          An activity record that says a revision was applied does not prove it; the referenced canonical owner
+          does. Records are never rewritten to claim success.
+        </Muted>
+      </Section>
+
+      <Section title="Actions taken from this surface (this UI session only)" testId="management-log-section">
         {actions.length === 0 ? (
           <Muted>No action was taken from this surface in this session.</Muted>
         ) : (
@@ -848,7 +934,7 @@ function ManagementPanel(props: {
             </div>
           ))
         )}
-        <Muted>No canonical management action history is exposed over the typed routes; this list is UI session state.</Muted>
+        <Muted>This list is UI session state only; the durable history is above.</Muted>
       </Section>
     </div>
   );
@@ -870,6 +956,10 @@ export function ProjectWorkspaceView(props: {
   const [journal, setJournal] = useState<readonly ProjectJournalViewEntry[]>([]);
   const [status, setStatus] = useState<ManagementAssessment | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
+  // G10-AB: the durable posture and activity history (derived + non-authoritative).
+  const [posture, setPosture] = useState<ProjectOperatingPostureView | null>(null);
+  const [postureError, setPostureError] = useState<string | null>(null);
+  const [activity, setActivity] = useState<readonly ManagementActivityRecord[]>([]);
   const [message, setMessage] = useState<string | null>(null);
 
   const refreshStatus = useCallback(async (): Promise<void> => {
@@ -879,6 +969,20 @@ export function ProjectWorkspaceView(props: {
     } catch (error) {
       setStatus(null);
       setStatusError(errText(error));
+    }
+    // The posture and the activity history are read from their own durable,
+    // non-authoritative stores. A missing store is reported, never fabricated.
+    try {
+      setPosture(await operatingPosture());
+      setPostureError(null);
+    } catch (error) {
+      setPosture(null);
+      setPostureError(errText(error));
+    }
+    try {
+      setActivity(await managementActivity(20));
+    } catch {
+      setActivity([]);
     }
   }, []);
 
@@ -985,6 +1089,9 @@ export function ProjectWorkspaceView(props: {
           <ManagementPanel
             status={status}
             statusError={statusError}
+            posture={posture}
+            postureError={postureError}
+            activity={activity}
             surfaces={props.surfaces}
             refreshStatus={refreshStatus}
             onMessage={setMessage}

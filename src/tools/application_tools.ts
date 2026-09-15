@@ -13,6 +13,10 @@ import { VARIANT_KINDS } from "../organization_memory/index.js";
 import { SOURCE_PROVENANCES, materializeProofSourceRevisionRef } from "../proof_asset/index.js";
 import { PROJECT_JOURNAL_KINDS } from "../project_workspace/index.js";
 import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
+import {
+  WORK_MODE_BASE_MODES,
+  WORK_MODE_MODIFIERS,
+} from "../project_operating/work_mode_profile.js";
 
 function textBlock(value: unknown): DshContentBlock[] {
   return [{ type: "text", text: JSON.stringify(value, null, 2) }];
@@ -680,11 +684,28 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         description:
           "Graduated project-management autonomy (mode ≠ authority): inspect status, list recommendations, preview the next bounded step, execute one bounded local step or a bounded run through the EXISTING governed services, REQUEST an involvement change, or run the mechanical project-head reconciliation. It can never grant authority/commitment/disclosure, can never set the mode upward — only the operator control plane does — and reconciling the head never promotes an attempt",
         mode: "mutating",
-        actions: ["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"],
+        actions: [
+          "status",
+          "recommend",
+          "preview",
+          "step",
+          "run",
+          "request_mode_change",
+          "reconcile_project_head",
+          // G10-AB (additive): the derived operating posture, the durable management activity
+          // history, and a Work Mode REQUEST. Reading is read-only; the request never persists
+          // the user-level default - only the operator control plane does.
+          "posture",
+          "activity",
+          "request_work_mode_change",
+        ],
         extraProperties: {
           confirmed: { type: "boolean", description: "confirms a step that sits on a confirmation boundary" },
           maxSteps: { type: "number", description: "bounded run budget; never exceeds the operator profile budget" },
           to: { type: "string", enum: [...MANAGEMENT_INVOLVEMENTS], description: "the involvement being REQUESTED (a request only; never applied here)" },
+          baseMode: { type: "string", enum: ["FOCUS", "EXPLORE", "COORDINATE"], description: "the Work Mode being REQUESTED (a request only; never persisted here)" },
+          modifiers: { type: "array", items: { type: "string", enum: ["VERIFY", "MONITOR"] }, description: "the Work Mode modifiers being REQUESTED" },
+          limit: { type: "number", description: "how many recent activity records to return" },
         },
         run: async (action, object) => {
           if (action === "status") return management.status();
@@ -693,6 +714,31 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           // G10-X: the mechanical head reconciliation. No caller head/commit/plan
           // is accepted; it delegates to the canonical controller derivation.
           if (action === "reconcile_project_head") return management.reconcileProjectHead();
+          if (action === "posture") return management.posture();
+          if (action === "activity") {
+            const limit = object.limit;
+            if (limit !== undefined && (typeof limit !== "number" || !Number.isSafeInteger(limit) || limit < 1)) {
+              throw new ToolArgsError('argument "limit" must be a positive integer');
+            }
+            return management.activity(limit === undefined ? undefined : limit);
+          }
+          if (action === "request_work_mode_change") {
+            const baseMode = requiredString(object, "baseMode");
+            if (!WORK_MODE_BASE_MODES.includes(baseMode as never)) {
+              throw new ToolArgsError(`argument "baseMode" must be one of ${WORK_MODE_BASE_MODES.join(", ")}`);
+            }
+            const modifiers = stringArray(object.modifiers ?? [], "modifiers");
+            for (const modifier of modifiers) {
+              if (!WORK_MODE_MODIFIERS.includes(modifier as never)) {
+                throw new ToolArgsError(`argument "modifiers" entries must be one of ${WORK_MODE_MODIFIERS.join(", ")}`);
+              }
+            }
+            // A REQUEST only: an agent recommendation is never an operator preference change.
+            return management.requestWorkModeChange({
+              baseMode: baseMode as (typeof WORK_MODE_BASE_MODES)[number],
+              modifiers: modifiers as readonly (typeof WORK_MODE_MODIFIERS)[number][],
+            });
+          }
           if (action === "request_mode_change") {
             const to = requiredString(object, "to");
             if (!(MANAGEMENT_INVOLVEMENTS as readonly string[]).includes(to)) {

@@ -75,6 +75,12 @@ import { runTui } from "./tui.js";
 import { launchDeployment, loadDeploymentProfile } from "./deployment/index.js";
 
 import { defaultOrdariumPath } from "./effects/index.js";
+import {
+  SqliteWorkModePreferenceStore,
+  defaultOperatingStorePath,
+  WORK_MODE_BASE_MODES,
+  WORK_MODE_MODIFIERS,
+} from "./project_operating/index.js";
 import { TaskPolicy } from "./domain/index.js";
 
 const THE_COMMIT = "c".repeat(40);
@@ -514,6 +520,54 @@ async function main() {
       }
       case "status": {
         console.log(JSON.stringify(controller.status(), null, 2));
+        break;
+      }
+      case "work-mode": {
+        // G10-AB: OPERATOR control of the project Work Mode preference. This is
+        // the ONLY place the user-level project default is persisted (through the
+        // operator control port). It is a PREFERENCE, not authority: it changes
+        // how eligible work is organised, never what may be done, and the
+        // agent-facing tools can only REQUEST a change.
+        const requestedBase = a1;
+        if (
+          requestedBase === undefined ||
+          !(WORK_MODE_BASE_MODES as readonly string[]).includes(requestedBase)
+        ) {
+          throw new Error(`work-mode requires a base mode: ${WORK_MODE_BASE_MODES.join("|")}`);
+        }
+        const requestedModifiers = (arg(parsed.options, "--modifiers") ?? "")
+          .split(",")
+          .map((entry) => entry.trim().toUpperCase())
+          .filter((entry) => entry.length > 0);
+        for (const modifier of requestedModifiers) {
+          if (!(WORK_MODE_MODIFIERS as readonly string[]).includes(modifier)) {
+            throw new Error(`unknown Work Mode modifier "${modifier}": ${WORK_MODE_MODIFIERS.join("|")}`);
+          }
+        }
+        const operatingPath =
+          arg(parsed.options, "--operating") ?? defaultOperatingStorePath();
+        const workModeStore = new SqliteWorkModePreferenceStore(operatingPath);
+        try {
+          const stored = await workModeStore.set({
+            projectId: arg(parsed.options, "--project") ?? controller.projectId,
+            baseMode: requestedBase as (typeof WORK_MODE_BASE_MODES)[number],
+            modifiers: requestedModifiers as readonly (typeof WORK_MODE_MODIFIERS)[number][],
+            updatedBy: "operator:cli",
+          });
+          console.log(
+            JSON.stringify({
+              projectId: stored.projectId,
+              baseMode: stored.baseMode,
+              modifiers: stored.modifiers,
+              digest: stored.digest,
+              note:
+                "operator control: a Work Mode preference is never authority, never creates a peer, " +
+                "and never starts an unavailable capability",
+            }),
+          );
+        } finally {
+          workModeStore.close();
+        }
         break;
       }
       case "manage": {
