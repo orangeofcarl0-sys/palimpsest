@@ -59,6 +59,16 @@ Baseline: `main @ 565e2ff9992e5a12aec595e692cb647a798f5efd`. Ordarium v1.3.1. Ho
 5. Streamed/multipart upload is not implemented; browser import is base64 JSON bounded by the server's
    1 MB body limit (~750 KB raw) (CF-U-04).
 
-## Required CI
+## Required CI (canonical gate)
 
-See the canonical gate recorded after the implementation PR run (filled in the closure commit).
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#82** `experiment/g10-u-proof-vault` |
+| Tested branch HEAD | `36c7a67` |
+| PR run | `34946565653` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ d10cb6e3249cdc16404bf8dd5693cadfa8ae1ffc` |
+| Tree identity | `git diff 36c7a67 d10cb6e` empty → the tested tree IS the merged tree |
+| Canonical main run | `34946808403` — **unit pass + e2e pass on attempt 1** |
+
+All required checks were GREEN before merge; no force/bypass/history rewrite. The real-DSH extraction,
+selective-disclosure and Proof Vault browser E2Es are separately reproducible artifacts.
