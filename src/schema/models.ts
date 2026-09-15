@@ -1188,13 +1188,19 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
     "promotion_id", "attempt_id", "source_commit",
     "expected_head_commit", "resulting_head_commit", "reason",
   ],
+  // G10-AA: terminal facts MAY carry minimal, non-secret provenance so an
+  // operator can correlate the canonical Event to the Ordarium operation that
+  // produced it, without consulting Ordarium. All three are OPTIONAL, so every
+  // legacy terminal event (which has none) remains byte-identically replayable.
   PROMOTION_COMMITTED: [
     "promotion_id", "attempt_id", "source_commit",
     "expected_head_commit", "resulting_head_commit", "reason",
+    "operation_id", "outcome_basis", "outcome_digest",
   ],
   PROMOTION_FAILED: [
     "promotion_id", "attempt_id", "source_commit",
     "expected_head_commit", "resulting_head_commit", "reason",
+    "operation_id", "outcome_basis", "outcome_digest",
   ],
   JUDGE_DECLARED: ["judge_id", "kind", "version", "declared_by"],
   CANDIDATE_SELECTED: ["task_id", "candidates", "rounds", "judge", "winner", "entries_digest"],
@@ -1205,6 +1211,37 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   HOLD_SET: ["task_id", "reason", "declared_by", "project_revision"],
   HOLD_CLEARED: ["task_id", "reason"],
 };
+
+/**
+ * G10-AA durable terminal provenance. Optional and additive: an event without
+ * these keys normalizes exactly as before, so the canonical event/request
+ * digests of existing promotion history do not move.
+ */
+function provenanceOf(
+  eventType: EventType,
+  raw: Record<string, unknown>,
+): Record<string, unknown> {
+  if (eventType !== "PROMOTION_COMMITTED" && eventType !== "PROMOTION_FAILED") return {};
+  const provenance: Record<string, unknown> = {};
+  // An Ordarium operation id is not a stable-identifier-grammar value (it is
+  // `op_<hex>`), so it is validated as a non-empty string rather than an id.
+  if (raw.operation_id !== undefined && raw.operation_id !== null) {
+    provenance.operation_id = field(raw.operation_id, "operation_id", (inner) =>
+      nonEmpty(expectString(inner)),
+    );
+  }
+  if (raw.outcome_basis !== undefined && raw.outcome_basis !== null) {
+    provenance.outcome_basis = field(raw.outcome_basis, "outcome_basis", (inner) =>
+      nonEmpty(expectString(inner)),
+    );
+  }
+  if (raw.outcome_digest !== undefined && raw.outcome_digest !== null) {
+    provenance.outcome_digest = field(raw.outcome_digest, "outcome_digest", (inner) =>
+      nonEmpty(expectString(inner)),
+    );
+  }
+  return provenance;
+}
 
 export function normalizeEventPayload(
   eventType: EventType,
@@ -1656,6 +1693,7 @@ export function normalizeEventPayload(
           return validateCommit(expectString(inner));
         }),
         reason: expectNullableString(raw.reason),
+        ...provenanceOf(eventType, raw),
       };
     }
   }

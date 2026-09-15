@@ -1781,6 +1781,14 @@ export class ProjectController {
    * (task-stale-v1); active tasks carry their batch anchor.
    */
   invalidateTask(taskId: string, reason: string): SchedulerEvent {
+    // G10-AA (audit finding): this direct retirement path bypassed Z's promotion
+    // fence, which lived only in `planReconciled`. An unresolved external effect
+    // must not be crossed by ANY retirement path, so the same fence is applied
+    // here: retiring Work while a promotion intent owns its effect is refused.
+    const fence = compilePromotionFenceBlocker(this.promotions.promotionFenceRows(), [taskId]);
+    if (fence !== undefined) {
+      throw new PlanReconciliationError(fence);
+    }
     return this.store.append(this.#taskStaleRequest(taskId, reason));
   }
 

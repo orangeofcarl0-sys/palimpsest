@@ -515,44 +515,23 @@ describe("G10-Z adversarial: the promotion fence", () => {
     }
   });
 
-  it("Z-N16/Z-N17 recovery re-checks authority and never hides a proven effect", async () => {
-    // (a) authority gone + effect provably never started -> FAILED, no dispatch.
-    const a = await rig({ tasks: [taskSpec("task-a")] });
+  it("Z-N16/Z-N17 (G10-AA aware) recovery re-checks authority, and no path can manufacture the revoked state", async () => {
+    // (a) The G10-AA audit found that Z's fence lived only in `planReconciled`,
+    // so the direct `invalidateTask` path could retire Work across an unresolved
+    // effect - the exact state recovery's authority re-check guards. It is now
+    // fenced too, so the state is unreachable through the supported surface.
+    const a = await rig({ crashOnce: true, tasks: [taskSpec("task-a")] });
     try {
-      const { attemptId, resultCommit } = await driveToVerifying(a);
-      const promotionId = `promotion-${"0".repeat(32)}`;
-      a.store.append({
-        schema_version: 1,
-        project_id: PROJECT,
-        event_type: "PROMOTION_PREPARED",
-        payload_version: 1,
-        entity_type: "promotion",
-        entity_id: promotionId,
-        payload: {
-          promotion_id: promotionId,
-          attempt_id: attemptId,
-          source_commit: resultCommit,
-          expected_head_commit: HEAD,
-          resulting_head_commit: null,
-          reason: "legacy intent",
-        },
-        causation_id: null,
-        correlation_id: `promotion:${promotionId}`,
-        idempotency_key: actionKey("promotion-prepare-v1", {
-          project_id: PROJECT,
-          promotion_id: promotionId,
-        }),
-        expected_project_revision: 0,
-      } as unknown as NewEvent);
-      // The fence blocks this now; a legacy log could still contain it, which is
-      // exactly what the recovery re-check must survive.
-      a.controller.invalidateTask("task-a", "legacy retirement");
-      a.advance(1000);
-      const report = await a.controller.recovery.reconcileAll();
-      expect(report.terminal.map((entry) => entry.outcome)).toEqual(["failed"]);
-      expect(a.crashing.merges).toBe(0);
-      expect(eventsOfType(a.store, "PROMOTION_COMMITTED")).toHaveLength(0);
-      expect(taskState(a.store, "task-a")).toBe("STALE");
+      const { attemptId } = await driveToVerifying(a);
+      await expect(a.controller.promoteAttempt({ attemptId })).rejects.toBeInstanceOf(
+        SimulatedProcessCrash,
+      );
+      expect(a.crashing.merges).toBe(1);
+      expect(() => a.controller.invalidateTask("task-a", "legacy retirement")).toThrow(
+        /promotion_settlement_required/,
+      );
+      expect(taskState(a.store, "task-a")).toBe("VERIFYING");
+      expect(a.controller.status().promotionFence).toHaveLength(1);
     } finally {
       await a.cleanup();
     }
