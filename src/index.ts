@@ -19,3 +19,11 @@ export * from "./scheduler/index.js";
 export * from "./domain/plan_reconciliation.js";
 export { AtomicAppendError } from "./state/event_store.js";
 export type { AtomicFaultHook } from "./state/event_store.js";
+
+/**
+ * G10-X canonical project-head evolution (additive): the pure head derivation
+ * (`deriveProjectHeadStatus`), the pure reconciliation compiler
+ * (`compileProjectHeadReconciliation`) and the typed `ProjectHeadError`.
+ * No second ProjectIR, no git-head database, no second promotion ledger.
+ */
+export * from "./domain/project_head.js";

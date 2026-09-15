@@ -202,8 +202,14 @@ describe("orchestration graph projection (PLMP-VIS-1)", () => {
       expect(attemptsOf().attribution).toEqual({ model: "demo-a", cost: 0.002 });
 
       // A worker report is a self-claim, not evidence - it does not consume
-      // the attribution and does not sample telemetry (ALC-1).
-      controller.report(first.entity_id, { workerStatus: "completed", summary: "self-claim" });
+      // the attribution and does not sample telemetry (ALC-1). G10-X: the
+      // promotion source is now the report's canonical result_commit, so the
+      // report names the commit the promotion below will carry.
+      controller.report(first.entity_id, {
+        workerStatus: "completed",
+        summary: "self-claim",
+        resultCommit: "d".repeat(40),
+      });
       expect(attemptsOf().attribution).toEqual({ model: "demo-a", cost: 0.002 });
       expect(controller.telemetry.stat("implementer", "demo-a")).toBeUndefined();
 
@@ -238,17 +244,13 @@ describe("control mapping face (PLMP-VIS-2)", () => {
     const gate = vi.fn();
     const report = vi.fn();
     const plan = vi.fn();
-    const promoteWhenGatePasses = vi.fn(async () => ({ promoted: true, result: {} as never }));
+    const evaluateAttemptGate = vi.fn(() => ({ verdict: "PASS", next_evidence_needed: [] }));
+    const promoteAttempt = vi.fn(async () => ({ resultingHeadCommit: "head-2" }) as never);
     const status = vi.fn(
       () =>
         ({ attempts: [{ attempt_id: "attempt-x", state: "COMPLETED" }] }) as ControllerStatusView,
     );
     const orchestrationGraph = vi.fn(() => ({}) as OrchestrationGraph);
-    const get = vi.fn(() => ({
-      report_json: new TextEncoder().encode(JSON.stringify({ result_commit: "abc" })),
-    }));
-    const prepare = vi.fn(() => ({ get }));
-    const head = vi.fn(async () => "head-1");
     const target = {
       pause,
       resume,
@@ -257,14 +259,13 @@ describe("control mapping face (PLMP-VIS-2)", () => {
       claim,
       selectCandidate,
       gate,
+      evaluateAttemptGate,
       report,
       plan,
-      promoteWhenGatePasses,
+      promoteAttempt,
       status,
       orchestrationGraph,
       projectId: "p",
-      store: { connection: { prepare } },
-      effects: { git: { head } },
     } as unknown as OrchestrationControlTarget;
 
     const surface = definePalimpsestControl(target);
@@ -302,9 +303,13 @@ describe("control mapping face (PLMP-VIS-2)", () => {
     expect(orchestrationGraph).toHaveBeenCalledTimes(1);
 
     const outcome = await surface.promote("gate-release");
-    expect(promoteWhenGatePasses).toHaveBeenCalledTimes(1);
-    expect(promoteWhenGatePasses).toHaveBeenCalledWith("attempt-x", "abc", "head-1", "gate-release");
-    expect(outcome).toEqual({ promoted: true, result: {} });
+    expect(evaluateAttemptGate).toHaveBeenCalledTimes(1);
+    expect(evaluateAttemptGate).toHaveBeenCalledWith("gate-release", "attempt-x");
+    expect(promoteAttempt).toHaveBeenCalledTimes(1);
+    // G10-X: the surface supplies the attempt and gate ONLY - never a source
+    // commit or an expected head.
+    expect(promoteAttempt).toHaveBeenCalledWith({ attemptId: "attempt-x", gateId: "gate-release" });
+    expect(outcome).toEqual({ promoted: true, result: { resultingHeadCommit: "head-2" } });
   });
 
   it("VIS-A05 (loop): the full dispatch→evidence→report→promote cycle runs over the surface", async () => {

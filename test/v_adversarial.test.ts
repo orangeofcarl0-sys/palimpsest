@@ -316,7 +316,7 @@ describe("G10-V management surface (V-N07…V-N10)", () => {
       });
 
       const surface = application.projectManagement!;
-      expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "requestModeChange", "run", "status", "step"]);
+      expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "reconcileProjectHead", "requestModeChange", "run", "status", "step"]);
       for (const forbidden of [
         "applyOperatorModeChange",
         "setModeUpward",
@@ -336,7 +336,7 @@ describe("G10-V management surface (V-N07…V-N10)", () => {
       const manage = tools.find((tool) => tool.name === "palimpsest_manage");
       expect(manage).toBeDefined();
       const actions = (manage as unknown as { parameters: { properties: { action: { enum: readonly string[] } } } }).parameters.properties.action.enum;
-      expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change"]);
+      expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"]);
       expect(actions.join(",")).not.toMatch(FORBIDDEN_ESCALATION);
     } finally {
       store.close();

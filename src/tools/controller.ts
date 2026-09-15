@@ -51,6 +51,13 @@ import {
   type ReconcileTaskRow,
 } from "../domain/plan_reconciliation.js";
 import {
+  compileProjectHeadReconciliation,
+  ProjectHeadError,
+  type ProjectHeadReconciliationCandidate,
+  type ProjectHeadState,
+  type ProjectHeadStatus,
+} from "../domain/project_head.js";
+import {
   assessCoverage,
   buildContextManifest,
   compileContextBrief,
@@ -126,6 +133,33 @@ export interface PlanInput {
   /** R2 typed invalidation: the class and logical ids this revision changes. */
   changeClass?: ChangeClass | undefined;
   changedIds?: readonly string[] | undefined;
+}
+
+/**
+ * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the
+ * agent-facing `PlanInput` surface: an agent can never name a head. The head
+ * advance is derived by the promotion manager's canonical chain and is
+ * re-validated here against the same derivation, so `headAdvance` is a
+ * redundant proof of a fact the controller already owns - never a free choice.
+ */
+export interface TrustedPlanOptions {
+  readonly headAdvance?:
+    | {
+        /** The backing PROMOTION_COMMITTED event ref (the canonical chain tip). */
+        readonly fromPromotionEventId: string;
+        /** The canonically proven effect head. */
+        readonly toHead: string;
+      }
+    | undefined;
+}
+
+/** G10-X: the outcome of one mechanical head reconciliation. */
+export interface ProjectHeadReconciliationResult {
+  readonly status: "reconciled" | "in_sync" | "blocked";
+  readonly revision?: number;
+  readonly fromHead: string;
+  readonly toHead: string;
+  readonly blockers: readonly string[];
 }
 
 /** The additive read-back of one reconciled plan revision. */
@@ -291,6 +325,31 @@ export interface ControllerStatusView {
     openTasks: Array<{ task_id: string; state: string }>;
     /** Promotions sitting PREPARED without a terminal event (H1 §3.1). */
     preparedPromotions: string[];
+  };
+  /**
+   * G10-X additive: the canonical head picture. Derived from the ProjectIR
+   * head plus the committed promotion facts only - never from `git.head()`.
+   */
+  head?: {
+    projectHeadCommit: string;
+    provenEffectHeadCommit: string;
+    state: ProjectHeadState;
+    /**
+     * G10-X additive: the provenance of the promotion that produced the
+     * canonical head (the chain tip when SYNC_REQUIRED, the absorbed tip when
+     * IN_SYNC). `null` when no promotion is chained. Derived from the committed
+     * promotion facts only.
+     */
+    latestPromotion:
+      | {
+          promotionId: string;
+          attemptId: string;
+          sourceCommit: string;
+          fromHead: string;
+          toHead: string;
+          eventId: string;
+        }
+      | null;
   };
 }
 
@@ -666,9 +725,16 @@ export class ProjectController {
    * update is a projection repair with no event of its own, so it stays an
    * explicit second step after the batch commits (documented limitation).
    */
-  planReconciled(input: PlanInput): PlanReconciliationOutcome {
+  planReconciled(input: PlanInput, trusted: TrustedPlanOptions = {}): PlanReconciliationOutcome {
     const current = this.#project();
     const revision = current.revision + 1;
+    // G10-X: a TRUSTED-ONLY head advance. Without it the head is unchanged
+    // (every existing caller keeps byte-identical behaviour); with it the new
+    // ProjectIR carries the canonically proven effect head and the retained
+    // READY/BLOCKED tasks are reauthorized onto that base inside the SAME
+    // atomic batch. The advance is validated against the canonical derivation,
+    // so a caller cannot mint a head of its own choosing.
+    const nextHeadCommit = this.#validatedHeadAdvance(current, trusted.headAdvance);
     const data = {
       project_id: this.projectId,
       revision,
@@ -678,7 +744,7 @@ export class ProjectController {
       requirements: input.requirements ? [...input.requirements] : current.requirements,
       decisions: input.decisions ? [...input.decisions] : current.decisions,
       tasks: [...input.tasks],
-      head_commit: current.head_commit,
+      head_commit: nextHeadCommit,
       committed_at: input.committedAt ?? this.#now(),
     };
     const project = buildProjectIr({
@@ -874,6 +940,213 @@ export class ProjectController {
   }
 
   /**
+   * G10-X TRUSTED-ONLY head advance validation. Returns the next ProjectIR head
+   * commit: unchanged when no advance was requested, else the canonically
+   * proven effect head - but only after proving (against the promotion
+   * manager's own derivation and the backing PROMOTION_COMMITTED event) that
+   * the caller is not choosing a head. Anything else fails closed with
+   * `caller_head_not_canonical` and zero writes.
+   */
+  #validatedHeadAdvance(
+    current: ProjectIr,
+    advance: TrustedPlanOptions["headAdvance"],
+  ): string {
+    if (advance === undefined) return current.head_commit;
+    const refuse = (message: string, refs: readonly string[]): never => {
+      throw new ProjectHeadError("caller_head_not_canonical", message, refs);
+    };
+    const status = this.promotions.projectHeadStatusSync();
+    if (status.state !== "SYNC_REQUIRED") {
+      refuse(
+        `head advance refused: the canonical head state is ${status.state}, not SYNC_REQUIRED`,
+        [status.projectHeadCommit, status.provenEffectHeadCommit],
+      );
+    }
+    if (status.projectHeadCommit !== current.head_commit) {
+      refuse(
+        `head advance refused: the project head changed under the revision (${current.head_commit} -> ${status.projectHeadCommit})`,
+        [current.head_commit, status.projectHeadCommit],
+      );
+    }
+    const canonical = this.promotions.canonicalExpectedHeadSync();
+    if (advance.toHead !== canonical || advance.toHead !== status.provenEffectHeadCommit) {
+      refuse(
+        `head advance refused: toHead ${advance.toHead} is not the canonical proven effect head ${canonical}`,
+        [advance.toHead, canonical],
+      );
+    }
+    if (
+      status.latestPromotionEventRef === null ||
+      advance.fromPromotionEventId !== status.latestPromotionEventRef
+    ) {
+      refuse(
+        `head advance refused: fromPromotionEventId ${advance.fromPromotionEventId} is not the canonical chain tip`,
+        [advance.fromPromotionEventId],
+      );
+    }
+    const eventId = Number(advance.fromPromotionEventId);
+    const backing = Number.isInteger(eventId) ? this.store.getEvent(eventId) : undefined;
+    if (
+      backing === undefined ||
+      backing.event_type !== "PROMOTION_COMMITTED" ||
+      String(backing.payload.resulting_head_commit) !== advance.toHead ||
+      String(backing.payload.expected_head_commit) !== current.head_commit
+    ) {
+      refuse(
+        `head advance refused: promotion event ${advance.fromPromotionEventId} does not back ${current.head_commit} -> ${advance.toHead}`,
+        [advance.fromPromotionEventId],
+      );
+    }
+    return advance.toHead;
+  }
+
+  /** The pure head-reconciliation proposal (no writes). */
+  #headReconciliationCandidate(): ProjectHeadReconciliationCandidate {
+    const project = this.#project();
+    const status = this.promotions.projectHeadStatusSync();
+    const tasks = (
+      this.store.connection
+        .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).map((row) => ({ taskId: String(row.task_id), state: String(row.state) }));
+    const openAttempts = (
+      this.store.connection
+        .prepare(
+          "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')",
+        )
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).map((row) => ({
+      attemptId: String(row.attempt_id),
+      taskId: String(row.task_id),
+      state: String(row.state),
+    }));
+    return compileProjectHeadReconciliation({
+      project,
+      status,
+      tasks,
+      openAttempts,
+      promotions: this.promotions.promotionFactsSync(),
+    });
+  }
+
+  /**
+   * G10-X: the provenance of the canonical head - the chained promotion fact
+   * named by the status (the absorbed tip when IN_SYNC). Derived from the
+   * committed promotion facts only, never from `git.head()`.
+   */
+  #latestHeadPromotion(
+    status: ProjectHeadStatus,
+  ): {
+    promotionId: string;
+    attemptId: string;
+    sourceCommit: string;
+    fromHead: string;
+    toHead: string;
+    eventId: string;
+  } | null {
+    const ref = status.latestPromotionEventRef;
+    if (ref === null) return null;
+    const fact = this.promotions.promotionFactsSync().find((entry) => entry.eventId === ref);
+    if (fact === undefined) return null;
+    return {
+      promotionId: fact.promotionId,
+      attemptId: fact.attemptId,
+      sourceCommit: fact.sourceCommit,
+      fromHead: fact.expectedHeadCommit,
+      toHead: fact.resultingHeadCommit,
+      eventId: fact.eventId,
+    };
+  }
+
+  /**
+   * G10-X: the MANAGE/DELEGATE-appropriate mechanical consistency step. Derive
+   * the head status, compile the pure candidate, and - only when it is
+   * compilable - advance the ProjectIR head onto the canonically proven effect
+   * head through the SAME atomic revision batch (`planReconciled`), which
+   * reauthorizes the retained READY/BLOCKED tasks onto the new base.
+   *
+   * On any blocker this returns `blocked` (or `in_sync`/`reconciled`) with ZERO
+   * writes. Freshness is re-verified immediately before the commit: if the
+   * ProjectIR basis or the backing promotion fact changed, it throws
+   * `stale_head_reconciliation` (again, zero writes). An already-compiled
+   * `candidate` (a pure, content-addressed proposal) may be supplied by a
+   * trusted caller - it is re-validated here and again by `planReconciled`, so
+   * it can never name a head of its own choosing.
+   *
+   * Management-policy seam (next stage): `operator` marks an operator-driven
+   * call. The mechanical consistency step is currently unconditional, and a
+   * caller that must not auto-reconcile (a policy that forbids it) should
+   * inspect the returned blockers and drive the advance itself via the trusted
+   * `planReconciled(..., { headAdvance })` path. The policy wiring lands in the
+   * next stage; the seam is deliberately kept explicit here.
+   */
+  async reconcileProjectHead(
+    input: { operator?: boolean; candidate?: ProjectHeadReconciliationCandidate } = {},
+  ): Promise<ProjectHeadReconciliationResult> {
+    void input.operator;
+    const project = this.#project();
+    const fromHead = project.head_commit;
+    const status = await this.promotions.projectHeadStatus();
+    if (status.state === "IN_SYNC") {
+      return { status: "in_sync", fromHead, toHead: fromHead, blockers: [] };
+    }
+    // The candidate is ALWAYS re-validated below (freshness) and again inside
+    // `planReconciled` (canonical proof), so a supplied candidate is never a
+    // caller-settable head: a stale or forged one fails closed with zero writes.
+    const candidate = input.candidate ?? this.#headReconciliationCandidate();
+    if (!candidate.compilable) {
+      return {
+        status: "blocked",
+        fromHead: candidate.fromHead,
+        toHead: candidate.toHead,
+        blockers: candidate.blockers.map((blocker) => `${blocker.kind}: ${blocker.detail}`),
+      };
+    }
+    const promotionEventId = candidate.latestPromotionEventId;
+    if (promotionEventId === null) {
+      throw new ProjectHeadError(
+        "head_not_proven",
+        "the head drift has no backing promotion fact; refusing an unproven advance",
+        [fromHead, candidate.toHead],
+      );
+    }
+    // Freshness (zero writes on failure): the basis and the backing fact must
+    // still be exactly what the candidate was compiled from.
+    const freshProject = this.#project();
+    const freshStatus = await this.promotions.projectHeadStatus();
+    const freshBacking = candidate.promotionChainBasis.at(-1)?.eventId;
+    if (
+      freshProject.revision !== project.revision ||
+      freshProject.digest !== project.digest ||
+      freshProject.head_commit !== fromHead ||
+      freshStatus.state !== "SYNC_REQUIRED" ||
+      freshStatus.provenEffectHeadCommit !== candidate.toHead ||
+      freshStatus.latestPromotionEventRef !== promotionEventId ||
+      (freshBacking !== undefined && freshBacking !== promotionEventId)
+    ) {
+      throw new ProjectHeadError(
+        "stale_head_reconciliation",
+        "the ProjectIR basis or the backing promotion fact changed before the reconciliation committed; no events were written",
+        [String(project.revision), String(freshProject.revision), fromHead, freshProject.head_commit],
+      );
+    }
+    const outcome = this.planReconciled(
+      {
+        tasks: [...project.tasks],
+        reason: `project head reconciliation ${fromHead} -> ${candidate.toHead}`,
+      },
+      { headAdvance: { fromPromotionEventId: promotionEventId, toHead: candidate.toHead } },
+    );
+    return {
+      status: "reconciled",
+      revision: outcome.result.revision,
+      fromHead,
+      toHead: candidate.toHead,
+      blockers: [],
+    };
+  }
+
+  /**
    * The forward propagation set for a typed revision delta (sorted, stable).
    * This is the EXACT set the revision batch stales, and therefore the exact set
    * that is removed from the quiescence requirement.
@@ -995,10 +1268,15 @@ export class ProjectController {
       | "needs_worker"
       | "needs_promotion"
       | "needs_reconcile"
-      | "progress";
+      | "progress"
+      | "head_sync_required";
     mechanical: { attemptsRun: number; exits: (number | null)[] };
     next?: { eventType: string; entityId: string; projectRevision: number | null };
     recovery?: RecoveryReport;
+    /** G10-X additive: the derived head picture (never from `git.head()`). */
+    head?: { projectHeadCommit: string; provenEffectHeadCommit: string; state: ProjectHeadState };
+    /** G10-X: the explicit barrier reasons when phase is `head_sync_required`. */
+    blockers?: readonly string[];
   }> {
     const maxSteps = options.maxSteps ?? 50;
     // H1 spec §3.1: reconcile PREPARED promotions before the scheduler looks
@@ -1013,12 +1291,51 @@ export class ProjectController {
         recovery,
       };
     }
-    const mechanical = await this.pumpCommandAttempts({ maxSteps });
+    // G10-X head barrier. When the project head is behind the proven effect
+    // head, NEW READY work must not activate - but already-started / VERIFYING
+    // work may still settle so the project can reach quiescence. Once quiescent
+    // the head advance runs automatically (the MANAGE/DELEGATE-appropriate
+    // mechanical consistency step) and normal activation resumes in the same
+    // turn. There is no deadlock: promotion -> drift -> new activation blocked
+    // -> settlement allowed -> quiescent -> head sync -> activation resumes.
+    const headStatus = await this.promotions.projectHeadStatus();
+    const headView = (status: ProjectHeadStatus) => ({
+      projectHeadCommit: status.projectHeadCommit,
+      provenEffectHeadCommit: status.provenEffectHeadCommit,
+      state: status.state,
+    });
+    const mechanical =
+      headStatus.state === "SYNC_REQUIRED"
+        ? await this.pumpSettlement({ maxSteps })
+        : await this.pumpCommandAttempts({ maxSteps });
     const control = this.store.connection
       .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
       .get(this.projectId) as { state: string } | undefined;
     if (control?.state === "PAUSED") {
       return { phase: "paused", mechanical };
+    }
+    if (headStatus.state === "SYNC_REQUIRED") {
+      const post = await this.promotions.projectHeadStatus();
+      if (post.state === "SYNC_REQUIRED") {
+        const candidate = this.#headReconciliationCandidate();
+        if (!candidate.compilable) {
+          return {
+            phase: "head_sync_required",
+            mechanical,
+            head: headView(post),
+            blockers: candidate.blockers.map((blocker) => blocker.kind),
+          };
+        }
+        const reconciliation = await this.reconcileProjectHead();
+        if (reconciliation.status === "blocked") {
+          return {
+            phase: "head_sync_required",
+            mechanical,
+            head: headView(post),
+            blockers: reconciliation.blockers,
+          };
+        }
+      }
     }
     const decision = this.scheduler.decide();
     if (decision !== null) {
@@ -1461,11 +1778,46 @@ export class ProjectController {
     attemptsRun: number;
     exits: (number | null)[];
   }> {
-    const maxSteps = options.maxSteps ?? 50;
+    return this.#pump({
+      maxSteps: options.maxSteps ?? 50,
+      blockTaskActivation: false,
+      attribution: options.attribution,
+    });
+  }
+
+  /**
+   * G10-X: settle-only pump used while the project head is behind the proven
+   * effect head. It behaves exactly like `pumpCommandAttempts` except that it
+   * refuses to commit a NEW task activation (`TASK_STARTED`): already-started
+   * work (its planned attempts, its reports/gates) may still settle, so the
+   * world can reach quiescence and the head can advance. A blocked activation
+   * is never an error - it is the barrier.
+   */
+  async pumpSettlement(options: { maxSteps?: number } = {}): Promise<{
+    lastEvent: SchedulerEvent | null;
+    attemptsRun: number;
+    exits: (number | null)[];
+  }> {
+    return this.#pump({ maxSteps: options.maxSteps ?? 50, blockTaskActivation: true });
+  }
+
+  async #pump(options: {
+    maxSteps: number;
+    blockTaskActivation: boolean;
+    attribution?: AttemptAttribution | undefined;
+  }): Promise<{
+    lastEvent: SchedulerEvent | null;
+    attemptsRun: number;
+    exits: (number | null)[];
+  }> {
     const exits: (number | null)[] = [];
     let attemptsRun = 0;
     let event: SchedulerEvent | null = null;
-    for (let step = 0; step < maxSteps; step += 1) {
+    for (let step = 0; step < options.maxSteps; step += 1) {
+      if (options.blockTaskActivation) {
+        const decision = this.scheduler.decide();
+        if (decision === null || decision.event_type === "TASK_STARTED") break;
+      }
       event = this.step();
       if (event === null) break;
       if (event.event_type === "ATTEMPT_CREATED") {
@@ -1500,6 +1852,23 @@ export class ProjectController {
   // -------------------------------------------------------------------------
   // Promotion and status
   // -------------------------------------------------------------------------
+
+  /**
+   * G10-X: the product-safe promotion entry point. The caller names the attempt
+   * (and optionally a registered gate) and NOTHING ELSE: the source commit is
+   * the attempt's canonical `AttemptReport.result_commit` and the expected head
+   * is the canonically proven effect head of the promotion chain. Both are
+   * re-validated inside the promotion manager, so a caller can never choose
+   * either. `promote(attemptId, sourceCommit, expectedHeadCommit)` below stays
+   * reachable only as the expert/internal path.
+   */
+  promoteAttempt(input: {
+    attemptId: string;
+    gateId?: string | undefined;
+    reason?: string | undefined;
+  }): Promise<PromoteResult> {
+    return this.promotions.promoteAttempt(input);
+  }
 
   promote(
     attemptId: string,
@@ -1918,6 +2287,7 @@ export class ProjectController {
       costPerSuccess:
         row.costPerSuccess === undefined ? "n/a" : row.costPerSuccess.toFixed(4),
     }));
+    const headStatus = this.promotions.projectHeadStatusSync();
     return {
       projectId: this.projectId,
       revision: project.revision,
@@ -1933,10 +2303,16 @@ export class ProjectController {
         rejectedClaims: this.budget.rejected,
       },
       resume: {
-        ...this.#resumeOverview(),
+        ...this.#resumeOverview(headStatus),
         preparedPromotions: this.#preparedPromotionIds(),
       },
       ...(telemetryRows.length === 0 ? {} : { telemetry: { rows: telemetryRows } }),
+      head: {
+        projectHeadCommit: headStatus.projectHeadCommit,
+        provenEffectHeadCommit: headStatus.provenEffectHeadCommit,
+        state: headStatus.state,
+        latestPromotion: this.#latestHeadPromotion(headStatus),
+      },
     };
   }
 
@@ -2279,7 +2655,25 @@ export class ProjectController {
     return rows.map((row) => String(row.promotion_id));
   }
 
-  #resumeOverview(): Omit<ControllerStatusView["resume"], "preparedPromotions"> {
+  /**
+   * G10-X additive: fold the canonical head picture into the resume detail
+   * without changing the action taxonomy (existing consumers keep their
+   * action; the head state becomes explicit in the human-facing detail and in
+   * the status `head` block).
+   */
+  #resumeOverview(
+    headStatus?: ProjectHeadStatus,
+  ): Omit<ControllerStatusView["resume"], "preparedPromotions"> {
+    const overview = this.#resumeOverviewBase();
+    if (headStatus === undefined || headStatus.state === "IN_SYNC") return overview;
+    const note =
+      headStatus.state === "SYNC_REQUIRED"
+        ? `project head drift: the proven effect head ${headStatus.provenEffectHeadCommit} has not yet become the project head ${headStatus.projectHeadCommit}; settle in-flight work and reconcile the head before new READY work activates`
+        : `project head conflict: the promotion chain is broken (head ${headStatus.projectHeadCommit}); no automatic head advance is offered`;
+    return { ...overview, detail: `${overview.detail}; ${note}` };
+  }
+
+  #resumeOverviewBase(): Omit<ControllerStatusView["resume"], "preparedPromotions"> {
     const control = this.store.connection
       .prepare("SELECT state FROM scheduler_control WHERE project_id=?")
       .get(this.projectId) as { state: string } | undefined;

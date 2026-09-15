@@ -54,6 +54,13 @@ export const CAPABILITY_RUN_TURN = "controller.runTurn";
 export const CAPABILITY_PLAN = "controller.plan";
 export const CAPABILITY_RECIPE_EXECUTION = "recipes.execution";
 export const CAPABILITY_VERIFY = "verify";
+/**
+ * G10-X: the mechanical project-head reconciliation port
+ * (`controller.reconcileProjectHead`). It advances the ProjectIR head onto the
+ * canonically proven effect head through the ordinary revision batch; it is
+ * NOT a promotion port and it can never be used to promote an attempt.
+ */
+export const CAPABILITY_RECONCILE_HEAD = "controller.reconcileProjectHead";
 /** Deliberately unmapped: no authority-bearing port exists in this layer. */
 export const CAPABILITY_EXTERNAL = "management.external";
 
@@ -267,6 +274,37 @@ export function deriveManagementActionCandidates(view: ProjectWorkspaceView): re
         drafts.push({
           kind: "RECOMMEND",
           reason: `proof standing/freshness has degraded: ${loop.detail}`,
+          subjects: subjectsOfLoop(loop),
+          riskClass: "MEDIUM",
+          requiredConfirmation: false,
+          capability: CAPABILITY_RECOMMEND,
+          executable: true,
+        });
+        break;
+
+      case "PROJECT_HEAD_DRIFT":
+        // G10-X: the ProjectIR head is behind the canonically proven effect head.
+        // The candidate is the MECHANICAL CONSISTENCY step (advance the head and
+        // re-authorize retained tasks), never a promotion: the attempt that moved
+        // the branch was promoted long before this, and this action class carries
+        // no promotion authority.
+        drafts.push({
+          kind: "RECONCILE_PROJECT_HEAD",
+          reason: `the project head is behind the proven effect head: ${loop.detail}`,
+          subjects: subjectsOfLoop(loop),
+          riskClass: "LOW",
+          requiredConfirmation: false,
+          capability: CAPABILITY_RECONCILE_HEAD,
+          executable: true,
+        });
+        break;
+
+      case "PROJECT_HEAD_CONFLICT":
+        // A broken promotion chain is never auto-advanced: observe and recommend
+        // an operator investigation instead.
+        drafts.push({
+          kind: "RECOMMEND",
+          reason: `the promotion chain is broken and the project head cannot be advanced automatically: ${loop.detail}`,
           subjects: subjectsOfLoop(loop),
           riskClass: "MEDIUM",
           requiredConfirmation: false,

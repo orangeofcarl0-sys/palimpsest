@@ -1,0 +1,22 @@
+# G10-X — G10-W Carry-Forward Disposition
+
+Baseline: `main @ f639181199da9ccd7acb3fac2c46392e0b82eb04`. Every CF-W item is disposed below;
+none is left silently unhandled. No `BLOCKER_IN_X`.
+
+| ID | G10-W finding | Disposition | Evidence / trigger |
+| --- | --- | --- | --- |
+| CF-W-01 | `#validateTaskSatisfied` self-matched on replay (promotion-bearing projects failed `verifyFull`) | **CLOSED_IN_W** (unchanged) | Fixed in G10-W; G10-X does not reopen it. |
+| CF-W-02 | A plan revision cannot re-anchor the canonical head; multi-task progress stalls at `needs_promotion` | **CLOSED_IN_X** | `src/domain/project_head.ts` + `PromotionManager.promoteAttempt`/`canonicalExpectedHead` + `ProjectController.reconcileProjectHead`/`promoteAttempt` + trusted `planReconciled(headAdvance)` + the `runTurn` barrier. `test/x_multi_promotion.test.ts` X-M1 proves rev0/H0 → H1 → rev1/H1 → H2 → rev2/H2 → terminal with git head === ProjectIR head. `scripts/management/multi-promotion.mjs` reproduces it on a real deployment profile (`IR head === git head`). |
+| CF-W-03 | Typed evidence staleness is a post-commit projection repair with no event of its own; a crash between the batch and the repair leaves evidence `active` that should be `stale` | **STILL_DEFERRED_WITH_TRIGGER** | Unchanged by G10-X: the head advance deliberately reuses the existing `planReconciled` evidence repair and does not invent an `EVIDENCE_STALE` event. Trigger to revisit: a consumer that reads evidence status immediately after a committed revision, or a wire-contract change that can add a canonical `EVIDENCE_STALE` event. |
+| CF-W-04 | The `resume.action = "blocked"` branch was reachable only through the CF-V-05 stale-input world; it remains defensive with no reproduction test | **STILL_DEFERRED_WITH_TRIGGER** | The G10-X barrier returns `phase: "head_sync_required"`, not `resume.action = "blocked"`. Trigger: a future feature that changes a project revision without settling/re-authorizing in-flight work (it must not). |
+| CF-W-05 | `GET /api/manage/preview` is not consumed by `web/**` | **STILL_DEFERRED_WITH_TRIGGER** | Product/route coverage, orthogonal to G10-X. Trigger: a UI change that wants preview without the step path. |
+| CF-W-06 | `RETAIN_UNCHANGED` for a `READY` task whose dependency is `STALE` leaves the task `READY`; the revision re-authorized but did not recompute dependency states | **STILL_DEFERRED_WITH_TRIGGER** | The head reconciliation re-authorizes retained `READY`/`BLOCKED` tasks onto the new base; it does not recompute dependency-derived state. Trigger: an operator expecting a revision (or a head sync) to recompute dependency states of retained tasks rather than only re-authorize them. |
+| CF-W-07 | `planReconciled` reads the full task/open-attempt projections and mints one envelope per retained task on every revision — O(tasks) per revision | **STILL_DEFERRED_WITH_TRIGGER** | G10-X adds one more revision per promotion (the head sync), which *raises* the frequency of this cost. Trigger: a project with thousands of tasks where revisions are frequent. Fix = a retention window or lazy re-authorization, never a partial closure. |
+
+## New carry-forward from G10-X
+
+| ID | Kind | Finding | Trigger |
+| --- | --- | --- | --- |
+| CF-X-01 | semantics/invariant | A task authorized at an older base cannot be satisfied by a promotion whose expected head has advanced (`#validateTaskSatisfied` requires `expected_head_commit === envelope.base_commit`). The parallel old-base path is therefore `NOT_APPLICABLE_CURRENT_TOPOLOGY`: two tasks both started at H0 must settle through the head sync (settle the batch → reconcile → re-READY), not by weakening the invariant. | A topology/product need for two concurrent tasks to promote independently from the same base, which would require a new envelope-reauthorization-on-promotion contract. |
+| CF-X-02 | product/route | `ProjectWorkspaceView.project.head` is now part of the derived overview payload and `stateLabel`/`latestPromotion` are populated, but `web/**` does not yet render the head panel (out of this stage's write scope). | A UI change that wants to show project-head state and promotion provenance. |
+| CF-X-03 | coverage | The `headAdvance` trusted option is exercised through `reconcileProjectHead` and the forgery-negative tests; no production caller passes it directly. | A future internal caller that wants to commit a pre-compiled reconciliation without the wrapper. |
