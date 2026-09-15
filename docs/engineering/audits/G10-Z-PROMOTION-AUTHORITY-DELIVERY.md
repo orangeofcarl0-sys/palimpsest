@@ -141,4 +141,43 @@ Baseline was 149 files / 1385 tests.
 
 ## 7. Canonical checkpoint
 
-Recorded by the docs-only closure PR after merge.
+Recorded after merge.
+
+```text
+baseline                         d809a9082f7534077f8deb02695b85f14dabac52
+implementation commit            15d6e5808f3e8678e5a7155094d7c250e7193c2b
+  "feat(g10-z): promotion eligibility & superseded-work effect fencing"
+pull request                     #92  experiment/g10-z-promotion-authority -> main
+PR checks                        run 35009800175  attempt 1  e2e pass / unit pass
+merged commit (canonical main)   2761b50e6fc4bf352495c6dd1a9ac2735c7e545e
+  "Merge pull request #92 from orangeofcarl0-sys/experiment/g10-z-promotion-authority"
+tree identity                    git diff 15d6e58 2761b50  ->  EMPTY (identical trees)
+```
+
+The required-check run for the PR concluded green on **attempt 1**; no rerun was
+required.
+
+### CI-trigger observation
+
+The `push` workflow on `main` (`.github/workflows/ci.yml`, `on: push: branches:
+[main]`) did **not** produce a run for the merge commit `2761b50`, although it did
+for the two preceding merges (`9c372b06`, `d809a908`). The workflow is `active`,
+the repository is public, and the query
+`/actions/runs?head_sha=2761b50…` returns `total_count: 0` - so no run was created
+rather than created-and-hidden. This is recorded as an observation about the
+trigger, not as a code result; canonical main's content is the byte-identical tree
+that the green PR run `35009800175` validated (`git diff 15d6e58 2761b50` is empty).
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                      # 151 files / 1422 tests
+pnpm run build:web
+pnpm exec playwright test                 # 27 passed
+node scripts/audit/z0-promotion-authority-repro.mjs
+#   cfy1  -> CLOSED_RETIRED_WORK_HAS_NO_PROMOTION_AUTHORITY
+#   race  -> CLOSED_PREPARED_FENCES_REVISION
+node scripts/management/multi-promotion.mjs   # G10-X MULTI-PROMOTION PASS
+```
