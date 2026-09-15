@@ -225,7 +225,11 @@ describe("G10-AB effective capability status", () => {
     // ...and the EFFECTIVE status is honest about what exists.
     expect(byCapability.get("EXPLORE")?.availability).toBe("UNAVAILABLE");
     expect(byCapability.get("VERIFY")?.availability).toBe("UNAVAILABLE");
-    expect(byCapability.get("MONITOR")?.availability).toBe("PREVIEW_ONLY");
+    // G10-AC §34: availability now derives from REAL runtime wiring. This rig
+    // composes no monitor runtime, so MONITOR is UNAVAILABLE here - the
+    // preference is still retained, and the reason says no runtime is composed.
+    expect(byCapability.get("MONITOR")?.availability).toBe("UNAVAILABLE");
+    expect(byCapability.get("MONITOR")?.reason).toMatch(/no monitor runtime is composed/u);
     // FOCUS is always available as the conventional anchor.
     expect(byCapability.get("FOCUS")?.availability).toBe("AVAILABLE");
     for (const row of rows) expect(row.reason.length).toBeGreaterThan(0);

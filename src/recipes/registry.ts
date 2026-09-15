@@ -72,8 +72,18 @@ export function builtinRecipeRegistry(): RecipeRegistry {
       supportedModifiers: [],
       capabilityRequirements: ["campaign.watcher"],
       parameterSchema: Object.freeze({ optional: ["campaignRef"] }),
-      readiness: "PREVIEW_ONLY",
-      limitations: ["no background condition source / host wake binding wired"],
+      // G10-AC §33: a real runtime now exists, so PREVIEW_ONLY is no longer
+      // honest - but deployment binding remains CONDITIONAL, so this is NOT
+      // PRODUCTION_READY.
+      readiness: "CONDITIONAL",
+      limitations: [
+        "requires the Campaign prospective-memory surface",
+        "requires an explicit monitor tick/runtime wiring",
+        "requires a host wake adapter for autonomous resume",
+        "a MONITOR preference alone does not create watches",
+        "a watch firing only causes reconsideration",
+        "delivery is at-least-once",
+      ],
     }),
   ]);
 

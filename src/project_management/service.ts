@@ -105,7 +105,10 @@ export interface ProjectManagementServiceDeps {
    * active, and `verify` being wired is not the same as an INDEPENDENT verifier
    * (same-model same-context verification does not count).
    */
-  readonly operatingCapabilities?: Partial<WorkModeCapabilityInputs> | undefined;
+  readonly operatingCapabilities?:
+    | Partial<WorkModeCapabilityInputs>
+    | (() => Partial<WorkModeCapabilityInputs>)
+    | undefined;
   /** The recipe registry used to report readiness (falls back to `recipes`). */
   readonly registry?: { get(recipeId: string): RecipeDefinition | undefined } | undefined;
 }
@@ -773,7 +776,12 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
    * availability claim.
    */
   function operatingCapabilitiesOf(): WorkModeCapabilityInputs {
-    const declared = deps.operatingCapabilities ?? {};
+    // A PROVIDER is resolved per read so capability availability reflects the
+    // wiring that actually exists now, rather than the wiring at construction.
+    const declared =
+      typeof deps.operatingCapabilities === "function"
+        ? deps.operatingCapabilities()
+        : (deps.operatingCapabilities ?? {});
     return {
       reasoningBranches: declared.reasoningBranches ?? deps.recipes?.execution !== undefined,
       independentVerifier: declared.independentVerifier ?? false,

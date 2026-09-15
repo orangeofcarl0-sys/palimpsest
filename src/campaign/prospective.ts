@@ -259,6 +259,17 @@ export interface ProspectiveService {
   /** READ-ONLY evaluation (§120). */
   scanWatches(campaignId: string): Promise<readonly WatchEvaluation[]>;
   recordTrigger(input: { readonly campaignId: string; readonly watchId: WatchId; readonly cause: string }): Promise<void>;
+  /**
+   * G10-AC §14: record SEVERAL triggered watches in ONE atomic write, so
+   * reconciliation can truthfully see the complete triggered-watch set. Returns
+   * the watch ids actually recorded (already-triggered watches are idempotent
+   * and excluded), in deterministic order. Additive: `recordTrigger` is a
+   * one-element case of this and stays for compatibility.
+   */
+  recordTriggers(input: {
+    readonly campaignId: string;
+    readonly triggers: readonly { readonly watchId: WatchId; readonly cause: string }[];
+  }): Promise<readonly WatchId[]>;
   cancelWatch(input: { readonly campaignId: string; readonly watchId: WatchId; readonly reason: string }): Promise<void>;
   /** A WAIT admission must install at least one wake route (§117). */
   wait(input: {
@@ -389,6 +400,38 @@ export function makeProspectiveService(deps: ProspectiveServiceDeps): Prospectiv
     });
   }
 
+  /**
+   * Atomic multi-trigger. The whole set lands in ONE `appendAtomic` batch against
+   * the SAME basis, so a crash cannot leave a partially-recorded trigger set and
+   * the reconciliation that follows sees every trigger of this condition epoch.
+   */
+  async function recordTriggers(input: {
+    readonly campaignId: string;
+    readonly triggers: readonly { readonly watchId: WatchId; readonly cause: string }[];
+  }): Promise<readonly WatchId[]> {
+    if (input.triggers.length === 0) return Object.freeze([]);
+    const basis = await currentBasis(input.campaignId);
+    const events = await deps.store.replay(input.campaignId);
+    const already = new Set(
+      events
+        .filter((event: CampaignEvent) => event.type === "WATCH_TRIGGERED")
+        .map((event: CampaignEvent) => (event.payload as { watchId: WatchId }).watchId),
+    );
+    // Deterministic order, deduplicated, and idempotent per watch.
+    const fresh = [...new Set(input.triggers.map((trigger) => trigger.watchId))]
+      .filter((watchId) => !already.has(watchId))
+      .sort();
+    if (fresh.length === 0) return Object.freeze([]);
+    const causeOf = new Map(input.triggers.map((trigger) => [trigger.watchId, trigger.cause]));
+    await deps.store.appendAtomic({
+      expectedBasis: basis,
+      events: fresh.map((watchId) =>
+        request("WATCH_TRIGGERED", input.campaignId, { watchId, cause: causeOf.get(watchId) ?? "condition satisfied" }),
+      ),
+    });
+    return Object.freeze(fresh);
+  }
+
   async function cancelWatch(input: { readonly campaignId: string; readonly watchId: WatchId; readonly reason: string }): Promise<void> {
     const basis = await currentBasis(input.campaignId);
     await deps.store.appendAtomic({
@@ -434,5 +477,6 @@ export function makeProspectiveService(deps: ProspectiveServiceDeps): Prospectiv
     return Object.freeze([...byId.values()]);
   }
 
-  return { installWatch, scanWatches, recordTrigger, cancelWatch, wait, watchStates };
+  return { installWatch, scanWatches, recordTrigger,
+    recordTriggers, cancelWatch, wait, watchStates };
 }

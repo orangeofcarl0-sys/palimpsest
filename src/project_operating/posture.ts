@@ -178,18 +178,29 @@ export function deriveEffectiveModeStatus(input: {
       : "no independent verifier is configured; same-model same-context is not verification",
   );
 
+  // G10-AC §34: MONITOR availability is derived from REAL runtime wiring. A
+  // composed first-party driver (or an embedder's explicit truthful equivalence
+  // declaration) makes it AVAILABLE; a bare boolean with no runtime does not.
+  const monitorRuntime = input.capabilities.monitorRuntime === true;
+  const monitorProvenance = input.capabilities.monitorRuntimeProvenance ?? "declared_external";
   push(
     "MONITOR",
     "modifier",
     preferredModifiers.has("MONITOR"),
-    input.capabilities.monitorConditionSource
+    monitorRuntime
       ? "AVAILABLE"
-      : readinessOf(input.registry, "MONITOR") === "PREVIEW_ONLY"
-        ? "PREVIEW_ONLY"
-        : "UNAVAILABLE",
-    input.capabilities.monitorConditionSource
-      ? "a production condition source is configured"
-      : "no production condition source exists; the preference is retained and no scheduler is started",
+      : input.capabilities.monitorConditionSource
+        ? "AVAILABLE"
+        : readinessOf(input.registry, "MONITOR") === "PREVIEW_ONLY"
+          ? "PREVIEW_ONLY"
+          : "UNAVAILABLE",
+    monitorRuntime
+      ? monitorProvenance === "first_party"
+        ? "the Campaign monitor runtime is composed: a driver with an explicit tick source and a wake activation port"
+        : "an equivalent external monitor runtime is declared"
+      : input.capabilities.monitorConditionSource
+        ? "a production condition source is declared, but no monitor driver wiring is composed for this installation"
+        : "no monitor runtime is composed; the preference is retained and no scheduler is started",
   );
 
   return Object.freeze(rows);

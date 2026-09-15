@@ -150,11 +150,18 @@ describe("G10-S builtin registry", () => {
       "explore.v1": "CONDITIONAL",
       "coordinate.v1": "PRODUCTION_READY",
       "verify.v1": "CONDITIONAL",
-      "monitor.v1": "PREVIEW_ONLY",
+      // G10-AC §33: a real Campaign monitor runtime now exists, so PREVIEW_ONLY
+      // is no longer honest for monitor.v1. It is CONDITIONAL rather than
+      // PRODUCTION_READY because deployment binding (tick source, wake adapter)
+      // remains conditional.
+      "monitor.v1": "CONDITIONAL",
     });
-    // A CONDITIONAL/PREVIEW recipe states its limitation; readiness is never padded.
+    // A CONDITIONAL recipe states its limitations; readiness is never padded.
     expect(registry.get("explore.v1")!.limitations.length).toBeGreaterThan(0);
-    expect(registry.get("monitor.v1")!.limitations.some((line) => line.includes("background condition source"))).toBe(true);
+    expect(registry.get("monitor.v1")!.limitations.length).toBeGreaterThan(0);
+    expect(
+      registry.get("monitor.v1")!.limitations.some((line) => line.includes("explicit monitor tick/runtime wiring")),
+    ).toBe(true);
     expect(registry.get("ghost.v1")).toBeUndefined();
   });
 
@@ -367,7 +374,8 @@ describe("G10-S product wiring", () => {
       expect(listed).toHaveLength(5);
       expect((await http(installed, "GET", "/api/recipes/recipe?id=focus.v1")).body).toMatchObject({ recipeId: "focus.v1" });
       const readiness = (await http(installed, "GET", "/api/recipes/readiness")).body as readonly { recipeId: string; readiness: string }[];
-      expect(readiness.find((entry) => entry.recipeId === "monitor.v1")!.readiness).toBe("PREVIEW_ONLY");
+      // G10-AC: honest readiness for a runtime that exists but is conditioningally bound.
+      expect(readiness.find((entry) => entry.recipeId === "monitor.v1")!.readiness).toBe("CONDITIONAL");
 
       // wrong method is rejected
       expect((await http(installed, "GET", "/api/recipes/compile")).status).toBe(400);
