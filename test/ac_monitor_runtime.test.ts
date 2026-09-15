@@ -430,7 +430,19 @@ describe("G10-AC structural firewalls", () => {
     await setPreference(rig, "FOCUS", ["MONITOR"]);
     const driver = driverOf(rig);
 
-    expect(Object.keys(driver).sort()).toEqual(["dispose", "previewTick", "start", "status", "stop", "tick"]);
+    // G10-AC-R: the driver gained `capability()` (the live runtime capability) and
+    // `ready()` (the non-rejecting start orchestration). Both are read-only; the
+    // "no store seam" firewall below is unchanged.
+    expect(Object.keys(driver).sort()).toEqual([
+      "capability",
+      "dispose",
+      "previewTick",
+      "ready",
+      "start",
+      "status",
+      "stop",
+      "tick",
+    ]);
     for (const key of Object.keys(driver)) expect(key).not.toMatch(/store|db|table|close/i);
     expect((driver as unknown as Record<string, unknown>).store).toBeUndefined();
 
@@ -578,7 +590,11 @@ describe("G10-AC incomplete watches and the opt-in gate", () => {
     await driver.start();
     await new Promise((resolve) => setTimeout(resolve, 20));
     const status = await driver.status();
-    expect(status.driverStarted).toBe(true);
+    // G10-AC-R: `driverStarted` now means the tick source is ACTUALLY RUNNING.
+    // With no tick source there is nothing to start, so start() is a no-op and the
+    // runtime is NOT_CONFIGURED - the honest statement that no timer exists.
+    expect(status.driverStarted).toBe(false);
+    expect(status.capability.startState).toBe("NOT_CONFIGURED");
     expect(status.tickSource).toBeNull();
     expect(await countOf(rig, "WAKE_STARTED")).toBe(0);
     expect(await countOf(rig, "WATCH_TRIGGERED")).toBe(0);
@@ -915,8 +931,12 @@ describe("G10-AC disabling and posture integration", () => {
       },
     });
     const monitorWith = withRuntime.find((row) => row.capability === "MONITOR")!;
-    expect(monitorWith.availability).toBe("AVAILABLE");
-    expect(monitorWith.reason).toMatch(/Campaign monitor runtime is composed/);
+    // G10-AC-R: a bare `monitorRuntime: true` is NO LONGER an availability claim.
+    // Without tick/activation detail the honest answer is CONDITIONAL; only a LIVE
+    // capability in the RUNNING state (see test/ac_r_install_lifecycle.test.ts)
+    // reports AVAILABLE.
+    expect(monitorWith.availability).toBe("CONDITIONAL");
+    expect(monitorWith.reason).toMatch(/without tick\/activation detail/);
   });
 });
 

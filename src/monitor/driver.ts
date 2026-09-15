@@ -36,6 +36,7 @@ import type { ProspectiveService } from "../campaign/prospective.js";
 import type { UserWorkModeControlPort } from "../project_operating/work_mode_profile.js";
 import {
   buildCampaignWakeActivationSignal,
+  NULL_CAMPAIGN_WAKE_ACTIVATION_ADAPTER_ID,
   type CampaignWakeActivationPort,
   type CampaignWakeActivationSignal,
 } from "./activation.js";
@@ -47,6 +48,9 @@ import {
 } from "./lifecycle_derivation.js";
 import type { CampaignMonitorScopePort } from "./scope.js";
 import type { MonitorTickSourcePort, MonitorTickTrigger } from "./tick_source.js";
+// The ONE availability table lives in `project_operating` (see the re-export
+// note below); the driver imports it so both sides share a single implementation.
+import { monitorAvailabilityOf } from "../project_operating/posture.js";
 
 /** The narrow READ-ONLY history seam the driver needs for crash recovery. */
 export interface MonitorCampaignHistoryPort {
@@ -67,6 +71,70 @@ export const DEFAULT_CAMPAIGN_MONITOR_POLICY: CampaignMonitorPolicy = Object.fre
   maxActivationsPerTick: 5,
   redeliveryAfterMs: 300_000,
 });
+
+/**
+ * G10-AC-R §5: the lifecycle a monitor runtime can be in. It is deliberately a
+ * small, closed set: "configured" is not the same as "running", and a driver with
+ * only a scope is NOT a runtime at all.
+ */
+export const MONITOR_START_STATES = ["NOT_CONFIGURED", "MANUAL_ONLY", "STARTING", "RUNNING", "FAILED"] as const;
+export type MonitorStartState = (typeof MONITOR_START_STATES)[number];
+
+/**
+ * The LIVE runtime capability of one composed driver. This is the single input
+ * the posture's availability table reads, so a declaration can never drift from
+ * the wiring that actually exists.
+ */
+export interface MonitorRuntimeCapability {
+  /** A first-party driver object exists at all. */
+  readonly driverComposed: boolean;
+  /** A Campaign scope is bound (always true for a composed driver). */
+  readonly scopeConfigured: boolean;
+  /** An explicit tick source was supplied. */
+  readonly tickSourceConfigured: boolean;
+  /** A REAL host wake adapter is bound; FALSE for the null/pull adapter. */
+  readonly activationConfigured: boolean;
+  /** A delivery mark store is bound (duplicate suppression / backoff). */
+  readonly deliveryMarksConfigured: boolean;
+  /** True ONLY while the tick source is RUNNING (a start promise resolved). */
+  readonly started: boolean;
+  readonly startState: MonitorStartState;
+  /** The start failure message when `startState === "FAILED"`; else null. */
+  readonly startError: string | null;
+  readonly provenance: "first_party" | "declared_external";
+}
+
+/** The outcome of the start orchestration. It never rejects (see `ready`). */
+export interface MonitorStartOutcome {
+  readonly status: "not_configured" | "running" | "failed";
+  readonly detail: string;
+  readonly error?: string | undefined;
+}
+
+export type MonitorAvailability = "AVAILABLE" | "CONDITIONAL" | "PREVIEW_ONLY" | "UNAVAILABLE";
+
+/**
+ * G10-AC-R §5/§14: the STABLE semantic cause recorded in the canonical
+ * WATCH_TRIGGERED payload. The `watchId` is already canonical in that payload, so
+ * the cause carries NO clock, epoch or other dynamic text: two logically identical
+ * triggers at different clocks must produce the same canonical event identity.
+ * (The old value interpolated the wall clock, minting a new canonical event per
+ * clock tick.)
+ */
+export const MONITOR_TRIGGER_CAUSE = "monitor_condition_satisfied";
+
+/**
+ * G10-AC-R §5: the ONE availability table, shared by the driver and the
+ * operating posture so the two can never disagree. It lives in
+ * `project_operating/posture.ts` and is re-exported here: `project_operating`
+ * must never import the monitor driver (the driver imports the work-mode port),
+ * and the driver already depends on `project_operating`, so this direction is the
+ * only one that avoids a `project_operating -> monitor -> project_operating`
+ * cycle. The driver's stricter `MonitorRuntimeCapability` is structurally
+ * assignable to the helper's `MonitorRuntimeCapabilityView` parameter.
+ */
+export { monitorAvailabilityOf };
+
 
 export interface CampaignMonitorCampaignOutcome {
   readonly campaignId: string;
@@ -95,7 +163,17 @@ export interface CampaignMonitorStatus {
   readonly projectId: string;
   /** A real runtime (scope + services + history seam) is composed. */
   readonly runtimeConfigured: boolean;
+  /**
+   * True ONLY while the tick source is RUNNING. A configured-but-unstarted source
+   * (or a scope-only composition) reports false: nothing autonomous is happening.
+   */
   readonly driverStarted: boolean;
+  /** G10-AC-R: the LIVE runtime capability availability derives from. */
+  readonly capability: MonitorRuntimeCapability;
+  /** The honest availability + reason, derived by the ONE shared table (§5). */
+  readonly availability: { readonly availability: MonitorAvailability; readonly reason: string };
+  /** G10-AC-R: whether duplicate suppression marks are defaulted, supplied or disabled. */
+  readonly deliveryMarks: "default" | "supplied" | "disabled";
   readonly monitorPreferenceEnabled: boolean;
   readonly preferenceSource: "stored" | "safe_default" | "unavailable";
   readonly disabledReason: string | null;
@@ -106,7 +184,13 @@ export interface CampaignMonitorStatus {
   readonly inFlightWakeCount: number;
   readonly lastTick: string | null;
   readonly lastActivation: CampaignWakeActivationSignal | null;
-  readonly tickSource: { readonly kind: string; readonly running: boolean; readonly intervalMs?: number | undefined } | null;
+  readonly tickSource: {
+    readonly kind: string;
+    readonly running: boolean;
+    /** How many times the source has fired (deployment-local diagnostic). */
+    readonly fires: number;
+    readonly intervalMs?: number | undefined;
+  } | null;
 }
 
 export interface CampaignMonitorDriverDeps {
@@ -138,6 +222,13 @@ export interface CampaignMonitorDriverDeps {
   readonly history: MonitorCampaignHistoryPort;
   readonly activation: CampaignWakeActivationPort;
   readonly marks?: SqliteMonitorDeliveryMarkStore | undefined;
+  /**
+   * G10-AC-R: where the marks store came from, reported verbatim in `status()`.
+   * `default` is a deployment-local store the install created; `supplied` is a host
+   * store; `disabled` means suppression is deliberately off (and the driver then
+   * re-delivers on the configured cooldown).
+   */
+  readonly deliveryMarksSource?: "default" | "supplied" | "disabled" | undefined;
   readonly policy?: Partial<CampaignMonitorPolicy> | undefined;
   readonly tickSource?: MonitorTickSourcePort | undefined;
   readonly clock?: (() => string) | undefined;
@@ -147,10 +238,18 @@ export interface CampaignMonitorDriverDeps {
 
 export interface CampaignMonitorDriver {
   status(): Promise<CampaignMonitorStatus>;
+  /** READ-ONLY: the LIVE runtime capability (started/startState are fresh reads). */
+  capability(): MonitorRuntimeCapability;
   /** READ-ONLY: what a tick would do, with no write of any kind. */
   previewTick(): Promise<CampaignMonitorTickResult>;
   tick(trigger?: MonitorTickTrigger): Promise<CampaignMonitorTickResult>;
   start(): Promise<void>;
+  /**
+   * Await the current start orchestration (starting it if a tick source exists and
+   * nothing has started it yet). NEVER rejects: a failure is recorded into the
+   * driver state and returned as `status: "failed"`.
+   */
+  ready(): Promise<MonitorStartOutcome>;
   stop(): Promise<void>;
   dispose(): Promise<void>;
 }
@@ -204,7 +303,15 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
   });
   const now = (): string => (deps.clock ?? (() => new Date().toISOString()))();
 
+  const tickSourceConfigured = deps.tickSource !== undefined;
+  const activationConfigured = deps.activation.adapterId !== NULL_CAMPAIGN_WAKE_ACTIVATION_ADAPTER_ID;
+  const deliveryMarks = deps.deliveryMarksSource ?? (deps.marks === undefined ? "disabled" : "supplied");
+
   let started = false;
+  let startState: MonitorStartState = tickSourceConfigured ? "MANUAL_ONLY" : "NOT_CONFIGURED";
+  let startError: string | null = null;
+  let startPromise: Promise<MonitorStartOutcome> | null = null;
+  let disposed = false;
   let lastTick: string | null = null;
   let lastActivation: CampaignWakeActivationSignal | null = null;
   let inFlight: Promise<CampaignMonitorTickResult> | null = null;
@@ -326,7 +433,8 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
             campaignId,
             triggers: triggered.map((watchId) => ({
               watchId,
-              cause: `watch condition satisfied at ${now()}`,
+              // A stable semantic cause; the watchId carries the canonical detail.
+              cause: MONITOR_TRIGGER_CAUSE,
             })),
           });
           const causeWatchId = [...recorded].sort()[0] ?? triggered[0]!;
@@ -337,11 +445,14 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
           input.budget.wakeAdvances -= 1;
           outcome.beganWake = started.status === "started";
           outcome.wakeCycleId = started.status === "blocked" ? null : started.wakeCycleId;
+          // The clock is DIAGNOSTIC ONLY and lives here, in the non-canonical
+          // outcome detail - never in a canonical Campaign payload.
+          const at = now();
           outcome.detail =
             started.status === "started"
-              ? `recorded ${String(recorded.length)} triggered watch(es); woke from ${causeWatchId}`
+              ? `recorded ${String(recorded.length)} triggered watch(es) at ${at}; woke from ${causeWatchId}`
               : started.status === "wake_already_in_progress"
-                ? "a wake was already in progress"
+                ? `a wake was already in progress (evaluated at ${at})`
                 : `wake blocked: ${started.detail}`;
         } else {
           outcome.detail = `the per-tick wake budget is exhausted; ${String(triggered.length)} watch(es) remain triggered`;
@@ -525,6 +636,87 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
     });
   }
 
+  /**
+   * G10-AC-R §5: the LIVE capability. `started` is true ONLY once the tick
+   * source's `start()` has RESOLVED, so a configured-but-unstarted (or failed)
+   * runtime can never be presented as autonomous.
+   */
+  function capability(): MonitorRuntimeCapability {
+    return Object.freeze({
+      driverComposed: true,
+      scopeConfigured: true,
+      tickSourceConfigured,
+      activationConfigured,
+      deliveryMarksConfigured: deps.marks !== undefined,
+      started,
+      startState,
+      startError,
+      provenance: "first_party" as const,
+    });
+  }
+
+  /**
+   * The ONE start orchestration `start()` and `ready()` share.
+   *
+   *  - no tick source        → NOT_CONFIGURED, nothing to start
+   *  - already started        → the existing promise (concurrent callers converge
+   *                             on exactly ONE `tickSource.start()` invocation)
+   *  - rejection              → startState FAILED + startError, and the outcome is
+   *                             RESOLVED (never rejected) so no unhandled rejection
+   *                             can escape
+   *  - already disposed       → refused, so no callback can run after dispose()
+   */
+  function beginStart(): Promise<MonitorStartOutcome> {
+    if (disposed) {
+      return Promise.resolve(
+        Object.freeze({
+          status: "not_configured" as const,
+          detail: "the monitor is disposed; no tick source will be started",
+        }),
+      );
+    }
+    if (deps.tickSource === undefined) {
+      startState = "NOT_CONFIGURED";
+      return Promise.resolve(
+        Object.freeze({
+          status: "not_configured" as const,
+          detail: "no tick source is configured; ticks are manual only",
+        }),
+      );
+    }
+    if (startPromise !== null) return startPromise;
+    const source = deps.tickSource;
+    startState = "STARTING";
+    startError = null;
+    startPromise = (async (): Promise<MonitorStartOutcome> => {
+      try {
+        await source.start(async (trigger) => {
+          await driver.tick(trigger);
+        });
+        // ONLY now is the runtime actually running.
+        startState = "RUNNING";
+        started = true;
+        return Object.freeze({
+          status: "running" as const,
+          detail: `the ${source.status().kind} tick source is running`,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        startState = "FAILED";
+        started = false;
+        startError = message;
+        // RESOLVE, never reject: the failure is part of the driver state and a
+        // rejected `ready()` would escape as an unhandled rejection.
+        return Object.freeze({
+          status: "failed" as const,
+          detail: `the tick source failed to start: ${message}`,
+          error: message,
+        });
+      }
+    })();
+    return startPromise;
+  }
+
   const driver: CampaignMonitorDriver = Object.freeze({
     async status(): Promise<CampaignMonitorStatus> {
       const preference = await preferenceState();
@@ -549,10 +741,16 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
         }
       }
       const source = deps.tickSource?.status();
+      const liveCapability = capability();
       return Object.freeze({
         projectId: deps.projectId,
         runtimeConfigured: true,
         driverStarted: started,
+        capability: liveCapability,
+        // The SAME table the posture uses, so the driver and the posture can never
+        // disagree about what this runtime is.
+        availability: monitorAvailabilityOf(liveCapability),
+        deliveryMarks,
         monitorPreferenceEnabled: preference.enabled,
         preferenceSource: preference.source,
         disabledReason: preference.detail,
@@ -569,10 +767,13 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
             : Object.freeze({
                 kind: source.kind,
                 running: source.running,
+                fires: source.fires,
                 ...(source.intervalMs === undefined ? {} : { intervalMs: source.intervalMs }),
               }),
       });
     },
+
+    capability,
 
     async previewTick(): Promise<CampaignMonitorTickResult> {
       return runTick("manual", false);
@@ -588,20 +789,38 @@ export function makeCampaignMonitorDriver(deps: CampaignMonitorDriverDeps): Camp
     },
 
     async start(): Promise<void> {
-      if (started) return;
-      started = true;
-      await deps.tickSource?.start(async (trigger) => {
-        await driver.tick(trigger);
-      });
+      // Delegates to the SAME orchestration as `ready()`; it never rejects.
+      await beginStart();
+    },
+
+    async ready(): Promise<MonitorStartOutcome> {
+      return beginStart();
     },
 
     async stop(): Promise<void> {
-      started = false;
+      // Settle an in-flight start first so a late resolution cannot restart the
+      // source after we stopped it.
+      if (startPromise !== null) await startPromise;
       await deps.tickSource?.stop();
+      started = false;
+      startError = null;
+      // A configured, stopped source is MANUAL_ONLY, not "not configured".
+      startState = tickSourceConfigured ? "MANUAL_ONLY" : "NOT_CONFIGURED";
+      startPromise = null;
     },
 
     async dispose(): Promise<void> {
-      await driver.stop();
+      if (disposed) return; // idempotent
+      // Settle the start orchestration FIRST, so a pending `start()` cannot resolve
+      // after we have stopped the source and closed the marks.
+      if (startPromise !== null) await startPromise;
+      disposed = true;
+      await deps.tickSource?.stop();
+      started = false;
+      startError = null;
+      startState = tickSourceConfigured ? "MANUAL_ONLY" : "NOT_CONFIGURED";
+      // No callback may run after this point: `beginStart` refuses and the tick
+      // source is stopped before the owned marks are closed.
       deps.marks?.close();
     },
   });

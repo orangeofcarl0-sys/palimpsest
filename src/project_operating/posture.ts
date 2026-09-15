@@ -25,6 +25,7 @@ import type { RecipeDefinition, RecipeReadiness } from "../recipes/index.js";
 import {
   isWorkModeModifier,
   type EffectiveWorkModePreference,
+  type MonitorRuntimeCapabilityView,
   type WorkModeBaseMode,
   type WorkModeCapabilityInputs,
   type WorkModeModifier,
@@ -98,6 +99,123 @@ function readinessOf(
 ): RecipeReadiness {
   const definition = registry.get(WORK_MODE_RECIPE_IDS[capability]);
   return definition === undefined ? "UNAVAILABLE" : definition.readiness;
+}
+
+/**
+ * G10-AC-R §5: the ONE availability table for a monitor runtime, over the
+ * STRUCTURAL capability view.
+ *
+ * This lives here (not in `src/monitor/driver.ts`) and the driver imports it:
+ * `project_operating` must never import the monitor driver (the driver imports
+ * the work-mode port), while the driver already depends on `project_operating`.
+ * This direction is the only one that avoids a
+ * `project_operating -> monitor -> project_operating` cycle, and it guarantees
+ * the driver and the posture can never disagree.
+ *
+ * Branches (in order):
+ *  - no capability composed            → PREVIEW_ONLY (no runtime exists)
+ *  - startState FAILED                 → UNAVAILABLE, with the start error
+ *  - tick + activation, RUNNING        → AVAILABLE
+ *  - tick + activation, not RUNNING    → CONDITIONAL, naming the current state
+ *  - exactly one of tick/activation    → CONDITIONAL, naming precisely what is
+ *                                        missing (a tick with no real host wake
+ *                                        adapter, or an adapter with no tick)
+ *  - scope only (neither)              → UNAVAILABLE ("scope only")
+ */
+export function monitorAvailabilityOf(capability: MonitorRuntimeCapabilityView | undefined): {
+  readonly availability: EffectiveModeStatus["availability"];
+  readonly reason: string;
+} {
+  if (capability === undefined) {
+    return Object.freeze({
+      availability: "PREVIEW_ONLY" as const,
+      reason: "no monitor runtime is composed; the preference is retained and no scheduler is started",
+    });
+  }
+  if (capability.startState === "FAILED") {
+    return Object.freeze({
+      availability: "UNAVAILABLE" as const,
+      reason: `the monitor tick source failed to start: ${
+        capability.startError ?? "unknown error"
+      }; automatic monitoring is not running`,
+    });
+  }
+  if (capability.tickSourceConfigured && capability.activationConfigured) {
+    if (capability.startState === "RUNNING") {
+      return Object.freeze({
+        availability: "AVAILABLE" as const,
+        reason:
+          "the Campaign monitor runtime is composed and running: a driver with an explicit tick source and a real host wake activation adapter",
+      });
+    }
+    return Object.freeze({
+      availability: "CONDITIONAL" as const,
+      reason: `the Campaign monitor runtime is fully wired but its start state is ${capability.startState}; it becomes available once the tick source is RUNNING`,
+    });
+  }
+  if (capability.tickSourceConfigured) {
+    return Object.freeze({
+      availability: "CONDITIONAL" as const,
+      reason:
+        "a monitor tick source is configured but no real host wake activation adapter is bound (the null/pull adapter only records signals); no host can be autonomously woken",
+    });
+  }
+  if (capability.activationConfigured) {
+    return Object.freeze({
+      availability: "CONDITIONAL" as const,
+      reason: `a host wake activation adapter is bound but no monitor tick source is configured (start state ${capability.startState}); only manual/debug ticks can evaluate watches`,
+    });
+  }
+  return Object.freeze({
+    availability: "UNAVAILABLE" as const,
+    reason: "scope only: a manual/debug driver at most; no autonomous monitoring",
+  });
+}
+
+/** The preferred-but-not-available warnings for one effective-status list. */
+function capabilityWarningsOf(
+  effectiveStatus: readonly EffectiveModeStatus[],
+): readonly string[] {
+  return Object.freeze(
+    effectiveStatus
+      .filter((row) => row.preferred && row.availability !== "AVAILABLE")
+      .map(
+        (row) =>
+          `${row.capability} is preferred but ${row.availability === "PREVIEW_ONLY" ? "preview-only" : row.availability === "CONDITIONAL" ? "only conditionally available" : "unavailable"}: ${row.reason}`,
+      ),
+  );
+}
+
+/**
+ * G10-AC-R §5: apply a LIVE runtime capability to an already-derived posture view.
+ *
+ * The install composes the monitor AFTER the management service, and
+ * `makeProjectManagementService`'s capability resolver forwards only a fixed set
+ * of declared fields, so the live capability cannot ride through that seam. This
+ * wrapper lets the install replace the MONITOR row on the derived view with the
+ * honest value from the same table - no other row or field moves.
+ */
+export function withMonitorRuntimeCapability(
+  view: ProjectOperatingPostureView,
+  capability: MonitorRuntimeCapabilityView | undefined,
+): ProjectOperatingPostureView {
+  if (capability === undefined) return view;
+  const mapped = monitorAvailabilityOf(capability);
+  const effectiveStatus = Object.freeze(
+    view.workMode.effectiveStatus.map((row) =>
+      row.capability === "MONITOR"
+        ? Object.freeze({ ...row, availability: mapped.availability, reason: mapped.reason })
+        : row,
+    ),
+  );
+  return Object.freeze({
+    ...view,
+    workMode: Object.freeze({
+      ...view.workMode,
+      effectiveStatus,
+      capabilityWarnings: capabilityWarningsOf(effectiveStatus),
+    }),
+  });
 }
 
 /**
@@ -178,30 +296,34 @@ export function deriveEffectiveModeStatus(input: {
       : "no independent verifier is configured; same-model same-context is not verification",
   );
 
-  // G10-AC §34: MONITOR availability is derived from REAL runtime wiring. A
-  // composed first-party driver (or an embedder's explicit truthful equivalence
-  // declaration) makes it AVAILABLE; a bare boolean with no runtime does not.
-  const monitorRuntime = input.capabilities.monitorRuntime === true;
-  const monitorProvenance = input.capabilities.monitorRuntimeProvenance ?? "declared_external";
-  push(
-    "MONITOR",
-    "modifier",
-    preferredModifiers.has("MONITOR"),
-    monitorRuntime
-      ? "AVAILABLE"
-      : input.capabilities.monitorConditionSource
-        ? "AVAILABLE"
-        : readinessOf(input.registry, "MONITOR") === "PREVIEW_ONLY"
-          ? "PREVIEW_ONLY"
-          : "UNAVAILABLE",
-    monitorRuntime
-      ? monitorProvenance === "first_party"
-        ? "the Campaign monitor runtime is composed: a driver with an explicit tick source and a wake activation port"
-        : "an equivalent external monitor runtime is declared"
-      : input.capabilities.monitorConditionSource
-        ? "a production condition source is declared, but no monitor driver wiring is composed for this installation"
-        : "no monitor runtime is composed; the preference is retained and no scheduler is started",
-  );
+  // G10-AC §34 + AC-R §5: MONITOR availability is derived from REAL runtime
+  // wiring. A LIVE capability (when present) is AUTHORITATIVE and is mapped
+  // through the ONE shared table. The older declared fields remain as fallbacks,
+  // but a bare `monitorRuntime: true` is NO LONGER a claim of availability: a
+  // declaration without tick/activation detail is only CONDITIONAL.
+  const monitorCapability = input.capabilities.monitorRuntimeCapability;
+  let monitorAvailability: EffectiveModeStatus["availability"];
+  let monitorReason: string;
+  if (monitorCapability !== undefined) {
+    const mapped = monitorAvailabilityOf(monitorCapability);
+    monitorAvailability = mapped.availability;
+    monitorReason = mapped.reason;
+  } else if (input.capabilities.monitorRuntime === true) {
+    monitorAvailability = "CONDITIONAL";
+    monitorReason =
+      "a monitor runtime is declared without tick/activation detail; a bare declaration cannot prove an autonomous runtime";
+  } else if (input.capabilities.monitorConditionSource) {
+    monitorAvailability = "AVAILABLE";
+    monitorReason =
+      "a production condition source is declared, as an explicit equivalence claim for an external monitor implementation";
+  } else if (readinessOf(input.registry, "MONITOR") === "PREVIEW_ONLY") {
+    monitorAvailability = "PREVIEW_ONLY";
+    monitorReason = "no monitor runtime is composed; the preference is retained and no scheduler is started";
+  } else {
+    monitorAvailability = "UNAVAILABLE";
+    monitorReason = "no monitor runtime is composed; the preference is retained and no scheduler is started";
+  }
+  push("MONITOR", "modifier", preferredModifiers.has("MONITOR"), monitorAvailability, monitorReason);
 
   return Object.freeze(rows);
 }
@@ -280,14 +402,7 @@ export function buildProjectOperatingPostureView(input: {
     registry: input.registry,
     capabilities: input.capabilities,
   });
-  const capabilityWarnings = Object.freeze(
-    effectiveStatus
-      .filter((row) => row.preferred && row.availability !== "AVAILABLE")
-      .map(
-        (row) =>
-          `${row.capability} is preferred but ${row.availability === "PREVIEW_ONLY" ? "preview-only" : row.availability === "CONDITIONAL" ? "only conditionally available" : "unavailable"}: ${row.reason}`,
-      ),
-  );
+  const capabilityWarnings = capabilityWarningsOf(effectiveStatus);
   const { preference } = input.preference;
   return Object.freeze({
     projectId: input.projectId,

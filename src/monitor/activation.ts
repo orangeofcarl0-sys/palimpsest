@@ -130,10 +130,18 @@ export interface CampaignWakeActivationPort {
   activate(signal: CampaignWakeActivationSignal): Promise<CampaignWakeActivationOutcome>;
 }
 
+/**
+ * The adapter id of the pull/debug default. It is exported so the driver can
+ * report `activationConfigured === false` for it WITHOUT importing a magic
+ * string: the null adapter records signals and never wakes a host, so it is not
+ * an autonomous wake binding (§5).
+ */
+export const NULL_CAMPAIGN_WAKE_ACTIVATION_ADAPTER_ID = "campaign-wake:null";
+
 /** Pull mode: never activates anything. The honest default. */
 export function nullCampaignWakeActivation(): CampaignWakeActivationPort {
   return Object.freeze({
-    adapterId: "campaign-wake:null",
+    adapterId: NULL_CAMPAIGN_WAKE_ACTIVATION_ADAPTER_ID,
     async activate(): Promise<CampaignWakeActivationOutcome> {
       return Object.freeze({
         activated: false,

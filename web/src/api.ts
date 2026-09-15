@@ -1110,8 +1110,109 @@ export interface ProjectOperatingHistory {
     readonly managementActivity: number;
     readonly unresolvedActivity: number;
     readonly incompleteCanonicalRefs: number;
+    /** G10-AC-R §13: canonical Campaign wake events REFERENCED by this view. */
+    readonly campaignWakeEvents: number;
   };
   readonly hasIncompleteAuditRecords: boolean;
+}
+
+/* ------------------------------------------------------------------ *
+ * G10-AC-R §11/§12: the READ-ONLY monitor runtime face
+ * ------------------------------------------------------------------ */
+
+/**
+ * GET /api/monitor/status. Read-only observation of the composed Campaign
+ * monitor runtime. There is no force-tick helper in this module on purpose:
+ * `POST /api/monitor/status` is refused by the server (the route requires GET),
+ * and the operator/debug tick exists only on the installed runtime.
+ */
+export function monitorStatus(): Promise<MonitorStatus> {
+  return call<MonitorStatus>("/api/monitor/status");
+}
+
+/** GET /api/monitor/preview. READ-ONLY: what a tick WOULD do; it never ticks. */
+export function monitorPreview(): Promise<MonitorPreview> {
+  return call<MonitorPreview>("/api/monitor/preview");
+}
+
+/** The LIVE runtime capability the availability is derived from (never a claim). */
+export interface MonitorRuntimeCapabilityView {
+  readonly driverComposed: boolean;
+  readonly scopeConfigured: boolean;
+  readonly tickSourceConfigured: boolean;
+  /** FALSE for the null/pull adapter: nothing can autonomously wake a host. */
+  readonly activationConfigured: boolean;
+  readonly deliveryMarksConfigured: boolean;
+  readonly started: boolean;
+  readonly startState: "NOT_CONFIGURED" | "MANUAL_ONLY" | "STARTING" | "RUNNING" | "FAILED";
+  readonly startError: string | null;
+  readonly provenance: "first_party" | "declared_external";
+}
+
+/** The at-least-once host wake signal; its identity is semantic, never a clock. */
+export interface MonitorWakeActivationSignal {
+  readonly signalId: string;
+  readonly projectId: string;
+  readonly campaignId: string;
+  readonly wakeCycleId: string;
+  readonly cause: string;
+  readonly phase: string;
+  readonly reconciliationDigest: string | null;
+  readonly blockerCode: string | null;
+  readonly detail: string;
+  readonly createdAt: string;
+}
+
+export interface MonitorStatus {
+  readonly projectId: string;
+  readonly runtimeConfigured: boolean;
+  readonly driverStarted: boolean;
+  readonly capability: MonitorRuntimeCapabilityView;
+  readonly availability: {
+    readonly availability: "AVAILABLE" | "CONDITIONAL" | "PREVIEW_ONLY" | "UNAVAILABLE";
+    readonly reason: string;
+  };
+  readonly deliveryMarks: "default" | "supplied" | "disabled";
+  readonly monitorPreferenceEnabled: boolean;
+  readonly preferenceSource: "stored" | "safe_default" | "unavailable";
+  readonly disabledReason: string | null;
+  readonly scopeId: string;
+  readonly scopedCampaignCount: number;
+  readonly dormantCampaignCount: number;
+  readonly activeWatchCount: number;
+  readonly inFlightWakeCount: number;
+  readonly lastTick: string | null;
+  readonly lastActivation: MonitorWakeActivationSignal | null;
+  readonly tickSource: {
+    readonly kind: string;
+    readonly running: boolean;
+    readonly fires: number;
+    readonly intervalMs?: number | undefined;
+  } | null;
+}
+
+/** ONE Campaign's outcome in a tick or preview (read-only when previewed). */
+export interface MonitorCampaignOutcome {
+  readonly campaignId: string;
+  readonly lifecycle: string;
+  readonly triggeredWatchIds: readonly string[];
+  readonly beganWake: boolean;
+  readonly wakeCycleId: string | null;
+  readonly reconciled: boolean;
+  readonly activationPhase: string | null;
+  readonly delivered: boolean;
+  readonly detail: string;
+}
+
+export interface MonitorPreview {
+  readonly trigger: string;
+  readonly enabled: boolean;
+  readonly disabledReason: string | null;
+  readonly scopedCampaignCount: number;
+  readonly campaigns: readonly MonitorCampaignOutcome[];
+  readonly wakeAdvances: number;
+  readonly activations: number;
+  readonly detail: string;
 }
 
 /** GET /api/manage/status - profile + derived view + derived candidates (read-only). */
