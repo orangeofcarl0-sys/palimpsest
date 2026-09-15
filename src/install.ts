@@ -9,7 +9,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 import { canonicalDigest } from "./schema/canonical.js";
 
@@ -160,6 +160,12 @@ import type {
   ProjectManagementService,
   UserManagementControlPort,
 } from "./project_management/index.js";
+import {
+  SqliteManagementActivityStore,
+  SqliteWorkModePreferenceStore,
+  type UserWorkModeControlPort,
+  type WorkModeCapabilityInputs,
+} from "./project_operating/index.js";
 import {
   DEFAULT_MAX_STEPS_PER_RUN,
   defaultAllowedActionClasses,
@@ -373,6 +379,25 @@ export interface InstallPalimpsestOptions {
    * control (read-only in effect, everything degrades to DIRECT).
    */
   managementPreferenceStore?: SqliteManagementPreferenceStore | undefined;
+  /**
+   * G10-AB (additive): the deployment-local, NON-authoritative Work Mode preference store. It
+   * is the ONLY writer of the user-level project default; absent ⇒ derived from
+   * `operatingStorePath`/`databasePath`, else an in-memory FOCUS default.
+   */
+  workModePreferenceStore?: UserWorkModeControlPort | undefined;
+  /** G10-AB (additive): the append-only, NON-authoritative management activity store. */
+  managementActivityStore?: SqliteManagementActivityStore | undefined;
+  /**
+   * G10-AB: where the operator preference + activity stores live. Defaults to
+   * `<databasePath dir>/project_operating.sqlite` (a deployment-local file), and to `:memory:`
+   * when the orchestration store itself is in memory.
+   */
+  operatingStorePath?: string | undefined;
+  /**
+   * G10-AB §7/§30: which capabilities actually EXIST. Only what is declared here is reported as
+   * available; `verify` being wired is not the same as an INDEPENDENT verifier.
+   */
+  operatingCapabilities?: Partial<WorkModeCapabilityInputs> | undefined;
 }
 
 /**
@@ -459,6 +484,17 @@ export interface InstalledPalimpsest {
    * application surface/tools never do.
    */
   readonly projectManagement?: ProjectManagementService | undefined;
+  /**
+   * G10-AB (additive): the deployment-local operating-posture stores. Present iff a workspace
+   * exists. Neither is authority: the Work Mode store holds a user default, and the activity
+   * store is an append-only, non-authoritative audit log.
+   */
+  readonly projectOperating?:
+    | {
+        readonly workMode: UserWorkModeControlPort;
+        readonly activity: SqliteManagementActivityStore;
+      }
+    | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -1392,6 +1428,31 @@ export function installPalimpsest(
   // G10-V: the bounded management service exists only alongside a workspace (it composes the
   // workspace view with the operator profile and the EXISTING governed services). It owns no
   // authority: the default control is an in-memory DIRECT profile when no store is supplied.
+  // G10-AB: the deployment-local operating-posture stores. They are NON-authoritative: the
+  // Work Mode preference is a user default, and the activity log only REFERENCES canonical
+  // owners. Both default to a file beside the orchestration store so a durable project
+  // remembers its posture across sessions; an in-memory orchestration store stays in memory.
+  const operatingStores:
+    | { readonly workMode: UserWorkModeControlPort; readonly activity: SqliteManagementActivityStore }
+    | undefined = (() => {
+    if (projectWorkspace === undefined) return undefined;
+    const derived =
+      options.operatingStorePath ??
+      (options.databasePath === undefined || options.databasePath === ":memory:"
+        ? ":memory:"
+        : join(dirname(options.databasePath), "project_operating.sqlite"));
+    try {
+      return {
+        workMode: options.workModePreferenceStore ?? new SqliteWorkModePreferenceStore(derived),
+        activity: options.managementActivityStore ?? new SqliteManagementActivityStore(derived),
+      };
+    } catch {
+      // An unusable operating store must not take the whole runtime down: the
+      // posture simply reports safe defaults and records no activity.
+      return undefined;
+    }
+  })();
+
   const projectManagement: ProjectManagementService | undefined =
     projectWorkspace === undefined
       ? undefined
@@ -1401,6 +1462,26 @@ export function installPalimpsest(
           controller,
           ...(recipeExecution === undefined ? {} : { recipes: { registry: recipeRegistry, execution: recipeExecution } }),
           capabilities: { recipeExecution: recipeExecution !== undefined, verify: false },
+          ...(operatingStores === undefined ? {} : { workMode: operatingStores.workMode, activity: operatingStores.activity }),
+          registry: recipeRegistry,
+          projectBasis: () => {
+            // A read of the canonical ProjectIR projection - the same source the
+            // management service's own `readProject()` uses. No new truth.
+            const row = controller.store.connection
+              .prepare("SELECT revision, digest, head_commit FROM projects WHERE project_id=?")
+              .get(controller.projectId) as
+              | { revision: number; digest: string; head_commit: string }
+              | undefined;
+            if (row === undefined) return { revision: 0, digest: "", headCommit: "" };
+            return {
+              revision: Number(row.revision),
+              digest: String(row.digest),
+              headCommit: String(row.head_commit),
+            };
+          },
+          ...(options.operatingCapabilities === undefined
+            ? {}
+            : { operatingCapabilities: options.operatingCapabilities }),
         });
 
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
@@ -1508,6 +1589,7 @@ export function installPalimpsest(
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
+    ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {

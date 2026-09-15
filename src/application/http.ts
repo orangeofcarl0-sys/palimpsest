@@ -17,6 +17,12 @@ import type { RecipeExecutionContext } from "../recipes/execution.js";
 import { SOURCE_PROVENANCES, parseEvidenceSelector, parseProofSourceRevisionRef } from "../proof_asset/index.js";
 import { ASSOCIATION_KINDS, PROJECT_ASSET_KINDS, PROJECT_JOURNAL_KINDS, PROJECT_JOURNAL_RESOLUTION_STATUSES, parseCanonicalAssetRef } from "../project_workspace/index.js";
 import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
+import {
+  WORK_MODE_BASE_MODES,
+  WORK_MODE_MODIFIERS,
+  type WorkModeBaseMode,
+  type WorkModeModifier,
+} from "../project_operating/work_mode_profile.js";
 
 export interface ApplicationRouteResult {
   readonly status: number;
@@ -726,6 +732,60 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   }
 
   /* ---- management autonomy (G10-V; mode ≠ authority, request only) ---- */
+  // G10-AB: the derived operating posture - the Work Mode preference with its
+  // EFFECTIVE capability status, and the management axis. Read-only.
+  if (pathname === "/api/project/operating-posture") {
+    requireGet();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").posture());
+  }
+  // G10-AB: the durable, append-only management activity history. Reads are
+  // read-only: the activity log is product/audit history, never authority.
+  if (pathname === "/api/manage/activity") {
+    requireGet();
+    const limitRaw = query.get("limit");
+    let limit: number | undefined;
+    if (limitRaw !== null && limitRaw !== "") {
+      const parsed = Number(limitRaw);
+      if (!Number.isSafeInteger(parsed) || parsed < 1) {
+        throw new InvalidRequest('"limit" must be a positive integer');
+      }
+      limit = parsed;
+    }
+    const management = requireSurface(application.projectManagement, "projectManagement");
+    return ok(limit === undefined ? await management.activity() : await management.activity(limit));
+  }
+  if (pathname.startsWith("/api/manage/activity/")) {
+    requireGet();
+    const recordId = decodeURIComponent(pathname.slice("/api/manage/activity/".length));
+    if (recordId.length === 0) throw new InvalidRequest("an activity record id is required");
+    const records = await requireSurface(application.projectManagement, "projectManagement").activity();
+    const record = records.find((entry) => entry.recordId === recordId);
+    if (record === undefined) throw new InvalidRequest(`unknown management activity record "${recordId}"`);
+    return ok(record);
+  }
+  // G10-AB: the DERIVED operating history (references only; ProjectIR stays the
+  // canonical owner of every revision).
+  if (pathname === "/api/project/operating-history") {
+    requireGet();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").operatingHistory());
+  }
+  // G10-AB: an agent-facing Work Mode REQUEST. It never persists the user-level
+  // project default - HTTP authentication is not operator semantic authority, so
+  // only the operator CLI control path can apply a change.
+  if (pathname === "/api/manage/request_work_mode_change") {
+    requirePost();
+    const b = bodyObject(body);
+    const baseMode = enumValue(b.baseMode, WORK_MODE_BASE_MODES, "baseMode");
+    const modifiersRaw = b.modifiers ?? [];
+    if (!Array.isArray(modifiersRaw)) throw new InvalidRequest('"modifiers" must be an array');
+    const modifiers = modifiersRaw.map((entry) => enumValue(entry, WORK_MODE_MODIFIERS, "modifiers"));
+    return ok(
+      await requireSurface(application.projectManagement, "projectManagement").requestWorkModeChange({
+        baseMode: baseMode as WorkModeBaseMode,
+        modifiers: modifiers as readonly WorkModeModifier[],
+      }),
+    );
+  }
   if (pathname === "/api/manage/status") {
     requireGet();
     return ok(await requireSurface(application.projectManagement, "projectManagement").status());

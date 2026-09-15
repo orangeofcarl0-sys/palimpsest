@@ -1007,6 +1007,113 @@ export function projectOpportunityPromote(input: {
   });
 }
 
+/**
+ * G10-AB §42: the DERIVED operating posture - the operator's Work Mode preference
+ * with its EFFECTIVE capability status, plus the management axis. Read-only; the
+ * preference is never authority and an unavailable capability is never presented
+ * as active.
+ */
+export function operatingPosture(): Promise<ProjectOperatingPostureView> {
+  return call<ProjectOperatingPostureView>("/api/project/operating-posture");
+}
+
+/** G10-AB: the durable, append-only management activity history (read-only). */
+export function managementActivity(limit?: number): Promise<readonly ManagementActivityRecord[]> {
+  return call<readonly ManagementActivityRecord[]>(
+    limit === undefined ? "/api/manage/activity" : `/api/manage/activity?limit=${String(limit)}`,
+  );
+}
+
+/** G10-AB: the derived operating history (references only). */
+export function projectOperatingHistory(): Promise<ProjectOperatingHistory> {
+  return call<ProjectOperatingHistory>("/api/project/operating-history");
+}
+
+export interface EffectiveModeStatus {
+  readonly capability: string;
+  readonly role: "base" | "modifier";
+  readonly preferred: boolean;
+  readonly readiness: string;
+  readonly availability: "AVAILABLE" | "CONDITIONAL" | "PREVIEW_ONLY" | "UNAVAILABLE";
+  readonly reason: string;
+}
+
+export interface ProjectOperatingPostureView {
+  readonly projectId: string;
+  readonly workMode: {
+    readonly preferred: {
+      readonly baseMode: string;
+      readonly modifiers: readonly string[];
+      readonly updatedAt: string;
+      readonly updatedBy: string;
+      readonly digest: string;
+      readonly source: "stored" | "safe_default";
+      readonly degradedReason?: string | undefined;
+    };
+    readonly effectiveStatus: readonly EffectiveModeStatus[];
+    readonly capabilityWarnings: readonly string[];
+    readonly historySummary: {
+      readonly changes: number;
+      readonly lastChange: {
+        readonly at: string;
+        readonly updatedBy: string;
+        readonly from: string;
+        readonly to: string;
+      } | null;
+    };
+  };
+  readonly management: {
+    readonly involvement: string;
+    readonly automaticActionClasses: readonly string[];
+    readonly confirmationBoundaries: readonly string[];
+    readonly historySummary: {
+      readonly changes: number;
+      readonly lastChange: {
+        readonly at: string;
+        readonly updatedBy: string;
+        readonly from: string;
+        readonly to: string;
+      } | null;
+    };
+  };
+}
+
+export interface ManagementActivityRecord {
+  readonly recordId: string;
+  readonly sequence: number;
+  readonly candidateRef: string;
+  readonly actionClass: string;
+  readonly decision: string;
+  readonly confirmed: boolean;
+  readonly reason: string;
+  readonly typedReasonCode: string | null;
+  readonly startedAt: string;
+  readonly finishedAt: string | null;
+  readonly canonicalOutcomeRefs: readonly { readonly kind: string; readonly ref: string }[];
+  readonly supersedesRecordId: string | null;
+}
+
+export interface ProjectOperatingHistory {
+  readonly entries: readonly {
+    readonly kind: string;
+    readonly ref: string;
+    readonly at: string;
+    readonly actor: string;
+    readonly summary: string;
+    readonly decision?: string | undefined;
+    readonly canonicalOutcomeRefs: readonly string[];
+    readonly incompleteCanonicalRef: boolean;
+  }[];
+  readonly counts: {
+    readonly workModeChanges: number;
+    readonly managementModeChanges: number;
+    readonly managementActivity: number;
+    readonly unresolvedActivity: number;
+    readonly incompleteCanonicalRefs: number;
+  };
+  readonly hasIncompleteAuditRecords: boolean;
+}
+
 /** GET /api/manage/status - profile + derived view + derived candidates (read-only). */
 export function manageStatus(): Promise<ManagementAssessment> {
   return call<ManagementAssessment>("/api/manage/status");
