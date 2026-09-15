@@ -147,3 +147,12 @@ export * from "./advisor/index.js";
  * accepts so the advanced barrel is unambiguous.
  */
 export type { ReasoningBranchExecutionPort } from "./recipes/execution.js";
+
+/**
+ * G10-T: authoritative Proof/Evidence plane & local purpose-scoped disclosure — advanced opt-in
+ * only. Source ≠ Evidence ≠ Claim ≠ Truth; Verification ≠ PublicationAdmission; PublishedClaim ≠
+ * Authority; Freshness ≠ Truth; STALE ≠ FALSE; VaultBlob ≠ SemanticClaim; Preview ≠ Approval;
+ * Export ≠ RecipientReceipt. LOCAL storage by default: no cloud sync, no federation send, no
+ * encryption-at-rest claim, no VC/DID/ZK, no recipient authentication.
+ */
+export * from "./proof_asset/index.js";
