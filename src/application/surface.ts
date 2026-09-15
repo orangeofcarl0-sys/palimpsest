@@ -74,6 +74,33 @@ import { materializePeerRef } from "../federation/peer.js";
 import type { DurablePeerOperation } from "../transport/envelope.js";
 import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
 import type { ProjectController } from "../tools/controller.js";
+import type { TaskSpec } from "../schema/models.js";
+import type {
+  AppendDecisionResult,
+  AssociationKind,
+  CanonicalAssetRefInput,
+  OpenLoop,
+  ProjectAssetAssociation,
+  ProjectAssetKind,
+  ProjectJournalEntry,
+  ProjectJournalKind,
+  ProjectJournalRef,
+  ProjectJournalResolution,
+  ProjectJournalViewEntry,
+  ProjectWorkspaceService,
+  ProjectWorkspaceView,
+  PromoteOpportunityResult,
+  WorkspaceHistoryEntry,
+} from "../project_workspace/index.js";
+import type {
+  ManagementActionCandidate,
+  ManagementAssessment,
+  ManagementBoundedRun,
+  ManagementInvolvement,
+  ManagementStepPreview,
+  ManagementStepResult,
+  ProjectManagementService,
+} from "../project_management/index.js";
 import { definePalimpsestControl } from "../tools/control_surface.js";
 import type { ProjectionEnvelope } from "./projection_types.js";
 import { collaborationProjection, organizationProjection, reasoningProjection, runtimeProjection, workProjection } from "./projections.js";
@@ -394,8 +421,68 @@ export interface RecipeExecutionApplicationSurface {
   status(): RecipeExecutionStatus;
 }
 
-export interface PalimpsestApplicationSurface {
-  readonly work: WorkApplicationSurface;
+/**
+ * G10-V: the DERIVED project workspace as seen by products. Every read re-derives from the
+ * canonical owner matrix plus the two narrowly-owned append-only histories; nothing here
+ * copies a canonical fact. The `projectId` inputs default to this installation's project (a
+ * caller cannot address another project's history through this surface).
+ */
+export interface ProjectWorkspaceApplicationSurface {
+  view(): Promise<ProjectWorkspaceView>;
+  assets(): Promise<readonly ProjectAssetAssociation[]>;
+  openLoops(): Promise<readonly OpenLoop[]>;
+  history(): Promise<readonly WorkspaceHistoryEntry[]>;
+  journal(projectId?: string): Promise<readonly ProjectJournalViewEntry[]>;
+  associateAsset(input: {
+    readonly projectId?: string | undefined;
+    readonly assetKind: ProjectAssetKind;
+    readonly canonicalRef: CanonicalAssetRefInput;
+    readonly associationKind: AssociationKind;
+    readonly provenance: string;
+  }): Promise<ProjectAssetAssociation>;
+  recordJournalEntry(input: {
+    readonly projectId?: string | undefined;
+    readonly kind: ProjectJournalKind;
+    readonly title: string;
+    readonly body: string;
+    readonly provenance: string;
+    readonly relatedRefs?: readonly ProjectJournalRef[] | undefined;
+  }): Promise<ProjectJournalEntry>;
+  resolveJournalEntry(input: {
+    readonly projectId?: string | undefined;
+    readonly entryId: string;
+    readonly resolution: ProjectJournalResolution;
+  }): Promise<ProjectJournalViewEntry>;
+  appendDecision(input: {
+    readonly projectId?: string | undefined;
+    readonly statement: string;
+    readonly rationale: string;
+    readonly evidenceIds: readonly string[];
+    readonly supersedes?: string | undefined;
+  }): Promise<AppendDecisionResult>;
+  promoteOpportunity(input: {
+    readonly projectId?: string | undefined;
+    readonly entryId: string;
+    readonly taskSpec: TaskSpec;
+  }): Promise<PromoteOpportunityResult>;
+}
+
+/**
+ * G10-V: graduated project-management autonomy as seen by AGENTS. It can inspect, recommend,
+ * preview, execute one bounded local step, run bounded, or REQUEST a mode change. It deliberately
+ * has NO `setModeUpward`/`grantAuthority`/`approveDisclosure`/`forceCommitment`: a mode is never
+ * authority and the agent-facing path can never escalate its own involvement.
+ */
+export interface ProjectManagementApplicationSurface {
+  status(): Promise<ManagementAssessment>;
+  recommend(): Promise<readonly ManagementActionCandidate[]>;
+  preview(): Promise<ManagementStepPreview>;
+  step(input?: { readonly confirmed?: boolean | undefined }): Promise<ManagementStepResult>;
+  run(input?: { readonly maxSteps?: number | undefined }): Promise<ManagementBoundedRun>;
+  requestModeChange(input: { readonly to: ManagementInvolvement }): Promise<{ readonly status: "requested"; readonly detail: string }>;
+}
+
+export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
   readonly boundary?: BoundaryApplicationSurface | undefined;
   readonly runtime?: RuntimeApplicationSurface | undefined;
@@ -418,6 +505,10 @@ export interface PalimpsestApplicationSurface {
   readonly proof?: ProofApplicationSurface | undefined;
   /** G10-T (additive): local purpose-scoped disclosure; absent ⇒ no disclosure surface. */
   readonly disclosure?: DisclosureApplicationSurface | undefined;
+  /** G10-V (additive): the DERIVED project workspace; absent ⇒ no projectWorkspace surface. */
+  readonly projectWorkspace?: ProjectWorkspaceApplicationSurface | undefined;
+  /** G10-V (additive): agent-facing management autonomy (never an escalation path). */
+  readonly projectManagement?: ProjectManagementApplicationSurface | undefined;
   /** Derived MultiGraph projections (read-only; never a canonical graph). */
   readonly projections?: ProjectionsApplicationSurface | undefined;
 }
@@ -459,6 +550,10 @@ export interface ApplicationSurfaceDeps {
   readonly proofExtraction?: EvidenceExtractionService | undefined;
   /** G10-T (additive): the local disclosure service; absent ⇒ no disclosure surface. */
   readonly disclosure?: DisclosureService | undefined;
+  /** G10-V (additive): the DERIVED project workspace service; absent ⇒ no workspace surface. */
+  readonly projectWorkspace?: ProjectWorkspaceService | undefined;
+  /** G10-V (additive): the bounded management service; absent ⇒ no management surface. */
+  readonly projectManagement?: ProjectManagementService | undefined;
 }
 
 function invalidInput(message: string): Error {
@@ -878,6 +973,66 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           history: () => deps.disclosure!.history(),
         };
 
+  const projectWorkspace: ProjectWorkspaceApplicationSurface | undefined =
+    deps.projectWorkspace === undefined
+      ? undefined
+      : (() => {
+          const service = deps.projectWorkspace!;
+          // The installation's project: a caller can address a projectId only if it names THIS
+          // project (the service asserts it), so the default is the truthful local scope.
+          const projectId = deps.controller.projectId;
+          return {
+            view: () => service.view(),
+            assets: () => service.assets(),
+            openLoops: () => service.openLoops(),
+            history: () => service.history(),
+            journal: (id) => service.journal(id),
+            associateAsset: (input) =>
+              service.associateAsset({
+                projectId: input.projectId ?? projectId,
+                assetKind: input.assetKind,
+                canonicalRef: input.canonicalRef,
+                associationKind: input.associationKind,
+                provenance: input.provenance,
+              }),
+            recordJournalEntry: (input) =>
+              service.recordJournalEntry({
+                projectId: input.projectId ?? projectId,
+                kind: input.kind,
+                title: input.title,
+                body: input.body,
+                provenance: input.provenance,
+                ...(input.relatedRefs === undefined ? {} : { relatedRefs: input.relatedRefs }),
+              }),
+            resolveJournalEntry: (input) =>
+              service.resolveJournalEntry({ projectId: input.projectId ?? projectId, entryId: input.entryId, resolution: input.resolution }),
+            appendDecision: (input) =>
+              service.appendDecision({
+                projectId: input.projectId ?? projectId,
+                statement: input.statement,
+                rationale: input.rationale,
+                evidenceIds: input.evidenceIds,
+                ...(input.supersedes === undefined ? {} : { supersedes: input.supersedes }),
+              }),
+            promoteOpportunity: (input) =>
+              service.promoteOpportunity({ projectId: input.projectId ?? projectId, entryId: input.entryId, taskSpec: input.taskSpec }),
+          };
+        })();
+
+  const projectManagement: ProjectManagementApplicationSurface | undefined =
+    deps.projectManagement === undefined
+      ? undefined
+      : {
+          status: () => deps.projectManagement!.assess(),
+          recommend: () => deps.projectManagement!.recommend(),
+          preview: () => deps.projectManagement!.previewStep(),
+          step: (input) => deps.projectManagement!.step(input),
+          run: (input) => deps.projectManagement!.runBounded(input),
+          // A REQUEST only: `requestedBy` is filled here, never supplied by the caller, and the
+          // service never applies an upward change on the agent-facing path.
+          requestModeChange: (input) => deps.projectManagement!.requestModeChange({ to: input.to, requestedBy: "agent" }),
+        };
+
   const projections: ProjectionsApplicationSurface = {
     work: async () => {
       try {
@@ -944,6 +1099,8 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(proof === undefined ? {} : { proof }),
     ...(disclosure === undefined ? {} : { disclosure }),
+    ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

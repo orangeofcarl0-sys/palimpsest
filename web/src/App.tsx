@@ -2,15 +2,18 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   ApiError,
+  applicationSurfaces,
   getGraph,
   getToken,
   health,
   layoutCanvas,
   listPresets,
   setToken,
+  type ApplicationSurfaceAvailability,
 } from "./api";
 import { MultiGraphView } from "./MultiGraphView";
 import { ProofVaultView } from "./proof_vault/ProofVaultView";
+import { ProjectWorkspaceView, type ProjectSurfaceTarget } from "./project_workspace/ProjectWorkspaceView";
 import { CanvasView } from "./CanvasView";
 import { GraphView, liveLinks, liveNodes } from "./GraphView";
 import {
@@ -39,6 +42,10 @@ import { newCanvasDoc, randomCanvasNamespace, upgradeCanvasV2ToV3 } from "./canv
 
 type Mode = "live" | "draft";
 
+/** G10-V: the project workspace is the default first entry when its surface is
+ * available; every other surface stays reachable from both headers. */
+type Surface = ProjectSurfaceTarget;
+
 const LAYOUTS: Array<{ id: CanvasLayoutName; label: string }> = [
   { id: "manual", label: "手动" },
   { id: "flow_lr", label: "流式 →" },
@@ -64,7 +71,9 @@ export function App() {
   const [presets, setPresets] = useState<PresetMeta[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [mode, setMode] = useState<Mode>("live");
-  const [surface, setSurface] = useState<"work" | "multigraph" | "proof">("work");
+  /** null while the surface availability is still being resolved. */
+  const [surface, setSurface] = useState<Surface | null>(null);
+  const [surfaces, setSurfaces] = useState<ApplicationSurfaceAvailability | null>(null);
   const [doc, setDoc] = useState<CanvasDoc>(emptyDoc());
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [satellitesOn, setSatellitesOn] = useState(true);
@@ -120,6 +129,25 @@ export function App() {
     void listPresets()
       .then((result) => setPresets(result.presets))
       .catch((error) => setMessage(error instanceof Error ? error.message : String(error)));
+  }, [authorized]);
+
+  // G10-V: the DERIVED project workspace is the default first entry when the
+  // installation actually wires it. A Work-only server (no application surface)
+  // has no /api/application/surfaces route at all, so a failed probe must fall
+  // back to the Work surface rather than fabricate project state.
+  useEffect(() => {
+    if (authorized !== true) return;
+    void (async () => {
+      let availability: ApplicationSurfaceAvailability | null = null;
+      try {
+        availability = await applicationSurfaces();
+        setSurfaces(availability);
+      } catch {
+        availability = null;
+      }
+      const landing: Surface = availability?.projectWorkspace === true ? "project" : "work";
+      setSurface((current) => current ?? landing);
+    })();
   }, [authorized]);
 
   // PLMP-CANVAS-1: the doc is client-side scratch - localStorage + import/export.
@@ -205,6 +233,12 @@ export function App() {
     );
   }
 
+  const homeSurface: Surface = surfaces?.projectWorkspace === true ? "project" : "work";
+  if (surface === null) {
+    // The surface probe has not answered yet; never render a guessed landing.
+    return <Center>连接中…</Center>;
+  }
+
   const graphTasks = graph?.tasks ?? [];
   const selectedTask = graphTasks.find((task) => task.taskId === selectedKey) ?? null;
   const attemptIds = graphTasks.flatMap((task) => task.attempts.map((attempt) => attempt.attemptId));
@@ -254,10 +288,13 @@ export function App() {
   };
 
   if (surface === "multigraph") {
-    return <MultiGraphView onExit={() => setSurface("work")} />;
+    return <MultiGraphView onExit={() => setSurface(homeSurface)} />;
   }
   if (surface === "proof") {
-    return <ProofVaultView onExit={() => setSurface("work")} />;
+    return <ProofVaultView onExit={() => setSurface(homeSurface)} />;
+  }
+  if (surface === "project") {
+    return <ProjectWorkspaceView surfaces={surfaces} onNavigate={(target) => setSurface(target)} />;
   }
 
   return (
@@ -265,8 +302,17 @@ export function App() {
       <div style={{ display: "grid", gridTemplateRows: mode === "draft" ? "auto 1fr auto" : "auto auto 1fr auto", gap: 8, minHeight: 0 }}>
         <div style={{ display: "flex", gap: 10, alignItems: "baseline", color: "#e2e8f0" }}>
           <b>palimpsest 图面</b>
+          {surfaces?.projectWorkspace === true ? (
+            <button
+              onClick={() => setSurface("project")}
+              style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #1d4ed8", background: "#1d4ed8", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}
+            >
+              Project
+            </button>
+          ) : null}
           <button
             onClick={() => setSurface("proof")}
+            title="deep capability over this project's proof assets"
             style={{ padding: "4px 10px", borderRadius: 8, border: "1px solid #334155", background: "#1e293b", color: "#e2e8f0", fontSize: 12, cursor: "pointer" }}
           >
             Proof Vault
