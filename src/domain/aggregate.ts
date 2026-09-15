@@ -108,7 +108,7 @@ export class AggregateValidator {
 
   /** Validate local trust required for a new Event, never for replay. */
   validateAdmission(connection: DatabaseSync, event: NewEvent): void {
-    if (event.event_type !== "TASK_CREATED") return;
+    if (event.event_type !== "TASK_CREATED" && event.event_type !== "TASK_REAUTHORIZED") return;
     const [, project] = this.#project(connection, event.project_id);
     const policyId = String(event.payload.policy_id);
     const policyDigest = String(event.payload.policy_digest);
@@ -124,6 +124,14 @@ export class AggregateValidator {
   }
 
   validate(connection: DatabaseSync, event: NewEvent | SchedulerEvent): void {
+    // TASK_REAUTHORIZED is explicitly NOT a task transition: the task's state
+    // is untouched (only its envelope is rebound), so routing it into
+    // #validateTaskTransition would be wrong. It is checked BEFORE the
+    // TASK_EVENT_TARGET dispatch for exactly that reason.
+    if (event.event_type === "TASK_REAUTHORIZED") {
+      this.#validateTaskReauthorized(connection, event);
+      return;
+    }
     if (event.event_type in TASK_EVENT_TARGET) {
       this.#validateTaskTransition(connection, event);
     } else if (event.event_type in ATTEMPT_EVENT_TARGET) {
@@ -215,6 +223,41 @@ export class AggregateValidator {
     const expectedState = ready ? "READY" : "BLOCKED";
     if (event.payload.initial_state !== expectedState) {
       throw new DomainValidationError("Task initial state does not match dependencies");
+    }
+  }
+
+  /**
+   * TASK_REAUTHORIZED (revision-safe Work evolution): rebind a RETAINED task's
+   * envelope to the current ProjectIR head without touching its state. The
+   * admission check (policy.authorize → canonical envelope equality) runs in
+   * validateAdmission; here the projection + identity facts are pinned.
+   */
+  #validateTaskReauthorized(connection: DatabaseSync, event: NewEvent): void {
+    const row = this.#taskRow(connection, event);
+    const state = rowStr(row, "state");
+    if (state !== "READY" && state !== "BLOCKED") {
+      throw new DomainValidationError("TASK_REAUTHORIZED requires a READY or BLOCKED task");
+    }
+    const [, project] = this.#project(connection, event.project_id);
+    const envelope = parseTaskEnvelope(event.payload.task_envelope);
+    const task = project.tasks.find((item) => item.task_id === event.entity_id);
+    if (task === undefined) {
+      throw new DomainValidationError("Task is not declared by the current ProjectIR");
+    }
+    const matches =
+      envelope.project_id === project.project_id &&
+      envelope.task_id === task.task_id &&
+      envelope.project_revision === project.revision &&
+      envelope.project_digest === project.digest &&
+      envelope.base_commit === project.head_commit &&
+      envelope.objective === task.objective &&
+      listsEqual(envelope.write_paths, task.write_paths) &&
+      listsEqual(envelope.required_artifacts, task.required_artifacts);
+    if (!matches) {
+      throw new DomainValidationError("TaskEnvelope does not match ProjectIR.TaskSpec");
+    }
+    if (event.idempotency_key !== envelope.idempotency_key) {
+      throw new DomainValidationError("Task reauthorization key is not deterministic");
     }
   }
 
@@ -516,11 +559,19 @@ export class AggregateValidator {
     ) {
       throw new DomainValidationError("promotion does not match candidate commits");
     }
+    // One promotion satisfies exactly one Task. The check must EXCLUDE the
+    // Event being validated: on a clean replay (`verifyFull`/
+    // `rebuildProjections`) this very TASK_SATISFIED row is already present in
+    // the log, and a self-match made every promotion-bearing project fail its
+    // own integrity check ("promotion already satisfied another Task").
+    // A live append validates BEFORE the insert, so there is no self to exclude.
+    const selfEventId = (event as { event_id?: number }).event_id;
     const used = connection
       .prepare(
-        "SELECT entity_id FROM events WHERE event_type='TASK_SATISFIED' AND causation_id=?",
+        `SELECT entity_id FROM events
+         WHERE event_type='TASK_SATISFIED' AND causation_id=? AND event_id != ?`,
       )
-      .get(event.causation_id);
+      .get(event.causation_id, selfEventId ?? -1);
     if (used !== undefined) {
       throw new DomainValidationError("promotion already satisfied another Task");
     }

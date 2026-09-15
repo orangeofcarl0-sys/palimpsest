@@ -14,6 +14,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
+import { PlanReconciliationError } from "../src/advanced.js";
 
 import { FakeClock, taskSpec, tempStatePath } from "./helpers.js";
 
@@ -145,7 +146,7 @@ describe("typed invalidation through the controller plan", () => {
     }
   });
 
-  it("a metadata_only plan leaves the dependency chain and evidence active", async () => {
+  it("a metadata_only plan settles nothing, so a live batch refuses the revision without touching the chain", async () => {
     const { controller, cleanup } = makeController();
     try {
       controller.start({
@@ -162,12 +163,27 @@ describe("typed invalidation through the controller plan", () => {
         command: ["python", "-m", "pytest"],
         exitCode: 0,
       });
-      controller.plan({
-        tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])],
-        changeClass: "metadata_only",
-        changedIds: ["task-1"],
-      });
+      // G10-W contract change: a revision now requires quiescence, and
+      // `metadata_only` is the change class that invalidates NOTHING - it stales
+      // neither the changed id nor its dependents, so it settles no in-flight
+      // work. With task-1 ACTIVE the revision is therefore refused with a typed
+      // blocker and ZERO events; the dependency chain and the evidence keep
+      // their authority exactly as before.
+      const revisionBefore = controller.status().revision;
+      let blocked: unknown;
+      try {
+        controller.plan({
+          tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])],
+          changeClass: "metadata_only",
+          changedIds: ["task-1"],
+        });
+      } catch (error) {
+        blocked = error;
+      }
+      expect(blocked).toBeInstanceOf(PlanReconciliationError);
+      expect((blocked as PlanReconciliationError).kind).toBe("quiescence_required");
       const status = controller.status();
+      expect(status.revision).toBe(revisionBefore);
       expect(status.tasks.map((t) => t.state)).toEqual(["ACTIVE", "BLOCKED"]);
       expect(status.evidence[0]?.status).toBe("active");
     } finally {
