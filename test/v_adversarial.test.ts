@@ -132,6 +132,11 @@ const ALLOWED_MODULES: readonly RegExp[] = [
   /^\.\.\/recipes\//u,
   /^\.\.\/reasoning_cell\/service\.js$/u,
   /^\.\.\/project_workspace\//u,
+  // G10-AB: the operating-posture plane. It owns NO authority: no effects, no
+  // federation, no promotion, no sibling store - only the operator's Work Mode
+  // preference and an append-only, non-authoritative activity log. The AB suite
+  // asserts that authority freedom directly.
+  /^\.\.\/project_operating\//u,
 ];
 
 /** Identifiers that would signal mutating a sibling store or taking effect authority. */
@@ -316,7 +321,23 @@ describe("G10-V management surface (V-N07…V-N10)", () => {
       });
 
       const surface = application.projectManagement!;
-      expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "reconcileProjectHead", "requestModeChange", "run", "status", "step"]);
+      // G10-AB: the operating-posture READS and the Work Mode REQUEST join the
+      // agent-facing surface. The surface still exposes NO mutation of the
+      // user-level default: `setWorkModePreference` stays operator-only, exactly
+      // like `applyOperatorModeChange`.
+      expect(Object.keys(surface).sort()).toEqual([
+        "activity",
+        "operatingHistory",
+        "posture",
+        "preview",
+        "recommend",
+        "reconcileProjectHead",
+        "requestModeChange",
+        "requestWorkModeChange",
+        "run",
+        "status",
+        "step",
+      ]);
       for (const forbidden of [
         "applyOperatorModeChange",
         "setModeUpward",
@@ -327,6 +348,10 @@ describe("G10-V management surface (V-N07…V-N10)", () => {
         "approve_disclosure",
         "forceCommitment",
         "force_commitment",
+        // G10-AB: the operator-only Work Mode mutation is NOT on the agent surface.
+        "setWorkModePreference",
+        "set_work_mode",
+        "applyWorkModeChange",
       ]) {
         expect(surface).not.toHaveProperty(forbidden);
       }
@@ -336,7 +361,18 @@ describe("G10-V management surface (V-N07…V-N10)", () => {
       const manage = tools.find((tool) => tool.name === "palimpsest_manage");
       expect(manage).toBeDefined();
       const actions = (manage as unknown as { parameters: { properties: { action: { enum: readonly string[] } } } }).parameters.properties.action.enum;
-      expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"]);
+      expect([...actions]).toEqual([
+        "status",
+        "recommend",
+        "preview",
+        "step",
+        "run",
+        "request_mode_change",
+        "reconcile_project_head",
+        "posture",
+        "activity",
+        "request_work_mode_change",
+      ]);
       expect(actions.join(",")).not.toMatch(FORBIDDEN_ESCALATION);
     } finally {
       store.close();

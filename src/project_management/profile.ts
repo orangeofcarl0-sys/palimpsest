@@ -261,6 +261,11 @@ export function parseManagementAutonomyProfile(raw: unknown, what = "ManagementA
 
 export interface UserManagementControlPort {
   get(projectId: string): Promise<ManagementAutonomyProfile>;
+  /**
+   * G10-AB (additive, optional): the existing append-only involvement history.
+   * The operating-posture view reads it; it is not duplicated anywhere.
+   */
+  history?(projectId: string): Promise<readonly ManagementPreferenceHistoryEntry[]>;
   set(input: {
     readonly projectId: string;
     readonly involvement: ManagementInvolvement;
