@@ -134,6 +134,7 @@ import { makeBoundaryHome, makeBoundaryMemoryService, makeFederatedBoundaryClien
 import type {
   DisclosureAdmissionPort,
   DisclosureService,
+  EvidenceExtractionService,
   LocalProofBlobStore,
   ProofEvidenceService,
   ProofEvidenceStore,
@@ -144,6 +145,7 @@ import {
   blobBackedSourceContentPort,
   localDisclosureExporter,
   makeDisclosureService,
+  makeEvidenceExtractionService,
   makeProofEvidenceService,
   proofCampaignEvidencePort,
 } from "./proof_asset/index.js";
@@ -408,6 +410,8 @@ export interface InstalledPalimpsest {
   readonly attentionActivation?: AttentionActivationPort | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane — present iff a proof store is supplied. */
   readonly proof?: ProofEvidenceService | undefined;
+  /** G10-T CF-T-02 (additive): evidence-grounded Explore extraction — present iff a proof store is supplied. */
+  readonly proofExtraction?: EvidenceExtractionService | undefined;
   /** G10-T (additive): local purpose-scoped disclosure — present iff a proof store is supplied. */
   readonly disclosure?: DisclosureService | undefined;
   register(context: DshPluginContext): () => void;
@@ -1136,6 +1140,24 @@ export function installPalimpsest(
     };
   }
 
+  // G10-T CF-T-02: evidence-grounded extraction exists whenever the proof plane exists. It is
+  // built even without reasoning/branch/content wiring (those are reported honestly as
+  // `capability_required` at call time) so the proof surface always answers `analyze`.
+  const proofExtraction: EvidenceExtractionService | undefined =
+    proof === undefined
+      ? undefined
+      : (() => {
+          const content =
+            options.proofContentPort ?? (options.proofBlobStore === undefined ? undefined : blobBackedSourceContentPort(options.proofBlobStore));
+          return makeEvidenceExtractionService({
+            proof,
+            ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
+            ...(options.reasoningBranchExecution === undefined ? {} : { branchExecution: options.reasoningBranchExecution }),
+            ...(content === undefined ? {} : { content }),
+            ...(options.clock === undefined ? {} : { clock: options.clock }),
+          });
+        })();
+
   // G10-R: the empirical organization-memory surface exists only when a canonical
   // store is supplied; it is a pure READ model and owns no other subsystem. Evaluation
   // ≠ governance and memory ≠ authority.
@@ -1280,6 +1302,7 @@ export function installPalimpsest(
       : { recipeExecution: { service: recipeExecution, status: recipeExecutionStatus } }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
+    ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
@@ -1348,6 +1371,7 @@ export function installPalimpsest(
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     ...(proof === undefined ? {} : { proof }),
+    ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];

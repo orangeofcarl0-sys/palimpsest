@@ -13,8 +13,11 @@
 // activation can cold-resume the SAME principal (host session ≠ PeerRef).
 //
 // `--branch <path>` runs ONE ephemeral reasoning branch: it reads the frozen
-// branch brief from the JSON file and exits. It is mutually exclusive with a
-// normal principal run (`--resume` / `--session-file`) because a branch is NOT a
+// branch brief from the JSON file and exits. The file may contain EITHER a bare
+// frozen brief OR `{ brief, evidenceContext }` — the latter is the CF-T-02
+// evidence-grounded extraction payload (selector-only materialized evidence plus
+// the allowed evidence-ref allowlist). It is mutually exclusive with a normal
+// principal run (`--resume` / `--session-file`) because a branch is NOT a
 // principal: it has no durable session, no PeerRef and no PersistentPoint.
 
 import { Command } from 'commander';
@@ -32,7 +35,7 @@ function palimpsestCommand() {
     .argument('[message...]', 'the task or attention message; multiple words are joined by spaces')
     .option('--resume <sessionId>', 'cold-resume a persisted principal session instead of creating one')
     .option('--session-file <path>', 'persist this principal session id to the given file')
-    .option('--branch <briefFile>', 'run ONE ephemeral reasoning branch from a frozen brief JSON file, then exit')
+    .option('--branch <briefFile>', 'run ONE ephemeral reasoning branch from a frozen brief (or {brief,evidenceContext}) JSON file, then exit')
     .option('--once', 'deliver the launch message, print the turn, and exit (smoke / one-shot turn)')
     .option('--idle-ms <ms>', 'attention loop poll interval in milliseconds', '1500')
     .option('--max-turns <n>', 'advisory turn budget for this activation', '6');

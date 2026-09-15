@@ -349,6 +349,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           type: { type: "object" },
           content: { type: "object" },
           dependencies: { type: "array", items: { type: "object" } },
+          externalEvidenceRefs: { type: "array", items: { type: "string" }, description: "opaque Proof-plane evidence ids this candidate actually used (selector-only)" },
           candidateDigest: { type: "string" },
           targetClaimId: { type: "string" },
           reason: { type: "string" },
@@ -360,12 +361,14 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           if (action === "brief") return reasoning.brief({ cellId: requiredString(object, "cellId"), branchId: requiredString(object, "branchId") });
           if (action === "branch") return reasoning.openBranch({ cellId: requiredString(object, "cellId"), question: requiredString(object, "question") });
           if (action === "candidate") {
+            const refs = Array.isArray(object.externalEvidenceRefs) ? stringArray(object.externalEvidenceRefs, "externalEvidenceRefs") : [];
             return reasoning.submitCandidate({
               cellId: requiredString(object, "cellId"),
               branchId: requiredString(object, "branchId"),
               type: required(object, "type") as never,
               content: required(object, "content"),
               ...(Array.isArray(object.dependencies) ? { dependencies: object.dependencies as never } : {}),
+              ...(refs.length === 0 ? {} : { externalEvidenceRefs: refs.map((evidenceId) => ({ evidenceId })) }),
             });
           }
           if (action === "evaluate") return reasoning.evaluate({ cellId: requiredString(object, "cellId"), candidateDigest: requiredString(object, "candidateDigest") });
@@ -555,14 +558,33 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         description:
           "Authoritative proof claims: list published claims, inspect derived standing/why, prepare a candidate from an ACTIVE reasoning claim, evaluate it through verification then a SEPARATE publication admission, and reassess. No caller-supplied standing or decision is ever accepted",
         mode: "mutating",
-        actions: ["list", "inspect", "why", "prepare_publication", "evaluate_publication", "reassess"],
-        extraProperties: { claimId: { type: "string" }, cellId: { type: "string" }, candidateId: { type: "string" } },
+        actions: ["list", "inspect", "why", "prepare_publication", "evaluate_publication", "reassess", "analyze"],
+        extraProperties: {
+          claimId: { type: "string" },
+          cellId: { type: "string" },
+          candidateId: { type: "string" },
+          evidenceIds: { type: "array", items: { type: "string" }, description: "Proof-plane evidence ids to analyze (allowlist)" },
+          objective: { type: "string" },
+          branchCount: { type: "number" },
+        },
         run: async (action, object) => {
           if (action === "list") return proof.claims();
           if (action === "inspect") return proof.inspectClaim(requiredString(object, "claimId"));
           if (action === "why") return proof.why(requiredString(object, "claimId"));
           if (action === "prepare_publication") return proof.preparePublication({ cellId: requiredString(object, "cellId"), claimId: requiredString(object, "claimId") });
           if (action === "evaluate_publication") return proof.evaluatePublication({ candidateId: requiredString(object, "candidateId") });
+          if (action === "analyze") {
+            const evidenceIds = stringArray(object.evidenceIds ?? [], "evidenceIds");
+            const branchCount = object.branchCount;
+            if (branchCount !== undefined && (typeof branchCount !== "number" || !Number.isSafeInteger(branchCount) || branchCount < 1)) {
+              throw new ToolArgsError('argument "branchCount" must be a positive integer');
+            }
+            return proof.analyzeEvidence({
+              evidenceIds,
+              objective: requiredString(object, "objective"),
+              ...(branchCount === undefined ? {} : { branchCount }),
+            });
+          }
           return proof.reassess({ claimId: requiredString(object, "claimId") });
         },
       }),

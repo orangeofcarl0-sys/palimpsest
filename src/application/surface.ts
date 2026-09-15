@@ -27,12 +27,14 @@ import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphVi
 import type { ReasoningClaimTypeRef, ReasoningClaimRef, ExternalEvidenceRef, EvaluationOutcome, InvalidationOutcome } from "../reasoning_cell/index.js";
 import type { CampaignClaimStatus, ClaimStandingSnapshot, EvidenceKnowledge } from "../campaign/epistemic.js";
 import type {
+  AnalyzeEvidenceOutcome,
   ClaimAssessmentRevision,
   DisclosureExportOutcome,
   DisclosureExportReceipt,
   DisclosurePreview,
   DisclosureRequest,
   DisclosureService,
+  EvidenceExtractionService,
   EvidenceItem,
   EvidenceSelector,
   ProofAssetView,
@@ -286,6 +288,13 @@ export interface ProofApplicationSurface {
   evaluatePublication(input: { readonly candidateId: string }): Promise<ProofPublicationResult>;
   reassess(input: { readonly claimId: string }): Promise<ClaimAssessmentRevision>;
   assetView(claimId: string): Promise<ProofAssetView>;
+  /**
+   * G10-T CF-T-02: evidence-grounded Explore extraction. Builds a selector-only
+   * evidence context, runs ephemeral branches and evaluates their candidates
+   * through the REAL ReasoningCell service. It NEVER verifies with the proof plane,
+   * publishes, or approves disclosure. Absent extraction wiring ⇒ `capability_required`.
+   */
+  analyzeEvidence(input: { readonly evidenceIds: readonly string[]; readonly objective: string; readonly branchCount?: number }): Promise<AnalyzeEvidenceOutcome>;
 }
 
 /** Local, purpose-scoped disclosure over published claims. Preview ≠ export ≠ recipient receipt. */
@@ -446,6 +455,8 @@ export interface ApplicationSurfaceDeps {
   readonly taskProfiler?: TaskProfilerPort | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
+  /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
+  readonly proofExtraction?: EvidenceExtractionService | undefined;
   /** G10-T (additive): the local disclosure service; absent ⇒ no disclosure surface. */
   readonly disclosure?: DisclosureService | undefined;
 }
@@ -843,6 +854,18 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
             },
             reassess: (input) => service.reassess({ claimId: input.claimId }),
             assetView: (claimId) => service.proofAssetView(claimId),
+            analyzeEvidence: (input) => {
+              const extraction = deps.proofExtraction;
+              if (extraction === undefined) {
+                return Promise.resolve(
+                  Object.freeze({
+                    status: "capability_required" as const,
+                    detail: "evidence extraction is not configured for this installation (needs a source content port and reasoning/branch execution wiring)",
+                  }),
+                );
+              }
+              return extraction.analyzeEvidence(input);
+            },
           };
         })();
 

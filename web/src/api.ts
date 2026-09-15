@@ -234,3 +234,405 @@ export function boundaryDecide(input: { readonly workspaceId: string; readonly a
 export function boundaryView(workspaceId: string): Promise<unknown> {
   return call<unknown>(`/api/boundary/workspace?workspaceId=${encodeURIComponent(workspaceId)}`);
 }
+
+/* ------------------------------------------------------------------ *
+ * G10-U Proof Vault (typed /api/proof/* and /api/proof/disclosure/* routes)
+ *
+ * Every helper here is a thin, typed wrapper over ONE strict server route.
+ * No store, blob, or raw SQLite is reachable from the browser; content is only
+ * ever read through the explicit `read_explicit` route.
+ * ------------------------------------------------------------------ */
+
+export type ProofClaimStanding =
+  | "SUPPORTED"
+  | "PARTIALLY_SUPPORTED"
+  | "CONTRADICTED"
+  | "INCONCLUSIVE"
+  | "STALE";
+
+export type ProofFreshness = "fresh" | "stale" | "unknown";
+
+export type SourceProvenance = "LOCAL_IMPORT" | "EXTERNAL_REFERENCE" | "GENERATED_ARTIFACT";
+
+export type EvidenceSelector =
+  | { readonly kind: "WHOLE_SOURCE" }
+  | { readonly kind: "TEXT_RANGE"; readonly start: number; readonly end: number }
+  | { readonly kind: "JSON_POINTER"; readonly pointer: string };
+
+export interface ProofSourceRevisionRef {
+  readonly schemaVersion: 1;
+  readonly sourceId: string;
+  readonly revision: number;
+  readonly contentDigest: string;
+}
+
+export interface ProofSourceRevision extends ProofSourceRevisionRef {
+  readonly mediaType: string;
+  readonly label: string;
+  readonly provenance: SourceProvenance;
+  readonly blobRef?: string;
+  readonly externalResolverRef?: string;
+  readonly metadata: Readonly<Record<string, string>>;
+  readonly digest: string;
+}
+
+export interface ProofSourceSummary {
+  readonly sourceId: string;
+  readonly revisionCount: number;
+  readonly latestRevision: number;
+  readonly latestContentDigest: string;
+  readonly latestMediaType: string;
+  readonly latestLabel: string;
+  readonly provenance: SourceProvenance;
+}
+
+export interface EvidenceItem {
+  readonly schemaVersion: 1;
+  readonly evidenceId: string;
+  readonly sourceRevision: ProofSourceRevisionRef;
+  readonly selector: EvidenceSelector;
+  readonly selectionDigest: string;
+  readonly provenanceDigest: string;
+  readonly digest: string;
+}
+
+export interface PublishedProofClaim {
+  readonly schemaVersion: 1;
+  readonly claimRef: { readonly claimId: string };
+  readonly claimType: { readonly typeId: string; readonly version: string };
+  readonly content: unknown;
+  readonly publicationProvenance: Readonly<Record<string, string>>;
+  readonly publishedAt: string;
+  readonly digest: string;
+}
+
+export interface ProofAssetDependency {
+  readonly claimId: string;
+  readonly effectiveStanding: ProofClaimStanding;
+}
+
+export interface ProofAssetView {
+  readonly schemaVersion: 1;
+  readonly claimRef: { readonly claimId: string };
+  readonly claimType: { readonly typeId: string; readonly version: string };
+  readonly content: unknown;
+  readonly baseStanding: ProofClaimStanding;
+  readonly effectiveStanding: ProofClaimStanding;
+  readonly freshness: ProofFreshness;
+  readonly freshnessExplanation: string;
+  readonly supportingEvidence: readonly EvidenceItem[];
+  readonly contradictingEvidence: readonly EvidenceItem[];
+  readonly sourceRevisions: readonly ProofSourceRevisionRef[];
+  readonly dependencies: readonly ProofAssetDependency[];
+  readonly publicationProvenance: Readonly<Record<string, string>>;
+  readonly digest: string;
+}
+
+export interface ProofWhyAssessment {
+  readonly assessmentId: string;
+  readonly standing: ProofClaimStanding;
+  readonly policyRef: { readonly policyId: string; readonly version: string };
+  readonly assessedAt: string;
+  readonly previousAssessmentId?: string;
+}
+
+export interface ProofWhy {
+  readonly claimRef: { readonly claimId: string };
+  readonly claimType: { readonly typeId: string; readonly version: string };
+  readonly content: unknown;
+  readonly baseStanding: ProofClaimStanding;
+  readonly effectiveStanding: ProofClaimStanding;
+  readonly freshness: ProofFreshness;
+  readonly freshnessExplanation: string;
+  readonly verification: {
+    readonly standing: ProofClaimStanding;
+    readonly supportingEvidenceIds: readonly string[];
+    readonly contradictingEvidenceIds: readonly string[];
+    readonly policyRef: { readonly policyId: string; readonly version: string };
+    readonly digest: string;
+  } | null;
+  readonly policyRef: { readonly policyId: string; readonly version: string } | null;
+  readonly evidence: readonly EvidenceItem[];
+  readonly sourceRevisions: readonly ProofSourceRevisionRef[];
+  readonly provenance: Readonly<Record<string, string>>;
+  readonly dependencies: readonly ProofAssetDependency[];
+  readonly assessments: readonly ProofWhyAssessment[];
+}
+
+export interface ClaimStandingSnapshot {
+  readonly claim: { readonly claimId: string };
+  readonly status: ProofClaimStanding;
+  readonly supportingEvidenceIds: readonly string[];
+  readonly contradictingEvidenceIds: readonly string[];
+  readonly provenanceDigest: string;
+  readonly digest: string;
+}
+
+export type EvidenceKnowledge<T> =
+  | { readonly state: "known"; readonly value: T }
+  | { readonly state: "unknown"; readonly detail: string }
+  | { readonly state: "error"; readonly detail: string };
+
+export type ProofReadExplicitResult =
+  | { readonly state: "unavailable"; readonly sourceId: string; readonly revision: number; readonly contentDigest: string }
+  | { readonly state: "available"; readonly sourceId: string; readonly revision: number; readonly contentDigest: string; readonly content: string };
+
+export interface ProofClaimCandidateSummary {
+  readonly candidateId: string;
+  readonly claimType: { readonly typeId: string; readonly version: string };
+  readonly content: unknown;
+  readonly supportingEvidence: readonly { readonly evidenceId: string }[];
+  readonly contradictingEvidence: readonly { readonly evidenceId: string }[];
+  readonly dependencies: readonly { readonly claimId: string }[];
+  readonly origin: string;
+  readonly provenance: Readonly<Record<string, string>>;
+  readonly digest: string;
+}
+
+export type ProofPreparePublicationResult =
+  | { readonly status: "prepared"; readonly candidate: ProofClaimCandidateSummary }
+  | { readonly status: "blocked"; readonly reason: string };
+
+export interface ProofPublicationResult {
+  readonly decision: "PUBLISH" | "REJECT" | "UNRESOLVED";
+  readonly verification: {
+    readonly standing: ProofClaimStanding;
+    readonly supportingEvidenceIds: readonly string[];
+    readonly contradictingEvidenceIds: readonly string[];
+    readonly policyRef: { readonly policyId: string; readonly version: string };
+    readonly digest: string;
+  };
+  readonly publication: {
+    readonly candidateId: string;
+    readonly decision: "PUBLISH" | "REJECT" | "UNRESOLVED";
+    readonly policyRef: { readonly policyId: string; readonly version: string };
+  };
+  readonly claimId?: string;
+}
+
+export interface ClaimAssessmentRevision {
+  readonly schemaVersion: 1;
+  readonly assessmentId: string;
+  readonly claimRef: { readonly claimId: string };
+  readonly verificationPolicyRef: { readonly policyId: string; readonly version: string };
+  readonly supportingEvidenceIds: readonly string[];
+  readonly contradictingEvidenceIds: readonly string[];
+  readonly standing: ProofClaimStanding;
+  readonly provenanceDigest: string;
+  readonly previousAssessmentId?: string;
+  readonly assessedAt: string;
+  readonly digest: string;
+}
+
+export interface AnalyzeEvidenceOutcome {
+  readonly status: "analyzed" | "capability_required" | "blocked";
+  readonly cellId?: string;
+  readonly branchCount?: number;
+  readonly admittedClaimIds?: readonly string[];
+  readonly candidateDigests?: readonly string[];
+  readonly detail?: string;
+}
+
+export interface DisclosureMaterial {
+  readonly evidenceId: string;
+  readonly sourceRevision: ProofSourceRevisionRef;
+  readonly selector: EvidenceSelector;
+  readonly materializationKind: "ORIGINAL_SOURCE" | "TEXT_EXCERPT" | "JSON_VALUE";
+  readonly mediaType: string;
+  readonly contentDigest: string;
+  readonly fileName: string;
+}
+
+export interface DisclosurePreview {
+  readonly schemaVersion: 1;
+  readonly previewId: string;
+  readonly purpose: string;
+  readonly audienceLabel: string;
+  readonly claimIds: readonly string[];
+  readonly claims: readonly ProofAssetView[];
+  readonly requiredDependencyIds: readonly string[];
+  readonly evidenceRefs: readonly { readonly evidenceId: string }[];
+  readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
+  readonly wholeSourceWarnings: readonly string[];
+  readonly warnings: readonly string[];
+  readonly excludedBySelection: readonly string[];
+  readonly digest: string;
+}
+
+export interface DisclosureExportReceipt {
+  readonly schemaVersion: 1;
+  readonly bundleDigest: string;
+  readonly purpose: string;
+  readonly audienceLabel: string;
+  readonly exportedAt: string;
+  readonly exporterId: string;
+  readonly digest: string;
+}
+
+export type DisclosureExportOutcome =
+  | { readonly status: "exported"; readonly receipt: DisclosureExportReceipt }
+  | { readonly status: "blocked"; readonly reason: string }
+  | { readonly status: "capability_required"; readonly capability: string };
+
+export interface ProofSurfaceAvailability {
+  readonly proof: boolean;
+  readonly disclosure: boolean;
+}
+
+/** GET /api/application/surfaces — narrowed to the two proof-plane booleans. */
+export async function proofSurfaces(): Promise<ProofSurfaceAvailability> {
+  const surfaces = await call<{ readonly proof?: boolean; readonly disclosure?: boolean }>("/api/application/surfaces");
+  return { proof: surfaces.proof === true, disclosure: surfaces.disclosure === true };
+}
+
+/** GET /api/proof/sources */
+export function proofSources(): Promise<readonly ProofSourceSummary[]> {
+  return call<readonly ProofSourceSummary[]>("/api/proof/sources");
+}
+
+/** GET /api/proof/sources/revisions?sourceId= */
+export function proofSourceRevisions(sourceId: string): Promise<readonly ProofSourceRevision[]> {
+  return call<readonly ProofSourceRevision[]>(`/api/proof/sources/revisions?sourceId=${encodeURIComponent(sourceId)}`);
+}
+
+/** GET /api/proof/sources/inspect?sourceId=&revision= */
+export function proofSourceInspect(input: { readonly sourceId: string; readonly revision: number }): Promise<ProofSourceRevision | null> {
+  return call<ProofSourceRevision | null>(
+    `/api/proof/sources/inspect?sourceId=${encodeURIComponent(input.sourceId)}&revision=${encodeURIComponent(String(input.revision))}`,
+  );
+}
+
+/** POST /api/proof/sources/import — the body field the server reads is `content` (base64). */
+export function proofImportSource(input: {
+  readonly sourceId: string;
+  readonly label: string;
+  readonly mediaType: string;
+  readonly provenance: SourceProvenance;
+  readonly contentBase64: string;
+}): Promise<{ readonly revision: ProofSourceRevision }> {
+  return call<{ readonly revision: ProofSourceRevision }>("/api/proof/sources/import", {
+    method: "POST",
+    body: JSON.stringify({
+      sourceId: input.sourceId,
+      label: input.label,
+      mediaType: input.mediaType,
+      provenance: input.provenance,
+      content: input.contentBase64,
+    }),
+  });
+}
+
+/** POST /api/proof/sources/read_explicit — the ONLY explicit content read path. */
+export function proofReadExplicit(input: {
+  readonly sourceId: string;
+  readonly revision: number;
+  readonly contentDigest: string;
+}): Promise<ProofReadExplicitResult> {
+  return call<ProofReadExplicitResult>("/api/proof/sources/read_explicit", {
+    method: "POST",
+    body: JSON.stringify({ sourceId: input.sourceId, revision: input.revision, contentDigest: input.contentDigest }),
+  });
+}
+
+/** POST /api/proof/evidence */
+export function proofEvidenceCreate(input: {
+  readonly sourceId: string;
+  readonly revision: number;
+  readonly contentDigest: string;
+  readonly selector: EvidenceSelector;
+}): Promise<EvidenceItem> {
+  return call<EvidenceItem>("/api/proof/evidence", {
+    method: "POST",
+    body: JSON.stringify({
+      sourceId: input.sourceId,
+      revision: input.revision,
+      contentDigest: input.contentDigest,
+      selector: input.selector,
+    }),
+  });
+}
+
+/** GET /api/proof/claims */
+export function proofClaims(): Promise<readonly PublishedProofClaim[]> {
+  return call<readonly PublishedProofClaim[]>("/api/proof/claims");
+}
+
+/** GET /api/proof/claims/inspect?claimId= */
+export function proofClaimInspect(claimId: string): Promise<EvidenceKnowledge<ClaimStandingSnapshot>> {
+  return call<EvidenceKnowledge<ClaimStandingSnapshot>>(`/api/proof/claims/inspect?claimId=${encodeURIComponent(claimId)}`);
+}
+
+/** GET /api/proof/claims/why?claimId= */
+export function proofClaimWhy(claimId: string): Promise<ProofWhy> {
+  return call<ProofWhy>(`/api/proof/claims/why?claimId=${encodeURIComponent(claimId)}`);
+}
+
+/** POST /api/proof/publication/prepare (read-only materialization; never verifies/publishes) */
+export function proofPreparePublication(input: { readonly cellId: string; readonly claimId: string }): Promise<ProofPreparePublicationResult> {
+  return call<ProofPreparePublicationResult>("/api/proof/publication/prepare", {
+    method: "POST",
+    body: JSON.stringify({ cellId: input.cellId, claimId: input.claimId }),
+  });
+}
+
+/** POST /api/proof/publication/evaluate (verify then the SEPARATE publication admission) */
+export function proofEvaluatePublication(input: { readonly candidateId: string }): Promise<ProofPublicationResult> {
+  return call<ProofPublicationResult>("/api/proof/publication/evaluate", {
+    method: "POST",
+    body: JSON.stringify({ candidateId: input.candidateId }),
+  });
+}
+
+/** POST /api/proof/claims/reassess */
+export function proofReassess(input: { readonly claimId: string }): Promise<ClaimAssessmentRevision> {
+  return call<ClaimAssessmentRevision>("/api/proof/claims/reassess", {
+    method: "POST",
+    body: JSON.stringify({ claimId: input.claimId }),
+  });
+}
+
+/** POST /api/proof/analyze — evidence-grounded explore; never publishes or approves. */
+export function proofAnalyze(input: {
+  readonly evidenceIds: readonly string[];
+  readonly objective: string;
+  readonly branchCount?: number;
+}): Promise<AnalyzeEvidenceOutcome> {
+  return call<AnalyzeEvidenceOutcome>("/api/proof/analyze", {
+    method: "POST",
+    body: JSON.stringify({
+      evidenceIds: [...input.evidenceIds],
+      objective: input.objective,
+      ...(input.branchCount === undefined ? {} : { branchCount: input.branchCount }),
+    }),
+  });
+}
+
+/** POST /api/proof/disclosure/preview — a description of what WOULD be disclosed. */
+export function disclosurePreview(input: {
+  readonly purpose: string;
+  readonly audienceLabel: string;
+  readonly requestedClaimIds: readonly string[];
+}): Promise<DisclosurePreview> {
+  return call<DisclosurePreview>("/api/proof/disclosure/preview", {
+    method: "POST",
+    body: JSON.stringify({
+      purpose: input.purpose,
+      audienceLabel: input.audienceLabel,
+      requestedClaimIds: [...input.requestedClaimIds],
+    }),
+  });
+}
+
+/** POST /api/proof/disclosure/approve_export — the SEPARATE explicit export action. */
+export function disclosureApproveExport(input: { readonly previewId: string }): Promise<DisclosureExportOutcome> {
+  return call<DisclosureExportOutcome>("/api/proof/disclosure/approve_export", {
+    method: "POST",
+    body: JSON.stringify({ previewId: input.previewId }),
+  });
+}
+
+/** GET /api/proof/disclosure/history */
+export function disclosureHistory(): Promise<readonly DisclosureExportReceipt[]> {
+  return call<readonly DisclosureExportReceipt[]>("/api/proof/disclosure/history");
+}
