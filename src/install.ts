@@ -131,6 +131,23 @@ import type {
   FederatedBoundaryClient,
 } from "./boundary_memory/index.js";
 import { makeBoundaryHome, makeBoundaryMemoryService, makeFederatedBoundaryClient } from "./boundary_memory/index.js";
+import type {
+  DisclosureAdmissionPort,
+  DisclosureService,
+  LocalProofBlobStore,
+  ProofEvidenceService,
+  ProofEvidenceStore,
+  ProofPublicationAdmissionPort,
+  ProofVerificationPolicyPort,
+} from "./proof_asset/index.js";
+import {
+  blobBackedSourceContentPort,
+  localDisclosureExporter,
+  makeDisclosureService,
+  makeProofEvidenceService,
+  proofCampaignEvidencePort,
+} from "./proof_asset/index.js";
+import type { ProofSourceContentPort } from "./proof_asset/source_content_port.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -300,6 +317,27 @@ export interface InstallPalimpsestOptions {
    * advisor reports reasoning branches unavailable and EXPLORE execution fails closed.
    */
   reasoningBranchExecution?: ReasoningBranchExecutionPort | undefined;
+  /**
+   * G10-T (additive): the canonical append-only Proof/Evidence plane store. Supplying it enables the
+   * authoritative source-revision / evidence / candidate-claim / verification / publication /
+   * assessment plane plus local, purpose-scoped disclosure. Absent ⇒ no proof surface (never a stub).
+   */
+  proofEvidenceStore?: ProofEvidenceStore | undefined;
+  /** G10-T (additive): the local content-addressed blob vault for opaque source bytes. */
+  proofBlobStore?: LocalProofBlobStore | undefined;
+  /**
+   * G10-T (additive): the explicit source-content resolver used for extract/read/verify/disclosure.
+   * Content is reached ONLY through this port — never embedded in the semantic SQLite rows.
+   */
+  proofContentPort?: ProofSourceContentPort | undefined;
+  /** G10-T (additive): the verification policy seam (separate from publication admission). */
+  proofVerificationPolicy?: ProofVerificationPolicyPort | undefined;
+  /** G10-T (additive): the publication-admission policy seam (separate from verification). */
+  proofPublicationAdmission?: ProofPublicationAdmissionPort | undefined;
+  /** G10-T (additive): the disclosure admission seam; absent ⇒ export fails closed unless supplied. */
+  disclosureAdmission?: DisclosureAdmissionPort | undefined;
+  /** G10-T (additive): the LOCAL disclosure export root. Absent ⇒ no exporter is wired. */
+  disclosureExporterRoot?: string | undefined;
 }
 
 /**
@@ -368,6 +406,10 @@ export interface InstalledPalimpsest {
   readonly recipeExecution?: RecipeExecutionService | undefined;
   /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
   readonly attentionActivation?: AttentionActivationPort | undefined;
+  /** G10-T (additive): the authoritative Proof/Evidence plane — present iff a proof store is supplied. */
+  readonly proof?: ProofEvidenceService | undefined;
+  /** G10-T (additive): local purpose-scoped disclosure — present iff a proof store is supplied. */
+  readonly disclosure?: DisclosureService | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -607,6 +649,45 @@ export function installPalimpsest(
   });
   const baseTools = definePalimpsestTools(controller);
 
+  // G10-T: the authoritative Proof/Evidence plane exists only when a canonical proof store is
+  // supplied. Source bytes never enter the semantic rows; they are reachable only through the
+  // explicit content port (or the content-addressed blob vault). Disclosure is a LOCAL,
+  // purpose-scoped projection over published claims — never a federation send.
+  let proof: ProofEvidenceService | undefined;
+  let disclosure: DisclosureService | undefined;
+  if (options.proofEvidenceStore !== undefined) {
+    const sourceContentPort = options.proofContentPort;
+    proof = makeProofEvidenceService({
+      store: options.proofEvidenceStore,
+      ...(options.proofBlobStore === undefined ? {} : { blob: options.proofBlobStore }),
+      ...(sourceContentPort === undefined
+        ? {}
+        : {
+            contentPort: {
+              resolve: (input: { readonly revision: { readonly sourceId: string; readonly revision: number; readonly contentDigest: string } }) =>
+                sourceContentPort.readContent({ sourceId: input.revision.sourceId, revision: input.revision.revision, contentDigest: input.revision.contentDigest }),
+            },
+          }),
+      ...(options.proofVerificationPolicy === undefined ? {} : { verificationPolicy: options.proofVerificationPolicy }),
+      ...(options.proofPublicationAdmission === undefined ? {} : { publicationAdmission: options.proofPublicationAdmission }),
+    });
+    const exporter = options.disclosureExporterRoot === undefined ? undefined : localDisclosureExporter(options.disclosureExporterRoot);
+    // Blob-backed source bytes are exposed to disclosure through the SAME explicit read port idiom.
+    const disclosureContent: ProofSourceContentPort | undefined =
+      sourceContentPort ?? (options.proofBlobStore === undefined ? undefined : blobBackedSourceContentPort(options.proofBlobStore));
+    disclosure = makeDisclosureService({
+      proof,
+      ...(exporter === undefined ? {} : { exporter }),
+      ...(options.disclosureAdmission === undefined ? {} : { admission: options.disclosureAdmission }),
+      ...(disclosureContent === undefined ? {} : { content: disclosureContent }),
+    });
+  }
+  // G10-T: Campaign gains a real authoritative Evidence plane when no explicit port was given,
+  // so a hypothesis can reference a published proof claim's standing snapshot read-only. An
+  // explicitly supplied port always wins (the Campaign never fabricates a second Evidence plane).
+  const campaignEvidence: CampaignEvidencePort | undefined =
+    options.campaignEvidencePort ?? (proof === undefined ? undefined : proofCampaignEvidencePort(proof));
+
   // G10-D5: the runtime service exists only when runtime wiring is supplied
   // (§92/§93). No hidden default host behavior; the seven-tool orchestration
   // surface is unchanged when the options are absent.
@@ -766,14 +847,14 @@ export function installPalimpsest(
     const campaignService = makeCampaignService({
       store: campaignStore,
       allocateCommitmentId: () => `cc-${randomUUID()}`,
-      evidence: options.campaignEvidencePort,
+      evidence: campaignEvidence,
       institutions: campaignInstitutionSource,
     });
     const prospective = makeProspectiveService({
       store: campaignStore,
       allocateWatchId: () => `cw-${randomUUID()}`,
       clock: options.campaignClock ?? (() => new Date().toISOString()),
-      evidence: options.campaignEvidencePort,
+      evidence: campaignEvidence,
       signals: options.campaignSignalPort,
       // Adapt the full-epoch source to the watch port's epoch-number view.
       institutions: {
@@ -788,7 +869,7 @@ export function installPalimpsest(
       store: campaignStore,
       allocateWakeCycleId: () => `wc-${randomUUID()}`,
       institutions: campaignInstitutionSource,
-      evidence: options.campaignEvidencePort,
+      evidence: campaignEvidence,
       work: options.campaignWorkPort,
     });
     const interventions =
@@ -798,12 +879,12 @@ export function installPalimpsest(
             store: campaignStore,
             allocateInterventionId: () => `iv-${randomUUID()}`,
             work: options.campaignWorkPort,
-            evidence: options.campaignEvidencePort,
+            evidence: campaignEvidence,
           });
     const production = makeCampaignProductionService({
       store: campaignStore,
       institutions: campaignInstitutionSource,
-      evidence: options.campaignEvidencePort,
+      evidence: campaignEvidence,
       work: options.campaignWorkPort,
       allocateWakeCycleId: () => `wc-${randomUUID()}`,
       allocateWatchId: () => `cw-${randomUUID()}`,
@@ -1198,6 +1279,8 @@ export function installPalimpsest(
       ? {}
       : { recipeExecution: { service: recipeExecution, status: recipeExecutionStatus } }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
+    ...(proof === undefined ? {} : { proof }),
+    ...(disclosure === undefined ? {} : { disclosure }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1228,6 +1311,8 @@ export function installPalimpsest(
     application.recipes !== undefined ||
     application.advisor !== undefined ||
     application.recipeExecution !== undefined ||
+    application.proof !== undefined ||
+    application.disclosure !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -1262,6 +1347,8 @@ export function installPalimpsest(
     ...(advisor === undefined ? {} : { advisor }),
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
+    ...(proof === undefined ? {} : { proof }),
+    ...(disclosure === undefined ? {} : { disclosure }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
@@ -1280,6 +1367,8 @@ export function installPalimpsest(
       // G10-R: close the empirical organization-memory store only when this install was
       // given one (it is the store it wired into the application surface).
       options.organizationMemoryStore?.close();
+      // G10-T: close the authoritative proof store only when this install was given one.
+      options.proofEvidenceStore?.close();
       // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
       // deployment launcher, a host) leaks the shared operations file handle.
       await effects.close();
