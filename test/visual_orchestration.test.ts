@@ -221,6 +221,10 @@ describe("orchestration graph projection (PLMP-VIS-1)", () => {
         command: ["python", "-m", "pytest"],
         exitCode: 0,
       });
+      // G10-Z §10: the canonical flow settles the candidate batch BEFORE the
+      // promotion, so a new promotion is admitted from current VERIFYING Work
+      // rather than straight out of ACTIVE.
+      expect(controller.step()!.event_type).toBe("TASK_VERIFYING");
       await controller.promoteWhenGatePasses(first.entity_id, "d".repeat(40), HEAD, "gate-release");
       expect("attribution" in attemptsOf()).toBe(false);
       expect(controller.telemetry.stat("implementer", "demo-a")).toMatchObject({
@@ -336,6 +340,9 @@ describe("control mapping face (PLMP-VIS-2)", () => {
         summary: "ok",
         resultCommit: "b".repeat(40),
       });
+      // G10-Z §10: settle the batch into VERIFYING before the promotion - the
+      // canonical product order (dispatch → evidence → report → settle → promote).
+      expect(surface.next()!.event_type).toBe("TASK_VERIFYING");
       const outcome = await surface.promote("gate-release");
       expect(outcome.promoted).toBe(true);
       const graph = surface.graph();

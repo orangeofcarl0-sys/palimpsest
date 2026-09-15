@@ -36,6 +36,7 @@ import {
   type StageGraphDefinition,
 } from "../src/domain/index.js";
 import { ProjectHeadError } from "../src/domain/project_head.js";
+import { PromotionEligibilityError } from "../src/domain/promotion_eligibility.js";
 import {
   createPalimpsestEffects,
   FakeGitPort,
@@ -315,10 +316,10 @@ describe("G10-X X-M2: a plan revision after the sync anchors on the proven head"
 });
 
 describe("G10-X X-M3: parallel old-base promotion", () => {
-  it("A and B both start at H0; A promotes H0→H1 and B promotes with expected H1 on base H0", async () => {
+  it("A and B both start at H0; A promotes H0→H1 and B's old-base promotion is refused before Git", async () => {
     const r = await rig();
     try {
-      const { controller, store } = r;
+      const { controller, store, git } = r;
       controller.start({
         projectId: PROJECT,
         goal: "parallel old-base",
@@ -366,28 +367,38 @@ describe("G10-X X-M3: parallel old-base promotion", () => {
       const sourceB = await workAndReport(controller, attemptB);
       expect(sourceB).not.toBe(sourceA);
       expect(controller.step()?.event_type).toBe("TASK_VERIFYING");
-      const promoB = await controller.promoteAttempt({ attemptId: attemptB });
-      expect(promoB.committed.payload.expected_head_commit).toBe(h1);
-      expect(promoB.resultingHeadCommit).not.toBe(h1);
-      expect(envelopeOf(store, "task-b").base_commit).toBe(H0); // base never changed
 
-      // NOT_APPLICABLE_CURRENT_TOPOLOGY. The promotion itself is canonical
-      // (expected = H1 while B's own base is H0), but the aggregate refuses to
-      // SATISFY B: `#validateTaskSatisfied` requires
-      // `promotion.expected_head_commit === envelope.base_commit`. A task
-      // authorized at an older base therefore cannot be satisfied by a promotion
-      // whose expected head has since advanced - the two-task parallel path must
-      // be settled through the head sync (settle the batch, reconcile, re-READY),
-      // never by weakening the invariant. Asserted explicitly, not faked.
+      // G10-Z §13: the unsafe EFFECT-FIRST path is CLOSED. B was authorized at
+      // H0 while the canonical expected head is now H1, and this topology has no
+      // cross-revision compatibility protocol - so the promotion is refused
+      // BEFORE the external effect, instead of moving Git first and failing Work
+      // admission afterwards. CF-X-01 (real cross-revision compatibility) stays
+      // feature-deferred; only its unsafe path is closed.
+      const promotionsBefore = store
+        .listEvents(PROJECT)
+        .filter((event) => event.event_type.startsWith("PROMOTION_")).length;
       let refusal: unknown;
       try {
-        controller.step();
+        await controller.promoteAttempt({ attemptId: attemptB });
       } catch (error) {
         refusal = error;
       }
-      expect(refusal).toBeInstanceOf(DomainValidationError);
-      expect((refusal as Error).message).toMatch(/promotion does not match candidate commits/);
+      expect(refusal).toBeInstanceOf(PromotionEligibilityError);
+      expect((refusal as PromotionEligibilityError).kind).toBe(
+        "cross_revision_promotion_not_supported",
+      );
+      // Zero new PREPARED, zero external effect, zero PROMOTION_COMMITTED, and
+      // the task is untouched: the refusal wrote nothing and moved no branch.
+      expect(
+        store.listEvents(PROJECT).filter((event) => event.event_type.startsWith("PROMOTION_")).length,
+      ).toBe(promotionsBefore);
+      expect(await git.head()).toBe(h1);
       expect(taskState(store, "task-b")).toBe("VERIFYING");
+      expect(envelopeOf(store, "task-b").base_commit).toBe(H0); // base never changed
+
+      // The supported resolution is unchanged: the parallel old-base path must
+      // settle through the head sync (settle the batch, reconcile, re-authorize).
+      // Asserted explicitly, not faked.
       expect("NOT_APPLICABLE_CURRENT_TOPOLOGY").toBe("NOT_APPLICABLE_CURRENT_TOPOLOGY");
     } finally {
       await r.cleanup();
