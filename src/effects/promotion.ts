@@ -27,7 +27,12 @@ import {
 } from "@ordarium/core";
 
 import { actionKey, stableEntityId } from "../domain/index.js";
-import { parseNewEvent, parseAttemptReport, type SchedulerEvent } from "../schema/index.js";
+import {
+  parseNewEvent,
+  parseAttemptReport,
+  parseTaskEnvelope,
+  type SchedulerEvent,
+} from "../schema/index.js";
 import type { EventStore } from "../state/index.js";
 import { DomainValidationError } from "../domain/errors.js";
 import {
@@ -37,6 +42,17 @@ import {
   type PromotionFact,
 } from "../domain/project_head.js";
 import { GateEngine, type GateResult } from "../evidence/gate_dsl.js";
+import {
+  readPromotionEligibilityInput,
+  readPromotionFenceRows,
+} from "../domain/promotion_eligibility_read.js";
+import {
+  assessPromotionEligibility,
+  PromotionEligibilityError,
+  type PromotionBlocker,
+  type PromotionEligibilityAssessment,
+  type PromotionFenceRow,
+} from "../domain/promotion_eligibility.js";
 import { isTransientOperationError } from "./errors.js";
 import { orchestrationAuthorization, type PalimpsestEffectsRuntime } from "./runtime.js";
 import type { PromotionRecoveryOutcome, RecoveryReport } from "../recovery/recovery.js";
@@ -200,41 +216,144 @@ export class PromotionManager {
   }
 
   /**
+   * §32 idempotent terminal replay: an attempt whose promotion already reached a
+   * terminal fact is answered from HISTORY, before any question of current
+   * authority is asked. A replay is not fresh authority, it never re-executes the
+   * external effect, and it is deliberately not refused for a Work state that
+   * the promotion itself produced (the task is SATISFIED afterwards).
+   */
+  #terminalReplay(attemptId: string): PromoteResult | undefined {
+    const promotionId = promotionIdFor(this.projectId, attemptId);
+    const existing = this.#terminal(promotionId);
+    if (existing === undefined) return undefined;
+    if (existing.event_type !== "PROMOTION_COMMITTED") {
+      throw new DomainValidationError(`promotion ${promotionId} already failed`);
+    }
+    return {
+      promotionId,
+      committed: existing,
+      resultingHeadCommit: String(existing.payload.resulting_head_commit),
+    };
+  }
+
+  /**
    * High-level promotion: the caller names the attempt (and optionally a gate),
    * never the commits. The source is the attempt's canonical result commit and
    * the expected head is the canonical proven effect head.
+   *
+   * G10-Z: the canonical derivations alone are NOT authority. The attempt must
+   * additionally pass the shared eligibility assessment, which proves that the
+   * Work authorizing the result is still current - completed candidate of the
+   * task's CURRENT batch, a current VERIFYING task, an input world matching the
+   * current ProjectIR, and a head compatible with the supported protocol.
    */
   async promoteAttempt(input: {
     attemptId: string;
     gateId?: string | undefined;
     reason?: string | undefined;
   }): Promise<PromoteResult> {
-    const sourceCommit = this.canonicalAttemptResultCommit(input.attemptId);
-    const expectedHeadCommit = await this.canonicalExpectedHead();
-    if (input.gateId !== undefined) {
-      const verdict: GateResult = new GateEngine().evaluate(
-        this.#store,
-        this.projectId,
-        "attempt",
-        input.attemptId,
-        input.gateId,
-      );
-      if (verdict.verdict !== "PASS") {
-        throw new DomainValidationError(
-          `gate ${input.gateId} verdict ${verdict.verdict} does not authorize promotion of ${input.attemptId}`,
-        );
-      }
+    const replay = this.#terminalReplay(input.attemptId);
+    if (replay !== undefined) return replay;
+    const assessment = this.assessEligibility(input.attemptId, {
+      ...(input.gateId === undefined ? {} : { gateId: input.gateId }),
+    });
+    if (!assessment.eligible) {
+      throw new PromotionEligibilityError(input.attemptId, assessment.blockers);
     }
+    if (assessment.sourceCommit === null) {
+      throw new PromotionEligibilityError(input.attemptId, [
+        Object.freeze({
+          kind: "result_commit_missing" as const,
+          detail: `attempt ${input.attemptId} has no result_commit`,
+          refs: [input.attemptId],
+        }),
+      ]);
+    }
+    const expectedHeadCommit = await this.canonicalExpectedHead();
     return this.promote({
       attemptId: input.attemptId,
-      sourceCommit,
+      sourceCommit: assessment.sourceCommit,
       expectedHeadCommit,
       ...(input.reason === undefined ? {} : { reason: input.reason }),
     });
   }
 
-  #projectHeadRow(): { revision: number; digest: string; headCommit: string } {
-    const row = this.#store.connection
+  // -------------------------------------------------------------------------
+  // G10-Z: promotion eligibility (current effect authority)
+  // -------------------------------------------------------------------------
+
+  /**
+   * The pending promotion intents, derived from canonical events only.
+   *
+   *   PREPARED            - an external-effect intent with no terminal fact
+   *   COMMITTED_UNSETTLED - the effect is recorded but the owning Work was never
+   *                         admitted (no TASK_SATISFIED caused by it)
+   *
+   * No separate store and no lock table: this is a read over the promotion
+   * events and the attempts projection.
+   */
+  promotionFenceRows(): readonly PromotionFenceRow[] {
+    return readPromotionFenceRows(this.#store.connection, this.projectId);
+  }
+
+  /**
+   * The current promotion-eligibility assessment for one attempt. READ-ONLY: it
+   * performs no write and starts no effect, so it is safe to expose for
+   * preview/explanation (§41).
+   *
+   * The read model comes from the ONE shared reader, and the current-batch fact
+   * from the aggregate validator's OWN derivation - never a second
+   * interpretation of the batch anchor.
+   */
+  assessEligibility(
+    attemptId: string,
+    options: { gateId?: string | undefined } = {},
+  ): PromotionEligibilityAssessment {
+    return assessPromotionEligibility(this.#eligibilityInput(attemptId, options.gateId));
+  }
+
+  #eligibilityInput(
+    attemptId: string,
+    gateId?: string | undefined,
+  ): Parameters<typeof assessPromotionEligibility>[0] {
+    let gate: { gateId: string; verdict: string } | null = null;
+    if (gateId !== undefined) {
+      // Y semantics carry into promotion admission unchanged: Evidence that lost
+      // its authority cannot keep a gate PASS, so it cannot authorize an effect.
+      const verdict: GateResult = new GateEngine().evaluate(
+        this.#store,
+        this.projectId,
+        "attempt",
+        attemptId,
+        gateId,
+      );
+      gate = { gateId, verdict: verdict.verdict };
+    }
+    const promotionId = promotionIdFor(this.projectId, attemptId);
+    return readPromotionEligibilityInput({
+      connection: this.#store.connection,
+      projectId: this.projectId,
+      attemptId,
+      currentBatch: (taskRow) => {
+        const [activationEventId, , attempts] = this.#store.aggregateValidator.currentBatch(
+          this.#store.connection,
+          taskRow,
+        );
+        return {
+          activationEventId,
+          attemptIds: attempts.map((row) => String(row.attempt_id)),
+        };
+      },
+      gate,
+      considerPendingPromotion: true,
+      // An outstanding intent for THIS attempt is the promotion this call would
+      // retry, not a new one: a retry re-enters the same Ordarium operation
+      // identity and must not be refused as fresh authority.
+      retryOfPromotionId: promotionId,
+    });
+  }
+
+  #projectHeadRow(): { revision: number; digest: string; headCommit: string } {    const row = this.#store.connection
       .prepare("SELECT revision, digest, head_commit FROM projects WHERE project_id=?")
       .get(this.projectId) as
       | { revision: number; digest: string; head_commit: string }
@@ -250,18 +369,18 @@ export class PromotionManager {
   }
 
   async promote(options: PromoteOptions): Promise<PromoteResult> {
+    // §32 first: a terminal promotion is answered from history before any
+    // question of current authority is asked.
+    const replay = this.#terminalReplay(options.attemptId);
+    if (replay !== undefined) return replay;
     const promotionId = promotionIdFor(this.projectId, options.attemptId);
-    const existing = this.#terminal(promotionId);
-    if (existing !== undefined) {
-      if (existing.event_type !== "PROMOTION_COMMITTED") {
-        throw new DomainValidationError(`promotion ${promotionId} already failed`);
-      }
-      const payload = existing.payload;
-      return {
-        promotionId,
-        committed: existing,
-        resultingHeadCommit: String(payload.resulting_head_commit),
-      };
+
+    // G10-Z: CURRENT effect authority, checked before anything is written and
+    // before any external effect can start. The expert path is not an authority
+    // bypass: it must pass the SAME assessment as the product path.
+    const assessment = this.assessEligibility(options.attemptId);
+    if (!assessment.eligible) {
+      throw new PromotionEligibilityError(options.attemptId, assessment.blockers);
     }
 
     // G10-X: the caller-supplied source and expected head are STRICTLY
@@ -439,6 +558,45 @@ export class PromotionManager {
     ).operationId;
     const record = await this.#effects.runtime.ledger.get(operationId);
 
+    // G10-Z §27: recovery must RE-CHECK current promotion authority before it
+    // dispatches or redispatches anything. An intent prepared while the Work was
+    // current does not license an effect after that Work was retired - the
+    // authority follows the Work, never the stored intent.
+    //
+    // §28 exception: when Ordarium PROVES the effect already occurred, reality is
+    // recorded rather than hidden. Effect truth is not Work admission, and a
+    // retired task is never auto-satisfied by it.
+    const effectProven =
+      record !== undefined && (record.state === "succeeded" || record.state === "reconciled");
+    if (!effectProven) {
+      const authority = this.assessEligibility(entry.attempt_id).blockers;
+      if (authority.length > 0) {
+        const summary = authority.map((item) => item.kind).join(", ");
+        if (record === undefined) {
+          // The invocation provably never started AND the authorizing Work is
+          // gone: FAILED is the materially honest terminal fact (the promotion
+          // did not and cannot happen). Never dispatch under revoked authority.
+          const reason = `promotion authority was revoked before the effect started (${summary})`;
+          this.#appendFailed({
+            promotionId,
+            attemptId: entry.attempt_id,
+            sourceCommit: entry.source_commit,
+            expectedHeadCommit: entry.expected_head_commit,
+            reason,
+          });
+          return { promotionId, outcome: "failed", reason };
+        }
+        // The effect may or may not have begun. Palimpsest does not reimplement
+        // Ordarium's recovery evaluator, and it will not fabricate success or
+        // failure: the intent stays unresolved and surfaces for the engine.
+        return {
+          promotionId,
+          outcome: "blocked",
+          reason: `promotion_effect_resolution_required: ${summary}`,
+        };
+      }
+    }
+
     if (record === undefined) {
       // PREPARED was written but the invocation never started: run it now.
       return this.#redispatch(entry, input, intent);
@@ -558,6 +716,23 @@ export class PromotionManager {
     input: { promotionId: string; sourceCommit: string; expectedHeadCommit: string },
     intent: { scope: string; callId: string; revision: number },
   ): Promise<PromotionRecoveryOutcome> {
+    // §27: the last gate before a NEW external dispatch. `#reconcileOne` already
+    // refuses when authority is gone, so this is defence in depth for the case
+    // where the record was absent and the world moved underneath the call.
+    const authority = this.assessEligibility(entry.attempt_id).blockers;
+    if (authority.length > 0) {
+      const reason = `promotion authority was revoked before redispatch (${authority
+        .map((item) => item.kind)
+        .join(", ")})`;
+      this.#appendFailed({
+        promotionId: entry.promotion_id,
+        attemptId: entry.attempt_id,
+        sourceCommit: entry.source_commit,
+        expectedHeadCommit: entry.expected_head_commit,
+        reason,
+      });
+      return { promotionId: entry.promotion_id, outcome: "failed", reason };
+    }
     try {
       const outcome = await this.#effects.invoke(this.#effects.actions.gitPromote, input, intent);
       this.#appendCommitted({

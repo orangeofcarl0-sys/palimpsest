@@ -439,10 +439,12 @@ describe("G10-W source firewall", () => {
     }
     expect(envelopeWriters).toHaveLength(1);
     expect(envelopeWriters[0]!.endsWith("src/state/projector.ts")).toBe(true);
-    // Only the projector (write), the schema/migrations (shape) and the
-    // controller (read) may name the column - no third, shadow envelope cache.
+    // Only the projector (write), the schema/migrations (shape), the controller
+    // (read) and the G10-Z promotion-eligibility reader (read) may name the
+    // column - no third, shadow envelope cache. The firewall is about WRITERS,
+    // and `envelopeWriters` above already pins that set to exactly one file.
     for (const owner of envelopeOwners) {
-      expect(owner).toMatch(/(state\/projector|state\/migrations|state\/migration_files|schema\/|tools\/controller|domain\/aggregate|scheduler\/scheduler|cli\.ts)/);
+      expect(owner).toMatch(/(state\/projector|state\/migrations|state\/migration_files|schema\/|tools\/controller|domain\/aggregate|domain\/promotion_eligibility_read|scheduler\/scheduler|cli\.ts)/);
     }
   });
 
