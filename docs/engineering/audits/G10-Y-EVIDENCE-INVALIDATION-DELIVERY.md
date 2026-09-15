@@ -115,5 +115,29 @@ existing test modified.
 
 ## 7. Canonical checkpoint
 
-Recorded by the docs-only closure PR after merge (remote runs, merge SHAs, and the
-tree-identity check).
+Recorded after merge.
+
+```text
+baseline                        189fcd005885d1d7fdd40174aa6935783be92da6
+implementation commit           dbf6fb87f409674791d4461b1b660a5f1c8b5fe7
+  "feat(g10-y): canonical work-evidence invalidation & atomic gate authority"
+pull request                    #90  experiment/g10-y-evidence-authority -> main
+PR checks                       run 35002006422  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  9c372b06bda5bc0202d225f8920f3ac5a13bbc58
+  "Merge pull request #90 from orangeofcarl0-sys/experiment/g10-y-evidence-authority"
+tree identity                   git diff dbf6fb8 9c372b0  ->  EMPTY (identical trees)
+canonical main run              35002173071  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                # 149 files / 1385 tests
+pnpm run build:web
+pnpm exec playwright test           # 27 passed
+node scripts/audit/y0-cf-w-03-repro.mjs   # classification: CLOSED_COMPLETE_NEW_WORLD
+```
