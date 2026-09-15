@@ -629,6 +629,10 @@ describe("G10-AB operating history", () => {
         managementActivity: 1,
         unresolvedActivity: 0,
         incompleteCanonicalRefs: 0,
+        // G10-AC-R §13 added the `campaign_wake` kind and its count. This test
+        // declares no `campaignWakeEvents` input, so the reference count is
+        // exactly zero — the assertion stays exact rather than being weakened.
+        campaignWakeEvents: 0,
       });
       expect(history.hasIncompleteAuditRecords).toBe(false);
       expect(history.entries.map((entry) => entry.kind)).toContain("work_mode_change");

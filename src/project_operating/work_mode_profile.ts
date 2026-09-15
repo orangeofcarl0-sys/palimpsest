@@ -214,6 +214,19 @@ export interface UserWorkModeControlPort {
 }
 
 /**
+ * G10-AC-R §5: the STRUCTURAL view of a live monitor runtime capability. Only the
+ * fields the availability table needs. `startState` is a plain string here so the
+ * monitor module's closed union stays its own concern.
+ */
+export interface MonitorRuntimeCapabilityView {
+  readonly tickSourceConfigured: boolean;
+  /** FALSE for the null/pull activation adapter (it only records signals). */
+  readonly activationConfigured: boolean;
+  readonly startState: string;
+  readonly startError: string | null;
+}
+
+/**
  * Does this modifier need a capability that may not exist? Used to build the
  * honest effective-status view: a preference is never silently dropped, and an
  * unavailable capability is never reported as active.
@@ -238,6 +251,15 @@ export interface WorkModeCapabilityInputs {
    * driver; `declared_external` is an embedder's truthful equivalence claim.
    */
   readonly monitorRuntimeProvenance?: "first_party" | "declared_external" | undefined;
+  /**
+   * G10-AC-R §5: the LIVE runtime capability the MONITOR row must be derived from
+   * when present. It is declared STRUCTURALLY here (not imported from
+   * `src/monitor/driver.ts`) because the driver imports this module's work-mode
+   * port: importing `MonitorRuntimeCapability` here would create a
+   * `project_operating -> monitor -> project_operating` cycle. The driver's
+   * `MonitorRuntimeCapability` is structurally assignable to this view.
+   */
+  readonly monitorRuntimeCapability?: MonitorRuntimeCapabilityView | undefined;
   /** Reasoning-branch execution is available for EXPLORE. */
   readonly reasoningBranches: boolean;
   /** A genuine already-independent sovereign peer exists for COORDINATE. */
