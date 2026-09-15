@@ -167,3 +167,16 @@ export * from "./proof_asset/index.js";
  */
 export * from "./project_workspace/index.js";
 export * from "./project_management/index.js";
+
+/**
+ * Revision-safe Work evolution (additive): the PURE plan-revision
+ * reconciliation (`compilePlanRevision`), the `appendAtomic` batch it commits
+ * through, and the typed `PlanReconciliationError` blocker surface.
+ */
+export * from "./domain/plan_reconciliation.js";
+export { AtomicAppendError } from "./state/event_store.js";
+export type { AtomicFaultHook } from "./state/event_store.js";
+export {
+  PlanReconciliationError,
+  type PlanReconciliationOutcome,
+} from "./tools/controller.js";

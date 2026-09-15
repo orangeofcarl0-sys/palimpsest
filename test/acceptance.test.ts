@@ -18,6 +18,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { snapshotDigest, PROJECTION_TABLES } from "../src/state/index.js";
 import { DomainValidationError } from "../src/domain/index.js";
+import { PlanReconciliationError } from "../src/advanced.js";
 import { FakeGitPort, createPalimpsestEffects, PromotionManager } from "../src/effects/index.js";
 import { Scheduler } from "../src/scheduler/index.js";
 
@@ -225,15 +226,33 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
   });
 
   it("7. revision change: planning invalidates the running task (STALE) and halts scheduling", async () => {
-    const { controller, cleanup } = await rig();
+    const { controller, store, cleanup } = await rig();
     try {
       const attemptId = await driveToAttempt(controller);
       await controller.claim(attemptId);
-      controller.plan({ tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])] });
-      const stale = controller.invalidateTask("task-1", "architecture contract changed");
-      expect(stale.event_type).toBe("TASK_STALE");
+      // G10-W contract change: the revision contract now requires quiescence or
+      // an explicit invalidation that settles the affected work. The legacy
+      // single-event PROJECT_REVISED fallback (which left the running task
+      // bound to the OLD revision) is gone: without a settlement act the
+      // revision fails closed and writes ZERO events.
+      const eventsBefore = store.listEvents(controller.projectId).length;
+      expect(() =>
+        controller.plan({ tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])] }),
+      ).toThrow(PlanReconciliationError);
+      expect(store.listEvents(controller.projectId).length).toBe(eventsBefore);
+      // Typed invalidation IS the explicit settlement act: it stales exactly the
+      // affected running task INSIDE the same atomic batch, and scheduling halts.
+      const reconciled = controller.planReconciled({
+        tasks: [taskSpec("task-1"), taskSpec("task-2", ["task-1"])],
+        changeClass: "contract_breaking",
+        changedIds: ["task-1"],
+      });
+      expect(reconciled.result.revision).toBe(1);
       const status = controller.status();
-      expect(status.tasks[0]).toMatchObject({ task_id: "task-1", state: "STALE" });
+      expect(status.tasks.find((task) => task.task_id === "task-1")).toMatchObject({
+        task_id: "task-1",
+        state: "STALE",
+      });
       expect(controller.step()).toBeNull(); // no scheduling from a stale task
       void attemptId;
     } finally {

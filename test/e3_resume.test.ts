@@ -10,6 +10,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { TaskPolicy } from "../src/domain/index.js";
+import { PlanReconciliationError } from "../src/advanced.js";
 
 import { FakeClock, taskSpec } from "./helpers.js";
 
@@ -200,7 +201,7 @@ describe("E3 resume: status block and cross-session continue", () => {
     }
   });
 
-  it("status stays observable (resume 'blocked') when the scheduler cannot advance a stale world", async () => {
+  it("status stays observable when a live world refuses a revision (the CF-V-05 stale world is unreachable)", async () => {
     const dir = mkdtempSync(join(tmpdir(), "palimpsest-e3-"));
     const s = openSession(join(dir, "p.sqlite"), join(dir, "o.sqlite"), new FakeGitPort(HEAD));
     try {
@@ -209,16 +210,30 @@ describe("E3 resume: status block and cross-session continue", () => {
       s.controller.step(); // TASK_STARTED
       const created = s.controller.step()!; // ATTEMPT_CREATED
       await s.controller.claim(created.entity_id); // RUNNING, in flight
-      // Bump the revision while the batch is still ACTIVE: the scheduler now
-      // fail-closes its decision (stale input world). status() must not throw —
-      // observation reports the block honestly.
-      s.controller.plan({ tasks: [taskSpec("task-1")], changeClass: "metadata_only" });
+      // G10-W contract change: the revision contract requires quiescence (or an
+      // explicit invalidation that settles the affected work). `metadata_only`
+      // settles nothing, so bumping the revision while the batch is still ACTIVE
+      // is now REFUSED with zero events. That is exactly what retires the
+      // CF-V-05 stale world: a live ACTIVE task can no longer be left bound to
+      // an older ProjectIR revision, so the old "scheduler cannot advance a
+      // stale world" block is unreachable through the public API. status() still
+      // must not throw - observation reports the live state honestly.
+      let blocked: unknown;
+      try {
+        s.controller.plan({ tasks: [taskSpec("task-1")], changeClass: "metadata_only" });
+      } catch (error) {
+        blocked = error;
+      }
+      expect(blocked).toBeInstanceOf(PlanReconciliationError);
+      expect((blocked as PlanReconciliationError).kind).toBe("quiescence_required");
       const status = s.controller.status();
-      expect(status.resume.action).toBe("blocked");
-      expect(status.resume.detail).toContain("cannot advance");
+      expect(status.revision).toBe(0); // zero events: the revision was refused
+      expect(status.resume.action).toBe("awaiting_worker");
       expect(status.resume.inFlightAttemptIds).toContain(created.entity_id);
-      // Idempotent observation.
-      expect(s.controller.status().resume.action).toBe("blocked");
+      // Idempotent observation; the world is byte-for-byte unchanged.
+      const observed = s.controller.status();
+      expect(observed.resume.action).toBe("awaiting_worker");
+      expect(observed.tasks.map((task) => task.state)).toEqual(["ACTIVE"]);
     } finally {
       await s.close();
     }

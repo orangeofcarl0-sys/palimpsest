@@ -1025,6 +1025,7 @@ export const EVENT_TYPES = [
   "TASK_SATISFIED",
   "TASK_FAILED",
   "TASK_STALE",
+  "TASK_REAUTHORIZED",
   "ATTEMPT_CREATED",
   "ATTEMPT_LEASED",
   "ATTEMPT_STARTED",
@@ -1161,6 +1162,7 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   TASK_SATISFIED: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
   TASK_FAILED: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
   TASK_STALE: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_REAUTHORIZED: ["task_envelope", "policy_id", "policy_digest"],
   ATTEMPT_CREATED: ["task_id", "envelope_id", "attempt_no"],
   ATTEMPT_LEASED: ["previous_state", "new_state", "lease_generation", "reason"],
   ATTEMPT_STARTED: ["previous_state", "new_state", "lease_generation", "reason"],
@@ -1292,6 +1294,21 @@ export function normalizeEventPayload(
         batch_activation_event_id: optionalPositiveInt(
           raw.batch_activation_event_id,
           "batch_activation_event_id",
+        ),
+      };
+    }
+    case "TASK_REAUTHORIZED": {
+      // Revision-safe Work evolution: the task's STATE is untouched; only the
+      // envelope is rebound to the new ProjectIR head. The envelope is a
+      // first-class contract with a single grammar owner (parseTaskEnvelope).
+      requireFields(raw, "task_envelope", "policy_id", "policy_digest");
+      return {
+        task_envelope: parseTaskEnvelope(raw.task_envelope),
+        policy_id: field(raw.policy_id, "policy_id", (inner) =>
+          validateIdentifier(expectString(inner)),
+        ),
+        policy_digest: field(raw.policy_digest, "policy_digest", (inner) =>
+          validateDigest(expectString(inner)),
         ),
       };
     }
@@ -1709,7 +1726,7 @@ function validateEmbeddedIdentity(input: {
     if (project.project_id !== projectId || entityId !== projectId) {
       throw new ContractError("embedded ProjectIR identity does not match Event identity");
     }
-  } else if (eventType === "TASK_CREATED") {
+  } else if (eventType === "TASK_CREATED" || eventType === "TASK_REAUTHORIZED") {
     const envelope = payload.task_envelope as TaskEnvelope;
     if (envelope.project_id !== projectId || envelope.task_id !== entityId) {
       throw new ContractError("embedded TaskEnvelope identity does not match Event identity");
