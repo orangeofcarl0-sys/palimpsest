@@ -53,6 +53,13 @@ import {
   type PromotionEligibilityAssessment,
   type PromotionFenceRow,
 } from "../domain/promotion_eligibility.js";
+import {
+  PromotionIntentPermit,
+  PromotionOutcomeWitness,
+  type PromotionOutcomeWitnessInput,
+} from "../domain/promotion_terminal_admission.js";
+import type { PromotionOutcomeBasis } from "../domain/promotion_terminal.js";
+import { canonicalDigest } from "../schema/canonical.js";
 import { isTransientOperationError } from "./errors.js";
 import { orchestrationAuthorization, type PalimpsestEffectsRuntime } from "./runtime.js";
 import type { PromotionRecoveryOutcome, RecoveryReport } from "../recovery/recovery.js";
@@ -353,6 +360,42 @@ export class PromotionManager {
     });
   }
 
+  /**
+   * G10-AA §19/§20: the deterministic Ordarium operation identity and input
+   * digest for one promotion. Reuses `operationIdentityPreview` - there is no
+   * second identity algorithm - so a witness is bound to the exact operation the
+   * effect was dispatched under.
+   */
+  #operationRefOf(input: {
+    promotionId: string;
+    sourceCommit: string;
+    expectedHeadCommit: string;
+  }): { operationId: string; inputDigest: string } {
+    const actionInput = {
+      promotionId: input.promotionId,
+      sourceCommit: input.sourceCommit,
+      expectedHeadCommit: input.expectedHeadCommit,
+    };
+    return {
+      operationId: operationIdentityPreview(this.#effects.actions.gitPromote, actionInput, {
+        source: "palimpsest",
+        scope: this.projectId,
+        callId: `promote:${input.promotionId}`,
+      }).operationId,
+      inputDigest: canonicalDigest({ domain: "palimpsest.promote-input.v1", ...actionInput }),
+    };
+  }
+
+  /** The PREPARED event this promotion was admitted by, when it exists. */
+  #preparedEventRefOf(promotionId: string): string | null {
+    const row = this.#store.connection
+      .prepare(
+        "SELECT event_id FROM events WHERE project_id=? AND event_type='PROMOTION_PREPARED' AND entity_id=? ORDER BY event_id LIMIT 1",
+      )
+      .get(this.projectId, promotionId) as { event_id: number } | undefined;
+    return row === undefined ? null : String(row.event_id);
+  }
+
   #projectHeadRow(): { revision: number; digest: string; headCommit: string } {    const row = this.#store.connection
       .prepare("SELECT revision, digest, head_commit FROM projects WHERE project_id=?")
       .get(this.projectId) as
@@ -420,6 +463,7 @@ export class PromotionManager {
       return {
         promotionId,
         committed: this.#appendCommitted({
+          basis: "invoke_result",
           promotionId,
           attemptId: options.attemptId,
           sourceCommit: options.sourceCommit,
@@ -456,6 +500,7 @@ export class PromotionManager {
       }
       if (isTransientOperationError(error)) throw error;
       this.#appendFailed({
+        basis: "deterministic_failure",
         promotionId,
         attemptId: options.attemptId,
         sourceCommit: options.sourceCommit,
@@ -578,6 +623,7 @@ export class PromotionManager {
           // did not and cannot happen). Never dispatch under revoked authority.
           const reason = `promotion authority was revoked before the effect started (${summary})`;
           this.#appendFailed({
+            basis: "authority_revoked_before_dispatch",
             promotionId,
             attemptId: entry.attempt_id,
             sourceCommit: entry.source_commit,
@@ -613,6 +659,7 @@ export class PromotionManager {
         };
       }
       this.#appendCommitted({
+        basis: "ledger_receipt",
         promotionId,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -625,6 +672,7 @@ export class PromotionManager {
     if (record.state === "failed" || record.state === "denied") {
       const reason = record.error?.message ?? `operation ${record.state} (recovered)`;
       this.#appendFailed({
+        basis: record.state === "denied" ? "denied" : "deterministic_failure",
         promotionId,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -636,6 +684,7 @@ export class PromotionManager {
     if (record.state === "cancelled") {
       const reason = "operation cancelled (recovered)";
       this.#appendFailed({
+        basis: "cancelled",
         promotionId,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -653,6 +702,7 @@ export class PromotionManager {
     try {
       const outcome = await this.#effects.invoke(this.#effects.actions.gitPromote, input, intent);
       this.#appendCommitted({
+        basis: "reconciled_result",
         promotionId,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -671,6 +721,7 @@ export class PromotionManager {
         if (error instanceof OrdariumError && DETERMINISTIC_FAILURE_CODES.has(error.code)) {
           const reason = `recovered failure: ${error.message}`;
           this.#appendFailed({
+            basis: "deterministic_failure",
             promotionId,
             attemptId: entry.attempt_id,
             sourceCommit: entry.source_commit,
@@ -725,6 +776,7 @@ export class PromotionManager {
         .map((item) => item.kind)
         .join(", ")})`;
       this.#appendFailed({
+        basis: "authority_revoked_before_dispatch",
         promotionId: entry.promotion_id,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -736,6 +788,7 @@ export class PromotionManager {
     try {
       const outcome = await this.#effects.invoke(this.#effects.actions.gitPromote, input, intent);
       this.#appendCommitted({
+        basis: "invoke_result",
         promotionId: entry.promotion_id,
         attemptId: entry.attempt_id,
         sourceCommit: entry.source_commit,
@@ -753,6 +806,7 @@ export class PromotionManager {
       if (!isTransientOperationError(error)) {
         const reason = (error as Error).message;
         this.#appendFailed({
+          basis: "deterministic_failure",
           promotionId: entry.promotion_id,
           attemptId: entry.attempt_id,
           sourceCommit: entry.source_commit,
@@ -800,12 +854,23 @@ export class PromotionManager {
     return event;
   }
 
-  #appendPrepared(
-    promotionId: string,
-    options: PromoteOptions,
-  ): SchedulerEvent {
+  /**
+   * Append the admitted intent. The permit is minted HERE, after the caller has
+   * already passed Z's eligibility assessment, and consumed by live admission -
+   * so a structurally perfect PREPARED appended through the generic surface is
+   * refused, and no other module can manufacture a revision fence.
+   */
+  #appendPrepared(promotionId: string, options: PromoteOptions): SchedulerEvent {
     const revision = this.projectRevision();
-    return this.#store.append(
+    const permit = PromotionIntentPermit.issue({
+      projectId: this.projectId,
+      promotionId,
+      attemptId: options.attemptId,
+      sourceCommit: options.sourceCommit,
+      expectedHeadCommit: options.expectedHeadCommit,
+      basis: "eligibility_passed",
+    });
+    return this.#store.appendPromotionIntent(
       parseNewEvent({
         schema_version: 1,
         project_id: this.projectId,
@@ -829,9 +894,16 @@ export class PromotionManager {
         }),
         expected_project_revision: revision,
       }),
+      permit,
     );
   }
 
+  /**
+   * Record a terminal SUCCESS from its real outcome basis. The witness records
+   * where the resulting head came from (a live invocation, a ledger receipt, or
+   * a reconciled operation) and binds it to the operation, the input, and the
+   * head itself - so a witness for H1 cannot authorize a COMMITTED claiming H2.
+   */
   #appendCommitted(arg: {
     promotionId: string;
     attemptId: string;
@@ -839,32 +911,10 @@ export class PromotionManager {
     expectedHeadCommit: string;
     resultingHeadCommit: string;
     reason: string;
+    basis: PromotionOutcomeBasis;
+    outcomeDigest?: string | undefined;
   }): SchedulerEvent {
-    return this.#store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "PROMOTION_COMMITTED",
-        payload_version: 1,
-        entity_type: "promotion",
-        entity_id: arg.promotionId,
-        payload: {
-          promotion_id: arg.promotionId,
-          attempt_id: arg.attemptId,
-          source_commit: arg.sourceCommit,
-          expected_head_commit: arg.expectedHeadCommit,
-          resulting_head_commit: arg.resultingHeadCommit,
-          reason: arg.reason,
-        },
-        causation_id: null,
-        correlation_id: `promotion:${arg.promotionId}`,
-        idempotency_key: actionKey("promotion-committed-v1", {
-          project_id: this.projectId,
-          promotion_id: arg.promotionId,
-        }),
-        expected_project_revision: this.projectRevision(),
-      }),
-    );
+    return this.#appendTerminal("PROMOTION_COMMITTED", arg);
   }
 
   #appendFailed(arg: {
@@ -873,13 +923,51 @@ export class PromotionManager {
     sourceCommit: string;
     expectedHeadCommit: string;
     reason: string;
+    basis: PromotionOutcomeBasis;
+    outcomeDigest?: string | undefined;
   }): SchedulerEvent {
-    const revision = this.projectRevision();
-    return this.#store.append(
+    return this.#appendTerminal("PROMOTION_FAILED", arg);
+  }
+
+  #appendTerminal(
+    eventType: "PROMOTION_COMMITTED" | "PROMOTION_FAILED",
+    arg: {
+      promotionId: string;
+      attemptId: string;
+      sourceCommit: string;
+      expectedHeadCommit: string;
+      reason: string;
+      basis: PromotionOutcomeBasis;
+      resultingHeadCommit?: string | undefined;
+      outcomeDigest?: string | undefined;
+    },
+  ): SchedulerEvent {
+    const resultingHeadCommit = arg.resultingHeadCommit ?? null;
+    const { operationId, inputDigest } = this.#operationRefOf({
+      promotionId: arg.promotionId,
+      sourceCommit: arg.sourceCommit,
+      expectedHeadCommit: arg.expectedHeadCommit,
+    });
+    const witness = PromotionOutcomeWitness.issue({
+      projectId: this.projectId,
+      promotionId: arg.promotionId,
+      attemptId: arg.attemptId,
+      operationId,
+      inputDigest,
+      outcomeKind: eventType === "PROMOTION_COMMITTED" ? "COMMITTED" : "FAILED",
+      basis: arg.basis,
+      sourceCommit: arg.sourceCommit,
+      expectedHeadCommit: arg.expectedHeadCommit,
+      resultingHeadCommit,
+      outcomeDigest: arg.outcomeDigest ?? null,
+      preparedEventRef: this.#preparedEventRefOf(arg.promotionId),
+    } satisfies PromotionOutcomeWitnessInput & { outcomeKind: "COMMITTED" | "FAILED" });
+    const committed = eventType === "PROMOTION_COMMITTED";
+    return this.#store.appendPromotionTerminal(
       parseNewEvent({
         schema_version: 1,
         project_id: this.projectId,
-        event_type: "PROMOTION_FAILED",
+        event_type: eventType,
         payload_version: 1,
         entity_type: "promotion",
         entity_id: arg.promotionId,
@@ -888,17 +976,24 @@ export class PromotionManager {
           attempt_id: arg.attemptId,
           source_commit: arg.sourceCommit,
           expected_head_commit: arg.expectedHeadCommit,
-          resulting_head_commit: null,
+          resulting_head_commit: resultingHeadCommit,
           reason: arg.reason,
+          // G10-AA durable provenance (optional, non-secret): correlates the
+          // canonical Event to its Ordarium operation without asking Ordarium.
+          operation_id: operationId,
+          outcome_basis: arg.basis,
+          outcome_digest: committed ? (arg.outcomeDigest ?? inputDigest) : inputDigest,
         },
         causation_id: null,
         correlation_id: `promotion:${arg.promotionId}`,
-        idempotency_key: actionKey("promotion-failed-v1", {
-          project_id: this.projectId,
-          promotion_id: arg.promotionId,
-        }),
-        expected_project_revision: revision,
+        idempotency_key: actionKey(
+          committed ? "promotion-committed-v1" : "promotion-failed-v1",
+          { project_id: this.projectId, promotion_id: arg.promotionId },
+        ),
+        expected_project_revision: this.projectRevision(),
       }),
+      witness,
     );
   }
+
 }

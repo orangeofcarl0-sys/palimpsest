@@ -26,6 +26,11 @@ import {
   type SchedulerEvent,
 } from "../schema/index.js";
 import { AggregateValidator } from "../domain/aggregate.js";
+import type {
+  PromotionGovernedAdmission,
+  PromotionIntentPermit,
+  PromotionOutcomeWitness,
+} from "../domain/promotion_terminal_admission.js";
 import type { TaskPolicy } from "../domain/policy.js";
 import { openDatabase } from "./database.js";
 import {
@@ -286,6 +291,35 @@ export class EventStore {
   }
 
   /**
+   * G10-AA — append a NEW promotion PREPARED intent through the governed
+   * protocol. NOT agent-facing: no tool, route, port or barrel export reaches
+   * this method, and the generic `append` refuses a promotion intent outright.
+   * The permit is consumed by admission, so one permit authorizes one append.
+   */
+  appendPromotionIntent(request: NewEvent, permit: PromotionIntentPermit): SchedulerEvent {
+    const parsed = parseNewEvent(request);
+    return this.#runInTransaction(() =>
+      this.#appendInTransaction(parsed, { promotionAdmission: { intentPermit: permit } }),
+    );
+  }
+
+  /**
+   * G10-AA — append a NEW promotion terminal fact (COMMITTED / FAILED) through
+   * the governed protocol. NOT agent-facing. Requires the one-shot outcome
+   * witness that records the real basis of the outcome; the generic `append`
+   * refuses a terminal fact outright, however structurally perfect.
+   */
+  appendPromotionTerminal(
+    request: NewEvent,
+    witness: PromotionOutcomeWitness,
+  ): SchedulerEvent {
+    const parsed = parseNewEvent(request);
+    return this.#runInTransaction(() =>
+      this.#appendInTransaction(parsed, { promotionAdmission: { terminalWitness: witness } }),
+    );
+  }
+
+  /**
    * Commit a BATCH of new events as ONE transaction (revision-safe Work
    * evolution needs a closure - stale, revise, reauthorize, register - that
    * either lands entirely or not at all).
@@ -373,7 +407,12 @@ export class EventStore {
    */
   #appendInTransaction(
     parsed: NewEvent,
-    options: { faultHook?: FaultHook; committedAt?: string },
+    options: {
+      faultHook?: FaultHook;
+      committedAt?: string;
+      /** G10-AA: live-only governed-promotion admission. Never present on replay. */
+      promotionAdmission?: PromotionGovernedAdmission | undefined;
+    },
   ): SchedulerEvent {
     const requestDigest = computeRequestDigest(parsed);
     const existing = this.connection
@@ -390,7 +429,7 @@ export class EventStore {
 
     this.#validatePreconditions(parsed);
     this.#aggregateValidator.validate(this.connection, parsed);
-    this.#aggregateValidator.validateAdmission(this.connection, parsed);
+    this.#aggregateValidator.validateAdmission(this.connection, parsed, options.promotionAdmission);
     const eventId = this.#nextEventId();
     this.#validateCausation(parsed, eventId);
     const [projectSequence, previousDigest] = this.#nextProjectPosition(parsed);
