@@ -52,6 +52,16 @@ Baseline: `main @ 735f54d6935b71f681ff97aa1413687baf53dfad`. Ordarium v1.3.1. Ho
 5. `DISCLOSURE_*` events were added to the proof store for durability; own-freshness now feeds effective
    standing (base standing is still retained).
 
-## Required CI
+## Required CI (canonical gate)
 
-See the canonical gate recorded after the implementation PR run (filled in the closure commit).
+| Checkpoint | Value |
+| --- | --- |
+| Implementation PR | **#80** `experiment/g10-t-proof-asset` |
+| Tested branch HEAD | `fce3b3d` |
+| PR run | `34940138113` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ 89b002375ad27e19e0c4fd156245a471009b31b8` |
+| Tree identity | `git diff fce3b3d 89b0023` empty → the tested tree IS the merged tree |
+| Canonical main run | `34940281236` — **unit pass + e2e pass on attempt 1** |
+
+All required checks were GREEN before merge; no force/bypass/history rewrite; status read via
+`gh run view --json`. The proof-vault vertical E2E is a separately reproducible artifact, not required CI.
