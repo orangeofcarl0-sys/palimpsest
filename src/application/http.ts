@@ -786,6 +786,17 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       }),
     );
   }
+  // G10-AC §39: READ-ONLY monitor observation. There is deliberately no HTTP
+  // force-tick: an HTTP-authenticated caller must not bypass the project's
+  // MONITOR preference. The operator/debug tick lives on the CLI.
+  if (pathname === "/api/monitor/status") {
+    requireGet();
+    return ok(await requireSurface(application.monitor, "monitor").status());
+  }
+  if (pathname === "/api/monitor/preview") {
+    requireGet();
+    return ok(await requireSurface(application.monitor, "monitor").preview());
+  }
   if (pathname === "/api/manage/status") {
     requireGet();
     return ok(await requireSurface(application.projectManagement, "projectManagement").status());

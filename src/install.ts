@@ -167,6 +167,16 @@ import {
   type WorkModeCapabilityInputs,
 } from "./project_operating/index.js";
 import {
+  makeCampaignMonitorDriver,
+  nullCampaignWakeActivation,
+  type CampaignMonitorDriver,
+  type CampaignMonitorPolicy,
+  type CampaignMonitorScopePort,
+  type CampaignWakeActivationPort,
+  type MonitorTickSourcePort,
+  type SqliteMonitorDeliveryMarkStore,
+} from "./monitor/index.js";
+import {
   DEFAULT_MAX_STEPS_PER_RUN,
   defaultAllowedActionClasses,
   defaultConfirmationBoundaries,
@@ -240,6 +250,20 @@ export interface InstallPalimpsestOptions {
   campaignInstitutionEpochPort?: CampaignInstitutionEpochSource | undefined;
   /** G10-G7 (additive): injected campaign clock (not Date.now in materialization). */
   campaignClock?: (() => string) | undefined;
+  /**
+   * G10-AC (additive): which Campaigns this project's monitor may evaluate. Absent
+   * ⇒ the monitor runtime is NOT composed and no background work happens. There is
+   * no default that scans every Campaign.
+   */
+  campaignMonitorScope?: CampaignMonitorScopePort | undefined;
+  /** G10-AC (additive): the host-driven tick. Absent ⇒ ticks are manual only. */
+  campaignMonitorTickSource?: MonitorTickSourcePort | undefined;
+  /** G10-AC (additive): the host wake adapter. Absent ⇒ pull mode, nothing is resumed. */
+  campaignMonitorActivation?: CampaignWakeActivationPort | undefined;
+  /** G10-AC (additive): deployment-local delivery marks (duplicate suppression/backoff). */
+  campaignMonitorDeliveryMarks?: SqliteMonitorDeliveryMarkStore | undefined;
+  /** G10-AC (additive): explicit per-tick budgets and redelivery cooldown. */
+  campaignMonitorPolicy?: Partial<CampaignMonitorPolicy> | undefined;
   /**
    * G10-H (additive): the canonical runtime-organization store. Absent = no
    * RuntimeScope/Holon surface (never a stub). Organization grounding is
@@ -495,6 +519,14 @@ export interface InstalledPalimpsest {
         readonly activity: SqliteManagementActivityStore;
       }
     | undefined;
+  /**
+   * G10-AC (additive): the long-horizon Campaign monitor runtime. Present only
+   * when the operator explicitly wired a monitor scope. It is not an agent and
+   * not a scheduler: it evaluates dormant watches, records canonical triggers,
+   * advances the existing wake/reconciliation, and emits an at-least-once host
+   * wake signal. It grants no authority and compiles no next action.
+   */
+  readonly monitor?: CampaignMonitorDriver | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -1453,6 +1485,11 @@ export function installPalimpsest(
     }
   })();
 
+  // G10-AC: whether a REAL monitor runtime ends up composed. Read LIVE by the
+  // operating-posture capability seam, so MONITOR availability reflects the
+  // wiring that actually exists rather than a construction-time claim.
+  const monitorWiring = { configured: false };
+
   const projectManagement: ProjectManagementService | undefined =
     projectWorkspace === undefined
       ? undefined
@@ -1479,14 +1516,70 @@ export function installPalimpsest(
               headCommit: String(row.head_commit),
             };
           },
-          ...(options.operatingCapabilities === undefined
-            ? {}
-            : { operatingCapabilities: options.operatingCapabilities }),
+          operatingCapabilities: () => ({
+            // G10-AC §34: MONITOR availability derives from REAL runtime wiring,
+            // read LIVE (the monitor runtime is composed after this service), not
+            // from a bare boolean. An embedder may still declare an equivalent
+            // external implementation explicitly via `monitorConditionSource`.
+            ...(options.operatingCapabilities ?? {}),
+            monitorRuntime: monitorWiring.configured,
+            monitorRuntimeProvenance: "first_party" as const,
+          }),
         });
 
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
   // HTTP both go through this; neither imports a store. Advanced application tools are registered
   // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
+// G10-AC: the monitor runtime is composed ONLY when the operator explicitly
+// wires a scope, and it owns no canonical store. With no scope there is no
+// driver, MONITOR degrades to PREVIEW_ONLY/UNAVAILABLE, and NOTHING runs in the
+// background. The driver never starts itself: `start()` requires a tick source.
+const monitor: CampaignMonitorDriver | undefined =
+  campaign === undefined || options.campaignMonitorScope === undefined
+    ? undefined
+    : makeCampaignMonitorDriver({
+        projectId: options.projectId,
+        // The opt-in gate is read through the SAME operator store the rest of the
+        // runtime uses. Without one the driver cannot prove an opt-in, so it
+        // refuses to scan rather than assuming MONITOR.
+        workMode: operatingStores?.workMode ?? {
+          get: async () => {
+            throw new Error("no Work Mode preference store is configured");
+          },
+          set: async () => {
+            throw new Error("no Work Mode preference store is configured");
+          },
+          history: async () => [],
+        },
+        scope: options.campaignMonitorScope,
+        prospective: {
+          scanWatches: (campaignId) => campaign.prospective.scanWatches(campaignId),
+          recordTriggers: (input) => campaign.prospective.recordTriggers(input),
+          watchStates: (campaignId) => campaign.prospective.watchStates(campaignId),
+        },
+        production: {
+          lifecycleState: (campaignId) => campaign.production.lifecycleState(campaignId),
+          beginWake: (input) => campaign.production.beginWake(input),
+          reconcileCurrentWorld: (input) => campaign.production.reconcileCurrentWorld(input),
+        },
+        history: {
+          readEvents: (campaignId) => campaign.store.replay(campaignId),
+        },
+        activation: options.campaignMonitorActivation ?? nullCampaignWakeActivation(),
+        ...(options.campaignMonitorDeliveryMarks === undefined
+          ? {}
+          : { marks: options.campaignMonitorDeliveryMarks }),
+        ...(options.campaignMonitorPolicy === undefined
+          ? {}
+          : { policy: options.campaignMonitorPolicy }),
+        ...(options.campaignMonitorTickSource === undefined
+          ? {}
+          : { tickSource: options.campaignMonitorTickSource }),
+        ...(options.campaignClock === undefined ? {} : { clock: options.campaignClock }),
+      });
+
+  monitorWiring.configured = monitor !== undefined;
+
   const application = makePalimpsestApplicationSurface({
     controller,
     ...(options.localPeer === undefined ? {} : { localPeer: options.localPeer }),
@@ -1516,6 +1609,7 @@ export function installPalimpsest(
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
+    ...(monitor === undefined ? {} : { monitor }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1590,6 +1684,7 @@ export function installPalimpsest(
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
+    ...(monitor === undefined ? {} : { monitor }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
