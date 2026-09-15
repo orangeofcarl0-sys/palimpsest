@@ -73,6 +73,7 @@ const EXPECTED_MATRIX: Record<ManagementActionClass, Record<ManagementInvolvemen
   START_LOCAL_RECIPE: { DIRECT: "explicit", ASSIST: "no", MANAGE: "yes", DELEGATE: "yes" },
   RUN_LOCAL_VERIFY: { DIRECT: "explicit", ASSIST: "no", MANAGE: "yes", DELEGATE: "yes" },
   APPLY_LOCAL_PLAN_REVISION: { DIRECT: "explicit", ASSIST: "no", MANAGE: "confirmation", DELEGATE: "within_envelope" },
+  RECONCILE_PROJECT_HEAD: { DIRECT: "explicit", ASSIST: "suggest", MANAGE: "yes", DELEGATE: "yes" },
   DISPATCH_LOCAL_WORK: { DIRECT: "explicit", ASSIST: "no", MANAGE: "existing_plan", DELEGATE: "yes" },
   SEND_PEER_REQUEST: { DIRECT: "explicit", ASSIST: "suggest", MANAGE: "confirmation", DELEGATE: "confirmation" },
   CREATE_EXTERNAL_COMMITMENT: { DIRECT: "semantic_authority", ASSIST: "no", MANAGE: "no", DELEGATE: "no" },
@@ -205,8 +206,8 @@ function viewWith(real: ProjectWorkspaceService, override: (view: ProjectWorkspa
  * ------------------------------------------------------------------ */
 
 describe("G10-V management policy matrix (§27)", () => {
-  it("matches every cell for all 13 action classes × 4 involvements", () => {
-    expect([...MANAGEMENT_ACTION_CLASSES]).toHaveLength(13);
+  it("matches every cell for all 14 action classes × 4 involvements", () => {
+    expect([...MANAGEMENT_ACTION_CLASSES]).toHaveLength(14);
     expect([...MANAGEMENT_INVOLVEMENTS]).toEqual(["DIRECT", "ASSIST", "MANAGE", "DELEGATE"]);
     expect(Object.keys(EXPECTED_MATRIX).sort()).toEqual([...MANAGEMENT_ACTION_CLASSES].sort());
     for (const actionClass of MANAGEMENT_ACTION_CLASSES) {
@@ -585,7 +586,7 @@ describe("G10-V no escalation path on the agent-facing surface", () => {
         });
 
         const surface = application.projectManagement!;
-        expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "requestModeChange", "run", "status", "step"]);
+        expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "reconcileProjectHead", "requestModeChange", "run", "status", "step"]);
         for (const forbidden of [
           "applyOperatorModeChange",
           "setModeUpward",
@@ -614,7 +615,7 @@ describe("G10-V no escalation path on the agent-facing surface", () => {
         const manage = tools.find((tool) => tool.name === "palimpsest_manage")!;
         expect(manage).toBeDefined();
         const actions = (manage as unknown as { parameters: { properties: { action: { enum: readonly string[] } } } }).parameters.properties.action.enum;
-        expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change"]);
+        expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"]);
         for (const forbidden of [
           "apply_operator_mode",
           "set_mode_upward",

@@ -21,14 +21,22 @@
 import {
   operationIdentityPreview,
   OrdariumError,
+  SimulatedProcessCrash,
   type Action,
   type JsonValue,
 } from "@ordarium/core";
 
 import { actionKey, stableEntityId } from "../domain/index.js";
-import { parseNewEvent, type SchedulerEvent } from "../schema/index.js";
+import { parseNewEvent, parseAttemptReport, type SchedulerEvent } from "../schema/index.js";
 import type { EventStore } from "../state/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import {
+  deriveProjectHeadStatus,
+  ProjectHeadError,
+  type ProjectHeadStatus,
+  type PromotionFact,
+} from "../domain/project_head.js";
+import { GateEngine, type GateResult } from "../evidence/gate_dsl.js";
 import { isTransientOperationError } from "./errors.js";
 import { orchestrationAuthorization, type PalimpsestEffectsRuntime } from "./runtime.js";
 import type { PromotionRecoveryOutcome, RecoveryReport } from "../recovery/recovery.js";
@@ -87,6 +95,160 @@ export class PromotionManager {
     return row.revision;
   }
 
+  // -------------------------------------------------------------------------
+  // Canonical project-head derivation (G10-X)
+  //
+  // The read model is derived EXCLUSIVELY from the ProjectIR head plus the
+  // canonical PROMOTION_COMMITTED facts, in event order. Node's SQLite handle
+  // is synchronous, so the derivation is synchronous under the hood; the public
+  // promises are the sanctioned async surface, and the `…Sync` variants exist
+  // only so the synchronous revision path (planReconciled) can validate a
+  // trusted head advance without I/O.
+  // -------------------------------------------------------------------------
+
+  /** The canonical committed promotion facts, in event order. */
+  promotionFacts(): Promise<readonly PromotionFact[]> {
+    return Promise.resolve(this.promotionFactsSync());
+  }
+
+  promotionFactsSync(): readonly PromotionFact[] {
+    return this.#store
+      .listEvents(this.projectId)
+      .filter((event) => event.event_type === "PROMOTION_COMMITTED")
+      .map((event) => {
+        const payload = event.payload;
+        return {
+          eventId: String(event.event_id),
+          promotionId: String(payload.promotion_id),
+          attemptId: String(payload.attempt_id),
+          sourceCommit: String(payload.source_commit),
+          expectedHeadCommit: String(payload.expected_head_commit),
+          resultingHeadCommit: String(payload.resulting_head_commit),
+        };
+      });
+  }
+
+  /** The ProjectIR head plus the derived effect-head status. */
+  projectHeadStatus(): Promise<ProjectHeadStatus> {
+    return Promise.resolve(this.projectHeadStatusSync());
+  }
+
+  projectHeadStatusSync(): ProjectHeadStatus {
+    const project = this.#projectHeadRow();
+    return deriveProjectHeadStatus({
+      project: { revision: project.revision, headCommit: project.headCommit },
+      promotions: this.promotionFactsSync(),
+    });
+  }
+
+  /**
+   * The ONLY sanctioned expected head: the proven effect head of the
+   * contiguous promotion chain, falling back to the ProjectIR head when no
+   * promotion is chained. A broken chain is a hard `head_conflict` - there is
+   * no ambient fallback.
+   */
+  canonicalExpectedHead(): Promise<string> {
+    return Promise.resolve(this.canonicalExpectedHeadSync());
+  }
+
+  canonicalExpectedHeadSync(): string {
+    const status = this.projectHeadStatusSync();
+    if (status.state === "CONFLICT") {
+      throw new ProjectHeadError(
+        "head_conflict",
+        "the promotion chain is broken; the canonical expected head cannot be determined",
+        [status.projectHeadCommit, status.provenEffectHeadCommit].concat(
+          status.latestPromotionEventRef === null ? [] : [status.latestPromotionEventRef],
+        ),
+      );
+    }
+    return status.provenEffectHeadCommit;
+  }
+
+  /**
+   * The canonical source commit for one attempt: the `result_commit` of its
+   * stored AttemptReport. The caller never supplies this - an attempt without a
+   * completed report (or with a null result commit) fails closed.
+   */
+  canonicalAttemptResultCommit(attemptId: string): string {
+    const row = this.#store.connection
+      .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { report_json: Uint8Array | null } | undefined;
+    if (row === undefined) {
+      throw new ProjectHeadError(
+        "caller_source_not_canonical",
+        `attempt ${attemptId} does not exist; the promotion source can only be canonical`,
+        [attemptId],
+      );
+    }
+    if (row.report_json === null) {
+      throw new ProjectHeadError(
+        "caller_source_not_canonical",
+        `attempt ${attemptId} has no completed report; the promotion source can only be canonical`,
+        [attemptId],
+      );
+    }
+    const report = parseAttemptReport(JSON.parse(new TextDecoder().decode(row.report_json)));
+    if (report.result_commit === null) {
+      throw new ProjectHeadError(
+        "caller_source_not_canonical",
+        `attempt ${attemptId} report has no result_commit; the promotion source can only be canonical`,
+        [attemptId],
+      );
+    }
+    return report.result_commit;
+  }
+
+  /**
+   * High-level promotion: the caller names the attempt (and optionally a gate),
+   * never the commits. The source is the attempt's canonical result commit and
+   * the expected head is the canonical proven effect head.
+   */
+  async promoteAttempt(input: {
+    attemptId: string;
+    gateId?: string | undefined;
+    reason?: string | undefined;
+  }): Promise<PromoteResult> {
+    const sourceCommit = this.canonicalAttemptResultCommit(input.attemptId);
+    const expectedHeadCommit = await this.canonicalExpectedHead();
+    if (input.gateId !== undefined) {
+      const verdict: GateResult = new GateEngine().evaluate(
+        this.#store,
+        this.projectId,
+        "attempt",
+        input.attemptId,
+        input.gateId,
+      );
+      if (verdict.verdict !== "PASS") {
+        throw new DomainValidationError(
+          `gate ${input.gateId} verdict ${verdict.verdict} does not authorize promotion of ${input.attemptId}`,
+        );
+      }
+    }
+    return this.promote({
+      attemptId: input.attemptId,
+      sourceCommit,
+      expectedHeadCommit,
+      ...(input.reason === undefined ? {} : { reason: input.reason }),
+    });
+  }
+
+  #projectHeadRow(): { revision: number; digest: string; headCommit: string } {
+    const row = this.#store.connection
+      .prepare("SELECT revision, digest, head_commit FROM projects WHERE project_id=?")
+      .get(this.projectId) as
+      | { revision: number; digest: string; head_commit: string }
+      | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError("project does not exist");
+    }
+    return {
+      revision: Number(row.revision),
+      digest: String(row.digest),
+      headCommit: String(row.head_commit),
+    };
+  }
+
   async promote(options: PromoteOptions): Promise<PromoteResult> {
     const promotionId = promotionIdFor(this.projectId, options.attemptId);
     const existing = this.#terminal(promotionId);
@@ -100,6 +262,27 @@ export class PromotionManager {
         committed: existing,
         resultingHeadCommit: String(payload.resulting_head_commit),
       };
+    }
+
+    // G10-X: the caller-supplied source and expected head are STRICTLY
+    // validated against the canonical derivations before anything is appended -
+    // there is no free choice. A broken promotion chain fails with head_conflict
+    // (canonicalExpectedHeadSync) before any write.
+    const canonicalSource = this.canonicalAttemptResultCommit(options.attemptId);
+    if (options.sourceCommit !== canonicalSource) {
+      throw new ProjectHeadError(
+        "caller_source_not_canonical",
+        `source commit ${options.sourceCommit} does not match the canonical AttemptReport.result_commit ${canonicalSource}`,
+        [options.attemptId, options.sourceCommit, canonicalSource],
+      );
+    }
+    const canonicalHead = this.canonicalExpectedHeadSync();
+    if (options.expectedHeadCommit !== canonicalHead) {
+      throw new ProjectHeadError(
+        "caller_head_not_canonical",
+        `expected head ${options.expectedHeadCommit} does not match the canonical proven effect head ${canonicalHead}`,
+        [options.expectedHeadCommit, canonicalHead],
+      );
     }
 
     this.#appendPrepared(promotionId, options);
@@ -131,16 +314,54 @@ export class PromotionManager {
       // Crash windows and uncertain outcomes must NOT terminalize the
       // promotion: a restart reclaims the operation and reconciles. Only a
       // deterministic failure records PROMOTION_FAILED.
-      if (!isTransientOperationError(error)) {
-        this.#appendFailed({
-          promotionId,
-          attemptId: options.attemptId,
-          sourceCommit: options.sourceCommit,
-          expectedHeadCommit: options.expectedHeadCommit,
-          reason: (error as Error).message,
-        });
+      //
+      // G10-X external divergence: the live branch differs from the canonical
+      // expected head AND the source commit did not land - the promotion failed
+      // because someone moved the branch outside the canonical ledger. Never
+      // adopt the ambient head and never fabricate a PROMOTION_COMMITTED; the
+      // PREPARED intent stays for a head-reconciled retry. A genuine crash
+      // window (SimulatedProcessCrash) is exempt: it is a recovery signal, not
+      // a divergence verdict.
+      if (!(error instanceof SimulatedProcessCrash)) {
+        const liveHead = await this.#gitHeadOrUndefined();
+        if (liveHead !== undefined && liveHead !== options.expectedHeadCommit) {
+          const contained = await this.#gitContainsOrUndefined(options.sourceCommit);
+          if (contained === false) {
+            throw new ProjectHeadError(
+              "external_head_divergence",
+              `the live git head ${liveHead} differs from the canonical expected head ${options.expectedHeadCommit}; refusing to adopt the ambient head`,
+              [options.expectedHeadCommit, liveHead],
+            );
+          }
+        }
       }
+      if (isTransientOperationError(error)) throw error;
+      this.#appendFailed({
+        promotionId,
+        attemptId: options.attemptId,
+        sourceCommit: options.sourceCommit,
+        expectedHeadCommit: options.expectedHeadCommit,
+        reason: (error as Error).message,
+      });
       throw error;
+    }
+  }
+
+  /** Diagnostic-only live head; a failing git port yields undefined. */
+  async #gitHeadOrUndefined(): Promise<string | undefined> {
+    try {
+      return await this.#effects.git.head();
+    } catch {
+      return undefined;
+    }
+  }
+
+  /** Diagnostic-only ancestry probe; a failing git port yields undefined. */
+  async #gitContainsOrUndefined(commit: string): Promise<boolean | undefined> {
+    try {
+      return await this.#effects.git.contains(commit);
+    } catch {
+      return undefined;
     }
   }
 

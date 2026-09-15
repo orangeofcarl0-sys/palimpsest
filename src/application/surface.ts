@@ -73,7 +73,7 @@ import type { PeerRef } from "../federation/peer.js";
 import { materializePeerRef } from "../federation/peer.js";
 import type { DurablePeerOperation } from "../transport/envelope.js";
 import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
-import type { ProjectController } from "../tools/controller.js";
+import type { ProjectController, ProjectHeadReconciliationResult } from "../tools/controller.js";
 import type { TaskSpec } from "../schema/models.js";
 import type {
   AppendDecisionResult,
@@ -480,6 +480,13 @@ export interface ProjectManagementApplicationSurface {
   step(input?: { readonly confirmed?: boolean | undefined }): Promise<ManagementStepResult>;
   run(input?: { readonly maxSteps?: number | undefined }): Promise<ManagementBoundedRun>;
   requestModeChange(input: { readonly to: ManagementInvolvement }): Promise<{ readonly status: "requested"; readonly detail: string }>;
+  /**
+   * G10-X: the mechanical project-head reconciliation (advance the ProjectIR
+   * head onto the proven effect head through the ordinary revision batch). It
+   * never promotes an attempt, never accepts a caller head, and is a mechanical
+   * consistency step - not a plan revision and not an authority act.
+   */
+  reconcileProjectHead(): Promise<ProjectHeadReconciliationResult>;
 }
 
 export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
@@ -1031,6 +1038,8 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           // A REQUEST only: `requestedBy` is filled here, never supplied by the caller, and the
           // service never applies an upward change on the agent-facing path.
           requestModeChange: (input) => deps.projectManagement!.requestModeChange({ to: input.to, requestedBy: "agent" }),
+          // G10-X mechanical consistency: no caller head, no raw plan, no promotion.
+          reconcileProjectHead: () => deps.projectManagement!.reconcileProjectHead(),
         };
 
   const projections: ProjectionsApplicationSurface = {

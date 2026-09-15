@@ -16,8 +16,10 @@
  *   claim <attemptId>                     claim + worktree
  *   gate  <attemptId> <predicate> <exit> [cmd...]
  *   report <attemptId> completed|failed "<summary>"
- *   promote <gateId> [expectedHead]       gate-passed promotion
- *   pump  [maxSteps]                      fully-automated command executor
+ *   promote <gateId>                      gate-passed promotion of the completed
+ *                                         candidate (source commit + expected head
+ *                                         are derived canonically, never supplied)
+ *   pump  [maxSteps]                      fully-automated command executor (+ head sync)
  *   context <attemptId>                   compile the attempt's context manifest
  *   telemetry [--candidates JSON]         pooled telemetry view (+ optional
  *                                         model advice against a candidate set)
@@ -333,28 +335,29 @@ async function main() {
         break;
       }
       case "promote": {
-        const gateId = a1;
+        const gateId = a1 ?? "gate-release";
         const winner = controller.status().attempts.find((attempt) => attempt.state === "COMPLETED");
         if (winner === undefined) throw new Error("no completed candidate to promote");
-        const report = JSON.parse(
-          new TextDecoder().decode(
-            (
-              store.connection
-                .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
-                .get("project", winner.attempt_id) as { report_json: Uint8Array }
-            ).report_json,
-          ),
-        );
-        // The expected head is the canonical branch's CURRENT head - with the
-        // real GitCliPort this is the live repo head, not the fake constant.
-        const expectedHead = await effects.git.head();
-        const outcome = await controller.promoteWhenGatePasses(
-          winner.attempt_id,
-          report.result_commit ?? THE_COMMIT,
-          expectedHead,
-          gateId ?? "gate-release",
-        );
-        console.log(JSON.stringify(outcome));
+        // G10-X product-safe promotion: the caller names the attempt and the
+        // gate only. The source commit is the attempt's canonical report
+        // result commit and the expected head is the canonically proven effect
+        // head - neither is a caller choice. (The legacy expert path
+        // `controller.promote(attemptId, sourceCommit, expectedHeadCommit)`
+        // stays reachable for internal/tests only.)
+        const verdict = controller.evaluateAttemptGate(gateId, winner.attempt_id);
+        if (verdict.verdict !== "PASS") {
+          console.log(
+            JSON.stringify({
+              promoted: false,
+              gateId,
+              verdict: verdict.verdict,
+              nextEvidenceNeeded: verdict.next_evidence_needed,
+            }),
+          );
+          break;
+        }
+        const outcome = await controller.promoteAttempt({ attemptId: winner.attempt_id, gateId });
+        console.log(JSON.stringify({ promoted: true, result: outcome }));
         break;
       }
       case "pump": {
@@ -371,7 +374,21 @@ async function main() {
           maxSteps: Number.isNaN(maxSteps) ? 20 : maxSteps,
           attribution,
         });
-        console.log(JSON.stringify({ ...result, lastEventType: result.lastEvent?.event_type ?? null }));
+        // G10-X: the pump path never supplies a commit, and it completes the
+        // promotion cycle mechanically. When a prior promotion left the ProjectIR
+        // head behind the proven effect head, reconcile it here (blocked while
+        // work is in flight; the derived head view is reported either way).
+        const headBefore = controller.status().head;
+        if (headBefore !== undefined && headBefore.state === "SYNC_REQUIRED") {
+          await controller.reconcileProjectHead();
+        }
+        console.log(
+          JSON.stringify({
+            ...result,
+            lastEventType: result.lastEvent?.event_type ?? null,
+            head: controller.status().head,
+          }),
+        );
         break;
       }
       case "context": {

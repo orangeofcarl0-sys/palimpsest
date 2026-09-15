@@ -34,6 +34,10 @@ export const OPEN_LOOP_KINDS = [
   "PENDING_BOUNDARY_DECISION",
   "JOURNAL_OPEN_QUESTION",
   "JOURNAL_OPPORTUNITY",
+  // G10-X: the ProjectIR head is behind the canonically proven effect head, or
+  // the promotion chain is broken. Derived from the controller's head status.
+  "PROJECT_HEAD_DRIFT",
+  "PROJECT_HEAD_CONFLICT",
 ] as const;
 export type OpenLoopKind = (typeof OPEN_LOOP_KINDS)[number];
 
@@ -58,8 +62,34 @@ export interface WorkspaceProjectView {
   readonly revision: number;
   readonly digest: string;
   readonly headCommit: string;
+  /**
+   * G10-X: the DERIVED canonical head picture. `state` is the machine value and
+   * `stateLabel` the human rendering (`in sync` / `sync required` / `conflict`);
+   * `latestPromotion` is the provenance of the promotion that produced the head
+   * (null when no promotion is chained). Everything here is copied from the
+   * controller's derived status - the view owns no head of its own.
+   */
+  readonly head?: WorkspaceHeadView | undefined;
   readonly requirements: readonly Requirement[];
   readonly decisions: readonly Decision[];
+}
+
+export interface WorkspaceHeadView {
+  readonly projectHeadCommit: string;
+  readonly provenEffectHeadCommit: string;
+  readonly state: "IN_SYNC" | "SYNC_REQUIRED" | "CONFLICT";
+  readonly stateLabel: "in sync" | "sync required" | "conflict";
+  readonly latestPromotion?:
+    | {
+        readonly promotionId: string;
+        readonly attemptId: string;
+        readonly sourceCommit: string;
+        readonly fromHead: string;
+        readonly toHead: string;
+        readonly eventId: string;
+      }
+    | null
+    | undefined;
 }
 
 export interface WorkspaceTaskView {
@@ -213,6 +243,28 @@ function loopOf(kind: OpenLoopKind, detail: string, subjectRef?: OpenLoopSubject
   };
 }
 
+/**
+ * G10-X: re-render the controller's DERIVED head status as the workspace
+ * overview shape. Undefined when the controller exposes no head view (a bare
+ * controller without the additive field), never a guessed default.
+ */
+function headViewOf(status: ControllerStatusView): WorkspaceHeadView | undefined {
+  const head = status.head;
+  if (head === undefined) return undefined;
+  return {
+    projectHeadCommit: head.projectHeadCommit,
+    provenEffectHeadCommit: head.provenEffectHeadCommit,
+    state: head.state,
+    stateLabel:
+      head.state === "IN_SYNC"
+        ? "in sync"
+        : head.state === "SYNC_REQUIRED"
+          ? "sync required"
+          : "conflict",
+    latestPromotion: head.latestPromotion,
+  };
+}
+
 function byKindCounts(associations: readonly ProjectAssetAssociation[]): Readonly<Record<string, number>> {
   const counts: Record<string, number> = {};
   for (const association of associations) {
@@ -321,6 +373,31 @@ function openLoopsOf(sources: ProjectWorkspaceViewSources): readonly OpenLoop[] 
     loops.push(loopOf("PENDING_BOUNDARY_DECISION", decision.detail, { kind: "boundary_decision", id: decision.id }));
   }
 
+  // G10-X: the canonical head drift/conflict loops. Derived from the
+  // controller's head status only (never from git) - a prompt to look, never a
+  // task and never an automatic head change.
+  const head = status.head;
+  if (head !== undefined && (head.state === "SYNC_REQUIRED" || head.state === "CONFLICT")) {
+    const subject: OpenLoopSubjectRef = { kind: "project", id: sources.project.project_id };
+    if (head.state === "SYNC_REQUIRED") {
+      loops.push(
+        loopOf(
+          "PROJECT_HEAD_DRIFT",
+          `project head ${head.projectHeadCommit} is behind the proven effect head ${head.provenEffectHeadCommit}`,
+          subject,
+        ),
+      );
+    } else {
+      loops.push(
+        loopOf(
+          "PROJECT_HEAD_CONFLICT",
+          `the promotion chain is broken at project head ${head.projectHeadCommit}; the head cannot be advanced automatically`,
+          subject,
+        ),
+      );
+    }
+  }
+
   // Journal knowledge loops — an unresolved question / an unpromoted opportunity.
   for (const view of journalEntries) {
     const entry: ProjectJournalEntry = view.entry;
@@ -420,6 +497,7 @@ export function buildProjectWorkspaceView(sources: ProjectWorkspaceViewSources):
   const associations = sources.associations ?? [];
   const journal = sources.journal ?? [];
   const loops = openLoopsOf(sources);
+  const headView = headViewOf(status);
   const view: ProjectWorkspaceView = {
     schemaVersion: 1,
     projectId: project.project_id,
@@ -428,6 +506,7 @@ export function buildProjectWorkspaceView(sources: ProjectWorkspaceViewSources):
       revision: project.revision,
       digest: project.digest,
       headCommit: project.head_commit,
+      ...(headView === undefined ? {} : { head: headView }),
       requirements: project.requirements.map((requirement) => ({ ...requirement, acceptance_refs: [...requirement.acceptance_refs] })),
       decisions: project.decisions.map((decision) => ({ ...decision, evidence_ids: [...decision.evidence_ids] })),
     },
