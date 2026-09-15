@@ -512,9 +512,12 @@ export interface ProjectManagementApplicationSurface {
 
 /**
  * G10-AC: the read-only monitor face. A force-tick is deliberately NOT here: the
- * operator/debug tick lives on the installed runtime (`installed.monitor.tick()`)
- * and never on an agent-facing or HTTP-authenticated surface, so no such caller
- * can bypass the project's MONITOR preference.
+ * operator/debug tick lives on the installed runtime only - a host calls
+ * `installed.monitor.tick()` directly, never an agent-facing or
+ * HTTP-authenticated surface, so no such caller can bypass the project's MONITOR
+ * preference. The CLI deliberately has NO monitor command (carry-forward
+ * CF-AC-01): this CLI composes no Campaign store, so there is no runtime for a
+ * `palimpsest monitor ...` command to drive.
  */
 export interface MonitorApplicationSurface {
   status(): Promise<CampaignMonitorStatus>;
@@ -1092,8 +1095,22 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
             }),
         };
 
-  const projections: ProjectionsApplicationSurface = {
-    work: async () => {
+  // G10-AC-R §11/§12: the READ-ONLY monitor face. `deps.monitor` was already
+  // declared and already supplied by the install, but this factory never mapped
+  // it onto the returned surface, so `GET /api/monitor/status` and
+  // `GET /api/monitor/preview` always answered 501 ("surface_absent") and no UI
+  // could ever observe a runtime that really exists. The mapping is one-to-one
+  // with the driver's read-only members: there is no force-tick here, because the
+  // operator/debug tick lives on the installed runtime only.
+  const monitor: MonitorApplicationSurface | undefined =
+    deps.monitor === undefined
+      ? undefined
+      : {
+          status: () => deps.monitor!.status(),
+          preview: () => deps.monitor!.previewTick(),
+        };
+
+  const projections: ProjectionsApplicationSurface = {    work: async () => {
       try {
         return workProjection(deps.controller.orchestrationGraph(), deps.controller.viewCursor());
       } catch {
@@ -1160,6 +1177,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
+    ...(monitor === undefined ? {} : { monitor }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

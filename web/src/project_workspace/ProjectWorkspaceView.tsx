@@ -26,12 +26,15 @@ import {
   manageRun,
   manageStatus,
   manageStep,
+  monitorPreview,
+  monitorStatus,
   projectAssets,
   managementActivity,
   operatingPosture,
   projectHistory,
   projectJournal,
   projectOpenLoops,
+  projectOperatingHistory,
   projectWorkspace,
   type ApplicationSurfaceAvailability,
   type ManagementActivityRecord,
@@ -39,9 +42,12 @@ import {
   type ManagementBoundedRun,
   type ManagementInvolvement,
   type ManagementStepResult,
+  type MonitorPreview,
+  type MonitorStatus,
   type OpenLoop,
   type ProjectAssetAssociation,
   type ProjectJournalViewEntry,
+  type ProjectOperatingHistory,
   type ProjectOperatingPostureView,
   type ProjectWorkspaceView as ProjectWorkspaceReadModel,
   type WorkspaceHistoryEntry,
@@ -66,7 +72,7 @@ import {
 
 export type ProjectSurfaceTarget = "project" | "work" | "multigraph" | "proof";
 
-type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management";
+type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management" | "monitor";
 
 const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -75,6 +81,12 @@ const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   { id: "loops", label: "Open Loops" },
   { id: "history", label: "History" },
   { id: "management", label: "Management" },
+  // G10-AC-R §11: Monitor gets its OWN tab rather than a section inside the
+  // Management tab. The Management tab is the TWO-AXIS surface (Work Mode ⊥
+  // Management involvement) and stays readable only if a third, non-management
+  // concern is not folded into it; MONITOR is a Work Mode MODIFIER whose runtime
+  // state is not an axis of management at all.
+  { id: "monitor", label: "Monitor" },
 ];
 
 const INVOLVEMENTS: readonly ManagementInvolvement[] = ["DIRECT", "ASSIST", "MANAGE", "DELEGATE"];
@@ -941,6 +953,298 @@ function ManagementPanel(props: {
 }
 
 /* ------------------------------------------------------------------ *
+ * Monitor (G10-AC-R §11/§12) — read-only runtime observation
+ * ------------------------------------------------------------------ */
+
+/**
+ * The READ-ONLY Monitor card.
+ *
+ *   MonitorPreference ≠ ActiveMonitoring
+ *   RuntimeState      ≠ Availability reason     Preview ≠ Tick
+ *
+ * The Work Mode PREFERENCE ("preferred / not preferred") and the LIVE RUNTIME
+ * state are rendered as two separate sections on purpose: a project may prefer
+ * MONITOR while no runtime exists at all, and a runtime may be running while the
+ * project does not prefer MONITOR. Neither is ever shown as the other, and no
+ * number is invented when the status endpoint is unavailable.
+ */
+function MonitorPanel(props: {
+  readonly status: MonitorStatus | null;
+  readonly statusError: string | null;
+  readonly preview: MonitorPreview | null;
+  readonly previewError: string | null;
+  readonly operatingHistory: ProjectOperatingHistory | null;
+  readonly operatingHistoryError: string | null;
+}): React.ReactElement {
+  if (props.statusError !== null) {
+    return (
+      <div style={{ display: "grid", gap: 14 }}>
+        <Notice testId="monitor-unavailable">
+          No monitor runtime is wired for this installation ({props.statusError}). No runtime state, campaign count,
+          tick source or activation is fabricated here.
+        </Notice>
+        <Section title="What would Monitor do now?" testId="monitor-preview-section">
+          <Notice testId="monitor-preview-never-ticks">A preview reads only; it never ticks.</Notice>
+          {props.previewError === null ? null : (
+            <div data-testid="monitor-preview-unavailable">
+              <Muted>The read-only preview is unavailable too ({props.previewError}).</Muted>
+            </div>
+          )}
+        </Section>
+      </div>
+    );
+  }
+  if (props.status === null) return <Muted>Loading the monitor runtime status…</Muted>;
+
+  const { status } = props;
+  const capability = status.capability;
+  const tickSource = status.tickSource;
+  const lastActivation = status.lastActivation;
+  const preview = props.preview;
+
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <Muted>
+        This card OBSERVES the composed monitor runtime. It owns no state, offers no force-tick, and starts nothing:
+        it reads the same read-only routes an operator would, and the runtime itself is started and stopped by the
+        installation that composed it.
+      </Muted>
+
+      <Section title="Monitor preference (the Work Mode preference)" testId="monitor-preference-section">
+        <Field label="preference" testId="monitor-preference">
+          <b>{status.monitorPreferenceEnabled ? "preferred" : "not preferred"}</b>{" "}
+          <Muted>
+            ({status.preferenceSource === "stored"
+              ? "a stored Work Mode preference"
+              : status.preferenceSource === "safe_default"
+                ? "no stored preference; the safe default applies"
+                : "the preference could not be read"}{" "}
+            — a preference is never an availability claim)
+          </Muted>
+        </Field>
+        <Muted>
+          MONITOR is a Work Mode modifier: the preference says how this project is willing to be organised. It creates
+          no Campaign, no watch and no timer.
+        </Muted>
+      </Section>
+
+      <Section title="Runtime (what is actually composed and started)" testId="monitor-runtime-section">
+        <Field label="runtime" testId="monitor-runtime">
+          <b>{capability.startState}</b>{" "}
+          <Muted>
+            (driver composed: {capability.driverComposed ? "yes" : "no"} · started: {capability.started ? "yes" : "no"}{" "}
+            · provenance {capability.provenance})
+          </Muted>
+        </Field>
+        {capability.startError === null ? null : (
+          <Field label="start error" testId="monitor-start-error">
+            <span style={{ color: COLORS.danger }}>{capability.startError}</span>
+          </Field>
+        )}
+        <Field label="availability" testId="monitor-availability">
+          <b>{status.availability.availability}</b>
+        </Field>
+        <Field label="availability reason" testId="monitor-availability-reason">
+          {status.availability.reason}
+        </Field>
+        <Muted>
+          UNAVAILABLE / MANUAL_ONLY / NOT_CONFIGURED / STARTING / RUNNING / FAILED are runtime states. A composed
+          driver is not a running one: only a resolved tick-source start makes the runtime RUNNING.
+        </Muted>
+      </Section>
+
+      <Section title="Tick source" testId="monitor-tick-source-section">
+        <Field label="tick source" testId="monitor-tick-source">
+          {tickSource === null ? (
+            <Muted>no tick source is configured; ticks are manual only</Muted>
+          ) : (
+            <>
+              <Mono>{tickSource.kind}</Mono> · running <b>{tickSource.running ? "yes" : "no"}</b> · interval{" "}
+              <Mono>{tickSource.intervalMs === undefined ? "none (manual)" : `${String(tickSource.intervalMs)} ms`}</Mono>{" "}
+              · fires <Mono>{String(tickSource.fires)}</Mono>
+            </>
+          )}
+        </Field>
+        <Field label="host wake" testId="monitor-host-wake">
+          {capability.activationConfigured
+            ? "configured: a real host wake activation adapter is bound"
+            : "pull-only: the null/pull adapter records signals and no host can be autonomously woken"}
+        </Field>
+        <Field label="delivery marks" testId="monitor-delivery-marks">
+          <Mono>{status.deliveryMarks}</Mono>{" "}
+          <Muted>
+            (duplicate suppression is deployment-local and is never evidence that a wake succeeded)
+          </Muted>
+        </Field>
+      </Section>
+
+      <Section title="Scoped Campaigns" testId="monitor-campaigns-section">
+        <Field label="scope" testId="monitor-campaigns">
+          <Mono>{status.scopeId}</Mono> · scoped <b>{String(status.scopedCampaignCount)}</b> · dormant{" "}
+          <b>{String(status.dormantCampaignCount)}</b> · active watches <b>{String(status.activeWatchCount)}</b> ·
+          in-flight wakes <b>{String(status.inFlightWakeCount)}</b>
+        </Field>
+        <Muted>
+          Only Campaigns in this scope are ever evaluated, and an empty scope is an honest answer: the runtime never
+          scans a shared store.
+        </Muted>
+      </Section>
+
+      <Section title="Last observed activity" testId="monitor-last-activity-section">
+        <Field label="last tick" testId="monitor-last-tick">
+          {status.lastTick === null ? <Muted>no tick has run in this process</Muted> : <Mono>{status.lastTick}</Mono>}
+        </Field>
+        <Field label="last activation" testId="monitor-last-activation">
+          {lastActivation === null ? (
+            <Muted>no host wake signal has been produced in this process</Muted>
+          ) : (
+            <>
+              signal <Mono>{lastActivation.signalId}</Mono> · phase <b>{lastActivation.phase}</b> · cause{" "}
+              <Mono>{lastActivation.cause}</Mono>
+            </>
+          )}
+        </Field>
+        <Field label="incomplete reason" testId="monitor-incomplete-reason">
+          {status.disabledReason === null ? (
+            <Muted>none: automatic evaluation is not disabled</Muted>
+          ) : (
+            status.disabledReason
+          )}
+        </Field>
+        {lastActivation === null ? null : <Muted>{lastActivation.detail}</Muted>}
+      </Section>
+
+      <Section title={"What would Monitor do now?"} testId="monitor-preview-section">
+        <Notice testId="monitor-preview-never-ticks">
+          This block is a READ-ONLY preview: it never ticks, records no trigger, starts no wake, reconciles nothing and
+          delivers nothing.
+        </Notice>
+        {preview === null ? (
+          <div data-testid="monitor-preview-unavailable">
+            <Muted>
+              {props.previewError === null ? "Loading the read-only preview…" : `The preview is unavailable (${props.previewError}).`}
+            </Muted>
+          </div>
+        ) : (
+          <>
+            <Field label="scoped campaigns" testId="monitor-preview-scoped">
+              <b>{String(preview.scopedCampaignCount)}</b> · {preview.detail}
+            </Field>
+            <Field label="evaluation enabled" testId="monitor-preview-enabled">
+              {preview.enabled ? "MONITOR is preferred; new dormant-watch scans would run" : "MONITOR is not preferred; no new scan would run"}
+              {preview.disabledReason === null ? null : (
+                <>
+                  {" "}
+                  — <Muted>{preview.disabledReason}</Muted>
+                </>
+              )}
+            </Field>
+            {preview.campaigns.length === 0 ? (
+              <div data-testid="monitor-preview-none">
+                <Muted>No Campaign in scope; a tick would evaluate nothing.</Muted>
+              </div>
+            ) : (
+              preview.campaigns.map((campaign) => (
+                <div key={campaign.campaignId} data-testid="monitor-preview-campaign" style={{ fontSize: 12 }}>
+                  <Mono>{campaign.campaignId}</Mono> · lifecycle <b>{campaign.lifecycle}</b> · would begin a wake:{" "}
+                  {campaign.beganWake ? "yes" : "no"}
+                  <div data-testid="monitor-preview-conditions" style={{ color: COLORS.muted }}>
+                    pending triggered conditions:{" "}
+                    {campaign.triggeredWatchIds.length === 0
+                      ? "none"
+                      : campaign.triggeredWatchIds.join(", ")}
+                  </div>
+                  <div data-testid="monitor-preview-continuation" style={{ color: COLORS.muted }}>
+                    in-flight continuation:{" "}
+                    {campaign.wakeCycleId === null
+                      ? "no wake is in flight"
+                      : `wake cycle ${campaign.wakeCycleId}${
+                          campaign.activationPhase === null ? "" : ` · phase ${campaign.activationPhase}`
+                        }`}
+                  </div>
+                  <div data-testid="monitor-preview-detail" style={{ color: COLORS.muted }}>
+                    {campaign.detail}
+                  </div>
+                </div>
+              ))
+            )}
+            <Muted>
+              The preview derives what the next tick WOULD do from canonical Campaign history alone. A trigger that
+              fires is a prompt to reconsider the Campaign — it proves no claim, satisfies no commitment and requires no
+              project action.
+            </Muted>
+          </>
+        )}
+      </Section>
+
+      {/*
+        G10-AC-R §13: the operating history's references to canonical Campaign
+        wake events. The entry carries the campaign, the canonical event id, the
+        event type and an ORDERING KEY — never a copy of the Campaign payload. The
+        key is the canonical chain position, not a wall clock: the Campaign plane
+        records no time, so `campaign-seq:<n>` is labelled as exactly what it is.
+      */}
+      <Section title="Campaign wake references (operating history)" testId="monitor-wake-history-section">
+        {props.operatingHistoryError === null ? null : (
+          <Notice testId="monitor-wake-history-unavailable">
+            The operating history is unavailable for this installation ({props.operatingHistoryError}).
+          </Notice>
+        )}
+        {props.operatingHistory === null ? (
+          <Muted>Loading the derived operating history…</Muted>
+        ) : (
+          (() => {
+            const wakeEntries = props.operatingHistory.entries.filter((entry) => entry.kind === "campaign_wake");
+            return (
+              <>
+                <Field label="campaign wake references" testId="monitor-wake-history-count">
+                  <b>{String(props.operatingHistory.counts.campaignWakeEvents)}</b>{" "}
+                  <Muted>
+                    (references only: the Campaign store remains the canonical owner of every wake event)
+                  </Muted>
+                </Field>
+                <Field label="incomplete audit records" testId="monitor-wake-history-incomplete">
+                  {props.operatingHistory.hasIncompleteAuditRecords
+                    ? "yes — at least one referenced canonical owner could not be read"
+                    : "none — every referenced canonical owner was readable"}
+                </Field>
+                {wakeEntries.length === 0 ? (
+                  <Notice testId="monitor-wake-history-empty">
+                    No canonical Campaign wake event is referenced by this project's operating history. Nothing is
+                    inferred from the absence: a project with no triggered watch legitimately has none.
+                  </Notice>
+                ) : (
+                  wakeEntries.map((entry) => (
+                    <div key={entry.ref} data-testid="monitor-wake-history-row" style={{ fontSize: 12 }}>
+                      <b>{entry.summary}</b> <Mono>{entry.actor}</Mono>
+                      <div data-testid="monitor-wake-history-ref" style={{ color: COLORS.muted }}>
+                        canonical ref: <Mono>{entry.canonicalOutcomeRefs.join(", ")}</Mono> · event{" "}
+                        <Mono>{entry.ref}</Mono>
+                        {entry.incompleteCanonicalRef ? " · incomplete audit record" : ""}
+                      </div>
+                      <div data-testid="monitor-wake-history-at" style={{ color: COLORS.muted }}>
+                        at{" "}
+                        {entry.at.startsWith("campaign-seq:")
+                          ? `Campaign chain position ${entry.at.slice("campaign-seq:".length)} (the Campaign plane records no wall clock)`
+                          : entry.at}
+                      </div>
+                    </div>
+                  ))
+                )}
+                <Muted>
+                  This list is a DERIVED audit view, not a history store: it re-reads the owning planes on every load and
+                  copies nothing but references.
+                </Muted>
+              </>
+            );
+          })()
+        )}
+      </Section>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
  * Main view
  * ------------------------------------------------------------------ */
 
@@ -960,6 +1264,15 @@ export function ProjectWorkspaceView(props: {
   const [posture, setPosture] = useState<ProjectOperatingPostureView | null>(null);
   const [postureError, setPostureError] = useState<string | null>(null);
   const [activity, setActivity] = useState<readonly ManagementActivityRecord[]>([]);
+  // G10-AC-R §11/§12: the read-only monitor runtime observation. A missing
+  // surface is reported, never fabricated.
+  const [monitor, setMonitor] = useState<MonitorStatus | null>(null);
+  const [monitorError, setMonitorError] = useState<string | null>(null);
+  const [monitorPreviewResult, setMonitorPreviewResult] = useState<MonitorPreview | null>(null);
+  const [monitorPreviewError, setMonitorPreviewError] = useState<string | null>(null);
+  // G10-AC-R §13: the derived operating history (references only).
+  const [operatingHistory, setOperatingHistory] = useState<ProjectOperatingHistory | null>(null);
+  const [operatingHistoryError, setOperatingHistoryError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
   const refreshStatus = useCallback(async (): Promise<void> => {
@@ -983,6 +1296,32 @@ export function ProjectWorkspaceView(props: {
       setActivity(await managementActivity(20));
     } catch {
       setActivity([]);
+    }
+    // G10-AC-R §11: the monitor runtime status and the read-only preview. Both are
+    // observation only; an installation without a monitor runtime reports the
+    // absence rather than zeroes.
+    try {
+      setMonitor(await monitorStatus());
+      setMonitorError(null);
+    } catch (error) {
+      setMonitor(null);
+      setMonitorError(errText(error));
+    }
+    try {
+      setMonitorPreviewResult(await monitorPreview());
+      setMonitorPreviewError(null);
+    } catch (error) {
+      setMonitorPreviewResult(null);
+      setMonitorPreviewError(errText(error));
+    }
+    // G10-AC-R §13: the derived operating history. Its Campaign-wake entries are
+    // REFERENCES to canonical Campaign events; an unreadable owner is reported.
+    try {
+      setOperatingHistory(await projectOperatingHistory());
+      setOperatingHistoryError(null);
+    } catch (error) {
+      setOperatingHistory(null);
+      setOperatingHistoryError(errText(error));
     }
   }, []);
 
@@ -1095,6 +1434,16 @@ export function ProjectWorkspaceView(props: {
             surfaces={props.surfaces}
             refreshStatus={refreshStatus}
             onMessage={setMessage}
+          />
+        ) : null}
+        {tab === "monitor" ? (
+          <MonitorPanel
+            status={monitor}
+            statusError={monitorError}
+            preview={monitorPreviewResult}
+            previewError={monitorPreviewError}
+            operatingHistory={operatingHistory}
+            operatingHistoryError={operatingHistoryError}
           />
         ) : null}
       </div>

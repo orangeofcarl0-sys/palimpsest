@@ -40,7 +40,7 @@ import {
   type WorkModeOrderableCandidate,
   type WorkModePreferenceExplanation,
 } from "../project_operating/preference.js";
-import { buildProjectOperatingHistory, type ProjectOperatingHistory } from "../project_operating/history.js";
+import { buildProjectOperatingHistory, type CampaignWakeEventRef, type ProjectOperatingHistory } from "../project_operating/history.js";
 import type { RecipeDefinition } from "../recipes/index.js";
 
 import {
@@ -111,6 +111,16 @@ export interface ProjectManagementServiceDeps {
     | undefined;
   /** The recipe registry used to report readiness (falls back to `recipes`). */
   readonly registry?: { get(recipeId: string): RecipeDefinition | undefined } | undefined;
+  /**
+   * G10-AC-R §13 (additive, read-only): the canonical Campaign wake events of
+   * THIS project's scoped Campaigns, as references. The bounded management service
+   * owns no Campaign store, so this is an injected READ seam, exactly like the
+   * monitor's `CampaignMonitorScopePort`: the scoping decision belongs to whoever
+   * owns the Campaign store (`linkedCampaignWakeEventSource` is the first-party
+   * implementation). Absent ⇒ `operatingHistory()` references ZERO Campaign events
+   * and says so, rather than scanning a shared store or inventing one.
+   */
+  readonly campaignWakeEvents?: (() => Promise<readonly CampaignWakeEventRef[]>) | undefined;
 }
 
 /* ------------------------------------------------------------------ *
@@ -782,7 +792,13 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
       typeof deps.operatingCapabilities === "function"
         ? deps.operatingCapabilities()
         : (deps.operatingCapabilities ?? {});
+    // SPREAD the caller's declaration and only DEFAULT the fields this layer
+    // knows how to infer. Rebuilding a fixed four-field object here silently
+    // dropped every capability the caller declared beyond them - including the
+    // G10-AC monitor runtime wiring - which made the operating posture unable to
+    // see wiring that really existed (G10-AC-R audit finding AC-R-03).
     return {
+      ...declared,
       reasoningBranches: declared.reasoningBranches ?? deps.recipes?.execution !== undefined,
       independentVerifier: declared.independentVerifier ?? false,
       monitorConditionSource: declared.monitorConditionSource ?? false,
@@ -848,6 +864,30 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
     return (await deps.control.history?.(controller.projectId)) ?? [];
   }
 
+  /**
+   * G10-AC-R §13: the canonical Campaign wake events of this project's SCOPED
+   * Campaigns.
+   *
+   * HONEST: this service owns no Campaign store, so it does not scan one. When no
+   * `campaignWakeEvents` seam is wired it returns an EMPTY list — the history then
+   * references zero Campaign events rather than widening to every Campaign in a
+   * shared store or inventing an event. The scope decision lives with the Campaign
+   * owner (`linkedCampaignWakeEventSource` mirrors `linkedCampaignMonitorScope`:
+   * only Campaigns whose own record links THIS project).
+   *
+   * A read failure is reported as an empty list: the operating history is a
+   * derived audit view, and it never turns a store outage into a fabricated event.
+   */
+  async function campaignWakeEventsForHistory(): Promise<readonly CampaignWakeEventRef[]> {
+    const seam = deps.campaignWakeEvents;
+    if (seam === undefined) return Object.freeze([]);
+    try {
+      return await seam();
+    } catch {
+      return Object.freeze([]);
+    }
+  }
+
   async function operatingHistory(): Promise<ProjectOperatingHistory> {
     const all = await activity();
     // Canonical refs are only marked resolvable when the OWNING plane can be
@@ -866,6 +906,14 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
         }
       }
     }
+    // The Campaign references are resolvable by construction: the seam returned
+    // events it had READ from the canonical Campaign owner. A caller that supplies
+    // refs it cannot read leaves them flagged incomplete, exactly like the other
+    // kinds.
+    const campaignWakeEvents = await campaignWakeEventsForHistory();
+    for (const event of campaignWakeEvents) {
+      resolvable.push(`campaign_event:${event.campaignEventId}`);
+    }
     const unresolved = await unresolvedActivity();
     return buildProjectOperatingHistory({
       projectId: controller.projectId,
@@ -874,6 +922,7 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
       activity: all,
       unresolvedRecordIds: unresolved.map((record) => record.recordId),
       resolvableCanonicalRefs: resolvable,
+      campaignWakeEvents,
     });
   }
 

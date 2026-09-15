@@ -10,7 +10,13 @@
  * The synthetic project is seeded through the PUBLIC application/workspace surface before
  * any browser action (setup, never the subject under test): a goal with two requirements,
  * one appended decision, two tasks, one journal OPEN_QUESTION, one associated produced
- * artifact, and management involvement ASSIST.
+ * artifact, management involvement ASSIST, and (G10-AC-R) one project-linked DORMANT
+ * Campaign plus a persisted MONITOR Work Mode preference.
+ *
+ * G10-AC-R composition: the install wires a real monitor SCOPE and NO tick source, so the
+ * runtime is honestly NOT_CONFIGURED/UNAVAILABLE while the project PREFERS MONITOR. That
+ * is the strongest available demonstration that the preference and the runtime are two
+ * separate readings, and it keeps the suite free of background timers.
  *
  * The one honest gap this suite reports: the management surface exposes a single step route
  * and no canonical management-action history, so "recent management actions" on the
@@ -25,10 +31,16 @@ import { join } from "node:path";
 
 import { installPalimpsest } from "../dist/src/advanced.js";
 import {
+  makeCampaignProductionService,
+  makeCampaignService,
+  makeInterventionService,
+  materializeCampaignProjectRef,
   SqliteManagementPreferenceStore,
   SqliteProjectAssetAssociationStore,
   SqliteProjectJournalStore,
+  SqliteCampaignStore,
 } from "../dist/src/advanced.js";
+import { linkedCampaignMonitorScope } from "../dist/src/monitor/index.js";
 import { serveOrchestration } from "../dist/src/serve.js";
 
 const TOKEN = "e2e-project";
@@ -41,6 +53,11 @@ const DECISION_RATIONALE = "Ownership must stay with the canonical subsystem";
 const JOURNAL_TITLE = "Does the derived view need a cache?";
 const ASSET_ID = "artifact-1";
 const ASSET_PROVENANCE = "e2e seed provenance";
+/** G10-AC-R: the Campaign linked to this project, so the monitor scope is not empty. */
+const CAMPAIGN_ID = "e2e-campaign";
+const INSTITUTION_ID = "e2e-institution";
+/** A `not_before` condition strictly in the past: the watch IS satisfied. */
+const WATCH_AT = "2026-01-01T00:00:00Z";
 /** controller.start mints the genesis revision (0 before this run's decision);
  * the single appended decision mints the revision this suite observes. */
 const EXPECTED_REVISION = 1;
@@ -51,11 +68,61 @@ interface WorkspaceSession {
   close(): Promise<void>;
 }
 
+/**
+ * G10-AC-R: seed ONE project-linked DORMANT Campaign with a SATISFIED
+ * `not_before` watch. This is setup only: it makes the monitor scope non-empty and
+ * gives the read-only preview something real to derive. No tick source is wired,
+ * so nothing runs in the background during this suite.
+ */
+async function seedLinkedDormantCampaign(store: SqliteCampaignStore): Promise<void> {
+  const institutions = {
+    inspectEpoch: async (institutionId: string) => ({
+      state: "known" as const,
+      value: { institutionId, epoch: 1, digest: "e".repeat(64) },
+    }),
+  };
+  let commitment = 0;
+  let watch = 0;
+  let wake = 0;
+  let observation = 0;
+  let revision = 0;
+  const campaign = makeCampaignService({
+    store,
+    allocateCommitmentId: () => `cc-${++commitment}`,
+    institutions,
+  });
+  const production = makeCampaignProductionService({
+    store,
+    institutions,
+    work: { inspectProject: async () => ({ state: "known" as const, value: "running" as const }) },
+    allocateWakeCycleId: () => `wc-${++wake}`,
+    allocateWatchId: () => `w-${++watch}`,
+    allocateObservationId: () => `obs-${++observation}`,
+    allocateRevisionId: () => `br-${++revision}`,
+  });
+  const intervention = makeInterventionService({ store, allocateInterventionId: () => "iv-1" });
+  await campaign.createCampaign({ campaignId: CAMPAIGN_ID, institutionId: INSTITUTION_ID, statement: "wait" });
+  await intervention.register({
+    campaignId: CAMPAIGN_ID,
+    project: materializeCampaignProjectRef({ projectId: PROJECT_ID, revision: 0, digest: "d".repeat(64) }),
+    purpose: "test",
+    targetHypothesisIds: [],
+  });
+  const dormant = await production.admitWait({
+    campaignId: CAMPAIGN_ID,
+    reason: "nothing useful yet",
+    watches: [{ condition: { kind: "not_before", at: WATCH_AT }, reason: "review" }],
+  });
+  if (dormant.status !== "dormant") throw new Error(`expected DORMANT, got ${dormant.status}`);
+}
+
 async function startWorkspace(): Promise<WorkspaceSession> {
   const dir = mkdtempSync(join(tmpdir(), "palimpsest-e2e-project-"));
   const associations = new SqliteProjectAssetAssociationStore(join(dir, "associations.sqlite"));
   const journal = new SqliteProjectJournalStore(join(dir, "journal.sqlite"));
   const management = new SqliteManagementPreferenceStore(join(dir, "management.sqlite"));
+  const campaignStore = new SqliteCampaignStore(join(dir, "campaign.sqlite"));
+  await seedLinkedDormantCampaign(campaignStore);
 
   const installed = installPalimpsest({ tools: { register: () => undefined } }, {
     projectId: PROJECT_ID,
@@ -64,6 +131,22 @@ async function startWorkspace(): Promise<WorkspaceSession> {
     projectAssociationStore: associations,
     projectJournalStore: journal,
     managementPreferenceStore: management,
+    // G10-AC-R §11/§12: the REAL monitor composition. A scope is wired, so the
+    // read-only monitor surface exists and reports live state; NO tick source is
+    // wired, so the runtime is honestly NOT_CONFIGURED/UNAVAILABLE and nothing
+    // runs in the background during this suite.
+    campaignStore,
+    campaignInstitutionEpochPort: {
+      inspectEpoch: async (institutionId: string) => ({
+        state: "known" as const,
+        value: { institutionId, epoch: 1, digest: "e".repeat(64) },
+      }),
+    },
+    campaignMonitorScope: linkedCampaignMonitorScope({ store: campaignStore }),
+    // A fixed campaign clock keeps the `not_before` evaluation deterministic: the
+    // seeded watch is satisfied, so the read-only preview has something real to
+    // derive on any machine.
+    campaignClock: () => "2026-09-16T00:00:00Z",
   });
 
   // Seed the synthetic project through the PUBLIC application surface: the
@@ -100,6 +183,14 @@ async function startWorkspace(): Promise<WorkspaceSession> {
     provenance: ASSET_PROVENANCE,
   });
   await management.set({ projectId: PROJECT_ID, involvement: "ASSIST", updatedBy: "e2e-operator" });
+  // The OPERATOR path persists the Work Mode preference: the project PREFERS
+  // MONITOR while (see above) no runtime is actually running. The Monitor card
+  // must show those two facts separately.
+  await installed.projectManagement!.setWorkModePreference({
+    baseMode: "FOCUS",
+    modifiers: ["MONITOR"],
+    updatedBy: "e2e-operator",
+  });
 
   const handle = await serveOrchestration(installed.controller, {
     host: "127.0.0.1",
@@ -114,6 +205,11 @@ async function startWorkspace(): Promise<WorkspaceSession> {
     close: async () => {
       await handle.close();
       await installed.dispose();
+      try {
+        campaignStore.close();
+      } catch {
+        // The install may already have closed the Campaign store.
+      }
       try {
         rmSync(dir, { recursive: true, force: true });
       } catch {
@@ -203,6 +299,9 @@ test.describe("G10-V Project Workspace", () => {
     // legitimate, honest state - nothing is fabricated to fill it).
     await expect(page.getByTestId("management-activity-section")).toBeVisible();
     await expect(page.getByTestId("management-involvement")).toContainText("ASSIST");
+    // G10-AC-R: the Monitor tab is a separate, read-only observation surface; it
+    // is present in the tab strip (its own assertions live in E2E-PROJECT-03).
+    await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeVisible();
     await expect(page.getByTestId("management-allowed")).toContainText("OBSERVE");
     await expect(page.getByTestId("management-allowed")).toContainText("RECOMMEND");
     await expect(page.getByTestId("management-confirmation")).toContainText("APPROVE_DISCLOSURE");
@@ -247,5 +346,83 @@ test.describe("G10-V Project Workspace", () => {
 
     // The MultiGraph debugger still exists on the advanced project header.
     await expect(page.getByRole("button", { name: "MultiGraph 调试器" })).toBeVisible();
+  });
+
+  /**
+   * G10-AC-R §11–§12: the Monitor card. This suite wires a real monitor SCOPE but
+   * NO tick source, so the product must show a PREFERRED Work Mode next to a
+   * runtime that is NOT configured and NOT available — two facts, never collapsed.
+   * The preview block must state, visibly, that it never ticks.
+   */
+  test("E2E-PROJECT-03: the Monitor tab shows the preference and the runtime separately and never ticks", async ({ page }) => {
+    await page.goto(session.url);
+    await page.getByRole("button", { name: "Monitor", exact: true }).click();
+
+    // 1. The section is visible, with its own blocks.
+    await expect(page.getByTestId("monitor-preference-section")).toBeVisible();
+    await expect(page.getByTestId("monitor-runtime-section")).toBeVisible();
+    await expect(page.getByTestId("monitor-tick-source-section")).toBeVisible();
+    await expect(page.getByTestId("monitor-campaigns-section")).toBeVisible();
+    await expect(page.getByTestId("monitor-preview-section")).toBeVisible();
+
+    // 2. The PREFERENCE and the RUNTIME are two separate readings, and neither
+    //    one is presented as the other. The project prefers MONITOR (the operator
+    //    persisted that in setup) while no tick source exists at all.
+    const preference = page.getByTestId("monitor-preference");
+    const runtime = page.getByTestId("monitor-runtime");
+    await expect(preference).toContainText("preferred");
+    await expect(preference).not.toContainText("NOT_CONFIGURED");
+    await expect(runtime).toContainText("NOT_CONFIGURED");
+    await expect(runtime).not.toContainText("preferred");
+
+    // 3. Availability is derived from the real wiring and named verbatim: a
+    //    scope-only composition is NOT available.
+    await expect(page.getByTestId("monitor-availability")).toContainText("UNAVAILABLE");
+    await expect(page.getByTestId("monitor-availability-reason")).toContainText("scope only");
+
+    // 4. Tick source and host wake are honest about the wiring that does not exist.
+    await expect(page.getByTestId("monitor-tick-source")).toContainText("no tick source is configured");
+    await expect(page.getByTestId("monitor-host-wake")).toContainText("pull-only");
+    await expect(page.getByTestId("monitor-delivery-marks")).toContainText("disabled");
+
+    // 5. The scoped Campaign is counted (one dormant Campaign, one active watch).
+    await expect(page.getByTestId("monitor-campaigns")).toContainText("scoped 1");
+    await expect(page.getByTestId("monitor-campaigns")).toContainText("dormant 1");
+
+    // 6. Nothing has ticked and nothing has been activated in this process, and
+    //    the reason new scanning is not running is stated (the runtime, not the
+    //    preference, is what is missing).
+    await expect(page.getByTestId("monitor-last-tick")).toContainText("no tick has run in this process");
+    await expect(page.getByTestId("monitor-last-activation")).toContainText("no host wake signal has been produced");
+    await expect(page.getByTestId("monitor-incomplete-reason")).toBeVisible();
+
+    // 7. The preview is visibly READ-ONLY, and it derives the real pending
+    //    condition from canonical Campaign history without performing it.
+    await expect(page.getByTestId("monitor-preview-never-ticks")).toContainText("never ticks");
+    await expect(page.getByTestId("monitor-preview-scoped")).toContainText("1");
+    const previewCampaign = page.getByTestId("monitor-preview-campaign");
+    await expect(previewCampaign).toHaveCount(1);
+    await expect(previewCampaign).toContainText(CAMPAIGN_ID);
+    await expect(previewCampaign).toContainText("DORMANT");
+    await expect(previewCampaign.getByTestId("monitor-preview-conditions")).toContainText("w-1");
+    await expect(previewCampaign.getByTestId("monitor-preview-continuation")).toContainText("no wake is in flight");
+
+    // 8. This card offers NO force-tick: the only tick path is the installed
+    //    runtime's own `tick()`, never an HTTP- or UI-authenticated one.
+    await expect(page.getByRole("button", { name: /tick|force|run monitor/i })).toHaveCount(0);
+
+    // 9. G10-AC-R §13: the operating history's references to canonical Campaign
+    //    wake events. Nothing has ticked in this installation, so the honest state
+    //    is an explicit empty reference list — never an invented event.
+    await expect(page.getByTestId("monitor-wake-history-section")).toBeVisible();
+    await expect(page.getByTestId("monitor-wake-history-count")).toContainText("0");
+    await expect(page.getByTestId("monitor-wake-history-empty")).toContainText("No canonical Campaign wake event");
+    await expect(page.getByTestId("monitor-wake-history-row")).toHaveCount(0);
+    // And the app surface discovery route now reports the read-only monitor face.
+    const surfaces = await page.evaluate(async (headers: Record<string, string>) => {
+      const response = await fetch("/api/application/surfaces", { headers });
+      return (await response.json()) as Record<string, boolean>;
+    }, { authorization: `Bearer ${TOKEN}` });
+    expect(surfaces.monitor).toBe(true);
   });
 });
