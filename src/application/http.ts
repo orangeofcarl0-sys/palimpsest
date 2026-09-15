@@ -715,6 +715,15 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       }),
     );
   }
+  // G10-X: mechanical project-head reconciliation (operator/management-driven).
+  // The endpoint wraps `reconcileProjectHead()`: the caller supplies NOTHING -
+  // there is no head, source commit, expected head or plan field on the wire -
+  // and the head can only advance onto the canonically proven effect head when
+  // the project is quiescent. It never promotes an attempt.
+  if (pathname === "/api/project/reconcile_head") {
+    requirePost();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").reconcileProjectHead());
+  }
 
   /* ---- management autonomy (G10-V; mode ≠ authority, request only) ---- */
   if (pathname === "/api/manage/status") {

@@ -19,7 +19,7 @@
 
 import { canonicalDigest } from "../schema/canonical.js";
 import { parseProjectIr, type ProjectIr, type TaskSpec } from "../schema/models.js";
-import { decodeJsonBlob, type ProjectController } from "../tools/controller.js";
+import { decodeJsonBlob, type ProjectController, type ProjectHeadReconciliationResult } from "../tools/controller.js";
 import { materializeRecipePlan } from "../recipes/artifacts.js";
 import { compileRecipePlan } from "../recipes/compiler.js";
 import type { RecipeExecutionService } from "../recipes/execution.js";
@@ -32,6 +32,7 @@ import {
   CAPABILITY_PLAN,
   CAPABILITY_RECIPE_EXECUTION,
   CAPABILITY_RECOMMEND,
+  CAPABILITY_RECONCILE_HEAD,
   CAPABILITY_RUN_TURN,
   CAPABILITY_VERIFY,
   deriveManagementActionCandidates,
@@ -113,6 +114,13 @@ export interface ProjectManagementService {
   runBounded(input?: { readonly maxSteps?: number | undefined }): Promise<ManagementBoundedRun>;
   requestModeChange(input: { readonly to: ManagementInvolvement; readonly requestedBy: string }): Promise<{ readonly status: "requested"; readonly detail: string }>;
   applyOperatorModeChange(input: { readonly to: ManagementInvolvement; readonly updatedBy: string }): Promise<ManagementAutonomyProfile>;
+  /**
+   * G10-X: the mechanical project-head reconciliation. It calls the
+   * controller's canonical `reconcileProjectHead()` (which advances the
+   * ProjectIR head onto the proven effect head through the ordinary revision
+   * batch) and can NEVER promote an attempt or grant promotion authority.
+   */
+  reconcileProjectHead(): Promise<ProjectHeadReconciliationResult>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -123,6 +131,7 @@ const EXECUTION_PRIORITY: readonly ManagementActionClass[] = Object.freeze([
   "ADVANCE_MECHANICAL_WORK",
   "START_LOCAL_RECIPE",
   "RUN_LOCAL_VERIFY",
+  "RECONCILE_PROJECT_HEAD",
   "DISPATCH_LOCAL_WORK",
   "APPLY_LOCAL_PLAN_REVISION",
   "PREPARE",
@@ -191,6 +200,7 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
       case CAPABILITY_PREPARE:
       case CAPABILITY_RUN_TURN:
       case CAPABILITY_PLAN:
+      case CAPABILITY_RECONCILE_HEAD:
         return true;
       case CAPABILITY_RECIPE_EXECUTION:
         return deps.capabilities?.recipeExecution ?? deps.recipes?.execution !== undefined;
@@ -369,6 +379,28 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
         return stepResult("executed", candidate.kind, "ran the configured local verification port");
       }
 
+      case "RECONCILE_PROJECT_HEAD": {
+        // G10-X: the MECHANICAL CONSISTENCY step. It calls the controller's
+        // canonical reconciliation (never a raw plan, never a caller head) - the
+        // ProjectIR head is advanced onto the proven effect head and the retained
+        // tasks are re-authorized onto it. It does NOT promote anything.
+        const outcome = await controller.reconcileProjectHead();
+        if (outcome.status === "blocked") {
+          return stepResult(
+            "nothing_to_do",
+            candidate.kind,
+            `the project head cannot advance yet: ${outcome.blockers.join("; ")}`,
+          );
+        }
+        return stepResult(
+          "executed",
+          candidate.kind,
+          `project head ${outcome.status}: ${outcome.fromHead} -> ${outcome.toHead}${
+            outcome.revision === undefined ? "" : ` at revision ${outcome.revision}`
+          }`,
+        );
+      }
+
       default:
         return stepResult("not_permitted", candidate.kind, `${candidate.kind} has no governed execution binding in this layer`);
     }
@@ -470,6 +502,17 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
     return deps.control.set({ projectId: controller.projectId, involvement: to, updatedBy });
   }
 
+  /**
+   * G10-X: the mechanical project-head reconciliation exposed as an explicit,
+   * bounded operation (the HTTP `POST /api/project/reconcile_head` path and the
+   * `palimpsest_manage` action both land here). It delegates to the controller's
+   * canonical derivation - no head, source commit or plan is ever supplied by
+   * the caller, and it cannot promote.
+   */
+  async function reconcileProjectHead(): Promise<ProjectHeadReconciliationResult> {
+    return controller.reconcileProjectHead();
+  }
+
   return Object.freeze({
     assess,
     recommend,
@@ -478,5 +521,6 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
     runBounded,
     requestModeChange,
     applyOperatorModeChange,
+    reconcileProjectHead,
   });
 }

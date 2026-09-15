@@ -67,6 +67,12 @@ export const DEFAULT_ACTION_POLICY: ManagementActionPolicyTable = Object.freeze(
   RUN_LOCAL_VERIFY: Object.freeze({ DIRECT: "explicit", ASSIST: "no", MANAGE: "yes", DELEGATE: "yes" }),
 
   APPLY_LOCAL_PLAN_REVISION: Object.freeze({ DIRECT: "explicit", ASSIST: "no", MANAGE: "confirmation", DELEGATE: "within_envelope" }),
+  // G10-X: a MECHANICAL CONSISTENCY action, not a plan revision. It advances the
+  // ProjectIR head onto the canonically proven effect head (and re-authorizes the
+  // retained tasks onto that base) - it never promotes an attempt and never
+  // grants promotion authority. ASSIST can only SUGGEST it; MANAGE/DELEGATE may
+  // execute the mechanical consistency step; DIRECT needs an explicit act.
+  RECONCILE_PROJECT_HEAD: Object.freeze({ DIRECT: "explicit", ASSIST: "suggest", MANAGE: "yes", DELEGATE: "yes" }),
   DISPATCH_LOCAL_WORK: Object.freeze({ DIRECT: "explicit", ASSIST: "no", MANAGE: "existing_plan", DELEGATE: "yes" }),
 
   SEND_PEER_REQUEST: Object.freeze({ DIRECT: "explicit", ASSIST: "suggest", MANAGE: "confirmation", DELEGATE: "confirmation" }),
