@@ -586,7 +586,23 @@ describe("G10-V no escalation path on the agent-facing surface", () => {
         });
 
         const surface = application.projectManagement!;
-        expect(Object.keys(surface).sort()).toEqual(["preview", "recommend", "reconcileProjectHead", "requestModeChange", "run", "status", "step"]);
+        // G10-AB: the operating-posture READS and the Work Mode REQUEST join the
+      // agent-facing surface. The surface still exposes NO mutation of the
+      // user-level default: `setWorkModePreference` stays operator-only, exactly
+      // like `applyOperatorModeChange`.
+      expect(Object.keys(surface).sort()).toEqual([
+        "activity",
+        "operatingHistory",
+        "posture",
+        "preview",
+        "recommend",
+        "reconcileProjectHead",
+        "requestModeChange",
+        "requestWorkModeChange",
+        "run",
+        "status",
+        "step",
+      ]);
         for (const forbidden of [
           "applyOperatorModeChange",
           "setModeUpward",
@@ -615,7 +631,18 @@ describe("G10-V no escalation path on the agent-facing surface", () => {
         const manage = tools.find((tool) => tool.name === "palimpsest_manage")!;
         expect(manage).toBeDefined();
         const actions = (manage as unknown as { parameters: { properties: { action: { enum: readonly string[] } } } }).parameters.properties.action.enum;
-        expect([...actions]).toEqual(["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"]);
+        expect([...actions]).toEqual([
+        "status",
+        "recommend",
+        "preview",
+        "step",
+        "run",
+        "request_mode_change",
+        "reconcile_project_head",
+        "posture",
+        "activity",
+        "request_work_mode_change",
+      ]);
         for (const forbidden of [
           "apply_operator_mode",
           "set_mode_upward",

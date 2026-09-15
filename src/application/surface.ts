@@ -101,6 +101,10 @@ import type {
   ManagementStepResult,
   ProjectManagementService,
 } from "../project_management/index.js";
+import type { ProjectOperatingPostureView } from "../project_operating/posture.js";
+import type { ManagementActivityRecord } from "../project_operating/activity.js";
+import type { ProjectOperatingHistory } from "../project_operating/history.js";
+import type { WorkModeBaseMode, WorkModeModifier } from "../project_operating/work_mode_profile.js";
 import { definePalimpsestControl } from "../tools/control_surface.js";
 import type { ProjectionEnvelope } from "./projection_types.js";
 import { collaborationProjection, organizationProjection, reasoningProjection, runtimeProjection, workProjection } from "./projections.js";
@@ -487,6 +491,19 @@ export interface ProjectManagementApplicationSurface {
    * consistency step - not a plan revision and not an authority act.
    */
   reconcileProjectHead(): Promise<ProjectHeadReconciliationResult>;
+  /**
+   * G10-AB (additive): the DERIVED operating posture and the durable management
+   * activity history. Both are read-only over non-authoritative stores, and a
+   * Work Mode change is a REQUEST only - the agent-facing path never persists
+   * the user-level project default.
+   */
+  posture(): Promise<ProjectOperatingPostureView>;
+  activity(limit?: number): Promise<readonly ManagementActivityRecord[]>;
+  operatingHistory(): Promise<ProjectOperatingHistory>;
+  requestWorkModeChange(input: {
+    readonly baseMode: WorkModeBaseMode;
+    readonly modifiers: readonly WorkModeModifier[];
+  }): Promise<{ readonly status: "requested"; readonly detail: string }>;
 }
 
 export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
@@ -1040,6 +1057,16 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           requestModeChange: (input) => deps.projectManagement!.requestModeChange({ to: input.to, requestedBy: "agent" }),
           // G10-X mechanical consistency: no caller head, no raw plan, no promotion.
           reconcileProjectHead: () => deps.projectManagement!.reconcileProjectHead(),
+          // G10-AB: derived reads plus a Work Mode REQUEST (never a mutation).
+          posture: () => deps.projectManagement!.posture(),
+          activity: (limit) => deps.projectManagement!.activity(limit),
+          operatingHistory: () => deps.projectManagement!.operatingHistory(),
+          requestWorkModeChange: (input) =>
+            deps.projectManagement!.requestWorkModeChange({
+              baseMode: input.baseMode,
+              modifiers: input.modifiers,
+              requestedBy: "agent",
+            }),
         };
 
   const projections: ProjectionsApplicationSurface = {

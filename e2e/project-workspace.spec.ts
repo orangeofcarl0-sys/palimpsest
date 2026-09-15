@@ -194,6 +194,14 @@ test.describe("G10-V Project Workspace", () => {
     );
     await expect(page.getByTestId("management-work-mode")).toBeVisible();
     await expect(page.getByTestId("management-work-mode")).toContainText("Work Mode");
+    // G10-AB: the Work Mode is REAL persisted state now, and the effective
+    // availability is shown separately from the preference.
+    await expect(page.getByTestId("management-work-mode")).toContainText(/FOCUS|EXPLORE|COORDINATE/u);
+    await expect(page.getByTestId("management-work-mode-effective")).toBeVisible();
+    await expect(page.getByTestId("management-mode-status").first()).toBeVisible();
+    // The durable, append-only management activity section exists (empty is a
+    // legitimate, honest state - nothing is fabricated to fill it).
+    await expect(page.getByTestId("management-activity-section")).toBeVisible();
     await expect(page.getByTestId("management-involvement")).toContainText("ASSIST");
     await expect(page.getByTestId("management-allowed")).toContainText("OBSERVE");
     await expect(page.getByTestId("management-allowed")).toContainText("RECOMMEND");
