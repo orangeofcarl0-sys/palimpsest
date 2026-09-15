@@ -101,6 +101,10 @@ import type {
   ManagementStepResult,
   ProjectManagementService,
 } from "../project_management/index.js";
+import type {
+  CampaignMonitorStatus,
+  CampaignMonitorTickResult,
+} from "../monitor/index.js";
 import type { ProjectOperatingPostureView } from "../project_operating/posture.js";
 import type { ManagementActivityRecord } from "../project_operating/activity.js";
 import type { ProjectOperatingHistory } from "../project_operating/history.js";
@@ -506,6 +510,18 @@ export interface ProjectManagementApplicationSurface {
   }): Promise<{ readonly status: "requested"; readonly detail: string }>;
 }
 
+/**
+ * G10-AC: the read-only monitor face. A force-tick is deliberately NOT here: the
+ * operator/debug tick lives on the installed runtime (`installed.monitor.tick()`)
+ * and never on an agent-facing or HTTP-authenticated surface, so no such caller
+ * can bypass the project's MONITOR preference.
+ */
+export interface MonitorApplicationSurface {
+  status(): Promise<CampaignMonitorStatus>;
+  /** READ-ONLY: what a tick would do. Never ticks. */
+  preview(): Promise<CampaignMonitorTickResult>;
+}
+
 export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
   readonly boundary?: BoundaryApplicationSurface | undefined;
@@ -535,6 +551,8 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
   readonly projectManagement?: ProjectManagementApplicationSurface | undefined;
   /** Derived MultiGraph projections (read-only; never a canonical graph). */
   readonly projections?: ProjectionsApplicationSurface | undefined;
+  /** G10-AC (additive): read-only long-horizon monitor status and preview. */
+  readonly monitor?: MonitorApplicationSurface | undefined;
 }
 
 export interface ApplicationSurfaceDeps {
@@ -578,6 +596,11 @@ export interface ApplicationSurfaceDeps {
   readonly projectWorkspace?: ProjectWorkspaceService | undefined;
   /** G10-V (additive): the bounded management service; absent ⇒ no management surface. */
   readonly projectManagement?: ProjectManagementService | undefined;
+  /** G10-AC: the composed Campaign monitor driver, when the operator wired one. */
+  readonly monitor?: {
+    status(): Promise<CampaignMonitorStatus>;
+    previewTick(): Promise<CampaignMonitorTickResult>;
+  } | undefined;
 }
 
 function invalidInput(message: string): Error {

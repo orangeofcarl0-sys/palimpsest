@@ -221,8 +221,23 @@ export interface UserWorkModeControlPort {
 export interface WorkModeCapabilityInputs {
   /** A genuine independent verifier is configured. */
   readonly independentVerifier: boolean;
-  /** A production Monitor condition source exists. */
+  /**
+   * A production Monitor condition source exists. Kept for an embedder that
+   * genuinely has an EQUIVALENT external implementation; on its own it is only a
+   * declaration, which is why `monitorRuntime` below is preferred.
+   */
   readonly monitorConditionSource: boolean;
+  /**
+   * G10-AC §34: a REAL monitor runtime is composed - a driver with an explicit
+   * tick source and an activation port. Availability is derived from this wiring
+   * rather than from a bare boolean claim.
+   */
+  readonly monitorRuntime?: boolean | undefined;
+  /**
+   * WHERE the runtime comes from. `first_party` is the composed Campaign monitor
+   * driver; `declared_external` is an embedder's truthful equivalence claim.
+   */
+  readonly monitorRuntimeProvenance?: "first_party" | "declared_external" | undefined;
   /** Reasoning-branch execution is available for EXPLORE. */
   readonly reasoningBranches: boolean;
   /** A genuine already-independent sovereign peer exists for COORDINATE. */
