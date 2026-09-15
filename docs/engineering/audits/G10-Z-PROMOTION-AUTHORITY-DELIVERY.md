@@ -152,6 +152,11 @@ PR checks                        run 35009800175  attempt 1  e2e pass / unit pas
 merged commit (canonical main)   2761b50e6fc4bf352495c6dd1a9ac2735c7e545e
   "Merge pull request #92 from orangeofcarl0-sys/experiment/g10-z-promotion-authority"
 tree identity                    git diff 15d6e58 2761b50  ->  EMPTY (identical trees)
+closure PR                       #93  experiment/g10-z-closure -> main
+closure PR checks                run 35010856337  attempt 1  e2e pass / unit pass
+closure merge (canonical main)   ae87cab2777436719b994590661dfd5aeee5837b
+closure tree identity            git diff c7943bc ae87cab  ->  EMPTY (identical trees)
+canonical main run               35011031215  attempt 1  conclusion: success
 ```
 
 The required-check run for the PR concluded green on **attempt 1**; no rerun was
@@ -167,6 +172,10 @@ the repository is public, and the query
 rather than created-and-hidden. This is recorded as an observation about the
 trigger, not as a code result; canonical main's content is the byte-identical tree
 that the green PR run `35009800175` validated (`git diff 15d6e58 2761b50` is empty).
+
+The miss was one-off rather than a systemic trigger change: the immediately
+following docs-only closure merge (`ae87cab2`, PR #93) **did** produce a `push`
+run - `35011031215`, attempt 1, conclusion `success`.
 
 ### Reproducing the local gate
 
