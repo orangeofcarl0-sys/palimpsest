@@ -60,6 +60,15 @@ export interface ProjectAgentDeploymentProfile {
     readonly boundaryMemory?: string | undefined;
     readonly runtimeScope?: string | undefined;
     readonly attentionMarks?: string | undefined;
+    /**
+     * G10-V (additive): the Palimpsest-owned project-asset association history. Supplying it
+     * (with `projectJournal`) enables the DERIVED project workspace + management surfaces.
+     */
+    readonly projectAssociations?: string | undefined;
+    /** G10-V (additive): the Palimpsest-owned project journal history. */
+    readonly projectJournal?: string | undefined;
+    /** G10-V (additive): the deployment-local, NON-authoritative operator management preference. */
+    readonly management?: string | undefined;
   };
   /** Non-authoritative discovery hints; absent ⇒ the directory is honestly UNKNOWN. */
   readonly directory?: readonly DeploymentDirectoryEntry[] | undefined;
@@ -221,7 +230,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
   const databasesObject = asObject(object.databases, `${what}.databases`);
   exactKeys(
     databasesObject,
-    ["orchestration", "ordarium", "coordination", "transportCursors", "boundaryMemory", "runtimeScope", "attentionMarks"],
+    ["orchestration", "ordarium", "coordination", "transportCursors", "boundaryMemory", "runtimeScope", "attentionMarks", "projectAssociations", "projectJournal", "management"],
     `${what}.databases`,
   );
 
@@ -244,6 +253,9 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ...(optionalString(databasesObject, "boundaryMemory", `${what}.databases`) === undefined ? {} : { boundaryMemory: optionalString(databasesObject, "boundaryMemory", `${what}.databases`)! }),
       ...(optionalString(databasesObject, "runtimeScope", `${what}.databases`) === undefined ? {} : { runtimeScope: optionalString(databasesObject, "runtimeScope", `${what}.databases`)! }),
       ...(optionalString(databasesObject, "attentionMarks", `${what}.databases`) === undefined ? {} : { attentionMarks: optionalString(databasesObject, "attentionMarks", `${what}.databases`)! }),
+      ...(optionalString(databasesObject, "projectAssociations", `${what}.databases`) === undefined ? {} : { projectAssociations: optionalString(databasesObject, "projectAssociations", `${what}.databases`)! }),
+      ...(optionalString(databasesObject, "projectJournal", `${what}.databases`) === undefined ? {} : { projectJournal: optionalString(databasesObject, "projectJournal", `${what}.databases`)! }),
+      ...(optionalString(databasesObject, "management", `${what}.databases`) === undefined ? {} : { management: optionalString(databasesObject, "management", `${what}.databases`)! }),
     }),
     ...(object.directory === undefined ? {} : { directory: parseDirectory(object.directory, `${what}.directory`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),

@@ -82,6 +82,7 @@ import type {
 import {
   committedReconciliationOf,
   inFlightWake,
+  linkedProjectRefs,
   makeCampaignProductionService,
   makeCampaignService,
   makeCompilerService,
@@ -89,6 +90,7 @@ import {
   makeLifecycleService,
   makeNextActionAdmissionService,
   makeProspectiveService,
+  projectLinkedProjects,
 } from "./campaign/index.js";
 import type { CampaignProductionService, NextActionAdmissionService } from "./campaign/index.js";
 import type {
@@ -150,6 +152,23 @@ import {
   proofCampaignEvidencePort,
 } from "./proof_asset/index.js";
 import type { ProofSourceContentPort } from "./proof_asset/source_content_port.js";
+import type { ProjectWorkspaceCampaignPort, ProjectWorkspaceService } from "./project_workspace/index.js";
+import { makeProjectWorkspaceService, SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "./project_workspace/index.js";
+import type {
+  ManagementAutonomyProfile,
+  ManagementInvolvement,
+  ProjectManagementService,
+  UserManagementControlPort,
+} from "./project_management/index.js";
+import {
+  DEFAULT_MAX_STEPS_PER_RUN,
+  defaultAllowedActionClasses,
+  defaultConfirmationBoundaries,
+  defaultManagementProfile,
+  makeProjectManagementService,
+  materializeManagementProfile,
+  SqliteManagementPreferenceStore,
+} from "./project_management/index.js";
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -340,6 +359,20 @@ export interface InstallPalimpsestOptions {
   disclosureAdmission?: DisclosureAdmissionPort | undefined;
   /** G10-T (additive): the LOCAL disclosure export root. Absent ⇒ no exporter is wired. */
   disclosureExporterRoot?: string | undefined;
+  /**
+   * G10-V (additive): the Palimpsest-owned append-only ProjectAssetAssociation store (one
+   * project's associations). Supplying it (or the journal / a proof store) enables the DERIVED
+   * project workspace surface; absent ⇒ no projectWorkspace surface (never a stub).
+   */
+  projectAssociationStore?: SqliteProjectAssetAssociationStore | undefined;
+  /** G10-V (additive): the Palimpsest-owned append-only project journal store. */
+  projectJournalStore?: SqliteProjectJournalStore | undefined;
+  /**
+   * G10-V (additive): the deployment-local, NON-authoritative operator management-preference
+   * store. It is the ONLY writer of an involvement change; absent ⇒ an in-memory DIRECT default
+   * control (read-only in effect, everything degrades to DIRECT).
+   */
+  managementPreferenceStore?: SqliteManagementPreferenceStore | undefined;
 }
 
 /**
@@ -414,6 +447,18 @@ export interface InstalledPalimpsest {
   readonly proofExtraction?: EvidenceExtractionService | undefined;
   /** G10-T (additive): local purpose-scoped disclosure — present iff a proof store is supplied. */
   readonly disclosure?: DisclosureService | undefined;
+  /**
+   * G10-V (additive): the DERIVED project workspace read model — present iff an association
+   * store, a journal store, or a proof store is supplied. It copies no canonical truth and
+   * owns only the association/journal histories.
+   */
+  readonly projectWorkspace?: ProjectWorkspaceService | undefined;
+  /**
+   * G10-V (additive): graduated project-management autonomy — present iff a workspace exists.
+   * The installed service exposes the OPERATOR `applyOperatorModeChange`; the agent-facing
+   * application surface/tools never do.
+   */
+  readonly projectManagement?: ProjectManagementService | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
 }
@@ -625,11 +670,56 @@ export function trustedDefaultPolicy(): TaskPolicy {
   });
 }
 
+/**
+ * G10-V: a read-only, in-memory DIRECT management control. It is used only when no
+ * `managementPreferenceStore` is supplied: reads degrade to the safe DIRECT default, and a
+ * write fails closed (the operator must configure a store; the agent-facing path never writes).
+ */
+function directManagementControl(clock: () => string): UserManagementControlPort {
+  return {
+    get: async (projectId: string): Promise<ManagementAutonomyProfile> => defaultManagementProfile(projectId, "operator:unset"),
+    set: async (input: {
+      readonly projectId: string;
+      readonly involvement: ManagementInvolvement;
+      readonly updatedBy: string;
+    }): Promise<ManagementAutonomyProfile> =>
+      materializeManagementProfile({
+        projectId: input.projectId,
+        involvement: input.involvement,
+        budgets: { maxStepsPerRun: DEFAULT_MAX_STEPS_PER_RUN },
+        allowedActionClasses: defaultAllowedActionClasses(input.involvement),
+        confirmationBoundaries: defaultConfirmationBoundaries(input.involvement),
+        updatedAt: clock(),
+        updatedBy: input.updatedBy,
+      }),
+  };
+}
+
+/**
+ * G10-V: adapt the canonical Campaign stores into the workspace's read-only project-ref port.
+ * It DERIVES complete `(projectId, revision, digest)` references from canonical history; a
+ * campaign whose linked-project projection reports an identity conflict is skipped (never
+ * guessed), so the workspace can still show the other campaigns' relations honestly.
+ */
+function campaignProjectRefPort(store: CampaignStore): ProjectWorkspaceCampaignPort {
+  return {
+    projectRefs: async (): Promise<readonly { readonly projectId: string; readonly revision: number; readonly digest: string }[]> => {
+      const refs: { readonly projectId: string; readonly revision: number; readonly digest: string }[] = [];
+      for (const definition of await store.campaigns()) {
+        const projection = projectLinkedProjects(await store.replay(definition.campaignId));
+        if (projection.status !== "known") continue;
+        for (const ref of linkedProjectRefs(projection)) refs.push(ref);
+      }
+      return Object.freeze(refs);
+    },
+  };
+}
+
+
 export function installPalimpsest(
   context: DshPluginContext,
   options: InstallPalimpsestOptions,
-): InstalledPalimpsest {
-  const repository = options.repository ?? process.cwd();
+): InstalledPalimpsest {  const repository = options.repository ?? process.cwd();
   const git =
     options.git ??
     new GitCliPort(repository, join(repository, ".palimpsest", "worktrees"));
@@ -1274,6 +1364,45 @@ export function installPalimpsest(
           federation: federation !== undefined,
         });
 
+  // G10-V: the DERIVED project workspace exists only when it has at least one truthful source
+  // (the association store, the journal store, or the authoritative proof plane). It OWNS the
+  // association/journal histories and copies no canonical fact; the proof/memory/campaign planes
+  // are read-only ports, and an absent operand is reported (knowledgeWarnings), never guessed.
+  const projectWorkspace: ProjectWorkspaceService | undefined =
+    options.projectAssociationStore === undefined && options.projectJournalStore === undefined && proof === undefined
+      ? undefined
+      : makeProjectWorkspaceService({
+          controller,
+          ...(options.projectAssociationStore === undefined ? {} : { associations: options.projectAssociationStore }),
+          ...(options.projectJournalStore === undefined ? {} : { journal: options.projectJournalStore }),
+          ...(proof === undefined
+            ? {}
+            : {
+                proof: {
+                  publishedClaims: () => proof!.publishedClaims(),
+                  assetView: (claimId: string) => proof!.proofAssetView(claimId),
+                },
+              }),
+          ...(organizationMemory === undefined
+            ? {}
+            : { memory: { evaluations: (experimentId: string) => organizationMemory!.evaluations(experimentId) } }),
+          ...(campaign === undefined ? {} : { campaigns: campaignProjectRefPort(campaign.store) }),
+        });
+
+  // G10-V: the bounded management service exists only alongside a workspace (it composes the
+  // workspace view with the operator profile and the EXISTING governed services). It owns no
+  // authority: the default control is an in-memory DIRECT profile when no store is supplied.
+  const projectManagement: ProjectManagementService | undefined =
+    projectWorkspace === undefined
+      ? undefined
+      : makeProjectManagementService({
+          workspace: projectWorkspace,
+          control: options.managementPreferenceStore ?? directManagementControl(options.clock ?? (() => new Date().toISOString())),
+          controller,
+          ...(recipeExecution === undefined ? {} : { recipes: { registry: recipeRegistry, execution: recipeExecution } }),
+          capabilities: { recipeExecution: recipeExecution !== undefined, verify: false },
+        });
+
   // G10-O: ONE composed application surface over the services actually wired above. Tools and
   // HTTP both go through this; neither imports a store. Advanced application tools are registered
   // ONLY when their surface exists (a bare Work install keeps exactly the nine Work tools).
@@ -1304,6 +1433,8 @@ export function installPalimpsest(
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
+    ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1336,6 +1467,8 @@ export function installPalimpsest(
     application.recipeExecution !== undefined ||
     application.proof !== undefined ||
     application.disclosure !== undefined ||
+    application.projectWorkspace !== undefined ||
+    application.projectManagement !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -1373,6 +1506,8 @@ export function installPalimpsest(
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
+    ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(projectManagement === undefined ? {} : { projectManagement }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
@@ -1393,6 +1528,10 @@ export function installPalimpsest(
       options.organizationMemoryStore?.close();
       // G10-T: close the authoritative proof store only when this install was given one.
       options.proofEvidenceStore?.close();
+      // G10-V: close the narrowly-owned workspace/management stores only when supplied.
+      options.projectAssociationStore?.close();
+      options.projectJournalStore?.close();
+      options.managementPreferenceStore?.close();
       // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
       // deployment launcher, a host) leaks the shared operations file handle.
       await effects.close();

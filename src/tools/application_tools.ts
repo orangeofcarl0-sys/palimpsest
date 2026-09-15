@@ -11,6 +11,8 @@ import type { PalimpsestApplicationSurface } from "../application/surface.js";
 import type { VariantKind } from "../organization_memory/index.js";
 import { VARIANT_KINDS } from "../organization_memory/index.js";
 import { SOURCE_PROVENANCES, materializeProofSourceRevisionRef } from "../proof_asset/index.js";
+import { PROJECT_JOURNAL_KINDS } from "../project_workspace/index.js";
+import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
 
 function textBlock(value: unknown): DshContentBlock[] {
   return [{ type: "text", text: JSON.stringify(value, null, 2) }];
@@ -114,6 +116,8 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         recipeExecution: application.recipeExecution !== undefined,
         proof: application.proof !== undefined,
         disclosure: application.disclosure !== undefined,
+        projectWorkspace: application.projectWorkspace !== undefined,
+        projectManagement: application.projectManagement !== undefined,
         projections: application.projections !== undefined,
       }),
     }),
@@ -619,9 +623,96 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
     );
   }
 
-  if (application.projections !== undefined) {
-    const projections = application.projections;
+  if (application.projectWorkspace !== undefined) {
+    const workspace = application.projectWorkspace;
     tools.push(
+      tool({
+        name: "palimpsest_project",
+        description:
+          "The DERIVED project workspace: read the project overview, associated assets, derived open loops, and history; append a decision through the EXISTING ProjectIR validation; or record a journal entry. It owns no truth and copies no canonical fact. A decision is a ProjectIR lineage append (never an authority grant) and a journal entry is knowledge with no other canonical owner",
+        mode: "mutating",
+        actions: ["overview", "assets", "open_loops", "history", "decision", "journal"],
+        extraProperties: {
+          projectId: { type: "string", description: "defaults to this installation's project" },
+          statement: { type: "string" },
+          rationale: { type: "string" },
+          evidenceIds: { type: "array", items: { type: "string" } },
+          supersedes: { type: "string" },
+          kind: { type: "string", enum: [...PROJECT_JOURNAL_KINDS] },
+          title: { type: "string" },
+          body: { type: "string" },
+          provenance: { type: "string" },
+          relatedRefs: { type: "array", items: { type: "object" }, description: "references to assets owned elsewhere (kind/id only; never a copy)" },
+        },
+        run: async (action, object) => {
+          if (action === "overview") return workspace.view();
+          if (action === "assets") return workspace.assets();
+          if (action === "open_loops") return workspace.openLoops();
+          if (action === "history") return workspace.history();
+          if (action === "decision") {
+            const evidenceIds = Array.isArray(object.evidenceIds) ? stringArray(object.evidenceIds, "evidenceIds") : [];
+            return workspace.appendDecision({
+              ...(typeof object.projectId === "string" && object.projectId.length > 0 ? { projectId: object.projectId } : {}),
+              statement: requiredString(object, "statement"),
+              rationale: requiredString(object, "rationale"),
+              evidenceIds,
+              ...(object.supersedes === undefined ? {} : { supersedes: requiredString(object, "supersedes") }),
+            });
+          }
+          return workspace.recordJournalEntry({
+            ...(typeof object.projectId === "string" && object.projectId.length > 0 ? { projectId: object.projectId } : {}),
+            kind: requiredString(object, "kind") as (typeof PROJECT_JOURNAL_KINDS)[number],
+            title: requiredString(object, "title"),
+            body: requiredString(object, "body"),
+            provenance: requiredString(object, "provenance"),
+            ...(object.relatedRefs === undefined ? {} : { relatedRefs: object.relatedRefs as never }),
+          });
+        },
+      }),
+    );
+  }
+
+  if (application.projectManagement !== undefined) {
+    const management = application.projectManagement;
+    tools.push(
+      tool({
+        name: "palimpsest_manage",
+        description:
+          "Graduated project-management autonomy (mode ≠ authority): inspect status, list recommendations, preview the next bounded step, execute one bounded local step or a bounded run through the EXISTING governed services, and REQUEST an involvement change. It can never grant authority/commitment/disclosure and can never set the mode upward — only the operator control plane does",
+        mode: "mutating",
+        actions: ["status", "recommend", "preview", "step", "run", "request_mode_change"],
+        extraProperties: {
+          confirmed: { type: "boolean", description: "confirms a step that sits on a confirmation boundary" },
+          maxSteps: { type: "number", description: "bounded run budget; never exceeds the operator profile budget" },
+          to: { type: "string", enum: [...MANAGEMENT_INVOLVEMENTS], description: "the involvement being REQUESTED (a request only; never applied here)" },
+        },
+        run: async (action, object) => {
+          if (action === "status") return management.status();
+          if (action === "recommend") return management.recommend();
+          if (action === "preview") return management.preview();
+          if (action === "request_mode_change") {
+            const to = requiredString(object, "to");
+            if (!(MANAGEMENT_INVOLVEMENTS as readonly string[]).includes(to)) {
+              throw new ToolArgsError(`argument "to" must be one of ${MANAGEMENT_INVOLVEMENTS.join(", ")}`);
+            }
+            return management.requestModeChange({ to: to as (typeof MANAGEMENT_INVOLVEMENTS)[number] });
+          }
+          if (action === "step") {
+            if (object.confirmed !== undefined && typeof object.confirmed !== "boolean") throw new ToolArgsError('argument "confirmed" must be a boolean');
+            return management.step(object.confirmed === undefined ? {} : { confirmed: object.confirmed });
+          }
+          const maxSteps = object.maxSteps;
+          if (maxSteps !== undefined && (typeof maxSteps !== "number" || !Number.isSafeInteger(maxSteps) || maxSteps < 1)) {
+            throw new ToolArgsError('argument "maxSteps" must be a positive integer');
+          }
+          return management.run(maxSteps === undefined ? {} : { maxSteps });
+        },
+      }),
+    );
+  }
+
+  if (application.projections !== undefined) {
+    const projections = application.projections;    tools.push(
       tool({
         name: "palimpsest_graph",
         description: "Read-only MultiGraph projections: typed nodes/edges per species with canonical refs, per-source bases, and an honest known/unknown/error/stale knowledge state (never a canonical graph)",

@@ -26,6 +26,10 @@
  *             the preset library (PLMP-ARCH-3); empty diagnostics only then declare
  *                                         with --declare, declare it via start/plan
  *   status                                project view
+ *   manage <DIRECT|ASSIST|MANAGE|DELEGATE> set the OPERATOR management involvement
+ *                                         (operator control: a preference, NOT authority;
+ *                                         the agent path can only REQUEST a change — this
+ *                                         never grants semantic authority)
  *
  * Options:
  *   --db <path>   orchestration SQLite (default $DSH_HOME/palimpsest/… or ~/.dsh/…)
@@ -33,6 +37,9 @@
  *   --repo <path> use the real git CLI port rooted there (default: embedded fake port)
  *   --gate <file> path to a JSON file of GateDefinition to register
  *   --skills <json> E2: JSON array of skill hints for task-1 (new/plan)
+ *   --project <id> manage: the project whose management involvement is set
+ *   --management <path> manage: the operator preference SQLite (default
+ *                     $DSH_HOME/palimpsest/management.sqlite)
  *   --profile <file>  G10-P: full-stack deployment profile (serve only) — builds every
  *                     advanced surface via installPalimpsest and serves the application
  *   --pump <ms>       G10-P: with --profile, drain the durable mailbox on an interval
@@ -45,6 +52,12 @@ import {
   FakeGitPort,
   createPalimpsestEffects,
   parseGateDefinition,
+  MANAGEMENT_INVOLVEMENTS,
+  SqliteManagementPreferenceStore,
+  defaultManagementProfilePath,
+  makeProjectManagementService,
+  makeProjectWorkspaceService,
+  type ManagementInvolvement,
 } from "./advanced.js";
 import { EventStore, dshDefaultStatePath } from "./state/index.js";
 import { ProjectController } from "./tools/index.js";
@@ -132,7 +145,7 @@ function policy() {
 async function main() {
   const parsed = parseArgs(process.argv.slice(2));
   const [command, a1, a2, ...rest] = parsed.positional;
-  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status> …");
+  if (command === undefined) throw new Error("usage: palimpsest <new|plan|next|preview|run|claim|gate|report|promote|pump|context|telemetry|architect|serve|tui|status|manage> …");
 
   // G10-P (CF-O-02): a profile-driven full-stack launch. The profile is HOST CONFIG —
   // it builds the services through installPalimpsest and serves the advanced application;
@@ -484,6 +497,54 @@ async function main() {
       }
       case "status": {
         console.log(JSON.stringify(controller.status(), null, 2));
+        break;
+      }
+      case "manage": {
+        // G10-V: OPERATOR control of the management involvement. This is the ONLY
+        // place a mode change is persisted (through SqliteManagementPreferenceStore
+        // + applyOperatorModeChange). It is a preference, NOT authority: it can only
+        // restrict or permit proactive behaviour, never grant semantic authority,
+        // and the agent-facing tools can only REQUEST a change.
+        const requested = a1;
+        if (requested === undefined || !(MANAGEMENT_INVOLVEMENTS as readonly string[]).includes(requested)) {
+          throw new Error(`manage requires an involvement: ${MANAGEMENT_INVOLVEMENTS.join("|")}`);
+        }
+        const projectId = arg(parsed.options, "--project") ?? controller.projectId;
+        const managementPath = arg(parsed.options, "--management") ?? defaultManagementProfilePath();
+        const preference = new SqliteManagementPreferenceStore(managementPath);
+        try {
+          const scopedController =
+            projectId === controller.projectId
+              ? controller
+              : new ProjectController({
+                  store,
+                  effects,
+                  projectId,
+                  policy: policy(),
+                  clock: () => new Date().toISOString(),
+                });
+          const workspace = makeProjectWorkspaceService({ controller: scopedController });
+          const management = makeProjectManagementService({
+            workspace,
+            control: preference,
+            controller: scopedController,
+            capabilities: { recipeExecution: false, verify: false },
+          });
+          const profile = await management.applyOperatorModeChange({
+            to: requested as ManagementInvolvement,
+            updatedBy: "operator:cli",
+          });
+          console.log(
+            JSON.stringify({
+              projectId,
+              involvement: profile.involvement,
+              digest: profile.digest,
+              note: "operator control: a management preference is never semantic authority",
+            }),
+          );
+        } finally {
+          preference.close();
+        }
         break;
       }
       default:

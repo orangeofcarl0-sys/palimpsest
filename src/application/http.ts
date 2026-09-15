@@ -15,6 +15,8 @@ import type { TaskProfile } from "../advisor/task_profile.js";
 import { parseTaskProfile } from "../advisor/task_profile.js";
 import type { RecipeExecutionContext } from "../recipes/execution.js";
 import { SOURCE_PROVENANCES, parseEvidenceSelector, parseProofSourceRevisionRef } from "../proof_asset/index.js";
+import { ASSOCIATION_KINDS, PROJECT_ASSET_KINDS, PROJECT_JOURNAL_KINDS, PROJECT_JOURNAL_RESOLUTION_STATUSES, parseCanonicalAssetRef } from "../project_workspace/index.js";
+import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
 
 export interface ApplicationRouteResult {
   readonly status: number;
@@ -50,6 +52,14 @@ function queryRequired(query: URLSearchParams, name: string): string {
   const value = query.get(name);
   if (value === null || value === "") throw new InvalidRequest(`query parameter "${name}" is required`);
   return value;
+}
+
+/** Strict closed-enum validation; the value is never coerced. */
+function enumValue<T extends string>(value: unknown, allowed: readonly T[], what: string): T {
+  if (typeof value !== "string" || !(allowed as readonly string[]).includes(value)) {
+    throw new InvalidRequest(`${what} must be one of ${allowed.join(", ")}`);
+  }
+  return value as T;
 }
 
 /** Strict-parse a request body artifact; a malformed body is a 400, never an internal error. */
@@ -127,6 +137,8 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       recipeExecution: application.recipeExecution !== undefined,
       proof: application.proof !== undefined,
       disclosure: application.disclosure !== undefined,
+      projectWorkspace: application.projectWorkspace !== undefined,
+      projectManagement: application.projectManagement !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -610,6 +622,128 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     requirePost();
     const b = bodyObject(body);
     return ok(await requireSurface(application.disclosure, "disclosure").approveAndExport({ previewId: str(b.previewId, "previewId") }));
+  }
+
+  /* ---- project workspace (G10-V; DERIVED read model + two owned histories) ---- */
+  if (pathname === "/api/project/workspace") {
+    requireGet();
+    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").view());
+  }
+  if (pathname === "/api/project/assets") {
+    requireGet();
+    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").assets());
+  }
+  if (pathname === "/api/project/open_loops") {
+    requireGet();
+    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").openLoops());
+  }
+  if (pathname === "/api/project/history") {
+    requireGet();
+    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").history());
+  }
+  if (pathname === "/api/project/journal") {
+    const workspace = requireSurface(application.projectWorkspace, "projectWorkspace");
+    if (method === "GET") {
+      const projectId = query.get("projectId");
+      return ok(await workspace.journal(projectId === null || projectId === "" ? undefined : projectId));
+    }
+    requirePost();
+    const b = bodyObject(body);
+    return ok(
+      await workspace.recordJournalEntry({
+        ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        kind: enumValue(b.kind, PROJECT_JOURNAL_KINDS, "kind"),
+        title: str(b.title, "title"),
+        body: str(b.body, "body"),
+        provenance: str(b.provenance, "provenance"),
+        ...(b.relatedRefs === undefined ? {} : { relatedRefs: b.relatedRefs as never }),
+      }),
+    );
+  }
+  if (pathname === "/api/project/journal/resolve") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(
+      await requireSurface(application.projectWorkspace, "projectWorkspace").resolveJournalEntry({
+        ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        entryId: str(b.entryId, "entryId"),
+        resolution: {
+          status: enumValue(b.status, PROJECT_JOURNAL_RESOLUTION_STATUSES, "status"),
+          ...(b.detail === undefined ? {} : { detail: str(b.detail, "detail") }),
+        },
+      }),
+    );
+  }
+  if (pathname === "/api/project/decision") {
+    requirePost();
+    const b = bodyObject(body);
+    const evidenceIds = Array.isArray(b.evidenceIds) ? b.evidenceIds.map((id) => str(id, "evidenceIds[]")) : [];
+    return ok(
+      await requireSurface(application.projectWorkspace, "projectWorkspace").appendDecision({
+        ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        statement: str(b.statement, "statement"),
+        rationale: str(b.rationale, "rationale"),
+        evidenceIds,
+        ...(b.supersedes === undefined ? {} : { supersedes: str(b.supersedes, "supersedes") }),
+      }),
+    );
+  }
+  if (pathname === "/api/project/association") {
+    requirePost();
+    const b = bodyObject(body);
+    const canonicalRef = parseBody(() => parseCanonicalAssetRef(b.canonicalRef, "canonicalRef"));
+    return ok(
+      await requireSurface(application.projectWorkspace, "projectWorkspace").associateAsset({
+        ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        assetKind: enumValue(b.assetKind, PROJECT_ASSET_KINDS, "assetKind"),
+        canonicalRef,
+        associationKind: enumValue(b.associationKind, ASSOCIATION_KINDS, "associationKind"),
+        provenance: str(b.provenance, "provenance"),
+      }),
+    );
+  }
+  if (pathname === "/api/project/opportunity/promote") {
+    requirePost();
+    const b = bodyObject(body);
+    const taskSpec = b.taskSpec;
+    if (typeof taskSpec !== "object" || taskSpec === null || Array.isArray(taskSpec)) throw new InvalidRequest("taskSpec must be an object");
+    return ok(
+      await requireSurface(application.projectWorkspace, "projectWorkspace").promoteOpportunity({
+        ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        entryId: str(b.entryId, "entryId"),
+        taskSpec: taskSpec as never,
+      }),
+    );
+  }
+
+  /* ---- management autonomy (G10-V; mode ≠ authority, request only) ---- */
+  if (pathname === "/api/manage/status") {
+    requireGet();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").status());
+  }
+  if (pathname === "/api/manage/step") {
+    requirePost();
+    const b = bodyObject(body);
+    if (b.confirmed !== undefined && typeof b.confirmed !== "boolean") throw new InvalidRequest('"confirmed" must be a boolean');
+    return ok(await requireSurface(application.projectManagement, "projectManagement").step(b.confirmed === undefined ? {} : { confirmed: b.confirmed }));
+  }
+  if (pathname === "/api/manage/run") {
+    requirePost();
+    const b = bodyObject(body);
+    const maxSteps = b.maxSteps;
+    if (maxSteps !== undefined && (typeof maxSteps !== "number" || !Number.isSafeInteger(maxSteps) || maxSteps < 1)) {
+      throw new InvalidRequest('"maxSteps" must be a positive integer');
+    }
+    return ok(await requireSurface(application.projectManagement, "projectManagement").run(maxSteps === undefined ? {} : { maxSteps }));
+  }
+  if (pathname === "/api/manage/request_mode_change") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(
+      await requireSurface(application.projectManagement, "projectManagement").requestModeChange({
+        to: enumValue(b.to, MANAGEMENT_INVOLVEMENTS, "to"),
+      }),
+    );
   }
 
   return undefined;

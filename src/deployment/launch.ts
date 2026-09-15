@@ -48,6 +48,8 @@ import {
   type AttentionSignal,
 } from "../attention/index.js";
 import { staticBoundaryRoute } from "../boundary_memory/index.js";
+import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "../project_workspace/index.js";
+import { SqliteManagementPreferenceStore } from "../project_management/index.js";
 import type { RemoteSubmissionPort } from "../application/surface.js";
 import type { ProjectAgentDeploymentProfile } from "./profile.js";
 
@@ -186,6 +188,21 @@ export function launchDeployment(
     profile.databases.runtimeScope === undefined
       ? undefined
       : new SqliteRuntimeScopeStore(profile.databases.runtimeScope);
+  // G10-V: the project workspace is wired only when the profile lists its narrowly-owned
+  // histories. These stores hold associations/journal records only — never a copy of a
+  // canonical fact — and are closed by this deployment.
+  const projectAssociationStore =
+    profile.databases.projectAssociations === undefined
+      ? undefined
+      : new SqliteProjectAssetAssociationStore(profile.databases.projectAssociations);
+  const projectJournalStore =
+    profile.databases.projectJournal === undefined
+      ? undefined
+      : new SqliteProjectJournalStore(profile.databases.projectJournal);
+  const managementPreferenceStore =
+    profile.databases.management === undefined
+      ? undefined
+      : new SqliteManagementPreferenceStore(profile.databases.management);
 
   const transport = ordariumDurableTransportAt({
     databasePath: profile.transport.databasePath,
@@ -271,6 +288,9 @@ export function launchDeployment(
     attemptCatalog: deploymentAttemptCatalog(profile.databases.orchestration),
     ...(boundaryMemoryStore === undefined ? {} : { boundaryMemoryStore }),
     ...(runtimeScopeStore === undefined ? {} : { runtimeScopeStore }),
+    ...(projectAssociationStore === undefined ? {} : { projectAssociationStore }),
+    ...(projectJournalStore === undefined ? {} : { projectJournalStore }),
+    ...(managementPreferenceStore === undefined ? {} : { managementPreferenceStore }),
     ...(profile.boundaryHomeId === undefined ? {} : { boundaryHomeId: profile.boundaryHomeId }),
     ...(continuityAssociations === undefined ? {} : { peerContinuityAssociations: continuityAssociations }),
     ...(profile.attention === undefined
@@ -344,6 +364,7 @@ export function launchDeployment(
       coordinationStore.close();
       boundaryMemoryStore?.close();
       runtimeScopeStore?.close();
+      // The G10-V workspace/management stores are closed by `installed.dispose()` above.
       transport.close();
       cursorStore.close();
       marks?.close();
