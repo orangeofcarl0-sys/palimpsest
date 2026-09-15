@@ -80,13 +80,12 @@ Baseline: `main @ 2b671d7057ebf7f169d25e980800c873779f6752`. Ordarium v1.3.1. Ho
 
 | Checkpoint | Value |
 | --- | --- |
-| Implementation PR | _left for the closure commit_ |
-| Tested branch HEAD | _left for the closure commit_ |
-| PR run | _left for the closure commit_ |
-| Merge | _left for the closure commit_ |
-| Tree identity | _left for the closure commit_ |
-| Canonical main run | _left for the closure commit_ |
+| Implementation PR | **#84** `experiment/g10-v-project-workspace` |
+| Tested branch HEAD | `1b55f5b` |
+| PR run | `34962712449` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ a14487771e581df3b6b9ca22f1d234b5bfd31acc` |
+| Tree identity | `git diff 1b55f5b a144877` empty → the tested tree IS the merged tree |
+| Canonical main run | `34962865133` — **unit pass + e2e pass on attempt 1** |
 
-The required CI checkpoint is recorded by the G10-V closure commit; this delivery records only the
-local gates above. Required checks must be GREEN before merge (read the real exit status /
-`gh run view --json conclusion`, never an assumption).
+All required checks were GREEN before merge; no force/bypass/history rewrite. The management dogfood and
+the browser Project Workspace E2E are separately reproducible artifacts, not required CI.
