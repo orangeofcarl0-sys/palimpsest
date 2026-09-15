@@ -180,3 +180,15 @@ export {
   PlanReconciliationError,
   type PlanReconciliationOutcome,
 } from "./tools/controller.js";
+
+/**
+ * G10-X canonical project-head evolution (additive): the trusted revision
+ * head-advance option and the reconciliation outcome, plus the pure head
+ * kernel itself. The advance is committed through the SAME atomic revision
+ * batch (`planReconciled`) - there is no second head-writing path.
+ */
+export type {
+  ProjectHeadReconciliationResult,
+  TrustedPlanOptions,
+} from "./tools/controller.js";
+export * from "./domain/project_head.js";

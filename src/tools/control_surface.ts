@@ -4,14 +4,17 @@
  * method (or, for promote, the exact CLI promote composition) - zero new
  * semantics, so what a button does on screen is what the tool face and the
  * CLI already do. Permission and approval stay with the host surface.
+ *
+ * G10-X: the promote composition is now the PRODUCT-SAFE one. It derives the
+ * candidate attempt and asks the controller to promote it canonically
+ * (`promoteAttempt`) - the surface never supplies a source commit or an
+ * expected head, so there is no ambient-head input left on this path.
  */
 
-import { TextDecoder } from "node:util";
-
+import type { GateResult } from "../evidence/gate_dsl.js";
 import type { SchedulerEvent } from "../schema/index.js";
 
 import {
-  DEFAULT_HEAD_COMMIT,
   type AttemptAttribution,
   type GateInput,
   type PlanInput,
@@ -29,8 +32,10 @@ export type OrchestrationControlTarget = Pick<
   | "claim"
   | "selectCandidate"
   | "gate"
+  | "evaluateAttemptGate"
   | "report"
   | "plan"
+  | "promoteAttempt"
   | "promoteWhenGatePasses"
   | "status"
   | "orchestrationGraph"
@@ -41,26 +46,37 @@ export type OrchestrationControlTarget = Pick<
   | "effects"
 >;
 
-type PromoteOutcome = Awaited<ReturnType<ProjectController["promoteWhenGatePasses"]>>;
+/** The structured promote outcome (a non-PASS gate is a reported verdict, never a throw). */
+export type PromoteOutcome =
+  | { readonly promoted: true; readonly result: Awaited<ReturnType<ProjectController["promoteAttempt"]>> }
+  | {
+      readonly promoted: false;
+      readonly gateId: string;
+      readonly verdict: GateResult["verdict"];
+      readonly nextEvidenceNeeded: readonly string[];
+    };
 
-/** The CLI promote path, verbatim: completed candidate → report commit → real head → gated promotion. */
+/**
+ * The CLI promote path, verbatim: completed candidate → registered gate verdict
+ * → canonical promotion. The caller supplies the gate id only; the source
+ * commit and the expected head are derived by the promotion manager.
+ */
 async function promoteCompletedCandidate(
   target: OrchestrationControlTarget,
   gateId: string,
 ): Promise<PromoteOutcome> {
   const winner = target.status().attempts.find((attempt) => attempt.state === "COMPLETED");
   if (winner === undefined) throw new Error("no completed candidate to promote");
-  const row = target.store.connection
-    .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
-    .get(target.projectId, winner.attempt_id) as { report_json: Uint8Array };
-  const report = JSON.parse(new TextDecoder().decode(row.report_json)) as { result_commit?: string };
-  const expectedHead = await target.effects.git.head();
-  return target.promoteWhenGatePasses(
-    winner.attempt_id,
-    report.result_commit ?? DEFAULT_HEAD_COMMIT,
-    expectedHead,
-    gateId,
-  );
+  const verdict = target.evaluateAttemptGate(gateId, winner.attempt_id);
+  if (verdict.verdict !== "PASS") {
+    return {
+      promoted: false,
+      gateId,
+      verdict: verdict.verdict,
+      nextEvidenceNeeded: verdict.next_evidence_needed,
+    };
+  }
+  return { promoted: true, result: await target.promoteAttempt({ attemptId: winner.attempt_id, gateId }) };
 }
 
 export function definePalimpsestControl(target: OrchestrationControlTarget) {

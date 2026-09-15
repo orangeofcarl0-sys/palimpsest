@@ -678,9 +678,9 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
       tool({
         name: "palimpsest_manage",
         description:
-          "Graduated project-management autonomy (mode ≠ authority): inspect status, list recommendations, preview the next bounded step, execute one bounded local step or a bounded run through the EXISTING governed services, and REQUEST an involvement change. It can never grant authority/commitment/disclosure and can never set the mode upward — only the operator control plane does",
+          "Graduated project-management autonomy (mode ≠ authority): inspect status, list recommendations, preview the next bounded step, execute one bounded local step or a bounded run through the EXISTING governed services, REQUEST an involvement change, or run the mechanical project-head reconciliation. It can never grant authority/commitment/disclosure, can never set the mode upward — only the operator control plane does — and reconciling the head never promotes an attempt",
         mode: "mutating",
-        actions: ["status", "recommend", "preview", "step", "run", "request_mode_change"],
+        actions: ["status", "recommend", "preview", "step", "run", "request_mode_change", "reconcile_project_head"],
         extraProperties: {
           confirmed: { type: "boolean", description: "confirms a step that sits on a confirmation boundary" },
           maxSteps: { type: "number", description: "bounded run budget; never exceeds the operator profile budget" },
@@ -690,6 +690,9 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           if (action === "status") return management.status();
           if (action === "recommend") return management.recommend();
           if (action === "preview") return management.preview();
+          // G10-X: the mechanical head reconciliation. No caller head/commit/plan
+          // is accepted; it delegates to the canonical controller derivation.
+          if (action === "reconcile_project_head") return management.reconcileProjectHead();
           if (action === "request_mode_change") {
             const to = requiredString(object, "to");
             if (!(MANAGEMENT_INVOLVEMENTS as readonly string[]).includes(to)) {
