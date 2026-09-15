@@ -119,4 +119,32 @@ Baseline was 151 files / 1422 tests.
 
 ## 7. Canonical checkpoint
 
-Recorded by the docs-only closure PR after merge.
+Recorded after merge.
+
+```text
+baseline                        0164aab755a1372e4f1c81e391c2fd2f73a661f3
+implementation commit           3d05ae41932d51efeffc4605f30887cdb50ced1b
+  "feat(g10-aa): trusted promotion outcome admission & terminal-fact integrity"
+pull request                    #95  experiment/g10-aa-outcome-admission -> main
+PR checks                       run 35015447381  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  751609447e17fab269b25c04720c75ed9ebc416a
+  "Merge pull request #95 from orangeofcarl0-sys/experiment/g10-aa-outcome-admission"
+tree identity                   git diff 3d05ae4 7516094  ->  EMPTY (identical trees)
+canonical main run              35015616408  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                      # 153 files / 1454 tests
+pnpm run build:web
+pnpm exec playwright test                 # 27 passed
+node scripts/audit/aa0-terminal-ingestion-repro.mjs
+#   A -> CLOSED_GENERIC_TERMINAL_DENIED   (forged COMMITTED)
+#   B -> CLOSED_GENERIC_TERMINAL_DENIED   (forged FAILED)
+#   C -> CLOSED_GENERIC_INTENT_DENIED     (fabricated PREPARED)
+```
