@@ -176,6 +176,14 @@ export interface ApplicationSurfaceAvailability {
   readonly evolution: boolean;
   readonly reasoning: boolean;
   readonly projections: boolean;
+  /** G10-V: the DERIVED project workspace surface (the default landing when present). */
+  readonly projectWorkspace: boolean;
+  /** G10-V: the bounded management-autonomy surface (recommend/preview/step/request only). */
+  readonly projectManagement: boolean;
+  /** G10-S: read-only recipe catalog (a work-mode hint source, never a score). */
+  readonly recipes?: boolean;
+  /** G10-S: read-only advisor availability (per-task mode recommendations only). */
+  readonly advisor?: boolean;
 }
 
 export function applicationSurfaces(): Promise<ApplicationSurfaceAvailability> {
@@ -635,4 +643,407 @@ export function disclosureApproveExport(input: { readonly previewId: string }): 
 /** GET /api/proof/disclosure/history */
 export function disclosureHistory(): Promise<readonly DisclosureExportReceipt[]> {
   return call<readonly DisclosureExportReceipt[]>("/api/proof/disclosure/history");
+}
+
+/* ------------------------------------------------------------------ *
+ * G10-V Project Workspace (typed /api/project/* and /api/manage/* routes)
+ *
+ *   ProjectWorkspaceView ≠ CanonicalStore      OpenLoop ≠ WorkTask
+ *   Association ≠ AssetContent                 Mode ≠ Authority
+ *   Recommendation ≠ Mutation                  Request ≠ Change
+ *
+ * Every helper below is a thin, typed wrapper over ONE strict server route.
+ * The workspace view is DERIVED server-side from the canonical owner matrix
+ * plus the two narrowly-owned append-only histories; the browser never reaches
+ * a store, and the management helpers can never set a mode (only request one).
+ * ------------------------------------------------------------------ */
+
+export type ProjectAssetKind =
+  | "DECISION"
+  | "PRODUCED_ARTIFACT"
+  | "PROOF_CLAIM"
+  | "EXPERIMENT"
+  | "JOURNAL_ENTRY"
+  | "CAMPAIGN"
+  | "REASONING_CELL";
+
+export type AssociationKind = "MANUAL" | "DERIVED_FROM_WORK" | "PUBLISHED";
+
+/** An OPAQUE reference to an existing canonical asset - never its content. */
+export interface CanonicalAssetRef {
+  readonly kind: string;
+  readonly id: string;
+  readonly digest?: string;
+}
+
+export interface ProjectAssetAssociation {
+  readonly schemaVersion: 1;
+  readonly associationId: string;
+  readonly projectId: string;
+  readonly assetKind: ProjectAssetKind;
+  readonly canonicalRef: CanonicalAssetRef;
+  readonly associationKind: AssociationKind;
+  readonly provenance: string;
+  readonly recordedAt: string;
+  readonly digest: string;
+}
+
+export type OpenLoopKind =
+  | "BLOCKED_WORK"
+  | "READY_WORK"
+  | "CAMPAIGN_WATCH"
+  | "REASONING_UNRESOLVED"
+  | "STALE_PROOF"
+  | "PENDING_COMMITMENT"
+  | "PENDING_BOUNDARY_DECISION"
+  | "JOURNAL_OPEN_QUESTION"
+  | "JOURNAL_OPPORTUNITY";
+
+/** A derived prompt to look - explicitly NOT a work task. */
+export interface OpenLoop {
+  readonly id: string;
+  readonly kind: OpenLoopKind;
+  readonly detail: string;
+  readonly subjectRef?: { readonly kind: string; readonly id: string };
+}
+
+export interface WorkspaceHistoryEntry {
+  readonly kind: string;
+  readonly at: string;
+  readonly detail: string;
+}
+
+export interface ProjectRequirement {
+  readonly requirement_id: string;
+  readonly statement: string;
+  readonly priority: "critical" | "high" | "normal" | "low";
+  readonly acceptance_refs: readonly string[];
+}
+
+export interface ProjectDecision {
+  readonly decision_id: string;
+  readonly statement: string;
+  readonly rationale: string;
+  readonly evidence_ids: readonly string[];
+  readonly supersedes: string | null;
+}
+
+export interface WorkspaceProjectView {
+  readonly goal: string;
+  readonly revision: number;
+  readonly digest: string;
+  readonly headCommit: string;
+  readonly requirements: readonly ProjectRequirement[];
+  readonly decisions: readonly ProjectDecision[];
+}
+
+export interface WorkspaceTaskView {
+  readonly task_id: string;
+  readonly state: string;
+  readonly last_event_id: number;
+  readonly role?: string;
+}
+
+export interface WorkspaceAttemptView {
+  readonly attempt_id: string;
+  readonly task_id: string | null;
+  readonly state: string;
+  readonly attempt_no: number | null;
+}
+
+export interface WorkspaceEvidenceView {
+  readonly evidence_id: string;
+  readonly status: string;
+}
+
+export interface WorkspacePromotionView {
+  readonly promotion_id: string;
+  readonly state: string;
+}
+
+export interface WorkspaceResumeView {
+  readonly action: string;
+  readonly detail: string;
+  readonly inFlightAttemptIds: readonly string[];
+  readonly openTasks: readonly { readonly task_id: string; readonly state: string }[];
+  readonly preparedPromotions: readonly string[];
+}
+
+export interface ProjectWorkspaceWorkView {
+  readonly schedulerState: "RUNNING" | "PAUSED";
+  readonly tasks: readonly WorkspaceTaskView[];
+  readonly attempts: readonly WorkspaceAttemptView[];
+  readonly evidence: readonly WorkspaceEvidenceView[];
+  readonly promotions: readonly WorkspacePromotionView[];
+  readonly resume: WorkspaceResumeView;
+  readonly blockers: readonly string[];
+}
+
+export interface ProjectWorkspaceAssetsView {
+  readonly associations: readonly ProjectAssetAssociation[];
+  readonly byKind: Readonly<Record<string, number>>;
+}
+
+export interface ProjectWorkspaceView {
+  readonly schemaVersion: 1;
+  readonly projectId: string;
+  readonly project: WorkspaceProjectView;
+  readonly work: ProjectWorkspaceWorkView;
+  readonly assets: ProjectWorkspaceAssetsView;
+  readonly openLoops: readonly OpenLoop[];
+  readonly relations: { readonly campaignProjectRefs: readonly { readonly projectId: string; readonly revision: number; readonly digest: string }[] };
+  readonly historySummary: readonly WorkspaceHistoryEntry[];
+  readonly knowledgeWarnings: readonly string[];
+}
+
+export type ProjectJournalKind = "IDEA" | "OPEN_QUESTION" | "NEGATIVE_RESULT" | "OPPORTUNITY" | "REFERENCE_NOTE";
+export type ProjectJournalResolutionStatus = "RESOLVED" | "DISMISSED" | "PROMOTED";
+
+export interface ProjectJournalRef {
+  readonly kind: string;
+  readonly id: string;
+}
+
+export interface ProjectJournalResolution {
+  readonly status: ProjectJournalResolutionStatus;
+  readonly detail?: string;
+}
+
+export interface ProjectJournalEntry {
+  readonly schemaVersion: 1;
+  readonly entryId: string;
+  readonly projectId: string;
+  readonly kind: ProjectJournalKind;
+  readonly title: string;
+  readonly body: string;
+  readonly provenance: string;
+  readonly relatedRefs: readonly ProjectJournalRef[];
+  readonly createdAt: string;
+  readonly supersedes?: string;
+  readonly resolution?: ProjectJournalResolution;
+  readonly digest: string;
+}
+
+export interface ProjectJournalViewEntry {
+  readonly entry: ProjectJournalEntry;
+  readonly resolution?: ProjectJournalResolution;
+  readonly resolvedAt?: string;
+}
+
+export type ManagementInvolvement = "DIRECT" | "ASSIST" | "MANAGE" | "DELEGATE";
+
+export type ManagementRiskClass = "LOW" | "MEDIUM" | "HIGH" | "CONSTITUTIONAL";
+
+export interface ManagementActionSubjectRef {
+  readonly kind: string;
+  readonly id: string;
+}
+
+/** A DERIVED, content-addressed prompt - no authority and no score. */
+export interface ManagementActionCandidate {
+  readonly actionId: string;
+  readonly kind: string;
+  readonly reason: string;
+  readonly subjects: readonly ManagementActionSubjectRef[];
+  readonly riskClass: ManagementRiskClass;
+  readonly requiredConfirmation: boolean;
+  readonly capability: string;
+  readonly executable: boolean;
+}
+
+export interface ManagementAutonomyProfile {
+  readonly schemaVersion: 1;
+  readonly projectId: string;
+  readonly involvement: ManagementInvolvement;
+  readonly budgets: { readonly maxStepsPerRun: number; readonly maxWallClockMs?: number };
+  readonly allowedActionClasses: readonly string[];
+  readonly confirmationBoundaries: readonly string[];
+  readonly updatedAt: string;
+  readonly updatedBy: string;
+  readonly digest: string;
+}
+
+export interface ManagementAssessment {
+  readonly profile: ManagementAutonomyProfile;
+  readonly view: ProjectWorkspaceView;
+  readonly candidates: readonly ManagementActionCandidate[];
+}
+
+export type ManagementStepPreview =
+  | { readonly candidate: ManagementActionCandidate; readonly permitted: boolean; readonly requiredConfirmation: boolean; readonly reason: string }
+  | { readonly candidate: null; readonly reason: string };
+
+export type ManagementStepStatus = "executed" | "needs_confirmation" | "not_permitted" | "nothing_to_do";
+
+export interface ManagementStepResult {
+  readonly status: ManagementStepStatus;
+  readonly action?: string;
+  readonly detail: string;
+}
+
+export interface ManagementBoundedRun {
+  readonly steps: readonly ManagementStepResult[];
+  readonly stoppedReason: string;
+}
+
+/** GET /api/project/workspace */
+export function projectWorkspace(): Promise<ProjectWorkspaceView> {
+  return call<ProjectWorkspaceView>("/api/project/workspace");
+}
+
+/** GET /api/project/assets */
+export function projectAssets(): Promise<readonly ProjectAssetAssociation[]> {
+  return call<readonly ProjectAssetAssociation[]>("/api/project/assets");
+}
+
+/** GET /api/project/open_loops */
+export function projectOpenLoops(): Promise<readonly OpenLoop[]> {
+  return call<readonly OpenLoop[]>("/api/project/open_loops");
+}
+
+/** GET /api/project/history */
+export function projectHistory(): Promise<readonly WorkspaceHistoryEntry[]> {
+  return call<readonly WorkspaceHistoryEntry[]>("/api/project/history");
+}
+
+/** GET /api/project/journal[?projectId=] */
+export function projectJournal(projectId?: string): Promise<readonly ProjectJournalViewEntry[]> {
+  return call<readonly ProjectJournalViewEntry[]>(`/api/project/journal${projectId === undefined ? "" : `?projectId=${encodeURIComponent(projectId)}`}`);
+}
+
+/** POST /api/project/journal - appends one journal entry (a NEW event, never an edit). */
+export function projectJournalRecord(input: {
+  readonly kind: ProjectJournalKind;
+  readonly title: string;
+  readonly body: string;
+  readonly provenance: string;
+  readonly relatedRefs?: readonly ProjectJournalRef[];
+  readonly projectId?: string;
+}): Promise<ProjectJournalEntry> {
+  return call<ProjectJournalEntry>("/api/project/journal", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
+      kind: input.kind,
+      title: input.title,
+      body: input.body,
+      provenance: input.provenance,
+      ...(input.relatedRefs === undefined ? {} : { relatedRefs: [...input.relatedRefs] }),
+    }),
+  });
+}
+
+/** POST /api/project/journal/resolve - records a resolution event for an existing entry. */
+export function projectJournalResolve(input: {
+  readonly entryId: string;
+  readonly status: ProjectJournalResolutionStatus;
+  readonly detail?: string;
+  readonly projectId?: string;
+}): Promise<ProjectJournalViewEntry> {
+  return call<ProjectJournalViewEntry>("/api/project/journal/resolve", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
+      entryId: input.entryId,
+      status: input.status,
+      ...(input.detail === undefined ? {} : { detail: input.detail }),
+    }),
+  });
+}
+
+/** POST /api/project/decision - appends a decision through the existing ProjectIR lineage. */
+export function projectDecision(input: {
+  readonly statement: string;
+  readonly rationale: string;
+  readonly evidenceIds: readonly string[];
+  readonly supersedes?: string;
+  readonly projectId?: string;
+}): Promise<{ readonly revision: number; readonly decision: ProjectDecision }> {
+  return call<{ readonly revision: number; readonly decision: ProjectDecision }>("/api/project/decision", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
+      statement: input.statement,
+      rationale: input.rationale,
+      evidenceIds: [...input.evidenceIds],
+      ...(input.supersedes === undefined ? {} : { supersedes: input.supersedes }),
+    }),
+  });
+}
+
+/** POST /api/project/association - links this project to an EXISTING canonical asset. */
+export function projectAssociation(input: {
+  readonly assetKind: ProjectAssetKind;
+  readonly canonicalRef: CanonicalAssetRef;
+  readonly associationKind: AssociationKind;
+  readonly provenance: string;
+  readonly projectId?: string;
+}): Promise<ProjectAssetAssociation> {
+  return call<ProjectAssetAssociation>("/api/project/association", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
+      assetKind: input.assetKind,
+      canonicalRef: input.canonicalRef,
+      associationKind: input.associationKind,
+      provenance: input.provenance,
+    }),
+  });
+}
+
+/** POST /api/project/opportunity/promote - the EXPLICIT opportunity-to-task promotion. */
+export function projectOpportunityPromote(input: {
+  readonly entryId: string;
+  readonly taskSpec: unknown;
+  readonly projectId?: string;
+}): Promise<{ readonly revision: number; readonly entryId: string; readonly taskId: string }> {
+  return call<{ readonly revision: number; readonly entryId: string; readonly taskId: string }>("/api/project/opportunity/promote", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input.projectId === undefined ? {} : { projectId: input.projectId }),
+      entryId: input.entryId,
+      taskSpec: input.taskSpec,
+    }),
+  });
+}
+
+/** GET /api/manage/status - profile + derived view + derived candidates (read-only). */
+export function manageStatus(): Promise<ManagementAssessment> {
+  return call<ManagementAssessment>("/api/manage/status");
+}
+
+/**
+ * POST /api/manage/step.
+ *
+ * An unconfirmed step evaluates the deterministic policy and acts only where no
+ * confirmation boundary applies; a confirmed step still cannot cross an authority
+ * boundary (a mode never grants authority).
+ */
+export function manageStep(input?: { readonly confirmed?: boolean }): Promise<ManagementStepResult> {
+  return call<ManagementStepResult>("/api/manage/step", {
+    method: "POST",
+    body: JSON.stringify(input?.confirmed === undefined ? {} : { confirmed: input.confirmed }),
+  });
+}
+
+/** POST /api/manage/run - bounded; the per-step read re-checks a downgrade immediately. */
+export function manageRun(input?: { readonly maxSteps?: number }): Promise<ManagementBoundedRun> {
+  return call<ManagementBoundedRun>("/api/manage/run", {
+    method: "POST",
+    body: JSON.stringify(input?.maxSteps === undefined ? {} : { maxSteps: input.maxSteps }),
+  });
+}
+
+/**
+ * POST /api/manage/request_mode_change.
+ *
+ * A REQUEST only. The agent-facing path can never apply an involvement change:
+ * the returned status is always `requested` and only the operator control port
+ * may persist it. There is deliberately no mode-setter helper in this module.
+ */
+export function manageRequestModeChange(input: { readonly to: ManagementInvolvement }): Promise<{ readonly status: "requested"; readonly detail: string }> {
+  return call<{ readonly status: "requested"; readonly detail: string }>("/api/manage/request_mode_change", {
+    method: "POST",
+    body: JSON.stringify({ to: input.to }),
+  });
 }

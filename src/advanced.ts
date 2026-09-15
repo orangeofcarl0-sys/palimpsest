@@ -156,3 +156,14 @@ export type { ReasoningBranchExecutionPort } from "./recipes/execution.js";
  * encryption-at-rest claim, no VC/DID/ZK, no recipient authentication.
  */
 export * from "./proof_asset/index.js";
+
+/**
+ * G10-V: Project-as-Asset & graduated project-management autonomy — advanced opt-in
+ * only. A DERIVED project workspace read model over the canonical owner matrix (one
+ * project's associations + journal are the only narrowly-owned append-only stores;
+ * neither copies a canonical fact), plus the operator-preference management autonomy
+ * layer (mode ≠ authority; the agent-facing path can only inspect, recommend, request,
+ * or execute bounded local work and can NEVER self-escalate).
+ */
+export * from "./project_workspace/index.js";
+export * from "./project_management/index.js";
