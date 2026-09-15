@@ -23,6 +23,7 @@ import { decodeJsonBlob } from "../src/tools/controller.js";
 import { parseProjectIr } from "../src/schema/models.js";
 import { canonicalDatetime } from "../src/schema/datetime.js";
 import { makePalimpsestApplicationSurface } from "../src/application/surface.js";
+import { handleApplicationRequest } from "../src/application/http.js";
 import { defineApplicationTools } from "../src/tools/application_tools.js";
 
 import {
@@ -623,6 +624,71 @@ describe("G10-V no escalation path on the agent-facing surface", () => {
         ]) {
           expect(actions).not.toContain(forbidden);
         }
+      } finally {
+        store.close();
+      }
+    } finally {
+      await rig.cleanup();
+    }
+  });
+
+  /**
+   * G10-W closes CF-V-01: the management surface already exposed
+   * `recommend()`/`preview()`; the missing piece was a canonical HTTP route so a
+   * client never has to re-derive candidates from `status` or abuse an
+   * UNCONFIRMED `step`. Both routes are GET + pure reads: zero ledger writes.
+   */
+  it("CF-V-01: /api/manage/recommend and /api/manage/preview are canonical, read-only GET routes", async () => {
+    const rig = makeRig();
+    try {
+      const store = new SqliteManagementPreferenceStore(rig.managementPath, { clock: () => CLOCK });
+      try {
+        const management = makeProjectManagementService({
+          workspace: rig.workspace,
+          control: controlFor("DELEGATE"),
+          controller: rig.controller,
+          clock: () => CLOCK,
+        });
+        const application = makePalimpsestApplicationSurface({
+          controller: rig.controller,
+          projectWorkspace: rig.workspace,
+          projectManagement: management,
+        });
+        const eventsBefore = countEvents(rig.controller);
+        const revisionBefore = readIr(rig.controller).revision;
+
+        const recommended = await handleApplicationRequest({
+          application,
+          method: "GET",
+          pathname: "/api/manage/recommend",
+          query: new URLSearchParams(),
+          body: undefined,
+        });
+        expect(recommended?.status).toBe(200);
+        expect(Array.isArray(recommended?.body)).toBe(true);
+
+        const preview = await handleApplicationRequest({
+          application,
+          method: "GET",
+          pathname: "/api/manage/preview",
+          query: new URLSearchParams(),
+          body: undefined,
+        });
+        expect(preview?.status).toBe(200);
+
+        // Read-only: neither route writes the ledger or moves the revision.
+        expect(countEvents(rig.controller)).toBe(eventsBefore);
+        expect(readIr(rig.controller).revision).toBe(revisionBefore);
+
+        // Method discipline: these are reads, not an unconfirmed step alias.
+        const wrongMethod = await handleApplicationRequest({
+          application,
+          method: "POST",
+          pathname: "/api/manage/preview",
+          query: new URLSearchParams(),
+          body: {},
+        });
+        expect(wrongMethod?.status).toBe(400);
       } finally {
         store.close();
       }

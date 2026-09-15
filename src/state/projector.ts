@@ -35,6 +35,9 @@ export class CoreProjector {
       case "TASK_CREATED":
         this.#applyTaskCreated(connection, event);
         break;
+      case "TASK_REAUTHORIZED":
+        this.#applyTaskReauthorized(connection, event);
+        break;
       case "ATTEMPT_CREATED":
         this.#applyAttemptCreated(connection, event);
         break;
@@ -326,6 +329,32 @@ export class CoreProjector {
     } catch (error) {
       throw new ProjectionError(withCause("task already exists", error));
     }
+  }
+
+  /**
+   * TASK_REAUTHORIZED (revision-safe Work evolution): rewrite ONLY the
+   * envelope binding. `state` and `state_json` are deliberately untouched -
+   * reauthorization is not a state transition. The projector imports no
+   * policy: the trusted-policy equality check belongs to admission, not to
+   * the deterministic replay projector.
+   */
+  #applyTaskReauthorized(connection: DatabaseSync, event: SchedulerEvent): void {
+    const changes = connection
+      .prepare(
+        `
+        UPDATE tasks
+        SET envelope_json=?, last_event_id=?, updated_at=?
+        WHERE project_id=? AND task_id=?
+        `,
+      )
+      .run(
+        jsonBytes(event.payload.task_envelope),
+        event.event_id,
+        isoformatDatetime(event.committed_at),
+        event.project_id,
+        event.entity_id,
+      ).changes;
+    requireUpdated(changes, "task reauthorization refers to an unknown task");
   }
 
   #applyTaskTransition(connection: DatabaseSync, event: SchedulerEvent): void {

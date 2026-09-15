@@ -10,3 +10,12 @@ export * from "./schema/index.js";
 export * from "./domain/index.js";
 export * from "./state/index.js";
 export * from "./scheduler/index.js";
+
+/**
+ * Revision-safe Work evolution: the PURE plan-revision reconciliation, plus the
+ * atomic multi-event append it commits through. Explicit additive exports (the
+ * domain barrel predates them).
+ */
+export * from "./domain/plan_reconciliation.js";
+export { AtomicAppendError } from "./state/event_store.js";
+export type { AtomicFaultHook } from "./state/event_store.js";

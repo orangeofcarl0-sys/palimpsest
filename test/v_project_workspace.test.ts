@@ -240,6 +240,11 @@ async function buildGolden(rig: Rig, service: ProjectWorkspaceService): Promise<
     summary: "the first approach failed",
     producedArtifacts: ["reports/failure-report.md"],
   });
+  // G10-W contract change: a plan revision now requires quiescence. A reported
+  // FAILED batch is still ACTIVE until the scheduler's own TASK_READY
+  // transition settles it, so the mechanical step below must run BEFORE the
+  // first revision (appendDecision). This is the normal settle-then-revise path.
+  expect(rig.controller.step()!.event_type).toBe("TASK_READY");
 
   const openQuestion = await service.recordJournalEntry({
     projectId: PROJECT,

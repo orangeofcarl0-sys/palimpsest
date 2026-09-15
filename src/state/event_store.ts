@@ -209,6 +209,27 @@ function verifyProjectionTails(connection: DatabaseSync): void {
 
 export type FaultHook = (checkpoint: "after_event_insert", event: SchedulerEvent) => void;
 
+/** appendAtomic checkpoints: after each event insert and once before COMMIT. */
+export type AtomicFaultHook = (checkpoint: string, event?: SchedulerEvent) => void;
+
+/**
+ * Failure of an atomic multi-event append. `recoveryRequired` means the batch
+ * was only PARTIALLY present on the log before the transaction opened - which
+ * cannot happen through this class (one BEGIN IMMEDIATE wraps the whole batch)
+ * and therefore indicates external tampering or a foreign writer; the batch
+ * fails closed instead of guessing how to reconcile.
+ */
+export class AtomicAppendError extends StateStoreError {
+  readonly recoveryRequired: boolean;
+
+  constructor(message: string, options: { cause?: unknown; recoveryRequired?: boolean } = {}) {
+    super(message);
+    this.name = "AtomicAppendError";
+    this.recoveryRequired = options.recoveryRequired ?? false;
+    if (options.cause !== undefined) this.cause = options.cause;
+  }
+}
+
 export interface CheckpointResult {
   busy: number;
   logPages: number;
@@ -261,51 +282,78 @@ export class EventStore {
     options: { faultHook?: FaultHook; committedAt?: string } = {},
   ): SchedulerEvent {
     const parsed = parseNewEvent(request);
-    const requestDigest = computeRequestDigest(parsed);
+    return this.#runInTransaction(() => this.#appendInTransaction(parsed, options));
+  }
+
+  /**
+   * Commit a BATCH of new events as ONE transaction (revision-safe Work
+   * evolution needs a closure - stale, revise, reauthorize, register - that
+   * either lands entirely or not at all).
+   *
+   * Contract:
+   *   - every request is parsed UP FRONT: a malformed batch never opens a
+   *     transaction;
+   *   - events are appended sequentially, so later events observe the
+   *     projected effects of earlier ones (a TASK_CREATED after
+   *     PROJECT_REVISED sees the new head);
+   *   - an identical full-batch retry is idempotent: each request resolves
+   *     through its idempotency key to the stored event and no new events are
+   *     written;
+   *   - a PARTIAL presence fails closed with `AtomicAppendError`
+   *     (`recoveryRequired`), which under one transaction should be impossible
+   *     except after external tampering;
+   *   - the same event identity with different content is an
+   *     `IdempotencyConflict`;
+   *   - ANY error rolls the whole batch back and rethrows the original typed
+   *     error (single-event semantics are never weakened).
+   */
+  appendAtomic(
+    requests: readonly NewEvent[],
+    options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
+  ): readonly SchedulerEvent[] {
+    const parsed = requests.map((request) => parseNewEvent(request));
+    if (parsed.length === 0) {
+      throw new AtomicAppendError("appendAtomic requires at least one request");
+    }
+    return this.#runInTransaction(() => {
+      const present = parsed.map(
+        (request) =>
+          this.connection
+            .prepare("SELECT event_id FROM events WHERE project_id=? AND idempotency_key=?")
+            .get(request.project_id, request.idempotency_key) !== undefined,
+      );
+      if (present.some(Boolean) && !present.every(Boolean)) {
+        throw new AtomicAppendError(
+          "appendAtomic batch is only partially present on the log; refusing a mixed commit (recovery_required)",
+          { recoveryRequired: true },
+        );
+      }
+      const events: SchedulerEvent[] = [];
+      for (const request of parsed) {
+        events.push(
+          this.#appendInTransaction(request, {
+            ...(options.faultHook === undefined
+              ? {}
+              : { faultHook: (checkpoint: "after_event_insert", event: SchedulerEvent) =>
+                  options.faultHook?.(checkpoint, event) }),
+            ...(options.committedAt === undefined ? {} : { committedAt: options.committedAt }),
+          }),
+        );
+      }
+      options.faultHook?.("before_commit");
+      return events;
+    });
+  }
+
+  /** One transaction boundary: BEGIN IMMEDIATE → fn → COMMIT, ROLLBACK on any throw. */
+  #runInTransaction<T>(fn: () => T): T {
     this.connection.exec("BEGIN IMMEDIATE");
     let inTransaction = true;
     try {
-      const existing = this.connection
-        .prepare("SELECT * FROM events WHERE project_id=? AND idempotency_key=?")
-        .get(parsed.project_id, parsed.idempotency_key) as Row | undefined;
-      if (existing !== undefined) {
-        if (rowStr(existing, "request_digest") !== requestDigest) {
-          throw new IdempotencyConflict(
-            "idempotency key was reused for a different request",
-          );
-        }
-        const event = rowToEvent(existing);
-        this.connection.exec("COMMIT");
-        inTransaction = false;
-        return event;
-      }
-
-      this.#validatePreconditions(parsed);
-      this.#aggregateValidator.validate(this.connection, parsed);
-      this.#aggregateValidator.validateAdmission(this.connection, parsed);
-      const eventId = this.#nextEventId();
-      this.#validateCausation(parsed, eventId);
-      const [projectSequence, previousDigest] = this.#nextProjectPosition(parsed);
-      const committedAt = canonicalDatetime(options.committedAt ?? this.clock());
-
-      const data = {
-        ...parsed,
-        payload: canonicalizeEventPayload(parsed.event_type, parsed.payload),
-        event_id: eventId,
-        project_sequence: projectSequence,
-        request_digest: requestDigest,
-        previous_event_digest: previousDigest,
-        event_digest: EMPTY_PREVIOUS_EVENT_DIGEST,
-        committed_at: committedAt,
-      } as SchedulerEvent;
-      data.event_digest = computeEventDigest(data);
-      const event = parseSchedulerEvent(data);
-      this.#insertEvent(event);
-      options.faultHook?.("after_event_insert", event);
-      this.projector.apply(this.connection, event);
+      const result = fn();
       this.connection.exec("COMMIT");
       inTransaction = false;
-      return event;
+      return result;
     } finally {
       if (inTransaction) {
         try {
@@ -315,6 +363,55 @@ export class EventStore {
         }
       }
     }
+  }
+
+  /**
+   * The per-event body of `append`, executed inside the caller's transaction:
+   * idempotency lookup, preconditions, aggregate validation, admission,
+   * identity/causation/position binding, digest computation, insert, fault
+   * hook, projection.
+   */
+  #appendInTransaction(
+    parsed: NewEvent,
+    options: { faultHook?: FaultHook; committedAt?: string },
+  ): SchedulerEvent {
+    const requestDigest = computeRequestDigest(parsed);
+    const existing = this.connection
+      .prepare("SELECT * FROM events WHERE project_id=? AND idempotency_key=?")
+      .get(parsed.project_id, parsed.idempotency_key) as Row | undefined;
+    if (existing !== undefined) {
+      if (rowStr(existing, "request_digest") !== requestDigest) {
+        throw new IdempotencyConflict(
+          "idempotency key was reused for a different request",
+        );
+      }
+      return rowToEvent(existing);
+    }
+
+    this.#validatePreconditions(parsed);
+    this.#aggregateValidator.validate(this.connection, parsed);
+    this.#aggregateValidator.validateAdmission(this.connection, parsed);
+    const eventId = this.#nextEventId();
+    this.#validateCausation(parsed, eventId);
+    const [projectSequence, previousDigest] = this.#nextProjectPosition(parsed);
+    const committedAt = canonicalDatetime(options.committedAt ?? this.clock());
+
+    const data = {
+      ...parsed,
+      payload: canonicalizeEventPayload(parsed.event_type, parsed.payload),
+      event_id: eventId,
+      project_sequence: projectSequence,
+      request_digest: requestDigest,
+      previous_event_digest: previousDigest,
+      event_digest: EMPTY_PREVIOUS_EVENT_DIGEST,
+      committed_at: committedAt,
+    } as SchedulerEvent;
+    data.event_digest = computeEventDigest(data);
+    const event = parseSchedulerEvent(data);
+    this.#insertEvent(event);
+    options.faultHook?.("after_event_insert", event);
+    this.projector.apply(this.connection, event);
+    return event;
   }
 
   #validatePreconditions(request: NewEvent): void {
@@ -362,7 +459,7 @@ export class EventStore {
           "new ProjectIR must be the direct child of the current projection",
         );
       }
-    } else if (request.event_type === "TASK_CREATED") {
+    } else if (request.event_type === "TASK_CREATED" || request.event_type === "TASK_REAUTHORIZED") {
       const envelope = request.payload.task_envelope as {
         project_revision: number;
         project_digest: string;
