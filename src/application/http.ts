@@ -14,6 +14,7 @@ import { parseCompiledRecipePlan, parseRecipePlan } from "../recipes/artifacts.j
 import type { TaskProfile } from "../advisor/task_profile.js";
 import { parseTaskProfile } from "../advisor/task_profile.js";
 import type { RecipeExecutionContext } from "../recipes/execution.js";
+import { SOURCE_PROVENANCES, parseEvidenceSelector, parseProofSourceRevisionRef } from "../proof_asset/index.js";
 
 export interface ApplicationRouteResult {
   readonly status: number;
@@ -124,6 +125,8 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       recipes: application.recipes !== undefined,
       advisor: application.advisor !== undefined,
       recipeExecution: application.recipeExecution !== undefined,
+      proof: application.proof !== undefined,
+      disclosure: application.disclosure !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -458,6 +461,125 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   if (pathname === "/api/projection/reasoning") {
     requireGet();
     return ok(await requireSurface(application.projections, "projections").reasoning({ cellId: queryRequired(query, "cellId") }));
+  }
+
+  /* ---- proof / evidence (G10-T; raw content is POST-only and goes through the explicit port) ---- */
+  if (pathname === "/api/proof/sources") {
+    requireGet();
+    return ok(await requireSurface(application.proof, "proof").sources());
+  }
+  if (pathname === "/api/proof/sources/revisions") {
+    requireGet();
+    return ok(await requireSurface(application.proof, "proof").sourceRevisions(queryRequired(query, "sourceId")));
+  }
+  if (pathname === "/api/proof/sources/inspect") {
+    requireGet();
+    const proof = requireSurface(application.proof, "proof");
+    const sourceId = queryRequired(query, "sourceId");
+    const revision = Number(queryRequired(query, "revision"));
+    if (!Number.isSafeInteger(revision) || revision < 0) throw new InvalidRequest('query parameter "revision" must be a non-negative integer');
+    const revisions = await proof.sourceRevisions(sourceId);
+    const found = revisions.find((entry) => entry.revision === revision);
+    if (found === undefined) return ok(null);
+    return ok(await proof.inspectSource({ schemaVersion: 1, sourceId: found.sourceId, revision: found.revision, contentDigest: found.contentDigest }));
+  }
+  if (pathname === "/api/proof/sources/import") {
+    requirePost();
+    const b = bodyObject(body);
+    const provenance = str(b.provenance, "provenance");
+    if (!(SOURCE_PROVENANCES as readonly string[]).includes(provenance)) {
+      throw new InvalidRequest(`provenance must be one of ${SOURCE_PROVENANCES.join(", ")}`);
+    }
+    const content = str(b.content, "content");
+    const bytes = new Uint8Array(Buffer.from(content, "base64"));
+    const metadata = b.metadata === undefined ? undefined : (b.metadata as Readonly<Record<string, string>>);
+    return ok(
+      await requireSurface(application.proof, "proof").importSource({
+        bytes,
+        mediaType: str(b.mediaType, "mediaType"),
+        label: str(b.label, "label"),
+        provenance: provenance as (typeof SOURCE_PROVENANCES)[number],
+        sourceId: str(b.sourceId, "sourceId"),
+        ...(metadata === undefined ? {} : { metadata }),
+      }),
+    );
+  }
+  if (pathname === "/api/proof/sources/read_explicit") {
+    requirePost();
+    const b = bodyObject(body);
+    const ref = parseBody(() =>
+      parseProofSourceRevisionRef({
+        schemaVersion: 1,
+        sourceId: str(b.sourceId, "sourceId"),
+        revision: b.revision,
+        contentDigest: str(b.contentDigest, "contentDigest"),
+      }),
+    );
+    const bytes = await requireSurface(application.proof, "proof").readContentExplicit(ref);
+    if (bytes === undefined) return ok({ state: "unavailable", sourceId: ref.sourceId, revision: ref.revision, contentDigest: ref.contentDigest });
+    return ok({ state: "available", sourceId: ref.sourceId, revision: ref.revision, contentDigest: ref.contentDigest, content: Buffer.from(bytes).toString("base64") });
+  }
+  if (pathname === "/api/proof/evidence") {
+    requirePost();
+    const b = bodyObject(body);
+    const sourceRevision = parseBody(() =>
+      parseProofSourceRevisionRef({
+        schemaVersion: 1,
+        sourceId: str(b.sourceId, "sourceId"),
+        revision: b.revision,
+        contentDigest: str(b.contentDigest, "contentDigest"),
+      }),
+    );
+    const selector = parseBody(() => parseEvidenceSelector(b.selector, "selector"));
+    return ok(await requireSurface(application.proof, "proof").recordEvidence({ sourceRevision, selector }));
+  }
+  if (pathname === "/api/proof/claims") {
+    requireGet();
+    return ok(await requireSurface(application.proof, "proof").claims());
+  }
+  if (pathname === "/api/proof/claims/inspect") {
+    requireGet();
+    return ok(await requireSurface(application.proof, "proof").inspectClaim(queryRequired(query, "claimId")));
+  }
+  if (pathname === "/api/proof/claims/why") {
+    requireGet();
+    return ok(await requireSurface(application.proof, "proof").why(queryRequired(query, "claimId")));
+  }
+  if (pathname === "/api/proof/publication/prepare") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.proof, "proof").preparePublication({ cellId: str(b.cellId, "cellId"), claimId: str(b.claimId, "claimId") }));
+  }
+  if (pathname === "/api/proof/publication/evaluate") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.proof, "proof").evaluatePublication({ candidateId: str(b.candidateId, "candidateId") }));
+  }
+  if (pathname === "/api/proof/claims/reassess") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.proof, "proof").reassess({ claimId: str(b.claimId, "claimId") }));
+  }
+  if (pathname === "/api/proof/disclosure/history") {
+    requireGet();
+    return ok(await requireSurface(application.disclosure, "disclosure").history());
+  }
+  if (pathname === "/api/proof/disclosure/preview") {
+    requirePost();
+    const b = bodyObject(body);
+    const requestedClaimIds = Array.isArray(b.requestedClaimIds) ? b.requestedClaimIds.map((id) => str(id, "requestedClaimIds[]")) : [];
+    return ok(
+      await requireSurface(application.disclosure, "disclosure").preview({
+        purpose: str(b.purpose, "purpose"),
+        audienceLabel: str(b.audienceLabel, "audienceLabel"),
+        requestedClaimIds,
+      }),
+    );
+  }
+  if (pathname === "/api/proof/disclosure/approve_export") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.disclosure, "disclosure").approveAndExport({ previewId: str(b.previewId, "previewId") }));
   }
 
   return undefined;
