@@ -208,4 +208,33 @@ correction recorded in `G10-AC-R-CARRY-FORWARD.md` for the verified gates.
 
 ## 7. Canonical checkpoint
 
+Recorded after merge.
+
+```text
+baseline                        4f5daec1f6e16cd9c923b562ee4141a05fa0a72c
+implementation commit           0341db5913127d3895718f67914a0c370c2dc1f0
+  "fix(g10-ac-r): monitor install lifecycle, truthful availability & product closure"
+pull request                    #101  experiment/g10-ac-r-closure -> main
+PR checks                       run 35036345424  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  d83f3098c6101538cff891b65150be1e94137f43
+  "Merge pull request #101 from orangeofcarl0-sys/experiment/g10-ac-r-closure"
+tree identity                   git diff 0341db5 d83f309  ->  EMPTY (identical trees)
+canonical main run              35036456329  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                    # 158 files / 1554 tests
+pnpm run build:web
+pnpm exec playwright test               # 28 passed
+node scripts/monitor/acr0-repro.mjs     # anyDefect=false (AC-R-01..04 all defect:false)
+node scripts/monitor/cold-resume.mjs    # pass=true, workEventsCreated=0
+```
+
+
 Recorded by the docs-only closure PR after merge.
