@@ -148,6 +148,9 @@ export class AggregateValidator {
         case "ATTEMPT_CREATED":
           this.#validateAttemptCreated(connection, event);
           return;
+        case "EVIDENCE_STALE":
+          this.#validateEvidenceStale(connection, event);
+          return;
         default:
           return;
       }
@@ -261,8 +264,37 @@ export class AggregateValidator {
     }
   }
 
-  #taskRow(connection: DatabaseSync, event: NewEvent): Row {
+  /**
+   * EVIDENCE_STALE (G10-Y): canonical revocation of one Work Evidence item's
+   * GATE AUTHORITY. The immutable `EvidenceAtom` history is NOT rewritten - only
+   * the evidence projection's `status` column moves, which is precisely what
+   * `GateEngine` reads. Admission pins the identity and the CURRENT authority:
+   * the event must target its own entity, the Evidence must exist in this
+   * project, and it must still be `active` (re-revoking an already-revoked item
+   * is not a state transition). An idempotent retry of the SAME request never
+   * reaches here - EventStore resolves it by identity before validation.
+   */
+  #validateEvidenceStale(connection: DatabaseSync, event: NewEvent): void {
+    if (String(event.payload.evidence_id) !== event.entity_id) {
+      throw new DomainValidationError(
+        "EVIDENCE_STALE evidence_id must equal the event entity id",
+      );
+    }
     const row = connection
+      .prepare("SELECT status FROM evidence WHERE project_id=? AND evidence_id=?")
+      .get(event.project_id, event.entity_id) as Row | undefined;
+    if (row === undefined) {
+      throw new DomainValidationError("EVIDENCE_STALE refers to unknown Evidence");
+    }
+    const status = rowStr(row, "status");
+    if (status !== "active") {
+      throw new DomainValidationError(
+        `EVIDENCE_STALE requires active Evidence (current status is ${status})`,
+      );
+    }
+  }
+
+  #taskRow(connection: DatabaseSync, event: NewEvent): Row {    const row = connection
       .prepare("SELECT * FROM tasks WHERE project_id=? AND task_id=?")
       .get(event.project_id, event.entity_id);
     if (row === undefined) {

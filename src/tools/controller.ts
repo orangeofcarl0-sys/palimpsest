@@ -70,7 +70,13 @@ import {
 } from "../context/index.js";
 import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
-import { computeInvalidationSet } from "../evidence/invalidation.js";
+import {
+  compileEvidenceInvalidation,
+  computeInvalidationSet,
+  type ActiveWorkEvidence,
+  type ChangeClass,
+  type EvidenceInvalidationPlan,
+} from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import {
   runTournament,
@@ -84,7 +90,7 @@ import { adjustAllocation } from "../allocate/telemetry_adapter.js";
 import { ModelPerformanceTable } from "../telemetry/performance_table.js";
 import { TelemetryStateSync } from "../telemetry/state_persistence.js";
 import { ClaimGraph } from "../evidence/graph.js";
-import type { ChangeClass, DependencyEdge } from "../evidence/invalidation.js";
+import type { DependencyEdge } from "../evidence/invalidation.js";
 import type { TaskRole } from "../schema/index.js";
 import { EventStore } from "../state/index.js";
 import { Scheduler } from "../scheduler/index.js";
@@ -712,18 +718,24 @@ export class ProjectController {
    * when it cannot be honest, and otherwise commit it as ONE `appendAtomic`
    * batch in a deterministic order:
    *
-   *   1. TASK_STALE   for each removed runnable task (and each typed-invalidation task)
-   *   2. PROJECT_REVISED
-   *   3. TASK_REAUTHORIZED for each retained task (fresh envelope on the new head)
-   *   4. TASK_CREATED for each added task
+   *   1. TASK_STALE       for each removed runnable task (and each typed-invalidation task)
+   *   2. EVIDENCE_STALE   for each Work Evidence item those tasks' retirement revokes
+   *   3. PROJECT_REVISED
+   *   4. TASK_REAUTHORIZED for each retained task (fresh envelope on the new head)
+   *   5. TASK_CREATED     for each added task
    *
    * Nothing is written when a blocker is present - not a partial closure, not a
    * single-event legacy closure. Typed invalidation (`changeClass`/`changedIds`)
    * is an EXPLICIT settlement act: the tasks it stales ride INSIDE the same
    * batch, so those tasks (and their open attempts) no longer block quiescence;
-   * any in-flight work outside the affected set still does. The evidence-status
-   * update is a projection repair with no event of its own, so it stays an
-   * explicit second step after the batch commits (documented limitation).
+   * any in-flight work outside the affected set still does.
+   *
+   * G10-Y: the retirement of a task and the revocation of the Evidence that gave
+   * its work gate authority are ONE durable transition. The stale events are
+   * compiled before the batch opens and appended inside it, so a crash can only
+   * expose the complete old world (with its evidence still active) or the
+   * complete new world (with the retired work's evidence revoked) - never a new
+   * ProjectIR still backed by authority from the superseded one.
    */
   planReconciled(input: PlanInput, trusted: TrustedPlanOptions = {}): PlanReconciliationOutcome {
     const current = this.#project();
@@ -842,6 +854,32 @@ export class ProjectController {
       staled.add(taskId);
     }
 
+    // G10-Y: the tasks this batch retires also lose the Work Evidence that
+    // granted gate authority to their old work. The plan is compiled from the
+    // pre-mutation projection and its events are appended BEFORE the revision
+    // bump: revoking authority over the OLD world is part of retiring it, so it
+    // commits in the SAME transaction as the revision closure. There is no
+    // post-commit repair and therefore no window in which a committed new world
+    // is still backed by old authority.
+    const evidenceInvalidation = this.#compileEvidenceInvalidation({
+      current,
+      revision,
+      changeClass: input.changeClass ?? null,
+      retiredTaskIds: [...staled],
+    });
+    for (const evidenceId of evidenceInvalidation.evidenceIds) {
+      requests.push(
+        this.#evidenceStaleRequest({
+          evidenceId,
+          reason: evidenceInvalidation.reason,
+          fromRevision: current.revision,
+          toRevision: revision,
+          changeClass: input.changeClass ?? null,
+          expectedProjectRevision: current.revision,
+        }),
+      );
+    }
+
     const promotionId = stableEntityId(
       "plan",
       actionKey("plan-revision-v1", { project_id: this.projectId, revision }),
@@ -918,9 +956,6 @@ export class ProjectController {
     const events = this.store.appendAtomic(requests, {
       ...(input.committedAt === undefined ? {} : { committedAt: input.committedAt }),
     });
-    if (input.changeClass !== undefined && affected.length > 0) {
-      this.#staleEvidenceForScope(affected);
-    }
     const revised = events.find((event) => event.event_type === "PROJECT_REVISED");
     if (revised === undefined) {
       throw new DomainValidationError("plan reconciliation did not commit PROJECT_REVISED");
@@ -1181,42 +1216,97 @@ export class ProjectController {
   }
 
   /**
-   * Evidence bound to the affected tasks (or their attempts) loses authority.
-   * This is a projection repair without an event of its own: it cannot join the
-   * appendAtomic batch, so it runs as an explicit second step after commit.
+   * Build (but do not append) the canonical EVIDENCE_STALE request for one Work
+   * Evidence item. ONE builder serves both the revision path and the manual
+   * `invalidateEvidence` path, so the two can never drift into different event
+   * shapes or idempotency semantics.
+   *
+   * The identity binds the SEMANTICS, not merely the target: the same Evidence
+   * across the same `from -> to` revision transition under the same trigger is a
+   * retry and converges; different semantics reusing the identity fail closed as
+   * an idempotency conflict instead of silently overwriting authority history.
    */
-  #staleEvidenceForScope(affected: readonly string[]): void {
-    const scope: string[] = [];
-    for (const taskId of affected) {
-      scope.push(taskId);
-      for (const attempt of this.store.connection
-        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=?")
-        .all(this.projectId, taskId) as Array<{ attempt_id: string }>) {
-        scope.push(attempt.attempt_id);
-      }
+  #evidenceStaleRequest(input: {
+    evidenceId: string;
+    reason: string;
+    fromRevision: number;
+    toRevision: number;
+    changeClass: ChangeClass | null;
+    expectedProjectRevision: number;
+  }): NewEvent {
+    return parseNewEvent({
+      schema_version: 1,
+      project_id: this.projectId,
+      event_type: "EVIDENCE_STALE",
+      payload_version: 1,
+      entity_type: "evidence",
+      entity_id: input.evidenceId,
+      payload: { evidence_id: input.evidenceId, reason: input.reason },
+      causation_id: null,
+      correlation_id: `evidence-stale:${input.evidenceId}`,
+      idempotency_key: actionKey("evidence-stale-v1", {
+        project_id: this.projectId,
+        evidence_id: input.evidenceId,
+        from_revision: input.fromRevision,
+        to_revision: input.toRevision,
+        change_class: input.changeClass,
+        reason: input.reason,
+      }),
+      expected_project_revision: input.expectedProjectRevision,
+    });
+  }
+
+  /**
+   * Read the ACTIVE Work Evidence of this project and compile the typed
+   * invalidation plan for the tasks this revision retires. Compilation is a READ:
+   * it runs before the atomic batch opens and writes nothing, so the plan is a
+   * function of the world being revoked rather than of the mutation itself.
+   */
+  #compileEvidenceInvalidation(input: {
+    current: ProjectIr;
+    revision: number;
+    changeClass: ChangeClass | null;
+    retiredTaskIds: readonly string[];
+  }): EvidenceInvalidationPlan {
+    const retiredTaskIds = [...input.retiredTaskIds].sort();
+    const affectedAttemptIds: string[] = [];
+    for (const taskId of retiredTaskIds) {
+      const attempts = this.store.connection
+        .prepare(
+          "SELECT attempt_id FROM attempts WHERE project_id=? AND task_id=? ORDER BY attempt_id",
+        )
+        .all(this.projectId, taskId) as Array<{ attempt_id: string }>;
+      for (const attempt of attempts) affectedAttemptIds.push(String(attempt.attempt_id));
     }
-    if (scope.length === 0) return;
-    const holders = this.store.connection
+    const activeEvidence: ActiveWorkEvidence[] = [];
+    const rows = this.store.connection
       .prepare(
-        "SELECT evidence_id FROM evidence WHERE project_id=? AND status='active'",
+        `SELECT evidence_id,
+                json_extract(evidence_json, '$.subject_type') AS subject_type,
+                json_extract(evidence_json, '$.subject_id') AS subject_id
+         FROM evidence
+         WHERE project_id=? AND status='active'
+         ORDER BY evidence_id`,
       )
-      .all(this.projectId) as Array<{ evidence_id: string }>;
-    for (const holder of holders) {
-      const evidence = JSON.parse(
-        new TextDecoder().decode(
-          (
-            this.store.connection
-              .prepare("SELECT evidence_json FROM evidence WHERE project_id=? AND evidence_id=?")
-              .get(this.projectId, holder.evidence_id) as { evidence_json: Uint8Array }
-          ).evidence_json,
-        ),
-      ) as { subject_id?: string };
-      if (evidence.subject_id !== undefined && scope.includes(evidence.subject_id)) {
-        this.store.connection
-          .prepare("UPDATE evidence SET status='stale' WHERE project_id=? AND evidence_id=?")
-          .run(this.projectId, holder.evidence_id);
-      }
+      .all(this.projectId) as Array<Record<string, unknown>>;
+    for (const row of rows) {
+      const subjectType = String(row.subject_type);
+      if (subjectType !== "task" && subjectType !== "attempt" && subjectType !== "commit") continue;
+      activeEvidence.push({
+        evidenceId: String(row.evidence_id),
+        subjectType,
+        subjectId: String(row.subject_id),
+      });
     }
+    return compileEvidenceInvalidation({
+      projectId: this.projectId,
+      basis: { revision: input.current.revision, digest: input.current.digest },
+      targetRevision: input.revision,
+      affectedTaskIds: retiredTaskIds,
+      affectedAttemptIds,
+      changeClass: input.changeClass,
+      activeEvidence,
+    });
   }
 
   // -------------------------------------------------------------------------
@@ -1693,26 +1783,25 @@ export class ProjectController {
     return verdict;
   }
 
-  /** Invalidate evidence bound to a superseded subject (revision change). */
+  /**
+   * Invalidate Evidence bound to a superseded subject (revision change).
+   *
+   * This is the MANUAL revocation path. It shares the exact builder, event shape
+   * and idempotency semantics with the revision path (`planReconciled`), so a
+   * manually revoked item and a revision-revoked item are indistinguishable on
+   * the log. The `from`/`to` revision pair is the current revision on both sides,
+   * because a manual act revokes authority without moving the ProjectIR.
+   */
   invalidateEvidence(evidenceId: string, reason: string): SchedulerEvent {
     const revision = this.#project().revision;
     return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "EVIDENCE_STALE",
-        payload_version: 1,
-        entity_type: "evidence",
-        entity_id: evidenceId,
-        payload: { evidence_id: evidenceId, reason },
-        causation_id: null,
-        correlation_id: `evidence-stale:${evidenceId}`,
-        idempotency_key: actionKey("evidence-stale-v1", {
-          project_id: this.projectId,
-          evidence_id: evidenceId,
-          reason,
-        }),
-        expected_project_revision: revision,
+      this.#evidenceStaleRequest({
+        evidenceId,
+        reason,
+        fromRevision: revision,
+        toRevision: revision,
+        changeClass: null,
+        expectedProjectRevision: revision,
       }),
     );
   }
