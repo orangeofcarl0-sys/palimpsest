@@ -63,12 +63,12 @@ Verdict: **G10-X CANONICAL PROJECT-HEAD EVOLUTION: PASS**.
 
 | Checkpoint | Value |
 | --- | --- |
-| Implementation PR |  |
-| Tested branch HEAD |  |
-| PR run |  |
-| Merge |  |
-| Tree identity |  |
-| Canonical main run |  |
+| Implementation PR | **#88** `experiment/g10-x-project-head` |
+| Tested branch HEAD | `4d5775c` |
+| PR run | `34996042858` — **unit pass + e2e pass on attempt 1** |
+| Merge | `--merge` (normal) → canonical `main @ 98133a16113b2dafa58e275ed777faebc875f0d1` |
+| Tree identity | `git diff 4d5775c 98133a1` empty → the tested tree IS the merged tree |
+| Canonical main run | `34996215991` — **unit pass + e2e pass on attempt 1** |
 
-*(Left blank deliberately: this record is written before the remote gate runs. Required checks must
-be GREEN — read from the real conclusion — before the merge.)*
+All required checks were GREEN before merge; no force/bypass/history rewrite; replay fixtures were NOT
+modified. The multi-promotion dogfood and the crash/divergence tests are separately reproducible artifacts.
