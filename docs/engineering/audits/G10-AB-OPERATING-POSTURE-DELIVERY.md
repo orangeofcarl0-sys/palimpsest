@@ -123,4 +123,33 @@ Baseline was 153 files / 1454 tests.
 
 ## 7. Canonical checkpoint
 
-Recorded by the docs-only closure PR after merge.
+Recorded after merge.
+
+```text
+baseline                        9f29547b0eeccc524b0120ef13e9ce55656429ee
+implementation commit           2e338a149270751397df79e386e4095689b40282
+  "feat(g10-ab): durable project operating posture & management history"
+pull request                    #97  experiment/g10-ab-operating-posture -> main
+PR checks                       run 35022762982  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  23fd1f30009fe510d59c135dfb01408dab3f63a5
+  "Merge pull request #97 from orangeofcarl0-sys/experiment/g10-ab-operating-posture"
+tree identity                   git diff 2e338a1 23fd1f3  ->  EMPTY (identical trees)
+canonical main run              35022966803  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                         # 155 files / 1498 tests
+pnpm run build:web
+pnpm exec playwright test                    # 27 passed
+node scripts/operating/multi-session.mjs
+#   session1  FOCUS(safe_default)+DIRECT -> EXPLORE+VERIFY, MANAGE, one executed action
+#   session2  same posture, both histories, 4 activity records, chain verified
+#   crash     real SIGKILL between the activity phases -> 1 unresolved record,
+#             anyFabricatedSuccess=false, honest=true
+```
