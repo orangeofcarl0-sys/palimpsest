@@ -222,6 +222,16 @@ describe("architecture modes (PLMP-ARCH)", () => {
       });
       controller.step();
       const created = controller.step()!;
+      // G10-W contract change: a revision now requires quiescence (or an explicit
+      // invalidation that settles the affected work). The in-flight batch is
+      // settled through the normal mechanical path (claim → report → the
+      // scheduler's own TASK_READY transition) BEFORE the revision is declared.
+      await controller.claim(created.entity_id);
+      controller.report(created.entity_id, {
+        workerStatus: "failed",
+        summary: "settle the pre-revision batch before the architecture change",
+      });
+      expect(controller.step()!.event_type).toBe("TASK_READY");
       controller.plan({
         tasks: [
           ...proposalTaskSpecs(PIPELINE),

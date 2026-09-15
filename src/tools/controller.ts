@@ -34,6 +34,7 @@ import {
   type Decision,
   type EvidenceAtom,
   type EventType,
+  type NewEvent,
   type ProjectIr,
   type Requirement,
   type SchedulerEvent,
@@ -41,6 +42,14 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import {
+  compilePlanRevision,
+  type PlanReconciliationBlocker,
+  type PlanReconciliationBlockerKind,
+  type PlanRevisionReconciliation,
+  type ReconcileAttemptRow,
+  type ReconcileTaskRow,
+} from "../domain/plan_reconciliation.js";
 import {
   assessCoverage,
   buildContextManifest,
@@ -54,7 +63,7 @@ import {
 } from "../context/index.js";
 import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
-import { computeInvalidationSet, changeClassInvalidates } from "../evidence/invalidation.js";
+import { computeInvalidationSet } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import {
   runTournament,
@@ -117,6 +126,41 @@ export interface PlanInput {
   /** R2 typed invalidation: the class and logical ids this revision changes. */
   changeClass?: ChangeClass | undefined;
   changedIds?: readonly string[] | undefined;
+}
+
+/** The additive read-back of one reconciled plan revision. */
+export interface PlanReconciliationOutcome {
+  /** The committed PROJECT_REVISED event (the batch's centerpiece). */
+  readonly event: SchedulerEvent;
+  /** The pure reconciliation the batch was compiled from (diffs + basis). */
+  readonly reconciliation: PlanRevisionReconciliation;
+  readonly result: {
+    readonly revision: number;
+    readonly digest: string;
+    readonly retainedReauthorized: readonly string[];
+    readonly added: readonly string[];
+    readonly removedStaled: readonly string[];
+    readonly blocked: readonly string[];
+  };
+}
+
+/**
+ * Fail-closed plan-revision blocker. Nothing is written before this is thrown
+ * (the reconciliation is pure), so a caller that receives it knows the work
+ * graph is byte-for-byte unchanged.
+ */
+export class PlanReconciliationError extends DomainValidationError {
+  readonly kind: PlanReconciliationBlockerKind;
+  readonly refs: readonly string[];
+
+  constructor(blocker: PlanReconciliationBlocker) {
+    super(
+      `plan revision blocked (${blocker.kind}): ${blocker.detail} [refs: ${blocker.refs.join(", ")}]`,
+    );
+    this.name = "PlanReconciliationError";
+    this.kind = blocker.kind;
+    this.refs = [...blocker.refs];
+  }
 }
 
 export interface ReportInput {
@@ -585,8 +629,44 @@ export class ProjectController {
     );
   }
 
-  /** Emit a new ProjectIR revision (palimpsest_plan). */
+  /**
+   * Emit a new ProjectIR revision (palimpsest_plan).
+   *
+   * Signature and return are unchanged, but the semantics are now the revision
+   * contract: a revision either commits the COMPLETE structural closure as ONE
+   * atomic batch (stale removed tasks, stale the typed-invalidation set, revise,
+   * reauthorize retained tasks, register added tasks) or it throws a typed
+   * `PlanReconciliationError` and writes ZERO events. There is no fallback:
+   *
+   *   - without `changeClass`/`changedIds` the project must be quiescent (no
+   *     ACTIVE/VERIFYING task, no open CREATED/LEASED/RUNNING attempt);
+   *   - with them, exactly the affected tasks are settled by staling them
+   *     inside the same batch, and any UNaffected in-flight work still blocks.
+   */
   plan(input: PlanInput): SchedulerEvent {
+    return this.planReconciled(input).event;
+  }
+
+  /**
+   * Revision-safe Work evolution: compile the complete structural closure for
+   * a plan revision (pure, via `compilePlanRevision`), refuse it fail-closed
+   * when it cannot be honest, and otherwise commit it as ONE `appendAtomic`
+   * batch in a deterministic order:
+   *
+   *   1. TASK_STALE   for each removed runnable task (and each typed-invalidation task)
+   *   2. PROJECT_REVISED
+   *   3. TASK_REAUTHORIZED for each retained task (fresh envelope on the new head)
+   *   4. TASK_CREATED for each added task
+   *
+   * Nothing is written when a blocker is present - not a partial closure, not a
+   * single-event legacy closure. Typed invalidation (`changeClass`/`changedIds`)
+   * is an EXPLICIT settlement act: the tasks it stales ride INSIDE the same
+   * batch, so those tasks (and their open attempts) no longer block quiescence;
+   * any in-flight work outside the affected set still does. The evidence-status
+   * update is a projection repair with no event of its own, so it stays an
+   * explicit second step after the batch commits (documented limitation).
+   */
+  planReconciled(input: PlanInput): PlanReconciliationOutcome {
     const current = this.#project();
     const revision = current.revision + 1;
     const data = {
@@ -613,11 +693,94 @@ export class ProjectController {
       headCommit: data.head_commit,
       committedAt: data.committed_at,
     });
+
+    const reconcileTasks: ReconcileTaskRow[] = (
+      this.store.connection
+        .prepare("SELECT task_id, state, envelope_json FROM tasks WHERE project_id=?")
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).map((row) => ({
+      taskId: String(row.task_id),
+      state: String(row.state),
+      envelope:
+        row.envelope_json === null || row.envelope_json === undefined
+          ? null
+          : parseTaskEnvelope(decodeJsonBlob(row.envelope_json)),
+    }));
+    const openAttempts: ReconcileAttemptRow[] = (
+      this.store.connection
+        .prepare(
+          "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')",
+        )
+        .all(this.projectId) as Array<Record<string, unknown>>
+    ).map((row) => ({
+      attemptId: String(row.attempt_id),
+      taskId: String(row.task_id),
+      state: String(row.state),
+    }));
+
+    // Typed invalidation is an explicit operator act: it names the tasks whose
+    // in-flight work this revision settles by staling them in the batch. Only
+    // those exact tasks stop blocking quiescence; everything else in flight
+    // (ANY ACTIVE/VERIFYING task, ANY open attempt outside the set) still fails
+    // closed with `quiescence_required`. A same-id meaning change always blocks
+    // (`replacement_task_id_required`): settlement is not a lineage protocol.
+    const affected =
+      input.changeClass === undefined
+        ? []
+        : this.#invalidationAffected({
+            changeClass: input.changeClass,
+            changedIds: input.changedIds ?? input.tasks.map((task) => task.task_id),
+            from: current.revision,
+            to: revision,
+            project,
+          });
+    const stateOf = new Map(reconcileTasks.map((row) => [row.taskId, row.state]));
+    const settledTaskIds = affected.filter((taskId) => {
+      const state = stateOf.get(taskId);
+      return state !== undefined && state !== "STALE" && state !== "FAILED" && state !== "SATISFIED";
+    });
+
+    const reconciliation = compilePlanRevision({
+      current,
+      next: project,
+      tasks: reconcileTasks,
+      openAttempts,
+      policy: this.policy,
+      settledTaskIds,
+    });
+
+    const firstBlocker = reconciliation.blocked[0];
+    if (firstBlocker !== undefined) {
+      throw new PlanReconciliationError(firstBlocker);
+    }
+
+    const requests: NewEvent[] = [];
+    const staled = new Set<string>();
+
+    for (const taskId of reconciliation.removedStaled) {
+      requests.push(
+        this.#taskStaleRequest(
+          taskId,
+          `plan revision ${revision}: task is not declared by the new ProjectIR`,
+        ),
+      );
+      staled.add(taskId);
+    }
+    const typedReason =
+      input.changeClass === undefined
+        ? ""
+        : `typed invalidation (${input.changeClass}) on revision ${revision}`;
+    for (const taskId of settledTaskIds) {
+      if (staled.has(taskId)) continue;
+      requests.push(this.#taskStaleRequest(taskId, typedReason));
+      staled.add(taskId);
+    }
+
     const promotionId = stableEntityId(
       "plan",
       actionKey("plan-revision-v1", { project_id: this.projectId, revision }),
     );
-    const event = this.store.append(
+    requests.push(
       parseNewEvent({
         schema_version: 1,
         project_id: this.projectId,
@@ -635,27 +798,95 @@ export class ProjectController {
         expected_project_revision: current.revision,
       }),
     );
-    if (input.changeClass !== undefined) {
-      this.#applyTypedInvalidation({
-        changeClass: input.changeClass,
-        changedIds: input.changedIds ?? input.tasks.map((task) => task.task_id),
-        from: current.revision,
-        to: revision,
-      });
+
+    const retainedIds: string[] = [];
+    for (const envelope of reconciliation.retainedReauthorized) {
+      if (staled.has(envelope.task_id)) continue;
+      retainedIds.push(envelope.task_id);
+      requests.push(
+        parseNewEvent({
+          schema_version: 1,
+          project_id: this.projectId,
+          event_type: "TASK_REAUTHORIZED",
+          payload_version: 1,
+          entity_type: "task",
+          entity_id: envelope.task_id,
+          payload: {
+            task_envelope: envelope,
+            policy_id: this.policy.policy_id,
+            policy_digest: this.policy.digest,
+          },
+          causation_id: null,
+          correlation_id: `task:${envelope.task_id}:reauthorized`,
+          idempotency_key: envelope.idempotency_key,
+          expected_project_revision: envelope.project_revision,
+        }),
+      );
     }
-    return event;
+
+    const addedIds: string[] = [];
+    for (const entry of reconciliation.added) {
+      addedIds.push(entry.taskId);
+      requests.push(
+        parseNewEvent({
+          schema_version: 1,
+          project_id: this.projectId,
+          event_type: "TASK_CREATED",
+          payload_version: 1,
+          entity_type: "task",
+          entity_id: entry.taskId,
+          payload: {
+            task_envelope: entry.envelope,
+            initial_state: entry.initial,
+            policy_id: this.policy.policy_id,
+            policy_digest: this.policy.digest,
+          },
+          causation_id: null,
+          correlation_id: `task:${entry.taskId}`,
+          idempotency_key: entry.envelope.idempotency_key,
+          expected_project_revision: entry.envelope.project_revision,
+        }),
+      );
+    }
+
+    const events = this.store.appendAtomic(requests, {
+      ...(input.committedAt === undefined ? {} : { committedAt: input.committedAt }),
+    });
+    if (input.changeClass !== undefined && affected.length > 0) {
+      this.#staleEvidenceForScope(affected);
+    }
+    const revised = events.find((event) => event.event_type === "PROJECT_REVISED");
+    if (revised === undefined) {
+      throw new DomainValidationError("plan reconciliation did not commit PROJECT_REVISED");
+    }
+    return Object.freeze({
+      event: revised,
+      reconciliation,
+      result: Object.freeze({
+        revision,
+        digest: project.digest,
+        retainedReauthorized: Object.freeze(retainedIds),
+        added: Object.freeze(addedIds),
+        removedStaled: Object.freeze([...reconciliation.removedStaled]),
+        blocked: Object.freeze([]) as readonly string[],
+      }),
+    });
   }
 
-  /** R2: compute and apply the typed invalidation closure for a plan revision. */
-  #applyTypedInvalidation(arg: {
+  /**
+   * The forward propagation set for a typed revision delta (sorted, stable).
+   * This is the EXACT set the revision batch stales, and therefore the exact set
+   * that is removed from the quiescence requirement.
+   */
+  #invalidationAffected(arg: {
     changeClass: ChangeClass;
     changedIds: readonly string[];
     from: number;
     to: number;
-  }): void {
-    const project = this.#project(); // new revision is now current
+    project: ProjectIr;
+  }): string[] {
     const edges: DependencyEdge[] = [];
-    for (const task of project.tasks) {
+    for (const task of arg.project.tasks) {
       for (const dependency of task.depends_on) {
         edges.push({
           from: dependency,
@@ -673,19 +904,15 @@ export class ProjectController {
       },
       edges,
     );
-    if (affected.size === 0 && !changeClassInvalidates(arg.changeClass)) {
-      return;
-    }
-    for (const taskId of affected) {
-      const row = this.store.connection
-        .prepare("SELECT state FROM tasks WHERE project_id=? AND task_id=?")
-        .get(this.projectId, taskId) as { state: string } | undefined;
-      if (row === undefined || row.state === "STALE" || row.state === "FAILED" || row.state === "SATISFIED") {
-        continue;
-      }
-      this.invalidateTask(taskId, `typed invalidation (${arg.changeClass}) on revision ${arg.to}`);
-    }
-    // Evidence bound to the affected tasks (or their attempts) loses authority.
+    return [...affected].sort((left, right) => (left < right ? -1 : left > right ? 1 : 0));
+  }
+
+  /**
+   * Evidence bound to the affected tasks (or their attempts) loses authority.
+   * This is a projection repair without an event of its own: it cannot join the
+   * appendAtomic batch, so it runs as an explicit second step after commit.
+   */
+  #staleEvidenceForScope(affected: readonly string[]): void {
     const scope: string[] = [];
     for (const taskId of affected) {
       scope.push(taskId);
@@ -1070,6 +1297,17 @@ export class ProjectController {
    * (task-stale-v1); active tasks carry their batch anchor.
    */
   invalidateTask(taskId: string, reason: string): SchedulerEvent {
+    return this.store.append(this.#taskStaleRequest(taskId, reason));
+  }
+
+  /**
+   * Build (but do not append) the TASK_STALE request for one task. The key is
+   * derived exactly like the frozen baseline (task-stale-v1); active tasks
+   * carry their batch anchor. Building is separated from appending so the
+   * reconcile batch can place the stale BEFORE the revision bump while keeping
+   * the same event shape.
+   */
+  #taskStaleRequest(taskId: string, reason: string): NewEvent {
     const row = this.store.connection
       .prepare("SELECT * FROM tasks WHERE project_id=? AND task_id=?")
       .get(this.projectId, taskId) as Record<string, unknown> | undefined;
@@ -1092,26 +1330,25 @@ export class ProjectController {
       previous_state: previousState,
       batch_activation_event_id: batchId,
     });
-    return this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "TASK_STALE",
-        payload_version: 1,
-        entity_type: "task",
-        entity_id: taskId,
-        payload: {
-          previous_state: previousState,
-          new_state: "STALE",
-          reason,
-          batch_activation_event_id: batchId,
-        },
-        causation_id: row.last_event_id,
-        correlation_id: `task:${taskId}:stale`,
-        idempotency_key: key,
-        expected_project_revision: this.#project().revision,
-      }),
-    );
+    void state;
+    return parseNewEvent({
+      schema_version: 1,
+      project_id: this.projectId,
+      event_type: "TASK_STALE",
+      payload_version: 1,
+      entity_type: "task",
+      entity_id: taskId,
+      payload: {
+        previous_state: previousState,
+        new_state: "STALE",
+        reason,
+        batch_activation_event_id: batchId,
+      },
+      causation_id: row.last_event_id,
+      correlation_id: `task:${taskId}:stale`,
+      idempotency_key: key,
+      expected_project_revision: this.#project().revision,
+    });
   }
 
   /**

@@ -721,6 +721,17 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     requireGet();
     return ok(await requireSurface(application.projectManagement, "projectManagement").status());
   }
+  // G10-W (CF-V-01): canonical read-only recommend/preview endpoints, distinct
+  // from an UNCONFIRMED step. Both are pure reads of the same evaluator the
+  // step uses; neither mutates the ledger and neither applies a revision.
+  if (pathname === "/api/manage/recommend") {
+    requireGet();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").recommend());
+  }
+  if (pathname === "/api/manage/preview") {
+    requireGet();
+    return ok(await requireSurface(application.projectManagement, "projectManagement").preview());
+  }
   if (pathname === "/api/manage/step") {
     requirePost();
     const b = bodyObject(body);

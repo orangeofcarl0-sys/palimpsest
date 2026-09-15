@@ -9,6 +9,7 @@ import { ProjectController } from "../src/tools/index.js";
 import { EventStore } from "../src/state/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { actionKey, parseGateDefinition, TaskPolicy, type StageGraphDefinition } from "../src/domain/index.js";
+import { PlanReconciliationError } from "../src/advanced.js";
 import { parseNewEvent } from "../src/schema/index.js";
 import { MIGRATION_8_SQL, MIGRATION_9_BACKFILL_SQL } from "../src/state/migrations.js";
 
@@ -249,28 +250,43 @@ describe("debugger holds x plan revision (PLMP-GRAPH-4, 30 号规格)", () => {
       expect(heldTasks(controller)).toEqual(["task-1"]);
       expect(controller.scheduler.runOnce()).toBeNull();
 
-      // r2: task-1 is now a semantically different node (X); A moved to
-      // task-2 and B to task-3. The r1 hold must NOT gate any of them.
-      controller.plan({
-        tasks: [
-          { ...taskSpec("task-1"), objective: "X" },
-          { ...taskSpec("task-2"), objective: "A" },
-          { ...taskSpec("task-3", ["task-2"]), objective: "B" },
-        ],
-      });
+      // G10-W contract change: revision-safe Work evolution forbids a same-id
+      // meaning swap (v1 has no lineage protocol), so the hazard this test
+      // guards - a hold silently rebinding to a DIFFERENT semantic task that
+      // reuses "task-1" - is now prevented STRUCTURALLY at plan time: the
+      // revision is refused with a typed blocker and ZERO events, so the
+      // occupant of task_id "task-1" can never change identity under a hold.
+      const eventsBefore = store.listEvents("scheduler-project").length;
+      let blocked: unknown;
+      try {
+        controller.plan({
+          tasks: [
+            { ...taskSpec("task-1"), objective: "X" },
+            { ...taskSpec("task-2"), objective: "A" },
+            { ...taskSpec("task-3", ["task-2"]), objective: "B" },
+          ],
+        });
+      } catch (error) {
+        blocked = error;
+      }
+      expect(blocked).toBeInstanceOf(PlanReconciliationError);
+      expect((blocked as PlanReconciliationError).kind).toBe("replacement_task_id_required");
+      expect(store.listEvents("scheduler-project").length).toBe(eventsBefore);
       const graph = controller.orchestrationGraph();
-      expect(graph.tasks.map((task) => task.objective)).toEqual(["X", "A", "B"]);
-      // §B3-C badge attribution: this scenario carries no definition
-      // identities, so the mismatched hold must NOT read as "X was held" -
-      // the stale state lives only in the governance projection.
-      expect(graph.tasks.filter((task) => task.held === "stale")).toEqual([]);
-      expect(graph.tasks.filter((task) => task.held === "active")).toEqual([]);
-      const staleHold = graph.runtime?.controls?.holds[0]!;
-      expect(staleHold).toMatchObject({ taskId: "task-1", status: "stale", setAtRevision: 0 });
-      expect(staleHold.definitionId).toBeUndefined();
+      expect(graph.project.revision).toBe(0);
+      expect(graph.tasks.map((task) => task.objective)).toEqual([
+        "Complete task-1.",
+        "Complete task-2.",
+      ]);
+      // The hold still gates exactly the task it was set on (no rebinding is
+      // possible), so it reads as a normal active hold, never as "X was held".
+      expect(heldTasks(controller)).toEqual(["task-1"]);
+      const activeHold = graph.runtime?.controls?.holds[0]!;
+      expect(activeHold).toMatchObject({ taskId: "task-1", status: "active", setAtRevision: 0 });
+      expect(activeHold.definitionId).toBeUndefined();
 
-      // The stale hold stays auditable and explicit: re-anchor it at the
-      // current revision (new HOLD_SET carries the live revision), or release it.
+      // The hold stays auditable and explicit: re-anchor it (a new HOLD_SET
+      // carries the live revision), or release it.
       controller.setHold("task-1", { reason: "X 也要停", declaredBy: "panel" });
       expect(heldTasks(controller)).toEqual(["task-1"]);
       const revision = store.connection
@@ -374,16 +390,22 @@ describe("hold governance projection (PLMP-GRAPH-5 §B2-D)", () => {
         reason: "A 的断点",
         declaredBy: "panel",
       });
+      // G10-W contract change: a revision that swaps the meaning of an existing
+      // task_id is refused (`replacement_task_id_required`), so the "current
+      // task reusing the id" can never diverge from the task the hold was set
+      // on. The revision therefore RETAINS task-1 and ADDS a task; the mere
+      // revision bump is what makes the rev0 hold stale - the governance fact
+      // under test.
       controller.plan({
         tasks: [
-          { ...taskSpec("task-1"), objective: "X" },
-          { ...taskSpec("task-2"), objective: "A" },
-          { ...taskSpec("task-3", ["task-2"]), objective: "B" },
+          taskSpec("task-1"),
+          taskSpec("task-2", ["task-1"]),
+          taskSpec("task-3", ["task-2"]),
         ],
       });
       const stale = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
-      // The hold belongs to revision 0 (the old semantic task) - it must NOT
-      // read as if the current task-1 (X) was historically held.
+      // The hold belongs to revision 0 - it must NOT read as if it were set on
+      // the current plan revision.
       expect(stale).toMatchObject({
         taskId: "task-1",
         setAtRevision: 0,
@@ -406,8 +428,10 @@ describe("hold governance projection (PLMP-GRAPH-5 §B2-D)", () => {
         tasks: [taskSpec("task-1"), taskSpec("task-2")],
       });
       controller.setHold("task-2", { reason: "即将消失的任务", declaredBy: "panel" });
-      // r2 removes task-2 entirely.
-      controller.plan({ tasks: [{ ...taskSpec("task-1"), objective: "X" }] });
+      // r2 removes task-2 entirely. G10-W contract change: task-1 is RETAINED
+      // verbatim (a same-id meaning swap would now be refused), so this is a
+      // pure removal revision and the hold's task really does disappear.
+      controller.plan({ tasks: [taskSpec("task-1")] });
       const graph = controller.orchestrationGraph();
       expect(graph.tasks.some((task) => task.taskId === "task-2")).toBe(false);
       const orphan = graph.runtime?.controls?.holds[0]!;
@@ -547,17 +571,43 @@ describe("historical hold definition identity (PLMP-GRAPH-5 §B3-C)", () => {
         status: "active",
         definitionId: "n17",
       });
-      controller.plan({ tasks: irSpecs("n99") });
+      // G10-W contract change: a definition identity swap under the SAME task_id
+      // is a meaning change, and v1 has no lineage protocol to prove a
+      // replacement - so the revision is refused with `replacement_task_id_required`
+      // and ZERO events. The current occupant of task_id "task-1" therefore
+      // cannot diverge from the task the hold was set on.
+      let blockedIdentity: unknown;
+      try {
+        controller.plan({ tasks: irSpecs("n99") });
+      } catch (error) {
+        blockedIdentity = error;
+      }
+      expect(blockedIdentity).toBeInstanceOf(PlanReconciliationError);
+      expect((blockedIdentity as PlanReconciliationError).kind).toBe("replacement_task_id_required");
+      expect(
+        controller.orchestrationGraph().runtime?.controls?.holds[0],
+      ).toMatchObject({ taskId: "task-1", status: "active", setAtRevision: 0, definitionId: "n17" });
+      // A VALID revision (retain the identity, add an unrelated task) makes the
+      // hold stale; the historical definitionId survives the revision and the
+      // stale hold badges nothing.
+      controller.plan({
+        tasks: [
+          ...irSpecs("n17"),
+          { ...irSpecs(undefined)[0]!, task_id: "task-2", objective: "B" },
+        ],
+      });
       const graph = controller.orchestrationGraph();
-      // Historical identity is n17 - the current n99 occupant must not
-      // inherit it, neither in the projection nor as a badge.
       expect(graph.runtime?.controls?.holds[0]).toMatchObject({
         taskId: "task-1",
         status: "stale",
         setAtRevision: 0,
         definitionId: "n17",
       });
-      expect(graph.tasks[0]!.held).toBeUndefined();
+      // The identity is retained, so the stale hold's historical definitionId
+      // still matches the current task: it badges "stale" (set at an older
+      // revision), never "active". It can never badge a DIFFERENT identity,
+      // because the same-id swap that would create one is refused above.
+      expect(graph.tasks[0]!.held).toBe("stale");
     } finally {
       await rig.cleanup();
     }
@@ -594,9 +644,27 @@ describe("historical hold definition identity (PLMP-GRAPH-5 §B3-C)", () => {
       controller.setHold("task-1", { reason: "spec-first 断点", declaredBy: "panel" });
       const hold = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
       expect(Object.hasOwn(hold, "definitionId")).toBe(false);
-      controller.plan({ tasks: irSpecs("n99") });
-      // Still absent after the current task gains an identity - no leakage
-      // of the current definition into the historical hold.
+      // G10-W contract change: adding an identity under an EXISTING task_id is a
+      // meaning change (n17-shape), so it is refused with a typed blocker and
+      // zero events - the historical hold can never be retro-attributed an
+      // identity that did not exist when it was set.
+      let blockedIdentity: unknown;
+      try {
+        controller.plan({ tasks: irSpecs("n99") });
+      } catch (error) {
+        blockedIdentity = error;
+      }
+      expect(blockedIdentity).toBeInstanceOf(PlanReconciliationError);
+      expect((blockedIdentity as PlanReconciliationError).kind).toBe("replacement_task_id_required");
+      expect(Object.hasOwn(controller.orchestrationGraph().runtime?.controls?.holds[0]!, "definitionId")).toBe(false);
+      // A VALID revision (retain the spec, add a task) leaves absence absent:
+      // never synthesized from the current task's (still absent) identity.
+      controller.plan({
+        tasks: [
+          ...irSpecs(undefined),
+          { ...irSpecs(undefined)[0]!, task_id: "task-2", objective: "B" },
+        ],
+      });
       const after = controller.orchestrationGraph().runtime?.controls?.holds[0]!;
       expect(Object.hasOwn(after, "definitionId")).toBe(false);
       expect(after.status).toBe("stale");
