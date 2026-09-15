@@ -115,7 +115,15 @@ export async function apply(ctx, config) {
       graph: (cellId) => reasoningService.claimGraph({ cellId }),
       brief: (input) => reasoningService.branchBrief(input),
       openBranch: forbidden('open a branch'),
-      submitCandidate: (input) => reasoningService.submitCandidate(input),
+      // A branch MAY submit exactly one structured candidate, INCLUDING the opaque
+      // `externalEvidenceRefs` it actually used. The runner enforces that those
+      // refs stay inside the frozen allowlist; the tool surface grants no proof or
+      // publication capability to a branch.
+      submitCandidate: (input) =>
+        reasoningService.submitCandidate({
+          ...input,
+          ...(Array.isArray(input?.externalEvidenceRefs) ? { externalEvidenceRefs: input.externalEvidenceRefs } : {}),
+        }),
       evaluate: forbidden('evaluate or admit'),
       invalidate: forbidden('invalidate a claim'),
     };

@@ -33,10 +33,13 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { canonicalDigest, canonicalJsonBytes } from "../schema/canonical.js";
-import { proofContentDigestOfBytes } from "./blob.js";
 import type { ProofAssetView, PublishedProofClaim } from "./claims.js";
 import { parseProofAssetView, parsePublishedProofClaim } from "./claims.js";
-import type { EvidenceItem } from "./evidence.js";
+import type { EvidenceItem, EvidenceSelector } from "./evidence.js";
+import { materializeEvidenceItem, parseEvidenceSelector } from "./evidence.js";
+import type { MaterializationKind, MaterializedSelection } from "./materialize_selector.js";
+import { materializeSelection } from "./materialize_selector.js";
+import type { ProofSourceRevision } from "./sources.js";
 import type { ProofSourceRevisionRef } from "./refs.js";
 import {
   parseProofSourceRevisionRef,
@@ -83,6 +86,125 @@ export class DisclosureError extends Error {
 }
 
 /* ------------------------------------------------------------------ *
+ * Materialization manifest (per-evidence export plan)
+ * ------------------------------------------------------------------ */
+
+export const DISCLOSURE_MATERIALIZATION_KINDS = [
+  "ORIGINAL_SOURCE",
+  "TEXT_EXCERPT",
+  "JSON_VALUE",
+] as const satisfies readonly MaterializationKind[];
+
+export type DisclosureMaterializationKind = MaterializationKind;
+
+/**
+ * Exactly what bytes ONE selected evidence contributes to a bundle. The
+ * `selector` and `materializationKind` are part of every preview/bundle digest,
+ * so a manifest can never be silently re-pointed at a different text range,
+ * JSON pointer, or materialization without changing its bundle identity.
+ *
+ * `contentDigest` is the digest of the MATERIALIZED bytes (the excerpt/value),
+ * never of the source revision; `fileName` is the single safe path segment the
+ * local exporter writes under the bundle directory.
+ */
+export interface DisclosureMaterial {
+  readonly evidenceId: string;
+  readonly sourceRevision: ProofSourceRevisionRef;
+  readonly selector: EvidenceSelector;
+  readonly materializationKind: DisclosureMaterializationKind;
+  readonly mediaType: string;
+  readonly contentDigest: string;
+  readonly fileName: string;
+}
+
+function expectedMaterializationKind(selector: EvidenceSelector): DisclosureMaterializationKind {
+  switch (selector.kind) {
+    case "WHOLE_SOURCE":
+      return "ORIGINAL_SOURCE";
+    case "TEXT_RANGE":
+      return "TEXT_EXCERPT";
+    case "JSON_POINTER":
+      return "JSON_VALUE";
+  }
+}
+
+function disclosureFileName(value: unknown, what: string): string {
+  const name = proofNonEmpty(value, what);
+  if (name === "." || name === ".." || !/^[A-Za-z0-9._-]+$/u.test(name)) {
+    proofFail("invalid_value", `${what} must be a single safe file name`);
+  }
+  return name;
+}
+
+/**
+ * The deterministic, collision-resistant file name for one material. Text and
+ * JSON excerpts are keyed by evidence id (content-addressed, so the name changes
+ * with the selection); whole-source originals are keyed by source revision +
+ * content digest.
+ */
+export function disclosureMaterialFileName(input: {
+  readonly evidenceId: string;
+  readonly materializationKind: DisclosureMaterializationKind;
+  readonly sourceRevision: ProofSourceRevisionRef;
+  readonly contentDigest: string;
+}): string {
+  switch (input.materializationKind) {
+    case "TEXT_EXCERPT":
+      return `evidence-${input.evidenceId}.txt`;
+    case "JSON_VALUE":
+      return `evidence-${input.evidenceId}.json`;
+    case "ORIGINAL_SOURCE":
+      return `${safePathSegment(input.sourceRevision.sourceId)}-${input.sourceRevision.revision}-${input.contentDigest}`;
+  }
+}
+
+export function materializeDisclosureMaterial(input: DisclosureMaterial): DisclosureMaterial {
+  const evidenceId = proofStableId(input.evidenceId, "material.evidenceId");
+  const sourceRevision = parseProofSourceRevisionRef(input.sourceRevision, "material.sourceRevision");
+  const selector = parseEvidenceSelector(input.selector, "material.selector");
+  const materializationKind = proofEnum(input.materializationKind, DISCLOSURE_MATERIALIZATION_KINDS, "material.materializationKind");
+  if (materializationKind !== expectedMaterializationKind(selector)) {
+    proofFail("invalid_value", `material.materializationKind must be ${expectedMaterializationKind(selector)} for a ${selector.kind} selector`);
+  }
+  const mediaType = proofNonEmpty(input.mediaType, "material.mediaType");
+  const contentDigest = proofDigestHex(input.contentDigest, "material.contentDigest");
+  const fileName = disclosureFileName(input.fileName, "material.fileName");
+  return Object.freeze({ evidenceId, sourceRevision, selector, materializationKind, mediaType, contentDigest, fileName });
+}
+
+export function parseDisclosureMaterial(raw: unknown, what = "DisclosureMaterial"): DisclosureMaterial {
+  const object = proofObject(raw, what);
+  proofKeys(
+    object,
+    ["evidenceId", "sourceRevision", "selector", "materializationKind", "mediaType", "contentDigest", "fileName"],
+    ["evidenceId", "sourceRevision", "selector", "materializationKind", "mediaType", "contentDigest", "fileName"],
+    what,
+  );
+  return materializeDisclosureMaterial({
+    evidenceId: object.evidenceId as string,
+    sourceRevision: object.sourceRevision as ProofSourceRevisionRef,
+    selector: object.selector as EvidenceSelector,
+    materializationKind: object.materializationKind as DisclosureMaterializationKind,
+    mediaType: object.mediaType as string,
+    contentDigest: object.contentDigest as string,
+    fileName: object.fileName as string,
+  });
+}
+
+function materialArray(value: unknown, what: string): readonly DisclosureMaterial[] {
+  const raw = asArray(value, what);
+  const seen = new Set<string>();
+  const out: DisclosureMaterial[] = [];
+  for (const entry of raw) {
+    const material = parseDisclosureMaterial(entry, `${what}[]`);
+    if (seen.has(material.evidenceId)) proofFail("invalid_value", `${what}: duplicate evidence "${material.evidenceId}"`);
+    seen.add(material.evidenceId);
+    out.push(material);
+  }
+  return Object.freeze(out.sort((a, b) => compareStrings(a.evidenceId, b.evidenceId)));
+}
+
+/* ------------------------------------------------------------------ *
  * Request / admission ports
  * ------------------------------------------------------------------ */
 
@@ -126,6 +248,7 @@ export interface DisclosurePreview {
   readonly requiredDependencyIds: readonly string[];
   readonly evidenceRefs: readonly DisclosureEvidenceRef[];
   readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
   readonly wholeSourceWarnings: readonly string[];
   readonly warnings: readonly string[];
   readonly excludedBySelection: readonly string[];
@@ -140,6 +263,7 @@ export interface MaterializeDisclosurePreviewInput {
   readonly requiredDependencyIds: readonly string[];
   readonly evidenceRefs: readonly DisclosureEvidenceRef[];
   readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
   readonly wholeSourceWarnings: readonly string[];
   readonly warnings: readonly string[];
   readonly excludedBySelection: readonly string[];
@@ -155,6 +279,7 @@ export function disclosurePreviewDigestOf(input: Omit<DisclosurePreview, "schema
     requiredDependencyIds: input.requiredDependencyIds,
     evidenceRefs: input.evidenceRefs,
     sourceRevisionRefs: input.sourceRevisionRefs,
+    materials: input.materials,
     wholeSourceWarnings: input.wholeSourceWarnings,
     warnings: input.warnings,
     excludedBySelection: input.excludedBySelection,
@@ -170,6 +295,7 @@ export function materializeDisclosurePreview(input: MaterializeDisclosurePreview
     requiredDependencyIds: stableIdArray(input.requiredDependencyIds, "preview.requiredDependencyIds"),
     evidenceRefs: evidenceRefArray(input.evidenceRefs, "preview.evidenceRefs"),
     sourceRevisionRefs: sourceRevisionRefArray(input.sourceRevisionRefs, "preview.sourceRevisionRefs"),
+    materials: materialArray(input.materials, "preview.materials"),
     wholeSourceWarnings: stringArray(input.wholeSourceWarnings, "preview.wholeSourceWarnings"),
     warnings: stringArray(input.warnings, "preview.warnings"),
     excludedBySelection: stableIdArray(input.excludedBySelection, "preview.excludedBySelection"),
@@ -183,8 +309,8 @@ export function parseDisclosurePreview(raw: unknown, what = "DisclosurePreview")
   const object = proofObject(raw, what);
   proofKeys(
     object,
-    ["schemaVersion", "previewId", "purpose", "audienceLabel", "claimIds", "claims", "requiredDependencyIds", "evidenceRefs", "sourceRevisionRefs", "wholeSourceWarnings", "warnings", "excludedBySelection", "digest"],
-    ["schemaVersion", "previewId", "purpose", "audienceLabel", "claimIds", "claims", "requiredDependencyIds", "evidenceRefs", "sourceRevisionRefs", "wholeSourceWarnings", "warnings", "excludedBySelection", "digest"],
+    ["schemaVersion", "previewId", "purpose", "audienceLabel", "claimIds", "claims", "requiredDependencyIds", "evidenceRefs", "sourceRevisionRefs", "materials", "wholeSourceWarnings", "warnings", "excludedBySelection", "digest"],
+    ["schemaVersion", "previewId", "purpose", "audienceLabel", "claimIds", "claims", "requiredDependencyIds", "evidenceRefs", "sourceRevisionRefs", "materials", "wholeSourceWarnings", "warnings", "excludedBySelection", "digest"],
     what,
   );
   if (object.schemaVersion !== 1) proofFail("unknown_schema_version", `${what}.schemaVersion must be 1`);
@@ -196,6 +322,7 @@ export function parseDisclosurePreview(raw: unknown, what = "DisclosurePreview")
     requiredDependencyIds: object.requiredDependencyIds as readonly string[],
     evidenceRefs: object.evidenceRefs as readonly DisclosureEvidenceRef[],
     sourceRevisionRefs: object.sourceRevisionRefs as readonly ProofSourceRevisionRef[],
+    materials: object.materials as readonly DisclosureMaterial[],
     wholeSourceWarnings: object.wholeSourceWarnings as readonly string[],
     warnings: object.warnings as readonly string[],
     excludedBySelection: object.excludedBySelection as readonly string[],
@@ -220,6 +347,7 @@ export interface DisclosureBundle {
   readonly claimSnapshots: readonly PublishedProofClaim[];
   readonly evidenceRefs: readonly DisclosureEvidenceRef[];
   readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
   readonly warnings: readonly string[];
   readonly createdAt: string;
   readonly digest: string;
@@ -231,6 +359,7 @@ export interface MaterializeDisclosureBundleInput {
   readonly claimSnapshots: readonly PublishedProofClaim[];
   readonly evidenceRefs: readonly DisclosureEvidenceRef[];
   readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
   readonly warnings?: readonly string[] | undefined;
   readonly createdAt: string;
 }
@@ -242,6 +371,7 @@ export function disclosureBundleContentDigestOf(input: {
   readonly claimSnapshots: readonly PublishedProofClaim[];
   readonly evidenceRefs: readonly DisclosureEvidenceRef[];
   readonly sourceRevisionRefs: readonly ProofSourceRevisionRef[];
+  readonly materials: readonly DisclosureMaterial[];
   readonly warnings: readonly string[];
 }): string {
   return canonicalDigest({
@@ -251,6 +381,7 @@ export function disclosureBundleContentDigestOf(input: {
     claimSnapshots: input.claimSnapshots.map((claim) => claim.digest),
     evidenceRefs: input.evidenceRefs.map((ref) => ref.evidenceId),
     sourceRevisionRefs: input.sourceRevisionRefs,
+    materials: input.materials,
     warnings: input.warnings,
   });
 }
@@ -265,6 +396,7 @@ export function disclosureBundleDigestOf(input: Omit<DisclosureBundle, "digest">
     claimSnapshots: input.claimSnapshots.map((claim) => claim.digest),
     evidenceRefs: input.evidenceRefs.map((ref) => ref.evidenceId),
     sourceRevisionRefs: input.sourceRevisionRefs,
+    materials: input.materials,
     warnings: input.warnings,
     createdAt: input.createdAt,
   });
@@ -276,9 +408,10 @@ export function materializeDisclosureBundle(input: MaterializeDisclosureBundleIn
   const claimSnapshots = publishedClaimArray(input.claimSnapshots, "bundle.claimSnapshots");
   const evidenceRefs = evidenceRefArray(input.evidenceRefs, "bundle.evidenceRefs");
   const sourceRevisionRefs = sourceRevisionRefArray(input.sourceRevisionRefs, "bundle.sourceRevisionRefs");
+  const materials = materialArray(input.materials, "bundle.materials");
   const warnings = input.warnings === undefined ? Object.freeze([] as string[]) : stringArray(input.warnings, "bundle.warnings");
   const createdAt = proofNonEmpty(input.createdAt, "bundle.createdAt");
-  const bundleDigest = disclosureBundleContentDigestOf({ purpose, audienceLabel, claimSnapshots, evidenceRefs, sourceRevisionRefs, warnings });
+  const bundleDigest = disclosureBundleContentDigestOf({ purpose, audienceLabel, claimSnapshots, evidenceRefs, sourceRevisionRefs, materials, warnings });
   const bundleId = proofRefDigest(DISCLOSURE_BUNDLE_ID_DOMAIN, bundleDigest, "dsb");
   const base: Omit<DisclosureBundle, "digest"> = {
     schemaVersion: 1 as const,
@@ -289,6 +422,7 @@ export function materializeDisclosureBundle(input: MaterializeDisclosureBundleIn
     claimSnapshots,
     evidenceRefs,
     sourceRevisionRefs,
+    materials,
     warnings,
     createdAt,
   };
@@ -299,8 +433,8 @@ export function parseDisclosureBundle(raw: unknown, what = "DisclosureBundle"): 
   const object = proofObject(raw, what);
   proofKeys(
     object,
-    ["schemaVersion", "bundleId", "bundleDigest", "purpose", "audienceLabel", "claimSnapshots", "evidenceRefs", "sourceRevisionRefs", "warnings", "createdAt", "digest"],
-    ["schemaVersion", "bundleId", "bundleDigest", "purpose", "audienceLabel", "claimSnapshots", "evidenceRefs", "sourceRevisionRefs", "warnings", "createdAt", "digest"],
+    ["schemaVersion", "bundleId", "bundleDigest", "purpose", "audienceLabel", "claimSnapshots", "evidenceRefs", "sourceRevisionRefs", "materials", "warnings", "createdAt", "digest"],
+    ["schemaVersion", "bundleId", "bundleDigest", "purpose", "audienceLabel", "claimSnapshots", "evidenceRefs", "sourceRevisionRefs", "materials", "warnings", "createdAt", "digest"],
     what,
   );
   if (object.schemaVersion !== 1) proofFail("unknown_schema_version", `${what}.schemaVersion must be 1`);
@@ -310,6 +444,7 @@ export function parseDisclosureBundle(raw: unknown, what = "DisclosureBundle"): 
     claimSnapshots: object.claimSnapshots as readonly PublishedProofClaim[],
     evidenceRefs: object.evidenceRefs as readonly DisclosureEvidenceRef[],
     sourceRevisionRefs: object.sourceRevisionRefs as readonly ProofSourceRevisionRef[],
+    materials: object.materials as readonly DisclosureMaterial[],
     warnings: object.warnings as readonly string[],
     createdAt: object.createdAt as string,
   });
@@ -391,12 +526,22 @@ export function parseDisclosureExportReceipt(raw: unknown, what = "DisclosureExp
  * Local exporter
  * ------------------------------------------------------------------ */
 
+/** A resolved immutable revision plus its bytes, as returned by a content resolver. */
+export interface DisclosureResolvedSource {
+  readonly revision: ProofSourceRevision;
+  readonly bytes: Uint8Array;
+}
+
 export interface LocalDisclosureExporter {
   readonly exporterId: string;
   export(input: {
     readonly bundle: DisclosureBundle;
     readonly root: string;
-    readonly content?: (ref: ProofSourceRevisionRef) => Promise<Uint8Array | undefined>;
+    /**
+     * Resolve an exact immutable revision and its bytes. A missing revision or
+     * unresolvable bytes MUST be reported as `undefined` — never as wrong bytes.
+     */
+    readonly content?: (ref: ProofSourceRevisionRef) => Promise<DisclosureResolvedSource | undefined>;
   }): Promise<DisclosureExportReceipt>;
 }
 
@@ -406,18 +551,19 @@ function safePathSegment(value: string): string {
 
 /**
  * A local, filesystem-only exporter. It writes `<root>/<bundleDigest>/manifest.json`
- * (the immutable bundle) plus every source revision whose bytes the caller can
- * resolve AND whose bytes re-hash to the recorded content digest. It makes no
- * transport/recipient claim.
+ * (the canonical immutable bundle, INCLUDING its materials array) plus exactly one
+ * file per material, materialized by selector through `materializeSelection`.
+ *
+ * FAIL CLOSED: every material is resolved, materialized, and digest-verified
+ * BEFORE any byte is written. If ANY material fails — unavailable content, an
+ * out-of-range text range, an invalid JSON pointer, a non-JSON source, or a
+ * digest/media-type mismatch — the export throws and writes NOTHING. There is no
+ * whole-source fallback: a bundle that declares a sub-range/pointer NEVER emits
+ * the surrounding source bytes.
  *
  * The `root` passed to `export` wins; an empty `root` falls back to the factory
  * default. The disclosure SERVICE (which has no root parameter) passes an empty
  * root so a pre-bound default is used.
- *
- * LIMITATION (reported, not faked): the bundle carries opaque evidence refs and
- * source-revision refs, NOT evidence selectors. Whole-source files can therefore
- * be written exactly, but sub-range/JSON-pointer EXCERPTS cannot be reconstructed
- * from the bundle alone; only the source files they are drawn from are written.
  */
 export function localDisclosureExporter(root?: string): LocalDisclosureExporter {
   const defaultRoot = root;
@@ -426,7 +572,7 @@ export function localDisclosureExporter(root?: string): LocalDisclosureExporter 
     async export(input: {
       readonly bundle: DisclosureBundle;
       readonly root: string;
-      readonly content?: (ref: ProofSourceRevisionRef) => Promise<Uint8Array | undefined>;
+      readonly content?: (ref: ProofSourceRevisionRef) => Promise<DisclosureResolvedSource | undefined>;
     }): Promise<DisclosureExportReceipt> {
       const bundle = parseDisclosureBundle(input.bundle);
       const targetRoot = input.root.trim() !== "" ? input.root : defaultRoot;
@@ -434,23 +580,68 @@ export function localDisclosureExporter(root?: string): LocalDisclosureExporter 
         throw new DisclosureError("invalid_request", "no disclosure export root was provided");
       }
       const bundleDir = join(targetRoot, bundle.bundleDigest);
+      // Phase 1: materialize + verify EVERY material against the manifest. No
+      // file or directory is created until all of them pass.
+      const writes: { readonly path: string; readonly bytes: Uint8Array }[] = [];
+      const targets = new Set<string>();
+      for (const material of bundle.materials) {
+        if (input.content === undefined) {
+          throw new DisclosureError("export_failed", `no content resolver was provided; material for evidence "${material.evidenceId}" cannot be materialized`);
+        }
+        let resolved: DisclosureResolvedSource | undefined;
+        try {
+          resolved = await input.content(material.sourceRevision);
+        } catch (error) {
+          throw new DisclosureError("export_failed", `reading source content for evidence "${material.evidenceId}" failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        if (resolved === undefined || !(resolved.bytes instanceof Uint8Array)) {
+          throw new DisclosureError("export_failed", `source content for evidence "${material.evidenceId}" is unavailable`);
+        }
+        const { revision, bytes } = resolved;
+        if (
+          revision.sourceId !== material.sourceRevision.sourceId ||
+          revision.revision !== material.sourceRevision.revision ||
+          revision.contentDigest !== material.sourceRevision.contentDigest
+        ) {
+          throw new DisclosureError("export_failed", `the resolved revision does not match the manifest revision for evidence "${material.evidenceId}"`);
+        }
+        // Reconstruct the evidence selection from the manifest material. The
+        // material's contentDigest IS the digest of the materialized selection,
+        // so the recomputed evidence id must equal the manifest evidence id.
+        const evidence = materializeEvidenceItem({
+          sourceRevision: material.sourceRevision,
+          selector: material.selector,
+          selectionDigest: material.contentDigest,
+        });
+        if (evidence.evidenceId !== material.evidenceId) {
+          throw new DisclosureError("export_failed", `material for evidence "${material.evidenceId}" does not reconstruct its evidence identity`);
+        }
+        let selected: MaterializedSelection;
+        try {
+          selected = materializeSelection({ evidence, sourceRevision: revision, content: bytes });
+        } catch (error) {
+          throw new DisclosureError("export_failed", `materializing evidence "${material.evidenceId}" (${material.selector.kind}) failed: ${error instanceof Error ? error.message : String(error)}`);
+        }
+        if (selected.kind !== material.materializationKind) {
+          throw new DisclosureError("export_failed", `materialized kind "${selected.kind}" does not match the manifest kind "${material.materializationKind}" for evidence "${material.evidenceId}"`);
+        }
+        if (selected.contentDigest !== material.contentDigest) {
+          throw new DisclosureError("export_failed", `materialized content digest does not match the manifest digest for evidence "${material.evidenceId}"`);
+        }
+        if (selected.mediaType !== material.mediaType) {
+          throw new DisclosureError("export_failed", `materialized media type does not match the manifest media type for evidence "${material.evidenceId}"`);
+        }
+        const path = join(bundleDir, material.fileName);
+        if (targets.has(path)) {
+          throw new DisclosureError("export_failed", `more than one material maps to the file "${material.fileName}"`);
+        }
+        targets.add(path);
+        writes.push({ path, bytes: selected.bytes });
+      }
+      // Phase 2: every material verified — now, and only now, write bytes.
       mkdirSync(bundleDir, { recursive: true });
       writeFileSync(join(bundleDir, "manifest.json"), canonicalJsonBytes(bundle));
-      for (const ref of bundle.sourceRevisionRefs) {
-        let bytes: Uint8Array | undefined;
-        if (input.content !== undefined) {
-          try {
-            bytes = await input.content(ref);
-          } catch {
-            bytes = undefined;
-          }
-        }
-        // Fail closed: never write bytes that do not match the recorded address.
-        if (bytes === undefined || !(bytes instanceof Uint8Array) || proofContentDigestOfBytes(bytes) !== ref.contentDigest) continue;
-        const dir = join(bundleDir, "sources", safePathSegment(ref.sourceId));
-        mkdirSync(dir, { recursive: true });
-        writeFileSync(join(dir, `${ref.revision}-${ref.contentDigest}`), bytes);
-      }
+      for (const write of writes) writeFileSync(write.path, write.bytes);
       return materializeDisclosureExportReceipt({
         bundleDigest: bundle.bundleDigest,
         purpose: bundle.purpose,
@@ -546,8 +737,54 @@ export function makeDisclosureService(deps: DisclosureServiceDeps): DisclosureSe
     );
   }
 
-  async function publishedClaimsFor(claimIds: readonly string[]): Promise<ReadonlyMap<string, PublishedProofClaim>> {
-    const wanted = new Set(claimIds);
+  /**
+   * Resolve each selected evidence to the EXACT materialization that an export
+   * would write: the kind, media type, and digest of the materialized bytes (never
+   * of the whole source). A preview therefore states exactly what will be exported,
+   * and an export can never silently differ from its approved preview.
+   *
+   * Fail closed: if a selected revision or its content cannot be resolved, or the
+   * recorded selector no longer materializes, the preview FAILS rather than
+   * describing a disclosure it cannot honour.
+   */
+  async function materialsOf(evidence: readonly EvidenceItem[]): Promise<readonly DisclosureMaterial[]> {
+    const materials: DisclosureMaterial[] = [];
+    for (const item of evidence) {
+      const revision = await deps.proof.sourceRevision(item.sourceRevision);
+      if (revision === undefined) {
+        throw new DisclosureError("invalid_artifact", `evidence "${item.evidenceId}" points at an unknown source revision; the preview cannot state what would be exported`);
+      }
+      const content = await deps.proof.readSourceContent(item.sourceRevision);
+      if (content === undefined) {
+        throw new DisclosureError("invalid_artifact", `source content for evidence "${item.evidenceId}" is unavailable; the preview cannot state what would be exported`);
+      }
+      let selected: MaterializedSelection;
+      try {
+        selected = materializeSelection({ evidence: item, sourceRevision: revision, content });
+      } catch (error) {
+        throw new DisclosureError("invalid_artifact", `evidence "${item.evidenceId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`);
+      }
+      materials.push(
+        materializeDisclosureMaterial({
+          evidenceId: item.evidenceId,
+          sourceRevision: item.sourceRevision,
+          selector: item.selector,
+          materializationKind: selected.kind,
+          mediaType: selected.mediaType,
+          contentDigest: selected.contentDigest,
+          fileName: disclosureMaterialFileName({
+            evidenceId: item.evidenceId,
+            materializationKind: selected.kind,
+            sourceRevision: item.sourceRevision,
+            contentDigest: selected.contentDigest,
+          }),
+        }),
+      );
+    }
+    return Object.freeze(materials.sort((a, b) => compareStrings(a.evidenceId, b.evidenceId)));
+  }
+
+  async function publishedClaimsFor(claimIds: readonly string[]): Promise<ReadonlyMap<string, PublishedProofClaim>> {    const wanted = new Set(claimIds);
     const byId = new Map<string, PublishedProofClaim>();
     const events = await deps.proof.replay();
     for (const event of events) {
@@ -567,6 +804,7 @@ export function makeDisclosureService(deps: DisclosureServiceDeps): DisclosureSe
     const requestedIds = stableIdArray(request.requestedClaimIds, "DisclosureRequest.requestedClaimIds");
     const closure = await collectClosure(requestedIds);
     const evidence = evidenceOfViews(closure.claims);
+    const materials = await materialsOf(evidence);
     const wholeSource = evidence.some((item) => item.selector.kind === "WHOLE_SOURCE");
     const warnings: string[] = [];
     for (const claimId of closure.excludedBySelection) {
@@ -585,6 +823,7 @@ export function makeDisclosureService(deps: DisclosureServiceDeps): DisclosureSe
       requiredDependencyIds: closure.requiredDependencyIds,
       evidenceRefs: evidence.map((item) => Object.freeze({ evidenceId: item.evidenceId })),
       sourceRevisionRefs: sourceRevisionRefsOf(closure.claims, evidence),
+      materials,
       wholeSourceWarnings: wholeSource ? [DISCLOSURE_WHOLE_SOURCE_WARNING] : [],
       warnings,
       excludedBySelection: closure.excludedBySelection,
@@ -650,16 +889,25 @@ export function makeDisclosureService(deps: DisclosureServiceDeps): DisclosureSe
       claimSnapshots,
       evidenceRefs: preview.evidenceRefs,
       sourceRevisionRefs: preview.sourceRevisionRefs,
+      materials: preview.materials,
       warnings: preview.warnings,
       createdAt: clock(),
     });
 
+    // Resolve the exact revision + bytes for each material. The blob/content port
+    // is used for bytes when configured; the proof plane's own read path is the
+    // fallback, so an export is possible whenever a preview was.
     const contentPort = deps.content;
-    const content = contentPort === undefined
-      ? undefined
-      : (ref: ProofSourceRevisionRef): Promise<Uint8Array | undefined> =>
-          contentPort.readContent({ sourceId: ref.sourceId, revision: ref.revision, contentDigest: ref.contentDigest });
-    const exportInput = content === undefined ? { bundle, root: "" } : { bundle, root: "", content };
+    const content = async (ref: ProofSourceRevisionRef): Promise<DisclosureResolvedSource | undefined> => {
+      const revision = await deps.proof.sourceRevision(ref);
+      if (revision === undefined) return undefined;
+      const bytes = contentPort === undefined
+        ? await deps.proof.readSourceContent(ref)
+        : await contentPort.readContent({ sourceId: ref.sourceId, revision: ref.revision, contentDigest: ref.contentDigest });
+      if (bytes === undefined || !(bytes instanceof Uint8Array)) return undefined;
+      return Object.freeze({ revision, bytes });
+    };
+    const exportInput = { bundle, root: "", content };
 
     let rawReceipt: unknown;
     try {
