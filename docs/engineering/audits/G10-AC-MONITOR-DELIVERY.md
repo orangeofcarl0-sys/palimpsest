@@ -170,4 +170,32 @@ recorded as `CF-AC-06`, not claimed as delivered.
 
 ## 7. Canonical checkpoint
 
+Recorded after merge.
+
+```text
+baseline                        eca28ecce8118b21d41debb9af66b472b5ca866a
+implementation commit           c3d093c48fba3598174a816bd9c415fe191d0cf1
+  "feat(g10-ac): long-horizon monitor runtime & event-driven project wake"
+pull request                    #99  experiment/g10-ac-monitor-runtime -> main
+PR checks                       run 35030571413  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  6a7413df8c051d14010d237fc59494bc116fe643
+  "Merge pull request #99 from orangeofcarl0-sys/experiment/g10-ac-monitor-runtime"
+tree identity                   git diff c3d093c 6a7413d  ->  EMPTY (identical trees)
+canonical main run              35030710775  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                      # 156 files / 1528 tests
+pnpm run build:web
+pnpm exec playwright test                 # 27 passed
+node scripts/monitor/cold-resume.mjs      # pass=true (cold resume, zero Work events)
+```
+
+
 Recorded by the docs-only closure PR after merge.
