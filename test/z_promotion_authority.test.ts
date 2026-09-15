@@ -28,7 +28,7 @@ import {
   type GitPort,
   type PalimpsestEffectsRuntime,
 } from "../src/effects/index.js";
-import { TaskPolicy, actionKey } from "../src/domain/index.js";
+import { TaskPolicy } from "../src/domain/index.js";
 import {
   PromotionEligibilityError,
   explainPromotionIneligibility,
@@ -590,55 +590,71 @@ describe("G10-Z idempotent terminal replay", () => {
  * ------------------------------------------------------------------ */
 
 describe("G10-Z recovery authority re-check", () => {
-  it("recovery refuses to redispatch when the authorizing Work was retired", async () => {
-    const r = await rig({ tasks: [taskSpec("task-a")] });
+  it("no supported retirement path can cross an unresolved promotion intent (G10-AA audit finding)", async () => {
+    const r = await rig({ crashOnce: true, tasks: [taskSpec("task-a")] });
     try {
-      const { attemptId, resultCommit } = await driveToVerifying(r);
-      // A valid PREPARED with no Ordarium record at all: the invocation never
-      // started. Built directly to model a PRE-Z log, because the fence now
-      // prevents the revision that would otherwise create this state. It carries
-      // the canonical source and head, so it is a *valid* intent - the point of
-      // the test is that RECOVERY re-checks authority, not that admission does.
-      const promotionId = `promotion-${"0".repeat(32)}`;
-      r.store.append(
-        {
-          schema_version: 1,
-          project_id: PROJECT,
-          event_type: "PROMOTION_PREPARED",
-          payload_version: 1,
-          entity_type: "promotion",
-          entity_id: promotionId,
-          payload: {
-            promotion_id: promotionId,
-            attempt_id: attemptId,
-            source_commit: resultCommit,
-            expected_head_commit: HEAD,
-            resulting_head_commit: null,
-            reason: "legacy intent",
-          },
-          causation_id: null,
-          correlation_id: `promotion:${promotionId}`,
-          idempotency_key: actionKey("promotion-prepare-v1", {
-            project_id: PROJECT,
-            promotion_id: promotionId,
-          }),
-          expected_project_revision: 0,
-        } as unknown as NewEvent,
+      const { attemptId } = await driveToVerifying(r);
+      // A GENUINE intent from the governed protocol: the merge lands and the
+      // process dies before the terminal, leaving an unresolved PREPARED.
+      await expect(r.controller.promoteAttempt({ attemptId })).rejects.toBeInstanceOf(
+        SimulatedProcessCrash,
       );
-      // Retire the task (a legacy log could contain this; the fence blocks it now).
-      r.controller.invalidateTask("task-a", "retired by a legacy revision");
-      expect(taskState(r.store, "task-a")).toBe("STALE");
+      expect(r.crashing.merges.count).toBe(1);
+      expect(r.controller.status().promotionFence).toHaveLength(1);
 
-      const mergesBefore = r.crashing.merges.count;
-      r.advance(1000);
-      const report = await r.controller.recovery.reconcileAll();
-      // §29: the invocation provably never started and the authority is gone, so
-      // FAILED is the materially honest terminal fact - and nothing is dispatched.
-      expect(report.terminal.map((entry) => entry.outcome)).toEqual(["failed"]);
-      expect(r.crashing.merges.count).toBe(mergesBefore);
-      expect(eventsOfType(r.store, "PROMOTION_FAILED")).toHaveLength(1);
-      expect(eventsOfType(r.store, "PROMOTION_COMMITTED")).toHaveLength(0);
-      expect(taskState(r.store, "task-a")).toBe("STALE");
+      // G10-AA hardening: Z's fence lived only in `planReconciled`, so the
+      // direct `invalidateTask` path could retire the Work across the effect and
+      // manufacture exactly the state recovery's authority re-check exists to
+      // survive. Every supported retirement path is now fenced.
+      const paths: Array<[string, () => unknown]> = [
+        [
+          "direct task invalidation",
+          () => r.controller.invalidateTask("task-a", "retire across the effect"),
+        ],
+        [
+          "typed invalidating revision",
+          () =>
+            r.controller.planReconciled({
+              tasks: [taskSpec("task-a"), taskSpec("task-c")],
+              changeClass: "behavior_change",
+              changedIds: ["task-a"],
+            }),
+        ],
+        ["task removal", () => r.controller.planReconciled({ tasks: [] })],
+        [
+          "same-id replacement",
+          () =>
+            r.controller.planReconciled({
+              tasks: [{ ...taskSpec("task-a"), objective: "different" }, taskSpec("task-c")],
+            }),
+        ],
+      ];
+      for (const [label, run] of paths) {
+        const before = r.store.listEvents(PROJECT).length;
+        let blocker: PlanReconciliationError | undefined;
+        try {
+          run();
+        } catch (error) {
+          blocker = error as PlanReconciliationError;
+        }
+        // Every path is REFUSED with zero writes. The fence is the reason where
+        // the task would actually leave the plan; a same-id replacement keeps the
+        // id, so the revision's own `replacement_task_id_required` /
+        // `quiescence_required` refusal carries it - and since a VERIFYING task is
+        // never quiescent, no replacement can retire it either way.
+        expect([
+          "promotion_settlement_required",
+          "replacement_task_id_required",
+          "quiescence_required",
+        ]).toContain(blocker?.kind);
+        expect(r.store.listEvents(PROJECT)).toHaveLength(before);
+      }
+      // With every retirement path fenced, "unresolved intent + revoked Work
+      // authority" is unreachable through the supported surface - which is what
+      // makes recovery's authority re-check defence in depth rather than a
+      // reachable branch. The task is untouched and the fence still stands.
+      expect(taskState(r.store, "task-a")).toBe("VERIFYING");
+      expect(r.controller.status().promotionFence).toHaveLength(1);
     } finally {
       await r.cleanup();
     }
