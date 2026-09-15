@@ -42,7 +42,17 @@ export type TaskDiffClass =
 export type PlanReconciliationBlockerKind =
   | "quiescence_required"
   | "replacement_task_id_required"
-  | "missing_registration";
+  | "missing_registration"
+  /**
+   * G10-Z §26: a meaning-changing revision cannot land while a committed
+   * promotion effect has not been reconciled into the ProjectIR head. The
+   * supported order is effect → Work settlement → head sync → meaning change.
+   */
+  | "head_sync_required"
+  /** G10-Z §23: the task owns an unresolved external promotion effect. */
+  | "promotion_settlement_required"
+  /** G10-Z §25: the promotion committed but its Work was never admitted. */
+  | "promotion_semantic_settlement_required";
 
 export interface PlanReconciliationBlocker {
   readonly kind: PlanReconciliationBlockerKind;

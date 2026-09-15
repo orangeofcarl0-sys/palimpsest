@@ -155,6 +155,10 @@ describe("serve channel face (PLMP-WEB-1)", () => {
       });
       expect((reported.json.result as Json).event_type).toBe("ATTEMPT_COMPLETED");
 
+      // G10-Z §10: a new promotion is admitted from current VERIFYING Work, so
+      // the canonical flow settles the candidate batch first.
+      expect(rig.controller.step()!.event_type).toBe("TASK_VERIFYING");
+
       const promoted = await api(handle, "/api/control/promote", {
         method: "POST",
         body: { gateId: "gate-release" },

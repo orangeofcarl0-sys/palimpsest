@@ -259,9 +259,13 @@ describe("G10-X A: forgery negatives", () => {
       const created = controller.step()!;
       await controller.claim(created.entity_id);
       controller.report(created.entity_id, { workerStatus: "failed", summary: "no commit" });
+      // G10-Z §10: a new promotion may only start from a COMPLETED attempt of a
+      // current VERIFYING task, so this is refused earlier and for a stronger
+      // reason than the missing source commit. The guarantee under test (fail
+      // closed, write nothing) is preserved and tightened.
       await expect(
         controller.promotions.promoteAttempt({ attemptId: created.entity_id }),
-      ).rejects.toMatchObject({ kind: "caller_source_not_canonical" });
+      ).rejects.toMatchObject({ kind: "attempt_not_completed" });
     } finally {
       await r.cleanup();
     }

@@ -563,6 +563,12 @@ describe("G10-W revision-safe Work evolution", () => {
       });
       // Put task-a into terminal (SATISFIED) history and produce real evidence.
       await driveToSatisfied(r);
+      // G10-Z §26: the committed promotion effect must be reconciled into the
+      // ProjectIR head BEFORE a meaning-changing revision (the supported order is
+      // effect -> Work settlement -> head sync -> meaning change). Without the
+      // sync, new Work would be authorized on a base the canonical promotion
+      // chain has already superseded.
+      expect((await r.controller.reconcileProjectHead()).status).toBe("reconciled");
       const evidenceBefore = r.controller.status().evidence.map((e) => `${e.evidence_id}:${e.status}`);
       const satisfiedEvents = eventsOfType(r.store, "TASK_SATISFIED").length;
 

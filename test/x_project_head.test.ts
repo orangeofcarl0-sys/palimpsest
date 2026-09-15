@@ -357,9 +357,16 @@ describe("G10-X canonical promotion derivation", () => {
       await controller.claim(created.entity_id);
       controller.report(created.entity_id, { workerStatus: "failed", summary: "no commit" });
       controller.step(); // TASK_READY (failed batch); the report has no result commit
+      // G10-Z §10: a new promotion may only start from a COMPLETED attempt of a
+      // current VERIFYING task, so this is now refused EARLIER and for a
+      // stronger reason than the missing source commit - the guarantee under
+      // test (fail closed, write nothing) is preserved and tightened. A
+      // COMPLETED report cannot carry a null result commit through the product
+      // surface at all (the controller fills it in), so `result_commit_missing`
+      // remains defence in depth for direct writers.
       await expect(
         controller.promotions.promoteAttempt({ attemptId: created.entity_id }),
-      ).rejects.toMatchObject({ kind: "caller_source_not_canonical" });
+      ).rejects.toMatchObject({ kind: "attempt_not_completed" });
     } finally {
       await cleanup();
     }

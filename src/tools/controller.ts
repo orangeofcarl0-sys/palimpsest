@@ -78,6 +78,8 @@ import {
   type EvidenceInvalidationPlan,
 } from "../evidence/invalidation.js";
 import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
+import { compilePromotionFenceBlocker } from "../domain/promotion_eligibility.js";
+import type { PromotionEligibilityAssessment } from "../domain/promotion_eligibility.js";
 import {
   runTournament,
   type PairwiseJudge,
@@ -303,6 +305,16 @@ export interface ControllerStatusView {
   }>;
   evidence: Array<{ evidence_id: string; status: string }>;
   promotions: Array<{ promotion_id: string; state: string }>;
+  /**
+   * G10-Z: pending promotion intents - the same read model the revision fence
+   * refuses on, exposed so a UI can explain the refusal without provoking it.
+   */
+  promotionFence: Array<{
+    promotion_id: string;
+    attempt_id: string;
+    task_id: string;
+    state: string;
+  }>;
   parallel: { admittedAttempts: number; rejectedClaims: number };
   /** PLMP-TLM-2 §1: human-facing model performance summary (absent when cold). */
   telemetry?: {
@@ -827,6 +839,26 @@ export class ProjectController {
       settledTaskIds,
     });
 
+    // G10-Z §23/§24/§25: the PROMOTION FENCE, checked BEFORE the generic
+    // reconciliation blockers so the most specific reason is reported. The set is
+    // computed pre-compile as a SUPERSET of what this revision could retire (the
+    // typed-invalidation settlement set plus every non-terminal task the new
+    // ProjectIR drops), so a fence can never be bypassed by a blocker that
+    // happened to be reported first. Typed invalidation's settlement bypass does
+    // NOT cross it: the fence is evaluated on the resulting set, not the input.
+    const terminalStates = new Set(["SATISFIED", "FAILED", "STALE"]);
+    const nextTaskIds = new Set(project.tasks.map((task) => task.task_id));
+    const wouldRetire = [
+      ...settledTaskIds,
+      ...reconcileTasks
+        .filter((row) => !terminalStates.has(row.state) && !nextTaskIds.has(row.taskId))
+        .map((row) => row.taskId),
+    ];
+    const fence = compilePromotionFenceBlocker(this.promotions.promotionFenceRows(), wouldRetire);
+    if (fence !== undefined) {
+      throw new PlanReconciliationError(fence);
+    }
+
     const firstBlocker = reconciliation.blocked[0];
     if (firstBlocker !== undefined) {
       throw new PlanReconciliationError(firstBlocker);
@@ -852,6 +884,33 @@ export class ProjectController {
       if (staled.has(taskId)) continue;
       requests.push(this.#taskStaleRequest(taskId, typedReason));
       staled.add(taskId);
+    }
+
+    // G10-Z §23/§24/§25: the PROMOTION FENCE. `staled` is now the exact set of
+    // tasks this revision would retire - by removal, by typed invalidation, or
+    // by both. A task that owns an unresolved external promotion effect cannot
+    // be among them: the external effect's authority basis must settle first.
+    // Typed invalidation's settlement bypass does NOT cross this fence, because
+    // the fence is evaluated on the resulting set rather than on the input.
+    // G10-Z §26: head-drift ordering. A committed promotion effect that has not
+    // been reconciled into the ProjectIR head leaves the canonical expected head
+    // ahead of this revision's base. A MEANING-CHANGING revision on that base
+    // would anchor new/retained Work on a superseded base (and, under Z's
+    // same-base eligibility rule, produce work that cannot be promoted until the
+    // sync happens). The supported order is effect -> Work settlement -> head
+    // sync -> meaning change, so the revision is refused with `head_sync_required`
+    // and ZERO writes. The trusted head reconciliation itself still passes
+    // (it carries `headAdvance` and is head-only, so it is not meaning-changing).
+    if (trusted.headAdvance === undefined && this.#isMeaningChanging(reconciliation, input)) {
+      const headStatus = this.promotions.projectHeadStatusSync();
+      if (headStatus.state === "SYNC_REQUIRED") {
+        throw new PlanReconciliationError({
+          kind: "head_sync_required",
+          detail:
+            "the canonical promotion head has advanced past the ProjectIR head; reconcile the project head before a meaning-changing revision",
+          refs: [headStatus.projectHeadCommit, headStatus.provenEffectHeadCommit],
+        });
+      }
     }
 
     // G10-Y: the tasks this batch retires also lose the Work Evidence that
@@ -1179,6 +1238,24 @@ export class ProjectController {
       toHead: candidate.toHead,
       blockers: [],
     };
+  }
+
+  /**
+   * G10-Z §26: does this revision change the PROJECT'S MEANING, as opposed to
+   * merely re-anchoring the head? A head-only reconciliation retains every task
+   * unchanged and retires none, so it is not meaning-changing; anything that
+   * adds, removes, replaces, or typed-invalidates is.
+   */
+  #isMeaningChanging(
+    reconciliation: PlanRevisionReconciliation,
+    input: PlanInput,
+  ): boolean {
+    if (input.changeClass !== undefined) return true;
+    if (reconciliation.removedStaled.length > 0) return true;
+    if (reconciliation.added.length > 0) return true;
+    return reconciliation.diffs.some(
+      (diff) => diff.class === "ADD" || diff.class === "REMOVE" || diff.class === "MODIFY_SAME_ID",
+    );
   }
 
   /**
@@ -1959,6 +2036,22 @@ export class ProjectController {
     return this.promotions.promoteAttempt(input);
   }
 
+  /**
+   * G10-Z §41: a READ-ONLY promotion-eligibility preview. It answers "may this
+   * attempt start an external effect right now, and if not, why not" without
+   * attempting any mutation - so a UI or agent can explain the refusal instead
+   * of provoking it. Nothing is appended and no effect starts.
+   */
+  promotionEligibility(
+    attemptId: string,
+    gateId?: string | undefined,
+  ): PromotionEligibilityAssessment {
+    return this.promotions.assessEligibility(
+      attemptId,
+      gateId === undefined ? {} : { gateId },
+    );
+  }
+
   promote(
     attemptId: string,
     sourceCommit: string,
@@ -2309,6 +2402,12 @@ export class ProjectController {
 
   status(): ControllerStatusView {
     const project = this.#project();
+    const promotionFence = this.promotions.promotionFenceRows().map((row) => ({
+      promotion_id: row.promotionId,
+      attempt_id: row.attemptId,
+      task_id: row.taskId,
+      state: row.state,
+    }));
     const control = this.store.connection
       .prepare("SELECT state, generation FROM scheduler_control WHERE project_id=?")
       .get(this.projectId) as { state: "RUNNING" | "PAUSED"; generation: number } | undefined;
@@ -2387,6 +2486,7 @@ export class ProjectController {
       attempts,
       evidence,
       promotions,
+      promotionFence,
       parallel: {
         admittedAttempts: this.budget.admitted,
         rejectedClaims: this.budget.rejected,
