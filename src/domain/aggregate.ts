@@ -24,6 +24,18 @@ import { actionKey, stableEntityId } from "./idempotency.js";
 import { TaskPolicy } from "./policy.js";
 import { parseStageGraphDefinition } from "./stage_graph.js";
 import { assessPromotionEligibility } from "./promotion_eligibility.js";
+import {
+  outcomeKindOf,
+  preparedBasisOf,
+  promotionTerminalProblems,
+  type PromotionTerminalType,
+} from "./promotion_terminal.js";
+import {
+  consumePromotionIntentPermit,
+  consumePromotionOutcomeWitness,
+  PromotionAdmissionError,
+  type PromotionGovernedAdmission,
+} from "./promotion_terminal_admission.js";
 import { readPromotionEligibilityInput } from "./promotion_eligibility_read.js";
 import {
   ATTEMPT_ALLOWED_SOURCES,
@@ -109,7 +121,73 @@ export class AggregateValidator {
   }
 
   /** Validate local trust required for a new Event, never for replay. */
-  validateAdmission(connection: DatabaseSync, event: NewEvent): void {
+  /**
+   * G10-AA Plane B — LIVE-ONLY admission. Runs for a NEW append and never
+   * during replay, so it may require an ephemeral trusted capability.
+   *
+   * The governed promotion protocol is the ONLY producer of promotion facts.
+   * A structurally perfect PREPARED, COMMITTED or FAILED appended through the
+   * generic surface is refused here, because no admitted capability accompanies
+   * it - which is precisely what a generic/foreign/plugin writer cannot supply.
+   */
+  validateAdmission(
+    connection: DatabaseSync,
+    event: NewEvent,
+    admission?: PromotionGovernedAdmission,
+  ): void {
+    if (event.event_type === "PROMOTION_PREPARED") {
+      const permit = admission?.intentPermit;
+      if (permit === undefined) {
+        throw new PromotionAdmissionError(
+          "intent_admission_required",
+          "a PROMOTION_PREPARED intent requires a trusted intent permit from the governed promotion protocol",
+          [event.entity_id],
+        );
+      }
+      const payload = event.payload;
+      consumePromotionIntentPermit(permit, {
+        projectId: event.project_id,
+        promotionId: String(payload.promotion_id),
+        attemptId: String(payload.attempt_id),
+        sourceCommit: payload.source_commit === undefined || payload.source_commit === null
+          ? null
+          : String(payload.source_commit),
+        expectedHeadCommit:
+          payload.expected_head_commit === undefined || payload.expected_head_commit === null
+            ? null
+            : String(payload.expected_head_commit),
+      });
+      return;
+    }
+    if (event.event_type === "PROMOTION_COMMITTED" || event.event_type === "PROMOTION_FAILED") {
+      const witness = admission?.terminalWitness;
+      if (witness === undefined) {
+        throw new PromotionAdmissionError(
+          "terminal_admission_required",
+          `a new ${event.event_type} requires a trusted effect-outcome witness from the governed promotion protocol`,
+          [event.entity_id],
+        );
+      }
+      const payload = event.payload;
+      const resultingRaw = payload.resulting_head_commit;
+      consumePromotionOutcomeWitness(witness, {
+        projectId: event.project_id,
+        promotionId: String(payload.promotion_id),
+        attemptId: String(payload.attempt_id),
+        outcomeKind: outcomeKindOf(event.event_type as PromotionTerminalType),
+        sourceCommit: payload.source_commit === undefined || payload.source_commit === null
+          ? null
+          : String(payload.source_commit),
+        expectedHeadCommit:
+          payload.expected_head_commit === undefined || payload.expected_head_commit === null
+            ? null
+            : String(payload.expected_head_commit),
+        resultingHeadCommit: resultingRaw === undefined || resultingRaw === null
+          ? null
+          : String(resultingRaw),
+      });
+      return;
+    }
     if (event.event_type !== "TASK_CREATED" && event.event_type !== "TASK_REAUTHORIZED") return;
     const [, project] = this.#project(connection, event.project_id);
     const policyId = String(event.payload.policy_id);
@@ -155,6 +233,10 @@ export class AggregateValidator {
           return;
         case "PROMOTION_PREPARED":
           this.#validatePromotionPrepared(connection, event);
+          return;
+        case "PROMOTION_COMMITTED":
+        case "PROMOTION_FAILED":
+          this.#validatePromotionTerminal(connection, event);
           return;
         default:
           return;
@@ -352,6 +434,66 @@ export class AggregateValidator {
     if (String(event.payload.expected_head_commit) !== String(input.canonicalExpectedHead)) {
       throw new DomainValidationError(
         "PROMOTION_PREPARED expected_head_commit is not the canonical expected head",
+      );
+    }
+  }
+
+  /**
+   * G10-AA Plane A — REPLAY-SAFE structural validation of a promotion terminal.
+   *
+   * A terminal fact is the UNIQUE closing transition of an earlier matching
+   * PREPARED intent, and nothing else:
+   *
+   *   COMMITTED without PREPARED   -> refused
+   *   FAILED without PREPARED      -> refused
+   *   PREPARED -> COMMITTED -> FAILED -> refused (already terminal)
+   *
+   * It may inspect only canonical local state, so it queries no Ordarium and no
+   * Git, and it never inspects future events: the admitted intent is read from
+   * the `promotions` PROJECTION, which a replay rebuilds event by event, so at
+   * this point in the replay it holds exactly what had been applied.
+   *
+   * It deliberately does NOT consult current Work state. A recovered effect may
+   * be proven to have happened after its task was retired, and Z's "effect truth
+   * can still be recorded honestly" exception depends on that.
+   */
+  #validatePromotionTerminal(connection: DatabaseSync, event: NewEvent): void {
+    const kind = outcomeKindOf(event.event_type as PromotionTerminalType);
+    const payload = event.payload;
+    const promotionId = String(payload.promotion_id);
+    const row = connection
+      .prepare("SELECT state, state_json FROM promotions WHERE project_id=? AND promotion_id=?")
+      .get(event.project_id, promotionId) as { state: string; state_json: Uint8Array } | undefined;
+    // The intent basis is read from the projection row whether or not it is still
+    // PREPARED: after a terminal the projector overwrites state_json with that
+    // terminal's payload, whose anchoring fields are identical - so the
+    // "already terminal" rule is what refuses a second transition, with a
+    // precise message, instead of a misleading "no PREPARED".
+    const prepared =
+      row === undefined
+        ? null
+        : preparedBasisOf(
+            JSON.parse(new TextDecoder().decode(row.state_json)) as Record<string, unknown>,
+          );
+    const resultingRaw = payload.resulting_head_commit;
+    const problems = promotionTerminalProblems({
+      shape: {
+        kind,
+        promotionId,
+        attemptId: String(payload.attempt_id),
+        sourceCommit: String(payload.source_commit),
+        expectedHeadCommit: String(payload.expected_head_commit),
+        resultingHeadCommit: resultingRaw === undefined || resultingRaw === null
+          ? null
+          : String(resultingRaw),
+      },
+      prepared,
+      currentState: row === undefined ? null : String(row.state),
+      entityId: event.entity_id,
+    });
+    if (problems.length > 0) {
+      throw new DomainValidationError(
+        `${event.event_type} is not a valid promotion terminal: ${problems.join("; ")}`,
       );
     }
   }
