@@ -455,9 +455,15 @@ async function main() {
   for (const secret of ["SYNTHETIC-EMPLOYER-INC", "EMP-SYNTHETIC-7788", "SYNTHETIC-IBAN-0000", "SYNTHETIC-ACCOUNT-0000"]) {
     assert.ok(!allExportedText.includes(secret), `excluded bytes must not appear in any export: ${secret}`);
   }
-  const degreeSourceFiles = exportedFiles.filter((path) => path.includes(`${join("sources", "degree")}`));
-  assert.ok(degreeSourceFiles.length > 0, "the selected degree source must be written");
-  assert.ok(degreeSourceFiles.some((path) => readUtf8(path) === DEGREE_V1), "the exported degree bytes must match revision 1");
+  // CF-T-03: the exporter materializes by selector, so the degree WHOLE_SOURCE
+  // evidence is written as its ORIGINAL_SOURCE material (file name from the
+  // manifest material), never under a generic sources/<id>/ path.
+  const degreeMaterial = preview.materials.find((material) => material.sourceRevision.sourceId === "degree");
+  assert.ok(degreeMaterial, "the preview must carry a material for the selected degree source");
+  assert.equal(degreeMaterial.materializationKind, "ORIGINAL_SOURCE");
+  const degreePath = join(bundleDir, degreeMaterial.fileName);
+  assert.ok(existsSync(degreePath), "the selected degree material must be written");
+  assert.ok(readUtf8(degreePath) === DEGREE_V1, "the exported degree bytes must match revision 1");
   // A local export receipt asserts a LOCAL write only — never delivery/recipient.
   assert.equal(receipt.exporterId, "local-disclosure-exporter");
   assert.deepEqual(Object.keys(receipt).sort(), ["audienceLabel", "bundleDigest", "digest", "exportedAt", "exporterId", "purpose", "schemaVersion"].sort());

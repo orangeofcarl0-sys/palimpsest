@@ -328,7 +328,21 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   if (pathname === "/api/reasoning/candidate") {
     requirePost();
     const b = bodyObject(body);
-    return ok(await requireSurface(application.reasoning, "reasoning").submitCandidate({ cellId: str(b.cellId, "cellId"), branchId: str(b.branchId, "branchId"), type: b.type as never, content: b.content, ...(Array.isArray(b.dependencies) ? { dependencies: b.dependencies as never } : {}) }));
+    const externalEvidenceRefs = Array.isArray(b.externalEvidenceRefs)
+      ? b.externalEvidenceRefs.map((entry) => ({
+          evidenceId: typeof entry === "string" ? str(entry, "externalEvidenceRefs[]") : str(bodyObject(entry).evidenceId, "externalEvidenceRefs[].evidenceId"),
+        }))
+      : [];
+    return ok(
+      await requireSurface(application.reasoning, "reasoning").submitCandidate({
+        cellId: str(b.cellId, "cellId"),
+        branchId: str(b.branchId, "branchId"),
+        type: b.type as never,
+        content: b.content,
+        ...(Array.isArray(b.dependencies) ? { dependencies: b.dependencies as never } : {}),
+        ...(externalEvidenceRefs.length === 0 ? {} : { externalEvidenceRefs }),
+      }),
+    );
   }
   if (pathname === "/api/reasoning/evaluate") {
     requirePost();
@@ -532,6 +546,22 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
     );
     const selector = parseBody(() => parseEvidenceSelector(b.selector, "selector"));
     return ok(await requireSurface(application.proof, "proof").recordEvidence({ sourceRevision, selector }));
+  }
+  if (pathname === "/api/proof/analyze") {
+    requirePost();
+    const b = bodyObject(body);
+    const evidenceIds = Array.isArray(b.evidenceIds) ? b.evidenceIds.map((id) => str(id, "evidenceIds[]")) : [];
+    const branchCount = b.branchCount;
+    if (branchCount !== undefined && (typeof branchCount !== "number" || !Number.isSafeInteger(branchCount) || branchCount < 1)) {
+      throw new InvalidRequest('"branchCount" must be a positive integer');
+    }
+    return ok(
+      await requireSurface(application.proof, "proof").analyzeEvidence({
+        evidenceIds,
+        objective: str(b.objective, "objective"),
+        ...(branchCount === undefined ? {} : { branchCount }),
+      }),
+    );
   }
   if (pathname === "/api/proof/claims") {
     requireGet();

@@ -18,9 +18,21 @@ import {
   localProofBlobStore,
   makeDisclosureService,
   makeProofEvidenceService,
+  materializeDisclosurePreview,
+  materializeEvidenceItem,
   materializeProofSourceRevisionRef,
+  proofContentDigestOfBytes,
 } from "../src/proof_asset/index.js";
-import type { DisclosureAdmissionOutcome, DisclosureAdmissionPort, DisclosureService, ProofEvidenceService } from "../src/proof_asset/index.js";
+import type {
+  DisclosureAdmissionOutcome,
+  DisclosureAdmissionPort,
+  DisclosureMaterial,
+  DisclosurePreview,
+  DisclosureService,
+  EvidenceSelector,
+  ProofEvidenceService,
+  ProofSourceRevisionRef,
+} from "../src/proof_asset/index.js";
 
 const DIR = mkdtempSync(join(tmpdir(), "palimpsest-t-disc-"));
 afterAll(() => {
@@ -74,6 +86,45 @@ async function publishClaim(proof: ProofEvidenceService, input: { sourceId: stri
   const result = await proof.decidePublication({ candidateId: candidate.candidateId });
   if (result.claimId === undefined) throw new Error("synthetic claim did not publish");
   return result.claimId;
+}
+
+async function publishSelective(
+  proof: ProofEvidenceService,
+  input: { sourceId: string; bytes: string; mediaType?: string; selector: EvidenceSelector; statement: string },
+): Promise<{ claimId: string; evidenceId: string; revision: ProofSourceRevisionRef }> {
+  const imported = await proof.importSource({
+    bytes: bytesOf(input.bytes),
+    mediaType: input.mediaType ?? "text/plain",
+    label: `synthetic-${input.sourceId}`,
+    provenance: "LOCAL_IMPORT",
+    sourceId: input.sourceId,
+  });
+  const revision = materializeProofSourceRevisionRef({ sourceId: input.sourceId, revision: imported.revision.revision, contentDigest: imported.revision.contentDigest });
+  const evidence = await proof.recordEvidence({ sourceRevision: revision, selector: input.selector });
+  const candidate = await proof.prepareCandidate({ claimType: PROOF_STATEMENT_TYPE, content: { statement: input.statement }, supportingEvidenceIds: [evidence.evidenceId], origin: "MANUAL" });
+  await proof.verify({ candidateId: candidate.candidateId });
+  const result = await proof.decidePublication({ candidateId: candidate.candidateId });
+  if (result.claimId === undefined) throw new Error("synthetic selective claim did not publish");
+  return { claimId: result.claimId, evidenceId: evidence.evidenceId, revision };
+}
+
+/** Record a preview on the chain whose single material substitutes a crafted selector. */
+async function recordCraftedPreview(env: Env, preview: DisclosurePreview, material: DisclosureMaterial): Promise<string> {
+  const crafted = materializeDisclosurePreview({
+    purpose: preview.purpose,
+    audienceLabel: preview.audienceLabel,
+    claimIds: preview.claimIds,
+    claims: preview.claims,
+    requiredDependencyIds: preview.requiredDependencyIds,
+    evidenceRefs: preview.evidenceRefs,
+    sourceRevisionRefs: preview.sourceRevisionRefs,
+    materials: [material],
+    wholeSourceWarnings: preview.wholeSourceWarnings,
+    warnings: preview.warnings,
+    excludedBySelection: preview.excludedBySelection,
+  });
+  await env.proof.recordDisclosurePreview(crafted);
+  return crafted.previewId;
 }
 
 const approve: DisclosureAdmissionPort = {
@@ -173,8 +224,12 @@ describe("G10-T disclosure: whole-source warning and selection discipline", () =
     expect(files.length).toBeGreaterThan(0);
     const allText = files.map((path) => readFileSync(path, "utf-8")).join("\n");
     expect(allText).not.toContain(betaSecret);
-    expect(existsSync(join(bundleDir, "sources", "beta"))).toBe(false);
-    expect(existsSync(join(bundleDir, "sources", "alpha"))).toBe(true);
+    // Only the selected alpha material is written; beta contributes no file at all.
+    expect(preview.materials.every((material) => material.sourceRevision.sourceId === "alpha")).toBe(true);
+    for (const material of preview.materials) {
+      expect(existsSync(join(bundleDir, material.fileName))).toBe(true);
+    }
+    expect(files.some((path) => path.split(/[\\/]/u).some((segment) => segment.startsWith("beta")))).toBe(false);
   });
 
   it("produces a local receipt that makes no recipient claim (PA-A08)", async () => {
@@ -188,6 +243,208 @@ describe("G10-T disclosure: whole-source warning and selection discipline", () =
     expect(outcome.receipt).not.toHaveProperty("recipient");
     expect(outcome.receipt).not.toHaveProperty("receivedBy");
     expect(outcome.receipt).not.toHaveProperty("accepted");
+  });
+
+  it("keeps the whole-source warning and materializes a WHOLE_SOURCE evidence as ORIGINAL_SOURCE (CF-T-03)", async () => {
+    const env = buildEnv(approve);
+    const claimId = await publishClaim(env.proof, { sourceId: "whole", bytes: "SYNTHETIC-WHOLE-SOURCE-BYTES", statement: "synthetic whole claim" });
+    const preview = await env.disclosure.preview({ purpose: "synthetic whole review", audienceLabel: "synthetic-audience", requestedClaimIds: [claimId] });
+    expect(preview.wholeSourceWarnings).toContain(DISCLOSURE_WHOLE_SOURCE_WARNING);
+    expect(preview.materials).toHaveLength(1);
+    const material = preview.materials[0]!;
+    expect(material.selector).toEqual({ kind: "WHOLE_SOURCE" });
+    expect(material.materializationKind).toBe("ORIGINAL_SOURCE");
+    expect(material.mediaType).toBe("text/plain");
+    expect(material.fileName).toBe(`whole-1-${material.contentDigest}`);
+
+    const outcome = await env.disclosure.approveAndExport({ previewId: preview.previewId });
+    expect(outcome.status).toBe("exported");
+    if (outcome.status !== "exported") return;
+    const bundleDir = join(env.exportRoot, outcome.receipt.bundleDigest);
+    const exported = readFileSync(join(bundleDir, material.fileName), "utf-8");
+    expect(exported).toBe("SYNTHETIC-WHOLE-SOURCE-BYTES");
+    expect(proofContentDigestOfBytes(bytesOf(exported))).toBe(material.contentDigest);
+  });
+});
+
+describe("G10-T disclosure: selector-aware selective export (CF-T-03)", () => {
+  const TEXT = "PUBLIC DEGREE LINE\nPRIVATE EMPLOYMENT LINE\nPRIVATE FINANCIAL LINE";
+  const DEGREE_END = TEXT.indexOf("\n");
+
+  it("records the selector + materializationKind in the manifest and preview materials equal the exported bytes (parity)", async () => {
+    const env = buildEnv(approve);
+    const { claimId, revision, evidenceId } = await publishSelective(env.proof, {
+      sourceId: "selective-text",
+      bytes: TEXT,
+      selector: { kind: "TEXT_RANGE", start: 0, end: DEGREE_END },
+      statement: "synthetic selective degree claim",
+    });
+    const preview = await env.disclosure.preview({ purpose: "synthetic selective review", audienceLabel: "synthetic-audience", requestedClaimIds: [claimId] });
+    expect(preview.materials).toHaveLength(1);
+    const material = preview.materials[0]!;
+    expect(material.evidenceId).toBe(evidenceId);
+    expect(material.sourceRevision).toEqual(revision);
+    expect(material.selector).toEqual({ kind: "TEXT_RANGE", start: 0, end: DEGREE_END });
+    expect(material.materializationKind).toBe("TEXT_EXCERPT");
+    expect(material.mediaType).toBe("text/plain");
+    expect(material.fileName).toBe(`evidence-${evidenceId}.txt`);
+    // No whole-source warning: this disclosure is a bounded excerpt.
+    expect(preview.wholeSourceWarnings).toHaveLength(0);
+
+    const outcome = await env.disclosure.approveAndExport({ previewId: preview.previewId });
+    expect(outcome.status).toBe("exported");
+    if (outcome.status !== "exported") return;
+
+    const bundleDir = join(env.exportRoot, outcome.receipt.bundleDigest);
+    const manifest = JSON.parse(readFileSync(join(bundleDir, "manifest.json"), "utf-8")) as {
+      materials: readonly { selector: unknown; materializationKind: string }[];
+    };
+    expect(manifest.materials).toEqual(JSON.parse(JSON.stringify(preview.materials)));
+    expect(manifest.materials[0]!.selector).toEqual({ kind: "TEXT_RANGE", start: 0, end: DEGREE_END });
+    expect(manifest.materials[0]!.materializationKind).toBe("TEXT_EXCERPT");
+    // Preview/export parity: the digest the preview computed is the digest written.
+    const exported = readFileSync(join(bundleDir, material.fileName));
+    expect(proofContentDigestOfBytes(new Uint8Array(exported))).toBe(material.contentDigest);
+  });
+
+  it("writes only the exact TEXT_RANGE excerpt and never the surrounding source lines", async () => {
+    const env = buildEnv(approve);
+    const { claimId } = await publishSelective(env.proof, {
+      sourceId: "range-source",
+      bytes: TEXT,
+      selector: { kind: "TEXT_RANGE", start: 0, end: DEGREE_END },
+      statement: "synthetic range-only claim",
+    });
+    const preview = await env.disclosure.preview({ purpose: "synthetic range review", audienceLabel: "synthetic-audience", requestedClaimIds: [claimId] });
+    const outcome = await env.disclosure.approveAndExport({ previewId: preview.previewId });
+    expect(outcome.status).toBe("exported");
+    if (outcome.status !== "exported") return;
+
+    const bundleDir = join(env.exportRoot, outcome.receipt.bundleDigest);
+    const files = collectFiles(bundleDir);
+    const excerptFiles = files.filter((path) => path.endsWith(".txt"));
+    expect(excerptFiles).toHaveLength(1);
+    expect(readFileSync(excerptFiles[0]!, "utf-8")).toBe("PUBLIC DEGREE LINE");
+
+    const allText = files.map((path) => readFileSync(path, "utf-8")).join("\n");
+    expect(allText).toContain("PUBLIC DEGREE LINE");
+    expect(allText).not.toContain("PRIVATE EMPLOYMENT LINE");
+    expect(allText).not.toContain("PRIVATE FINANCIAL LINE");
+    // No whole-source file for this source: the exporter never falls back.
+    expect(existsSync(join(bundleDir, "sources"))).toBe(false);
+    expect(allText).not.toContain(TEXT);
+  });
+
+  it("writes only the selected JSON_POINTER value and never the other numbers", async () => {
+    const env = buildEnv(approve);
+    const json = JSON.stringify({
+      education: { degree: "BSc Synthetic Computing", institution: "Synthetic Institute" },
+      employment: { employer: "PRIVATE EMPLOYER INC", reference: "EMP-PRIVATE-0001" },
+      financial: { balance: "PRIVATE BALANCE 9999" },
+    });
+    const { claimId } = await publishSelective(env.proof, {
+      sourceId: "json-source",
+      bytes: json,
+      mediaType: "application/json",
+      selector: { kind: "JSON_POINTER", pointer: "/education" },
+      statement: "synthetic education-only claim",
+    });
+    const preview = await env.disclosure.preview({ purpose: "synthetic json review", audienceLabel: "synthetic-audience", requestedClaimIds: [claimId] });
+    expect(preview.materials[0]!.materializationKind).toBe("JSON_VALUE");
+    expect(preview.materials[0]!.mediaType).toBe("application/json");
+
+    const outcome = await env.disclosure.approveAndExport({ previewId: preview.previewId });
+    expect(outcome.status).toBe("exported");
+    if (outcome.status !== "exported") return;
+
+    const bundleDir = join(env.exportRoot, outcome.receipt.bundleDigest);
+    const files = collectFiles(bundleDir);
+    const jsonFiles = files.filter((path) => path.endsWith(".json") && !path.endsWith("manifest.json"));
+    expect(jsonFiles).toHaveLength(1);
+    const selected = JSON.parse(readFileSync(jsonFiles[0]!, "utf-8"));
+    expect(selected).toEqual({ degree: "BSc Synthetic Computing", institution: "Synthetic Institute" });
+
+    const allText = files.map((path) => readFileSync(path, "utf-8")).join("\n");
+    expect(allText).not.toContain("PRIVATE EMPLOYER INC");
+    expect(allText).not.toContain("EMP-PRIVATE-0001");
+    expect(allText).not.toContain("PRIVATE BALANCE 9999");
+    expect(allText).not.toContain('"employment"');
+    expect(allText).not.toContain('"financial"');
+    expect(existsSync(join(bundleDir, "sources"))).toBe(false);
+  });
+
+  it("blocks (and writes nothing) when a material's selector no longer materializes", async () => {
+    const env = buildEnv(approve);
+    // --- an out-of-range TEXT_RANGE ---
+    const range = await publishSelective(env.proof, {
+      sourceId: "bad-range",
+      bytes: "SYNTHETIC-HEADER\nSYNTHETIC-BODY",
+      selector: { kind: "TEXT_RANGE", start: 0, end: 8 },
+      statement: "synthetic bad-range claim",
+    });
+    const rangePreview = await env.disclosure.preview({ purpose: "synthetic bad-range review", audienceLabel: "synthetic-audience", requestedClaimIds: [range.claimId] });
+    const rangeSelector: EvidenceSelector = { kind: "TEXT_RANGE", start: 0, end: 100_000 };
+    const rangeDigest = "a".repeat(64);
+    const rangeEvidence = materializeEvidenceItem({ sourceRevision: range.revision, selector: rangeSelector, selectionDigest: rangeDigest });
+    const rangePreviewId = await recordCraftedPreview(env, rangePreview, {
+      evidenceId: rangeEvidence.evidenceId,
+      sourceRevision: range.revision,
+      selector: rangeSelector,
+      materializationKind: "TEXT_EXCERPT",
+      mediaType: "text/plain",
+      contentDigest: rangeDigest,
+      fileName: `evidence-${rangeEvidence.evidenceId}.txt`,
+    });
+    const rangeOutcome = await env.disclosure.approveAndExport({ previewId: rangePreviewId });
+    expect(rangeOutcome.status).toBe("blocked");
+    if (rangeOutcome.status === "blocked") expect(rangeOutcome.reason).toMatch(/TEXT_RANGE/u);
+    expect(collectFiles(env.exportRoot)).toHaveLength(0);
+
+    // --- an invalid JSON pointer ---
+    const jsonEnv = buildEnv(approve);
+    const json = JSON.stringify({ education: { degree: "BSc" }, employment: { employer: "PRIVATE" } });
+    const pointer = await publishSelective(jsonEnv.proof, {
+      sourceId: "bad-pointer",
+      bytes: json,
+      mediaType: "application/json",
+      selector: { kind: "JSON_POINTER", pointer: "/education" },
+      statement: "synthetic bad-pointer claim",
+    });
+    const pointerPreview = await jsonEnv.disclosure.preview({ purpose: "synthetic bad-pointer review", audienceLabel: "synthetic-audience", requestedClaimIds: [pointer.claimId] });
+    const pointerSelector: EvidenceSelector = { kind: "JSON_POINTER", pointer: "/does-not-exist" };
+    const pointerDigest = "b".repeat(64);
+    const pointerEvidence = materializeEvidenceItem({ sourceRevision: pointer.revision, selector: pointerSelector, selectionDigest: pointerDigest });
+    const pointerPreviewId = await recordCraftedPreview(jsonEnv, pointerPreview, {
+      evidenceId: pointerEvidence.evidenceId,
+      sourceRevision: pointer.revision,
+      selector: pointerSelector,
+      materializationKind: "JSON_VALUE",
+      mediaType: "application/json",
+      contentDigest: pointerDigest,
+      fileName: `evidence-${pointerEvidence.evidenceId}.json`,
+    });
+    const pointerOutcome = await jsonEnv.disclosure.approveAndExport({ previewId: pointerPreviewId });
+    expect(pointerOutcome.status).toBe("blocked");
+    if (pointerOutcome.status === "blocked") expect(pointerOutcome.reason).toMatch(/does not exist/u);
+    expect(collectFiles(jsonEnv.exportRoot)).toHaveLength(0);
+  });
+
+  it("blocks (and writes nothing) when the source content is unavailable", async () => {
+    const env = buildEnv(approve);
+    const { claimId } = await publishSelective(env.proof, {
+      sourceId: "vanishing",
+      bytes: "SYNTHETIC-VANISHING-BYTES",
+      selector: { kind: "TEXT_RANGE", start: 0, end: 9 },
+      statement: "synthetic vanishing claim",
+    });
+    const preview = await env.disclosure.preview({ purpose: "synthetic vanishing review", audienceLabel: "synthetic-audience", requestedClaimIds: [claimId] });
+    // A service whose content port refuses every read must block, not fall back.
+    const brokenContent = { readContent: async (): Promise<Uint8Array | undefined> => undefined };
+    const noContent = makeDisclosureService({ proof: env.proof, exporter: localDisclosureExporter(env.exportRoot), admission: approve, content: brokenContent });
+    const outcome = await noContent.approveAndExport({ previewId: preview.previewId });
+    expect(outcome.status).toBe("blocked");
+    if (outcome.status === "blocked") expect(outcome.reason).toMatch(/unavailable/u);
+    expect(collectFiles(env.exportRoot)).toHaveLength(0);
   });
 });
 
@@ -217,7 +474,10 @@ describe("G10-T disclosure: durable previews and receipts (restart reconstructio
     const disclosure2 = makeDisclosureService({ proof: proof2, exporter, content, admission: approve });
     expect(await disclosure2.history()).toEqual([receipt]);
     expect(await proof2.disclosureReceipts()).toEqual([receipt]);
-    expect((await proof2.disclosurePreviews()).map((entry) => entry.previewId)).toEqual([preview.previewId]);
+    const reconstructedPreviews = await proof2.disclosurePreviews();
+    expect(reconstructedPreviews.map((entry) => entry.previewId)).toEqual([preview.previewId]);
+    expect(reconstructedPreviews[0]!.materials).toEqual(preview.materials);
+    expect(reconstructedPreviews[0]!.materials[0]!.materializationKind).toBe("ORIGINAL_SOURCE");
     store2.close();
   });
 });
