@@ -22,6 +22,24 @@ export interface DeploymentDirectoryEntry {
   readonly competenceTags: readonly string[];
 }
 
+/**
+ * UX-B §7 (additive): ONE project↔peer routing binding. `directory` above is the
+ * EXISTING peer-identity list (audit Q1/Q2: it carries no project dimension at
+ * all), so a human project NAME cannot be resolved through it. This entry is the
+ * deployment's explicit, READ-ONLY answer to "which project is behind which peer",
+ * and it is validated with the same strict discipline as the descriptor it becomes.
+ *
+ * It is deployment configuration, NOT authority, ownership or canonical truth, and
+ * `projectId` is never assumed to equal `peerId` (§12/SC-10).
+ */
+export interface DeploymentProjectDirectoryEntry {
+  readonly projectId: string;
+  readonly displayName?: string | undefined;
+  readonly aliases: readonly string[];
+  readonly peerId: string;
+  readonly competenceTags: readonly string[];
+}
+
 export interface DeploymentAttentionConfig {
   readonly policyId: string;
   readonly cooldownMs: number;
@@ -72,6 +90,13 @@ export interface ProjectAgentDeploymentProfile {
   };
   /** Non-authoritative discovery hints; absent ⇒ the directory is honestly UNKNOWN. */
   readonly directory?: readonly DeploymentDirectoryEntry[] | undefined;
+  /**
+   * UX-B §7 (additive): the project↔peer routing bindings. Supplying them composes
+   * `application.crossProject` (and makes the peers named here the deployment's
+   * known independent peers for the advisor — SC-9). Absent ⇒ the cross-project
+   * face is absent, never stubbed, and nothing about the advisor changes.
+   */
+  readonly projectDirectory?: readonly DeploymentProjectDirectoryEntry[] | undefined;
   readonly attention?: DeploymentAttentionConfig | undefined;
   readonly boundaryHomeId?: string | undefined;
   /** Deployment binding workspaceId → canonical boundary homeId (never social semantics). */
@@ -157,6 +182,54 @@ function parseDirectory(raw: unknown, what: string): readonly DeploymentDirector
   return Object.freeze(entries);
 }
 
+/**
+ * UX-B §7/SC-10: strict parse of the project↔peer binding list. It validates the
+ * same discipline the descriptor itself enforces (stable project id, non-empty
+ * display name/aliases with no duplicates, a real peer id, non-empty tags), so a
+ * malformed deployment binding fails closed HERE rather than producing a directory
+ * the product would have to distrust later.
+ */
+function parseProjectDirectory(raw: unknown, what: string): readonly DeploymentProjectDirectoryEntry[] {
+  if (!Array.isArray(raw)) fail("invalid_value", `${what} must be an array`);
+  const entries: DeploymentProjectDirectoryEntry[] = [];
+  const projectIds = new Set<string>();
+  const aliases = new Set<string>();
+  for (const entry of raw) {
+    const object = asObject(entry, `${what}[]`);
+    exactKeys(object, ["projectId", "displayName", "aliases", "peerId", "competenceTags"], `${what}[]`);
+    const projectId = stableId(object.projectId, `${what}[].projectId`);
+    if (projectIds.has(projectId)) fail("invalid_value", `${what} has duplicate projectId "${projectId}"`);
+    projectIds.add(projectId);
+    const peerId = stableId(object.peerId, `${what}[].peerId`);
+    const displayName = optionalString(object, "displayName", `${what}[]`);
+    const rawAliases = object.aliases;
+    if (!Array.isArray(rawAliases) || rawAliases.some((alias) => typeof alias !== "string" || alias.length === 0)) {
+      fail("invalid_value", `${what}[].aliases must be an array of non-empty strings`);
+    }
+    for (const alias of rawAliases as string[]) {
+      if (aliases.has(alias)) fail("invalid_value", `${what} binds alias "${alias}" to more than one project`);
+      aliases.add(alias);
+    }
+    if (displayName !== undefined && (rawAliases as string[]).includes(displayName)) {
+      fail("invalid_value", `${what}[].displayName must not also appear in its own aliases`);
+    }
+    const tags = object.competenceTags;
+    if (!Array.isArray(tags) || tags.some((tag) => typeof tag !== "string" || tag.length === 0)) {
+      fail("invalid_value", `${what}[].competenceTags must be an array of non-empty strings`);
+    }
+    entries.push(
+      Object.freeze({
+        projectId,
+        ...(displayName === undefined ? {} : { displayName }),
+        aliases: Object.freeze([...(rawAliases as string[])]),
+        peerId,
+        competenceTags: Object.freeze([...(tags as string[])]),
+      }),
+    );
+  }
+  return Object.freeze(entries);
+}
+
 function parseAttention(raw: unknown, what: string): DeploymentAttentionConfig {
   const object = asObject(raw, what);
   exactKeys(object, ["policyId", "cooldownMs", "activation", "sessionId", "deliverAs"], what);
@@ -214,6 +287,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "transport",
       "databases",
       "directory",
+      "projectDirectory",
       "attention",
       "boundaryHomeId",
       "boundaryRoutes",
@@ -258,6 +332,9 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ...(optionalString(databasesObject, "management", `${what}.databases`) === undefined ? {} : { management: optionalString(databasesObject, "management", `${what}.databases`)! }),
     }),
     ...(object.directory === undefined ? {} : { directory: parseDirectory(object.directory, `${what}.directory`) }),
+    ...(object.projectDirectory === undefined
+      ? {}
+      : { projectDirectory: parseProjectDirectory(object.projectDirectory, `${what}.projectDirectory`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),
     ...(optionalStableId(object, "boundaryHomeId", what) === undefined ? {} : { boundaryHomeId: optionalStableId(object, "boundaryHomeId", what)! }),
     ...(object.boundaryRoutes === undefined

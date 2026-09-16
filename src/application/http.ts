@@ -118,7 +118,10 @@ export function applicationErrorStatus(error: unknown): number {
   if (/^unknown_|_unknown$|^not_admitted$/.test(kind)) return 404;
   if (/stale|basis_mismatch|conflict|already_|head_mismatch|_closed$|retired_lineage/.test(kind)) return 409;
   if (/unauthenticated|not_a_participant|not_required|unauthorized|unverified|representation_not_admitted|_denied$/.test(kind)) return 403;
-  if (/^invalid_|unknown_type|invalid_content|missing_/.test(kind)) return 400;
+  // UX-B: a project↔peer binding mismatch is a refusal of the SENDER, exactly like
+  // an unverified peer; an oversize packet is the caller's fault, not a server fault.
+  if (/binding_mismatch/.test(kind)) return 403;
+  if (/^invalid_|unknown_type|invalid_content|missing_|^oversized/.test(kind)) return 400;
   return 500;
 }
 
@@ -182,9 +185,64 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       // above — a composed surface this discovery list omits is invisible to a
       // client, so the entry ships WITH the surface rather than after it.
       collaboration: application.collaboration !== undefined,
+      // UX-B §28/§67: the cross-project face. Same rule again — a composed surface
+      // this discovery list omits is invisible to a client, so a false here is the
+      // truthful "this deployment has no project directory", never an empty list.
+      crossProject: application.crossProject !== undefined,
     });
   }
 
+  /* ---- one-request cross-project collaboration (UX-B §67) ---- */
+  /**
+   * §67: discovery/prepare/status/pending/receive plus a MUTATING Ask route. The
+   * mutating route is acceptable only under the existing product user-intent/auth
+   * semantics: it is the explicit cross-project Ask (§27 — nothing else may send),
+   * it is NOT the expert `/api/federation/message` shape, and plain HTTP
+   * authentication grants no new peer authority. `respond` is mutating too: it
+   * sends one answer and then acknowledges the request it answered.
+   */
+  if (pathname === "/api/cross-project/projects") {
+    requireGet();
+    return ok(await requireSurface(application.crossProject, "crossProject").projects());
+  }
+  if (pathname === "/api/cross-project/prepare") {
+    requirePost();
+    return ok(await requireSurface(application.crossProject, "crossProject").prepareAsk(body));
+  }
+  if (pathname === "/api/cross-project/ask") {
+    requirePost();
+    return ok(await requireSurface(application.crossProject, "crossProject").ask(body));
+  }
+  if (pathname === "/api/cross-project/status") {
+    requireGet();
+    return ok(await requireSurface(application.crossProject, "crossProject").status(queryRequired(query, "requestId")));
+  }
+  if (pathname === "/api/cross-project/pending") {
+    requireGet();
+    return ok(await requireSurface(application.crossProject, "crossProject").pending());
+  }
+  if (pathname === "/api/cross-project/respond") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(
+      await requireSurface(application.crossProject, "crossProject").respond(
+        str(b.requestId, "requestId"),
+        b.answer,
+      ),
+    );
+  }
+  if (pathname === "/api/cross-project/receive") {
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.crossProject, "crossProject").receive(str(b.requestId, "requestId")));
+  }
+  if (pathname === "/api/cross-project/acknowledge") {
+    // SC-7: per-`PeerMessage`, never per-id. The body IS the message the caller
+    // consumed; the application face strict-parses it.
+    requirePost();
+    const b = bodyObject(body);
+    return ok(await requireSurface(application.crossProject, "crossProject").acknowledge(b.message));
+  }
   /* ---- one-request collaboration (UX-A) ---- */
   /**
    * The HIGH-LEVEL product face: one request in, a plan or a useful result out.

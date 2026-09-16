@@ -52,6 +52,9 @@ import { materializeProofSourceRevisionRef, reasoningClaimPublicationSource } fr
 import type { CollaborationService } from "../interaction/collaboration.js";
 import type { CollaborationPlanView } from "../interaction/intent.js";
 import type { CollaborationResult } from "../interaction/result_view.js";
+import type { CrossProjectService, CrossProjectDirectoryView, CrossProjectPendingAsk } from "../interaction/cross_project.js";
+import type { CrossProjectCollaborationResult } from "../interaction/cross_project_result.js";
+import { parsePeerMessage } from "../federation/messages.js";
 import type {
   ArchitectureVariant,
   ExperimentDefinition,
@@ -474,6 +477,41 @@ export interface CollaborationApplicationSurface {
 }
 
 /**
+ * UX-B §28 — ONE-REQUEST CROSS-PROJECT COLLABORATION.
+ *
+ * The seven §28 members, plus the §22/§38/§39 `acknowledge` product path the audit
+ * found missing entirely (SC-7: `FederationService.acknowledge` existed with NO
+ * surface, tool or route). Everything else is derived by the service from the
+ * EXISTING federation thread + inbox; this face adds no logic, no authority and no
+ * second parser beyond the service's own strict ones.
+ *
+ * §60: the summaries are plain language ("Asked the optics project"); peer ids,
+ * thread ids and message ids stay under `details`.
+ */
+export interface CrossProjectApplicationSurface {
+  /** §8/§42: the READ-ONLY project directory. `state` is part of the answer. */
+  projects(): Promise<CrossProjectDirectoryView>;
+  /** §26: READ-ONLY — the exact outbound packet, nothing hidden, nothing sent. */
+  prepareAsk(request: unknown): Promise<CrossProjectCollaborationResult>;
+  /** §9/§27/§45: the explicit Ask. The ONLY place this face sends a request. */
+  ask(request: unknown): Promise<CrossProjectCollaborationResult>;
+  /** §18/§19: READ-ONLY derived state. Never sends, never acknowledges. */
+  status(requestId: string): Promise<CrossProjectCollaborationResult>;
+  /** §30: authenticated inbound asks addressed to THIS project. */
+  pending(): Promise<readonly CrossProjectPendingAsk[]>;
+  /** §37/§38: answer one pending Ask on its own thread. */
+  respond(requestId: string, answer: unknown): Promise<CrossProjectCollaborationResult>;
+  /** §39: surface the valid terminal answer and acknowledge THAT message. */
+  receive(requestId: string): Promise<CrossProjectCollaborationResult>;
+  /**
+   * SC-7: the explicit `acknowledge` product path, per `PeerMessage` (never per
+   * id). ACK means "processed/seen" — never agreement, never truth (§76), and it
+   * is never called before a response send succeeded (§38).
+   */
+  acknowledge(message: unknown): Promise<unknown>;
+}
+
+/**
  * G10-V: the DERIVED project workspace as seen by products. Every read re-derives from the
  * canonical owner matrix plus the two narrowly-owned append-only histories; nothing here
  * copies a canonical fact. The `projectId` inputs default to this installation's project (a
@@ -694,6 +732,12 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
    * the verification/externalAssets faces follow).
    */
   readonly collaboration?: CollaborationApplicationSurface | undefined;
+  /**
+   * UX-B §28/SC-15 (additive): one-request CROSS-PROJECT collaboration. ABSENT ⇒
+   * this deployment has no project directory or no federation, so the face is
+   * absent rather than stubbed (the same rule every optional face follows).
+   */
+  readonly crossProject?: CrossProjectApplicationSurface | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane; absent ⇒ no proof surface. */
   readonly proof?: ProofApplicationSurface | undefined;
   /** G10-T (additive): local purpose-scoped disclosure; absent ⇒ no disclosure surface. */
@@ -755,6 +799,13 @@ export interface ApplicationSurfaceDeps {
    * `surface_absent` rather than pretending to collaborate.
    */
   readonly collaboration?: CollaborationService | undefined;
+  /**
+   * UX-B §28/SC-15 (additive): the composed cross-project service. ABSENT ⇒
+   * `application.crossProject` (and `palimpsest_cross_project`) are absent — the
+   * face is never a stub, so a deployment without a project directory answers
+   * `surface_absent` rather than pretending it can reach another project.
+   */
+  readonly crossProject?: CrossProjectService | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
@@ -1148,6 +1199,38 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           run: (request) => deps.collaboration!.run(request),
         };
 
+  /*
+   * UX-B §28/SC-15/SC-7: the cross-project face. Like the collaboration face above
+   * it is COMPOSED here and MAPPED onto the returned object below — the G10-AC-R
+   * §11 lesson in this file is that a declared-but-unmapped face is a 501 and the
+   * product is invisible. `acknowledge` is the SC-7 addition: it strict-parses a
+   * caller-supplied `PeerMessage` and hands it to the EXISTING federation service,
+   * so "processed" is recorded and nothing else changes (ack ≠ agreement).
+   */
+  const crossProject: CrossProjectApplicationSurface | undefined =
+    deps.crossProject === undefined
+      ? undefined
+      : {
+          projects: () => deps.crossProject!.projects(),
+          prepareAsk: (request) => deps.crossProject!.prepareAsk(request),
+          ask: (request) => deps.crossProject!.ask(request),
+          status: (requestId) => deps.crossProject!.status(requestId),
+          pending: () => deps.crossProject!.pending(),
+          respond: (requestId, answer) => deps.crossProject!.respond(requestId, answer),
+          receive: (requestId) => deps.crossProject!.receive(requestId),
+          acknowledge: async (message: unknown) => {
+            const federation = deps.federation;
+            if (federation === undefined) {
+              const error = new Error("the federation surface is not configured for this installation");
+              (error as { kind?: string }).kind = "surface_absent";
+              throw error;
+            }
+            // Strict: a caller cannot acknowledge a shape the federation service
+            // would not have produced.
+            return federation.acknowledge({ message: parsePeerMessage(message) });
+          },
+        };
+
   const proof: ProofApplicationSurface | undefined =
     deps.proof === undefined
       ? undefined
@@ -1436,6 +1519,9 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(advisor === undefined ? {} : { advisor }),
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(collaboration === undefined ? {} : { collaboration }),
+    // UX-B §28/SC-15: mapped here, not merely declared. The monitor 501 bug
+    // documented above `const monitor` is the reason this line ships WITH the face.
+    ...(crossProject === undefined ? {} : { crossProject }),
     ...(proof === undefined ? {} : { proof }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),

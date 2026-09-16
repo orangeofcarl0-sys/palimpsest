@@ -187,7 +187,10 @@ import {
 import {
   deterministicTaskProfiler,
   makeCollaborationService,
+  makeCrossProjectService,
   type CollaborationService,
+  type CrossProjectService,
+  type ProjectPeerDirectoryPort,
 } from "./interaction/index.js";
 import type { TaskProfilerPort } from "./advisor/index.js";
 import {
@@ -258,6 +261,16 @@ export interface InstallPalimpsestOptions {
   peerTransportPort?: PeerTransportPort | undefined;
   /** G10-E5 (additive): the read-only peer directory port. */
   peerDirectoryPort?: PeerDirectoryPort | undefined;
+  /**
+   * UX-B §7/§8/SC-10 (additive): the READ-ONLY project↔peer deployment directory.
+   * It is genuinely separate from `peerDirectoryPort` (which carries peer identity
+   * only, with no project dimension — audit Q1/Q2): this one answers "which project
+   * is behind which peer", which is what lets a user say "ask the optics project"
+   * instead of naming a `PeerRef`. With `localPeer` + federation it enables
+   * `application.crossProject`; absent ⇒ that face (and its tool/routes) are absent,
+   * never stubbed. It is deployment routing metadata, NOT authority or ownership.
+   */
+  projectPeerDirectory?: ProjectPeerDirectoryPort | undefined;
   /** G10-E5 (additive): the canonical Palimpsest-owned coordination store. */
   coordinationStore?: CoordinationStore | undefined;
   /** G10-E5 (additive): read-only canonical Attempt validation for participation. */
@@ -599,6 +612,14 @@ export interface InstalledPalimpsest {
    * `application.collaboration` face and no `palimpsest_collaborate` tool.
    */
   readonly collaboration?: CollaborationService | undefined;
+  /**
+   * UX-B §28 (additive): the ONE-REQUEST CROSS-PROJECT collaboration composition —
+   * present iff a `projectPeerDirectory` AND federation are supplied. It is a thin,
+   * STATELESS product composition above the existing federation: it owns no store,
+   * no authority, no agent identity and no new protocol. Absent ⇒ no
+   * `application.crossProject` face and no `palimpsest_cross_project` tool.
+   */
+  readonly crossProject?: CrossProjectService | undefined;
   /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
   readonly attentionActivation?: AttentionActivationPort | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane — present iff a proof store is supplied. */
@@ -2217,6 +2238,33 @@ export function installPalimpsest(
           ...(projectManagement === undefined ? {} : { posture: () => projectManagement.posture() }),
         });
 
+  /*
+   * UX-B §28/§72/SC-9: the ONE-REQUEST CROSS-PROJECT collaboration composition.
+   *
+   * It is composed ONLY from wiring that already exists here, and it owns nothing:
+   *
+   *   projectPeerDirectory → the read-only project↔peer deployment binding (§7/§8)
+   *   federation           → the EXISTING sendMessage/thread/inbox/acknowledge (§4)
+   *   collaboration        → the EXISTING local collaboration the REMOTE principal
+   *                          may answer with (§52) — never re-implemented
+   *
+   * The minimum wiring is federation + a project directory: without a directory
+   * there is no way to turn a project NAME into an address, so `crossProject` is
+   * simply ABSENT and the product answers `surface_absent` (the same rule every
+   * other optional face follows — never a stub and never a guess).
+   */
+  const crossProject: CrossProjectService | undefined =
+    options.projectPeerDirectory === undefined || options.localPeer === undefined || federation === undefined
+      ? undefined
+      : makeCrossProjectService({
+          projectId: options.projectId,
+          localPeer: options.localPeer,
+          clock: options.clock ?? (() => new Date().toISOString()),
+          directory: options.projectPeerDirectory,
+          federation,
+          ...(collaboration === undefined ? {} : { collaboration }),
+        });
+
   const application = makePalimpsestApplicationSurface({
     controller,
     ...(options.localPeer === undefined ? {} : { localPeer: options.localPeer }),
@@ -2247,6 +2295,9 @@ export function installPalimpsest(
     // UX-A §16: the one-request collaboration face. ABSENT ⇒ no such surface,
     // never a stub (the G10-AC-R §11 lesson: a declared-but-uncomposed face is a 501).
     ...(collaboration === undefined ? {} : { collaboration }),
+    // UX-B §28: the cross-project face over the SAME composed federation. ABSENT ⇒
+    // no such surface, never a stub (the G10-AC-R §11 lesson).
+    ...(crossProject === undefined ? {} : { crossProject }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
@@ -2294,6 +2345,9 @@ export function installPalimpsest(
     // UX-A §17: a collaboration-only deployment still gets its tool face, so
     // `palimpsest_collaborate` is composed exactly when the service is.
     application.collaboration !== undefined ||
+    // UX-B §29: a cross-project-only deployment still gets its tool face, so
+    // `palimpsest_cross_project` is composed exactly when the service is.
+    application.crossProject !== undefined ||
     application.proof !== undefined ||
     application.disclosure !== undefined ||
     application.projectWorkspace !== undefined ||
@@ -2335,6 +2389,7 @@ export function installPalimpsest(
     ...(advisor === undefined ? {} : { advisor }),
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(collaboration === undefined ? {} : { collaboration }),
+    ...(crossProject === undefined ? {} : { crossProject }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
