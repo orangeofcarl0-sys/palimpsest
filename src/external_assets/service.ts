@@ -756,6 +756,15 @@ export function makeExternalAssetBridgeService(
 
   async function beginImport(candidate: ExternalAssetImportCandidate): Promise<ExternalAssetBridgeRecord> {
     const parsed = parseExternalAssetImportCandidate(candidate);
+    // G10-AE-R §11: the phase-1 receipt is a DURABLE write into a project scope, so it
+    // carries the same held-project fence as every other project-scoped bridge
+    // operation. The stage review demonstrated that without it an installation bound to
+    // project-A could append project-B's `EXTERNAL_IMPORT_PREPARED` receipt to a shared
+    // bridge store (inert for reads — commitImport re-fences — but a real cross-scope
+    // write on an unfenced writer).
+    if ((await basisOf(parsed.projectId)) === undefined) {
+      eaFail("unknown_project", `project "${parsed.projectId}" is not held by this deployment`);
+    }
     const lineage = deps.bridge.lineage(parsed.projectId, parsed.operationId);
     const prepared = lineage.find((record) => record.family === "EXTERNAL_IMPORT_PREPARED");
     if (prepared !== undefined) return prepared;
@@ -931,6 +940,12 @@ export function makeExternalAssetBridgeService(
     preview: ExternalAssetPublicationPreview,
   ): Promise<ExternalAssetBridgeRecord> {
     const parsed = parseExternalAssetPublicationPreview(preview);
+    // G10-AE-R §11: same held-project fence as beginImport — the phase-1 receipt of a
+    // publication is a durable write into the named project's scope, and
+    // `approveAndPublish` (its only product caller) has already established the basis.
+    if ((await basisOf(parsed.projectId)) === undefined) {
+      eaFail("unknown_project", `project "${parsed.projectId}" is not held by this deployment`);
+    }
     const lineage = deps.bridge.lineage(parsed.projectId, parsed.publicationId);
     const prepared = lineage.find((record) => record.family === "EXTERNAL_PUBLICATION_PREPARED");
     if (prepared !== undefined) return prepared;
@@ -1161,6 +1176,16 @@ export function makeExternalAssetBridgeService(
   /* ----- §12/§26 derived view ----- */
 
   async function resolve(projectId: string): Promise<ExternalAssetDerivedView> {
+    // G10-AE-R §12: the derived external view is a read of ONE project's external
+    // references, so it requires a project this deployment HOLDS — the same basis
+    // fence `preparePublication` and `approveAndPublish` already apply (the G10-AE
+    // gate review's R-03). Without it, a shared association store would let one
+    // installation resolve another scope's references, which is the §22 partial
+    // condition "external bridge can resolve foreign associations". A store may hold
+    // many scopes (PSI-A09); reading them is not this installation's authority.
+    if ((await basisOf(projectId)) === undefined) {
+      eaFail("unknown_project", `project "${projectId}" is not held by this deployment`);
+    }
     const associations = deps.associations;
     const listed = associations === undefined ? [] : await associations.list(projectId);
     return resolveExternalAssetView({ projectId, associations: listed, registry: deps.registry });

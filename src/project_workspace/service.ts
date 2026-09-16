@@ -169,12 +169,27 @@ export interface PromoteOpportunityResult {
   readonly taskId: string;
 }
 
+/**
+ * G10-AE-R §4–§7. A ProjectWorkspaceService is a ONE-PROJECT facade: the backing
+ * stores may physically hold many scopes, but `controller.projectId` is the only
+ * semantic project scope of every read below. `assets()` and the default
+ * `journal()` mean the installed current project; an explicit id that is NOT the
+ * current project FAILS (typed `invalid_registration`, the same scope-violation
+ * vocabulary the write fence uses) rather than silently answering for another
+ * scope or returning an empty list (spec §15 forbids hiding the violation).
+ * `associationStore.projects()` / `journalStore.projects()` stay available on the
+ * STORES: a direct store owner may enumerate its own data (PSI-A09), but this
+ * facade may not use that enumeration as an application read.
+ */
 export interface ProjectWorkspaceService {
   view(): Promise<ProjectWorkspaceView>;
+  /** The associations of `controller.projectId` ONLY — never every store scope. */
   assets(): Promise<readonly ProjectAssetAssociation[]>;
   openLoops(): Promise<readonly OpenLoop[]>;
   history(): Promise<readonly WorkspaceHistoryEntry[]>;
+  /** `undefined` or `controller.projectId` ⇒ the current project; any OTHER id fails closed. */
   journal(projectId?: string): Promise<readonly ProjectJournalViewEntry[]>;
+  /** `projectId` MUST equal `controller.projectId`; any other id fails closed (spec §7). */
   projectScopedAssets(projectId: string): Promise<readonly ProjectAssetAssociation[]>;
   associateAsset(input: AssociateAssetInput): Promise<ProjectAssetAssociation>;
   recordJournalEntry(input: RecordJournalEntryInput): Promise<ProjectJournalEntry>;
@@ -411,14 +426,20 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     const project = readProject();
     const status = controller.status();
     const graph = controller.orchestrationGraph();
-    const associations = await associationsFor(project.project_id);
-    const journal = await journalFor(project.project_id);
+    // G10-AE-R §4: every read below takes its scope from `controller.projectId`, the
+    // facade's ONE semantic project scope. `readProject()` is validated (the canonical
+    // ProjectIR is content-addressed and `controller.start` rejects a foreign id), so
+    // the row and the controller agree; naming the controller here keeps the rule
+    // literal rather than implied.
+    const scopeId = controller.projectId;
+    const associations = await associationsFor(scopeId);
+    const journal = await journalFor(scopeId);
     const known = associations ?? [];
     const proofClaims = await proofSnapshots(known);
     const reasoningCells = await reasoningSnapshots(known);
     const memoryExperiments = await memorySnapshots(known);
     const campaignProjectRefs = await campaignRefs();
-    const externalAssets = await externalSource(project.project_id);
+    const externalAssets = await externalSource(scopeId);
     return buildProjectWorkspaceView({
       project,
       status,
@@ -433,31 +454,46 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     });
   }
 
+  /**
+   * G10-AE-R §5: the associations of the INSTALLED project ONLY.
+   *
+   * The baseline implementation iterated `associationStore.projects()` and
+   * concatenated every scope in the shared store — `SharedPhysicalStore !=
+   * SharedSemanticScope`. A store-level enumeration is never an application-level
+   * read. If a global enumerator is ever needed it belongs to a separate
+   * administrative/library surface, not to a project-scoped facade.
+   */
   async function assets(): Promise<readonly ProjectAssetAssociation[]> {
     const store = deps.associations;
     if (store === undefined) return Object.freeze([]);
-    const found: ProjectAssetAssociation[] = [];
-    for (const projectId of await store.projects()) {
-      found.push(...associatedAssetsOf(await store.replay(projectId)));
-    }
-    return Object.freeze(found);
+    return associatedAssetsOf(await store.replay(controller.projectId));
   }
 
+  /**
+   * G10-AE-R §6: `undefined` → the current project; an explicit id EQUAL to the
+   * current project → allowed (API compatibility); a DIFFERENT id → typed failure.
+   * `undefined` never means "every scope in the store".
+   */
   async function journal(projectId?: string): Promise<readonly ProjectJournalViewEntry[]> {
+    const scopeId = projectId === undefined ? controller.projectId : projectId;
+    // The fence runs BEFORE the "store not configured" check so an unconfigured
+    // workspace still refuses a foreign scope rather than silently answering [].
+    assertScopedProject(scopeId);
     const store = deps.journal;
     if (store === undefined) return Object.freeze([]);
-    const projectIds = projectId === undefined ? await store.projects() : [projectId];
-    const found: ProjectJournalViewEntry[] = [];
-    for (const id of projectIds) {
-      found.push(...projectJournalView(await store.replay(id)));
-    }
-    return Object.freeze(found);
+    return projectJournalView(await store.replay(scopeId));
   }
 
+  /**
+   * G10-AE-R §7: the method is kept (the workspace's exact key set is pinned by
+   * test/v_adversarial.test.ts PW-A01) but fenced — an arbitrary id is no longer
+   * an escape hatch around the facade's single semantic scope.
+   */
   async function projectScopedAssets(projectId: string): Promise<readonly ProjectAssetAssociation[]> {
+    assertScopedProject(projectId);
     const store = deps.associations;
     if (store === undefined) return Object.freeze([]);
-    return associatedAssetsOf(await store.replay(projectId));
+    return associatedAssetsOf(await store.replay(controller.projectId));
   }
 
   async function openLoops(): Promise<readonly OpenLoop[]> {
