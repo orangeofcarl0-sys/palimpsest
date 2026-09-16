@@ -20,6 +20,13 @@
 import { canonicalDigest } from "../schema/canonical.js";
 import { parseProjectIr, type ProjectIr, type TaskSpec } from "../schema/models.js";
 import { decodeJsonBlob, type ProjectController, type ProjectHeadReconciliationResult } from "../tools/controller.js";
+import {
+  projectVerificationRunRef,
+  verificationIsDue,
+  type ProjectVerificationOutcome,
+  type ProjectVerificationService,
+  type ProjectVerificationStatus,
+} from "../project_verification/index.js";
 import { materializeRecipePlan } from "../recipes/artifacts.js";
 import { compileRecipePlan } from "../recipes/compiler.js";
 import type { RecipeExecutionService } from "../recipes/execution.js";
@@ -54,6 +61,7 @@ import {
   CAPABILITY_VERIFY,
   deriveManagementActionCandidates,
   type ManagementActionCandidate,
+  type ManagementVerificationContext,
 } from "./actions.js";
 import { evaluateManagementAction, type ManagementActionEvaluation } from "./policy.js";
 import {
@@ -79,15 +87,41 @@ export interface ProjectManagementRecipeDeps {
 
 export interface ProjectManagementCapabilities {
   readonly recipeExecution: boolean;
-  readonly verify: boolean;
+  /**
+   * DEPRECATED (G10-AD §16): ignored. A declared boolean can never make
+   * `RUN_LOCAL_VERIFY` available — a REAL verification runtime must be wired via
+   * `ProjectManagementServiceDeps.verification`. Kept optional for compatibility
+   * so an existing embedder keeps compiling; it grants nothing.
+   */
+  readonly verify?: boolean | undefined;
 }
+
+/**
+ * G10-AD §21: the TYPED Project Verification execution seam, replacing the old
+ * untyped `{ run(): Promise<unknown> }` stub.
+ *
+ * `ProjectVerificationService` is structurally assignable, so the install passes
+ * `installed.verification.service` directly. The seam can only review or verify
+ * the CURRENT project head through a REGISTERED verifier: it accepts no command,
+ * no commit, no independence class and no authority, and it returns the durable
+ * run the caller must REFERENCE (never duplicate).
+ */
+export type ManagementVerificationPort = Pick<
+  ProjectVerificationService,
+  "status" | "history" | "verifyCurrentHead"
+> | (() => Pick<ProjectVerificationService, "status" | "history" | "verifyCurrentHead"> | undefined) | undefined;
 
 export interface ProjectManagementServiceDeps {
   readonly workspace: ProjectWorkspaceService;
   readonly control: UserManagementControlPort;
   readonly controller: ProjectController;
   readonly recipes?: ProjectManagementRecipeDeps | undefined;
-  readonly verify?: { run(): Promise<unknown> } | undefined;
+  /**
+   * G10-AD §21: the typed Project Verification runtime. Absent ⇒ RUN_LOCAL_VERIFY
+   * has no capability at all (it is refused, never faked) and no automatic
+   * verification candidate can be derived.
+   */
+  readonly verification?: ManagementVerificationPort;
   readonly capabilities?: ProjectManagementCapabilities | undefined;
   readonly clock?: (() => string) | undefined;
   /**
@@ -279,6 +313,72 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
     }
   }
 
+  /**
+   * G10-AD §19/§20: the facts the AUTOMATIC verification candidate is derived from.
+   * PURE with respect to verification: no provider is ever invoked here, because the
+   * due decision is a derivation over the canonical ProjectIR head, the registered
+   * verifier definitions and the append-only run history.
+   *
+   * `undefined` means "this deployment has no verification runtime", which is also
+   * why no candidate can exist — a mode's preference can never conjure a verifier.
+   */
+  async function verificationContext(): Promise<ManagementVerificationContext | undefined> {
+    const port = verificationPort();
+    if (port === undefined) return undefined;
+    // Preference first: with no VERIFY preference there is no automatic candidate,
+    // and there is no reason to read the verification status at all.
+    let verifyPreferred = false;
+    if (deps.workMode !== undefined) {
+      try {
+        verifyPreferred = (await deps.workMode.get(controller.projectId)).preference.modifiers.includes("VERIFY");
+      } catch {
+        verifyPreferred = false;
+      }
+    }
+    if (!verifyPreferred) {
+      return Object.freeze({
+        verifyPreferred: false,
+        independentVerifierAvailable: false,
+        verifierRef: null,
+        subjectDigest: null,
+        verificationDue: false,
+        reason:
+          "the Work Mode preference does not select VERIFY, so no automatic verification candidate exists (an explicit verification request is still possible)",
+      });
+    }
+    let status: ProjectVerificationStatus;
+    try {
+      status = await port.status();
+    } catch {
+      // An unreadable verification status is "cannot establish": no candidate.
+      return undefined;
+    }
+    const due = verificationIsDue({ status });
+    return Object.freeze({
+      verifyPreferred: true,
+      independentVerifierAvailable: status.independentVerifyAvailable,
+      verifierRef: status.defaultVerifierRef,
+      subjectDigest: status.subject?.digest ?? null,
+      verificationDue: due.due,
+      reason: due.due
+        ? `the current project head is verification-due under "${status.defaultVerifierRef ?? "no verifier"}": ${due.reason}`
+        : due.reason,
+    });
+  }
+
+  /**
+   * G10-AD §21: resolve the typed verification seam at CALL time. The install may
+   * compose the Project Verification runtime after this service, so a thunk is an
+   * allowed (and preferred) hand-over; a direct port is also accepted.
+   */
+  function verificationPort():
+    | Pick<ProjectVerificationService, "status" | "history" | "verifyCurrentHead">
+    | undefined {
+    const configured = deps.verification;
+    if (configured === undefined) return undefined;
+    return typeof configured === "function" ? configured() : configured;
+  }
+
   function capabilityAvailable(capability: string): boolean {
     switch (capability) {
       case CAPABILITY_OBSERVE:
@@ -291,7 +391,10 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
       case CAPABILITY_RECIPE_EXECUTION:
         return deps.capabilities?.recipeExecution ?? deps.recipes?.execution !== undefined;
       case CAPABILITY_VERIFY:
-        return deps.capabilities?.verify ?? deps.verify !== undefined;
+        // G10-AD §16: ONLY a real, bound Project Verification runtime makes this
+        // available. `deps.capabilities.verify` is deliberately NOT consulted: a
+        // declared boolean is not an executable verifier.
+        return verificationPort() !== undefined;
       default:
         // Fail closed: an unmapped capability (e.g. the authority-shaped classes)
         // is never available in this deployment.
@@ -408,7 +511,14 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
   async function assess(): Promise<ManagementAssessment> {
     const profile = await deps.control.get(controller.projectId);
     const view = await deps.workspace.view();
-    return Object.freeze({ profile, view, candidates: deriveManagementActionCandidates(view) });
+    // G10-AD §19: deriving candidates runs NO verifier. The verification context is
+    // a pure read of the preference plus the DERIVED verification status.
+    const verification = await verificationContext();
+    return Object.freeze({
+      profile,
+      view,
+      candidates: deriveManagementActionCandidates(view, verification),
+    });
   }
 
   async function recommend(): Promise<readonly ManagementActionCandidate[]> {
@@ -575,14 +685,53 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
       }
 
       case "RUN_LOCAL_VERIFY": {
-        const verify = deps.verify;
-        if (verify === undefined) return stepResult("not_permitted", candidate.kind, "no local verification port is configured");
-        await verify.run();
-        // The verify port returns no canonical ref today, so none is invented.
-        return stepResult("executed", candidate.kind, "ran the configured local verification port", {
-          typedReasonCode: "verify_port_ran",
-          canonicalOutcomeRefs: [],
-        });
+        // G10-AD §21: typed Project Verification execution. The management layer
+        // selects NO verifier, supplies NO command and supplies NO commit: it asks
+        // the runtime to verify the EXACT current project head under the
+        // registered/default verifier protocol.
+        const port = verificationPort();
+        if (port === undefined) {
+          return stepResult(
+            "not_permitted",
+            candidate.kind,
+            "no Project Verification runtime is configured; a registered versioned verifier protocol cannot execute here",
+          );
+        }
+        let outcome: ProjectVerificationOutcome;
+        try {
+          outcome = await port.verifyCurrentHead({
+            requestedBy: `project-management:${profile.involvement.toLowerCase()}`,
+            reason: candidate.reason,
+          });
+        } catch (error) {
+          return stepResult(
+            "not_permitted",
+            candidate.kind,
+            `the verification runtime threw before it could record a run: ${error instanceof Error ? error.message : String(error)}`,
+            { typedReasonCode: "verification_runtime_error", canonicalOutcomeRefs: [] },
+          );
+        }
+        if (outcome.status !== "recorded" || outcome.run === null) {
+          // Nothing was executed and nothing was written: history claims no result.
+          return stepResult("not_permitted", candidate.kind, `verification did not run: ${outcome.typedReasonCode} — ${outcome.detail}`, {
+            typedReasonCode: outcome.typedReasonCode,
+            canonicalOutcomeRefs: [],
+          });
+        }
+        const run = outcome.run;
+        // §21: the activity REFERENCES the durable run; the run body stays owned by
+        // the Project Verification history store. The stored ref value is the stable
+        // id in the OWNING plane (like `work_event`/`project_revision` do), so the
+        // derived operating history renders the canonical product ref verbatim.
+        return stepResult(
+          "executed",
+          candidate.kind,
+          `verified the current project head under "${run.verifierRef}": ${run.verdict ?? run.status} (${run.freshness}, independence ${run.independence}); durable run ref ${projectVerificationRunRef(run.runId)}`,
+          {
+            typedReasonCode: `verification_${(run.verdict ?? "unresolved").toLowerCase()}`,
+            canonicalOutcomeRefs: [{ kind: "project_verification", ref: run.runId }],
+          },
+        );
       }
 
       case "RECONCILE_PROJECT_HEAD": {
@@ -903,6 +1052,13 @@ export function makeProjectManagementService(deps: ProjectManagementServiceDeps)
             .prepare("SELECT event_id FROM events WHERE project_id=? AND event_id=?")
             .get(controller.projectId, Number(ref.ref));
           if (row !== undefined) resolvable.push(`work_event:${ref.ref}`);
+        } else if (ref.kind === "project_verification") {
+          // G10-AD §21: the ref was obtained from the Project Verification runtime
+          // that RECORDED the run, so its owning plane can read it by construction —
+          // it is resolvable exactly when a verification runtime is wired here. The
+          // composite `${kind}:${ref}` IS the canonical product ref
+          // `project_verification:<runId>`.
+          if (verificationPort() !== undefined) resolvable.push(`project_verification:${ref.ref}`);
         }
       }
     }

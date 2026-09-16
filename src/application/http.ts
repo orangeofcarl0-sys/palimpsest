@@ -149,6 +149,8 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       // and wired by the install, but this discovery list omitted it, so a client
       // could not see whether a monitor runtime was observable at all.
       monitor: application.monitor !== undefined,
+      // G10-AD §23: the project-head verification face (status/history/run).
+      verification: application.verification !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -800,6 +802,38 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   if (pathname === "/api/monitor/preview") {
     requireGet();
     return ok(await requireSurface(application.monitor, "monitor").preview());
+  }
+  // G10-AD §23: project-head verification. Status and history are pure reads; the
+  // run endpoint accepts ONLY the two honest inputs a caller may choose — a
+  // REGISTERED verifierRef and a free-text reason. There is deliberately NO route
+  // that accepts a verifier DEFINITION, a command, an independence class or a
+  // commit: an HTTP-authenticated caller can never register a verifier or retarget
+  // the subject, and the subject is always the exact current ProjectIR head.
+  if (pathname === "/api/verification/status") {
+    requireGet();
+    return ok(await requireSurface(application.verification, "verification").status());
+  }
+  if (pathname === "/api/verification/history") {
+    requireGet();
+    const limitRaw = query.get("limit");
+    if (limitRaw === null) {
+      return ok(await requireSurface(application.verification, "verification").history());
+    }
+    const limit = Number(limitRaw);
+    if (!Number.isSafeInteger(limit) || limit < 1) throw new InvalidRequest('"limit" must be a positive integer');
+    return ok(await requireSurface(application.verification, "verification").history(limit));
+  }
+  if (pathname === "/api/verification/verify_current_head") {
+    requirePost();
+    const b = bodyObject(body);
+    const verifierRef = b.verifierRef === undefined ? undefined : str(b.verifierRef, "verifierRef");
+    const reason = b.reason === undefined ? undefined : str(b.reason, "reason");
+    return ok(
+      await requireSurface(application.verification, "verification").verifyCurrentHead({
+        ...(verifierRef === undefined ? {} : { verifierRef }),
+        ...(reason === undefined ? {} : { reason }),
+      }),
+    );
   }
   if (pathname === "/api/manage/status") {
     requireGet();

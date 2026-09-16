@@ -53,6 +53,12 @@ export const CAPABILITY_PREPARE = "management.prepare";
 export const CAPABILITY_RUN_TURN = "controller.runTurn";
 export const CAPABILITY_PLAN = "controller.plan";
 export const CAPABILITY_RECIPE_EXECUTION = "recipes.execution";
+/**
+ * G10-AD §16/§19: the local Project Verification capability. It is available ONLY
+ * when a REAL verification runtime is wired (a registered, versioned verifier
+ * protocol with an execution binding); a bare declared boolean no longer makes it
+ * available, and an agent may never register a verifier.
+ */
 export const CAPABILITY_VERIFY = "verify";
 /**
  * G10-X: the mechanical project-head reconciliation port
@@ -192,10 +198,46 @@ interface Draft {
 }
 
 /**
- * Derive the deterministic candidate set a workspace view supports. Pure: the
- * same view always yields the same, content-addressed candidates.
+ * G10-AD §19/§20: the PURE facts that decide whether an automatic
+ * `RUN_LOCAL_VERIFY` candidate exists. Deriving this context runs NO verifier: it
+ * is a read of the Work Mode preference plus the DERIVED verification status
+ * (which is itself a pure derivation over the canonical ProjectIR head, the
+ * registry and the append-only run history).
+ *
+ *   VERIFY preferred            — the operator's stored preference selects it
+ *   independentVerifierAvailable— a REGISTERED verifier really executes AND counts
+ *                                 as independent (§15; never a bare bool/string)
+ *   verificationDue             — no FRESH COMPLETED run covers this EXACT head
+ *                                 under the selected/default verifier (§20)
+ *
+ * All three must hold. A missing preference produces NO automatic candidate at
+ * all: explicit verification stays possible through the verification surface.
  */
-export function deriveManagementActionCandidates(view: ProjectWorkspaceView): readonly ManagementActionCandidate[] {
+export interface ManagementVerificationContext {
+  readonly verifyPreferred: boolean;
+  readonly independentVerifierAvailable: boolean;
+  /** The verifier ref a run would use; null when none is selectable. */
+  readonly verifierRef: string | null;
+  /** The exact current verification subject digest (binds the head). */
+  readonly subjectDigest: string | null;
+  /** TRUE only when a run is DUE for the exact current head + verifier (§20). */
+  readonly verificationDue: boolean;
+  /** Why the candidate does (or does not) exist, verbatim, for the candidate reason. */
+  readonly reason: string;
+}
+
+/**
+ * Derive the deterministic candidate set a workspace view supports. Pure: the
+ * same view (plus the same verification context) always yields the same,
+ * content-addressed candidates.
+ *
+ * `verification` is optional and additive: without it no RUN_LOCAL_VERIFY
+ * candidate can be derived at all, which is exactly the pre-G10-AD behaviour.
+ */
+export function deriveManagementActionCandidates(
+  view: ProjectWorkspaceView,
+  verification?: ManagementVerificationContext | undefined,
+): readonly ManagementActionCandidate[] {
   const drafts: Draft[] = [];
   const nonTerminalTasks = new Set<string>();
   for (const attempt of view.work.attempts) {
@@ -373,6 +415,39 @@ export function deriveManagementActionCandidates(view: ProjectWorkspaceView): re
         });
         break;
     }
+  }
+
+  // G10-AD §19/§20: the deterministic AUTOMATIC verification candidate.
+  //
+  // Deriving it runs NO verifier: it exists exactly when the operator PREFERS
+  // VERIFY, a real independent verifier is available, and the CURRENT Project Head
+  // has no fresh completed run for the selected/default verifier. The subject
+  // digest is part of the candidate content, so a NEW head mints a NEW candidate
+  // while a fresh run suppresses the repeat.
+  if (
+    verification !== undefined &&
+    verification.verifyPreferred &&
+    verification.independentVerifierAvailable &&
+    verification.verificationDue &&
+    verification.subjectDigest !== null
+  ) {
+    const subjects: ManagementActionSubjectRef[] = [
+      { kind: "verification_subject", id: verification.subjectDigest },
+    ];
+    if (verification.verifierRef !== null) {
+      subjects.push({ kind: "verifier", id: verification.verifierRef });
+    }
+    drafts.push({
+      kind: "RUN_LOCAL_VERIFY",
+      reason: verification.reason,
+      subjects,
+      riskClass: "LOW",
+      // The policy matrix still decides: at DIRECT this class requires an explicit
+      // confirmation (DEFAULT_ACTION_POLICY.RUN_LOCAL_VERIFY.DIRECT === "explicit").
+      requiredConfirmation: false,
+      capability: CAPABILITY_VERIFY,
+      executable: true,
+    });
   }
 
   const byId = new Map<string, ManagementActionCandidate>();

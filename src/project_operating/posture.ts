@@ -26,6 +26,7 @@ import {
   isWorkModeModifier,
   type EffectiveWorkModePreference,
   type MonitorRuntimeCapabilityView,
+  type VerificationRuntimeCapabilityView,
   type WorkModeBaseMode,
   type WorkModeCapabilityInputs,
   type WorkModeModifier,
@@ -172,6 +173,50 @@ export function monitorAvailabilityOf(capability: MonitorRuntimeCapabilityView |
   });
 }
 
+/**
+ * G10-AD §15/§16: the ONE availability table for the VERIFY modifier, over the
+ * STRUCTURAL verification-runtime capability view.
+ *
+ * Branches (in order):
+ *  - a real runtime capability view EXISTS, a runtime is executable and at least
+ *    one registered verifier counts as independent            → AVAILABLE
+ *  - a real runtime capability view exists, but nothing counts as independent
+ *    (SHARED_CONTEXT / DECLARED_SEPARATE / UNKNOWN), or no verifier is
+ *    executable at all                                        → UNAVAILABLE, with
+ *    the runtime's own honest note
+ *  - no runtime capability view, but a bare `independentVerifier: true`
+ *    (DEPRECATED, §16)                                        → CONDITIONAL: a
+ *    declaration is not a runtime, and a bare bool/string may never inflate
+ *    capability into availability
+ *  - otherwise                                                → UNAVAILABLE
+ *
+ * A preferred VERIFY with no runtime stays a VALID PREFERENCE and is shown
+ * honestly: the preference is never dropped, only its availability is stated.
+ */
+export function verificationAvailabilityOf(capabilities: {
+  readonly independentVerifier?: boolean | undefined;
+  readonly verificationRuntimeCapability?: VerificationRuntimeCapabilityView | undefined;
+}): { readonly availability: EffectiveModeStatus["availability"]; readonly reason: string } {
+  const capability = capabilities.verificationRuntimeCapability;
+  if (capability !== undefined) {
+    if (capability.runtimeAvailable && capability.independentVerifierAvailable) {
+      return Object.freeze({ availability: "AVAILABLE" as const, reason: capability.note });
+    }
+    return Object.freeze({ availability: "UNAVAILABLE" as const, reason: capability.note });
+  }
+  if (capabilities.independentVerifier === true) {
+    return Object.freeze({
+      availability: "CONDITIONAL" as const,
+      reason:
+        "a verifier is declared but no Project Verification runtime capability is wired; a bare declaration cannot prove that a registered versioned protocol really executes and counts as independent",
+    });
+  }
+  return Object.freeze({
+    availability: "UNAVAILABLE" as const,
+    reason: "no independent verifier is configured; same-model same-context is not verification",
+  });
+}
+
 /** The preferred-but-not-available warnings for one effective-status list. */
 function capabilityWarningsOf(
   effectiveStatus: readonly EffectiveModeStatus[],
@@ -286,14 +331,20 @@ export function deriveEffectiveModeStatus(input: {
       : "no genuine independent peer exists; the preference is retained but currently ineligible",
   );
 
+  // G10-AD §15/§16: VERIFY availability is derived from a REAL Project
+  // Verification runtime. The ONE table lives in `verificationAvailabilityOf`
+  // (exported so an install can map a live runtime capability onto an already
+  // derived view exactly like `withMonitorRuntimeCapability` does).
+  const verify = verificationAvailabilityOf(input.capabilities);
+  const verifyAvailability = verify.availability;
+  const verifyReason = verify.reason;
+
   push(
     "VERIFY",
     "modifier",
     preferredModifiers.has("VERIFY"),
-    input.capabilities.independentVerifier ? "AVAILABLE" : "UNAVAILABLE",
-    input.capabilities.independentVerifier
-      ? "an independent verification capability is configured"
-      : "no independent verifier is configured; same-model same-context is not verification",
+    verifyAvailability === "AVAILABLE" ? "AVAILABLE" : verifyAvailability,
+    verifyReason,
   );
 
   // G10-AC §34 + AC-R §5: MONITOR availability is derived from REAL runtime

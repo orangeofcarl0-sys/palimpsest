@@ -227,12 +227,50 @@ export interface MonitorRuntimeCapabilityView {
 }
 
 /**
+ * G10-AD §15/§16: the STRUCTURAL view of a real Project Verification runtime.
+ *
+ *   VerifierRuntimeCapabilityView ≠ a truth channel
+ *   it is exactly: "can a registered/versioned verifier protocol EXECUTE here,
+ *   and does at least one of them count as independent?"
+ *
+ * It is declared structurally (rather than imported from
+ * `src/project_verification/service.ts`) for the SAME reason
+ * `MonitorRuntimeCapabilityView` is: `src/project_verification/**` is a product
+ * plane and `project_operating` must not take a dependency on it. The plane's
+ * `ProjectVerificationRuntimeFacts` is structurally assignable to this view.
+ *
+ * `independentVerifierAvailable` may only be TRUE when the runtime EXISTS (`§15`:
+ * a runtime AND at least one registered verifier that counts as independent). A
+ * SHARED_CONTEXT / DECLARED_SEPARATE / UNKNOWN verifier never counts, and an
+ * empty runtime can never claim it.
+ */
+export interface VerificationRuntimeCapabilityView {
+  /** At least one REGISTERED verifier has a real execution binding here. */
+  readonly runtimeAvailable: boolean;
+  /** §15: runtimeAvailable AND at least one registered verifier counts as independent. */
+  readonly independentVerifierAvailable: boolean;
+  /** The registered refs that count as independent (never a bare bool/string). */
+  readonly independentVerifierRefs: readonly string[];
+  /** The ref a caller gets when it does not select one; null when none exists. */
+  readonly defaultVerifierRef: string | null;
+  /** The honest one-line basis, renderable verbatim. */
+  readonly note: string;
+}
+
+/**
  * Does this modifier need a capability that may not exist? Used to build the
  * honest effective-status view: a preference is never silently dropped, and an
  * unavailable capability is never reported as active.
  */
 export interface WorkModeCapabilityInputs {
-  /** A genuine independent verifier is configured. */
+  /**
+   * DEPRECATED (G10-AD §16). A bare boolean is NO LONGER an availability claim:
+   * it cannot distinguish "a registered verifier really executes here and counts
+   * as independent" from a descriptive string or a same-model same-context stub.
+   * It is still ACCEPTED for compatibility and is reported as CONDITIONAL at
+   * best; wire `verificationRuntimeCapability` for a real availability derivation.
+   * Retained (`required`) so existing embedders keep compiling unchanged.
+   */
   readonly independentVerifier: boolean;
   /**
    * A production Monitor condition source exists. Kept for an embedder that
@@ -260,6 +298,15 @@ export interface WorkModeCapabilityInputs {
    * `MonitorRuntimeCapability` is structurally assignable to this view.
    */
   readonly monitorRuntimeCapability?: MonitorRuntimeCapabilityView | undefined;
+  /**
+   * G10-AD §15/§16: the LIVE Project Verification runtime capability the VERIFY
+   * row must be derived from when present. Declared STRUCTURALLY (see
+   * `VerificationRuntimeCapabilityView`) so `project_operating` does not import
+   * `src/project_verification/**`. A `verificationCapabilityRef` string or a bare
+   * `independentVerifier: true` is NOT this: only a view built from the real
+   * registry + executable providers can make VERIFY AVAILABLE.
+   */
+  readonly verificationRuntimeCapability?: VerificationRuntimeCapabilityView | undefined;
   /** Reasoning-branch execution is available for EXPLORE. */
   readonly reasoningBranches: boolean;
   /** A genuine already-independent sovereign peer exists for COORDINATE. */

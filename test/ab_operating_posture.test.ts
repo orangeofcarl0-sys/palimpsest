@@ -248,9 +248,62 @@ describe("G10-AB effective capability status", () => {
     });
     const byCapability = new Map(rows.map((row) => [row.capability, row]));
     expect(byCapability.get("EXPLORE")?.availability).toBe("CONDITIONAL");
-    expect(byCapability.get("VERIFY")?.availability).toBe("AVAILABLE");
+    // G10-AD §15/§16 JUSTIFICATION: this assertion changed from AVAILABLE to
+    // CONDITIONAL. A bare `independentVerifier: true` boolean (or a
+    // `verificationCapabilityRef` string) is NO LONGER an availability claim: it
+    // cannot distinguish a registered, versioned protocol that really executes and
+    // counts as independent from a same-model same-context stub. The VERIFY row is
+    // now derived from the STRUCTURAL runtime capability view, and a bare
+    // declaration is reported as CONDITIONAL at best - a valid preference shown
+    // honestly. The AVAILABLE path is asserted immediately below.
+    expect(byCapability.get("VERIFY")?.availability).toBe("CONDITIONAL");
+    expect(byCapability.get("VERIFY")?.reason).toMatch(/bare declaration cannot prove/u);
     expect(byCapability.get("COORDINATE")?.availability).toBe("AVAILABLE");
     expect(byCapability.get("COORDINATE")?.preferred).toBe(false);
+
+    // The REAL availability path (§15): a runtime exists AND a registered verifier
+    // counts as independent. This is the only thing that may say AVAILABLE.
+    const withRuntime = deriveEffectiveModeStatus({
+      preference: preferenceOf("EXPLORE", ["VERIFY"]),
+      registry: builtinRecipeRegistry(),
+      capabilities: {
+        independentVerifier: false,
+        monitorConditionSource: false,
+        reasoningBranches: true,
+        independentPeer: true,
+        verificationRuntimeCapability: {
+          runtimeAvailable: true,
+          independentVerifierAvailable: true,
+          independentVerifierRefs: ["project.head.git-diff-check.v1"],
+          defaultVerifierRef: "project.head.git-diff-check.v1",
+          note: "VERIFY is available from a real independent runtime (project.head.git-diff-check.v1)",
+        },
+      },
+    });
+    expect(withRuntime.find((row) => row.capability === "VERIFY")?.availability).toBe("AVAILABLE");
+
+    // A runtime that exists but whose only verifier does NOT count as independent
+    // (shared context / declared only / unknown separation) is UNAVAILABLE.
+    const sharedContextRuntime = deriveEffectiveModeStatus({
+      preference: preferenceOf("EXPLORE", ["VERIFY"]),
+      registry: builtinRecipeRegistry(),
+      capabilities: {
+        independentVerifier: true,
+        monitorConditionSource: false,
+        reasoningBranches: true,
+        independentPeer: true,
+        verificationRuntimeCapability: {
+          runtimeAvailable: true,
+          independentVerifierAvailable: false,
+          independentVerifierRefs: [],
+          defaultVerifierRef: "project.head.same-context.v1",
+          note: "a verification runtime exists but no registered verifier counts as independent; VERIFY is not available",
+        },
+      },
+    });
+    expect(sharedContextRuntime.find((row) => row.capability === "VERIFY")?.availability).toBe(
+      "UNAVAILABLE",
+    );
   });
 
   it("a COORDINATE preference creates no peer and is shown as ineligible", () => {

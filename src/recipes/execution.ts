@@ -13,16 +13,37 @@
  * verification. A branch stays ephemeral: this layer creates NO PeerRef and NO
  * PersistentPoint. COORDINATE surfaces an existing independent peer set and never
  * accepts a commitment or boundary revision, and never creates a peer.
+ *
+ * G10-AD §18: a plan containing the VERIFY modifier no longer ignores it. The BASE
+ * mode runs first, and THEN the exact current Project Head is verified through the
+ * Project Verification runtime:
+ *
+ *   FOCUS+VERIFY       replay the principal, then verify the current project head
+ *   EXPLORE+VERIFY     ReasoningCell keeps its OWN verification/admission; the
+ *                      project-head verification afterwards is about the PROJECT
+ *                      HEAD, never about the reasoning claims
+ *   COORDINATE+VERIFY  the coordination step still only surfaces EXISTING peers;
+ *                      verification checks the project head and accepts NO
+ *                      commitment
+ *
+ *   VerificationResult ≠ ReasoningAdmission ≠ ProofPublication ≠ WorkEvidence
+ *
+ * With no verification runtime configured the plan returns `capability_required`
+ * (the compiled plan declared a capability this deployment does not have) — never
+ * a fake success. A runtime that exists but produces no recorded run leaves the
+ * base outcome visible and carries a typed unresolved reason.
  */
 
 import type { FederationService } from "../federation/federation_service.js";
 import type { PeerRef } from "../federation/peer.js";
+import { projectVerificationRunRef } from "../project_verification/artifacts.js";
 import type { ReasoningBranchBrief } from "../reasoning_cell/artifacts.js";
 import { REASONING_STATEMENT_TYPE } from "../reasoning_cell/claims.js";
 import type { ReasoningPolicyRef } from "../reasoning_cell/ref.js";
 import type { ReasoningCellService } from "../reasoning_cell/service.js";
 import type { ExperimentValidatorPort } from "../experiment/validators.js";
 import type { CompiledRecipePlan, CompiledStep } from "./artifacts.js";
+import { PROJECT_DEFAULT_VERIFIER_REF } from "./compiler.js";
 
 /**
  * Structural port satisfied by the real DSH branch runner. `brief` is opaque on
@@ -34,6 +55,76 @@ export interface ReasoningBranchExecutionPort {
   run(input: { readonly brief: unknown; readonly executionBudget?: unknown }): Promise<unknown>;
 }
 
+/* -------------------------------------------------------------------------- *
+ * G10-AD §18: the project-head verification port
+ * -------------------------------------------------------------------------- */
+
+/**
+ * The ONE run shape this layer reads back. The real `ProjectVerificationRun`
+ * (and the real `ProjectVerificationOutcome`) are structurally assignable, so the
+ * install passes `installed.verification.service` directly — this layer never
+ * copies the verification plane's semantics, and it can never mint a verdict.
+ */
+export interface RecipeVerificationRunSummary {
+  readonly runId: string;
+  readonly verifierRef: string;
+  readonly verdict: string | null;
+  readonly status: string;
+  readonly freshness: string;
+  readonly independence: string;
+}
+
+export interface RecipeProjectVerificationOutcome {
+  readonly status: "recorded" | "blocked";
+  readonly typedReasonCode: string;
+  readonly detail: string;
+  readonly run: RecipeVerificationRunSummary | null;
+}
+
+/**
+ * The narrow execution seam. It verifies ONLY the exact current ProjectIR head
+ * under a REGISTERED verifier protocol; the caller may select a registered ref
+ * (or leave it unresolved so the deployment default applies) and can never inject
+ * a command, a commit or an independence class.
+ */
+export interface RecipeProjectVerificationPort {
+  verifyCurrentHead(input: {
+    readonly verifierRef?: string | undefined;
+    readonly requestedBy: string;
+    readonly reason: string;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<RecipeProjectVerificationOutcome>;
+}
+
+/**
+ * Resolved at CALL time. The install composes the Project Verification runtime
+ * after the recipe execution service (the verification runtime itself is composed
+ * with the operating stores), so a thunk is the honest way to hand over the live
+ * port without pretending it existed at construction.
+ */
+export type RecipeProjectVerificationProvider =
+  | RecipeProjectVerificationPort
+  | (() => RecipeProjectVerificationPort | undefined);
+
+/** The verification result a completed recipe outcome carries (§18, additive). */
+export interface RecipeVerificationSummary {
+  readonly verifierRef: string;
+  readonly runId: string;
+  /** §21: the canonical/product ref of the durable run. */
+  readonly runRef: string;
+  readonly verdict: string | null;
+  readonly status: string;
+  readonly freshness: string;
+  readonly independence: string;
+  readonly detail: string;
+}
+
+/** A VERIFY step that was instructed but produced NO recorded run (§18). */
+export interface RecipeVerificationUnresolved {
+  readonly typedReasonCode: string;
+  readonly detail: string;
+}
+
 export interface RecipeExecutionDeps {
   readonly localPeer: PeerRef;
   readonly reasoning?: ReasoningCellService | undefined;
@@ -41,6 +132,8 @@ export interface RecipeExecutionDeps {
   readonly federation?: FederationService | undefined;
   readonly validators?: readonly ExperimentValidatorPort[] | undefined;
   readonly campaign?: unknown;
+  /** G10-AD §18: the Project Verification runtime, when the install composed one. */
+  readonly verification?: RecipeProjectVerificationProvider | undefined;
 }
 
 export interface RecipeExecutionContext {
@@ -49,7 +142,8 @@ export interface RecipeExecutionContext {
   readonly signal?: AbortSignal | undefined;
 }
 
-export type RecipeExecutionOutcome =
+/** The base-mode outcomes: what the mode itself did, before any VERIFY step. */
+export type RecipeBaseOutcome =
   | { readonly status: "reused_principal" }
   | {
       readonly status: "explored";
@@ -60,7 +154,21 @@ export type RecipeExecutionOutcome =
       readonly unresolved: number;
       readonly branchExecutions: number;
     }
-  | { readonly status: "coordination_surfaced"; readonly contactNeedId?: string; readonly peerRefs: readonly PeerRef[] }
+  | { readonly status: "coordination_surfaced"; readonly contactNeedId?: string; readonly peerRefs: readonly PeerRef[] };
+
+/** The base outcome plus the additive §18 verification result, when one ran. */
+export type RecipeCompletedOutcome = RecipeBaseOutcome & {
+  readonly verification?: RecipeVerificationSummary | undefined;
+  readonly verificationUnresolved?: RecipeVerificationUnresolved | undefined;
+};
+
+/** What a base-mode helper may return: it ran, or a capability it needs is absent. */
+export type RecipeModeOutcome =
+  | RecipeBaseOutcome
+  | { readonly status: "capability_required"; readonly capability: string; readonly detail: string };
+
+export type RecipeExecutionOutcome =
+  | RecipeCompletedOutcome
   | { readonly status: "capability_required"; readonly capability: string; readonly detail: string };
 
 export interface RecipeExecutionService {
@@ -103,7 +211,7 @@ function statementFromOutput(output: unknown): string | undefined {
 }
 
 export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExecutionService {
-  async function executeExplore(compiled: CompiledRecipePlan, context: RecipeExecutionContext): Promise<RecipeExecutionOutcome> {
+  async function executeExplore(compiled: CompiledRecipePlan, context: RecipeExecutionContext): Promise<RecipeModeOutcome> {
     const step = stepOf(compiled, "open_reasoning_cell");
     if (step === undefined) return capabilityRequired("reasoning_cell", "compiled EXPLORE plan has no open_reasoning_cell step");
     const reasoning = deps.reasoning;
@@ -179,7 +287,7 @@ export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExe
     });
   }
 
-  async function executeCoordinate(compiled: CompiledRecipePlan): Promise<RecipeExecutionOutcome> {
+  async function executeCoordinate(compiled: CompiledRecipePlan): Promise<RecipeModeOutcome> {
     const step = stepOf(compiled, "surface_contact_need") ?? stepOf(compiled, "prepare_boundary_context");
     if (step === undefined) return capabilityRequired("federation_contact", "compiled COORDINATE plan has no contact step");
     const peerRefs = step.peerRefs;
@@ -190,16 +298,120 @@ export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExe
     return Object.freeze({ status: "coordination_surfaced" as const, peerRefs });
   }
 
+  /** Resolve the §18 verification port at CALL time (see the provider type). */
+  function resolveVerificationPort(): RecipeProjectVerificationPort | undefined {
+    const configured = deps.verification;
+    if (configured === undefined) return undefined;
+    return typeof configured === "function" ? configured() : configured;
+  }
+
+  /**
+   * G10-AD §18: verify ONLY the exact current Project Head under the registered
+   * protocol the compiled plan bound. The result is additive metadata on the base
+   * outcome; it can never admit a claim, publish proof or write Work Evidence.
+   */
+  async function verifyProjectHead(
+    base: RecipeBaseOutcome,
+    compiled: CompiledRecipePlan,
+    step: Extract<CompiledStep, { readonly kind: "bind_verification" }>,
+    context: RecipeExecutionContext,
+  ): Promise<RecipeCompletedOutcome> {
+    const port = resolveVerificationPort();
+    if (port === undefined) {
+      // Unreachable through `execute` (the port is resolved before the base mode
+      // runs), kept total for a caller that invokes this helper directly.
+      return Object.freeze({
+        ...base,
+        verificationUnresolved: Object.freeze({
+          typedReasonCode: "verification_runtime_unavailable",
+          detail: "no Project Verification runtime is configured for this installation",
+        }),
+      });
+    }
+    // `project-default` is resolved by the RUNTIME against its registry: an absent
+    // verifier is never silently bound to an invented ref.
+    const selected = step.verifierRef === PROJECT_DEFAULT_VERIFIER_REF ? undefined : step.verifierRef;
+    try {
+      const outcome = await port.verifyCurrentHead({
+        ...(selected === undefined ? {} : { verifierRef: selected }),
+        requestedBy: "recipe:execution",
+        reason: `recipe ${compiled.baseMode}+VERIFY over the exact current project head`,
+        ...(context.signal === undefined ? {} : { signal: context.signal }),
+      });
+      if (outcome.status !== "recorded" || outcome.run === null) {
+        // The runtime refused to execute (an unregistered ref, a head that is not
+        // materialized, no bound runtime). The base outcome stays visible and the
+        // verification is honestly UNRESOLVED - never a fabricated success.
+        return Object.freeze({
+          ...base,
+          verificationUnresolved: Object.freeze({
+            typedReasonCode: outcome.typedReasonCode,
+            detail: outcome.detail,
+          }),
+        });
+      }
+      const run = outcome.run;
+      return Object.freeze({
+        ...base,
+        verification: Object.freeze({
+          verifierRef: run.verifierRef,
+          runId: run.runId,
+          runRef: projectVerificationRunRef(run.runId),
+          verdict: run.verdict,
+          status: run.status,
+          freshness: run.freshness,
+          independence: run.independence,
+          detail: outcome.detail,
+        }),
+      });
+    } catch (error) {
+      // An infrastructure fault is UNRESOLVED, never a verdict and never a success.
+      return Object.freeze({
+        ...base,
+        verificationUnresolved: Object.freeze({
+          typedReasonCode: "verification_runtime_error",
+          detail: `the verification runtime threw before a run could be recorded: ${error instanceof Error ? error.message : String(error)}`,
+        }),
+      });
+    }
+  }
+
   return {
     async execute(compiled: CompiledRecipePlan, context: RecipeExecutionContext): Promise<RecipeExecutionOutcome> {
+      const verificationInstructed = compiled.modifiers.includes("VERIFY");
+      const verificationStep = verificationInstructed
+        ? stepOf(compiled, "bind_verification")
+        : undefined;
+      if (verificationInstructed && verificationStep === undefined) {
+        return capabilityRequired(
+          "project.verification",
+          "the compiled plan declares VERIFY but carries no bind_verification step, so no registered protocol is named",
+        );
+      }
+      if (verificationInstructed && resolveVerificationPort() === undefined) {
+        // §18: no fake success. The mode asked for the project-head verification
+        // capability and this deployment does not have it.
+        return capabilityRequired(
+          "project.verification",
+          "no Project Verification runtime is configured; a registered, versioned verifier protocol cannot execute here",
+        );
+      }
+
+      let base: RecipeModeOutcome;
       switch (compiled.baseMode) {
         case "FOCUS":
-          return Object.freeze({ status: "reused_principal" as const });
+          base = Object.freeze({ status: "reused_principal" as const });
+          break;
         case "EXPLORE":
-          return executeExplore(compiled, context);
+          base = await executeExplore(compiled, context);
+          break;
         case "COORDINATE":
-          return executeCoordinate(compiled);
+          base = await executeCoordinate(compiled);
+          break;
       }
+      if (base.status === "capability_required") return base;
+      if (verificationStep === undefined) return base;
+      return verifyProjectHead(base, compiled, verificationStep, context);
     },
   };
 }
