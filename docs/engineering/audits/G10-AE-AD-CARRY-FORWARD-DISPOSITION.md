@@ -122,6 +122,8 @@ CF-AE-12  CLOSED IN AE — surface/web/e2e/dogfood all landed and pinned
 CF-AE-13  seven declared error kinds are never thrown
 CF-AE-14  CLOSED IN AE — one unused exported search-hit domain constant, removed
 CF-AE-15  resolve() does one provider round trip per reference and caches nothing
+CF-AE-16  PRE-EXISTING: the unscoped GET /api/project/journal reads every scope in
+          the store (surfaced by the AE review; not introduced by, or fixed in, AE)
 ```
 
 ## 6. Honest limitations

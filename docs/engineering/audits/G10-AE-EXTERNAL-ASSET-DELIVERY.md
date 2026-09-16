@@ -193,7 +193,14 @@ the suite has been deterministic since.
    same-process embedder inside the trust boundary can invoke it directly; that
    is the boundary the security note in `EXTERNAL-ASSET-PUBLICATION-BOUNDARY.md`
    already states, not a new discovery.
-7. **`EXT-A27` (remote CI)** is recorded in §8 after the merge.
+7. **A pre-existing scope weakness is recorded, not fixed.** The review found that
+   `GET /api/project/journal` reads every project scope in the journal store when
+   no `projectId` is supplied (`http.ts:682-686` -> `service.ts:445-454`). That is
+   G10-V behaviour, outside this stage's write scope, and it is carried forward as
+   `CF-AE-16` with its trigger. It is also why the review rated the publication
+   scope gap (R-03) MAJOR rather than BLOCKER: the content was reachable by
+   another, pre-existing route. AE's own publication path is now scoped.
+8. **`EXT-A27` (remote CI)** is recorded in §8 after the merge.
 
 ## 8. Canonical checkpoint
 
