@@ -364,6 +364,14 @@ export interface InstallPalimpsestOptions {
   runtimeEvolutionAuthority?: RuntimeStructuralEvolutionAdmissionPort | undefined;
   /** G10-N (additive): the canonical reasoning-cell store. */
   reasoningCellStore?: ReasoningCellStore | undefined;
+  /**
+   * UX-C §9/SC-4 (additive): who OWNS `reasoningCellStore`. Default `false` — a
+   * caller-supplied store belongs to its caller and is NEVER closed by this
+   * install (the audit found this ownership was previously implicit, which silently
+   * leaked a store unless the caller happened to close it). Set `true` only when
+   * this install created the store and should close it in `dispose()`.
+   */
+  reasoningCellStoreOwned?: boolean | undefined;
   /** G10-N (additive): claim-type registry; defaults to the builtin statement/dead-end registry. */
   reasoningClaimTypes?: ReasoningClaimTypeRegistry | undefined;
   /** G10-N (additive): the verification policy seam (separate from admission). */
@@ -399,6 +407,10 @@ export interface InstallPalimpsestOptions {
    * G10-R (additive): the canonical empirical organization-memory store. Supplying it enables the
    * READ-ONLY empirical surface (experiments/runs/evaluations/interventions); absent ⇒ no empirical
    * surface (never a stub). Evaluation ≠ governance; memory ≠ authority.
+   *
+   * UX-C §7: this is NOT required for the advisor. The advisor is composed whenever the
+   * installation can act (a local peer) or this store is supplied, and with no memory it
+   * makes no empirical claim of any kind.
    */
   organizationMemoryStore?: OrganizationMemoryStore | undefined;
   /**
@@ -600,7 +612,12 @@ export interface InstalledPalimpsest {
   readonly evaluation?: { readonly evaluate: typeof evaluate } | undefined;
   /** G10-S (additive): the versioned in-code recipe catalog (product config, never canonical truth). */
   readonly recipes: RecipeRegistry;
-  /** G10-S (additive): the read-only empirical architecture advisor — present iff an organization-memory store is supplied. */
+  /**
+   * G10-S + UX-C §7/CF-UXA-02 (additive): the read-only empirical architecture advisor —
+   * present whenever this installation can act (a local peer) or an organization-memory
+   * store is supplied. An OrganizationMemory store is NOT a prerequisite: with no memory
+   * the advisor makes no empirical claim of any kind.
+   */
   readonly advisor?: EmpiricalArchitectureAdvisor | undefined;
   /** G10-S (additive): governed recipe execution — present iff a local peer is supplied. */
   readonly recipeExecution?: RecipeExecutionService | undefined;
@@ -1592,20 +1609,23 @@ export function installPalimpsest(
     return verificationWiring.runtime;
   }
 
-  // G10-S: the advisor exists iff an empirical organization-memory store is supplied (it is a pure,
-  // read-only advisor). Capabilities derive HONESTLY from this install's wiring; nothing is assumed:
-  // an empty known-peer list is "no independent peer", absent verification/campaign/branch wiring is
-  // reported as unavailable — never padded.
+  // G10-S + UX-C §7/CF-UXA-02: the advisor exists whenever its DESCRIPTIVE dependencies
+  // exist — an empirical organization-memory store is OPTIONAL (`memory: undefined`), not a
+  // prerequisite. With no memory it reports empty empirical support, omits the
+  // INSUFFICIENT_EMPIRICAL_EVIDENCE marker and states honestly that the recommendation
+  // rests on stated capability and task features alone. It is composed when this installation
+  // can act on a recommendation (a local peer) or when an explicit empirical store was
+  // supplied, so a bare Work-only install keeps exactly its nine Work tools.
   //
   // G10-AD §16/§28: the verifier fact comes from the REAL runtime/registry, read lazily (the
   // runtime is composed below). A descriptive `verificationCapabilityRef` option can no longer make
   // the Advisor report an independent verifier available.
   const advisor: EmpiricalArchitectureAdvisor | undefined =
-    options.organizationMemoryStore === undefined
+    options.organizationMemoryStore === undefined && options.localPeer === undefined
       ? undefined
       : makeEmpiricalArchitectureAdvisor({
           registry: recipeRegistry,
-          memory: organizationMemory,
+          ...(organizationMemory === undefined ? {} : { memory: organizationMemory }),
           capabilities: {
             independentPeers: (options.knownIndependentPeers ?? []).map((peer) => Object.freeze({ peerId: peer.peerId })),
             // G10-AD §28: read lazily from the composed runtime. When there is no
@@ -2429,6 +2449,10 @@ export function installPalimpsest(
       // G10-R: close the empirical organization-memory store only when this install was
       // given one (it is the store it wired into the application surface).
       options.organizationMemoryStore?.close();
+      // UX-C §9/SC-4: a reasoning-cell store is closed ONLY when ownership was made
+      // explicit. A caller-supplied (or deployment-owned) store keeps its own lifetime;
+      // the packaged deployment closes the store IT created.
+      if (options.reasoningCellStoreOwned === true) options.reasoningCellStore?.close();
       // G10-T: close the authoritative proof store only when this install was given one.
       options.proofEvidenceStore?.close();
       // G10-V: close the narrowly-owned workspace/management stores only when supplied.

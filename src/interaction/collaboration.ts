@@ -52,10 +52,28 @@ import {
 } from "./intent.js";
 import type { CollaborationFinding, CollaborationResult, CollaborationVerificationView } from "./result_view.js";
 import {
+  EXPLORATORY_CELL_LOCAL,
+  EXPLORATORY_FINDING_NOTE,
   collaborationFindingsFrom,
   collaborationSummaryOf,
   collaborationVerificationFrom,
 } from "./result_view.js";
+
+/**
+ * UX-C §13/SC-10: a result that projects reasoning-cell findings carries the typed
+ * exploratory standing and the mandated primary sentence. Findings only ever come
+ * from the accepted ReasoningCell frontier (LOCAL_EXPLORE kinds), and an admitted
+ * cell-local claim is a structured hypothesis — so the label is derived from the
+ * findings themselves, not from a configured policy name.
+ */
+function exploratoryFindingFields(
+  executionKind: CollaborationExecutionKind,
+  findings: readonly CollaborationFinding[],
+): { readonly findingStanding?: typeof EXPLORATORY_CELL_LOCAL; readonly findingNote?: string } {
+  if (findings.length === 0) return {};
+  if (executionKind !== "LOCAL_EXPLORE" && executionKind !== "LOCAL_EXPLORE_AND_VERIFY") return {};
+  return { findingStanding: EXPLORATORY_CELL_LOCAL, findingNote: EXPLORATORY_FINDING_NOTE };
+}
 
 /**
  * The digest domain for a plan's `rationaleDigest`. A `RecipePlan` requires a
@@ -820,6 +838,7 @@ export function makeCollaborationService(deps: CollaborationDeps): Collaboration
     readonly independentVerification?: boolean | undefined;
   }): CollaborationResult {
     const resolution = input.resolution;
+    const exploratory = exploratoryFindingFields(resolution.view.executionKind, input.findings);
     return Object.freeze({
       status: input.status,
       verb: resolution.view.verb,
@@ -832,9 +851,11 @@ export function makeCollaborationService(deps: CollaborationDeps): Collaboration
         branchExecutions: input.branchExecutions ?? 0,
         independentVerification: input.independentVerification === true,
         unresolved: input.unresolved,
+        ...(exploratory.findingNote === undefined ? {} : { findingNote: exploratory.findingNote }),
         ...(input.verification === undefined ? {} : { verification: input.verification }),
       }),
       findings: Object.freeze([...input.findings]),
+      ...exploratory,
       unresolved: freezeStrings(input.unresolved),
       ...(input.verification === undefined ? {} : { verification: input.verification }),
       capabilityWarnings: resolution.view.capabilityWarnings,
@@ -948,13 +969,20 @@ export function makeCollaborationService(deps: CollaborationDeps): Collaboration
     const status: CollaborationResult["status"] =
       resolution.verificationRequested && verification === undefined ? "PARTIAL" : "COMPLETED";
 
+    // UX-C §14/SC-10: TWO INDEPENDENT FACTS, never one implied by the other. Local
+    // Explore produced exploratory cell-local hypotheses; SEPARATELY the exact
+    // current Project Head may have been checked. This sentence must never suggest
+    // the findings were independently verified.
     const didWhat =
       resolution.view.effectiveBaseMode === "EXPLORE"
-        ? `Ran a bounded local exploration of the task in ${branchExecutions ?? 0} branch execution(s) against one reasoning cell and read the admitted findings back from the accepted frontier.${
-            verification === undefined ? "" : " The exact current project head was then verified by the registered protocol."
+        ? `Local Explore produced exploratory findings: a bounded local exploration ran in ${branchExecutions ?? 0} branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them.${
+            verification === undefined
+              ? ""
+              : " Separately, the exact current Project Head (not the findings) was checked by the registered protocol; the summary below states that check on its own."
           }`
-        : "Replayed the single principal and verified the exact current project head with the registered protocol.";
+        : "Replayed the single principal and checked the exact current Project Head (not any finding) with the registered protocol.";
 
+    const exploratory = exploratoryFindingFields(resolution.view.executionKind, findings);
     return Object.freeze({
       status,
       verb: resolution.view.verb,
@@ -970,9 +998,11 @@ export function makeCollaborationService(deps: CollaborationDeps): Collaboration
         branchExecutions: branchExecutions ?? 0,
         independentVerification,
         unresolved,
+        ...(exploratory.findingNote === undefined ? {} : { findingNote: exploratory.findingNote }),
         ...(verification === undefined ? {} : { verification }),
       }),
       findings,
+      ...exploratory,
       unresolved: freezeStrings(unresolved),
       ...(verification === undefined ? {} : { verification }),
       capabilityWarnings: resolution.view.capabilityWarnings,

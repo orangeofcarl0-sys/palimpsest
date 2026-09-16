@@ -130,7 +130,7 @@ function setupProfiles() {
   const shellPatch = readFileSync(join(PROFILES, "headless", "cordis.patch.yml"), "utf8").replace(/^#[^\n]*\n(?!#)/, "");
   writeFileSync(
     join(profileDir, "cordis.patch.yml"),
-    `${shellPatch.trimEnd()}\n\n- id: palimpsest-tools\n  config:\n    palimpsestEntry: '${ADVANCED}'\n    deploymentProfile: '${deploymentPath}'\n    serve: false\n    reasoningCellStore: '${REASONING_DB}'\n`,
+    `${shellPatch.trimEnd()}\n\n- id: palimpsest-tools\n  config:\n    palimpsestEntry: '${ADVANCED}'\n    deploymentProfile: '${deploymentPath}'\n    serve: false\n`,
   );
   record("profiles_ready", { profile: PROFILE_NAME, hostBundle: HOST_BUNDLE, reasoningCellStore: REASONING_DB, dshBin: DSH_BIN });
   return deploymentPath;

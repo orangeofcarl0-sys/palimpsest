@@ -9,12 +9,19 @@
 //
 // The deployment is built by Palimpsest itself (launchDeployment) from a typed
 // deployment profile; this plugin never carries semantic authority.
+//
+// UX-C §16/§18/SC-7: the MODE is dispatched BEFORE any deployment composition.
+// `dsh --profile <p> --branch <file>` composes ONLY the minimal branch environment
+// (one strict `palimpsest_branch_result` tool and the frozen brief); it never
+// launches the durable project stack, never registers a principal tool, and never
+// composes a ReasoningCell service.
 
 import { pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs';
 import z from '@deepseek-ai/schemastery';
 
 export const name = 'palimpsest-tools';
-export const inject = ['tools'];
+export const inject = ['tools', 'agents'];
 
 export const Config = z.object({
   /** Absolute path to Palimpsest's built `dist/src/advanced.js`. */
@@ -26,13 +33,10 @@ export const Config = z.object({
   host: z.string().default('127.0.0.1'),
   token: z.string().default('palimpsest-dogfood'),
   /**
-   * Optional absolute path to the canonical SQLite ReasoningCell store. When set,
-   * this bundle also registers `palimpsest_reasoning` against that store so an
-   * EPHEMERAL branch agent can read a frozen brief and submit structured
-   * candidates. The store is SHARED with the calling harness; a branch can never
-   * admit (only the harness's own ReasoningCellService evaluates).
+   * Advanced: an explicit path to a DSH bin for branch execution. Absent ⇒ this
+   * host derives it from its own invocation (`process.argv[1]`) plus `--profile`.
    */
-  reasoningCellStore: z.string().default(''),
+  dshBin: z.string().default(''),
 });
 
 function toRealTool(definition) {
@@ -49,8 +53,90 @@ function toRealTool(definition) {
   };
 }
 
+/** Read one `--flag value` from the raw command line (no semantic effect). */
+function flagValue(name) {
+  const argv = process.argv;
+  for (let index = 0; index < argv.length; index += 1) {
+    if (argv[index] === name) {
+      const value = argv[index + 1];
+      return typeof value === 'string' && value.length > 0 ? value : undefined;
+    }
+    if (typeof argv[index] === 'string' && argv[index].startsWith(`${name}=`)) {
+      const value = argv[index].slice(name.length + 1);
+      return value.length > 0 ? value : undefined;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * UX-C §20: the HOST derives the ephemeral branch execution port from its own
+ * runtime knowledge — the DSH bin it was launched with and the profile it runs
+ * under. A normal user supplies neither the bin path nor a separate branch profile.
+ */
+function deriveBranchExecution(palimpsest, profile) {
+  if (profile.reasoning === undefined) return undefined;
+  const profileName = flagValue('--profile');
+  const bin = process.env.PALIMPSEST_DSH_BIN?.trim() || (typeof process.argv[1] === 'string' && process.argv[1].endsWith('.js') ? process.argv[1] : undefined);
+  if (profileName === undefined || bin === undefined) return undefined;
+  if (typeof palimpsest.dshSubprocessBranchExecutionPort !== 'function') return undefined;
+  try {
+    return palimpsest.dshSubprocessBranchExecutionPort({
+      dshBin: bin,
+      profile: profileName,
+      workDir: process.cwd(),
+    });
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * BRANCH MODE: compose the minimal branch environment and nothing else. The
+ * runner reads `host.branch` and prints the ONE result line.
+ */
+async function applyBranch(ctx, palimpsest, branchFile) {
+  const toolNames = [];
+  const context = {
+    tools: {
+      register(definition) {
+        toolNames.push(definition.name);
+        return ctx.tools.register(toRealTool(definition));
+      },
+    },
+  };
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(branchFile, 'utf8'));
+  } catch (error) {
+    ctx.provide('palimpsestHost', {
+      branch: { error: `the branch payload could not be read: ${error?.message ?? String(error)}` },
+      palimpsest,
+      toolNames,
+    });
+    return;
+  }
+  const composed = palimpsest.composeBranchHostEnvironment(raw);
+  if (composed.ok !== true) {
+    ctx.provide('palimpsestHost', { branch: { error: composed.detail }, palimpsest, toolNames });
+    return;
+  }
+  const environment = composed.environment;
+  context.tools.register(environment.tool);
+  ctx.provide('palimpsestHost', { palimpsest, branch: environment, toolNames });
+  // A branch holds NO deployment, NO store and NO durable identity, so there is no
+  // lifecycle effect to register: the process simply exits after printing its result.
+}
+
 export async function apply(ctx, config) {
   const palimpsest = await import(pathToFileURL(config.palimpsestEntry).href);
+
+  // §18/SC-7: dispatch BEFORE composing anything.
+  const branchFile = flagValue('--branch');
+  if (branchFile !== undefined) {
+    return applyBranch(ctx, palimpsest, branchFile);
+  }
+
   const profile = palimpsest.loadDeploymentProfile(config.deploymentProfile);
 
   const toolNames = [];
@@ -64,76 +150,19 @@ export async function apply(ctx, config) {
     },
   };
 
-  const deployment = palimpsest.launchDeployment(profile, { context });
-
-  // Optional EPHEMERAL branch-cognition wiring. A branch is NOT a principal: it
-  // can read the frozen brief and submit structured candidates through the REAL
-  // ReasoningCell service, but it can NEVER open a branch, evaluate/admit, or
-  // invalidate. The store is shared with the calling harness, which owns
-  // verification and admission.
-  let reasoningStore;
-  if (config.reasoningCellStore.length > 0) {
-    reasoningStore = new palimpsest.SqliteReasoningCellStore(config.reasoningCellStore);
-    const verificationPolicy = {
-      verify: async ({ definition, candidate, frontierBasis }) => {
-        const base = {
-          schemaVersion: 1,
-          cell: candidate.cell,
-          candidateDigest: candidate.candidateDigest,
-          frontierBasis,
-          verificationPolicyRef: definition.verificationPolicyRef,
-          standing: 'SUPPORTED',
-          supportingEvidenceIds: [],
-          contradictingEvidenceIds: [],
-          provenanceDigest: '0'.repeat(64),
-        };
-        return { ...base, digest: palimpsest.reasoningVerificationDigestOf(base) };
-      },
-    };
-    const admissionPolicy = {
-      admit: async ({ definition, candidate, verification, frontierBasis }) => {
-        const base = {
-          schemaVersion: 1,
-          cell: candidate.cell,
-          candidateDigest: candidate.candidateDigest,
-          verificationResultDigest: verification.digest,
-          frontierBasis,
-          admissionPolicyRef: definition.admissionPolicyRef,
-          decision: 'ADMIT',
-          provenanceDigest: '1'.repeat(64),
-        };
-        return { ...base, digest: palimpsest.reasoningAdmissionDigestOf(base) };
-      },
-    };
-    const reasoningService = palimpsest.makeReasoningCellService({ store: reasoningStore, verificationPolicy, admissionPolicy });
-    const forbidden = (what) => async () => {
-      throw new Error(`EPHEMERAL_BRANCH_FORBIDDEN: a branch may not ${what}; it may only read the frozen brief and submit one candidate`);
-    };
-    const reasoningSurface = {
-      view: (cellId) => reasoningService.cellView({ cellId }),
-      frontier: (cellId) => reasoningService.frontier({ cellId }),
-      graph: (cellId) => reasoningService.claimGraph({ cellId }),
-      brief: (input) => reasoningService.branchBrief(input),
-      openBranch: forbidden('open a branch'),
-      // A branch MAY submit exactly one structured candidate, INCLUDING the opaque
-      // `externalEvidenceRefs` it actually used. The runner enforces that those
-      // refs stay inside the frozen allowlist; the tool surface grants no proof or
-      // publication capability to a branch.
-      submitCandidate: (input) =>
-        reasoningService.submitCandidate({
-          ...input,
-          ...(Array.isArray(input?.externalEvidenceRefs) ? { externalEvidenceRefs: input.externalEvidenceRefs } : {}),
-        }),
-      evaluate: forbidden('evaluate or admit'),
-      invalidate: forbidden('invalidate a claim'),
-    };
-    const reasoningDefinition = palimpsest
-      .defineApplicationTools({ reasoning: reasoningSurface })
-      .find((definition) => definition.name === 'palimpsest_reasoning');
-    if (reasoningDefinition !== undefined) {
-      context.tools.register(reasoningDefinition);
-    }
-  }
+  // UX-C §20/§26: the host supplies the agents service (used only when the profile
+  // explicitly binds a DSH session) and the host-derived branch execution port. The
+  // packaged reasoning policies and store come from the DEPLOYMENT PROFILE, not from
+  // any hard-coded host policy: the fabricating SUPPORTED policy is gone (SC-5).
+  const agents = ctx.get('agents');
+  const branchExecution = deriveBranchExecution(palimpsest, profile);
+  const deployment = palimpsest.launchDeployment(profile, {
+    context,
+    host: {
+      ...(agents === undefined ? {} : { dshAgents: agents }),
+      ...(branchExecution === undefined ? {} : { branchExecution }),
+    },
+  });
 
   let serve;
   if (config.serve === true) {
@@ -161,13 +190,8 @@ export async function apply(ctx, config) {
         /* the harness may already have closed the socket */
       }
       await deployment.close();
-      try {
-        reasoningStore?.close?.();
-      } catch {
-        /* the store may already be closed */
-      }
     };
   }, 'palimpsest-host lifecycle');
 }
 
-export { toRealTool };
+export { toRealTool, flagValue, deriveBranchExecution };

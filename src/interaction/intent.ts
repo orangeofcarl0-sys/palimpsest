@@ -258,8 +258,10 @@ export type CollaborationExecutionKind = (typeof COLLABORATION_EXECUTION_KINDS)[
 export const COLLABORATION_VERBS: Readonly<Record<CollaborationExecutionKind, string>> = Object.freeze({
   PRINCIPAL_CONTINUES: "Do it",
   LOCAL_EXPLORE: "Explore alternatives",
-  LOCAL_VERIFY: "Check independently",
-  LOCAL_EXPLORE_AND_VERIFY: "Explore alternatives, then check independently",
+  // UX-C §14/SC-10: CHECK verifies the EXACT CURRENT PROJECT HEAD, never the Explore
+  // findings. The verb says so instead of implying an independent check of findings.
+  LOCAL_VERIFY: "Verify current project head",
+  LOCAL_EXPLORE_AND_VERIFY: "Explore alternatives locally, then verify the current project head",
   CROSS_PROJECT_REQUIRED: "Needs another project (not available here yet)",
   CAPABILITY_REQUIRED: "Not available in this deployment",
   ERROR: "Could not be started",
