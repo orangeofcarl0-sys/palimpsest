@@ -165,12 +165,113 @@ export interface WorkspaceHistoryEntry {
   readonly detail: string;
 }
 
+/* ------------------------------------------------------------------ *
+ * G10-AE §26 — the DERIVED external view
+ *
+ *   ExternalAsset != ProjectAsset      Association != Ownership
+ *   ExternalLatest != ReferencedRevision
+ *   ProviderUnavailable != AssetFalse  View != Truth
+ *
+ * This section NEVER adds a canonical fact: it re-shapes what the external-asset
+ * plane's OWN `resolve(projectId)` derived (provider, asset id, referenced
+ * digest, provider availability, newer-revision surfacing) and joins it to the
+ * project's EXISTING association records (association kind + provenance text).
+ * A fetched external title/type is DERIVED output only; it is never persisted
+ * here and never becomes project truth unless a caller explicitly imports it.
+ * ------------------------------------------------------------------ */
+
+/** The derived resolution state, structurally the bridge plane's own enum. */
+export type WorkspaceExternalResolutionState =
+  | "RESOLVED"
+  | "PROVIDER_UNAVAILABLE"
+  | "REVISION_UNAVAILABLE";
+
+/** WHO owns the asset, as opposed to who LINKED it. Never collapsed. */
+export const WORKSPACE_EXTERNAL_OWNERSHIP_LABELS = [
+  /** The asset lives in the external library; Palimpsest holds a link only. */
+  "EXTERNAL_OWNER",
+] as const;
+export type WorkspaceExternalOwnershipLabel = (typeof WORKSPACE_EXTERNAL_OWNERSHIP_LABELS)[number];
+
+/** The project-side relation kinds this view distinguishes for one external ref. */
+export const WORKSPACE_EXTERNAL_RELATION_KINDS = [
+  /** `associationKind: MANUAL` — a project reference to an externally owned asset. */
+  "PROJECT_REFERENCE",
+  /** `associationKind: PUBLISHED` — this project's outbound counterpart. */
+  "PUBLISHED_EXTERNAL_COUNTERPART",
+] as const;
+export type WorkspaceExternalRelationKind = (typeof WORKSPACE_EXTERNAL_RELATION_KINDS)[number];
+
+/**
+ * ONE externally-owned asset, as this project sees it. Everything except the
+ * association link fields is DERIVED from the bridge plane's read-only resolve.
+ */
+export interface WorkspaceExternalRefView {
+  readonly associationId: string;
+  /** Always `EXTERNAL_OWNER`: the library owns the asset; the project owns the link. */
+  readonly ownership: WorkspaceExternalOwnershipLabel;
+  readonly relation: WorkspaceExternalRelationKind;
+  readonly associationKind: string;
+  /** The project's own association provenance (refs/digests only; no content). */
+  readonly provenance: string;
+  readonly recordedAt: string;
+  readonly providerId: string;
+  readonly assetId: string;
+  /** The EXACT digest this project references. Never silently advanced. */
+  readonly referencedDigest: string;
+  readonly stableRefKey: string;
+  readonly providerAvailable: boolean;
+  readonly resolution: WorkspaceExternalResolutionState;
+  /** DERIVED, read-only description (never persisted by the view). */
+  readonly assetType?: string | undefined;
+  readonly title?: string | undefined;
+  readonly sourceLocator?: string | undefined;
+  /** TRUE ⇒ the provider currently holds a DIFFERENT revision; the link does not move. */
+  readonly newerRevisionAvailable?: boolean | undefined;
+  readonly latestDigestHint?: string | undefined;
+  readonly latestRevisionLabel?: string | undefined;
+  readonly detail?: string | undefined;
+}
+
+/**
+ * An EXTERNAL import this project made into its own Journal: the local note is
+ * project knowledge, and its provenance names the exact external revision it
+ * came from. The external asset stays externally owned.
+ */
+export interface WorkspaceExternalImportView {
+  readonly entryId: string;
+  readonly journalKind: string;
+  readonly title: string;
+  readonly createdAt: string;
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly contentDigest: string;
+  readonly refDigest: string;
+  readonly provenanceDigest: string;
+  readonly operationId: string;
+  readonly sourceLocator?: string | undefined;
+}
+
+export interface ProjectWorkspaceExternalView {
+  /** FALSE ⇒ no external bridge is configured: NOT an empty, known library. */
+  readonly bridgeConfigured: boolean;
+  /** Project references and published counterparts, in derived association order. */
+  readonly references: readonly WorkspaceExternalRefView[];
+  /** Derived provider availability, keyed by provider id. */
+  readonly providerAvailability: Readonly<Record<string, boolean>>;
+  /** Journal entries whose STRUCTURED provenance names an external revision. */
+  readonly imports: readonly WorkspaceExternalImportView[];
+  readonly warnings: readonly string[];
+}
+
 export interface ProjectWorkspaceView {
   readonly schemaVersion: 1;
   readonly projectId: string;
   readonly project: WorkspaceProjectView;
   readonly work: ProjectWorkspaceWorkView;
   readonly assets: ProjectWorkspaceAssetsView;
+  /** G10-AE §26 (additive): the DERIVED external-asset view for this project. */
+  readonly external: ProjectWorkspaceExternalView;
   readonly openLoops: readonly OpenLoop[];
   readonly relations: ProjectWorkspaceRelationsView;
   readonly historySummary: readonly WorkspaceHistoryEntry[];
@@ -204,6 +305,38 @@ export interface MemoryExperimentSnapshot {
   readonly evaluationCount: number;
 }
 
+/**
+ * G10-AE §26: the READ-ONLY result of the external-asset plane's own
+ * `resolve(projectId)`, plus the derived imports. The bridge plane owns this
+ * derivation (it is the only place that knows what a provider currently holds);
+ * this view only re-shapes it. `undefined` for the whole field means "no bridge
+ * is configured" and is reported as such — never as an empty library.
+ */
+export interface ProjectWorkspaceExternalSource {
+  readonly projectId: string;
+  readonly external: readonly {
+    readonly associationId: string;
+    readonly providerId: string;
+    readonly assetId: string;
+    readonly referencedDigest: string;
+    readonly stableRefKey: string;
+    readonly associationKind: string;
+    readonly recordedAt: string;
+    readonly providerAvailable: boolean;
+    readonly resolution: WorkspaceExternalResolutionState;
+    readonly assetType?: string | undefined;
+    readonly title?: string | undefined;
+    readonly sourceLocator?: string | undefined;
+    readonly newerRevisionAvailable?: boolean | undefined;
+    readonly latestDigestHint?: string | undefined;
+    readonly latestRevisionLabel?: string | undefined;
+    readonly detail?: string | undefined;
+  }[];
+  readonly providerAvailability: Readonly<Record<string, boolean>>;
+  readonly imports?: readonly WorkspaceExternalImportView[] | undefined;
+  readonly warnings: readonly string[];
+}
+
 export interface ProjectWorkspaceViewSources {
   readonly project: ProjectIr;
   readonly status: ControllerStatusView;
@@ -218,6 +351,8 @@ export interface ProjectWorkspaceViewSources {
   readonly campaignProjectRefs?: readonly WorkspaceProjectRef[] | undefined;
   readonly commitments?: readonly PendingKnowledgeRef[] | undefined;
   readonly boundaryDecisions?: readonly PendingKnowledgeRef[] | undefined;
+  /** undefined ⇒ no external-asset bridge is configured for this deployment. */
+  readonly externalAssets?: ProjectWorkspaceExternalSource | undefined;
 }
 
 /* ------------------------------------------------------------------ *
@@ -455,6 +590,81 @@ function blockersOf(loops: readonly OpenLoop[], graph: OrchestrationGraph): read
   return Object.freeze(blockers);
 }
 
+/**
+ * G10-AE §26: derive the external view from the bridge plane's own resolve plus
+ * this project's EXISTING association records. Pure: nothing is fetched, nothing
+ * is persisted and a missing bridge is reported as missing.
+ */
+function externalViewOf(
+  sources: ProjectWorkspaceViewSources,
+  associations: readonly ProjectAssetAssociation[],
+): ProjectWorkspaceExternalView {
+  const source = sources.externalAssets;
+  if (source === undefined) {
+    return {
+      bridgeConfigured: false,
+      references: [],
+      providerAvailability: {},
+      imports: [],
+      warnings: [
+        "external asset bridge not configured: referenced external assets cannot be resolved",
+      ],
+    };
+  }
+  const byAssociationId = new Map(associations.map((association) => [association.associationId, association]));
+  const references: WorkspaceExternalRefView[] = [];
+  const warnings: string[] = [...source.warnings];
+  for (const resolution of source.external) {
+    const association = byAssociationId.get(resolution.associationId);
+    if (association === undefined) {
+      // The plane derived a resolution for an association this read did not see:
+      // report it instead of inventing provenance or dropping it silently.
+      warnings.push(
+        `external resolution ${resolution.associationId} has no association record in this read`,
+      );
+      continue;
+    }
+    references.push({
+      associationId: resolution.associationId,
+      ownership: "EXTERNAL_OWNER",
+      relation: resolution.associationKind === "PUBLISHED" ? "PUBLISHED_EXTERNAL_COUNTERPART" : "PROJECT_REFERENCE",
+      associationKind: association.associationKind,
+      provenance: association.provenance,
+      recordedAt: association.recordedAt,
+      providerId: resolution.providerId,
+      assetId: resolution.assetId,
+      referencedDigest: resolution.referencedDigest,
+      stableRefKey: resolution.stableRefKey,
+      providerAvailable: resolution.providerAvailable,
+      resolution: resolution.resolution,
+      ...(resolution.assetType === undefined ? {} : { assetType: resolution.assetType }),
+      ...(resolution.title === undefined ? {} : { title: resolution.title }),
+      ...(resolution.sourceLocator === undefined ? {} : { sourceLocator: resolution.sourceLocator }),
+      ...(resolution.newerRevisionAvailable === undefined
+        ? {}
+        : { newerRevisionAvailable: resolution.newerRevisionAvailable }),
+      ...(resolution.latestDigestHint === undefined ? {} : { latestDigestHint: resolution.latestDigestHint }),
+      ...(resolution.latestRevisionLabel === undefined
+        ? {}
+        : { latestRevisionLabel: resolution.latestRevisionLabel }),
+      ...(resolution.detail === undefined ? {} : { detail: resolution.detail }),
+    });
+  }
+  references.sort((a, b) => compareText(a.associationId, b.associationId));
+  const availability: Record<string, boolean> = {};
+  for (const key of Object.keys(source.providerAvailability).sort(compareText)) {
+    availability[key] = source.providerAvailability[key]!;
+  }
+  const imports = [...(source.imports ?? [])].sort((a, b) => compareText(a.entryId, b.entryId));
+  return deepFreeze({
+    bridgeConfigured: true,
+    references,
+    providerAvailability: availability,
+    imports,
+    warnings: [...new Set(warnings)].sort(compareText),
+  });
+}
+
 function knowledgeWarningsOf(
   sources: ProjectWorkspaceViewSources,
   associations: readonly ProjectAssetAssociation[],
@@ -513,6 +723,25 @@ function knowledgeWarningsOf(
   if (commitments === undefined) warnings.push("commitment plane not configured: PENDING_COMMITMENT loops are not evaluated");
   if (boundaryDecisions === undefined) warnings.push("boundary decision plane not configured: PENDING_BOUNDARY_DECISION loops are not evaluated");
 
+  // G10-AE §26: an external reference whose provider cannot be reached is NOT a
+  // false asset — it is an unresolved link, and it is reported as one.
+  if (sources.externalAssets !== undefined) {
+    for (const warning of sources.externalAssets.warnings) warnings.push(warning);
+    for (const resolution of sources.externalAssets.external) {
+      if (resolution.resolution === "PROVIDER_UNAVAILABLE") {
+        warnings.push(
+          `external asset ${resolution.stableRefKey} cannot be resolved: its provider "${resolution.providerId}" is unavailable (the association remains)`,
+        );
+      } else if (resolution.resolution === "REVISION_UNAVAILABLE") {
+        warnings.push(
+          `external asset ${resolution.stableRefKey} can no longer be resolved at the referenced revision`,
+        );
+      }
+    }
+  } else {
+    warnings.push("external asset bridge not configured: external references cannot be resolved");
+  }
+
   warnings.sort(compareText);
   return Object.freeze([...new Set(warnings)]);
 }
@@ -558,6 +787,7 @@ export function buildProjectWorkspaceView(sources: ProjectWorkspaceViewSources):
       associations: [...associations],
       byKind: byKindCounts(associations),
     },
+    external: externalViewOf(sources, associations),
     openLoops: loops,
     relations: {
       campaignProjectRefs: (sources.campaignProjectRefs ?? []).map((ref) => ({ ...ref })),

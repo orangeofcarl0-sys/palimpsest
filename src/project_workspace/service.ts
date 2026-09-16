@@ -25,6 +25,7 @@ import {
   associatedAssetsOf,
   materializeProjectAssetAssociation,
   projectWorkspaceOpenedEvent,
+  ProjectWorkspaceError,
   SqliteProjectAssetAssociationStore,
   type CanonicalAssetRefInput,
   type ProjectAssetAssociation,
@@ -56,8 +57,10 @@ import {
   type MemoryExperimentSnapshot,
   type OpenLoop,
   type ProofClaimSnapshot,
+  type ProjectWorkspaceExternalSource,
   type ProjectWorkspaceView,
   type ReasoningCellSnapshot,
+  type WorkspaceExternalImportView,
   type WorkspaceHistoryEntry,
   type WorkspaceProjectRef,
 } from "./view.js";
@@ -79,6 +82,25 @@ export interface ProjectWorkspaceCampaignPort {
   projectRefs(): Promise<readonly { readonly projectId: string; readonly revision: number; readonly digest: string }[]>;
 }
 
+/**
+ * G10-AE §26: the DERIVED external-asset view, produced by the external-asset
+ * plane's own read-only `resolve(projectId)`. This service never derives it and
+ * never persists it: it re-shapes what the owning plane resolved.
+ */
+export interface ProjectWorkspaceExternalAssetsPort {
+  resolve(projectId: string): Promise<ProjectWorkspaceExternalSource>;
+}
+
+/**
+ * G10-AE §16: read the STRUCTURED external-import provenance out of a journal
+ * entry, when that entry was written by an explicit external import. The bridge
+ * plane owns the artifact format (and re-verifies its digest), so this plane only
+ * asks for the already-verified view of it.
+ */
+export interface ProjectWorkspaceExternalImportPort {
+  of(entry: ProjectJournalEntry): WorkspaceExternalImportView | undefined;
+}
+
 export interface ProjectWorkspaceServiceDeps {
   readonly controller: ProjectController;
   readonly associations?: SqliteProjectAssetAssociationStore | undefined;
@@ -88,6 +110,10 @@ export interface ProjectWorkspaceServiceDeps {
   readonly campaigns?: ProjectWorkspaceCampaignPort | undefined;
   /** Read-only access to the reasoning plane (cellView/frontier/claimGraph). */
   readonly reasoning?: ReasoningCellService | undefined;
+  /** G10-AE §26 (additive): the external-asset bridge's own derived read. Absent ⇒ not configured. */
+  readonly externalAssets?: ProjectWorkspaceExternalAssetsPort | undefined;
+  /** G10-AE §16 (additive): the bridge's structured import-provenance reader. */
+  readonly externalImports?: ProjectWorkspaceExternalImportPort | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -322,6 +348,53 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     return Object.freeze(scoped);
   }
 
+  /**
+   * G10-AE §26: the external-asset plane's own derived read. A bridge that does
+   * not answer is NOT an empty, known library: the returned source says so
+   * through a warning and contributes no references.
+   */
+  async function externalSource(projectId: string): Promise<ProjectWorkspaceExternalSource | undefined> {
+    const port = deps.externalAssets;
+    if (port === undefined) return undefined;
+    try {
+      const source = await port.resolve(projectId);
+      return Object.freeze({
+        ...source,
+        projectId,
+        imports: Object.freeze(
+          source.imports ?? (await externalImports(projectId)),
+        ),
+      });
+    } catch (error) {
+      return Object.freeze({
+        projectId,
+        external: Object.freeze([]),
+        providerAvailability: Object.freeze({}),
+        imports: Object.freeze([]),
+        warnings: Object.freeze([
+          `the external asset bridge did not answer this read: ${error instanceof Error ? error.message : String(error)}`,
+        ]),
+      });
+    }
+  }
+
+  /**
+   * G10-AE §16: the local Journal entries that carry STRUCTURED external-import
+   * provenance. The bridge's own reader re-verifies the provenance digest and the
+   * `relatedRefs` linkage, so a prose-only lookalike is not reported as an import.
+   */
+  async function externalImports(projectId: string): Promise<readonly WorkspaceExternalImportView[]> {
+    const reader = deps.externalImports;
+    if (reader === undefined) return Object.freeze([]);
+    const entries = await journalFor(projectId);
+    const imports: WorkspaceExternalImportView[] = [];
+    for (const view of entries ?? []) {
+      const importView = reader.of(view.entry);
+      if (importView !== undefined) imports.push(importView);
+    }
+    return Object.freeze(imports);
+  }
+
   /* ----- reads ----- */
 
   async function associationsFor(projectId: string): Promise<readonly ProjectAssetAssociation[] | undefined> {
@@ -345,6 +418,7 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
     const reasoningCells = await reasoningSnapshots(known);
     const memoryExperiments = await memorySnapshots(known);
     const campaignProjectRefs = await campaignRefs();
+    const externalAssets = await externalSource(project.project_id);
     return buildProjectWorkspaceView({
       project,
       status,
@@ -355,6 +429,7 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
       ...(reasoningCells === undefined ? {} : { reasoningCells }),
       ...(memoryExperiments === undefined ? {} : { memoryExperiments }),
       ...(campaignProjectRefs === undefined ? {} : { campaignProjectRefs }),
+      ...(externalAssets === undefined ? {} : { externalAssets }),
     });
   }
 
@@ -397,6 +472,21 @@ export function makeProjectWorkspaceService(deps: ProjectWorkspaceServiceDeps): 
 
   async function associateAsset(input: AssociateAssetInput): Promise<ProjectAssetAssociation> {
     assertScopedProject(input.projectId);
+    // G10-AE §5/§10: `EXTERNAL_ASSET` names an asset owned by an EXTERNAL LIBRARY,
+    // so an association of that kind is a project's durable REFERENCE to one exact
+    // external revision. Only the external asset bridge may create one, because
+    // only the bridge re-checks that the referenced digest still resolves, that
+    // the provider definition still matches and that the project scope is the
+    // caller's. Letting this generic writer mint one would let any caller assert
+    // "referenced from / published to provider X at digest D" with no provider
+    // ever consulted - and the derived view would then show an external owner or a
+    // published counterpart that never existed.
+    if (input.assetKind === "EXTERNAL_ASSET") {
+      throw new ProjectWorkspaceError(
+        "invalid_value",
+        "EXTERNAL_ASSET associations are created by the external asset bridge (reference/import/publication), not by associateAsset",
+      );
+    }
     const association = materializeProjectAssetAssociation({
       projectId: input.projectId,
       assetKind: input.assetKind,

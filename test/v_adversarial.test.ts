@@ -176,7 +176,27 @@ const FORBIDDEN_TOKENS: readonly string[] = [
 const FORBIDDEN_AGENTS = /ManagerAgent|ProjectManagerAgent|SupervisorAgent|GlobalProjectManager/u;
 const FORBIDDEN_SCORE = /autonomy\s*=|autonomyScore|managementScore/u;
 const FORBIDDEN_ESCALATION = /set_mode_upward|setModeUpward|grant_authority|grantAuthority|approve_disclosure|approveDisclosure|force_commitment|forceCommitment/u;
-const PERSONAL_ASSET = /PersonalAsset|PersonalKnowledge|ExternalAssetLibrary/u;
+/**
+ * V-N05's token set. It forbids an IMPLEMENTED personal-asset store inside
+ * Palimpsest.
+ *
+ * G10-AE justification (why the bare `ExternalAssetLibrary` token can no longer
+ * be forbidden as a whole): the campaign spec §7/§8 REQUIRES a bridge whose
+ * vocabulary is `ExternalAssetLibrary*` — a registry of externally-owned
+ * libraries, a read port, a provider. Those names describe a bridge to an asset
+ * Palimpsest does NOT own; they are not a store implemented here.
+ *
+ * What must still fail is anything STORE-shaped: a declaration naming a
+ * `…Store`/`…Table`/`…Database`/`…Repository`/`…Cache`/`…Index`/`…Dao`/`…Catalog`
+ * of external assets. That name rule is a backstop; the substantive guard is the
+ * companion assertion that no table in `src/` holds external asset CONTENT.
+ */
+const PERSONAL_ASSET = /PersonalAsset|PersonalKnowledge|ExternalAssetLibraryStore|ExternalAssetLibraryDatabase|ExternalAssetLibraryDb|ExternalAssetLibraryTable/u;
+const EXTERNAL_ASSET_LIBRARY_STORE_DECLARATION =
+  /(class|interface|const|function)\s+(ExternalAssetLibrary\w*(?:Store|Table|Database|Db|Repository|Cache|Index|Dao|Catalog))/u;
+/** Column names that would make a table hold external asset CONTENT, not a reference. */
+
+const EXTERNAL_ASSET_TABLE_NAME = /external_asset_(library|content|store)|personal_asset|external_truth/u;
 
 /* ------------------------------------------------------------------ *
  * Rig for behaviour checks
@@ -300,10 +320,37 @@ describe("G10-V source firewall (V-N01…V-N06)", () => {
       }
     }
     expect(codeHits, "an external personal-asset store/type is implemented").toBe(0);
-    // No class/interface/const declaration of that name exists anywhere in src.
+    // No STORE-shaped declaration of that name exists anywhere in src.
+    // G10-AE: `ExternalAssetLibraryRegistry` / `ExternalAssetLibraryReadPort` /
+    // `ExternalAssetLibraryProvider` (the spec-mandated bridge config, read port
+    // and provider vocabulary) are permitted; a `…Store`/`…Table`/`…Database` of
+    // that name is not.
     for (const file of allSrcFiles()) {
-      expect(strip(file.code)).not.toMatch(/(class|interface|const|function)\s+[A-Za-z]*PersonalAsset/u);
-      expect(strip(file.code)).not.toMatch(/(class|interface|const|function)\s+ExternalAssetLibrary/u);
+      const code = strip(file.code);
+      expect(code).not.toMatch(/(class|interface|const|function)\s+[A-Za-z]*PersonalAsset/u);
+      expect(
+        EXTERNAL_ASSET_LIBRARY_STORE_DECLARATION.test(code),
+        `src/${file.name} declares an external-asset store-shaped type`,
+      ).toBe(false);
+    }
+  });
+
+  it("V-N05 (G10-AE): src creates no external-asset CONTENT table", () => {
+    // The substantive guard behind the name rule above: a bridge may persist
+    // operation receipts (refs and digests), never a table of external assets.
+    // AE-N27 pins the COLUMN shape of the one table that may mention them.
+    const tables = allSrcFiles().flatMap((file) =>
+      [...strip(file.code).matchAll(/CREATE TABLE IF NOT EXISTS\s+([a-z_]+)/gu)].map((match) => ({
+        file: file.name,
+        table: match[1]!,
+      })),
+    );
+    expect(tables.length, "the CREATE TABLE scan found nothing").toBeGreaterThan(10);
+    for (const { file, table } of tables) {
+      expect(
+        EXTERNAL_ASSET_TABLE_NAME.test(table),
+        `src/${file} creates table "${table}", which names an external asset store`,
+      ).toBe(false);
     }
   });
 
