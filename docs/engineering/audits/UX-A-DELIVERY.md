@@ -322,14 +322,26 @@ CF-AE-R-05                             correctly carried OPEN (spec §36); no do
 Recorded after merge.
 
 ```text
-baseline                      437d1c9a6e1dc9a9ff36754096aaad98e787a184
-implementation commit         (to be recorded after merge)
-pull request                  (to be recorded after merge)
-PR checks                     (to be recorded after merge)
-merged commit (canonical main)(to be recorded after merge)
-tree identity                 (to be recorded after merge)
-canonical main run            (to be recorded after merge)
+baseline                       437d1c9a6e1dc9a9ff36754096aaad98e787a184
+implementation commit          e34dc1a  "feat(ux-a): one-request local multi-agent collaboration"
+pull request                   #110  experiment/ux-a-one-request-collaboration -> main
+PR checks                      run 35106542881  attempt 1  unit pass / e2e pass
+merged commit (canonical main) 86ac268460247a6853e9759c760d2d162de5ac87
+  "Merge pull request #110 from orangeofcarl0-sys/experiment/ux-a-one-request-collaboration"
+tree identity                  git diff e34dc1a 86ac2684  ->  EMPTY (identical trees)
+canonical main run             35106791890  attempt 1  unit: success
+                               e2e: HUNG in `playwright test` (>20 min, never concluded)
 ```
+
+**Honest note on the canonical run.** The merge produced run `35106791890`; its `unit`
+job succeeded in 1m05s and its `e2e` job hung inside `pnpm exec playwright test` for
+over 20 minutes without concluding (the job was still `in_progress` when this
+checkpoint was written — it never reported a failure, it simply never finished).
+The **identical tree** passed `e2e` in 1m24s in the PR run `35106542881`, `git diff`
+between the implementation commit and the merge commit is EMPTY, UX-A adds and changes
+**no** e2e spec, and the closure run below concluded green — so the hang is an
+environmental/runner event, not a UX-A regression. It is recorded rather than hidden.
+
 
 ### Reproducing the local gate
 
