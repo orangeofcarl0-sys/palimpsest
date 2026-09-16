@@ -36,6 +36,10 @@ import {
   projectOpenLoops,
   projectOperatingHistory,
   projectWorkspace,
+  verificationHistory,
+  verificationRunRef,
+  verificationStatus,
+  verificationVerifyCurrentHead,
   type ApplicationSurfaceAvailability,
   type ManagementActivityRecord,
   type ManagementAssessment,
@@ -50,6 +54,9 @@ import {
   type ProjectOperatingHistory,
   type ProjectOperatingPostureView,
   type ProjectWorkspaceView as ProjectWorkspaceReadModel,
+  type VerificationOutcome,
+  type VerificationRun,
+  type VerificationStatus,
   type WorkspaceHistoryEntry,
 } from "../api";
 import {
@@ -72,7 +79,7 @@ import {
 
 export type ProjectSurfaceTarget = "project" | "work" | "multigraph" | "proof";
 
-type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management" | "monitor";
+type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management" | "monitor" | "verification";
 
 const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -87,6 +94,11 @@ const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   // concern is not folded into it; MONITOR is a Work Mode MODIFIER whose runtime
   // state is not an axis of management at all.
   { id: "monitor", label: "Monitor" },
+  // G10-AD §23: Verification is likewise its own tab. It observes the EXACT
+  // current ProjectIR head under a NAMED registered protocol; folding it into the
+  // Management or Monitor tab would suggest it is a mode or a scheduler, and a
+  // generic "verified" badge would hide the protocol that produced it.
+  { id: "verification", label: "Verification" },
 ];
 
 const INVOLVEMENTS: readonly ManagementInvolvement[] = ["DIRECT", "ASSIST", "MANAGE", "DELEGATE"];
@@ -1245,6 +1257,207 @@ function MonitorPanel(props: {
 }
 
 /* ------------------------------------------------------------------ *
+ * Verification (G10-AD §23) — the CURRENT head under a NAMED protocol
+ * ------------------------------------------------------------------ */
+
+/**
+ * The Project-Head Verification card.
+ *
+ *   VerificationResult ≠ Truth   ≠ WorkEvidence   ≠ ProofPublication
+ *   ≠ ReasoningAdmission          ≠ TaskState      ≠ Authority
+ *
+ * The card never renders a generic "verified" state: a state is always shown
+ * TOGETHER with the verifier protocol that produced it, the independence basis,
+ * whether it is CURRENT or STALE for this exact head, and the durable run ref. An
+ * installation with no verification runtime reports the absence (and the retained
+ * VERIFY preference) rather than a zero or a badge.
+ */
+function VerificationPanel(props: {
+  readonly status: VerificationStatus | null;
+  readonly statusError: string | null;
+  readonly history: readonly VerificationRun[];
+  readonly historyError: string | null;
+  readonly result: VerificationOutcome | null;
+  readonly resultError: string | null;
+  readonly busy: boolean;
+  readonly onVerify: () => void;
+}): React.ReactElement {
+  const status = props.status;
+  if (status === null) {
+    return (
+      <div style={{ display: "grid", gap: 8 }}>
+        <Notice testId="verification-unavailable">
+          This installation exposes no Project Verification runtime ({props.statusError}). No verifier, no run and no
+          verdict is invented to fill the card.
+        </Notice>
+        <Section title="Run history" testId="verification-history-section">
+          <div data-testid="verification-history-empty">
+            <Muted>No verification history is readable for this installation.</Muted>
+          </div>
+        </Section>
+      </div>
+    );
+  }
+
+  const currentRun = status.currentSubjectRun;
+  const latest = status.latestRun;
+  const row = currentRun ?? latest;
+  const independentRefs = status.independentVerifierRefs;
+  const availability = status.independentVerifyAvailable
+    ? "AVAILABLE"
+    : status.runtimeAvailable
+      ? "RUNTIME WITHOUT AN INDEPENDENT VERIFIER"
+      : "UNAVAILABLE";
+
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <Notice testId="verification-not-a-badge">
+        This card never shows a generic “verified” badge. Every state names the registered verifier protocol that
+        produced it and the durable run it came from, because “a verifier passed” is not “the world is true”.
+      </Notice>
+
+      <Section title="Current project head" testId="verification-section">
+        <Field label="head revision" testId="verification-head-revision">
+          {status.subject === null ? (
+            <Muted>the canonical project head cannot be materialized</Muted>
+          ) : (
+            <>
+              revision <b>{String(status.subject.projectRevision)}</b> · commit{" "}
+              <Mono testId="verification-head-commit">{status.subject.headCommit}</Mono>
+            </>
+          )}
+        </Field>
+        <Field label="repository consistent" testId="verification-repository-consistent">
+          {status.repositoryConsistent === null
+            ? "no repository head is readable, so the consistency rule cannot be enforced (§5)"
+            : status.repositoryConsistent
+              ? "the actual git head equals the canonical project head"
+              : `the repository head ${status.repositoryHead ?? ""} differs from the canonical project head; first-party verification is blocked`}
+        </Field>
+        <Field label="runtime" testId="verification-availability">
+          <b>{availability}</b> · registered verifiers {String(status.registeredVerifierRefs.length)} · executable{" "}
+          {String(status.executableVerifierRefs.length)} · independent {String(independentRefs.length)}
+          {status.defaultVerifierRef === null ? null : (
+            <>
+              {" "}
+              · default <Mono>{status.defaultVerifierRef}</Mono>
+            </>
+          )}
+        </Field>
+        <Field label="state" testId="verification-state">
+          <b>{status.state}</b>
+          {row === null ? null : (
+            <>
+              {" "}
+              · protocol <Mono testId="verification-verifier">{row.run.verifierRef}</Mono> · run{" "}
+              <Mono testId="verification-run-ref">{verificationRunRef(row.run.runId)}</Mono>
+            </>
+          )}
+        </Field>
+        <Field label="verdict scope" testId="verification-verdict-scope">
+          <Mono>{status.verdictScope}</Mono> — the state above is a protocol result, not truth and not authority
+        </Field>
+        <Field label="independence" testId="verification-independence">
+          {row === null ? (
+            <Muted>no run exists for this head, so no independence basis is claimed</Muted>
+          ) : (
+            <>
+              {row.run.independence} · {row.independent ? "counts as independent" : "does not count as independent"} ·{" "}
+              {row.independenceBasis}
+            </>
+          )}
+        </Field>
+        <Field label="current vs stale" testId="verification-freshness">
+          {row === null ? (
+            <Muted>nothing has been verified for this head</Muted>
+          ) : (
+            <>
+              <b>{row.current ? "CURRENT" : "STALE"}</b> · freshness {row.freshness}
+              {row.reasons.length === 0 ? "" : ` · ${row.reasons.join("; ")}`}
+            </>
+          )}
+        </Field>
+        <Field label="detail" testId="verification-detail">
+          {status.detail}
+        </Field>
+        <Field label="latest run" testId="verification-latest-run">
+          {latest === null ? (
+            <Muted>no run has ever been recorded for this project</Muted>
+          ) : (
+            <>
+              <Mono>{verificationRunRef(latest.run.runId)}</Mono> · verdict{" "}
+              <b>{latest.run.verdict ?? latest.run.status}</b> · freshness {latest.freshness}
+            </>
+          )}
+        </Field>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          <Btn primary disabled={props.busy} onClick={props.onVerify} testId="verification-verify-current-head">
+            Verify the current project head
+          </Btn>
+          <Muted>
+            Selects a registered verifier (or the deployment default). No command, no commit and no independence class
+            can be supplied here.
+          </Muted>
+        </div>
+        <Field label="request result" testId="verification-result">
+          {props.resultError !== null ? (
+            <ErrorText>{props.resultError}</ErrorText>
+          ) : props.result === null ? (
+            <Muted>no verification has been requested from this session</Muted>
+          ) : props.result.status === "blocked" ? (
+            <>
+              <b>blocked</b> ({props.result.typedReasonCode}) · {props.result.detail}
+            </>
+          ) : (
+            <>
+              <b>recorded</b> · verdict <b>{props.result.run?.verdict ?? "none"}</b> · run{" "}
+              <Mono>{props.result.run === null ? "" : verificationRunRef(props.result.run.runId)}</Mono> ·{" "}
+              {props.result.detail}
+            </>
+          )}
+        </Field>
+      </Section>
+
+      <Section title="Run history" testId="verification-history-section">
+        {props.historyError === null ? null : (
+          <Notice testId="verification-history-unavailable">
+            The run history is unavailable for this installation ({props.historyError}).
+          </Notice>
+        )}
+        <Field label="runs" testId="verification-history-count">
+          <b>{String(props.history.length)}</b>{" "}
+          <Muted>(append-only: the verifier history store owns every run; this view copies no run body)</Muted>
+        </Field>
+        {props.history.length === 0 ? (
+          <Notice testId="verification-history-empty">
+            No verification run has been recorded. Nothing is inferred from the absence: an unverified project is
+            UNVERIFIED, not failed.
+          </Notice>
+        ) : (
+          props.history.slice(0, 10).map((run) => (
+            <Card key={run.runId} testId="verification-history-row">
+              <div>
+                verdict <b>{run.verdict ?? run.status}</b> · protocol <Mono>{run.verifierRef}</Mono> ·{" "}
+                {run.independence}
+              </div>
+              <div data-testid="verification-history-ref" style={{ color: COLORS.muted }}>
+                run <Mono>{verificationRunRef(run.runId)}</Mono> · freshness {run.freshness} · started {run.startedAt}
+                {run.finishedAt === null ? "" : ` · finished ${run.finishedAt}`}
+              </div>
+              {run.detail === null ? null : (
+                <div data-testid="verification-history-detail" style={{ color: COLORS.muted }}>
+                  {run.detail}
+                </div>
+              )}
+            </Card>
+          ))
+        )}
+      </Section>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
  * Main view
  * ------------------------------------------------------------------ */
 
@@ -1273,6 +1486,15 @@ export function ProjectWorkspaceView(props: {
   // G10-AC-R §13: the derived operating history (references only).
   const [operatingHistory, setOperatingHistory] = useState<ProjectOperatingHistory | null>(null);
   const [operatingHistoryError, setOperatingHistoryError] = useState<string | null>(null);
+  // G10-AD §23: the project-head verification status and the append-only run
+  // history. A missing runtime is reported, never fabricated.
+  const [verification, setVerification] = useState<VerificationStatus | null>(null);
+  const [verificationError, setVerificationError] = useState<string | null>(null);
+  const [verificationRuns, setVerificationRuns] = useState<readonly VerificationRun[]>([]);
+  const [verificationHistoryError, setVerificationHistoryError] = useState<string | null>(null);
+  const [verificationResult, setVerificationResult] = useState<VerificationOutcome | null>(null);
+  const [verificationResultError, setVerificationResultError] = useState<string | null>(null);
+  const [verificationBusy, setVerificationBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const refreshStatus = useCallback(async (): Promise<void> => {
@@ -1323,7 +1545,46 @@ export function ProjectWorkspaceView(props: {
       setOperatingHistory(null);
       setOperatingHistoryError(errText(error));
     }
+    // G10-AD §23: the DERIVED current-head verification status and the append-only
+    // run history. Both are reads; the status runs no verifier.
+    try {
+      setVerification(await verificationStatus());
+      setVerificationError(null);
+    } catch (error) {
+      setVerification(null);
+      setVerificationError(errText(error));
+    }
+    try {
+      setVerificationRuns(await verificationHistory(20));
+      setVerificationHistoryError(null);
+    } catch (error) {
+      setVerificationRuns([]);
+      setVerificationHistoryError(errText(error));
+    }
   }, []);
+
+  /**
+   * G10-AD §22: request verification of the EXACT current project head through the
+   * deployment's registered verifier (the server resolves the default). This sends
+   * no command, no commit and no independence class, and the outcome is whatever the
+   * protocol returned - never a locally invented verdict.
+   */
+  const verifyCurrentHead = useCallback(async (): Promise<void> => {
+    setVerificationBusy(true);
+    try {
+      const outcome = await verificationVerifyCurrentHead({
+        reason: "explicit request from the Project Workspace verification card",
+      });
+      setVerificationResult(outcome);
+      setVerificationResultError(null);
+    } catch (error) {
+      setVerificationResult(null);
+      setVerificationResultError(errText(error));
+    } finally {
+      setVerificationBusy(false);
+    }
+    await refreshStatus();
+  }, [refreshStatus]);
 
   const refresh = useCallback(async (): Promise<void> => {
     try {
@@ -1444,6 +1705,18 @@ export function ProjectWorkspaceView(props: {
             previewError={monitorPreviewError}
             operatingHistory={operatingHistory}
             operatingHistoryError={operatingHistoryError}
+          />
+        ) : null}
+        {tab === "verification" ? (
+          <VerificationPanel
+            status={verification}
+            statusError={verificationError}
+            history={verificationRuns}
+            historyError={verificationHistoryError}
+            result={verificationResult}
+            resultError={verificationResultError}
+            busy={verificationBusy}
+            onVerify={() => void verifyCurrentHead()}
           />
         ) : null}
       </div>

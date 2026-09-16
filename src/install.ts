@@ -165,6 +165,7 @@ import {
   SqliteWorkModePreferenceStore,
   withMonitorRuntimeCapability,
   type UserWorkModeControlPort,
+  type VerificationRuntimeCapabilityView,
   type WorkModeCapabilityInputs,
   linkedCampaignWakeEventSource,
 } from "./project_operating/index.js";
@@ -179,6 +180,20 @@ import {
   type MonitorRuntimeCapability,
   type MonitorTickSourcePort,
 } from "./monitor/index.js";
+import {
+  SqliteProjectVerificationStore,
+  commandProjectHeadVerifier,
+  firstPartyProjectHeadVerificationSource,
+  independenceSummary,
+  makeProjectVerificationService,
+  verifierRegistryFromPorts,
+  type ProjectVerificationOutcome,
+  type ProjectVerificationRun,
+  type ProjectVerificationService,
+  type ProjectVerificationStatus,
+  type ProjectVerifierPort,
+  type ProjectVerifierRegistry,
+} from "./project_verification/index.js";
 import {
   DEFAULT_MAX_STEPS_PER_RUN,
   defaultAllowedActionClasses,
@@ -365,8 +380,13 @@ export interface InstallPalimpsestOptions {
    */
   knownIndependentPeers?: readonly { readonly peerId: string }[] | undefined;
   /**
-   * G10-S (additive): the configured independent verifier reference, when one exists. Absent ⇒ the
-   * advisor reports verification as unavailable (never assumed).
+   * G10-S (additive), DEPRECATED by G10-AD §16: a descriptive verifier ref for the Advisor.
+   *
+   * It is still ACCEPTED for compatibility, but it NO LONGER implies an executable independent
+   * verifier: the Advisor's "independent verifier available" fact is derived LIVE from the composed
+   * Project Verification runtime (registry + executable providers), and the deprecated string is
+   * only displayed when no runtime exists. Wire `projectVerifierProviders` /
+   * `projectVerifierRegistry` / `projectVerificationDefaultVerifierRef` for a real VERIFY capability.
    */
   verificationCapabilityRef?: string | undefined;
   /**
@@ -429,6 +449,28 @@ export interface InstallPalimpsestOptions {
    * available; `verify` being wired is not the same as an INDEPENDENT verifier.
    */
   operatingCapabilities?: Partial<WorkModeCapabilityInputs> | undefined;
+  /**
+   * G10-AD §29 (additive): the narrowly-owned, append-only Project Verification history store.
+   * Absent ⇒ a default deployment-local store is created beside the G10-AB/AC operating store
+   * (or `:memory:` when the orchestration store is in memory).
+   */
+  projectVerificationStore?: SqliteProjectVerificationStore | undefined;
+  /**
+   * G10-AD §29 (additive): the verifier CONFIG registry (definitions, not truth). Absent ⇒ it is
+   * derived from the executable runtime ports, so a registered ref is always executable.
+   */
+  projectVerifierRegistry?: ProjectVerifierRegistry | undefined;
+  /**
+   * G10-AD §29 (additive): the EXECUTABLE verifier ports. Absent ⇒ this deployment registers the
+   * first-party mechanical `git diff --check` verifier over `repository`. An EMPTY array is the
+   * explicit "no verification runtime" deployment.
+   */
+  projectVerifierProviders?: readonly ProjectVerifierPort[] | undefined;
+  /**
+   * G10-AD §29 (additive): the verifier ref a caller/agent gets when it does not select one.
+   * Absent ⇒ the first executable independent ref.
+   */
+  projectVerificationDefaultVerifierRef?: string | undefined;
 }
 
 /**
@@ -534,8 +576,53 @@ export interface InstalledPalimpsest {
    * wake signal. It grants no authority and compiles no next action.
    */
   readonly monitor?: CampaignMonitorDriver | undefined;
+  /**
+   * G10-AD §29 (additive): the independent Project Verification runtime. Present iff a verification
+   * history store was composed. It verifies ONLY the exact current ProjectIR head under a registered
+   * verifier protocol and records the run; it grants no truth, no Work Evidence, no Proof
+   * publication, no Reasoning admission and no authority.
+   *
+   * §15/§18/§19/§22 integration: `status()`/`history()`/`verifyCurrentHead()` are wired into the
+   * operating posture (VERIFY availability), recipe execution (`bind_verification`), bounded
+   * management (`RUN_LOCAL_VERIFY`), the application/HTTP surface and the Agent tools. All of those
+   * consume this SAME runtime — none of them can register a verifier, inject a command, target an
+   * arbitrary commit, or mint authority from a verdict.
+   */
+  readonly verification?: InstalledVerification | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
+}
+
+/**
+ * G10-AD §22/§29: the installed verification surface.
+ *
+ *   ProjectVerificationStatus ≠ Truth
+ *   a recorded run     ≠ Work Evidence / Proof publication / Reasoning admission
+ */
+export interface InstalledVerification {
+  readonly store: SqliteProjectVerificationStore;
+  readonly registry: ProjectVerifierRegistry;
+  readonly service: ProjectVerificationService;
+  readonly defaultVerifierRef: string | null;
+  /** The repository the mechanical protocol runs against, when one is configured. */
+  readonly repository: string | null;
+  status(): Promise<ProjectVerificationStatus>;
+  /** The append-only history, newest first. */
+  history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
+  verifyCurrentHead(input?: {
+    readonly verifierRef?: string | undefined;
+    readonly requestedBy?: string | undefined;
+    readonly reason?: string | undefined;
+    readonly signal?: AbortSignal | undefined;
+  }): Promise<ProjectVerificationOutcome>;
+  /**
+   * G10-AD §15/§16: the STRUCTURAL runtime capability the Work Mode availability is
+   * derived from. It is a pure read of the registered definitions + the executable
+   * providers: a registered ref with NO provider is not a runtime, and a verifier
+   * whose independence class does not count can never make VERIFY available. It runs
+   * no verifier and reads no project state.
+   */
+  runtimeCapability(): VerificationRuntimeCapabilityView;
 }
 
 /** G10-H: the runtime-organization surface (never forces organization wiring). */
@@ -1340,10 +1427,31 @@ export function installPalimpsest(
   // layer is actually wired (so a bare Work install keeps exactly its Work tools).
   const recipeRegistry: RecipeRegistry = options.recipeRegistry ?? builtinRecipeRegistry();
 
+  /*
+   * G10-AD §15/§16/§18/§28: the LIVE verification-runtime hand-over.
+   *
+   * The Project Verification runtime is composed AFTER the Advisor and the recipe
+   * execution service (it needs the operating-store path and the project
+   * workspace), while those two must read it. A mutable wiring holder - the SAME
+   * pattern the monitor uses - is the honest hand-over: readers resolve the
+   * runtime per call, so nothing claims a runtime that was never composed
+   * (`undefined` means exactly "no verification runtime here", never a stub).
+   */
+  const verificationWiring: { runtime: InstalledVerification | undefined } = {
+    runtime: undefined,
+  };
+  function liveVerification(): InstalledVerification | undefined {
+    return verificationWiring.runtime;
+  }
+
   // G10-S: the advisor exists iff an empirical organization-memory store is supplied (it is a pure,
   // read-only advisor). Capabilities derive HONESTLY from this install's wiring; nothing is assumed:
   // an empty known-peer list is "no independent peer", absent verification/campaign/branch wiring is
   // reported as unavailable — never padded.
+  //
+  // G10-AD §16/§28: the verifier fact comes from the REAL runtime/registry, read lazily (the
+  // runtime is composed below). A descriptive `verificationCapabilityRef` option can no longer make
+  // the Advisor report an independent verifier available.
   const advisor: EmpiricalArchitectureAdvisor | undefined =
     options.organizationMemoryStore === undefined
       ? undefined
@@ -1352,7 +1460,16 @@ export function installPalimpsest(
           memory: organizationMemory,
           capabilities: {
             independentPeers: (options.knownIndependentPeers ?? []).map((peer) => Object.freeze({ peerId: peer.peerId })),
-            ...(options.verificationCapabilityRef === undefined ? {} : { verifierRef: options.verificationCapabilityRef }),
+            // G10-AD §28: read lazily from the composed runtime. When there is no
+            // runtime, the deprecated `verificationCapabilityRef` string may still
+            // be DISPLAYED, but `independentVerifierAvailable` stays false: a
+            // descriptive ref never inflates capability.
+            get verifierRef(): string | undefined {
+              return liveVerification()?.defaultVerifierRef ?? options.verificationCapabilityRef;
+            },
+            get independentVerifierAvailable(): boolean {
+              return liveVerification()?.runtimeCapability().independentVerifierAvailable === true;
+            },
             campaignMonitoring: campaign !== undefined,
             reasoningBranches: options.reasoningBranchExecution !== undefined,
           },
@@ -1369,6 +1486,11 @@ export function installPalimpsest(
           reasoning: reasoningCellsInstalled?.service,
           branchExecution: options.reasoningBranchExecution,
           federation,
+          // G10-AD §18: a VERIFY modifier in a compiled plan runs the base mode and
+          // THEN verifies the exact current project head through this runtime. Read
+          // lazily: the runtime is composed further down. Absent ⇒ the step returns
+          // `capability_required`, never a fake success.
+          verification: () => liveVerification()?.service,
         });
 
   // G10-P: semantic attention is a DERIVATION of the surfaces above — never a scheduler and
@@ -1500,9 +1622,127 @@ export function installPalimpsest(
     }
   })();
 
-  // G10-AC-R: the LIVE monitor runtime capability. It is refreshed on every read
-  // from the driver, so `started`/`startState` can never drift from the wiring.
-  // `capability` keeps the composition-time snapshot as a fallback only.
+  // G10-AD §29: the independent Project Verification runtime, composed ADDITIVELY.
+  //
+  //  - the HISTORY store defaults to the SAME derived deployment-local path the G10-AB/AC
+  //    operating stores use (a sibling table, never a second database truth); it is closed by
+  //    `dispose()` only when this install created it;
+  //  - the RUNTIME defaults to the first-party MECHANICAL `git diff --check` verifier over this
+  //    deployment's repository - a real independent execution path (a bounded subprocess). An
+  //    explicitly supplied port list is authoritative, and `[]` means "no verification runtime";
+  //  - the REGISTRY is config: it defaults to exactly the executable ports, so a ref can never be
+  //    registered without a runtime behind it;
+  //  - `defaultVerifierRef` is only what a caller gets when it does not select a ref.
+  //
+  // G10-AD §15/§18/§19/§22/§23/§28 integration: the SAME runtime is handed to the operating posture
+  // (VERIFY availability), recipe execution (`bind_verification`), bounded management
+  // (`RUN_LOCAL_VERIFY`), the Advisor's independence fact and the application/HTTP/tool surface.
+  //
+  // A PRODUCT install - a derived workspace or a recipe execution binding - gets the first-party
+  // runtime by default, so a normal deployment has a real VERIFY path. A BARE Work-only install
+  // gets NO verification surface at all (never a stub), so its routes/tools are unchanged. It
+  // grants no authority and can emit no Work/Proof/Reasoning record.
+  const projectVerificationConfigured =
+    options.projectVerificationStore !== undefined ||
+    options.projectVerifierRegistry !== undefined ||
+    options.projectVerifierProviders !== undefined ||
+    options.projectVerificationDefaultVerifierRef !== undefined ||
+    projectWorkspace !== undefined ||
+    recipeExecution !== undefined;
+  const verificationStoreCreated =
+    projectVerificationConfigured && options.projectVerificationStore === undefined;
+  let projectVerificationStore: SqliteProjectVerificationStore | undefined;
+  if (projectVerificationConfigured) {
+    try {
+      projectVerificationStore =
+        options.projectVerificationStore ??
+        new SqliteProjectVerificationStore(derivedOperatingStorePath);
+    } catch {
+      // An unusable verification store must not take the whole runtime down: the
+      // verification surface is simply absent (never a stub).
+      projectVerificationStore = undefined;
+    }
+  }
+  const verificationProviders: readonly ProjectVerifierPort[] =
+    options.projectVerifierProviders ??
+    Object.freeze([
+      commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] }),
+    ]);
+  const verificationRegistry: ProjectVerifierRegistry =
+    options.projectVerifierRegistry ?? verifierRegistryFromPorts(verificationProviders);
+  const executableVerifierDefinitions = verificationRegistry
+    .list()
+    .filter((definition) =>
+      verificationProviders.some(
+        (provider) => provider.definition.verifierRef === definition.verifierRef,
+      ),
+    );
+  // The RESOLVED default, by the SAME rule the service uses (the explicit option,
+  // else the first verifier that actually has a provider). Reporting the raw option
+  // made this field null while an unqualified verifyCurrentHead used a real ref -
+  // two answers to one question.
+  const resolvedDefaultVerifierRef =
+    options.projectVerificationDefaultVerifierRef ??
+    executableVerifierDefinitions[0]?.verifierRef ??
+    null;
+  const verification: InstalledVerification | undefined =
+    projectVerificationStore === undefined
+      ? undefined
+      : (() => {
+          const store = projectVerificationStore;
+          const repository = options.repository ?? null;
+          const service = makeProjectVerificationService({
+            projectId: options.projectId,
+            source: firstPartyProjectHeadVerificationSource({ controller, git }),
+            store,
+            registry: verificationRegistry,
+            providers: verificationProviders,
+            ...(options.projectVerificationDefaultVerifierRef === undefined
+              ? {}
+              : { defaultVerifierRef: options.projectVerificationDefaultVerifierRef }),
+            ...(repository === null ? {} : { repository }),
+            ...(options.clock === undefined ? {} : { clock: options.clock }),
+          });
+          return {
+            store,
+            registry: verificationRegistry,
+            service,
+            defaultVerifierRef: resolvedDefaultVerifierRef,
+            repository,
+            status: () => service.status(),
+            history: (limit?: number) => service.history(limit),
+            verifyCurrentHead: (input) =>
+              service.verifyCurrentHead({
+                requestedBy: input?.requestedBy ?? "operator:install",
+                reason: input?.reason ?? "explicit request through the installed verification runtime",
+                ...(input?.verifierRef === undefined ? {} : { verifierRef: input.verifierRef }),
+                ...(input?.signal === undefined ? {} : { signal: input.signal }),
+              }),
+            // §15/§16: the availability fact is derived from the REGISTERED definitions
+            // that have a real execution binding - never from a bare bool/string.
+            runtimeCapability: (): VerificationRuntimeCapabilityView => {
+              const summary = independenceSummary(executableVerifierDefinitions);
+              const runtimeAvailable = executableVerifierDefinitions.length > 0;
+              const independentVerifierAvailable =
+                runtimeAvailable && summary.independentVerifyAvailable;
+              return Object.freeze({
+                runtimeAvailable,
+                independentVerifierAvailable,
+                independentVerifierRefs: summary.independentRefs,
+                defaultVerifierRef: resolvedDefaultVerifierRef,
+                note: independentVerifierAvailable
+                  ? `VERIFY is available from a real independent runtime (${summary.independentRefs.join(", ")})`
+                  : runtimeAvailable
+                    ? "a verification runtime exists but no registered verifier counts as independent; VERIFY is not available"
+                    : "no verification runtime exists; the VERIFY preference is retained and reported honestly",
+              });
+            },
+          };
+        })();
+  // Hand the LIVE runtime to whatever was composed before it (recipe execution, and
+  // any later reader). This mirrors the monitor's `monitorWiring` hand-over.
+  verificationWiring.runtime = verification;
+
   const monitorWiring: { capability: MonitorRuntimeCapability | undefined } = { capability: undefined };
   function liveMonitorCapability(): MonitorRuntimeCapability | undefined {
     return monitor?.capability() ?? monitorWiring.capability;
@@ -1516,7 +1756,15 @@ export function installPalimpsest(
           control: options.managementPreferenceStore ?? directManagementControl(options.clock ?? (() => new Date().toISOString())),
           controller,
           ...(recipeExecution === undefined ? {} : { recipes: { registry: recipeRegistry, execution: recipeExecution } }),
-          capabilities: { recipeExecution: recipeExecution !== undefined, verify: false },
+          // G10-AD §16/§21: `capabilities.verify` is deliberately GONE (it was a bare
+          // boolean and is now ignored). RUN_LOCAL_VERIFY availability and its typed
+          // execution both come from the REAL verification runtime below.
+          capabilities: { recipeExecution: recipeExecution !== undefined },
+          // G10-AD §19/§21: the typed verification runtime. It makes RUN_LOCAL_VERIFY
+          // available, lets the candidate builder derive a verification-due candidate,
+          // and returns the durable `project_verification:<runId>` ref the activity
+          // record references. Read lazily through the same wiring holder.
+          verification: () => liveVerification()?.service,
           ...(operatingStores === undefined ? {} : { workMode: operatingStores.workMode, activity: operatingStores.activity }),
           registry: recipeRegistry,
           // G10-AC-R §13: the operating history REFERENCES canonical Campaign wake
@@ -1558,6 +1806,15 @@ export function installPalimpsest(
             monitorRuntime: liveMonitorCapability() !== undefined,
             monitorRuntimeProvenance: "first_party" as const,
             monitorRuntimeCapability: liveMonitorCapability(),
+            // G10-AD §15/§16: VERIFY availability derives from the REAL Project
+            // Verification runtime, read LIVE. The capability VIEW takes precedence
+            // over the deprecated `independentVerifier` bool in the ONE availability
+            // table, so a caller's bare declaration can never inflate the row - and
+            // when no runtime exists the view is simply absent (the declaration, if
+            // any, is reported as CONDITIONAL at best).
+            ...(liveVerification() === undefined
+              ? {}
+              : { verificationRuntimeCapability: liveVerification()!.runtimeCapability() }),
           }),
         });
 
@@ -1697,6 +1954,8 @@ export function installPalimpsest(
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(monitor === undefined ? {} : { monitor }),
+    // G10-AD §22/§23: the project-head verification face over the SAME composed runtime.
+    ...(verification === undefined ? {} : { verification: { service: verification.service } }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1771,6 +2030,7 @@ export function installPalimpsest(
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
+    ...(verification === undefined ? {} : { verification }),
     ...(monitor === undefined ? {} : { monitor }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
@@ -1807,6 +2067,9 @@ export function installPalimpsest(
       options.projectAssociationStore?.close();
       options.projectJournalStore?.close();
       options.managementPreferenceStore?.close();
+      // G10-AD §29: close the deployment-local verification HISTORY store only when this install
+      // created it — a supplied store belongs to its caller (same discipline as above).
+      if (verificationStoreCreated) projectVerificationStore?.close();
       // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
       // deployment launcher, a host) leaks the shared operations file handle.
       await effects.close();

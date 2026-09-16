@@ -59,10 +59,20 @@ export function builtinRecipeRegistry(): RecipeRegistry {
       role: "modifier",
       modifier: "VERIFY",
       supportedModifiers: [],
-      capabilityRequirements: ["experiment.validator"],
+      // G10-AD §17: the capability is PROJECT VERIFICATION, not the ambiguous
+      // experiment-validator vocabulary. The ExperimentValidatorPort primitives
+      // are reused by an adapter, but experiment evaluation is not project
+      // verification truth, and a verifier is a REGISTERED protocol - not a
+      // validator ref a caller may name.
+      capabilityRequirements: ["project.verification"],
       parameterSchema: Object.freeze({ optional: ["verifierRef"] }),
       readiness: "CONDITIONAL",
-      limitations: ["same-model same-context verification is not independent"],
+      limitations: [
+        "same-model same-context verification is not independent",
+        "requires a registered, versioned verifier definition on the deployment's ProjectVerifierRegistry",
+        "requires that definition to have a real execution binding (an unbound registered ref is not a runtime)",
+        "the subject is the exact current ProjectIR head; an arbitrary commit cannot be selected",
+      ],
     }),
     materializeRecipeDefinition({
       recipeId: "monitor.v1",
