@@ -1,0 +1,390 @@
+/**
+ * G10-AD §4/§5/§11/§12 — the verification ORCHESTRATION.
+ *
+ * One run is:
+ *
+ *   materialize the exact current ProjectIR head           (§4 — never a caller's commit)
+ *   → enforce actual Git head == subject head commit       (§5 — before ANY execution)
+ *   → write STARTED                                        (§12 — before the provider call)
+ *   → call the registered verifier protocol
+ *   → re-read ProjectIR + Git                              (§5 — mid-run drift)
+ *   → write COMPLETED with verdict/independence/freshness  (§8/§10/§12/§13)
+ *
+ * Firewalls (§2/§25): this module imports NO Work module, NO gate, NO Evidence,
+ * NO Proof, NO Reasoning, NO promotion and NO effects module. A PASS here mints
+ * nothing: no Work EvidenceAtom, no Proof publication, no Reasoning admission,
+ * no task/project state change, no promotion eligibility, no effect authority.
+ * The typed SURFACE of what it can do is exactly: read the head, run a
+ * registered protocol, append history.
+ */
+
+import { canonicalDatetime } from "../schema/datetime.js";
+import {
+  materializeProjectVerificationRequest,
+  materializeProjectVerifierRawResult,
+  parseProjectVerifierRawResult,
+  type ProjectVerifierRawResult,
+  type ProjectVerificationFreshness,
+  type ProjectVerificationRun,
+  type VerifierDefinition,
+} from "./artifacts.js";
+import {
+  deriveProjectVerificationStatus,
+  type ProjectVerificationStatus,
+  type ProjectVerificationState,
+} from "./status.js";
+import type { ProjectHeadVerificationSource, ProjectVerifierPort } from "./provider.js";
+import type { ProjectVerifierRegistry } from "./registry.js";
+import type { ProjectVerificationHistoryStore } from "./store.js";
+
+export interface ProjectVerificationServiceDeps {
+  readonly projectId: string;
+  readonly source: ProjectHeadVerificationSource;
+  readonly store: ProjectVerificationHistoryStore;
+  readonly registry: ProjectVerifierRegistry;
+  /** The EXECUTABLE ports this deployment bound. A registered ref with no port is not a runtime. */
+  readonly providers: readonly ProjectVerifierPort[];
+  readonly defaultVerifierRef?: string | null | undefined;
+  /** The repository the mechanical protocol runs against, when one applies. */
+  readonly repository?: string | undefined;
+  readonly clock?: (() => string) | undefined;
+}
+
+export interface VerifyCurrentHeadInput {
+  readonly verifierRef?: string | undefined;
+  readonly requestedBy: string;
+  readonly reason?: string | undefined;
+  readonly repository?: string | undefined;
+  readonly signal?: AbortSignal | undefined;
+}
+
+/**
+ * `recorded` means a run was durably recorded (its VERDICT may be any of
+ * PASS/FAIL/SCORE/UNRESOLVED/ERROR — the outcome is not a truth claim).
+ * `blocked` means nothing was executed and nothing was written.
+ */
+export interface ProjectVerificationOutcome {
+  readonly status: "recorded" | "blocked";
+  readonly typedReasonCode: string;
+  readonly detail: string;
+  readonly run: ProjectVerificationRun | null;
+  readonly statusView: ProjectVerificationStatus;
+}
+
+export interface ProjectVerificationService {
+  verifyCurrentHead(input: VerifyCurrentHeadInput): Promise<ProjectVerificationOutcome>;
+  status(): Promise<ProjectVerificationStatus>;
+  /** Newest first (a UI/agent history read), never a rewrite of the chain. */
+  history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
+  /** Runs that never produced a verdict (a crash leaves one). */
+  unresolved(): Promise<readonly ProjectVerificationRun[]>;
+  /** The local tamper-evidence check over the append-only chain. */
+  verifyHistoryChain(): { readonly ok: boolean; readonly problem?: string | undefined };
+}
+
+/** The typed reason codes this plane produces (never prose-only). */
+export const PROJECT_VERIFICATION_REASON_CODES = [
+  "verified",
+  "project_ir_unavailable",
+  "no_registered_verifier",
+  "unknown_verifier_ref",
+  "unsupported_verification_subject",
+  "verifier_runtime_unavailable",
+  "verifier_definition_mismatch",
+  /** §5: the actual git head is not the canonical project head. */
+  "project_head_not_materialized",
+  "verification_aborted",
+] as const;
+export type ProjectVerificationReasonCode = (typeof PROJECT_VERIFICATION_REASON_CODES)[number];
+
+export function makeProjectVerificationService(
+  deps: ProjectVerificationServiceDeps,
+): ProjectVerificationService {
+  const registry = deps.registry;
+  const providerByRef = new Map<string, ProjectVerifierPort>(
+    deps.providers.map((provider) => [provider.definition.verifierRef, provider]),
+  );
+  const now = (): string => canonicalDatetime((deps.clock ?? (() => new Date().toISOString()))());
+
+  function executableVerifierRefs(): readonly string[] {
+    return Object.freeze(
+      registry
+        .list()
+        .filter((definition) => providerByRef.has(definition.verifierRef))
+        .map((definition) => definition.verifierRef),
+    );
+  }
+
+  function defaultVerifierRef(): string | null {
+    if (deps.defaultVerifierRef !== undefined && deps.defaultVerifierRef !== null) {
+      return deps.defaultVerifierRef;
+    }
+    const executable = executableVerifierRefs();
+    return executable.length === 0 ? null : executable[0]!;
+  }
+
+  async function readRepositoryHead(): Promise<string | null> {
+    if (deps.source.repositoryHead === undefined) return null;
+    try {
+      return await deps.source.repositoryHead();
+    } catch {
+      return null;
+    }
+  }
+
+  async function status(): Promise<ProjectVerificationStatus> {
+    let subject = null;
+    let subjectError: string | null = null;
+    try {
+      subject = deps.source.current();
+    } catch (error) {
+      subjectError = error instanceof Error ? error.message : String(error);
+    }
+    if (subject !== null && subject.projectId !== deps.projectId) {
+      subjectError = `the ProjectIR projection returned project "${subject.projectId}", not "${deps.projectId}"`;
+      subject = null;
+    }
+    return deriveProjectVerificationStatus({
+      projectId: deps.projectId,
+      subject,
+      subjectError,
+      repositoryHead: await readRepositoryHead(),
+      runs: deps.store.list(deps.projectId),
+      registry,
+      executableVerifierRefs: executableVerifierRefs(),
+      defaultVerifierRef: deps.defaultVerifierRef ?? null,
+      derivedAt: now(),
+    });
+  }
+
+  async function blocked(
+    typedReasonCode: ProjectVerificationReasonCode,
+    detail: string,
+  ): Promise<ProjectVerificationOutcome> {
+    return Object.freeze({
+      status: "blocked" as const,
+      typedReasonCode,
+      detail,
+      run: null,
+      statusView: await status(),
+    });
+  }
+
+  /** §5: re-read the ProjectIR AND git after the run and label the input honestly. */
+  async function freshnessAfterRun(input: {
+    readonly subjectDigest: string;
+    readonly headCommit: string;
+  }): Promise<ProjectVerificationFreshness> {
+    let current;
+    try {
+      current = deps.source.current();
+    } catch {
+      // The subject can no longer be established: never claim the input was current.
+      return "STALE_INPUT";
+    }
+    if (current.digest !== input.subjectDigest) return "STALE_INPUT";
+    const headNow = await readRepositoryHead();
+    if (headNow !== null && headNow !== input.headCommit) return "STALE_INPUT";
+    return "CURRENT";
+  }
+
+  async function withStatus(
+    outcome: Omit<ProjectVerificationOutcome, "statusView">,
+  ): Promise<ProjectVerificationOutcome> {
+    return Object.freeze({ ...outcome, statusView: await status() });
+  }
+
+  return Object.freeze({
+    async verifyCurrentHead(input: VerifyCurrentHeadInput): Promise<ProjectVerificationOutcome> {
+      const reason = input.reason ?? "explicit request to verify the current project head";
+      const repository = input.repository ?? deps.repository;
+
+      // §4: the subject is DERIVED. `input` cannot name a revision or a commit.
+      let subject;
+      try {
+        subject = deps.source.current();
+      } catch (error) {
+        return blocked(
+          "project_ir_unavailable",
+          `the canonical project head cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      if (subject.projectId !== deps.projectId) {
+        return blocked(
+          "project_ir_unavailable",
+          `the ProjectIR projection returned project "${subject.projectId}", not "${deps.projectId}"`,
+        );
+      }
+
+      // A caller may only SELECT a registered ref; it can never inject a command.
+      const selectedVerifierRef = input.verifierRef ?? defaultVerifierRef();
+      if (selectedVerifierRef === null) {
+        return blocked(
+          "no_registered_verifier",
+          "no verifier is registered in this deployment, so there is nothing to execute",
+        );
+      }
+      const definition: VerifierDefinition | undefined = registry.get(selectedVerifierRef);
+      if (definition === undefined) {
+        return blocked(
+          "unknown_verifier_ref",
+          `"${selectedVerifierRef}" is not a registered verifier ref; only registered verifiers may be selected`,
+        );
+      }
+      if (!definition.supportedSubjects.includes("CURRENT_PROJECT_HEAD")) {
+        return blocked(
+          "unsupported_verification_subject",
+          `verifier "${selectedVerifierRef}" does not support CURRENT_PROJECT_HEAD`,
+        );
+      }
+      const provider = providerByRef.get(selectedVerifierRef);
+      if (provider === undefined) {
+        return blocked(
+          "verifier_runtime_unavailable",
+          `verifier "${selectedVerifierRef}" is registered as configuration but no runtime is bound to it`,
+        );
+      }
+      if (provider.definition.digest !== definition.digest) {
+        return blocked(
+          "verifier_definition_mismatch",
+          `the runtime for "${selectedVerifierRef}" implements definition ${provider.definition.digest}, but the registry lists ${definition.digest}`,
+        );
+      }
+
+      // §5: repository consistency, BEFORE the provider call and before STARTED.
+      const repositoryHead = await readRepositoryHead();
+      if (repositoryHead !== null && repositoryHead !== subject.headCommit) {
+        return blocked(
+          "project_head_not_materialized",
+          `the actual repository head ${repositoryHead} differs from the canonical project head ${subject.headCommit}; ambient git is never verified while it is labelled the canonical project head`,
+        );
+      }
+
+      // §11 + §12: the request is digest-bound, and STARTED is written BEFORE the
+      // provider call so a crash can only leave an unresolved STARTED.
+      const request = materializeProjectVerificationRequest({
+        subject,
+        verifierRef: selectedVerifierRef,
+        verifierDefinitionDigest: definition.digest,
+        requestedBy: input.requestedBy,
+        reason,
+      });
+      const started = deps.store.appendStart({
+        projectId: deps.projectId,
+        requestRef: request.verificationRequestId,
+        requestDigest: request.digest,
+        subject,
+        verifierRef: selectedVerifierRef,
+        verifierDefinitionDigest: definition.digest,
+        independence: definition.independenceClass,
+        startedAt: now(),
+      });
+
+      let raw: ProjectVerifierRawResult | null = null;
+      let failure: string | null = null;
+      try {
+        raw = parseProjectVerifierRawResult(
+          await provider.verify({
+            subject,
+            ...(repository === undefined ? {} : { repository }),
+            ...(input.signal === undefined ? {} : { signal: input.signal }),
+          }),
+        );
+      } catch (error) {
+        failure = error instanceof Error ? error.message : String(error);
+      }
+      const finishedAt = now();
+      const freshness = await freshnessAfterRun({
+        subjectDigest: subject.digest,
+        headCommit: subject.headCommit,
+      });
+
+      if (failure !== null && input.signal?.aborted === true) {
+        // An abort is NOT an evaluation: the run is closed with no verdict.
+        const run = deps.store.appendInterruption({
+          projectId: deps.projectId,
+          runId: started.runId,
+          detail: `the run was aborted before the protocol produced a result: ${failure}`,
+          freshness,
+          finishedAt,
+        });
+        return withStatus({
+          status: "recorded",
+          typedReasonCode: "verification_aborted",
+          detail: run.detail ?? "the run was aborted",
+          run,
+        });
+      }
+      if (raw === null) {
+        // An infrastructure fault is ERROR, never FAIL (§8).
+        raw = materializeProjectVerifierRawResult({
+          verifierRef: selectedVerifierRef,
+          verdict: "ERROR",
+          detail: `the verifier runtime failed before it produced a result: ${failure ?? "unknown failure"}`,
+        });
+      }
+      const run = deps.store.appendCompletion({
+        projectId: deps.projectId,
+        runId: started.runId,
+        verdict: raw.verdict,
+        score: raw.score,
+        detail: raw.detail,
+        freshness,
+        resultDigest: raw.digest,
+        finishedAt,
+      });
+      return withStatus({
+        status: "recorded",
+        typedReasonCode: "verified",
+        detail:
+          run.status === "COMPLETED"
+            ? `the verifier protocol "${selectedVerifierRef}" returned ${run.verdict} (${run.freshness})`
+            : `the run ended as ${run.status}`,
+        run,
+      });
+    },
+
+    status,
+
+    async history(limit?: number): Promise<readonly ProjectVerificationRun[]> {
+      const all = [...deps.store.list(deps.projectId)].reverse();
+      if (limit === undefined) return Object.freeze(all);
+      return Object.freeze(all.slice(0, Math.max(0, limit)));
+    },
+
+    async unresolved(): Promise<readonly ProjectVerificationRun[]> {
+      return deps.store.unresolved(deps.projectId);
+    },
+
+    verifyHistoryChain(): { readonly ok: boolean; readonly problem?: string | undefined } {
+      return deps.store.verifyChain(deps.projectId);
+    },
+  });
+}
+
+/** §15/§19: the honest VERIFY runtime facts a posture/advisor derives from. */
+export interface ProjectVerificationRuntimeFacts {
+  readonly runtimeAvailable: boolean;
+  readonly independentVerifyAvailable: boolean;
+  readonly independentVerifierRefs: readonly string[];
+  readonly declaredSeparateVerifierRefs: readonly string[];
+  readonly defaultVerifierRef: string | null;
+  readonly note: string;
+}
+
+export function runtimeFactsOf(status: ProjectVerificationStatus): ProjectVerificationRuntimeFacts {
+  return Object.freeze({
+    runtimeAvailable: status.runtimeAvailable,
+    independentVerifyAvailable: status.independentVerifyAvailable,
+    independentVerifierRefs: status.independentVerifierRefs,
+    declaredSeparateVerifierRefs: status.declaredSeparateVerifierRefs,
+    defaultVerifierRef: status.defaultVerifierRef,
+    note: status.independentVerifyAvailable
+      ? `VERIFY is available from a real independent runtime (${status.independentVerifierRefs.join(", ")})`
+      : status.runtimeAvailable
+        ? "a verification runtime exists but no registered verifier counts as independent; VERIFY is not available"
+        : "no verification runtime exists; the VERIFY preference is retained and reported honestly",
+  });
+}
+
+export type { ProjectVerificationState };

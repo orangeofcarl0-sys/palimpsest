@@ -122,6 +122,8 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         disclosure: application.disclosure !== undefined,
         projectWorkspace: application.projectWorkspace !== undefined,
         projectManagement: application.projectManagement !== undefined,
+        // G10-AD §23: the project-head verification face (status/history/request).
+        verification: application.verification !== undefined,
         projections: application.projections !== undefined,
       }),
     }),
@@ -755,6 +757,51 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
             throw new ToolArgsError('argument "maxSteps" must be a positive integer');
           }
           return management.run(maxSteps === undefined ? {} : { maxSteps });
+        },
+      }),
+    );
+  }
+
+  /*
+   * G10-AD §22/§23: the AGENT face of Project Verification.
+   *
+   *   VerificationResult ≠ Truth, ≠ Work Evidence, ≠ Proof publication,
+   *   ≠ Reasoning admission, ≠ task state, ≠ authority
+   *
+   * The tool can read the DERIVED current-head status and the append-only
+   * history, and it can REQUEST a verification of the exact current project head
+   * under a REGISTERED verifier ref. It cannot register a verifier, change an
+   * independence class, supply a command, or claim its own context is independent:
+   * the only verifier-shaped input is a registered `verifierRef` the runtime
+   * resolves (and refuses when unknown).
+   */
+  if (application.verification !== undefined) {
+    const verification = application.verification;
+    tools.push(
+      tool({
+        name: "palimpsest_verification",
+        description:
+          "Project-head verification: read the DERIVED status of the exact current ProjectIR head, read the append-only run history, or request a verification under a REGISTERED verifier protocol. A PASS means only 'that named protocol passed' — it is not truth, not Work Evidence, not Proof publication, not Reasoning admission, not task state and not authority. An agent can never register a verifier, change an independence class, supply a command, or verify an arbitrary commit",
+        mode: "mutating",
+        actions: ["status", "history", "verify_current_head"],
+        extraProperties: {
+          verifierRef: { type: "string", description: "a REGISTERED verifier ref to select; never a command" },
+          reason: { type: "string" },
+          limit: { type: "number", description: "how many recent runs to return (newest first)" },
+        },
+        run: async (action, object) => {
+          if (action === "status") return verification.status();
+          if (action === "history") {
+            const limit = object.limit;
+            if (limit !== undefined && (typeof limit !== "number" || !Number.isSafeInteger(limit) || limit < 1)) {
+              throw new ToolArgsError('argument "limit" must be a positive integer');
+            }
+            return verification.history(limit === undefined ? undefined : limit);
+          }
+          return verification.verifyCurrentHead({
+            ...(object.verifierRef === undefined ? {} : { verifierRef: requiredString(object, "verifierRef") }),
+            ...(object.reason === undefined ? {} : { reason: requiredString(object, "reason") }),
+          });
         },
       }),
     );

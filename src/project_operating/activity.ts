@@ -62,6 +62,13 @@ export const CANONICAL_OUTCOME_KINDS = [
   "recipe_execution",
   "reasoning_cell",
   "promotion",
+  /**
+   * G10-AD §21: a durable Project Verification RUN. The reference is the canonical
+   * product ref `project_verification:<runId>`; the run body stays owned by the
+   * narrowly-owned append-only Project Verification history store and is never
+   * copied into the management activity record.
+   */
+  "project_verification",
 ] as const;
 
 export type CanonicalOutcomeKind = (typeof CANONICAL_OUTCOME_KINDS)[number];

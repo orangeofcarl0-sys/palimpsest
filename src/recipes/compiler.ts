@@ -114,10 +114,26 @@ function baseModeSteps(plan: RecipePlan, baseMode: RecipeBaseMode): readonly Com
   }
 }
 
+/**
+ * G10-AD §17: the EXPLICIT sentinel a VERIFY modifier carries when the plan names
+ * no verifier ref. It means "the deployment's default REGISTERED verifier", which
+ * execution resolves against the runtime registry. It is named rather than
+ * silently bound: an absent verifier never becomes an invented one, and a
+ * deployment with no registered default fails the step honestly.
+ */
+export const PROJECT_DEFAULT_VERIFIER_REF = "project-default";
+
 function modifierStep(plan: RecipePlan, modifier: RecipeModifier): CompiledStep {
   if (modifier === "VERIFY") {
     const raw = parameterOf(plan, "verifierRef");
-    if (raw === undefined) return Object.freeze({ kind: "bind_verification" as const, verifierRef: "deterministic" });
+    // G10-AD §17: `project-default` is the honest, EXPLICIT sentinel. The old
+    // `"deterministic"` token named no registered protocol and read like a real
+    // verifier ref, so an absent parameter looked bound. Execution now resolves
+    // this sentinel against the runtime registry (or fails with a typed
+    // capability/unresolved outcome if no default verifier exists).
+    if (raw === undefined) {
+      return Object.freeze({ kind: "bind_verification" as const, verifierRef: PROJECT_DEFAULT_VERIFIER_REF });
+    }
     if (typeof raw !== "string" || raw.trim() === "") {
       throw new RecipeCompileError("missing_parameter", "VERIFY parameter \"verifierRef\" must be a non-empty string");
     }

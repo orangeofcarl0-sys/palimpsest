@@ -1,0 +1,53 @@
+feat(g10-ad): independent project verification runtime
+
+VERIFY stops being a boolean, an ignored recipe step and an untyped management
+stub. AD0 confirmed every gap the spec named: the management verify seam was
+'{run(): Promise<unknown>}', install hardcoded verify=false, no RUN_LOCAL_VERIFY
+candidate was derivable, FOCUS+VERIFY compiled to bind_verification but
+RecipeExecution ignored it, verificationCapabilityRef was descriptive with no
+runtime, posture availability came from a bare bool, and no durable Project
+Verification result or ref existed anywhere.
+
+- src/project_verification/: a narrow plane owning only verification history.
+  artifacts      strict digest-bound subject/definition/request/run artifacts
+  independence   the five-class model, with same-model same-context FORCED to
+                 SHARED_CONTEXT and different-prompt-alone refused a better class
+  registry       versioned verifier definitions (config, not project truth)
+  provider       the host-neutral execution seam + a ProjectHeadVerificationSource
+                 that materializes the subject from the canonical ProjectIR
+  experiment_adapter  reuses the existing validator primitives behind the new port
+  store          append-only, chained, crash-honest: STARTED before the provider
+                 call, COMPLETED after, a crash leaving an unresolved STARTED and
+                 NO fabricated verdict
+  service/status verification of the EXACT current ProjectIR head only, with
+                 freshness bound to project revision + digest + head + verifier
+                 definition digest, so a head or definition change stales an old
+                 run by DERIVATION and never by deletion; a git/ProjectIR head
+                 mismatch blocks the provider (project_head_not_materialized) so
+                 ambient git is never verified while labelled the canonical head;
+                 a mid-run head move stores the run as STALE_INPUT
+- a real first-party MECHANICAL verifier (git diff --check) is the independent
+  execution path; PASS/FAIL/SCORE/UNRESOLVED/ERROR keep their protocol meaning
+  and ERROR is never FAIL, SCORE never becomes PASS
+- Work Mode: VERIFY availability derives from the REAL runtime + a registered
+  independent verifier; a bare verificationCapabilityRef no longer inflates it
+- recipes: verify.v1 stays CONDITIONAL, the capability is renamed project.verification,
+  bind_verification names a registered ref or the explicit project-default, and
+  RecipeExecution now EXECUTES it after the base mode - FOCUS reuses the principal,
+  EXPLORE keeps its own ReasoningCell admission and verifies the project head (not
+  reasoning claims), COORDINATE accepts no commitment
+- management: a pure RUN_LOCAL_VERIFY candidate appears only when VERIFY is
+  preferred AND a real independent verifier exists AND the head has no fresh run;
+  a fresh run prevents an automatic loop while a new head becomes due again; the
+  typed execution returns project_verification:<runId> and the AB activity record
+  REFERENCES it (the policy matrix is unchanged and asserted verbatim)
+- surfaces: application.verification.status/history/verifyCurrentHead, HTTP reads
+  plus a run endpoint only for the current head and a registered verifier, a
+  Project Workspace Verification tab showing verifier/independence/verdict/
+  current-vs-stale with no generic green badge, and a read-only Advisor
+
+No authority bridge: verification emits no Work Evidence, no Proof publication, no
+Reasoning admission, no task state and no promotion/effect authority.
+Gates: build clean; vitest 160 files / 1623 tests; build:web ok; playwright 29/29;
+mechanical-verify dogfood pass=true (PASS, MECHANICAL_INDEPENDENT, zero leakage;
+head move -> STALE_SUBJECT and the new head UNVERIFIED, history retained).
