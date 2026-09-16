@@ -350,10 +350,38 @@ two honest caveats in `UX-C-HOST-RUNTIME-READINESS.md` §5).
 
 ## 8. Canonical checkpoint
 
-Recorded after merge. No commit SHA, pull-request number or CI run id is recorded in this
-document: the documentation pass did not author or observe the merge, and inventing an
-identifier would be a fabricated claim. The canonical identity and the green CI runs are
-those of this branch's merge on canonical main, and are re-verifiable from git and CI at
-that time.
+Recorded after merge.
+
+```text
+baseline                       a36d37b13b5fb9f28ef77b07657aaf728ab1cb45
+implementation commit          b60685b  "feat(ux-c): host-native zero-config collaboration runtime"
+pull request                   #114  experiment/ux-c-host-runtime -> main
+PR checks                      run 35147799861  attempt 1  unit pass / e2e pass
+merged commit (canonical main) eb8fe90b07ef3049fbe5bda0cbe3fec3d84f643d
+  "Merge pull request #114 from orangeofcarl0-sys/experiment/ux-c-host-runtime"
+tree identity                  git diff b60685b eb8fe90b  ->  EMPTY (identical trees)
+canonical main run             35148033755  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+git diff --check
+pnpm build
+pnpm exec vitest run --maxWorkers=2
+pnpm run build:web
+pnpm exec playwright test
+node scripts/interaction/uxc-dsh-local-dogfood.mjs          # expect pass=true
+node scripts/interaction/uxc-dsh-cross-project-dogfood.mjs  # expect pass=true
+node scripts/interaction/uxb-two-project-dogfood.mjs        # expect pass=true
+node scripts/interaction/uxa-dogfood.mjs                    # expect pass=true
+node scripts/scope/aer-boundary-dogfood.mjs                 # expect pass=true
+node scripts/recipes/explore-e2e.mjs                        # expect PASS
+node scripts/proof/real-extraction-e2e.mjs                  # expect PASS
+```
+
 
 Recorded after merge.
