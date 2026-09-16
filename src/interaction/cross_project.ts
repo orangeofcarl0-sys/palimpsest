@@ -1111,16 +1111,27 @@ export function makeCrossProjectService(deps: CrossProjectDeps): CrossProjectSer
     readonly status: ProjectAnswerStatus;
     readonly answer?: string | undefined;
     readonly detail?: string | undefined;
+    /** UX-C §13/SC-10: the composed run's exploratory finding label, when it had one. */
+    readonly findingStanding?: string | undefined;
+    readonly findingNote?: string | undefined;
   } {
     const result = (typeof raw === "object" && raw !== null ? raw : {}) as {
       readonly status?: unknown;
       readonly summary?: unknown;
       readonly unresolved?: unknown;
       readonly message?: unknown;
+      readonly findingStanding?: unknown;
+      readonly findingNote?: unknown;
     };
     const status = typeof result.status === "string" ? result.status : "ERROR";
     const summary = typeof result.summary === "string" && result.summary.trim() !== "" ? result.summary : undefined;
     const unresolved = Array.isArray(result.unresolved) ? result.unresolved.filter((entry): entry is string => typeof entry === "string") : [];
+    const findingStanding = typeof result.findingStanding === "string" ? result.findingStanding : undefined;
+    const findingNote = typeof result.findingNote === "string" ? result.findingNote : undefined;
+    const label = {
+      ...(findingStanding === undefined ? {} : { findingStanding }),
+      ...(findingNote === undefined ? {} : { findingNote }),
+    };
     const fallbackDetail =
       typeof result.message === "string" && result.message.trim() !== ""
         ? result.message
@@ -1128,14 +1139,13 @@ export function makeCrossProjectService(deps: CrossProjectDeps): CrossProjectSer
     switch (status) {
       case "COMPLETED":
       case "PRINCIPAL_CONTINUES":
-        return summary === undefined
-          ? { status: "PARTIAL", detail: fallbackDetail }
-          : { status: "ANSWERED", answer: summary };
+        return summary === undefined ? { status: "PARTIAL", detail: fallbackDetail } : { status: "ANSWERED", answer: summary, ...label };
       case "PARTIAL":
         return {
           status: "PARTIAL",
           ...(summary === undefined ? {} : { answer: summary }),
           detail: unresolved.length === 0 ? (summary === undefined ? fallbackDetail : "this project's local collaboration returned a partial result") : unresolved.join(" "),
+          ...label,
         };
       case "CAPABILITY_REQUIRED":
       case "CROSS_PROJECT_REQUIRED":
@@ -1175,7 +1185,7 @@ export function makeCrossProjectService(deps: CrossProjectDeps): CrossProjectSer
 
     const prior = await outboundAnswersFor(requestId, threadId);
 
-    let resolved: { status: ProjectAnswerStatus; answer?: string | undefined; detail?: string | undefined };
+    let resolved: { status: ProjectAnswerStatus; answer?: string | undefined; detail?: string | undefined; findingStanding?: string | undefined; findingNote?: string | undefined };
     let reused = false;
     if (draft.compose !== undefined) {
       if (prior.length > 0) {
@@ -1258,6 +1268,10 @@ export function makeCrossProjectService(deps: CrossProjectDeps): CrossProjectSer
       targetProject: targetName,
       status: statusForAnswer(envelope),
       ...(envelope.answer === undefined ? {} : { answer: envelope.answer }),
+      // UX-C §13/SC-10: a composed exploratory answer carries its typed label locally;
+      // the SAME sentence is inside the answer text that travelled to the origin.
+      ...(resolved.findingStanding === undefined ? {} : { findingStanding: resolved.findingStanding }),
+      ...(resolved.findingNote === undefined ? {} : { findingNote: resolved.findingNote }),
       // §37: the responder is THIS project — it was never caller-supplied.
       responder: deps.projectId,
       warnings: envelope.detail === undefined ? warnings : [...warnings, envelope.detail],

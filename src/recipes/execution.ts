@@ -179,9 +179,13 @@ export interface RecipeExecutionService {
  * Policy refs used only when opening a cell on the caller's behalf. The configured
  * ReasoningCellService verification/admission policies must emit results bound to
  * these refs; otherwise evaluateCandidate will honestly report an invalid evaluation.
+ *
+ * UX-C §12/SC-12: they are EXPORTED (read-only) so the first-party deployment
+ * policies can recognise exactly these refs without duplicating string literals in
+ * two unrelated modules.
  */
-const RECIPE_VERIFICATION_POLICY: ReasoningPolicyRef = Object.freeze({ policyId: "recipe.explore.verification", version: "v1" });
-const RECIPE_ADMISSION_POLICY: ReasoningPolicyRef = Object.freeze({ policyId: "recipe.explore.admission", version: "v1" });
+export const RECIPE_VERIFICATION_POLICY: ReasoningPolicyRef = Object.freeze({ policyId: "recipe.explore.verification", version: "v1" });
+export const RECIPE_ADMISSION_POLICY: ReasoningPolicyRef = Object.freeze({ policyId: "recipe.explore.admission", version: "v1" });
 
 function capabilityRequired(capability: string, detail: string): RecipeExecutionOutcome {
   return Object.freeze({ status: "capability_required" as const, capability, detail });
@@ -208,6 +212,28 @@ function statementFromOutput(output: unknown): string | undefined {
     if (typeof statement === "string" && statement.trim() !== "") return statement;
   }
   return undefined;
+}
+
+/**
+ * UX-C §15/SC-3: the evidence refs the BRANCH actually cited. They must reach
+ * `submitCandidate` as `externalEvidenceRefs`; before UX-C they were dropped here,
+ * so a branch that cited evidence produced a different `candidateDigest` whose
+ * candidate was never evaluated and whose citation was lost. The branch HOST has
+ * already enforced the frozen allowlist structurally; this only normalizes.
+ */
+function evidenceRefsFromOutput(output: unknown): readonly string[] {
+  if (typeof output !== "object" || output === null || Array.isArray(output)) return Object.freeze([] as string[]);
+  const raw = (output as { readonly evidenceRefs?: unknown }).evidenceRefs;
+  if (!Array.isArray(raw)) return Object.freeze([] as string[]);
+  const out = new Set<string>();
+  for (const entry of raw) {
+    if (typeof entry === "string" && entry.length > 0) out.add(entry);
+    else if (typeof entry === "object" && entry !== null && typeof (entry as { readonly evidenceId?: unknown }).evidenceId === "string") {
+      const evidenceId = (entry as { readonly evidenceId: string }).evidenceId;
+      if (evidenceId.length > 0) out.add(evidenceId);
+    }
+  }
+  return Object.freeze([...out].sort());
 }
 
 export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExecutionService {
@@ -260,11 +286,19 @@ export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExe
         unresolved += 1;
         continue;
       }
+      // UX-C §15/SC-3: forward the branch's OWN cited evidence refs. RecipeExecution
+      // remains the SOLE candidate submit/evaluate owner; the branch host submits
+      // nothing. The refs stay subject to the frozen allowlist, which the host
+      // enforced structurally before this result existed.
+      const citedEvidenceRefs = evidenceRefsFromOutput(output);
       const submitted = await reasoning.submitCandidate({
         cellId,
         branchId: opened.branch.ref.branchId,
         type: REASONING_STATEMENT_TYPE,
         content: { statement },
+        ...(citedEvidenceRefs.length === 0
+          ? {}
+          : { externalEvidenceRefs: citedEvidenceRefs.map((evidenceId) => Object.freeze({ evidenceId })) }),
       });
       if (submitted.status !== "PENDING") continue; // DEDUPLICATED converges on an existing claim.
 

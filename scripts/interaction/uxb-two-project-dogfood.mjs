@@ -283,15 +283,15 @@ try {
   const pending2 = await detectorCross.pending();
   check("second_ask_is_pending_on_the_remote_side", pending2.length === 1,
     JSON.stringify(pending2.map((entry) => entry.requestId)));
-  // HONEST DEPLOYMENT LIMIT, found while running this rig: a profile-launched
-  // deployment composes NO reasoning (no cell store, no branch-execution port), so the
-  // remote project cannot fan out — an EXPLORE/PARALLEL compose request comes back
-  // CAPABILITY_REQUIRED and UX-B honestly maps that to DECLINED rather than inventing
-  // an answer. The composition PATH is therefore proven here with the intent the
-  // deployed stack can serve (FOCUS ⇒ the principal continues ⇒ a real answer), and the
-  // Explore variant is proven in-suite (UXB-N26) with a hand-composed installation that
-  // has a branch port. Recorded as a carry-forward: extending the launcher profile to
-  // compose reasoning is a host-capability decision, not a UX-B protocol change.
+  // HONEST DEPLOYMENT LIMIT, still true for THIS rig: these profiles do not request
+  // the UX-C §9 reasoning bundle (`reasoning: {}`), so this deployment composes NO
+  // reasoning (no cell store, no branch-execution port) and cannot fan out — an
+  // EXPLORE/PARALLEL compose request comes back CAPABILITY_REQUIRED and UX-B honestly
+  // maps that to DECLINED rather than inventing an answer. The composition PATH is
+  // therefore proven here with the intent the deployed stack can serve (FOCUS ⇒ the
+  // principal continues ⇒ a real answer). The packaged Explore variant is proven by
+  // UX-C in `scripts/interaction/uxc-dsh-local-dogfood.mjs`, where the SAME kind of
+  // profile DOES declare `reasoning: {}`; UXB-N26 keeps the in-suite Explore proof.
   const capabilityProbe = await detectorCross.respond(pending2[0].requestId, {
     compose: { task: "Parallel investigate two calibration approaches and check the result.", intent: "PARALLEL" },
   });
@@ -459,12 +459,14 @@ try {
 
 const honestNotes = {
   deployment_wiring_gap:
-    "A profile-launched deployment composes NO reasoning (no cell store, no branch-execution " +
-    "port), so a remote project cannot fan out: an EXPLORE/PARALLEL compose request comes back " +
-    "CAPABILITY_REQUIRED and UX-B honestly maps it to DECLINED. The composition PATH is proven " +
-    "here with the intent the deployed stack can serve; the Explore variant is proven in-suite " +
-    "(UXB-N26) with a hand-composed installation. Extending the launcher profile to compose " +
-    "reasoning is a host-capability decision and is carried forward.",
+    "These UX-B rigs do not request the UX-C §9 reasoning bundle (`reasoning: {}`), so " +
+    "they compose NO reasoning (no cell store, no branch-execution port) and a remote " +
+    "project cannot fan out: an EXPLORE/PARALLEL compose request comes back " +
+    "CAPABILITY_REQUIRED and UX-B honestly maps it to DECLINED. The composition PATH is " +
+    "proven here with the intent the deployed stack can serve. Since UX-C, a profile CAN " +
+    "declare `reasoning: {}` to get a deployment-owned store + ephemeral branches with no " +
+    "manual wiring (scripts/interaction/uxc-dsh-local-dogfood.mjs), and UXB-N26 keeps the " +
+    "in-suite Explore proof.",
   cf_ae_r_05_precision:
     "The shared-store section proves (a) no federation call site accepts a project or workspace " +
     "scope, so there is no reachable foreign-read PATH, and (b) the workspace facade fence " +
