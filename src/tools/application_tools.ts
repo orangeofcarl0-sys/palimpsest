@@ -120,6 +120,8 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         advisor: application.advisor !== undefined,
         recipeExecution: application.recipeExecution !== undefined,
         collaboration: application.collaboration !== undefined,
+        // UX-B §28: the cross-project face (a missing one is never an empty directory).
+        crossProject: application.crossProject !== undefined,
         proof: application.proof !== undefined,
         disclosure: application.disclosure !== undefined,
         projectWorkspace: application.projectWorkspace !== undefined,
@@ -572,6 +574,63 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
             ...(values === undefined ? {} : { taskProfileOverrides: values as Readonly<Record<string, string>> }),
           };
           return action === "plan" ? collaboration.plan(request) : collaboration.run(request);
+        },
+      }),
+    );
+  }
+
+  if (application.crossProject !== undefined) {
+    const crossProject = application.crossProject;
+    tools.push(
+      tool({
+        name: "palimpsest_cross_project",
+        description:
+          "ONE-REQUEST CROSS-PROJECT COLLABORATION (UX-B): ask an existing other project a question with one product-level request, without knowing peer ids, threads or federation mechanics. `projects` is the READ-ONLY deployment directory of projects this installation may reach; `prepare` is a READ-ONLY preview of the EXACT packet that would be sent (task text plus any explicitly supplied context, and nothing else — no workspace, journal, asset or proof data is ever attached automatically); `ask` [mutating] sends ONE ordinary peer message and returns immediately (one request is NOT one round trip, and no answer is awaited); `status` is a READ-ONLY derivation of what is known so far (no response yet means WAITING, not failure, and materially different answers are reported as CONFLICT rather than picked); `pending` lists the authenticated questions OTHER projects have asked THIS one; `respond` [mutating] answers one of them on its own thread (use compose.{\"task\",\"intent\"} to answer with this project's own local collaboration instead of authoring text); `receive` [mutating] surfaces the terminal answer and marks that answer processed; `acknowledge` [mutating] marks ONE consumed peer message as processed. Asking creates NO commitment, Work task, ProjectIR revision, boundary change, Evidence or Proof, and an answer is never imported automatically.",
+        mode: "mutating",
+        actions: ["projects", "prepare", "ask", "status", "pending", "respond", "receive", "acknowledge"],
+        extraProperties: {
+          target: {
+            type: "string",
+            description: "the other project's name as the user would say it (its id, display name or alias) — never a peer id",
+          },
+          task: { type: "string", description: "the question, in the user's own words" },
+          contextText: { type: "string", description: "optional context text to include EXACTLY as given; nothing else is sent" },
+          requestId: { type: "string", description: "the cross-project request id (from `ask`, `pending` or `prepare`)" },
+          answer: {
+            type: "object",
+            description:
+              "what to reply with: {status?: ANSWERED|PARTIAL|DECLINED|ERROR, answer?, detail?} for authored text, or {compose:{task?,intent?}} to answer using this project's own local collaboration",
+          },
+          message: {
+            type: "object",
+            description: "the full peer message to acknowledge (the object returned by `pending`/`status`/`receive` is not it — use the message the inbox returned)",
+          },
+        },
+        run: async (action, object) => {
+          if (action === "projects") return crossProject.projects();
+          if (action === "pending") return crossProject.pending();
+          if (action === "prepare") {
+            return crossProject.prepareAsk({
+              target: requiredString(object, "target"),
+              task: requiredString(object, "task"),
+              ...(object.contextText === undefined ? {} : { contextText: requiredString(object, "contextText") }),
+              requestedBy: "agent:palimpsest_cross_project",
+            });
+          }
+          if (action === "ask") {
+            return crossProject.ask({
+              target: requiredString(object, "target"),
+              task: requiredString(object, "task"),
+              ...(object.contextText === undefined ? {} : { contextText: requiredString(object, "contextText") }),
+              requestedBy: "agent:palimpsest_cross_project",
+            });
+          }
+          if (action === "status") return crossProject.status(requiredString(object, "requestId"));
+          if (action === "receive") return crossProject.receive(requiredString(object, "requestId"));
+          if (action === "respond") {
+            return crossProject.respond(requiredString(object, "requestId"), object.answer);
+          }
+          return crossProject.acknowledge(required(object, "message"));
         },
       }),
     );
