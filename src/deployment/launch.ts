@@ -50,6 +50,7 @@ import {
 import { staticBoundaryRoute } from "../boundary_memory/index.js";
 import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "../project_workspace/index.js";
 import { SqliteManagementPreferenceStore } from "../project_management/index.js";
+import { staticProjectPeerDirectory, type ProjectPeerDirectoryPort } from "../interaction/index.js";
 import type { RemoteSubmissionPort } from "../application/surface.js";
 import type { ProjectAgentDeploymentProfile } from "./profile.js";
 
@@ -140,6 +141,40 @@ function deploymentPeerDirectory(
     }),
   );
   return { observePeers: async () => ({ state: "known", value: Object.freeze(advertisements) }) };
+}
+
+/**
+ * UX-B §7/§42/SC-9: the deployment's project↔peer bindings as a READ-ONLY
+ * `ProjectPeerDirectoryPort`.
+ *
+ * WHY THIS EXISTS: the profile's `directory` carries peer identity only, so in a
+ * profile-launched deployment there was no way for a user to name a PROJECT, and
+ * `knownIndependentPeers` was never passed either — which meant UX-A's COORDINATE
+ * handoff was unreachable and `AUTO cannot silently cross projects` was only
+ * VACUOUSLY true (audit SC-9/SC-19). Supplying `projectDirectory` makes the peers
+ * really observable, so both facts become falsifiable in a real launched
+ * deployment.
+ *
+ * It is ADDITIVE and strictly bounded: absent `projectDirectory` ⇒ `undefined` ⇒
+ * `application.crossProject` is absent (a 501 `surface_absent`, never a stub) and
+ * nothing else changes. The descriptors are validated by
+ * `staticProjectPeerDirectory`, so a malformed binding fails at launch instead of
+ * producing a directory the product would have to distrust per call.
+ */
+function deploymentProjectDirectory(
+  entries: ProjectAgentDeploymentProfile["projectDirectory"],
+): ProjectPeerDirectoryPort | undefined {
+  if (entries === undefined) return undefined;
+  return staticProjectPeerDirectory(
+    entries.map((entry) => ({
+      projectId: entry.projectId,
+      ...(entry.displayName === undefined ? {} : { displayName: entry.displayName }),
+      aliases: entry.aliases,
+      peer: materializePeerRef({ peerId: entry.peerId }),
+      competenceTags: entry.competenceTags,
+    })),
+    { directoryId: "deployment-project-directory" },
+  );
 }
 
 function deploymentAttemptCatalog(orchestrationDatabasePath: string): AttemptCatalogPort {
@@ -238,6 +273,18 @@ export function launchDeployment(
       ? undefined
       : [{ peer: localPeer, point: profile.persistentPoint }];
 
+  // UX-B §7/§42/SC-9: the project↔peer binding directory, when the profile declares
+  // one. `undefined` keeps the cross-project face (and the advisor's peer list)
+  // exactly as they were before this option existed.
+  const projectPeerDirectory = deploymentProjectDirectory(profile.projectDirectory);
+  // SC-9: the SAME declared bindings are the deployment's known independent peers,
+  // so UX-A's COORDINATE handoff is reachable in a launched deployment instead of
+  // being vacuously non-mutating. Only present when the profile declares bindings.
+  const knownIndependentPeers =
+    profile.projectDirectory === undefined
+      ? undefined
+      : profile.projectDirectory.map((entry) => ({ peerId: entry.peerId }));
+
   // G10-Q: the durable remote-submission port lets a NON-home peer act through product tools
   // (submit a boundary mutation to the home; communicate an explicit commitment decision to the
   // owner). A queue receipt is mechanical, never an acceptance.
@@ -285,6 +332,8 @@ export function launchDeployment(
     coordinationStore,
     peerTransportPort: peerTransportFromDurable(transport, { localPeer }),
     peerDirectoryPort: deploymentPeerDirectory(profile.directory),
+    ...(projectPeerDirectory === undefined ? {} : { projectPeerDirectory }),
+    ...(knownIndependentPeers === undefined ? {} : { knownIndependentPeers }),
     attemptCatalog: deploymentAttemptCatalog(profile.databases.orchestration),
     ...(boundaryMemoryStore === undefined ? {} : { boundaryMemoryStore }),
     ...(runtimeScopeStore === undefined ? {} : { runtimeScopeStore }),
