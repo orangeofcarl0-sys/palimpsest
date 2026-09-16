@@ -105,6 +105,12 @@ import type {
   CampaignMonitorStatus,
   CampaignMonitorTickResult,
 } from "../monitor/index.js";
+import type {
+  ProjectVerificationOutcome,
+  ProjectVerificationRun,
+  ProjectVerificationService,
+  ProjectVerificationStatus,
+} from "../project_verification/index.js";
 import type { ProjectOperatingPostureView } from "../project_operating/posture.js";
 import type { ManagementActivityRecord } from "../project_operating/activity.js";
 import type { ProjectOperatingHistory } from "../project_operating/history.js";
@@ -525,6 +531,39 @@ export interface MonitorApplicationSurface {
   preview(): Promise<CampaignMonitorTickResult>;
 }
 
+/* ------------------------------------------------------------------ *
+ * G10-AD §22: Project Verification (current head only, registered verifiers only)
+ * ------------------------------------------------------------------ */
+
+/**
+ * The explicit Project Verification face.
+ *
+ *   VerificationResult ≠ Truth   ≠ WorkEvidence   ≠ ProofPublication
+ *   ≠ ReasoningAdmission         ≠ TaskState      ≠ Authority
+ *
+ * An agent/user can request verification of the CURRENT project through a
+ * REGISTERED verifier and read the derived status and the append-only history. It
+ * can NEVER: register a verifier, change an independence class, supply an arbitrary
+ * command, or claim its own context is independent. There is deliberately no
+ * `registerVerifier`/`setIndependenceClass`/`runCommand` here, and `requestedBy` is
+ * filled by the surface, never supplied by the caller.
+ */
+export interface VerificationApplicationSurface {
+  /** §13: the DERIVED current-head verification status (pure; runs no verifier). */
+  status(): Promise<ProjectVerificationStatus>;
+  /** §12: the append-only run history, newest first (references only). */
+  history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
+  /**
+   * §4/§14/§22: verify the EXACT current ProjectIR head under a registered
+   * `verifierRef` (or the deployment default). A caller may only SELECT a
+   * registered ref; an unknown ref is refused with a typed reason and nothing runs.
+   */
+  verifyCurrentHead(input?: {
+    readonly verifierRef?: string | undefined;
+    readonly reason?: string | undefined;
+  }): Promise<ProjectVerificationOutcome>;
+}
+
 export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
   readonly boundary?: BoundaryApplicationSurface | undefined;
@@ -556,6 +595,8 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
   readonly projections?: ProjectionsApplicationSurface | undefined;
   /** G10-AC (additive): read-only long-horizon monitor status and preview. */
   readonly monitor?: MonitorApplicationSurface | undefined;
+  /** G10-AD (additive): project-head verification status/history/request. */
+  readonly verification?: VerificationApplicationSurface | undefined;
 }
 
 export interface ApplicationSurfaceDeps {
@@ -603,6 +644,17 @@ export interface ApplicationSurfaceDeps {
   readonly monitor?: {
     status(): Promise<CampaignMonitorStatus>;
     previewTick(): Promise<CampaignMonitorTickResult>;
+  } | undefined;
+  /**
+   * G10-AD §22/§29: the composed Project Verification runtime. Absent ⇒ the
+   * verification surface is absent (a 501, never a stub). The structural `Pick`
+   * means the real `ProjectVerificationService` is passed straight through.
+   */
+  readonly verification?: {
+    readonly service: Pick<
+      ProjectVerificationService,
+      "status" | "history" | "verifyCurrentHead"
+    >;
   } | undefined;
 }
 
@@ -1110,6 +1162,33 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           preview: () => deps.monitor!.previewTick(),
         };
 
+  // G10-AD §22: the explicit Project Verification face. `requestedBy` is filled
+  // HERE, never by the caller, and the only thing a caller may choose is a
+  // REGISTERED verifier ref: the runtime refuses an unknown ref with a typed reason
+  // and executes nothing. There is no way to register a verifier, change an
+  // independence class, inject a command or claim a caller's context is independent.
+  const verification: VerificationApplicationSurface | undefined =
+    deps.verification === undefined
+      ? undefined
+      : (() => {
+          const service = deps.verification!.service;
+          return {
+            status: () => service.status(),
+            history: (limit?: number) => service.history(limit),
+            verifyCurrentHead: (input?: {
+              readonly verifierRef?: string | undefined;
+              readonly reason?: string | undefined;
+            }) =>
+              service.verifyCurrentHead({
+                requestedBy: "agent:application",
+                reason:
+                  input?.reason ??
+                  "explicit request to verify the exact current project head through a registered verifier",
+                ...(input?.verifierRef === undefined ? {} : { verifierRef: input.verifierRef }),
+              }),
+          };
+        })();
+
   const projections: ProjectionsApplicationSurface = {    work: async () => {
       try {
         return workProjection(deps.controller.orchestrationGraph(), deps.controller.viewCursor());
@@ -1178,6 +1257,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(monitor === undefined ? {} : { monitor }),
+    ...(verification === undefined ? {} : { verification }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

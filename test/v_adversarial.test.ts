@@ -137,6 +137,21 @@ const ALLOWED_MODULES: readonly RegExp[] = [
   // preference and an append-only, non-authoritative activity log. The AB suite
   // asserts that authority freedom directly.
   /^\.\.\/project_operating\//u,
+  // G10-AD §21 JUSTIFICATION: `project_management/service.ts` now imports
+  // `../project_verification/index.js`. This is the SAME class of module the G10-AB
+  // entry above admits: a narrowly-owned product plane with its OWN append-only,
+  // non-authoritative store, which can emit NO Work Evidence, NO Proof publication,
+  // NO Reasoning admission, NO task state, NO promotion eligibility and NO effect
+  // authority (its own suite proves that statically AND behaviourally).
+  //
+  // The firewall's real invariant - "the vertical never imports a SIBLING CANONICAL
+  // store or an effect-authority module" - is UNCHANGED: none of the FORBIDDEN
+  // patterns above matches it, and the vertical uses ONLY the typed verification
+  // seam (`status`/`history`/`verifyCurrentHead`), the pure `verificationIsDue`
+  // derivation and the canonical run-ref builder. Spec §21 requires the bounded
+  // management layer to return the durable `project_verification:<runId>` reference,
+  // so the seam is a product requirement, not an escape hatch.
+  /^\.\.\/project_verification\//u,
 ];
 
 /** Identifiers that would signal mutating a sibling store or taking effect authority. */

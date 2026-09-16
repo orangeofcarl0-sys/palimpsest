@@ -17,8 +17,9 @@
  *     none it is a NON-overridable blocker ("no independent sovereign peer").
  *   - EXPLORE is eligible only with reasoning branches; it is disfavoured (never
  *     blocked) under high coupling or low output composability.
- *   - VERIFY is suggested only with a configured verifier; a same-model verifier is
- *     labelled NOT independent.
+ *   - VERIFY is suggested only with a REGISTERED verifier ref, and whether that
+ *     verifier counts as independent is reported from the deployment's real
+ *     runtime/registry fact (G10-AD §28) — never inferred from its NAME.
  *   - MONITOR is suggested only with campaign monitoring and never claims autonomy.
  */
 
@@ -62,8 +63,14 @@ export const BLOCKER_NO_INDEPENDENT_PEER = "no independent sovereign peer";
 /*
  * Capability notes use the same `capability_required:<id>` vocabulary as the
  * recipe execution layer, so an unavailable capability is stated, never padded.
+ *
+ * G10-AD §17: the VERIFY modifier's capability is PROJECT VERIFICATION, not the
+ * ambiguous experiment-validator vocabulary (`experiment.validator`). The
+ * ExperimentValidatorPort primitives are reused by an adapter, but experiment
+ * evaluation is not project-verification truth, and the verifier is a REGISTERED
+ * protocol rather than a validator ref a caller may name.
  */
-export const CAPABILITY_VERIFIER = "experiment.validator";
+export const CAPABILITY_VERIFIER = "project.verification";
 export const CAPABILITY_MONITORING = "campaign.watcher";
 export const CAPABILITY_REASONING = "reasoning.cell";
 
@@ -85,7 +92,20 @@ export interface AdvisorIndependentPeer {
 
 export interface AdvisorCapabilities {
   readonly independentPeers: readonly AdvisorIndependentPeer[];
+  /**
+   * G10-AD §28: the REGISTERED verifier ref a plan may bind, taken from the real
+   * `ProjectVerifierRegistry`. A bare descriptive string is still accepted for
+   * compatibility, but it NO LONGER implies an independent verifier: see
+   * `independentVerifierAvailable`.
+   */
   readonly verifierRef?: string | undefined;
+  /**
+   * G10-AD §28 (additive): TRUE only when the registered verifier really EXECUTES
+   * in this deployment and counts as independent under its registered independence
+   * class. Absent ⇒ false. A raw `verificationCapabilityRef` can never set it -
+   * the fact must come from the runtime/registry.
+   */
+  readonly independentVerifierAvailable?: boolean | undefined;
   readonly campaignMonitoring: boolean;
   readonly reasoningBranches: boolean;
 }
@@ -237,8 +257,17 @@ function supportedModifiersOf(registry: RecipeRegistry, baseId: string): readonl
 }
 
 function isSameModelVerifier(verifierRef: string): boolean {
+  // G10-AD §28: DEPRECATED and no longer consulted. A VERIFIER REF NAME is not an
+  // independence signal (nor a correctness one): independence comes from the
+  // registered definition's class + separation contract, which the install reads
+  // from the real ProjectVerifierRegistry and reports through
+  // `AdvisorCapabilities.independentVerifierAvailable`. Kept exported for embedders
+  // that used it as a purely descriptive label.
   return /same[-_ ]?model|same[-_ ]?context|self[-_ ]?verif|non[-_ ]?independent/iu.test(verifierRef);
 }
+
+/** G10-AD §28: the deprecated name heuristic, kept only for display callers. */
+export const verifierRefNameLooksSameModel = isSameModelVerifier;
 
 /* ------------------------------------------------------------------ *
  * Advisor
@@ -342,12 +371,20 @@ export function makeEmpiricalArchitectureAdvisor(deps: EmpiricalArchitectureAdvi
         rationale.push("A multi-agent request was noted, but durable coordination still requires an already-independent peer; Explore uses ephemeral branches, not durable peer agents.");
       }
       if (hasVerifier) {
-        rationale.push("Verification can be bound to the configured verifier; independent verification requires a verifier that is not the same model and context.");
-        if (isSameModelVerifier(verifierRef!)) {
-          rationale.push("The only configured verifier appears to be same-model and is NOT independent.");
+        // G10-AD §28: the independence FACT comes from the runtime/registry, never
+        // from a name heuristic or a bare capability string. A registered ref that
+        // does not count as independent is stated as exactly that.
+        if (capabilities.independentVerifierAvailable === true) {
+          rationale.push(
+            `Verification can be bound to the registered verifier "${verifierRef}", which counts as independent under its registered independence class; the deployment can prove the separation.`,
+          );
+        } else {
+          rationale.push(
+            `Verification can be bound to the registered verifier "${verifierRef}", but it does not count as independent in this deployment (an unbound, shared-context, declared-only or unknown-separation verifier is not independent verification).`,
+          );
         }
       } else {
-        rationale.push("No verifier is configured, so Verify is not suggested.");
+        rationale.push("No verifier is registered, so Verify is not suggested.");
       }
       if (hasMonitoring) {
         rationale.push("Monitoring would be caller-driven only; no autonomous background monitoring is claimed.");

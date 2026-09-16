@@ -1255,3 +1255,117 @@ export function manageRequestModeChange(input: { readonly to: ManagementInvolvem
     body: JSON.stringify({ to: input.to }),
   });
 }
+
+/* ------------------------------------------------------------------ *
+ * G10-AD §23: project-head verification (status / history / explicit run)
+ * ------------------------------------------------------------------ */
+
+/**
+ * GET /api/verification/status.
+ *
+ * The DERIVED status of the EXACT current ProjectIR head. `state === "PASS"` means
+ * only "the named verifier protocol passed" — never "the world is true", never Work
+ * Evidence, never Proof publication, never Reasoning admission, never task state.
+ * The status is derived per read; this module owns no verification state.
+ */
+export function verificationStatus(): Promise<VerificationStatus> {
+  return call<VerificationStatus>("/api/verification/status");
+}
+
+/** GET /api/verification/history. The append-only runs, newest first (references only). */
+export function verificationHistory(limit?: number): Promise<readonly VerificationRun[]> {
+  return call<readonly VerificationRun[]>(
+    limit === undefined ? "/api/verification/history" : `/api/verification/history?limit=${limit}`,
+  );
+}
+
+/**
+ * POST /api/verification/verify_current_head.
+ *
+ * A caller may select a REGISTERED `verifierRef` (or leave it to the deployment
+ * default); the server refuses an unknown ref with a typed reason and runs nothing.
+ * There is deliberately no helper that accepts a command, a commit or an
+ * independence class: the subject is always the exact current project head.
+ */
+export function verificationVerifyCurrentHead(input?: {
+  readonly verifierRef?: string;
+  readonly reason?: string;
+}): Promise<VerificationOutcome> {
+  return call<VerificationOutcome>("/api/verification/verify_current_head", {
+    method: "POST",
+    body: JSON.stringify({
+      ...(input?.verifierRef === undefined ? {} : { verifierRef: input.verifierRef }),
+      ...(input?.reason === undefined ? {} : { reason: input.reason }),
+    }),
+  });
+}
+
+/** The exact verification subject: the canonical ProjectIR head, never a caller's commit. */
+export interface VerificationSubject {
+  readonly projectRevision: number;
+  readonly projectDigest: string;
+  readonly headCommit: string;
+  readonly digest: string;
+}
+
+export interface VerificationRun {
+  readonly runId: string;
+  readonly requestRef: string;
+  readonly subject: VerificationSubject;
+  readonly verifierRef: string;
+  readonly verifierDefinitionDigest: string;
+  readonly independence: string;
+  readonly status: string;
+  readonly verdict: string | null;
+  readonly score: number | null;
+  readonly detail: string | null;
+  readonly startedAt: string;
+  readonly finishedAt: string | null;
+  readonly freshness: string;
+  readonly resultDigest: string | null;
+  readonly runDigest: string;
+}
+
+export interface VerificationRunView {
+  readonly run: VerificationRun;
+  readonly freshness: string;
+  readonly current: boolean;
+  readonly reasons: readonly string[];
+  readonly independent: boolean;
+  readonly independenceBasis: string;
+}
+
+export interface VerificationStatus {
+  readonly schemaVersion: 1;
+  readonly projectId: string;
+  readonly subject: VerificationSubject | null;
+  readonly repositoryHead: string | null;
+  readonly repositoryConsistent: boolean | null;
+  readonly runtimeAvailable: boolean;
+  readonly independentVerifyAvailable: boolean;
+  readonly registeredVerifierRefs: readonly string[];
+  readonly executableVerifierRefs: readonly string[];
+  readonly independentVerifierRefs: readonly string[];
+  readonly declaredSeparateVerifierRefs: readonly string[];
+  readonly defaultVerifierRef: string | null;
+  readonly latestRun: VerificationRunView | null;
+  readonly currentSubjectRun: VerificationRunView | null;
+  readonly freshIndependentRun: VerificationRunView | null;
+  readonly unresolvedRunIds: readonly string[];
+  readonly state: string;
+  readonly verdictScope: string;
+  readonly detail: string;
+  readonly derivedAt: string;
+}
+
+export interface VerificationOutcome {
+  readonly status: "recorded" | "blocked";
+  readonly typedReasonCode: string;
+  readonly detail: string;
+  readonly run: VerificationRun | null;
+}
+
+/** The canonical/product ref of a durable verification run (never a copied body). */
+export function verificationRunRef(runId: string): string {
+  return `project_verification:${runId}`;
+}

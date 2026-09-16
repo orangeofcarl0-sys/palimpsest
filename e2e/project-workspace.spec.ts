@@ -25,6 +25,7 @@
  */
 
 import { expect, test } from "@playwright/test";
+import { execFileSync } from "node:child_process";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -41,6 +42,7 @@ import {
   SqliteCampaignStore,
 } from "../dist/src/advanced.js";
 import { linkedCampaignMonitorScope } from "../dist/src/monitor/index.js";
+import { commandProjectHeadVerifier } from "../dist/src/project_verification/index.js";
 import { serveOrchestration } from "../dist/src/serve.js";
 
 const TOKEN = "e2e-project";
@@ -61,10 +63,19 @@ const WATCH_AT = "2026-01-01T00:00:00Z";
 /** controller.start mints the genesis revision (0 before this run's decision);
  * the single appended decision mints the revision this suite observes. */
 const EXPECTED_REVISION = 1;
+/**
+ * G10-AD §14/§23: the deployment-registered verifier this suite wires. It is a REAL
+ * bounded subprocess (`node -e process.exit(0)`) through the real command validator,
+ * declared MECHANICAL_INDEPENDENT, so the run really executes and really counts as
+ * independent. The command lives in the deployment CONFIG, never in a request.
+ */
+const VERIFIER_REF = "e2e.project.head.check.v1";
 
 interface WorkspaceSession {
   readonly url: string;
   readonly decisionId: string;
+  /** The canonical ProjectIR head at start, which the real git head also reports. */
+  readonly headCommit: string;
   close(): Promise<void>;
 }
 
@@ -124,6 +135,15 @@ async function startWorkspace(): Promise<WorkspaceSession> {
   const campaignStore = new SqliteCampaignStore(join(dir, "campaign.sqlite"));
   await seedLinkedDormantCampaign(campaignStore);
 
+  // G10-AD §5: the project head IS the real git head of this working copy, so the
+  // repository-consistency rule is exercised against real git (not a stub) and the
+  // first-party verification path can really execute.
+  const headCommit = execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+  }).trim();
+  if (!/^[0-9a-f]{40}$/.test(headCommit)) throw new Error(`unexpected git head: ${headCommit}`);
+
   const installed = installPalimpsest({ tools: { register: () => undefined } }, {
     projectId: PROJECT_ID,
     databasePath: join(dir, "state.sqlite"),
@@ -147,6 +167,19 @@ async function startWorkspace(): Promise<WorkspaceSession> {
     // seeded watch is satisfied, so the read-only preview has something real to
     // derive on any machine.
     campaignClock: () => "2026-09-16T00:00:00Z",
+    repository: process.cwd(),
+    // G10-AD §14/§23: a REAL deployment-registered mechanical verifier. The default
+    // first-party protocol (`git diff --check`) is also registered, but this suite
+    // registers a deterministic bounded subprocess so the verdict does not depend on
+    // the working copy's whitespace.
+    projectVerifierProviders: [
+      commandProjectHeadVerifier({
+        verifierRef: VERIFIER_REF,
+        command: process.execPath,
+        args: ["-e", "process.exit(0)"],
+      }),
+    ],
+    projectVerificationDefaultVerifierRef: VERIFIER_REF,
   });
 
   // Seed the synthetic project through the PUBLIC application surface: the
@@ -156,6 +189,9 @@ async function startWorkspace(): Promise<WorkspaceSession> {
   installed.controller.start({
     projectId: PROJECT_ID,
     goal: GOAL,
+    // G10-AD §5: the canonical project head is the REAL git head the verification
+    // runtime also reads, so the consistency rule is genuinely satisfied here.
+    headCommit,
     requirements: [
       { requirement_id: "req-1", statement: REQUIREMENT_1, priority: "critical", acceptance_refs: [] },
       { requirement_id: "req-2", statement: REQUIREMENT_2, priority: "high", acceptance_refs: [] },
@@ -202,6 +238,7 @@ async function startWorkspace(): Promise<WorkspaceSession> {
   return {
     url: handle.url,
     decisionId: decision.decision.decision_id,
+    headCommit,
     close: async () => {
       await handle.close();
       await installed.dispose();
@@ -424,5 +461,76 @@ test.describe("G10-V Project Workspace", () => {
       return (await response.json()) as Record<string, boolean>;
     }, { authorization: `Bearer ${TOKEN}` });
     expect(surfaces.monitor).toBe(true);
+  });
+
+  /**
+   * G10-AD §23: the Verification tab. It shows the EXACT current head under the
+   * NAMED registered protocol, its independence basis, the verdict, CURRENT-vs-stale
+   * and the durable run ref — and it never renders a generic "verified" badge. The
+   * run requested from the card goes through the real runtime and is recorded in the
+   * append-only history.
+   */
+  test("E2E-PROJECT-04: the verification card names the protocol, never a generic verified badge", async ({ page }) => {
+    await page.goto(session.url);
+    await page.getByRole("button", { name: "Verification", exact: true }).click();
+
+    // 1. The card exists with its own blocks, and it states what it refuses to do.
+    await expect(page.getByTestId("verification-section")).toBeVisible();
+    await expect(page.getByTestId("verification-not-a-badge")).toContainText("never shows a generic");
+    await expect(page.getByTestId("verification-verdict-scope")).toContainText("named_verifier_protocol_only");
+
+    // 2. The runtime is derived from REAL wiring: the registered mechanical verifier
+    //    executes and counts as independent, and the head is the real git head.
+    await expect(page.getByTestId("verification-availability")).toContainText("AVAILABLE");
+    await expect(page.getByTestId("verification-head-commit")).toContainText(session.headCommit);
+    await expect(page.getByTestId("verification-repository-consistent")).toContainText(
+      "the actual git head equals the canonical project head",
+    );
+
+    // 3. Nothing has run yet for this exact head: UNVERIFIED, and no verdict is invented.
+    await expect(page.getByTestId("verification-state")).toContainText("UNVERIFIED");
+    await expect(page.getByTestId("verification-independence")).toContainText("no run exists for this head");
+    await expect(page.getByTestId("verification-history-empty")).toBeVisible();
+    await expect(page.getByTestId("verification-history-row")).toHaveCount(0);
+
+    // 4. Requesting a run executes the REGISTERED protocol and records it durably.
+    await page.getByTestId("verification-verify-current-head").click();
+    await expect(page.getByTestId("verification-result")).toContainText("recorded", { timeout: 30_000 });
+    await expect(page.getByTestId("verification-state")).toContainText("PASS");
+    // The state is NEVER a bare badge: it names the protocol AND the durable run ref.
+    await expect(page.getByTestId("verification-verifier")).toHaveText(VERIFIER_REF);
+    await expect(page.getByTestId("verification-run-ref")).toContainText("project_verification:");
+    await expect(page.getByTestId("verification-independence")).toContainText("MECHANICAL_INDEPENDENT");
+    await expect(page.getByTestId("verification-independence")).toContainText("counts as independent");
+    await expect(page.getByTestId("verification-freshness")).toContainText("CURRENT");
+    await expect(page.getByTestId("verification-latest-run")).toContainText("PASS");
+
+    // 5. The run is in the append-only history (the same ref as the current state).
+    await expect(page.getByTestId("verification-history-row")).toHaveCount(1);
+    await expect(page.getByTestId("verification-history-ref")).toContainText("project_verification:");
+    await expect(page.getByTestId("verification-history-count")).toContainText("1");
+
+    // 6. The HTTP surface is discoverable for this installation.
+    const surfaces = await page.evaluate(async (headers: Record<string, string>) => {
+      const response = await fetch("/api/application/surfaces", { headers });
+      return (await response.json()) as Record<string, boolean>;
+    }, { authorization: `Bearer ${TOKEN}` });
+    expect(surfaces.verification).toBe(true);
+
+    // 7. A caller may only SELECT a registered verifier: an unknown ref is refused and
+    //    nothing runs (the run count is unchanged), and no route accepts a command.
+    const refused = await page.evaluate(async (headers: Record<string, string>) => {
+      const response = await fetch("/api/verification/verify_current_head", {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify({ verifierRef: "project.head.not-registered.v1" }),
+      });
+      return (await response.json()) as { status: string; typedReasonCode: string; run: unknown };
+    }, { authorization: `Bearer ${TOKEN}` });
+    expect(refused.status).toBe("blocked");
+    expect(refused.typedReasonCode).toBe("unknown_verifier_ref");
+    expect(refused.run).toBeNull();
+    await page.getByTestId("project-refresh").click();
+    await expect(page.getByTestId("verification-history-count")).toContainText("1");
   });
 });
