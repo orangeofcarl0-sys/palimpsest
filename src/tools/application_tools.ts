@@ -13,6 +13,7 @@ import { VARIANT_KINDS } from "../organization_memory/index.js";
 import { SOURCE_PROVENANCES, materializeProofSourceRevisionRef } from "../proof_asset/index.js";
 import { PROJECT_JOURNAL_KINDS, ProjectWorkspaceError } from "../project_workspace/index.js";
 import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
+import { COLLABORATION_INTENTS, MAX_BRANCH_HINT, MIN_BRANCH_HINT } from "../interaction/index.js";
 import {
   WORK_MODE_BASE_MODES,
   WORK_MODE_MODIFIERS,
@@ -118,6 +119,7 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
         recipes: application.recipes !== undefined,
         advisor: application.advisor !== undefined,
         recipeExecution: application.recipeExecution !== undefined,
+        collaboration: application.collaboration !== undefined,
         proof: application.proof !== undefined,
         disclosure: application.disclosure !== undefined,
         projectWorkspace: application.projectWorkspace !== undefined,
@@ -507,6 +509,69 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           if (typeof compiled !== "object" || compiled === null) throw new ToolArgsError("compiled must be an object");
           const context = object.context;
           return recipeExecution.start(compiled as never, (typeof context === "object" && context !== null ? context : {}) as never);
+        },
+      }),
+    );
+  }
+
+  if (application.collaboration !== undefined) {
+    const collaboration = application.collaboration;
+    tools.push(
+      tool({
+        name: "palimpsest_collaborate",
+        description:
+          "ONE-REQUEST LOCAL COLLABORATION (UX-A): state a task and an intent and Palimpsest decides whether another collaboration boundary has engineering value. `plan` is a read-only derivation (it profiles the task, consults the existing architecture advisor and the derived posture/verification availability, and returns the structure, why it was chosen, and any capability warning); `run` [mutating] executes only the EXISTING governed recipe/verification paths and returns the admitted reasoning findings and any independent verification result in plain language. FOCUS creates no branch and no agent; PARALLEL uses bounded ephemeral reasoning branches and mints no durable peer/commitment; CHECK uses only the real Project Verification runtime, and `run` may honestly answer CAPABILITY_REQUIRED / CROSS_PROJECT_REQUIRED / PARTIAL. Raw recipe ids, plan objects, agent ids, commands, authority flags, peer refs and verification results are NOT accepted — the advisor still selects, the compiler still compiles, and ReasoningCell/ProjectVerification still own their semantics. This asks for EXPLORE-style work: use `palimpsest_recipe`/`palimpsest_reasoning` only for expert, step-by-step control, and `truth` is never returned (a PASS is a protocol result)",
+        mode: "mutating",
+        actions: ["plan", "run"],
+        extraProperties: {
+          task: { type: "string", description: "the task in the user's own words" },
+          intent: {
+            type: "string",
+            enum: [...COLLABORATION_INTENTS],
+            description: "AUTO (default) | FOCUS | PARALLEL | CHECK | PARALLEL_AND_CHECK",
+          },
+          branchCountHint: {
+            type: "number",
+            description: `advanced, bounded local branch count (${MIN_BRANCH_HINT}..${MAX_BRANCH_HINT}); out-of-range is refused, never clamped`,
+          },
+          verifierRef: { type: "string", description: "an already-REGISTERED verifier ref that CHECK may bind" },
+          values: {
+            type: "object",
+            description:
+              "explicit task-feature values (USER_DECLARED) that override the untrusted profiler proposal; keys are the nine task feature names",
+          },
+        },
+        run: async (action, object) => {
+          const intent = object.intent;
+          if (
+            intent !== undefined &&
+            (typeof intent !== "string" || !(COLLABORATION_INTENTS as readonly string[]).includes(intent))
+          ) {
+            throw new ToolArgsError(`argument "intent" must be one of ${COLLABORATION_INTENTS.join(", ")}`);
+          }
+          const branchCountHint = object.branchCountHint;
+          if (branchCountHint !== undefined && (typeof branchCountHint !== "number" || !Number.isSafeInteger(branchCountHint))) {
+            throw new ToolArgsError('argument "branchCountHint" must be an integer');
+          }
+          const values = object.values;
+          if (values !== undefined && (typeof values !== "object" || values === null || Array.isArray(values))) {
+            throw new ToolArgsError('argument "values" must be an object');
+          }
+          const verifierRef = object.verifierRef;
+          if (verifierRef !== undefined && (typeof verifierRef !== "string" || verifierRef.trim() === "")) {
+            throw new ToolArgsError('argument "verifierRef" must be a non-empty string');
+          }
+          // The caller supplies the task, an optional intent and the bounded hints —
+          // never an identity, a plan or an authority. `requestedBy` is derived here.
+          const request = {
+            task: requiredString(object, "task"),
+            requestedBy: "agent:palimpsest_collaborate",
+            ...(intent === undefined ? {} : { intent: intent as (typeof COLLABORATION_INTENTS)[number] }),
+            ...(branchCountHint === undefined ? {} : { branchCountHint }),
+            ...(verifierRef === undefined ? {} : { verifierRef }),
+            ...(values === undefined ? {} : { taskProfileOverrides: values as Readonly<Record<string, string>> }),
+          };
+          return action === "plan" ? collaboration.plan(request) : collaboration.run(request);
         },
       }),
     );

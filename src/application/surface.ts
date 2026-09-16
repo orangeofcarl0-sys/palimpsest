@@ -49,6 +49,9 @@ import type {
   SourceProvenance,
 } from "../proof_asset/index.js";
 import { materializeProofSourceRevisionRef, reasoningClaimPublicationSource } from "../proof_asset/index.js";
+import type { CollaborationService } from "../interaction/collaboration.js";
+import type { CollaborationPlanView } from "../interaction/intent.js";
+import type { CollaborationResult } from "../interaction/result_view.js";
 import type {
   ArchitectureVariant,
   ExperimentDefinition,
@@ -454,6 +457,23 @@ export interface RecipeExecutionApplicationSurface {
 }
 
 /**
+ * UX-A §16/§17/§23: ONE-REQUEST LOCAL COLLABORATION.
+ *
+ * `plan(request)` is READ-ONLY (it profiles, consults the existing advisor and the
+ * derived posture/verification availability, and derives a plan view); `run(request)`
+ * executes only the EXISTING governed recipe/verification paths. Neither method
+ * reaches a store, mints an authority, creates a durable peer/commitment, or revises
+ * ProjectIR. The request is a `CollaborationRequest`: `{ task, intent?,
+ * taskProfileOverrides?, branchCountHint?, verifierRef?, requestedBy }` — raw recipe
+ * ids, plan objects, agent ids, commands, authority flags, `PeerRef`s and
+ * `VerificationResult`s are rejected as unknown fields.
+ */
+export interface CollaborationApplicationSurface {
+  plan(request: unknown): Promise<CollaborationPlanView>;
+  run(request: unknown): Promise<CollaborationResult>;
+}
+
+/**
  * G10-V: the DERIVED project workspace as seen by products. Every read re-derives from the
  * canonical owner matrix plus the two narrowly-owned append-only histories; nothing here
  * copies a canonical fact. The `projectId` inputs default to this installation's project (a
@@ -668,6 +688,12 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
   readonly advisor?: AdvisorApplicationSurface | undefined;
   /** G10-S: descriptive compile + governed execution of an existing recipe plan. */
   readonly recipeExecution?: RecipeExecutionApplicationSurface | undefined;
+  /**
+   * UX-A §16 (additive): one-request local multi-agent collaboration. ABSENT ⇒ this
+   * deployment has no collaboration surface at all — never a stub (the same rule
+   * the verification/externalAssets faces follow).
+   */
+  readonly collaboration?: CollaborationApplicationSurface | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane; absent ⇒ no proof surface. */
   readonly proof?: ProofApplicationSurface | undefined;
   /** G10-T (additive): local purpose-scoped disclosure; absent ⇒ no disclosure surface. */
@@ -722,6 +748,13 @@ export interface ApplicationSurfaceDeps {
   readonly recipeExecution?: { readonly service: RecipeExecutionService; readonly status: RecipeExecutionStatus } | undefined;
   /** G10-S (additive): an UNTRUSTED host profiler; its output is strict-parsed and never selects a recipe. */
   readonly taskProfiler?: TaskProfilerPort | undefined;
+  /**
+   * UX-A §16 (additive): the composed one-request collaboration service. ABSENT ⇒
+   * `application.collaboration` (and `palimpsest_collaborate`) are absent — the
+   * surface is never a stub, so a deployment without the recipe layer answers
+   * `surface_absent` rather than pretending to collaborate.
+   */
+  readonly collaboration?: CollaborationService | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
@@ -1099,6 +1132,22 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           status: () => deps.recipeExecution!.status,
         };
 
+  /*
+   * UX-A §16: the collaboration face. It is COMPOSED here (not merely declared) —
+   * the G10-AC-R lesson recorded in this file: a surface member that is declared on
+   * the type and wired into the deps but never added to the returned object makes
+   * every route answer 501. The service itself is the install's thin, stateless
+   * composition; this face adds NO logic, NO authority and NO second parser beyond
+   * the service's own strict `parseCollaborationRequest`.
+   */
+  const collaboration: CollaborationApplicationSurface | undefined =
+    deps.collaboration === undefined
+      ? undefined
+      : {
+          plan: (request) => deps.collaboration!.plan(request),
+          run: (request) => deps.collaboration!.run(request),
+        };
+
   const proof: ProofApplicationSurface | undefined =
     deps.proof === undefined
       ? undefined
@@ -1386,6 +1435,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(recipes === undefined ? {} : { recipes }),
     ...(advisor === undefined ? {} : { advisor }),
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
+    ...(collaboration === undefined ? {} : { collaboration }),
     ...(proof === undefined ? {} : { proof }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
