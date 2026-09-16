@@ -249,8 +249,33 @@ the store-level enumeration asymmetry intact (a direct owner can still list both
 
 ## 8. Canonical checkpoint
 
-Baseline for this stage: `0ba32639614a8963ba243efe53a6c72b6fcae040`. The
-implementation commit, pull request, PR-check run, merged commit and canonical-main
-run are recorded after the merge; none of them is invented here.
-
 Recorded after merge.
+
+```text
+baseline                       0ba32639614a8963ba243efe53a6c72b6fcae040
+implementation commit          c491329  "fix(g10-ae-r): scope every Project Workspace
+                               read to the installed project"
+pull request                   #108  experiment/g10-ae-r-scope-isolation -> main
+PR checks                      run 35089220345  attempt 1  unit pass / e2e pass
+merged commit (canonical main) effaedeb389ea478a37debd815e3eed5ebd6365d
+  "Merge pull request #108 from orangeofcarl0-sys/experiment/g10-ae-r-scope-isolation"
+tree identity                  git diff c491329 effaedeb  ->  EMPTY (identical trees)
+canonical main run             35089425725  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+git diff --check
+pnpm build
+pnpm exec vitest run --maxWorkers=2
+pnpm run build:web
+pnpm exec playwright test
+node scripts/external_assets/ae-dogfood.mjs      # expect pass=true
+node scripts/scope/aer0-repro.mjs                # expect 0/8 surfaces leak B
+node scripts/scope/aer-boundary-dogfood.mjs      # expect pass=true
+```
+
