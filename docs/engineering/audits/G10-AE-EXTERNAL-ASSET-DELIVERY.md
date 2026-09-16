@@ -198,3 +198,30 @@ the suite has been deterministic since.
 ## 8. Canonical checkpoint
 
 Recorded after merge.
+
+```text
+baseline                        a45f7c81bad07551c9c879b0048dba0df042cd30
+implementation commit           762be3e190f225d2f9319f99904a7e4a2048338a
+  "feat(g10-ae): external asset library bridge & explicit project reuse"
+pull request                    #105  experiment/g10-ae-external-assets -> main
+PR checks                       run 35059675281  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  cb15a9f653fd5dfe1a3f58ed3b9981173ec41cd2
+  "Merge pull request #105 from orangeofcarl0-sys/experiment/g10-ae-external-assets"
+tree identity                   git diff 762be3e cb15a9f  ->  EMPTY (identical trees)
+canonical main run              35059849898  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+git diff --check
+pnpm build
+pnpm exec vitest run --maxWorkers=2
+pnpm run build:web
+pnpm exec playwright test
+node scripts/external_assets/ae-dogfood.mjs      # expect pass=true, exit 0
+```
+
