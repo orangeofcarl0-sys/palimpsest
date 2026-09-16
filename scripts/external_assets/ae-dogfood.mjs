@@ -844,13 +844,29 @@ async function main() {
         spentInspections === resolved.external.length,
       JSON.stringify({ references: resolved.external.length, inspections: spentInspections }),
     );
-    const foreign = await installed.externalAssets.resolve("some-other-project");
+    // G10-AE-R §12 CHANGED THIS ANSWER, deliberately. AE's original check asked
+    // `resolve("some-other-project")` and asserted an EMPTY view with a warning. That
+    // is the "return an empty list and hide the violation" shape AE-R forbids for the
+    // workspace, and it let this read answer for a project the deployment does not hold
+    // (the AE-R §22 partial condition "external bridge can resolve foreign
+    // associations", reproduced pre-fix against a shared store). `resolve` now applies
+    // the SAME held-project basis fence as prepareReference / prepareImport /
+    // preparePublication / approveAndPublish, so the honest answer for a foreign scope
+    // is a typed refusal. The property this check originally protected — no global
+    // scan, no invented library — is still asserted, by the per-association
+    // inspection count above and by the refusal below.
+    let foreignOutcome;
+    try {
+      foreignOutcome = JSON.stringify(
+        (await installed.externalAssets.resolve("some-other-project")).external,
+      );
+    } catch (error) {
+      foreignOutcome = `${error?.kind ?? error?.name}`;
+    }
     check(
       "no_foreign_project_is_scanned_or_invented",
-      foreign.external.length === 0 &&
-        foreign.providerAvailability !== undefined &&
-        foreign.warnings.includes("no external asset association is recorded for this project"),
-      JSON.stringify({ references: foreign.external.length, warnings: foreign.warnings }),
+      foreignOutcome === "unknown_project",
+      `resolve("some-other-project") -> ${foreignOutcome}`,
     );
     await adapter.operator("/__mode", { leakCredential: true });
     const leaky = await installed.externalAssets
