@@ -27,6 +27,13 @@ import { canonicalDigest } from "../schema/canonical.js";
 import { canonicalDatetime } from "../schema/datetime.js";
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
 
+/**
+ * G10-AE §5: exactly ONE additive kind, `EXTERNAL_ASSET`, is added here. It names
+ * a project's association to an asset OWNED BY AN EXTERNAL LIBRARY. The provider's
+ * own asset type (`Paper`, `Idea`, `Method`, …) is deliberately NOT added: provider
+ * ontology stays provider-owned metadata and never becomes a Palimpsest universal
+ * asset ontology. See `src/external_assets/` for the bridge plane.
+ */
 export const PROJECT_ASSET_KINDS = [
   "DECISION",
   "PRODUCED_ARTIFACT",
@@ -35,6 +42,8 @@ export const PROJECT_ASSET_KINDS = [
   "JOURNAL_ENTRY",
   "CAMPAIGN",
   "REASONING_CELL",
+  // G10-AE §5/§10 (additive): a project reference to an asset owned elsewhere.
+  "EXTERNAL_ASSET",
 ] as const;
 export type ProjectAssetKind = (typeof PROJECT_ASSET_KINDS)[number];
 
@@ -192,6 +201,28 @@ export function projectAssetAssociationDigestOf(input: Omit<ProjectAssetAssociat
   return canonicalDigest({ domain: PROJECT_ASSET_ASSOCIATION_DOMAIN, association: input });
 }
 
+/**
+ * G10-AE §6/EXT-A03: an `EXTERNAL_ASSET` association IS the project's durable
+ * reference to one exact revision owned by an external library, so its
+ * `canonicalRef.digest` is MANDATORY. A digest-less external reference would
+ * mean "whatever the provider shows now", which §12 forbids
+ * (`ExternalLatest != ReferencedRevision`). The bridge port enforces this;
+ * enforcing it on the artifact means no writer can bypass it. Every other kind
+ * keeps its existing optional-digest semantics unchanged.
+ */
+function requireExternalAssetDigest(
+  assetKind: ProjectAssetKind,
+  canonicalRef: CanonicalAssetRef,
+  what: string,
+): void {
+  if (assetKind === "EXTERNAL_ASSET" && canonicalRef.digest === undefined) {
+    pwFail(
+      "invalid_value",
+      `${what}: an EXTERNAL_ASSET reference must carry the exact external contentDigest`,
+    );
+  }
+}
+
 export function materializeProjectAssetAssociation(input: {
   readonly projectId: string;
   readonly assetKind: ProjectAssetKind;
@@ -209,6 +240,7 @@ export function materializeProjectAssetAssociation(input: {
     provenance: pwString(input.provenance, "provenance"),
     recordedAt: pwTimestamp(input.recordedAt, "recordedAt"),
   };
+  requireExternalAssetDigest(content.assetKind, content.canonicalRef, "canonicalRef");
   const associationId = projectAssetAssociationIdOf(content);
   const withId = { ...content, associationId };
   return Object.freeze({ ...withId, digest: projectAssetAssociationDigestOf(withId) });
@@ -232,6 +264,7 @@ export function parseProjectAssetAssociation(raw: unknown, what = "ProjectAssetA
     provenance: pwString(object.provenance, `${what}.provenance`),
     recordedAt: pwTimestamp(object.recordedAt, `${what}.recordedAt`),
   };
+  requireExternalAssetDigest(content.assetKind, content.canonicalRef, `${what}.canonicalRef`);
   const associationId = pwString(object.associationId, `${what}.associationId`);
   if (projectAssetAssociationIdOf(content) !== associationId) {
     pwFail("invalid_value", `${what}.associationId does not match its content`);
