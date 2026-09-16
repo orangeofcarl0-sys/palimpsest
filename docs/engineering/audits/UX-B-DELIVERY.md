@@ -440,3 +440,30 @@ document's.
 ## 8. Canonical checkpoint
 
 Recorded after merge.
+
+```text
+baseline                       2e0f48b2b915e9a58c28313d9bc0e046c97b1669
+implementation commit          ffb2d55  "feat(ux-b): one-request cross-project collaboration"
+pull request                   #112  experiment/ux-b-cross-project -> main
+PR checks                      run 35122069430  attempt 1  unit pass / e2e pass
+merged commit (canonical main) 390623b51128bc2e01a39373522484856ea08618
+  "Merge pull request #112 from orangeofcarl0-sys/experiment/ux-b-cross-project"
+tree identity                  git diff ffb2d55 390623b5  ->  EMPTY (identical trees)
+canonical main run             35122316032  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+git diff --check
+pnpm build
+pnpm exec vitest run --maxWorkers=2
+pnpm run build:web
+pnpm exec playwright test
+node scripts/interaction/uxb-two-project-dogfood.mjs   # expect pass=true (41/41)
+node scripts/scope/aer-boundary-dogfood.mjs            # expect pass=true
+node scripts/interaction/uxa-dogfood.mjs               # expect pass=true
+```
