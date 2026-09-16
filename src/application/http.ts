@@ -15,7 +15,7 @@ import type { TaskProfile } from "../advisor/task_profile.js";
 import { parseTaskProfile } from "../advisor/task_profile.js";
 import type { RecipeExecutionContext } from "../recipes/execution.js";
 import { SOURCE_PROVENANCES, parseEvidenceSelector, parseProofSourceRevisionRef } from "../proof_asset/index.js";
-import { ASSOCIATION_KINDS, PROJECT_ASSET_KINDS, PROJECT_JOURNAL_KINDS, PROJECT_JOURNAL_RESOLUTION_STATUSES, parseCanonicalAssetRef } from "../project_workspace/index.js";
+import { ASSOCIATION_KINDS, PROJECT_ASSET_KINDS, PROJECT_JOURNAL_KINDS, PROJECT_JOURNAL_RESOLUTION_STATUSES, ProjectWorkspaceError, parseCanonicalAssetRef } from "../project_workspace/index.js";
 import {
   parseExternalAssetImportCandidate,
   parseExternalAssetPublicationPreview,
@@ -663,21 +663,43 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
   }
 
   /* ---- project workspace (G10-V; DERIVED read model + two owned histories) ---- */
+  /**
+   * G10-AE-R §9/§15: these routes are scoped to the INSTALLED project, so a
+   * `projectId` query naming a different project is refused rather than ignored.
+   * The baseline answered 200 with the current project's payload while silently
+   * dropping the parameter, which let a caller believe it had read another scope.
+   * The check is deliberately uniform across the project read routes (the journal
+   * route's own fence is in the service); the service enforces the same rule again.
+   */
+  const projectReadSurface = async () => {
+    const workspace = requireSurface(application.projectWorkspace, "projectWorkspace");
+    const requested = query.get("projectId");
+    if (requested !== null && requested !== "") {
+      const current = (await workspace.view()).projectId;
+      if (requested !== current) {
+        throw new ProjectWorkspaceError(
+          "invalid_registration",
+          `project "${requested}" is not this installation's project "${current}"`,
+        );
+      }
+    }
+    return workspace;
+  };
   if (pathname === "/api/project/workspace") {
     requireGet();
-    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").view());
+    return ok(await (await projectReadSurface()).view());
   }
   if (pathname === "/api/project/assets") {
     requireGet();
-    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").assets());
+    return ok(await (await projectReadSurface()).assets());
   }
   if (pathname === "/api/project/open_loops") {
     requireGet();
-    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").openLoops());
+    return ok(await (await projectReadSurface()).openLoops());
   }
   if (pathname === "/api/project/history") {
     requireGet();
-    return ok(await requireSurface(application.projectWorkspace, "projectWorkspace").history());
+    return ok(await (await projectReadSurface()).history());
   }
   if (pathname === "/api/project/journal") {
     const workspace = requireSurface(application.projectWorkspace, "projectWorkspace");

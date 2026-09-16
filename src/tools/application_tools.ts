@@ -11,7 +11,7 @@ import type { PalimpsestApplicationSurface } from "../application/surface.js";
 import type { VariantKind } from "../organization_memory/index.js";
 import { VARIANT_KINDS } from "../organization_memory/index.js";
 import { SOURCE_PROVENANCES, materializeProofSourceRevisionRef } from "../proof_asset/index.js";
-import { PROJECT_JOURNAL_KINDS } from "../project_workspace/index.js";
+import { PROJECT_JOURNAL_KINDS, ProjectWorkspaceError } from "../project_workspace/index.js";
 import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
 import {
   WORK_MODE_BASE_MODES,
@@ -653,6 +653,26 @@ export function defineApplicationTools(application: PalimpsestApplicationSurface
           relatedRefs: { type: "array", items: { type: "object" }, description: "references to assets owned elsewhere (kind/id only; never a copy)" },
         },
         run: async (action, object) => {
+          // G10-AE-R §9/§15: a NAMED project is never silently ignored. Every action
+          // below is scoped to THIS installation's project, so a caller naming another
+          // project must be refused rather than handed this project's data as if it
+          // were that one's (the baseline silently dropped the parameter on the read
+          // actions, so `{action:"assets", projectId:"project-B"}` answered with A's
+          // assets and no indication the scope had been ignored). The mutating actions
+          // below forward the id to the service's own fence; this one guard covers both.
+          const named =
+            typeof object.projectId === "string" && object.projectId.length > 0
+              ? object.projectId
+              : undefined;
+          if (named !== undefined) {
+            const current = (await workspace.view()).projectId;
+            if (named !== current) {
+              throw new ProjectWorkspaceError(
+                "invalid_registration",
+                `project "${named}" is not this installation's project "${current}"`,
+              );
+            }
+          }
           if (action === "overview") return workspace.view();
           if (action === "assets") return workspace.assets();
           if (action === "open_loops") return workspace.openLoops();
