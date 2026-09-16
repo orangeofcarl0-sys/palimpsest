@@ -866,7 +866,13 @@ describe("G10-V project journal — knowledge with no other canonical owner", ()
         kind: "invalid_registration",
       });
       // Another project is never addressable through this workspace.
-      await expect(service.projectScopedAssets("some-other-project")).resolves.toEqual([]);
+      // G10-AE-R §7/§15: a foreign id must FAIL CLOSED with the typed scope violation
+      // — the previous expectation (`.resolves.toEqual([])`) encoded exactly the
+      // empty-list-hides-the-violation answer the spec forbids: an A-bound facade
+      // silently answering "no data" for B looks like a correct empty scope.
+      await expect(service.projectScopedAssets("some-other-project")).rejects.toMatchObject({
+        kind: "invalid_registration",
+      });
     } finally {
       await rig.cleanup();
     }
