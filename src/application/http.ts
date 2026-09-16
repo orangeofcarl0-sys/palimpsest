@@ -178,7 +178,29 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       // truthful "this deployment has no external library" — never an empty list.
       externalAssets: application.externalAssets !== undefined,
       projections: application.projections !== undefined,
+      // UX-A: the one-request collaboration face. Same lesson as the monitor entry
+      // above — a composed surface this discovery list omits is invisible to a
+      // client, so the entry ships WITH the surface rather than after it.
+      collaboration: application.collaboration !== undefined,
     });
+  }
+
+  /* ---- one-request collaboration (UX-A) ---- */
+  /**
+   * The HIGH-LEVEL product face: one request in, a plan or a useful result out.
+   * `plan` is read-only; `run` executes only the existing governed recipe /
+   * verification paths. The body IS the `CollaborationRequest`, parsed strictly by
+   * the interaction layer so a caller cannot smuggle a recipe id, an agent id, a
+   * command or an authority flag through this route — and a request that carries
+   * one is refused (400), never silently ignored.
+   */
+  if (pathname === "/api/collaboration/plan") {
+    requirePost();
+    return ok(await requireSurface(application.collaboration, "collaboration").plan(body));
+  }
+  if (pathname === "/api/collaboration/run") {
+    requirePost();
+    return ok(await requireSurface(application.collaboration, "collaboration").run(body));
   }
 
   /* ---- federation ---- */

@@ -185,6 +185,12 @@ import {
   linkedCampaignWakeEventSource,
 } from "./project_operating/index.js";
 import {
+  deterministicTaskProfiler,
+  makeCollaborationService,
+  type CollaborationService,
+} from "./interaction/index.js";
+import type { TaskProfilerPort } from "./advisor/index.js";
+import {
   SqliteMonitorDeliveryMarkStore,
   makeCampaignMonitorDriver,
   nullCampaignWakeActivation,
@@ -411,6 +417,14 @@ export interface InstallPalimpsestOptions {
    */
   reasoningBranchExecution?: ReasoningBranchExecutionPort | undefined;
   /**
+   * UX-A §3/§22 (additive): the UNTRUSTED TaskProfilerPort. Absent ⇒ the first-party
+   * DETERMINISTIC, local, no-LLM lexical profiler is used, so `advisor.profile({ task })`
+   * and AUTO/PARALLEL can actually profile a task sentence. A supplied profiler is
+   * strict-parsed by `applyProfilerOutput`, re-sourced as UNTRUSTED_PROFILER, and can
+   * never select a recipe.
+   */
+  taskProfiler?: TaskProfilerPort | undefined;
+  /**
    * G10-T (additive): the canonical append-only Proof/Evidence plane store. Supplying it enables the
    * authoritative source-revision / evidence / candidate-claim / verification / publication /
    * assessment plane plus local, purpose-scoped disclosure. Absent ⇒ no proof surface (never a stub).
@@ -577,6 +591,14 @@ export interface InstalledPalimpsest {
   readonly advisor?: EmpiricalArchitectureAdvisor | undefined;
   /** G10-S (additive): governed recipe execution — present iff a local peer is supplied. */
   readonly recipeExecution?: RecipeExecutionService | undefined;
+  /**
+   * UX-A §16 (additive): the ONE-REQUEST local collaboration composition — present iff the
+   * recipe layer is actually composed (registry + governed execution). It is a thin,
+   * STATELESS composition over the SAME owners every expert tool uses, and it owns no store,
+   * no authority, no agent identity and no durable collaboration protocol. Absent ⇒ no
+   * `application.collaboration` face and no `palimpsest_collaborate` tool.
+   */
+  readonly collaboration?: CollaborationService | undefined;
   /** G10-P (additive): the host activation adapter when supplied (notification ≠ activation). */
   readonly attentionActivation?: AttentionActivationPort | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane — present iff a proof store is supplied. */
@@ -1520,6 +1542,19 @@ export function installPalimpsest(
   const recipeRegistry: RecipeRegistry = options.recipeRegistry ?? builtinRecipeRegistry();
 
   /*
+   * UX-A §3/§22: the ONE task profiler this install uses.
+   *
+   * Before UX-A, `ApplicationSurfaceDeps.taskProfiler` was declared but NEVER
+   * supplied, so `advisor.profile({ task })` returned nine UNKNOWN features on a real
+   * installation (the UX-A gap assessment §8.1). The first-party default is the
+   * DETERMINISTIC, local, no-model lexical profiler: it emits a value only where the
+   * text carries an explicit signal, leaves everything else UNKNOWN, and never
+   * selects a recipe. A host may supply a smarter profiler; its output is still
+   * strict-parsed and re-sourced as UNTRUSTED_PROFILER.
+   */
+  const taskProfiler: TaskProfilerPort = options.taskProfiler ?? deterministicTaskProfiler();
+
+  /*
    * G10-AD §15/§16/§18/§28: the LIVE verification-runtime hand-over.
    *
    * The Project Verification runtime is composed AFTER the Advisor and the recipe
@@ -2145,6 +2180,43 @@ export function installPalimpsest(
     // Defensive only: `ready()` resolves even on a failed start.
   });
 
+  /*
+   * UX-A §3/§16/§17/§22: the ONE-REQUEST collaboration composition.
+   *
+   * It is composed ONLY from wiring that already exists here, and it owns nothing:
+   *
+   *   advisor            → the architecture selector (§12) — never re-implemented
+   *   recipeRegistry     → the descriptive catalog (product config)
+   *   recipeExecution    → the governed execution service (§3/§17)
+   *   reasoning service  → the accepted-frontier READ (§19 findings)
+   *   liveVerification() → the DERIVED independent-verification availability (§34)
+   *   projectManagement  → the durable Work Mode preference, CONTEXT ONLY (§8/§31)
+   *
+   * The verification and posture readers are THUNKS for the same reason
+   * `verificationWiring`/`liveVerification()` exist above: they are read per call, so
+   * an absent service means exactly "not composed" (never a stub, never a guess).
+   * The minimum wiring is the recipe layer: without it there is nothing to plan or
+   * run, so `collaboration` is simply ABSENT.
+   */
+  const collaboration: CollaborationService | undefined =
+    recipeExecution === undefined
+      ? undefined
+      : makeCollaborationService({
+          projectId: options.projectId,
+          clock: options.clock ?? (() => new Date().toISOString()),
+          recipes: recipeRegistry,
+          recipeExecution,
+          ...(advisor === undefined ? {} : { advisor }),
+          // UX-A §22/§3: the deterministic, local, no-LLM profiler is the
+          // FIRST-PARTY default, so AUTO/PARALLEL can profile a task sentence
+          // without an LLM classifier. A supplied profiler is UNTRUSTED and is
+          // strict-parsed + re-sourced by `applyProfilerOutput`.
+          taskProfiler,
+          ...(reasoningCellsInstalled === undefined ? {} : { reasoning: reasoningCellsInstalled.service }),
+          ...(verification === undefined ? {} : { verificationStatus: () => verification.status() }),
+          ...(projectManagement === undefined ? {} : { posture: () => projectManagement.posture() }),
+        });
+
   const application = makePalimpsestApplicationSurface({
     controller,
     ...(options.localPeer === undefined ? {} : { localPeer: options.localPeer }),
@@ -2168,6 +2240,13 @@ export function installPalimpsest(
     ...(recipeExecution === undefined || recipeExecutionStatus === undefined
       ? {}
       : { recipeExecution: { service: recipeExecution, status: recipeExecutionStatus } }),
+    // UX-A §3/§22: the UNTRUSTED profiler seam is now actually SUPPLIED, so
+    // `advisor.profile({ task })` profiles a sentence instead of returning nine
+    // UNKNOWN features. Absent ⇒ the deterministic first-party profiler above.
+    taskProfiler,
+    // UX-A §16: the one-request collaboration face. ABSENT ⇒ no such surface,
+    // never a stub (the G10-AC-R §11 lesson: a declared-but-uncomposed face is a 501).
+    ...(collaboration === undefined ? {} : { collaboration }),
     ...(options.remoteTransport === undefined ? {} : { remoteTransport: options.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
@@ -2212,6 +2291,9 @@ export function installPalimpsest(
     application.recipes !== undefined ||
     application.advisor !== undefined ||
     application.recipeExecution !== undefined ||
+    // UX-A §17: a collaboration-only deployment still gets its tool face, so
+    // `palimpsest_collaborate` is composed exactly when the service is.
+    application.collaboration !== undefined ||
     application.proof !== undefined ||
     application.disclosure !== undefined ||
     application.projectWorkspace !== undefined ||
@@ -2252,6 +2334,7 @@ export function installPalimpsest(
     recipes: recipeRegistry,
     ...(advisor === undefined ? {} : { advisor }),
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
+    ...(collaboration === undefined ? {} : { collaboration }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
