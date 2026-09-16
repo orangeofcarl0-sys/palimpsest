@@ -45,9 +45,42 @@ export interface DeploymentAttentionConfig {
   readonly cooldownMs: number;
   /** Host activation adapter kind. `none` = pull mode only. */
   readonly activation: "none" | "dsh" | "pi";
-  /** DSH session/agent id or Pi session binding; required when activation is not `none`. */
+  /**
+   * DSH session/agent id or Pi session binding.
+   *
+   * UX-C SC-9/§23: for `activation: "dsh"` this may be ABSENT. The DSH host creates
+   * or cold-resumes the persisted principal session at runtime, so the deployment
+   * profile cannot know the id when it is written; the host binds it through the
+   * explicit `Deployment.bindAttentionActivation` late-binding seam (the persisted
+   * host session id is never a PeerRef). Pi still requires it because a Pi binding
+   * is a static operator decision.
+   */
   readonly sessionId?: string | undefined;
   readonly deliverAs?: "steer" | "followUp" | "nextTurn" | undefined;
+}
+
+/**
+ * UX-C §9/SC-4/SC-12: the deployment-owned LOCAL COLLABORATION BUNDLE.
+ *
+ * Presence of this field (even `{}`) is the ONE switch that composes the packaged
+ * local-Explore surface: a deployment-local durable ReasoningCell store, the
+ * first-party exploratory verification/admission policies, and — when the host
+ * supplies one — the ephemeral branch execution port. It is capability
+ * composition, NOT authority: wiring it starts no branch, opens no cell, derives
+ * no attention and sends no message by itself (§32).
+ *
+ * It carries at most ONE advanced override (`storePath`); every other value is
+ * derived by the launcher/host from what it already knows. There is deliberately
+ * no `autonomy`/`everything` switch (§44).
+ */
+export interface DeploymentReasoningConfig {
+  /**
+   * ADVANCED override for the deployment-owned ReasoningCell store path. Absent ⇒
+   * a stable derived path beside the project's orchestration DB
+   * (`<orchestration dir>/reasoning.sqlite`). Callers who need a custom store may
+   * still pass one through the expert `installPalimpsest` API.
+   */
+  readonly storePath?: string | undefined;
 }
 
 export interface DeploymentServeConfig {
@@ -97,6 +130,14 @@ export interface ProjectAgentDeploymentProfile {
    * face is absent, never stubbed, and nothing about the advisor changes.
    */
   readonly projectDirectory?: readonly DeploymentProjectDirectoryEntry[] | undefined;
+  /**
+   * UX-C §9/SC-4/SC-12 (additive): the deployment-owned LOCAL COLLABORATION BUNDLE.
+   * Present (even `{}`) ⇒ the launcher composes a durable deployment-local
+   * ReasoningCell store and the first-party exploratory policies, and wires the
+   * host-supplied ephemeral branch execution when there is one. Absent ⇒ nothing
+   * about reasoning changes (never a stub).
+   */
+  readonly reasoning?: DeploymentReasoningConfig | undefined;
   readonly attention?: DeploymentAttentionConfig | undefined;
   readonly boundaryHomeId?: string | undefined;
   /** Deployment binding workspaceId → canonical boundary homeId (never social semantics). */
@@ -243,7 +284,10 @@ function parseAttention(raw: unknown, what: string): DeploymentAttentionConfig {
     fail("invalid_value", `${what}.activation must be "none" | "dsh" | "pi"`);
   }
   const sessionId = optionalString(object, "sessionId", what);
-  if (activation !== "none" && sessionId === undefined) {
+  // UX-C SC-9: a DSH activation may be late-bound by the host to the persisted
+  // principal session it creates/resumes, so `sessionId` is optional there. Pi
+  // still requires its static binding.
+  if (activation === "pi" && sessionId === undefined) {
     fail("invalid_value", `${what}.sessionId is required when activation is "${activation}"`);
   }
   const deliverAs = object.deliverAs;
@@ -256,6 +300,21 @@ function parseAttention(raw: unknown, what: string): DeploymentAttentionConfig {
     activation,
     ...(sessionId === undefined ? {} : { sessionId }),
     ...(deliverAs === undefined ? {} : { deliverAs }),
+  });
+}
+
+/**
+ * UX-C §9/SC-12: strict parse of the local-collaboration bundle. The ONLY key this
+ * profile may carry is the ADVANCED store-path override; a semantic/authority
+ * field (a policy, a branch port, an "enable everything" flag) fails closed as an
+ * unknown field, exactly like every other deployment-config surface.
+ */
+function parseReasoning(raw: unknown, what: string): DeploymentReasoningConfig {
+  const object = asObject(raw, what);
+  exactKeys(object, ["storePath"], what);
+  const storePath = optionalString(object, "storePath", what);
+  return Object.freeze({
+    ...(storePath === undefined ? {} : { storePath }),
   });
 }
 
@@ -288,6 +347,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "databases",
       "directory",
       "projectDirectory",
+      "reasoning",
       "attention",
       "boundaryHomeId",
       "boundaryRoutes",
@@ -335,6 +395,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     ...(object.projectDirectory === undefined
       ? {}
       : { projectDirectory: parseProjectDirectory(object.projectDirectory, `${what}.projectDirectory`) }),
+    ...(object.reasoning === undefined ? {} : { reasoning: parseReasoning(object.reasoning, `${what}.reasoning`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),
     ...(optionalStableId(object, "boundaryHomeId", what) === undefined ? {} : { boundaryHomeId: optionalStableId(object, "boundaryHomeId", what)! }),
     ...(object.boundaryRoutes === undefined

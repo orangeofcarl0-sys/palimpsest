@@ -51,13 +51,24 @@ import { staticBoundaryRoute } from "../boundary_memory/index.js";
 import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "../project_workspace/index.js";
 import { SqliteManagementPreferenceStore } from "../project_management/index.js";
 import { staticProjectPeerDirectory, type ProjectPeerDirectoryPort } from "../interaction/index.js";
+import { SqliteReasoningCellStore } from "../reasoning_cell/index.js";
+import type { ReasoningBranchExecutionPort } from "../recipes/execution.js";
 import type { RemoteSubmissionPort } from "../application/surface.js";
+import { deploymentReasoningStorePath, firstPartyExploratoryAdmissionPolicy, firstPartyExploratoryVerificationPolicy } from "./reasoning_bundle.js";
+import { deriveHostCollaborationReadiness, type HostCollaborationReadiness } from "./readiness.js";
 import type { ProjectAgentDeploymentProfile } from "./profile.js";
 
 /** Optional host services; the profile selects the KIND, the host supplies the instance. */
 export interface DeploymentHostServices {
   readonly dshAgents?: Parameters<typeof dshAgentsAttentionAdapter>[0]["agents"] | undefined;
   readonly pi?: Parameters<typeof piAttentionAdapter>[0]["pi"] | undefined;
+  /**
+   * UX-C §20/SC-12: the host-derived EPHEMERAL branch execution port. The DSH host
+   * knows its own runtime/bin, profile and working directory, so it constructs this
+   * from that knowledge; a normal user never supplies it. It is wired only when the
+   * profile carries the `reasoning` bundle.
+   */
+  readonly branchExecution?: ReasoningBranchExecutionPort | undefined;
 }
 
 export interface DeploymentActivationReport {
@@ -81,8 +92,23 @@ export interface Deployment {
   readonly attention?: AttentionService | undefined;
   readonly attentionActivation?: AttentionActivationPort | undefined;
   readonly boundaryClient?: DurableBoundaryClient | undefined;
+  /**
+   * UX-C §9/§30: the packaged local-collaboration status. `storeOwned` is TRUE only
+   * when THIS deployment created and therefore closes the ReasoningCell store.
+   */
+  readonly reasoning: DeploymentReasoningStatus;
   /** Drain the mailbox, then derive + (optionally) activate attention. Safe to repeat. */
   pumpAndActivate(input?: { readonly fromStart?: boolean }): Promise<DeploymentPumpReport>;
+  /**
+   * UX-C §24/§23: the host LATE-BINDING seam for activation. The DSH host creates or
+   * cold-resumes the persistent principal session after the deployment exists, so it
+   * binds the resume-capable adapter here instead of re-implementing
+   * pump→drain→activate→mark. An explicit `activation: "none"` profile stays pull
+   * mode: binding is accepted but never turns it active (§26).
+   */
+  bindAttentionActivation(activation: AttentionActivationPort | undefined): void;
+  /** UX-C §30: the derived, non-authoritative readiness view (no numeric score). */
+  collaborationReadiness(): HostCollaborationReadiness;
   /**
    * Send THIS peer's explicit decision on a commitment it holds/owes to the peer that owns
    * the commitment record. A message body is NEVER interpreted as a decision, so this typed
@@ -96,6 +122,14 @@ export interface Deployment {
     readonly operationId?: string | undefined;
   }): Promise<{ readonly operationId: string; readonly delivered: boolean }>;
   close(): Promise<void>;
+}
+
+/** UX-C §9/§30: what the packaged reasoning bundle composed, and who owns it. */
+export interface DeploymentReasoningStatus {
+  readonly storeConfigured: boolean;
+  /** TRUE iff this deployment created the store and closes it in `close()`. */
+  readonly storeOwned: boolean;
+  readonly branchAdapter?: string | undefined;
 }
 
 export class DeploymentLaunchError extends Error {
@@ -207,6 +241,23 @@ function unavailableActivation(kind: "dsh" | "pi"): AttentionActivationPort {
   };
 }
 
+/**
+ * UX-C §23: a DSH activation whose persisted session id is not known at launch. It
+ * activates nothing and never invents a session; the host binds the real adapter
+ * through `Deployment.bindAttentionActivation` once it has created/resumed the
+ * principal. The durable signal therefore stays PENDING (never marked delivered).
+ */
+function unboundDshActivation(): AttentionActivationPort {
+  return {
+    adapterId: "dsh-agents-unbound",
+    activate: async () => ({
+      activated: false,
+      detail:
+        "the deployment requests DSH activation but no persisted principal session is bound yet; the DSH host must bind one (a PeerRef is never used as a host session)",
+    }),
+  };
+}
+
 export function launchDeployment(
   profile: ProjectAgentDeploymentProfile,
   options: { readonly context?: DshPluginContext; readonly host?: DeploymentHostServices } = {},
@@ -249,17 +300,34 @@ export function launchDeployment(
       ? new SqliteAttentionMarkStore(profile.databases.attentionMarks)
       : undefined;
 
-  const activation: AttentionActivationPort | undefined =
+  // UX-C §9/SC-4: the DEPLOYMENT-OWNED local collaboration bundle. It is composed only
+  // when the profile carries `reasoning`; the store path is derived beside this project's
+  // orchestration DB unless the ONE advanced override names one. Nothing is opened,
+  // spawned or sent by existing.
+  let reasoningStore: SqliteReasoningCellStore | undefined;
+  if (profile.reasoning !== undefined) {
+    const storePath = profile.reasoning.storePath ?? deploymentReasoningStorePath(profile.databases.orchestration);
+    ensureSqliteFile(storePath);
+    reasoningStore = new SqliteReasoningCellStore(storePath);
+  }
+  const reasoningBranchExecution =
+    profile.reasoning === undefined ? undefined : options.host?.branchExecution;
+
+  // UX-C §23/§26: a DSH activation is LATE-BOUND by the host to the persisted principal
+  // session it creates/resumes, so a profile may omit `sessionId`. Until the host binds
+  // one, activation honestly reports that it is unbound; an explicit `"none"` stays pull.
+  const explicitPullMode = profile.attention?.activation === "none";
+  let activation: AttentionActivationPort | undefined =
     profile.attention === undefined
       ? undefined
-      : profile.attention.activation === "none"
+      : explicitPullMode
         ? nullAttentionAdapter()
         : profile.attention.activation === "dsh"
-          ? options.host?.dshAgents === undefined
-            ? unavailableActivation("dsh")
+          ? options.host?.dshAgents === undefined || profile.attention.sessionId === undefined
+            ? unboundDshActivation()
             : dshAgentsAttentionAdapter({
                 agents: options.host.dshAgents,
-                resumeSessionId: profile.attention.sessionId!,
+                resumeSessionId: profile.attention.sessionId,
               })
           : options.host?.pi === undefined
             ? unavailableActivation("pi")
@@ -349,6 +417,19 @@ export function launchDeployment(
         }),
     ...(marks === undefined ? {} : { attentionMarkStore: marks }),
     ...(activation === undefined ? {} : { attentionActivation: activation }),
+    ...(reasoningStore === undefined
+      ? {}
+      : {
+          // UX-C §11/§12: the packaged policies are EXPLORATORY by construction. A
+          // deployment that needs stronger semantics composes its own policies through
+          // the expert `installPalimpsest` API; this bundle never fabricates support and
+          // never replaces a caller-supplied policy (it only supplies one when the
+          // profile asked for the first-party bundle).
+          reasoningCellStore: reasoningStore,
+          reasoningVerificationPolicy: firstPartyExploratoryVerificationPolicy(),
+          reasoningAdmissionPolicy: firstPartyExploratoryAdmissionPolicy(),
+        }),
+    ...(reasoningBranchExecution === undefined ? {} : { reasoningBranchExecution }),
     remoteTransport,
   });
 
@@ -397,6 +478,34 @@ export function launchDeployment(
     return { operationId, delivered: result.delivered };
   }
 
+  function attentionClass(): HostCollaborationReadiness["attention"] {
+    if (installed.attention === undefined) return "ABSENT";
+    const adapterId = activation?.adapterId;
+    // `ACTIVE` means a host WAKE is really bound. The null/unbound/unavailable adapters
+    // derive signals but activate nothing, so they are honestly PULL.
+    return adapterId === "dsh-agents" || adapterId === "pi-host" ? "ACTIVE" : "PULL";
+  }
+
+  function bindAttentionActivation(next: AttentionActivationPort | undefined): void {
+    // §26/SC-14: an explicit `activation: "none"` profile is pull mode and is NEVER
+    // flipped active by the host. With no attention configured there is nothing to bind.
+    if (explicitPullMode || profile.attention === undefined) return;
+    activation = next;
+  }
+
+  function collaborationReadiness(): HostCollaborationReadiness {
+    return deriveHostCollaborationReadiness({
+      advisorPresent: installed.application.advisor !== undefined,
+      reasoningStoreConfigured: reasoningStore !== undefined,
+      branchAdapter: reasoningBranchExecution?.adapterId,
+      projectVerificationAvailable: installed.application.verification !== undefined || installed.verification !== undefined,
+      crossProjectAvailable: installed.application.crossProject !== undefined,
+      inboundPumpConfigured: true,
+      attention: attentionClass(),
+      coldResume: activation?.adapterId === "dsh-agents" ? "AVAILABLE" : "UNAVAILABLE",
+    });
+  }
+
   return {
     profile,
     localPeer,
@@ -404,12 +513,24 @@ export function launchDeployment(
     transport,
     pump,
     submitRemoteCommitmentDecision,
+    reasoning: Object.freeze({
+      storeConfigured: reasoningStore !== undefined,
+      storeOwned: reasoningStore !== undefined,
+      ...(reasoningBranchExecution === undefined ? {} : { branchAdapter: reasoningBranchExecution.adapterId }),
+    }),
     ...(installed.attention === undefined ? {} : { attention: installed.attention }),
-    ...(activation === undefined ? {} : { attentionActivation: activation }),
+    get attentionActivation(): AttentionActivationPort | undefined {
+      return activation;
+    },
     ...(boundaryClient === undefined ? {} : { boundaryClient }),
     pumpAndActivate,
+    bindAttentionActivation,
+    collaborationReadiness,
     async close() {
       await installed.dispose();
+      // UX-C §9/SC-4: close ONLY the store this deployment created. A store supplied by
+      // the caller keeps its own lifetime (the install never closes it either).
+      reasoningStore?.close();
       coordinationStore.close();
       boundaryMemoryStore?.close();
       runtimeScopeStore?.close();

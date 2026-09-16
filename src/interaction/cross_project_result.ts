@@ -102,6 +102,13 @@ export interface CrossProjectCollaborationResult {
   readonly status: CrossProjectStatus;
   /** Present only for `ANSWERED`/`PARTIAL`. Ordinary peer communication, never Evidence. */
   readonly answer?: string | undefined;
+  /**
+   * UX-C §13/SC-10: present when the answer was produced by a `compose` answer that
+   * projected reasoning-cell findings. The remote answer text carries the same
+   * sentence, so it is never only a local diagnostic.
+   */
+  readonly findingStanding?: string | undefined;
+  readonly findingNote?: string | undefined;
   /** Who replied, by project name. Empty until an answer was accepted. */
   readonly responder: string;
   readonly summary: string;
@@ -206,6 +213,8 @@ export function crossProjectResultOf(input: {
   readonly targetProject: string;
   readonly status: CrossProjectStatus;
   readonly answer?: string | undefined;
+  readonly findingStanding?: string | undefined;
+  readonly findingNote?: string | undefined;
   readonly responder?: string | undefined;
   readonly summary?: string | undefined;
   readonly warnings?: readonly string[] | undefined;
@@ -225,6 +234,8 @@ export function crossProjectResultOf(input: {
     targetProject: input.targetProject,
     status: input.status,
     ...(input.answer === undefined ? {} : { answer: input.answer }),
+    ...(input.findingStanding === undefined ? {} : { findingStanding: input.findingStanding }),
+    ...(input.findingNote === undefined ? {} : { findingNote: input.findingNote }),
     responder: input.responder ?? "",
     summary: input.summary ?? crossProjectSummaryOf({ status: input.status, targetProject: input.targetProject, ...(input.target === undefined ? {} : { target: input.target }) }),
     warnings: Object.freeze([...(input.warnings ?? [])]),

@@ -11,12 +11,20 @@
  *     → ReasoningCellService over the canonical SQLite store
  *     → dshSubprocessBranchExecutionPort: `node <dsh bin> --profile ... --branch <brief.json>`
  *       = ONE EPHEMERAL host cognition per branch, which reads the frozen brief and
- *         submits a structured candidate through the REAL palimpsest_reasoning tool
- *     → the harness's ReasoningCellService performs verification + SEPARATE admission
+ *         returns ONE structured `palimpsest_branch_result` result
+ *     → RecipeExecution submits the statement (and the branch's cited evidence refs)
+ *       and the harness's ReasoningCellService performs verification + SEPARATE admission
+ *
+ * UX-C §15/§36: the branch is a PURE result adapter. It composes NO deployment and NO
+ * ReasoningCell, so its result carries NO candidate digest — the sole candidate
+ * submit/evaluate owner is RecipeExecution. This harness never asserts ownership via
+ * `DEDUPLICATED` (SC-2); it asserts it structurally (the branch reports no digest) and
+ * by requiring exactly one submission per branch.
  *
  * Invariants asserted:
  *   - >= 2 real branch host executions;
- *   - the branch-reported candidate digests exist in the real cell store;
+ *   - every completed branch reports NO ReasoningCell candidate digest;
+ *   - exactly one CANDIDATE_SUBMITTED event per branch (one owner);
  *   - verification AND admission actually ran (durable events);
  *   - the frontier advanced, or an honest UNRESOLVED/REJECTED outcome is recorded;
  *   - ZERO new PeerRef and ZERO new PersistentPoint;
@@ -109,7 +117,7 @@ function setupProfiles() {
   const shellPatch = readFileSync(join(PROFILES, 'headless', 'cordis.patch.yml'), 'utf8').replace(/^#[^\n]*\n(?!#)/, '');
   writeFileSync(
     join(profileDir, 'cordis.patch.yml'),
-    `${shellPatch.trimEnd()}\n\n- id: palimpsest-tools\n  config:\n    palimpsestEntry: '${ADVANCED}'\n    deploymentProfile: '${deploymentPath}'\n    serve: false\n    reasoningCellStore: '${REASONING_DB}'\n`,
+    `${shellPatch.trimEnd()}\n\n- id: palimpsest-tools\n  config:\n    palimpsestEntry: '${ADVANCED}'\n    deploymentProfile: '${deploymentPath}'\n    serve: false\n`,
   );
   record('profiles_ready', { profile: PROFILE_NAME, hostBundle: HOST_BUNDLE, reasoningCellStore: REASONING_DB });
   return deploymentPath;
@@ -224,10 +232,21 @@ async function main() {
   const admissionEvents = eventTypes.filter((type) => type === 'ADMISSION_DECIDED').length;
   const candidateSubmittedEvents = eventTypes.filter((type) => type === 'CANDIDATE_SUBMITTED').length;
 
+  // UX-C §15/§36: the branch has no ReasoningCell, so it reports no candidate digest.
   const reportedDigests = branchRuns.map((run) => run?.candidateDigest).filter((digest) => typeof digest === 'string');
+  const branchesReportingACandidateDigest = reportedDigests.length;
   const storedDigests = new Set(view.candidates.map((candidate) => candidate.candidateDigest));
-  const digestsLandedInStore = reportedDigests.filter((digest) => storedDigests.has(digest));
   const completedBranches = branchRuns.filter((run) => run?.status === 'completed').length;
+  const branchStatements = branchRuns.map((run) => run?.statement).filter((statement) => typeof statement === 'string' && statement.length > 0);
+  // The recipe (not the branch) submitted the candidates: exactly one submission per
+  // branch, and every branch statement is present in the real cell.
+  const statementsInStore = new Set(
+    events
+      .filter((event) => event.type === 'CANDIDATE_SUBMITTED')
+      .map((event) => event.payload?.candidate?.claim?.content?.statement)
+      .filter((value) => typeof value === 'string'),
+  );
+  const statementsLandedInStore = branchStatements.filter((statement) => statementsInStore.has(statement));
 
   // 7. Continuity/peer stores AFTER. No branch is a principal: it writes no identity.
   const persistentPointsAfter = await pointStore.list();
@@ -240,8 +259,10 @@ async function main() {
   const checks = {
     realBranchExecutions: branchRuns.length >= BRANCH_COUNT,
     completedBranchExecutions: completedBranches >= BRANCH_COUNT,
+    branchComposesNoReasoningCell: branchesReportingACandidateDigest === 0,
     candidatesSubmitted: candidateSubmittedEvents >= BRANCH_COUNT && view.candidates.length >= BRANCH_COUNT,
-    branchCandidatesLandedInRealStore: digestsLandedInStore.length >= 1,
+    exactlyOneSubmissionPerBranch: candidateSubmittedEvents === completedBranches,
+    branchStatementsLandedInRealStore: statementsLandedInStore.length >= BRANCH_COUNT,
     verificationRan: verificationEvents >= 1,
     admissionRan: admissionEvents >= 1,
     evaluatedByService: outcome.status === 'explored',
@@ -265,7 +286,7 @@ async function main() {
       candidateSubmittedEvents,
       candidatesInCell: view.candidates.length,
       branchReportedCandidateDigests: reportedDigests,
-      branchCandidateDigestsLandedInStore: digestsLandedInStore,
+      branchStatementsLandedInStore: statementsLandedInStore.length,
       verificationEvents,
       admissionEvents,
       admittedClaimIds: frontier.claims.map((entry) => entry.ref.claimId),
@@ -282,7 +303,7 @@ async function main() {
     checks,
     timeline,
     note:
-      'A branch is ephemeral: it creates no PeerRef, no PersistentPoint and no durable principal. It only reads the frozen brief and submits one structured candidate through the real palimpsest_reasoning tool; the harness-owned ReasoningCellService performs verification and the SEPARATE epistemic admission.',
+      'A branch is ephemeral: it creates no PeerRef, no PersistentPoint and no durable principal, and it composes NO ReasoningCell. It only reads the frozen brief and records ONE structured result through the host-private palimpsest_branch_result tool; RecipeExecution is the sole candidate submit/evaluate owner and the harness-owned ReasoningCellService performs verification and the SEPARATE epistemic admission.',
   };
 
   try {
