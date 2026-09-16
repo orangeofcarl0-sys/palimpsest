@@ -114,6 +114,24 @@ import type {
 import type { ProjectOperatingPostureView } from "../project_operating/posture.js";
 import type { ManagementActivityRecord } from "../project_operating/activity.js";
 import type { ProjectOperatingHistory } from "../project_operating/history.js";
+import type {
+  ExternalAssetImportCandidate,
+  ExternalAssetImportCommit,
+  ExternalAssetImportPreparation,
+  ExternalAssetInspection,
+  ExternalAssetInspectInput,
+  ExternalAssetPrepareImportInput,
+  ExternalAssetPreparePublicationInput,
+  ExternalAssetPrepareReferenceInput,
+  ExternalAssetProviderDescriptor,
+  ExternalAssetPublicationPreview,
+  ExternalAssetPublicationResult,
+  ExternalAssetReferenceCandidate,
+  ExternalAssetReferenceCommit,
+  ExternalAssetReferencePreparation,
+  ExternalAssetSearchInput,
+  ExternalAssetSearchPage,
+} from "../external_assets/index.js";
 import type { WorkModeBaseMode, WorkModeModifier } from "../project_operating/work_mode_profile.js";
 import { definePalimpsestControl } from "../tools/control_surface.js";
 import type { ProjectionEnvelope } from "./projection_types.js";
@@ -564,6 +582,73 @@ export interface VerificationApplicationSurface {
   }): Promise<ProjectVerificationOutcome>;
 }
 
+/* ------------------------------------------------------------------ *
+ * G10-AE §28: External Asset Library bridge
+ * ------------------------------------------------------------------ */
+
+/**
+ * The composed External Asset Library face.
+ *
+ *   ExternalAsset != ProjectAsset        Association != Ownership
+ *   Reference != Import                  PublicationPreview != Publication
+ *   SearchResult != StableAssetRef       ExternalLatest != ReferencedRevision
+ *   AgentPrepare != OperatorCommit       HTTPAuthentication != PublicationApproval
+ *
+ * `providers`/`search`/`inspect` are READS and persist nothing (a search page is
+ * ephemeral; an inspection is a snapshot, not a project fact). `prepareReference`,
+ * `prepareImport` and `preparePublication` return READ-ONLY candidates/previews:
+ * committing one still re-checks the exact external digest, the provider
+ * definition and the project scope inside the plane.
+ *
+ * `commitReference`, `commitImport` and `approveAndPublish` are the
+ * OPERATOR-EXPLICIT operations §28 names. They are exposed HERE (the composed
+ * application face the operator/UI path uses) and deliberately NOT on the agent
+ * tool face, because nothing an agent may call ever commits a reference, writes a
+ * Journal import or publishes outbound. Approval additionally travels through the
+ * plane's SEPARATE `ExternalAssetPublicationAdmissionPort`: the caller of
+ * `approveAndPublish` cannot approve by calling it — ordinary HTTP authentication
+ * is not semantic publication approval.
+ */
+/**
+ * The three prepare inputs as the PRODUCT boundary takes them: the project is the
+ * installation's own project unless the caller explicitly names it (the plane
+ * refuses a project this deployment does not hold, exactly as the workspace
+ * surface does). A caller can never widen the scope by naming another project.
+ */
+export type ExternalAssetPrepareReferenceCommand = Omit<ExternalAssetPrepareReferenceInput, "projectId"> & {
+  readonly projectId?: string | undefined;
+};
+export type ExternalAssetPrepareImportCommand = Omit<ExternalAssetPrepareImportInput, "projectId"> & {
+  readonly projectId?: string | undefined;
+};
+export type ExternalAssetPreparePublicationCommand = Omit<ExternalAssetPreparePublicationInput, "projectId"> & {
+  readonly projectId?: string | undefined;
+};
+
+export interface ExternalAssetsApplicationSurface {
+  /** Deployment config descriptors (capabilities). Never asset truth. */
+  providers(): Promise<readonly ExternalAssetProviderDescriptor[]>;
+  /** §8: an EPHEMERAL page of hits. Zero project mutation, zero persistence. */
+  search(input: ExternalAssetSearchInput): Promise<ExternalAssetSearchPage>;
+  /** §9: an EXACT-digest snapshot (never a silent "latest"). */
+  inspect(input: ExternalAssetInspectInput): Promise<ExternalAssetInspection>;
+  /** §11: a read-only reference candidate bound to the exact external digest. */
+  prepareReference(input: ExternalAssetPrepareReferenceCommand): Promise<ExternalAssetReferencePreparation>;
+  /** §14/§15: an explicit Journal kind + exact materialized text, read-only. */
+  prepareImport(input: ExternalAssetPrepareImportCommand): Promise<ExternalAssetImportPreparation>;
+  /** §20: the EXACT outbound payload, with zero external effect. */
+  preparePublication(input: ExternalAssetPreparePublicationCommand): Promise<ExternalAssetPublicationPreview>;
+  /** OPERATOR-EXPLICIT: one `EXTERNAL_ASSET` association (copies no content). */
+  commitReference(candidate: ExternalAssetReferenceCandidate): Promise<ExternalAssetReferenceCommit>;
+  /** OPERATOR-EXPLICIT: one Journal entry with structured external provenance. */
+  commitImport(candidate: ExternalAssetImportCandidate): Promise<ExternalAssetImportCommit>;
+  /**
+   * OPERATOR-EXPLICIT approval + governed publication. The decision itself comes
+   * from the separate admission port (or the call returns `NOT_APPROVED`).
+   */
+  approveAndPublish(preview: ExternalAssetPublicationPreview): Promise<ExternalAssetPublicationResult>;
+}
+
 export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationSurface;
   readonly federation?: FederationApplicationSurface | undefined;
   readonly boundary?: BoundaryApplicationSurface | undefined;
@@ -597,6 +682,13 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
   readonly monitor?: MonitorApplicationSurface | undefined;
   /** G10-AD (additive): project-head verification status/history/request. */
   readonly verification?: VerificationApplicationSurface | undefined;
+  /**
+   * G10-AE §28 (additive): the External Asset Library bridge. ABSENT ⇒ this
+   * deployment has no external library at all — never a stub and never an empty
+   * "known" list (the HTTP face answers `501 surface_absent`, exactly as it does
+   * for the verification face).
+   */
+  readonly externalAssets?: ExternalAssetsApplicationSurface | undefined;
 }
 
 export interface ApplicationSurfaceDeps {
@@ -656,6 +748,14 @@ export interface ApplicationSurfaceDeps {
       "status" | "history" | "verifyCurrentHead"
     >;
   } | undefined;
+  /**
+   * G10-AE §28/§29: the composed External Asset Library bridge. Absent ⇒ the
+   * `externalAssets` surface is absent (a 501, never a fabricated empty list). The
+   * structural type is the plane's own read/prepare/commit/approve face, so the
+   * installed bridge is passed straight through — this surface adds no logic, no
+   * bypass and no second approval path.
+   */
+  readonly externalAssets?: ExternalAssetsApplicationSurface | undefined;
 }
 
 function invalidInput(message: string): Error {
@@ -1189,6 +1289,40 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
           };
         })();
 
+  // G10-AE §28: the External Asset Library face. The read/search/inspect verbs are
+  // pure reads; the prepare verbs return read-only candidates; the three
+  // operator-explicit verbs are the ONLY mutation/approval entries and they still
+  // run through the plane's own re-checks (exact digest, provider definition,
+  // project scope) and — for publication — the SEPARATE admission port. Ordinary
+  // HTTP authentication never stands in for that approval.
+  const externalAssets: ExternalAssetsApplicationSurface | undefined =
+    deps.externalAssets === undefined
+      ? undefined
+      : (() => {
+          const bridge = deps.externalAssets!;
+          // The installation's project. A caller may name a projectId, but the plane
+          // refuses one this deployment does not hold (unknown_project), so naming
+          // another project can never widen the bridge's scope.
+          const localProjectId = deps.controller.projectId;
+          return {
+            providers: () => bridge.providers(),
+            search: (input: ExternalAssetSearchInput) => bridge.search(input),
+            inspect: (input: ExternalAssetInspectInput) => bridge.inspect(input),
+            prepareReference: (input: ExternalAssetPrepareReferenceCommand) =>
+              bridge.prepareReference({ ...input, projectId: input.projectId ?? localProjectId }),
+            prepareImport: (input: ExternalAssetPrepareImportCommand) =>
+              bridge.prepareImport({ ...input, projectId: input.projectId ?? localProjectId }),
+            preparePublication: (input: ExternalAssetPreparePublicationCommand) =>
+              bridge.preparePublication({ ...input, projectId: input.projectId ?? localProjectId }),
+            commitReference: (candidate: ExternalAssetReferenceCandidate) =>
+              bridge.commitReference(candidate),
+            commitImport: (candidate: ExternalAssetImportCandidate) =>
+              bridge.commitImport(candidate),
+            approveAndPublish: (preview: ExternalAssetPublicationPreview) =>
+              bridge.approveAndPublish(preview),
+          };
+        })();
+
   const projections: ProjectionsApplicationSurface = {    work: async () => {
       try {
         return workProjection(deps.controller.orchestrationGraph(), deps.controller.viewCursor());
@@ -1258,6 +1392,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(monitor === undefined ? {} : { monitor }),
     ...(verification === undefined ? {} : { verification }),
+    ...(externalAssets === undefined ? {} : { externalAssets }),
     ...(deps.boundaryWorkspaces === undefined && deps.organizations === undefined && deps.runtimeScopes === undefined && deps.reasoning === undefined ? {} : { projections }),
   };
 }

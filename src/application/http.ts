@@ -16,6 +16,12 @@ import { parseTaskProfile } from "../advisor/task_profile.js";
 import type { RecipeExecutionContext } from "../recipes/execution.js";
 import { SOURCE_PROVENANCES, parseEvidenceSelector, parseProofSourceRevisionRef } from "../proof_asset/index.js";
 import { ASSOCIATION_KINDS, PROJECT_ASSET_KINDS, PROJECT_JOURNAL_KINDS, PROJECT_JOURNAL_RESOLUTION_STATUSES, parseCanonicalAssetRef } from "../project_workspace/index.js";
+import {
+  parseExternalAssetImportCandidate,
+  parseExternalAssetPublicationPreview,
+  parseExternalAssetReferenceCandidate,
+  parseExternalAssetStableRef,
+} from "../external_assets/index.js";
 import { MANAGEMENT_INVOLVEMENTS } from "../project_management/index.js";
 import {
   WORK_MODE_BASE_MODES,
@@ -28,6 +34,23 @@ export interface ApplicationRouteResult {
   readonly status: number;
   readonly body: unknown;
 }
+
+/**
+ * G10-AE §28: every external-asset route. They are matched as a closed set so an
+ * unknown sub-path under `/api/external-assets/` stays a 404 instead of being
+ * reported as an absent surface.
+ */
+const EXTERNAL_ASSET_ROUTES: readonly string[] = [
+  "/api/external-assets/providers",
+  "/api/external-assets/search",
+  "/api/external-assets/inspect",
+  "/api/external-assets/prepare-reference",
+  "/api/external-assets/prepare-import",
+  "/api/external-assets/prepare-publication",
+  "/api/external-assets/commit-reference",
+  "/api/external-assets/commit-import",
+  "/api/external-assets/approve-publish",
+];
 
 export interface ApplicationRouteInput {
   readonly application: PalimpsestApplicationSurface;
@@ -151,6 +174,9 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
       monitor: application.monitor !== undefined,
       // G10-AD §23: the project-head verification face (status/history/run).
       verification: application.verification !== undefined,
+      // G10-AE §28: the external asset library bridge face. A false here is the
+      // truthful "this deployment has no external library" — never an empty list.
+      externalAssets: application.externalAssets !== undefined,
       projections: application.projections !== undefined,
     });
   }
@@ -834,6 +860,124 @@ async function dispatch(application: PalimpsestApplicationSurface, method: strin
         ...(reason === undefined ? {} : { reason }),
       }),
     );
+  }
+  /*
+   * G10-AE §28: the External Asset Library bridge.
+   *
+   * A deployment without the bridge answers 501 `surface_absent` on EVERY route
+   * below (the same truthful absence the verification face reports) — never a
+   * fabricated empty provider list or a fabricated empty result page.
+   *
+   * The read routes persist nothing. The prepare routes return read-only
+   * candidates/previews. The three operator-explicit routes commit through the
+   * EXISTING owners; the commit still re-checks the exact external digest, the
+   * provider definition and the project scope inside the plane, and publication
+   * still requires the SEPARATE admission port — the bearer token that admitted
+   * this HTTP request is NOT semantic publication approval (§21). There is
+   * deliberately no route that accepts an admission decision, an approver, a
+   * provider definition, a credential or a target commit.
+   */
+  if (EXTERNAL_ASSET_ROUTES.includes(pathname)) {
+    // The surface is resolved FIRST, before any body/query validation: a
+    // deployment without the bridge answers 501 `surface_absent` on every one of
+    // these routes — the truthful "not composed" — so a missing library can never
+    // be mistaken for a malformed request, an empty provider list or an empty
+    // result page.
+    const externalAssets = requireSurface(application.externalAssets, "externalAssets");
+    if (pathname === "/api/external-assets/providers") {
+      requireGet();
+      return ok(await externalAssets.providers());
+    }
+    if (pathname === "/api/external-assets/search") {
+      requireGet();
+      const assetTypes = query
+        .getAll("assetType")
+        .flatMap((value) => value.split(","))
+        .map((value) => value.trim())
+        .filter((value) => value !== "");
+      const limitRaw = query.get("limit");
+      let limit: number | undefined;
+      if (limitRaw !== null && limitRaw !== "") {
+        const parsed = Number(limitRaw);
+        if (!Number.isSafeInteger(parsed) || parsed < 1) throw new InvalidRequest('"limit" must be a positive integer');
+        limit = parsed;
+      }
+      return ok(
+        await externalAssets.search({
+          providerId: queryRequired(query, "providerId"),
+          text: queryRequired(query, "text"),
+          ...(limit === undefined ? {} : { limit }),
+          ...(assetTypes.length === 0 ? {} : { assetTypes }),
+        }),
+      );
+    }
+    if (pathname === "/api/external-assets/inspect") {
+      requireGet();
+      const contentDigest = query.get("contentDigest");
+      return ok(
+        await externalAssets.inspect({
+          providerId: queryRequired(query, "providerId"),
+          assetId: queryRequired(query, "assetId"),
+          ...(contentDigest === null || contentDigest === "" ? {} : { contentDigest }),
+        }),
+      );
+    }
+    if (pathname === "/api/external-assets/prepare-reference") {
+      requirePost();
+      const b = bodyObject(body);
+      const contentDigest = b.contentDigest === undefined ? undefined : str(b.contentDigest, "contentDigest");
+      return ok(
+        await externalAssets.prepareReference({
+          providerId: str(b.providerId, "providerId"),
+          assetId: str(b.assetId, "assetId"),
+          ...(contentDigest === undefined ? {} : { contentDigest }),
+          ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        }),
+      );
+    }
+    if (pathname === "/api/external-assets/prepare-import") {
+      requirePost();
+      const b = bodyObject(body);
+      const sourceLocator = b.sourceLocator === undefined ? undefined : str(b.sourceLocator, "sourceLocator");
+      // The exact stable external ref is strict-parsed at the wire boundary: a ref
+      // without an exact content digest is refused here, never completed by guessing.
+      const externalRef = parseBody(() => parseExternalAssetStableRef(b.externalRef, "externalRef"));
+      return ok(
+        await externalAssets.prepareImport({
+          externalRef,
+          // §14: the Journal kind is the CALLER's explicit choice, never provider-mapped.
+          journalKind: enumValue(b.journalKind, PROJECT_JOURNAL_KINDS, "journalKind"),
+          title: str(b.title, "title"),
+          ...(sourceLocator === undefined ? {} : { sourceLocator }),
+          ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        }),
+      );
+    }
+    if (pathname === "/api/external-assets/prepare-publication") {
+      requirePost();
+      const b = bodyObject(body);
+      return ok(
+        await externalAssets.preparePublication({
+          providerId: str(b.providerId, "providerId"),
+          targetAssetType: str(b.targetAssetType, "targetAssetType"),
+          journalEntryId: str(b.journalEntryId, "journalEntryId"),
+          ...(typeof b.projectId === "string" && b.projectId.length > 0 ? { projectId: b.projectId } : {}),
+        }),
+      );
+    }
+    if (pathname === "/api/external-assets/commit-reference") {
+      requirePost();
+      const candidate = parseBody(() => parseExternalAssetReferenceCandidate(bodyObject(body).candidate, "candidate"));
+      return ok(await externalAssets.commitReference(candidate));
+    }
+    if (pathname === "/api/external-assets/commit-import") {
+      requirePost();
+      const candidate = parseBody(() => parseExternalAssetImportCandidate(bodyObject(body).candidate, "candidate"));
+      return ok(await externalAssets.commitImport(candidate));
+    }
+    requirePost();
+    const preview = parseBody(() => parseExternalAssetPublicationPreview(bodyObject(body).preview, "preview"));
+    return ok(await externalAssets.approveAndPublish(preview));
   }
   if (pathname === "/api/manage/status") {
     requireGet();

@@ -154,6 +154,21 @@ import {
 import type { ProofSourceContentPort } from "./proof_asset/source_content_port.js";
 import type { ProjectWorkspaceCampaignPort, ProjectWorkspaceService } from "./project_workspace/index.js";
 import { makeProjectWorkspaceService, SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "./project_workspace/index.js";
+import type { ProjectJournalEntry, WorkspaceExternalImportView } from "./project_workspace/index.js";
+import type {
+  ExternalAssetBridgeService,
+  ExternalAssetLibraryRegistry,
+  ExternalAssetProjectBasis,
+  ExternalAssetPublicationAdmissionPort,
+} from "./external_assets/index.js";
+import {
+  SqliteExternalAssetBridgeStore,
+  defineExternalAssetEffects,
+  externalAssetImportProvenanceOf,
+  makeExternalAssetBridgeService,
+  sqliteExternalAssetAssociationPort,
+  sqliteExternalAssetJournalPort,
+} from "./external_assets/index.js";
 import type {
   ManagementAutonomyProfile,
   ManagementInvolvement,
@@ -471,6 +486,31 @@ export interface InstallPalimpsestOptions {
    * Absent ⇒ the first executable independent ref.
    */
   projectVerificationDefaultVerifierRef?: string | undefined;
+  /**
+   * G10-AE §7 (additive): the EXTERNAL ASSET LIBRARY registry — versioned deployment CONFIG,
+   * never asset truth and never project context. Supplying it composes `installed.externalAssets`;
+   * absent ⇒ no bridge surface at all (never a stub), so a bare Work-only install composes
+   * exactly nothing and NO external library is ever consulted automatically.
+   */
+  externalAssetProviders?: ExternalAssetLibraryRegistry | undefined;
+  /**
+   * G10-AE §17 (additive): the narrow, append-only bridge history store. It owns operation
+   * lineage/receipts ONLY (refs and digests, never asset content). Absent ⇒ a deployment-local
+   * default is created beside the other operating stores (or `:memory:` when the orchestration
+   * store is in memory); it is closed by `dispose()` only when this install created it.
+   */
+  externalAssetBridgeStore?: SqliteExternalAssetBridgeStore | undefined;
+  /**
+   * G10-AE §21 (additive): the SEPARATE publication approval port (`APPROVE | REJECT`). Absent ⇒
+   * `approveAndPublish` fails closed and NOTHING is published: no agent, no management mode and no
+   * ordinary HTTP authentication can stand in for this port.
+   */
+  externalAssetPublicationAdmission?: ExternalAssetPublicationAdmissionPort | undefined;
+  /**
+   * G10-AE §15 (additive): the explicit bound on imported text, in bytes. Content above it BLOCKS
+   * the import with `content_too_large`; it is never truncated. Defaults to 256 KiB.
+   */
+  maxImportedTextBytes?: number | undefined;
 }
 
 /**
@@ -589,8 +629,36 @@ export interface InstalledPalimpsest {
    * arbitrary commit, or mint authority from a verdict.
    */
   readonly verification?: InstalledVerification | undefined;
+  /**
+   * G10-AE §7/§8/§28 (additive): the EXTERNAL ASSET LIBRARY bridge. Present iff an
+   * `externalAssetProviders` registry was supplied. It exposes the read (providers/search/inspect),
+   * prepare (reference/import/publication) and operator-explicit commit/approve operations over the
+   * EXISTING owners — one `EXTERNAL_ASSET` ProjectAssetAssociation, one ProjectJournal entry, and the
+   * governed external-effect path for publication. It can reach no Work, Proof or Reasoning owner,
+   * never consults a library automatically and never injects an external asset into project context.
+   *
+   * The AGENT-facing surface (application/tools/HTTP) deliberately exposes only read/prepare: the
+   * publication approval lives on this install object and behind the explicit admission port.
+   */
+  readonly externalAssets?: InstalledExternalAssets | undefined;
   register(context: DshPluginContext): () => void;
   dispose(): Promise<void>;
+}
+
+/**
+ * G10-AE §28: the installed external-asset bridge surface.
+ *
+ *   ExternalAsset != ProjectAsset      Association != Ownership
+ *   Reference != Import               PublicationPreview != Publication
+ *
+ * `service.<verb>` is the plane itself; the promoted verbs are the read/prepare/commit operations
+ * the operator path uses. `commitReference`, `commitImport` and `approveAndPublish` are
+ * OPERATOR-EXPLICIT: the agent-facing application surface never calls them.
+ */
+export interface InstalledExternalAssets extends ExternalAssetBridgeService {
+  readonly store: SqliteExternalAssetBridgeStore;
+  readonly registry: ExternalAssetLibraryRegistry;
+  readonly service: ExternalAssetBridgeService;
 }
 
 /**
@@ -877,6 +945,30 @@ function campaignProjectRefPort(store: CampaignStore): ProjectWorkspaceCampaignP
   };
 }
 
+
+/**
+ * G10-AE §16/§26: the workspace's read-only view of an IMPORTED journal entry.
+ * The bridge plane owns the structured `ExternalAssetImportProvenance` artifact and
+ * re-verifies its digest against the entry's `relatedRefs`, so a prose-only
+ * lookalike is never reported as an external import.
+ */
+function externalImportViewOf(entry: ProjectJournalEntry): WorkspaceExternalImportView | undefined {
+  const provenance = externalAssetImportProvenanceOf(entry);
+  if (provenance === undefined) return undefined;
+  return Object.freeze({
+    entryId: entry.entryId,
+    journalKind: entry.kind,
+    title: entry.title,
+    createdAt: entry.createdAt,
+    providerId: provenance.providerId,
+    assetId: provenance.assetId,
+    contentDigest: provenance.contentDigest,
+    refDigest: provenance.refDigest,
+    provenanceDigest: provenance.digest,
+    operationId: provenance.importOperationId,
+    ...(provenance.sourceLocator === undefined ? {} : { sourceLocator: provenance.sourceLocator }),
+  });
+}
 
 export function installPalimpsest(
   context: DshPluginContext,
@@ -1569,6 +1661,13 @@ export function installPalimpsest(
   // (the association store, the journal store, or the authoritative proof plane). It OWNS the
   // association/journal histories and copies no canonical fact; the proof/memory/campaign planes
   // are read-only ports, and an absent operand is reported (knowledgeWarnings), never guessed.
+  //
+  // G10-AE §26: when the operator supplies an external-asset provider registry the workspace view
+  // additionally consumes the BRIDGE's own derived read (the plane's `resolve(projectId)`) and its
+  // structured import-provenance reader. Both are read-only. They are wired LAZILY through
+  // `externalAssetsRef` because the bridge itself is composed further down (it depends on the
+  // composed Ordarium effects runtime).
+  const externalAssetsRef: { service: ExternalAssetBridgeService | undefined } = { service: undefined };
   const projectWorkspace: ProjectWorkspaceService | undefined =
     options.projectAssociationStore === undefined && options.projectJournalStore === undefined && proof === undefined
       ? undefined
@@ -1588,6 +1687,23 @@ export function installPalimpsest(
             ? {}
             : { memory: { evaluations: (experimentId: string) => organizationMemory!.evaluations(experimentId) } }),
           ...(campaign === undefined ? {} : { campaigns: campaignProjectRefPort(campaign.store) }),
+          ...(options.externalAssetProviders === undefined
+            ? {}
+            : {
+                externalAssets: {
+                  resolve: async (projectId: string) => {
+                    const service = externalAssetsRef.service;
+                    if (service === undefined) {
+                      throw new Error("the external asset bridge is not composed for this installation");
+                    }
+                    return service.resolve(projectId);
+                  },
+                },
+                // G10-AE §16: the bridge's OWN structured-provenance reader (it re-verifies the
+                // provenance digest and the relatedRefs linkage), so the workspace never has to
+                // reinterpret an imported entry's provenance prose.
+                externalImports: { of: (entry: ProjectJournalEntry) => externalImportViewOf(entry) },
+              }),
         });
 
   // G10-V: the bounded management service exists only alongside a workspace (it composes the
@@ -1742,6 +1858,111 @@ export function installPalimpsest(
   // Hand the LIVE runtime to whatever was composed before it (recipe execution, and
   // any later reader). This mirrors the monitor's `monitorWiring` hand-over.
   verificationWiring.runtime = verification;
+
+  /*
+   * G10-AE §7/§17/§21/§22: the EXTERNAL ASSET LIBRARY bridge, composed ADDITIVELY.
+   *
+   *  - it exists ONLY when the operator supplies a provider registry: with no registry there is
+   *    no surface at all (never a stub) and a bare Work-only install composes nothing;
+   *  - the bridge HISTORY store defaults to the SAME derived deployment-local path the G10-AB/AC/AD
+   *    stores use (a sibling table, never a second database truth);
+   *  - it writes through the EXISTING owners: the Project Workspace association store (pinned to
+   *    `EXTERNAL_ASSET` and an exact digest) and the Project Journal store (the ONLY import target).
+   *    Supplying neither leaves search/inspect/prepare usable and every commit fail-closed;
+   *  - publication goes through the shared Ordarium effects runtime: the
+   *    `palimpsest.external_asset.publish` Safe Action is DEFINED in `src/external_assets/effects.ts`
+   *    and INVOKED here, so Web/tools/Workspace never call a provider write directly;
+   *  - the project scope/basis is a READ of the canonical ProjectIR projection - no new truth.
+   */
+  let externalAssets: InstalledExternalAssets | undefined;
+  let externalAssetBridgeStoreCreated = false;
+  /** Set ONLY for a store this install created (a supplied one belongs to its caller). */
+  let externalAssetBridgeStore: SqliteExternalAssetBridgeStore | undefined;
+  if (options.externalAssetProviders !== undefined) {
+    try {
+      const bridgeStore =
+        options.externalAssetBridgeStore ??
+        new SqliteExternalAssetBridgeStore(derivedOperatingStorePath);
+      externalAssetBridgeStoreCreated = options.externalAssetBridgeStore === undefined;
+      if (externalAssetBridgeStoreCreated) externalAssetBridgeStore = bridgeStore;
+      const externalRegistry = options.externalAssetProviders;
+      const journalPort =
+        options.projectJournalStore === undefined
+          ? undefined
+          : sqliteExternalAssetJournalPort(options.projectJournalStore);
+      const associationPort =
+        options.projectAssociationStore === undefined
+          ? undefined
+          : sqliteExternalAssetAssociationPort(options.projectAssociationStore, options.clock);
+      const publicationEffects = defineExternalAssetEffects({
+        publicationPort: (providerId) => externalRegistry.get(providerId)?.publication,
+        // Fail closed with a clear reason when this install holds no journal owner.
+        journal: journalPort ?? {
+          read: async (projectId: string, entryId: string) => {
+            throw new Error(
+              `no project journal store is configured: journal entry "${entryId}" of project "${projectId}" cannot be read for publication`,
+            );
+          },
+        },
+      });
+      const projectBasisOf = async (projectId: string): Promise<ExternalAssetProjectBasis | undefined> => {
+        if (projectId !== controller.projectId) return undefined;
+        const row = controller.store.connection
+          .prepare("SELECT revision, digest FROM projects WHERE project_id=?")
+          .get(projectId) as { revision: unknown; digest: unknown } | undefined;
+        if (row === undefined) return undefined;
+        return Object.freeze({
+          projectId,
+          revision: Number(row.revision),
+          digest: String(row.digest),
+        });
+      };
+      const projectRevisionOf = async (projectId: string): Promise<number> =>
+        (await projectBasisOf(projectId))?.revision ?? 0;
+      const externalAssetService = makeExternalAssetBridgeService({
+        registry: externalRegistry,
+        bridge: bridgeStore,
+        projectScope: { basis: projectBasisOf },
+        ...(associationPort === undefined ? {} : { associations: associationPort }),
+        ...(journalPort === undefined ? {} : { journal: journalPort }),
+        ...(options.externalAssetPublicationAdmission === undefined
+          ? {}
+          : { publicationAdmission: options.externalAssetPublicationAdmission }),
+        ...(options.maxImportedTextBytes === undefined
+          ? {}
+          : { maxImportedTextBytes: options.maxImportedTextBytes }),
+        ...(options.clock === undefined ? {} : { clock: options.clock }),
+        invokeEffect: {
+          invoke: async (input) =>
+            effects.invoke(publicationEffects.publishExternalAsset, input, {
+              scope: options.projectId,
+              callId: `external-asset-publish:${input.publicationId}`,
+              // The Ordarium authorization evidence is the project revision the publication was
+              // prepared under; the load-bearing binding is the preview's `payloadDigest`.
+              revision: await projectRevisionOf(controller.projectId),
+            }),
+        },
+      });
+      externalAssets = Object.freeze({
+        ...externalAssetService,
+        store: bridgeStore,
+        registry: externalRegistry,
+        service: externalAssetService,
+      });
+      // G10-AE §26: the derived workspace view now reads its external section from
+      // THIS service (the plane's own read-only resolve).
+      externalAssetsRef.service = externalAssetService;
+    } catch {
+      // An unusable bridge must not take the whole runtime down: the surface is simply
+      // absent (never a stub) and no external library is consulted.
+      externalAssets = undefined;
+      externalAssetsRef.service = undefined;
+      // A store this install created has no other owner: release it here. The previous
+      // code dropped the flag instead, leaking the file handle it had just opened.
+      if (externalAssetBridgeStoreCreated) externalAssetBridgeStore?.close();
+      externalAssetBridgeStoreCreated = false;
+    }
+  }
 
   const monitorWiring: { capability: MonitorRuntimeCapability | undefined } = { capability: undefined };
   function liveMonitorCapability(): MonitorRuntimeCapability | undefined {
@@ -1956,6 +2177,11 @@ export function installPalimpsest(
     ...(monitor === undefined ? {} : { monitor }),
     // G10-AD §22/§23: the project-head verification face over the SAME composed runtime.
     ...(verification === undefined ? {} : { verification: { service: verification.service } }),
+    // G10-AE §28: the external-asset bridge face. Absent ⇒ the surface (and its HTTP
+    // routes) are absent with a truthful 501 `surface_absent`, never a fabricated
+    // empty provider list. The operator-explicit commit/approve verbs live HERE (the
+    // composed application face) and never on the agent tool face.
+    ...(externalAssets === undefined ? {} : { externalAssets }),
     ...(options.boundaryMemoryStore === undefined || boundaryMemory === undefined
       ? {}
       : {
@@ -1990,6 +2216,9 @@ export function installPalimpsest(
     application.disclosure !== undefined ||
     application.projectWorkspace !== undefined ||
     application.projectManagement !== undefined ||
+    // G10-AE: an external-library-only deployment still gets its (read/prepare) tool
+    // face, so `palimpsest_external_assets` is composed exactly when the bridge is.
+    application.externalAssets !== undefined ||
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
@@ -2032,6 +2261,7 @@ export function installPalimpsest(
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),
     ...(monitor === undefined ? {} : { monitor }),
+    ...(externalAssets === undefined ? {} : { externalAssets }),
     register(next: DshPluginContext): () => void {
       const inner: (() => void)[] = [];
       for (const definition of tools) {
@@ -2070,6 +2300,11 @@ export function installPalimpsest(
       // G10-AD §29: close the deployment-local verification HISTORY store only when this install
       // created it — a supplied store belongs to its caller (same discipline as above).
       if (verificationStoreCreated) projectVerificationStore?.close();
+      // G10-AE §17: close the deployment-local bridge history store only when this install
+      // created it — a supplied store belongs to its caller (same discipline as above). The
+      // test-only gate review caught this line closing a SUPPLIED store while its comment
+      // promised the opposite.
+      if (externalAssetBridgeStoreCreated) externalAssetBridgeStore?.close();
       // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
       // deployment launcher, a host) leaks the shared operations file handle.
       await effects.close();

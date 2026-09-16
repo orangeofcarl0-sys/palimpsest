@@ -89,7 +89,12 @@ export type {
   ProjectJournalViewEntry,
 } from "./journal.js";
 
-export { OPEN_LOOP_KINDS, buildProjectWorkspaceView } from "./view.js";
+export {
+  OPEN_LOOP_KINDS,
+  WORKSPACE_EXTERNAL_OWNERSHIP_LABELS,
+  WORKSPACE_EXTERNAL_RELATION_KINDS,
+  buildProjectWorkspaceView,
+} from "./view.js";
 export type {
   MemoryExperimentSnapshot,
   OpenLoop,
@@ -97,6 +102,8 @@ export type {
   OpenLoopSubjectRef,
   PendingKnowledgeRef,
   ProjectWorkspaceAssetsView,
+  ProjectWorkspaceExternalSource,
+  ProjectWorkspaceExternalView,
   ProjectWorkspaceRelationsView,
   ProjectWorkspaceView,
   ProjectWorkspaceViewSources,
@@ -105,6 +112,11 @@ export type {
   ReasoningCellSnapshot,
   WorkspaceAttemptView,
   WorkspaceEvidenceView,
+  WorkspaceExternalImportView,
+  WorkspaceExternalOwnershipLabel,
+  WorkspaceExternalRefView,
+  WorkspaceExternalRelationKind,
+  WorkspaceExternalResolutionState,
   WorkspaceHistoryEntry,
   WorkspaceOpenTaskView,
   WorkspaceProjectRef,
@@ -120,6 +132,8 @@ export type {
   AppendDecisionResult,
   AssociateAssetInput,
   ProjectWorkspaceCampaignPort,
+  ProjectWorkspaceExternalAssetsPort,
+  ProjectWorkspaceExternalImportPort,
   ProjectWorkspaceMemoryPort,
   ProjectWorkspaceProofPort,
   ProjectWorkspaceService,
