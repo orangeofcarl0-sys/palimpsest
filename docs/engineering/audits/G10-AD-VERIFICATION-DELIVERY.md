@@ -187,6 +187,37 @@ integration pass found no further defect in the plane and changed no file under
 
 ## 7. Canonical checkpoint
 
+Recorded after merge.
+
+```text
+baseline                        02131caa3ba4631004ff049d5c66378b8fd1b9e4
+implementation commit           13771271cfe846bf1dc9f41382d5fe7024497ea5
+  "feat(g10-ad): independent project verification runtime"
+pull request                    #103  experiment/g10-ad-verification -> main
+PR checks                       run 35047946475  attempt 1  e2e pass / unit pass
+merged commit (canonical main)  818b58c801d0d52fe74c81062415a63418eb037d
+  "Merge pull request #103 from orangeofcarl0-sys/experiment/g10-ad-verification"
+tree identity                   git diff 1377127 818b58c  ->  EMPTY (identical trees)
+canonical main run              35048047867  attempt 1  conclusion: success
+```
+
+All remote runs concluded green on **attempt 1**; no rerun was required.
+
+### Reproducing the local gate
+
+```bash
+pnpm install
+pnpm build
+pnpm exec vitest run                        # 160 files / 1623 tests
+pnpm run build:web
+pnpm exec playwright test                   # 29 passed
+node scripts/verification/mechanical-verify.mjs
+#   PASS / MECHANICAL_INDEPENDENT / CURRENT, zero Work Evidence, zero Proof
+#   publication, zero Reasoning admission
+#   then a head move -> STALE_SUBJECT, new head UNVERIFIED, history retained
+```
+
+
 ```text
 G10-AD INDEPENDENT PROJECT VERIFICATION RUNTIME: PASS
 ```
