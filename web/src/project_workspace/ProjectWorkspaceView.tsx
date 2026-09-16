@@ -22,6 +22,15 @@ import { useCallback, useEffect, useState } from "react";
 
 import {
   ApiError,
+  externalAssetApprovePublish,
+  externalAssetCommitImport,
+  externalAssetCommitReference,
+  externalAssetInspect,
+  externalAssetPrepareImport,
+  externalAssetPreparePublication,
+  externalAssetPrepareReference,
+  externalAssetProviders,
+  externalAssetSearch,
   manageRequestModeChange,
   manageRun,
   manageStatus,
@@ -41,6 +50,13 @@ import {
   verificationStatus,
   verificationVerifyCurrentHead,
   type ApplicationSurfaceAvailability,
+  type ExternalAssetImportCandidate,
+  type ExternalAssetInspection,
+  type ExternalAssetProviderDescriptor,
+  type ExternalAssetPublicationPreview,
+  type ExternalAssetPublicationResult,
+  type ExternalAssetReferenceCandidate,
+  type ExternalAssetSearchHit,
   type ManagementActivityRecord,
   type ManagementAssessment,
   type ManagementBoundedRun,
@@ -50,9 +66,11 @@ import {
   type MonitorStatus,
   type OpenLoop,
   type ProjectAssetAssociation,
+  type ProjectJournalKind,
   type ProjectJournalViewEntry,
   type ProjectOperatingHistory,
   type ProjectOperatingPostureView,
+  type ProjectWorkspaceExternalView,
   type ProjectWorkspaceView as ProjectWorkspaceReadModel,
   type VerificationOutcome,
   type VerificationRun,
@@ -74,12 +92,13 @@ import {
   TWO_AXIS_SENTENCE,
   Tag,
   canonicalOwnerOf,
+  selectStyle,
   shortDigest,
 } from "./parts";
 
 export type ProjectSurfaceTarget = "project" | "work" | "multigraph" | "proof";
 
-type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management" | "monitor" | "verification";
+type Tab = "overview" | "work" | "assets" | "loops" | "history" | "management" | "monitor" | "verification" | "external";
 
 const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   { id: "overview", label: "Overview" },
@@ -99,6 +118,12 @@ const TABS: readonly { readonly id: Tab; readonly label: string }[] = [
   // Management or Monitor tab would suggest it is a mode or a scheduler, and a
   // generic "verified" badge would hide the protocol that produced it.
   { id: "verification", label: "Verification" },
+  // G10-AE §27: External Assets is its own tab. Reuse across an ownership
+  // boundary is a different concern from assets this project already owns, and
+  // folding it into "Assets" would blur which system owns what. The tab renders
+  // four visibly distinct things: the EXTERNAL OWNER, the PROJECT REFERENCE, the
+  // IMPORTED LOCAL NOTE, and the PUBLISHED EXTERNAL COUNTERPART.
+  { id: "external", label: "External Assets" },
 ];
 
 const INVOLVEMENTS: readonly ManagementInvolvement[] = ["DIRECT", "ASSIST", "MANAGE", "DELEGATE"];
@@ -1458,6 +1483,603 @@ function VerificationPanel(props: {
 }
 
 /* ------------------------------------------------------------------ *
+ * G10-AE §27 — External Assets
+ *
+ * Four things are rendered as four DIFFERENT things and never collapsed:
+ *
+ *   EXTERNAL OWNER                 the library owns the asset; Palimpsest holds
+ *                                  a reference (and copies no content);
+ *   PROJECT REFERENCE              this project's MANUAL association to it;
+ *   IMPORTED LOCAL NOTE            a Journal entry this project explicitly
+ *                                  imported (project knowledge with external
+ *                                  provenance);
+ *   PUBLISHED EXTERNAL COUNTERPART this project's outbound publication.
+ *
+ * The read/search/prepare calls persist nothing. The three operator-explicit
+ * buttons ("Reference to project", "Import as Journal", "Approve & publish") are
+ * labelled as operator actions; publication approval additionally comes from the
+ * server-side SEPARATE admission port, so pressing the button cannot approve.
+ * ------------------------------------------------------------------ */
+
+const JOURNAL_KIND_OPTIONS: readonly { readonly value: ProjectJournalKind; readonly label: string }[] = [
+  { value: "IDEA", label: "IDEA" },
+  { value: "OPEN_QUESTION", label: "OPEN_QUESTION" },
+  { value: "NEGATIVE_RESULT", label: "NEGATIVE_RESULT" },
+  { value: "OPPORTUNITY", label: "OPPORTUNITY" },
+  { value: "REFERENCE_NOTE", label: "REFERENCE_NOTE" },
+];
+
+function ExternalAssetsPanel(props: {
+  readonly external: ProjectWorkspaceExternalView | null;
+  readonly externalError: string | null;
+  readonly journal: readonly ProjectJournalViewEntry[];
+  readonly onChanged: () => Promise<void>;
+}): React.ReactElement {
+  const [providers, setProviders] = useState<readonly ExternalAssetProviderDescriptor[]>([]);
+  const [providersError, setProvidersError] = useState<string | null>(null);
+  const [providerId, setProviderId] = useState<string>("");
+  const [query, setQuery] = useState<string>("");
+  const [hits, setHits] = useState<readonly ExternalAssetSearchHit[]>([]);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [searched, setSearched] = useState<boolean>(false);
+  const [selected, setSelected] = useState<ExternalAssetSearchHit | null>(null);
+  const [inspection, setInspection] = useState<ExternalAssetInspection | null>(null);
+  const [inspectError, setInspectError] = useState<string | null>(null);
+  const [referenceResult, setReferenceResult] = useState<string | null>(null);
+  const [referenceError, setReferenceError] = useState<string | null>(null);
+  const [importKind, setImportKind] = useState<ProjectJournalKind>("REFERENCE_NOTE");
+  const [importTitle, setImportTitle] = useState<string>("");
+  const [importResult, setImportResult] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [publicationEntryId, setPublicationEntryId] = useState<string>("");
+  const [publicationType, setPublicationType] = useState<string>("Note");
+  const [preview, setPreview] = useState<ExternalAssetPublicationPreview | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const [publicationResult, setPublicationResult] = useState<ExternalAssetPublicationResult | null>(null);
+  const [publicationError, setPublicationError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<boolean>(false);
+
+  const loadProviders = useCallback(async (): Promise<void> => {
+    try {
+      const listed = await externalAssetProviders();
+      setProviders(listed);
+      setProvidersError(null);
+      setProviderId((current) => (current === "" ? (listed[0]?.definition.providerId ?? "") : current));
+    } catch (error) {
+      setProviders([]);
+      setProvidersError(errText(error));
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadProviders();
+  }, [loadProviders]);
+
+  const runSearch = useCallback(async (): Promise<void> => {
+    setBusy(true);
+    try {
+      const page = await externalAssetSearch({ providerId, text: query, limit: 10 });
+      setHits(page.hits);
+      setSearchError(null);
+      setSearched(true);
+    } catch (error) {
+      setHits([]);
+      setSearchError(errText(error));
+      setSearched(true);
+    } finally {
+      setBusy(false);
+    }
+  }, [providerId, query]);
+
+  const inspectHit = useCallback(async (hit: ExternalAssetSearchHit): Promise<void> => {
+    setSelected(hit);
+    setReferenceResult(null);
+    setReferenceError(null);
+    setImportResult(null);
+    setImportError(null);
+    try {
+      // NO digest is sent: the caller is asking the provider what it currently
+      // holds, and the exact digest that comes back is what any reference binds.
+      const result = await externalAssetInspect({ providerId: hit.providerId, assetId: hit.assetId });
+      setInspection(result);
+      setInspectError(null);
+    } catch (error) {
+      setInspection(null);
+      setInspectError(errText(error));
+    }
+  }, []);
+
+  const referenceToProject = useCallback(async (): Promise<void> => {
+    if (inspection === null || inspection.status !== "AVAILABLE") return;
+    const ref = inspection.snapshot.ref;
+    setBusy(true);
+    try {
+      const prepared = await externalAssetPrepareReference({
+        providerId: ref.providerId,
+        assetId: ref.assetId,
+        contentDigest: ref.contentDigest,
+      });
+      if (prepared.status !== "PREPARED") {
+        setReferenceError(`denied (${prepared.reason}): ${prepared.detail}`);
+        return;
+      }
+      const committed = await externalAssetCommitReference(prepared.candidate);
+      if (committed.status !== "COMMITTED") {
+        setReferenceError(`stale candidate: ${committed.detail}`);
+        return;
+      }
+      setReferenceError(null);
+      setReferenceResult(
+        `${committed.created ? "association created" : "association already existed"} · ${committed.association.assetKind} · ${committed.association.associationId}`,
+      );
+      await props.onChanged();
+    } catch (error) {
+      setReferenceError(errText(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [inspection, props]);
+
+  const importToJournal = useCallback(async (): Promise<void> => {
+    if (inspection === null || inspection.status !== "AVAILABLE") return;
+    setBusy(true);
+    try {
+      const prepared = await externalAssetPrepareImport({
+        externalRef: inspection.snapshot.ref,
+        journalKind: importKind,
+        title: importTitle === "" ? inspection.snapshot.title : importTitle,
+      });
+      if (prepared.status !== "PREPARED") {
+        setImportError(`denied (${prepared.reason}): ${prepared.detail}`);
+        return;
+      }
+      const committed = await externalAssetCommitImport(prepared.candidate);
+      if (committed.status !== "COMMITTED") {
+        setImportError(`stale candidate: ${committed.detail}`);
+        return;
+      }
+      setImportError(null);
+      setImportResult(
+        `journal entry ${committed.entry.entryId} · kind ${committed.entry.kind} · ${committed.journalCreated ? "written" : "already recorded (idempotent retry)"}`,
+      );
+      await props.onChanged();
+    } catch (error) {
+      setImportError(errText(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [importKind, importTitle, inspection, props]);
+
+  const preparePublication = useCallback(async (): Promise<void> => {
+    setBusy(true);
+    setPublicationResult(null);
+    try {
+      const prepared = await externalAssetPreparePublication({
+        providerId,
+        targetAssetType: publicationType,
+        journalEntryId: publicationEntryId,
+      });
+      setPreview(prepared);
+      setPreviewError(null);
+    } catch (error) {
+      setPreview(null);
+      setPreviewError(errText(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [providerId, publicationEntryId, publicationType]);
+
+  const approveAndPublish = useCallback(async (): Promise<void> => {
+    if (preview === null) return;
+    setBusy(true);
+    try {
+      const result = await externalAssetApprovePublish(preview);
+      setPublicationResult(result);
+      setPublicationError(null);
+      await props.onChanged();
+    } catch (error) {
+      setPublicationResult(null);
+      setPublicationError(errText(error));
+    } finally {
+      setBusy(false);
+    }
+  }, [preview, props]);
+
+  const external = props.external;
+  const bridgeKnown = providersError === null;
+  const bridgeConfigured = (external?.bridgeConfigured ?? false) && bridgeKnown;
+
+  return (
+    <div style={{ display: "grid", gap: 14 }}>
+      <Notice testId="external-ownership-notice">
+        Four different things live here and are never collapsed: the EXTERNAL OWNER (the library owns the asset),
+        the PROJECT REFERENCE (this project links to it and copies no content), the IMPORTED LOCAL NOTE (a Journal
+        entry this project explicitly imported, now project knowledge) and the PUBLISHED EXTERNAL COUNTERPART (the
+        external copy this project explicitly sent out). Search results and inspections are ephemeral reads; they
+        never become project context.
+      </Notice>
+
+      <Section title="Providers (deployment config, never asset truth)" testId="external-providers-section">
+        {providersError === null ? null : (
+          <Notice testId="external-unavailable">
+            No external asset library is configured for this installation ({providersError}). Nothing is invented
+            here: no provider list, no search result and no empty "library" stand-in.
+          </Notice>
+        )}
+        {providersError !== null ? null : providers.length === 0 ? (
+          <div data-testid="external-providers-empty">
+            <Muted>
+              This deployment holds an external-library bridge with NO provider configured. That is an honest empty
+              registry, not a library with no assets.
+            </Muted>
+          </div>
+        ) : (
+          providers.map((provider) => (
+            <Card key={provider.definition.providerId} testId="external-provider-row">
+              <div>
+                <b>{provider.definition.displayName}</b> · provider <Mono testId="external-provider-id">{provider.definition.providerId}</Mono>{" "}
+                · version <Mono>{provider.definition.version}</Mono>
+              </div>
+              <div data-testid="external-provider-capabilities" style={{ color: COLORS.muted }}>
+                capabilities{" "}
+                {provider.definition.capabilities.map((capability) => (
+                  <Tag key={capability}>{capability}</Tag>
+                ))}{" "}
+                · definition digest <Mono>{shortDigest(provider.definition.digest)}</Mono>
+              </div>
+            </Card>
+          ))
+        )}
+        {bridgeKnown ? null : (
+          <Muted>The ownership labels below reflect the DERIVED project view, which is independent of the provider list.</Muted>
+        )}
+      </Section>
+
+      <Section title="Search the external library" testId="external-search-section">
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <SelectInput
+            ariaLabel="external provider"
+            testId="external-search-provider"
+            value={providerId}
+            options={providers.map((provider) => ({
+              value: provider.definition.providerId,
+              label: provider.definition.providerId,
+            }))}
+            onChange={setProviderId}
+          />
+          <input
+            aria-label="external search text"
+            data-testid="external-search-text"
+            value={query}
+            placeholder="search the external library"
+            onChange={(event) => setQuery(event.target.value)}
+            style={{ ...selectStyle, minWidth: 220 }}
+          />
+          <Btn primary disabled={busy || providerId === "" || query.trim() === ""} onClick={() => void runSearch()} testId="external-search-run">
+            Search
+          </Btn>
+        </div>
+        <Notice testId="external-search-ephemeral">
+          A search hit is NOT a durable project reference, and searching changes nothing in this project: no
+          association, no Journal entry, no Work, no context.
+        </Notice>
+        {searchError === null ? null : (
+          <ErrorText testId="external-search-error">{searchError}</ErrorText>
+        )}
+        {searched && searchError === null && hits.length === 0 ? (
+          <div data-testid="external-search-empty">
+            <Muted>The library answered with no hit for this query. That is an empty result page, not an absent asset.</Muted>
+          </div>
+        ) : null}
+        {hits.map((hit) => (
+          <Card key={`${hit.providerId}:${hit.assetId}`} testId="external-search-hit">
+            <div>
+              <b>{hit.title}</b> · external type <Mono testId="external-hit-type">{hit.assetType}</Mono> · id{" "}
+              <Mono testId="external-hit-id">{hit.assetId}</Mono>
+            </div>
+            {hit.summary === undefined ? null : <div style={{ color: COLORS.muted }}>{hit.summary}</div>}
+            <div data-testid="external-hit-hint" style={{ color: COLORS.muted }}>
+              {hit.searchScore === undefined ? null : <>ranking hint {String(hit.searchScore)} · </>}
+              {hit.latestDigestHint === undefined ? (
+                <>no latest digest hint is exposed; an exact INSPECT is still required before any reference</>
+              ) : (
+                <>latest digest HINT <Mono>{shortDigest(hit.latestDigestHint)}</Mono> — a hint, never the referenced revision</>
+              )}
+            </div>
+            <div>
+              <Btn onClick={() => void inspectHit(hit)} testId="external-inspect-run">
+                Inspect exact revision
+              </Btn>
+              <Muted> reading only</Muted>
+            </div>
+          </Card>
+        ))}
+      </Section>
+
+      <Section title="Inspect (the exact digest-bound revision)" testId="external-inspect-section">
+        {selected === null ? (
+          <Muted>Choose a search hit to inspect. Nothing is fetched automatically.</Muted>
+        ) : (
+          <>
+            <Field label="external owner" testId="external-inspect-owner">
+              <Tag tone="muted">EXTERNAL OWNER</Tag> provider <Mono>{selected.providerId}</Mono> owns asset{" "}
+              <Mono>{selected.assetId}</Mono>
+            </Field>
+            {inspectError === null ? null : (
+              <Notice testId="external-inspect-unavailable">
+                The provider could not answer this inspection ({inspectError}). An unavailable provider is not a false
+                asset.
+              </Notice>
+            )}
+            {inspection !== null && inspection.status === "UNAVAILABLE" ? (
+              <Notice testId="external-inspect-unavailable">
+                UNAVAILABLE ({inspection.reason}): {inspection.detail}
+              </Notice>
+            ) : null}
+            {inspection !== null && inspection.status === "AVAILABLE" ? (
+              <>
+                <Field label="exact ref" testId="external-inspect-ref">
+                  <Mono>
+                    {inspection.snapshot.ref.providerId}/{inspection.snapshot.ref.assetId}@
+                    {inspection.snapshot.ref.contentDigest}
+                  </Mono>
+                </Field>
+                <Field label="external type / title" testId="external-inspect-title">
+                  <Mono>{inspection.snapshot.assetType}</Mono> · {inspection.snapshot.title}{" "}
+                  <Muted>(derived from the provider; not stored as project truth)</Muted>
+                </Field>
+                <Field label="ref digest" testId="external-inspect-digest">
+                  <Mono>{inspection.snapshot.ref.refDigest}</Mono>
+                </Field>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  <Btn primary disabled={busy} onClick={() => void referenceToProject()} testId="external-reference-run">
+                    Reference to project (operator)
+                  </Btn>
+                  <Muted>
+                    Creates ONE EXTERNAL_ASSET association with the exact digest above. It copies no content; the
+                    library stays the owner.
+                  </Muted>
+                </div>
+                <Field label="reference result" testId="external-reference-result">
+                  {referenceError !== null ? (
+                    <ErrorText>{referenceError}</ErrorText>
+                  ) : referenceResult === null ? (
+                    <Muted>no reference has been committed from this session</Muted>
+                  ) : (
+                    <b>{referenceResult}</b>
+                  )}
+                </Field>
+                <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                  <SelectInput
+                    ariaLabel="journal kind for the import"
+                    testId="external-import-kind"
+                    value={importKind}
+                    options={[...JOURNAL_KIND_OPTIONS]}
+                    onChange={setImportKind}
+                  />
+                  <input
+                    aria-label="journal title for the import"
+                    data-testid="external-import-title"
+                    value={importTitle}
+                    placeholder={inspection.snapshot.title}
+                    onChange={(event) => setImportTitle(event.target.value)}
+                    style={{ ...selectStyle, minWidth: 200 }}
+                  />
+                  <Btn disabled={busy} onClick={() => void importToJournal()} testId="external-import-run">
+                    Import as Project Journal… (operator)
+                  </Btn>
+                </div>
+                <Muted>
+                  The Journal kind is YOUR explicit choice: no provider type is ever mapped to a Palimpsest kind. The
+                  exact materialized text is copied; nothing is summarized or truncated. Oversized or non-text content
+                  blocks the import instead.
+                </Muted>
+                <Field label="import result" testId="external-import-result">
+                  {importError !== null ? (
+                    <ErrorText>{importError}</ErrorText>
+                  ) : importResult === null ? (
+                    <Muted>no import has been committed from this session</Muted>
+                  ) : (
+                    <b>{importResult}</b>
+                  )}
+                </Field>
+              </>
+            ) : null}
+          </>
+        )}
+      </Section>
+
+      <Section title="Referenced assets in this project (derived)" testId="external-references-section">
+        {external === null ? (
+          <Notice testId="external-unavailable">
+            The project workspace read did not report an external section ({props.externalError ?? "no view"}). No
+            reference list is fabricated.
+          </Notice>
+        ) : external.bridgeConfigured ? null : (
+          <Notice testId="external-references-unbridged">
+            No external asset bridge is configured for this deployment, so no referenced external asset can be
+            resolved here. This is not an empty library.
+          </Notice>
+        )}
+        {external === null || external.references.length === 0 ? (
+          <div data-testid="external-references-empty">
+            <Muted>No external asset is referenced by (or published from) this project.</Muted>
+          </div>
+        ) : (
+          external.references.map((reference) => (
+            <Card key={reference.associationId} testId="external-reference-row">
+              <div>
+                <Tag tone="muted" ><span data-testid="external-ref-ownership">EXTERNAL OWNER</span></Tag>{" "}
+                <span data-testid="external-ref-relation">
+                  {reference.relation === "PUBLISHED_EXTERNAL_COUNTERPART" ? "PUBLISHED EXTERNAL COUNTERPART" : "PROJECT REFERENCE"}
+                </span>{" "}
+                · provider <Mono>{reference.providerId}</Mono> · asset <Mono>{reference.assetId}</Mono>
+              </div>
+              <div data-testid="external-ref-digest" style={{ color: COLORS.muted }}>
+                referenced digest <Mono>{shortDigest(reference.referencedDigest)}</Mono> · association{" "}
+                <Mono>{reference.associationId}</Mono> ({reference.associationKind})
+              </div>
+              <div data-testid="external-ref-status">
+                resolution <b>{reference.resolution}</b> · provider{" "}
+                <b>{reference.providerAvailable ? "available" : "unavailable"}</b>
+                {reference.providerAvailable ? null : (
+                  <Muted> — the association remains; the asset is not reported false</Muted>
+                )}
+              </div>
+              {reference.providerAvailable ? null : (
+                <div data-testid="external-ref-detail" style={{ color: COLORS.muted }}>
+                  {reference.detail ?? "the provider could not answer for this revision"} — the referenced digest above is unchanged
+                </div>
+              )}
+              {reference.title === undefined && reference.assetType === undefined ? (
+                <div data-testid="external-ref-description">
+                  <Muted>the provider could not describe this revision right now (the referenced digest is unchanged)</Muted>
+                </div>
+              ) : (
+                <div data-testid="external-ref-description">
+                  external type <Mono>{reference.assetType ?? "unknown"}</Mono> · title {reference.title ?? "unknown"}
+                </div>
+              )}
+              {reference.newerRevisionAvailable === true ? (
+                <div data-testid="external-ref-newer">
+                  <Notice>
+                    a NEWER revision {reference.latestRevisionLabel === undefined ? "" : `(${reference.latestRevisionLabel}) `}
+                    is available ({shortDigest(reference.latestDigestHint ?? "")}) — the referenced digest above is
+                    NOT changed
+                  </Notice>
+                </div>
+              ) : null}
+              <div data-testid="external-ref-provenance" style={{ color: COLORS.muted }}>
+                provenance <Mono>{reference.provenance}</Mono>
+              </div>
+            </Card>
+          ))
+        )}
+      </Section>
+
+      <Section title="Imported from the external library (local project knowledge)" testId="external-imports-section">
+        {external === null || external.imports.length === 0 ? (
+          <div data-testid="external-imports-empty">
+            <Muted>No Journal entry of this project carries structured external-import provenance.</Muted>
+          </div>
+        ) : (
+          external.imports.map((imported) => (
+            <Card key={imported.entryId} testId="external-import-row">
+              <div>
+                <Tag tone="ok"><span data-testid="external-import-label">IMPORTED LOCAL NOTE</span></Tag> ·{" "}
+                <b>{imported.title}</b> · journal kind <Mono>{imported.journalKind}</Mono>
+              </div>
+              <div data-testid="external-import-provenance" style={{ color: COLORS.muted }}>
+                exact external origin <Mono>{imported.providerId}/{imported.assetId}@{shortDigest(imported.contentDigest)}</Mono>{" "}
+                · entry <Mono>{imported.entryId}</Mono> · operation <Mono>{imported.operationId}</Mono>
+              </div>
+            </Card>
+          ))
+        )}
+      </Section>
+
+      <Section title="Publish a local Journal entry to the external library" testId="external-publication-section">
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+          <SelectInput
+            ariaLabel="journal entry to publish"
+            testId="external-publication-entry"
+            value={publicationEntryId}
+            options={[
+              { value: "", label: props.journal.length === 0 ? "no journal entry readable" : "select a journal entry…" },
+              ...props.journal.map((entry) => ({
+                value: entry.entry.entryId,
+                label: `${entry.entry.kind} · ${entry.entry.title}`,
+              })),
+            ]}
+            onChange={setPublicationEntryId}
+          />
+          <input
+            aria-label="target external asset type"
+            data-testid="external-publication-type"
+            value={publicationType}
+            onChange={(event) => setPublicationType(event.target.value)}
+            style={{ ...selectStyle, minWidth: 140 }}
+          />
+          <Btn disabled={busy || providerId === "" || publicationEntryId === ""} onClick={() => void preparePublication()} testId="external-publication-preview-run">
+            Prepare publication preview
+          </Btn>
+        </div>
+        <Notice testId="external-publication-preview-only">
+          A preview is NOT a publication: preparing one writes no bridge receipt, calls no provider and produces no
+          external effect.
+        </Notice>
+        {previewError === null ? null : <ErrorText testId="external-publication-preview-error">{previewError}</ErrorText>}
+        {preview === null ? null : (
+          <Card testId="external-publication-preview">
+            <div data-testid="external-publication-target">
+              target <Mono>{preview.provider.providerId}</Mono> as external type <Mono>{preview.targetAssetType}</Mono> ·
+              source journal entry <Mono>{preview.localJournalRef.entryId}</Mono> ({preview.localJournalRef.kind})
+            </div>
+            <div data-testid="external-publication-title">
+              outbound title: <b>{preview.outboundTitle}</b>
+            </div>
+            <div data-testid="external-publication-body" style={{ whiteSpace: "pre-wrap" }}>
+              outbound body: {preview.outboundBody}
+            </div>
+            <div data-testid="external-publication-metadata" style={{ color: COLORS.muted }}>
+              outbound metadata{" "}
+              {Object.entries(preview.outboundMetadata).map(([key, value]) => (
+                <span key={key}>
+                  <Mono>{key}</Mono>={<Mono>{shortDigest(value)}</Mono>}{" "}
+                </span>
+              ))}
+            </div>
+            <div data-testid="external-publication-payload-digest" style={{ color: COLORS.muted }}>
+              payload digest <Mono>{preview.payloadDigest}</Mono> · publication <Mono>{preview.publicationId}</Mono>
+            </div>
+            <Muted>
+              This is the exact content that would leave the project — nothing else: no other journal entry, no project
+              context, no reasoning. Publishing it requires the separate approval below.
+            </Muted>
+            <div>
+              <Btn primary disabled={busy} onClick={() => void approveAndPublish()} testId="external-publication-approve">
+                Approve &amp; publish (operator)
+              </Btn>
+            </div>
+          </Card>
+        )}
+        <Field label="publication result" testId="external-publication-result">
+          {publicationError !== null ? (
+            <ErrorText>{publicationError}</ErrorText>
+          ) : publicationResult === null ? (
+            <Muted>no publication has been attempted from this session</Muted>
+          ) : publicationResult.status === "PUBLISHED" ? (
+            <>
+              <b>PUBLISHED</b> · external ref{" "}
+              <Mono testId="external-published-ref">
+                {publicationResult.ref.providerId}/{publicationResult.ref.assetId}@{shortDigest(publicationResult.ref.contentDigest)}
+              </Mono>{" "}
+              · association{" "}
+              <Mono testId="external-published-association">
+                {publicationResult.association?.associationId ?? "none"}
+              </Mono>{" "}
+              <Muted>
+                (the local Journal entry remains this project's own canonical history; the external copy is a
+                counterpart, not a replacement)
+              </Muted>
+            </>
+          ) : publicationResult.status === "NOT_APPROVED" ? (
+            <>
+              <b>NOT_APPROVED</b> ({publicationResult.decision}) · {publicationResult.detail}{" "}
+              <Muted>nothing left the project and no external asset exists</Muted>
+            </>
+          ) : (
+            <>
+              <b>FAILED</b> ({publicationResult.reason}) · {publicationResult.detail}
+            </>
+          )}
+        </Field>
+      </Section>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ *
  * Main view
  * ------------------------------------------------------------------ */
 
@@ -1467,6 +2089,7 @@ export function ProjectWorkspaceView(props: {
 }): React.ReactElement {
   const [tab, setTab] = useState<Tab>("overview");
   const [view, setView] = useState<ProjectWorkspaceReadModel | null>(null);
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [assets, setAssets] = useState<readonly ProjectAssetAssociation[]>([]);
   const [loops, setLoops] = useState<readonly OpenLoop[]>([]);
   const [history, setHistory] = useState<readonly WorkspaceHistoryEntry[]>([]);
@@ -1589,7 +2212,10 @@ export function ProjectWorkspaceView(props: {
   const refresh = useCallback(async (): Promise<void> => {
     try {
       setView(await projectWorkspace());
+      setWorkspaceError(null);
     } catch (error) {
+      setView(null);
+      setWorkspaceError(errText(error));
       setMessage(`workspace query failed: ${errText(error)}`);
     }
     try {
@@ -1717,6 +2343,14 @@ export function ProjectWorkspaceView(props: {
             resultError={verificationResultError}
             busy={verificationBusy}
             onVerify={() => void verifyCurrentHead()}
+          />
+        ) : null}
+        {tab === "external" ? (
+          <ExternalAssetsPanel
+            external={view?.external ?? null}
+            externalError={workspaceError}
+            journal={journal}
+            onChanged={refresh}
           />
         ) : null}
       </div>

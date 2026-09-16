@@ -78,6 +78,21 @@ function packageRoot(modulePath: string): string {
 
 const STATIC_ROOT = join(packageRoot(fileURLToPath(import.meta.url)), "dist", "web");
 
+/**
+ * The "bad port" set from the WHATWG fetch standard, which every compliant HTTP
+ * client refuses to connect to (undici throws `TypeError: fetch failed` with
+ * cause `bad port` before a byte is written). Node's `net` layer binds them
+ * happily, so an ephemeral listener can end up unreachable. Only consulted when
+ * the caller asks for an ephemeral port (`0`); an explicit port is honoured.
+ */
+const CLIENT_FORBIDDEN_PORTS: ReadonlySet<number> = new Set([
+  1, 7, 9, 11, 13, 15, 17, 19, 20, 21, 22, 23, 25, 37, 42, 43, 53, 69, 77, 79, 87, 95, 101, 102,
+  103, 104, 109, 110, 111, 113, 115, 117, 119, 123, 135, 137, 139, 143, 161, 179, 389, 427, 465,
+  512, 513, 514, 515, 526, 530, 531, 532, 540, 548, 554, 556, 563, 587, 601, 636, 989, 990, 993,
+  995, 1719, 1720, 1723, 2049, 3659, 4045, 4190, 5060, 5061, 6000, 6566, 6665, 6666, 6667, 6668,
+  6669, 6679, 6697, 10080,
+]);
+
 export interface ServeOptions {
   /** Bind port; default 7831 (tests pass 0 for an ephemeral port). */
   readonly port?: number | undefined;
@@ -159,6 +174,11 @@ function declaredGateIds(controller: ProjectController): Set<string> {
         .all(controller.projectId) as Array<{ gate_id: string }>
     ).map((row) => row.gate_id),
   );
+}
+
+/** True for the ports a WHATWG-compliant HTTP client refuses to connect to. */
+export function isClientForbiddenPort(port: number): boolean {
+  return CLIENT_FORBIDDEN_PORTS.has(port);
 }
 
 export function serveOrchestration(
@@ -508,22 +528,42 @@ export function serveOrchestration(
   });
 
   return new Promise((resolve) => {
-    server.listen(options.port ?? 7831, options.host ?? "127.0.0.1", () => {
-      const address = server.address();
-      const port = typeof address === "object" && address !== null ? address.port : options.port ?? 7831;
-      const host = options.host ?? "127.0.0.1";
-      resolve({
-        token,
-        port,
-        host,
-        url: `http://${host}:${port}`,
-        close: () =>
-          new Promise((resolveClose, rejectClose) => {
-            server.close((error) => (error === undefined ? resolveClose() : rejectClose(error)));
-            server.closeAllConnections();
-          }),
+    const requestedPort = options.port ?? 7831;
+    const host = options.host ?? "127.0.0.1";
+    let retries = 0;
+
+    const listenOnce = (): void => {
+      server.listen(requestedPort, host, () => {
+        const address = server.address();
+        const port = typeof address === "object" && address !== null ? address.port : requestedPort;
+        // G10-AE gate finding: with an ephemeral port the OS chooses from the
+        // machine's dynamic range, which on Windows is configurable and on this
+        // host is 1024-15000 - wide enough to hand out a port that WHATWG-compliant
+        // HTTP clients refuse to CONNECT to at all (`fetch` fails with "bad port"
+        // before any request is sent, exactly as if the server were down). Retrying
+        // the bind keeps an ephemeral server reachable instead of intermittently
+        // invisible. An explicitly requested port is never second-guessed: a caller
+        // who asks for 6667 gets 6667 or an error.
+        if (requestedPort === 0 && CLIENT_FORBIDDEN_PORTS.has(port) && retries < 8) {
+          retries += 1;
+          server.close(() => listenOnce());
+          return;
+        }
+        resolve({
+          token,
+          port,
+          host,
+          url: `http://${host}:${port}`,
+          close: () =>
+            new Promise((resolveClose, rejectClose) => {
+              server.close((error) => (error === undefined ? resolveClose() : rejectClose(error)));
+              server.closeAllConnections();
+            }),
+        });
       });
-    });
+    };
+
+    listenOnce();
   });
 }
 

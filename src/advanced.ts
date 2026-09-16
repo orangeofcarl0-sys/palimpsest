@@ -169,6 +169,22 @@ export * from "./project_workspace/index.js";
 export * from "./project_management/index.js";
 
 /**
+ * G10-AE: External Asset Library bridge & explicit project reuse — advanced opt-in
+ * only. ExternalAsset ≠ ProjectAsset / ProjectContext / WorkEvidence / ProofEvidence /
+ * ReasoningClaim / Decision / Truth; SearchResult ≠ StableAssetRef; Reference ≠ Import;
+ * Import ≠ TruthAdmission / Task / Evidence; PublicationPreview ≠ Publication;
+ * PublicationReceipt ≠ Truth; ExternalLatest ≠ ReferencedRevision;
+ * ProviderUnavailable ≠ AssetFalse; Association ≠ Ownership.
+ *
+ * A READ-ONLY library port plus an explicit reference/import/publication bridge: the
+ * external system stays the asset owner and the project stays the project owner. It
+ * imports into the EXISTING ProjectJournal only, publishes ONLY a ProjectJournalEntry
+ * through the governed Ordarium effect path behind a SEPARATE approval, and never
+ * auto-retrieves, auto-admits or auto-contextualizes anything.
+ */
+export * from "./external_assets/index.js";
+
+/**
  * Revision-safe Work evolution (additive): the PURE plan-revision
  * reconciliation (`compilePlanRevision`), the `appendAtomic` batch it commits
  * through, and the typed `PlanReconciliationError` blocker surface.

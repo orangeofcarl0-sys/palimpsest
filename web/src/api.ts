@@ -784,12 +784,70 @@ export interface ProjectWorkspaceAssetsView {
   readonly byKind: Readonly<Record<string, number>>;
 }
 
+/**
+ * G10-AE §26: the DERIVED external-asset section of the workspace view.
+ *
+ *   ExternalAsset != ProjectAsset      Association != Ownership
+ *   ExternalLatest != ReferencedRevision
+ *   ProviderUnavailable != AssetFalse
+ *
+ * `bridgeConfigured: false` means this deployment has NO external library at all
+ * (never an empty, known library). `ownership` is always EXTERNAL_OWNER: the
+ * library owns the asset and the project owns only the link.
+ */
+export interface WorkspaceExternalRefView {
+  readonly associationId: string;
+  readonly ownership: "EXTERNAL_OWNER";
+  readonly relation: "PROJECT_REFERENCE" | "PUBLISHED_EXTERNAL_COUNTERPART";
+  readonly associationKind: string;
+  readonly provenance: string;
+  readonly recordedAt: string;
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly referencedDigest: string;
+  readonly stableRefKey: string;
+  readonly providerAvailable: boolean;
+  readonly resolution: "RESOLVED" | "PROVIDER_UNAVAILABLE" | "REVISION_UNAVAILABLE";
+  readonly assetType?: string;
+  readonly title?: string;
+  readonly sourceLocator?: string;
+  readonly newerRevisionAvailable?: boolean;
+  readonly latestDigestHint?: string;
+  readonly latestRevisionLabel?: string;
+  readonly detail?: string;
+}
+
+/** An EXPLICIT import this project made into its own Journal (local note, external origin). */
+export interface WorkspaceExternalImportView {
+  readonly entryId: string;
+  readonly journalKind: string;
+  readonly title: string;
+  readonly createdAt: string;
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly contentDigest: string;
+  readonly refDigest: string;
+  readonly provenanceDigest: string;
+  readonly operationId: string;
+  readonly sourceLocator?: string;
+}
+
+export interface ProjectWorkspaceExternalView {
+  readonly bridgeConfigured: boolean;
+  readonly references: readonly WorkspaceExternalRefView[];
+  readonly providerAvailability: Readonly<Record<string, boolean>>;
+  readonly imports: readonly WorkspaceExternalImportView[];
+  readonly warnings: readonly string[];
+}
+
 export interface ProjectWorkspaceView {
   readonly schemaVersion: 1;
   readonly projectId: string;
   readonly project: WorkspaceProjectView;
   readonly work: ProjectWorkspaceWorkView;
   readonly assets: ProjectWorkspaceAssetsView;
+  /** G10-AE §26: the derived external view (never a copy of external content). */
+  readonly external: ProjectWorkspaceExternalView;
   readonly openLoops: readonly OpenLoop[];
   readonly relations: { readonly campaignProjectRefs: readonly { readonly projectId: string; readonly revision: number; readonly digest: string }[] };
   readonly historySummary: readonly WorkspaceHistoryEntry[];
@@ -1368,4 +1426,278 @@ export interface VerificationOutcome {
 /** The canonical/product ref of a durable verification run (never a copied body). */
 export function verificationRunRef(runId: string): string {
   return `project_verification:${runId}`;
+}
+
+/* ------------------------------------------------------------------ *
+ * G10-AE §27/§28: the External Asset Library bridge
+ *
+ * Every helper is a thin wrapper over ONE strict server route. A deployment
+ * without the bridge answers 501 `surface_absent` on all of them (a truthful
+ * "no external library"), never a fabricated empty provider list.
+ *
+ * The operator-explicit helpers (`externalAssetCommitReference`,
+ * `externalAssetCommitImport`, `externalAssetApprovePublish`) are the ONLY
+ * mutating/approving calls in this module. Approval still travels through the
+ * server-side SEPARATE admission port: the bearer token that admits the request
+ * is not semantic publication approval.
+ * ------------------------------------------------------------------ */
+
+export interface ExternalAssetProviderDescriptor {
+  readonly definition: {
+    readonly providerId: string;
+    readonly version: string;
+    readonly displayName: string;
+    readonly capabilities: readonly string[];
+    readonly protocolDigest: string;
+    readonly digest: string;
+  };
+  readonly search: boolean;
+  readonly inspect: boolean;
+  readonly materializeText: boolean;
+  readonly publish: boolean;
+  readonly publicationSemantics?: string;
+}
+
+/** An EPHEMERAL search hit: ranking only, never applicability/quality/truth. */
+export interface ExternalAssetSearchHit {
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly assetType: string;
+  readonly title: string;
+  readonly summary?: string;
+  readonly searchScore?: number;
+  readonly latestDigestHint?: string;
+}
+
+export interface ExternalAssetSearchPage {
+  readonly providerId: string;
+  readonly hits: readonly ExternalAssetSearchHit[];
+  readonly nextCursor?: string;
+}
+
+/** The exact `provider/asset@digest` identity: never a "latest" shorthand. */
+export interface ExternalAssetStableRef {
+  readonly schemaVersion: 1;
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly contentDigest: string;
+  readonly revisionLabel?: string;
+  readonly refDigest: string;
+}
+
+export type ExternalAssetInspection =
+  | {
+      readonly status: "AVAILABLE";
+      readonly snapshot: {
+        readonly ref: ExternalAssetStableRef;
+        readonly assetType: string;
+        readonly title: string;
+        readonly summary?: string;
+        readonly tags: readonly string[];
+        readonly metadata: Readonly<Record<string, string>>;
+        readonly sourceLocator?: string;
+      };
+    }
+  | {
+      readonly status: "UNAVAILABLE";
+      readonly providerId: string;
+      readonly assetId: string;
+      readonly requestedDigest?: string;
+      readonly reason: string;
+      readonly detail: string;
+    };
+
+/** A read-only reference candidate: committing it re-checks the exact digest. */
+export interface ExternalAssetReferenceCandidate {
+  readonly schemaVersion: 1;
+  readonly projectId: string;
+  readonly externalRef: ExternalAssetStableRef;
+  readonly providerDefinitionDigest: string;
+  readonly projectBasis: { readonly projectId: string; readonly revision: number; readonly digest: string };
+  readonly candidateDigest: string;
+}
+
+/** A read-only import candidate: the local Journal entry it WOULD append. */
+export interface ExternalAssetImportCandidate {
+  readonly schemaVersion: 1;
+  readonly operationId: string;
+  readonly projectId: string;
+  readonly externalRef: ExternalAssetStableRef;
+  readonly providerDefinitionDigest: string;
+  readonly journalKind: ProjectJournalKind;
+  readonly entry: ProjectJournalEntry;
+  readonly provenance: {
+    readonly relation: string;
+    readonly providerId: string;
+    readonly assetId: string;
+    readonly contentDigest: string;
+    readonly refDigest: string;
+    readonly importOperationId: string;
+    readonly digest: string;
+    readonly sourceLocator?: string;
+  };
+  readonly textDigest: string;
+  readonly candidateDigest: string;
+}
+
+export type ExternalAssetReferencePreparation =
+  | { readonly status: "PREPARED"; readonly candidate: ExternalAssetReferenceCandidate }
+  | { readonly status: "DENIED"; readonly reason: string; readonly detail: string };
+
+export type ExternalAssetImportPreparation =
+  | { readonly status: "PREPARED"; readonly candidate: ExternalAssetImportCandidate }
+  | { readonly status: "DENIED"; readonly reason: string; readonly detail: string };
+
+export type ExternalAssetReferenceCommit =
+  | {
+      readonly status: "COMMITTED";
+      readonly association: ProjectAssetAssociation;
+      readonly created: boolean;
+    }
+  | { readonly status: "STALE_REFERENCE_CANDIDATE"; readonly reason: string; readonly detail: string };
+
+export type ExternalAssetImportCommit =
+  | {
+      readonly status: "COMMITTED";
+      readonly entry: ProjectJournalEntry;
+      readonly journalCreated: boolean;
+      readonly replayed: boolean;
+    }
+  | { readonly status: "STALE_IMPORT_CANDIDATE"; readonly reason: string; readonly detail: string };
+
+/** The EXACT bytes that would leave the project, plus the approval identity. */
+export interface ExternalAssetPublicationPreview {
+  readonly schemaVersion: 1;
+  readonly publicationId: string;
+  readonly provider: ExternalAssetProviderDescriptor["definition"];
+  readonly projectId: string;
+  readonly localJournalRef: { readonly entryId: string; readonly kind: ProjectJournalKind };
+  readonly localJournalDigest: string;
+  readonly targetAssetType: string;
+  readonly outboundTitle: string;
+  readonly outboundBody: string;
+  readonly outboundMetadata: Readonly<Record<string, string>>;
+  readonly payloadDigest: string;
+  readonly digest: string;
+}
+
+export type ExternalAssetPublicationResult =
+  | {
+      readonly status: "PUBLISHED";
+      readonly ref: ExternalAssetStableRef;
+      readonly association?: ProjectAssetAssociation;
+      readonly created: boolean;
+    }
+  | { readonly status: "NOT_APPROVED"; readonly decision: string; readonly detail: string }
+  | { readonly status: "FAILED"; readonly reason: string; readonly detail: string };
+
+/** GET /api/external-assets/providers — deployment config descriptors. */
+export function externalAssetProviders(): Promise<readonly ExternalAssetProviderDescriptor[]> {
+  return call<readonly ExternalAssetProviderDescriptor[]>("/api/external-assets/providers");
+}
+
+/** GET /api/external-assets/search — EPHEMERAL hits; zero project mutation. */
+export function externalAssetSearch(input: {
+  readonly providerId: string;
+  readonly text: string;
+  readonly limit?: number;
+}): Promise<ExternalAssetSearchPage> {
+  const params = new URLSearchParams({ providerId: input.providerId, text: input.text });
+  if (input.limit !== undefined) params.set("limit", String(input.limit));
+  return call<ExternalAssetSearchPage>(`/api/external-assets/search?${params.toString()}`);
+}
+
+/** GET /api/external-assets/inspect — the EXACT digest-bound snapshot. */
+export function externalAssetInspect(input: {
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly contentDigest?: string;
+}): Promise<ExternalAssetInspection> {
+  const params = new URLSearchParams({ providerId: input.providerId, assetId: input.assetId });
+  if (input.contentDigest !== undefined) params.set("contentDigest", input.contentDigest);
+  return call<ExternalAssetInspection>(`/api/external-assets/inspect?${params.toString()}`);
+}
+
+/** POST /api/external-assets/prepare-reference — a read-only candidate. */
+export function externalAssetPrepareReference(input: {
+  readonly providerId: string;
+  readonly assetId: string;
+  readonly contentDigest?: string;
+}): Promise<ExternalAssetReferencePreparation> {
+  return call<ExternalAssetReferencePreparation>("/api/external-assets/prepare-reference", {
+    method: "POST",
+    body: JSON.stringify({
+      providerId: input.providerId,
+      assetId: input.assetId,
+      ...(input.contentDigest === undefined ? {} : { contentDigest: input.contentDigest }),
+    }),
+  });
+}
+
+/** POST /api/external-assets/prepare-import — an explicit Journal kind + exact text. */
+export function externalAssetPrepareImport(input: {
+  readonly externalRef: ExternalAssetStableRef;
+  readonly journalKind: ProjectJournalKind;
+  readonly title: string;
+  readonly sourceLocator?: string;
+}): Promise<ExternalAssetImportPreparation> {
+  return call<ExternalAssetImportPreparation>("/api/external-assets/prepare-import", {
+    method: "POST",
+    body: JSON.stringify({
+      externalRef: input.externalRef,
+      journalKind: input.journalKind,
+      title: input.title,
+      ...(input.sourceLocator === undefined ? {} : { sourceLocator: input.sourceLocator }),
+    }),
+  });
+}
+
+/** POST /api/external-assets/prepare-publication — the EXACT outbound payload. */
+export function externalAssetPreparePublication(input: {
+  readonly providerId: string;
+  readonly targetAssetType: string;
+  readonly journalEntryId: string;
+}): Promise<ExternalAssetPublicationPreview> {
+  return call<ExternalAssetPublicationPreview>("/api/external-assets/prepare-publication", {
+    method: "POST",
+    body: JSON.stringify({
+      providerId: input.providerId,
+      targetAssetType: input.targetAssetType,
+      journalEntryId: input.journalEntryId,
+    }),
+  });
+}
+
+/** POST /api/external-assets/commit-reference — OPERATOR-EXPLICIT. */
+export function externalAssetCommitReference(
+  candidate: ExternalAssetReferenceCandidate,
+): Promise<ExternalAssetReferenceCommit> {
+  return call<ExternalAssetReferenceCommit>("/api/external-assets/commit-reference", {
+    method: "POST",
+    body: JSON.stringify({ candidate }),
+  });
+}
+
+/** POST /api/external-assets/commit-import — OPERATOR-EXPLICIT. */
+export function externalAssetCommitImport(
+  candidate: ExternalAssetImportCandidate,
+): Promise<ExternalAssetImportCommit> {
+  return call<ExternalAssetImportCommit>("/api/external-assets/commit-import", {
+    method: "POST",
+    body: JSON.stringify({ candidate }),
+  });
+}
+
+/**
+ * POST /api/external-assets/approve-publish — OPERATOR-EXPLICIT, and still only a
+ * REQUEST for publication: the decision comes from the server-side separate
+ * admission port, so an authenticated HTTP caller cannot approve by calling it.
+ */
+export function externalAssetApprovePublish(
+  preview: ExternalAssetPublicationPreview,
+): Promise<ExternalAssetPublicationResult> {
+  return call<ExternalAssetPublicationResult>("/api/external-assets/approve-publish", {
+    method: "POST",
+    body: JSON.stringify({ preview }),
+  });
 }
