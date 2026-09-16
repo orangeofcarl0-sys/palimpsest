@@ -351,7 +351,12 @@ describe("G10-S product wiring", () => {
       expect(application.reasoning).toBeUndefined();
       expect(application.attention).toBeUndefined();
       expect(application.empirical).toBeUndefined();
-      expect(application.advisor).toBeUndefined();
+      // UX-C §7/CF-UXA-02: the advisor is composed whenever this installation can act
+      // (a local peer) OR an empirical memory store was supplied — an OrganizationMemory
+      // store is no longer a prerequisite. It is a pure READ-ONLY advisor and performs no
+      // work merely by existing: the assertions above still hold (no cell, no branch, no
+      // cognition, no verification run).
+      expect(application.advisor).toBeDefined();
     } finally {
       await installed.dispose();
     }
@@ -368,7 +373,8 @@ describe("G10-S product wiring", () => {
       const surfaces = (await http(installed, "GET", "/api/application/surfaces")).body as Record<string, boolean>;
       expect(surfaces.recipes).toBe(true);
       expect(surfaces.recipeExecution).toBe(true);
-      expect(surfaces.advisor).toBe(false);
+      // UX-C §7: a memoryless advisor is a safe default for a deployment with a local peer.
+      expect(surfaces.advisor).toBe(true);
 
       const listed = (await http(installed, "GET", "/api/recipes")).body as readonly { recipeId: string }[];
       expect(listed).toHaveLength(5);
@@ -404,7 +410,9 @@ describe("G10-S product wiring", () => {
       const names = installed.tools.map((tool) => tool.name);
       expect(names).toContain("palimpsest_recipes");
       expect(names).toContain("palimpsest_recipe");
-      expect(names).not.toContain("palimpsest_advisor"); // no memory store here
+      // UX-C §7/CF-UXA-02: the memoryless advisor is composed (and its read-only tool
+      // exposed) without any organization-memory store.
+      expect(names).toContain("palimpsest_advisor");
 
       for (const forbidden of ["localPeer", "from", "authenticated", "authority", "peerId", "force_authority", "force_admit", "spawn_peer"]) {
         for (const name of ["palimpsest_recipes", "palimpsest_recipe", "palimpsest_advisor"]) {

@@ -1,22 +1,32 @@
-// palimpsest-dsh-host/runner — the persistent project principal.
+// palimpsest-dsh-host/runner — the persistent project principal AND the ephemeral
+// reasoning branch.
 //
-// Creates or COLD-RESUMES one durable principal session over the real DSH agent
-// runtime, delivers the launch message, then runs an attention loop:
+// PRINCIPAL MODE: creates or COLD-RESUMES one durable principal session over the
+// real DSH agent runtime, delivers the launch message, then runs an attention loop:
 //
 //   durable semantic fact → Palimpsest AttentionSignal → the REAL Palimpsest
 //   host activation adapter (dshAgentsAttentionAdapter) → agent.followup(turn)
 //   → the SAME persistent principal decides using the palimpsest_* tools.
 //
-// Notification ≠ Activation: the loop only wakes the agent; all semantic
-// decisions are made by the agent through the product tools. The host session id
-// is NOT the PeerRef: a cold resume mints a fresh agent over the persisted
-// session while the Palimpsest identity (PeerRef/PersistentPoint) is unchanged.
+// UX-C §24: this runner no longer re-implements the lifecycle. It only SCHEDULES
+// `deployment.pumpAndActivate()` — the deployment owns pump → drain → activate →
+// mark-after-success — and late-binds the resume-capable activation adapter once it
+// has created/resumed the principal session.
+//
+// BRANCH MODE: one ephemeral cognition that may only call the ONE strict
+// `palimpsest_branch_result` tool and then exits. A branch composes no deployment,
+// no ReasoningCell and no principal tool (UX-C §16/§18).
+//
+// Notification ≠ Activation: the loop only wakes the agent; all semantic decisions
+// are made by the agent through the product tools. The host session id is NOT the
+// PeerRef: a cold resume mints a fresh agent over the persisted session while the
+// Palimpsest identity (PeerRef/PersistentPoint) is unchanged.
 //
 // No chain-of-thought is captured: only tool calls, semantic state, host
 // activation events and the final visible response matter to the dogfood.
 
 import { randomUUID } from 'node:crypto';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 
 import { brandString } from '@deepseek-ai/dsh-brand';
 import { installModelSelection } from '@deepseek-ai/dsh-agent';
@@ -30,17 +40,14 @@ function userMessage(text) {
 }
 
 /**
- * The task text for ONE ephemeral reasoning branch. It carries everything the
- * agent needs to act (cellId/branchId/question/frontier) and explicitly forbids
- * the actions a branch must never take (open branch / evaluate / invalidate).
- *
- * When an `evidenceContext` is supplied it carries the SELECTOR-ONLY materialized
- * evidence plus the frozen allowlist: the branch may cite ONLY those evidence ids
- * and may NOT browse the Vault or cite unrelated evidence.
+ * The task text for ONE ephemeral reasoning branch. It carries the frozen brief and
+ * (when supplied) the selector-only materialized evidence plus the frozen allowlist.
+ * The capability boundary is NOT this text: the branch environment registers only
+ * `palimpsest_branch_result`, so no other tool exists to call.
  */
-function branchTask(brief, cellId, branchId, evidenceContext) {
-  const objective = typeof brief.objective === 'string' ? brief.objective : '';
-  const question = typeof brief.question === 'string' ? brief.question : '';
+function branchTask(payload) {
+  const brief = payload.brief;
+  const evidenceContext = payload.evidenceContext;
   const allowed = Array.isArray(evidenceContext?.allowedEvidenceRefs)
     ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
     : [];
@@ -48,13 +55,12 @@ function branchTask(brief, cellId, branchId, evidenceContext) {
   const hasEvidence = allowed.length > 0 || selections.length > 0;
 
   const lines = [
-    'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You may ONLY read the frozen brief and submit exactly ONE structured candidate.',
-    'Do NOT call palimpsest_reasoning with action "branch", "evaluate" or "invalidate" (they are forbidden for a branch).',
+    'You are an EPHEMERAL reasoning branch of a Palimpsest ReasoningCell. You are NOT a durable principal: you create no peer, no persistent point and no durable session. You have exactly ONE tool, `palimpsest_branch_result`, and you call it exactly ONCE.',
     '',
-    `cellId: ${cellId}`,
-    `branchId: ${branchId}`,
-    `objective: ${objective}`,
-    `question: ${question}`,
+    `cellId: ${payload.cellId}`,
+    `branchId: ${payload.branchId}`,
+    `objective: ${typeof brief.objective === 'string' ? brief.objective : ''}`,
+    `question: ${typeof brief.question === 'string' ? brief.question : ''}`,
     `acceptedFrontierBasis: ${JSON.stringify(brief.frontierBasis ?? null)}`,
     `acceptedClaims: ${JSON.stringify(brief.acceptedClaims ?? [])}`,
   ];
@@ -74,34 +80,19 @@ function branchTask(brief, cellId, branchId, evidenceContext) {
       'EVIDENCE RULES:',
       '- You may cite ONLY evidence ids from the ALLOWED EVIDENCE list above; never invent, guess or cite any other id.',
       '- You may NOT browse the Vault or read any other source; the materialized selections above are ALL the evidence you may use.',
-      '- Your candidate MUST include externalEvidenceRefs set to the evidence ids you actually used (an array of id strings).',
+      '- Your result MUST include `evidenceRefs` set to the evidence ids you actually used (an array of id strings).',
     );
   }
 
   lines.push('', 'Do this now:');
-  lines.push(`1. Call palimpsest_reasoning with action "brief", cellId "${cellId}", branchId "${branchId}" to read the frozen brief and the accepted frontier.`);
-  const candidateCall =
-    '2. Think briefly, then call palimpsest_reasoning with action "candidate", cellId "' +
-    cellId +
-    '", branchId "' +
-    branchId +
-    '", type {"typeId":"reasoning.statement","version":"v1"}, content {"statement":"<one concise, falsifiable statement that directly answers the question>"}' +
-    (hasEvidence ? ', externalEvidenceRefs ["<only evidence ids you actually used from the ALLOWED list>"]' : '') +
-    '. Submit EXACTLY ONE candidate. Do not try again if it succeeds or fails.';
-  lines.push(candidateCall);
+  lines.push('1. Think briefly about the frozen question using ONLY the material above.');
+  lines.push(
+    '2. Call `palimpsest_branch_result` EXACTLY ONCE with {"statement":"<one concise, falsifiable statement that directly answers the question>"' +
+      (hasEvidence ? ',"evidenceRefs":["<only evidence ids you actually used from the ALLOWED list>"]' : '') +
+      '}. Do not call it again if it succeeds or fails.',
+  );
   lines.push('3. Reply with one short line. Do nothing else.');
   return lines.join('\n');
-}
-
-/** Normalize cited evidence refs from a tool call into a de-duplicated id array. */
-function citedEvidenceRefs(raw) {
-  if (!Array.isArray(raw)) return [];
-  const out = new Set();
-  for (const entry of raw) {
-    if (typeof entry === 'string' && entry.length > 0) out.add(entry);
-    else if (entry !== null && typeof entry === 'object' && typeof entry.evidenceId === 'string' && entry.evidenceId.length > 0) out.add(entry.evidenceId);
-  }
-  return [...out].sort();
 }
 
 /** Machine-readable line the harness parses; exactly one is printed, even on failure. */
@@ -110,14 +101,38 @@ function printBranchResult(result) {
 }
 
 /**
- * Run ONE ephemeral branch: create a fresh in-memory agent (no --session-file
- * write, no resume, not kept alive), deliver the branch task, observe the single
- * structured candidate it submitted through the real ReasoningCell service, and
- * exit. A branch NEVER opens a durable principal, writes a session id file,
- * creates a peer, or calls admission.
+ * The tool catalogue the model was ACTUALLY offered, read from the branch agent's
+ * OWN real `request/header` session event — not from the in-process environment
+ * object. This is the same durable evidence a reviewer can read from the persisted
+ * session artifact, and it is what the structural branch-firewall proof asserts on.
+ */
+function offeredToolNames(session) {
+  const names = new Set();
+  for (let seq = 0; seq < session.seq; seq += 1) {
+    const event = session.eventAt(seq);
+    if (event?.type !== 'request/header') continue;
+    const tools = event.data?.header?.tools;
+    if (!Array.isArray(tools)) continue;
+    for (const tool of tools) if (typeof tool?.name === 'string' && tool.name.length > 0) names.add(tool.name);
+  }
+  return [...names].sort();
+}
+
+/**
+ * Run ONE ephemeral branch: create a fresh agent over a transient session,
+ * deliver the branch task, read the ONE result the strict tool recorded, and exit.
+ *
+ * CAPABILITY BOUNDARY (UX-C §17/§37): the branch agent's OWN scoped tool view is
+ * restricted to exactly `palimpsest_branch_result` in its `setup` hook, i.e. BEFORE
+ * publication and the first prompt assembly, and for every subsequent turn of that
+ * one agent. A prompt line is NOT the boundary; the capability set is. The branch
+ * still creates no PeerRef/PersistentPoint, writes no Palimpsest store and calls no
+ * admission — but the DSH host DOES durably persist a session artifact for the
+ * branch process (see the anti-waste doc): treat that artifact as host-local
+ * telemetry, not as a Palimpsest store or a durable principal.
  */
 async function runBranch(ctx, deps) {
-  const { startup, host, agents, agentOptions, setup } = deps;
+  const { host, agents, sessions, agentOptions, setup } = deps;
   const exitWith = (code) => {
     const exit = ctx.get('appExit');
     if (typeof exit === 'function') exit(code);
@@ -126,89 +141,63 @@ async function runBranch(ctx, deps) {
 
   let status = 'failed';
   let detail = '';
-  let candidateDigest;
   let statement;
-  let submitted = false;
   let evidenceRefs = [];
+  let offeredTools = [];
 
   try {
-    const payload = JSON.parse(readFileSync(startup.branchFile, 'utf8'));
-    const isEnvelope = payload !== null && typeof payload === 'object' && payload.brief !== undefined && typeof payload.brief === 'object';
-    const brief = isEnvelope ? payload.brief : payload;
-    const evidenceContext = isEnvelope ? payload.evidenceContext : undefined;
-    const allowlist = Array.isArray(evidenceContext?.allowedEvidenceRefs)
-      ? evidenceContext.allowedEvidenceRefs.map((ref) => (typeof ref === 'string' ? ref : ref?.evidenceId)).filter((id) => typeof id === 'string' && id.length > 0)
-      : [];
-    // The allowlist is enforced ONLY when an evidence context was supplied: a
-    // non-evidence branch keeps its historical behaviour.
-    const enforceAllowlist = isEnvelope && evidenceContext !== undefined && Array.isArray(evidenceContext.allowedEvidenceRefs);
-    const cellId = brief?.cell && typeof brief.cell.cellId === 'string' ? brief.cell.cellId : undefined;
-    const branchId = brief?.branch && typeof brief.branch.branchId === 'string' ? brief.branch.branchId : undefined;
-    if (cellId === undefined || branchId === undefined) {
-      detail = 'branch brief is missing cell/branch identity';
+    const environment = host.branch;
+    if (environment === undefined || environment.recorder === undefined) {
+      detail = environment?.error ?? 'the packaged branch environment was not composed';
     } else {
-      const handle = await agents.create({
-        sessionId: brandString(`branch-${randomUUID()}`),
-        meta: { cwd: process.cwd() },
-        agentOptions,
-        setup,
-      });
-      const agent = handle.agent;
-      await agent.whenIdle();
-
-      const fromSeq = agent.session.seq;
-      agent.followup(userMessage(branchTask(brief, cellId, branchId, evidenceContext)));
-      await agent.whenIdle();
-
-      // Observe ONLY tool calls / results (never private reasoning) to find the
-      // one candidate submitted through palimpsest_reasoning.
-      const session = agent.session;
-      const length = session.seq;
-      const candidateCalls = new Map();
-      const citedRefs = new Set();
-      for (let seq = fromSeq; seq < length; seq += 1) {
-        const event = session.eventAt(seq);
-        if (event === undefined) continue;
-        if (event.type === 'tool/call' && event.data?.name === 'palimpsest_reasoning') {
-          let args;
-          try {
-            args = JSON.parse(event.data.arguments ?? '{}');
-          } catch {
-            args = {};
-          }
-          const callId = String(event.data.callId ?? '');
-          candidateCalls.set(callId, args);
-          if (args?.action === 'candidate') {
-            submitted = true;
-            for (const ref of citedEvidenceRefs(args.externalEvidenceRefs)) citedRefs.add(ref);
-            if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
-          }
-        } else if (event.type === 'tool/result') {
-          const block = event.data?.message?.content?.[0];
-          if (block === undefined) continue;
-          const args = candidateCalls.get(String(block.toolCallId ?? ''));
-          if (args?.action !== 'candidate') continue;
-          const text = (block.content ?? [])
-            .filter((part) => part.type === 'text')
-            .map((part) => part.text)
-            .join('');
-          const match = /"candidateDigest"\s*:\s*"([^"]+)"/u.exec(text);
-          if (match !== null) candidateDigest = match[1];
-          if (typeof args.content?.statement === 'string' && args.content.statement.trim() !== '') statement = args.content.statement;
-        }
-      }
-      evidenceRefs = [...citedRefs].sort();
-
-      const disallowed = enforceAllowlist ? evidenceRefs.filter((ref) => !allowlist.includes(ref)) : [];
-      if (disallowed.length > 0) {
-        // STRUCTURAL REJECTION: a branch may never cite evidence outside the
-        // frozen allowlist. The failed result still reports what it cited so the
-        // caller can enforce the same rule independently.
-        status = 'failed';
-        detail = `branch cited evidence outside the frozen allowlist: ${disallowed.join(', ')}`;
+      // Prefer the product constant; fall back to the composed tool definition's own
+      // name (never to a prompt-derived literal).
+      const branchToolName =
+        typeof host.palimpsest?.BRANCH_RESULT_TOOL_NAME === 'string' && host.palimpsest.BRANCH_RESULT_TOOL_NAME.length > 0
+          ? host.palimpsest.BRANCH_RESULT_TOOL_NAME
+          : typeof environment.tool?.name === 'string' && environment.tool.name.length > 0
+            ? environment.tool.name
+            : undefined;
+      if (branchToolName === undefined) {
+        detail = 'the branch result tool name is unavailable; refusing to run a branch without a structural capability boundary';
       } else {
-        status = submitted ? 'completed' : 'failed';
-        detail = submitted ? `branch submitted a candidate through the real ReasoningCell service (${cellId}/${branchId})` : 'branch did not submit a candidate through palimpsest_reasoning';
+        // Block body on purpose: `tools.restrict()` returns a disposer (truthy), and
+        // a truthy setup return is read as a commit handle by the agent factory.
+        const branchSetup = (agentCtx) => {
+          setup(agentCtx);
+          // Scope-local, structural, fail-closed: an unknown/scope-local name throws
+          // here and the branch fails rather than silently keeping a wider tool set.
+          agentCtx.tools.restrict({ allow: [branchToolName] });
+        };
+        const handle = await agents.create({
+          sessionId: brandString(`branch-${randomUUID()}`),
+          meta: { cwd: process.cwd() },
+          agentOptions,
+          setup: branchSetup,
+        });
+        const agent = handle.agent;
+        await agent.whenIdle();
+        agent.followup(userMessage(branchTask(environment.payload)));
+        await agent.whenIdle();
+        offeredTools = offeredToolNames(agent.session);
+        if (typeof sessions?.flush === 'function') {
+          try {
+            await sessions.flush(agent.session);
+          } catch (error) {
+            process.stderr.write(`palimpsest-runner: branch session flush failed: ${error?.message ?? String(error)}\n`);
+          }
+        }
+
+        const recorder = environment.recorder;
+        if (recorder.status === 'completed') {
+          status = 'completed';
+          statement = recorder.statement;
+          evidenceRefs = [...recorder.evidenceRefs];
+          detail = recorder.detail;
+        } else {
+          status = 'failed';
+          detail = recorder.violations.length > 0 ? recorder.violations.join('; ') : recorder.detail;
+        }
       }
     }
   } catch (error) {
@@ -218,16 +207,11 @@ async function runBranch(ctx, deps) {
 
   printBranchResult({
     status,
-    ...(candidateDigest === undefined ? {} : { candidateDigest }),
     ...(statement === undefined ? {} : { statement }),
     evidenceRefs,
+    offeredTools,
     detail,
   });
-  try {
-    await host.deployment.close();
-  } catch {
-    /* the harness may already have closed the deployment */
-  }
   exitWith(status === 'completed' ? 0 : 1);
 }
 
@@ -244,7 +228,7 @@ async function run(ctx, deps) {
   };
 
   if (startup.mode === 'branch') {
-    await runBranch(ctx, { startup, host, agents, agentOptions, setup });
+    await runBranch(ctx, { startup, host, agents, sessions, agentOptions, setup });
     return;
   }
 
@@ -270,7 +254,39 @@ async function run(ctx, deps) {
     }
   }
 
-  // Machine-readable readiness line for the dogfood harness (noncanonical).
+  // UX-C §22/§61: the PRODUCT attention formatter for cross-project signals. It reads
+  // only the signal's routing metadata (there is no message body on a signal), so no
+  // peer-message content can reach the attention text. Other kinds keep ordinary text.
+  const formatAttention = (signal) =>
+    signal.kind === 'inbound_peer_message'
+      ? host.palimpsest.crossProjectAttentionText(signal, 'either')
+      : host.palimpsest.defaultAttentionText(signal);
+
+  // UX-C §23/CF-UXB-03: the REAL resume-capable agents service, wired into the
+  // EXISTING activation adapter. `get()` may return undefined for a cold session, in
+  // which case the adapter cold-resumes the persisted session and queues a followup;
+  // a failed resume/activation returns activated:false so the signal stays pending.
+  // The wiring itself lives in the product (`composeRunnerActivation`) so the
+  // cold-resume proof drives the SHIPPED construction, not a parallel stub.
+  const activation = host.palimpsest.composeRunnerActivation({
+    createAdapter: host.palimpsest.dshAgentsAttentionAdapter,
+    agents,
+    sessionId,
+    agentOptions,
+    setup,
+    brandSessionId: (id) => brandString(String(id)),
+    toUserMessage: (text) => userMessage(text),
+    format: formatAttention,
+  });
+  // The deployment owns pump → drain → activate → mark-after-success (§24); the runner
+  // only binds the host session this launcher could not know, then SCHEDULES the loop.
+  host.deployment.bindAttentionActivation(activation);
+
+  // Machine-readable readiness line for the dogfood harness (noncanonical). It reports
+  // composed CAPABILITIES only — never any credential (§31) and never any private
+  // project content. The local serve bearer token is deliberately NOT printed: the
+  // URL alone identifies the endpoint, and a credential must not reach stdout.
+  const readiness = host.deployment.collaborationReadiness();
   process.stdout.write(
     `PALIMPSEST_HOST_READY ${JSON.stringify({
       sessionId,
@@ -278,11 +294,12 @@ async function run(ctx, deps) {
       localPeer: host.profile?.localPeer ?? null,
       persistentPoint: host.profile?.persistentPoint ?? null,
       transportAdapter: host.deployment?.transport?.adapterId ?? null,
-      attentionAdapter: 'dsh-agents (in-process real agent service)',
+      attentionAdapter: activation.adapterId,
+      attentionFormat: 'product (cross-project formatter + default)',
       application: host.deployment?.installed?.application ? 'full' : 'none',
+      collaboration: readiness,
       toolNames: host.toolNames ?? [],
       url: host.serve?.url ?? null,
-      token: host.serve?.token ?? null,
     })}\n`,
   );
 
@@ -330,30 +347,21 @@ async function run(ctx, deps) {
     return;
   }
 
-  // The REAL Palimpsest host activation adapter, bound to the live agent. The
-  // string→UserMessage shim is host-side (the adapter asserts a followup(string)).
-  const activation = host.palimpsest.dshAgentsAttentionAdapter({
-    agents: { get: () => ({ followup: (text) => agent.followup(userMessage(text)) }) },
-    resumeSessionId: sessionId,
-  });
-
   const idleMs = Number.isFinite(startup.idleMs) && startup.idleMs > 0 ? startup.idleMs : 1500;
   let busy = false;
   const timer = setInterval(async () => {
     if (busy) return;
     busy = true;
     try {
-      await host.deployment.pump.pumpOnce();
-      const attention = host.deployment.installed.attention;
-      if (attention !== undefined) {
-        const signals = await attention.drain();
-        for (const signal of signals) {
-          const outcome = await activation.activate(signal);
-          process.stdout.write(
-            `PALIMPSEST_ACTIVATION ${JSON.stringify({ signalId: signal.signalId, kind: signal.kind, activated: outcome.activated })}\n`,
-          );
-          if (outcome.activated) await attention.markDelivered([signal.signalId]);
-        }
+      // The ONE lifecycle owner: the runner schedules, the deployment performs
+      // pump → drain → activate → mark-after-success. Overlapping ticks serialize on
+      // `busy`; the pump cursor advances only after ingest; a failed activation leaves
+      // the signal pending (never marked delivered).
+      const report = await host.deployment.pumpAndActivate();
+      for (const entry of report.activations) {
+        process.stdout.write(
+          `PALIMPSEST_ACTIVATION ${JSON.stringify({ signalId: entry.signal.signalId, kind: entry.signal.kind, activated: entry.outcome.activated })}\n`,
+        );
       }
     } catch (error) {
       process.stderr.write(`palimpsest-runner loop: ${error?.stack ?? String(error)}\n`);
@@ -386,4 +394,4 @@ function apply(ctx) {
   });
 }
 
-export { apply };
+export { apply, branchTask };

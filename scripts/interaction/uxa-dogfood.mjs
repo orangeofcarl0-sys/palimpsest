@@ -61,6 +61,7 @@ const { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } = await 
 const reasoning = await import(`${DIST}/reasoning_cell/index.js`);
 const verification = await import(`${DIST}/project_verification/index.js`);
 const interaction = await import(`${DIST}/interaction/index.js`);
+const recipes = await import(`${DIST}/recipes/index.js`);
 
 /* -------------------------------------------------------------------------- *
  * Evidence collection (house style)
@@ -455,25 +456,49 @@ async function main() {
       `status=${resultC2.status} kind=${resultC2.executionKind} findings=${resultC2.findings.length} branchExecutions=${rigC2.branchExecutions.length} texts=${JSON.stringify(textsOf(resultC2.findings))}`,
     );
 
-    // C3 — the safe fallback: an install WITHOUT an advisor (no organization-memory
-    // store) cannot select an architecture, so AUTO must fall back to FOCUS and NAME
-    // the fallback rather than guess.
-    const rigC3 = track(await makeRig(dir, "c3", { withAdvisor: false, withReasoning: true, verifiers: "none" }));
-    const resultC3 = await rigC3.collaboration.run({ task: EXPLORE_TASK, intent: "AUTO", requestedBy: "dogfood:host" });
-    const fallbackText = `${resultC3.summary} ${resultC3.unresolved.join(" ")}`;
+    // C3 — the safe fallback: a collaboration service composed WITHOUT an advisor
+    // cannot select an architecture, so AUTO must fall back to FOCUS and NAME the
+    // fallback rather than guess. (UX-C §7: a normal install with a local peer now
+    // always has a memoryless advisor, so the fallback is proven through the service
+    // itself rather than through a starved install.)
+    const bareService = interaction.makeCollaborationService({
+      projectId: PROJECT,
+      clock: () => CLOCK,
+      recipes: recipes.builtinRecipeRegistry(),
+    });
+    const planC3 = await bareService.plan({ task: EXPLORE_TASK, intent: "AUTO", requestedBy: "dogfood:host" });
+    const fallbackText = planC3.reason.join(" ");
     check(
       "C3_auto_without_advisor_falls_back_to_focus_and_names_it",
-      resultC3.status === "PRINCIPAL_CONTINUES" &&
-        resultC3.executionKind === "PRINCIPAL_CONTINUES" &&
-        rigC3.branchExecutions.length === 0 &&
+      planC3.executionKind === "PRINCIPAL_CONTINUES" &&
+        planC3.effectiveBaseMode === "FOCUS" &&
         /no empirical architecture advisor is configured/u.test(fallbackText) &&
         /falls back to FOCUS/u.test(fallbackText),
-      `status=${resultC3.status} branchExecutions=${rigC3.branchExecutions.length}`,
+      `executionKind=${planC3.executionKind} baseMode=${planC3.effectiveBaseMode} reason=${fallbackText.slice(0, 200)}`,
     );
-    evidence.C3_fallback_reason = { ok: true, detail: resultC3.summary };
+    evidence.C3_fallback_reason = { ok: true, detail: fallbackText };
+
+    // C4 — UX-C §7/§34 (CF-UXA-02): the SAME install without any OrganizationMemory
+    // store now HAS a memoryless advisor and can AUTO-Explore, claiming no empirical
+    // evidence. This is the new intended behaviour the C3 fallback no longer covers.
+    const rigC4 = track(await makeRig(dir, "c4", { withAdvisor: false, withReasoning: true, verifiers: "none" }));
+    const advisorC4 = rigC4.installed.application?.advisor ?? rigC4.installed.advisor;
+    const resultC4 = await rigC4.collaboration.run({ task: EXPLORE_TASK, intent: "AUTO", requestedBy: "dogfood:host" });
+    const recommendationC4 =
+      advisorC4 === undefined ? undefined : await advisorC4.recommend({ taskProfile: await advisorC4.profile({ task: EXPLORE_TASK }) });
+    check(
+      "C4_memoryless_advisor_exists_and_auto_explores_without_empirical_claim",
+      advisorC4 !== undefined &&
+        recommendationC4 !== undefined &&
+        recommendationC4.empiricalSupport.length === 0 &&
+        resultC4.executionKind === "LOCAL_EXPLORE" &&
+        resultC4.findings.length >= 2 &&
+        rigC4.branchExecutions.length >= 2,
+      `advisor=${advisorC4 !== undefined} empiricalSupport=${recommendationC4?.empiricalSupport.length ?? "n/a"} kind=${resultC4.executionKind} findings=${resultC4.findings.length} branchExecutions=${rigC4.branchExecutions.length}`,
+    );
     note(
       "C_auto_needs_advisor",
-      "AUTO selects EXPLORE only when an advisor is composed; the advisor itself exists only when an organization-memory store is supplied (src/install.ts). C1/C2 wire it; C3 proves the documented safe fallback when it is absent.",
+      "AUTO selects EXPLORE only when an advisor is composed. UX-C §7/CF-UXA-02 changed the first-party install: the advisor is now composed whenever the installation can act (a local peer) OR an OrganizationMemory store was supplied, so a memoryless install can AUTO-Explore and claims no empirical evidence (C4). C3 proves the documented safe fallback through a collaboration service composed with NO advisor at all.",
     );
 
     /* ====================================================================== *

@@ -117,6 +117,15 @@ export * from "./transport/index.js";
 export * from "./attention/index.js";
 export * from "./deployment/index.js";
 
+/**
+ * UX-A/UX-B/UX-C: the interaction layer (one-request local collaboration and the
+ * cross-project product face). The DSH host bundle needs
+ * `crossProjectAttentionText` to format inbound project attention with the PRODUCT
+ * instruction text (CF-UXB-02/SC-8), so this barrel is reachable from the host's
+ * `palimpsestEntry` (`dist/src/advanced.js`).
+ */
+export * from "./interaction/index.js";
+
 /** G10-Q (additive): the launch/serve entry points a real host plugin needs. */
 export { serveOrchestration } from "./serve.js";
 export type { ServeOptions, ServeHandle } from "./serve.js";

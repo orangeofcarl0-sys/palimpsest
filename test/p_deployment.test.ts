@@ -87,9 +87,19 @@ describe("G10-P deployment profile", () => {
       expect(() => parseDeploymentProfile(valid)).not.toThrow();
       expect(() => parseDeploymentProfile({ ...valid, authority: "peer-palimpsest" })).toThrow(DeploymentProfileError);
       expect(() => parseDeploymentProfile({ ...valid, schemaVersion: 2 })).toThrow(DeploymentProfileError);
+      // UX-C SC-9: a DSH activation may be LATE-BOUND by the host to the persisted
+      // principal session it creates/resumes, so `sessionId` is optional there...
       expect(() =>
         parseDeploymentProfile({ ...valid, attention: { policyId: "p", cooldownMs: 0, activation: "dsh" } }),
-      ).toThrow(DeploymentProfileError); // activation without sessionId
+      ).not.toThrow();
+      // ...but a Pi binding is a static operator decision and still requires one.
+      expect(() =>
+        parseDeploymentProfile({ ...valid, attention: { policyId: "p", cooldownMs: 0, activation: "pi" } }),
+      ).toThrow(DeploymentProfileError);
+      // UX-C §9/SC-12: the local-collaboration bundle carries at most ONE advanced
+      // override; a semantic/authority field fails closed.
+      expect(() => parseDeploymentProfile({ ...valid, reasoning: {} })).not.toThrow();
+      expect(() => parseDeploymentProfile({ ...valid, reasoning: { enabled: true } })).toThrow(DeploymentProfileError);
       expect(() => parseDeploymentProfile({ ...valid, localPeer: "has space" })).toThrow(DeploymentProfileError);
     } finally {
       rmSync(root, { recursive: true, force: true });

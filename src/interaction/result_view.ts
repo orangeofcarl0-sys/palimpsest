@@ -24,8 +24,26 @@ import type { RecipeVerificationSummary } from "../recipes/execution.js";
 import type { CollaborationExecutionKind } from "./intent.js";
 
 /* ------------------------------------------------------------------ *
- * Findings (§19)
+ * Findings (§19) and their EXPLORATORY standing (§13)
  * ------------------------------------------------------------------ */
+
+/**
+ * UX-C §13/SC-10: the mandated sentence for ANY reasoning-cell finding in a
+ * user-facing result. A cell-local admitted claim is a structured hypothesis — it
+ * is never Evidence, Proof, truth, a commitment or authority, regardless of how
+ * strong the cell's own verification policy is. The user must read this, not infer
+ * it from architecture docs.
+ */
+export const EXPLORATORY_FINDING_NOTE =
+  "These are exploratory cell-local findings. They are not Evidence and were not independently verified as true.";
+
+/**
+ * The typed standing of a result's findings. `EXPLORATORY_CELL_LOCAL` is the ONLY
+ * value today: an admitted claim is a hypothesis for collaborative composition, so
+ * no result may claim a stronger standing without a finding-specific verifier.
+ */
+export const EXPLORATORY_CELL_LOCAL = "EXPLORATORY_CELL_LOCAL" as const;
+export type CollaborationFindingStanding = typeof EXPLORATORY_CELL_LOCAL;
 
 export interface CollaborationFinding {
   readonly claimId: string;
@@ -153,6 +171,13 @@ export interface CollaborationResult {
   /** §18: the five questions, in plain language. */
   readonly summary: string;
   readonly findings: readonly CollaborationFinding[];
+  /**
+   * UX-C §13/SC-10: the typed standing of `findings`, present iff this result
+   * projects reasoning-cell findings. Always `EXPLORATORY_CELL_LOCAL`.
+   */
+  readonly findingStanding?: CollaborationFindingStanding | undefined;
+  /** UX-C §13/SC-10: the mandated primary-text sentence for `findingStanding`. */
+  readonly findingNote?: string | undefined;
   /** §18/§19: what did not converge (unresolved evaluations, a refused check). */
   readonly unresolved: readonly string[];
   /** Present iff an independent verification run was actually RECORDED. */
@@ -190,7 +215,13 @@ export interface CollaborationSummaryInput {
    */
   readonly independentVerification?: boolean | undefined;
   readonly findings: readonly CollaborationFinding[];
-  readonly unresolved: readonly string[];
+  unresolved: readonly string[];
+  /**
+   * UX-C §13/SC-10: the exploratory-standing sentence, appended to the primary
+   * summary immediately after the findings sentence when the result projects
+   * reasoning-cell findings. The result ALSO carries it as a typed field.
+   */
+  readonly findingNote?: string | undefined;
   readonly verification?: CollaborationVerificationView | undefined;
 }
 
@@ -229,14 +260,18 @@ export function collaborationSummaryOf(input: CollaborationSummaryInput): string
       );
     }
   }
+  // UX-C §13: the exploratory standing of the findings is PRIMARY user-visible text.
+  if (input.findingNote !== undefined) parts.push(input.findingNote);
   parts.push(input.unresolved.length === 0 ? "Nothing is left unresolved." : `Still unresolved: ${input.unresolved.join(" ")}`);
   if (input.verification === undefined) {
     parts.push("Verification did not run, so nothing about the project head is being claimed as checked.");
   } else if (input.independentVerification === true) {
+    // UX-C §14: an INDEPENDENT fact, stated separately: it is about the exact current
+    // Project Head, never about the exploratory findings above.
     parts.push(
-      `Independent verification ran: the registered protocol "${input.verification.verifierRef}" returned ${String(
+      `Separately: Independent verification ran: the registered protocol "${input.verification.verifierRef}" returned ${String(
         input.verification.verdict ?? input.verification.status,
-      )} for the exact current project head (freshness ${input.verification.freshness}, independence ${input.verification.independence}). ${input.verification.protocolNote}`,
+      )} for the exact current project head (freshness ${input.verification.freshness}, independence ${input.verification.independence}). This is a check of the current project head, not a verification of the exploratory findings. ${input.verification.protocolNote}`,
     );
   } else {
     // The deployment-wide availability gate only proves SOME verifier is independent;
@@ -244,9 +279,9 @@ export function collaborationSummaryOf(input: CollaborationSummaryInput): string
     // that as "independent verification ran" would be false, so the sentence says
     // exactly what happened.
     parts.push(
-      `A verification ran, but it is NOT an independent check: the protocol "${input.verification.verifierRef}" ` +
+      `Separately, a verification ran, but it is NOT an independent check: the protocol "${input.verification.verifierRef}" ` +
         `returned ${String(input.verification.verdict ?? input.verification.status)} with independence ` +
-        `${input.verification.independence}, which does not count as independent verification. ` +
+        `${input.verification.independence}, which does not count as independent verification. It concerns the current project head, not the exploratory findings. ` +
         `${input.verification.protocolNote}`,
     );
   }
