@@ -167,8 +167,19 @@ interruption after D completed; its E#1 evidence is retained separately
 
 ---
 
-## 6. Merge discipline (§49, PASS path)
+## 6. Merge discipline (§49, PASS path) — complete
 
-Reconciled RC branch → PR → PR CI attempt 1 → merge → canonical main exact SHA → canonical main
-CI attempt 1 → tree identity evidence. Recorded in the carry-forward document's checkpoint
-table once complete.
+| Step | Value |
+| --- | --- |
+| Reconciled onto canonical main | `b7fcb399c5630f29b94732569e1f91470d07dfda` (PR #116 preserved; `git diff <pre-rebase> <post-rebase>` EMPTY) |
+| RC-1E stage commit | `0274a86e8baef0c7021155af20f73148f704dba3` |
+| Branch | `experiment/rc-1-live-principal` (force-with-lease pushed after the required rebase) |
+| PR | #117 — https://github.com/orangeofcarl0-sys/palimpsest/pull/117 |
+| PR CI attempt 1 | **success** — run `35263611232` (jobs `unit` + `e2e`), attempt 1 |
+| Merge | merge commit `b22187cde444f4b23b30d85b5862a641ac90d5be` |
+| Tree identity | `git diff 0274a86 b22187c` EMPTY — the merged tree is byte-identical to the qualified stage tip |
+| Canonical main CI attempt 1 | **success** — run `35264265782` on `b22187c`, `run_attempt: 1` |
+
+There are no GitHub Actions runs for the RC branch before this stage: RC-1 and RC-1R were
+local/manual-evidence only, which RC-1R's own checklist correction recorded. RC-1E is the
+first stage of the track whose claim is backed by PR and canonical-main CI.
