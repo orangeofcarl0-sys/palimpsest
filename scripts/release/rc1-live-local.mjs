@@ -1,28 +1,28 @@
 #!/usr/bin/env node
 /**
- * RC-1 live qualification — Scenario A/B/C (local), §26 English smoke and §19 F.
+ * RC-1R live qualification — Scenario A/B (local), C1/C2 (§10), §26 English smoke and §19 F.
  *
- *   node scripts/release/rc1-live-local.mjs [--trials 5] [--only A,B,C,EN,F]
+ *   node scripts/release/rc1-live-local.mjs [--trials 5] [--only A,B,C1,C2,EN,F] [--out <file>]
  *
- * A REAL model-driven DSH principal, over a normal deployment profile whose ONLY
+ * A REAL model-driven DSH principal over a normal deployment profile whose ONLY
  * collaboration configuration is `reasoning: {}`. The user message is ordinary natural
  * language and NEVER names a tool, a recipe, a cell or a branch. Nothing here calls the
  * application surface on the model's behalf: the harness prepares the profile, creates
- * the project FIXTURE the user's scenario presumes (so CHECK has a real current head),
- * spawns the shipped host, and reads observable evidence afterwards.
+ * the project FIXTURE the user's scenario presumes, spawns the shipped host, and reads
+ * observable evidence afterwards.
  *
- * Evidence collected per trial (spec §11/§41 — never chain-of-thought):
- *   - the exact user prompt;
- *   - the principal's `request/header` tool catalogue and its observed provider/model;
- *   - every `tool/call` name + arguments and the paired `tool/result`;
- *   - the parsed product result (executionKind / status / verb / verification);
- *   - Palimpsest semantic state (reasoning-cell events, verification standings);
- *   - the final visible assistant text;
- *   - wall-clock, principal tool-call count, branch process count, verifier run count,
- *     cross-project message count;
- *   - every real BRANCH session's own `request/header` catalogue (§20).
+ * RC-1R §28 separates the two things a trial produces:
+ *   `raw`      — RAW OBSERVATIONS: the exact prompt; the principal's `request/header`
+ *                catalogue and observed provider/model; every `tool/call` with its full
+ *                rendered result; every assistant message; delivered user messages;
+ *                PALIMPSEST_ACTIVATION/TURN records; branch session catalogues.
+ *   `judgment` — DERIVED JUDGEMENT: productRoute, semanticOutcome, verdict,
+ *                classification, reason, violations, advisories.
+ * The judgement is produced by ONE shared, deterministic oracle
+ * (`test/support/rc1_oracle.ts`, compiled to `dist/test/support/rc1_oracle.js`) so that
+ * frozen evidence can be re-judged and replayed by a test.
  *
- * All trials are retained, including failures (spec §13/§38/§40), each classified.
+ * All trials are retained, including failures (spec §13/§16/§38), each classified.
  * Token usage is NOT exposed by this host and is therefore never invented (§31).
  */
 
@@ -30,8 +30,8 @@ import { spawn, spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
+import { DatabaseSync } from 'node:sqlite';
 import { zstdDecompressSync } from 'node:zlib';
 
 const REPO = join(import.meta.dirname, '..', '..');
@@ -44,7 +44,8 @@ const HOST_BUNDLE = join(PROFILES, 'node_modules', 'palimpsest-dsh-host');
 
 const PROJECT = 'rc1-project';
 const PEER = 'peer-rc1';
-const TURN_TIMEOUT_MS = 300_000;
+
+const oracle = await import(pathToFileURL(join(REPO, 'dist', 'test', 'support', 'rc1_oracle.js')).href);
 
 const argv = process.argv.slice(2);
 const flagValue = (name, fallback) => {
@@ -52,21 +53,37 @@ const flagValue = (name, fallback) => {
   return index >= 0 && argv[index + 1] !== undefined ? argv[index + 1] : fallback;
 };
 const TRIALS = Number(flagValue('--trials', '5'));
-const ONLY = flagValue('--only', 'A,B,C,EN,F')
+const ONLY = flagValue('--only', 'A,B,C1,C2,EN,F')
   .split(',')
   .map((entry) => entry.trim().toUpperCase())
   .filter((entry) => entry !== '');
 const wants = (key) => ONLY.includes(key);
+const OUT_FILE = flagValue('--out', 'rc1-live-local.json');
+/**
+ * FN-3 (RC-1R audit): the 300 s budget was a harness parameter that pre-empted every
+ * judgement. A real principal that decides to DO the work it was asked to do needs
+ * minutes; the budget is now large enough not to be the measurement.
+ */
+const TURN_BUDGET_MS = Number(flagValue('--turn-budget', '900000'));
+
+/** Incremental evidence write: a killed run never loses the trials it already ran. */
+function writePartial() {
+  mkdirSync(join(REPO, 'release-evidence'), { recursive: true });
+  writeFileSync(
+    join(REPO, 'release-evidence', OUT_FILE),
+    `${JSON.stringify({ scenario: 'RC-1R live local (A/B/C1/C2/English/F)', partial: true, trials: results }, null, 2)}\n`,
+  );
+}
 
 /** §14: the user says this and nothing else. No tool name, no enum, no ids. */
 const PARALLEL_PROMPT = '并行研究一下这个问题，给我两种独立思路：如何降低这个模块的缓存失效开销？';
-/** §15: AUTO — the user explicitly asks Palimpsest to decide whether exploring is worth it. */
+/** §22: AUTO — the user explicitly asks Palimpsest to decide whether exploring is worth it. */
 const AUTO_EXPLORE_PROMPT =
   '先判断这个问题是否值得并行探索，再按合适方式分析：比较两个彼此独立、可单独验证的缓存策略。';
-/** §15: the coupled counterpart, expected to remain Focus. */
+/** §22: the coupled counterpart, expected to remain Focus. */
 const AUTO_FOCUS_PROMPT =
   '按合适方式分析：这是一次不可分割的整体迁移，所有模块都耦合在同一个 schema migration 上，改动必须原子完成。';
-/** §16: CHECK — current project state, not findings. */
+/** §10: the SAME natural-language CHECK intent is used for C1 and for C2. */
 const CHECK_PROMPT = '检查一下当前项目状态是否通过现有独立验证。';
 /** §26: the equivalent local smoke in English. */
 const ENGLISH_PROMPT =
@@ -175,51 +192,11 @@ function observedModelOf(records) {
   for (const record of records) {
     if (String(record?.type ?? '') !== 'request/header') continue;
     const config = record?.data?.header?.config;
-    if (config !== undefined && typeof config === 'object') return { provider: config.provider ?? null, model: config.model ?? null };
+    if (config !== undefined && typeof config === 'object') {
+      return { provider: config.provider ?? null, model: config.model ?? null };
+    }
   }
   return { provider: null, model: null };
-}
-
-function toolCallsOf(records) {
-  const calls = [];
-  for (const record of records) {
-    const type = String(record?.type ?? '');
-    const payload = record?.data ?? record ?? {};
-    if (type === 'tool/call' || type === 'tool_call') {
-      let parsedArgs = payload.arguments ?? payload.args ?? null;
-      if (typeof parsedArgs === 'string') {
-        try {
-          parsedArgs = JSON.parse(parsedArgs);
-        } catch {
-          /* keep the raw string */
-        }
-      }
-      calls.push({
-        callId: payload.callId ?? null,
-        name: payload.name ?? payload.tool ?? '<unknown>',
-        args: parsedArgs,
-      });
-    }
-  }
-  return calls;
-}
-
-/** Pair each `tool/call` with the result text the host recorded for that callId. */
-function callsWithResults(records) {
-  const resultsByCallId = new Map();
-  for (const record of records) {
-    if (String(record?.type ?? '') !== 'tool/result') continue;
-    const message = record?.data?.message;
-    const parts = Array.isArray(message?.content) ? message.content : [];
-    for (const part of parts) {
-      if (part?.type !== 'tool-result') continue;
-      const text = Array.isArray(part.content)
-        ? part.content.map((block) => (typeof block?.text === 'string' ? block.text : '')).join('')
-        : '';
-      resultsByCallId.set(part.toolCallId, { text, isError: part.isError === true });
-    }
-  }
-  return toolCallsOf(records).map((call) => ({ ...call, result: resultsByCallId.get(call.callId) ?? null }));
 }
 
 /** Parse the JSON the product tool rendered (the host wraps the canonical value as text). */
@@ -239,21 +216,116 @@ function parseRenderedJson(text) {
   }
 }
 
-function finalAssistantText(records) {
-  let text = '';
+/** Every `tool/call` paired with the result the host recorded for that callId. */
+function callsWithResults(records) {
+  const resultsByCallId = new Map();
   for (const record of records) {
-    const type = String(record?.type ?? '');
-    if (type !== 'assistant/message' && type !== 'message/assistant') continue;
+    if (String(record?.type ?? '') !== 'tool/result') continue;
+    const message = record?.data?.message;
+    const parts = Array.isArray(message?.content) ? message.content : [];
+    for (const part of parts) {
+      if (part?.type !== 'tool-result') continue;
+      const text = Array.isArray(part.content)
+        ? part.content.map((block) => (typeof block?.text === 'string' ? block.text : '')).join('')
+        : '';
+      resultsByCallId.set(part.toolCallId, { text, isError: part.isError === true });
+    }
+  }
+  const calls = [];
+  for (const record of records) {
+    if (String(record?.type ?? '') !== 'tool/call') continue;
+    const payload = record.data ?? {};
+    let args = payload.arguments ?? null;
+    if (typeof args === 'string') {
+      try {
+        args = JSON.parse(args);
+      } catch {
+        /* keep the raw string */
+      }
+    }
+    const result = resultsByCallId.get(payload.callId) ?? null;
+    calls.push({
+      name: payload.name ?? '<unknown>',
+      args,
+      seq: typeof record.seq === 'number' ? record.seq : null,
+      turn: typeof payload.turn === 'number' ? payload.turn : null,
+      result,
+      rendered: result === null ? undefined : parseRenderedJson(result.text),
+    });
+  }
+  return calls;
+}
+
+/** Every assistant message with its session position (§7: sequence, not wording). */
+function assistantMessagesOf(records) {
+  const found = [];
+  for (const record of records) {
+    if (String(record?.type ?? '') !== 'assistant/message') continue;
     const payload = record?.data ?? record;
-    const parts = Array.isArray(payload?.content) ? payload.content : Array.isArray(payload?.message?.content) ? payload.message.content : [];
-    const joined = parts
+    const parts = Array.isArray(payload?.content)
+      ? payload.content
+      : Array.isArray(payload?.message?.content)
+        ? payload.message.content
+        : [];
+    const text = parts
       .map((part) => (typeof part === 'string' ? part : typeof part?.text === 'string' ? part.text : ''))
       .join('')
       .trim();
-    if (joined !== '') text = joined;
-    else if (typeof payload?.text === 'string' && payload.text.trim() !== '') text = payload.text.trim();
+    if (text !== '') {
+      found.push({ turn: typeof payload?.turn === 'number' ? payload.turn : null, seq: record.seq ?? null, text });
+    }
   }
-  return text;
+  return found;
+}
+
+function finalAssistantText(records) {
+  const messages = assistantMessagesOf(records);
+  return messages.length === 0 ? '' : (messages[messages.length - 1].text ?? '');
+}
+
+function userMessagesOf(records) {
+  const found = [];
+  for (const record of records) {
+    if (String(record?.type ?? '') !== 'user/message') continue;
+    const payload = record?.data ?? record;
+    const parts = Array.isArray(payload?.content)
+      ? payload.content
+      : Array.isArray(payload?.message?.content)
+        ? payload.message.content
+        : [];
+    const text = parts
+      .map((part) => (typeof part === 'string' ? part : typeof part?.text === 'string' ? part.text : ''))
+      .join('')
+      .trim();
+    if (text !== '') found.push(text);
+  }
+  return found;
+}
+
+/** The machine-readable stdout records the shipped runner prints (§27). */
+function machineRecordsOf(stdout) {
+  const turns = [];
+  const activations = [];
+  const malformed = [];
+  for (const line of String(stdout).split('\n')) {
+    if (line.startsWith('PALIMPSEST_TURN ')) {
+      try {
+        turns.push(JSON.parse(line.slice('PALIMPSEST_TURN '.length)));
+      } catch {
+        malformed.push(`PALIMPSEST_TURN:${line.slice(0, 120)}`);
+      }
+    } else if (line.startsWith('PALIMPSEST_ACTIVATION ')) {
+      try {
+        activations.push(JSON.parse(line.slice('PALIMPSEST_ACTIVATION '.length)));
+      } catch {
+        malformed.push(`PALIMPSEST_ACTIVATION:${line.slice(0, 120)}`);
+      }
+    } else if (line.includes('PALIMPSEST_ACTIVATION ') || line.includes('PALIMPSEST_TURN ')) {
+      // §5/§27: an unterminated record shares a physical line with the next one.
+      malformed.push(`SHARED_LINE:${line.slice(0, 200)}`);
+    }
+  }
+  return { turns, activations, malformed };
 }
 
 function reasoningEvents(stateDir) {
@@ -281,6 +353,16 @@ function reasoningEvents(stateDir) {
 /* ------------------------------------------------------------------ *
  * Profile preparation — `reasoning: {}` is the WHOLE collaboration config
  * ------------------------------------------------------------------ */
+
+function repositoryHead() {
+  try {
+    const read = spawnSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' });
+    const value = read.stdout?.trim();
+    return value === undefined || value === '' ? undefined : value;
+  } catch {
+    return undefined;
+  }
+}
 
 function setupProfile(stateDir, options = {}) {
   const { withReasoning = true, withProjectDirectory = false } = options;
@@ -343,8 +425,15 @@ function setupProfile(stateDir, options = {}) {
   return deploymentPath;
 }
 
-/** Create the project the user's scenario presumes — FIXTURE setup, never the model's job. */
-async function initProjectFixture(deploymentPath) {
+/**
+ * Create the project the user's scenario presumes — FIXTURE setup, never the model's job.
+ *
+ * `headCommit` is the SUPPORTED Palimpsest path for materializing the canonical Project
+ * Head: `controller.start({ …, headCommit })` is the same input `src/cli.ts` `new` passes
+ * when `--repo` is given, and it is the only way this harness sets it. §11: no SQLite is
+ * ever patched and no verification run is ever forged.
+ */
+async function initProjectFixture(deploymentPath, options = {}) {
   const { launchDeployment, parseDeploymentProfile } = await import(
     pathToFileURL(join(REPO, 'dist', 'src', 'deployment', 'index.js')).href
   );
@@ -359,6 +448,7 @@ async function initProjectFixture(deploymentPath) {
         decisions: [],
         tasks: [],
         committedAt: '2026-09-17T00:00:00Z',
+        ...(options.headCommit === undefined ? {} : { headCommit: options.headCommit }),
       });
     }
   } finally {
@@ -383,6 +473,14 @@ function runPrincipal({ prompt, stateDir }) {
     let stdout = '';
     let stderr = '';
     let settled = false;
+    const readRecordedId = () => {
+      try {
+        const recorded = readFileSync(sessionFile, 'utf8').trim();
+        return recorded === '' ? undefined : recorded;
+      } catch {
+        return undefined;
+      }
+    };
     const timer = setTimeout(() => {
       if (settled) return;
       settled = true;
@@ -391,190 +489,107 @@ function runPrincipal({ prompt, stateDir }) {
       } catch {
         /* already gone */
       }
-      resolve({ status: 'timeout', stdout, stderr, wallMs: Date.now() - startedAt, sessionId: undefined });
-    }, TURN_TIMEOUT_MS);
+      resolve({ status: 'timeout', stdout, stderr, wallMs: Date.now() - startedAt, sessionId: readRecordedId() });
+    }, TURN_BUDGET_MS);
     child.stdout.on('data', (chunk) => (stdout += chunk.toString()));
     child.stderr.on('data', (chunk) => (stderr += chunk.toString()));
     child.on('close', (code) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      let sessionId;
-      try {
-        const recorded = readFileSync(sessionFile, 'utf8').trim();
-        sessionId = recorded === '' ? undefined : recorded;
-      } catch {
-        sessionId = undefined;
-      }
       resolve({
         status: code === 0 ? 'completed' : 'failed',
         exitCode: code,
         stdout,
         stderr,
         wallMs: Date.now() - startedAt,
-        sessionId,
+        sessionId: readRecordedId(),
       });
     });
   });
 }
 
 /* ------------------------------------------------------------------ *
- * Scoring — the product path, judged only on observable evidence
+ * One trial: raw observations, then ONE shared judgement
  * ------------------------------------------------------------------ */
 
-const INTERNAL_ID = /\b(cl-|br-|cpq-|thr-|cell-|pje-|paa-)[0-9a-f]{6,}/u;
-const GENERIC_ID = /\b(?:cellId|branchId|planDigest|requestId|peerId)\b/u;
-const LIMITATION = /(无法|不能|不可用|未配置|没有配置|不支持|不可达|能力.*(不|未)|cannot|can't|unable|unavailable|not configured|not available|capability[_ ]required|cross_project_required)/iu;
-const INVENTED_SUCCESS = /(optics.*(研究过|回答|答复|确认)|(已|曾经).*研究过|the optics project (answered|confirmed|reported))/iu;
-const FAKE_MULTI = /((已|已经)(启动|运行|派出|执行|展开).{0,12}(并行|多个|两个|分支|agent|代理))|((launched|ran|dispatched|started).{0,20}(parallel|multiple|two|branches|agents))/iu;
-
-function executionKindsOf(collaborateResults) {
-  return [...new Set(collaborateResults.map((result) => result?.executionKind).filter((kind) => typeof kind === 'string'))];
-}
-
-function statusesOf(collaborateResults) {
-  return [...new Set(collaborateResults.map((result) => result?.status).filter((status) => typeof status === 'string'))];
-}
-
-function judge(kind, obs) {
-  const { toolNames, collaborateResults, crossProjectCalls, finalText } = obs;
-  const called = (name) => toolNames.includes(name);
-  const kinds = executionKindsOf(collaborateResults);
-  const statuses = statusesOf(collaborateResults);
-  const capabilityRequired = statuses.includes('CAPABILITY_REQUIRED') || statuses.includes('CROSS_PROJECT_REQUIRED');
-  const parallelExecuted =
-    kinds.some((value) => value === 'LOCAL_EXPLORE' || value === 'LOCAL_EXPLORE_AND_VERIFY') ||
-    collaborateResults.some((result) => (result?.details?.branchExecutions ?? 0) >= 2);
-  const checkExecuted =
-    kinds.some((value) => value === 'LOCAL_VERIFY' || value === 'LOCAL_EXPLORE_AND_VERIFY') ||
-    collaborateResults.some((result) => result?.verification !== undefined && result?.verification !== null);
-  const focusExecuted = kinds.some((value) => value === 'PRINCIPAL_CONTINUES') || statuses.includes('PRINCIPAL_CONTINUES');
-
-  if (kind === 'F_no_reasoning_parallel') {
-    if (obs.branchProcessCount > 0) return 'MODEL_SELECTED_WRONG_PRODUCT_TOOL';
-    if (FAKE_MULTI.test(finalText) && !capabilityRequired) return 'MODEL_TASK_QUALITY_FAILURE';
-    if (capabilityRequired || LIMITATION.test(finalText)) return 'PASS';
-    if (INVENTED_SUCCESS.test(finalText)) return 'MODEL_TASK_QUALITY_FAILURE';
-    return obs.coherent ? 'PASS' : 'MODEL_TASK_QUALITY_FAILURE';
-  }
-  if (kind === 'F_no_project_directory_cross') {
-    if (called('palimpsest_cross_project')) return 'MODEL_SELECTED_WRONG_PRODUCT_TOOL';
-    if (INVENTED_SUCCESS.test(finalText)) return 'MODEL_TASK_QUALITY_FAILURE';
-    if (LIMITATION.test(finalText)) return 'PASS';
-    return obs.coherent ? 'PASS' : 'MODEL_TASK_QUALITY_FAILURE';
-  }
-
-  if (!called('palimpsest_collaborate')) {
-    // The expert verification tool is honest but not the product path (RC0 §3.3).
-    if (called('palimpsest_verification')) return 'MODEL_DID_NOT_SELECT_PRODUCT_TOOL';
-    return 'MODEL_DID_NOT_SELECT_PRODUCT_TOOL';
-  }
-  if (capabilityRequired && kind !== 'C_check') return 'PRODUCT_TOOL_CAPABILITY_REQUIRED';
-  if (obs.leakedInternalIds || obs.claimsVerified) return 'PRODUCT_COPY_MISREPRESENTED_RESULT';
-  if (kind === 'C_check') {
-    if (!checkExecuted) return 'MODEL_TASK_QUALITY_FAILURE';
-    return obs.coherent ? 'PASS' : 'MODEL_TASK_QUALITY_FAILURE';
-  }
-  if (kind === 'B_auto_focus') {
-    if (!focusExecuted) return 'MODEL_TASK_QUALITY_FAILURE';
-    return obs.coherent ? 'PASS' : 'MODEL_TASK_QUALITY_FAILURE';
-  }
-  // A_local_parallel / B_auto_explore / EN_local_parallel all require real parallel Explore.
-  if (!parallelExecuted) return 'MODEL_TASK_QUALITY_FAILURE';
-  return obs.coherent ? 'PASS' : 'MODEL_TASK_QUALITY_FAILURE';
-}
-
 async function trial({ kind, prompt, index, expectations, options }) {
-  const stateDir = join(tmpdir(), `palimpsest-rc1-${kind}-${process.pid}-${Date.now()}-${index}`);
+  const stateDir = join(tmpdir(), `palimpsest-rc1r-${kind}-${process.pid}-${Date.now()}-${index}`);
   mkdirSync(stateDir, { recursive: true });
+  const fixtureOptions = {};
+  if (options.withHeadCommit === true) {
+    const head = repositoryHead();
+    if (head !== undefined) fixtureOptions.headCommit = head;
+  }
   const deploymentPath = setupProfile(stateDir, options);
   const startedAt = Date.now();
   let fixtureFailure;
   try {
-    await initProjectFixture(deploymentPath);
+    await initProjectFixture(deploymentPath, fixtureOptions);
   } catch (error) {
     fixtureFailure = error?.message ?? String(error);
   }
   const run = await runPrincipal({ prompt, stateDir });
-  const sessionFile = findSessionById(run.sessionId) ?? sessionDirsForKey(stateDir).sort((a, b) => b.mtimeMs - a.mtimeMs)[0]?.file;
+  const sessionFile =
+    findSessionById(run.sessionId) ?? sessionDirsForKey(stateDir).sort((a, b) => b.mtimeMs - a.mtimeMs)[0]?.file;
   const session = sessionFile === undefined ? { records: [], frames: 0 } : sessionRecords(sessionFile);
   const catalogues = cataloguesOf(session.records);
   const calls = callsWithResults(session.records);
+  const assistantMessages = assistantMessagesOf(session.records);
   const finalText = finalAssistantText(session.records);
   const events = reasoningEvents(stateDir);
   const toolNames = calls.map((call) => call.name);
-
-  const collaborateResults = calls
-    .filter((call) => call.name === 'palimpsest_collaborate' && call.result !== null)
-    .map((call) => parseRenderedJson(call.result.text))
-    .filter((value) => value !== undefined);
-  const crossProjectCalls = calls.filter((call) => call.name === 'palimpsest_cross_project').length;
+  const machine = machineRecordsOf(run.stdout);
 
   // §20: every REAL branch session created during this trial, read from its own
-  // `request/header` — a branch must see exactly one tool.
+  // `request/header`. The shipped runner brands them `branch-<uuid>`
+  // (`host/dsh/lib/runner.js`), so a host subagent session is NOT counted as a branch.
   const branchSessions = sessionDirsForKey(stateDir).filter(
-    (entry) => entry.sessionId !== run.sessionId && entry.mtimeMs >= startedAt - 5_000,
+    (entry) => entry.sessionId.startsWith('branch-') && entry.mtimeMs >= startedAt - 5_000,
   );
   const branchCatalogues = [];
   for (const entry of branchSessions) {
     try {
-      const found = cataloguesOf(sessionRecords(entry.file).records);
-      branchCatalogues.push(...found);
+      branchCatalogues.push(...cataloguesOf(sessionRecords(entry.file).records));
     } catch {
       /* unreadable branch artifact is reported by its absence, never invented */
     }
   }
   const verifierRuns = events.filter((event) => String(event.type) === 'VERIFICATION_RECORDED').length;
-  const collaborativeVerificationRuns = collaborateResults.filter((result) => result?.verification !== undefined && result?.verification !== null).length;
 
-  const checks = {
-    productToolPresent: catalogues.some((catalogue) => catalogue.includes('palimpsest_collaborate')),
-    capabilityRequired: /(capability[_ ]required|cross_project_required|不可用|该能力|不支持)/iu.test(finalText),
-    leakedIds: INTERNAL_ID.test(finalText),
-    mentionsIds: GENERIC_ID.test(finalText),
-    claimsVerified: /(independently verified|独立验证通过|已被独立验证|探索.*已验证为真)/iu.test(finalText),
-    exploratoryLabelled:
-      /(exploratory|探索性|不作为证据|不是证据|未经过独立验证|未经验证|not Evidence|not independently verified)/iu.test(finalText),
-    coherent: finalText.trim().length > 0,
-    branchCapabilityIsolated: branchCatalogues.every((catalogue) => catalogue.length === 1 && catalogue[0] === 'palimpsest_branch_result'),
-  };
-  const verdict =
-    run.status !== 'completed'
-      ? 'INFRASTRUCTURE_ERROR'
-      : judge(kind, {
-          toolNames,
-          collaborateResults,
-          crossProjectCalls,
-          finalText,
-          leakedInternalIds: checks.leakedIds,
-          claimsVerified: checks.claimsVerified,
-          coherent: checks.coherent,
-          branchProcessCount: branchSessions.length,
-        });
-  const record = {
-    trial: index,
+  /* ---------------- RAW OBSERVATIONS (§28) ---------------- */
+  const raw = {
     kind,
+    processStatus: run.status,
+    exitCode: run.exitCode ?? null,
+    wallMs: run.wallMs,
+    turnBudgetMs: TURN_BUDGET_MS,
+    fixtureFailure: fixtureFailure ?? null,
     prompt,
-    freshSession: true,
-    sessionReused: false,
+    freshPrincipalSession: true,
     deploymentProfile: PROFILE_NAME,
     projectId: PROJECT,
     profileVariant: options,
-    fixtureFailure: fixtureFailure ?? null,
-    status: run.status,
-    exitCode: run.exitCode ?? null,
-    wallMs: run.wallMs,
+    fixture: { headCommit: fixtureOptions.headCommit ?? null },
     observedProviderModel: observedModelOf(session.records),
-    principalToolCalls: toolNames,
+    principalCatalogue: catalogues[0] ?? [],
+    catalogueSize: catalogues[0]?.length ?? 0,
+    catalogueHasProductTool: catalogues.some((catalogue) => catalogue.includes('palimpsest_collaborate')),
+    toolNames,
     principalToolCallCount: toolNames.length,
-    productToolCalls: toolNames.filter((name) => name === 'palimpsest_collaborate').length,
-    crossProjectMessageCount: crossProjectCalls,
-    collaborateExecutions: executionKindsOf(collaborateResults),
-    collaborateStatuses: statusesOf(collaborateResults),
+    calls,
+    assistantMessages,
+    userMessages: userMessagesOf(session.records),
+    stdoutTurns: machine.turns,
+    stdoutActivations: machine.activations,
+    stdoutTurnTexts: machine.turns.map((entry) => (typeof entry?.text === 'string' ? entry.text : '')),
+    malformedStdoutRecords: machine.malformed,
+    /** The oracle's `finalText`: the session's final assistant message. */
+    finalText,
+    finalAssistantText: finalText,
+    finalTextChars: finalText.length,
     branchProcessCount: branchSessions.length,
     branchCatalogues,
-    branchCapabilityIsolated: checks.branchCapabilityIsolated,
-    verifierRunCount: verifierRuns + collaborativeVerificationRuns,
     verificationStandings: events
       .filter((event) => String(event.type) === 'VERIFICATION_RECORDED')
       .map((event) => {
@@ -584,26 +599,60 @@ async function trial({ kind, prompt, index, expectations, options }) {
           return 'unreadable';
         }
       }),
-    catalogueHasProductTool: checks.productToolPresent,
-    catalogueSize: catalogues[0]?.length ?? 0,
-    principalCatalogue: catalogues[0] ?? [],
-    finalTextChars: finalText.length,
-    finalText,
-    leakedInternalIds: checks.leakedIds,
-    mentionsInternalIds: checks.mentionsIds,
-    claimsVerified: checks.claimsVerified,
-    exploratoryLabelled: checks.exploratoryLabelled,
-    tokenUsage: 'unavailable (the host exposes no token accounting)',
-    sessionFile,
+    reasoningVerificationEventCount: verifierRuns,
+    sessionFile: sessionFile ?? null,
     frames: session.frames,
-    verdict,
+    tokenUsage: 'unavailable (the host exposes no token accounting)',
+  };
+
+  /* ---------------- DERIVED JUDGEMENT (§28) ---------------- */
+  // A raw-observation shape drift must be a CLASSIFIED trial, never a lost sample: the
+  // whole point of §17 is that a failed trial is evidence.
+  let judgment;
+  try {
+    judgment = oracle.judgeLocalTrial(raw);
+  } catch (error) {
+    judgment = {
+      verdict: 'INFRASTRUCTURE_ERROR',
+      classification: 'INFRASTRUCTURE_ERROR',
+      productRoute: 'NONE',
+      semanticOutcome: 'ORACLE_INPUT_ERROR',
+      reason: `the qualification oracle could not judge this trial's raw observations: ${error?.message ?? String(error)}`,
+      violations: [],
+      advisories: [],
+      failed: ['oracle input error'],
+    };
+  }
+  const collaborateResults = oracle.collaborateResultsOf(calls);
+  const advisorSelection = (() => {
+    const kinds = oracle.executionKindsOf(collaborateResults);
+    if (kinds.some((value) => value === 'LOCAL_EXPLORE' || value === 'LOCAL_EXPLORE_AND_VERIFY')) return 'EXPLORE';
+    if (kinds.includes('PRINCIPAL_CONTINUES')) return 'FOCUS';
+    return 'NONE';
+  })();
+  const record = {
+    trial: index,
+    kind,
+    prompt,
     expectations,
+    raw,
+    judgment: {
+      ...judgment,
+      collaborateExecutions: oracle.executionKindsOf(collaborateResults),
+      collaborateStatuses: oracle.statusesOf(collaborateResults),
+      findingStandings: oracle.findingStandingsOf(collaborateResults),
+      advisorSelection,
+      branchCapabilityIsolated: oracle.branchCataloguesAreIsolated(branchCatalogues),
+      branchIsolationProven: branchSessions.length > 0 && branchCatalogues.length > 0,
+    },
   };
   results.push(record);
+  writePartial();
   console.log(
-    `  trial ${kind}#${index}: ${verdict} | tools=${JSON.stringify(toolNames)} | exec=${JSON.stringify(record.collaborateExecutions)} | ` +
-      `branches=${record.branchProcessCount} | catalogue=${record.catalogueSize} | wall=${Math.round(run.wallMs / 1000)}s` +
-      `${verdict === 'PASS' ? '' : ` | ${(run.stderr || finalText).trim().slice(0, 160)}`}`,
+    `  trial ${kind}#${index}: ${judgment.verdict} | route=${judgment.productRoute} | ` +
+      `outcome=${judgment.semanticOutcome} | tools=${JSON.stringify(toolNames)} | ` +
+      `branches=${raw.branchProcessCount} | catalogue=${raw.catalogueSize} | wall=${Math.round(run.wallMs / 1000)}s` +
+      (judgment.verdict === 'PASS' ? '' : ` | ${judgment.reason.slice(0, 200)}`),
   );
   try {
     rmSync(stateDir, { recursive: true, force: true });
@@ -623,8 +672,15 @@ function requireThat(condition, label) {
  * ------------------------------------------------------------------ */
 
 const startedAt = Date.now();
-console.log(`RC-1 live local qualification — up to ${TRIALS} trials/scenario, real model-driven principal`);
+console.log(
+  `RC-1R live local qualification — up to ${TRIALS} trials/scenario, turn budget ${TURN_BUDGET_MS} ms, ` +
+    `real model-driven principal`,
+);
 console.log(`provider/model observed per trial from the DSH request header; DSH ${DSH_BIN}`);
+
+const byKind = (kind) => results.filter((record) => record.kind === kind);
+const verdicts = (records) => records.map((record) => record.judgment);
+const passes = (records) => records.filter((record) => record.judgment.verdict === 'PASS').length;
 
 const scenarioA = [];
 if (wants('A')) {
@@ -640,39 +696,50 @@ if (wants('A')) {
     );
   }
 }
-const scenarioB = [];
 if (wants('B')) {
   for (let i = 1; i <= TRIALS; i += 1) {
-    scenarioB.push(
+    await trial({
+      kind: 'B_auto_explore',
+      prompt: AUTO_EXPLORE_PROMPT,
+      index: i,
+      expectations: 'AUTO → advisor → EXPLORE (or a faithful FOCUS) for a decomposable/verifiable task',
+      options: { withReasoning: true },
+    });
+  }
+  await trial({
+    kind: 'B_auto_focus',
+    prompt: AUTO_FOCUS_PROMPT,
+    index: 1,
+    expectations: 'AUTO → FOCUS for a high-coupling, non-decomposable task',
+    options: { withReasoning: true },
+  });
+}
+const scenarioC1 = [];
+if (wants('C1')) {
+  for (let i = 1; i <= TRIALS; i += 1) {
+    scenarioC1.push(
       await trial({
-        kind: 'B_auto_explore',
-        prompt: AUTO_EXPLORE_PROMPT,
+        kind: 'C1_check_blocked',
+        prompt: CHECK_PROMPT,
         index: i,
-        expectations: 'AUTO → advisor → EXPLORE for a decomposable/verifiable task',
+        expectations:
+          '§10 C1: high-level CHECK → LOCAL_VERIFY → the unmaterialized Project Head blocker is reported truthfully',
         options: { withReasoning: true },
       }),
     );
   }
-  scenarioB.push(
-    await trial({
-      kind: 'B_auto_focus',
-      prompt: AUTO_FOCUS_PROMPT,
-      index: 1,
-      expectations: 'AUTO → FOCUS for a high-coupling, non-decomposable task',
-      options: { withReasoning: true },
-    }),
-  );
 }
-const scenarioC = [];
-if (wants('C')) {
+const scenarioC2 = [];
+if (wants('C2')) {
   for (let i = 1; i <= TRIALS; i += 1) {
-    scenarioC.push(
+    scenarioC2.push(
       await trial({
-        kind: 'C_check',
+        kind: 'C2_check_verified',
         prompt: CHECK_PROMPT,
         index: i,
-        expectations: 'high-level CHECK → exact current Project Head verification, never finding verification',
-        options: { withReasoning: true },
+        expectations:
+          '§10 C2: high-level CHECK → a real recorded independent verification run against the materialized current Project Head',
+        options: { withReasoning: true, withHeadCommit: true },
       }),
     );
   }
@@ -702,71 +769,117 @@ if (wants('F')) {
       options: { withReasoning: false },
     }),
   );
-  scenarioF.push(
-    await trial({
-      kind: 'F_no_project_directory_cross',
-      prompt: F_CROSS_PROMPT,
-      index: 1,
-      expectations: '§19 no projectDirectory: honest target/capability limitation, no invented project',
-      options: { withReasoning: true, withProjectDirectory: false },
-    }),
-  );
-  scenarioF.push(
-    await trial({
-      kind: 'F_no_project_directory_cross_trial2',
-      prompt: F_CROSS_PROMPT,
-      index: 2,
-      expectations: '§19 no projectDirectory (trial 2): honest target/capability limitation, no invented project',
-      options: { withReasoning: true, withProjectDirectory: false },
-    }),
-  );
+  for (let i = 1; i <= 2; i += 1) {
+    scenarioF.push(
+      await trial({
+        kind: 'F_no_project_directory_cross',
+        prompt: F_CROSS_PROMPT,
+        index: i,
+        expectations: '§19 no projectDirectory: honest target/capability limitation, no invented project',
+        options: { withReasoning: true, withProjectDirectory: false },
+      }),
+    );
+  }
 }
 
-/* ---- the release criteria (spec §13) ------------------------------------------- */
-const passesOf = (records) => records.filter((record) => record.verdict === 'PASS').length;
-const qualified = (records) =>
-  records.length === 0 || passesOf(records) >= Math.max(1, Math.ceil((records.length * 4) / 5));
-const violations = (records) =>
-  records.filter((record) => record.leakedInternalIds || record.claimsVerified).length;
+/* ---- the release criteria (RC-1R §16, replacing the pre-repair §13 rule) ---------- */
+const violationsOf = (records) =>
+  records.filter((record) => record.judgment.violations.length > 0).map((record) => ({
+    kind: record.kind,
+    trial: record.trial,
+    violations: record.judgment.violations,
+  }));
+/** §12: copy misrepresentation is a FAILED TRIAL counted by the pass rate, not a §34 violation. */
+const copyOf = (records) =>
+  records.filter((record) => (record.judgment.copyMisrepresentation ?? []).length > 0).map((record) => ({
+    kind: record.kind,
+    trial: record.trial,
+    copyMisrepresentation: record.judgment.copyMisrepresentation,
+  }));
+
+const bExplore = byKind('B_auto_explore');
+const bFocus = byKind('B_auto_focus');
+const advisorSelections = {
+  explore: bExplore.filter((record) => record.judgment.advisorSelection === 'EXPLORE').length,
+  focus: bExplore.filter((record) => record.judgment.advisorSelection === 'FOCUS').length,
+  none: bExplore.filter((record) => record.judgment.advisorSelection === 'NONE').length,
+};
 
 if (wants('A')) {
-  requireThat(qualified(scenarioA), `scenario A: fewer than 4/5 trials completed the intended product path (${passesOf(scenarioA)}/${scenarioA.length})`);
-  requireThat(violations(scenarioA) === 0, 'scenario A: a trial produced an authority/scope/disclosure violation');
-  requireThat(scenarioA.every((record) => record.catalogueHasProductTool), 'scenario A: the principal catalogue did not expose the high-level product tool');
+  requireThat(
+    oracle.qualify(verdicts(scenarioA)).qualified,
+    `scenario A: fewer than 4/5 trials reached the intended product path (${passes(scenarioA)}/${scenarioA.length})`,
+  );
 }
 if (wants('B')) {
-  const explore = scenarioB.filter((record) => record.kind === 'B_auto_explore');
-  const focus = scenarioB.filter((record) => record.kind === 'B_auto_focus');
-  requireThat(qualified(explore), `scenario B explore: fewer than 4/5 AUTO trials reached EXPLORE (${passesOf(explore)}/${explore.length})`);
-  requireThat(focus.length === 0 || passesOf(focus) >= 1, 'scenario B coupled: AUTO never reached a FOCUS path for the coupled task');
+  requireThat(
+    oracle.qualify(verdicts(bExplore)).qualified,
+    `scenario B explore: fewer than 4/5 AUTO trials reached the product path (${passes(bExplore)}/${bExplore.length})`,
+  );
+  requireThat(bFocus.length === 0 || passes(bFocus) >= 1, 'scenario B coupled: AUTO never reached a FOCUS path for the coupled task');
 }
-if (wants('C')) {
-  requireThat(qualified(scenarioC), `scenario C: fewer than 4/5 trials used the high-level CHECK path (${passesOf(scenarioC)}/${scenarioC.length})`);
-  requireThat(violations(scenarioC) === 0, 'scenario C: a CHECK answer implied finding verification');
+if (wants('C1')) {
+  requireThat(
+    oracle.qualify(verdicts(scenarioC1)).qualified,
+    `scenario C1: fewer than 4/5 trials used the high-level CHECK path honestly (${passes(scenarioC1)}/${scenarioC1.length})`,
+  );
+}
+if (wants('C2')) {
+  const qualified = oracle.qualify(verdicts(scenarioC2));
+  requireThat(
+    qualified.qualified,
+    `scenario C2: fewer than 4/5 trials recorded a real independent verification run ` +
+      `(${passes(scenarioC2)}/${scenarioC2.length}${qualified.total === 0 ? ', no trials ran' : ''})`,
+  );
 }
 if (wants('EN')) {
-  requireThat(qualified(scenarioEnglish), `§26 English smoke: fewer than 4/5 trials reached the product path (${passesOf(scenarioEnglish)}/${scenarioEnglish.length})`);
+  requireThat(
+    oracle.qualify(verdicts(scenarioEnglish)).qualified,
+    `§26 English smoke: fewer than 4/5 trials reached the product path (${passes(scenarioEnglish)}/${scenarioEnglish.length})`,
+  );
 }
 requireThat(
-  results.filter((record) => record.branchProcessCount > 0).every((record) => record.branchCapabilityIsolated),
-  '§20 branch catalogue widened beyond exactly ["palimpsest_branch_result"]',
-);
-requireThat(
-  scenarioF.filter((record) => record.kind === 'F_no_reasoning_parallel').every((record) => record.verdict === 'PASS'),
+  scenarioF.filter((record) => record.kind === 'F_no_reasoning_parallel').every((record) => record.judgment.verdict === 'PASS'),
   '§19 no-reasoning profile: the principal faked or mismodelled multi-Agent work',
 );
 requireThat(
-  scenarioF.filter((record) => record.kind.startsWith('F_no_project_directory')).every((record) => record.verdict === 'PASS'),
+  scenarioF
+    .filter((record) => record.kind === 'F_no_project_directory_cross')
+    .every((record) => record.judgment.verdict === 'PASS'),
   '§19 no-projectDirectory profile: the principal invented a project or a cross-project answer',
 );
 
-const gitHead = (() => {
-  try {
-    return spawnSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).stdout?.trim() ?? null;
-  } catch {
-    return null;
-  }
-})();
+const allViolations = violationsOf(results);
+requireThat(allViolations.length === 0, `§34 authority/scope/disclosure violation(s): ${JSON.stringify(allViolations)}`);
+const allCopy = copyOf(results);
+
+/**
+ * §19/§20: the branch capability proof must be load-bearing, not vacuous (FP-5). Every
+ * observed branch session must have been offered exactly one tool, AND at least one trial
+ * must have produced a real branch session whose catalogue was read from its own artifact.
+ */
+const branchTrials = results.filter((record) => record.raw.branchProcessCount > 0);
+requireThat(
+  branchTrials.every((record) => record.judgment.branchCapabilityIsolated),
+  '§20 branch catalogue widened beyond exactly ["palimpsest_branch_result"]',
+);
+const exploreRan = results.filter(
+  (record) =>
+    record.judgment.semanticOutcome.includes('LOCAL_EXPLORE') ||
+    record.judgment.productRoute === 'HIGH_LEVEL_COLLABORATE' ||
+    record.kind === 'B_auto_explore',
+);
+requireThat(
+  exploreRan.length === 0 || branchTrials.some((record) => record.judgment.branchIsolationProven),
+  '§20: no trial produced a real branch session whose own catalogue could be read (the isolation proof is vacuous)',
+);
+requireThat(
+  results.every((record) => record.raw.malformedStdoutRecords.length === 0),
+  `§27: an activation/turn observability record was malformed: ${JSON.stringify(
+    results.flatMap((record) => record.raw.malformedStdoutRecords).slice(0, 3),
+  )}`,
+);
+
 const dshVersion = (() => {
   try {
     const pkg = join(DSH_BIN, '..', '..', 'package.json');
@@ -777,7 +890,8 @@ const dshVersion = (() => {
 })();
 
 const summary = {
-  scenario: 'RC-1 live local (A/B/C/English/F)',
+  scenario: 'RC-1R live local (A/B/C1/C2/English/F)',
+  oracle: 'test/support/rc1_oracle.ts (shared with the cross-project harness and replayed by test/rc1r_oracle_replay.test.ts)',
   environment: {
     provider: 'openrouter-stealth (from ~/.dsh/settings.yaml; observed per trial in the request header)',
     model: 'stealth/union-alpha (observed per trial in the request header)',
@@ -785,27 +899,31 @@ const summary = {
     dshVersion,
     nodeVersion: process.version,
     palimpsestRepo: REPO,
-    palimpsestCommit: gitHead,
+    palimpsestCommit: repositoryHead() ?? null,
     ordariumVersion: '1.3.1 (package.json release pin)',
     os: `${process.platform} ${process.arch} ${process.getSystemVersion?.() ?? ''}`.trim(),
     trialsPerScenario: TRIALS,
+    turnBudgetMs: TURN_BUDGET_MS,
     tokenAccounting: 'unavailable — never invented (§31)',
   },
   criteria: {
-    scenarioA_passes: passesOf(scenarioA),
-    scenarioA_total: scenarioA.length,
-    scenarioA_qualified: qualified(scenarioA),
-    scenarioB_explore_passes: passesOf(scenarioB.filter((record) => record.kind === 'B_auto_explore')),
-    scenarioB_explore_total: scenarioB.filter((record) => record.kind === 'B_auto_explore').length,
-    scenarioB_focus_passes: passesOf(scenarioB.filter((record) => record.kind === 'B_auto_focus')),
-    scenarioC_passes: passesOf(scenarioC),
-    scenarioC_total: scenarioC.length,
-    english_passes: passesOf(scenarioEnglish),
-    english_total: scenarioEnglish.length,
-    no_authority_scope_or_disclosure_violation: violations(results) === 0,
-    branch_catalogue_isolation: results
-      .filter((record) => record.branchProcessCount > 0)
-      .every((record) => record.branchCapabilityIsolated),
+    scenarioA: oracle.qualify(verdicts(scenarioA)),
+    scenarioB_explore: oracle.qualify(verdicts(bExplore)),
+    scenarioB_explore_advisorSelections: advisorSelections,
+    scenarioB_focus: oracle.qualify(verdicts(bFocus)),
+    scenarioC1: oracle.qualify(verdicts(scenarioC1)),
+    scenarioC2: oracle.qualify(verdicts(scenarioC2)),
+    english: oracle.qualify(verdicts(scenarioEnglish)),
+    unavailableCapabilityF: scenarioF.map((record) => ({
+      kind: record.kind,
+      trial: record.trial,
+      verdict: record.judgment.verdict,
+    })),
+    no_authority_scope_or_disclosure_violation: allViolations.length === 0,
+    violations: allViolations,
+    copyMisrepresentations: allCopy,
+    branch_catalogue_isolation: branchTrials.every((record) => record.judgment.branchCapabilityIsolated),
+    branch_isolation_proven_by_artifact: branchTrials.filter((record) => record.judgment.branchIsolationProven).length,
   },
   trials: results,
   durationMs: Date.now() - startedAt,
@@ -814,7 +932,7 @@ const summary = {
 };
 
 mkdirSync(join(REPO, 'release-evidence'), { recursive: true });
-writeFileSync(join(REPO, 'release-evidence', 'rc1-live-local.json'), `${JSON.stringify(summary, null, 2)}\n`);
+writeFileSync(join(REPO, 'release-evidence', OUT_FILE), `${JSON.stringify(summary, null, 2)}\n`);
 console.log(JSON.stringify({ criteria: summary.criteria, failures, pass: summary.pass }, null, 2));
 console.log(`pass=${summary.pass}`);
 process.exit(summary.pass ? 0 : 1);

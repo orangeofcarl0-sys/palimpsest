@@ -360,8 +360,11 @@ async function run(ctx, deps) {
       const fromSeq = agent.session.seq;
       const report = await host.deployment.pumpAndActivate();
       for (const entry of report.activations) {
+        // The trailing newline is load-bearing: this record and the `PALIMPSEST_TURN`
+        // printed just below are two INDEPENDENT machine lines. Without it a harness
+        // that parses by `line.startsWith(...)` loses both records on one physical line.
         process.stdout.write(
-          `PALIMPSEST_ACTIVATION ${JSON.stringify({ signalId: entry.signal.signalId, kind: entry.signal.kind, activated: entry.outcome.activated })}`,
+          `PALIMPSEST_ACTIVATION ${JSON.stringify({ signalId: entry.signal.signalId, kind: entry.signal.kind, activated: entry.outcome.activated })}\n`,
         );
       }
       // RC-1 §11/§40 observability (no semantics): a successful activation queues a

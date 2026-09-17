@@ -1,0 +1,23 @@
+RC-1R sampling run 1 — HARNESS DEFECT (retained as evidence, spec §17)
+====================================================================
+Command: node scripts/release/rc1-live-local.mjs --trials 5 --out rc1r-live-local.json
+Exit: 1 after ~148 s, ZERO trials completed and ZERO trials written.
+
+Cause (from rc1r-local.err):
+  TypeError: Cannot read properties of undefined (reading 'trim')
+    at textFlagsOf (dist/test/support/rc1_oracle.js:204)
+    at localFacts (rc1_oracle.js:255) -> judgeLocalTrial -> trial()
+
+Root cause: the rewritten local harness put the session's final assistant message on the
+raw record as `finalAssistantText`, while `Rc1LocalRaw.finalText` is the field the oracle
+reads. The first trial was therefore judged with `finalText === undefined`.
+
+Classification: INFRASTRUCTURE_ERROR / ORACLE_INPUT_ERROR. No product behaviour was
+observed; no product conclusion may be drawn from this run.
+
+Fixes (both applied before re-sampling):
+  1. the local harness populates the oracle's raw shape exactly (`finalText`,
+     `stdoutTurnTexts`);
+  2. BOTH harnesses now wrap the oracle call in try/catch and record a classified
+     `INFRASTRUCTURE_ERROR / ORACLE_INPUT_ERROR` trial, so a future raw-shape drift costs one
+     classified trial instead of the whole sample.

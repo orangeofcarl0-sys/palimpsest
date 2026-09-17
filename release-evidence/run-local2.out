@@ -1,0 +1,56 @@
+RC-1 live local qualification — up to 5 trials/scenario, real model-driven principal
+provider/model observed per trial from the DSH request header; DSH C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/lib/bin.js
+  trial A_local_parallel#1: PASS | tools=["palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=124s
+  trial A_local_parallel#2: PASS | tools=["glob","palimpsest_status","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=149s
+  trial A_local_parallel#3: PASS | tools=["glob","palimpsest_status","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=114s
+  trial A_local_parallel#4: PASS | tools=["palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=102s
+  trial A_local_parallel#5: PASS | tools=["palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=152s
+  trial B_auto_explore#1: INFRASTRUCTURE_ERROR | tools=["palimpsest_collaborate"] | exec=["PRINCIPAL_CONTINUES"] | branches=0 | catalogue=44 | wall=300s | (node:36720) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial B_auto_explore#2: INFRASTRUCTURE_ERROR | tools=["palimpsest_collaborate","todo_write","pwsh","write","pwsh","edit","edit","pwsh","write","pwsh","todo_write"] | exec=["PRINCIPAL_CONTINUES"] | branches=0 | catalogue=44 | wall=300s | (node:30240) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial B_auto_explore#3: MODEL_TASK_QUALITY_FAILURE | tools=["palimpsest_collaborate","glob","todo_write","write","write","write","write","write","pwsh","pwsh","edit","read","edit","pwsh","pwsh","todo_write"] | exec=["PRINCIPAL_CONTINUES"] | branches=0 | catalogue=44 | wall=240s | (node:50000) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial B_auto_explore#4: PASS | tools=["glob","palimpsest_surfaces","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=134s
+  trial B_auto_explore#5: MODEL_TASK_QUALITY_FAILURE | tools=["palimpsest_collaborate","palimpsest_status","glob"] | exec=["PRINCIPAL_CONTINUES"] | branches=0 | catalogue=44 | wall=82s | (node:46144) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial B_auto_focus#1: PASS | tools=["glob","palimpsest_collaborate"] | exec=["PRINCIPAL_CONTINUES"] | branches=0 | catalogue=44 | wall=111s
+  trial C_check#1: PASS | tools=["palimpsest_collaborate","palimpsest_status","palimpsest_verification"] | exec=["LOCAL_VERIFY"] | branches=0 | catalogue=44 | wall=25s
+  trial C_check#2: PASS | tools=["palimpsest_collaborate","palimpsest_status","palimpsest_verification"] | exec=["LOCAL_VERIFY"] | branches=0 | catalogue=44 | wall=31s
+  trial C_check#3: PASS | tools=["palimpsest_status","palimpsest_verification","palimpsest_collaborate","pwsh","palimpsest_verification","pwsh"] | exec=["LOCAL_VERIFY"] | branches=0 | catalogue=44 | wall=62s
+  trial C_check#4: PASS | tools=["palimpsest_collaborate"] | exec=["LOCAL_VERIFY"] | branches=0 | catalogue=44 | wall=16s
+  trial C_check#5: PASS | tools=["palimpsest_status","palimpsest_verification","palimpsest_collaborate"] | exec=["LOCAL_VERIFY"] | branches=0 | catalogue=44 | wall=45s
+  trial EN_local_parallel#1: PASS | tools=["glob","palimpsest_surfaces","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=105s
+  trial EN_local_parallel#2: PASS | tools=["glob","grep","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=120s
+  trial EN_local_parallel#3: PASS | tools=["glob","read","glob","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=107s
+  trial EN_local_parallel#4: PASS | tools=["glob","palimpsest_surfaces","read","palimpsest_collaborate","palimpsest_collaborate","palimpsest_reasoning","palimpsest_reasoning","palimpsest_reasoning","palimpsest_reasoning","glob"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=134s
+  trial EN_local_parallel#5: PRODUCT_COPY_MISREPRESENTED_RESULT | tools=["glob","palimpsest_surfaces","palimpsest_status","palimpsest_collaborate","palimpsest_collaborate"] | exec=["LOCAL_EXPLORE"] | branches=2 | catalogue=44 | wall=100s | (node:40388) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial F_no_reasoning_parallel#1: PASS | tools=["glob","palimpsest_collaborate","glob","subagent","subagent"] | exec=["CAPABILITY_REQUIRED"] | branches=0 | catalogue=42 | wall=150s
+  trial F_no_project_directory_cross#1: INFRASTRUCTURE_ERROR | tools=["palimpsest_status","glob","grep","palimpsest_graph","palimpsest_reasoning","palimpsest_federation"] | exec=[] | branches=0 | catalogue=44 | wall=24s | (node:37808) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was 
+  trial F_no_project_directory_cross_trial2#2: INFRASTRUCTURE_ERROR | tools=[] | exec=[] | branches=0 | catalogue=0 | wall=1s | <--- Last few GCs --->
+
+[39648:0000020092244000]      495 ms: Scavenge 14.1 (20.2) -> 11.1 (20.5) MB, pooled: 0 MB, 0.44 / 0.01 ms  (average mu = 1.000, curre
+{
+  "criteria": {
+    "scenarioA_passes": 5,
+    "scenarioA_total": 5,
+    "scenarioA_qualified": true,
+    "scenarioB_explore_passes": 1,
+    "scenarioB_explore_total": 5,
+    "scenarioB_focus_passes": 1,
+    "scenarioC_passes": 5,
+    "scenarioC_total": 5,
+    "english_passes": 4,
+    "english_total": 5,
+    "no_authority_scope_or_disclosure_violation": false,
+    "branch_catalogue_isolation": true
+  },
+  "failures": [
+    "scenario B explore: fewer than 4/5 AUTO trials reached EXPLORE (1/5)",
+    "§19 no-projectDirectory profile: the principal invented a project or a cross-project answer"
+  ],
+  "pass": false
+}
+pass=false
