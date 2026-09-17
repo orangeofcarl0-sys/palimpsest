@@ -67,12 +67,20 @@ because RC-1E passed; nothing is closed without evidence.
 | Fact | Value |
 | --- | --- |
 | Reconciled onto canonical main | `b7fcb399c5630f29b94732569e1f91470d07dfda` (PR #116 preserved; pre-rebase tree preserved byte-identically) |
-| RC-1E stage commit | recorded in §6 once merged |
+| RC-1E stage commit | `0274a86e8baef0c7021155af20f73148f704dba3` |
 | Evidence bundle | `release-evidence/rc1e-live-cross-project.json` |
 | Deterministic tests | `test/rc1e_intent_handoff.test.ts`, `test/rc1e_oracle_routes.test.ts`, `test/rc1r_oracle_replay.test.ts` |
 | Live sample | D 5/5, E 5/5 (all `RESPOND_COMPOSE`), A 1/1 smoke |
 
-## 6. Merge checkpoint (filled at §49)
+## 6. Merge checkpoint (§49) — complete
 
-See `RC-1E-DELIVERY.md` §6 and the PR/CI records. Canonical-main CI attempt 1 must be green
-before the release-qualified claim is made.
+| Step | Value |
+| --- | --- |
+| PR | #117 |
+| PR CI attempt 1 | success (`35263611232`) |
+| Merge commit | `b22187cde444f4b23b30d85b5862a641ac90d5be` |
+| Tree identity | `git diff 0274a86 b22187c` EMPTY |
+| Canonical main CI attempt 1 | success (`35264265782`, `run_attempt: 1`) |
+
+The RC-1E claim — including the `CF-UXA-04`-stays-open qualification — is now the first
+release-track claim backed by PR and canonical-main CI.
