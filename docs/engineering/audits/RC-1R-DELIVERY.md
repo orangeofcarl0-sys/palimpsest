@@ -326,3 +326,17 @@ case — no kernel semantics, no new capability. It should be a small, separatel
 stage with its own live E sample.
 
 Carry-forward reassessment (§35) is recorded in `RC-1-CARRY-FORWARD.md`.
+
+---
+
+## 10. Checkpoint
+
+| Fact | Value |
+| --- | --- |
+| Stage commit | `eed1883b25e0be53b1312f71c56bfd0eef800752` |
+| Branch | `experiment/rc-1-live-principal` (pushed; no PR opened) |
+| Parent | `ae4a91c3ef57b9cd50770faa5ab0b180c839aebf` (RC-1) |
+| Canonical main | `6c7181d66816a70cb41583be00e0676e56fce06d` + the unrelated hygiene fix `b7fcb399` |
+| Evidence bundle | `release-evidence/rc1r-live-principal.json` (42 trials, raw + re-derived judgement) |
+| Deterministic replay | `test/rc1r_oracle_replay.test.ts` — 50 tests, no live calls |
+| Live sample | 3 harness runs (1 primary + 1 B top-up + 1 cross), 2 additional runs stopped as instruments were repaired and retained |
