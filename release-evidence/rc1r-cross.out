@@ -1,0 +1,52 @@
+RC-1R live cross-project qualification — D:5 trials, E:5 trials, real model-driven principals
+  D_cross_project_ask#1: MODEL_SELECTED_WRONG_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=252s | the Ask did not resolve (observed status null)
+  D_cross_project_ask#2: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_PARTIAL_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_project","palimpsest_project","glob","palimpsest_graph","palimpsest_project","palimpsest_reasoning","palimpsest_cross_project","palimpsest_cross_project"] | terminal=PARTIAL surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=106s
+  D_cross_project_ask#3: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_graph","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=96s
+  D_cross_project_ask#4: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_federation"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=106s
+  D_cross_project_ask#5: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","skill","palimpsest_federation"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=116s
+  E_remote_local_collaboration#1: MODEL_DID_NOT_SELECT_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED+REMOTE_DIRECT_ANSWER | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_federation","palimpsest_federation","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=343s | §9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly
+  E_remote_local_collaboration#2: MODEL_DID_NOT_SELECT_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED+REMOTE_DIRECT_ANSWER | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=206s | §9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly
+  E_remote_local_collaboration#3: MODEL_DID_NOT_SELECT_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED+REMOTE_DIRECT_ANSWER | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_federation","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=222s | §9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly
+  E_remote_local_collaboration#4: MODEL_DID_NOT_SELECT_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED+REMOTE_DIRECT_ANSWER | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_federation","palimpsest_federation"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=292s | §9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly
+  E_remote_local_collaboration#5: MODEL_SELECTED_WRONG_PRODUCT_TOOL | route=CROSS_PROJECT_ASK | outcome=ANSWERED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","glob","palimpsest_cross_project","palimpsest_cross_project","pwsh","job_output","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=418s | the Ask did not resolve (observed status null)
+{
+  "criteria": {
+    "scenarioD": {
+      "total": 5,
+      "passes": 4,
+      "required": 4,
+      "qualified": true,
+      "violationCount": 0
+    },
+    "scenarioE": {
+      "total": 5,
+      "passes": 0,
+      "required": 4,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioE_remote_used_collaborate": 0,
+    "terminalAnswerStatuses": [
+      "ANSWERED",
+      "PARTIAL",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED"
+    ],
+    "no_copy_or_disclosure_violation": true,
+    "violations": [],
+    "copyMisrepresentations": [],
+    "branch_catalogue_isolation": true
+  },
+  "failures": [
+    "scenario E: fewer than 4/5 cross-project trials composed the remote project's own local collaboration (0/5)"
+  ],
+  "pass": false
+}
+pass=false
+CROSS_EXIT=1
