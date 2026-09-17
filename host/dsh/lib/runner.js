@@ -357,11 +357,25 @@ async function run(ctx, deps) {
       // pump → drain → activate → mark-after-success. Overlapping ticks serialize on
       // `busy`; the pump cursor advances only after ingest; a failed activation leaves
       // the signal pending (never marked delivered).
+      const fromSeq = agent.session.seq;
       const report = await host.deployment.pumpAndActivate();
       for (const entry of report.activations) {
+        // The trailing newline is load-bearing: this record and the `PALIMPSEST_TURN`
+        // printed just below are two INDEPENDENT machine lines. Without it a harness
+        // that parses by `line.startsWith(...)` loses both records on one physical line.
         process.stdout.write(
           `PALIMPSEST_ACTIVATION ${JSON.stringify({ signalId: entry.signal.signalId, kind: entry.signal.kind, activated: entry.outcome.activated })}\n`,
         );
+      }
+      // RC-1 §11/§40 observability (no semantics): a successful activation queues a
+      // turn on THIS same agent, but `followup` itself is fire-and-forget. Wait for
+      // the activated turn to finish, flush it, and report its tool calls + final
+      // visible text exactly like a launch turn — otherwise an attention-driven turn
+      // is invisible to the harness and may not be durably persisted.
+      if (report.activations.some((entry) => entry.outcome.activated === true)) {
+        await agent.whenIdle();
+        await sessions.flush(agent.session);
+        printTurn(fromSeq);
       }
     } catch (error) {
       process.stderr.write(`palimpsest-runner loop: ${error?.stack ?? String(error)}\n`);

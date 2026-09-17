@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "profileId": "detector-project",
+  "projectId": "detector",
+  "localPeer": "detector-peer",
+  "persistentPoint": "pp-detector",
+  "repository": "/path/to/your/detector-repo",
+  "transport": {
+    "namespace": "detector-optics",
+    "databasePath": "/path/to/palimpsest-state/shared/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "/path/to/palimpsest-state/detector/orchestration.sqlite",
+    "ordarium": "/path/to/palimpsest-state/detector/ordarium.sqlite",
+    "coordination": "/path/to/palimpsest-state/detector/coordination.sqlite",
+    "transportCursors": "/path/to/palimpsest-state/detector/cursors.sqlite",
+    "attentionMarks": "/path/to/palimpsest-state/detector/attention.sqlite"
+  },
+  "directory": [
+    { "peerId": "detector-peer", "competenceTags": ["detector"] },
+    { "peerId": "optics-peer", "competenceTags": ["optics"] }
+  ],
+  "projectDirectory": [
+    {
+      "projectId": "detector",
+      "displayName": "the detector project",
+      "aliases": ["detector"],
+      "peerId": "detector-peer",
+      "competenceTags": ["detector"]
+    },
+    {
+      "projectId": "optics",
+      "displayName": "the optics project",
+      "aliases": ["optics"],
+      "peerId": "optics-peer",
+      "competenceTags": ["optics"]
+    }
+  ],
+  "reasoning": {},
+  "attention": { "policyId": "detector-attention-v1", "cooldownMs": 0, "activation": "dsh" }
+}

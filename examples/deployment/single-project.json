@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "profileId": "single-project",
+  "projectId": "single-project",
+  "localPeer": "single-project-peer",
+  "persistentPoint": "pp-single-project",
+  "repository": "/path/to/your/repo",
+  "transport": {
+    "namespace": "single-project",
+    "databasePath": "/path/to/palimpsest-state/single-project/transport.sqlite"
+  },
+  "databases": {
+    "orchestration": "/path/to/palimpsest-state/single-project/orchestration.sqlite",
+    "ordarium": "/path/to/palimpsest-state/single-project/ordarium.sqlite",
+    "coordination": "/path/to/palimpsest-state/single-project/coordination.sqlite",
+    "transportCursors": "/path/to/palimpsest-state/single-project/cursors.sqlite",
+    "attentionMarks": "/path/to/palimpsest-state/single-project/attention.sqlite"
+  },
+  "reasoning": {}
+}

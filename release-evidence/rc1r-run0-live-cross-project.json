@@ -1,0 +1,896 @@
+{
+  "scenario": "RC-1 live cross-project (D/E)",
+  "partial": true,
+  "trials": [
+    {
+      "scenario": "D_cross_project_ask",
+      "trial": 1,
+      "prompt": "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+      "freshSession": true,
+      "expectation": "cross-project Ask → remote shipped pump+attention → remote answer → origin surfaces it without a second prompt",
+      "fixtureFailure": null,
+      "sharedTransport": "rc1-live-cross",
+      "sharedWorkspaceFiles": [
+        "shared-associations.sqlite",
+        "shared-journal.sqlite"
+      ],
+      "wallMs": 65642,
+      "askStatus": "RESOLVED",
+      "askTurn": 1,
+      "origin": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "pwsh",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "ask",
+            "target": "optics",
+            "status": "RESOLVED"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "ANSWERED"
+          },
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          }
+        ],
+        "stdoutTurns": [
+          {
+            "text": "已向 **optics 项目**询问：“我们之前是否研究过探测器孔径对接收稳定性的影响？”\n\n目前尚未收到回复，因此还不能确认是否研究过；这也不代表对方不可用。暂不继续轮询。",
+            "toolCalls": [
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:pwsh",
+              "tool/result"
+            ]
+          }
+        ],
+        "stdoutLength": 2081,
+        "stdoutSample": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-4cc14f32-7ad8-4688-8c08-ef4aef397a8a\",\"mode\":\"create\",\"localPeer\":\"detector-peer\",\"persistentPoint\":\"pp-origin\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-su",
+        "assistantTurns": [
+          1,
+          1,
+          2
+        ],
+        "userMessages": [
+          "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650244926-1\\\\origin\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"optics-peer\" (thread thr-cpq-616e74595fa4515128010e80932bc8a5) about msg-1246bc44-efff-48f8-95f6-9d54ed69fba7. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked.",
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"optics-peer\" (thread thr-cpq-616e74595fa4515128010e80932bc8a5) about msg-21aaa2c3-893d-45ad-925f-cb18d9524222. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked."
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "**optics 项目已回复：目前没有找到相关研究记录。**\n\n对方检查了项目任务、决策记录、历史日志、开放问题，并在工作区搜索了“aperture／孔径”，均未发现关于“探测器孔径对接收稳定性的影响”的结论或数据。\n\n因此，准确说法是：**根据 optics 当前可查的项目记录，没有证据表明之前研究过这个问题**；不能据此排除曾有未记录的讨论或线下研究。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "remote": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "grep",
+          "palimpsest_graph",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "ANSWERED"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "projects",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "PARTIAL"
+          }
+        ],
+        "collaborateExecutions": [],
+        "stdoutTurns": [],
+        "activations": [],
+        "userMessages": [
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"detector-peer\" (thread thr-cpq-616e74595fa4515128010e80932bc8a5) about msg-c43caea7-8189-4b7c-8b00-a9f7327c58bb. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked.",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650244926-1\\\\remote\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "已检查该信号：这是 **detector 项目发给 optics 的提问**，不是其他项目的回信。\n\n问题是：“我们之前是否研究过探测器孔径对接收稳定性的影响？”\n\n已回复 detector，并补发更正说明：\n- 当前可访问的项目记录和工作区检索中，**未找到相关研究记录**。\n- 部分知识服务未配置，无法查阅，因此不能据此断言“从未研究过”或“没有重复工作”。\n\n最初回复中的结论过强，已明确更正。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "crossProjectMessageCount": {
+        "originAsks": 1,
+        "remoteResponses": 3,
+        "originReceives": 4
+      },
+      "remoteUsedCollaborate": false,
+      "remoteCollaborateExecutionKinds": [],
+      "remoteActivated": true,
+      "originActivated": true,
+      "originSurfacedWithoutSecondPrompt": true,
+      "pollExitedBeforeCompletion": false,
+      "surfacedText": "**optics 项目已回复：目前没有找到相关研究记录。**\n\n对方检查了项目任务、决策记录、历史日志、开放问题，并在工作区搜索了“aperture／孔径”，均未发现关于“探测器孔径对接收稳定性的影响”的结论或数据。\n\n因此，准确说法是：**根据 optics 当前可查的项目记录，没有证据表明之前研究过这个问题**；不能据此排除曾有未记录的讨论或线下研究。",
+      "leakedInternalIds": false,
+      "surfacedRequestId": false,
+      "claimsVerified": false,
+      "claimsCommitment": false,
+      "inventedProject": false,
+      "branchProcessCount": 0,
+      "branchCatalogues": [],
+      "branchCapabilityIsolated": true,
+      "tokenUsage": "unavailable (the host exposes no token accounting)",
+      "failure": null,
+      "verdict": "PASS"
+    },
+    {
+      "scenario": "D_cross_project_ask",
+      "trial": 2,
+      "prompt": "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+      "freshSession": true,
+      "expectation": "cross-project Ask → remote shipped pump+attention → remote answer → origin surfaces it without a second prompt",
+      "fixtureFailure": null,
+      "sharedTransport": "rc1-live-cross",
+      "sharedWorkspaceFiles": [
+        "shared-associations.sqlite",
+        "shared-journal.sqlite"
+      ],
+      "wallMs": 600613,
+      "askStatus": "RESOLVED",
+      "askTurn": 1,
+      "origin": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_federation",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "ask",
+            "target": "optics",
+            "status": "RESOLVED"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "PARTIAL"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "CONFLICT"
+          },
+          {
+            "action": "acknowledge",
+            "target": null,
+            "status": null
+          }
+        ],
+        "stdoutTurns": [
+          {
+            "text": "已向 **optics 项目**发送问题：“我们之前是否研究过探测器孔径对接收稳定性的影响？”\n\n目前仍在等待回复，尚不能确认是否研究过。我会停止重复查询；暂不重复发送或更换渠道，以免产生重复请求。",
+            "toolCalls": [
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result"
+            ]
+          }
+        ],
+        "stdoutLength": 2472,
+        "stdoutSample": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-cf4f0c9a-4f96-45c3-8ef0-1ce4a8358f4e\",\"mode\":\"create\",\"localPeer\":\"detector-peer\",\"persistentPoint\":\"pp-origin\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-su",
+        "assistantTurns": [
+          1,
+          1,
+          1,
+          2,
+          3
+        ],
+        "userMessages": [
+          "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650311195-2\\\\origin\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"optics-peer\" (thread thr-cpq-5c6dd21b957773c5fec4859addfd80d7) about msg-55fd88a5-d127-44c2-b07b-49e1db61b5dd. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked.",
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"optics-peer\" (thread thr-cpq-5c6dd21b957773c5fec4859addfd80d7) about msg-3ab7a640-3dc9-490d-b4c8-c8bfc0aa1848. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked."
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "optics 项目又发来一条**明确更正**：此前“没有研究过”的说法过于确定，应改为：\n\n> 目前可访问的记录中未找到相关研究，无法确认是否曾研究过，也无法提供已有结论。\n\n对方补充，已检查项目概览、历史、未决事项、资产关联和工作区关键词，但部分外部记录接口未配置，不能排除不可访问记录中存在相关研究。\n\n系统将两次答复标记为不一致；第二条明确说明是在更正第一条措辞，并非发现了新的研究结果。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "remote": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_cross_project",
+          "grep",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "PREPARED"
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "PARTIAL"
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "PARTIAL"
+          }
+        ],
+        "collaborateExecutions": [],
+        "stdoutTurns": [],
+        "activations": [],
+        "userMessages": [
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"detector-peer\" (thread thr-cpq-5c6dd21b957773c5fec4859addfd80d7) about msg-795b25f7-a828-4b11-9921-cacec1d6a60a. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked.",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650311195-2\\\\remote\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "已检查并回复 **detector 项目**的问题：\n\n> 我们之前是否研究过探测器孔径对接收稳定性的影响？\n\n回复状态为 **PARTIAL**：当前可访问的 optics 项目记录和工作区中未找到相关研究，无法提供已有结论。已补充澄清：**未找到记录不代表确定没有研究过**，部分历史知识接口尚未配置。\n\n该通知实际对应的是收到的提问，而不是其他项目对本项目提问的回复；此请求没有可接收的外部答复。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "crossProjectMessageCount": {
+        "originAsks": 1,
+        "remoteResponses": 2,
+        "originReceives": 6
+      },
+      "remoteUsedCollaborate": false,
+      "remoteCollaborateExecutionKinds": [],
+      "remoteActivated": true,
+      "originActivated": true,
+      "originSurfacedWithoutSecondPrompt": false,
+      "pollExitedBeforeCompletion": false,
+      "surfacedText": "已向 **optics 项目**发送问题：“我们之前是否研究过探测器孔径对接收稳定性的影响？”\n\n目前仍在等待回复，尚不能确认是否研究过。我会停止重复查询；暂不重复发送或更换渠道，以免产生重复请求。",
+      "leakedInternalIds": false,
+      "surfacedRequestId": false,
+      "claimsVerified": false,
+      "claimsCommitment": false,
+      "inventedProject": false,
+      "branchProcessCount": 0,
+      "branchCatalogues": [],
+      "branchCapabilityIsolated": true,
+      "tokenUsage": "unavailable (the host exposes no token accounting)",
+      "failure": "timeout",
+      "verdict": "REMOTE_RESULT_NOT_SURFACED"
+    },
+    {
+      "scenario": "D_cross_project_ask",
+      "trial": 3,
+      "prompt": "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+      "freshSession": true,
+      "expectation": "cross-project Ask → remote shipped pump+attention → remote answer → origin surfaces it without a second prompt",
+      "fixtureFailure": null,
+      "sharedTransport": "rc1-live-cross",
+      "sharedWorkspaceFiles": [
+        "shared-associations.sqlite",
+        "shared-journal.sqlite"
+      ],
+      "wallMs": 600804,
+      "askStatus": "RESOLVED",
+      "askTurn": 1,
+      "origin": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "pwsh",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "projects",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "prepare",
+            "target": "optics",
+            "status": "PREPARED"
+          },
+          {
+            "action": "ask",
+            "target": "optics",
+            "status": "RESOLVED"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "PARTIAL"
+          },
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          }
+        ],
+        "stdoutTurns": [
+          {
+            "text": "已向 **optics 项目**发送问题：\n\n> 我们之前是否研究过探测器孔径对接收稳定性的影响？\n\n当前状态是 **等待回复**，尚不能确认是否研究过。工具说明表明这是异步咨询；`receive` 只能接收已有答复，不能促使对方回复。qbank 技能用于题库管理，与此次咨询无关。\n\n刚才反复查询和等待没有必要，我已停止轮询。",
+            "toolCalls": [
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:pwsh",
+              "tool/result"
+            ]
+          }
+        ],
+        "stdoutLength": 2145,
+        "stdoutSample": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-a8bcd5f6-0efb-4fcb-8ad0-6f24fe26f7ec\",\"mode\":\"create\",\"localPeer\":\"detector-peer\",\"persistentPoint\":\"pp-origin\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-su",
+        "assistantTurns": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "userMessages": [
+          "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650912227-3\\\\origin\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>",
+          "You are repeating the exact same tool call with identical arguments. Carefully analyze the previous result before calling again: if the task is not complete, try a different approach or different arguments instead of repeating the call.",
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"optics-peer\" (thread thr-cpq-954555845ad1d80827b78bc612265187) about msg-929d0208-52da-4245-bb11-869effd1f76b. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked."
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "**optics 项目已回复：当前可访问记录中，未找到此前研究过“探测器孔径对接收稳定性的影响”的记录。**\n\n对方检查了项目概览和历史，没有找到相关研究资料或已验证结论。但其他未接入的资料无法检索，因此这表示**“暂未找到”，不是“从未研究过”**。\n\n如果您能提供相关报告名称或具体资料，可以请他们进一步核对。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "remote": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "glob",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": "detector",
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": "detector",
+            "status": "PREPARED"
+          },
+          {
+            "action": "receive",
+            "target": "detector",
+            "status": "PREPARED"
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "PARTIAL"
+          },
+          {
+            "action": "acknowledge",
+            "target": null,
+            "status": null
+          }
+        ],
+        "collaborateExecutions": [],
+        "stdoutTurns": [],
+        "activations": [],
+        "userMessages": [
+          "[palimpsest cross-project] Another project is asking this project a question. Inspect the pending request and answer it using this project's context. A project you asked has replied. Receive the result and surface it to the user. Signalled by \"detector-peer\" (thread thr-cpq-954555845ad1d80827b78bc612265187) about msg-14a7c594-7e9b-493f-9b78-43bf66a3e04b. Use the palimpsest_cross_project tool: action \"pending\" for a request addressed to this project, or action \"status\"/\"receive\" for an answer to a question this project asked.",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1-cross-D_cross_project_ask-30372-1789650912227-3\\\\remote\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+        ],
+        "attentionDelivered": true,
+        "finalAssistantText": "已检查并回复 **detector 项目**，请求已标记为已处理。\n\n**问题：**此前是否研究过探测器孔径对接收稳定性的影响？\n\n**已发送的答复：**当前 optics 项目的可访问记录中未找到相关研究，无法确认做过此项研究或提供已验证结论。项目概览及历史没有相关决策、证据或关联资料；部分外部资料来源未接入，因此“未找到记录”不代表“从未研究过”。\n\n另外，通知所指消息实际是**传入的问题**，不是对本项目提问的回复；未发现另有可接收的答复。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "crossProjectMessageCount": {
+        "originAsks": 1,
+        "remoteResponses": 1,
+        "originReceives": 5
+      },
+      "remoteUsedCollaborate": false,
+      "remoteCollaborateExecutionKinds": [],
+      "remoteActivated": true,
+      "originActivated": true,
+      "originSurfacedWithoutSecondPrompt": false,
+      "pollExitedBeforeCompletion": false,
+      "surfacedText": "已向 **optics 项目**发送问题：\n\n> 我们之前是否研究过探测器孔径对接收稳定性的影响？\n\n当前状态是 **等待回复**，尚不能确认是否研究过。工具说明表明这是异步咨询；`receive` 只能接收已有答复，不能促使对方回复。qbank 技能用于题库管理，与此次咨询无关。\n\n刚才反复查询和等待没有必要，我已停止轮询。",
+      "leakedInternalIds": false,
+      "surfacedRequestId": false,
+      "claimsVerified": false,
+      "claimsCommitment": false,
+      "inventedProject": false,
+      "branchProcessCount": 0,
+      "branchCatalogues": [],
+      "branchCapabilityIsolated": true,
+      "tokenUsage": "unavailable (the host exposes no token accounting)",
+      "failure": "timeout",
+      "verdict": "REMOTE_RESULT_NOT_SURFACED"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+RC-1R live cross-project qualification — D:0 trials, E:5 trials, real model-driven principals
+  E_remote_local_collaboration#1: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteCollaboration=RESPOND_COMPOSE exploreRan=true | remoteBranches=2 | wall=152s
+  E_remote_local_collaboration#2: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteCollaboration=RESPOND_COMPOSE exploreRan=true | remoteBranches=2 | wall=142s
+  E_remote_local_collaboration#3: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteCollaboration=RESPOND_COMPOSE exploreRan=true | remoteBranches=2 | wall=162s
+  E_remote_local_collaboration#4: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteCollaboration=RESPOND_COMPOSE exploreRan=true | remoteBranches=2 | wall=182s
+  E_remote_local_collaboration#5: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","pwsh","palimpsest_cross_project","pwsh","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteCollaboration=RESPOND_COMPOSE exploreRan=true | remoteBranches=2 | wall=202s
+{
+  "criteria": {
+    "scenarioD": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioE": {
+      "total": 5,
+      "passes": 5,
+      "required": 4,
+      "qualified": true,
+      "violationCount": 0
+    },
+    "scenarioE_routes": {
+      "COLLABORATE_TOOL": 0,
+      "RESPOND_COMPOSE": 5,
+      "NONE": 0
+    },
+    "scenarioE_remoteExploreActuallyRan": 5,
+    "scenarioD_remoteBranchUse": [],
+    "terminalAnswerStatuses": [
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED",
+      "ANSWERED"
+    ],
+    "no_copy_or_disclosure_violation": true,
+    "violations": [],
+    "copyMisrepresentations": [],
+    "branch_catalogue_isolation": true
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true
+E_EXIT=0

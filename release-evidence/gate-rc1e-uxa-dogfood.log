@@ -1,0 +1,160 @@
+(node:35136) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "A_request_carries_no_recipe_plan_cell_or_branch_id": {
+      "ok": true,
+      "detail": "request keys=[\"intent\",\"requestedBy\",\"task\"]"
+    },
+    "A_status_completed": {
+      "ok": true,
+      "detail": "status=COMPLETED"
+    },
+    "A_at_least_two_findings_with_content": {
+      "ok": true,
+      "detail": "2 finding(s): [\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "A_findings_source_is_reasoning_cell": {
+      "ok": true,
+      "detail": "sources=[\"reasoning_cell\",\"reasoning_cell\"]"
+    },
+    "A_details_carry_ids_and_findings_carry_the_value": {
+      "ok": true,
+      "detail": "details.cellId=recipe-2ed96e4ffa58ee3a3e118edde85fd766 branchIds=[\"br-76272c017ba17da9941a0af2\",\"br-6a06316a163789d0ddedf01f\"] claimIds=[\"cl-163194609e9ae2e812b548de\",\"cl-63af65fbb4bc09b8fac6817d\"]"
+    },
+    "A_dsh_tool_is_registered_with_plan_and_run": {
+      "ok": true,
+      "detail": "palimpsest_collaborate actions=[\"plan\",\"run\"]"
+    },
+    "A_findings_printed": {
+      "ok": true,
+      "detail": [
+        "approach 2: a distinct candidate answer",
+        "approach 1: a distinct candidate answer"
+      ]
+    },
+    "A_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Why: UX-A: PARALLEL is an explicit request for LOCAL multi-branch exploration; no durable peer agent is minted to satisfy the word \"multi-agent\" (§7/§13). UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Verification did not run, so nothing about the project head is being claimed as checked."
+    },
+    "B_status_completed": {
+      "ok": true,
+      "detail": "status=COMPLETED"
+    },
+    "B_findings_present": {
+      "ok": true,
+      "detail": "2 finding(s): [\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "B_verification_verdict_recorded": {
+      "ok": true,
+      "detail": "verification={\"verifierRef\":\"uxa-dogfood-mechanical\",\"runRef\":\"project_verification:pvrun-86f51ed73f37c475da85624e2bd30a3b\",\"runId\":\"pvrun-86f51ed73f37c475da85624e2bd30a3b\",\"verdict\":\"PASS\",\"status\":\"COMPLETED\",\"freshness\":\"CURRENT\",\"independence\":\"MECHANICAL_INDEPENDENT\",\"detail\":\"the verifier protocol \\\"uxa-dogfood-mechanical\\\" returned PASS (CURRENT)\",\"protocolNote\":\"PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority.\"}"
+    },
+    "B_verification_independence_reported": {
+      "ok": true,
+      "detail": "independence=MECHANICAL_INDEPENDENT freshness=CURRENT verifierRef=uxa-dogfood-mechanical"
+    },
+    "B_protocol_note_present_and_truthful": {
+      "ok": true,
+      "detail": "note=\"PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority.\""
+    },
+    "B_findings_printed": {
+      "ok": true,
+      "detail": [
+        "approach 2: a distinct candidate answer",
+        "approach 1: a distinct candidate answer"
+      ]
+    },
+    "B_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Separately, the exact current Project Head (not the findings) was checked by the registered protocol; the summary below states that check on its own. Why: UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment UX-A: derived verification availability: \"project.verification\" is AVAILABLE — no verification has ever run for this project UX-A: the exploration runs first and then the exact current project head is verified by the registered protocol. 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Separately: Independent verification ran: the registered protocol \"uxa-dogfood-mechanical\" returned PASS for the exact current project head (freshness CURRENT, independence MECHANICAL_INDEPENDENT). This is a check of the current project head, not a verification of the exploratory findings. PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority."
+    },
+    "C1_auto_focus_principal_continues_with_zero_branches": {
+      "ok": true,
+      "detail": "status=PRINCIPAL_CONTINUES kind=PRINCIPAL_CONTINUES findings=0 branchExecutions=0 reasoningCells=0"
+    },
+    "C2_auto_explore_local_explore_with_real_findings": {
+      "ok": true,
+      "detail": "status=COMPLETED kind=LOCAL_EXPLORE findings=2 branchExecutions=2 texts=[\"approach 1: a distinct candidate answer\",\"approach 2: a distinct candidate answer\"]"
+    },
+    "C3_auto_without_advisor_falls_back_to_focus_and_names_it": {
+      "ok": true,
+      "detail": "executionKind=PRINCIPAL_CONTINUES baseMode=FOCUS reason=UX-A: the durable Work Mode preference could not be read (no operating posture is composed), so AUTO was resolved without durable preference context. UX-A: no empirical architecture advisor is configu"
+    },
+    "C3_fallback_reason": {
+      "ok": true,
+      "detail": "UX-A: the durable Work Mode preference could not be read (no operating posture is composed), so AUTO was resolved without durable preference context. UX-A: no empirical architecture advisor is configured for this installation, and AUTO must not invent an architecture policy, so AUTO falls back to FOCUS — the zero-extra-boundary baseline. Nothing was explored and no agent was created."
+    },
+    "C4_memoryless_advisor_exists_and_auto_explores_without_empirical_claim": {
+      "ok": true,
+      "detail": "advisor=true empiricalSupport=0 kind=LOCAL_EXPLORE findings=2 branchExecutions=2"
+    },
+    "D_federation_surface_composed": {
+      "ok": true,
+      "detail": "installed.federation is present, so inbox/commitments and the raw coordination rows can both be compared"
+    },
+    "D_plan_and_run_are_cross_project_required": {
+      "ok": true,
+      "detail": "plan.executionKind=CROSS_PROJECT_REQUIRED plan.effectiveBaseMode=COORDINATE result.executionKind=CROSS_PROJECT_REQUIRED result.status=CROSS_PROJECT_REQUIRED"
+    },
+    "D_peers_are_named": {
+      "ok": true,
+      "detail": "details.peers=[\"peer-independent-1\"] unresolved=[\"Cross-project collaboration is not implemented in UX-A (§36); it is the UX-B handoff seam. No peer message was sent, no commitment was created and no boundary was mutated. Existing peers named by the recommendation: peer-independent-1.\"]"
+    },
+    "D_zero_peer_message_and_zero_commitment": {
+      "ok": true,
+      "detail": "sent=0 directoryCalls=0 commitments=[] inbox.received=[] (a thread/contact-need would appear as a coordination_events row, checked below)"
+    },
+    "D_raw_coordination_rows_byte_identical": {
+      "ok": true,
+      "detail": "before=[] after=[]"
+    },
+    "D_zero_project_mutation": {
+      "ok": true,
+      "detail": "head before={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} after={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} project/tasks/promotions/journal identical=true"
+    },
+    "E_result_carries_no_branch_or_cot_machinery": {
+      "ok": true,
+      "detail": "forbidden tokens found=[]; payload bytes=3477"
+    },
+    "E_finding_content_equals_the_admitted_frontier_claim": {
+      "ok": true,
+      "detail": "frontier claims=2 activeClaims=2 findings=2 equal=true findings=[\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "E_no_projectir_revision_and_no_journal_or_decision_write": {
+      "ok": true,
+      "detail": "head before={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} after={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"}; project/tasks/promotions/journal identical=true"
+    },
+    "E_payload_keys": {
+      "ok": true,
+      "detail": [
+        "at",
+        "capabilityWarnings",
+        "details",
+        "executionKind",
+        "findingNote",
+        "findingStanding",
+        "findings",
+        "status",
+        "summary",
+        "unresolved",
+        "verb",
+        "verification"
+      ]
+    },
+    "E_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Separately, the exact current Project Head (not the findings) was checked by the registered protocol; the summary below states that check on its own. Why: UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment UX-A: derived verification availability: \"project.verification\" is AVAILABLE — no verification has ever run for this project UX-A: the exploration runs first and then the exact current project head is verified by the registered protocol. 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Separately: Independent verification ran: the registered protocol \"uxa-dogfood-mechanical\" returned PASS for the exact current project head (freshness CURRENT, independence MECHANICAL_INDEPENDENT). This is a check of the current project head, not a verification of the exploratory findings. PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority."
+    },
+    "AE_R_boundary_dogfood_remains_green": {
+      "ok": true,
+      "detail": "exit=0 final=pass=true"
+    }
+  },
+  "honestNotes": {
+    "C_auto_needs_advisor": "AUTO selects EXPLORE only when an advisor is composed. UX-C §7/CF-UXA-02 changed the first-party install: the advisor is now composed whenever the installation can act (a local peer) OR an OrganizationMemory store was supplied, so a memoryless install can AUTO-Explore and claims no empirical evidence (C4). C3 proves the documented safe fallback through a collaboration service composed with NO advisor at all."
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true
+EXIT=0
