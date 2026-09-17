@@ -1,0 +1,31 @@
+RC-1R live cross-project qualification — D:1 trials, E:0 trials, real model-driven principals
+  D_cross_project_ask#1: PASS | route=CROSS_PROJECT_ASK | outcome=TERMINAL_ANSWERED_SURFACED | originTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project"] | remoteTools=["palimpsest_cross_project","palimpsest_cross_project","palimpsest_cross_project","palimpsest_project","palimpsest_cross_project","palimpsest_project","palimpsest_project","palimpsest_cross_project"] | terminal=ANSWERED surfaced=true | remoteBranches=0 | remoteCollaborate=false | wall=132s
+{
+  "criteria": {
+    "scenarioD": {
+      "total": 1,
+      "passes": 1,
+      "required": 1,
+      "qualified": true,
+      "violationCount": 0
+    },
+    "scenarioE": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioE_remote_used_collaborate": 0,
+    "terminalAnswerStatuses": [
+      "ANSWERED"
+    ],
+    "no_copy_or_disclosure_violation": true,
+    "violations": [],
+    "copyMisrepresentations": [],
+    "branch_catalogue_isolation": true
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true

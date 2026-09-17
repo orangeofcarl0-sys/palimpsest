@@ -50,12 +50,23 @@ No launch profile in RC-1 wires a Proof store, so the latent coupling is still
 unreachable. RC-1 deliberately did not wire Proof just to exercise it (§43). Trigger
 unchanged: the first packaging step that wires a Proof store into a launched deployment.
 
-## 6. CF-UXA-04 — lexical profiler → **OPEN (unchanged)**
+## 6. CF-UXA-04 — lexical profiler → **OPEN, trigger now genuinely FIRED**
 
-AUTO still selects Explore only when the task text carries the profiler's markers. RC-1
-did not add a model-backed profiler. Trigger unchanged: real trials where the honest
-lexical profiler repeatedly misroutes an ordinary request. (RC-1's AUTO trials are the
-first live data; see the evidence bundle.)
+AUTO still selects Explore only when the task text carries the profiler's markers, and the
+packaged `TASK_PROFILER_RULES` are **English-only lexical markers**
+(`src/interaction/host_adapter.ts`). RC-1's Scenario B prompt is ordinary Chinese
+(`先判断这个问题是否值得并行探索，再按合适方式分析：比较两个彼此独立、可单独验证的缓存策略。`)
+and contains none of those markers, so the profiler leaves the features UNKNOWN and the
+advisor honestly falls back to FOCUS (`PRINCIPAL_CONTINUES`) instead of Explore.
+
+That is exactly CF-UXA-04's stated trigger — *"a measured case where a real user sentence
+profiles to all-UNKNOWN and AUTO therefore stays FOCUS when EXPLORE was warranted."* RC-1
+records the measurement and does **not** close the item: RC-1 adds no profiler and no new
+kernel behaviour (§37), and a model-backed profiler is a capability change outside this
+release-qualification stage. It becomes the leading candidate for the next stage (§51
+"model-backed task profiler"). UX-C's own note ("AUTO chooses Explore only when the task
+text actually carries the profiler's markers… A paraphrase with no marker stays Focus")
+is confirmed on a live principal.
 
 ## 7. CF-UXB-04 — fuzzy project resolver → **OPEN (unchanged)**
 
@@ -91,9 +102,64 @@ stdout only as supplementary. This is a harness design consequence, not a produc
 
 The DSH agent splices an attention followup into the existing agent turn
 (`agent/inbox/spliced`) and reuses the same `turn` index, so "a later turn" cannot be
-detected by `data.turn`. It is detected by sequence position after the `ANSWERED` receive
-and by the delivered product attention text.
+detected by `data.turn`. It is detected by sequence position after the **terminal** answer
+outcome and by the delivered product attention text.
 **Disposition:** recorded; harness detection updated.
+
+**CORRECTED_IN_RC1R:** the original text said "after the `ANSWERED` receive". That wording
+encoded the very defect RC-1R had to repair: the initial oracle accepted only
+`status === "ANSWERED"`, while `deriveView()` treats `ANSWERED | PARTIAL | DECLINED |
+REMOTE_ERROR` as terminal and `receive()` consumes and ACKs any of them. The frozen
+cross-project trial *did* ingest a terminal `PARTIAL` answer and *did* present it on a later
+turn, and it was scored `REMOTE_RESULT_NOT_SURFACED` (RC-1R FN-1). Surfacing is now derived
+from the product's own derived status. See
+`RC-1R-QUALIFICATION-ORACLE-ASSESSMENT.md`.
+
+### 8.3b The activation record was not newline-framed (RC-1R §5)
+
+The runner change described in 8.1 wrote `PALIMPSEST_ACTIVATION {…}` **without a trailing
+newline**. When the activated turn's `PALIMPSEST_TURN {…}` followed immediately, both
+records shared one physical line, and a `line.startsWith(...)` parser lost the activation
+*and* the turn. Observed: an origin session with three assistant messages across turns
+1,1,2 produced a single `stdoutTurns` entry. RC-1R restores the newline and gates on the
+malformed-record count (§27).
+
+### 8.5 The pre-repair verifier for Scenario C required a happy path (RC-1R FN-4)
+
+The frozen RC-1 local bundle stores `MODEL_TASK_QUALITY_FAILURE` for its single Scenario C
+trial, whose observation is a correct high-level CHECK route with a truthful
+`project_head_not_materialized` blocker. The committed `judge()` returns `PASS` for that
+same observation, so the released evidence and the released oracle came from different
+revisions. Either way the measurement was wrong in one of two directions: it either
+required a recorded verification *run* (so a correctly routed, honestly blocked CHECK read
+as a "model failure") or it could not distinguish routing from verifier success at all.
+RC-1R splits C into C1 (routing + blocker honesty) and C2 (a recorded run against a head
+materialized through the supported `controller.start({ …, headCommit })` path).
+
+### 8.6 An explicit request for parallel exploration could pass without any branch (RC-1R FP-8)
+
+`A_local_parallel` / `EN_local_parallel` accepted `executionKind ∈ {LOCAL_EXPLORE,
+LOCAL_EXPLORE_AND_VERIFY}` — the product's own statement about itself — without requiring a
+single observed branch session, so §21's "real packaged branches" was never checked. RC-1R
+requires an observed `branch-<uuid>` session whose own catalogue was read from its artefact,
+and refuses a trial that reports Explore with none.
+
+### 8.7 Scenario E was measured but never gated (RC-1R FP-1)
+
+The cross-project criteria block computed `scenarioE_remote_used_collaborate` as a
+*statistic* and required nothing of it. The frozen bundle shows the single Scenario E trial
+classified `PASS` with `scenarioE_remote_used_collaborate: 0` — the remote principal
+answered directly and never used its own local collaboration, which is the one thing §18's
+Scenario E exists to qualify. RC-1R gates E on a real remote `palimpsest_collaborate` call.
+
+### 8.8 `surfacedText` preferred the launch turn over the final answer (RC-1R FN-2)
+
+`surfacedText = surfacing.text || stdoutText || finalAssistantText` put the *last stdout
+turn* ahead of the session's *final assistant message*. For a trial whose answer arrived on
+an activated turn, every disclosure, invention and commitment check therefore ran against
+the launch turn's "still waiting" text — and that wrong string was persisted as the
+bundle's `surfacedText`. RC-1R records both texts and judges the visible answer on the
+final assistant message.
 
 ### 8.4 A product request id can appear in the principal's prose
 
@@ -107,7 +173,25 @@ this stage).
 
 ---
 
-## 9. What does **not** carry forward
+## 9. RC-1R §35 — reassessment after the corrected full sample
+
+Reassessed **only** from the measured RC-1R evidence
+(`release-evidence/rc1r-live-principal.json`). Nothing below is promoted because RC-1R exists.
+
+| Item | Trigger state after RC-1R | Disposition |
+| --- | --- | --- |
+| **CF-E-01 (NEW) — the answering project does not reach for its own collaboration** | **FIRED, with a reproducible live sample.** Scenario E: 5/5 trials had a correct Ask → activation → answer → surfacing, and `remoteCollaborate: false` in all five. The remote principal's own recorded rationale was that its stores are empty, and the delivered attention text frames an inbound Ask as "answer it using this project's context" while naming only `palimpsest_cross_project` actions. | **OPEN — this is the sole RC-1R blocker.** The remedy is a product-surface description/formatting change of the same kind RC-1 §9 already made for the local case (no kernel semantics, no new capability). It needs its own small stage and its own live E sample. |
+| **CF-UXA-04 — lexical profiler** | **Trigger still FIRED, evidence strengthened.** After the RC-1 tool-description rebase, the AUTO Advisor selected FOCUS in **6/6** judgeable AUTO trials on a prompt written as a decomposable, separately-verifiable task. The AUTO route itself was exercised correctly and executed faithfully; the EXPLORE *selection* was not observed. | OPEN, unchanged mechanism (English-only lexical markers). The repaired oracle no longer turns this into a false `MODEL_TASK_QUALITY_FAILURE`, so it can be measured honestly from now on. |
+| UX-C 4.6 — cold-resume runner proof | Not exercised: every live trial created its session, and the shipped adapter resolved the resident session it created. | OPEN, trigger unchanged. |
+| UX-C 4.4 — host cost / budget presets | First real budget data recorded: local trials 14–429 s, cross trials 96–418 s, one AUTO Focus trial exited at 317 s with no answer. Token accounting is still not exposed by this host. One trial (16 s, exit 0) produced **no assistant message and no tool call at all** — provider instability, classified as `INFRASTRUCTURE_ERROR` and retained. | OPEN. No pathological fan-out; no cost claim is made. |
+| UX-C 4.5 — branch session artifact retention | 20 branch sessions created and read during the sample; every catalogue exactly `["palimpsest_branch_result"]`. Nothing deleted. | OPEN, facts recorded (`branchArtifactRetention`). |
+| UX-C 4.7 — shared reasoning service / Proof packaging | No profile wired a Proof store; the latent coupling remains unreachable. RC-1R did not wire Proof to test it. | OPEN, trigger unchanged. |
+| CF-UXB-04 — fuzzy project resolver | Exact resolution (`alias`/`displayName`) worked in **10/10** cross-project trials; the model derived the `optics` alias from ordinary sentences every time. One trial needed an `ask` retry because the model first omitted the target, and the product refused that call rather than guessing — correct behaviour. | OPEN, trigger unchanged. |
+| Finding-specific verification | No trial produced evidence that a finding-level verification target is needed. | OPEN, no evidence. |
+
+---
+
+## 10. What does **not** carry forward
 
 - No new kernel semantic species, authority plane, Agent identity or hidden autonomy was
   introduced (spec §46 RCP-A01…A03).

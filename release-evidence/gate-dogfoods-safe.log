@@ -1,0 +1,478 @@
+=== uxa ===
+(node:43896) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "A_request_carries_no_recipe_plan_cell_or_branch_id": {
+      "ok": true,
+      "detail": "request keys=[\"intent\",\"requestedBy\",\"task\"]"
+    },
+    "A_status_completed": {
+      "ok": true,
+      "detail": "status=COMPLETED"
+    },
+    "A_at_least_two_findings_with_content": {
+      "ok": true,
+      "detail": "2 finding(s): [\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "A_findings_source_is_reasoning_cell": {
+      "ok": true,
+      "detail": "sources=[\"reasoning_cell\",\"reasoning_cell\"]"
+    },
+    "A_details_carry_ids_and_findings_carry_the_value": {
+      "ok": true,
+      "detail": "details.cellId=recipe-2ed96e4ffa58ee3a3e118edde85fd766 branchIds=[\"br-76272c017ba17da9941a0af2\",\"br-6a06316a163789d0ddedf01f\"] claimIds=[\"cl-163194609e9ae2e812b548de\",\"cl-63af65fbb4bc09b8fac6817d\"]"
+    },
+    "A_dsh_tool_is_registered_with_plan_and_run": {
+      "ok": true,
+      "detail": "palimpsest_collaborate actions=[\"plan\",\"run\"]"
+    },
+    "A_findings_printed": {
+      "ok": true,
+      "detail": [
+        "approach 2: a distinct candidate answer",
+        "approach 1: a distinct candidate answer"
+      ]
+    },
+    "A_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Why: UX-A: PARALLEL is an explicit request for LOCAL multi-branch exploration; no durable peer agent is minted to satisfy the word \"multi-agent\" (§7/§13). UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Verification did not run, so nothing about the project head is being claimed as checked."
+    },
+    "B_status_completed": {
+      "ok": true,
+      "detail": "status=COMPLETED"
+    },
+    "B_findings_present": {
+      "ok": true,
+      "detail": "2 finding(s): [\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "B_verification_verdict_recorded": {
+      "ok": true,
+      "detail": "verification={\"verifierRef\":\"uxa-dogfood-mechanical\",\"runRef\":\"project_verification:pvrun-86f51ed73f37c475da85624e2bd30a3b\",\"runId\":\"pvrun-86f51ed73f37c475da85624e2bd30a3b\",\"verdict\":\"PASS\",\"status\":\"COMPLETED\",\"freshness\":\"CURRENT\",\"independence\":\"MECHANICAL_INDEPENDENT\",\"detail\":\"the verifier protocol \\\"uxa-dogfood-mechanical\\\" returned PASS (CURRENT)\",\"protocolNote\":\"PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority.\"}"
+    },
+    "B_verification_independence_reported": {
+      "ok": true,
+      "detail": "independence=MECHANICAL_INDEPENDENT freshness=CURRENT verifierRef=uxa-dogfood-mechanical"
+    },
+    "B_protocol_note_present_and_truthful": {
+      "ok": true,
+      "detail": "note=\"PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority.\""
+    },
+    "B_findings_printed": {
+      "ok": true,
+      "detail": [
+        "approach 2: a distinct candidate answer",
+        "approach 1: a distinct candidate answer"
+      ]
+    },
+    "B_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Separately, the exact current Project Head (not the findings) was checked by the registered protocol; the summary below states that check on its own. Why: UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment UX-A: derived verification availability: \"project.verification\" is AVAILABLE — no verification has ever run for this project UX-A: the exploration runs first and then the exact current project head is verified by the registered protocol. 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Separately: Independent verification ran: the registered protocol \"uxa-dogfood-mechanical\" returned PASS for the exact current project head (freshness CURRENT, independence MECHANICAL_INDEPENDENT). This is a check of the current project head, not a verification of the exploratory findings. PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority."
+    },
+    "C1_auto_focus_principal_continues_with_zero_branches": {
+      "ok": true,
+      "detail": "status=PRINCIPAL_CONTINUES kind=PRINCIPAL_CONTINUES findings=0 branchExecutions=0 reasoningCells=0"
+    },
+    "C2_auto_explore_local_explore_with_real_findings": {
+      "ok": true,
+      "detail": "status=COMPLETED kind=LOCAL_EXPLORE findings=2 branchExecutions=2 texts=[\"approach 1: a distinct candidate answer\",\"approach 2: a distinct candidate answer\"]"
+    },
+    "C3_auto_without_advisor_falls_back_to_focus_and_names_it": {
+      "ok": true,
+      "detail": "executionKind=PRINCIPAL_CONTINUES baseMode=FOCUS reason=UX-A: the durable Work Mode preference could not be read (no operating posture is composed), so AUTO was resolved without durable preference context. UX-A: no empirical architecture advisor is configu"
+    },
+    "C3_fallback_reason": {
+      "ok": true,
+      "detail": "UX-A: the durable Work Mode preference could not be read (no operating posture is composed), so AUTO was resolved without durable preference context. UX-A: no empirical architecture advisor is configured for this installation, and AUTO must not invent an architecture policy, so AUTO falls back to FOCUS — the zero-extra-boundary baseline. Nothing was explored and no agent was created."
+    },
+    "C4_memoryless_advisor_exists_and_auto_explores_without_empirical_claim": {
+      "ok": true,
+      "detail": "advisor=true empiricalSupport=0 kind=LOCAL_EXPLORE findings=2 branchExecutions=2"
+    },
+    "D_federation_surface_composed": {
+      "ok": true,
+      "detail": "installed.federation is present, so inbox/commitments and the raw coordination rows can both be compared"
+    },
+    "D_plan_and_run_are_cross_project_required": {
+      "ok": true,
+      "detail": "plan.executionKind=CROSS_PROJECT_REQUIRED plan.effectiveBaseMode=COORDINATE result.executionKind=CROSS_PROJECT_REQUIRED result.status=CROSS_PROJECT_REQUIRED"
+    },
+    "D_peers_are_named": {
+      "ok": true,
+      "detail": "details.peers=[\"peer-independent-1\"] unresolved=[\"Cross-project collaboration is not implemented in UX-A (§36); it is the UX-B handoff seam. No peer message was sent, no commitment was created and no boundary was mutated. Existing peers named by the recommendation: peer-independent-1.\"]"
+    },
+    "D_zero_peer_message_and_zero_commitment": {
+      "ok": true,
+      "detail": "sent=0 directoryCalls=0 commitments=[] inbox.received=[] (a thread/contact-need would appear as a coordination_events row, checked below)"
+    },
+    "D_raw_coordination_rows_byte_identical": {
+      "ok": true,
+      "detail": "before=[] after=[]"
+    },
+    "D_zero_project_mutation": {
+      "ok": true,
+      "detail": "head before={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} after={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} project/tasks/promotions/journal identical=true"
+    },
+    "E_result_carries_no_branch_or_cot_machinery": {
+      "ok": true,
+      "detail": "forbidden tokens found=[]; payload bytes=3477"
+    },
+    "E_finding_content_equals_the_admitted_frontier_claim": {
+      "ok": true,
+      "detail": "frontier claims=2 activeClaims=2 findings=2 equal=true findings=[\"approach 2: a distinct candidate answer\",\"approach 1: a distinct candidate answer\"]"
+    },
+    "E_no_projectir_revision_and_no_journal_or_decision_write": {
+      "ok": true,
+      "detail": "head before={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"} after={\"revision\":0,\"digest\":\"57503e30a15b2195519ec8e837a48758d7a571ae703f72c96f416eb452792e0a\"}; project/tasks/promotions/journal identical=true"
+    },
+    "E_payload_keys": {
+      "ok": true,
+      "detail": [
+        "at",
+        "capabilityWarnings",
+        "details",
+        "executionKind",
+        "findingNote",
+        "findingStanding",
+        "findings",
+        "status",
+        "summary",
+        "unresolved",
+        "verb",
+        "verification"
+      ]
+    },
+    "E_summary": {
+      "ok": true,
+      "detail": "Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were read back from the accepted frontier. Those findings are cell-local hypotheses, not Evidence, and this exploration did not verify them. Separately, the exact current Project Head (not the findings) was checked by the registered protocol; the summary below states that check on its own. Why: UX-A: derived exploration availability: \"reasoning.cell\" is AVAILABLE — the advisor made the EXPLORE architecture eligible for this deployment UX-A: derived verification availability: \"project.verification\" is AVAILABLE — no verification has ever run for this project UX-A: the exploration runs first and then the exact current project head is verified by the registered protocol. 2 admitted findings in this cell's current accepted frontier (2 admitted by this request): \"approach 2: a distinct candidate answer\"; \"approach 1: a distinct candidate answer\". These are exploratory cell-local findings. They are not Evidence and were not independently verified as true. Nothing is left unresolved. Separately: Independent verification ran: the registered protocol \"uxa-dogfood-mechanical\" returned PASS for the exact current project head (freshness CURRENT, independence MECHANICAL_INDEPENDENT). This is a check of the current project head, not a verification of the exploratory findings. PASS means the named verifier protocol passed for this exact project head; it is a protocol result, not truth, and it admits no claim, publishes no proof and grants no authority."
+    },
+    "AE_R_boundary_dogfood_remains_green": {
+      "ok": true,
+      "detail": "exit=0 final=pass=true"
+    }
+  },
+  "honestNotes": {
+    "C_auto_needs_advisor": "AUTO selects EXPLORE only when an advisor is composed. UX-C §7/CF-UXA-02 changed the first-party install: the advisor is now composed whenever the installation can act (a local peer) OR an OrganizationMemory store was supplied, so a memoryless install can AUTO-Explore and claims no empirical evidence (C4). C3 proves the documented safe fallback through a collaboration service composed with NO advisor at all."
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true
+UXA_EXIT=0
+=== aer ===
+(node:45996) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "project_B_seeded_through_its_own_installation": {
+      "ok": true,
+      "detail": "B external prepare=PREPARED"
+    },
+    "project_A_installed_share_both_files": {
+      "ok": true,
+      "detail": "A external prepare=PREPARED"
+    },
+    "service_assets_is_A_only": {
+      "ok": true,
+      "detail": "workspace.assets() (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "service_journal_is_A_only": {
+      "ok": true,
+      "detail": "workspace.journal() (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "service_view_is_A_only": {
+      "ok": true,
+      "detail": "derived workspace view (foreign markers=[]; mentionsA=true; content=ok - view.projectId=project-A)"
+    },
+    "service_journal_current_id_is_A_only": {
+      "ok": true,
+      "detail": "explicit current project id (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "service_projectScopedAssets_current_is_A_only": {
+      "ok": true,
+      "detail": "explicit current project id (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "service_journal_foreign_fails_closed": {
+      "ok": true,
+      "detail": "{\"refused\":true,\"name\":\"ProjectWorkspaceError\",\"kind\":\"invalid_registration\",\"message\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}"
+    },
+    "service_projectScopedAssets_foreign_fails_closed": {
+      "ok": true,
+      "detail": "{\"refused\":true,\"name\":\"ProjectWorkspaceError\",\"kind\":\"invalid_registration\",\"message\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}"
+    },
+    "http_assets_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_assets_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/assets (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_journal_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/journal (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_current_id_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_journal_current_id_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/journal?projectId=project-A (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_foreign_fails_closed": {
+      "ok": true,
+      "detail": "status 400, body {\"error\":{\"status\":400,\"detail\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}}"
+    },
+    "http_journal_foreign_leaks_nothing": {
+      "ok": true,
+      "detail": "[]"
+    },
+    "agent_tool_assets_is_A_only": {
+      "ok": true,
+      "detail": "palimpsest_project action=assets (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "agent_tool_with_foreign_id_is_refused_not_ignored": {
+      "ok": true,
+      "detail": "ProjectWorkspaceError: project \"project-B\" is not this installation's project \"project-A\""
+    },
+    "agent_tool_has_no_global_enumeration_action": {
+      "ok": true,
+      "detail": "[\"overview\",\"assets\",\"open_loops\",\"history\",\"decision\",\"journal\"]"
+    },
+    "shared_store_physically_holds_B_rows": {
+      "ok": true,
+      "detail": "journal scopes=[{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"}], association scopes=[{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"}]"
+    },
+    "direct_store_owner_can_enumerate_both_scopes": {
+      "ok": true,
+      "detail": "association scopes=[project-A,project-B], journal scopes=[project-A,project-B]"
+    },
+    "direct_store_owner_can_replay_B": {
+      "ok": true,
+      "detail": "3 B event(s) readable by the store owner"
+    },
+    "external_view_is_A_only": {
+      "ok": true,
+      "detail": "workspace external section (foreign markers=[]; mentionsA=false; content=ok - 1 external reference(s))"
+    },
+    "external_view_resolves_only_the_installed_project": {
+      "ok": true,
+      "detail": "references=[\"a-ext\"]"
+    },
+    "external_resolve_current_project_is_A_only": {
+      "ok": true,
+      "detail": "externalAssets.resolve(project-A) (foreign markers=[]; mentionsA=true; content=ok - 1 external reference(s))"
+    },
+    "external_resolve_current_project_has_A_reference": {
+      "ok": true,
+      "detail": "[\"a-ext\"]"
+    },
+    "external_resolve_refuses_a_project_the_deployment_does_not_hold": {
+      "ok": true,
+      "detail": "unknown_project: project \"project-B\" is not held by this deployment"
+    },
+    "workspace_external_view_never_uses_the_foreign_resolve": {
+      "ok": true,
+      "detail": "workspace external section (A-bound) (foreign markers=[]; mentionsA=false; content=ok - 1 external reference(s))"
+    },
+    "management_history_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/history (foreign markers=[]; mentionsA=false; content=not-required)"
+    },
+    "shared_db_is_not_a_shared_semantic_scope": {
+      "ok": true,
+      "detail": "the raw store holds B while every A-bound read is B-free"
+    }
+  },
+  "honestNotes": {},
+  "failures": [],
+  "pass": true
+}
+pass=true
+AER_EXIT=0
+=== uxb ===
+(node:44636) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "both_installations_compose_the_cross_project_face": {
+      "ok": true,
+      "detail": "{\"optics\":true,\"detector\":true}"
+    },
+    "federation_is_active_on_both_sides": {
+      "ok": true
+    },
+    "discovery_lists_projects_with_names_not_peers": {
+      "ok": true,
+      "detail": "{\"state\":\"known\",\"projects\":[{\"projectId\":\"optics\",\"displayName\":\"the optics project\",\"aliases\":[\"optics\",\"photonics\"],\"peerId\":\"peer-optics\",\"competenceTags\":[\"optics\"]},{\"projectId\":\"detector\",\"displayName\":\"the detector project\",\"aliases\":[\"detector\"],\"peerId\":\"peer-detector\",\"competenceTags\":[\"d"
+    },
+    "discovery_never_exposes_a_peeref_as_project_identity": {
+      "ok": true,
+      "detail": "each descriptor keeps projectId and peer distinct"
+    },
+    "prepare_ask_is_read_only_and_shows_the_exact_packet": {
+      "ok": true,
+      "detail": "{\"targetProject\":\"the detector project\",\"status\":\"PREPARED\",\"responder\":\"\",\"summary\":\"Ready to ask the detector project.\",\"warnings\":[],\"details\":{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"peerId\":\"peer-detector\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"messageRefs\":[]},\"outb"
+    },
+    "prepare_ask_sends_nothing": {
+      "ok": true,
+      "detail": "ledger bytes before any send: 176"
+    },
+    "prepare_ask_targets_B_and_contains_only_the_task": {
+      "ok": true,
+      "detail": "{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"targetProjectId\":\"detector\",\"targetPeerId\":\"peer-detector\",\"task\":\"Have we already studied this detector aperture issue?\",\"body\":\"{\\\"schemaVersion\\\":1,\\\"kind\\\":\\\"PROJECT_ASK\\\",\\\"requestId\\\":\\\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\\\",\\\"sourceProjectId\\\":\\\"optics\\\",\\\"targetProjectId\\\":\\\"detector\\"
+    },
+    "ask_resolves_the_project_and_reports_sent_not_a_synchronous_answer": {
+      "ok": true,
+      "detail": "RESOLVED: Asked the detector project."
+    },
+    "raw_transport_envelope_carries_no_workspace_sentinel": {
+      "ok": true,
+      "detail": "ledger bytes: 1822"
+    },
+    "raw_transport_envelope_carries_the_exact_task": {
+      "ok": true,
+      "detail": "the task text is present and unmodified"
+    },
+    "remote_pump_ingests_the_authenticated_message": {
+      "ok": true,
+      "detail": "{\"ingested\":1,\"received\":1,\"unverified\":0}"
+    },
+    "remote_attention_emitted_an_inbound_peer_message": {
+      "ok": true,
+      "detail": "[\"inbound_peer_message\"]"
+    },
+    "remote_pending_returns_one_authenticated_request": {
+      "ok": true,
+      "detail": "[{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"sourceProjectId\":\"optics\",\"sourceProject\":\"the optics project\",\"sourcePeerId\":\"peer-optics\",\"targetProjectId\":\"detector\",\"task\":\"Have we already studied this detector aperture issue?\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"messageId\":\"msg-30af9b8c-f6b7-4a30-819a-5d2e568e5bba\",\"at\":\"2026-09-17T12:15:27.194Z\"}]"
+    },
+    "remote_focus_answers_directly_without_explore": {
+      "ok": true,
+      "detail": "ANSWERED: The optics project replied."
+    },
+    "origin_pump_ingests_the_answer": {
+      "ok": true,
+      "detail": "{\"ingested\":1}"
+    },
+    "origin_status_shows_the_answer_without_a_second_user_request": {
+      "ok": true,
+      "detail": "ANSWERED: \"We studied the aperture issue; our calibration note is B_ONLY_SECRET_GAIN_CALIBRATION\""
+    },
+    "answer_is_not_auto_imported": {
+      "ok": true,
+      "detail": "no Journal/Decision/Task is created by the projection"
+    },
+    "receive_surfaces_the_terminal_answer": {
+      "ok": true,
+      "detail": "ANSWERED"
+    },
+    "ask_and_answer_create_zero_commitment_boundary_or_project_mutation": {
+      "ok": true,
+      "detail": "{\"before\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"},\"after\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"}}"
+    },
+    "second_ask_is_pending_on_the_remote_side": {
+      "ok": true,
+      "detail": "[\"cpq-af9a49c266556697cd13401e201f935d\"]"
+    },
+    "remote_uxa_capability_gap_is_honest_not_fabricated": {
+      "ok": true,
+      "detail": "DECLINED: The optics project declined to answer."
+    },
+    "third_ask_is_pending_for_the_focus_compose": {
+      "ok": true,
+      "detail": "[\"cpq-d1a50dd195ce34fc26bf3fded9e22dec\"]"
+    },
+    "remote_uxa_collaboration_can_answer": {
+      "ok": true,
+      "detail": "ANSWERED: No extra collaboration boundary was created: the principal continues with this request itself, and nothing was explored or verified on its behalf. Why: UX-A: FOCUS is the chosen intent, and FOCUS never explores: no branch, no reasoning cell and no extra agent is created. The principal continues with the request itself (§13/§21). No admitted finding emerged. Nothing is left unresolved. Verification did not run, so nothing about the project head is being claimed as checked."
+    },
+    "duplicate_request_does_not_force_duplicate_cognition": {
+      "ok": true,
+      "detail": "{\"pending\":[],\"note\":\"the already-answered request is excluded, not re-cognised\"}"
+    },
+    "fourth_ask_is_pending_for_the_conflict_proof": {
+      "ok": true,
+      "detail": "[\"cpq-80c3d175e7f97b40752b2b20786c6a18\"]"
+    },
+    "first_terminal_answer_is_accepted": {
+      "ok": true,
+      "detail": "ANSWERED"
+    },
+    "materially_different_terminal_answers_report_CONFLICT": {
+      "ok": true,
+      "detail": "CONFLICT: Conflicting answers arrived from the detector project; nothing was chosen for you."
+    },
+    "conflict_picks_no_side_silently": {
+      "ok": true,
+      "detail": "{\"answer\":null,\"warnings\":[\"2 materially different answers arrived for this request from the detector project; none of them was chosen for you\"]}"
+    },
+    "unanswered_request_is_waiting_not_failed": {
+      "ok": true,
+      "detail": "WAITING"
+    },
+    "compose_answered_paths_also_create_zero_mutation": {
+      "ok": true,
+      "detail": "{\"before\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"},\"after\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"}}"
+    },
+    "shared_association_file_really_holds_BOTH_scopes": {
+      "ok": true,
+      "detail": "[\"detector\",\"optics\"]"
+    },
+    "shared_journal_file_really_holds_BOTH_scopes": {
+      "ok": true,
+      "detail": "[\"detector\",\"optics\"]"
+    },
+    "spoof_packet_is_a_valid_protocol_packet": {
+      "ok": true,
+      "detail": "so the refusal below can only come from the source-binding rule"
+    },
+    "live_source_binding_spoof_is_not_pending": {
+      "ok": true,
+      "detail": "[\"cpq-4391a301fa16cdc34985a69f72e1c36c\",\"req-hostile-1\"]"
+    },
+    "foreign_journal_read_fails_closed_from_B": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "foreign_scoped_assets_read_fails_closed_from_B": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "no_external_asset_bridge_is_composed_to_widen_from_B": {
+      "ok": true,
+      "detail": "no bridge (a bridge that IS composed refuses a foreign scope: proven in the AE-R dogfood)"
+    },
+    "foreign_journal_read_fails_closed_from_A": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "B_local_reads_stay_bound_to_B": {
+      "ok": true,
+      "detail": "B's own read shows B's scope and never A's secret"
+    },
+    "no_secret_crossed_the_boundary_in_any_form": {
+      "ok": true,
+      "detail": "A's secret never appears in the shared transport ledger"
+    },
+    "B_sent_only_its_authored_answer": {
+      "ok": true,
+      "detail": "the ask is inbound; B's outbound content is what it authored"
+    }
+  },
+  "honestNotes": {
+    "deployment_wiring_gap": "These UX-B rigs do not request the UX-C §9 reasoning bundle (`reasoning: {}`), so they compose NO reasoning (no cell store, no branch-execution port) and a remote project cannot fan out: an EXPLORE/PARALLEL compose request comes back CAPABILITY_REQUIRED and UX-B honestly maps it to DECLINED. The composition PATH is proven here with the intent the deployed stack can serve. Since UX-C, a profile CAN declare `reasoning: {}` to get a deployment-owned store + ephemeral branches with no manual wiring (scripts/interaction/uxc-dsh-local-dogfood.mjs), and UXB-N26 keeps the in-suite Explore proof.",
+    "cf_ae_r_05_precision": "The shared-store section proves (a) no federation call site accepts a project or workspace scope, so there is no reachable foreign-read PATH, and (b) the workspace facade fence REFUSES a foreign project id with a typed error. It does not claim a bypass was attempted and blocked, and it does not exercise externalAssets (no bridge is composed in a profile-launched deployment - that fence is proven in the AE-R dogfood).",
+    "scope_claim": "No federation call site accepts a project or workspace scope, so the shared-store section proves the ABSENCE of a reachable foreign-read path together with the fence behaviour (SC-17) - not that a bypass was attempted and blocked.",
+    "authentication": "'authenticated' means asserted by the LOCAL transport adapter from this installation's own durable ledger (SC-4). The real defence for a cross-project Ask is the directory binding (peer <-> project), which is what the source/target-binding checks exercise.",
+    "pumping": "In this rig the pump is driven explicitly (pumpAndActivate), which is what a host loop does. The DSH runner has an unconditional attention loop; launchDeployment itself starts nothing (SC-2), and this stage adds no second scheduler."
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true
+UXB_EXIT=0
