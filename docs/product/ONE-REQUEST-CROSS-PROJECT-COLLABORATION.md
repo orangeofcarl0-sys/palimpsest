@@ -49,6 +49,13 @@ face exists at all is discoverable — `GET /api/application/surfaces` carries a
 `crossProject` boolean (`src/application/http.ts:191`). The service itself is the
 seven-member composition returned at `src/interaction/cross_project.ts:1285`.
 
+The tool description is meant to be reachable from what a user actually says — the user
+supplies no peer id, thread id or project switch. Its ordinary-language triggers are, in
+Chinese, `问一下另一个项目` / `咨询一下 optics 项目` / `别的项目之前是否研究过…` and, in
+English, `ask the optics project` / `consult the other project` / `did the other project
+already look into this?`. An Ask remains an Ask: it creates no commitment and its answer
+is peer communication, not Evidence, Proof or project truth.
+
 The **request body is the request**. There is no wrapper, no action enum inside
 the body, and no second parser.
 

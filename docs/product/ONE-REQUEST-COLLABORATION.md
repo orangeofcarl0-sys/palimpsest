@@ -27,6 +27,15 @@ The tool is defined at `src/tools/application_tools.ts:517-577`; the surface at
 face exists at all is discoverable: `GET /api/application/surfaces` carries a
 `collaboration` boolean (`src/application/http.ts:150,184`).
 
+The tool description is meant to be reachable from what a user actually says — no
+tool, recipe or cell name required. The ordinary-language triggers it exposes are, in
+Chinese, `并行探索` / `给我多个相互独立的思路` / `同时研究多种方案` / `多角度分析` /
+`比较几种方案` and, for the CHECK path, `检查当前项目状态`; and in English
+`parallel investigation` / `several independent approaches` / `compare the options` /
+`break this into independent parts`, and `check the current project state`. These are
+truthful triggers only: they assert no authority, and Explore findings stay exploratory
+while CHECK stays a check of the exact current Project Head.
+
 The **request body is the request**. There is no wrapper, no action enum in the
 body, and no second parse: the interaction layer's own strict parser is the only
 one (`src/application/http.ts:189-200`).

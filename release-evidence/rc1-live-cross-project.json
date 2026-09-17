@@ -1,0 +1,572 @@
+{
+  "scenario": "RC-1 live cross-project (D/E)",
+  "environment": {
+    "provider": "openrouter-stealth (from ~/.dsh/settings.yaml; observed per trial in the request header)",
+    "model": "stealth/union-alpha (observed per trial in the request header)",
+    "dshBin": "C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "nodeVersion": "v24.14.1",
+    "palimpsestRepo": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-rc1",
+    "palimpsestCommit": "6c7181d66816a70cb41583be00e0676e56fce06d",
+    "ordariumVersion": "1.3.1 (package.json release pin)",
+    "os": "win32 x64",
+    "dTrials": 1,
+    "eTrials": 1,
+    "tokenAccounting": "unavailable — never invented (§31)"
+  },
+  "criteria": {
+    "scenarioD_passes": 0,
+    "scenarioD_total": 1,
+    "scenarioD_qualified": false,
+    "scenarioE_trials": 1,
+    "scenarioE_remote_used_collaborate": 0,
+    "no_copy_or_disclosure_violation": true,
+    "branch_catalogue_isolation": true
+  },
+  "trials": [
+    {
+      "scenario": "D_cross_project_ask",
+      "trial": 1,
+      "prompt": "问一下之前那个 optics 项目，我们之前是否研究过探测器孔径对接收稳定性的影响？",
+      "freshSession": true,
+      "expectation": "cross-project Ask → remote shipped pump+attention → remote answer → origin surfaces it without a second prompt",
+      "fixtureFailure": null,
+      "sharedTransport": "rc1-live-cross",
+      "sharedWorkspaceFiles": [
+        "shared-associations.sqlite",
+        "shared-journal.sqlite"
+      ],
+      "wallMs": 600219,
+      "askStatus": "RESOLVED",
+      "askTurn": 1,
+      "origin": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "projects",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "ask",
+            "target": "optics",
+            "status": "RESOLVED"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "PARTIAL"
+          },
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          }
+        ],
+        "stdoutTurns": [
+          {
+            "text": "已向 **optics 项目**发出询问：之前是否研究过探测器孔径对接收稳定性的影响，并请对方提供相关结论或资料位置。\n\n目前尚未收到回复，因此还不能确认是否研究过。",
+            "toolCalls": [
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result"
+            ]
+          }
+        ],
+        "stdoutLength": 1974,
+        "stdoutSample": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-3dc5a602-87b1-4835-bdfa-3a16d33f10c3\",\"mode\":\"create\",\"localPeer\":\"detector-peer\",\"persistentPoint\":\"pp-origin\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-su",
+        "assistantTurns": [
+          1,
+          2
+        ],
+        "finalAssistantText": "**optics 项目已回复：在当前可访问的记录中，未找到相关研究。**\n\n对方检查了项目概览、历史及工作区关键词，未发现探测器孔径对接收稳定性影响的研究记录，也没有可提供的结论或资料位置。\n\n不过，核查未覆盖未关联的外部资料及无法读取的记录，因此只能说“目前未找到”，**不能据此认定此前从未研究过**。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "remote": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "grep",
+          "palimpsest_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "glob",
+          "palimpsest_attention",
+          "palimpsest_surfaces",
+          "palimpsest_reasoning",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": "detector-peer",
+            "status": null
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "PREPARED"
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "PARTIAL"
+          }
+        ],
+        "collaborateExecutions": [],
+        "stdoutTurns": [],
+        "activations": [],
+        "finalAssistantText": "Answered the **detector project’s incoming question** about prior aperture/stability research.\n\n**Reply sent:** No relevant study, conclusions, or source locations were found in this optics project’s accessible overview, history, or searchable workspace text. This is a **partial answer**, not proof that no study ever occurred: external and unlinked materials could not be checked.\n\nThe signalled message was an **incoming request**, not a reply to an outgoing question, so there was no separate result to receive for this request ID.",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "crossProjectMessageCount": {
+        "originAsks": 1,
+        "remoteResponses": 2,
+        "originReceives": 5
+      },
+      "remoteUsedCollaborate": false,
+      "remoteCollaborateExecutionKinds": [],
+      "originSurfacedWithoutSecondPrompt": false,
+      "surfacedText": "已向 **optics 项目**发出询问：之前是否研究过探测器孔径对接收稳定性的影响，并请对方提供相关结论或资料位置。\n\n目前尚未收到回复，因此还不能确认是否研究过。",
+      "leakedInternalIds": false,
+      "claimsVerified": false,
+      "claimsCommitment": false,
+      "inventedProject": false,
+      "branchProcessCount": 0,
+      "branchCatalogues": [],
+      "branchCapabilityIsolated": true,
+      "tokenUsage": "unavailable (the host exposes no token accounting)",
+      "failure": "timeout",
+      "verdict": "REMOTE_RESULT_NOT_SURFACED"
+    },
+    {
+      "scenario": "E_remote_local_collaboration",
+      "trial": 1,
+      "prompt": "问一下 optics 项目：降低探测器孔径对接收稳定性的影响，有哪几种彼此独立的方案？请它给出多个独立思路，并分别说明各自成立的条件。",
+      "freshSession": true,
+      "expectation": "cross-project Ask; the REMOTE project may itself choose palimpsest_collaborate (the harness must not call it)",
+      "fixtureFailure": null,
+      "sharedTransport": "rc1-live-cross",
+      "sharedWorkspaceFiles": [
+        "shared-associations.sqlite",
+        "shared-journal.sqlite"
+      ],
+      "wallMs": 373048,
+      "askStatus": "RESOLVED",
+      "askTurn": 1,
+      "origin": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "ask",
+            "target": "optics",
+            "status": "RESOLVED"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "WAITING"
+          },
+          {
+            "action": "receive",
+            "target": null,
+            "status": "ANSWERED"
+          }
+        ],
+        "stdoutTurns": [
+          {
+            "text": "已向 **optics 项目**发送问题，但目前仍是 **WAITING，尚未收到答复**。我之前说“已得到回应”是误读了发送结果，抱歉；不再重复轮询。\n\n下面先给出**我的独立初步分析，不代表 optics 项目的答复**。这里将问题理解为“如何降低接收稳定性对探测器孔径的敏感性”。\n\n| 独立思路 | 基本机制 | 成立条件与主要限制 |\n|---|---|---|\n| **1. 被动光学设计：让光斑及其漂移始终落在有效孔径内** | 调整成像倍率、聚焦或光束整形，减少边缘截光引起的功率波动 | 需要知道光斑尺寸、位置漂移和离焦的范围，并留出裕量；受衍射、像差及光学扩展量约束，不能无限压缩光斑 |\n| **2. 主动指向或位置跟踪** | 用位置传感器与反馈控制，使光斑保持在孔径中心 | 波动主要来自光斑漂移；反馈带宽、测量信噪比及执行器行程足够。对总光功率起伏或快于控制带宽的扰动无能为力 |\n| **3. 光学混合与匀化** | 在探测器前用积分腔、匀光元件等，减小输出对入射位置及空间分布的敏感性 | 前级必须先接住漂移光束，并具有足够的位置混合能力；能接受光损耗、背景增加和可能的时间展宽。**仅把光斑铺大不一定有效**，反而可能增加截光 |\n| **4. 多通道分集接收** | 用多个探测区域或接收通道覆盖漂移范围，再求和或加权组合 | 各通道波动不能完全同向，或整体覆盖能捕获单孔径漏掉的光；需要校准增益并考虑额外噪声。共同光源波动不会自动被分集消除 |\n| **5. 参考测量与响应补偿** | 通过参考光功率、光斑位置或标定模型，估计并校正孔径耦合变化 | 耦合变化可观测、可重复且剩余信号足够；参考量必须能反映实际截光。只能稳定测量结果，**不能恢复已丢失的光子及其信噪比** |\n| **6. 时间平均或带宽匹配** | 对随机的快速波动进行平均，降低输出起伏 | 扰动比有用信号变化快，且允许更长积分时间；不适合抑制慢漂移或持续截光，也可能牺牲瞬态响应 |\n\n**选择依据是先辨别不稳定来源**：位置漂移优先考虑 1、2；空间分布变化可考虑 3；局部衰落或覆盖不足可考虑 4；可测量的系统性变化可考虑 5；快速随机波动可考虑 6。这些机制彼此不同，也可以组合。\n\n如果你实际指的是“**缩小探测器孔径后，怎样维持接收稳定性**”，还需要明确缩小前后的孔径、光斑尺寸、漂移量和接收带宽，才能判断哪些方案真正成立。",
+            "toolCalls": [
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result",
+              "tool/call:palimpsest_cross_project",
+              "tool/result"
+            ]
+          }
+        ],
+        "stdoutLength": 3717,
+        "stdoutSample": "PALIMPSEST_HOST_READY {\"sessionId\":\"session-0b3f9dc2-3af3-4b87-b4b3-dc36e1d23fca\",\"mode\":\"create\",\"localPeer\":\"detector-peer\",\"persistentPoint\":\"pp-origin\",\"transportAdapter\":\"ordarium-durable\",\"attentionAdapter\":\"dsh-agents\",\"attentionFormat\":\"product (cross-project formatter + default)\",\"application\":\"full\",\"collaboration\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-su",
+        "assistantTurns": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          2
+        ],
+        "finalAssistantText": "**optics 项目已回复，提出了六条不同机制的方案。** 对方特别说明：其当前没有本地实验数据或资产，以下属于领域层面的方案梳理，尚未经过本项目验证。\n\n以下整理其答复，并校正了部分条件表述：\n\n| 方案 | 独立作用机制 | 成立条件及限制 |\n|---|---|---|\n| **1. 增大接收口径或收集面积** | 提高收光量；在合适条件下减轻截光、产生孔径平均效果 | 允许增加体积、重量和成本；背景噪声增长不抵消信号收益；像差可控。**接收光学口径增大不等同于探测器有效面积增大，也不必然降低对准敏感度。** |\n| **2. 多孔径阵列与信号合并** | 利用空间分集，平滑单路衰落 | 各路强度衰落的相关性足够低；通道增益和时延可校准；相干合并还需相位对齐。孔径间距应依据**强度衰落的空间相关尺度**确定，不能仅以大气相干长度判断。 |\n| **3. 自适应光学补偿** | 校正波前畸变，稳定聚焦或模式耦合 | 不稳定主要来自可校正的波前畸变；信标足够亮；执行器和闭环响应足够快；满足等晕角等限制。准确的时间条件是**校正响应时间短于相关湍流变化时间**，不能把相干时间直接与带宽比较。 |\n| **4. 光阑、视场与窄带滤光优化** | 抑制背景光和杂散光，改善信噪比 | 背景噪声占主导，信号功率有裕量；滤光带宽覆盖信号谱及漂移；视场能容纳指向误差。**缩小孔径本身不保证稳定，反而可能加重截光波动。** |\n| **5. 粗精两级跟踪与指向稳定化** | 用精跟踪或快速倾斜镜保持光斑居中 | 不稳定主要来自指向漂移；闭环能覆盖主要扰动频段；跟踪信标信噪比足够；粗、精执行器的行程和带宽合理分配。 |\n| **6. 交织、前向纠错与时间分集** | 在通信解码层抵抗短时衰落 | 交织时间跨度覆盖多个衰落相关时间；允许时延和冗余；衰落深度与持续时间未超出纠错能力。**改善的是链路可用性或误码率，不是探测器接收光功率本身的稳定性。** |\n\n**如何理解“彼此独立”**：这六条分别作用于收光量、空间分集、波前、背景噪声、指向和通信编码，机制可区分，但不意味着效果相互独立或收益可直接相加。\n\n还有一个关键范围问题：optics 的答复主要面向**自由空间光通信、含大气湍流的接收场景**。若你的约束是“**探测器孔径必须缩小，如何维持稳定性**”，方案 1 不能直接作为答案；应先区分不稳定来自截光、指向、波前还是噪声，再筛选其余方案。",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "remote": {
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "catalogueSize": 47,
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_cross_project",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_manage",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_project",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "toolNames": [
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "palimpsest_cross_project",
+          "palimpsest_cross_project",
+          "palimpsest_project",
+          "palimpsest_project",
+          "palimpsest_cross_project"
+        ],
+        "crossProjectCalls": [
+          {
+            "action": "pending",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": null
+          },
+          {
+            "action": "status",
+            "target": null,
+            "status": "PREPARED"
+          },
+          {
+            "action": "respond",
+            "target": null,
+            "status": "ANSWERED"
+          }
+        ],
+        "collaborateExecutions": [],
+        "stdoutTurns": [],
+        "activations": [
+          {
+            "signalId": "aebd3a98d925f94ef44a3cf6afc81f82b013b9a2909462ccb19700681504bb76",
+            "kind": "inbound_peer_message",
+            "activated": true
+          }
+        ],
+        "finalAssistantText": "",
+        "branchProcessCount": 0,
+        "exitCode": null
+      },
+      "crossProjectMessageCount": {
+        "originAsks": 1,
+        "remoteResponses": 1,
+        "originReceives": 5
+      },
+      "remoteUsedCollaborate": false,
+      "remoteCollaborateExecutionKinds": [],
+      "originSurfacedWithoutSecondPrompt": true,
+      "surfacedText": "**optics 项目已回复，提出了六条不同机制的方案。** 对方特别说明：其当前没有本地实验数据或资产，以下属于领域层面的方案梳理，尚未经过本项目验证。\n\n以下整理其答复，并校正了部分条件表述：\n\n| 方案 | 独立作用机制 | 成立条件及限制 |\n|---|---|---|\n| **1. 增大接收口径或收集面积** | 提高收光量；在合适条件下减轻截光、产生孔径平均效果 | 允许增加体积、重量和成本；背景噪声增长不抵消信号收益；像差可控。**接收光学口径增大不等同于探测器有效面积增大，也不必然降低对准敏感度。** |\n| **2. 多孔径阵列与信号合并** | 利用空间分集，平滑单路衰落 | 各路强度衰落的相关性足够低；通道增益和时延可校准；相干合并还需相位对齐。孔径间距应依据**强度衰落的空间相关尺度**确定，不能仅以大气相干长度判断。 |\n| **3. 自适应光学补偿** | 校正波前畸变，稳定聚焦或模式耦合 | 不稳定主要来自可校正的波前畸变；信标足够亮；执行器和闭环响应足够快；满足等晕角等限制。准确的时间条件是**校正响应时间短于相关湍流变化时间**，不能把相干时间直接与带宽比较。 |\n| **4. 光阑、视场与窄带滤光优化** | 抑制背景光和杂散光，改善信噪比 | 背景噪声占主导，信号功率有裕量；滤光带宽覆盖信号谱及漂移；视场能容纳指向误差。**缩小孔径本身不保证稳定，反而可能加重截光波动。** |\n| **5. 粗精两级跟踪与指向稳定化** | 用精跟踪或快速倾斜镜保持光斑居中 | 不稳定主要来自指向漂移；闭环能覆盖主要扰动频段；跟踪信标信噪比足够；粗、精执行器的行程和带宽合理分配。 |\n| **6. 交织、前向纠错与时间分集** | 在通信解码层抵抗短时衰落 | 交织时间跨度覆盖多个衰落相关时间；允许时延和冗余；衰落深度与持续时间未超出纠错能力。**改善的是链路可用性或误码率，不是探测器接收光功率本身的稳定性。** |\n\n**如何理解“彼此独立”**：这六条分别作用于收光量、空间分集、波前、背景噪声、指向和通信编码，机制可区分，但不意味着效果相互独立或收益可直接相加。\n\n还有一个关键范围问题：optics 的答复主要面向**自由空间光通信、含大气湍流的接收场景**。若你的约束是“**探测器孔径必须缩小，如何维持稳定性**”，方案 1 不能直接作为答案；应先区分不稳定来自截光、指向、波前还是噪声，再筛选其余方案。",
+      "leakedInternalIds": false,
+      "claimsVerified": false,
+      "claimsCommitment": false,
+      "inventedProject": false,
+      "branchProcessCount": 0,
+      "branchCatalogues": [],
+      "branchCapabilityIsolated": true,
+      "tokenUsage": "unavailable (the host exposes no token accounting)",
+      "failure": null,
+      "verdict": "PASS"
+    }
+  ],
+  "durationMs": 974262,
+  "failures": [
+    "scenario D: fewer than 4/5 cross-project trials completed the intended product path (0/1)"
+  ],
+  "pass": false
+}

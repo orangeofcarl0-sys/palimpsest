@@ -8,7 +8,7 @@
 
 import { describe, expect, it } from "vitest";
 import { spawn, type ChildProcess } from "node:child_process";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -104,6 +104,33 @@ describe("G10-P deployment profile", () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it("parses every shipped example deployment profile under the STRICT parser (RC-1 §33)", () => {
+    const dir = fileURLToPath(new URL("../examples/deployment", import.meta.url));
+    const files = readdirSync(dir)
+      .filter((name) => name.endsWith(".json"))
+      .sort();
+    expect(files).toEqual(["single-project.json", "two-project-detector.json", "two-project-optics.json"]);
+    for (const name of files) {
+      const raw = JSON.parse(readFileSync(join(dir, name), "utf8")) as Record<string, unknown>;
+      // Strict parsing must accept the shipped example unchanged...
+      const parsed = parseDeploymentProfile(raw, name);
+      expect(parsed.reasoning).toBeDefined();
+      // ...and the examples must carry no credential-shaped field at all.
+      expect(JSON.stringify(raw)).not.toMatch(/apiKey|password|secret|bearer|"token"/iu);
+    }
+    const single = parseDeploymentProfile(
+      JSON.parse(readFileSync(join(dir, "single-project.json"), "utf8")),
+      "single-project.json",
+    );
+    expect(single.projectDirectory).toBeUndefined();
+    const detector = parseDeploymentProfile(
+      JSON.parse(readFileSync(join(dir, "two-project-detector.json"), "utf8")),
+      "two-project-detector.json",
+    );
+    expect(detector.projectDirectory?.map((entry) => entry.projectId)).toEqual(["detector", "optics"]);
+    expect(detector.attention?.activation).toBe("dsh");
   });
 
   it("launches a full stack from a profile (surfaces present, no semantic authority in the profile)", async () => {
