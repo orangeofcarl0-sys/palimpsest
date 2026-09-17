@@ -66,35 +66,10 @@ const rejudge = (entry) => {
 };
 
 const rejudgeCross = (entry) => {
-  const record = entry.record;
-  const judgment = oracle.judgeCrossTrial({
-    scenario: record.scenario,
-    failure: record.pollFailure ?? null,
-    originExitedBeforeCompletion: record.originExitedBeforeCompletion === true,
-    origin: {
-      toolNames: record.origin.toolNames,
-      calls: record.origin.calls,
-      assistantMessages: record.origin.assistantMessages,
-      userMessages: record.origin.userMessages,
-      launchPrompts: record.origin.launchPrompts,
-      activations: record.origin.activations,
-      finalAssistantText: record.origin.finalAssistantText,
-      branchProcessCount: record.origin.branchProcessCount,
-      branchCatalogues: record.origin.branchCatalogues,
-    },
-    remote: {
-      toolNames: record.remote.toolNames,
-      calls: record.remote.calls,
-      assistantMessages: record.remote.assistantMessages,
-      userMessages: record.remote.userMessages,
-      launchPrompts: record.remote.launchPrompts,
-      activations: record.remote.activations,
-      finalAssistantText: record.remote.finalAssistantText,
-      branchProcessCount: record.remote.branchProcessCount,
-      branchCatalogues: record.remote.branchCatalogues,
-    },
-  });
-  return { ...entry, rejudged: judgment, judgementChanged: judgment.verdict !== record.judgment.verdict, harnessVerdict: record.judgment.verdict };
+  // §28: ONE shared adapter turns the recorded raw observations into the oracle's input,
+  // so the bundle and the replay tests can never disagree about what was observed.
+  const judgment = oracle.judgeCrossTrial(oracle.crossRawOfHarnessRecord(entry.record));
+  return { ...entry, rejudged: judgment, judgementChanged: judgment.verdict !== entry.record.judgment.verdict, harnessVerdict: entry.record.judgment.verdict };
 };
 
 const localTrials = flatten(localFiles, (record) => record.kind).map(rejudge);

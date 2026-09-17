@@ -660,7 +660,7 @@ async function trial({ scenario, prompt, index }) {
       failed: ['oracle input error'],
     };
     surfacing = { surfaced: false, surfacedText: '', answerText: '', terminalStatus: null, terminalSeq: null, laterMessages: [] };
-    crossFacts = { remoteUsedCollaborate: false };
+    crossFacts = { remoteExploreActuallyRan: false, remoteLocalCollaborationRoute: 'NONE' };
   }
   const branchTrials = [...originEvidence.branchCatalogues, ...remoteEvidence.branchCatalogues];
 
@@ -674,7 +674,15 @@ async function trial({ scenario, prompt, index }) {
       terminalStatus: surfacing.terminalStatus,
       terminalSeq: surfacing.terminalSeq,
       laterAssistantTurns: surfacing.laterMessages.map((message) => message.turn),
-      remoteUsedCollaborate: crossFacts.remoteUsedCollaborate,
+      // RC-1E §39: the local-collaboration observation, straight from the oracle.
+      remoteLocalCollaborationRoute: judgment.remoteLocalCollaborationRoute ?? 'NONE',
+      remoteExploreActuallyRan: crossFacts.remoteExploreActuallyRan === true,
+      remoteCollaborationExecutionKinds: judgment.remoteCollaborationExecutionKinds ?? [],
+      remoteComposeIntents: judgment.remoteComposeIntents ?? [],
+      remoteFindingStandings: judgment.remoteFindingStandings ?? [],
+      remoteBranchProcessCount: judgment.remoteBranchProcessCount ?? 0,
+      remoteBranchCatalogues: judgment.remoteBranchCatalogues ?? [],
+      remoteBranchIsolationProven: judgment.remoteBranchIsolationProven === true,
       branchCapabilityIsolated: oracle.branchCataloguesAreIsolated(branchTrials),
     },
   };
@@ -684,7 +692,8 @@ async function trial({ scenario, prompt, index }) {
     `  ${scenario}#${index}: ${judgment.verdict} | route=${judgment.productRoute} | outcome=${judgment.semanticOutcome} | ` +
       `originTools=${JSON.stringify(originEvidence.toolNames)} | remoteTools=${JSON.stringify(remoteEvidence.toolNames)} | ` +
       `terminal=${String(surfacing.terminalStatus)} surfaced=${surfacing.surfaced} | ` +
-      `remoteBranches=${remoteEvidence.branchProcessCount} | remoteCollaborate=${crossFacts.remoteUsedCollaborate} | ` +
+      `remoteCollaboration=${judgment.remoteLocalCollaborationRoute} exploreRan=${judgment.remoteExploreActuallyRan === true} | ` +
+      `remoteBranches=${judgment.remoteBranchProcessCount ?? 0} | ` +
       `wall=${Math.round(raw.wallMs / 1000)}s` +
       (judgment.verdict === 'PASS' ? '' : ` | ${judgment.reason.slice(0, 200)}`),
   );
@@ -781,7 +790,19 @@ const summary = {
   criteria: {
     scenarioD: dQualification,
     scenarioE: eQualification,
-    scenarioE_remote_used_collaborate: eTrials.filter((record) => record.judgment.remoteUsedCollaborate).length,
+    /** RC-1E §18: both legal routes are counted, and neither is privileged. */
+    scenarioE_routes: {
+      COLLABORATE_TOOL: eTrials.filter((record) => record.judgment.remoteLocalCollaborationRoute === 'COLLABORATE_TOOL').length,
+      RESPOND_COMPOSE: eTrials.filter((record) => record.judgment.remoteLocalCollaborationRoute === 'RESPOND_COMPOSE').length,
+      NONE: eTrials.filter((record) => (record.judgment.remoteLocalCollaborationRoute ?? 'NONE') === 'NONE').length,
+    },
+    scenarioE_remoteExploreActuallyRan: eTrials.filter((record) => record.judgment.remoteExploreActuallyRan === true).length,
+    /** §22: D must keep accepting a direct answer; its branch use is reported, not required. */
+    scenarioD_remoteBranchUse: dTrials.map((record) => ({
+      trial: record.trial,
+      route: record.judgment.remoteLocalCollaborationRoute ?? 'NONE',
+      remoteBranchProcessCount: record.judgment.remoteBranchProcessCount ?? 0,
+    })),
     terminalAnswerStatuses: trials.map((record) => record.judgment.terminalStatus),
     no_copy_or_disclosure_violation: allViolations.length === 0,
     violations: allViolations.map((record) => ({ trial: record.trial, violations: record.judgment.violations })),

@@ -35,9 +35,28 @@ import { descriptorForProject, observeProjectDescriptors } from "./project_peer_
  * Host text (§61)
  * ------------------------------------------------------------------ */
 
-/** §61 — the inbound-request instruction. No authority, no content, no identity. */
+/**
+ * §61 — the inbound-request instruction.
+ *
+ * RC-1E §9: an inbound Ask is a NORMAL REQUEST TO THIS PROJECT, not transport work. The
+ * earlier wording ("answer it using this project's context") over-centred the transport
+ * surface and named only `palimpsest_cross_project`, so a live remote principal answered
+ * from its own head every time and never reached its own collaboration (measured: RC-1R
+ * Scenario E, 0/5, with no branch process in any trial).
+ *
+ * This text still carries NO content, NO identity and NO authority, and it CLASSIFIES
+ * nothing (§11): it names capabilities that already exist and states, conditionally on what
+ * the pending task asks for, when each is appropriate. The principal stays the cognitive
+ * locus — it reads the task itself through `pending()` and decides.
+ */
 export const CROSS_PROJECT_INBOUND_REQUEST_TEXT =
-  "Another project is asking this project a question. Inspect the pending request and answer it using this project's context.";
+  "Another project is asking this project a question. Inspect the pending request first.\n\n" +
+  "Treat the pending task like a normal request to this project:\n" +
+  "- answer directly when one principal is sufficient;\n" +
+  "- when it explicitly asks for parallel exploration, multiple independent approaches, " +
+  "multi-Agent work or a local independent check, use this project's normal collaboration " +
+  "capability before responding.\n\n" +
+  "Return the answer through palimpsest_cross_project.";
 
 /** §61 — the inbound-answer instruction. */
 export const CROSS_PROJECT_INBOUND_ANSWER_TEXT =

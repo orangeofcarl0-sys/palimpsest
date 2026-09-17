@@ -367,7 +367,10 @@ describe("RC-1R §13 replay — the frozen Scenario E trial re-judged (FP-1)", (
     const judgment = judgeCrossTrial(raw);
     expect(judgment.verdict).toBe("MODEL_DID_NOT_SELECT_PRODUCT_TOOL");
     expect(judgment.verdict).not.toBe("PASS");
-    expect(judgment.reason).toContain("Scenario E requires the REMOTE principal");
+    // RC-1E §18: E is now measured by BEHAVIOUR, so the reason names the route it saw.
+    expect(judgment.remoteLocalCollaborationRoute).toBe("NONE");
+    expect(judgment.remoteExploreActuallyRan).toBe(false);
+    expect(judgment.reason).toContain("without using its own local collaboration");
   });
 });
 
