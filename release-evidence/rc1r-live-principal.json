@@ -334,7 +334,7 @@
       "trial": 5,
       "harnessVerdict": "MODEL_SELECTED_WRONG_PRODUCT_TOOL",
       "derivedVerdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
-      "derivedReason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "derivedReason": "§9: the remote principal answered directly without using its own local collaboration"
     }
   ],
   "infrastructureErrorTrials": [
@@ -389,8 +389,8 @@
       "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "productRoute": "CROSS_PROJECT_ASK",
-      "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-      "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "semanticOutcome": "ANSWERED+REMOTE_NONE",
+      "reason": "§9: the remote principal answered directly without using its own local collaboration"
     },
     {
       "source": "rc1r-live-cross-project.json",
@@ -399,8 +399,8 @@
       "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "productRoute": "CROSS_PROJECT_ASK",
-      "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-      "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "semanticOutcome": "ANSWERED+REMOTE_NONE",
+      "reason": "§9: the remote principal answered directly without using its own local collaboration"
     },
     {
       "source": "rc1r-live-cross-project.json",
@@ -409,8 +409,8 @@
       "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "productRoute": "CROSS_PROJECT_ASK",
-      "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-      "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "semanticOutcome": "ANSWERED+REMOTE_NONE",
+      "reason": "§9: the remote principal answered directly without using its own local collaboration"
     },
     {
       "source": "rc1r-live-cross-project.json",
@@ -419,8 +419,8 @@
       "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "productRoute": "CROSS_PROJECT_ASK",
-      "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-      "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "semanticOutcome": "ANSWERED+REMOTE_NONE",
+      "reason": "§9: the remote principal answered directly without using its own local collaboration"
     },
     {
       "source": "rc1r-live-cross-project.json",
@@ -429,8 +429,8 @@
       "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
       "productRoute": "CROSS_PROJECT_ASK",
-      "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-      "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
+      "semanticOutcome": "ANSWERED+REMOTE_NONE",
+      "reason": "§9: the remote principal answered directly without using its own local collaboration"
     }
   ],
   "branchCatalogueEvidence": {
@@ -563,9 +563,9 @@
   },
   "branchArtifactRetention": {
     "root": "C:/Users/66494/.dsh/sessions/<cwd-key>/branch-<id>/session.v3.jsonl.zstd",
-    "branchSessions": 149,
-    "totalBytes": 1640848,
-    "approximateMegabytes": 1.565,
+    "branchSessions": 163,
+    "totalBytes": 1751424,
+    "approximateMegabytes": 1.67,
     "dataClasses": [
       "session header (host-local telemetry)",
       "request/header — exactly one tool: palimpsest_branch_result",
@@ -10156,7 +10156,15 @@
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
-        "failed": []
+        "failed": [],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": true
     },
@@ -10919,7 +10927,15 @@
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
-        "failed": []
+        "failed": [],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -11785,7 +11801,15 @@
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
-        "failed": []
+        "failed": [],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -12624,7 +12648,15 @@
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
-        "failed": []
+        "failed": [],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -13427,7 +13459,15 @@
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
-        "failed": []
+        "failed": [],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -14365,14 +14405,22 @@
         "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "productRoute": "CROSS_PROJECT_ASK",
-        "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-        "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
+        "semanticOutcome": "ANSWERED+REMOTE_NONE",
+        "reason": "§9: the remote principal answered directly without using its own local collaboration",
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
         "failed": [
-          "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
-        ]
+          "§9: the remote principal answered directly without using its own local collaboration"
+        ],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -15179,14 +15227,22 @@
         "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "productRoute": "CROSS_PROJECT_ASK",
-        "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-        "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
+        "semanticOutcome": "ANSWERED+REMOTE_NONE",
+        "reason": "§9: the remote principal answered directly without using its own local collaboration",
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
         "failed": [
-          "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
-        ]
+          "§9: the remote principal answered directly without using its own local collaboration"
+        ],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -15990,14 +16046,22 @@
         "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "productRoute": "CROSS_PROJECT_ASK",
-        "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-        "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
+        "semanticOutcome": "ANSWERED+REMOTE_NONE",
+        "reason": "§9: the remote principal answered directly without using its own local collaboration",
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
         "failed": [
-          "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
-        ]
+          "§9: the remote principal answered directly without using its own local collaboration"
+        ],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -16960,14 +17024,22 @@
         "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "productRoute": "CROSS_PROJECT_ASK",
-        "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-        "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
+        "semanticOutcome": "ANSWERED+REMOTE_NONE",
+        "reason": "§9: the remote principal answered directly without using its own local collaboration",
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
         "failed": [
-          "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
-        ]
+          "§9: the remote principal answered directly without using its own local collaboration"
+        ],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": false
     },
@@ -17923,14 +17995,22 @@
         "verdict": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "classification": "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
         "productRoute": "CROSS_PROJECT_ASK",
-        "semanticOutcome": "ANSWERED+REMOTE_DIRECT_ANSWER",
-        "reason": "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
+        "semanticOutcome": "ANSWERED+REMOTE_NONE",
+        "reason": "§9: the remote principal answered directly without using its own local collaboration",
         "violations": [],
         "copyMisrepresentation": [],
         "advisories": [],
         "failed": [
-          "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly"
-        ]
+          "§9: the remote principal answered directly without using its own local collaboration"
+        ],
+        "remoteLocalCollaborationRoute": "NONE",
+        "remoteCollaborationExecutionKinds": [],
+        "remoteComposeIntents": [],
+        "remoteFindingStandings": [],
+        "remoteBranchProcessCount": 0,
+        "remoteBranchCatalogues": [],
+        "remoteBranchIsolationProven": false,
+        "remoteExploreActuallyRan": false
       },
       "judgementChanged": true
     }

@@ -1,0 +1,135 @@
+(node:40356) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "project_B_seeded_through_its_own_installation": {
+      "ok": true,
+      "detail": "B external prepare=PREPARED"
+    },
+    "project_A_installed_share_both_files": {
+      "ok": true,
+      "detail": "A external prepare=PREPARED"
+    },
+    "service_assets_is_A_only": {
+      "ok": true,
+      "detail": "workspace.assets() (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "service_journal_is_A_only": {
+      "ok": true,
+      "detail": "workspace.journal() (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "service_view_is_A_only": {
+      "ok": true,
+      "detail": "derived workspace view (foreign markers=[]; mentionsA=true; content=ok - view.projectId=project-A)"
+    },
+    "service_journal_current_id_is_A_only": {
+      "ok": true,
+      "detail": "explicit current project id (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "service_projectScopedAssets_current_is_A_only": {
+      "ok": true,
+      "detail": "explicit current project id (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "service_journal_foreign_fails_closed": {
+      "ok": true,
+      "detail": "{\"refused\":true,\"name\":\"ProjectWorkspaceError\",\"kind\":\"invalid_registration\",\"message\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}"
+    },
+    "service_projectScopedAssets_foreign_fails_closed": {
+      "ok": true,
+      "detail": "{\"refused\":true,\"name\":\"ProjectWorkspaceError\",\"kind\":\"invalid_registration\",\"message\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}"
+    },
+    "http_assets_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_assets_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/assets (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_journal_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/journal (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_current_id_status_200": {
+      "ok": true,
+      "detail": "status 200"
+    },
+    "http_journal_current_id_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/journal?projectId=project-A (foreign markers=[]; mentionsA=true; content=ok - 1 row(s), project ids [\"project-A\"])"
+    },
+    "http_journal_foreign_fails_closed": {
+      "ok": true,
+      "detail": "status 400, body {\"error\":{\"status\":400,\"detail\":\"project \\\"project-B\\\" is not this workspace's project \\\"project-A\\\"\"}}"
+    },
+    "http_journal_foreign_leaks_nothing": {
+      "ok": true,
+      "detail": "[]"
+    },
+    "agent_tool_assets_is_A_only": {
+      "ok": true,
+      "detail": "palimpsest_project action=assets (foreign markers=[]; mentionsA=true; content=ok - 2 row(s), project ids [\"project-A\"])"
+    },
+    "agent_tool_with_foreign_id_is_refused_not_ignored": {
+      "ok": true,
+      "detail": "ProjectWorkspaceError: project \"project-B\" is not this installation's project \"project-A\""
+    },
+    "agent_tool_has_no_global_enumeration_action": {
+      "ok": true,
+      "detail": "[\"overview\",\"assets\",\"open_loops\",\"history\",\"decision\",\"journal\"]"
+    },
+    "shared_store_physically_holds_B_rows": {
+      "ok": true,
+      "detail": "journal scopes=[{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"}], association scopes=[{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-A\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"},{\"scope_id\":\"project-B\"}]"
+    },
+    "direct_store_owner_can_enumerate_both_scopes": {
+      "ok": true,
+      "detail": "association scopes=[project-A,project-B], journal scopes=[project-A,project-B]"
+    },
+    "direct_store_owner_can_replay_B": {
+      "ok": true,
+      "detail": "3 B event(s) readable by the store owner"
+    },
+    "external_view_is_A_only": {
+      "ok": true,
+      "detail": "workspace external section (foreign markers=[]; mentionsA=false; content=ok - 1 external reference(s))"
+    },
+    "external_view_resolves_only_the_installed_project": {
+      "ok": true,
+      "detail": "references=[\"a-ext\"]"
+    },
+    "external_resolve_current_project_is_A_only": {
+      "ok": true,
+      "detail": "externalAssets.resolve(project-A) (foreign markers=[]; mentionsA=true; content=ok - 1 external reference(s))"
+    },
+    "external_resolve_current_project_has_A_reference": {
+      "ok": true,
+      "detail": "[\"a-ext\"]"
+    },
+    "external_resolve_refuses_a_project_the_deployment_does_not_hold": {
+      "ok": true,
+      "detail": "unknown_project: project \"project-B\" is not held by this deployment"
+    },
+    "workspace_external_view_never_uses_the_foreign_resolve": {
+      "ok": true,
+      "detail": "workspace external section (A-bound) (foreign markers=[]; mentionsA=false; content=ok - 1 external reference(s))"
+    },
+    "management_history_is_A_only": {
+      "ok": true,
+      "detail": "GET /api/project/history (foreign markers=[]; mentionsA=false; content=not-required)"
+    },
+    "shared_db_is_not_a_shared_semantic_scope": {
+      "ok": true,
+      "detail": "the raw store holds B while every A-bound read is B-free"
+    }
+  },
+  "honestNotes": {},
+  "failures": [],
+  "pass": true
+}
+pass=true
+EXIT=0

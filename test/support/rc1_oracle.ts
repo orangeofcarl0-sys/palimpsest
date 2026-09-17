@@ -151,6 +151,20 @@ export interface Rc1Judgment {
   /** Recorded copy-quality observations that are not release violations (§21 vs §34). */
   readonly advisories: readonly string[];
   readonly failed: readonly string[];
+
+  /* ---- RC-1E §39: the remote local-collaboration evidence, beside the judgement ---- */
+  readonly remoteLocalCollaborationRoute?: RemoteCollaborationRoute | undefined;
+  readonly remoteCollaborationExecutionKinds?: readonly string[] | undefined;
+  readonly remoteComposeIntents?: readonly string[] | undefined;
+  readonly remoteFindingStandings?: readonly string[] | undefined;
+  readonly remoteBranchProcessCount?: number | undefined;
+  readonly remoteBranchCatalogues?: readonly (readonly string[])[] | undefined;
+  readonly remoteBranchIsolationProven?: boolean | undefined;
+  readonly remoteExploreActuallyRan?: boolean | undefined;
+  /** The terminal answer status the origin ingested, and whether it was presented to the user. */
+  readonly terminalStatus?: string | null | undefined;
+  readonly surfaced?: boolean | undefined;
+  readonly answerText?: string | undefined;
 }
 
 /* ------------------------------------------------------------------ *
@@ -316,6 +330,12 @@ export interface CrossProjectCall {
   readonly answer: string;
   readonly responder: string;
   readonly warnings: readonly string[];
+  /** RC-1E §20: the `answer` ARGUMENT (raw), and whether it carried a `compose` request. */
+  readonly answerArgument: Record<string, unknown> | undefined;
+  readonly composeIntent: string | null;
+  readonly usesCompose: boolean;
+  /** RC-1E §19: the typed exploratory standing the RESULT carried, when it carried one. */
+  readonly findingStanding: string | null;
 }
 
 export function crossProjectCallsOf(calls: readonly Rc1ToolCall[]): readonly CrossProjectCall[] {
@@ -324,9 +344,11 @@ export function crossProjectCallsOf(calls: readonly Rc1ToolCall[]): readonly Cro
     if (call.name !== "palimpsest_cross_project") continue;
     const args = asRecord(call.args);
     const rendered = asRecord(call.rendered);
-    const warnings = Array.isArray(rendered?.warnings)
+    const warningList = Array.isArray(rendered?.warnings)
       ? rendered.warnings.filter((entry): entry is string => typeof entry === "string")
       : [];
+    const answerArgument = asRecord(args?.answer);
+    const compose = asRecord(answerArgument?.compose);
     found.push({
       call,
       action: stringOf(args?.action) ?? null,
@@ -334,7 +356,11 @@ export function crossProjectCallsOf(calls: readonly Rc1ToolCall[]): readonly Cro
       status: stringOf(rendered?.status) ?? null,
       answer: stringOf(rendered?.answer) ?? "",
       responder: stringOf(rendered?.responder) ?? "",
-      warnings,
+      warnings: warningList,
+      answerArgument,
+      composeIntent: stringOf(compose?.intent) ?? null,
+      usesCompose: compose !== undefined,
+      findingStanding: stringOf(rendered?.findingStanding) ?? null,
     });
   }
   return found;
@@ -1067,11 +1093,34 @@ export interface CrossFacts {
   readonly remoteActivated: boolean;
   readonly originActivated: boolean;
   readonly remoteAnswered: boolean;
-  readonly remoteUsedCollaborate: boolean;
+  /**
+   * RC-1E §18: HOW the remote reached its own local collaboration, if it did. The product
+   * offers two equally valid routes and the qualification must not privilege either:
+   *   COLLABORATE_TOOL — the remote ran `palimpsest_collaborate` itself;
+   *   RESPOND_COMPOSE  — the remote answered with `respond(answer.compose)`, which runs the
+   *                      same composed collaboration service and derives the answer from it.
+   * A tool NAME is not the behaviour; this is.
+   */
+  readonly remoteLocalCollaborationRoute: RemoteCollaborationRoute;
+  readonly remoteCollaborationExecutionKinds: readonly string[];
+  readonly remoteComposeIntents: readonly string[];
+  readonly remoteFindingStandings: readonly string[];
+  readonly remoteBranchProcessCount: number;
+  readonly remoteBranchCatalogues: readonly (readonly string[])[];
+  readonly remoteBranchIsolationProven: boolean;
+  /**
+   * RC-1E §19: local collaboration ACTUALLY RAN — real packaged branches executed and stayed
+   * capability-isolated. A request that resolved to FOCUS, a failed compose, or an authored
+   * answer does not satisfy this, however the call was spelled.
+   */
+  readonly remoteExploreActuallyRan: boolean;
   readonly surfacing: SurfacedAnswer;
   readonly flags: Rc1TextFlags;
   readonly extraUserPrompts: readonly string[];
 }
+
+export const REMOTE_COLLABORATION_ROUTES = ["NONE", "COLLABORATE_TOOL", "RESPOND_COMPOSE"] as const;
+export type RemoteCollaborationRoute = (typeof REMOTE_COLLABORATION_ROUTES)[number];
 
 export function crossFactsOf(raw: Rc1CrossRaw): CrossFacts {
   const originCalls = crossProjectCallsOf(raw.origin.calls);
@@ -1097,6 +1146,38 @@ export function crossFactsOf(raw: Rc1CrossRaw): CrossFacts {
   const extraUserPrompts = raw.origin.userMessages.filter(
     (text) => !launchPrompts.has(text) && !NON_PROMPT_USER_MESSAGE_PREFIXES.some((prefix) => text.startsWith(prefix)),
   );
+
+  /* ---------------- RC-1E §18/§19/§20 — semantic local-collaboration measurement ------- */
+  const remoteCollaborateResults = collaborateResultsOf(raw.remote.calls);
+  const remoteCollaborationExecutionKinds = executionKindsOf(remoteCollaborateResults);
+  const composedResponds = remoteCalls.filter((entry) => entry.action === "respond" && entry.usesCompose);
+  const remoteLocalCollaborationRoute: RemoteCollaborationRoute =
+    raw.remote.toolNames.includes("palimpsest_collaborate")
+      ? "COLLABORATE_TOOL"
+      : composedResponds.length > 0
+        ? "RESPOND_COMPOSE"
+        : "NONE";
+  const remoteFindingStandings = [
+    ...new Set([
+      ...findingStandingsOf(remoteCollaborateResults),
+      ...remoteCalls.map((entry) => entry.findingStanding).filter((value): value is string => value !== null),
+    ]),
+  ];
+  const remoteBranchIsolationProven =
+    raw.remote.branchProcessCount >= 2 &&
+    raw.remote.branchCatalogues.length > 0 &&
+    branchCataloguesAreIsolated(raw.remote.branchCatalogues);
+  /**
+   * RC-1E §19: "local collaboration used" means real packaged Explore ran, evidenced by the
+   * branch sessions themselves plus the product's own record of what the run did — not by the
+   * spelling of a call. Both routes qualify, and a route that resolved to FOCUS does not.
+   */
+  const reachedExplore =
+    remoteCollaborationExecutionKinds.some(
+      (kind) => kind === "LOCAL_EXPLORE" || kind === "LOCAL_EXPLORE_AND_VERIFY",
+    ) || remoteFindingStandings.includes(EXPLORATORY_STANDING);
+  const remoteExploreActuallyRan = remoteLocalCollaborationRoute !== "NONE" && reachedExplore && remoteBranchIsolationProven;
+
   return {
     asked,
     askStatus,
@@ -1107,7 +1188,14 @@ export function crossFactsOf(raw: Rc1CrossRaw): CrossFacts {
       raw.origin.userMessages.some((text) => text.startsWith("[palimpsest")) ||
       raw.origin.activations.some((entry) => entry.activated === true),
     remoteAnswered: remoteCalls.some((entry) => entry.action === "respond"),
-    remoteUsedCollaborate: raw.remote.toolNames.includes("palimpsest_collaborate"),
+    remoteLocalCollaborationRoute,
+    remoteCollaborationExecutionKinds,
+    remoteComposeIntents: composedResponds.map((entry) => entry.composeIntent ?? "AUTO"),
+    remoteFindingStandings,
+    remoteBranchProcessCount: raw.remote.branchProcessCount,
+    remoteBranchCatalogues: raw.remote.branchCatalogues,
+    remoteBranchIsolationProven,
+    remoteExploreActuallyRan,
     surfacing,
     flags: textFlagsOf(surfacing.surfacedText || raw.origin.finalAssistantText),
     extraUserPrompts,
@@ -1188,6 +1276,18 @@ export function judgeCrossTrial(raw: Rc1CrossRaw): Rc1Judgment {
     advisories,
     productRoute: "CROSS_PROJECT_ASK" as Rc1Route,
     semanticOutcome: facts.surfacing.terminalStatus ?? "NO_TERMINAL_ANSWER",
+    /** RC-1E §39 — the raw local-collaboration evidence, kept beside the judgement. */
+    remoteLocalCollaborationRoute: facts.remoteLocalCollaborationRoute,
+    remoteCollaborationExecutionKinds: facts.remoteCollaborationExecutionKinds,
+    remoteComposeIntents: facts.remoteComposeIntents,
+    remoteFindingStandings: facts.remoteFindingStandings,
+    remoteBranchProcessCount: facts.remoteBranchProcessCount,
+    remoteBranchCatalogues: facts.remoteBranchCatalogues,
+    remoteBranchIsolationProven: facts.remoteBranchIsolationProven,
+    remoteExploreActuallyRan: facts.remoteExploreActuallyRan,
+    terminalStatus: facts.surfacing.terminalStatus,
+    surfaced: facts.surfacing.surfaced,
+    answerText: facts.surfacing.answerText,
   };
 
   if (!facts.asked && raw.origin.finalAssistantText.trim() === "") {
@@ -1227,12 +1327,30 @@ export function judgeCrossTrial(raw: Rc1CrossRaw): Rc1Judgment {
       emptyJudgment("MODEL_DID_NOT_SELECT_PRODUCT_TOOL", "the remote principal never answered the request", shared),
     );
   }
-  if (scenarioE && !facts.remoteUsedCollaborate) {
+  if (scenarioE && !facts.remoteExploreActuallyRan) {
+    /*
+     * RC-1E §18/§19: E is about BEHAVIOUR, not about which tool name appears. Three
+     * distinct outcomes are reported distinctly so the evidence says what actually happened.
+     */
+    const detail =
+      facts.remoteLocalCollaborationRoute === "NONE"
+        ? "§9: the remote principal answered directly without using its own local collaboration"
+        : "§9/§19: the remote principal reached its local collaboration but no packaged Explore ran " +
+          `(execution kinds ${JSON.stringify(facts.remoteCollaborationExecutionKinds)}, ` +
+          `compose intents ${JSON.stringify(facts.remoteComposeIntents)}, ` +
+          `branch processes ${facts.remoteBranchProcessCount}, ` +
+          `isolated ${String(facts.remoteBranchIsolationProven)}) — a FOCUS outcome, a failed compose or ` +
+          "an unobserved branch is not the composition Scenario E qualifies";
     return withViolations(
       emptyJudgment(
-        "MODEL_DID_NOT_SELECT_PRODUCT_TOOL",
-        "§9: Scenario E requires the REMOTE principal to invoke its own local collaboration; it answered directly",
-        { ...shared, semanticOutcome: `${facts.surfacing.terminalStatus ?? "UNKNOWN"}+REMOTE_DIRECT_ANSWER` },
+        facts.remoteLocalCollaborationRoute === "NONE"
+          ? "MODEL_DID_NOT_SELECT_PRODUCT_TOOL"
+          : "PRODUCT_ROUTE_CORRECT_OPERATION_BLOCKED",
+        detail,
+        {
+          ...shared,
+          semanticOutcome: `${facts.surfacing.terminalStatus ?? "UNKNOWN"}+REMOTE_${facts.remoteLocalCollaborationRoute}`,
+        },
       ),
     );
   }
@@ -1293,6 +1411,55 @@ export function judgeCrossTrial(raw: Rc1CrossRaw): Rc1Judgment {
     failed: [],
     semanticOutcome: `TERMINAL_${String(facts.surfacing.terminalStatus)}_SURFACED`,
   });
+}
+
+/* ------------------------------------------------------------------ *
+ * §28 — the raw-observation view of a harness-recorded trial
+ * ------------------------------------------------------------------ */
+
+/**
+ * The `Rc1CrossRaw` view of a record the live harness wrote (or of the frozen evidence a
+ * previous run committed). ONE implementation, used by both the evidence bundle and the
+ * replay tests, so the two can never disagree about what the raw observations are.
+ *
+ * A field the record does not carry yields the EMPTY observation — never a guess.
+ */
+export function sideRawOfRecord(value: unknown, what: string): Rc1SideRaw {
+  const side = asRecord(value);
+  if (side === undefined) throw new TypeError(`${what}: a side observation must be an object`);
+  const stringsOf = (input: unknown): readonly string[] =>
+    Array.isArray(input) ? input.filter((entry): entry is string => typeof entry === "string") : [];
+  const catalogsOf = (input: unknown): readonly (readonly string[])[] =>
+    Array.isArray(input)
+      ? input.map((entry) => stringsOf(entry)).filter((entry) => entry.length > 0)
+      : [];
+  return {
+    toolNames: stringsOf(side.toolNames),
+    calls: (Array.isArray(side.calls) ? side.calls : []) as readonly Rc1ToolCall[],
+    assistantMessages: (Array.isArray(side.assistantMessages) ? side.assistantMessages : []) as readonly Rc1AssistantMessage[],
+    userMessages: stringsOf(side.userMessages),
+    launchPrompts: stringsOf(side.launchPrompts),
+    activations: (Array.isArray(side.activations) ? side.activations : []) as readonly Rc1ActivationRecord[],
+    finalAssistantText: typeof side.finalAssistantText === "string" ? side.finalAssistantText : "",
+    branchProcessCount: typeof side.branchProcessCount === "number" ? side.branchProcessCount : 0,
+    branchCatalogues: catalogsOf(side.branchCatalogues),
+  };
+}
+
+export function crossRawOfHarnessRecord(record: {
+  readonly scenario: string;
+  readonly pollFailure?: unknown;
+  readonly originExitedBeforeCompletion?: unknown;
+  readonly origin: unknown;
+  readonly remote: unknown;
+}): Rc1CrossRaw {
+  return {
+    scenario: record.scenario,
+    failure: typeof record.pollFailure === "string" ? record.pollFailure : null,
+    originExitedBeforeCompletion: record.originExitedBeforeCompletion === true,
+    origin: sideRawOfRecord(record.origin, "origin"),
+    remote: sideRawOfRecord(record.remote, "remote"),
+  };
 }
 
 /* ------------------------------------------------------------------ *
