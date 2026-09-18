@@ -22,10 +22,18 @@ interface SatelliteData extends Record<string, unknown> {
 /** Spec 36 §18: stable presentation-only selectors - the DOM exposes the
  * semantic ids/state for the browser suite, it never OWNS identity
  * (36 号 §19 red line). Visual output is unchanged (label only). */
+/** A node box is a handle: clamp what it shows, and keep the full text in `title`. */
+const NODE_LABEL_LIMIT = 52;
+
+function excerpt(text: string, limit = NODE_LABEL_LIMIT): string {
+  const flat = text.replace(/\s+/gu, " ").trim();
+  return flat.length <= limit ? flat : `${flat.slice(0, limit - 1)}…`;
+}
+
 function LiveNodeView({ data }: NodeProps<Node<GraphNodeData>>) {
   return (
-    <div data-graph-node-key={data.key} data-graph-state={data.state}>
-      {data.label}
+    <div data-graph-node-key={data.key} data-graph-state={data.state} title={data.label}>
+      {excerpt(data.label)}
     </div>
   );
 }
