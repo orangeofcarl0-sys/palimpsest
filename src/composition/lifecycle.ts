@@ -7,22 +7,32 @@
  * Extracting it makes the ownership table explicit and reviewable instead of implicit in the
  * order of statements at the end of a very long function.
  *
- * Ownership invariants (§14), unchanged by this move:
+ * LIFETIME CATEGORIES (SR-1C §13). The pre-refactor contract is NOT the idealized
+ * "a caller-owned resource is never closed by install": the canonical baseline already closes
+ * several caller-SUPPLIED stores during `installPalimpsest.dispose()`. The exact behaviour is
+ * preserved, and each resource is now named with the category it actually belongs to:
  *
- *   caller-owned resource is never closed by install
- *   install-owned resource closes exactly once
+ *   INSTALL_CREATED_AND_MANAGED              created here, closed here exactly once
+ *                                            (`store`, `effects`, the verification-history and
+ *                                            bridge-history stores when the install created them)
+ *   CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY   supplied by the caller and closed here anyway,
+ *                                            because that is what the canonical baseline does
+ *                                            (proof store, project association/journal stores,
+ *                                            management preference store, organization memory)
+ *   CALLER_SUPPLIED_CALLER_RETAINED          supplied by the caller and NOT closed here; the
+ *                                            caller keeps its lifetime (a reasoning-cell store
+ *                                            unless ownership was made explicit)
  *
- * Concretely, and exactly as before the move:
+ * Changing WHICH resources close is a product decision, deliberately NOT taken in this stage;
+ * it is tracked separately as SR-OWN.
  *
- *   `store`            install-created (an `EventStore` the caller supplied is still closed —
- *                      that is the pre-existing contract of `installPalimpsest`)
- *   `effects`          install-created; closed LAST, after every store
- *   `controller`       closed through `ProjectController.close()`
+ * Ordering, unchanged by this move:
+ *
  *   `monitor`          settled with `ready()` then stopped BEFORE any store closes, because a
  *                      tick callback must never run against a closed store
+ *   `controller`       closed through `ProjectController.close()`, then the log
+ *   `effects`          closed LAST, after every store
  *   tool registrations disposed FIRST, in reverse registration order
- *   the optional stores below follow their own pre-existing guards verbatim, including the
- *   two ownership flags the install path computes while composing
  */
 
 import type { DshPluginContext, DshToolDefinition } from "../tools/dsh_types.js";
@@ -30,12 +40,19 @@ import type { ProjectController } from "../tools/controller.js";
 import type { EventStore } from "../state/index.js";
 import type { PalimpsestEffectsRuntime } from "../effects/index.js";
 
-/** A resource this install is responsible for closing, with the reason recorded. */
+/** SR-1C §13: the exact lifetime category of a resource, as the canonical baseline behaves. */
+export const LIFETIME_CATEGORIES = [
+  "INSTALL_CREATED_AND_MANAGED",
+  "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY",
+  "CALLER_SUPPLIED_CALLER_RETAINED",
+] as const;
+export type LifetimeCategory = (typeof LIFETIME_CATEGORIES)[number];
+
+/** A resource this install is responsible for closing, with its lifetime category recorded. */
 export interface OwnedResource {
   /** Human-readable identity, used by the lifecycle tests. */
   readonly what: string;
-  /** Why the install owns it (or why it deliberately does not close it). */
-  readonly ownership: "install-owned" | "caller-supplied-but-closed-by-contract";
+  readonly ownership: LifetimeCategory;
   readonly close: () => void;
 }
 

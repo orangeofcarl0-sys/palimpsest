@@ -1,23 +1,25 @@
 /**
- * SR-1 §10 — the recorded reasons for every exception in the architecture baseline.
+ * SR-1 §10, repaired by SR-1C §4 — the recorded reason for every exception in the architecture
+ * baseline.
  *
- * These live in code (not only in the generated JSON) so that `--write` is deterministic
- * and a reviewer sees a reason appear or change in the diff. An exception without a reason
- * is not allowed to exist: `baselineFrom()` falls back to a "historical" marker and the
- * check reports how many exceptions are un-reasoned.
+ * Exceptions are keyed by CONCRETE IMPORT EDGE (`from -> to`), never by layer pair, so that a
+ * fifth upward import cannot slip in under the same layer pair. The reasons live in code (not
+ * only in the generated JSON) so that `--write` is deterministic and a reason change shows up in
+ * the diff. An exception without a reason is not allowed to exist.
  */
 
-/** Forbidden layer edges that exist at the SR-1 baseline, keyed `Lx->Ly`. */
+const UPWARD_EDGE_REASON =
+  "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or " +
+  "the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so " +
+  "that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way " +
+  "round), not part of a structural refactor that must not change semantics.";
+
+/** Forbidden import edges that exist at the SR-1 baseline, keyed `fromFile -> toFile`. */
 export const BASELINE_EDGE_REASONS: ReadonlyMap<string, string> = new Map([
-  [
-    "L2->L3",
-    "Four capability modules read a PROJECTION or the durable operating posture: monitor/driver.ts reads " +
-      "project_operating/{posture,work_mode_profile}, and project_workspace/view.ts + tools/controller.ts read the " +
-      "orchestration graph projection in tools/graph.ts. These are real upward edges, not misclassifications; the " +
-      "direction is recorded here so that no NEW one may appear. Removing them is SR-2 work (the projection should " +
-      "depend on the owner, not the other way round), not part of a structural refactor that must not change " +
-      "semantics.",
-  ],
+  ["src/monitor/driver.ts -> src/project_operating/posture.ts", UPWARD_EDGE_REASON],
+  ["src/monitor/driver.ts -> src/project_operating/work_mode_profile.ts", UPWARD_EDGE_REASON],
+  ["src/project_workspace/view.ts -> src/tools/graph.ts", UPWARD_EDGE_REASON],
+  ["src/tools/controller.ts -> src/tools/graph.ts", UPWARD_EDGE_REASON],
 ]);
 
 /** Cycles that exist at the SR-1 baseline, keyed by the sorted file list joined with `|`. */

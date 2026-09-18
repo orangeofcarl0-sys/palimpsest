@@ -109,18 +109,37 @@ ${table(
   ]),
 )}
 
-## 8. Forbidden layer edges (the recorded baseline exceptions)
+## 8. Forbidden edges — the recorded baseline exceptions
+
+### 8.1 Concrete forbidden IMPORT edges (the unit of an exception, SR-1C §4)
 
 ${table(
-  ["edge", "imports", "reason"],
-  architecture.forbiddenEdges.map((edge) => {
-    const key = `${edge.fromLayer}->${edge.toLayer}`;
-    const recorded = baseline.permittedForbiddenLayerEdges.find((entry) => entry.edge === key);
-    return [`${edge.fromLayer} → ${edge.toLayer}`, String(edge.count), recorded?.reason ?? "_not recorded_"];
+  ["from → to", "layers", "recorded?"],
+  architecture.forbiddenImports.map((edge) => {
+    const recorded = baseline.permittedForbiddenEdges.find((entry) => entry.from === edge.from && entry.to === edge.to);
+    return [
+      edge.from + " → " + edge.to,
+      edge.fromLayer + " → " + edge.toLayer,
+      recorded === undefined ? "**NO — this fails `architecture:check`**" : "yes",
+    ];
   }),
 )}
 
-A forbidden edge that is not in the table above **fails** \`pnpm architecture:check\`.
+### 8.2 Layer-pair summary (reporting only — never exception authority)
+
+${table(
+  ["layer pair", "imports", "permitted"],
+  [...new Set(architecture.forbiddenImports.map((edge) => edge.fromLayer + "->" + edge.toLayer))].sort().map((pair) => {
+    const edges = architecture.forbiddenImports.filter((edge) => edge.fromLayer + "->" + edge.toLayer === pair);
+    const permitted = edges.filter((edge) =>
+      baseline.permittedForbiddenEdges.some((entry) => entry.from === edge.from && entry.to === edge.to),
+    ).length;
+    return [pair, String(edges.length), String(permitted)];
+  }),
+)}
+
+A forbidden IMPORT that is not recorded in 8.1 **fails** \`pnpm architecture:check\`, even when its
+layer pair appears in 8.2.
 
 ## 9. Directory dependency matrix (top 40 by volume)
 

@@ -45,7 +45,7 @@ function harness(options: { readonly withMonitor?: boolean; readonly owned?: rea
     tools,
     owned: (options.owned ?? []).map((name) => ({
       what: name,
-      ownership: "install-owned" as const,
+      ownership: "INSTALL_CREATED_AND_MANAGED" as const,
       close: () => events.push(`close:${name}`),
     })),
     controller: { close: async () => void events.push("controller.close") },
@@ -127,7 +127,7 @@ describe("SR1-A08/A09 install lifecycle ownership", () => {
     const h = harness();
     const failing: OwnedResource = {
       what: "exploding",
-      ownership: "install-owned",
+      ownership: "INSTALL_CREATED_AND_MANAGED",
       close: () => {
         h.events.push("close:exploding");
         throw new Error("close failed");

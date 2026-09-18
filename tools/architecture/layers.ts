@@ -167,7 +167,13 @@ const PACKAGE_BARRELS: readonly string[] = Object.freeze([
  */
 const ROOT_ENTRIES: readonly string[] = Object.freeze(["src/index.ts", "src/advanced.ts"]);
 
-/** Decide the logical layer of a repo-relative path (POSIX separators). */
+/**
+ * Decide the logical layer of a repo-relative path (POSIX separators).
+ *
+ * First-party HOST code (SR-1C §9) is L5 exactly like the deployment and DSH adapters under
+ * `src/`: it is host-side wiring, it may depend on anything, and nothing may depend on it from
+ * below. There are zero file-level host exceptions at this baseline.
+ */
 export function layerOf(relativePath: string): { readonly layer: LogicalLayer; readonly why: string } {
   const override = FILE_LAYER_OVERRIDES[relativePath];
   if (override !== undefined) return { layer: override.layer, why: override.why };
@@ -178,8 +184,11 @@ export function layerOf(relativePath: string): { readonly layer: LogicalLayer; r
     return { layer: "BARREL", why: "package barrel re-exporting its own package's surfaces and adapters" };
   }
   const parts = relativePath.split("/");
+  if (parts[0] === "host") {
+    return { layer: "L5", why: "first-party DSH host bundle (host/**): host-side wiring (SR-1C §9)" };
+  }
   // src/<something> — either a directory or a top-level file.
-  if (parts[0] !== "src") return { layer: "BARREL", why: "outside src" };
+  if (parts[0] !== "src") return { layer: "BARREL", why: "outside src and host" };
   const second = parts[1];
   if (second === undefined) return { layer: "BARREL", why: "src root" };
   if (parts.length === 2) {
