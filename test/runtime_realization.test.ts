@@ -366,12 +366,23 @@ describe("D2-M09/M10/M11: compatibility (suites)", () => {
     // D2 added no install wiring; D5 later added the OPTIONAL runtime options
     // additively (behavioral backward compatibility is machine-proven by the
     // D5 §93 test: no runtime options → no runtime surface, unchanged tools).
+    //
+    // SR-1C §14: the public install CONTRACT (`InstallPalimpsestOptions`) now lives in
+    // `src/composition/install_contract.ts` and is re-exported by `src/install.ts`, so the
+    // declaration is asserted where it is declared. The re-export (and therefore the public
+    // symbol) is proven by `test/architecture/public_api_parity.test.ts`.
     const { readFileSync: read } = await import("node:fs");
+    const installContractSource = read(
+      fileURLToPath(new URL("../src/composition/install_contract.ts", import.meta.url)),
+      "utf-8",
+    );
+    expect(installContractSource).toMatch(/runtimeCarrierPort\?:/);
     const installSource = read(
       fileURLToPath(new URL("../src/install.ts", import.meta.url)),
       "utf-8",
     );
-    expect(installSource).toMatch(/runtimeCarrierPort\?:/);
+    // The install path still publishes that contract to callers.
+    expect(installSource).toMatch(/export \* from "\.\/composition\/install_contract\.js";/);
     const schedulerSource = read(
       fileURLToPath(new URL("../src/scheduler/scheduler.ts", import.meta.url)),
       "utf-8",
