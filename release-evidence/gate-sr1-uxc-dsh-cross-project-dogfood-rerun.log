@@ -1,0 +1,78 @@
+(node:35136) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "campaign": "UX-C packaged DSH cross-project collaboration",
+  "evidence": {
+    "both_packaged_deployments_compose_the_cross_project_face": {
+      "ok": true,
+      "detail": "no hand-composed install rig"
+    },
+    "both_packaged_deployments_have_the_local_collaboration_bundle": {
+      "ok": true,
+      "detail": "{\"a\":{\"storeConfigured\":true,\"storeOwned\":true,\"branchAdapter\":\"dsh-subprocess-branch:palimpsest-uxc-cross\"},\"b\":{\"storeConfigured\":true,\"storeOwned\":true,\"branchAdapter\":\"dsh-subprocess-branch:palimpsest-uxc-cross\"}}"
+    },
+    "ask_is_sent_as_an_ordinary_peer_message": {
+      "ok": true,
+      "detail": "RESOLVED: Asked the beta project."
+    },
+    "b_shipped_pump_ingests_the_request_without_manual_polling": {
+      "ok": true,
+      "detail": "{\"ingested\":1,\"pending\":1}"
+    },
+    "b_attention_uses_the_product_cross_project_text": {
+      "ok": true,
+      "detail": "[\"inbound_peer_message\"]"
+    },
+    "b_packaged_local_explore_answered_the_ask": {
+      "ok": false,
+      "detail": "ANSWERED branches=2 answer=Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were "
+    },
+    "b_execution_remains_the_sole_candidate_owner": {
+      "ok": true,
+      "detail": "[{\"status\":\"failed\",\"candidateDigest\":null},{\"status\":\"failed\",\"candidateDigest\":null}]"
+    },
+    "a_packaged_pump_consumed_the_answer": {
+      "ok": true,
+      "detail": "ANSWERED"
+    },
+    "a_attention_uses_the_product_cross_project_text": {
+      "ok": true,
+      "detail": "[\"inbound_peer_message\"]"
+    },
+    "b_packaged_focus_answered_without_branches": {
+      "ok": true,
+      "detail": "ANSWERED newBranches=0"
+    },
+    "cross_project_ask_and_answer_create_zero_commitment": {
+      "ok": true,
+      "detail": "no commitment exists on either side"
+    },
+    "foreign_workspace_read_fails_closed": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "cold_resume_get_undefined_resume_called_followup_queued": {
+      "ok": true,
+      "detail": "[\"resume:persisted-principal-session-1\",\"followup:[palimpsest cross-project] Another proje\"]"
+    },
+    "successful_activation_marks_the_signal_delivered": {
+      "ok": true,
+      "detail": "[]"
+    },
+    "failed_activation_leaves_the_signal_pending": {
+      "ok": true,
+      "detail": "{\"activations\":1,\"signals\":[\"inbound_peer_message\"],\"pending\":[\"inbound_peer_message\",\"inbound_peer_message\"]}"
+    }
+  },
+  "honestNotes": {
+    "daemon_resurrection": "UX-C proves COLD-RESUME of a PERSISTED AGENT SESSION INSIDE A RUNNING HOST (get() → undefined, resume() called, followup queued). It does NOT claim to restart a dead operating-system process or an OS service: OS-level daemon/autostart remains future packaging work (§41).",
+    "polling": "The script drives the DEPLOYMENT lifecycle (pumpAndActivate), which is what the shipped DSH runner schedules on a timer. No user mailbox polling happens: the cursor advances only after ingest, and the runner’s timer is mechanical scheduling, not semantic truth."
+  },
+  "failures": [
+    "b_packaged_local_explore_answered_the_ask: ANSWERED branches=2 answer=Local Explore produced exploratory findings: a bounded local exploration ran in 2 branch execution(s) against one reasoning cell and the admitted findings were "
+  ],
+  "elapsedMs": 10379,
+  "branchExecutions": 2,
+  "pass": false
+}
+pass=false

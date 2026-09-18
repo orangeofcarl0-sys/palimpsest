@@ -2,10 +2,10 @@
   "version": 1,
   "capturedFrom": "unknown",
   "totals": {
-    "files": 303,
-    "loc": 93623,
-    "bytes": 4031308,
-    "edges": 1250,
+    "files": 300,
+    "loc": 93386,
+    "bytes": 4020564,
+    "edges": 1230,
     "externalImports": 13,
     "unresolvedImports": 0
   },
@@ -28,7 +28,7 @@
     },
     {
       "layer": "L5",
-      "files": 19
+      "files": 16
     },
     {
       "layer": "BARREL",
@@ -67,9 +67,9 @@
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "loc": 2274,
-      "bytes": 122357,
-      "fanOut": 41,
+      "loc": 2476,
+      "bytes": 131249,
+      "fanOut": 38,
       "fanIn": 2
     },
     {
@@ -86,7 +86,7 @@
       "loc": 3095,
       "bytes": 120186,
       "fanOut": 27,
-      "fanIn": 12
+      "fanIn": 10
     }
   ],
   "topFanOut": [
@@ -96,14 +96,14 @@
       "fanOut": 44
     },
     {
-      "file": "src/install.ts",
-      "layer": "L5",
-      "fanOut": 41
-    },
-    {
       "file": "src/advanced.ts",
       "layer": "ENTRY",
       "fanOut": 40
+    },
+    {
+      "file": "src/install.ts",
+      "layer": "L5",
+      "fanOut": 38
     },
     {
       "file": "src/tools/controller.ts",
@@ -195,7 +195,7 @@
     {
       "file": "src/schema/canonical.ts",
       "layer": "L1",
-      "fanIn": 93
+      "fanIn": 92
     },
     {
       "file": "src/schema/identifier.ts",
@@ -243,17 +243,7 @@
       "fanIn": 13
     },
     {
-      "file": "src/tools/controller.ts",
-      "layer": "L2",
-      "fanIn": 12
-    },
-    {
       "file": "src/campaign/epistemic.ts",
-      "layer": "L2",
-      "fanIn": 11
-    },
-    {
-      "file": "src/coordination/index.ts",
       "layer": "L2",
       "fanIn": 11
     },
@@ -264,6 +254,11 @@
     },
     {
       "file": "src/campaign/artifacts.ts",
+      "layer": "L2",
+      "fanIn": 10
+    },
+    {
+      "file": "src/coordination/index.ts",
       "layer": "L2",
       "fanIn": 10
     },
@@ -283,12 +278,17 @@
       "fanIn": 10
     },
     {
-      "file": "src/state/index.ts",
-      "layer": "L1",
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
       "fanIn": 10
     },
     {
       "file": "src/coordination/store.ts",
+      "layer": "L2",
+      "fanIn": 9
+    },
+    {
+      "file": "src/external_assets/refs.ts",
       "layer": "L2",
       "fanIn": 9
     }
@@ -317,7 +317,7 @@
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 52
+      "count": 45
     },
     {
       "fromLayer": "L3",
@@ -330,19 +330,9 @@
       "count": 30
     },
     {
-      "fromLayer": "L5",
-      "toLayer": "L5",
-      "count": 26
-    },
-    {
       "fromLayer": "L4",
       "toLayer": "L2",
       "count": 24
-    },
-    {
-      "fromLayer": "L5",
-      "toLayer": "L3",
-      "count": 23
     },
     {
       "fromLayer": "ENTRY",
@@ -350,14 +340,19 @@
       "count": 22
     },
     {
-      "fromLayer": "L4",
+      "fromLayer": "L5",
       "toLayer": "L3",
-      "count": 17
+      "count": 22
     },
     {
       "fromLayer": "L5",
-      "toLayer": "L1",
-      "count": 15
+      "toLayer": "L5",
+      "count": 20
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L3",
+      "count": 17
     },
     {
       "fromLayer": "ENTRY",
@@ -366,8 +361,13 @@
     },
     {
       "fromLayer": "L5",
+      "toLayer": "L1",
+      "count": 11
+    },
+    {
+      "fromLayer": "L5",
       "toLayer": "BARREL",
-      "count": 9
+      "count": 7
     },
     {
       "fromLayer": "BARREL",
@@ -672,11 +672,6 @@
       "count": 5
     },
     {
-      "from": "src/composition",
-      "to": "src/tools",
-      "count": 5
-    },
-    {
       "from": "src/deployment",
       "to": "src/reasoning_cell",
       "count": 5
@@ -852,11 +847,6 @@
       "count": 3
     },
     {
-      "from": "src",
-      "to": "src/composition",
-      "count": 3
-    },
-    {
       "from": "src/interaction",
       "to": "src/advisor",
       "count": 3
@@ -929,6 +919,16 @@
     {
       "from": "src/runtime_evolution",
       "to": "src/runtime_scope",
+      "count": 3
+    },
+    {
+      "from": "src/state",
+      "to": "src/domain",
+      "count": 3
+    },
+    {
+      "from": "src/transport",
+      "to": "src/boundary_memory",
       "count": 3
     }
   ],
