@@ -185,7 +185,7 @@ persisted values fail closed.
 | GC0 | #48 | `9e98b0c` |
 | GC1 | #49 | `d19d127` |
 | GC2–GC6 | #50 | `b417baf` |
-| GC7–GC8 | #51 | recorded on branch |
+| GC7–GC8 | #51 | `0c45ac7` |
 
 ## 18. Final verdict
 
@@ -245,3 +245,19 @@ WAIT admission arms behind one `admitCompiledNextAction` boundary requiring a
 complete, strictly parsed, fresh `CompiledCampaignAction`. The original GC record
 is not rewritten; see
 [`G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md`](G10-GC3-UNIFIED-NEXT-ACTION-ADMISSION-CLOSURE.md).
+
+## 23. Campaign final canonical gate (G10-GC7–GC8)
+
+```text
+main SHA            0c45ac7ce60dabf8349390726bc1f6dcc8480dce
+git diff --check    clean
+unit                102 files / 873 tests passed
+pnpm build          PASS
+pnpm build:web      PASS
+e2e                 21/21 passed
+canonical main CI   run 34761851034 — SUCCESS (documented E2E-DEBUG-01 flake, failed-job rerun)
+```
+
+RS-1 note: this record was appended as a new final section. It was originally the branch's
+section 21; main had since added the GC2/GC3 historical notes above, and those records are
+not rewritten (RS-1 repository stabilization).
