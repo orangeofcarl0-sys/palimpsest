@@ -68,6 +68,16 @@ export interface ModuleArchitecture {
   readonly root: string;
   readonly modules: readonly ModuleNode[];
   readonly layerEdges: readonly LayerEdge[];
+  /**
+   * SR-1C §4/§5: forbidden edges are reported BOTH ways — as concrete import edges (the unit of
+   * an exception) and as layer-pair classes (reporting only, never exception authority).
+   */
+  readonly forbiddenImports: readonly {
+    readonly from: string;
+    readonly to: string;
+    readonly fromLayer: LogicalLayer;
+    readonly toLayer: LogicalLayer;
+  }[];
   readonly forbiddenEdges: readonly LayerEdge[];
   readonly directoryEdges: readonly DirectoryEdge[];
   readonly stronglyConnectedComponents: readonly StronglyConnectedComponent[];
@@ -84,7 +94,15 @@ export interface ModuleArchitecture {
 
 const toPosix = (value: string): string => value.split(sep).join("/");
 
-/** Collect every `.ts` file under `src/`, excluding declaration files. */
+/**
+ * Every FIRST-PARTY source file the checker owns (SR-1C §8):
+ *
+ *   the `src` tree   TypeScript product sources (declaration files excluded)
+ *   the `host` tree  the shipped DSH host bundle's JavaScript (`.js`, and `.mjs` when present)
+ *
+ * Deliberately excluded: build output, dependency trees and release evidence — none of them are
+ * authored source, and scanning them would report edges nobody wrote.
+ */
 export function listSourceFiles(root: string): readonly string[] {
   const out: string[] = [];
   const walk = (dir: string): void => {
@@ -94,11 +112,14 @@ export function listSourceFiles(root: string): readonly string[] {
         walk(path);
         continue;
       }
-      if (!entry.name.endsWith(".ts") || entry.name.endsWith(".d.ts")) continue;
+      const isTypescript = entry.name.endsWith(".ts") && !entry.name.endsWith(".d.ts");
+      const isHostJavascript = entry.name.endsWith(".js") || entry.name.endsWith(".mjs");
+      if (!isTypescript && !isHostJavascript) continue;
       out.push(toPosix(relative(root, path)));
     }
   };
   walk(join(root, "src"));
+  walk(join(root, "host"));
   return out.sort();
 }
 
@@ -290,14 +311,24 @@ export function exportSurfaceOf(_fileName: string, text: string): readonly strin
   return [...names].sort();
 }
 
-/** Resolve a specifier as written in a NodeNext `.js`-style import to a source file. */
+/**
+ * Resolve a specifier to a first-party source file.
+ *
+ * Both conventions in this repository are supported: NodeNext TypeScript, where `./x.js` means
+ * `x.ts`, and real host JavaScript, where `./x.js` means `x.js`. Bare specifiers are external
+ * and are never resolved (SR-1C §10: no fabricated edges for runtime bindings).
+ */
 export function resolveSpecifier(root: string, fromFile: string, specifier: string): string | undefined {
   if (!specifier.startsWith(".")) return undefined;
   const base = resolve(root, dirname(fromFile), specifier);
   const candidates: string[] = [];
-  if (base.endsWith(".js")) candidates.push(`${base.slice(0, -3)}.ts`);
-  if (base.endsWith(".mjs")) candidates.push(`${base.slice(0, -4)}.ts`);
-  candidates.push(`${base}.ts`, join(base, "index.ts"));
+  for (const suffix of [".js", ".mjs"] as const) {
+    if (base.endsWith(suffix)) {
+      const stem = base.slice(0, -suffix.length);
+      candidates.push(`${stem}.ts`, `${stem}.js`, base);
+    }
+  }
+  candidates.push(`${base}.ts`, `${base}.js`, join(base, "index.ts"), join(base, "index.js"));
   for (const candidate of candidates) {
     try {
       if (statSync(candidate).isFile()) return toPosix(relative(root, candidate));
@@ -457,6 +488,16 @@ export function analyseModuleArchitecture(root: string): ModuleArchitecture {
     root,
     modules: nodes,
     layerEdges,
+    forbiddenImports: nodes.flatMap((node) =>
+      node.imports
+        .map((target) => ({
+          from: node.file,
+          to: target,
+          fromLayer: node.layer,
+          toLayer: byFile.get(target)?.layer ?? node.layer,
+        }))
+        .filter((edge) => !isAllowedEdge(edge.fromLayer, edge.toLayer)),
+    ),
     forbiddenEdges: layerEdges.filter((edge) => !isAllowedEdge(edge.fromLayer, edge.toLayer)),
     directoryEdges: [...directoryEdgeCounts.values()].sort((a, b) => b.count - a.count),
     stronglyConnectedComponents: stronglyConnectedComponents(files, edgeMap),

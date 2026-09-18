@@ -1,12 +1,12 @@
 {
-  "version": 1,
+  "version": 2,
   "capturedFrom": "unknown",
   "totals": {
-    "files": 303,
-    "loc": 93623,
-    "bytes": 4031308,
+    "files": 306,
+    "loc": 94309,
+    "bytes": 4061108,
     "edges": 1250,
-    "externalImports": 13,
+    "externalImports": 19,
     "unresolvedImports": 0
   },
   "layers": [
@@ -28,7 +28,7 @@
     },
     {
       "layer": "L5",
-      "files": 19
+      "files": 22
     },
     {
       "layer": "BARREL",
@@ -933,12 +933,36 @@
     }
   ],
   "baseline": {
-    "version": 1,
+    "version": 2,
     "capturedFrom": "unknown",
-    "permittedForbiddenLayerEdges": [
+    "permittedForbiddenEdges": [
       {
-        "edge": "L2->L3",
-        "reason": "Four capability modules read a PROJECTION or the durable operating posture: monitor/driver.ts reads project_operating/{posture,work_mode_profile}, and project_workspace/view.ts + tools/controller.ts read the orchestration graph projection in tools/graph.ts. These are real upward edges, not misclassifications; the direction is recorded here so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+        "from": "src/monitor/driver.ts",
+        "to": "src/project_operating/posture.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/monitor/driver.ts",
+        "to": "src/project_operating/work_mode_profile.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/project_workspace/view.ts",
+        "to": "src/tools/graph.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/tools/controller.ts",
+        "to": "src/tools/graph.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
       }
     ],
     "permittedCycles": [

@@ -84,6 +84,16 @@ function syntheticArchitecture(spec: Readonly<Record<string, readonly string[]>>
     root: "/synthetic",
     modules,
     layerEdges,
+    forbiddenImports: modules.flatMap((node) =>
+      node.imports
+        .map((target) => ({
+          from: node.file,
+          to: target,
+          fromLayer: node.layer,
+          toLayer: byFile.get(target)?.layer ?? node.layer,
+        }))
+        .filter((edge) => !isAllowedEdge(edge.fromLayer, edge.toLayer)),
+    ),
     forbiddenEdges: layerEdges.filter((edge) => !isAllowedEdge(edge.fromLayer, edge.toLayer)),
     directoryEdges: [],
     stronglyConnectedComponents: stronglyConnectedComponents(files, edgeMap),
@@ -93,9 +103,9 @@ function syntheticArchitecture(spec: Readonly<Record<string, readonly string[]>>
 }
 
 const emptyBaseline = (): ArchitectureBaseline => ({
-  version: 1,
+  version: 2,
   capturedFrom: "synthetic",
-  permittedForbiddenLayerEdges: [],
+  permittedForbiddenEdges: [],
   permittedCycles: [],
   permittedUnresolvedImports: [],
 });
@@ -110,7 +120,7 @@ describe("SR-1 §10 the checker rejects the four named cases", () => {
     const graph = syntheticArchitecture({ "src/domain/models.ts": ["src/deployment/launch.ts"], "src/deployment/launch.ts": [] });
     const result = checkArchitecture(graph, emptyBaseline());
     expect(result.ok).toBe(false);
-    expect(result.violations[0]?.kind).toBe("forbidden_layer_edge");
+    expect(result.violations[0]?.kind).toBe("forbidden_import");
     expect(result.violations[0]?.detail).toContain("L1 → L5 is forbidden");
   });
 
@@ -178,7 +188,15 @@ describe("SR-1 §10 the checker accepts the allowed directions and recorded exce
     });
     const baseline: ArchitectureBaseline = {
       ...emptyBaseline(),
-      permittedForbiddenLayerEdges: [{ edge: "L2->L3", reason: "recorded for the test" }],
+      permittedForbiddenEdges: [
+        {
+          from: "src/monitor/driver.ts",
+          to: "src/project_operating/posture.ts",
+          fromLayer: "L2",
+          toLayer: "L3",
+          reason: "recorded for the test",
+        },
+      ],
     };
     const result = checkArchitecture(graph, baseline);
     expect(result.ok).toBe(true);
@@ -241,6 +259,64 @@ describe("SR-1 §10 the checker accepts the allowed directions and recorded exce
   });
 });
 
+/* ================================================================== *
+ * SR-1C §4-§9 — the two checker repairs
+ * ================================================================== */
+
+describe("SR-1C R0A forbidden-edge exceptions are concrete edges, not layer-pair classes", () => {
+  const historical = () =>
+    syntheticArchitecture({
+      "src/monitor/driver.ts": ["src/project_operating/posture.ts"],
+      "src/project_operating/posture.ts": [],
+    });
+
+  it("a recorded concrete edge passes", () => {
+    const graph = historical();
+    const baseline = baselineFrom(graph, { capturedFrom: "test" });
+    expect(checkArchitecture(graph, baseline).ok).toBe(true);
+  });
+
+  it("a DIFFERENT edge with the SAME permitted layer pair FAILS", () => {
+    const baseline = baselineFrom(historical(), { capturedFrom: "test" });
+    // Same layers (L2 -> L3), different files: monitor is recorded, campaign is not.
+    const grown = syntheticArchitecture({
+      "src/monitor/driver.ts": ["src/project_operating/posture.ts"],
+      "src/project_operating/posture.ts": [],
+      "src/campaign/digest.ts": ["src/project_operating/posture.ts"],
+    });
+    const result = checkArchitecture(grown, baseline);
+    expect(result.ok).toBe(false);
+    expect(result.violations.some((violation) => violation.kind === "forbidden_import")).toBe(true);
+  });
+
+  it("growing the count of a recorded layer pair from 1 to 2 fails if the second pair is new", () => {
+    const baseline = baselineFrom(historical(), { capturedFrom: "test" });
+    const grown = syntheticArchitecture({
+      "src/monitor/driver.ts": ["src/project_operating/posture.ts", "src/project_operating/work_mode_profile.ts"],
+      "src/project_operating/posture.ts": [],
+      "src/project_operating/work_mode_profile.ts": [],
+    });
+    expect(checkArchitecture(grown, baseline).ok).toBe(false);
+  });
+});
+
+describe("SR-1C R0B first-party host JavaScript is inside the checker", () => {
+  it("the live analysis covers host/**/*.js as L5", () => {
+    const architecture = analyseModuleArchitecture(REPO);
+    const hostModules = architecture.modules.filter((node) => node.file.startsWith("host/"));
+    expect(hostModules.length).toBeGreaterThanOrEqual(3);
+    expect(hostModules.every((node) => node.layer === "L5")).toBe(true);
+    expect(hostModules.some((node) => node.file === "host/dsh/lib/runner.js")).toBe(true);
+  });
+
+  it("host modules resolve their own relative specifiers and stay free of src dependencies", () => {
+    const architecture = analyseModuleArchitecture(REPO);
+    const hostModules = architecture.modules.filter((node) => node.file.startsWith("host/"));
+    expect(hostModules.every((node) => node.unresolvedImports.length === 0)).toBe(true);
+    const srcEdges = hostModules.flatMap((node) => node.imports.filter((target) => target.startsWith("src/")));
+    expect(srcEdges).toEqual([]);
+  });
+});
 /* ================================================================== *
  * The extractor itself (this toolchain has no JS compiler API)
  * ================================================================== */
@@ -328,13 +404,13 @@ describe("SR1-A01/A02 the live repository has no new forbidden edge and no new c
 
   it("SR1-A01 no forbidden layer edge outside the recorded baseline", () => {
     const result = checkArchitecture(architecture, baseline);
-    expect(result.violations.filter((violation) => violation.kind === "forbidden_layer_edge")).toEqual([]);
-    // The recorded exceptions are still exactly the ones with written reasons.
-    for (const edge of architecture.forbiddenEdges) {
-      const key = `${edge.fromLayer}->${edge.toLayer}`;
+    expect(result.violations.filter((violation) => violation.kind === "forbidden_import")).toEqual([]);
+    // The recorded exceptions are still exactly the ones with written reasons, per CONCRETE edge.
+    for (const edge of architecture.forbiddenImports) {
+      const key = `${edge.from} -> ${edge.to}`;
       expect(BASELINE_EDGE_REASONS.has(key), `unrecorded forbidden edge ${key}`).toBe(true);
     }
-    expect(architecture.forbiddenEdges.length).toBeLessThanOrEqual(1);
+    expect(architecture.forbiddenImports.length).toBeLessThanOrEqual(4);
   });
 
   it("SR1-A02 no cross-layer cycle outside the recorded baseline", () => {
@@ -352,7 +428,7 @@ describe("SR1-A01/A02 the live repository has no new forbidden edge and no new c
   it("SR1-A02 the baseline records a reason for every exception it carries", () => {
     const result = checkArchitecture(architecture, baseline);
     expect(result.unreasonedExceptions).toEqual([]);
-    expect(baseline.permittedForbiddenLayerEdges.every((entry) => entry.reason.length > 40)).toBe(true);
+    expect(baseline.permittedForbiddenEdges.every((entry) => entry.reason.length > 40)).toBe(true);
   });
 
   it("SR1-A01 the rule set is not vacuous: a synthetic upward edge would fail on this very graph", () => {

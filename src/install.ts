@@ -2201,32 +2201,32 @@ export function installPalimpsest(
       // G10-R: closed because this install wired it into the application surface.
       ...(options.organizationMemoryStore === undefined
         ? []
-        : [{ what: "organizationMemoryStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.organizationMemoryStore?.close() }]),
+        : [{ what: "organizationMemoryStore", ownership: "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY" as const, close: () => options.organizationMemoryStore?.close() }]),
       // UX-C §9/SC-4: only when ownership was made explicit; a deployment-owned store keeps its own lifetime.
       ...(options.reasoningCellStoreOwned === true
-        ? [{ what: "reasoningCellStore", ownership: "install-owned" as const, close: () => options.reasoningCellStore?.close() }]
+        ? [{ what: "reasoningCellStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => options.reasoningCellStore?.close() }]
         : []),
       // G10-T: the authoritative proof store, when one was supplied.
       ...(options.proofEvidenceStore === undefined
         ? []
-        : [{ what: "proofEvidenceStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.proofEvidenceStore?.close() }]),
+        : [{ what: "proofEvidenceStore", ownership: "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY" as const, close: () => options.proofEvidenceStore?.close() }]),
       // G10-V: the narrowly-owned workspace/management stores, when supplied.
       ...(options.projectAssociationStore === undefined
         ? []
-        : [{ what: "projectAssociationStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.projectAssociationStore?.close() }]),
+        : [{ what: "projectAssociationStore", ownership: "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY" as const, close: () => options.projectAssociationStore?.close() }]),
       ...(options.projectJournalStore === undefined
         ? []
-        : [{ what: "projectJournalStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.projectJournalStore?.close() }]),
+        : [{ what: "projectJournalStore", ownership: "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY" as const, close: () => options.projectJournalStore?.close() }]),
       ...(options.managementPreferenceStore === undefined
         ? []
-        : [{ what: "managementPreferenceStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.managementPreferenceStore?.close() }]),
+        : [{ what: "managementPreferenceStore", ownership: "CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY" as const, close: () => options.managementPreferenceStore?.close() }]),
       // G10-AD §29: the deployment-local verification HISTORY store, only when this install created it.
       ...(verificationStoreCreated && projectVerificationStore !== undefined
-        ? [{ what: "projectVerificationStore", ownership: "install-owned" as const, close: () => projectVerificationStore?.close() }]
+        ? [{ what: "projectVerificationStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => projectVerificationStore?.close() }]
         : []),
       // G10-AE §17: the deployment-local bridge history store, same discipline.
       ...(externalAssetBridgeStoreCreated && externalAssetBridgeStore !== undefined
-        ? [{ what: "externalAssetBridgeStore", ownership: "install-owned" as const, close: () => externalAssetBridgeStore?.close() }]
+        ? [{ what: "externalAssetBridgeStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => externalAssetBridgeStore?.close() }]
         : []),
     ]),
   });
