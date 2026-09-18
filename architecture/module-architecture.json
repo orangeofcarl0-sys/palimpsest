@@ -1,0 +1,1046 @@
+{
+  "version": 2,
+  "capturedFrom": "unknown",
+  "totals": {
+    "files": 344,
+    "loc": 96184,
+    "bytes": 4143206,
+    "edges": 1436,
+    "externalImports": 19,
+    "unresolvedImports": 0
+  },
+  "layers": [
+    {
+      "layer": "L1",
+      "files": 59
+    },
+    {
+      "layer": "L2",
+      "files": 168
+    },
+    {
+      "layer": "L3",
+      "files": 49
+    },
+    {
+      "layer": "L4",
+      "files": 13
+    },
+    {
+      "layer": "L5",
+      "files": 50
+    },
+    {
+      "layer": "BARREL",
+      "files": 3
+    },
+    {
+      "layer": "ENTRY",
+      "files": 2
+    }
+  ],
+  "hotspots": [
+    {
+      "file": "src/application/http.ts",
+      "layer": "L5",
+      "loc": 18,
+      "bytes": 1018,
+      "fanOut": 2,
+      "fanIn": 2
+    },
+    {
+      "file": "src/application/surface.ts",
+      "layer": "L4",
+      "loc": 56,
+      "bytes": 2373,
+      "fanOut": 9,
+      "fanIn": 17
+    },
+    {
+      "file": "src/deployment/launch.ts",
+      "layer": "L5",
+      "loc": 544,
+      "bytes": 24459,
+      "fanOut": 18,
+      "fanIn": 1
+    },
+    {
+      "file": "src/install.ts",
+      "layer": "L5",
+      "loc": 336,
+      "bytes": 15615,
+      "fanOut": 11,
+      "fanIn": 2
+    },
+    {
+      "file": "src/tools/application_tools.ts",
+      "layer": "L5",
+      "loc": 10,
+      "bytes": 383,
+      "fanOut": 1,
+      "fanIn": 3
+    },
+    {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "loc": 3095,
+      "bytes": 120186,
+      "fanOut": 27,
+      "fanIn": 18
+    }
+  ],
+  "topFanOut": [
+    {
+      "file": "src/advanced.ts",
+      "layer": "ENTRY",
+      "fanOut": 40
+    },
+    {
+      "file": "src/application/factory.ts",
+      "layer": "L4",
+      "fanOut": 34
+    },
+    {
+      "file": "src/composition/install_contract.ts",
+      "layer": "L5",
+      "fanOut": 34
+    },
+    {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "fanOut": 27
+    },
+    {
+      "file": "src/project_management/service.ts",
+      "layer": "L3",
+      "fanOut": 19
+    },
+    {
+      "file": "src/deployment/launch.ts",
+      "layer": "L5",
+      "fanOut": 18
+    },
+    {
+      "file": "src/composition/cognition.ts",
+      "layer": "L5",
+      "fanOut": 17
+    },
+    {
+      "file": "src/effects/promotion.ts",
+      "layer": "L2",
+      "fanOut": 14
+    },
+    {
+      "file": "src/proof_asset/index.ts",
+      "layer": "L2",
+      "fanOut": 14
+    },
+    {
+      "file": "src/composition/governance.ts",
+      "layer": "L5",
+      "fanOut": 13
+    },
+    {
+      "file": "src/interaction/collaboration.ts",
+      "layer": "L3",
+      "fanOut": 13
+    },
+    {
+      "file": "src/campaign/index.ts",
+      "layer": "L2",
+      "fanOut": 12
+    },
+    {
+      "file": "src/composition/application.ts",
+      "layer": "L5",
+      "fanOut": 12
+    },
+    {
+      "file": "src/adapters/http/router.ts",
+      "layer": "L5",
+      "fanOut": 11
+    },
+    {
+      "file": "src/application/surfaces/project.ts",
+      "layer": "L4",
+      "fanOut": 11
+    },
+    {
+      "file": "src/composition/collaboration.ts",
+      "layer": "L5",
+      "fanOut": 11
+    },
+    {
+      "file": "src/external_assets/service.ts",
+      "layer": "L2",
+      "fanOut": 11
+    },
+    {
+      "file": "src/install.ts",
+      "layer": "L5",
+      "fanOut": 11
+    },
+    {
+      "file": "src/monitor/driver.ts",
+      "layer": "L2",
+      "fanOut": 11
+    },
+    {
+      "file": "src/adapters/dsh/index.ts",
+      "layer": "L5",
+      "fanOut": 10
+    }
+  ],
+  "topFanIn": [
+    {
+      "file": "src/schema/canonical.ts",
+      "layer": "L1",
+      "fanIn": 92
+    },
+    {
+      "file": "src/schema/identifier.ts",
+      "layer": "L1",
+      "fanIn": 36
+    },
+    {
+      "file": "src/federation/peer.ts",
+      "layer": "L2",
+      "fanIn": 35
+    },
+    {
+      "file": "src/schema/index.ts",
+      "layer": "L1",
+      "fanIn": 31
+    },
+    {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "fanIn": 18
+    },
+    {
+      "file": "src/tools/dsh_types.ts",
+      "layer": "L5",
+      "fanIn": 18
+    },
+    {
+      "file": "src/application/surface.ts",
+      "layer": "L4",
+      "fanIn": 17
+    },
+    {
+      "file": "src/binding/contract.ts",
+      "layer": "L1",
+      "fanIn": 17
+    },
+    {
+      "file": "src/organization_memory/artifacts.ts",
+      "layer": "L2",
+      "fanIn": 17
+    },
+    {
+      "file": "src/campaign/store.ts",
+      "layer": "L2",
+      "fanIn": 16
+    },
+    {
+      "file": "src/architecture/index.ts",
+      "layer": "L1",
+      "fanIn": 15
+    },
+    {
+      "file": "src/domain/errors.ts",
+      "layer": "L1",
+      "fanIn": 13
+    },
+    {
+      "file": "src/organization/definition.ts",
+      "layer": "L2",
+      "fanIn": 13
+    },
+    {
+      "file": "src/recipes/execution.ts",
+      "layer": "L3",
+      "fanIn": 13
+    },
+    {
+      "file": "src/state/index.ts",
+      "layer": "L1",
+      "fanIn": 13
+    },
+    {
+      "file": "src/adapters/http/common.ts",
+      "layer": "L5",
+      "fanIn": 12
+    },
+    {
+      "file": "src/coordination/index.ts",
+      "layer": "L2",
+      "fanIn": 12
+    },
+    {
+      "file": "src/runtime_scope/index.ts",
+      "layer": "L2",
+      "fanIn": 12
+    },
+    {
+      "file": "src/boundary_memory/index.ts",
+      "layer": "L2",
+      "fanIn": 11
+    },
+    {
+      "file": "src/campaign/epistemic.ts",
+      "layer": "L2",
+      "fanIn": 11
+    }
+  ],
+  "layerEdges": [
+    {
+      "fromLayer": "L2",
+      "toLayer": "L2",
+      "count": 518
+    },
+    {
+      "fromLayer": "L2",
+      "toLayer": "L1",
+      "count": 160
+    },
+    {
+      "fromLayer": "L1",
+      "toLayer": "L1",
+      "count": 146
+    },
+    {
+      "fromLayer": "L3",
+      "toLayer": "L3",
+      "count": 112
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L5",
+      "count": 94
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L2",
+      "count": 84
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L2",
+      "count": 55
+    },
+    {
+      "fromLayer": "L3",
+      "toLayer": "L2",
+      "count": 36
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L3",
+      "count": 36
+    },
+    {
+      "fromLayer": "L3",
+      "toLayer": "L1",
+      "count": 30
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L3",
+      "count": 24
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L4",
+      "count": 23
+    },
+    {
+      "fromLayer": "ENTRY",
+      "toLayer": "L2",
+      "count": 22
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L1",
+      "count": 17
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L4",
+      "count": 16
+    },
+    {
+      "fromLayer": "ENTRY",
+      "toLayer": "L1",
+      "count": 13
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "BARREL",
+      "count": 11
+    },
+    {
+      "fromLayer": "BARREL",
+      "toLayer": "L2",
+      "count": 5
+    },
+    {
+      "fromLayer": "ENTRY",
+      "toLayer": "L3",
+      "count": 5
+    },
+    {
+      "fromLayer": "BARREL",
+      "toLayer": "L1",
+      "count": 4
+    },
+    {
+      "fromLayer": "BARREL",
+      "toLayer": "L5",
+      "count": 4
+    },
+    {
+      "fromLayer": "ENTRY",
+      "toLayer": "L5",
+      "count": 4
+    },
+    {
+      "fromLayer": "L2",
+      "toLayer": "L3",
+      "count": 4
+    },
+    {
+      "fromLayer": "BARREL",
+      "toLayer": "L4",
+      "count": 3
+    },
+    {
+      "fromLayer": "ENTRY",
+      "toLayer": "BARREL",
+      "count": 3
+    },
+    {
+      "fromLayer": "BARREL",
+      "toLayer": "L3",
+      "count": 2
+    },
+    {
+      "fromLayer": "L2",
+      "toLayer": "BARREL",
+      "count": 2
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L1",
+      "count": 2
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "ENTRY",
+      "count": 1
+    }
+  ],
+  "forbiddenLayerEdges": [
+    {
+      "edge": "L2->L3",
+      "count": 4
+    }
+  ],
+  "cycles": [
+    {
+      "size": 10,
+      "files": [
+        "src/boundary_memory/ref.ts",
+        "src/coordination/attempts.ts",
+        "src/coordination/index.ts",
+        "src/coordination/participate.ts",
+        "src/coordination/participation.ts",
+        "src/coordination/store.ts",
+        "src/federation/commitment.ts",
+        "src/federation/messages.ts",
+        "src/federation/peer.ts",
+        "src/organization/definition.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 8,
+      "files": [
+        "src/campaign/compiler.ts",
+        "src/campaign/digest.ts",
+        "src/campaign/intervention.ts",
+        "src/campaign/lifecycle.ts",
+        "src/campaign/production.ts",
+        "src/campaign/project.ts",
+        "src/campaign/prospective.ts",
+        "src/campaign/store.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 4,
+      "files": [
+        "src/domain/stage_graph.ts",
+        "src/domain/state_machine.ts",
+        "src/schema/index.ts",
+        "src/schema/models.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 3,
+      "files": [
+        "src/canvas/derive.ts",
+        "src/tools/controller.ts",
+        "src/tools/graph.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 3,
+      "files": [
+        "src/proof_asset/disclosure.ts",
+        "src/proof_asset/service.ts",
+        "src/proof_asset/store.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 2,
+      "files": [
+        "src/effects/promotion.ts",
+        "src/recovery/recovery.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 2,
+      "files": [
+        "src/project_management/policy.ts",
+        "src/project_management/profile.ts"
+      ],
+      "selfLoop": false
+    },
+    {
+      "size": 2,
+      "files": [
+        "src/project_verification/artifacts.ts",
+        "src/project_verification/independence.ts"
+      ],
+      "selfLoop": false
+    }
+  ],
+  "directoryEdges": [
+    {
+      "from": "src/federation",
+      "to": "src/coordination",
+      "count": 17
+    },
+    {
+      "from": "src/campaign",
+      "to": "src/schema",
+      "count": 16
+    },
+    {
+      "from": "src/composition",
+      "to": "src/tools",
+      "count": 12
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/application",
+      "count": 11
+    },
+    {
+      "from": "src/proof_asset",
+      "to": "src/schema",
+      "count": 11
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/tools",
+      "count": 10
+    },
+    {
+      "from": "src/application",
+      "to": "src/federation",
+      "count": 10
+    },
+    {
+      "from": "src/domain",
+      "to": "src/schema",
+      "count": 10
+    },
+    {
+      "from": "src",
+      "to": "src/tools",
+      "count": 8
+    },
+    {
+      "from": "src/external_assets",
+      "to": "src/schema",
+      "count": 8
+    },
+    {
+      "from": "src",
+      "to": "src/composition",
+      "count": 8
+    },
+    {
+      "from": "src/monitor",
+      "to": "src/campaign",
+      "count": 8
+    },
+    {
+      "from": "src/runtime",
+      "to": "src/binding",
+      "count": 8
+    },
+    {
+      "from": "src/tools",
+      "to": "src/domain",
+      "count": 8
+    },
+    {
+      "from": "src",
+      "to": "src/domain",
+      "count": 7
+    },
+    {
+      "from": "src/application",
+      "to": "src/interaction",
+      "count": 7
+    },
+    {
+      "from": "src/effects",
+      "to": "src/domain",
+      "count": 7
+    },
+    {
+      "from": "src/project_workspace",
+      "to": "src/schema",
+      "count": 7
+    },
+    {
+      "from": "src/proof_asset",
+      "to": "src/reasoning_cell",
+      "count": 7
+    },
+    {
+      "from": "src/transport",
+      "to": "src/federation",
+      "count": 7
+    },
+    {
+      "from": "src/advisor",
+      "to": "src/organization_memory",
+      "count": 6
+    },
+    {
+      "from": "src/application",
+      "to": "src/recipes",
+      "count": 6
+    },
+    {
+      "from": "src/boundary_memory",
+      "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/proof_asset",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/recipes",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/state",
+      "count": 6
+    },
+    {
+      "from": "src/external_assets",
+      "to": "src/project_workspace",
+      "count": 6
+    },
+    {
+      "from": "src/federation",
+      "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/interaction",
+      "to": "src/recipes",
+      "count": 6
+    },
+    {
+      "from": "src/interaction",
+      "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/organization_evolution",
+      "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/project_management",
+      "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/project_management",
+      "to": "src/project_operating",
+      "count": 6
+    },
+    {
+      "from": "src/application",
+      "to": "src/campaign",
+      "count": 5
+    },
+    {
+      "from": "src/application",
+      "to": "src/tools",
+      "count": 5
+    },
+    {
+      "from": "src/binding",
+      "to": "src/schema",
+      "count": 5
+    },
+    {
+      "from": "src/composition",
+      "to": "src/effects",
+      "count": 5
+    },
+    {
+      "from": "src/deployment",
+      "to": "src/reasoning_cell",
+      "count": 5
+    },
+    {
+      "from": "src/experiment",
+      "to": "src/organization_memory",
+      "count": 5
+    },
+    {
+      "from": "src/institution",
+      "to": "src/organization",
+      "count": 5
+    },
+    {
+      "from": "src/project_management",
+      "to": "src/recipes",
+      "count": 5
+    },
+    {
+      "from": "src/project_verification",
+      "to": "src/schema",
+      "count": 5
+    },
+    {
+      "from": "src/reasoning_cell",
+      "to": "src/schema",
+      "count": 5
+    },
+    {
+      "from": "src/tools",
+      "to": "src/schema",
+      "count": 5
+    },
+    {
+      "from": "src/tools",
+      "to": "src/effects",
+      "count": 5
+    },
+    {
+      "from": "src",
+      "to": "src/state",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/advisor",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/reasoning_cell",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/project_operating",
+      "count": 4
+    },
+    {
+      "from": "src/attention",
+      "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/boundary_memory",
+      "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/interaction",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/advisor",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/campaign",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/external_assets",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/project_workspace",
+      "count": 4
+    },
+    {
+      "from": "src/coordination",
+      "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/evidence",
+      "to": "src/domain",
+      "count": 4
+    },
+    {
+      "from": "src/organization",
+      "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/organization_evolution",
+      "to": "src/organization",
+      "count": 4
+    },
+    {
+      "from": "src/organization_evolution",
+      "to": "src/boundary_memory",
+      "count": 4
+    },
+    {
+      "from": "src/recipes",
+      "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/recipes",
+      "to": "src/reasoning_cell",
+      "count": 4
+    },
+    {
+      "from": "src/runtime_evolution",
+      "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/runtime_scope",
+      "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/state",
+      "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/tools",
+      "to": "src/evidence",
+      "count": 4
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/proof_asset",
+      "count": 3
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/project_management",
+      "count": 3
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/project_workspace",
+      "count": 3
+    },
+    {
+      "from": "src",
+      "to": "src/application",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/boundary_memory",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/organization",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/organization_memory",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/runtime_scope",
+      "count": 3
+    },
+    {
+      "from": "src/architecture",
+      "to": "src/schema",
+      "count": 3
+    },
+    {
+      "from": "src/binding",
+      "to": "src/architecture",
+      "count": 3
+    },
+    {
+      "from": "src/binding",
+      "to": "src/run",
+      "count": 3
+    },
+    {
+      "from": "src/canvas",
+      "to": "src/architecture",
+      "count": 3
+    }
+  ],
+  "baseline": {
+    "version": 2,
+    "capturedFrom": "unknown",
+    "permittedForbiddenEdges": [
+      {
+        "from": "src/monitor/driver.ts",
+        "to": "src/project_operating/posture.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/monitor/driver.ts",
+        "to": "src/project_operating/work_mode_profile.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/project_workspace/view.ts",
+        "to": "src/tools/graph.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      },
+      {
+        "from": "src/tools/controller.ts",
+        "to": "src/tools/graph.ts",
+        "fromLayer": "L2",
+        "toLayer": "L3",
+        "reason": "One of the four historical upward imports recorded at the SR-1 baseline: a capability module reads a PROJECTION or the durable operating posture. These are real edges, not misclassifications, and each is enumerated individually so that no NEW one may appear. Removing them is SR-2 work (the projection should depend on the owner, not the other way round), not part of a structural refactor that must not change semantics."
+      }
+    ],
+    "permittedCycles": [
+      {
+        "files": [
+          "src/boundary_memory/ref.ts",
+          "src/coordination/attempts.ts",
+          "src/coordination/index.ts",
+          "src/coordination/participate.ts",
+          "src/coordination/participation.ts",
+          "src/coordination/store.ts",
+          "src/federation/commitment.ts",
+          "src/federation/messages.ts",
+          "src/federation/peer.ts",
+          "src/organization/definition.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/campaign/compiler.ts",
+          "src/campaign/digest.ts",
+          "src/campaign/intervention.ts",
+          "src/campaign/lifecycle.ts",
+          "src/campaign/production.ts",
+          "src/campaign/project.ts",
+          "src/campaign/prospective.ts",
+          "src/campaign/store.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/domain/stage_graph.ts",
+          "src/domain/state_machine.ts",
+          "src/schema/index.ts",
+          "src/schema/models.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/canvas/derive.ts",
+          "src/tools/controller.ts",
+          "src/tools/graph.ts"
+        ],
+        "reason": "cross-layer cycle (L3→L2→L3): tools/graph.ts imports canvas/derive.ts, tools/controller.ts imports the graph projection, and canvas/derive.ts reads the controller. Recorded so that it cannot grow; unwinding it is a canonical SR-2 candidate because it spans the Work orchestration owner and a derived projection."
+      },
+      {
+        "files": [
+          "src/proof_asset/disclosure.ts",
+          "src/proof_asset/service.ts",
+          "src/proof_asset/store.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/effects/promotion.ts",
+          "src/recovery/recovery.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/project_management/policy.ts",
+          "src/project_management/profile.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      },
+      {
+        "files": [
+          "src/project_verification/artifacts.ts",
+          "src/project_verification/independence.ts"
+        ],
+        "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
+      }
+    ],
+    "permittedUnresolvedImports": []
+  }
+}

@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { handleApplicationRequest } from "../src/application/http.js";
+import { applicationRouteInventory } from "../src/adapters/http/router.js";
 import {
   SqliteCampaignStore,
   makeCampaignProductionService,
@@ -798,12 +799,23 @@ describe("G10-AC-R ACR-N20 no HTTP force tick", () => {
 
     // Structural: the route table contains the two read-only monitor routes and no
     // force-tick route of any name.
-    const httpSource = readFileSync(fileURLToPath(new URL("../src/application/http.ts", import.meta.url)), "utf8");
-    const monitorRoutes = [...httpSource.matchAll(/pathname === "(\/api\/monitor\/[^"]+)"/gu)].map((match) => match[1]!);
+    //
+    // SR-1 R3B: the route table moved from a `pathname === "…"` if-chain in
+    // `src/application/http.ts` to the static manifest under `src/adapters/http/`. The claim is
+    // unchanged, and this now reads the MANIFEST instead of pattern-matching one file's source —
+    // so a monitor route declared in a cluster the old grep could not see still fails here.
+    const monitorRoutes = applicationRouteInventory()
+      .map((entry) => entry.path)
+      .filter((path) => path.startsWith("/api/monitor/"));
     expect(monitorRoutes.sort()).toEqual(["/api/monitor/preview", "/api/monitor/status"]);
     expect(monitorRoutes.some((route) => /tick|run|force|fire/iu.test(route))).toBe(false);
     // The read-only monitor surface has no force-tick member at all.
-    const surfaceSource = readFileSync(fileURLToPath(new URL("../src/application/surface.ts", import.meta.url)), "utf8");
+    // SR-1D R2: the monitor façade interface now lives in its capability cluster; the
+    // compatibility barrel re-exports it (`src/application/surface.ts`).
+    const surfaceSource = readFileSync(
+      fileURLToPath(new URL("../src/application/surfaces/project.ts", import.meta.url)),
+      "utf8",
+    );
     const monitorSurface = surfaceSource.slice(surfaceSource.indexOf("export interface MonitorApplicationSurface"));
     const members = monitorSurface.slice(0, monitorSurface.indexOf("}"));
     expect(members).toContain("status()");
