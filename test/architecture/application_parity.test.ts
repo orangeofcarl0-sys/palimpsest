@@ -28,7 +28,17 @@ import { captureApplicationParity, compareParity, type ParityCapture } from "../
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIXTURE = JSON.parse(
   readFileSync(join(REPO, "test", "fixtures", "sr1", "application-parity.json"), "utf8"),
-) as { readonly note: string; readonly capture: ParityCapture };
+) as {
+  readonly schemaVersion: number;
+  readonly provenance: {
+    readonly baselineCommit: string;
+    readonly baselineTree: string;
+    readonly captureCommit: string;
+    readonly captureTree: string;
+  };
+  readonly note: string;
+  readonly capture: ParityCapture;
+};
 
 describe("SR-1C §21 golden structural parity", () => {
   // Captured once, before the assertions: the two installations are launched and disposed.
@@ -40,6 +50,33 @@ describe("SR-1C §21 golden structural parity", () => {
   it("A10/A11/A12 every recorded capability, face, tool and action set still exists", () => {
     const differences = compareParity(FIXTURE.capture, live);
     expect(differences).toEqual([]);
+  });
+
+  it("§10 the fixture records unambiguous canonical provenance", () => {
+    expect(FIXTURE.schemaVersion).toBe(1);
+    expect(FIXTURE.provenance.baselineCommit).toBe("a30a328afbe2850e02151f4e41f32242091abeae");
+    expect(FIXTURE.provenance.baselineTree).toBe("83ef6ba115feaae39a4b47c9881ad78fb6df2639");
+    // The capture ran on the exact canonical tree, so the control and the baseline are the same.
+    expect(FIXTURE.provenance.captureTree).toBe(FIXTURE.provenance.baselineTree);
+  });
+
+  it("A13 the HTTP route contract is recorded per method for both installations", () => {
+    expect(FIXTURE.capture.packagedRoutes.length).toBeGreaterThanOrEqual(120);
+    expect(FIXTURE.capture.minimalRoutes.length).toBe(FIXTURE.capture.packagedRoutes.length);
+    // Behavioural method contract, not source text: the surfaces route answers GET and refuses POST
+    // (or vice versa) and the fixture records which.
+    const surfaces = FIXTURE.capture.packagedRoutes.find((route) => route.path === "/api/application/surfaces");
+    expect(surfaces).toBeDefined();
+    expect(surfaces?.get).not.toBe(surfaces?.post);
+    // Every route is probed with both methods; a route that is unrouted for both is still recorded.
+    expect(FIXTURE.capture.packagedRoutes.every((route) => route.get !== "" && route.post !== "")).toBe(true);
+  });
+
+  it("§13 readiness keys are recorded and still present", () => {
+    expect(FIXTURE.capture.readiness).not.toBeNull();
+    expect(FIXTURE.capture.readiness?.length ?? 0).toBeGreaterThanOrEqual(8);
+    expect(live.readiness).toEqual(FIXTURE.capture.readiness);
+    expect(live.lifecycle.disposeIsIdempotent).toBe(true);
   });
 
   it("the fixture is a baseline capture, and it is not vacuous", () => {

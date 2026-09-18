@@ -1,4 +1,12 @@
 {
+  "schemaVersion": 1,
+  "provenance": {
+    "baselineCommit": "a30a328afbe2850e02151f4e41f32242091abeae",
+    "baselineTree": "83ef6ba115feaae39a4b47c9881ad78fb6df2639",
+    "captureCommand": "node scripts/audit/application-parity.mjs --tree <clean canonical-tree worktree> --write",
+    "captureCommit": "a30a328afbe2850e02151f4e41f32242091abeae",
+    "captureTree": "83ef6ba115feaae39a4b47c9881ad78fb6df2639"
+  },
   "note": "SR-1C §21 golden structural parity fixture. Captured from the canonical baseline (a30a328afbe2850e02151f4e41f32242091abeae) with `node scripts/audit/application-parity.mjs --tree <baseline> --write`, and compared by test/architecture/application_parity.test.ts. Sorted indices only: no timestamps, paths or ids.",
   "capture": {
     "packagedInstallation": {
@@ -191,6 +199,1294 @@
         "tools"
       ],
       "absent": []
+    },
+    "packagedRoutes": [
+      {
+        "path": "/api/advisor/recommend",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/application/surfaces",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/attention",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/current",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/decide",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/membership",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/observation",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/pending",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/propose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/boundary/submit_remote",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/boundary/workspace",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/campaign/view",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/collaboration/plan",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/collaboration/run",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/acknowledge",
+        "get": "ok:400",
+        "post": "ok:500"
+      },
+      {
+        "path": "/api/cross-project/ask",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/pending",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/prepare",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/projects",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/receive",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/respond",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/status",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/dynamics/diagnose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/freshness",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/impact",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/observe",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/propose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/advance",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/advance_runtime",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/inspect",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/inspect_runtime",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/prepare",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/experiments",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/corrections",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/evaluations",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/experiment",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/run",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/runs",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/scenarios",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/variants",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/external-assets/commit-import",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/commit-reference",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/inspect",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-import",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-publication",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-reference",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/providers",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/search",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/commitment",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/commitments",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/contact",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/inbox",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/message",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/remote_decision",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/thread",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/activity",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/preview",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/recommend",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/request_mode_change",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/request_work_mode_change",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/run",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/step",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/memory/interventions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/memory/similar_runs",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/memory/structural_history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/monitor/preview",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/monitor/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/institution",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/institutions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/retirements",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/view",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/assets",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/association",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/decision",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/journal",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/journal/resolve",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/open_loops",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/operating-history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/operating-posture",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/opportunity/promote",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/reconcile_head",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/workspace",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/collaboration",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/organization",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/reasoning",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/runtime",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/work",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/analyze",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/claims",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/claims/inspect",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/claims/reassess",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/claims/why",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/disclosure/approve_export",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/disclosure/history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/disclosure/preview",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/evidence",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/publication/evaluate",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/publication/prepare",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/sources",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/import",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/inspect",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/read_explicit",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/revisions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/branch",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/brief",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/candidate",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/evaluate",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/frontier",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/graph",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/invalidate",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/view",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/compile",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/execute",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/readiness",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/recipe",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/holon",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/scope",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/scopes",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/history",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/status",
+        "get": "ok:500",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/verify_current_head",
+        "get": "ok:400",
+        "post": "ok:500"
+      },
+      {
+        "path": "/api/",
+        "get": "unrouted",
+        "post": "unrouted"
+      },
+      {
+        "path": "/api/evolution/",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/activity/",
+        "get": "ok:400",
+        "post": "ok:400"
+      }
+    ],
+    "minimalRoutes": [
+      {
+        "path": "/api/advisor/recommend",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/application/surfaces",
+        "get": "ok:200",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/attention",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/current",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/decide",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/membership",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/observation",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/pending",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/boundary/propose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/boundary/submit_remote",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/boundary/workspace",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/campaign/view",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/collaboration/plan",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/collaboration/run",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/acknowledge",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/ask",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/pending",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/prepare",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/projects",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/cross-project/receive",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/respond",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/cross-project/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/dynamics/diagnose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/freshness",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/impact",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/observe",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/dynamics/propose",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/advance",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/advance_runtime",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/inspect",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/inspect_runtime",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/evolution/prepare",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/experiments",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/corrections",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/evaluations",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/experiment",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/run",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/runs",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/scenarios",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/experiments/variants",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/external-assets/commit-import",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/commit-reference",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/inspect",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-import",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-publication",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/prepare-reference",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/providers",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/external-assets/search",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/commitment",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/commitments",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/contact",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/inbox",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/federation/message",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/remote_decision",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/federation/thread",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/activity",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/preview",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/recommend",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/request_mode_change",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/request_work_mode_change",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/run",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/manage/step",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/memory/interventions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/memory/similar_runs",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/memory/structural_history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/monitor/preview",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/monitor/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/institution",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/institutions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/retirements",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/organization/view",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/assets",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/association",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/decision",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/journal",
+        "get": "ok:501",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/journal/resolve",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/open_loops",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/operating-history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/operating-posture",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/opportunity/promote",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/project/reconcile_head",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/project/workspace",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/collaboration",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/organization",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/reasoning",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/runtime",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/projection/work",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/analyze",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/claims",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/claims/inspect",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/claims/reassess",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/claims/why",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/disclosure/approve_export",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/disclosure/history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/disclosure/preview",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/evidence",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/publication/evaluate",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/publication/prepare",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/proof/sources",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/import",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/inspect",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/read_explicit",
+        "get": "ok:400",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/proof/sources/revisions",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/branch",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/reasoning/brief",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/candidate",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/reasoning/evaluate",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/reasoning/frontier",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/graph",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/reasoning/invalidate",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/reasoning/view",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/compile",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/recipes/execute",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/recipes/readiness",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/recipes/recipe",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/holon",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/scope",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/runtime/scopes",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/history",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/status",
+        "get": "ok:501",
+        "post": "ok:400"
+      },
+      {
+        "path": "/api/verification/verify_current_head",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/",
+        "get": "unrouted",
+        "post": "unrouted"
+      },
+      {
+        "path": "/api/evolution/",
+        "get": "ok:400",
+        "post": "ok:501"
+      },
+      {
+        "path": "/api/manage/activity/",
+        "get": "ok:400",
+        "post": "ok:400"
+      }
+    ],
+    "readiness": [
+      "advisor",
+      "attention",
+      "branchAdapter",
+      "coldResume",
+      "crossProject",
+      "inboundPump",
+      "localExplore",
+      "projectVerification",
+      "reasoningStore"
+    ],
+    "lifecycle": {
+      "disposeIsIdempotent": true
     }
   }
 }

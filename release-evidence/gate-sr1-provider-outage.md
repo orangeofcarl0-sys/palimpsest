@@ -15,8 +15,9 @@ All three failed **deterministically on re-run** (not the known branch-subproces
 ## Why this is environmental, not a refactor regression
 
 1. **The pristine baseline fails identically.** The same `uxc-dsh-local-dogfood.mjs` was run in the
-   untouched canonical worktree at `a851848` (SR-1 branches from `a30a328`; SR-1's `src/` changes
-   are not present there) and produced the *same* failures, byte-for-byte:
+   untouched worktree at `a851848`, a TREE-IDENTICAL canonical control (both `a851848` and canonical
+   main `a30a328` carry tree `83ef6ba115feaae39a4b47c9881ad78fb6df2639`; SR-1's `src/` changes are
+   not present there) and produced the *same* failures, byte-for-byte:
    `completed=0/2`, the same two branch statements, the same candidate-owner note.
 2. **The branch agents really did run.** The dogfood's own structural checks passed —
    `real_branch_process_was_offered_exactly_one_tool: ok, frames=9, catalogues=[["palimpsest_branch_result"]]`
