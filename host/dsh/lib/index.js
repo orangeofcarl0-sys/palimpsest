@@ -18,6 +18,8 @@
 
 import { pathToFileURL } from 'node:url';
 import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { openInDefaultBrowser, shouldOpenDashboard } from './browser.js';
 import z from '@deepseek-ai/schemastery';
 
 export const name = 'palimpsest-tools';
@@ -31,6 +33,12 @@ export const Config = z.object({
   serve: z.boolean().default(false),
   port: z.number().default(0),
   host: z.string().default('127.0.0.1'),
+  /**
+   * Open the dashboard in the default browser once it is serving. Default true, and only acted on
+   * when this process has a terminal: a person running the profile by hand gets the page without
+   * copying a token, while a scripted run or an agent host opens nothing.
+   */
+  openDashboard: z.boolean().default(true),
   /**
    * Dashboard credential. Empty (the default) ⇒ serve mints a random token for this start and
    * prints it, which is what a profile should do; set it only when something outside this process
@@ -186,6 +194,12 @@ export async function apply(ctx, config) {
       // malicious page could use without a preflight. Both halves are gone: the credential is now
       // per start, and it is accepted only for the root-url handoff, never on /api.
       ...(config.token === '' ? {} : { token: config.token }),
+      // The cookie secret lives beside this deployment's databases, so a browser that was
+      // authorized before a host restart still is afterwards. Derived HERE rather than in the
+      // product: the product's public surface is sealed (§4 — an added export fails parity), and
+      // this is host-side wiring about where a deployment keeps its files. `palimpsest serve`
+      // derives the same name from the same field, so one deployment has one secret.
+      secretPath: join(dirname(profile.databases.orchestration), 'dashboard-cookie-secret'),
       application: deployment.installed.application,
     });
     dashboardUrl = serve.url;
@@ -194,6 +208,15 @@ export async function apply(ctx, config) {
     // cookie and redirects to the clean url — so a person clicks once instead of hunting for a
     // token. Same line shape the CLI already uses, where the operator is already looking.
     process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, openUrl: serve.openUrl, token: serve.token })}\n`);
+    // Printing it is enough for whoever reads this terminal, and useless for whoever does not —
+    // measured: an agent asked "where do I watch?" reports the clean url, cannot obtain the token,
+    // and refuses to guess. So when a person IS watching this run, the deployment opens the url,
+    // which is what `dsh web` does by default. A script or a server has no terminal and gets no
+    // window popped at it.
+    if (shouldOpenDashboard(config.openDashboard, process.stdout.isTTY === true)) {
+      const opened = openInDefaultBrowser(serve.openUrl);
+      process.stdout.write(`PALIMPSEST_DASHBOARD_OPEN ${JSON.stringify({ opened, openUrl: serve.openUrl })}\n`);
+    }
   }
 
   ctx.provide('palimpsestHost', {

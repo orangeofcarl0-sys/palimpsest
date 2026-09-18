@@ -17,7 +17,7 @@
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -104,6 +104,12 @@ export interface ServeOptions {
   readonly token?: string | undefined;
   /** Static panel root; default <repo>/dist/web. */
   readonly staticRoot?: string | undefined;
+  /**
+   * Where the cookie-signing secret lives, so a browser cookie outlives this process. Absent ⇒ a
+   * per-process secret, which is right for tests and wrong for a deployment a person watches
+   * (a restart would lock out the tab they already had open).
+   */
+  readonly secretPath?: string | undefined;
   /**
    * Extra authorities the browser-trust fence accepts beyond loopback and the bound face, as
    * `host` or `host:port` (`--trusted-host`). A deployment reached through a LAN name needs this;
@@ -344,14 +350,40 @@ function decodeCookie(value: string, authority: string, secret: Buffer, now: num
   return issuedAt <= now && expiresAt > now && expiresAt - issuedAt <= COOKIE_MAX_AGE_SECONDS * 1000;
 }
 
+/**
+ * The cookie-signing secret: read from the deployment when it has one, else minted.
+ *
+ * Durable when a path is given, because a cookie is a promise to a BROWSER that it stays
+ * authorized — and a per-process secret breaks that promise on every host restart, with no way for
+ * the person to re-authorize themselves (the token goes to the host's stdout, which nobody reads in
+ * an agent-hosted deployment). Written `0600`: it is a signing key, not configuration.
+ */
+function loadOrCreateCookieSecret(path: string | undefined): Buffer {
+  if (path === undefined) return randomBytes(32);
+  try {
+    const existing = readFileSync(path);
+    if (existing.byteLength === 32) return existing;
+  } catch {
+    /* absent, or unreadable: mint below */
+  }
+  const created = randomBytes(32);
+  try {
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, created, { mode: 0o600 });
+  } catch {
+    /* a read-only state dir still gets a working (if per-process) secret */
+  }
+  return created;
+}
+
 export function serveOrchestration(
   controller: ProjectController,
   options: ServeOptions = {},
 ): Promise<ServeHandle> {
   const token = options.token ?? randomBytes(24).toString("base64url");
   const root = options.staticRoot ?? STATIC_ROOT;
-  /* Per start, like the token: a cookie is only ever valid for the process that minted it. */
-  const cookieSecret = randomBytes(32);
+  /* Per start when no path is configured, durable when one is (see loadOrCreateCookieSecret). */
+  const cookieSecret = loadOrCreateCookieSecret(options.secretPath);
   const trustedHosts = options.trustedHosts ?? [];
   /* The authority this deployment answers as, known only once the port is settled (a caller may
      ask for port 0). Requests cannot arrive before `listen` completes, so reading it per request

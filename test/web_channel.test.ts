@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -485,6 +485,57 @@ describe("the token handoff (WEB-A08)", () => {
       expect(rebound.status).toBe(403);
     } finally {
       await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  /* Measured in a live `--resume` session: with a per-process secret, a dashboard tab that was
+     open and authorized answered 401 after every host restart (3/3) — and the person cannot
+     re-authorize themselves, because the new token goes to the host's stdout, which in an
+     agent-hosted deployment nobody is reading. So the secret is a deployment file.
+
+     The restarted process is modelled by a SECOND server that is told the first one's authority is
+     trusted, which isolates the secret as the only variable: no same-port rebind (Windows does not
+     hand a just-closed port straight back), and the cookie's authority still matches what it was
+     minted for. */
+  it("a cookie survives a restart when the secret is durable, and dies with the process when it is not", async () => {
+    const rig = makeRig();
+    const durableSecret = join(mkdtempSync(join(tmpdir(), "palimpsest-secret-")), "dashboard-cookie-secret");
+    const freshSecret = join(mkdtempSync(join(tmpdir(), "palimpsest-secret-")), "dashboard-cookie-secret");
+    const cookieOf = async (handle: ServeHandle): Promise<string> => {
+      const handed = await rawRequest(handle, `/?token=${handle.token}`, {
+        host: `${handle.host}:${String(handle.port)}`,
+      });
+      return String(handed.headers["set-cookie"]).split(";")[0]!;
+    };
+
+    const first = await serveOrchestration(rig.controller, { port: 0, secretPath: durableSecret });
+    const cookie = await cookieOf(first);
+    const firstAuthority = `${first.host}:${String(first.port)}`;
+    const restarted = async (secretPath: string): Promise<ServeHandle> =>
+      serveOrchestration(rig.controller, { port: 0, secretPath, trustedHosts: [firstAuthority] });
+    try {
+      // Same secret, new process: the browser the person already had open keeps working.
+      const durable = await restarted(durableSecret);
+      try {
+        const replayed = await rawRequest(durable, "/api/health", { host: firstAuthority, cookie });
+        expect(replayed.status).toBe(200);
+        // The launch token is still per start, so the OLD LINK is dead — only the cookie carries over.
+        expect((await api(durable, "/api/health", { token: first.token })).status).toBe(401);
+      } finally {
+        await durable.close();
+      }
+      // A different secret is the per-process behaviour: the same cookie is inert.
+      const ephemeral = await restarted(freshSecret);
+      try {
+        expect((await rawRequest(ephemeral, "/api/health", { host: firstAuthority, cookie })).status).toBe(401);
+      } finally {
+        await ephemeral.close();
+      }
+      // And the secret really is on disk, at the path the deployment derives for it.
+      expect(readFileSync(durableSecret).byteLength).toBe(32);
+    } finally {
+      await first.close();
       await rig.cleanup();
     }
   });

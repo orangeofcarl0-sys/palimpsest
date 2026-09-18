@@ -48,6 +48,7 @@
  */
 
 import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 import {
   GitCliPort,
@@ -174,6 +175,10 @@ async function main() {
         ...(port === undefined ? {} : { port }),
         ...(host === undefined ? {} : { host }),
         ...(token === undefined ? {} : { token }),
+        // Durable, so a browser authorized before a restart stays authorized after one. Derived
+        // here and not exported from the product: the public surface is sealed, and the DSH host
+        // derives the same name from the same field so one deployment has one secret.
+        secretPath: join(dirname(profile.databases.orchestration), "dashboard-cookie-secret"),
         application: deployment.installed.application,
       });
       const interval = pumpOption === undefined ? undefined : setInterval(() => {
