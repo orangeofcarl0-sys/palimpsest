@@ -28,6 +28,27 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * The human sentence out of an API error envelope.
+ *
+ * The adapter answers `{ error: { status, detail } }`, and that `detail` is written to be read by a
+ * person — e.g. `project "fresh" has no ProjectIR`. This used to be `String(body.error)`, and
+ * `String()` of an object is `"[object Object]"`, so EVERY honest sentence the API produced was
+ * destroyed on arrival: the user saw `404: [object Object]` on the cold-start screen, on Monitor and
+ * in Proof Vault. A bare-string envelope (`{ error: "unknown endpoint" }`) is still honoured, and
+ * anything unrecognised falls back to the status instead of inventing text.
+ */
+export function apiErrorMessage(status: number, body: unknown): string {
+  if (typeof body !== "object" || body === null || !("error" in body)) return `HTTP ${String(status)}`;
+  const error = (body as { readonly error: unknown }).error;
+  if (typeof error === "string" && error.trim() !== "") return error;
+  if (typeof error === "object" && error !== null) {
+    const detail = (error as { readonly detail?: unknown }).detail;
+    if (typeof detail === "string" && detail.trim() !== "") return detail;
+  }
+  return `HTTP ${String(status)}`;
+}
+
 async function call<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, {
     ...init,
@@ -38,11 +59,7 @@ async function call<T>(path: string, init?: RequestInit): Promise<T> {
   });
   const body: unknown = await response.json();
   if (!response.ok) {
-    const message =
-      typeof body === "object" && body !== null && "error" in body
-        ? String((body as { error: unknown }).error)
-        : `HTTP ${response.status}`;
-    throw new ApiError(response.status, message);
+    throw new ApiError(response.status, apiErrorMessage(response.status, body));
   }
   return body as T;
 }
