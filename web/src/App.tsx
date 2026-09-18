@@ -207,7 +207,14 @@ export function App() {
     return (
       <Center>
         <div style={{ display: "grid", gap: 10, maxWidth: 380 }}>
-          <div>输入访问令牌（palimpsest serve 启动时打印）</div>
+          <div>输入访问令牌</div>
+          {/* Which command printed it depends on how this page is served: the CLI prints it itself,
+              and a DSH host prints it on its PALIMPSEST_DASHBOARD line. Naming only one of them
+              sends half the readers looking for output that does not exist. */}
+          <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6 }}>
+            启动时打印在终端：命令行 `palimpsest serve` 会打印它；由 DSH host 托管时，host 打印的
+            `PALIMPSEST_DASHBOARD` 一行里也有。
+          </div>
           <input
             value={tokenInput}
             onChange={(event) => setTokenInput(event.target.value)}
