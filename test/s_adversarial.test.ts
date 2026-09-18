@@ -155,6 +155,10 @@ const coordinate = compileRecipePlan(
 function reasoningSpy(calls: string[]): ReasoningCellService {
   let branch = 0;
   return {
+    listCells: async () => {
+      calls.push("listCells");
+      return [];
+    },
     openCell: async () => {
       calls.push("openCell");
       return {} as never;
