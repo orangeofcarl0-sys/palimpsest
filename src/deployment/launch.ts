@@ -13,6 +13,7 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
+import type { HostDeploymentFactsPort } from "../composition/install_contract.js";
 import type { DshPluginContext, DshToolDefinition, DshToolRegistry } from "../tools/index.js";
 import { SqliteCoordinationStore, SqliteAttemptCatalog, ParticipationError } from "../coordination/index.js";
 import type { AttemptCatalogPort } from "../coordination/index.js";
@@ -69,6 +70,11 @@ export interface DeploymentHostServices {
    * profile carries the `reasoning` bundle.
    */
   readonly branchExecution?: ReasoningBranchExecutionPort | undefined;
+  /**
+   * §"two surfaces know each other": facts about the running deployment, supplied as a port because
+   * the dashboard url only exists after the host has bound a port.
+   */
+  readonly facts?: HostDeploymentFactsPort | undefined;
 }
 
 export interface DeploymentActivationReport {
@@ -430,6 +436,7 @@ export function launchDeployment(
           reasoningAdmissionPolicy: firstPartyExploratoryAdmissionPolicy(),
         }),
     ...(reasoningBranchExecution === undefined ? {} : { reasoningBranchExecution }),
+    ...(options.host?.facts === undefined ? {} : { hostFacts: options.host.facts }),
     remoteTransport,
   });
 

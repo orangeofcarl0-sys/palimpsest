@@ -11,6 +11,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { installPalimpsest } from "../src/install.js";
+import { defineApplicationTools } from "../src/tools/application_tools.js";
 import type { InstalledPalimpsest } from "../src/install.js";
 import { handleApplicationRequest } from "../src/application/http.js";
 import { SqliteBoundaryMemoryStore } from "../src/boundary_memory/index.js";
@@ -320,5 +321,44 @@ describe("G10-O partial installation matrix (APP-A35)", () => {
     expect(withBoundary.tools.map((tool) => tool.name)).toContain("palimpsest_boundary");
     expect(withBoundary.tools.map((tool) => tool.name)).not.toContain("palimpsest_reasoning");
     await withBoundary.dispose();
+  });
+});
+
+/**
+ * APP-A16: the agent can tell a person where to watch this project.
+ *
+ * The agent is the primary interaction surface and the page is a dashboard beside it, so "where do I
+ * look?" has to be answerable from inside a tool result. Only the HOST can answer it, and only after
+ * it has served — a profile may ask for port 0 and let the OS choose — so the host supplies a getter.
+ * With no host wiring the answer is null: an unknown dashboard must never become an invented url.
+ */
+describe("APP-A16: the dashboard url reaches the agent through the surfaces tool", () => {
+  it("an installation with no host wiring reports null, never a guessed url", async () => {
+    const { installed } = fullInstall();
+    const surfaces = (await callTool(defineApplicationTools(installed.application), "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
+    expect(surfaces.dashboardUrl).toBeNull();
+    expect(installed.application.work.dashboardUrl()).toBeNull();
+    await installed.dispose();
+  });
+
+  it("a wired host fact is reported verbatim, and is read at CALL time rather than at install time", async () => {
+    // Exactly how the DSH host wires it: the url only exists after serving, so the port is a getter.
+    let url: string | null = null;
+    const installed = installPalimpsest(context() as never, {
+      projectId: "p-o-url",
+      databasePath: nextPath("state"),
+      ordariumDatabasePath: nextPath("ord"),
+      hostFacts: { dashboardUrl: () => url },
+    });
+    // `installed.tools` is the legacy Work set for a deployment with no advanced surface; the
+    // surfaces tool belongs to the application adapter, so ask that one directly.
+    const tools = defineApplicationTools(installed.application);
+    const before = (await callTool(tools, "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
+    expect(before.dashboardUrl).toBeNull();
+
+    url = "http://127.0.0.1:7911";
+    const after = (await callTool(tools, "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
+    expect(after.dashboardUrl).toBe("http://127.0.0.1:7911");
+    await installed.dispose();
   });
 });
