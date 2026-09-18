@@ -2,10 +2,10 @@
   "version": 2,
   "capturedFrom": "unknown",
   "totals": {
-    "files": 322,
-    "loc": 95009,
-    "bytes": 4104063,
-    "edges": 1375,
+    "files": 332,
+    "loc": 95171,
+    "bytes": 4111670,
+    "edges": 1410,
     "externalImports": 19,
     "unresolvedImports": 0
   },
@@ -28,7 +28,7 @@
     },
     {
       "layer": "L5",
-      "files": 28
+      "files": 38
     },
     {
       "layer": "BARREL",
@@ -54,7 +54,7 @@
       "loc": 56,
       "bytes": 2373,
       "fanOut": 9,
-      "fanIn": 8
+      "fanIn": 16
     },
     {
       "file": "src/deployment/launch.ts",
@@ -75,9 +75,9 @@
     {
       "file": "src/tools/application_tools.ts",
       "layer": "L5",
-      "loc": 1090,
-      "bytes": 65412,
-      "fanOut": 8,
+      "loc": 10,
+      "bytes": 383,
+      "fanOut": 1,
       "fanIn": 3
     },
     {
@@ -181,13 +181,13 @@
       "fanOut": 11
     },
     {
-      "file": "src/application/http.ts",
+      "file": "src/adapters/dsh/index.ts",
       "layer": "L5",
       "fanOut": 10
     },
     {
-      "file": "src/application/surfaces/cognition.ts",
-      "layer": "L4",
+      "file": "src/application/http.ts",
+      "layer": "L5",
       "fanOut": 10
     }
   ],
@@ -218,6 +218,11 @@
       "fanIn": 18
     },
     {
+      "file": "src/tools/dsh_types.ts",
+      "layer": "L5",
+      "fanIn": 18
+    },
+    {
       "file": "src/binding/contract.ts",
       "layer": "L1",
       "fanIn": 17
@@ -226,6 +231,11 @@
       "file": "src/organization_memory/artifacts.ts",
       "layer": "L2",
       "fanIn": 17
+    },
+    {
+      "file": "src/application/surface.ts",
+      "layer": "L4",
+      "fanIn": 16
     },
     {
       "file": "src/campaign/store.ts",
@@ -281,16 +291,6 @@
       "file": "src/federation/index.ts",
       "layer": "L2",
       "fanIn": 11
-    },
-    {
-      "file": "src/organization_dynamics/index.ts",
-      "layer": "L2",
-      "fanIn": 11
-    },
-    {
-      "file": "src/boundary_memory/ref.ts",
-      "layer": "L2",
-      "fanIn": 10
     }
   ],
   "layerEdges": [
@@ -317,17 +317,17 @@
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 82
+      "count": 83
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L5",
+      "count": 71
     },
     {
       "fromLayer": "L4",
       "toLayer": "L2",
       "count": 55
-    },
-    {
-      "fromLayer": "L5",
-      "toLayer": "L5",
-      "count": 45
     },
     {
       "fromLayer": "L3",
@@ -365,6 +365,11 @@
       "count": 17
     },
     {
+      "fromLayer": "L5",
+      "toLayer": "L4",
+      "count": 15
+    },
+    {
       "fromLayer": "ENTRY",
       "toLayer": "L1",
       "count": 13
@@ -373,11 +378,6 @@
       "fromLayer": "L5",
       "toLayer": "BARREL",
       "count": 11
-    },
-    {
-      "fromLayer": "L5",
-      "toLayer": "L4",
-      "count": 7
     },
     {
       "fromLayer": "BARREL",
@@ -552,6 +552,11 @@
       "count": 11
     },
     {
+      "from": "src/adapters",
+      "to": "src/tools",
+      "count": 10
+    },
+    {
       "from": "src/application",
       "to": "src/federation",
       "count": 10
@@ -560,6 +565,11 @@
       "from": "src/domain",
       "to": "src/schema",
       "count": 10
+    },
+    {
+      "from": "src/adapters",
+      "to": "src/application",
+      "count": 9
     },
     {
       "from": "src",
@@ -919,16 +929,6 @@
     {
       "from": "src/canvas",
       "to": "src/architecture",
-      "count": 3
-    },
-    {
-      "from": "src/composition",
-      "to": "src/application",
-      "count": 3
-    },
-    {
-      "from": "src/composition",
-      "to": "src/coordination",
       "count": 3
     }
   ],
