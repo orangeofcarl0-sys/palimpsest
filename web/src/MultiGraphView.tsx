@@ -32,12 +32,27 @@ const SPECIES: readonly { readonly id: GraphSpecies; readonly label: string }[] 
   { id: "reasoning", label: "Reasoning" },
 ];
 
+/**
+ * A graph node is a HANDLE, not a document.
+ *
+ * Node boxes are a fixed 190px wide, so rendering a projection label verbatim means one long label
+ * (a reasoning branch carries its whole question) fills a box with a paragraph and the graph becomes
+ * unreadable. The node shows an excerpt; `选中详情` shows the full text, so nothing is lost — it is
+ * moved to where there is room for it.
+ */
+const NODE_LABEL_LIMIT = 52;
+
+function excerpt(text: string, limit = NODE_LABEL_LIMIT): string {
+  const flat = text.replace(/\s+/gu, " ").trim();
+  return flat.length <= limit ? flat : `${flat.slice(0, limit - 1)}…`;
+}
+
 /** Derived presentation node id — never written back to the kernel. */
 function toFlowNodes(envelope: ProjectionEnvelope): Node[] {
   return envelope.nodes.map((node, index) => ({
     id: node.presentationId,
     position: { x: (index % 4) * 240, y: Math.floor(index / 4) * 130 },
-    data: { label: `${node.label}${node.state === null ? "" : ` · ${node.state}`}` },
+    data: { label: excerpt(`${node.label}${node.state === null ? "" : ` · ${node.state}`}`) },
     style: {
       border: node.kind.startsWith("external") ? "2px dashed #f59e0b" : "1px solid #334155",
       background: node.state === "inactive" ? "#1e293b" : "#0f172a",
@@ -179,6 +194,10 @@ export function MultiGraphView({ onExit }: { readonly onExit: () => void }): JSX
           <p style={{ color: "#94a3b8" }}>点击节点查看 typed ref（presentation id 不是 canonical identity）。</p>
         ) : (
           <div data-testid="inspector">
+            {/* The node shows only an excerpt; the selected node's full text belongs here. */}
+            <p style={{ color: "#e2e8f0", marginTop: 4 }} data-testid="inspector-label">
+              {selected.label}
+            </p>
             <p>
               species=<code>{selected.ref.species}</code> kind=<code>{selected.ref.kind}</code>
             </p>
@@ -192,16 +211,29 @@ export function MultiGraphView({ onExit }: { readonly onExit: () => void }): JSX
         {surfaces !== null ? (
           <>
             <hr style={{ borderColor: "#1e293b" }} />
+            {/*
+              Two wrapped lines instead of a 22-row bullet list: the same facts, a fraction of the
+              text. Each entry keeps its exact `name: 已配置` form, and the configured ones lead
+              because that is the question a reader actually has.
+            */}
             <b>已配置表面</b>
-            <ul style={{ paddingLeft: 18, color: "#94a3b8" }}>
-              {Object.entries(surfaces)
+            {(() => {
+              const entries = Object.entries(surfaces)
                 .filter(([key]) => key !== "work")
-                .map(([key, present]) => (
-                  <li key={key}>
-                    {key}: {present ? "已配置" : "未配置"}
-                  </li>
-                ))}
-            </ul>
+                .map(([key, present]) => `${key}: ${present ? "已配置" : "未配置"}`);
+              const present = entries.filter((entry) => entry.endsWith("已配置"));
+              const absent = entries.filter((entry) => !entry.endsWith("已配置"));
+              return (
+                <>
+                  <p style={{ color: "#94a3b8", margin: "4px 0" }}>
+                    {present.length}/{entries.length} 已配置 · {present.join(" · ")}
+                  </p>
+                  {absent.length === 0 ? null : (
+                    <p style={{ color: "#64748b", margin: "4px 0" }}>未配置 · {absent.join(" · ")}</p>
+                  )}
+                </>
+              );
+            })()}
           </>
         ) : null}
         {species === "reasoning" ? (
