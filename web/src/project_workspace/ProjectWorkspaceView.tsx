@@ -225,6 +225,26 @@ function OverviewPanel(props: {
         </Muted>
       </Section>
 
+      {/*
+        "What needs me" sits directly under the project identity, not second-to-last after four
+        detail blocks. A reader's question order is: what is this → what needs me → the detail →
+        the diagnostics. This section carries no testId assertion, so its ORDER was free to change.
+      */}
+      <Section title="Next attention item" testId="overview-next-attention">
+        {firstLoop === undefined ? (
+          <Muted>No open loop is currently derived.</Muted>
+        ) : (
+          <Card testId="overview-attention-item">
+            <div>
+              <Tag tone="warn">{firstLoop.kind}</Tag> {firstLoop.detail}
+            </div>
+            <Muted>
+              open loop <Mono>{firstLoop.id}</Mono> · an open loop is a prompt to look, not a work task
+            </Muted>
+          </Card>
+        )}
+      </Section>
+
       <Section title={`Requirements (${view.project.requirements.length})`} testId="overview-requirements">
         {view.project.requirements.length === 0 ? (
           <Muted>No requirements declared by the ProjectIR.</Muted>
@@ -283,26 +303,22 @@ function OverviewPanel(props: {
         )}
       </Section>
 
-      <Section title="Next attention item" testId="overview-next-attention">
-        {firstLoop === undefined ? (
-          <Muted>No open loop is currently derived.</Muted>
-        ) : (
-          <Card testId="overview-attention-item">
-            <div>
-              <Tag tone="warn">{firstLoop.kind}</Tag> {firstLoop.detail}
-            </div>
-            <Muted>
-              open loop <Mono>{firstLoop.id}</Mono> · an open loop is a prompt to look, not a work task
-            </Muted>
-          </Card>
-        )}
-      </Section>
-
       {view.knowledgeWarnings.length === 0 ? null : (
-        <Section title="Knowledge warnings (absent planes are reported, never guessed)" testId="overview-warnings">
-          {view.knowledgeWarnings.map((warning) => (
-            <Notice key={warning}>{warning}</Notice>
-          ))}
+        <Section
+          title={`Knowledge warnings (${String(view.knowledgeWarnings.length)} absent planes are reported, never guessed)`}
+          testId="overview-warnings"
+        >
+          {/*
+            One tight list instead of one card per absence: the count leads, so a reader knows the
+            size of the set before reading it, and each statement keeps its exact wording.
+            Classifying these by family is deliberately NOT done here — a view that grouped them by
+            matching words in the string would invent a taxonomy the API never stated.
+          */}
+          <ul style={{ margin: 0, paddingLeft: 18, color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
+            {view.knowledgeWarnings.map((warning) => (
+              <li key={warning}>{warning}</li>
+            ))}
+          </ul>
         </Section>
       )}
     </div>
