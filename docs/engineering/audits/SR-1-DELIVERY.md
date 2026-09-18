@@ -159,8 +159,20 @@ This is classified environmental, and it is **not** called green and **not** cal
 
 ---
 
-## 4. Merge discipline (§35/§51)
+## 4. Merge sequence (§35/§51)
 
-PASS candidate ⇒ **open the PR, PR CI attempt 1 green, merge, canonical-main CI attempt 1 green**
-(§35: not on local evidence only). The branch also carries `refactor/sr1-architecture` as the
-checkpoint.
+**PASS.** Not on local evidence only:
+
+| step | value |
+| --- | --- |
+| branch | `refactor/sr1-architecture` |
+| branch head (stage commit) | `de2d1c143b7aaf28893e2394cd4c8068e062feff` |
+| PR | [#119](https://github.com/orangeofcarl0-sys/palimpsest/pull/119) |
+| PR CI (attempt 1) | [`35340145324`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/35340145324) — **success**, `unit` 1m0s + `e2e` 1m13s, no retry |
+| merge commit | `74bb14225f70a1bc5a2df197736c599414d46a56` |
+| canonical main | `74bb14225f70a1bc5a2df197736c599414d46a56` |
+| canonical-main CI (attempt 1) | [`35340339464`](https://github.com/orangeofcarl0-sys/palimpsest/actions/runs/35340339464) — **success**, `unit` + `e2e` |
+| **tree identity** | branch head tree `a3f272a27cc2b15552faa5c8910e7800cb816a14` **==** main tree `a3f272a27cc2b15552faa5c8910e7800cb816a14` |
+
+The tree identity is the check that matters: the exact tree CI verified on the branch is the exact
+tree canonical main now contains. The merge added no content of its own.

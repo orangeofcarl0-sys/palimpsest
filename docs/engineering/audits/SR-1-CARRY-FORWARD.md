@@ -1,8 +1,17 @@
 # SR-1 — Carry-forward
 
-Status: **PASS candidate** — R0 (with the R0A/R0B repairs), R1, the §21 parity baseline, R2 (with the
-public-API seal), R3A and R3B are complete and verified, and every closure item A03–A15 is closed.
-The branch is ready for PR/canonical-main CI closure (§35).
+Status: **PASS** — R0 (with the R0A/R0B repairs), R1, the §21 parity baseline, R2 (with the
+public-API seal), R3A and R3B are complete and verified, every closure item A03–A15 is closed, and
+the branch completed PR/canonical-main CI closure (§35).
+
+```text
+branch head   de2d1c143b7aaf28893e2394cd4c8068e062feff
+PR            #119          CI attempt 1  35340145324  success
+merge         74bb14225f70a1bc5a2df197736c599414d46a56
+canonical main 74bb14225f70a1bc5a2df197736c599414d46a56
+main CI       attempt 1    35340339464  success
+tree identity a3f272a27cc2b15552faa5c8910e7800cb816a14  (branch head == main)
+```
 
 **No unfinished R2/R3 item remains.** What is listed below is either deliberately out of scope or a
 later campaign.
