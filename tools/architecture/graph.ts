@@ -1,7 +1,8 @@
 /**
  * SR-1 §7/§8 — the module dependency graph, built from the real sources.
  *
- * Only INTRA-REPOSITORY edges are modelled: every module under `src/**`. Bare specifiers
+ * Only INTRA-REPOSITORY edges are modelled: the TypeScript sources under `src/**` AND the
+ * first-party host JavaScript under `host/**` (SR-1C §8). Bare specifiers
  * are recorded as external imports and are not part of the graph (they cannot create a
  * layering violation inside this repository).
  *

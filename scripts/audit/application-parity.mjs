@@ -11,6 +11,7 @@
  * run against the canonical baseline, never against the tree it guards.
  */
 
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -25,6 +26,13 @@ const OUT = flag('--out', join('test', 'fixtures', 'sr1', 'application-parity.js
 
 const mod = await import(pathToFileURL(join(process.cwd(), 'dist', 'tools', 'architecture', 'application_parity.js')).href);
 const capture = await mod.captureApplicationParity(TREE);
+const git = (args) => {
+  try {
+    return execFileSync('git', ['-C', TREE, ...args], { encoding: 'utf8' }).trim();
+  } catch {
+    return 'unknown';
+  }
+};
 
 if (!argv.includes('--write')) {
   process.stdout.write(JSON.stringify(capture, null, 2) + String.fromCharCode(10));
@@ -32,6 +40,14 @@ if (!argv.includes('--write')) {
 }
 
 const payload = {
+  schemaVersion: 1,
+  provenance: {
+    baselineCommit: 'a30a328afbe2850e02151f4e41f32242091abeae',
+    baselineTree: '83ef6ba115feaae39a4b47c9881ad78fb6df2639',
+    captureCommand: 'node scripts/audit/application-parity.mjs --tree <clean canonical-tree worktree> --write',
+    captureCommit: git(['rev-parse', 'HEAD']),
+    captureTree: git(['rev-parse', 'HEAD^{tree}']),
+  },
   note:
     'SR-1C §21 golden structural parity fixture. Captured from the canonical baseline ' +
     '(a30a328afbe2850e02151f4e41f32242091abeae) with ' +
