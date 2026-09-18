@@ -116,7 +116,7 @@ describe("serve channel face (PLMP-WEB-1)", () => {
 
   it("WEB-A02: the control loop runs over HTTP; unauthenticated requests get 401", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       expect((await api(handle, "/api/graph", { token: null })).status).toBe(401);
 
@@ -248,8 +248,8 @@ describe("serve channel face (PLMP-WEB-1)", () => {
   it("WEB-A05: security defaults - loopback bind and a fresh random token per start", async () => {
     const rig = makeRig();
     rig.controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
-    const first = await serveOrchestration(rig.controller, { port: 0 });
-    const second = await serveOrchestration(rig.controller, { port: 0 });
+    const first = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
+    const second = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       expect(first.host).toBe("127.0.0.1");
       expect(second.host).toBe("127.0.0.1");
@@ -337,7 +337,7 @@ function rawRequest(
 describe("the browser-trust fence (WEB-A07)", () => {
   it("refuses a rebound Host before it considers credentials, and admits loopback", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       // A correct token is not enough: the request SHAPE is what a rebound browser sends.
       const rebound = await rawRequest(handle, "/api/health", {
@@ -358,7 +358,7 @@ describe("the browser-trust fence (WEB-A07)", () => {
 
   it("refuses a cross-site Origin, a cross-site Sec-Fetch-Site, and an unparseable Origin", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     const authority = `${handle.host}:${String(handle.port)}`;
     try {
       for (const headers of [
@@ -391,6 +391,7 @@ describe("the browser-trust fence (WEB-A07)", () => {
     const rig = makeRig();
     const handle = await serveOrchestration(rig.controller, {
       port: 0,
+      auth: "token",
       trustedHosts: ["palimpsest.internal:7831"],
     });
     try {
@@ -414,10 +415,11 @@ describe("the browser-trust fence (WEB-A07)", () => {
 describe("the token handoff (WEB-A08)", () => {
   it("exchanges a root-url token for an HttpOnly cookie and redirects to the clean url", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     const authority = `${handle.host}:${String(handle.port)}`;
+    const issued = handle.token as string;
     try {
-      const handed = await rawRequest(handle, `/?token=${encodeURIComponent(handle.token)}`, { host: authority });
+      const handed = await rawRequest(handle, `/?token=${encodeURIComponent(issued)}`, { host: authority });
       expect(handed.status).toBe(303);
       expect(handed.headers.location).toBe("/");
       expect(handed.headers["cache-control"]).toBe("no-store");
@@ -434,8 +436,8 @@ describe("the token handoff (WEB-A08)", () => {
       expect(viaCookie.status).toBe(200);
 
       // The url a human opens is exactly that handoff, and the clean url stays credential-free.
-      expect(handle.openUrl).toBe(`http://${authority}/?token=${encodeURIComponent(handle.token)}`);
-      expect(handle.url).not.toContain(handle.token);
+      expect(handle.openUrl).toBe(`http://${authority}/?token=${encodeURIComponent(issued)}`);
+      expect(handle.url).not.toContain(issued);
     } finally {
       await handle.close();
       await rig.cleanup();
@@ -444,8 +446,8 @@ describe("the token handoff (WEB-A08)", () => {
 
   it("a wrong or repeated token mints nothing, and a cookie is bound to its authority", async () => {
     const rig = makeRig();
-    const first = await serveOrchestration(rig.controller, { port: 0 });
-    const second = await serveOrchestration(rig.controller, { port: 0 });
+    const first = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
+    const second = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     const firstAuthority = `${first.host}:${String(first.port)}`;
     try {
       expect((await rawRequest(first, "/?token=wrong", { host: firstAuthority })).status).toBe(401);
@@ -473,7 +475,7 @@ describe("the token handoff (WEB-A08)", () => {
 
   it("the query token never authorizes an API request, and the fence outranks a cookie", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     const authority = `${handle.host}:${String(handle.port)}`;
     try {
       // The measured hole: this used to be 200 from any origin, with no preflight to stop a page.
@@ -503,17 +505,17 @@ describe("the token handoff (WEB-A08)", () => {
     const durableSecret = join(mkdtempSync(join(tmpdir(), "palimpsest-secret-")), "dashboard-cookie-secret");
     const freshSecret = join(mkdtempSync(join(tmpdir(), "palimpsest-secret-")), "dashboard-cookie-secret");
     const cookieOf = async (handle: ServeHandle): Promise<string> => {
-      const handed = await rawRequest(handle, `/?token=${handle.token}`, {
+      const handed = await rawRequest(handle, `/?token=${handle.token as string}`, {
         host: `${handle.host}:${String(handle.port)}`,
       });
       return String(handed.headers["set-cookie"]).split(";")[0]!;
     };
 
-    const first = await serveOrchestration(rig.controller, { port: 0, secretPath: durableSecret });
+    const first = await serveOrchestration(rig.controller, { port: 0, auth: "token", secretPath: durableSecret });
     const cookie = await cookieOf(first);
     const firstAuthority = `${first.host}:${String(first.port)}`;
     const restarted = async (secretPath: string): Promise<ServeHandle> =>
-      serveOrchestration(rig.controller, { port: 0, secretPath, trustedHosts: [firstAuthority] });
+      serveOrchestration(rig.controller, { port: 0, auth: "token", secretPath, trustedHosts: [firstAuthority] });
     try {
       // Same secret, new process: the browser the person already had open keeps working.
       const durable = await restarted(durableSecret);
@@ -536,6 +538,100 @@ describe("the token handoff (WEB-A08)", () => {
       expect(readFileSync(durableSecret).byteLength).toBe(32);
     } finally {
       await first.close();
+      await rig.cleanup();
+    }
+  });
+});
+
+/* ================================================================== *
+ * WEB-A09 — the access MODES.
+ *
+ * The derivation: in an agent-hosted deployment the conversation is the person's only console, so
+ * the agent's sentence about "where do I watch" must be complete on its own. DSH's split assumes
+ * the person is reading the server's terminal, which is false here. Measured with the fence in
+ * place, the only attacker a loopback dashboard has — a web page — is stopped without any secret,
+ * so the default is fence mode: no token exists, the address is the whole answer, and the residual
+ * risk (other user accounts on the machine) is accepted and documented. Token mode remains the
+ * opt-in for a machine other people use, and there the handoff link is written into the project so
+ * the agent can point at a PATH instead of confessing it cannot get the token.
+ * ================================================================== */
+describe("access modes (WEB-A09)", () => {
+  it("fence mode is the default: no token exists, and the address alone opens the API", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      expect(handle.auth).toBe("fence");
+      expect(handle.token).toBeNull();
+      expect(handle.openUrl).toBeNull();
+      expect(handle.handoffFilePath).toBeNull();
+      // No credential of any kind: this is what makes the agent's one sentence complete.
+      const health = await rawRequest(handle, "/api/health", { host: `${handle.host}:${String(handle.port)}` });
+      expect(health.status).toBe(200);
+      // A leftover `?token=` is meaningless here, not an error: it falls through to the page.
+      const stale = await rawRequest(handle, "/?token=whatever", { host: `${handle.host}:${String(handle.port)}` });
+      expect(stale.status).toBe(200);
+      // The fence still binds everything — mode changes who is authenticated, never who is trusted.
+      const rebound = await rawRequest(handle, "/api/health", { host: "evil.example" });
+      expect(rebound.status).toBe(403);
+      const crossSite = await rawRequest(handle, "/api/health", {
+        host: `${handle.host}:${String(handle.port)}`,
+        origin: "https://evil.example",
+      });
+      expect(crossSite.status).toBe(403);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("a supplied token implies token mode; an explicit auth wins over it", async () => {
+    const rig = makeRig();
+    const supplied = await serveOrchestration(rig.controller, { port: 0, token: "fixed-for-test" });
+    const forced = await serveOrchestration(rig.controller, { port: 0, token: "fixed-for-test", auth: "fence" });
+    const minted = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
+    try {
+      expect(supplied.auth).toBe("token");
+      expect(supplied.token).toBe("fixed-for-test");
+      // The explicit mode wins: the vestigial token line in a profile cannot drift it back.
+      expect(forced.auth).toBe("fence");
+      expect(forced.token).toBeNull();
+      expect(minted.auth).toBe("token");
+      expect(minted.token).not.toBeNull();
+      expect(minted.openUrl).toContain(String(minted.token));
+    } finally {
+      await supplied.close();
+      await forced.close();
+      await minted.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("token mode writes the handoff link into the project and removes it on close; fence mode writes nothing", async () => {
+    const rig = makeRig();
+    const workspace = mkdtempSync(join(tmpdir(), "palimpsest-workspace-"));
+    const handoffPath = join(workspace, ".palimpsest", "dashboard-link.txt");
+    const tokenFirst = await serveOrchestration(rig.controller, { port: 0, auth: "token", handoffFilePath: handoffPath });
+    try {
+      expect(tokenFirst.handoffFilePath).toBe(handoffPath);
+      // One line: the handoff url a person opens. It is the ONLY thing in the file, so `cat` output
+      // is clickable and no token ever needs to be quoted anywhere else.
+      const written = readFileSync(handoffPath, "utf8");
+      expect(written).toBe(`${tokenFirst.openUrl}
+`);
+      expect(written).not.toContain("palimpsest-dogfood");
+    } finally {
+      await tokenFirst.close();
+    }
+    // The link is gone with the process that minted it: a stale link authorizes nothing.
+    expect(existsSync(handoffPath)).toBe(false);
+
+    // Fence mode: there is nothing to hand over, so no file is written even if a path is given.
+    const fence = await serveOrchestration(rig.controller, { port: 0, handoffFilePath: handoffPath });
+    try {
+      expect(fence.handoffFilePath).toBeNull();
+      expect(existsSync(handoffPath)).toBe(false);
+    } finally {
+      await fence.close();
       await rig.cleanup();
     }
   });

@@ -332,11 +332,13 @@ describe("G10-O partial installation matrix (APP-A35)", () => {
  * it has served — a profile may ask for port 0 and let the OS choose — so the host supplies a getter.
  * With no host wiring the answer is null: an unknown dashboard must never become an invented url.
  */
-describe("APP-A16: the dashboard url reaches the agent through the surfaces tool", () => {
+describe("APP-A16: the dashboard answer reaches the agent through the surfaces tool", () => {
   it("an installation with no host wiring reports null, never a guessed url", async () => {
     const { installed } = fullInstall();
     const surfaces = (await callTool(defineApplicationTools(installed.application), "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
     expect(surfaces.dashboardUrl).toBeNull();
+    expect(surfaces.dashboardAuth).toBeNull();
+    expect(surfaces.dashboardHandoffFile).toBeNull();
     expect(installed.application.work.dashboardUrl()).toBeNull();
     await installed.dispose();
   });
@@ -344,21 +346,45 @@ describe("APP-A16: the dashboard url reaches the agent through the surfaces tool
   it("a wired host fact is reported verbatim, and is read at CALL time rather than at install time", async () => {
     // Exactly how the DSH host wires it: the url only exists after serving, so the port is a getter.
     let url: string | null = null;
+    let handoff: string | null = null;
     const installed = installPalimpsest(context() as never, {
       projectId: "p-o-url",
       databasePath: nextPath("state"),
       ordariumDatabasePath: nextPath("ord"),
-      hostFacts: { dashboardUrl: () => url },
+      hostFacts: {
+        dashboardUrl: () => url,
+        // Token mode: the person's entry is the link FILE, never a token in this conversation.
+        dashboardAuth: () => (handoff === null ? null : "token"),
+        dashboardHandoffFile: () => handoff,
+      },
     });
     // `installed.tools` is the legacy Work set for a deployment with no advanced surface; the
     // surfaces tool belongs to the application adapter, so ask that one directly.
     const tools = defineApplicationTools(installed.application);
     const before = (await callTool(tools, "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
     expect(before.dashboardUrl).toBeNull();
+    expect(before.dashboardAuth).toBeNull();
 
     url = "http://127.0.0.1:7911";
+    handoff = join("repo", ".palimpsest", "dashboard-link.txt");
     const after = (await callTool(tools, "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
     expect(after.dashboardUrl).toBe("http://127.0.0.1:7911");
+    expect(after.dashboardAuth).toBe("token");
+    expect(after.dashboardHandoffFile).toBe(join("repo", ".palimpsest", "dashboard-link.txt"));
+    await installed.dispose();
+  });
+
+  it("fence mode reports the address with no handoff file: one sentence is the whole answer", async () => {
+    const installed = installPalimpsest(context() as never, {
+      projectId: "p-o-url-fence",
+      databasePath: nextPath("state"),
+      ordariumDatabasePath: nextPath("ord"),
+      hostFacts: { dashboardUrl: () => "http://127.0.0.1:7912", dashboardAuth: () => "fence", dashboardHandoffFile: () => null },
+    });
+    const surfaces = (await callTool(defineApplicationTools(installed.application), "palimpsest_surfaces", { action: "list" })) as Record<string, unknown>;
+    expect(surfaces.dashboardUrl).toBe("http://127.0.0.1:7912");
+    expect(surfaces.dashboardAuth).toBe("fence");
+    expect(surfaces.dashboardHandoffFile).toBeNull();
     await installed.dispose();
   });
 });

@@ -275,7 +275,7 @@ describe("graph patch (PLMP-GRAPH-2)", () => {
 
   it("PATCH-A05: serve reviews patches - apply/stale/refusal, token gate, zero events", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       rig.controller.start({
         projectId: "scheduler-project",
