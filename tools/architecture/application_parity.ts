@@ -46,9 +46,20 @@ export interface ParityCapture {
   /** §11: the HTTP route contract, probed per method against each installation. */
   readonly packagedRoutes: readonly ParityRouteEntry[];
   readonly minimalRoutes: readonly ParityRouteEntry[];
-  /** §13: readiness top-level keys, or null when the surface exposes none. */
-  readonly readiness: readonly string[] | null;
+  /**
+   * §10/§11 — readiness VALUES, not just keys: shape alone proves nothing about state parity.
+   * One field is normalized: `branchAdapter` carries a host-supplied implementation id that
+   * embeds the temporary profile namespace, so it is recorded as PRESENT/ABSENT instead. Every
+   * other value is the canonical enum verbatim.
+   */
+  readonly readiness: Readonly<Record<string, string>> | null;
   readonly lifecycle: ParityLifecycleObservation;
+  /**
+   * §8/§14 P6/P7 — the ORDER in which the capture ran. Route and readiness probes must happen
+   * while the installation/deployment is still ACTIVE; recording the step order makes that
+   * machine-checkable instead of a claim in a comment.
+   */
+  readonly order: readonly string[];
 }
 
 type AnyRecord = Record<string, unknown>;
@@ -87,6 +98,7 @@ export async function captureApplicationParity(distRoot: string): Promise<Parity
   };
 
   const tmp = mkdtempSync(join(tmpdir(), "palimpsest-parity-"));
+  const order: string[] = [];
   const registered: unknown[] = [];
   const context = { tools: { register: (definition: unknown) => (registered.push(definition), () => {}) } };
 
@@ -106,6 +118,11 @@ export async function captureApplicationParity(distRoot: string): Promise<Parity
     present: installedKeys.filter((key) => installed[key] !== undefined),
     absent: installedKeys.filter((key) => installed[key] === undefined),
   };
+  /* §8: probed while the installation is ACTIVE. */
+  order.push("minimal:routes");
+  const minimalRoutes = await probeRoutes(handleApplicationRequest, applicationErrorStatus, installed.application);
+
+  order.push("minimal:dispose");
   await installed.dispose?.();
 
   const profile = parseDeploymentProfile({
@@ -146,20 +163,35 @@ export async function captureApplicationParity(distRoot: string): Promise<Parity
     dshTools: toolEntries(defineApplicationTools(packagedApplication)),
     applicationFacesPresent: Object.keys(packagedApplication).filter((key) => packagedApplication[key] !== undefined),
   };
-  await deployment.close();
-
-  /* §11: the route contract, probed against the PACKAGED installation (faces present) and the */
-  /* MINIMAL one (most faces absent), so surface-absent behaviour is recorded behaviourally.  */
+  /* §8: captured while the deployment is ACTIVE, before any store closes. */
+  order.push("packaged:routes");
   const packagedRoutes = await probeRoutes(handleApplicationRequest, applicationErrorStatus, packagedApplication);
-  const minimalRoutes = await probeRoutes(handleApplicationRequest, applicationErrorStatus, installed.application);
 
-  /* §13: deterministic readiness and lifecycle observations. */
+  order.push("packaged:readiness");
   const readiness = (() => {
     const read = (deployment as { readonly collaborationReadiness?: () => unknown }).collaborationReadiness;
     if (typeof read !== "function") return null;
     const value = read();
-    return value === null || typeof value !== "object" ? null : Object.keys(value as AnyRecord).sort();
+    if (value === null || typeof value !== "object") return null;
+    const out: Record<string, string> = {};
+    for (const key of Object.keys(value as AnyRecord).sort()) {
+      const raw = (value as AnyRecord)[key];
+      // Documented normalization: an implementation id that embeds the temp profile namespace.
+      const unstable = typeof raw === "string" && (raw.includes(tmp) || raw.includes(distRoot));
+      out[key] = unstable ? "PRESENT" : raw === undefined ? "ABSENT_FIELD" : String(raw);
+    }
+    return out;
   })();
+
+  order.push("packaged:close");
+  await deployment.close();
+
+  /* §11: the route contract, probed against the PACKAGED installation (faces present) and the */
+  /* MINIMAL one (most faces absent), so surface-absent behaviour is recorded behaviourally.  */
+
+  /* §13: deterministic readiness and lifecycle observations. */
+  /* §8/§11: readiness and the route probes are captured WHILE THE DEPLOYMENT IS ACTIVE — never */
+  /* against closed stores, which would record post-disposal behaviour as the canonical contract. */
   const lifecycle: ParityLifecycleObservation = {
     disposeIsIdempotent: await (async () => {
       const fresh = installPalimpsest(context, {
@@ -185,6 +217,7 @@ export async function captureApplicationParity(distRoot: string): Promise<Parity
     minimalRoutes,
     readiness,
     lifecycle,
+    order,
   };
 }
 
@@ -368,9 +401,16 @@ export interface ParityLifecycleObservation {
 /** Compare a live capture against the recorded baseline: every key and every action set. */
 export function compareParity(baseline: ParityCapture, live: ParityCapture): readonly ParityDifference[] {
   const differences: ParityDifference[] = [];
+  /**
+   * §2/§3 — EXACT two-way collection parity. Missing AND unexpected entries are both failures:
+   * a subset check would let an accidentally-added surface, tool, action or route pass, which is
+   * not zero-semantic-change parity.
+   */
   const compareList = (where: string, expected: readonly string[], actual: readonly string[]): void => {
-    const missing = expected.filter((entry) => !actual.includes(entry));
+    const missing = expected.filter((entry) => !actual.includes(entry)).sort();
+    const unexpected = actual.filter((entry) => !expected.includes(entry)).sort();
     if (missing.length > 0) differences.push({ where, detail: `missing: ${missing.join(", ")}` });
+    if (unexpected.length > 0) differences.push({ where, detail: `unexpected: ${unexpected.join(", ")}` });
   };
   const compareInstallation = (label: string, expected: ParityInstallation, actual: ParityInstallation): void => {
     compareList(`${label}.installedCapabilityKeys`, expected.installedCapabilityKeys, actual.installedCapabilityKeys);
@@ -397,6 +437,11 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
   const minimalRoutes = new Map(baseline.minimalRoutes.map((entry) => [routeKey(entry), entry]));
   const compareRoutes = (label: string, expected: Map<string, ParityRouteEntry>, actual: readonly ParityRouteEntry[]): void => {
     const actualByPath = new Map(actual.map((entry) => [routeKey(entry), entry]));
+    /* §5/§6: EXACT route-set equality — an added route must fail, not just a removed one. */
+    const unexpectedRoutes = [...actualByPath.keys()].filter((path) => !expected.has(path)).sort();
+    if (unexpectedRoutes.length > 0) {
+      differences.push({ where: `${label}.routes`, detail: `unexpected: ${unexpectedRoutes.join(", ")}` });
+    }
     for (const [path, entry] of expected) {
       const found = actualByPath.get(path);
       if (found === undefined) {
@@ -410,9 +455,14 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
   compareRoutes("packagedRoutes", baselineRoutes, live.packagedRoutes);
   compareRoutes("minimalRoutes", minimalRoutes, live.minimalRoutes);
 
-  /* §13: readiness keys and lifecycle observations. */
+  /* §12/§13: readiness parity is an EXACT key+value map comparison, with no missing and no
+     unexpected field, and no changed value. */
   if (baseline.readiness !== null) {
-    compareList("readiness", baseline.readiness, live.readiness ?? []);
+    compareList("readiness.keys", Object.keys(baseline.readiness).sort(), Object.keys(live.readiness ?? {}).sort());
+    for (const [key, value] of Object.entries(baseline.readiness)) {
+      const actual = (live.readiness ?? {})[key];
+      if (actual !== value) differences.push({ where: `readiness.${key}`, detail: `${value} → ${String(actual)}` });
+    }
   }
   if (baseline.lifecycle.disposeIsIdempotent !== live.lifecycle.disposeIsIdempotent) {
     differences.push({ where: "lifecycle.disposeIsIdempotent", detail: `${String(baseline.lifecycle.disposeIsIdempotent)} → ${String(live.lifecycle.disposeIsIdempotent)}` });
