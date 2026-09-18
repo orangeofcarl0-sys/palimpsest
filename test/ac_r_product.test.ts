@@ -803,7 +803,12 @@ describe("G10-AC-R ACR-N20 no HTTP force tick", () => {
     expect(monitorRoutes.sort()).toEqual(["/api/monitor/preview", "/api/monitor/status"]);
     expect(monitorRoutes.some((route) => /tick|run|force|fire/iu.test(route))).toBe(false);
     // The read-only monitor surface has no force-tick member at all.
-    const surfaceSource = readFileSync(fileURLToPath(new URL("../src/application/surface.ts", import.meta.url)), "utf8");
+    // SR-1D R2: the monitor façade interface now lives in its capability cluster; the
+    // compatibility barrel re-exports it (`src/application/surface.ts`).
+    const surfaceSource = readFileSync(
+      fileURLToPath(new URL("../src/application/surfaces/project.ts", import.meta.url)),
+      "utf8",
+    );
     const monitorSurface = surfaceSource.slice(surfaceSource.indexOf("export interface MonitorApplicationSurface"));
     const members = monitorSurface.slice(0, monitorSurface.indexOf("}"));
     expect(members).toContain("status()");
