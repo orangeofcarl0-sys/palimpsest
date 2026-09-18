@@ -172,6 +172,11 @@ export async function apply(ctx, config) {
       token: config.token,
       application: deployment.installed.application,
     });
+    // The dashboard is behind a bearer token. `palimpsest serve` prints the url AND the token; this
+    // path exposed the url only (in the readiness record), so the page was reachable only by knowing
+    // the configured default — which is how I reached it, and no user can. Print both, in the same
+    // line shape the CLI already uses, where the operator is already looking.
+    process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, token: serve.token })}\n`);
   }
 
   ctx.provide('palimpsestHost', {

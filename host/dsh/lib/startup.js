@@ -22,6 +22,7 @@
 
 import { Command } from 'commander';
 import { parseCmdline } from '@deepseek-ai/dsh-cmdline';
+import { withoutCoMountedFlags } from './cmdline.js';
 
 export const name = 'palimpsest-startup';
 export const inject = ['cmdlineArgs'];
@@ -38,13 +39,19 @@ function palimpsestCommand() {
     .option('--branch <briefFile>', 'run ONE ephemeral reasoning branch from a frozen brief (or {brief,evidenceContext}) JSON file, then exit')
     .option('--once', 'deliver the launch message, print the turn, and exit (smoke / one-shot turn)')
     .option('--idle-ms <ms>', 'attention loop poll interval in milliseconds', '1500')
-    .option('--max-turns <n>', 'advisory turn budget for this activation', '6');
+    .option('--max-turns <n>', 'advisory turn budget for this activation', '6')
+    // A co-mounted app's flags must not abort this app's parse. They are stripped from the
+    // message above rather than interpreted here.
+    .allowUnknownOption(true)
+    .allowExcessArguments(true);
 }
 
 function apply(ctx) {
   const program = palimpsestCommand();
   program.action(() => {
-    const message = program.args.join(' ');
+    // `program.args` also holds options commander did not recognise, so strip the co-mounted
+    // app's flags before the tokens become the principal's task text.
+    const message = withoutCoMountedFlags(program.args).join(' ');
     const options = program.opts();
     const resume = typeof options.resume === 'string' && options.resume.length > 0 ? options.resume : undefined;
     const branchFile = typeof options.branch === 'string' && options.branch.length > 0 ? options.branch : undefined;
