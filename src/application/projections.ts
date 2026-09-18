@@ -168,11 +168,26 @@ export function organizationProjection(input: {
  * Reasoning
  * ------------------------------------------------------------------ */
 
+/**
+ * The human text of a claim, when its type has one.
+ *
+ * `ReasoningClaim.content` is `unknown` on purpose — the shape belongs to the claim type. A
+ * `reasoning.statement` claim carries `{ statement }`, and that sentence is what a reader needs:
+ * labelling the node with `reasoning.statement` showed the TYPE, which tells a user nothing, and
+ * labelling a node with a digest prefix tells them less. The type id remains the fallback when a
+ * claim genuinely has no statement — nothing is invented either way.
+ */
+function claimStatementOf(content: unknown): string | null {
+  if (typeof content !== "object" || content === null) return null;
+  const statement = (content as { readonly statement?: unknown }).statement;
+  return typeof statement === "string" && statement.trim() !== "" ? statement.trim() : null;
+}
+
 export function reasoningProjection(input: {
   readonly cellId: string;
   readonly frontierRevision: number;
   readonly frontierDigest: string;
-  readonly nodes: readonly { readonly ref: { readonly claimId: string }; readonly claim: { readonly type: { readonly typeId: string }; readonly dependencies: readonly { readonly claimId: string }[] }; readonly active: boolean }[];
+  readonly nodes: readonly { readonly ref: { readonly claimId: string }; readonly claim: { readonly type: { readonly typeId: string }; readonly content?: unknown; readonly dependencies: readonly { readonly claimId: string }[] }; readonly active: boolean }[];
   readonly candidates: readonly { readonly candidateDigest: string; readonly branchId: string; readonly status: string }[];
   readonly branches: readonly { readonly ref: { readonly branchId: string }; readonly question: string; readonly closed: boolean }[];
 }): ProjectionEnvelope<ProjectionNode> {
@@ -180,7 +195,8 @@ export function reasoningProjection(input: {
     presentationId: `reasoning:claim:${node.ref.claimId}`,
     ref: { species: "reasoning", kind: "claim", id: node.ref.claimId },
     kind: "claim",
-    label: node.claim.type.typeId,
+    // The claim's own words when its type has them; the type id only as a fallback, never invented.
+    label: claimStatementOf(node.claim.content) ?? node.claim.type.typeId,
     // Pending/rejected candidates are NEVER rendered as admitted; active/inactive is explicit.
     state: node.active ? "active" : "inactive",
   }));
