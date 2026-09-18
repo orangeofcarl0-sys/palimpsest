@@ -86,6 +86,8 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // L5 — host / deployment adapters
   deployment: "L5",
   tools: "L5",
+  // SR-1 §11: the composition root's own modules. Composition is host/deployment-side wiring.
+  composition: "L5",
 });
 
 /**

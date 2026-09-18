@@ -20,6 +20,20 @@ import { defaultOrdariumPath, createPalimpsestEffects } from "./effects/index.js
 import { GitCliPort, type GitPort } from "./effects/index.js";
 import { TaskPolicy } from "./domain/index.js";
 import { ProjectController } from "./tools/controller.js";
+// SR-1 §11/§12: composition lives in `src/composition/`; this file composes the groups and
+// assembles the installed surface. The two public helpers below are re-exported so the
+// package export surface is byte-identical to the pre-refactor one (§27/§31).
+import { composeCore, defaultAllocateActivationId, trustedDefaultPolicy } from "./composition/core.js";
+import { composeInstalledLifecycle } from "./composition/lifecycle.js";
+import {
+  campaignActivityPort,
+  campaignProjectRefPort,
+  coordinationObservationPort,
+  directManagementControl,
+  externalImportViewOf,
+} from "./composition/optional.js";
+
+export { defaultAllocateActivationId, trustedDefaultPolicy };
 import { definePalimpsestTools } from "./tools/tools.js";
 import type { DshPluginContext, DshToolDefinition } from "./tools/dsh_types.js";
 import type {
@@ -801,104 +815,6 @@ export interface InstalledFederatedBoundaryMemory {
   readonly home?: BoundaryHome | undefined;
 }
 
-/**
- * G10-J CF-I-02: derive a read-only Campaign activity observation. Counts are mechanical
- * facts about canonical Campaign history — never value, health, or dissolution authority.
- */
-function campaignActivityPort(store: CampaignStore): CampaignActivityPort {
-  return {
-    observe: async (campaignId): Promise<CampaignActivityObservation> => {
-      const definition = await store.definition(campaignId);
-      if (definition === undefined) {
-        return { campaignId, exists: false, lifecycle: null, basisThroughSeq: null, chainDigest: null, semanticEventCount: 0, activeCommitmentCount: 0, activeWatchCount: 0, inFlightWake: null, state: "known" };
-      }
-      const events = await store.replay(campaignId);
-      const basis = await store.basis(campaignId);
-      const openCommitments = new Set<string>();
-      const activeWatches = new Set<string>();
-      const startedWakes = new Set<string>();
-      const endedWakes = new Set<string>();
-      let lifecycle = "ACTIVE";
-      for (const event of events) {
-        if (event.type === "CAMPAIGN_COMMITMENT_OPENED") openCommitments.add((event.payload as { commitment: { commitmentId: string } }).commitment.commitmentId);
-        else if (event.type === "CAMPAIGN_COMMITMENT_RESOLVED" || event.type === "CAMPAIGN_COMMITMENT_ABANDONED" || event.type === "CAMPAIGN_COMMITMENT_SUPERSEDED") openCommitments.delete((event.payload as { commitmentId: string }).commitmentId);
-        else if (event.type === "WATCH_INSTALLED") activeWatches.add((event.payload as { watch: { watchId: string } }).watch.watchId);
-        else if (event.type === "WATCH_TRIGGERED" || event.type === "WATCH_CANCELLED") activeWatches.delete((event.payload as { watchId: string }).watchId);
-        else if (event.type === "WAKE_STARTED") startedWakes.add((event.payload as { wakeCycleId: string }).wakeCycleId);
-        else if (event.type === "WAKE_CYCLE_COMPLETED" || event.type === "WAKE_COMPLETED") endedWakes.add((event.payload as { wakeCycleId: string }).wakeCycleId);
-        if (event.type === "CAMPAIGN_TERMINATED") lifecycle = "TERMINATED";
-        else if (event.type === "CAMPAIGN_DORMANT") lifecycle = "DORMANT";
-        else if (event.type === "WAKE_STARTED") lifecycle = "WAKING";
-        else if (event.type === "RECONCILIATION_COMMITTED") lifecycle = "RECONCILING";
-        else if (event.type === "WAKE_CYCLE_COMPLETED" || event.type === "WAKE_COMPLETED") lifecycle = "ACTIVE";
-      }
-      return {
-        campaignId,
-        exists: true,
-        lifecycle,
-        basisThroughSeq: basis?.throughSeq ?? null,
-        chainDigest: basis?.chainDigest ?? null,
-        semanticEventCount: events.length,
-        activeCommitmentCount: openCommitments.size,
-        activeWatchCount: activeWatches.size,
-        inFlightWake: [...startedWakes].some((id) => !endedWakes.has(id)),
-        state: "known",
-      };
-    },
-  };
-}
-
-/**
- * G10-I: derive a NORMALIZED collaboration observation from coordination events.
- * Purely mechanical: exact event-type counts, plus a documented payload key scan
- * for `peerId` / `activationId`. It never interprets messages as evidence,
- * commitment, or authority.
- */
-function coordinationObservationPort(store: CoordinationStore): DynamicsCollaborationPort {
-  return {
-    observe: async () => {
-      const events = await store.replay();
-      const eventCounts: Record<string, number> = {};
-      const peerIds = new Set<string>();
-      const activationIds = new Set<string>();
-      let messageEventCount = 0;
-      let commitmentAcceptedEvents = 0;
-      let handoffAcceptedEvents = 0;
-      let contactRequestEvents = 0;
-      const scan = (value: unknown): void => {
-        if (Array.isArray(value)) {
-          for (const item of value) scan(item);
-          return;
-        }
-        if (typeof value !== "object" || value === null) return;
-        for (const [key, item] of Object.entries(value)) {
-          if (key === "peerId" && typeof item === "string") peerIds.add(item);
-          else if (key === "activationId" && typeof item === "string") activationIds.add(item);
-          else scan(item);
-        }
-      };
-      for (const event of events) {
-        eventCounts[event.type] = (eventCounts[event.type] ?? 0) + 1;
-        if (event.type === "MESSAGE_PREPARED" || event.type === "MESSAGE_DELIVERED" || event.type === "MESSAGE_RECEIVED") messageEventCount += 1;
-        if (event.type === "COMMITMENT_ACCEPTED") commitmentAcceptedEvents += 1;
-        if (event.type === "HANDOFF_ACCEPTED") handoffAcceptedEvents += 1;
-        if (event.type === "CONTACT_REQUESTED") contactRequestEvents += 1;
-        scan(event.payload);
-      }
-      return {
-        eventCounts: Object.freeze(eventCounts),
-        messageEventCount,
-        distinctPeerIds: Object.freeze([...peerIds].sort()),
-        commitmentAcceptedEvents,
-        handoffAcceptedEvents,
-        contactRequestEvents,
-        participationActivationIds: Object.freeze([...activationIds].sort()),
-        coordinationHead: await store.head(),
-      };
-    },
-  };
-}
-
 /** G10-F5: the additive organization surface (never forces institution configuration). */
 export interface InstalledOrganization {
   readonly store: OrganizationStore;
@@ -933,129 +849,25 @@ export interface InstalledInstitution {
   readonly service: InstitutionService;
 }
 
-/**
- * G10-D5 default activation allocator: a domain-separated digest over
- * (context, subject) — retry-stable (same context ⇒ same id ⇒ Ordarium
- * idempotent dedupe), and not any forbidden identity (§21).
- */
-export function defaultAllocateActivationId(subject: string, context: string): string {
-  return `act-${canonicalDigest({
-    domain: "palimpsest.activation-id.v1",
-    context,
-    subject,
-  }).slice(0, 32)}`;
-}
-
-export function trustedDefaultPolicy(): TaskPolicy {
-  return new TaskPolicy({
-    policy_id: "trusted-default",
-    read_paths: ["src"],
-    allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
-    network_policy: "deny",
-    network_allowlist: [],
-    timeout_s: 60,
-    lease_s: 10,
-    attempt_limit: 2,
-    candidate_limit: 1,
-  });
-}
-
-/**
- * G10-V: a read-only, in-memory DIRECT management control. It is used only when no
- * `managementPreferenceStore` is supplied: reads degrade to the safe DIRECT default, and a
- * write fails closed (the operator must configure a store; the agent-facing path never writes).
- */
-function directManagementControl(clock: () => string): UserManagementControlPort {
-  return {
-    get: async (projectId: string): Promise<ManagementAutonomyProfile> => defaultManagementProfile(projectId, "operator:unset"),
-    set: async (input: {
-      readonly projectId: string;
-      readonly involvement: ManagementInvolvement;
-      readonly updatedBy: string;
-    }): Promise<ManagementAutonomyProfile> =>
-      materializeManagementProfile({
-        projectId: input.projectId,
-        involvement: input.involvement,
-        budgets: { maxStepsPerRun: DEFAULT_MAX_STEPS_PER_RUN },
-        allowedActionClasses: defaultAllowedActionClasses(input.involvement),
-        confirmationBoundaries: defaultConfirmationBoundaries(input.involvement),
-        updatedAt: clock(),
-        updatedBy: input.updatedBy,
-      }),
-  };
-}
-
-/**
- * G10-V: adapt the canonical Campaign stores into the workspace's read-only project-ref port.
- * It DERIVES complete `(projectId, revision, digest)` references from canonical history; a
- * campaign whose linked-project projection reports an identity conflict is skipped (never
- * guessed), so the workspace can still show the other campaigns' relations honestly.
- */
-function campaignProjectRefPort(store: CampaignStore): ProjectWorkspaceCampaignPort {
-  return {
-    projectRefs: async (): Promise<readonly { readonly projectId: string; readonly revision: number; readonly digest: string }[]> => {
-      const refs: { readonly projectId: string; readonly revision: number; readonly digest: string }[] = [];
-      for (const definition of await store.campaigns()) {
-        const projection = projectLinkedProjects(await store.replay(definition.campaignId));
-        if (projection.status !== "known") continue;
-        for (const ref of linkedProjectRefs(projection)) refs.push(ref);
-      }
-      return Object.freeze(refs);
-    },
-  };
-}
-
-
-/**
- * G10-AE §16/§26: the workspace's read-only view of an IMPORTED journal entry.
- * The bridge plane owns the structured `ExternalAssetImportProvenance` artifact and
- * re-verifies its digest against the entry's `relatedRefs`, so a prose-only
- * lookalike is never reported as an external import.
- */
-function externalImportViewOf(entry: ProjectJournalEntry): WorkspaceExternalImportView | undefined {
-  const provenance = externalAssetImportProvenanceOf(entry);
-  if (provenance === undefined) return undefined;
-  return Object.freeze({
-    entryId: entry.entryId,
-    journalKind: entry.kind,
-    title: entry.title,
-    createdAt: entry.createdAt,
-    providerId: provenance.providerId,
-    assetId: provenance.assetId,
-    contentDigest: provenance.contentDigest,
-    refDigest: provenance.refDigest,
-    provenanceDigest: provenance.digest,
-    operationId: provenance.importOperationId,
-    ...(provenance.sourceLocator === undefined ? {} : { sourceLocator: provenance.sourceLocator }),
-  });
-}
-
 export function installPalimpsest(
   context: DshPluginContext,
   options: InstallPalimpsestOptions,
-): InstalledPalimpsest {  const repository = options.repository ?? process.cwd();
-  const git =
-    options.git ??
-    new GitCliPort(repository, join(repository, ".palimpsest", "worktrees"));
-  const store = new EventStore(options.databasePath ?? dshDefaultStatePath(), {
-    clock: options.clock ?? (() => new Date().toISOString()),
-  });
-  const effects = createPalimpsestEffects({
-    databasePath: options.ordariumDatabasePath ?? defaultOrdariumPath(),
-    git,
-    clock: options.effectsClock,
+): InstalledPalimpsest {
+  // §12: the core substrate is composed by an explicit typed function; the rest of this
+  // file only decides which capabilities to compose and how to assemble the result.
+  const core = composeCore({
+    projectId: options.projectId,
+    repository: options.repository,
+    git: options.git,
+    databasePath: options.databasePath,
+    ordariumDatabasePath: options.ordariumDatabasePath,
+    policy: options.policy,
+    clock: options.clock,
+    effectsClock: options.effectsClock,
     leaseMs: options.leaseMs,
     hooks: options.hooks,
   });
-  const policy = options.policy ?? trustedDefaultPolicy();
-  const controller = new ProjectController({
-    store,
-    effects,
-    projectId: options.projectId,
-    policy,
-    clock: options.clock,
-  });
-  const baseTools = definePalimpsestTools(controller);
+  const { repository, git, store, effects, policy, controller, baseTools } = core;
 
   // G10-T: the authoritative Proof/Evidence plane exists only when a canonical proof store is
   // supplied. Source bytes never enter the semantic rows; they are reachable only through the
@@ -1377,11 +1189,9 @@ export function installPalimpsest(
     };
   }
 
-  const disposers: (() => void)[] = [];
   // G10-AC-R: `dispose()` is a no-op on a second call, so a host that disposes the
   // install twice (or disposes after the monitor already stopped) cannot
   // double-close the controller, stores or effects.
-  let installDisposed = false;
 
   // G10-F5 (§153): ADDITIVE organization/institution surfaces. Supplying no
   // organization/institution store changes nothing (§154); institution wiring
@@ -2378,11 +2188,48 @@ export function installPalimpsest(
     application.projections !== undefined;
   const tools = [...baseTools, ...(hasAdvancedSurface ? defineApplicationTools(application) : [])];
 
-  for (const definition of tools) {
-    const registered = context.tools.register(definition);
-    if (typeof registered === "function") disposers.push(registered);
-    else if (registered !== undefined) disposers.push(() => registered.dispose());
-  }
+  // §12/§14: registration and disposal are one explicit lifecycle composition, so the
+  // ownership rules live in one reviewable place (`src/composition/lifecycle.ts`).
+  const lifecycle = composeInstalledLifecycle({
+    context,
+    tools,
+    controller,
+    store,
+    effects,
+    ...(monitor === undefined ? {} : { monitor }),
+    ownedResources: Object.freeze([
+      // G10-R: closed because this install wired it into the application surface.
+      ...(options.organizationMemoryStore === undefined
+        ? []
+        : [{ what: "organizationMemoryStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.organizationMemoryStore?.close() }]),
+      // UX-C §9/SC-4: only when ownership was made explicit; a deployment-owned store keeps its own lifetime.
+      ...(options.reasoningCellStoreOwned === true
+        ? [{ what: "reasoningCellStore", ownership: "install-owned" as const, close: () => options.reasoningCellStore?.close() }]
+        : []),
+      // G10-T: the authoritative proof store, when one was supplied.
+      ...(options.proofEvidenceStore === undefined
+        ? []
+        : [{ what: "proofEvidenceStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.proofEvidenceStore?.close() }]),
+      // G10-V: the narrowly-owned workspace/management stores, when supplied.
+      ...(options.projectAssociationStore === undefined
+        ? []
+        : [{ what: "projectAssociationStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.projectAssociationStore?.close() }]),
+      ...(options.projectJournalStore === undefined
+        ? []
+        : [{ what: "projectJournalStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.projectJournalStore?.close() }]),
+      ...(options.managementPreferenceStore === undefined
+        ? []
+        : [{ what: "managementPreferenceStore", ownership: "caller-supplied-but-closed-by-contract" as const, close: () => options.managementPreferenceStore?.close() }]),
+      // G10-AD §29: the deployment-local verification HISTORY store, only when this install created it.
+      ...(verificationStoreCreated && projectVerificationStore !== undefined
+        ? [{ what: "projectVerificationStore", ownership: "install-owned" as const, close: () => projectVerificationStore?.close() }]
+        : []),
+      // G10-AE §17: the deployment-local bridge history store, same discipline.
+      ...(externalAssetBridgeStoreCreated && externalAssetBridgeStore !== undefined
+        ? [{ what: "externalAssetBridgeStore", ownership: "install-owned" as const, close: () => externalAssetBridgeStore?.close() }]
+        : []),
+    ]),
+  });
 
   return {
     controller,
@@ -2420,56 +2267,7 @@ export function installPalimpsest(
     ...(verification === undefined ? {} : { verification }),
     ...(monitor === undefined ? {} : { monitor }),
     ...(externalAssets === undefined ? {} : { externalAssets }),
-    register(next: DshPluginContext): () => void {
-      const inner: (() => void)[] = [];
-      for (const definition of tools) {
-        const registered = next.tools.register(definition);
-        if (typeof registered === "function") inner.push(registered);
-        else if (registered !== undefined) inner.push(() => registered.dispose());
-      }
-      return () => {
-        for (const dispose of [...inner].reverse()) dispose();
-      };
-    },
-    async dispose() {
-      if (installDisposed) return;
-      installDisposed = true;
-      for (const dispose of [...disposers].reverse()) dispose();
-      // G10-AC-R §8: settle the monitor startup and STOP the monitor BEFORE any
-      // store is closed. ORDER MATTERS: a tick callback must never run against a
-      // closed store, so the tick source is stopped (and its in-flight start
-      // settled) first. `monitor.dispose()` is idempotent, so a second
-      // `installed.dispose()` is a no-op.
-      if (monitor !== undefined) {
-        await monitor.ready();
-        await monitor.dispose();
-      }
-      await controller.close();
-      store.close();
-      // G10-R: close the empirical organization-memory store only when this install was
-      // given one (it is the store it wired into the application surface).
-      options.organizationMemoryStore?.close();
-      // UX-C §9/SC-4: a reasoning-cell store is closed ONLY when ownership was made
-      // explicit. A caller-supplied (or deployment-owned) store keeps its own lifetime;
-      // the packaged deployment closes the store IT created.
-      if (options.reasoningCellStoreOwned === true) options.reasoningCellStore?.close();
-      // G10-T: close the authoritative proof store only when this install was given one.
-      options.proofEvidenceStore?.close();
-      // G10-V: close the narrowly-owned workspace/management stores only when supplied.
-      options.projectAssociationStore?.close();
-      options.projectJournalStore?.close();
-      options.managementPreferenceStore?.close();
-      // G10-AD §29: close the deployment-local verification HISTORY store only when this install
-      // created it — a supplied store belongs to its caller (same discipline as above).
-      if (verificationStoreCreated) projectVerificationStore?.close();
-      // G10-AE §17: close the deployment-local bridge history store only when this install
-      // created it — a supplied store belongs to its caller (same discipline as above). The
-      // test-only gate review caught this line closing a SUPPLIED store while its comment
-      // promised the opposite.
-      if (externalAssetBridgeStoreCreated) externalAssetBridgeStore?.close();
-      // G10-P: release the Ordarium effects ledger too. Without this an embedder (the
-      // deployment launcher, a host) leaks the shared operations file handle.
-      await effects.close();
-    },
+    register: lifecycle.register,
+    dispose: () => lifecycle.dispose(),
   };
 }
