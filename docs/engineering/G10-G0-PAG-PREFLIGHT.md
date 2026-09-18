@@ -104,3 +104,14 @@ Campaign persists: evidence/claim REFERENCES, historical observations,
 | G0-M10 | store still rejects a stale head at activation |
 
 `test/g0_governance_closure.test.ts`: 7 tests. Full suite: **91 files / 800 tests**.
+
+## 6. CI record
+
+```text
+PR #40, final HEAD 5557484 (pre-merge), merge commit 5557484
+run 34756736991: unit pass; e2e first attempt failed on the documented
+  E2E-DEBUG-01 flake (spec line 42, assertion line 56) → failed-job rerun pass
+```
+The failure was the pre-existing documented flake, not a Campaign regression
+(§219).
+

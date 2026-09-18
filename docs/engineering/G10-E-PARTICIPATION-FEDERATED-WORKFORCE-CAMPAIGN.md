@@ -220,8 +220,11 @@ Load-bearing distinctions machine-proven across E1–E5.
 
 ## 20. Final verdict
 
-**Canonical gate (§169)**: recorded below after the E6 merge (local gates +
-canonical remote CI on the final main SHA).
+**Canonical gate (§169)** — post-E6 canonical main
+`6afa2920dabcc0dbd1c7b5efbf3a43fbfc88f110`:
+`git diff --check` clean; unit **83 files / 710 tests passed**; `pnpm build`
+and `pnpm build:web` pass; local e2e **21/21** (after documented flake runs);
+canonical remote CI workflow **34749879495** — **success** (first run).
 
 All §171 PASS criteria hold: D-AUTH-01/D-MOD-01 closed; activation contexts
 explicit; Invocation and Participation production-realized with the

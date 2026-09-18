@@ -33,9 +33,24 @@ Merged normally at stage close.
    contracts.
 7. **Gates?** Full unit **75 files / 652 tests** (post-D3 baseline 74/645);
    builds pass; `git diff --check` clean; local e2e 21/21 (after two
-   documented flake runs under local load); remote CI: implementation-HEAD
-   run **34714853606** **first-run green**. The tip-at-close run is cited in
-   the PR description.
+   documented flake runs under local load).
+
+## Remote CI history (recorded with full transparency)
+
+- Implementation HEAD run **34714853606**: **first-run green** (unit PASS +
+  e2e PASS).
+- Final docs HEAD `45829e9`: run **34714948858** — unit PASS, e2e FAIL
+  (`E2E-DEBUG-01`, 20/21, the known runtime-debugger flake family; D4
+  touches no UI/runtime code). **Process note, recorded honestly**: the
+  merge of PR #24 was issued in the same step as the run watch and landed
+  before this run's failure was observed — the exact-final-HEAD check
+  (§111) was therefore satisfied only retroactively. Remediation per the
+  established protocol: failed-job rerun → **success** (same known family,
+  no semantic change), and the authoritative post-merge canonical-main CI
+  run **34715023084** is **success** on its own (first run), so the merged
+  canonical state is green in fact. No ancestor-green citation is relied
+  upon: both the rerun and the canonical-main run are green on their own
+  SHAs.
 
 ## Verdict
 
