@@ -321,11 +321,13 @@ export const REVIEWED_TOOL_CONTRACT_CHANGES: readonly { readonly tool: string; r
   {
     tool: "palimpsest_surfaces",
     reason:
-      "The description now also says where a human can watch this deployment, and that the answer is " +
-      "this deployment's url rather than a default. Asked 'which address do I open?', the agent called " +
-      "no tool, read the product's own src/serve.ts, and answered with the CLI default port — wrong for " +
-      "the running deployment, and unverifiable by the user. The url was already in that tool's payload; " +
-      "nothing in its contract pointed at it.",
+      "The description now carries the whole 'where does a human watch' answer, because the agent is " +
+      "the primary surface and the person it talks to has no other console: asked 'which address do I " +
+      "open?', the agent first called no tool and answered the CLI default port; after the url reached " +
+      "the payload it answered correctly but had to add 'I cannot get the token', because the DSH-style " +
+      "split leaves the credential on a stdout nobody reads. The description now states the two access " +
+      "modes (fence: the address alone; token: the handoff link file) so the answer is complete and a " +
+      "token is never quoted into the conversation.",
   },
 ]);
 

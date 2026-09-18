@@ -34,6 +34,13 @@ export const Config = z.object({
   port: z.number().default(0),
   host: z.string().default('127.0.0.1'),
   /**
+   * How the dashboard is guarded. "fence" (the default) needs no credential — the browser-trust
+   * fence is the whole gate, so the agent's answer to "where do I watch?" is one sentence.
+   * "token" is the opt-in for a machine other people use; it costs the person a handoff, which is
+   * why that mode also writes the link into the project.
+   */
+  auth: z.union(['fence', 'token']).default('fence'),
+  /**
    * Open the dashboard in the default browser once it is serving. Default true, and only acted on
    * when this process has a terminal: a person running the profile by hand gets the page without
    * copying a token, while a scripted run or an agent host opens nothing.
@@ -173,13 +180,16 @@ export async function apply(ctx, config) {
   // The dashboard url exists only AFTER serving (a profile may ask for port 0 and let the OS pick),
   // so the deployment reads it through a getter rather than receiving a value it cannot know yet.
   // This is what lets the agent — the primary surface — tell the person where to watch.
-  let dashboardUrl = null;
   const deployment = palimpsest.launchDeployment(profile, {
     context,
     host: {
       ...(agents === undefined ? {} : { dshAgents: agents }),
       ...(branchExecution === undefined ? {} : { branchExecution }),
-      facts: { dashboardUrl: () => dashboardUrl },
+      facts: {
+        dashboardUrl: () => (serve === undefined ? null : serve.url),
+        dashboardAuth: () => (serve === undefined ? null : serve.auth),
+        dashboardHandoffFile: () => (serve === undefined ? null : serve.handoffFilePath),
+      },
     },
   });
 
@@ -188,12 +198,26 @@ export async function apply(ctx, config) {
     serve = await palimpsest.serveOrchestration(deployment.installed.controller, {
       port: config.port,
       host: config.host,
-      // Absent ⇒ serve mints a random token for this start. It used to default to a fixed string
-      // ('palimpsest-dogfood') here, which made the dashboard's only credential a constant published
-      // in this repository — and, because the token was also accepted from the query string, one a
-      // malicious page could use without a preflight. Both halves are gone: the credential is now
-      // per start, and it is accepted only for the root-url handoff, never on /api.
+      // Access mode. "fence" (the default) needs no credential at all — the browser-trust fence is
+      // the whole gate, so the agent's answer to "where do I watch?" is one complete sentence.
+      // "token" is the opt-in for a machine other people use, and it costs the person a handoff,
+      // which is why that mode also writes the link into the project (see handoffFilePath).
+      auth: config.auth,
+      // Token mode only; absent ⇒ a random token per start. It used to default to a fixed string
+      // ('palimpsest-dogfood'), which made the dashboard's only credential a constant published in
+      // this repository — and, because the token was then accepted from the query string, one a
+      // malicious page could use without a preflight.
       ...(config.token === '' ? {} : { token: config.token }),
+      // Token mode only: the handoff link, written where the person's own surfaces already look.
+      // First choice is the project's .palimpsest/ (what a dsh web workspace shows); a profile
+      // without a repository falls back to the deployment state dir, which a terminal still
+      // reaches. Either way the agent reports the PATH, never a token.
+      handoffFilePath:
+        config.auth === 'token'
+          ? profile.repository === undefined
+            ? join(dirname(profile.databases.orchestration), 'dashboard-link.txt')
+            : join(profile.repository, '.palimpsest', 'dashboard-link.txt')
+          : undefined,
       // The cookie secret lives beside this deployment's databases, so a browser that was
       // authorized before a host restart still is afterwards. Derived HERE rather than in the
       // product: the product's public surface is sealed (§4 — an added export fails parity), and
@@ -202,18 +226,18 @@ export async function apply(ctx, config) {
       secretPath: join(dirname(profile.databases.orchestration), 'dashboard-cookie-secret'),
       application: deployment.installed.application,
     });
-    dashboardUrl = serve.url;
-    // `url` is the clean address (what the agent reports, and what belongs in a model's context);
-    // `openUrl` carries this start's token, and opening it exchanges that token for a browser
-    // cookie and redirects to the clean url — so a person clicks once instead of hunting for a
-    // token. Same line shape the CLI already uses, where the operator is already looking.
-    process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, openUrl: serve.openUrl, token: serve.token })}\n`);
+    // `url` is the clean address (what the agent reports, and what belongs in a model's context).
+    // In fence mode that address IS the whole answer. In token mode `openUrl` carries this start's
+    // token, and opening it exchanges the token for a browser cookie and redirects to the clean
+    // url; the same link is in the project's .palimpsest/dashboard-link.txt for a person who is
+    // not reading this stream.
+    process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, auth: serve.auth, ...(serve.openUrl === null ? {} : { openUrl: serve.openUrl, token: serve.token, handoffFile: serve.handoffFilePath }) })}\n`);
     // Printing it is enough for whoever reads this terminal, and useless for whoever does not —
     // measured: an agent asked "where do I watch?" reports the clean url, cannot obtain the token,
     // and refuses to guess. So when a person IS watching this run, the deployment opens the url,
     // which is what `dsh web` does by default. A script or a server has no terminal and gets no
     // window popped at it.
-    if (shouldOpenDashboard(config.openDashboard, process.stdout.isTTY === true)) {
+    if (shouldOpenDashboard(config.openDashboard, process.stdout.isTTY === true) && serve.openUrl !== null) {
       const opened = openInDefaultBrowser(serve.openUrl);
       process.stdout.write(`PALIMPSEST_DASHBOARD_OPEN ${JSON.stringify({ opened, openUrl: serve.openUrl })}\n`);
     }

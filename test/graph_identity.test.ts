@@ -499,7 +499,7 @@ describe("identity-aware draft/live diff (PLMP-CANVAS-7 D7)", () => {
 describe("compile-independent anchor endpoint (PLMP-CANVAS-7 D8)", () => {
   it("ANCHOR-A01..A05: parse+lift+digest+revision only - cycles anchor fine, layout-stable, read-only", async () => {
     const rig = makeRig();
-    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
       const before = (rig.store.connection.prepare("SELECT COUNT(*) AS c FROM events").get() as { c: number }).c;
@@ -592,7 +592,7 @@ describe("patch endpoint presentation preservation (PLMP-CANVAS-8)", () => {
 
   it("PATCH-PRES-A01: semantic field update keeps position, group, and a correct digest", async () => {
     const rig = makeRig();
-    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle: ServeHandle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       rig.controller.start({ projectId: "identity-project", goal: "g", tasks: [taskSpec("task-1")] });
       const doc = beforeDoc();

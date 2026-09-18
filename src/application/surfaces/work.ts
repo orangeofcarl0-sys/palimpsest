@@ -26,6 +26,14 @@ export interface WorkApplicationSurface {
    * inventing a url.
    */
   dashboardUrl(): string | null;
+  /**
+   * How the dashboard is guarded, or null when none is served. This is what makes the agent's answer
+   * complete: fence ⇒ the address alone opens it; token ⇒ the person needs the handoff link, which
+   * is at {@link dashboardHandoffFile} — never in this conversation.
+   */
+  dashboardAuth(): "fence" | "token" | null;
+  /** Token mode only: the file holding the person's handoff link. Null otherwise. */
+  dashboardHandoffFile(): string | null;
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
@@ -36,6 +44,8 @@ export interface WorkApplicationSurface {
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
     const work: WorkApplicationSurface = {
       dashboardUrl: () => deps.hostFacts?.dashboardUrl() ?? null,
+      dashboardAuth: () => deps.hostFacts?.dashboardAuth() ?? null,
+      dashboardHandoffFile: () => deps.hostFacts?.dashboardHandoffFile() ?? null,
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),

@@ -53,10 +53,12 @@ const policy = () =>
 
 export interface KernelSession {
   readonly url: string;
-  /** The address a human opens: the url carrying this start's token, which the server exchanges
-   * for a browser cookie and then redirects to the clean url. */
-  readonly openUrl: string;
-  readonly token: string;
+  /** How the dashboard is guarded — the shape of the answer to "where do I watch". */
+  readonly auth: "fence" | "token";
+  /** Token mode: the address a human opens (the url carrying this start's token, exchanged for a
+   * browser cookie and redirected to the clean url). Fence mode: null — `url` is the whole answer. */
+  readonly openUrl: string | null;
+  readonly token: string | null;
   readonly projectId: string;
   readonly controller: ProjectController;
   readonly store: EventStore;
@@ -64,7 +66,11 @@ export interface KernelSession {
   close(): Promise<void>;
 }
 
-export async function startKernel(): Promise<KernelSession> {
+/**
+ * @param auth - `"token"` (the historical shape: a fixed token, a lock screen, a handoff) or
+ *   `"fence"` (the deployment default: no credential exists, the address is the whole answer).
+ */
+export async function startKernel(auth: "fence" | "token" = "token"): Promise<KernelSession> {
   const dir = mkdtempSync(join(tmpdir(), "palimpsest-e2e-"));
   const store = new EventStore(join(dir, "palimpsest.sqlite"), {
     clock: () => new Date().toISOString(),
@@ -83,12 +89,14 @@ export async function startKernel(): Promise<KernelSession> {
   const handle = await serveOrchestration(controller, {
     host: "127.0.0.1",
     port: 0,
-    token: E2E_TOKEN,
+    auth,
+    ...(auth === "token" ? { token: E2E_TOKEN } : {}),
   });
   return {
     url: handle.url,
+    auth: handle.auth,
     openUrl: handle.openUrl,
-    token: E2E_TOKEN,
+    token: handle.token,
     projectId: E2E_PROJECT,
     controller,
     store,
