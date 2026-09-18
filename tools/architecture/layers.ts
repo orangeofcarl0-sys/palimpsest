@@ -86,6 +86,11 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // L5 — host / deployment adapters
   deployment: "L5",
   tools: "L5",
+  // SR-1 §14/§34: the extracted host adapters (`src/adapters/dsh/**`, `src/adapters/http/**`).
+  // Host-side wiring, exactly like `tools/` and `deployment/`: they may depend on anything and
+  // nothing below may depend on them. The DSH and HTTP compatibility entries under `src/tools/`
+  // and `src/application/` keep the import paths a caller already had (§10/§18).
+  adapters: "L5",
   // SR-1 §11: the composition root's own modules. Composition is host/deployment-side wiring.
   composition: "L5",
 });
