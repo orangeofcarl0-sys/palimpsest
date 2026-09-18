@@ -50,7 +50,8 @@ function importedNames(file: string, specifier: string): string[] {
   const names = new Set<string>();
   for (const match of text.matchAll(pattern)) {
     for (const raw of match[1]!.split(",")) {
-      const name = raw.trim().split(/\s+as\s+/u).pop()?.trim() ?? "";
+      // An import list may mix kinds inline (`import { a, type B }`); the kind is not the name.
+      const name = (raw.trim().split(/\s+as\s+/u).pop()?.trim() ?? "").replace(/^type\s+/u, "");
       if (name !== "") names.add(name);
     }
   }

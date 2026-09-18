@@ -287,7 +287,14 @@ export interface ParityDifference {
 
 /**
  * §11 — the HTTP route contract inventory, read off the CANONICAL adapter before any split.
- * Each path is probed with both methods; the recorded value is a coarse outcome class.
+ * Each path is probed with every method in `HTTP_METHODS`; the recorded values are coarse outcome
+ * classes plus the accepted-method set derived from the adapter's own method guard.
+ *
+ * SR-1 closure §19: this list is a hand-read census of the canonical switchboard, so it can only
+ * prove that a KNOWN route did not move. Auditing it against the canonical source before R3B found
+ * exactly one real route it had never covered — `/api/external-assets/approve-publish` — which is
+ * why that path is here now. The static manifest in `src/adapters/http/` is what makes the
+ * inventory complete going forward; this list is its canonical counterpart.
  */
 const ROUTE_PATHS: readonly string[] = [
 "/api/advisor/recommend",
@@ -330,6 +337,7 @@ const ROUTE_PATHS: readonly string[] = [
   "/api/experiments/runs",
   "/api/experiments/scenarios",
   "/api/experiments/variants",
+  "/api/external-assets/approve-publish",
   "/api/external-assets/commit-import",
   "/api/external-assets/commit-reference",
   "/api/external-assets/inspect",
@@ -423,20 +431,50 @@ export interface ParityRouteEntry {
   readonly path: string;
   readonly get: string;
   readonly post: string;
+  /**
+   * SR-1 closure §20 — the methods this route actually ACCEPTS, derived black-box rather than
+   * declared: every method in `HTTP_METHODS` is probed and the ones answered with the adapter's
+   * own method guard are excluded. Recorded because a static route manifest must be comparable to
+   * the canonical route set, and the outcome classes alone cannot tell "this route wants POST"
+   * apart from "this route rejected the body".
+   */
+  readonly methods: readonly string[];
 }
 
+/**
+ * The probe methods. GET and POST are the adapter's real vocabulary; PUT/DELETE/PATCH exist only so
+ * the accepted-method set can be read off the guard instead of trusted from a hand-written list.
+ */
+const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "PATCH"] as const;
+
+/** The adapter's own wrong-method refusal, e.g. `route /api/proof/claims requires GET`. */
+const METHOD_GUARD = /^route \/api\/.* requires (?:GET|POST)$/u;
+
 async function probeRoutes(handle: (input: AnyRecord) => Promise<AnyRecord | undefined>, statusOf: (error: unknown) => number, application: unknown): Promise<ParityRouteEntry[]> {
-  const probe = async (method: string, pathname: string): Promise<string> => {
+  const probe = async (method: string, pathname: string): Promise<{ readonly outcome: string; readonly detail: string | undefined }> => {
     try {
       const result = await handle({ application, method, pathname, query: new URLSearchParams(), body: {} });
-      return result === undefined ? "unrouted" : `ok:${String(result.status)}`;
+      if (result === undefined) return { outcome: "unrouted", detail: undefined };
+      const body = result.body as { readonly error?: { readonly detail?: unknown } } | undefined;
+      const detail = body?.error?.detail;
+      return { outcome: `ok:${String(result.status)}`, detail: typeof detail === "string" ? detail : undefined };
     } catch (error) {
-      return `error:${String(statusOf(error))}`;
+      return { outcome: `error:${String(statusOf(error))}`, detail: error instanceof Error ? error.message : String(error) };
     }
   };
   const out: ParityRouteEntry[] = [];
   for (const pathname of ROUTE_PATHS) {
-    out.push({ path: pathname, get: await probe("GET", pathname), post: await probe("POST", pathname) });
+    const outcomes = new Map<string, { readonly outcome: string; readonly detail: string | undefined }>();
+    for (const method of HTTP_METHODS) outcomes.set(method, await probe(method, pathname));
+    out.push({
+      path: pathname,
+      get: outcomes.get("GET")!.outcome,
+      post: outcomes.get("POST")!.outcome,
+      methods: HTTP_METHODS.filter((method) => {
+        const detail = outcomes.get(method)!.detail;
+        return detail === undefined || !METHOD_GUARD.test(detail);
+      }),
+    });
   }
   return out;
 }
@@ -512,6 +550,15 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
       }
       if (found.get !== entry.get) differences.push({ where: `${label}.${path}.GET`, detail: `${entry.get} → ${found.get}` });
       if (found.post !== entry.post) differences.push({ where: `${label}.${path}.POST`, detail: `${entry.post} → ${found.post}` });
+      /* §20: the accepted-method set is compared exactly, in both directions. */
+      const missingMethods = entry.methods.filter((method) => !found.methods.includes(method));
+      const unexpectedMethods = found.methods.filter((method) => !entry.methods.includes(method));
+      if (missingMethods.length > 0 || unexpectedMethods.length > 0) {
+        differences.push({
+          where: `${label}.${path}.methods`,
+          detail: `${entry.methods.join("|")} → ${found.methods.join("|")}`,
+        });
+      }
     }
   };
   compareRoutes("packagedRoutes", baselineRoutes, live.packagedRoutes);

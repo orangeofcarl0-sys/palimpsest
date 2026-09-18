@@ -91,13 +91,43 @@ describe("SR-1D §14 the comparison rejects extras, not only omissions", () => {
 
   it("P4 an unexpected HTTP route fails, and a changed outcome class fails", () => {
     const extra = clone();
-    (extra.packagedRoutes as ParityRouteEntry[]).push({ path: "/api/debug", get: "ok:200", post: "ok:200" });
+    (extra.packagedRoutes as ParityRouteEntry[]).push({ path: "/api/debug", get: "ok:200", post: "ok:200", methods: ["GET"] });
     expect(compareParity(base, extra).some((difference) => difference.detail.includes("unexpected: /api/debug"))).toBe(true);
 
     const changed = clone();
     const route = changed.packagedRoutes.find((entry) => entry.path === "/api/application/surfaces");
     (route as unknown as { get: string }).get = "error:500";
     expect(compareParity(base, changed).some((difference) => difference.where.endsWith("/api/application/surfaces.GET"))).toBe(true);
+  });
+
+  /* SR-1 closure §20 — the accepted-method set is part of the route contract, and it is exactly
+     what a static manifest must agree with, so it gets its own mutations. */
+  it("P13 a changed accepted-method set fails, in both directions", () => {
+    const narrowed = clone();
+    const getOnly = narrowed.packagedRoutes.find((entry) => entry.path === "/api/proof/claims")!;
+    expect(getOnly.methods).toEqual(["GET"]);
+    (getOnly as unknown as { methods: string[] }).methods = ["GET", "POST"];
+    expect(compareParity(base, narrowed).some((difference) => difference.where.endsWith("/api/proof/claims.methods"))).toBe(true);
+
+    const widened = clone();
+    const postOnly = widened.packagedRoutes.find((entry) => entry.path === "/api/proof/claims/reassess")!;
+    expect(postOnly.methods).toEqual(["POST"]);
+    (postOnly as unknown as { methods: string[] }).methods = ["POST", "PUT"];
+    expect(compareParity(base, widened).some((difference) => difference.where.endsWith("/api/proof/claims/reassess.methods"))).toBe(true);
+  });
+
+  it("the fixture's method sets are coherent with its own outcome classes", () => {
+    // `methods` is read off the adapter's method guard (via the error detail), so the class alone
+    // cannot confirm it: an ACCEPTED method can legitimately answer 400 for a malformed probe body.
+    // What the class does pin is the refusal side — the guard always throws InvalidRequest, so a
+    // method outside the declared set must be answered 400.
+    for (const entry of base.packagedRoutes) {
+      expect(entry.methods.length, `${entry.path} accepts no method at all`).toBeGreaterThan(0);
+      if (entry.methods.length === 1) {
+        const refused = entry.methods[0] === "GET" ? entry.post : entry.get;
+        expect(refused, `${entry.path} refuses its non-declared method with something other than 400`).toBe("ok:400");
+      }
+    }
   });
 
   it("P5 a changed readiness value fails, and an extra readiness field fails", () => {
