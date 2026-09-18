@@ -16,7 +16,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { analyseModuleArchitecture, stripComments, type ModuleArchitecture } from "../../tools/architecture/index.js";
+import { REVIEWED_ROUTE_ADDITIONS, analyseModuleArchitecture, stripComments, type ModuleArchitecture } from "../../tools/architecture/index.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ADAPTERS = "src/adapters/http";
@@ -71,13 +71,27 @@ const canonicalRouted = FIXTURE.capture.packagedRoutes.filter(
 const canonicalPaths = [...canonicalRouted.map((entry) => entry.path)].sort();
 
 describe("SR-1 §20/A13 the static route manifest equals the canonical route set", () => {
-  it("the manifest covers exactly the canonical paths, no missing and no unexpected", () => {
+  it("the manifest covers exactly the canonical paths, no missing and no unreviewed addition", () => {
     const manifestPaths = [...inventory.map((entry) => entry.path)].sort();
+    const reviewed = REVIEWED_ROUTE_ADDITIONS.map((entry) => entry.path);
     const missing = canonicalPaths.filter((path) => !manifestPaths.includes(path));
-    const unexpected = manifestPaths.filter((path) => !canonicalPaths.includes(path));
-    expect(unexpected, "the manifest declares a route the canonical adapter did not have").toEqual([]);
+    const unexpected = manifestPaths.filter((path) => !canonicalPaths.includes(path) && !reviewed.includes(path));
+    expect(unexpected, "the manifest declares a route the canonical adapter did not have and that was never reviewed").toEqual([]);
     expect(missing, "the manifest lost a canonical route").toEqual([]);
-    expect(manifestPaths.length).toBe(127);
+    // An allowance that outlived the route it was granted for is a stale exception, not a licence.
+    expect(reviewed.filter((path) => !manifestPaths.includes(path)), "a reviewed addition is no longer routed").toEqual([]);
+    // The count is derived, so it cannot drift: 127 canonical + exactly the reviewed additions.
+    expect(manifestPaths.length).toBe(127 + reviewed.length);
+  });
+
+  it("every reviewed addition names a concrete path and a reason, like the architecture exceptions", () => {
+    expect(REVIEWED_ROUTE_ADDITIONS.length).toBeGreaterThan(0);
+    for (const entry of REVIEWED_ROUTE_ADDITIONS) {
+      expect(entry.path.startsWith("/api/")).toBe(true);
+      expect(entry.reason.length, `${entry.path} has no written reason`).toBeGreaterThan(40);
+    }
+    // A general wildcard would defeat the gate entirely.
+    expect(REVIEWED_ROUTE_ADDITIONS.some((entry) => entry.path.includes("*"))).toBe(false);
   });
 
   it("the manifest's path set has no duplicate", () => {
@@ -95,6 +109,9 @@ describe("SR-1 §20/A13 the static route manifest equals the canonical route set
     for (const descriptor of manifestModule.APPLICATION_ROUTE_MANIFEST) {
       const covered = [descriptor.path, ...(descriptor.covers ?? [])];
       for (const path of covered) {
+        // A reviewed post-baseline addition has no canonical method set to be compared against; it
+        // is covered instead by the behavioural probe and by the allowance's own assertions.
+        if (REVIEWED_ROUTE_ADDITIONS.some((entry) => entry.path === path)) continue;
         const canonical = canonicalRouted.find((entry) => entry.path === path);
         expect(canonical, `${path} is not a canonical route`).toBeDefined();
         expect(expectedFor(descriptor), `${path} method set differs from canonical`).toEqual([...canonical!.methods]);

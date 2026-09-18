@@ -27,6 +27,24 @@ import type { RecipeExecutionContext } from "../../recipes/execution.js";
 
 export const COGNITION_ROUTES: readonly ApplicationRouteDescriptor[] = [
   /* ---- reasoning ---- */
+  /*
+    Added after the canonical baseline, and recorded as such in the parity gate
+    (`REVIEWED_ROUTE_ADDITIONS`) rather than slipped in silently.
+
+    Every other reasoning route requires a `cellId`, so a client could only reach a cell whose id it
+    had been told out of band — there was no way for the dashboard to show what had already been
+    explored. This is the index: the cells this deployment owns, with the objective a human wrote.
+    It returns definitions only — no frontier, no claims, no candidate bodies.
+  */
+  route({
+    path: "/api/reasoning/cells",
+    methods: ["GET"],
+    face: "reasoning",
+    handle: async ({ application, ok, requireGet }) => {
+      requireGet();
+      return ok(await requireSurface(application.reasoning, "reasoning").listCells());
+    },
+  }),
   route({
     path: "/api/reasoning/view",
     methods: ["GET"],

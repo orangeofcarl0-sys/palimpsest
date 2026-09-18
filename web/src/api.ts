@@ -252,6 +252,22 @@ export function reasoningEvaluate(input: { readonly cellId: string; readonly can
   return call<unknown>("/api/reasoning/evaluate", { method: "POST", body: JSON.stringify(input) });
 }
 
+/**
+ * The reasoning index: every cell this deployment owns, with the objective a human wrote.
+ *
+ * Task §"what did the agent do": without this the panel could only be reached by typing a cell id
+ * from somewhere else, so a practice that really happened was invisible unless you already had it.
+ */
+export interface ReasoningCellListEntry {
+  readonly cellId: string;
+  readonly objective: string;
+  readonly lifecycle?: string;
+}
+
+export function reasoningCells(): Promise<readonly ReasoningCellListEntry[]> {
+  return call<readonly ReasoningCellListEntry[]>("/api/reasoning/cells");
+}
+
 export function boundaryDecide(input: { readonly workspaceId: string; readonly artifactId: string; readonly candidateDigest: string; readonly decision: "accept" | "reject" }): Promise<unknown> {
   return call<unknown>("/api/boundary/decide", { method: "POST", body: JSON.stringify(input) });
 }

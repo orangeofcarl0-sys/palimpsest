@@ -147,6 +147,14 @@ export interface ReasoningCellView {
 }
 
 export interface ReasoningCellService {
+  /**
+   * Every cell this deployment owns.
+   *
+   * The store could always do this; the service never exposed it, so nothing could show a user what
+   * had already been explored — the only way to reach a cell was to type an id somebody else
+   * printed. This is the read that makes an index possible.
+   */
+  listCells(): Promise<readonly ReasoningCellDefinition[]>;
   openCell(input: { readonly cellId: string; readonly objective: string; readonly verificationPolicyRef: ReasoningPolicyRef; readonly admissionPolicyRef: ReasoningPolicyRef }): Promise<ReasoningCellDefinition>;
   closeCell(input: { readonly cellId: string; readonly reason: string }): Promise<void>;
   openBranch(input: { readonly cellId: string; readonly question: string; readonly attribution?: ActivationRef | null | undefined }): Promise<{ readonly branch: ReasoningBranch; readonly brief: ReasoningBranchBrief }>;
@@ -688,6 +696,7 @@ export function makeReasoningCellService(deps: ReasoningCellDeps): ReasoningCell
   return {
     openCell,
     closeCell,
+    listCells: () => deps.store.cells(),
     openBranch,
     closeBranch,
     branchBrief,

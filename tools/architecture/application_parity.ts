@@ -286,6 +286,26 @@ export interface ParityDifference {
 
 
 /**
+ * RS-1 closure §20 — routes added AFTER the canonical baseline, each with a reason.
+ *
+ * The parity gate exists to catch an ACCIDENTAL change to the route surface, and exact two-way
+ * equality is what gives it teeth. An intentional product addition is the one case the gate cannot
+ * decide on its own, so it is recorded here explicitly, in the same idiom as the architecture
+ * checker's permitted edge exceptions: a named path with a written reason. The gate keeps both
+ * teeth — `missing` must still be empty (no canonical route may disappear) and any route NOT in this
+ * list is still an unexpected addition that fails.
+ */
+export const REVIEWED_ROUTE_ADDITIONS: readonly { readonly path: string; readonly reason: string }[] = Object.freeze([
+  {
+    path: "/api/reasoning/cells",
+    reason:
+      "The reasoning index. Every other /api/reasoning/* route requires a cellId, so a client could " +
+      "only reach a cell whose id it had been told out of band — the dashboard had no way to show " +
+      "what had already been explored, and reaching a practice required hand-typing the id.",
+  },
+]);
+
+/**
  * §11 — the HTTP route contract inventory, read off the CANONICAL adapter before any split.
  * Each path is probed with every method in `HTTP_METHODS`; the recorded values are coarse outcome
  * classes plus the accepted-method set derived from the adapter's own method guard.
@@ -463,7 +483,10 @@ async function probeRoutes(handle: (input: AnyRecord) => Promise<AnyRecord | und
     }
   };
   const out: ParityRouteEntry[] = [];
-  for (const pathname of ROUTE_PATHS) {
+  /* Probed but NOT canonical: a reviewed post-baseline addition still has to be observed, otherwise
+     the comparison would report the allowance as stale the moment it was granted. */
+  const probedPaths = [...ROUTE_PATHS, ...REVIEWED_ROUTE_ADDITIONS.map((entry) => entry.path)];
+  for (const pathname of probedPaths) {
     const outcomes = new Map<string, { readonly outcome: string; readonly detail: string | undefined }>();
     for (const method of HTTP_METHODS) outcomes.set(method, await probe(method, pathname));
     out.push({
@@ -537,8 +560,15 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
   const minimalRoutes = new Map(baseline.minimalRoutes.map((entry) => [routeKey(entry), entry]));
   const compareRoutes = (label: string, expected: Map<string, ParityRouteEntry>, actual: readonly ParityRouteEntry[]): void => {
     const actualByPath = new Map(actual.map((entry) => [routeKey(entry), entry]));
-    /* §5/§6: EXACT route-set equality — an added route must fail, not just a removed one. */
-    const unexpectedRoutes = [...actualByPath.keys()].filter((path) => !expected.has(path)).sort();
+    /* §5/§6: EXACT route-set equality — an added route must fail, not just a removed one — with the
+       single, reasoned exception for a reviewed post-baseline addition.
+
+       Staleness of an allowance ("it is no longer routed") is deliberately NOT checked here: this
+       comparison runs against the CANONICAL fixture, which by definition predates the addition and
+       therefore never contains it. That check belongs to the static manifest gate, which reads the
+       live manifest and can tell whether the allowed path is still declared. */
+    const reviewed = new Set(REVIEWED_ROUTE_ADDITIONS.map((entry) => entry.path));
+    const unexpectedRoutes = [...actualByPath.keys()].filter((path) => !expected.has(path) && !reviewed.has(path)).sort();
     if (unexpectedRoutes.length > 0) {
       differences.push({ where: `${label}.routes`, detail: `unexpected: ${unexpectedRoutes.join(", ")}` });
     }
