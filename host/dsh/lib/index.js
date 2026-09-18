@@ -156,11 +156,17 @@ export async function apply(ctx, config) {
   // any hard-coded host policy: the fabricating SUPPORTED policy is gone (SC-5).
   const agents = ctx.get('agents');
   const branchExecution = deriveBranchExecution(palimpsest, profile);
+
+  // The dashboard url exists only AFTER serving (a profile may ask for port 0 and let the OS pick),
+  // so the deployment reads it through a getter rather than receiving a value it cannot know yet.
+  // This is what lets the agent — the primary surface — tell the person where to watch.
+  let dashboardUrl = null;
   const deployment = palimpsest.launchDeployment(profile, {
     context,
     host: {
       ...(agents === undefined ? {} : { dshAgents: agents }),
       ...(branchExecution === undefined ? {} : { branchExecution }),
+      facts: { dashboardUrl: () => dashboardUrl },
     },
   });
 
@@ -172,6 +178,7 @@ export async function apply(ctx, config) {
       token: config.token,
       application: deployment.installed.application,
     });
+    dashboardUrl = serve.url;
     // The dashboard is behind a bearer token. `palimpsest serve` prints the url AND the token; this
     // path exposed the url only (in the readiness record), so the page was reachable only by knowing
     // the configured default — which is how I reached it, and no user can. Print both, in the same

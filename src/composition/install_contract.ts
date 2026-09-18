@@ -38,6 +38,7 @@ import { builtinRecipeRegistry } from "../recipes/registry.js";
 import type { RecipeExecutionService, ReasoningBranchExecutionPort } from "../recipes/execution.js";
 import type { EmpiricalArchitectureAdvisor } from "../advisor/advisor.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "../application/surface.js";
+import type { HostDeploymentFactsPort } from "../application/common.js";
 import type { BoundaryArtifactTypeRegistry, BoundaryCollaborationTransportPort, BoundaryHome, BoundaryMemoryService, BoundaryMemoryStore, BoundaryWorkspaceRoutePort, FederatedBoundaryClient } from "../boundary_memory/index.js";
 import type { DisclosureAdmissionPort, DisclosureService, EvidenceExtractionService, LocalProofBlobStore, ProofEvidenceService, ProofEvidenceStore, ProofPublicationAdmissionPort, ProofVerificationPolicyPort } from "../proof_asset/index.js";
 import type { ProofSourceContentPort } from "../proof_asset/source_content_port.js";
@@ -55,6 +56,12 @@ import type { CampaignMonitorDriver, CampaignMonitorPolicy, CampaignMonitorScope
 import { SqliteProjectVerificationStore } from "../project_verification/index.js";
 import type { ProjectVerificationOutcome, ProjectVerificationRun, ProjectVerificationService, ProjectVerificationStatus, ProjectVerifierPort, ProjectVerifierRegistry } from "../project_verification/index.js";
 import { SqliteManagementPreferenceStore } from "../project_management/index.js";
+
+/**
+ * @see {@link HostDeploymentFactsPort} — declared in the application layer, which consumes it; the
+ * composition root re-exports it so host wiring has a single import site for its ports.
+ */
+export type { HostDeploymentFactsPort };
 
 export interface InstallPalimpsestOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
@@ -269,6 +276,12 @@ export interface InstallPalimpsestOptions {
    * advisor reports reasoning branches unavailable and EXPLORE execution fails closed.
    */
   reasoningBranchExecution?: ReasoningBranchExecutionPort | undefined;
+  /**
+   * Host facts that only exist once the deployment is running (see {@link HostDeploymentFactsPort}).
+   * Absent means "this deployment knows of no dashboard", which the adapter reports as null — never
+   * as an invented url.
+   */
+  hostFacts?: HostDeploymentFactsPort | undefined;
   /**
    * UX-A §3/§22 (additive): the UNTRUSTED TaskProfilerPort. Absent ⇒ the first-party
    * DETERMINISTIC, local, no-LLM lexical profiler is used, so `advisor.profile({ task })`

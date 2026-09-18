@@ -24,6 +24,7 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  REVIEWED_TOOL_CONTRACT_CHANGES,
   canonicalJson,
   captureApplicationParity,
   compareParity,
@@ -214,6 +215,64 @@ describe("SR-1D §14 the comparison rejects extras, not only omissions", () => {
     expect(contractDifference(live)).toContain("description changed");
   });
 
+  /* §20 — the reviewed tool-contract allowance. The gate must keep its teeth: the allowance admits
+     a DESCRIPTION for the one named tool and nothing else, so a schema or action change smuggled in
+     beside an allowed description change still fails, and an unlisted tool still fails on prose. */
+  it("P14 a description-only change on a reviewed tool is admitted", () => {
+    const live = clone();
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!;
+    (tool as unknown as { description: string }).description = `${tool.description} (rewritten)`;
+    (tool as unknown as { contractDigest: string }).contractDigest = toolContractDigest({
+      name: tool.name,
+      mode: tool.mode,
+      description: tool.description,
+      parameters: tool.parameters,
+    });
+    expect(contractDifference(live)).toBeUndefined();
+    // Admitted, not ignored: the digest really did change, so P14 is not vacuous.
+    expect(tool.contractDigest).not.toBe(base.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")?.contractDigest);
+  });
+
+  it("P15 the same reviewed tool still fails on a schema change", () => {
+    const live = mutateTool("palimpsest_surfaces", (schema) => {
+      (schema.required as string[]).push("debugTrace");
+    });
+    // Both the description AND the schema differ here, so the "description only" condition must be
+    // what rejects it — not the absence of an allowance.
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!;
+    (tool as unknown as { description: string }).description = `${base.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!.description} (rewritten)`;
+    (tool as unknown as { contractDigest: string }).contractDigest = toolContractDigest({
+      name: tool.name,
+      mode: tool.mode,
+      description: tool.description,
+      parameters: tool.parameters,
+    });
+    expect(contractDifference(live)).toContain("parameters:");
+  });
+
+  it("P16 the same reviewed tool still fails on an action change", () => {
+    const live = clone();
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!;
+    (tool as unknown as { actions: string[] }).actions.push("debug_run");
+    expect(compareParity(base, live).some((difference) => difference.where.endsWith("palimpsest_surfaces.actions"))).toBe(true);
+  });
+
+  it("P17 an unlisted tool still fails on a description change (the allowance is not a class)", () => {
+    const live = clone();
+    const listed = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!;
+    // The same mutation P14 admits, moved to a tool that is NOT reviewed: it must fail.
+    const other = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_attention")!;
+    (other as unknown as { description: string }).description = `${other.description} (rewritten)`;
+    (other as unknown as { contractDigest: string }).contractDigest = toolContractDigest({
+      name: other.name,
+      mode: other.mode,
+      description: other.description,
+      parameters: other.parameters,
+    });
+    expect(listed.contractDigest).toBe(base.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_surfaces")!.contractDigest);
+    expect(contractDifference(live)).toContain("description changed");
+  });
+
   it("P12 the fixture really does pin the full contract, not just the action enum", () => {
     for (const tool of [...base.packagedInstallation.dshTools, ...base.minimalInstallation.dshTools]) {
       expect(tool.description.length, `${tool.name} has no captured description`).toBeGreaterThan(0);
@@ -331,5 +390,37 @@ describe("SR-1C §21 golden structural parity", () => {
       "receive",
       "acknowledge",
     ]);
+  });
+
+  /* §20 continued — the reviewed tool-contract allowance, checked against the LIVE tree.
+     `compareParity` cannot check staleness (the fixture predates every allowance by construction),
+     so it is checked here, where a real capture of the current tree exists. */
+  it("A16 every reviewed tool-contract change is real, and is a description-only change", () => {
+    expect(REVIEWED_TOOL_CONTRACT_CHANGES.length).toBeGreaterThan(0);
+    const canonicalTools = new Map(
+      [...FIXTURE.capture.packagedInstallation.dshTools, ...FIXTURE.capture.minimalInstallation.dshTools].map((tool) => [tool.name, tool]),
+    );
+    for (const entry of REVIEWED_TOOL_CONTRACT_CHANGES) {
+      const canonical = canonicalTools.get(entry.tool);
+      expect(canonical, `${entry.tool} is not a canonical tool, so the allowance points at nothing`).toBeDefined();
+      const now = live.packagedInstallation.dshTools.find((tool) => tool.name === entry.tool);
+      expect(now, `${entry.tool} is no longer in the catalogue, so the allowance is stale`).toBeDefined();
+      // Non-stale: the live contract really did change.
+      expect(now!.contractDigest, `the ${entry.tool} allowance is stale: its live contract is unchanged`).not.toBe(
+        canonical!.contractDigest,
+      );
+      // Description-only: everything a caller can pass, and everything the mode promises, is identical.
+      expect(now!.description).not.toBe(canonical!.description);
+      expect(now!.parameters).toBe(canonical!.parameters);
+      expect(now!.actions).toEqual(canonical!.actions);
+      expect(now!.mode).toBe(canonical!.mode);
+      expect(entry.reason.length, `${entry.tool} has no written reason`).toBeGreaterThan(40);
+    }
+  });
+
+  it("A16 an allowance never names a wildcard, and never repeats a tool", () => {
+    const tools = REVIEWED_TOOL_CONTRACT_CHANGES.map((entry) => entry.tool);
+    expect(tools.some((tool) => tool.includes("*"))).toBe(false);
+    expect(new Set(tools).size).toBe(tools.length);
   });
 });

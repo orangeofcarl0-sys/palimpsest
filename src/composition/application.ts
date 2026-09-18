@@ -49,6 +49,7 @@ export type ApplicationAssemblyOptions = Pick<
   | "proofEvidenceStore"
   | "reasoningCellStore"
   | "attentionActivation"
+  | "hostFacts"
 >;
 
 /** What the assembly produced. */
@@ -92,6 +93,9 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
 
   const application = makePalimpsestApplicationSurface({
     controller,
+    // Host facts that only exist once the deployment is serving (the dashboard url) pass straight
+    // through to the work face, which the agent-facing discovery tool reads.
+    ...(assemblyOptions.hostFacts === undefined ? {} : { hostFacts: assemblyOptions.hostFacts }),
     ...(assemblyOptions.localPeer === undefined ? {} : { localPeer: assemblyOptions.localPeer }),
     ...(federation === undefined ? {} : { federation }),
     ...(boundaryMemory === undefined ? {} : { boundary: boundaryMemory.service }),

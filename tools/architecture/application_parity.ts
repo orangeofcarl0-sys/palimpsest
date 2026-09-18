@@ -306,6 +306,30 @@ export const REVIEWED_ROUTE_ADDITIONS: readonly { readonly path: string; readonl
 ]);
 
 /**
+ * Tool contracts changed AFTER the canonical baseline, each with a reason.
+ *
+ * Same idiom, deliberately narrower teeth. The allowance covers the DESCRIPTION of the named tool
+ * and nothing else: a changed parameter schema, action set or mode on a listed tool still fails,
+ * and an unlisted tool still fails on any contract change at all. A listing that no longer
+ * describes a change — the tool is back to its canonical contract — is itself reported, so the
+ * list cannot quietly rot into a blanket permission.
+ *
+ * The description is the one part of a contract that is prose for a model rather than an interface
+ * for a caller: it changes what the model knows, never what a caller may pass.
+ */
+export const REVIEWED_TOOL_CONTRACT_CHANGES: readonly { readonly tool: string; readonly reason: string }[] = Object.freeze([
+  {
+    tool: "palimpsest_surfaces",
+    reason:
+      "The description now also says where a human can watch this deployment, and that the answer is " +
+      "this deployment's url rather than a default. Asked 'which address do I open?', the agent called " +
+      "no tool, read the product's own src/serve.ts, and answered with the CLI default port — wrong for " +
+      "the running deployment, and unverifiable by the user. The url was already in that tool's payload; " +
+      "nothing in its contract pointed at it.",
+  },
+]);
+
+/**
  * §11 — the HTTP route contract inventory, read off the CANONICAL adapter before any split.
  * Each path is probed with every method in `HTTP_METHODS`; the recorded values are coarse outcome
  * classes plus the accepted-method set derived from the adapter's own method guard.
@@ -544,10 +568,29 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
          and the canonical schema next to each other, because "the digest changed" alone is not a
          diagnosable failure. */
       if (found.contractDigest !== tool.contractDigest) {
-        const parts: string[] = [`digest ${tool.contractDigest.slice(0, 12)} → ${found.contractDigest.slice(0, 12)}`];
-        if (found.description !== tool.description) parts.push(`description changed (${tool.description.length} → ${found.description.length} chars)`);
-        if (found.parameters !== tool.parameters) parts.push(`parameters: ${tool.parameters} → ${found.parameters}`);
-        differences.push({ where: `${label}.${tool.name}.contract`, detail: parts.join("; ") });
+        /* A reviewed change tolerates a new description for that ONE tool, and only when everything
+           else in the contract is byte-identical. `parameters` is compared as the canonical JSON
+           string, and `actions`/`mode` were already compared above — so a schema change smuggled in
+           alongside an allowed description change is still caught, twice.
+
+           Staleness ("the entry no longer describes a change") is deliberately NOT checked here,
+           for the same reason route staleness is not: this comparison runs against the CANONICAL
+           fixture, which by definition predates the change and never contains it. The check belongs
+           where the LIVE tree is captured — `application_parity.test.ts` asserts each listed tool's
+           live digest really does differ from canonical, and differs in the description alone. */
+        const reviewed = REVIEWED_TOOL_CONTRACT_CHANGES.some((entry) => entry.tool === tool.name);
+        const descriptionOnly =
+          found.parameters === tool.parameters &&
+          found.mode === tool.mode &&
+          found.actions.join("\u0000") === tool.actions.join("\u0000") &&
+          found.description !== tool.description;
+        if (!reviewed || !descriptionOnly) {
+          const parts: string[] = [`digest ${tool.contractDigest.slice(0, 12)} → ${found.contractDigest.slice(0, 12)}`];
+          if (found.description !== tool.description) parts.push(`description changed (${tool.description.length} → ${found.description.length} chars)`);
+          if (found.parameters !== tool.parameters) parts.push(`parameters: ${tool.parameters} → ${found.parameters}`);
+          if (reviewed) parts.push("(reviewed for description only, but this is not a description-only change)");
+          differences.push({ where: `${label}.${tool.name}.contract`, detail: parts.join("; ") });
+        }
       }
     }
   };

@@ -11,6 +11,24 @@ import type { PeerRef } from "../federation/peer.js";
 import { materializePeerRef } from "../federation/peer.js";
 import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
 
+/**
+ * Host-supplied facts about a RUNNING deployment that exist only once it starts serving.
+ *
+ * Declared HERE, in the layer that consumes it, and not in the composition root that wires it: a
+ * facade that imported its own port from `composition/` would be an L4 → L5 edge, i.e. application
+ * code reaching up into host wiring (§6), and the two directions together closed a cycle. The
+ * composition root imports the port from this module instead — the direction the layers allow.
+ *
+ * A method rather than a value on purpose: a profile may ask the host to serve on port 0 and let the
+ * OS choose, so the dashboard url does not exist at composition time. The host wires an
+ * implementation after `serveOrchestration` returns, and the agent-facing discovery tool reads it
+ * then, which is why a captured string would be wrong rather than merely early.
+ */
+export interface HostDeploymentFactsPort {
+  /** Where a human can watch this project, or null when this deployment serves no dashboard. */
+  dashboardUrl(): string | null;
+}
+
 export function invalidInput(message: string): Error {
   const error = new Error(message);
   (error as { kind?: string }).kind = "invalid_value";

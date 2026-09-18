@@ -45,6 +45,7 @@ import type { EmpiricalArchitectureAdvisor } from "../advisor/advisor.js";
 import type { TaskProfilerPort } from "../advisor/task_profile.js";
 import type { PeerRef } from "../federation/peer.js";
 import type { ProjectController } from "../tools/controller.js";
+import type { HostDeploymentFactsPort } from "./common.js";
 import type { ProjectWorkspaceService } from "../project_workspace/index.js";
 import type { ProjectManagementService } from "../project_management/index.js";
 import type { CampaignMonitorStatus, CampaignMonitorTickResult } from "../monitor/index.js";
@@ -107,6 +108,11 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
 
 export interface ApplicationSurfaceDeps {
   readonly controller: ProjectController;
+  /**
+   * Host facts about the RUNNING deployment (the dashboard url). Optional: an installation with no
+   * dashboard and no host wiring simply has none, which the work face reports as null.
+   */
+  readonly hostFacts?: HostDeploymentFactsPort | undefined;
   readonly localPeer?: PeerRef | undefined;
   readonly federation?: FederationService | undefined;
   readonly boundary?: BoundaryMemoryService | undefined;
