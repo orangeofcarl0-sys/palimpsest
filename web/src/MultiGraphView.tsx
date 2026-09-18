@@ -17,11 +17,13 @@ import {
   applicationSurfaces,
   boundaryDecide,
   projection,
+  reasoningCells,
   reasoningEvaluate,
   type ApplicationSurfaceAvailability,
   type GraphSpecies,
   type ProjectionEnvelope,
   type ProjectionNode,
+  type ReasoningCellListEntry,
 } from "./api";
 
 const SPECIES: readonly { readonly id: GraphSpecies; readonly label: string }[] = [
@@ -89,6 +91,28 @@ export function MultiGraphView({ onExit }: { readonly onExit: () => void }): JSX
   const [message, setMessage] = useState<string | null>(null);
   const [candidateDigest, setCandidateDigest] = useState("");
   const [artifactId, setArtifactId] = useState("");
+  const [cells, setCells] = useState<readonly ReasoningCellListEntry[] | null>(null);
+
+  /**
+   * The reasoning specimen is the one species with no ref of its own in the URL, so the panel used to
+   * demand a cell id typed from memory. Fetch the index instead and let a user pick by what the
+   * objective SAYS; the id stays the value, out of sight.
+   */
+  useEffect(() => {
+    if (species !== "reasoning") return;
+    let current = true;
+    void reasoningCells()
+      .then((list) => {
+        if (current) setCells(list);
+      })
+      .catch(() => {
+        // An unreadable index must not break the panel: the free-text field still works.
+        if (current) setCells(null);
+      });
+    return () => {
+      current = false;
+    };
+  }, [species]);
 
   useEffect(() => {
     void applicationSurfaces()
@@ -162,12 +186,33 @@ export function MultiGraphView({ onExit }: { readonly onExit: () => void }): JSX
             {(species === "organization" && "OrganizationDefinitionId") || (species === "reasoning" && "CellId") || "本物种无需 ref"}：
           </span>
           {species === "organization" || species === "reasoning" ? (
-            <input
-              aria-label="投影 ref"
-              value={scope}
-              onChange={(event) => setScope(event.target.value)}
-              style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0", fontSize: 12, width: 260 }}
-            />
+            <>
+              {species === "reasoning" && cells !== null ? (
+                <select
+                  aria-label="选择 reasoning cell"
+                  data-testid="reasoning-cell-picker"
+                  value={cells.some((cell) => cell.cellId === scope) ? scope : ""}
+                  onChange={(event) => setScope(event.target.value)}
+                  style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0", fontSize: 12, maxWidth: 420 }}
+                >
+                  <option value="">
+                    {cells.length === 0 ? "此部署还没有 cell" : `${String(cells.length)} 个 cell —— 按 objective 选`}
+                  </option>
+                  {cells.map((cell) => (
+                    <option key={cell.cellId} value={cell.cellId}>
+                      {excerpt(cell.objective, 70)}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+              <input
+                aria-label="投影 ref"
+                value={scope}
+                onChange={(event) => setScope(event.target.value)}
+                placeholder={species === "reasoning" ? "或直接粘贴 cell id" : ""}
+                style={{ padding: "4px 8px", borderRadius: 6, border: "1px solid #334155", background: "#0f172a", color: "#e2e8f0", fontSize: 12, width: 260 }}
+              />
+            </>
           ) : null}
           {envelope !== null ? (
             <span data-testid="projection-knowledge">

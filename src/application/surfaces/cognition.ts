@@ -7,7 +7,9 @@
  */
 
 import { invalidInput } from "../common.js";
-import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphView, ReasoningCellView, ReasoningBranchBrief, CandidateStatus } from "../../reasoning_cell/index.js";
+import type { ReasoningCellService, ReasoningFrontierView, ReasoningClaimGraphView, ReasoningCellView, ReasoningBranchBrief, CandidateStatus,
+  ReasoningCellDefinition,
+} from "../../reasoning_cell/index.js";
 import type { ReasoningClaimTypeRef, ReasoningClaimRef, ExternalEvidenceRef, EvaluationOutcome, InvalidationOutcome } from "../../reasoning_cell/index.js";
 import type { ArchitectureVariant, ExperimentDefinition, InterventionRecord, MeasurementCorrection, OrganizationEvaluation, RunResult, ScenarioDefinition } from "../../organization_memory/index.js";
 import type { OrganizationMemoryService, SimilarRunsQuery } from "../../organization_memory/index.js";
@@ -33,6 +35,13 @@ export interface CognitionSurfaceDeps {
 }
 
 export interface ReasoningApplicationSurface {
+  /**
+   * Every cell this deployment owns, with the objective a human wrote.
+   *
+   * Without it the only way to reach a cell was to be told its id out of band: every other method
+   * here takes a cellId, so no client could discover what had already been explored.
+   */
+  listCells(): Promise<readonly ReasoningCellDefinition[]>;
   view(cellId: string): Promise<ReasoningCellView>;
   openBranch(input: { readonly cellId: string; readonly question: string; readonly attribution?: unknown }): Promise<{ readonly branch: unknown; readonly brief: ReasoningBranchBrief }>;
   brief(input: { readonly cellId: string; readonly branchId: string }): Promise<ReasoningBranchBrief>;
@@ -130,6 +139,7 @@ export function makeCognitionSurfaces(deps: CognitionSurfaceDeps): { readonly re
       deps.reasoning === undefined
         ? undefined
         : {
+            listCells: () => deps.reasoning!.listCells(),
             view: (cellId) => deps.reasoning!.cellView({ cellId }),
             openBranch: (input) => deps.reasoning!.openBranch({ cellId: input.cellId, question: input.question, attribution: input.attribution as never }),
             brief: (input) => deps.reasoning!.branchBrief(input),
