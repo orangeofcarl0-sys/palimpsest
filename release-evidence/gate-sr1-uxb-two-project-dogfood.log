@@ -1,0 +1,179 @@
+(node:41472) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "evidence": {
+    "both_installations_compose_the_cross_project_face": {
+      "ok": true,
+      "detail": "{\"optics\":true,\"detector\":true}"
+    },
+    "federation_is_active_on_both_sides": {
+      "ok": true
+    },
+    "discovery_lists_projects_with_names_not_peers": {
+      "ok": true,
+      "detail": "{\"state\":\"known\",\"projects\":[{\"projectId\":\"optics\",\"displayName\":\"the optics project\",\"aliases\":[\"optics\",\"photonics\"],\"peerId\":\"peer-optics\",\"competenceTags\":[\"optics\"]},{\"projectId\":\"detector\",\"displayName\":\"the detector project\",\"aliases\":[\"detector\"],\"peerId\":\"peer-detector\",\"competenceTags\":[\"d"
+    },
+    "discovery_never_exposes_a_peeref_as_project_identity": {
+      "ok": true,
+      "detail": "each descriptor keeps projectId and peer distinct"
+    },
+    "prepare_ask_is_read_only_and_shows_the_exact_packet": {
+      "ok": true,
+      "detail": "{\"targetProject\":\"the detector project\",\"status\":\"PREPARED\",\"responder\":\"\",\"summary\":\"Ready to ask the detector project.\",\"warnings\":[],\"details\":{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"peerId\":\"peer-detector\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"messageRefs\":[]},\"outb"
+    },
+    "prepare_ask_sends_nothing": {
+      "ok": true,
+      "detail": "ledger bytes before any send: 176"
+    },
+    "prepare_ask_targets_B_and_contains_only_the_task": {
+      "ok": true,
+      "detail": "{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"targetProjectId\":\"detector\",\"targetPeerId\":\"peer-detector\",\"task\":\"Have we already studied this detector aperture issue?\",\"body\":\"{\\\"schemaVersion\\\":1,\\\"kind\\\":\\\"PROJECT_ASK\\\",\\\"requestId\\\":\\\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\\\",\\\"sourceProjectId\\\":\\\"optics\\\",\\\"targetProjectId\\\":\\\"detector\\"
+    },
+    "ask_resolves_the_project_and_reports_sent_not_a_synchronous_answer": {
+      "ok": true,
+      "detail": "RESOLVED: Asked the detector project."
+    },
+    "raw_transport_envelope_carries_no_workspace_sentinel": {
+      "ok": true,
+      "detail": "ledger bytes: 1822"
+    },
+    "raw_transport_envelope_carries_the_exact_task": {
+      "ok": true,
+      "detail": "the task text is present and unmodified"
+    },
+    "remote_pump_ingests_the_authenticated_message": {
+      "ok": true,
+      "detail": "{\"ingested\":1,\"received\":1,\"unverified\":0}"
+    },
+    "remote_attention_emitted_an_inbound_peer_message": {
+      "ok": true,
+      "detail": "[\"inbound_peer_message\"]"
+    },
+    "remote_pending_returns_one_authenticated_request": {
+      "ok": true,
+      "detail": "[{\"requestId\":\"cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"sourceProjectId\":\"optics\",\"sourceProject\":\"the optics project\",\"sourcePeerId\":\"peer-optics\",\"targetProjectId\":\"detector\",\"task\":\"Have we already studied this detector aperture issue?\",\"threadId\":\"thr-cpq-5fe1dc8de9a90a693faaa40d93f9eb56\",\"messageId\":\"msg-f8d834ba-295b-41b1-9af8-853388e4a456\",\"at\":\"2026-09-18T06:16:20.870Z\"}]"
+    },
+    "remote_focus_answers_directly_without_explore": {
+      "ok": true,
+      "detail": "ANSWERED: The optics project replied."
+    },
+    "origin_pump_ingests_the_answer": {
+      "ok": true,
+      "detail": "{\"ingested\":1}"
+    },
+    "origin_status_shows_the_answer_without_a_second_user_request": {
+      "ok": true,
+      "detail": "ANSWERED: \"We studied the aperture issue; our calibration note is B_ONLY_SECRET_GAIN_CALIBRATION\""
+    },
+    "answer_is_not_auto_imported": {
+      "ok": true,
+      "detail": "no Journal/Decision/Task is created by the projection"
+    },
+    "receive_surfaces_the_terminal_answer": {
+      "ok": true,
+      "detail": "ANSWERED"
+    },
+    "ask_and_answer_create_zero_commitment_boundary_or_project_mutation": {
+      "ok": true,
+      "detail": "{\"before\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"},\"after\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"}}"
+    },
+    "second_ask_is_pending_on_the_remote_side": {
+      "ok": true,
+      "detail": "[\"cpq-af9a49c266556697cd13401e201f935d\"]"
+    },
+    "remote_uxa_capability_gap_is_honest_not_fabricated": {
+      "ok": true,
+      "detail": "DECLINED: The optics project declined to answer."
+    },
+    "third_ask_is_pending_for_the_focus_compose": {
+      "ok": true,
+      "detail": "[\"cpq-d1a50dd195ce34fc26bf3fded9e22dec\"]"
+    },
+    "remote_uxa_collaboration_can_answer": {
+      "ok": true,
+      "detail": "ANSWERED: No extra collaboration boundary was created: the principal continues with this request itself, and nothing was explored or verified on its behalf. Why: UX-A: FOCUS is the chosen intent, and FOCUS never explores: no branch, no reasoning cell and no extra agent is created. The principal continues with the request itself (§13/§21). No admitted finding emerged. Nothing is left unresolved. Verification did not run, so nothing about the project head is being claimed as checked."
+    },
+    "duplicate_request_does_not_force_duplicate_cognition": {
+      "ok": true,
+      "detail": "{\"pending\":[],\"note\":\"the already-answered request is excluded, not re-cognised\"}"
+    },
+    "fourth_ask_is_pending_for_the_conflict_proof": {
+      "ok": true,
+      "detail": "[\"cpq-80c3d175e7f97b40752b2b20786c6a18\"]"
+    },
+    "first_terminal_answer_is_accepted": {
+      "ok": true,
+      "detail": "ANSWERED"
+    },
+    "materially_different_terminal_answers_report_CONFLICT": {
+      "ok": true,
+      "detail": "CONFLICT: Conflicting answers arrived from the detector project; nothing was chosen for you."
+    },
+    "conflict_picks_no_side_silently": {
+      "ok": true,
+      "detail": "{\"answer\":null,\"warnings\":[\"2 materially different answers arrived for this request from the detector project; none of them was chosen for you\"]}"
+    },
+    "unanswered_request_is_waiting_not_failed": {
+      "ok": true,
+      "detail": "WAITING"
+    },
+    "compose_answered_paths_also_create_zero_mutation": {
+      "ok": true,
+      "detail": "{\"before\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"},\"after\":{\"commitments\":0,\"projects\":\"[]\",\"journal\":\"[{\\\"n\\\":4}]\"}}"
+    },
+    "shared_association_file_really_holds_BOTH_scopes": {
+      "ok": true,
+      "detail": "[\"detector\",\"optics\"]"
+    },
+    "shared_journal_file_really_holds_BOTH_scopes": {
+      "ok": true,
+      "detail": "[\"detector\",\"optics\"]"
+    },
+    "spoof_packet_is_a_valid_protocol_packet": {
+      "ok": true,
+      "detail": "so the refusal below can only come from the source-binding rule"
+    },
+    "live_source_binding_spoof_is_not_pending": {
+      "ok": true,
+      "detail": "[\"cpq-4391a301fa16cdc34985a69f72e1c36c\",\"req-hostile-1\"]"
+    },
+    "foreign_journal_read_fails_closed_from_B": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "foreign_scoped_assets_read_fails_closed_from_B": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "no_external_asset_bridge_is_composed_to_widen_from_B": {
+      "ok": true,
+      "detail": "no bridge (a bridge that IS composed refuses a foreign scope: proven in the AE-R dogfood)"
+    },
+    "foreign_journal_read_fails_closed_from_A": {
+      "ok": true,
+      "detail": "invalid_registration"
+    },
+    "B_local_reads_stay_bound_to_B": {
+      "ok": true,
+      "detail": "B's own read shows B's scope and never A's secret"
+    },
+    "no_secret_crossed_the_boundary_in_any_form": {
+      "ok": true,
+      "detail": "A's secret never appears in the shared transport ledger"
+    },
+    "B_sent_only_its_authored_answer": {
+      "ok": true,
+      "detail": "the ask is inbound; B's outbound content is what it authored"
+    }
+  },
+  "honestNotes": {
+    "deployment_wiring_gap": "These UX-B rigs do not request the UX-C §9 reasoning bundle (`reasoning: {}`), so they compose NO reasoning (no cell store, no branch-execution port) and a remote project cannot fan out: an EXPLORE/PARALLEL compose request comes back CAPABILITY_REQUIRED and UX-B honestly maps it to DECLINED. The composition PATH is proven here with the intent the deployed stack can serve. Since UX-C, a profile CAN declare `reasoning: {}` to get a deployment-owned store + ephemeral branches with no manual wiring (scripts/interaction/uxc-dsh-local-dogfood.mjs), and UXB-N26 keeps the in-suite Explore proof.",
+    "cf_ae_r_05_precision": "The shared-store section proves (a) no federation call site accepts a project or workspace scope, so there is no reachable foreign-read PATH, and (b) the workspace facade fence REFUSES a foreign project id with a typed error. It does not claim a bypass was attempted and blocked, and it does not exercise externalAssets (no bridge is composed in a profile-launched deployment - that fence is proven in the AE-R dogfood).",
+    "scope_claim": "No federation call site accepts a project or workspace scope, so the shared-store section proves the ABSENCE of a reachable foreign-read path together with the fence behaviour (SC-17) - not that a bypass was attempted and blocked.",
+    "authentication": "'authenticated' means asserted by the LOCAL transport adapter from this installation's own durable ledger (SC-4). The real defence for a cross-project Ask is the directory binding (peer <-> project), which is what the source/target-binding checks exercise.",
+    "pumping": "In this rig the pump is driven explicitly (pumpAndActivate), which is what a host loop does. The DSH runner has an unconditional attention loop; launchDeployment itself starts nothing (SC-2), and this stage adds no second scheduler."
+  },
+  "failures": [],
+  "pass": true
+}
+pass=true
