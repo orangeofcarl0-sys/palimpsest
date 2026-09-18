@@ -213,7 +213,7 @@
       },
       {
         "path": "/api/attention",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
@@ -283,7 +283,7 @@
       },
       {
         "path": "/api/cross-project/pending",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
@@ -448,7 +448,7 @@
       },
       {
         "path": "/api/federation/commitments",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
@@ -458,7 +458,7 @@
       },
       {
         "path": "/api/federation/inbox",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
@@ -623,7 +623,7 @@
       },
       {
         "path": "/api/projection/collaboration",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
@@ -808,18 +808,18 @@
       },
       {
         "path": "/api/verification/history",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
         "path": "/api/verification/status",
-        "get": "ok:500",
+        "get": "ok:200",
         "post": "ok:400"
       },
       {
         "path": "/api/verification/verify_current_head",
         "get": "ok:400",
-        "post": "ok:500"
+        "post": "ok:200"
       },
       {
         "path": "/api/",
@@ -1474,19 +1474,26 @@
         "post": "ok:400"
       }
     ],
-    "readiness": [
-      "advisor",
-      "attention",
-      "branchAdapter",
-      "coldResume",
-      "crossProject",
-      "inboundPump",
-      "localExplore",
-      "projectVerification",
-      "reasoningStore"
-    ],
+    "readiness": {
+      "advisor": "AVAILABLE",
+      "attention": "PULL",
+      "branchAdapter": "ABSENT_FIELD",
+      "coldResume": "UNAVAILABLE",
+      "crossProject": "AVAILABLE",
+      "inboundPump": "CONFIGURED",
+      "localExplore": "UNAVAILABLE",
+      "projectVerification": "AVAILABLE",
+      "reasoningStore": "CONFIGURED"
+    },
     "lifecycle": {
       "disposeIsIdempotent": true
-    }
+    },
+    "order": [
+      "minimal:routes",
+      "minimal:dispose",
+      "packaged:routes",
+      "packaged:readiness",
+      "packaged:close"
+    ]
   }
 }
