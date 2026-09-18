@@ -177,3 +177,42 @@ describe("MultiGraph Reasoning projection labels nodes by what they say", () => 
     expect(a.nodes[0]!.presentationId).toBe(b.nodes[0]!.presentationId);
   });
 });
+
+describe("MultiGraph Reasoning projection labels candidates by what they propose", () => {
+  const withCandidate = (claimContent: unknown) =>
+    reasoningProjection({
+      cellId: "cell-1",
+      frontierRevision: 0,
+      frontierDigest: "d",
+      nodes: [],
+      branches: [],
+      candidates: [
+        {
+          candidateDigest: "7a661b8da881a8dea0ec73fa6c3438d139ff7e9561aba7f9922f15a8c03bb92d",
+          branchId: "br-cde567c8f2a8e511790c99f8",
+          status: "ADMITTED",
+          ...(claimContent === undefined ? {} : { claim: { content: claimContent } }),
+        },
+      ],
+    });
+
+  it("PROJ-R04: a candidate that proposes something is labelled by the proposal, not by its digest", () => {
+    const node = withCandidate({ statement: "hash-set single pass, O(n) expected, preserves first-occurrence order" }).nodes[0]!;
+    expect(node.label).toBe("hash-set single pass, O(n) expected, preserves first-occurrence order");
+    expect(node.label).not.toBe("7a661b8da881");
+    // Identity is still carried: labelling by content does not lose the canonical digest.
+    expect(node.ref.id).toBe("7a661b8da881a8dea0ec73fa6c3438d139ff7e9561aba7f9922f15a8c03bb92d");
+  });
+
+  it("PROJ-R05: a candidate with no statement falls back to its digest prefix, never to undefined", () => {
+    for (const content of [undefined, {}, { statement: "" }, { statement: "  " }, { statement: 7 }, null]) {
+      const node = withCandidate(content as unknown).nodes[0]!;
+      expect(node.label).toBe("7a661b8da881");
+      expect(node.label).not.toBe("undefined");
+    }
+  });
+
+  it("PROJ-R06: the candidate's admission state is still explicit and lower-cased", () => {
+    expect(withCandidate({ statement: "x" }).nodes[0]!.state).toBe("admitted");
+  });
+});
