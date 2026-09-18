@@ -33,13 +33,87 @@ export const MANAGEMENT_MODE_NOTES: readonly string[] = Object.freeze([
   "an agent can never apply an involvement change: it can only request one, and the request is not a change",
 ]);
 
+/**
+ * A heading glyph, keyed by the section title.
+ *
+ * The rule for these: an icon may only REPEAT what the title already says. It must never add a
+ * claim — in particular there is deliberately no ✅/❌ for a verification verdict and no 🔒 for an
+ * approval, because the product's own copy promises it "never shows a generic verified badge" and
+ * that "confirming never substitutes for semantic authority". A green tick beside a verdict would
+ * be exactly that badge. A title with no entry simply renders without one.
+ */
+const SECTION_ICONS: Readonly<Record<string, string>> = Object.freeze({
+  Project: "📌",
+  Requirements: "📋",
+  "Current decisions": "⚖️",
+  "Decision supersession": "🔁",
+  "Scheduler / work state": "⏱️",
+  Resume: "⏯️",
+  Tasks: "🧩",
+  Attempts: "🏃",
+  "Attempt outcomes": "🏁",
+  Blockers: "🚧",
+  "Gate evidence": "🚪",
+  "Management mode": "🎛️",
+  "Work Mode": "⚙️",
+  Management: "🎛️",
+  "Next attention item": "👀",
+  "Knowledge warnings": "🩺",
+  Runtime: "🧰",
+  "Tick source": "⏱️",
+  "Monitor preference": "👁️",
+  "What would Monitor do now?": "🔍",
+  "What Palimpsest may do automatically": "🤖",
+  "What always requires confirmation": "🛡️",
+  "Derived management actions": "🧭",
+  "Pending confirmations": "✋",
+  "Request a mode change": "🙋",
+  "Management activity": "🧾",
+  "Current project head": "📍",
+  "Run history": "🗂️",
+  Publication: "🚀",
+  "Published proof assets": "🏷️",
+  Sources: "📚",
+  "Import a source": "📥",
+  "Export history": "📤",
+  Preview: "👁️",
+  Exposure: "👁️",
+  "Journal knowledge": "📓",
+  "Artifacts and associations": "🔗",
+  "Referenced assets in this project": "📎",
+  Providers: "🔌",
+  "Search the external library": "🔎",
+  "Analysis outcome": "🧪",
+  "Scoped Campaigns": "🗺️",
+  "Last observed activity": "🕒",
+  "ProjectIR revisions": "🧬",
+  "Proof standing changes": "📈",
+  Actions: "🎬",
+});
+
+function iconFor(title: string): string | null {
+  const direct = SECTION_ICONS[title];
+  if (direct !== undefined) return direct;
+  // Titles carrying a qualifier — "Requirements (0)", "Publication (advanced; …)" — match their base.
+  const base = title.split(" (")[0] ?? title;
+  return SECTION_ICONS[base] ?? null;
+}
+
 export function Section(props: { readonly title: string; readonly children: ReactNode; readonly testId?: string }): React.ReactElement {
+  const icon = iconFor(props.title);
   return (
     <section
       data-testid={props.testId}
       style={{ display: "grid", gap: 6, borderTop: `1px solid ${COLORS.border}`, paddingTop: 8 }}
     >
-      <h3 style={{ margin: 0, fontSize: 12, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.4 }}>{props.title}</h3>
+      <h3 style={{ margin: 0, fontSize: 12, color: COLORS.muted, textTransform: "uppercase", letterSpacing: 0.4 }}>
+        {icon === null ? null : (
+          <span aria-hidden="true" data-section-icon={props.title}>
+            {icon}{" "}
+          </span>
+        )}
+        {props.title}
+      </h3>
       {props.children}
     </section>
   );
