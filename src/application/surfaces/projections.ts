@@ -83,7 +83,8 @@ export function makeProjectionsSurfaces(deps: ProjectionsSurfaceDeps): { readonl
           frontierRevision: view.frontierBasis.frontierRevision,
           frontierDigest: view.frontierBasis.frontierDigest,
           nodes: graph.nodes.map((node) => ({ ref: { claimId: node.ref.claimId }, claim: { type: { typeId: node.claim.type.typeId }, content: node.claim.content, dependencies: node.claim.dependencies.map((dependency) => ({ claimId: dependency.claimId })) }, active: node.active })),
-          candidates: view.candidates,
+          // The view carries each candidate's claim; the projection decides what to label it with.
+          candidates: view.candidates.map((candidate) => ({ candidateDigest: candidate.candidateDigest, branchId: candidate.branchId, status: candidate.status, claim: { content: candidate.claim.content } })),
           branches: view.branches.map((branch) => ({ ref: { branchId: branch.ref.branchId }, question: branch.question, closed: branch.closed })),
         });
       },
