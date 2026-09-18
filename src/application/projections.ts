@@ -188,7 +188,7 @@ export function reasoningProjection(input: {
   readonly frontierRevision: number;
   readonly frontierDigest: string;
   readonly nodes: readonly { readonly ref: { readonly claimId: string }; readonly claim: { readonly type: { readonly typeId: string }; readonly content?: unknown; readonly dependencies: readonly { readonly claimId: string }[] }; readonly active: boolean }[];
-  readonly candidates: readonly { readonly candidateDigest: string; readonly branchId: string; readonly status: string }[];
+  readonly candidates: readonly { readonly candidateDigest: string; readonly branchId: string; readonly status: string; readonly claim?: { readonly content?: unknown } | undefined }[];
   readonly branches: readonly { readonly ref: { readonly branchId: string }; readonly question: string; readonly closed: boolean }[];
 }): ProjectionEnvelope<ProjectionNode> {
   const nodes: ProjectionNode[] = input.nodes.map((node) => ({
@@ -204,7 +204,9 @@ export function reasoningProjection(input: {
     nodes.push({ presentationId: `reasoning:branch:${branch.ref.branchId}`, ref: { species: "reasoning", kind: "branch", id: branch.ref.branchId }, kind: "branch", label: branch.question, state: branch.closed ? "closed" : "open" });
   }
   for (const candidate of input.candidates) {
-    nodes.push({ presentationId: `reasoning:candidate:${candidate.candidateDigest}`, ref: { species: "reasoning", kind: "candidate", id: candidate.candidateDigest }, kind: "candidate", label: candidate.candidateDigest.slice(0, 12), state: candidate.status.toLowerCase() });
+    // The candidate's own words when it has them; the digest prefix only as a fallback. A node named
+    // by a 12-character hex prefix told a reader nothing about what had been proposed.
+    nodes.push({ presentationId: `reasoning:candidate:${candidate.candidateDigest}`, ref: { species: "reasoning", kind: "candidate", id: candidate.candidateDigest }, kind: "candidate", label: claimStatementOf(candidate.claim?.content) ?? candidate.candidateDigest.slice(0, 12), state: candidate.status.toLowerCase() });
   }
   const edges: ProjectionEdge[] = [];
   for (const node of input.nodes) {

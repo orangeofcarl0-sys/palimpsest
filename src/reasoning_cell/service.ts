@@ -139,7 +139,18 @@ export interface ReasoningCellView {
   readonly storeBasis: ReasoningStoreBasis;
   readonly frontierBasis: ReasoningFrontierBasis;
   readonly branches: readonly { readonly ref: ReasoningBranch["ref"]; readonly question: string; readonly closed: boolean; readonly atFrontier: ReasoningFrontierBasis }[];
-  readonly candidates: readonly { readonly candidateDigest: string; readonly branchId: string; readonly status: CandidateStatus }[];
+  /**
+   * `claim.type` and `claim.content` are carried so a reader can label a candidate by what it SAYS.
+   * Without them a graph had only the digest to name a candidate with — a 12-character hex prefix
+   * is not an identity a person can use. The view states the content; deciding what counts as a
+   * human-readable statement stays a presentation concern.
+   */
+  readonly candidates: readonly {
+    readonly candidateDigest: string;
+    readonly branchId: string;
+    readonly status: CandidateStatus;
+    readonly claim: { readonly type: ReasoningClaimTypeRef; readonly content: unknown };
+  }[];
   readonly admittedClaimIds: readonly string[];
   readonly activeClaimIds: readonly string[];
   readonly inactiveClaimIds: readonly string[];
@@ -680,7 +691,7 @@ export function makeReasoningCellService(deps: ReasoningCellDeps): ReasoningCell
       frontierBasis: view.basis,
       branches: Object.freeze([...state.branches.values()].map((record) => Object.freeze({ ref: record.branch.ref, question: record.branch.question, closed: record.closed, atFrontier: record.branch.atFrontier }))),
       candidates: Object.freeze(
-        [...state.candidates.values()].map((record) => Object.freeze({ candidateDigest: record.candidate.candidateDigest, branchId: record.candidate.branch.branchId, status: record.status })).sort((a, b) => (a.candidateDigest < b.candidateDigest ? -1 : 1)),
+        [...state.candidates.values()].map((record) => Object.freeze({ candidateDigest: record.candidate.candidateDigest, branchId: record.candidate.branch.branchId, status: record.status, claim: Object.freeze({ type: record.candidate.claim.type, content: record.candidate.claim.content }) })).sort((a, b) => (a.candidateDigest < b.candidateDigest ? -1 : 1)),
       ),
       admittedClaimIds: admittedClaimIds(state),
       activeClaimIds: Object.freeze(view.active.map((entry) => entry.ref.claimId)),
