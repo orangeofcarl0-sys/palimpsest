@@ -389,3 +389,65 @@ describe("G10-N firewalls and failure modes", () => {
     }
   });
 });
+
+/* ========================================================================== *
+ * The reasoning index — what a dashboard needs in order to show anything
+ * ========================================================================== */
+
+describe("ReasoningCellService.listCells — the index a dashboard reads", () => {
+  it("an empty deployment lists nothing (absence is an empty list, not an invented cell)", async () => {
+    const env = build();
+    try {
+      expect(await env.service.listCells()).toEqual([]);
+    } finally {
+      env.store.close();
+    }
+  });
+
+  it("every opened cell is listed with the objective a human wrote", async () => {
+    const env = build();
+    try {
+      await openCell(env, "C1", "并行探索这个实现的两种改进方案");
+      await openCell(env, "C2", "check whether the current project state still passes");
+      const listed = await env.service.listCells();
+      // The objective is the whole point: it is what a picker shows instead of an id.
+      expect(listed.map((cell) => cell.cellId).sort()).toEqual(["C1", "C2"]);
+      expect(listed.map((cell) => cell.objective)).toEqual(
+        expect.arrayContaining(["并行探索这个实现的两种改进方案", "check whether the current project state still passes"]),
+      );
+    } finally {
+      env.store.close();
+    }
+  });
+
+  it("the index survives a reopen, so a practice stays reachable after a restart", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "palimpsest-reasoning-index-"));
+    const path = join(dir, "reasoning.sqlite");
+    try {
+      const env = build({}, path);
+      await openCell(env, "C", "durable objective");
+      env.store.close();
+
+      const reopened = new SqliteReasoningCellStore(path);
+      const service = makeReasoningCellService({ store: reopened, verificationPolicy: policies().verification, admissionPolicy: policies().admission });
+      const listed = await service.listCells();
+      expect(listed.map((cell) => cell.cellId)).toEqual(["C"]);
+      expect(listed[0]?.objective).toBe("durable objective");
+      reopened.close();
+    } finally {
+      try { rmSync(dir, { recursive: true, force: true }); } catch { /* windows handle */ }
+    }
+  });
+
+  it("the index is read-only: listing cells adds no event to the cell", async () => {
+    const env = build();
+    try {
+      await openCell(env, "C", "objective");
+      const before = (await env.service.events({ cellId: "C" })).length;
+      await env.service.listCells();
+      expect((await env.service.events({ cellId: "C" })).length).toBe(before);
+    } finally {
+      env.store.close();
+    }
+  });
+});

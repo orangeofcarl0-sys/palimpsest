@@ -25,5 +25,5 @@ export type { ArchitectureBaseline, ArchitectureCheckResult, ArchitectureViolati
 export { renderBaselineDocument, renderCheckSummary, toJson } from "./report.js";
 export { checkPublicApiParity, collectPublicApi } from "./public-api.js";
 export type { ExportKind, PublicApiBaseline, PublicApiParityResult, PublicApiSurface } from "./public-api.js";
-export { canonicalJson, captureApplicationParity, compareParity, toolContractDigest } from "./application_parity.js";
+export { REVIEWED_ROUTE_ADDITIONS, canonicalJson, captureApplicationParity, compareParity, toolContractDigest } from "./application_parity.js";
 export type { ParityCapture, ParityDifference, ParityInstallation, ParityRouteEntry, ParityToolEntry } from "./application_parity.js";
