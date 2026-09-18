@@ -117,13 +117,13 @@ if (mode === 'check-public-api') {
     'public-api:check ' + (result.ok ? 'PASS' : 'FAIL'),
     '  missing: ' + String(result.missing.length),
     '  changed kind: ' + String(result.changedKind.length),
-    '  added (allowed, reported): ' + String(result.added.length),
+    '  added: ' + String(result.added.length),
   ];
   for (const item of result.missing) lines.push('  MISSING ' + item.entry + '::' + item.name + ' (' + item.kind + ')');
   for (const item of result.changedKind) {
     lines.push('  KIND CHANGED ' + item.entry + '::' + item.name + ' ' + item.was + ' -> ' + item.now);
   }
-  for (const item of result.added.slice(0, 10)) lines.push('  added ' + item.entry + '::' + item.name);
+  for (const item of result.added.slice(0, 20)) lines.push('  ADDED ' + item.entry + '::' + item.name);
   process.stdout.write(lines.join(NL) + NL);
   process.exit(result.ok ? 0 : 1);
 }

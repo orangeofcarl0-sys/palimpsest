@@ -2,10 +2,10 @@
   "version": 2,
   "capturedFrom": "unknown",
   "totals": {
-    "files": 312,
-    "loc": 94830,
-    "bytes": 4089008,
-    "edges": 1317,
+    "files": 322,
+    "loc": 95009,
+    "bytes": 4104063,
+    "edges": 1375,
     "externalImports": 19,
     "unresolvedImports": 0
   },
@@ -24,7 +24,7 @@
     },
     {
       "layer": "L4",
-      "files": 3
+      "files": 13
     },
     {
       "layer": "L5",
@@ -51,9 +51,9 @@
     {
       "file": "src/application/surface.ts",
       "layer": "L4",
-      "loc": 1535,
-      "bytes": 82698,
-      "fanOut": 44,
+      "loc": 56,
+      "bytes": 2373,
+      "fanOut": 9,
       "fanIn": 8
     },
     {
@@ -86,19 +86,19 @@
       "loc": 3095,
       "bytes": 120186,
       "fanOut": 27,
-      "fanIn": 15
+      "fanIn": 18
     }
   ],
   "topFanOut": [
     {
-      "file": "src/application/surface.ts",
-      "layer": "L4",
-      "fanOut": 44
-    },
-    {
       "file": "src/advanced.ts",
       "layer": "ENTRY",
       "fanOut": 40
+    },
+    {
+      "file": "src/application/factory.ts",
+      "layer": "L4",
+      "fanOut": 34
     },
     {
       "file": "src/composition/install_contract.ts",
@@ -156,6 +156,11 @@
       "fanOut": 12
     },
     {
+      "file": "src/application/surfaces/project.ts",
+      "layer": "L4",
+      "fanOut": 11
+    },
+    {
       "file": "src/composition/collaboration.ts",
       "layer": "L5",
       "fanOut": 11
@@ -181,13 +186,8 @@
       "fanOut": 10
     },
     {
-      "file": "src/binding/compiler.ts",
-      "layer": "L1",
-      "fanOut": 10
-    },
-    {
-      "file": "src/binding/grounded.ts",
-      "layer": "L1",
+      "file": "src/application/surfaces/cognition.ts",
+      "layer": "L4",
       "fanOut": 10
     }
   ],
@@ -205,12 +205,17 @@
     {
       "file": "src/federation/peer.ts",
       "layer": "L2",
-      "fanIn": 31
+      "fanIn": 35
     },
     {
       "file": "src/schema/index.ts",
       "layer": "L1",
       "fanIn": 31
+    },
+    {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "fanIn": 18
     },
     {
       "file": "src/binding/contract.ts",
@@ -223,18 +228,13 @@
       "fanIn": 17
     },
     {
-      "file": "src/architecture/index.ts",
-      "layer": "L1",
-      "fanIn": 15
-    },
-    {
       "file": "src/campaign/store.ts",
       "layer": "L2",
-      "fanIn": 15
+      "fanIn": 16
     },
     {
-      "file": "src/tools/controller.ts",
-      "layer": "L2",
+      "file": "src/architecture/index.ts",
+      "layer": "L1",
       "fanIn": 15
     },
     {
@@ -248,6 +248,11 @@
       "fanIn": 13
     },
     {
+      "file": "src/recipes/execution.ts",
+      "layer": "L3",
+      "fanIn": 13
+    },
+    {
       "file": "src/state/index.ts",
       "layer": "L1",
       "fanIn": 13
@@ -258,9 +263,14 @@
       "fanIn": 12
     },
     {
-      "file": "src/recipes/execution.ts",
-      "layer": "L3",
+      "file": "src/runtime_scope/index.ts",
+      "layer": "L2",
       "fanIn": 12
+    },
+    {
+      "file": "src/boundary_memory/index.ts",
+      "layer": "L2",
+      "fanIn": 11
     },
     {
       "file": "src/campaign/epistemic.ts",
@@ -268,28 +278,18 @@
       "fanIn": 11
     },
     {
-      "file": "src/boundary_memory/ref.ts",
+      "file": "src/federation/index.ts",
       "layer": "L2",
-      "fanIn": 10
-    },
-    {
-      "file": "src/campaign/artifacts.ts",
-      "layer": "L2",
-      "fanIn": 10
+      "fanIn": 11
     },
     {
       "file": "src/organization_dynamics/index.ts",
       "layer": "L2",
-      "fanIn": 10
+      "fanIn": 11
     },
     {
-      "file": "src/project_operating/work_mode_profile.ts",
-      "layer": "L3",
-      "fanIn": 10
-    },
-    {
-      "file": "src/recipes/artifacts.ts",
-      "layer": "L3",
+      "file": "src/boundary_memory/ref.ts",
+      "layer": "L2",
       "fanIn": 10
     }
   ],
@@ -320,6 +320,11 @@
       "count": 82
     },
     {
+      "fromLayer": "L4",
+      "toLayer": "L2",
+      "count": 55
+    },
+    {
       "fromLayer": "L5",
       "toLayer": "L5",
       "count": 45
@@ -341,18 +346,18 @@
     },
     {
       "fromLayer": "L4",
-      "toLayer": "L2",
+      "toLayer": "L3",
       "count": 24
+    },
+    {
+      "fromLayer": "L4",
+      "toLayer": "L4",
+      "count": 23
     },
     {
       "fromLayer": "ENTRY",
       "toLayer": "L2",
       "count": 22
-    },
-    {
-      "fromLayer": "L4",
-      "toLayer": "L3",
-      "count": 17
     },
     {
       "fromLayer": "L5",
@@ -412,11 +417,6 @@
     {
       "fromLayer": "ENTRY",
       "toLayer": "BARREL",
-      "count": 3
-    },
-    {
-      "fromLayer": "L4",
-      "toLayer": "L4",
       "count": 3
     },
     {
@@ -552,6 +552,11 @@
       "count": 11
     },
     {
+      "from": "src/application",
+      "to": "src/federation",
+      "count": 10
+    },
+    {
       "from": "src/domain",
       "to": "src/schema",
       "count": 10
@@ -559,6 +564,11 @@
     {
       "from": "src",
       "to": "src/tools",
+      "count": 8
+    },
+    {
+      "from": "src/application",
+      "to": "src/recipes",
       "count": 8
     },
     {
@@ -592,6 +602,11 @@
       "count": 7
     },
     {
+      "from": "src/application",
+      "to": "src/interaction",
+      "count": 7
+    },
+    {
       "from": "src/effects",
       "to": "src/domain",
       "count": 7
@@ -614,11 +629,6 @@
     {
       "from": "src/advisor",
       "to": "src/organization_memory",
-      "count": 6
-    },
-    {
-      "from": "src/application",
-      "to": "src/recipes",
       "count": 6
     },
     {
@@ -678,12 +688,22 @@
     },
     {
       "from": "src/application",
-      "to": "src/project_operating",
+      "to": "src/advisor",
       "count": 5
     },
     {
       "from": "src/application",
-      "to": "src/interaction",
+      "to": "src/campaign",
+      "count": 5
+    },
+    {
+      "from": "src/application",
+      "to": "src/tools",
+      "count": 5
+    },
+    {
+      "from": "src/application",
+      "to": "src/project_operating",
       "count": 5
     },
     {
@@ -739,6 +759,16 @@
     {
       "from": "src",
       "to": "src/state",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/organization_memory",
+      "count": 4
+    },
+    {
+      "from": "src/application",
+      "to": "src/reasoning_cell",
       "count": 4
     },
     {
@@ -843,22 +873,32 @@
     },
     {
       "from": "src/application",
-      "to": "src/advisor",
+      "to": "src/boundary_memory",
       "count": 3
     },
     {
       "from": "src/application",
-      "to": "src/organization_memory",
+      "to": "src/organization",
       "count": 3
     },
     {
       "from": "src/application",
-      "to": "src/campaign",
+      "to": "src/project_management",
       "count": 3
     },
     {
       "from": "src/application",
-      "to": "src/federation",
+      "to": "src/project_workspace",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/proof_asset",
+      "count": 3
+    },
+    {
+      "from": "src/application",
+      "to": "src/runtime_scope",
       "count": 3
     },
     {
@@ -889,46 +929,6 @@
     {
       "from": "src/composition",
       "to": "src/coordination",
-      "count": 3
-    },
-    {
-      "from": "src/composition",
-      "to": "src/project_management",
-      "count": 3
-    },
-    {
-      "from": "src/composition",
-      "to": "src/organization_dynamics",
-      "count": 3
-    },
-    {
-      "from": "src/effects",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/interaction",
-      "to": "src/advisor",
-      "count": 3
-    },
-    {
-      "from": "src/interaction",
-      "to": "src/organization_memory",
-      "count": 3
-    },
-    {
-      "from": "src/interaction",
-      "to": "src/reasoning_cell",
-      "count": 3
-    },
-    {
-      "from": "src/interaction",
-      "to": "src/federation",
-      "count": 3
-    },
-    {
-      "from": "src/organization_dynamics",
-      "to": "src/boundary_memory",
       "count": 3
     }
   ],
