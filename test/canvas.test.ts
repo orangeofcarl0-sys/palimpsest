@@ -342,7 +342,7 @@ describe("canvas definition layer (PLMP-CANVAS)", () => {
 
   it("CANVAS-A06: serve canvas endpoints are token-gated, pure, and honest on errors", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       rig.controller.start({
         projectId: "scheduler-project",

@@ -61,6 +61,26 @@ test("E2E-AUTH-02: the handoff url admits the browser with no typing at all", as
   await expect(page.getByText("palimpsest 图面")).toBeVisible();
 });
 
+test("E2E-AUTH-03: fence mode — the address alone is the whole answer", async ({ page }) => {
+  // The deployment default. In an agent-hosted deployment the conversation is the person's only
+  // console, so the answer to "where do I watch" must be complete: the address, nothing else.
+  session = await startKernel("fence");
+  await seed(session, "basic");
+  expect(session.auth).toBe("fence");
+  expect(session.token).toBeNull();
+  expect(session.openUrl).toBeNull();
+  // The clean url, opened exactly as the agent would report it — no token anywhere.
+  await page.goto(session.url);
+  await expect(page.getByText("输入访问令牌")).toHaveCount(0);
+  await expect(page.getByText("palimpsest 图面")).toBeVisible();
+  await expect(page.getByText("e2e basic · revision 0")).toBeVisible();
+  // No credential machinery at all: no token in localStorage, no auth cookie needed.
+  expect(await page.evaluate(() => localStorage.getItem("palimpsest-token"))).toBeNull();
+  // And a reload stays authorized — there is nothing to expire.
+  await page.reload();
+  await expect(page.getByText("e2e basic · revision 0")).toBeVisible();
+});
+
 test("E2E-AUTH-01: the token gate blocks, then a valid token admits", async ({ page }) => {
   session = await startKernel();
   await seed(session, "basic");

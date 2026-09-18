@@ -214,7 +214,7 @@ describe("preset library (PLMP-ARCH-3)", () => {
 
   it("PRE-A08: serve endpoints - metadata, pure-derivation drafts, auth and errors", async () => {
     const rig = makeRig();
-    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const handle = await serveOrchestration(rig.controller, { port: 0, auth: "token" });
     try {
       const listed = await api(handle, "/api/presets");
       expect(listed.status).toBe(200);

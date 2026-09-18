@@ -167,14 +167,23 @@ async function main() {
     const portOption = arg(parsed.options, "--port");
     const hostOption = arg(parsed.options, "--host");
     const tokenOption = arg(parsed.options, "--token");
+    const authOption = arg(parsed.options, "--auth");
     const port = portOption === undefined ? profile.serve?.port : Number(portOption);
     const host = hostOption ?? profile.serve?.host;
     const token = tokenOption ?? profile.serve?.token;
+    // A supplied token implies token mode (as always); an explicit --auth wins over it.
+    const auth = authOption === "fence" || authOption === "token" ? authOption : token === undefined ? "fence" : "token";
     try {
       const handle = await serveOrchestration(deployment.installed.controller, {
         ...(port === undefined ? {} : { port }),
         ...(host === undefined ? {} : { host }),
-        ...(token === undefined ? {} : { token }),
+        auth,
+        ...(auth === "token" && token !== undefined ? { token } : {}),
+        // Token mode only: the handoff link goes into the project, where the person's own surfaces
+        // (a dsh web workspace, an editor) already look — the host derives the same location.
+        ...(auth === "token" && profile.repository !== undefined
+          ? { handoffFilePath: join(profile.repository, ".palimpsest", "dashboard-link.txt") }
+          : {}),
         // Durable, so a browser authorized before a restart stays authorized after one. Derived
         // here and not exported from the product: the public surface is sealed, and the DSH host
         // derives the same name from the same field so one deployment has one secret.
@@ -187,9 +196,12 @@ async function main() {
       console.log(
         JSON.stringify({
           url: handle.url,
-          // The clickable address: opening it exchanges the token for a browser cookie and
-          // redirects to `url`, so a person never types or pastes the token.
+          auth: handle.auth,
+          // Token mode: the clickable address (opening it exchanges the token for a browser cookie
+          // and redirects to `url`), and the file holding that link for a person not reading this
+          // stream. Fence mode: `url` alone is the whole answer, so those are null.
           openUrl: handle.openUrl,
+          handoffFile: handle.handoffFilePath,
           token: handle.token,
           profile: profile.profileId,
           surfaces: Object.keys(deployment.installed.application),

@@ -12,6 +12,12 @@ import { materializePeerRef } from "../federation/peer.js";
 import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
 
 /**
+ * How the deployment's dashboard is guarded — mirrored from `ServeAuth` so the application layer
+ * does not import the serve face for one string.
+ */
+export type DashboardAuth = "fence" | "token";
+
+/**
  * Host-supplied facts about a RUNNING deployment that exist only once it starts serving.
  *
  * Declared HERE, in the layer that consumes it, and not in the composition root that wires it: a
@@ -27,6 +33,19 @@ import type { BoundaryRemoteOperation } from "../boundary_memory/index.js";
 export interface HostDeploymentFactsPort {
   /** Where a human can watch this project, or null when this deployment serves no dashboard. */
   dashboardUrl(): string | null;
+  /**
+   * How the dashboard is guarded, or null when none is served — so "there is none" and "nobody told
+   * me" stay distinguishable. This is what lets the agent's answer be COMPLETE: in fence mode the
+   * address alone opens the page; in token mode the person needs the handoff link, which the agent
+   * must then be able to point at.
+   */
+  dashboardAuth(): DashboardAuth | null;
+  /**
+   * Token mode only: the file holding the handoff link, written where the person can reach it
+   * (the project's `.palimpsest/`), because the token itself never belongs in this conversation.
+   * Null in fence mode (nothing to hand over) and when no dashboard is served.
+   */
+  dashboardHandoffFile(): string | null;
 }
 
 export function invalidInput(message: string): Error {

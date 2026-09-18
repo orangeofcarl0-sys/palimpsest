@@ -7,17 +7,19 @@
  * same as the CLI's (one front drives orchestration at a time; many
  * readers are fine).
  *
- * Security defaults: bind 127.0.0.1, random token per start. Every /api/* request passes the
- * browser-trust fence (Host/Origin/Sec-Fetch — see `isTrustedBrowserRequest`) and then needs either
- * the `Authorization: Bearer` token or the browser cookie that the root-url handoff mints; the
- * token is NEVER accepted from a query string on /api, because a query parameter needs no CORS
- * preflight and so is attachable by a malicious page. Responses carry no event ids or hashes
- * (SDS-18 extends to the HTTP face).
+ * Security model: bind 127.0.0.1, and the browser-trust fence (Host/Origin/Sec-Fetch — see
+ * `isTrustedBrowserRequest`) on EVERY request. The fence alone stops the attacker a loopback
+ * dashboard actually has — a web page the user visits — so the default access mode is "fence": no
+ * token exists and the address is the whole answer. "token" is the opt-in for a machine other
+ * people use: a random per-start token gates /api via `Authorization` or the cookie minted by the
+ * root-url handoff, and the token is NEVER accepted from a query string on /api, because a query
+ * parameter needs no CORS preflight and so is attachable by a malicious page. Responses carry no
+ * event ids or hashes (SDS-18 extends to the HTTP face).
  */
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -95,15 +97,43 @@ const CLIENT_FORBIDDEN_PORTS: ReadonlySet<number> = new Set([
   6669, 6679, 6697, 10080,
 ]);
 
+/**
+ * How the dashboard decides who may call the API.
+ *
+ * - `"fence"` (the default): there is NO token. The browser-trust fence is the whole gate, because
+ *   it is what actually stops the attacker a loopback dashboard has — a web page the user visits
+ *   (measured: rebinding and cross-site blind writes are both refused by Host/Origin/Sec-Fetch
+ *   alone). The agent can then answer "where do I watch?" with one complete sentence: the address.
+ *   The residual risk is stated plainly: any OTHER user account on this machine could also call the
+ *   API. On a single-person machine that risk is the file permissions they already have.
+ * - `"token"`: for a machine other people use, or a LAN face. A per-start token gates `/api` (via
+ *   `Authorization` or a cookie minted by the root handoff). The cost is that a person needs the
+ *   token, which in an agent-hosted deployment nobody reads off a console — so this mode also
+ *   writes the handoff link where the person CAN reach it, and the agent reports that path.
+ */
+export type ServeAuth = "fence" | "token";
+
 export interface ServeOptions {
   /** Bind port; default 7831 (tests pass 0 for an ephemeral port). */
   readonly port?: number | undefined;
   /** Bind face; default 127.0.0.1 - widening is an explicit act. */
   readonly host?: string | undefined;
-  /** Bearer token; default randomly generated per start. */
+  /**
+   * Access mode. Default: `"token"` when a token is supplied (every existing caller), `"fence"`
+   * otherwise. An explicit `auth` wins over a supplied token.
+   */
+  readonly auth?: ServeAuth | undefined;
+  /** Bearer token; default randomly generated per start. Ignored in fence mode. */
   readonly token?: string | undefined;
   /** Static panel root; default <repo>/dist/web. */
   readonly staticRoot?: string | undefined;
+  /**
+   * Token mode only: where the handoff link is written so a person who is not reading this
+   * process's stdout can still get in — the agent reports this path, never the token. Inside the
+   * project's `.palimpsest/`, which the workspace surfaces already show. Removed on close, because
+   * a stale link authorizes nothing.
+   */
+  readonly handoffFilePath?: string | undefined;
   /**
    * Where the cookie-signing secret lives, so a browser cookie outlives this process. Absent ⇒ a
    * per-process secret, which is right for tests and wrong for a deployment a person watches
@@ -124,7 +154,10 @@ export interface ServeOptions {
 }
 
 export interface ServeHandle {
-  readonly token: string;
+  /** `"fence"` means the address alone is the whole answer; `"token"` means see `openUrl`. */
+  readonly auth: ServeAuth;
+  /** The API credential, or null in fence mode — where no credential exists. */
+  readonly token: string | null;
   readonly port: number;
   readonly host: string;
   readonly url: string;
@@ -132,9 +165,12 @@ export interface ServeHandle {
    * The address a HUMAN opens: the plain url with this start's token attached, which the server
    * exchanges for a browser cookie and then redirects to the clean url (see the fence note above
    * `isTrustedBrowserRequest`). Printing this is what lets a person click once instead of hunting
-   * for a token; the clean `url` is what belongs in a model's context.
+   * for a token; the clean `url` is what belongs in a model's context. Null in fence mode, where
+   * the clean url IS the openable one.
    */
-  readonly openUrl: string;
+  readonly openUrl: string | null;
+  /** Token mode only: where the handoff link was written for the person to open. Null otherwise. */
+  readonly handoffFilePath: string | null;
   close(): Promise<void>;
 }
 
@@ -380,7 +416,11 @@ export function serveOrchestration(
   controller: ProjectController,
   options: ServeOptions = {},
 ): Promise<ServeHandle> {
-  const token = options.token ?? randomBytes(24).toString("base64url");
+  /* A supplied token implies token mode (every existing caller), and an explicit auth wins —
+     including over a token, so a profile cannot drift into token mode by leaving a vestigial
+     `token:` line in its config. */
+  const auth: ServeAuth = options.auth ?? (options.token === undefined ? "fence" : "token");
+  const token = auth === "token" ? (options.token ?? randomBytes(24).toString("base64url")) : null;
   const root = options.staticRoot ?? STATIC_ROOT;
   /* Per start when no path is configured, durable when one is (see loadOrCreateCookieSecret). */
   const cookieSecret = loadOrCreateCookieSecret(options.secretPath);
@@ -444,39 +484,47 @@ export function serveOrchestration(
     void (async () => {
       const url = new URL(request.url ?? "/", "http://localhost");
       const path = url.pathname;
-      const authority = authorityOf(request.headers.host) ?? "";
-      const cookieNameHere = cookieName(authority);
-      const cookieOk =
-        authority !== "" &&
-        decodeCookie(cookieValueOf(request.headers.cookie, cookieNameHere) ?? "", authority, cookieSecret, Date.now());
-      const authorized =
-        secretMatches(request.headers.authorization ?? "", `Bearer ${token}`) || cookieOk;
 
-      /* The fence binds every request, before any question of credentials (§ above). */
+      /* The fence binds every request, before any question of credentials (§ above). It is also,
+         in fence mode, the ENTIRE gate. */
       if (!isTrustedBrowserRequest(request.headers, boundAuthority, trustedHosts)) {
         sendError(response, 403, "请求的 Host/Origin 不属于本部署");
         return;
       }
 
-      /* The token handoff: `GET /?token=…` mints the cookie and leaves. Accepted only here, on the
-         root, exactly once — never on /api, which is what closed the blind-write path. */
-      const handedTokens = url.searchParams.getAll("token");
-      if (request.method === "GET" && path === "/" && handedTokens.length > 0) {
-        if (handedTokens.length !== 1 || !secretMatches(handedTokens.join(""), token)) {
-          sendError(response, 401, "需要访问令牌");
+      /* Token mode only. The token handoff: `GET /?token=…` mints the cookie and leaves. Accepted
+         only here, on the root, exactly once — never on /api, which is what closed the blind-write
+         path. In fence mode a `?token=` query is meaningless, so it falls through to the page. */
+      const authorized =
+        auth === "fence"
+          ? true
+          : (() => {
+              const authority = authorityOf(request.headers.host) ?? "";
+              const cookieOk =
+                authority !== "" &&
+                decodeCookie(cookieValueOf(request.headers.cookie, cookieName(authority)) ?? "", authority, cookieSecret, Date.now());
+              return secretMatches(request.headers.authorization ?? "", `Bearer ${token ?? ""}`) || cookieOk;
+            })();
+      if (auth === "token") {
+        const handedTokens = url.searchParams.getAll("token");
+        if (request.method === "GET" && path === "/" && handedTokens.length > 0) {
+          if (handedTokens.length !== 1 || !secretMatches(handedTokens.join(""), token ?? "")) {
+            sendError(response, 401, "需要访问令牌");
+            return;
+          }
+          const authority = authorityOf(request.headers.host) ?? "";
+          const issuedAt = Date.now();
+          const expiresAt = issuedAt + COOKIE_MAX_AGE_SECONDS * 1000;
+          response.writeHead(303, {
+            "cache-control": "no-store",
+            // The token is in the url that produced this redirect; keep it out of any Referer.
+            "referrer-policy": "no-referrer",
+            location: "/",
+            "set-cookie": `${cookieName(authority)}=${encodeCookie(authority, issuedAt, expiresAt, cookieSecret)}; Max-Age=${String(COOKIE_MAX_AGE_SECONDS)}; Path=/; HttpOnly; SameSite=Strict`,
+          });
+          response.end();
           return;
         }
-        const issuedAt = Date.now();
-        const expiresAt = issuedAt + COOKIE_MAX_AGE_SECONDS * 1000;
-        response.writeHead(303, {
-          "cache-control": "no-store",
-          // The token is in the url that produced this redirect; keep it out of any Referer.
-          "referrer-policy": "no-referrer",
-          location: "/",
-          "set-cookie": `${cookieNameHere}=${encodeCookie(authority, issuedAt, expiresAt, cookieSecret)}; Max-Age=${String(COOKIE_MAX_AGE_SECONDS)}; Path=/; HttpOnly; SameSite=Strict`,
-        });
-        response.end();
-        return;
       }
 
       if (request.method === "GET" && (path === "/" || !path.startsWith("/api/"))) {
@@ -783,14 +831,38 @@ export function serveOrchestration(
           return;
         }
         boundAuthority = `${host}:${String(port)}`;
+        const openUrl = auth === "token" ? `http://${host}:${port}/?token=${encodeURIComponent(token ?? "")}` : null;
+        // Token mode: the handoff link goes where the person can reach it without this process's
+        // stdout, and the agent reports the PATH. Removed on close — a stale link authorizes
+        // nothing, and leaving it would send the next reader to a 401.
+        let handoffFilePath: string | null = null;
+        if (auth === "token" && options.handoffFilePath !== undefined && openUrl !== null) {
+          try {
+            mkdirSync(dirname(options.handoffFilePath), { recursive: true });
+            writeFileSync(options.handoffFilePath, `${openUrl}\n`);
+            handoffFilePath = options.handoffFilePath;
+          } catch {
+            /* a read-only workspace still gets a working dashboard; the agent reports null */
+          }
+        }
         resolve({
+          auth,
           token,
           port,
           host,
           url: `http://${host}:${port}`,
-          openUrl: `http://${host}:${port}/?token=${encodeURIComponent(token)}`,
+          openUrl,
+          handoffFilePath,
           close: () =>
             new Promise((resolveClose, rejectClose) => {
+              if (handoffFilePath !== null) {
+                try {
+                  rmSync(handoffFilePath);
+                } catch {
+                  /* already gone */
+                }
+                handoffFilePath = null;
+              }
               server.close((error) => (error === undefined ? resolveClose() : rejectClose(error)));
               server.closeAllConnections();
             }),
