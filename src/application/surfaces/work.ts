@@ -7,14 +7,25 @@
  */
 
 import type { ProjectController } from "../../tools/controller.js";
+import type { HostDeploymentFactsPort } from "../common.js";
 import { definePalimpsestControl } from "../../tools/control_surface.js";
 
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
 export interface WorkSurfaceDeps {
   readonly controller: ProjectController;
+  /** Host facts about the running deployment; absent means no dashboard is known of. */
+  readonly hostFacts?: HostDeploymentFactsPort | undefined;
 }
 
 export interface WorkApplicationSurface {
+  /**
+   * Where a human can watch this project, or null when no dashboard is known.
+   *
+   * The agent is the primary surface, so the person it is talking to needs the way to the dashboard.
+   * Only the host can answer this, and only once it has served; the adapter reports null rather than
+   * inventing a url.
+   */
+  dashboardUrl(): string | null;
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
@@ -24,6 +35,7 @@ export interface WorkApplicationSurface {
 
 export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkApplicationSurface } {
     const work: WorkApplicationSurface = {
+      dashboardUrl: () => deps.hostFacts?.dashboardUrl() ?? null,
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),

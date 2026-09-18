@@ -15,11 +15,15 @@ export function defineWorkTools(application: PalimpsestApplicationSurface): DshT
 tools.push(
     tool({
       name: "palimpsest_surfaces",
-      description: "Report which advanced Palimpsest surfaces are configured for this installation (a missing surface is never an empty known state)",
+      description: "Report which advanced Palimpsest surfaces are configured for this installation (a missing surface is never an empty known state). The result also carries `dashboardUrl` — the address where a human can open THIS deployment's dashboard in a browser, or null when no dashboard is served. When someone asks where to look, read it from here rather than inferring it from the product's source or a default port.",
       mode: "read-only",
       actions: ["list"],
       run: async () => ({
         work: true,
+        // Where a human can watch this project. Null when no dashboard is served — reported as
+        // null rather than omitted, so "there is none" and "nobody told me" stay distinguishable
+        // only by the host, never guessed here.
+        dashboardUrl: application.work.dashboardUrl(),
         federation: application.federation !== undefined,
         boundary: application.boundary !== undefined,
         runtime: application.runtime !== undefined,
