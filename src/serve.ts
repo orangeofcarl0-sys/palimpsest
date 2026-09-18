@@ -7,14 +7,16 @@
  * same as the CLI's (one front drives orchestration at a time; many
  * readers are fine).
  *
- * Security defaults: bind 127.0.0.1, random bearer token per start (printed
- * once); --host explicitly widens the bind face. Every /api/* request
- * requires the token. Responses carry no event ids or hashes (SDS-18
- * extends to the HTTP face).
+ * Security defaults: bind 127.0.0.1, random token per start. Every /api/* request passes the
+ * browser-trust fence (Host/Origin/Sec-Fetch — see `isTrustedBrowserRequest`) and then needs either
+ * the `Authorization: Bearer` token or the browser cookie that the root-url handoff mints; the
+ * token is NEVER accepted from a query string on /api, because a query parameter needs no CORS
+ * preflight and so is attachable by a malicious page. Responses carry no event ids or hashes
+ * (SDS-18 extends to the HTTP face).
  */
 
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http";
-import { randomBytes } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -103,6 +105,12 @@ export interface ServeOptions {
   /** Static panel root; default <repo>/dist/web. */
   readonly staticRoot?: string | undefined;
   /**
+   * Extra authorities the browser-trust fence accepts beyond loopback and the bound face, as
+   * `host` or `host:port` (`--trusted-host`). A deployment reached through a LAN name needs this;
+   * nothing else does.
+   */
+  readonly trustedHosts?: readonly string[] | undefined;
+  /**
    * G10-O (additive): the composed application surface. When supplied, namespaced typed
    * application routes are served. Absent ⇒ the legacy Work-only face is unchanged.
    */
@@ -114,6 +122,13 @@ export interface ServeHandle {
   readonly port: number;
   readonly host: string;
   readonly url: string;
+  /**
+   * The address a HUMAN opens: the plain url with this start's token attached, which the server
+   * exchanges for a browser cookie and then redirects to the clean url (see the fence note above
+   * `isTrustedBrowserRequest`). Printing this is what lets a person click once instead of hunting
+   * for a token; the clean `url` is what belongs in a model's context.
+   */
+  readonly openUrl: string;
   close(): Promise<void>;
 }
 
@@ -181,12 +196,167 @@ export function isClientForbiddenPort(port: number): boolean {
   return CLIENT_FORBIDDEN_PORTS.has(port);
 }
 
+/* ================================================================== *
+ * The browser-trust fence and the token exchange (DSH-aligned).
+ *
+ * A loopback HTTP API faces two confused-deputy paths that a bearer token is the wrong tool for,
+ * and that this fence closes instead:
+ *
+ *   - DNS rebinding: the page's Host names the attacker's domain while the socket reaches this
+ *     server. `Host` is the one header rebinding cannot forge, so the Host check binds EVERY
+ *     request, browser-looking or not.
+ *   - cross-site requests from a malicious page. `Origin` and `Sec-Fetch-Site` catch those, but
+ *     only when the browser sends them: over plain HTTP a browser attaches neither to a read
+ *     (image, navigation), so their absence is not evidence of a non-browser client. That is why
+ *     the Host check above is unconditional and these are additional.
+ *
+ * Measured before this was written: the token used to be accepted from the query string on EVERY
+ * route, and a query parameter needs no CORS preflight, so a malicious page could fire blind
+ * writes at `/api/*` with no ability to read the reply. The `Authorization` header, by contrast,
+ * cannot be set cross-origin without a preflight this server refuses. The fix is therefore not a
+ * better secret: it is to stop accepting the credential where a browser can attach it for free.
+ *
+ * The token survives only as a HANDOFF, the way DSH does it: a person opens `/?token=…`, the
+ * server mints an authority-bound HttpOnly cookie and redirects (303) to the clean url, and from
+ * then on the cookie — never a url — carries the browser's proof. So the token appears once, in a
+ * link a human clicks, and never in an API request.
+ * ================================================================== */
+
+/** Parse a `Host` header into its canonical authority, or undefined when it is unusable. */
+function authorityOf(hostHeader: string | undefined): string | undefined {
+  if (hostHeader === undefined || hostHeader === "") return undefined;
+  try {
+    return new URL(`http://${hostHeader}`).host;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Whether an authority's hostname names the local loopback face (127/8, localhost, [::1]). */
+function isLoopbackAuthority(authority: string): boolean {
+  let hostname: string;
+  try {
+    hostname = new URL(`http://${authority}`).hostname;
+  } catch {
+    return false;
+  }
+  if (hostname === "localhost" || hostname === "[::1]") return true;
+  const parts = hostname.split(".");
+  return (
+    parts.length === 4 &&
+    parts[0] === "127" &&
+    parts.every((part) => /^\d{1,3}$/u.test(part) && Number(part) <= 255)
+  );
+}
+
+/** Whether the Host is one this deployment serves: loopback, the bound face, or a declared trust. */
+function isOurAuthority(authority: string, boundAuthority: string, trustedHosts: readonly string[]): boolean {
+  if (isLoopbackAuthority(authority)) return true;
+  if (authority === boundAuthority) return true;
+  return trustedHosts.some((entry) => entry === authority || entry === authority.split(":")[0]);
+}
+
+/**
+ * Whether one request may reach the API at all, before any question of credentials.
+ *
+ * Deliberately separate from authentication: this answers "is this request shape one a browser
+ * could have been tricked into sending", and a refusal here is 403, not 401 — a caller that fails
+ * this is not under-authenticated, it is not talking to us.
+ */
+export function isTrustedBrowserRequest(
+  headers: Readonly<Record<string, string | string[] | undefined>>,
+  boundAuthority: string,
+  trustedHosts: readonly string[] = [],
+): boolean {
+  const first = (name: string): string | undefined => {
+    const value = headers[name];
+    return typeof value === "string" ? value : Array.isArray(value) ? value[0] : undefined;
+  };
+  const authority = authorityOf(first("host"));
+  if (authority === undefined) return false;
+  if (!isOurAuthority(authority, boundAuthority, trustedHosts)) return false;
+  if (first("sec-fetch-site") === "cross-site") return false;
+  const origin = first("origin");
+  if (origin === undefined) return true;
+  try {
+    return new URL(origin).host === authority;
+  } catch {
+    return false;
+  }
+}
+
+const COOKIE_MAX_AGE_SECONDS = 12 * 60 * 60;
+const COOKIE_PREFIX = "palimpsest-auth-";
+
+/** Constant-time comparison, so a wrong token cannot be narrowed down by timing. */
+function secretMatches(actual: string, expected: string): boolean {
+  const left = Buffer.from(actual, "utf8");
+  const right = Buffer.from(expected, "utf8");
+  return left.byteLength === right.byteLength && timingSafeEqual(left, right);
+}
+
+/**
+ * The cookie name is derived from the authority it was minted for, so a cookie obtained at one
+ * authority is not presented at another. `SameSite=Strict` and `HttpOnly` keep it out of reach of
+ * scripts and cross-site navigations.
+ */
+function cookieName(authority: string): string {
+  return `${COOKIE_PREFIX}${createHash("sha256").update(authority).digest("hex").slice(0, 16)}`;
+}
+
+function cookieValueOf(cookieHeader: string | undefined, name: string): string | undefined {
+  if (cookieHeader === undefined) return undefined;
+  for (const segment of cookieHeader.split(";")) {
+    const at = segment.indexOf("=");
+    if (at === -1) continue;
+    if (segment.slice(0, at).trim() === name) return segment.slice(at + 1).trim();
+  }
+  return undefined;
+}
+
+/** Sign the (authority, window) pair; the payload is readable, so the signature is the whole gate. */
+function signCookie(payload: string, secret: Buffer): string {
+  return createHmac("sha256", secret).update(payload).digest("base64url");
+}
+
+function encodeCookie(authority: string, issuedAt: number, expiresAt: number, secret: Buffer): string {
+  const payload = Buffer.from(JSON.stringify({ version: 1, authority, issuedAt, expiresAt }), "utf8").toString("base64url");
+  return `v1.${payload}.${signCookie(payload, secret)}`;
+}
+
+function decodeCookie(value: string, authority: string, secret: Buffer, now: number): boolean {
+  const parts = value.split(".");
+  const [version, payload, signature] = parts;
+  if (parts.length !== 3 || version !== "v1" || payload === undefined || signature === undefined) return false;
+  if (!secretMatches(signature, signCookie(payload, secret))) return false;
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(Buffer.from(payload, "base64url").toString("utf8"));
+  } catch {
+    return false;
+  }
+  if (typeof decoded !== "object" || decoded === null) return false;
+  const record = decoded as Record<string, unknown>;
+  if (record["version"] !== 1 || record["authority"] !== authority) return false;
+  const issuedAt = record["issuedAt"];
+  const expiresAt = record["expiresAt"];
+  if (typeof issuedAt !== "number" || typeof expiresAt !== "number") return false;
+  return issuedAt <= now && expiresAt > now && expiresAt - issuedAt <= COOKIE_MAX_AGE_SECONDS * 1000;
+}
+
 export function serveOrchestration(
   controller: ProjectController,
   options: ServeOptions = {},
 ): Promise<ServeHandle> {
   const token = options.token ?? randomBytes(24).toString("base64url");
   const root = options.staticRoot ?? STATIC_ROOT;
+  /* Per start, like the token: a cookie is only ever valid for the process that minted it. */
+  const cookieSecret = randomBytes(32);
+  const trustedHosts = options.trustedHosts ?? [];
+  /* The authority this deployment answers as, known only once the port is settled (a caller may
+     ask for port 0). Requests cannot arrive before `listen` completes, so reading it per request
+     is exact rather than merely early. */
+  let boundAuthority = "";
   const surface: PalimpsestControlSurface = definePalimpsestControl(controller);
 
   const control = (
@@ -242,9 +412,40 @@ export function serveOrchestration(
     void (async () => {
       const url = new URL(request.url ?? "/", "http://localhost");
       const path = url.pathname;
+      const authority = authorityOf(request.headers.host) ?? "";
+      const cookieNameHere = cookieName(authority);
+      const cookieOk =
+        authority !== "" &&
+        decodeCookie(cookieValueOf(request.headers.cookie, cookieNameHere) ?? "", authority, cookieSecret, Date.now());
       const authorized =
-        request.headers.authorization === `Bearer ${token}` ||
-        url.searchParams.get("token") === token;
+        secretMatches(request.headers.authorization ?? "", `Bearer ${token}`) || cookieOk;
+
+      /* The fence binds every request, before any question of credentials (§ above). */
+      if (!isTrustedBrowserRequest(request.headers, boundAuthority, trustedHosts)) {
+        sendError(response, 403, "请求的 Host/Origin 不属于本部署");
+        return;
+      }
+
+      /* The token handoff: `GET /?token=…` mints the cookie and leaves. Accepted only here, on the
+         root, exactly once — never on /api, which is what closed the blind-write path. */
+      const handedTokens = url.searchParams.getAll("token");
+      if (request.method === "GET" && path === "/" && handedTokens.length > 0) {
+        if (handedTokens.length !== 1 || !secretMatches(handedTokens.join(""), token)) {
+          sendError(response, 401, "需要访问令牌");
+          return;
+        }
+        const issuedAt = Date.now();
+        const expiresAt = issuedAt + COOKIE_MAX_AGE_SECONDS * 1000;
+        response.writeHead(303, {
+          "cache-control": "no-store",
+          // The token is in the url that produced this redirect; keep it out of any Referer.
+          "referrer-policy": "no-referrer",
+          location: "/",
+          "set-cookie": `${cookieNameHere}=${encodeCookie(authority, issuedAt, expiresAt, cookieSecret)}; Max-Age=${String(COOKIE_MAX_AGE_SECONDS)}; Path=/; HttpOnly; SameSite=Strict`,
+        });
+        response.end();
+        return;
+      }
 
       if (request.method === "GET" && (path === "/" || !path.startsWith("/api/"))) {
         if (!staticFile(response, root, path === "/" ? "index.html" : path)) {
@@ -549,11 +750,13 @@ export function serveOrchestration(
           server.close(() => listenOnce());
           return;
         }
+        boundAuthority = `${host}:${String(port)}`;
         resolve({
           token,
           port,
           host,
           url: `http://${host}:${port}`,
+          openUrl: `http://${host}:${port}/?token=${encodeURIComponent(token)}`,
           close: () =>
             new Promise((resolveClose, rejectClose) => {
               server.close((error) => (error === undefined ? resolveClose() : rejectClose(error)));

@@ -1,4 +1,5 @@
 import { existsSync, mkdtempSync, writeFileSync } from "node:fs";
+import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -295,6 +296,195 @@ describe("serve channel face (PLMP-WEB-1)", () => {
       }
     } finally {
       await second.close();
+      await rig.cleanup();
+    }
+  });
+});
+
+/* ================================================================== *
+ * WEB-A07/A08 — the browser-trust fence and the token handoff.
+ *
+ * Measured before these existed: the token was accepted from the query string on every route, and
+ * a query parameter needs no CORS preflight, so a malicious page could fire blind writes at /api
+ * with no ability to read the reply. These tests pin both halves of the fix — a request shape a
+ * browser could be tricked into sending is refused before credentials are considered at all (403),
+ * and the token survives only as a one-time handoff at the root that leaves a cookie behind.
+ *
+ * Raw `node:http` rather than `fetch`, because the subject under test is exactly the headers a
+ * browser controls (Host, Origin, Sec-Fetch-Site) and `fetch` decides some of them for you.
+ * ================================================================== */
+function rawRequest(
+  handle: ServeHandle,
+  path: string,
+  headers: Record<string, string> = {},
+): Promise<{ status: number; headers: Record<string, string | string[] | undefined>; body: string }> {
+  return new Promise((resolve, reject) => {
+    const request = httpRequest(
+      { host: handle.host, port: handle.port, path, method: "GET", headers },
+      (response) => {
+        let body = "";
+        response.on("data", (chunk: Buffer) => {
+          body += chunk.toString("utf8");
+        });
+        response.on("end", () => resolve({ status: response.statusCode ?? 0, headers: response.headers, body }));
+      },
+    );
+    request.on("error", reject);
+    request.end();
+  });
+}
+
+describe("the browser-trust fence (WEB-A07)", () => {
+  it("refuses a rebound Host before it considers credentials, and admits loopback", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    try {
+      // A correct token is not enough: the request SHAPE is what a rebound browser sends.
+      const rebound = await rawRequest(handle, "/api/health", {
+        host: "evil.example",
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(rebound.status).toBe(403);
+      const ours = await rawRequest(handle, "/api/health", {
+        host: `${handle.host}:${String(handle.port)}`,
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(ours.status).toBe(200);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("refuses a cross-site Origin, a cross-site Sec-Fetch-Site, and an unparseable Origin", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const authority = `${handle.host}:${String(handle.port)}`;
+    try {
+      for (const headers of [
+        { host: authority, origin: "https://evil.example", authorization: `Bearer ${handle.token}` },
+        { host: authority, "sec-fetch-site": "cross-site", authorization: `Bearer ${handle.token}` },
+        { host: authority, origin: "not a url", authorization: `Bearer ${handle.token}` },
+      ]) {
+        const refused = await rawRequest(handle, "/api/health", headers);
+        expect(refused.status, JSON.stringify(headers)).toBe(403);
+      }
+      // A same-origin page and a non-browser client both pass.
+      const sameOrigin = await rawRequest(handle, "/api/health", {
+        host: authority,
+        origin: `http://${authority}`,
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(sameOrigin.status).toBe(200);
+      const nonBrowser = await rawRequest(handle, "/api/health", {
+        host: authority,
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(nonBrowser.status).toBe(200);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("a declared trusted authority is admitted, and an undeclared one is not", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, {
+      port: 0,
+      trustedHosts: ["palimpsest.internal:7831"],
+    });
+    try {
+      const declared = await rawRequest(handle, "/api/health", {
+        host: "palimpsest.internal:7831",
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(declared.status).toBe(200);
+      const undeclared = await rawRequest(handle, "/api/health", {
+        host: "other.internal:7831",
+        authorization: `Bearer ${handle.token}`,
+      });
+      expect(undeclared.status).toBe(403);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+});
+
+describe("the token handoff (WEB-A08)", () => {
+  it("exchanges a root-url token for an HttpOnly cookie and redirects to the clean url", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const authority = `${handle.host}:${String(handle.port)}`;
+    try {
+      const handed = await rawRequest(handle, `/?token=${encodeURIComponent(handle.token)}`, { host: authority });
+      expect(handed.status).toBe(303);
+      expect(handed.headers.location).toBe("/");
+      expect(handed.headers["cache-control"]).toBe("no-store");
+      // The token is in the url that produced this redirect; it must not travel on as a Referer.
+      expect(handed.headers["referrer-policy"]).toBe("no-referrer");
+      const setCookie = String(handed.headers["set-cookie"]);
+      expect(setCookie).toContain("HttpOnly");
+      expect(setCookie).toContain("SameSite=Strict");
+      expect(setCookie).toContain("Path=/");
+
+      // The cookie — and only the cookie — then authorizes the API, with no Authorization header.
+      const cookie = setCookie.split(";")[0]!;
+      const viaCookie = await rawRequest(handle, "/api/health", { host: authority, cookie });
+      expect(viaCookie.status).toBe(200);
+
+      // The url a human opens is exactly that handoff, and the clean url stays credential-free.
+      expect(handle.openUrl).toBe(`http://${authority}/?token=${encodeURIComponent(handle.token)}`);
+      expect(handle.url).not.toContain(handle.token);
+    } finally {
+      await handle.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("a wrong or repeated token mints nothing, and a cookie is bound to its authority", async () => {
+    const rig = makeRig();
+    const first = await serveOrchestration(rig.controller, { port: 0 });
+    const second = await serveOrchestration(rig.controller, { port: 0 });
+    const firstAuthority = `${first.host}:${String(first.port)}`;
+    try {
+      expect((await rawRequest(first, "/?token=wrong", { host: firstAuthority })).status).toBe(401);
+      // Two occurrences are not one handoff: refuse rather than guess which was meant.
+      expect(
+        (await rawRequest(first, `/?token=${first.token}&token=${first.token}`, { host: firstAuthority })).status,
+      ).toBe(401);
+
+      const handed = await rawRequest(first, `/?token=${first.token}`, { host: firstAuthority });
+      const cookie = String(handed.headers["set-cookie"]).split(";")[0]!;
+      // The second server has its own secret AND a different authority, so this cookie is inert.
+      const replayed = await rawRequest(second, "/api/health", {
+        host: `${second.host}:${String(second.port)}`,
+        cookie,
+      });
+      expect(replayed.status).toBe(401);
+      // And a token handed to one process never authorizes another.
+      expect((await api(second, "/api/health", { token: first.token })).status).toBe(401);
+    } finally {
+      await first.close();
+      await second.close();
+      await rig.cleanup();
+    }
+  });
+
+  it("the query token never authorizes an API request, and the fence outranks a cookie", async () => {
+    const rig = makeRig();
+    const handle = await serveOrchestration(rig.controller, { port: 0 });
+    const authority = `${handle.host}:${String(handle.port)}`;
+    try {
+      // The measured hole: this used to be 200 from any origin, with no preflight to stop a page.
+      expect((await api(handle, `/api/health?token=${handle.token}`, { token: null })).status).toBe(401);
+      const handed = await rawRequest(handle, `/?token=${handle.token}`, { host: authority });
+      const cookie = String(handed.headers["set-cookie"]).split(";")[0]!;
+      // A valid cookie does not excuse a request shape the fence refuses.
+      const rebound = await rawRequest(handle, "/api/health", { host: "evil.example", cookie });
+      expect(rebound.status).toBe(403);
+    } finally {
+      await handle.close();
       await rig.cleanup();
     }
   });

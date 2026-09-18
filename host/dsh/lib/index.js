@@ -31,7 +31,12 @@ export const Config = z.object({
   serve: z.boolean().default(false),
   port: z.number().default(0),
   host: z.string().default('127.0.0.1'),
-  token: z.string().default('palimpsest-dogfood'),
+  /**
+   * Dashboard credential. Empty (the default) ⇒ serve mints a random token for this start and
+   * prints it, which is what a profile should do; set it only when something outside this process
+   * has to know the token in advance, such as a scripted rig.
+   */
+  token: z.string().default(''),
   /**
    * Advanced: an explicit path to a DSH bin for branch execution. Absent ⇒ this
    * host derives it from its own invocation (`process.argv[1]`) plus `--profile`.
@@ -175,15 +180,20 @@ export async function apply(ctx, config) {
     serve = await palimpsest.serveOrchestration(deployment.installed.controller, {
       port: config.port,
       host: config.host,
-      token: config.token,
+      // Absent ⇒ serve mints a random token for this start. It used to default to a fixed string
+      // ('palimpsest-dogfood') here, which made the dashboard's only credential a constant published
+      // in this repository — and, because the token was also accepted from the query string, one a
+      // malicious page could use without a preflight. Both halves are gone: the credential is now
+      // per start, and it is accepted only for the root-url handoff, never on /api.
+      ...(config.token === '' ? {} : { token: config.token }),
       application: deployment.installed.application,
     });
     dashboardUrl = serve.url;
-    // The dashboard is behind a bearer token. `palimpsest serve` prints the url AND the token; this
-    // path exposed the url only (in the readiness record), so the page was reachable only by knowing
-    // the configured default — which is how I reached it, and no user can. Print both, in the same
-    // line shape the CLI already uses, where the operator is already looking.
-    process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, token: serve.token })}\n`);
+    // `url` is the clean address (what the agent reports, and what belongs in a model's context);
+    // `openUrl` carries this start's token, and opening it exchanges that token for a browser
+    // cookie and redirects to the clean url — so a person clicks once instead of hunting for a
+    // token. Same line shape the CLI already uses, where the operator is already looking.
+    process.stdout.write(`PALIMPSEST_DASHBOARD ${JSON.stringify({ url: serve.url, openUrl: serve.openUrl, token: serve.token })}\n`);
   }
 
   ctx.provide('palimpsestHost', {
