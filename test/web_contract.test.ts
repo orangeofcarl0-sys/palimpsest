@@ -116,3 +116,47 @@ describe("web mirror contract (WEB-FRESH-A01/A02, WEB-CONTRACT-A01)", () => {
     expect(app).toMatch(/画布草稿已从 v2 升级到 v3/);
   });
 });
+
+/**
+ * WEB-ERROR-A01: the web chain must not destroy the API's error text.
+ *
+ * The adapter's envelope is `{ error: { status, detail } }`, and `detail` is written to be read by a
+ * person. The client used `String(body.error)`, which is `"[object Object]"` for an object, so every
+ * honest sentence the API produced was destroyed on arrival — a brand-new deployment's first screen
+ * read `history query failed: 404: [object Object]`. Source-level here because the web bundle has no
+ * runtime contract surface (the file header above); the rendered behaviour is verified in the
+ * browser.
+ */
+describe("web error text (WEB-ERROR-A01)", () => {
+  it("reads error.detail instead of stringifying the envelope", () => {
+    const api = read("api.ts");
+    expect(api).toMatch(/export function apiErrorMessage\(/);
+    // The nested envelope is unwrapped...
+    expect(api).toMatch(/\.detail/);
+    // ...and the exact defect — String()-ing the error object — is gone.
+    expect(api).not.toMatch(/String\(\(body as \{ error: unknown \}\)\.error\)/);
+    expect(api).toMatch(/apiErrorMessage\(response\.status, body\)/);
+  });
+
+  it("no other module stringifies a response envelope's error field", () => {
+    /*
+      Precise on purpose. Two things look like the defect but are not:
+        - the doc comment above, which quotes the removed expression;
+        - main.tsx's crash boundary, `String(this.state.error.stack ?? this.state.error)`, which
+          stringifies an Error instance — that is exactly what an Error's toString is for.
+      What must never come back is stringifying a RESPONSE BODY's error field.
+    */
+    const stripComments = (source: string): string =>
+      source.replace(/\/\*[\s\S]*?\*\//gu, "").replace(/(^|[^:])\/\/[^\n]*/gu, "$1");
+    const ENVELOPE_STRINGIFY = /String\([^)]*\b(body|response|res|json|payload)\b[^)]*\.error\b/iu;
+    for (const file of ["api.ts", "project_workspace/ProjectWorkspaceView.tsx", "ProofVaultView.tsx", "MultiGraphView.tsx", "App.tsx"]) {
+      let source: string;
+      try {
+        source = stripComments(read(file));
+      } catch {
+        continue;
+      }
+      expect(source, `${file} stringifies a response envelope's error field`).not.toMatch(ENVELOPE_STRINGIFY);
+    }
+  });
+});

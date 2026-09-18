@@ -99,6 +99,22 @@ function iconFor(title: string): string | null {
   return SECTION_ICONS[base] ?? null;
 }
 
+/**
+ * Identifiers and digests, one click away instead of on the first screen.
+ *
+ * These values are load-bearing for an expert and meaningless to everyone else, and the previous
+ * form served neither: a 16-character truncation is too short to read and too short to copy. Closed
+ * by default, and the full value is shown inside so it can be copied.
+ */
+export function TechnicalDetails(props: { readonly summary: string; readonly children: ReactNode }): React.ReactElement {
+  return (
+    <details style={{ marginTop: 2 }} data-testid="technical-details">
+      <summary style={{ cursor: "pointer", color: COLORS.muted, fontSize: 11 }}>{props.summary}</summary>
+      <div style={{ display: "grid", gap: 6, paddingTop: 6 }}>{props.children}</div>
+    </details>
+  );
+}
+
 export function Section(props: { readonly title: string; readonly children: ReactNode; readonly testId?: string }): React.ReactElement {
   const icon = iconFor(props.title);
   return (
