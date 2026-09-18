@@ -36,6 +36,31 @@ test("E2E-BOOT-01: an empty service loads honestly with no error churn", async (
   await expect(page.getByText("palimpsest 图面")).toBeVisible();
 });
 
+test("E2E-AUTH-02: the handoff url admits the browser with no typing at all", async ({ page }) => {
+  session = await startKernel();
+  await seed(session, "basic");
+  // This is the address a human is given (the host prints it; the clean url is what the agent
+  // reports). Arriving through it must be the END of the story: the server exchanges the token for
+  // a cookie and redirects, so the panel renders without anyone pasting anything.
+  await page.goto(session.openUrl);
+  await expect(page.getByText("palimpsest 图面")).toBeVisible();
+  await expect(page.getByText("输入访问令牌")).toHaveCount(0);
+  // The token is gone from the address bar: the redirect landed on the clean url.
+  expect(new URL(page.url()).search).toBe("");
+  await expect(page.getByText("e2e basic · revision 0")).toBeVisible();
+
+  // And the cookie is what admits it — not a token cached in localStorage.
+  const stored = await page.evaluate(() => localStorage.getItem("palimpsest-token"));
+  expect(stored).toBeNull();
+  const cookies = await page.context().cookies();
+  expect(cookies.some((cookie) => cookie.name.startsWith("palimpsest-auth-"))).toBe(true);
+  expect(cookies.find((cookie) => cookie.name.startsWith("palimpsest-auth-"))?.httpOnly).toBe(true);
+
+  // A reload keeps working, which is the point of a cookie rather than a url.
+  await page.reload();
+  await expect(page.getByText("palimpsest 图面")).toBeVisible();
+});
+
 test("E2E-AUTH-01: the token gate blocks, then a valid token admits", async ({ page }) => {
   session = await startKernel();
   await seed(session, "basic");

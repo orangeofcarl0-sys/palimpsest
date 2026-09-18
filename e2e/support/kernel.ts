@@ -53,6 +53,9 @@ const policy = () =>
 
 export interface KernelSession {
   readonly url: string;
+  /** The address a human opens: the url carrying this start's token, which the server exchanges
+   * for a browser cookie and then redirects to the clean url. */
+  readonly openUrl: string;
   readonly token: string;
   readonly projectId: string;
   readonly controller: ProjectController;
@@ -84,6 +87,7 @@ export async function startKernel(): Promise<KernelSession> {
   });
   return {
     url: handle.url,
+    openUrl: handle.openUrl,
     token: E2E_TOKEN,
     projectId: E2E_PROJECT,
     controller,

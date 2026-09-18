@@ -33,7 +33,9 @@ canvas (live/draft) with no multi-graph shell. Hence
 
 `src/serve.ts` is a raw `node:http` if-chain over one `ProjectController`:
 `GET /api/health|graph|presets`, `POST /api/control/:op|preset/:id/draft|proposal/validate|proposal/declare|canvas/{compile,diff,anchor,layout,insert,patch}`.
-A per-start bearer token (header or `?token=`) gates `/api/*`; static assets come from
+A per-start bearer token (Authorization header, or the browser cookie the root-url handoff mints)
+gates `/api/*` behind a browser-trust fence on Host/Origin/Sec-Fetch; the token is never accepted
+from a query string on `/api`. Static assets come from
 `<packageRoot>/dist/web`. There is **no** route-table abstraction and no `InstalledPalimpsest`
 parameter — the assembly gap this campaign closes.
 
