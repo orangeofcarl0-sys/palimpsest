@@ -91,6 +91,7 @@ import {
   SelectInput,
   TWO_AXIS_SENTENCE,
   Tag,
+  TechnicalDetails,
   canonicalOwnerOf,
   selectStyle,
   shortDigest,
@@ -202,9 +203,24 @@ function OverviewPanel(props: {
   readonly loops: readonly OpenLoop[];
   readonly status: ManagementAssessment | null;
   readonly managementError: string | null;
+  readonly workspaceError: string | null;
 }): React.ReactElement {
   const { view } = props;
-  if (view === null) return <Muted>Loading the derived project workspace view…</Muted>;
+  if (view === null) {
+    /*
+      A null view means EITHER "still loading" or "the read failed", and the panel used to say
+      "Loading…" for both — so a brand-new deployment whose project has no ProjectIR showed a
+      perpetual spinner while the reason sat in a red line at the bottom of the page. The failure
+      states what happened and quotes the API's own sentence; it does not interpret the cause,
+      because deciding "this project has not been started" from an error string is exactly the kind
+      of guess this surface does not make.
+    */
+    return props.workspaceError === null ? (
+      <Muted>Loading the derived project workspace view…</Muted>
+    ) : (
+      <Notice testId="overview-workspace-error">The workspace view could not be read: {props.workspaceError}</Notice>
+    );
+  }
   const firstLoop = openLoopsOf(view, props.loops)[0];
   return (
     <div style={{ display: "grid", gap: 14 }}>
@@ -213,12 +229,19 @@ function OverviewPanel(props: {
           <b>{view.project.goal}</b>
         </Field>
         <Field label="ProjectIR revision" testId="overview-revision">
-          <Mono>{`revision ${view.project.revision}`}</Mono> · digest <Mono>{shortDigest(view.project.digest)}</Mono> · head commit{" "}
-          <Mono>{shortDigest(view.project.headCommit)}</Mono>
+          <Mono>{`revision ${view.project.revision}`}</Mono>
         </Field>
-        <Field label="project id">
-          <Mono>{view.projectId}</Mono>
-        </Field>
+        <TechnicalDetails summary="technical details（digest · head commit · project id）">
+          <Field label="digest">
+            <Mono>{view.project.digest}</Mono>
+          </Field>
+          <Field label="head commit">
+            <Mono>{view.project.headCommit}</Mono>
+          </Field>
+          <Field label="project id">
+            <Mono>{view.projectId}</Mono>
+          </Field>
+        </TechnicalDetails>
         <Muted>
           This view is derived from the Work ledger (ProjectIR), the controller's scheduling projection, and this layer's two append-only
           histories. It copies no canonical fact.
@@ -580,9 +603,16 @@ function HistoryPanel(props: {
 
       <Section title="ProjectIR revisions" testId="history-revisions">
         <Field label="current revision" testId="history-revision">
-          <Mono>{`revision ${view.project.revision}`}</Mono> · digest {shortDigest(view.project.digest)} · head commit{" "}
-          {shortDigest(view.project.headCommit)}
+          <Mono>{`revision ${view.project.revision}`}</Mono>
         </Field>
+        <TechnicalDetails summary="technical details（digest · head commit）">
+          <Field label="digest">
+            <Mono>{view.project.digest}</Mono>
+          </Field>
+          <Field label="head commit">
+            <Mono>{view.project.headCommit}</Mono>
+          </Field>
+        </TechnicalDetails>
         <Muted>
           The exposed routes derive the CURRENT revision; the full ProjectIR revision lineage is not projected into the workspace history.
         </Muted>
@@ -2319,7 +2349,7 @@ export function ProjectWorkspaceView(props: {
 
       <div style={{ overflow: "auto", border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: 12, background: COLORS.panel }}>
         {tab === "overview" ? (
-          <OverviewPanel view={view} loops={loops} status={status} managementError={statusError} />
+          <OverviewPanel view={view} loops={loops} status={status} managementError={statusError} workspaceError={workspaceError} />
         ) : null}
         {tab === "work" ? <WorkPanel view={view} assets={assets} /> : null}
         {tab === "assets" ? (
