@@ -102,13 +102,23 @@ export interface PublicApiBaseline {
 }
 
 export interface PublicApiParityResult {
+  /** True only when `missing`, `changedKind` and `added` are all empty. */
   readonly ok: boolean;
   readonly missing: readonly { readonly entry: string; readonly name: string; readonly kind: ExportKind }[];
   readonly changedKind: readonly { readonly entry: string; readonly name: string; readonly was: ExportKind; readonly now: ExportKind }[];
   readonly added: readonly { readonly entry: string; readonly name: string }[];
 }
 
-/** Compare a live surface against the baseline: nothing missing, nothing re-kinded. */
+/**
+ * Compare a live surface against the baseline EXACTLY: nothing missing, nothing re-kinded, and
+ * nothing added.
+ *
+ * Additions used to be reported but tolerated. SR-1 closure §4 tightened this because the two
+ * failure shapes differ in kind: a missing name breaks a consumer, while an ADDED name is the
+ * signature of a refactor leaking internal wiring (`export *` over a set of cluster modules also
+ * publishes each cluster's constructor and its narrow deps input). Both are public API changes and
+ * both must be reviewed, so equality is now the rule in both directions.
+ */
 export function checkPublicApiParity(
   baseline: PublicApiBaseline,
   current: Readonly<Record<string, PublicApiSurface>>,
@@ -131,5 +141,5 @@ export function checkPublicApiParity(
     const expectedNames = new Set(expected.map((item) => item.name));
     for (const item of live.names) if (!expectedNames.has(item.name)) added.push({ entry, name: item.name });
   }
-  return { ok: missing.length === 0 && changedKind.length === 0, missing, changedKind, added };
+  return { ok: missing.length === 0 && changedKind.length === 0 && added.length === 0, missing, changedKind, added };
 }
