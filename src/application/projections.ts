@@ -10,6 +10,7 @@
  */
 
 import { canonicalDigest } from "../schema/canonical.js";
+import type { OrchestrationGraph } from "../tools/graph.js";
 import type { GraphSpecies, ProjectionEnvelope, ProjectionNode, ProjectionEdge, ProjectionSourceBasis } from "./projection_types.js";
 
 export type { GraphSpecies, ProjectionEnvelope, ProjectionNode, ProjectionEdge, ProjectionSourceBasis } from "./projection_types.js";
@@ -47,20 +48,27 @@ function envelope<N extends ProjectionNode>(input: {
  * Work (adapts the existing Work graph; never a second Work truth)
  * ------------------------------------------------------------------ */
 
-export function workProjection(graph: unknown, viewCursor: unknown): ProjectionEnvelope<ProjectionNode> {
-  if (typeof graph !== "object" || graph === null) {
+/**
+ * The input is the REAL `OrchestrationGraph`, not `unknown`.
+ *
+ * It used to be `unknown` with an inline cast to `{ tasks?: { id?: unknown }[] }` — and the Work
+ * graph's tasks expose `taskId`, not `id`. Nothing failed to compile, so every task node shipped
+ * with `presentationId`/`ref.id`/`label` = the literal string "undefined" (the MultiGraph rendered
+ * `undefined • ACTIVE`). Typing the parameter makes the compiler enforce the adapter contract here
+ * exactly as it already does for the other four projections, which all take declared inputs.
+ */
+export function workProjection(graph: OrchestrationGraph | null, viewCursor: unknown): ProjectionEnvelope<ProjectionNode> {
+  if (graph === null) {
     return envelope({ species: "work", sourceBases: [], knowledge: "unknown", nodes: [], edges: [] });
   }
-  const tasks = (graph as { tasks?: readonly { id?: unknown; state?: unknown }[] }).tasks ?? [];
-  const promotions = (graph as { promotions?: readonly { id?: unknown }[] }).promotions ?? [];
-  const nodes: ProjectionNode[] = tasks.map((task) => ({
-    presentationId: `work:task:${String(task.id)}`,
-    ref: { species: "work", kind: "task", id: String(task.id) },
+  const nodes: ProjectionNode[] = graph.tasks.map((task) => ({
+    presentationId: `work:task:${task.taskId}`,
+    ref: { species: "work", kind: "task", id: task.taskId },
     kind: "task",
-    label: String(task.id),
-    state: task.state === undefined ? null : String(task.state),
+    label: task.taskId,
+    state: task.state,
   }));
-  for (const promotion of promotions) nodes.push({ presentationId: `work:promotion:${String(promotion.id)}`, ref: { species: "work", kind: "promotion", id: String(promotion.id) }, kind: "promotion", label: String(promotion.id), state: null });
+  for (const promotion of graph.promotions) nodes.push({ presentationId: `work:promotion:${promotion.promotionId}`, ref: { species: "work", kind: "promotion", id: promotion.promotionId }, kind: "promotion", label: promotion.promotionId, state: null });
   const edges: ProjectionEdge[] = [];
   return envelope({ species: "work", sourceBases: [{ source: "work", ref: "orchestration-graph", throughSeq: typeof viewCursor === "number" ? viewCursor : null, chainDigest: null }], knowledge: "known", nodes, edges });
 }
