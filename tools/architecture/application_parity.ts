@@ -15,10 +15,12 @@
  *                         not a stub, it is not a key.
  *
  * Per installation: the installed capability keys, the aggregate application surface keys, the
- * DSH tool catalogue with its action sets, and the faces present at runtime. All indices are
- * sorted, so the capture is deterministic; no timestamps, absolute paths or random ids are stored.
+ * DSH tool catalogue with its action sets AND its full adapter contract (description plus canonical
+ * parameter schema — §8), and the faces present at runtime. All indices are sorted, so the capture
+ * is deterministic; no timestamps, absolute paths or random ids are stored.
  */
 
+import { createHash } from "node:crypto";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -28,6 +30,47 @@ export interface ParityToolEntry {
   readonly name: string;
   readonly mode: string;
   readonly actions: readonly string[];
+  /**
+   * SR-1 closure §8 — the ORIGINAL intent of this fixture was to pin the contract a host sees, but
+   * it only recorded name/mode/action-enum. A structural extraction is exactly the kind of change
+   * that can drop a `required` field, rename a property or narrow an enum while the action list
+   * stays identical, and that would have passed. These three fields close that gap.
+   */
+  readonly description: string;
+  /** The parameter schema as canonical JSON (recursively key-sorted; arrays keep their order). */
+  readonly parameters: string;
+  /** One stable digest over name + mode + description + canonical parameters. */
+  readonly contractDigest: string;
+}
+
+/**
+ * Canonical JSON: object keys sorted so two structurally-equal schemas serialize identically,
+ * arrays left in place because enum and `required` ORDER is part of what a host renders.
+ */
+export function canonicalJson(value: unknown): string {
+  const walk = (node: unknown): unknown => {
+    if (Array.isArray(node)) return node.map(walk);
+    if (node !== null && typeof node === "object") {
+      const source = node as Record<string, unknown>;
+      const out: Record<string, unknown> = {};
+      for (const key of Object.keys(source).sort()) out[key] = walk(source[key]);
+      return out;
+    }
+    return node;
+  };
+  return JSON.stringify(walk(value));
+}
+
+/** One digest over the whole adapter contract, so a single value pins it. */
+export function toolContractDigest(parts: {
+  readonly name: string;
+  readonly mode: string;
+  readonly description: string;
+  readonly parameters: string;
+}): string {
+  return createHash("sha256")
+    .update([parts.name, parts.mode, parts.description, parts.parameters].join("\u0000"))
+    .digest("hex");
 }
 
 export interface ParityInstallation {
@@ -64,16 +107,26 @@ export interface ParityCapture {
 
 type AnyRecord = Record<string, unknown>;
 
-const toolEntries = (tools: readonly { readonly name: string; readonly mode?: string; readonly parameters?: unknown }[]): ParityToolEntry[] =>
+const toolEntries = (
+  tools: readonly { readonly name: string; readonly mode?: string; readonly description?: string; readonly parameters?: unknown }[],
+): ParityToolEntry[] =>
   tools
-    .map((tool) => ({
-      name: tool.name,
-      mode: typeof tool.mode === "string" ? tool.mode : "unknown",
-      actions: [
-        ...(((tool.parameters as { readonly properties?: { readonly action?: { readonly enum?: readonly string[] } } })
-          ?.properties?.action?.enum ?? []) as readonly string[]),
-      ],
-    }))
+    .map((tool) => {
+      const mode = typeof tool.mode === "string" ? tool.mode : "unknown";
+      const description = typeof tool.description === "string" ? tool.description : "";
+      const parameters = canonicalJson(tool.parameters ?? {});
+      return {
+        name: tool.name,
+        mode,
+        actions: [
+          ...(((tool.parameters as { readonly properties?: { readonly action?: { readonly enum?: readonly string[] } } })
+            ?.properties?.action?.enum ?? []) as readonly string[]),
+        ],
+        description,
+        parameters,
+        contractDigest: toolContractDigest({ name: tool.name, mode, description, parameters }),
+      };
+    })
     .sort((a, b) => a.name.localeCompare(b.name));
 
 /**
@@ -426,6 +479,15 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
       if (found === undefined) continue;
       if (found.mode !== tool.mode) differences.push({ where: `${label}.${tool.name}.mode`, detail: `${tool.mode} → ${found.mode}` });
       compareList(`${label}.${tool.name}.actions`, tool.actions, found.actions);
+      /* §8: the rest of the adapter contract. A digest mismatch is reported with the description
+         and the canonical schema next to each other, because "the digest changed" alone is not a
+         diagnosable failure. */
+      if (found.contractDigest !== tool.contractDigest) {
+        const parts: string[] = [`digest ${tool.contractDigest.slice(0, 12)} → ${found.contractDigest.slice(0, 12)}`];
+        if (found.description !== tool.description) parts.push(`description changed (${tool.description.length} → ${found.description.length} chars)`);
+        if (found.parameters !== tool.parameters) parts.push(`parameters: ${tool.parameters} → ${found.parameters}`);
+        differences.push({ where: `${label}.${tool.name}.contract`, detail: parts.join("; ") });
+      }
     }
   };
   compareInstallation("packagedInstallation", baseline.packagedInstallation, live.packagedInstallation);

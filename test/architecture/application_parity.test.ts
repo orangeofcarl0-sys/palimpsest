@@ -23,7 +23,15 @@ import { fileURLToPath } from "node:url";
 
 import { beforeAll, describe, expect, it } from "vitest";
 
-import { captureApplicationParity, compareParity, type ParityCapture, type ParityRouteEntry, type ParityToolEntry } from "../../tools/architecture/index.js";
+import {
+  canonicalJson,
+  captureApplicationParity,
+  compareParity,
+  toolContractDigest,
+  type ParityCapture,
+  type ParityRouteEntry,
+  type ParityToolEntry,
+} from "../../tools/architecture/index.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const FIXTURE = JSON.parse(
@@ -62,7 +70,15 @@ describe("SR-1D §14 the comparison rejects extras, not only omissions", () => {
 
   it("P2 an unexpected DSH tool fails", () => {
     const live = clone();
-    (live.packagedInstallation.dshTools as ParityToolEntry[]).push({ name: "palimpsest_debug", mode: "read-only", actions: [] });
+    const added: ParityToolEntry = {
+      name: "palimpsest_debug",
+      mode: "read-only",
+      actions: [],
+      description: "",
+      parameters: canonicalJson({}),
+      contractDigest: toolContractDigest({ name: "palimpsest_debug", mode: "read-only", description: "", parameters: canonicalJson({}) }),
+    };
+    (live.packagedInstallation.dshTools as ParityToolEntry[]).push(added);
     expect(compareParity(base, live).some((difference) => difference.detail.includes("unexpected: palimpsest_debug"))).toBe(true);
   });
 
@@ -96,6 +112,92 @@ describe("SR-1D §14 the comparison rejects extras, not only omissions", () => {
 
   it("the unmutated baseline compares equal to itself (the comparison is not vacuous)", () => {
     expect(compareParity(base, clone())).toEqual([]);
+  });
+
+  /**
+   * SR-1 closure §8 — the mutation regressions for the EXTENDED contract. A structural extraction
+   * moves tool definitions between files; the way it goes wrong is not the tool name disappearing,
+   * it is a `required` entry, a property name or an enum narrowing changing quietly while the action
+   * list stays byte-identical. Each mutation below keeps `actions` untouched on purpose.
+   */
+  const mutateTool = (name: string, edit: (schema: Record<string, unknown>) => void): ParityCapture => {
+    const live = clone();
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === name)!;
+    const schema = JSON.parse(tool.parameters) as Record<string, unknown>;
+    edit(schema);
+    const parameters = canonicalJson(schema);
+    (tool as unknown as { parameters: string }).parameters = parameters;
+    (tool as unknown as { contractDigest: string }).contractDigest = toolContractDigest({
+      name: tool.name,
+      mode: tool.mode,
+      description: tool.description,
+      parameters,
+    });
+    return live;
+  };
+  const contractDifference = (live: ParityCapture): string | undefined =>
+    compareParity(base, live).find((difference) => difference.where.endsWith(".contract"))?.detail;
+
+  it("P8 a changed required-fields list fails, though the action enum is identical", () => {
+    const live = mutateTool("palimpsest_cross_project", (schema) => {
+      (schema.required as string[]).push("debugTrace");
+    });
+    const detail = contractDifference(live);
+    expect(detail).toBeDefined();
+    expect(detail).toContain("parameters:");
+    expect(live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_cross_project")?.actions).toEqual(
+      base.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_cross_project")?.actions,
+    );
+  });
+
+  it("P9 a renamed property fails", () => {
+    const live = mutateTool("palimpsest_collaborate", (schema) => {
+      const properties = schema.properties as Record<string, unknown>;
+      properties.branchCount = properties.branchCountHint;
+      delete properties.branchCountHint;
+    });
+    expect(contractDifference(live)).toContain("parameters:");
+  });
+
+  it("P10 a narrowed NESTED enum fails, though the action enum is identical", () => {
+    // `properties.intent.enum` is one level below the top: exactly the schema detail the
+    // name/mode/action-enum fixture could not see.
+    const live = mutateTool("palimpsest_collaborate", (schema) => {
+      const properties = schema.properties as Record<string, { enum?: string[] }>;
+      properties.intent!.enum = properties.intent!.enum!.filter((value) => value !== "PARALLEL_AND_CHECK");
+    });
+    expect(contractDifference(live)).toContain("parameters:");
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_collaborate")!;
+    expect(tool.actions).toEqual(["plan", "run"]);
+  });
+
+  it("P11 a changed description fails even with an identical schema", () => {
+    const live = clone();
+    const tool = live.packagedInstallation.dshTools.find((entry) => entry.name === "palimpsest_attention")!;
+    (tool as unknown as { description: string }).description = `${tool.description} (rewritten by the extraction)`;
+    (tool as unknown as { contractDigest: string }).contractDigest = toolContractDigest({
+      name: tool.name,
+      mode: tool.mode,
+      description: tool.description,
+      parameters: tool.parameters,
+    });
+    expect(contractDifference(live)).toContain("description changed");
+  });
+
+  it("P12 the fixture really does pin the full contract, not just the action enum", () => {
+    for (const tool of [...base.packagedInstallation.dshTools, ...base.minimalInstallation.dshTools]) {
+      expect(tool.description.length, `${tool.name} has no captured description`).toBeGreaterThan(0);
+      expect(tool.parameters.startsWith("{"), `${tool.name} has no captured parameter schema`).toBe(true);
+      const recomputed = toolContractDigest({
+        name: tool.name,
+        mode: tool.mode,
+        description: tool.description,
+        parameters: tool.parameters,
+      });
+      expect(recomputed, `${tool.name} digest does not cover its recorded contract`).toBe(tool.contractDigest);
+      // `parameters` must BE canonical, or a key-order change would read as a contract change.
+      expect(canonicalJson(JSON.parse(tool.parameters))).toBe(tool.parameters);
+    }
   });
 });
 
