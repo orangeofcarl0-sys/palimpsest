@@ -82,7 +82,7 @@ export function makeProjectionsSurfaces(deps: ProjectionsSurfaceDeps): { readonl
           cellId: input.cellId,
           frontierRevision: view.frontierBasis.frontierRevision,
           frontierDigest: view.frontierBasis.frontierDigest,
-          nodes: graph.nodes.map((node) => ({ ref: { claimId: node.ref.claimId }, claim: { type: { typeId: node.claim.type.typeId }, dependencies: node.claim.dependencies.map((dependency) => ({ claimId: dependency.claimId })) }, active: node.active })),
+          nodes: graph.nodes.map((node) => ({ ref: { claimId: node.ref.claimId }, claim: { type: { typeId: node.claim.type.typeId }, content: node.claim.content, dependencies: node.claim.dependencies.map((dependency) => ({ claimId: dependency.claimId })) }, active: node.active })),
           candidates: view.candidates,
           branches: view.branches.map((branch) => ({ ref: { branchId: branch.ref.branchId }, question: branch.question, closed: branch.closed })),
         });

@@ -18,7 +18,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { workProjection } from "../src/application/projections.js";
+import { reasoningProjection, workProjection } from "../src/application/projections.js";
 import type { OrchestrationGraph } from "../src/tools/graph.js";
 import { ProjectController } from "../src/tools/controller.js";
 import { EventStore } from "../src/state/index.js";
@@ -142,5 +142,38 @@ describe("MultiGraph Work projection reads the real Work graph", () => {
     };
     const other: OrchestrationGraph = { ...base, tasks: [{ ...base.tasks[0]!, taskId: "task-2" }] };
     expect(workProjection(base, null).projectionDigest).not.toBe(workProjection(other, null).projectionDigest);
+  });
+});
+
+describe("MultiGraph Reasoning projection labels nodes by what they say", () => {
+  const claimNode = (content: unknown) => ({
+    ref: { claimId: "cl-27148b4ce5c9c298dc53a4d5" },
+    claim: { type: { typeId: "reasoning.statement" }, ...(content === undefined ? {} : { content }), dependencies: [] },
+    active: true,
+  });
+  const project = (nodes: ReturnType<typeof claimNode>[]) =>
+    reasoningProjection({ cellId: "cell-1", frontierRevision: 0, frontierDigest: "d", nodes, candidates: [], branches: [] });
+
+  it("PROJ-R01: a claim with a statement is labelled by the statement, not by its type", () => {
+    const envelope = project([claimNode({ statement: "two independent falsifiable replacements preserving first-occurrence order" })]);
+    expect(envelope.nodes[0]!.label).toBe("two independent falsifiable replacements preserving first-occurrence order");
+    expect(envelope.nodes[0]!.label).not.toBe("reasoning.statement");
+    // The canonical identity is still carried — labelling by content must not lose the ref.
+    expect(envelope.nodes[0]!.ref).toEqual({ species: "reasoning", kind: "claim", id: "cl-27148b4ce5c9c298dc53a4d5" });
+  });
+
+  it("PROJ-R02: a claim with no statement falls back to its type, and nothing is invented", () => {
+    expect(project([claimNode(undefined)]).nodes[0]!.label).toBe("reasoning.statement");
+    expect(project([claimNode({})]).nodes[0]!.label).toBe("reasoning.statement");
+    expect(project([claimNode({ statement: "   " })]).nodes[0]!.label).toBe("reasoning.statement");
+    expect(project([claimNode({ statement: 42 })]).nodes[0]!.label).toBe("reasoning.statement");
+    expect(project([claimNode(null)]).nodes[0]!.label).toBe("reasoning.statement");
+  });
+
+  it("PROJ-R03: the label is not part of the digest, so re-labelling does not churn the read model", () => {
+    const a = project([claimNode({ statement: "first wording" })]);
+    const b = project([claimNode({ statement: "a different wording" })]);
+    expect(a.projectionDigest).toBe(b.projectionDigest);
+    expect(a.nodes[0]!.presentationId).toBe(b.nodes[0]!.presentationId);
   });
 });
