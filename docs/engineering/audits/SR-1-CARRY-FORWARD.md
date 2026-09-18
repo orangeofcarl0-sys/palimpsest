@@ -1,51 +1,59 @@
 # SR-1 — Carry-forward
 
-Status: SR-1 is **PARTIAL** (R0 complete, R1 partial, R2/R3 not started). This document maps what
-remains, in the order it should be attempted, and records the structural items SR-1 surfaced but
-deliberately did not touch.
+Status: **PARTIAL** — R0 (with the R0A/R0B repairs), R1 and the §21 parity fixture are complete;
+R2 and R3 are not started. This is the ordered remainder for SR-1 PASS.
 
 ---
 
 ## 1. Required to reach SR-1 PASS
 
-| id | item | why | evidence it is not done |
+| id | item | why | status |
 | --- | --- | --- | --- |
-| **SR1-R1b** | Extract the capability-wiring middle of `install.ts` (~1,000 lines: proof/disclosure, federation + boundary, campaign + institutions, organizations + dynamics + evolution, runtime scopes + evolution, reasoning cells, recipe execution + advisor, attention, verification, external-asset bridge, monitor, project management) into `composeProjectCapabilities` / `composeCognitionCapabilities` / `composeGovernanceCapabilities` / `composeCollaborationCapabilities` | this is where `install.ts`'s ~40 capability imports live; until they move, §38's "direct dependency families materially reduced" cannot be met | `install.ts` fan-out rose 38 → 41 with the delivered R1 slice |
-| **SR1-R1c** | Move the application assembly (`makePalimpsestApplicationSurface({...})`) and `hasAdvancedSurface` into `composition/application.ts`, taking the composed groups as an input | ~100 lines of the surface wiring; makes §2's "composition owner" column real | still in `install.ts` |
-| **SR1-R2** | Split `src/application/surface.ts` (1,535 lines, fan-out 44) into `src/application/surfaces/<capability>.ts` + `common.ts` + `factory.ts` | the largest single façade monolith; §49 lists "application surface remains monolithic" as PARTIAL | file unchanged |
-| **SR1-R3a** | Split `src/tools/application_tools.ts` (1,090 lines) into `src/adapters/dsh/*` behind the unchanged `defineApplicationTools(application)` | the DSH switchboard; every new tool edits the same 1,000-line file | file unchanged |
-| **SR1-R3b** | Split `src/application/http.ts` (1,126 lines) into `src/adapters/http/*` behind the unchanged `handleApplicationRequest(input)` | the HTTP switchboard; every new route edits the same file | file unchanged |
-| **SR1-N** | Implement the remaining architecture tests: **A03** (install root fan-out reduced — becomes true after R1b), **A04** (application factory composes per-capability surfaces — after R2), **A05/A06** (aggregate entries — trivial now, meaningful after R3), **A07** (adapters do not access semantic stores directly), **A10/A11** (capability absence + application availability parity), **A12/A13** (tool catalogue + HTTP route parity), **A15** (UX-A/UX-B product tool contracts) | §29 | only A01, A02, A08, A09, A14 exist |
-| **SR1-G** | The golden structural parity fixture (§30): installed capability keys, application surface keys, DSH tool names + action sets, HTTP route inventory, readiness view, ownership/disposal observations — compared before/after | it becomes the safety net for R2/R3 | not created |
-| **SR1-CR** | The three change-radius examples (§39): a new CrossProject read action, a new Verification read view, a new ProjectWorkspace read endpoint, with the expected file set after the refactor | §38/§39 | not written |
+| **R2** | Split `src/application/surface.ts` (1,535 lines, fan-out 44) into `src/application/surfaces/<capability>.ts` + `common.ts` + `factory.ts`, preserving `PalimpsestApplicationSurface`, `ApplicationSurfaceDeps` and `makePalimpsestApplicationSurface` through compatibility exports | §39 lists "application surface remains effective monolith" as PARTIAL; §22 | not started |
+| **R3A** | Split `src/tools/application_tools.ts` (1,090 lines) into `src/adapters/dsh/*` behind the unchanged `defineApplicationTools(application)` | §39 lists "DSH/HTTP remain effective switchboards"; §23 | not started |
+| **R3B** | Split `src/application/http.ts` (1,126 lines) into `src/adapters/http/*` behind the unchanged `handleApplicationRequest` / `applicationErrorStatus` / `ApplicationRouteInput` / `ApplicationRouteResult` | §24 | not started |
+| **A03** | install root fan-out reduced — now **true and measured** (38 → 11); the test is not written | §25 | test missing |
+| **A04** | the application factory composes per-capability surfaces | waits on R2 | not started |
+| **A05/A06** | aggregate DSH / HTTP entries preserved — behaviour is covered by the parity fixture and existing suites; dedicated tests missing | §25 | test missing |
+| **A07** | adapters avoid direct semantic-store access | becomes meaningful with R3 | not started |
+| **A13** | HTTP route parity table (method/path/required capability/success class/failure class) and the post-split comparison | §32; the current fixture covers tools and surfaces, not routes | not started |
+| **§30 remainder** | add readiness fields and lifecycle observations to the parity fixture (it currently captures capability keys, surface keys, tool names/modes/actions and the absence matrix) | §21 | partial |
 
-## 2. Structural findings SR-1 surfaced (candidates for a later stage)
+## 2. Deliberately untouched (§27)
 
-| id | finding | where it is recorded |
-| --- | --- | --- |
-| **SR-2 candidate** | the cross-layer cycle `canvas/derive ↔ tools/controller ↔ tools/graph`: the projection depends on the owner *and* the owner depends on the projection. Unwinding it means deciding which direction is canonical. | `architecture/module-architecture.json` → `cycles`; `baseline-reasons.ts` |
-| **SR-2 candidate** | the four `L2 → L3` upward edges (monitor → operating posture; workspace view + controller → graph projection) | same |
-| **SR-2 candidate** | `tools/controller.ts` at 3,095 lines / fan-out 27 stays deliberately untouched (§25) and is the single largest module in the repository | `MODULE-ARCHITECTURE-BASELINE.md` §3 |
-| **SR-3** | public API cleanup: the root entry's historical "P0 contract core" doc block, the embedding doubles (`FakeGitPort`, `MockExecutor`) shipped in the product surface, `definePalimpsestTools` superseded by `defineApplicationTools`, and splitting `advanced` into named subpath exports | `PUBLIC-API-ASSESSMENT.md` §2.4/§3 |
-| **SR-4** | test layout: 175 flat `test/*.test.ts` files with historical campaign prefixes (`g10*`, `aa*`, `ux*`, `rc*`); SR-1 added `test/architecture/` and `test/composition/` for new work and moved nothing | `SR-1-DELIVERY.md`; §28 |
+```text
+the canvas/derive ↔ tools/controller ↔ tools/graph cross-layer cycle   (recorded as an exception)
+the four historical L2→L3 imports                                     (recorded per concrete edge)
+ProjectController (3,095 lines, fan-out 27)                           (SR-2 candidate)
+the historical G10 barrel structure in src/index.ts / src/advanced.ts  (SR-3 candidate)
+```
 
-## 3. Process notes worth keeping
+## 3. Findings SR-1C produced
 
-1. **The extractor decision.** The `typescript@7.0.2` toolchain is the native compiler and no
-   longer exposes the JS `createSourceFile` API, so R0 uses a purpose-built, fixture-tested
-   specifier extractor rather than adding a dependency-analysis framework. Its safety property is
-   worth reusing: a misparse becomes an *unresolved import*, and `--check` fails on those, so the
-   graph cannot silently shrink.
-2. **The checker's shape.** `explicit exceptions + no-new-violations`, with each exception
-   carrying a written reason in code (`baseline-reasons.ts`) so `--write` is deterministic and a
-   reason change shows up in review. No wildcards; a NEW cycle of any size fails, not only a
-   cross-layer one.
-3. **What a partial refactor costs.** Splitting the low-coupling pieces first *increased*
-   `install.ts`'s fan-out. The lesson for R1b/R2/R3: extract by dependency *weight*, not by
-   convenience, and re-measure after each block.
+1. **A layer-pair exception is not an exception.** Recording `L2->L3` would have let the four
+   historical upward imports grow without the check noticing. Concrete edges only, now enforced
+   and demonstrated with a live probe.
+2. **Host JavaScript was outside the checker.** `host/**` is now scanned as L5; it happened to be
+   clean, which is exactly why the coverage matters rather than the current result.
+3. **Cutting a body does not prune an import.** After two cluster extractions the root had lost
+   60% of its lines and none of its fan-out: the imports were still there. The step that met §19
+   was pruning by identifier usage. Worth remembering for R2/R3, where the same trap exists.
+4. **A dropped optional face looks like "absent by configuration".** One mechanical rename
+   rewrote shorthand KEYS in the surface literal, silently removing the `collaboration` and
+   `crossProject` faces; 55 tests failed. A refactor that moves optional wiring must be verified
+   by the regression suite, not by reading the diff.
+5. **The provider outage is environmental, with a control.** The live smoke fails identically on
+   this tree and on the exact canonical baseline (`a30a328`), so per §29 it is neither green nor a
+   regression.
 
-## 4. Product backlog is untouched
+## 4. After SR-1 (unchanged, none automatic)
 
-Per §47 the product items stay separate and untouched by SR-1: `CF-UXA-04` (semantic/model-backed
-task profiler), `CF-UXB-04` (fuzzy project resolver), OS daemon/autostart, budget presets,
-finding-specific verification, branch-artifact retention, PIAS.
+```text
+SR-2   ProjectController internal decomposition
+SR-3   public API / export surface cleanup
+SR-4   test layout / historical naming cleanup
+SR-OWN resource lifetime contract cleanup (the CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY cases)
+```
+
+Product backlog stays separate: CF-UXA-04 (semantic profiler), CF-UXB-04 (fuzzy resolver),
+daemon/autostart, budget presets, finding-specific verification, branch-artifact retention, PIAS.

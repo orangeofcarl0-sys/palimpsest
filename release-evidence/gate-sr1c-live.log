@@ -1,0 +1,67 @@
+(node:35132) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+RC-1R live local qualification — up to 1 trials/scenario, turn budget 900000 ms, real model-driven principal
+provider/model observed per trial from the DSH request header; DSH C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/lib/bin.js
+  trial A_local_parallel#1: INFRASTRUCTURE_ERROR | route=NONE | outcome=INCOMPLETE_OBSERVATION | tools=[] | branches=0 | catalogue=44 | wall=9s | no product observation: the principal produced no assistant message and called no tool (process status "completed", exit 0, wall 8916 ms)
+{
+  "criteria": {
+    "scenarioA": {
+      "total": 1,
+      "passes": 0,
+      "required": 1,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioB_explore": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioB_explore_advisorSelections": {
+      "explore": 0,
+      "focus": 0,
+      "none": 0
+    },
+    "scenarioB_focus": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioC1": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioC2": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "english": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "unavailableCapabilityF": [],
+    "no_authority_scope_or_disclosure_violation": true,
+    "violations": [],
+    "copyMisrepresentations": [],
+    "branch_catalogue_isolation": true,
+    "branch_isolation_proven_by_artifact": 0
+  },
+  "failures": [
+    "scenario A: fewer than 4/5 trials reached the intended product path (0/1)"
+  ],
+  "pass": false
+}
+pass=false
