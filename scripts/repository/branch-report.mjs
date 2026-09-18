@@ -152,6 +152,8 @@ if (MODE === "after") {
   const cls = readJson(join("repository-audit", "branch-classification.json"));
   const deleted = cls.branches.filter((b) => !after.branches.some((a) => a.name === b.name));
   const retained = cls.branches.filter((b) => after.branches.some((a) => a.name === b.name));
+  /** Branches that exist now but were not in the audit: created during RS-1 itself. */
+  const introduced = after.branches.filter((a) => !cls.branches.some((b) => b.name === a.name));
   const lines = [
     "# RS-1 — remote branch inventory (AFTER)",
     "",
@@ -165,6 +167,7 @@ if (MODE === "after") {
     `remote branches    ${String(after.remoteBranchCount)}  (before: ${String(before.remoteBranchCount)})`,
     `deleted            ${String(deleted.length)}`,
     `retained           ${String(retained.length)}`,
+    `introduced by RS-1 ${String(introduced.length)}  (the working branch, deleted after its own merge per §27)`,
     "```",
     "",
     "## Mechanical invariants (§15)",
@@ -179,13 +182,16 @@ if (MODE === "after") {
     "## Retained branches",
     "",
   ];
-  if (retained.length === 0) lines.push("None: every non-main branch was classified deletable, so `main` is the only branch.", "");
-  else {
-    lines.push("| branch | classification | purpose |", "| --- | --- | --- |");
-    for (const b of retained) lines.push(`| \`${cell(b.name)}\` | ${b.classification} | ${cell(b.purposeReview?.purpose ?? "see the cleanup plan")} |`);
-    lines.push("");
+  lines.push("| branch | classification | purpose |", "| --- | --- | --- |");
+  for (const b of retained) {
+    lines.push(
+      `| \`${cell(b.name)}\` | ${b.classification} | ${cell(b.classification === "P_PROTECTED_MAIN" ? "§2: protected forever — never deleted, force-pushed, rewritten or rebased" : (b.purposeReview?.purpose ?? "see the cleanup plan"))} |`,
+    );
   }
-  lines.push("## Milestone tags created", "", "See `RS-1-DELIVERY.md` and the tag list in this document's sibling inventory.", "");
+  for (const a of introduced) {
+    lines.push(`| \`${cell(a.name)}\` | — (created by RS-1) | the RS-1 working branch: audit artifacts, the folded doc records and the branch policy. Deleted immediately after its own merge (§27), so it is not a surviving branch. |`);
+  }
+  lines.push("");
   mkdirSync(join(REPO, "docs", "engineering", "repository"), { recursive: true });
   writeFileSync(join(REPO, "docs", "engineering", "repository", "BRANCH-INVENTORY-AFTER.md"), `${lines.join("\n")}\n`);
   process.stdout.write(`rendered BRANCH-INVENTORY-AFTER.md (${String(after.branches.length)} branches, ${String(deleted.length)} deleted)\n`);
