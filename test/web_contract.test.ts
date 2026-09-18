@@ -160,3 +160,24 @@ describe("web error text (WEB-ERROR-A01)", () => {
     }
   });
 });
+
+/**
+ * WEB-TOKEN-A01: the lock screen must name every place the token is printed.
+ *
+ * The page is served two ways, and the token is printed by whichever one is running: `palimpsest
+ * serve` prints it itself, and a DSH host prints it on its PALIMPSEST_DASHBOARD line. The screen
+ * named only the CLI, so a person whose agent hosts the dashboard — the primary deployment — was
+ * told to look for output from a command they never ran, on the one screen that exists to unblock
+ * them. Source-level, like WEB-ERROR-A01: the rendered behaviour is the browser's job.
+ */
+describe("web token gate (WEB-TOKEN-A01)", () => {
+  it("the lock screen names both the CLI and the host line", () => {
+    const app = read("App.tsx");
+    expect(app).toMatch(/输入访问令牌/);
+    expect(app).toMatch(/palimpsest serve/);
+    // The host's own line, which is the only one that exists in a DSH-hosted deployment.
+    expect(app).toMatch(/PALIMPSEST_DASHBOARD/);
+    // The prompt must stay a prompt: the token is typed in, never auto-filled from the url.
+    expect(app).toMatch(/setToken\(tokenInput\)/);
+  });
+});
