@@ -13,8 +13,9 @@
 
 > ## `PALIMPSEST SR-1 ARCHITECTURAL DECOMPOSITION & COMPOSITION-ROOT REFACTOR: PARTIAL`
 
-**R0 (including the R0A/R0B checker repairs), R1 and the §21 golden parity fixture are complete
-and verified. R2 and R3 are not started**, and §39 names exactly those two as PARTIAL conditions
+**R0 (including the R0A/R0B checker repairs), R1 and the FULL golden parity baseline (capability
+keys, surfaces, tools, 127 HTTP routes × both methods, readiness, lifecycle) are complete and
+verified. R2 and R3 are not started**, and §39 names exactly those two as PARTIAL conditions
 ("application surface remains effective monolith"; "DSH/HTTP remain effective switchboards").
 
 Everything that IS delivered is measured. `install.ts` went 2,476 → **336 lines**, its fan-out

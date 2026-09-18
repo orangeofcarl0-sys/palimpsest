@@ -1,7 +1,9 @@
 # SR-1 — Carry-forward
 
-Status: **PARTIAL** — R0 (with the R0A/R0B repairs), R1 and the §21 parity fixture are complete;
-R2 and R3 are not started. This is the ordered remainder for SR-1 PASS.
+Status: **PARTIAL** — R0 (with the R0A/R0B repairs), R1 and the §21/§9-§13 parity baseline are
+complete and verified; **R2 and R3 are not started**. SR-1D completed the parity extension
+(HTTP route inventory, readiness, lifecycle) *before* any R2/R3 move, so the split now has a
+safety net captured from the exact canonical tree.
 
 ---
 
@@ -16,8 +18,8 @@ R2 and R3 are not started. This is the ordered remainder for SR-1 PASS.
 | **A04** | the application factory composes per-capability surfaces | waits on R2 | not started |
 | **A05/A06** | aggregate DSH / HTTP entries preserved — behaviour is covered by the parity fixture and existing suites; dedicated tests missing | §25 | test missing |
 | **A07** | adapters avoid direct semantic-store access | becomes meaningful with R3 | not started |
-| **A13** | HTTP route parity table (method/path/required capability/success class/failure class) and the post-split comparison | §32; the current fixture covers tools and surfaces, not routes | not started |
-| **§30 remainder** | add readiness fields and lifecycle observations to the parity fixture (it currently captures capability keys, surface keys, tool names/modes/actions and the absence matrix) | §21 | partial |
+| **A13** | HTTP route parity — **the inventory is done** (127 paths × both methods × two installations, recorded as outcome classes) and the test compares it; what remains is the post-R3B comparison, which the same test already performs once the split exists | §11/§37 | inventory done, split pending |
+| **§30/§13** | readiness fields and lifecycle observations in the parity fixture | §13/§21 | **done in SR-1D** — 9 readiness keys + a computed dispose-idempotence observation; closure ORDER stays pinned by `test/composition/lifecycle_ownership.test.ts` |
 
 ## 2. Deliberately untouched (§27)
 
