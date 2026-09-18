@@ -1,0 +1,92 @@
+(node:45884) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "campaign": "UX-C packaged DSH local collaboration",
+  "evidence": {
+    "deployment_composes_the_packaged_collaboration_surface": {
+      "ok": true,
+      "detail": "{\"reasoning\":{\"storeConfigured\":true,\"storeOwned\":true,\"branchAdapter\":\"dsh-subprocess-branch:palimpsest-uxc-local\"},\"readiness\":{\"advisor\":\"AVAILABLE\",\"localExplore\":\"AVAILABLE\",\"branchAdapter\":\"dsh-subprocess-branch:palimpsest-uxc-local\",\"reasoningStore\":\"CONFIGURED\",\"projectVerification\":\"AVAILABLE\",\"crossProject\":\"UNAVAILABLE\",\"inboundPump\":\"CONFIGURED\",\"attention\":\"PULL\",\"coldResume\":\"UNAVAILABLE\"}}"
+    },
+    "deployment_profile_carried_only_reasoning_empty": {
+      "ok": true,
+      "detail": "reasoning={} databases=[\"orchestration\",\"ordarium\",\"coordination\",\"transportCursors\",\"attentionMarks\"]"
+    },
+    "derived_store_lives_beside_the_orchestration_db": {
+      "ok": true,
+      "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-uxc-local-45884-1789731023733\\state\\reasoning.sqlite"
+    },
+    "branch_environment_has_exactly_one_host_private_tool": {
+      "ok": true,
+      "detail": "[\"palimpsest_branch_result\"]"
+    },
+    "branch_environment_exposes_no_principal_only_tool": {
+      "ok": true,
+      "detail": "[\"palimpsest_branch_result\"]"
+    },
+    "real_branch_process_was_offered_exactly_one_tool": {
+      "ok": true,
+      "detail": "frames=6 types=[\"session\",\"permission/preset\",\"sandbox/mode\",\"approval/policy\",\"agent/inbox/spliced\",\"turn/start\",\"step/start\",\"system/message\",\"user/message\",\"request/header\",\"request/context\",\"session/title\",\"session/title-llm-request\",\"assistant/attempt\",\"step/end\",\"turn/end\"] catalogues=[[\"palimpsest_branch_result\"]]"
+    },
+    "real_branch_process_was_offered_no_principal_only_tool": {
+      "ok": true,
+      "detail": "[[\"palimpsest_branch_result\"]]"
+    },
+    "parallel_ran_real_ephemeral_branches": {
+      "ok": false,
+      "detail": "completed=0/2 detail=[\"the branch has not produced a result yet\",\"the branch has not produced a result yet\"]"
+    },
+    "useful_findings_returned": {
+      "ok": false,
+      "detail": "[{\"statement\":\"the branch has not produced a result yet\"}]"
+    },
+    "exactly_one_candidate_owner": {
+      "ok": false,
+      "detail": "{\"branchReportedDigests\":[],\"submitted\":2,\"completedBranches\":0,\"deduplicated\":1,\"note\":\"the branch has no ReasoningCell; RecipeExecution submitted once per branch\"}"
+    },
+    "default_explore_standing_is_inconclusive_with_no_evidence": {
+      "ok": true,
+      "detail": "[\"INCONCLUSIVE\"]"
+    },
+    "no_supported_standing_without_real_evidence": {
+      "ok": true,
+      "detail": "no VERIFICATION_RECORDED carried SUPPORTED"
+    },
+    "primary_result_labels_findings_exploratory_not_truth": {
+      "ok": true,
+      "detail": "These are exploratory cell-local findings. They are not Evidence and were not independently verified as true."
+    },
+    "fan_out_bound_refused_not_clamped": {
+      "ok": true,
+      "detail": "branchCountHint 9 was refused with the 2..8 bound"
+    },
+    "fan_out_bound_holds": {
+      "ok": true,
+      "detail": "branches=3 (hint 3)"
+    },
+    "no_durable_peer_persistent_point_or_commitment_created": {
+      "ok": true,
+      "detail": "{\"coordinationUnchanged\":true,\"commitments\":0,\"received\":0}"
+    },
+    "memoryless_auto_selects_focus_for_a_coupled_task": {
+      "ok": true,
+      "detail": "PRINCIPAL_CONTINUES verb=Do it"
+    },
+    "memoryless_auto_selects_explore_for_a_decomposable_task": {
+      "ok": false,
+      "detail": "LOCAL_EXPLORE findings=1"
+    },
+    "memoryless_advisor_claims_no_empirical_evidence": {
+      "ok": true,
+      "detail": "Focus is always eligible: a single persistent locus is the baseline, and no other boundary is chosen without an engineering reason. Explore is recommended: the task decomposes cleanly, its components are loosely coupled, its output is verif"
+    }
+  },
+  "failures": [
+    "parallel_ran_real_ephemeral_branches: completed=0/2 detail=[\"the branch has not produced a result yet\",\"the branch has not produced a result yet\"]",
+    "useful_findings_returned: [{\"statement\":\"the branch has not produced a result yet\"}]",
+    "exactly_one_candidate_owner: {\"branchReportedDigests\":[],\"submitted\":2,\"completedBranches\":0,\"deduplicated\":1,\"note\":\"the branch has no ReasoningCell; RecipeExecution submitted once per branch\"}",
+    "memoryless_auto_selects_explore_for_a_decomposable_task: LOCAL_EXPLORE findings=1"
+  ],
+  "elapsedMs": 39386,
+  "pass": false
+}
+pass=false
