@@ -1,0 +1,205 @@
+{
+  "scenario": "RC-1R live local (A/B/C1/C2/English/F)",
+  "oracle": "test/support/rc1_oracle.ts (shared with the cross-project harness and replayed by test/rc1r_oracle_replay.test.ts)",
+  "environment": {
+    "provider": "openrouter-stealth (from ~/.dsh/settings.yaml; observed per trial in the request header)",
+    "model": "stealth/union-alpha (observed per trial in the request header)",
+    "dshBin": "C:/Users/66494/AppData/Roaming/npm/node_modules/@deepseek-ai/dsh/lib/bin.js",
+    "dshVersion": "0.1.5-rc.2",
+    "nodeVersion": "v24.14.1",
+    "palimpsestRepo": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1",
+    "palimpsestCommit": "7d0166aa916ff6fccdb50e700288452c01ffc343",
+    "ordariumVersion": "1.3.1 (package.json release pin)",
+    "os": "win32 x64",
+    "trialsPerScenario": 1,
+    "turnBudgetMs": 900000,
+    "tokenAccounting": "unavailable — never invented (§31)"
+  },
+  "criteria": {
+    "scenarioA": {
+      "total": 1,
+      "passes": 0,
+      "required": 1,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioB_explore": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioB_explore_advisorSelections": {
+      "explore": 0,
+      "focus": 0,
+      "none": 0
+    },
+    "scenarioB_focus": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioC1": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "scenarioC2": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "english": {
+      "total": 0,
+      "passes": 0,
+      "required": 0,
+      "qualified": false,
+      "violationCount": 0
+    },
+    "unavailableCapabilityF": [],
+    "no_authority_scope_or_disclosure_violation": true,
+    "violations": [],
+    "copyMisrepresentations": [],
+    "branch_catalogue_isolation": true,
+    "branch_isolation_proven_by_artifact": 0
+  },
+  "trials": [
+    {
+      "trial": 1,
+      "kind": "A_local_parallel",
+      "prompt": "并行研究一下这个问题，给我两种独立思路：如何降低这个模块的缓存失效开销？",
+      "expectations": "palimpsest_collaborate → local PARALLEL → real branches → exploratory findings → visible answer",
+      "raw": {
+        "kind": "A_local_parallel",
+        "processStatus": "completed",
+        "exitCode": 0,
+        "wallMs": 8916,
+        "turnBudgetMs": 900000,
+        "fixtureFailure": null,
+        "prompt": "并行研究一下这个问题，给我两种独立思路：如何降低这个模块的缓存失效开销？",
+        "freshPrincipalSession": true,
+        "deploymentProfile": "rc1-live-local",
+        "projectId": "rc1-project",
+        "profileVariant": {
+          "withReasoning": true
+        },
+        "fixture": {
+          "headCommit": null
+        },
+        "observedProviderModel": {
+          "provider": "openrouter-stealth",
+          "model": "stealth/union-alpha"
+        },
+        "principalCatalogue": [
+          "create_goal",
+          "edit",
+          "exit_plan_mode",
+          "get_goal",
+          "glob",
+          "grep",
+          "interrupt_agent",
+          "job_kill",
+          "job_list",
+          "job_output",
+          "list_agents",
+          "palimpsest_advisor",
+          "palimpsest_attention",
+          "palimpsest_claim",
+          "palimpsest_collaborate",
+          "palimpsest_federation",
+          "palimpsest_gate",
+          "palimpsest_graph",
+          "palimpsest_next",
+          "palimpsest_plan",
+          "palimpsest_preview",
+          "palimpsest_reasoning",
+          "palimpsest_recipe",
+          "palimpsest_recipes",
+          "palimpsest_report",
+          "palimpsest_run",
+          "palimpsest_start",
+          "palimpsest_status",
+          "palimpsest_surfaces",
+          "palimpsest_verification",
+          "pwsh",
+          "ralph",
+          "read",
+          "read_image",
+          "send_message",
+          "skill",
+          "subagent",
+          "subagent_fork",
+          "todo_write",
+          "update_goal",
+          "web_fetch",
+          "web_search",
+          "workflow",
+          "write"
+        ],
+        "catalogueSize": 44,
+        "catalogueHasProductTool": true,
+        "toolNames": [],
+        "principalToolCallCount": 0,
+        "calls": [],
+        "assistantMessages": [],
+        "userMessages": [
+          "并行研究一下这个问题，给我两种独立思路：如何降低这个模块的缓存失效开销？",
+          "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent DSH file policy: workspace-write. Any available operation enforced by the DSH file sandbox may modify files under the session workspace: \"C:\\\\Users\\\\66494\\\\AppData\\\\Local\\\\Temp\\\\palimpsest-rc1r-A_local_parallel-35132-1789717783058-1\". Some platform temporary areas may also be writable.\n\nApproval policy: ask. Operations that require approval may ask through the configured answerers; without an available answerer, the request fails closed.",
+          "<system-reminder>\nA skill is a reusable set of task-specific instructions. The following skills are available in this session:\n\n<available_skills>\n- `qbank`: Manage, inspect, import, revise, search, select, and export questions from a qbank repository, including when the source material or active task is in another project. Use when organizing questions from PDF, images, Word, Markdown, or text; importing batches; auditing or revising question quality; finding duplicates, missing conditions, or incomplete answers; searching and selecting questions; assembling paper.yaml; or exporting student, answer, solution, or question-list artifacts. Do not us...\n- `qbank-digitize`: Guide real-world PDF, scan, image, Word, OCR, answer-book, or classification-table projects into an approved qbank digitization profile and representative calibration sample. Use when the user needs help deciding question boundaries, relevant versus ignored attributes, taxonomy mappings, source fidelity, answer/figure handling, review gates, or batch strategy before importing. This is a domain-planning and calibration tool; hand deterministic qbank operations to $qbank.\n</available_skills>\n\nIf the user names a skill, or the task clearly matches a skill's description, call the `skill` tool with the exact skill name before taking task actions. Load all applicable skills, then follow their full instructions. This catalog contains summaries only; do not infer or follow a skill's instructions until it has been loaded.\nA user may also invoke a skill directly; its <skill_content> block then appears in this conversation. Follow it, and do not call the `skill` tool again for that skill.\n</system-reminder>"
+        ],
+        "stdoutTurns": [
+          {
+            "text": "",
+            "toolCalls": []
+          }
+        ],
+        "stdoutActivations": [],
+        "stdoutTurnTexts": [
+          ""
+        ],
+        "malformedStdoutRecords": [],
+        "finalText": "",
+        "finalAssistantText": "",
+        "finalTextChars": 0,
+        "branchProcessCount": 0,
+        "branchCatalogues": [],
+        "verificationStandings": [],
+        "reasoningVerificationEventCount": 0,
+        "sessionFile": "C:\\Users\\66494\\.dsh\\sessions\\--C-Users-66494-AppData-Local-Temp-palimpsest-rc1r-A_local_parallel-35132-1789717783058-1--\\session-16c4d5c1-942c-454f-b1b7-14eb71bd0623\\session.v3.jsonl.zstd",
+        "frames": 6,
+        "tokenUsage": "unavailable (the host exposes no token accounting)"
+      },
+      "judgment": {
+        "productRoute": "NONE",
+        "advisories": [],
+        "verdict": "INFRASTRUCTURE_ERROR",
+        "classification": "INFRASTRUCTURE_ERROR",
+        "semanticOutcome": "INCOMPLETE_OBSERVATION",
+        "reason": "no product observation: the principal produced no assistant message and called no tool (process status \"completed\", exit 0, wall 8916 ms)",
+        "violations": [],
+        "copyMisrepresentation": [],
+        "failed": [
+          "INFRASTRUCTURE_ERROR"
+        ],
+        "collaborateExecutions": [],
+        "collaborateStatuses": [],
+        "findingStandings": [],
+        "advisorSelection": "NONE",
+        "branchCapabilityIsolated": true,
+        "branchIsolationProven": false
+      }
+    }
+  ],
+  "durationMs": 9777,
+  "failures": [
+    "scenario A: fewer than 4/5 trials reached the intended product path (0/1)"
+  ],
+  "pass": false
+}

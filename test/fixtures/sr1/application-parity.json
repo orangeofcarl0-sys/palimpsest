@@ -1,0 +1,196 @@
+{
+  "note": "SR-1C §21 golden structural parity fixture. Captured from the canonical baseline (a30a328afbe2850e02151f4e41f32242091abeae) with `node scripts/audit/application-parity.mjs --tree <baseline> --write`, and compared by test/architecture/application_parity.test.ts. Sorted indices only: no timestamps, paths or ids.",
+  "capture": {
+    "packagedInstallation": {
+      "installedCapabilityKeys": [
+        "advisor",
+        "application",
+        "attention",
+        "attentionActivation",
+        "collaboration",
+        "controller",
+        "crossProject",
+        "dispose",
+        "federation",
+        "reasoningCells",
+        "recipeExecution",
+        "recipes",
+        "register",
+        "tools",
+        "verification"
+      ],
+      "applicationSurfaceKeys": [
+        "advisor",
+        "attention",
+        "collaboration",
+        "crossProject",
+        "federation",
+        "projections",
+        "reasoning",
+        "recipeExecution",
+        "recipes",
+        "verification",
+        "work"
+      ],
+      "dshTools": [
+        {
+          "name": "palimpsest_advisor",
+          "mode": "read-only",
+          "actions": [
+            "profile",
+            "recommend",
+            "explain"
+          ]
+        },
+        {
+          "name": "palimpsest_attention",
+          "mode": "read-only",
+          "actions": [
+            "pending"
+          ]
+        },
+        {
+          "name": "palimpsest_collaborate",
+          "mode": "mutating",
+          "actions": [
+            "plan",
+            "run"
+          ]
+        },
+        {
+          "name": "palimpsest_cross_project",
+          "mode": "mutating",
+          "actions": [
+            "projects",
+            "prepare",
+            "ask",
+            "status",
+            "pending",
+            "respond",
+            "receive",
+            "acknowledge"
+          ]
+        },
+        {
+          "name": "palimpsest_federation",
+          "mode": "mutating",
+          "actions": [
+            "inbox",
+            "thread",
+            "message",
+            "contact",
+            "commitment",
+            "commitments",
+            "remote_decision"
+          ]
+        },
+        {
+          "name": "palimpsest_graph",
+          "mode": "read-only",
+          "actions": [
+            "work",
+            "organization",
+            "collaboration",
+            "runtime",
+            "reasoning"
+          ]
+        },
+        {
+          "name": "palimpsest_reasoning",
+          "mode": "mutating",
+          "actions": [
+            "view",
+            "frontier",
+            "graph",
+            "brief",
+            "branch",
+            "candidate",
+            "evaluate",
+            "invalidate"
+          ]
+        },
+        {
+          "name": "palimpsest_recipe",
+          "mode": "mutating",
+          "actions": [
+            "compile",
+            "start",
+            "status"
+          ]
+        },
+        {
+          "name": "palimpsest_recipes",
+          "mode": "read-only",
+          "actions": [
+            "list",
+            "inspect",
+            "readiness"
+          ]
+        },
+        {
+          "name": "palimpsest_surfaces",
+          "mode": "read-only",
+          "actions": [
+            "list"
+          ]
+        },
+        {
+          "name": "palimpsest_verification",
+          "mode": "mutating",
+          "actions": [
+            "status",
+            "history",
+            "verify_current_head"
+          ]
+        }
+      ],
+      "applicationFacesPresent": [
+        "work",
+        "federation",
+        "reasoning",
+        "attention",
+        "recipes",
+        "advisor",
+        "recipeExecution",
+        "collaboration",
+        "crossProject",
+        "verification",
+        "projections"
+      ]
+    },
+    "minimalInstallation": {
+      "installedCapabilityKeys": [
+        "application",
+        "controller",
+        "dispose",
+        "recipes",
+        "register",
+        "tools"
+      ],
+      "applicationSurfaceKeys": [
+        "work"
+      ],
+      "dshTools": [
+        {
+          "name": "palimpsest_surfaces",
+          "mode": "read-only",
+          "actions": [
+            "list"
+          ]
+        }
+      ],
+      "applicationFacesPresent": [
+        "work"
+      ],
+      "present": [
+        "application",
+        "controller",
+        "dispose",
+        "recipes",
+        "register",
+        "tools"
+      ],
+      "absent": []
+    }
+  }
+}

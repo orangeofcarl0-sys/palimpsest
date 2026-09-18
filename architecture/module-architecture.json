@@ -2,10 +2,10 @@
   "version": 2,
   "capturedFrom": "unknown",
   "totals": {
-    "files": 306,
-    "loc": 94309,
-    "bytes": 4061108,
-    "edges": 1250,
+    "files": 312,
+    "loc": 94830,
+    "bytes": 4089008,
+    "edges": 1317,
     "externalImports": 19,
     "unresolvedImports": 0
   },
@@ -28,7 +28,7 @@
     },
     {
       "layer": "L5",
-      "files": 22
+      "files": 28
     },
     {
       "layer": "BARREL",
@@ -54,7 +54,7 @@
       "loc": 1535,
       "bytes": 82698,
       "fanOut": 44,
-      "fanIn": 6
+      "fanIn": 8
     },
     {
       "file": "src/deployment/launch.ts",
@@ -67,9 +67,9 @@
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "loc": 2274,
-      "bytes": 122357,
-      "fanOut": 41,
+      "loc": 336,
+      "bytes": 15615,
+      "fanOut": 11,
       "fanIn": 2
     },
     {
@@ -86,7 +86,7 @@
       "loc": 3095,
       "bytes": 120186,
       "fanOut": 27,
-      "fanIn": 12
+      "fanIn": 15
     }
   ],
   "topFanOut": [
@@ -96,14 +96,14 @@
       "fanOut": 44
     },
     {
-      "file": "src/install.ts",
-      "layer": "L5",
-      "fanOut": 41
-    },
-    {
       "file": "src/advanced.ts",
       "layer": "ENTRY",
       "fanOut": 40
+    },
+    {
+      "file": "src/composition/install_contract.ts",
+      "layer": "L5",
+      "fanOut": 34
     },
     {
       "file": "src/tools/controller.ts",
@@ -121,6 +121,11 @@
       "fanOut": 18
     },
     {
+      "file": "src/composition/cognition.ts",
+      "layer": "L5",
+      "fanOut": 17
+    },
+    {
       "file": "src/effects/promotion.ts",
       "layer": "L2",
       "fanOut": 14
@@ -129,6 +134,11 @@
       "file": "src/proof_asset/index.ts",
       "layer": "L2",
       "fanOut": 14
+    },
+    {
+      "file": "src/composition/governance.ts",
+      "layer": "L5",
+      "fanOut": 13
     },
     {
       "file": "src/interaction/collaboration.ts",
@@ -141,8 +151,23 @@
       "fanOut": 12
     },
     {
+      "file": "src/composition/application.ts",
+      "layer": "L5",
+      "fanOut": 12
+    },
+    {
+      "file": "src/composition/collaboration.ts",
+      "layer": "L5",
+      "fanOut": 11
+    },
+    {
       "file": "src/external_assets/service.ts",
       "layer": "L2",
+      "fanOut": 11
+    },
+    {
+      "file": "src/install.ts",
+      "layer": "L5",
       "fanOut": 11
     },
     {
@@ -164,38 +189,13 @@
       "file": "src/binding/grounded.ts",
       "layer": "L1",
       "fanOut": 10
-    },
-    {
-      "file": "src/campaign/compiler.ts",
-      "layer": "L2",
-      "fanOut": 10
-    },
-    {
-      "file": "src/cli.ts",
-      "layer": "L5",
-      "fanOut": 10
-    },
-    {
-      "file": "src/domain/aggregate.ts",
-      "layer": "L1",
-      "fanOut": 10
-    },
-    {
-      "file": "src/federation/federation_service.ts",
-      "layer": "L2",
-      "fanOut": 10
-    },
-    {
-      "file": "src/federation/index.ts",
-      "layer": "L2",
-      "fanOut": 10
     }
   ],
   "topFanIn": [
     {
       "file": "src/schema/canonical.ts",
       "layer": "L1",
-      "fanIn": 93
+      "fanIn": 92
     },
     {
       "file": "src/schema/identifier.ts",
@@ -233,6 +233,11 @@
       "fanIn": 15
     },
     {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "fanIn": 15
+    },
+    {
       "file": "src/domain/errors.ts",
       "layer": "L1",
       "fanIn": 13
@@ -243,17 +248,22 @@
       "fanIn": 13
     },
     {
-      "file": "src/tools/controller.ts",
+      "file": "src/state/index.ts",
+      "layer": "L1",
+      "fanIn": 13
+    },
+    {
+      "file": "src/coordination/index.ts",
       "layer": "L2",
       "fanIn": 12
     },
     {
-      "file": "src/campaign/epistemic.ts",
-      "layer": "L2",
-      "fanIn": 11
+      "file": "src/recipes/execution.ts",
+      "layer": "L3",
+      "fanIn": 12
     },
     {
-      "file": "src/coordination/index.ts",
+      "file": "src/campaign/epistemic.ts",
       "layer": "L2",
       "fanIn": 11
     },
@@ -268,6 +278,11 @@
       "fanIn": 10
     },
     {
+      "file": "src/organization_dynamics/index.ts",
+      "layer": "L2",
+      "fanIn": 10
+    },
+    {
       "file": "src/project_operating/work_mode_profile.ts",
       "layer": "L3",
       "fanIn": 10
@@ -276,21 +291,6 @@
       "file": "src/recipes/artifacts.ts",
       "layer": "L3",
       "fanIn": 10
-    },
-    {
-      "file": "src/recipes/execution.ts",
-      "layer": "L3",
-      "fanIn": 10
-    },
-    {
-      "file": "src/state/index.ts",
-      "layer": "L1",
-      "fanIn": 10
-    },
-    {
-      "file": "src/coordination/store.ts",
-      "layer": "L2",
-      "fanIn": 9
     }
   ],
   "layerEdges": [
@@ -317,7 +317,12 @@
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 52
+      "count": 82
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L5",
+      "count": 45
     },
     {
       "fromLayer": "L3",
@@ -325,24 +330,19 @@
       "count": 36
     },
     {
+      "fromLayer": "L5",
+      "toLayer": "L3",
+      "count": 35
+    },
+    {
       "fromLayer": "L3",
       "toLayer": "L1",
       "count": 30
     },
     {
-      "fromLayer": "L5",
-      "toLayer": "L5",
-      "count": 26
-    },
-    {
       "fromLayer": "L4",
       "toLayer": "L2",
       "count": 24
-    },
-    {
-      "fromLayer": "L5",
-      "toLayer": "L3",
-      "count": 23
     },
     {
       "fromLayer": "ENTRY",
@@ -357,7 +357,7 @@
     {
       "fromLayer": "L5",
       "toLayer": "L1",
-      "count": 15
+      "count": 17
     },
     {
       "fromLayer": "ENTRY",
@@ -367,7 +367,12 @@
     {
       "fromLayer": "L5",
       "toLayer": "BARREL",
-      "count": 9
+      "count": 11
+    },
+    {
+      "fromLayer": "L5",
+      "toLayer": "L4",
+      "count": 7
     },
     {
       "fromLayer": "BARREL",
@@ -377,11 +382,6 @@
     {
       "fromLayer": "ENTRY",
       "toLayer": "L3",
-      "count": 5
-    },
-    {
-      "fromLayer": "L5",
-      "toLayer": "L4",
       "count": 5
     },
     {
@@ -542,9 +542,9 @@
       "count": 16
     },
     {
-      "from": "src",
+      "from": "src/composition",
       "to": "src/tools",
-      "count": 11
+      "count": 12
     },
     {
       "from": "src/proof_asset",
@@ -558,12 +558,17 @@
     },
     {
       "from": "src",
-      "to": "src/domain",
+      "to": "src/tools",
       "count": 8
     },
     {
       "from": "src/external_assets",
       "to": "src/schema",
+      "count": 8
+    },
+    {
+      "from": "src",
+      "to": "src/composition",
       "count": 8
     },
     {
@@ -580,6 +585,11 @@
       "from": "src/tools",
       "to": "src/domain",
       "count": 8
+    },
+    {
+      "from": "src",
+      "to": "src/domain",
+      "count": 7
     },
     {
       "from": "src/effects",
@@ -614,6 +624,21 @@
     {
       "from": "src/boundary_memory",
       "to": "src/schema",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/proof_asset",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/recipes",
+      "count": 6
+    },
+    {
+      "from": "src/composition",
+      "to": "src/state",
       "count": 6
     },
     {
@@ -652,11 +677,6 @@
       "count": 6
     },
     {
-      "from": "src",
-      "to": "src/state",
-      "count": 5
-    },
-    {
       "from": "src/application",
       "to": "src/project_operating",
       "count": 5
@@ -673,7 +693,7 @@
     },
     {
       "from": "src/composition",
-      "to": "src/tools",
+      "to": "src/effects",
       "count": 5
     },
     {
@@ -718,12 +738,7 @@
     },
     {
       "from": "src",
-      "to": "src/application",
-      "count": 4
-    },
-    {
-      "from": "src",
-      "to": "src/recipes",
+      "to": "src/state",
       "count": 4
     },
     {
@@ -734,6 +749,36 @@
     {
       "from": "src/boundary_memory",
       "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/federation",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/interaction",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/advisor",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/campaign",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/external_assets",
+      "count": 4
+    },
+    {
+      "from": "src/composition",
+      "to": "src/project_workspace",
       "count": 4
     },
     {
@@ -793,17 +838,7 @@
     },
     {
       "from": "src",
-      "to": "src/advisor",
-      "count": 3
-    },
-    {
-      "from": "src",
-      "to": "src/effects",
-      "count": 3
-    },
-    {
-      "from": "src",
-      "to": "src/proof_asset",
+      "to": "src/application",
       "count": 3
     },
     {
@@ -847,13 +882,28 @@
       "count": 3
     },
     {
-      "from": "src/effects",
-      "to": "src/schema",
+      "from": "src/composition",
+      "to": "src/application",
       "count": 3
     },
     {
-      "from": "src",
-      "to": "src/composition",
+      "from": "src/composition",
+      "to": "src/coordination",
+      "count": 3
+    },
+    {
+      "from": "src/composition",
+      "to": "src/project_management",
+      "count": 3
+    },
+    {
+      "from": "src/composition",
+      "to": "src/organization_dynamics",
+      "count": 3
+    },
+    {
+      "from": "src/effects",
+      "to": "src/schema",
       "count": 3
     },
     {
@@ -879,56 +929,6 @@
     {
       "from": "src/organization_dynamics",
       "to": "src/boundary_memory",
-      "count": 3
-    },
-    {
-      "from": "src/organization_dynamics",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/organization_evolution",
-      "to": "src/organization_dynamics",
-      "count": 3
-    },
-    {
-      "from": "src/organization_memory",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/project_workspace",
-      "to": "src/tools",
-      "count": 3
-    },
-    {
-      "from": "src/run",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/run",
-      "to": "src/binding",
-      "count": 3
-    },
-    {
-      "from": "src/runtime",
-      "to": "src/architecture",
-      "count": 3
-    },
-    {
-      "from": "src/runtime",
-      "to": "src/run",
-      "count": 3
-    },
-    {
-      "from": "src/runtime",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/runtime_evolution",
-      "to": "src/runtime_scope",
       "count": 3
     }
   ],

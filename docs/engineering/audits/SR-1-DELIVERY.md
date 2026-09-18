@@ -13,15 +13,17 @@
 
 > ## `PALIMPSEST SR-1 ARCHITECTURAL DECOMPOSITION & COMPOSITION-ROOT REFACTOR: PARTIAL`
 
-**R0 is complete and CI-enforced; R1 is partly done; R2 and R3 are not started.** Nothing in
-`src/` changed semantics: the full suite, the export surface and the architecture rules are all
-green, and no forbidden edge or cycle was added.
+**R0 (including the R0A/R0B checker repairs), R1 and the §21 golden parity fixture are complete
+and verified. R2 and R3 are not started**, and §39 names exactly those two as PARTIAL conditions
+("application surface remains effective monolith"; "DSH/HTTP remain effective switchboards").
 
-The reason for PARTIAL is measured, not a matter of effort accounting: §38 requires
-"`install.ts` direct dependency families materially reduced", and after the delivered extraction
-`install.ts`'s **fan-out went from 38 to 41** because the ~40 capability imports belong to the
-wiring blocks that are still inside it. Reporting PASS here would be reporting a refactor that
-measurably did not yet reduce the coupling it exists to reduce.
+Everything that IS delivered is measured. `install.ts` went 2,476 → **336 lines**, its fan-out
+38 → **11** (target ≤20) and its capability-family imports 38 → **2** (target ≤8), so §19's
+directional targets are met, while the public export surface, the DSH catalogue, the capability
+absence matrix and the whole suite are unchanged. No forbidden edge or cycle was added.
+
+The previous SR-1 report's reason for PARTIAL ("`install.ts` fan-out went 38 → 41") is resolved;
+the remaining PARTIAL is exactly R2/R3 and the tests that depend on them.
 
 ---
 
