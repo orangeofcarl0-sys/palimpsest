@@ -166,14 +166,26 @@ test.describe("G10-O MultiGraph organizational debugger", () => {
     // existing Work E2E specs; here we assert the typed route contract directly.)
     const unauthorized = await request.get(`${session.url}/api/application/surfaces`);
     expect(unauthorized.status()).toBe(401);
-    const authorized = await request.get(`${session.url}/api/application/surfaces?token=${TOKEN}`);
+    // The credential travels in the Authorization header, never in the query string. A query
+    // parameter needs no CORS preflight, so accepting one there is what let a malicious page fire
+    // blind writes at the API (see the fence note in src/serve.ts); the header is a non-browser
+    // client's path, and after the fence it is the only one.
+    const authorized = await request.get(`${session.url}/api/application/surfaces`, {
+      headers: { authorization: `Bearer ${TOKEN}` },
+    });
     expect(authorized.status()).toBe(200);
     const surfaces = (await authorized.json()) as { reasoning: boolean; campaign: boolean };
     expect(surfaces.reasoning).toBe(true);
     expect(surfaces.campaign).toBe(false);
     // A generic advanced-method tunnel does not exist.
-    const tunnel = await request.post(`${session.url}/api/advanced?token=${TOKEN}`, { data: { service: "reasoning", method: "evaluate", args: {} } });
+    const tunnel = await request.post(`${session.url}/api/advanced`, {
+      headers: { authorization: `Bearer ${TOKEN}` },
+      data: { service: "reasoning", method: "evaluate", args: {} },
+    });
     expect(tunnel.status()).toBe(404);
+    // And the query parameter no longer authorizes an API request at all.
+    const viaQuery = await request.get(`${session.url}/api/application/surfaces?token=${TOKEN}`);
+    expect(viaQuery.status()).toBe(401);
     void page;
   });
 });

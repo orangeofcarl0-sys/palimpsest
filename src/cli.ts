@@ -182,6 +182,9 @@ async function main() {
       console.log(
         JSON.stringify({
           url: handle.url,
+          // The clickable address: opening it exchanges the token for a browser cookie and
+          // redirects to `url`, so a person never types or pastes the token.
+          openUrl: handle.openUrl,
           token: handle.token,
           profile: profile.profileId,
           surfaces: Object.keys(deployment.installed.application),
