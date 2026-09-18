@@ -48,14 +48,20 @@
             "profile",
             "recommend",
             "explain"
-          ]
+          ],
+          "description": "Read-only empirical architecture advisor: profile a task and get eligible recipe plans with one plain-language recommendation, non-overridable blockers, and disclosed empirical uncertainty (a suggestion, never a chooser; no score/weight/health) — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"profile\",\"recommend\",\"explain\"],\"type\":\"string\"},\"preferences\":{\"type\":\"object\"},\"task\":{\"type\":\"string\"},\"taskProfile\":{\"type\":\"object\"},\"userRequestedMultiAgent\":{\"type\":\"boolean\"},\"values\":{\"type\":\"object\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "9287498930c733a70aef124e4717e5dafc941803c58e0bca2ed30c652d231b4a"
         },
         {
           "name": "palimpsest_attention",
           "mode": "read-only",
           "actions": [
             "pending"
-          ]
+          ],
+          "description": "What currently deserves this peer's attention (derived from canonical state): unacked inbound messages, boundary decisions required, commitment offers requiring a decision, and newly relevant accepted boundary revisions. Read-only; host activation is a separate step — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"pending\"],\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "c1921d5a7a99752253df420bb4944e2a724cba39408f3f6183150b80de9937ed"
         },
         {
           "name": "palimpsest_collaborate",
@@ -63,7 +69,10 @@
           "actions": [
             "plan",
             "run"
-          ]
+          ],
+          "description": "ONE-REQUEST LOCAL COLLABORATION (UX-A): use this when the user asks, in ordinary language, for parallel or multi-agent work on the CURRENT project — 并行探索 / 同时研究多种方案 / 给我多个相互独立的思路 / 多角度分析 / 比较几种方案 and English equivalents such as parallel investigation, several independent approaches, compare the options, break this into independent parts, or get a second independent line of reasoning. It also answers a request to verify the CURRENT project state (检查当前项目状态是否通过验证 / check the current project state / is this still valid?). State the task in the user's own words and Palimpsest decides, through the existing architecture advisor, whether another collaboration boundary has engineering value. `plan` is a read-only derivation (it profiles the task, consults the architecture advisor and the derived posture/verification availability, and returns the structure chosen, why, and any capability warning); `run` [mutating] executes only the EXISTING governed recipe/verification paths and returns the findings and any verification result in plain language. intent AUTO (default; the advisor selects) | FOCUS | PARALLEL | CHECK | PARALLEL_AND_CHECK. FOCUS creates no branch and no agent. PARALLEL uses bounded EPHEMERAL reasoning branches: their findings are EXPLORATORY, are NOT Evidence and are not verified truth, and no durable peer, agent identity or commitment is minted. CHECK runs the REAL Project Verification runtime against the EXACT current Project Head: it verifies PROJECT STATE, never the PARALLEL findings. `run` may honestly answer CAPABILITY_REQUIRED / CROSS_PROJECT_REQUIRED / PARTIAL. Raw recipe ids, plan objects, agent ids, commands, authority flags, peer refs and verification results are NOT accepted — the advisor still selects, the compiler still compiles, and ReasoningCell/ProjectVerification still own their semantics. Use `palimpsest_recipe`/`palimpsest_reasoning` only for expert, step-by-step control; `truth` is never returned (a PASS is a protocol result) — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"plan\",\"run\"],\"type\":\"string\"},\"branchCountHint\":{\"description\":\"advanced, bounded local branch count (2..8); out-of-range is refused, never clamped\",\"type\":\"number\"},\"intent\":{\"description\":\"AUTO (default; let the advisor decide) | FOCUS | PARALLEL | CHECK | PARALLEL_AND_CHECK\",\"enum\":[\"AUTO\",\"FOCUS\",\"PARALLEL\",\"CHECK\",\"PARALLEL_AND_CHECK\"],\"type\":\"string\"},\"task\":{\"description\":\"the task or question in the user's own words (e.g. “并行研究这个问题，给我两种独立思路” / “check whether the current project state still passes”)\",\"type\":\"string\"},\"values\":{\"description\":\"explicit task-feature values (USER_DECLARED) that override the untrusted profiler proposal; keys are the nine task feature names\",\"type\":\"object\"},\"verifierRef\":{\"description\":\"an already-REGISTERED verifier ref that CHECK may bind\",\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "8dcc326aa19101211d5ba4e770c64cf7484569143da27faffd146d5a4dbefcb4"
         },
         {
           "name": "palimpsest_cross_project",
@@ -77,7 +86,10 @@
             "respond",
             "receive",
             "acknowledge"
-          ]
+          ],
+          "description": "ONE-REQUEST CROSS-PROJECT COLLABORATION (UX-B): use this when the user wants to ask, consult or check ANOTHER project in ordinary language — 问一下另一个项目 / 咨询一下 optics 项目 / 别的项目之前是否研究过这个问题 / ask the optics project / consult the other project / did the other project already look into this? — without knowing peer ids, threads or federation mechanics and without switching project. `projects` is the READ-ONLY deployment directory of projects this installation may reach; `prepare` is a READ-ONLY preview of the EXACT packet that would be sent (task text plus any explicitly supplied context, and nothing else — no workspace, journal, asset or proof data is ever attached automatically); `ask` [mutating] sends ONE ordinary peer message and returns immediately (one request is NOT one round trip, and no answer is awaited; asking creates NO commitment, Work task, ProjectIR revision, boundary change, Evidence or Proof — Ask stays Ask); `status` is a READ-ONLY derivation of what is known so far (no response yet means WAITING, not failure, and materially different answers are reported as CONFLICT rather than picked); `pending` lists the authenticated questions OTHER projects have asked THIS one, each with its `task` — read that task, it is the whole request; `respond` [mutating] answers one of them on its own thread in ONE of two forms — author the reply yourself with {status, answer, detail?}, or have THIS project's own local collaboration produce it with {compose:{task?,intent?}}; `receive` [mutating] surfaces the terminal answer and marks that answer processed; `acknowledge` [mutating] marks ONE consumed peer message as processed. `target` is the other project's NAME as the user would say it (its id, display name or alias) — never a peer id; an unknown or ambiguous name sends nothing. An answer is peer communication, not Evidence, Proof, Decision or Commitment, and is never imported automatically. — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"projects\",\"prepare\",\"ask\",\"status\",\"pending\",\"respond\",\"receive\",\"acknowledge\"],\"type\":\"string\"},\"answer\":{\"description\":\"what to reply with. For a simple answer, author it: {status?: ANSWERED|PARTIAL|DECLINED|ERROR, answer?, detail?}. When the pending task should be handled by THIS project's own local collaboration — which is the normal project path when the task explicitly asks for parallel exploration, multiple independent approaches, multi-Agent work or a local independent check — pass {compose:{task?,intent?}} instead and let the composed run derive the answer (compose.task defaults to the pending task; compose.intent is AUTO|FOCUS|PARALLEL|CHECK|PARALLEL_AND_CHECK, default AUTO, and PARALLEL is the intent for a request that asks for several independent approaches). Never present a single authored answer as if several independent branches had produced it. A composed run's findings are EXPLORATORY: they are not Evidence, not verified truth, and neither the answer nor its summary may say otherwise.\",\"type\":\"object\"},\"contextText\":{\"description\":\"optional context text to include EXACTLY as given; nothing else is sent\",\"type\":\"string\"},\"message\":{\"description\":\"the full peer message to acknowledge (the object returned by `pending`/`status`/`receive` is not it — use the message the inbox returned)\",\"type\":\"object\"},\"requestId\":{\"description\":\"the cross-project request id (from `ask`, `pending` or `prepare`)\",\"type\":\"string\"},\"target\":{\"description\":\"the other project's name as the user would say it, e.g. \\\"optics\\\" (its id, display name or alias) — never a peer id\",\"type\":\"string\"},\"task\":{\"description\":\"the question in the user's own words (e.g. “我们之前是否研究过探测器孔径对接收稳定性的影响？” / “has this been investigated before?”)\",\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "e6047a2eb3a90facaa580bf7472085fbf7b3c56ee7f2b4c73639ccb74863e21f"
         },
         {
           "name": "palimpsest_federation",
@@ -90,7 +102,10 @@
             "commitment",
             "commitments",
             "remote_decision"
-          ]
+          ],
+          "description": "Peer collaboration: read your inbox/threads, contact peers, exchange messages, and act on explicit commitments (local identity is derived, never supplied) — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"inbox\",\"thread\",\"message\",\"contact\",\"commitment\",\"commitments\",\"remote_decision\"],\"type\":\"string\"},\"body\":{\"type\":\"string\"},\"commitmentAction\":{\"enum\":[\"offer\",\"accept\",\"reject\",\"release\",\"handoff_offer\",\"handoff_accept\"],\"type\":\"string\"},\"commitmentId\":{\"type\":\"string\"},\"competenceTags\":{\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"handoffId\":{\"type\":\"string\"},\"proposedHolder\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"remoteDecision\":{\"enum\":[\"accept\",\"reject\",\"release\"],\"type\":\"string\"},\"scope\":{\"type\":\"object\"},\"statement\":{\"type\":\"string\"},\"threadId\":{\"type\":\"string\"},\"to\":{\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "1ece40161c6a9c004c59aca270947d0dd8a206d17927da5e6a1b9bbb3113be78"
         },
         {
           "name": "palimpsest_graph",
@@ -101,7 +116,10 @@
             "collaboration",
             "runtime",
             "reasoning"
-          ]
+          ],
+          "description": "Read-only MultiGraph projections: typed nodes/edges per species with canonical refs, per-source bases, and an honest known/unknown/error/stale knowledge state (never a canonical graph) — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"work\",\"organization\",\"collaboration\",\"runtime\",\"reasoning\"],\"type\":\"string\"},\"cellId\":{\"type\":\"string\"},\"organizationDefinitionId\":{\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "eb341b36c174abdccf70ef6fdb98adc05cef1556759e938ffa11898f2ce7b435"
         },
         {
           "name": "palimpsest_reasoning",
@@ -115,7 +133,10 @@
             "candidate",
             "evaluate",
             "invalidate"
-          ]
+          ],
+          "description": "Collaborative reasoning: view a cell, open a branch and read its FROZEN brief, submit a structured candidate, and request evaluation (the service performs verification then epistemic admission; no chain-of-thought is ever stored) — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"view\",\"frontier\",\"graph\",\"brief\",\"branch\",\"candidate\",\"evaluate\",\"invalidate\"],\"type\":\"string\"},\"branchId\":{\"type\":\"string\"},\"candidateDigest\":{\"type\":\"string\"},\"cellId\":{\"type\":\"string\"},\"content\":{\"type\":\"object\"},\"dependencies\":{\"items\":{\"type\":\"object\"},\"type\":\"array\"},\"externalEvidenceRefs\":{\"description\":\"opaque Proof-plane evidence ids this candidate actually used (selector-only)\",\"items\":{\"type\":\"string\"},\"type\":\"array\"},\"question\":{\"type\":\"string\"},\"reason\":{\"type\":\"string\"},\"targetClaimId\":{\"type\":\"string\"},\"type\":{\"type\":\"object\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "a953b31365ae8f520ff2e7caa9ca65afa5cc692d9c2a19101eaa5ec39ae918d9"
         },
         {
           "name": "palimpsest_recipe",
@@ -124,7 +145,10 @@
             "compile",
             "start",
             "status"
-          ]
+          ],
+          "description": "Compile a recipe plan into a descriptive plan, report the execution bindings actually wired, and START it through the EXISTING governed services (compilation grants no authority; start never admits a claim, accepts a boundary, evolves anything, or forces a peer) — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"compile\",\"start\",\"status\"],\"type\":\"string\"},\"compiled\":{\"type\":\"object\"},\"context\":{\"type\":\"object\"},\"plan\":{\"type\":\"object\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "43568bf6523fbe44ae7b721665de2118f6e1aa98c4c62cfc16277f7f00308f3a"
         },
         {
           "name": "palimpsest_recipes",
@@ -133,14 +157,20 @@
             "list",
             "inspect",
             "readiness"
-          ]
+          ],
+          "description": "Read-only recipe catalog: the versioned modes of working, their supported modifiers, honest per-capability readiness, and stated limitations (a recipe is descriptive product config, never authority) — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"list\",\"inspect\",\"readiness\"],\"type\":\"string\"},\"recipeId\":{\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "abb887eae70a3d7a95f739aba11bf0ad1fee3afb49ba850a38c23b9674ffc376"
         },
         {
           "name": "palimpsest_surfaces",
           "mode": "read-only",
           "actions": [
             "list"
-          ]
+          ],
+          "description": "Report which advanced Palimpsest surfaces are configured for this installation (a missing surface is never an empty known state) — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"list\"],\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "617f50535de330dc228fb90aa4ec7dc3323ca280e32fc21a9023cad89bbd9d85"
         },
         {
           "name": "palimpsest_verification",
@@ -149,7 +179,10 @@
             "status",
             "history",
             "verify_current_head"
-          ]
+          ],
+          "description": "Project-head verification: read the DERIVED status of the exact current ProjectIR head, read the append-only run history, or request a verification under a REGISTERED verifier protocol. A PASS means only 'that named protocol passed' — it is not truth, not Work Evidence, not Proof publication, not Reasoning admission, not task state and not authority. An agent can never register a verifier, change an independence class, supply a command, or verify an arbitrary commit — [mutating]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"status\",\"history\",\"verify_current_head\"],\"type\":\"string\"},\"limit\":{\"description\":\"how many recent runs to return (newest first)\",\"type\":\"number\"},\"reason\":{\"type\":\"string\"},\"verifierRef\":{\"description\":\"a REGISTERED verifier ref to select; never a command\",\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "e22b9343527fd57c8d62a5cbacbfa176c15ce4d3ed94a6d4d183b17ff39caefe"
         }
       ],
       "applicationFacesPresent": [
@@ -184,7 +217,10 @@
           "mode": "read-only",
           "actions": [
             "list"
-          ]
+          ],
+          "description": "Report which advanced Palimpsest surfaces are configured for this installation (a missing surface is never an empty known state) — [read-only]",
+          "parameters": "{\"additionalProperties\":false,\"properties\":{\"action\":{\"description\":\"the semantic action to perform\",\"enum\":[\"list\"],\"type\":\"string\"}},\"required\":[\"action\"],\"type\":\"object\"}",
+          "contractDigest": "617f50535de330dc228fb90aa4ec7dc3323ca280e32fc21a9023cad89bbd9d85"
         }
       ],
       "applicationFacesPresent": [
