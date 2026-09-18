@@ -31,8 +31,14 @@ Branch: `experiment/g10-f1-coalition-grounding`
 
 ## CI
 
-Remote canonical CI on the final F1 HEAD: recorded after the run (see the
-branch follow-up commit).
+Remote canonical CI on the final F1 HEAD (`8a92ee3`, PR #34):
+
+```text
+run 34752705661 — success (first run)
+  unit  pass (39s)
+  e2e   pass (1m1s)
+merge commit: 3eb70e3
+```
 
 ## Deliverables
 

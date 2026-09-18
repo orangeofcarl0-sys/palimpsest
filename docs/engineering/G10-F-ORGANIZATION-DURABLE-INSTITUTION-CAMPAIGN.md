@@ -251,7 +251,7 @@ semantic ownership.
 | F3 | #36 | `65e60c0` | `c76ca63` | 34753428792 | success (first run) |
 | F4 | #37 | `e649d1d` | `4cf7bdb` | 34753802125 | success (first run) |
 | F5 | #38 | `4cb905a` | `ddea5ef` | 34754165413 | success (first run) |
-| F6 | #39 | recorded on branch | recorded on branch | recorded on branch | recorded on branch |
+| F6 | #39 | `03de4d6` | `3f3ab6f` | 34754382983 (PR) + 34754464524 (main) | success (first run) |
 
 ## 17. CI history and known flakes
 
@@ -295,6 +295,42 @@ G10-F ORGANIZATION & DURABLE INSTITUTION CAMPAIGN: PASS
 Organization semantics are executable. Institutional continuity semantics are
 executable. A minimal AGT × PAG intersection exists. The full PLMP-PAG-0 stack
 is explicitly NOT claimed.
+
+### 19.1 Campaign final canonical gate (§189)
+
+Recorded on canonical `main` after the F6 merge:
+
+```text
+main SHA                3f3ab6f91f3196395d687ad70fbdfa2f971d1af9
+git diff --check        clean
+unit                    90 files / 793 tests passed
+pnpm build              PASS
+pnpm build:web          PASS
+e2e                     21/21 passed
+canonical main CI       run 34754464524 — SUCCESS (first run)
+```
+
+All §191 PASS criteria hold: F0 coordination atomicity closed; different-event
+multi-process append safe; all persisted event parsers fully strict; handoff
+transition crash-atomic; Coalition formally grounded and derived/overlapping;
+Coalition ≠ Organization executable; OrganizationDefinition production-realized
+with independent identity/revision/digest; member identity namespaces explicit;
+roles/assignments/capability-requirements production-realized; capability
+advertisement ≠ truth preserved; norms production-realized; norm permission ≠
+effect authority; declared interaction structure production-realized;
+organization lineage store immutable; typed REVISE/SPLIT/MERGE implemented;
+Split = Partition + InterfaceSynthesis + report with cross-boundary
+preservation proven; merge conflict handling explicit; proof obligations
+first-class and blocking; transformation proposals ≠ canonical state;
+DurableInstitution identity production-realized; versioned charter; explicit
+continuation authority; epoch lineage; stale approvals rejected; new authorities
+cannot self-authorize; epoch transition atomic; institution identity survives
+total member replacement and organization-body replacement only through
+explicit authorized transition; institution exists with zero runtime;
+Organization ≠ RuntimeScope/Holon; Institution ≠ PersistentPoint/RuntimeAgent/
+Organization; Coalition → Organization and Organization → Institution paths
+explicit only; governance ≠ truth verification; Work/runtime/federation remain
+independently usable; full adversarial review complete; canonical main green.
 
 ## 20. Recommended next major campaign (§203 — NOT started)
 

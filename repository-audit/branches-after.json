@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-09-18T12:07:52.955Z",
+  "repository": "orangeofcarl0-sys/palimpsest",
+  "mainRef": "origin/main",
+  "mainSha": "4028b6a30c917c73c26ecbd05c6a00743ace598e",
+  "mainTree": "dc863f86691681d3f722c1328b6ac630cf9fbd25",
+  "remoteBranchCount": 2,
+  "notes": [
+    "Every field is read from git reachability or the GitHub PR API; none is inferred from a branch name (§1/§5).",
+    "`aheadOfMain` counts commits reachable from the tip but not from main; `uniqueCommits` lists them.",
+    "`tipIsAncestorOfMain` true is the mechanical proof of classification A (§4)."
+  ],
+  "branches": [
+    {
+      "name": "chore/repository-stabilization",
+      "tipSha": "61ea27db40c02072a2e55832ae6d2a551302ce3b",
+      "tipDate": "2026-09-18T20:04:05+08:00",
+      "tipSubject": "chore(rs-1): branch audit, cleanup artifacts and the branch policy",
+      "tipTree": "a650f11d28c70fe963e9db18586dc6d8ef1004d3",
+      "mergeBaseWithMain": "4028b6a30c917c73c26ecbd05c6a00743ace598e",
+      "aheadOfMain": 1,
+      "behindMain": 0,
+      "tipIsAncestorOfMain": false,
+      "tipIsRemoteHead": true,
+      "uniqueCommitCount": 1,
+      "uniqueCommits": [
+        {
+          "sha": "61ea27db40c02072a2e55832ae6d2a551302ce3b",
+          "date": "2026-09-18T20:04:05+08:00",
+          "subject": "chore(rs-1): branch audit, cleanup artifacts and the branch policy"
+        }
+      ],
+      "pullRequests": [
+        {
+          "number": 121,
+          "state": "OPEN",
+          "title": "RS-1: repository stabilization and branch hygiene",
+          "base": "main",
+          "headRefOid": "61ea27db40c02072a2e55832ae6d2a551302ce3b",
+          "mergedAt": null,
+          "closedAt": null,
+          "mergeCommit": null,
+          "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/121",
+          "tipMatchesHead": true
+        }
+      ],
+      "mergedPullRequests": [],
+      "openPullRequests": [
+        {
+          "number": 121,
+          "state": "OPEN",
+          "title": "RS-1: repository stabilization and branch hygiene",
+          "base": "main",
+          "headRefOid": "61ea27db40c02072a2e55832ae6d2a551302ce3b",
+          "mergedAt": null,
+          "closedAt": null,
+          "mergeCommit": null,
+          "url": "https://github.com/orangeofcarl0-sys/palimpsest/pull/121",
+          "tipMatchesHead": true
+        }
+      ]
+    },
+    {
+      "name": "main",
+      "tipSha": "4028b6a30c917c73c26ecbd05c6a00743ace598e",
+      "tipDate": "2026-09-18T19:39:38+08:00",
+      "tipSubject": "Merge pull request #120 from orangeofcarl0-sys/chore/sr1-checkpoint",
+      "tipTree": "dc863f86691681d3f722c1328b6ac630cf9fbd25",
+      "mergeBaseWithMain": "4028b6a30c917c73c26ecbd05c6a00743ace598e",
+      "aheadOfMain": 0,
+      "behindMain": 0,
+      "tipIsAncestorOfMain": true,
+      "tipIsRemoteHead": true,
+      "uniqueCommitCount": 0,
+      "uniqueCommits": [],
+      "pullRequests": [],
+      "mergedPullRequests": [],
+      "openPullRequests": []
+    }
+  ]
+}

@@ -122,6 +122,13 @@ proofs); B3-M01…M14 and B3C-M01…M06 all remain green (§15).
 `pnpm build:web` pass; `pnpm test:e2e` **21 passed** on the closure commit
 (`retries = 0`, no flake re-run needed).
 
+**BC-06b closure record.** Commit `7cf71d4` (fix + regression proofs) → PR
+#15 advanced; final PR HEAD before merge `e8a0e7b` (records commit). CI history
+on the branch: `54b73bb` FAIL (flake) → rerun PASS; `7cf71d4` FAIL (flake,
+`E2E-DEBUG-01`+`E2E-RUNTIME-03`, 19/21) → rerun PASS; `f466a86`, `6b11ae0`,
+`cdfd065`, `e8a0e7b` all PASS first-run. Merge performed at `e8a0e7b` whose own
+workflow was green.
+
 **CI result.** History preserved per §23: HEAD `54b73bb`, run `34695840551`,
 unit PASS, e2e FAIL (`E2E-DEBUG-01`, 20/21 — task-1 remained hidden). After the
 BC-06b fix, the new final PR HEAD (the B3C2 closure commit) obtained
@@ -129,4 +136,7 @@ BC-06b fix, the new final PR HEAD (the B3C2 closure commit) obtained
 ancestor commit's green); Final-head record: SHA `7cf71d4`
 (`7cf71d4da58ea6a8be0a006e1b60cdaeed6458f0`), run `34698249642` — initial e2e
 FAIL on the documented `E2E-DEBUG-01`/`E2E-RUNTIME-03` flake, **passed on
-failed-job re-run**: final outcome unit PASS + e2e PASS.
+failed-job re-run**: final outcome unit PASS + e2e PASS. Merge: PR #15 merge
+commit `8ac32ed`; post-merge main `8ac32ed`; post-merge canonical gate local
+(65 files / 521 tests, e2e 21 passed after two documented flake runs, remote
+run `34699481336` FAIL on `E2E-DEBUG-01` → rerun **unit PASS + e2e PASS**).

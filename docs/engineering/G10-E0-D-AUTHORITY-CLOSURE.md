@@ -38,8 +38,12 @@ source is **`plan-revision:17`** — and **no** operation in the flow cites
 `plan-revision:0`. Handle immutability: deep-frozen (§13).
 
 Remote CI: implementation-HEAD run **34719450326** on PR #26 — **first-run
-green** (unit PASS + e2e PASS). The tip-at-close run is cited in the PR
-description.
+green** (unit PASS + e2e PASS). Final docs HEAD `d7fcacb`: run **34719555639**
+— unit PASS, e2e FAIL (`E2E-DEBUG-01`, known family) → failed-job rerun →
+**success**; post-merge canonical main run **34719676518** **success** (first
+run). The same transparent process note as D4 applies: the merge was issued
+concurrently with the final-HEAD run watch; remediation was immediate and the
+merged canonical state is green on its own SHA.
 
 ## 2. D-MOD-01 — module dependency cycle (§14)
 
