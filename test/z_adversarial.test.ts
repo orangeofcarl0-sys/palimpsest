@@ -192,7 +192,6 @@ async function driveToVerifying(
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   expect(controller.step()!.event_type).toBe("TASK_VERIFYING");
   return { attemptId, resultCommit: committed.commit };
@@ -410,7 +409,6 @@ describe("G10-Z adversarial: a historical result is not authority", () => {
         attemptId,
         predicate: "lint_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const evidenceId = gateEvent.entity_id;
       r.controller.declareGate(

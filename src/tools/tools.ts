@@ -286,7 +286,7 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
       name: "palimpsest_gate",
       mode: "mutating",
       description:
-        "Run one deterministic gate on an attempt and record the evidence atom; with a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
+        "Execute one gate command inside the attempt worktree and record what it OBSERVED as the attempt's evidence (the recorded exit code is this execution's, never a caller-supplied number; only commands authorized by the task envelope are accepted). With a gateId, also evaluate that registered gate and report the verdict plus missing evidence",
       properties: {
         attemptId: { type: "string" },
         predicate: {
@@ -301,14 +301,12 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
           ],
         },
         command: { type: "array", items: { type: "string" } },
-        exitCode: { type: "number" },
         gateId: { type: "string" },
       },
       required: ["attemptId"],
       execute: async (args) => {
         const attemptId = stringField(args, "attemptId");
         const gateId = optionalString(args, "gateId");
-        const exitCode = args.exitCode;
         const command = stringArray(args, "command") ?? [];
         const predicate = optionalString(args, "predicate") as
           | "process_exit_zero"
@@ -320,18 +318,26 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
           | undefined;
         let result: Record<string, unknown> = {};
         if (predicate !== undefined) {
-          if (typeof exitCode !== "number" || !Number.isInteger(exitCode)) {
-            throw new TypeError("exitCode must be an integer");
-          }
           if (command.length === 0) throw new TypeError("command must be non-empty");
+          // The gate EXECUTES the command and records what it observed; the caller never supplies
+          // an exit code, so a recorded number is always this product's own observation.
           const event = await controller.gate({
             attemptId,
             predicate,
             command,
-            exitCode,
           });
-          const evidence = event.payload.evidence as { evidence_id: string; status: string };
-          result = { evidenceId: evidence.evidence_id, status: evidence.status };
+          const evidence = event.payload.evidence as {
+            evidence_id: string;
+            status: string;
+            exit_code: number | null;
+            value: { exit_code?: number; output_tail?: string };
+          };
+          result = {
+            evidenceId: evidence.evidence_id,
+            status: evidence.status,
+            exitCode: evidence.exit_code,
+            ...(evidence.value.output_tail === undefined ? {} : { outputTail: evidence.value.output_tail }),
+          };
         }
         if (gateId !== undefined) {
           const verdict = controller.evaluateAttemptGate(gateId, attemptId);

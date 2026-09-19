@@ -40,7 +40,7 @@ export async function runGateCommand(
   effects: PalimpsestEffectsRuntime,
   request: GateCommandRequest,
   options: GateRunnerOptions = {},
-): Promise<JsonValue> {
+): Promise<{ exitCode: number | null; outputTail: string }> {
   const retries = options.retries ?? DEFAULT_RETRIES;
   const backoffMs = options.backoffMs ?? DEFAULT_BACKOFF_MS;
   const pause = options.sleepFn ?? sleep;

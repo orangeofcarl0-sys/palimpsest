@@ -190,7 +190,6 @@ async function activeTaskWithEvidence(target: Rig): Promise<{
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   controller.declareGate(
     {
@@ -504,7 +503,6 @@ describe("G10-Y canonical Work-Evidence invalidation", () => {
         attemptId,
         predicate: "lint_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const manual = r.controller.invalidateEvidence(gate.entity_id, "operator decision");
       const replay = r.controller.invalidateEvidence(gate.entity_id, "operator decision");

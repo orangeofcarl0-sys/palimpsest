@@ -336,13 +336,12 @@ async function main() {
           | "lint_pass"
           | "expected_files_exist"
           | "write_scope_valid";
-        const exitCode = Number(rest[0]);
-        const command = rest.slice(1);
+        // The gate executes and records its own observation; a CLI-side number would be a claim.
+        const command = rest.length > 0 ? rest.slice(0) : [];
         const event = await controller.gate({
           attemptId,
           predicate,
           command: command.length > 0 ? command : ["python", "-m", "pytest"],
-          exitCode: Number.isNaN(exitCode) ? 0 : exitCode,
         });
         console.log(JSON.stringify({ evidence: event.entity_id, status: (event.payload.evidence as { status: string }).status }));
         break;

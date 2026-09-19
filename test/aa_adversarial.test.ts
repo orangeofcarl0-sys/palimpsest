@@ -191,7 +191,6 @@ async function driveToVerifying(target: Rig): Promise<{ attemptId: string; resul
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   expect(controller.step()!.event_type).toBe("TASK_VERIFYING");
   return { attemptId, resultCommit: committed.commit };

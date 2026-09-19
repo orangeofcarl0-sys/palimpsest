@@ -240,6 +240,8 @@ export async function installForTests(options: {
   databasePath?: string;
   ordariumDatabasePath?: string;
   git?: import("../src/effects/index.js").GitPort;
+  /** Operator-declared gate allowlist for the composed policy. */
+  allowedCommands?: Array<{ executable: string; argv_prefix: string[] }>;
 } = {}) {
   const { installPalimpsest } = await import("../src/install.js");
   const { FakeGitPort } = await import("../src/effects/index.js");
@@ -252,6 +254,11 @@ export async function installForTests(options: {
       join(mkdtempSync(join(tmpdir(), "palimpsest-p2-")), "operations.sqlite"),
     git: options.git ?? new FakeGitPort("c".repeat(40)),
     clock: () => "2026-08-13T00:00:00Z",
+    ...(options.allowedCommands === undefined
+      ? {}
+      : {
+          policy: trustedDefaultPolicy({ allowed_commands: options.allowedCommands }),
+        }),
   });
   return { host, installed, controller: installed.controller };
 }

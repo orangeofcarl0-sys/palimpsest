@@ -317,9 +317,22 @@ export const REVIEWED_ROUTE_ADDITIONS: readonly { readonly path: string; readonl
  * The description is the one part of a contract that is prose for a model rather than an interface
  * for a caller: it changes what the model knows, never what a caller may pass.
  */
-export const REVIEWED_TOOL_CONTRACT_CHANGES: readonly { readonly tool: string; readonly reason: string }[] = Object.freeze([
+export const REVIEWED_TOOL_CONTRACT_CHANGES: readonly {
+  readonly tool: string;
+  /** The description text changed after the baseline. */
+  readonly descriptionChanged?: boolean;
+  /**
+   * The parameter schema changed after the baseline. Mode and action sets can NEVER be granted.
+   * Reserved and currently unexercised: the gate tool's schema lives outside this fixture (the
+   * golden covers the DSH adapter catalogue), so no entry needs it yet — the flag exists so that
+   * when a fixture-covered schema ever changes lawfully, the grant is named here and nowhere else.
+   */
+  readonly schemaChanged?: boolean;
+  readonly reason: string;
+}[] = Object.freeze([
   {
     tool: "palimpsest_surfaces",
+    descriptionChanged: true,
     reason:
       "The description now carries the whole 'where does a human watch' answer, because the agent is " +
       "the primary surface and the person it talks to has no other console: asked 'which address do I " +
@@ -580,17 +593,21 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
            fixture, which by definition predates the change and never contains it. The check belongs
            where the LIVE tree is captured — `application_parity.test.ts` asserts each listed tool's
            live digest really does differ from canonical, and differs in the description alone. */
-        const reviewed = REVIEWED_TOOL_CONTRACT_CHANGES.some((entry) => entry.tool === tool.name);
-        const descriptionOnly =
-          found.parameters === tool.parameters &&
-          found.mode === tool.mode &&
-          found.actions.join("\u0000") === tool.actions.join("\u0000") &&
-          found.description !== tool.description;
-        if (!reviewed || !descriptionOnly) {
+        const reviewed = REVIEWED_TOOL_CONTRACT_CHANGES.find((entry) => entry.tool === tool.name);
+        const actionsUnchanged =
+          found.mode === tool.mode && JSON.stringify(found.actions) === JSON.stringify(tool.actions);
+        const descriptionChanged = found.description !== tool.description;
+        const schemaChanged = found.parameters !== tool.parameters;
+        const tolerated =
+          reviewed !== undefined &&
+          actionsUnchanged &&
+          (descriptionChanged ? reviewed.descriptionChanged === true : true) &&
+          (schemaChanged ? reviewed.schemaChanged === true : true);
+        if (!tolerated) {
           const parts: string[] = [`digest ${tool.contractDigest.slice(0, 12)} → ${found.contractDigest.slice(0, 12)}`];
           if (found.description !== tool.description) parts.push(`description changed (${tool.description.length} → ${found.description.length} chars)`);
           if (found.parameters !== tool.parameters) parts.push(`parameters: ${tool.parameters} → ${found.parameters}`);
-          if (reviewed) parts.push("(reviewed for description only, but this is not a description-only change)");
+          if (reviewed !== undefined) parts.push("(reviewed, but this change exceeds what the entry grants)");
           differences.push({ where: `${label}.${tool.name}.contract`, detail: parts.join("; ") });
         }
       }
