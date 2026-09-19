@@ -402,6 +402,7 @@ export function launchDeployment(
     databasePath: profile.databases.orchestration,
     ordariumDatabasePath: profile.databases.ordarium,
     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
+    ...(profile.execution === undefined ? {} : { execution: profile.execution }),
     localPeer,
     coordinationStore,
     peerTransportPort: peerTransportFromDurable(transport, { localPeer }),

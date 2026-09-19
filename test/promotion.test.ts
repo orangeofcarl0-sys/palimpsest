@@ -23,6 +23,14 @@ class PromoCrashGit implements GitPort {
     this.afterPromote = afterPromote;
   }
 
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
+  }
+
   createWorktree(input: Parameters<GitPort["createWorktree"]>[0]) {
     return this.git.createWorktree(input);
   }

@@ -89,6 +89,11 @@ export interface DeploymentServeConfig {
   readonly token?: string | undefined;
 }
 
+function parseExecutionMode(value: string): "worktree" | "in-place" {
+  if (value === "worktree" || value === "in-place") return value;
+  return fail("invalid_value", `execution must be "worktree" or "in-place", got "${value}"`);
+}
+
 export interface ProjectAgentDeploymentProfile {
   readonly schemaVersion: 1;
   readonly profileId: string;
@@ -96,6 +101,13 @@ export interface ProjectAgentDeploymentProfile {
   /** This deployment's stable local PeerRef id — must not change across restarts. */
   readonly localPeer: string;
   readonly repository?: string | undefined;
+  /**
+   * Attempt work/observation model. Default "worktree" (an isolated git worktree per attempt).
+   * "in-place" means the attempt works in the canonical repository tree — the model for an agent
+   * whose cwd IS the repository — and its report is then OBSERVED by the product (git status/HEAD,
+   * checked against the envelope's write_paths) rather than assembled from caller claims.
+   */
+  readonly execution?: "worktree" | "in-place" | undefined;
   /** Durable continuity locus id (PersistentPoint) bound to `localPeer`. */
   readonly persistentPoint?: string | undefined;
   readonly transport: {
@@ -374,6 +386,9 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     projectId: requiredString(object, "projectId", what),
     localPeer: stableId(object.localPeer, `${what}.localPeer`),
     ...(optionalString(object, "repository", what) === undefined ? {} : { repository: optionalString(object, "repository", what)! }),
+    ...(optionalString(object, "execution", what) === undefined
+      ? {}
+      : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
     ...(optionalStableId(object, "persistentPoint", what) === undefined ? {} : { persistentPoint: optionalStableId(object, "persistentPoint", what)! }),
     transport: Object.freeze({
       namespace: stableId(transportObject.namespace, `${what}.transport.namespace`),

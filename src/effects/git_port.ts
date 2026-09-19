@@ -95,6 +95,16 @@ export interface GitPort {
   /** Run a gate command inside a worktree; resolves the process outcome. */
   runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }>;
   /**
+   * Observe one tree's uncommitted state: changed paths vs HEAD plus the current head commit.
+   * Read-only. In worktree mode the tree is the attempt worktree; in-place mode it is the
+   * repository itself, and this observation is what replaces a worker's file claims.
+   */
+  observeWorktree(input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }>;
+  /**
    * PLMP-CTX-2 §2: read-only lexical retrieval over worktree text files.
    * Scans are not side effects - they are deliberately NOT Ordarium actions;
    * the audit trail lives in the context manifest, not the operations ledger.
@@ -218,6 +228,25 @@ export class FakeGitPort implements GitPort {
   /** True iff the commit is reachable from the canonical head (--is-ancestor). */
   async contains(commit: string): Promise<boolean> {
     return this.#ancestors().has(commit);
+  }
+
+  readonly #dirty = new Map<string, string[]>();
+
+  async observeWorktree(input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    // The fake world: a worktree's head is its leaf commit (the canonical head when the attempt
+    // never committed), and dirtiness is what a test declared via markWorktreeDirty.
+    const head = this.#worktrees.get(input.worktreeId) ?? this.#head;
+    const changedPaths = this.#dirty.get(input.worktreeId) ?? [];
+    return { head, changedPaths, hasUncommittedChanges: changedPaths.length > 0 };
+  }
+
+  /** Test seam: declare a worktree's uncommitted paths, as a real `git status` would report. */
+  markWorktreeDirty(worktreeId: string, paths: readonly string[]): void {
+    this.#dirty.set(worktreeId, [...paths]);
   }
 
   async runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }> {
@@ -349,6 +378,11 @@ export class GitCliPort implements GitPort {
     return `${this.#worktreeRoot}/${worktreeId}`;
   }
 
+  /** The canonical repository directory — the tree an in-place attempt works in and is judged in. */
+  get repository(): string {
+    return this.#repository;
+  }
+
   async createWorktree(input: CreateWorktreeInput): Promise<{ worktreePath: string }> {
     const path = this.worktreePath(input.worktreeId);
     await this.#git(["worktree", "add", path, input.baseCommit]);
@@ -361,6 +395,28 @@ export class GitCliPort implements GitPort {
     await this.#git(["commit", "-m", input.message], cwd);
     const commit = await this.#git(["rev-parse", "HEAD"], cwd);
     return { commit };
+  }
+
+  /**
+   * In-place observation over the repository directory itself (the worktreeId names nothing
+   * here — in-place attempts work in the canonical tree). `git status --porcelain` is the
+   * observation of what changed vs HEAD; a rename shows as its two porcelain tokens, which
+   * still names every path the attempt touched.
+   */
+  async observeWorktree(input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    // In-place observation always reads the canonical repository directory.
+    const cwd = this.#repository;
+    const out = await this.#git(["status", "--porcelain"], cwd);
+    const changedPaths = out
+      .split(String.fromCharCode(10))
+      .filter((line) => line.trim() !== "")
+      .map((line) => line.slice(3).trim().replace(/^"|"$/g, ""));
+    const head = await this.#git(["rev-parse", "HEAD"], cwd);
+    return { head, changedPaths, hasUncommittedChanges: changedPaths.length > 0 };
   }
 
   async promote(input: PromoteInput): Promise<{ resultingHeadCommit: string }> {

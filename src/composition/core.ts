@@ -35,6 +35,7 @@ export interface CoreCompositionOptions {
   readonly databasePath?: string | undefined;
   readonly ordariumDatabasePath?: string | undefined;
   readonly policy?: TaskPolicy | undefined;
+  readonly execution?: import("../tools/controller.js").ExecutionMode | undefined;
   readonly clock?: (() => string) | undefined;
   readonly effectsClock?: (() => Date) | undefined;
   readonly leaseMs?: number | undefined;
@@ -72,6 +73,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     effects,
     projectId: options.projectId,
     policy,
+    execution: options.execution,
     clock: options.clock,
   });
   const baseTools = definePalimpsestTools(controller);

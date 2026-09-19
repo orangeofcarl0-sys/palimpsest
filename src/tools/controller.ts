@@ -13,6 +13,7 @@
  *   - pause/resume uses the scheduler control generation as a fencing token.
  */
 
+import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
 import {
@@ -370,11 +371,28 @@ export interface ControllerStatusView {
   };
 }
 
+/**
+ * Where an attempt's work happens, and therefore where it is observed.
+ *
+ * - "worktree" (default): every attempt gets an isolated git worktree at base commit; the worker
+ *   is expected to work there. Right for out-of-process workers, branch executors and CI, which
+ *   genuinely live in that directory.
+ * - "in-place": the attempt works in the canonical repository tree itself — the model for an
+ *   agent whose cwd IS the repository (a DSH agent). Isolation buys nothing here (the product's
+ *   single-writer discipline means one writer at a time anyway) and the worktree/workdir mismatch
+ *   is exactly the defect that burned four live attempts: work done in the main repo, gate run in
+ *   an empty worktree. So in-place, work and observation are the same tree, and concurrent RUNNING
+ *   attempts are capped at one because two agents writing one tree is not isolation, it is corruption.
+ */
+export type ExecutionMode = "worktree" | "in-place";
+
 export interface ProjectControllerOptions {
   store: EventStore;
   effects: PalimpsestEffectsRuntime;
   projectId: string;
   policy: TaskPolicy;
+  /** Attempt work/observation model; default "worktree" (every existing deployment). */
+  execution?: ExecutionMode | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -390,6 +408,7 @@ export class ProjectController {
   readonly scheduler: Scheduler;
   readonly promotions: PromotionManager;
   readonly recovery: PromotionRecoveryService;
+  readonly execution: ExecutionMode;
   /**
    * H1 §3.4 D-2: the slot policy is read from the declared role table on every
    * use - the declaration on the log is the single source of truth. Missing
@@ -472,6 +491,7 @@ export class ProjectController {
     this.policy = options.policy;
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
+    this.execution = options.execution ?? "worktree";
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId);
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -1589,7 +1609,7 @@ export class ProjectController {
   async claim(
     attemptId: string,
     attribution?: AttemptAttribution | undefined,
-  ): Promise<{ worktreePath: string }> {
+  ): Promise<{ worktreePath: string; baseCommit?: string }> {
     // G9-F2 VIEW-INV-5: validate + snapshot BEFORE any side effect - a
     // malformed attribution fails the whole claim with zero partial state,
     // and the stored value is controller-owned (never a caller alias).
@@ -1600,6 +1620,19 @@ export class ProjectController {
     const runningRoles = this.#runningRoles();
     this.slots.assertAdmissible(role, runningRoles);
     this.budget.admit();
+    if (this.execution === "in-place") {
+      // No isolated tree: the attempt works in the canonical repository, so the claimed base is
+      // the head the work will be diffed against, and a second concurrent writer is refused —
+      // two agents editing one tree is corruption, not isolation.
+      const inFlight = this.#runningRoles().length;
+      if (inFlight > 0) {
+        throw new DomainValidationError(
+          `in-place execution allows one RUNNING attempt at a time (${String(inFlight)} already running) — wait for it to settle or switch the deployment to worktree execution`,
+        );
+      }
+      this.scheduler.startAttempt(attemptId);
+      return { worktreePath: "", baseCommit: project.head_commit };
+    }
     const worktree = await this.effects.invoke(
       this.effects.actions.worktreeCreate,
       { worktreeId: attemptId, baseCommit: project.head_commit },
@@ -1625,6 +1658,29 @@ export class ProjectController {
       cancelled: "ATTEMPT_CANCELLED",
       expired: "ATTEMPT_EXPIRED",
     };
+    // In-place: the product observes the tree itself, synchronously. The caller's changed_files
+    // and result_commit are overwritten by what `git status`/HEAD actually say, so the report
+    // records an observation, not a claim. The envelope's write_paths are then the CONTRACT the
+    // observation is checked against: an out-of-scope change fails here, at the moment it can be
+    // named, instead of surfacing later as a gate that can only count evidence atoms.
+    if (this.execution === "in-place") {
+      const envelope = this.#attemptContext(attemptId)[1];
+      const observed = this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit);
+      const scope = envelope.write_paths;
+      const outOfScope = observed.changedFiles.filter(
+        (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
+      );
+      if (outOfScope.length > 0) {
+        throw new DomainValidationError(
+          `in-place attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan`,
+        );
+      }
+      input = {
+        ...input,
+        changedFiles: observed.changedFiles,
+        ...(observed.head === null ? {} : { resultCommit: observed.head }),
+      };
+    }
     const report = this.#buildReport(attemptId, input);
     return this.scheduler.recordCallback(attemptId, terminal[input.workerStatus], report);
   }
@@ -1636,6 +1692,45 @@ export class ProjectController {
       workerStatus: input.workerStatus === "expired" ? "expired" : input.workerStatus,
     });
     return this.scheduler.recordCallback(attemptId, "ATTEMPT_LATE_RESULT", report);
+  }
+
+  /**
+   * In-place observation of one attempt's work: `git status --porcelain` over the canonical
+   * repository (synchronous by necessity — the report path is synchronous — and safe: status is
+   * read-only). Untracked-but-ignored scaffolding (`.palimpsest/` state, caches) is excluded so
+   * the observation names what the attempt CHANGED, not what the tooling left behind. head is the
+   * repository's current HEAD commit; the caller commits through the normal git flow before
+   * reporting, so this head IS the attempt's result.
+   */
+  #observeInPlaceAttemptSync(attemptId: string, baseCommit: string): { changedFiles: string[]; head: string | null } {
+    const repo = this.#inPlaceRepository();
+    const run = (args: string[]): string => execFileSync("git", args, { cwd: repo, encoding: "utf8" });
+    // The observation covers BOTH states a change can be in at report time: committed since the
+    // attempt's base (`git diff --name-only base..HEAD` — the normal case, the agent commits as it
+    // works) and still-uncommitted (`git status --porcelain`). `.palimpsest/` is the product's own
+    // scaffolding, never the attempt's work.
+    const committed = run(["diff", "--name-only", baseCommit, "HEAD"])
+      .split(String.fromCharCode(10))
+      .map((path: string) => path.trim())
+      .filter((path: string) => path !== "" && !path.startsWith(".palimpsest/"));
+    const status = run(["status", "--porcelain"])
+      .split(String.fromCharCode(10))
+      .filter((line: string) => line.trim() !== "")
+      .map((line: string) => line.slice(3).trim())
+      .filter((path: string) => !path.startsWith(".palimpsest/"));
+    const changedFiles = [...new Set([...committed, ...status])].sort();
+    const head = run(["rev-parse", "HEAD"]).trim();
+    return { changedFiles, head };
+  }
+
+  #inPlaceRepository(): string {
+    const candidate = (this.effects.git as { repository?: string }).repository;
+    if (candidate === undefined || candidate === "") {
+      throw new DomainValidationError(
+        "in-place execution requires a git port bound to the repository (GitCliPort) — the fake port cannot observe a real tree",
+      );
+    }
+    return candidate;
   }
 
   #buildReport(attemptId: string, input: ReportInput): AttemptReport {
