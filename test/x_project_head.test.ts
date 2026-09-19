@@ -376,6 +376,7 @@ describe("G10-X canonical promotion derivation", () => {
     const base = new FakeGitPort(HEAD);
     let mergeAttempts = 0;
     const diverging: GitPort = {
+      observeWorktree: (input) => base.observeWorktree(input),
       createWorktree: (input) => base.createWorktree(input),
       commit: (input) => base.commit(input),
       async promote() {

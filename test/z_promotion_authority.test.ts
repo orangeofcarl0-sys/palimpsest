@@ -54,6 +54,14 @@ class CrashAfterMergeGit implements GitPort {
   createWorktree(input: Parameters<GitPort["createWorktree"]>[0]) {
     return this.git.createWorktree(input);
   }
+
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
+  }
   commit(input: Parameters<GitPort["commit"]>[0]) {
     return this.git.commit(input);
   }

@@ -175,6 +175,14 @@ class PromoSpyGit implements GitPort {
     this.git = git;
   }
 
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
+  }
+
   async createWorktree(input: any): Promise<any> {
     return this.git.createWorktree(input);
   }

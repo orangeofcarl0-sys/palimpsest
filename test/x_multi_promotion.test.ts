@@ -412,6 +412,7 @@ describe("G10-X X-M4: external divergence fails closed at the product-safe entry
     const HX = "f".repeat(40);
     let mergeAttempts = 0;
     const diverging: GitPort = {
+      observeWorktree: (input) => base.observeWorktree(input),
       createWorktree: (input) => base.createWorktree(input),
       commit: (input) => base.commit(input),
       async promote(input) {
@@ -475,6 +476,14 @@ class CrashAfterMergeGit implements GitPort {
   constructor(private readonly inner: GitPort, private readonly options: { readonly reportHead: boolean }) {}
   get promoteCalls(): number {
     return this.#promoteCalls;
+  }
+
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
   }
   createWorktree(input: Parameters<GitPort["createWorktree"]>[0]) {
     return this.inner.createWorktree(input);

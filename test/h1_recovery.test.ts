@@ -46,6 +46,14 @@ class CrashAfterMergeGit implements GitPort {
   ) {
     this.#git = git;
   }
+
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
+  }
   get promoteCalls(): number {
     return this.#promoteCalls;
   }
