@@ -151,7 +151,6 @@ describe("debugger holds (PLMP-DEBUG-1)", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       await controller.promoteWhenGatePasses(attemptId, committed.commit, HEAD, "gate-release");
       expect(controller.step()?.event_type).toBe("TASK_SATISFIED");

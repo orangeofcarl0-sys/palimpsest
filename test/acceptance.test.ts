@@ -54,7 +54,13 @@ async function rig(
     databasePath: paths.ordariumPath ?? join(mkdtempSync(join(tmpdir(), "palimpsest-acc-")), "ops.sqlite"),
     git,
   });
-  const policy = trustedDefaultPolicy();
+  const policy = trustedDefaultPolicy({
+    allowed_commands: [
+      { executable: "python", argv_prefix: ["-m", "pytest"] },
+      { executable: "git", argv_prefix: [] },
+      { executable: "check-write-scope", argv_prefix: [] },
+    ],
+  });
   const controller = new ProjectController({
     store,
     effects,
@@ -268,7 +274,6 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const evidenceId = gate.entity_id;
       expect(
@@ -291,7 +296,7 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
         attemptId,
         predicate: "write_scope_valid",
         command: ["check-write-scope"],
-        exitCode: 1, // the gate detected an out-of-scope write
+ // the gate detected an out-of-scope write
       });
       expect(gate.event_type).toBe("EVIDENCE_ADDED");
       const status = controller.status();
@@ -323,7 +328,6 @@ describe("the twelve fault-acceptance scenarios in plugin shape", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const verifying = controller.step()!;
       expect(verifying.event_type).toBe("TASK_VERIFYING");

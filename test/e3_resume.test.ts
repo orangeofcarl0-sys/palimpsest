@@ -38,7 +38,7 @@ function openSession(dbPath: string, opsPath: string, git: FakeGitPort) {
     policy: new TaskPolicy({
       policy_id: "trusted-default",
       read_paths: ["src"],
-      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }, { executable: "pytest", argv_prefix: [] }],
       network_policy: "deny",
       network_allowlist: [],
       timeout_s: 60,
@@ -150,7 +150,6 @@ describe("E3 resume: status block and cross-session continue", () => {
           attemptId: winner,
           predicate: "tests_pass",
           command: ["pytest"],
-          exitCode: 0,
         });
         s.controller.declareJudge({ judgeId: "host-llm", kind: "llm", declaredBy: "h1-test" });
         const outcome = await s.controller.selectAndPromoteWhenGatePasses(

@@ -162,7 +162,7 @@ describe("five Palimpsest actions under Ordarium fault injection", () => {
       identity: freshIdentity,
       authorization: AUTHORIZATION,
     });
-    expect(result).toEqual({ exitCode: 0 });
+    expect(result).toEqual({ exitCode: 0, outputTail: "" });
     await restarted.dispose();
   });
 });

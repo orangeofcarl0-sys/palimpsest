@@ -235,7 +235,6 @@ async function activeTaskWithEvidence(target: Rig): Promise<{
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   controller.declareGate(
     {
@@ -421,7 +420,6 @@ describe("G10-Y adversarial: exact declared scope", () => {
         attemptId: attemptA,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       // task-b stays declared, so it is RETAINED and never in the retired set.
       controller.planReconciled({
@@ -504,7 +502,6 @@ describe("G10-Y adversarial: exact declared scope", () => {
         attemptId: attempt,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       appendEvidence(r.store, {
         evidenceId: "evidence-outside-chain",
@@ -927,7 +924,6 @@ describe("G10-Y adversarial: cross-plane non-interference", () => {
         attemptId: created.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       expect(gate.event_type).toBe("EVIDENCE_ADDED");
       expect(evidenceStatus(r.store, gate.entity_id)).toBe("active");

@@ -47,7 +47,11 @@ function makeRig(withGates = false) {
     policy: new TaskPolicy({
       policy_id: "trusted-default",
       read_paths: ["src"],
-      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+      allowed_commands: [
+        { executable: "python", argv_prefix: ["-m", "pytest"] },
+        { executable: "pytest", argv_prefix: [] },
+        { executable: "check-write-scope", argv_prefix: [] },
+      ],
       network_policy: "deny",
       network_allowlist: [],
       timeout_s: 60,
@@ -91,7 +95,7 @@ describe("Gate DSL integration (R3)", () => {
     const { controller, cleanup } = makeRig(true);
     try {
       const attemptId = await driveAttempt(controller);
-      await controller.gate({ attemptId, predicate: "tests_pass", command: ["pytest"], exitCode: 0 });
+      await controller.gate({ attemptId, predicate: "tests_pass", command: ["pytest"] });
       const incomplete = controller.evaluateGate("gate-pass", "attempt", attemptId);
       expect(incomplete.verdict).toBe("INCOMPLETE");
       expect(incomplete.next_evidence_needed).toEqual(["exists(write_scope_valid)"]);
@@ -99,7 +103,6 @@ describe("Gate DSL integration (R3)", () => {
         attemptId,
         predicate: "write_scope_valid",
         command: ["check-write-scope"],
-        exitCode: 0,
       });
       const pass = controller.evaluateGate("gate-pass", "attempt", attemptId);
       expect(pass.verdict).toBe("PASS");
@@ -133,13 +136,13 @@ describe("Gate DSL integration (R3)", () => {
         (tool) => tool.name === "palimpsest_gate",
       );
       const first = (await gateTool!.execute(
-        { attemptId, predicate: "tests_pass", command: ["pytest"], exitCode: 0, gateId: "gate-pass" },
+        { attemptId, predicate: "tests_pass", command: ["pytest"], gateId: "gate-pass" },
         { callId: "c", rootCallId: "r", name: "palimpsest_gate", arguments: {}, agent: undefined, parent: undefined, signal: new AbortController().signal },
       )) as { evidenceId: string; gateVerdict: string; nextEvidenceNeeded: string[] };
       expect(first.gateVerdict).toBe("INCOMPLETE");
       expect(first.nextEvidenceNeeded).toEqual(["exists(write_scope_valid)"]);
       const second = (await gateTool!.execute(
-        { attemptId, predicate: "write_scope_valid", command: ["check-write-scope"], exitCode: 0, gateId: "gate-pass" },
+        { attemptId, predicate: "write_scope_valid", command: ["check-write-scope"], gateId: "gate-pass" },
         { callId: "c2", rootCallId: "r", name: "palimpsest_gate", arguments: {}, agent: undefined, parent: undefined, signal: new AbortController().signal },
       )) as { gateVerdict: string };
       expect(second.gateVerdict).toBe("PASS");

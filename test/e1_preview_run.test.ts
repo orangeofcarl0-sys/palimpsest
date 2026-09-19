@@ -137,10 +137,12 @@ describe("E1 entry loop: preview and turn", () => {
   });
 
   it("runTurn reports terminal once the attempt budget is exhausted", async () => {
-    const { controller, cleanup } = makeController(2, 1);
+    const { controller, git, cleanup } = makeController(2, 1);
     try {
+      // Every gate run observes "no result" (null): unknown is not a sample, so the run fails.
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
       controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
-      // No gate outcomes queued: every run fails, budget is consumed.
       const turn = await controller.runTurn();
       expect(turn.phase).toBe("terminal");
       expect(turn.mechanical.attemptsRun).toBe(2);

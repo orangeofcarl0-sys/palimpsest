@@ -175,7 +175,6 @@ async function driveToSatisfied(
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   expect(controller.step()!.event_type).toBe("TASK_VERIFYING");
   const result = await controller.promote(attemptId, committed.commit, HEAD);
@@ -376,7 +375,6 @@ describe("G10-W revision-safe Work evolution", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       expect(gate.event_type).toBe("EVIDENCE_ADDED");
     } finally {
@@ -644,7 +642,6 @@ describe("G10-W revision-safe Work evolution", () => {
         attemptId: created.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       expect(
         r.controller.status().evidence.find((e) => e.evidence_id === gate.entity_id)?.status,

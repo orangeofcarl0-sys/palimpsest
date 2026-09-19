@@ -220,7 +220,6 @@ export interface GateInput {
   attemptId: string;
   predicate: EvidenceAtom["predicate"];
   command: readonly string[];
-  exitCode: number;
   observedArtifacts?: readonly string[] | undefined;
 }
 
@@ -1704,13 +1703,49 @@ export class ProjectController {
   // Deterministic gate → EvidenceAtom
   // -------------------------------------------------------------------------
 
+  /**
+   * The envelope's allowlist is the OPERATOR's declaration of what may run on this project's
+   * behalf, so every gate path honours it — the auto path always did, and an explicit gate that
+   * skipped it made the promise conditional on which tool the agent happened to pick. Prefix
+   * match: `executable` plus the declared argv prefix (`python -m pytest` authorizes
+   * `python -m pytest -q`, not `python -m blackout`). An empty allowlist authorizes nothing.
+   */
+  #assertGateCommandAllowed(envelope: TaskEnvelope, command: readonly string[]): void {
+    const authorized = (envelope.allowed_commands ?? []).some(
+      (entry) =>
+        entry.executable === command[0] &&
+        entry.argv_prefix.every((prefix, index) => command[index + 1] === prefix),
+    );
+    if (!authorized) {
+      const allowed = (envelope.allowed_commands ?? [])
+        .map((entry) => `${entry.executable} ${entry.argv_prefix.join(" ")}`.trim())
+        .join("; ");
+      throw new DomainValidationError(
+        `gate command ${command.join(" ")} is not authorized by the task envelope (allowed: ${allowed || "none"}) — revise the plan with palimpsest_plan if this command is the right one`,
+      );
+    }
+  }
+
+  /**
+   * Run one gate command and record what was OBSERVED.
+   *
+   * The constitution is `palimpsest_report`'s own sentence — claims are never evidence, only
+   * deterministic observation is — so this method takes no exit code from the caller: the caller's
+   * version did execute the command and then record whatever number the caller asserted, which made
+   * `producer: "palimpsest-gate"` a label on an attestation. Three rules follow:
+   *   - the command must be one the task envelope authorizes (the auto path always honoured this);
+   *   - the recorded exit code is the one this execution produced, never a caller's;
+   *   - no observable exit (exit null) means NO evidence — absence of observation is not a
+   *     negative result (§18), so fabricating one is refused.
+   */
   async gate(input: GateInput): Promise<SchedulerEvent> {
     const [row, envelope] = this.#attemptContext(input.attemptId);
     const executable = input.command[0];
     if (executable === undefined) {
       throw new DomainValidationError("gate command must have an executable");
     }
-    await runGateCommand(this.effects, {
+    this.#assertGateCommandAllowed(envelope, input.command);
+    const observation = (await runGateCommand(this.effects, {
       worktreeId: input.attemptId,
       executable,
       argv: input.command.slice(1),
@@ -1720,7 +1755,12 @@ export class ProjectController {
         command: input.command,
       }).slice(0, 16)}`,
       revision: this.promotions.projectRevision(),
-    });
+    })) as { exitCode: number | null; outputTail: string };
+    if (observation.exitCode === null) {
+      throw new DomainValidationError(
+        `gate command ${input.command.join(" ")} produced no observable exit code — evidence is not recorded (an unobserved run is not a negative result)${observation.outputTail === "" ? "" : `; output: ${observation.outputTail}`}`,
+      );
+    }
     const evidenceId = stableEntityId(
       "evidence",
       actionKey("evidence-v1", {
@@ -1741,11 +1781,11 @@ export class ProjectController {
         command: input.command,
       }),
       predicate: input.predicate,
-      value: { exit_code: input.exitCode },
+      value: { exit_code: observation.exitCode },
       project_revision: envelope.project_revision,
       input_fingerprint: envelope.project_digest,
       command: [...input.command],
-      exit_code: input.exitCode,
+      exit_code: observation.exitCode,
       environment_digest: "e".repeat(64),
       dependency_digest: null,
       observed_artifacts: [...(input.observedArtifacts ?? envelope.required_artifacts)],
@@ -1921,7 +1961,7 @@ export class ProjectController {
       scope: this.projectId,
       callId: `gate:auto:${attemptId}`,
       revision: this.promotions.projectRevision(),
-    })) as { exitCode: number | null };
+    })) as { exitCode: number | null; outputTail: string };
     const exitCode = outcome.exitCode as number | null;
     const passed = exitCode === 0;
     // Evidence-faced settlement (PLMP-ALC-1 §3): the mechanical gate result
