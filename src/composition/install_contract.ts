@@ -74,6 +74,12 @@ export interface InstallPalimpsestOptions {
   git?: GitPort | undefined;
   projectId: string;
   policy?: TaskPolicy | undefined;
+  /**
+   * Where an attempt's work happens: "worktree" (default — an isolated git worktree per attempt,
+   * for out-of-process workers) or "in-place" (the attempt works in the canonical repository
+   * tree, for an agent whose cwd is the repository; its report is then observed, not claimed).
+   */
+  execution?: import("../tools/controller.js").ExecutionMode | undefined;
   /** Palimpsest-side wire clock (ProjectIR/evidence timestamps). */
   clock?: (() => string) | undefined;
   /** Ordarium-side Date clock (leases/recovery); tests pass a ManualClock. */

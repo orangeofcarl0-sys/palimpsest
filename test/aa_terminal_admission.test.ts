@@ -57,6 +57,14 @@ class CrashAfterMergeGit implements GitPort {
   createWorktree(input: Parameters<GitPort["createWorktree"]>[0]) {
     return this.git.createWorktree(input);
   }
+
+  async observeWorktree(_input: { worktreeId: string }): Promise<{
+    head: string;
+    changedPaths: string[];
+    hasUncommittedChanges: boolean;
+  }> {
+    return { head: "0".repeat(40), changedPaths: [], hasUncommittedChanges: false };
+  }
   commit(input: Parameters<GitPort["commit"]>[0]) {
     return this.git.commit(input);
   }
@@ -805,6 +813,7 @@ describe("G10-AA offline replay and legacy compatibility", () => {
 
       // Offline: no effects runtime, and a git port that would fail on any call.
       const hostileGit: GitPort = {
+        observeWorktree: () => Promise.reject(new Error("git must not be touched during replay")),
         createWorktree: () => Promise.reject(new Error("git must not be touched during replay")),
         commit: () => Promise.reject(new Error("git must not be touched during replay")),
         promote: () => Promise.reject(new Error("git must not be touched during replay")),
