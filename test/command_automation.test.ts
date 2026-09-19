@@ -68,10 +68,12 @@ describe("command-executor automation (R12)", () => {
   });
 
   it("pump retries a failing batch until the attempt budget is exhausted", async () => {
-    const { controller, cleanup } = makeController(2, 1);
+    const { controller, git, cleanup } = makeController(2, 1);
     try {
+      // Every gate run observes "no result" (null): unknown is not a sample, so the run fails.
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
       controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
-      // No gate outcomes queued: every run sees exit null -> failed.
       const pump = await controller.pumpCommandAttempts();
       expect(pump.attemptsRun).toBe(2); // attempt budget exhausted
       expect(pump.exits).toEqual([null, null]);
@@ -105,8 +107,10 @@ describe("command-executor automation (R12)", () => {
   });
 
   it("pump stops early when the project reaches a terminal task state", async () => {
-    const { controller, cleanup } = makeController(2, 1);
+    const { controller, git, cleanup } = makeController(2, 1);
     try {
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
+      git.queueGateOutcome("python", ["-m", "pytest"], null);
       controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
       const pump = await controller.pumpCommandAttempts();
       expect(pump.lastEvent?.event_type).toBe("TASK_FAILED");

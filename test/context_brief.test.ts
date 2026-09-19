@@ -184,7 +184,6 @@ describe("controller context brief (PLMP-CTX-1 P2)", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       evidenceIds.push((gateEvent.payload.evidence as { evidence_id: string }).evidence_id);
       controller.report(attemptId, {

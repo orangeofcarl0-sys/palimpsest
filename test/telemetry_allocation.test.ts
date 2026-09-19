@@ -94,7 +94,7 @@ describe("telemetry attribution and evidence-faced settlement (PLMP-ALC-1 P1)", 
   });
 
   it("ALC-A02: a completed self-report never counts as success - only the gate verdict does", async () => {
-    const { controller, cleanup } = makeRig();
+    const { controller, git, cleanup } = makeRig();
     try {
       controller.start({ projectId: "scheduler-project", goal: "g", tasks: [taskSpec("task-1")] });
       controller.declareGate(GATE, "alc-test");
@@ -123,11 +123,12 @@ describe("telemetry attribution and evidence-faced settlement (PLMP-ALC-1 P1)", 
       expect(controller.telemetry.stat("implementer", "flash")).toBeUndefined();
 
       // Evidence that fails the gate -> failure, despite the completed report.
+      // The observation is scripted to fail: tests_fail requires a nonzero exit code.
+      git.setGateOutcome(attemptId, "python", ["-m", "pytest"], 1);
       await controller.gate({
         attemptId,
         predicate: "tests_fail",
         command: ["python", "-m", "pytest"],
-        exitCode: 1,
       });
       const failed = controller.evaluateAttemptGate("gate-release", attemptId);
       expect(failed.verdict).toBe("FAIL");

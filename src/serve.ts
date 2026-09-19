@@ -459,7 +459,6 @@ export function serveOrchestration(
           attemptId: String(body.attemptId),
           predicate: body.predicate as "tests_pass",
           command: (body.command as string[]) ?? ["python", "-m", "pytest"],
-          exitCode: Number(body.exitCode ?? 0),
         });
       case "report":
         return surface.report(String(body.attemptId), {

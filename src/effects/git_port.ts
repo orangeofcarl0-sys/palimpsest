@@ -18,20 +18,24 @@ function runExecutable(
   executable: string,
   args: readonly string[],
   cwd: string,
-): Promise<{ exitCode: number | null }> {
+): Promise<{ exitCode: number | null; outputTail: string }> {
   return new Promise((resolve) => {
-    execFile(executable, [...args], { cwd }, (error) => {
-      if (error === null) {
-        resolve({ exitCode: 0 });
-        return;
+    // The tail is diagnostics for the OBSERVATION, never a caller-editable field: it is what makes
+    // an opaque exit code (pytest's 5 = "no tests ran") readable at the moment it matters.
+    let output = "";
+    const collect = (chunk: string | Buffer): void => {
+      output += chunk.toString("utf8");
+    };
+    const child = execFile(executable, [...args], { cwd }, (error) => {
+      let exitCode: number | null = 0;
+      if (error !== null) {
+        const code = (error as { code?: unknown }).code;
+        exitCode = typeof code === "number" || typeof code === "string" ? Number(code) : null;
       }
-      const code = (error as { code?: unknown }).code;
-      if (typeof code === "number" || typeof code === "string") {
-        resolve({ exitCode: Number(code) });
-        return;
-      }
-      resolve({ exitCode: null });
+      resolve({ exitCode, outputTail: output.slice(-500) });
     });
+    child.stdout?.on("data", collect);
+    child.stderr?.on("data", collect);
   });
 }
 
@@ -89,7 +93,7 @@ export interface GitPort {
   /** Does the canonical branch already contain this commit? (idempotency probe) */
   contains(commit: string): Promise<boolean>;
   /** Run a gate command inside a worktree; resolves the process outcome. */
-  runGate(input: GateCommandInput): Promise<{ exitCode: number | null }>;
+  runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }>;
   /**
    * PLMP-CTX-2 §2: read-only lexical retrieval over worktree text files.
    * Scans are not side effects - they are deliberately NOT Ordarium actions;
@@ -216,7 +220,7 @@ export class FakeGitPort implements GitPort {
     return this.#ancestors().has(commit);
   }
 
-  async runGate(input: GateCommandInput): Promise<{ exitCode: number | null }> {
+  async runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }> {
     // Sequential queue first (consumed in order of execution); unit-tests use
     // this to script "first attempt fails, second succeeds".
     const queued = this.#gateQueue.findIndex(
@@ -224,13 +228,15 @@ export class FakeGitPort implements GitPort {
     );
     if (queued >= 0) {
       const [entry] = this.#gateQueue.splice(queued, 1);
-      return { exitCode: entry!.exitCode };
+      return { exitCode: entry!.exitCode, outputTail: "" };
     }
     const key = `${input.worktreeId}:${input.executable}:${input.argv.join(" ")}`;
     if (this.#gateOutcomes.has(key)) {
-      return { exitCode: this.#gateOutcomes.get(key) ?? null };
+      return { exitCode: this.#gateOutcomes.get(key) ?? null, outputTail: "" };
     }
-    return { exitCode: null };
+    // Unscripted runs SUCCEED in the fake world: tests that gate as a means (invalidation,
+    // promotion flows) script failures explicitly, and the real port observes reality.
+    return { exitCode: 0, outputTail: "" };
   }
 
   /** Test seam: enqueue one gate outcome, consumed by the next matching run. */
@@ -381,7 +387,7 @@ export class GitCliPort implements GitPort {
     }
   }
 
-  async runGate(input: GateCommandInput): Promise<{ exitCode: number | null }> {
+  async runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }> {
     return runExecutable(input.executable, input.argv, this.worktreePath(input.worktreeId));
   }
 

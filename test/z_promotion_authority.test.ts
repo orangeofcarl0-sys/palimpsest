@@ -212,7 +212,6 @@ async function driveToVerifying(
     attemptId,
     predicate: "tests_pass",
     command: ["python", "-m", "pytest"],
-    exitCode: 0,
   });
   const verifying = controller.step();
   if (verifying?.event_type !== "TASK_VERIFYING") {

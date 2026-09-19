@@ -243,10 +243,10 @@ export function defineEffects(git: GitPort) {
       },
     },
     output: {
-      jsonSchema: objectSchema({ exitCode: { type: "number" } }, ["exitCode"]) as Record<
-        string,
-        JsonValue
-      >,
+      jsonSchema: objectSchema(
+        { exitCode: { type: "number" }, outputTail: { type: "string" } },
+        ["exitCode"],
+      ) as Record<string, JsonValue>,
       parse: (input) => {
         if (typeof input !== "object" || input === null || Array.isArray(input)) {
           throw new TypeError("input must be an object");
@@ -255,7 +255,10 @@ export function defineEffects(git: GitPort) {
         if (record.exitCode !== null && (typeof record.exitCode !== "number" || !Number.isInteger(record.exitCode))) {
           throw new TypeError("exitCode must be an integer or null");
         }
-        return { exitCode: record.exitCode as number | null };
+        return {
+          exitCode: record.exitCode as number | null,
+          outputTail: typeof record.outputTail === "string" ? record.outputTail : "",
+        };
       },
     },
     effect: effects.readOnly(),
@@ -265,7 +268,7 @@ export function defineEffects(git: GitPort) {
         executable: input.executable,
         argv: input.argv,
       });
-      return { exitCode: result.exitCode };
+      return { exitCode: result.exitCode, outputTail: result.outputTail };
     },
   });
 

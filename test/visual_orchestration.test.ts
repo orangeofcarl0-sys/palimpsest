@@ -118,7 +118,6 @@ describe("orchestration graph projection (PLMP-VIS-1)", () => {
         attemptId: second.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       controller.report(second.entity_id, { workerStatus: "completed", summary: "fixed" });
 
@@ -219,7 +218,6 @@ describe("orchestration graph projection (PLMP-VIS-1)", () => {
         attemptId: first.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       // G10-Z §10: the canonical flow settles the candidate batch BEFORE the
       // promotion, so a new promotion is admitted from current VERIFYING Work
@@ -294,7 +292,6 @@ describe("control mapping face (PLMP-VIS-2)", () => {
       attemptId: "attempt-y",
       predicate: "tests_pass",
       command: ["python", "-m", "pytest"],
-      exitCode: 0,
     };
     await surface.gate(gateInput);
     expect(gate).toHaveBeenCalledTimes(1);
@@ -333,7 +330,6 @@ describe("control mapping face (PLMP-VIS-2)", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       surface.report(attemptId, {
         workerStatus: "completed",

@@ -123,7 +123,6 @@ describe("typed invalidation through the controller plan", () => {
         attemptId: attempt.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       // A contract-breaking change to task-1 propagates to task-2 and task-3.
       controller.plan({
@@ -161,7 +160,6 @@ describe("typed invalidation through the controller plan", () => {
         attemptId: attempt.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       // G10-W contract change: a revision now requires quiescence, and
       // `metadata_only` is the change class that invalidates NOTHING - it stales

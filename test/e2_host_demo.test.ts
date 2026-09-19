@@ -42,7 +42,13 @@ describe("E2 host-demo equivalent: a worker honors the envelope skill hint", () 
     const head = execSync("git rev-parse HEAD", { cwd: repoRoot }).toString().trim();
 
     const git = new GitCliPort(repoRoot, join(repoRoot, ".palimpsest", "worktrees"));
-    const { host, installed } = await installForTests({ git });
+    const { host, installed } = await installForTests({
+      git,
+      allowedCommands: [
+        { executable: "python", argv_prefix: ["-m", "pytest"] },
+        { executable: "git", argv_prefix: [] },
+      ],
+    });
     try {
       // Start with the real base commit so the worktree can actually be created.
       await host.call("palimpsest_start", {
@@ -103,7 +109,6 @@ describe("E2 host-demo equivalent: a worker honors the envelope skill hint", () 
         attemptId,
         predicate: "tests_pass",
         command: ["git", "rev-parse", "--is-inside-work-tree"],
-        exitCode: 0,
       })) as { status: string };
       expect(gate.status).toBe("active");
 

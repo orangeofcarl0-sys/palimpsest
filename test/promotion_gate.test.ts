@@ -24,9 +24,10 @@ const GATE = parseGateDefinition({
 
 function makeRig() {
   const store = new EventStore(tempStatePath(), { clock: new FakeClock().next });
+  const git = new FakeGitPort(HEAD);
   const effects = createPalimpsestEffects({
     databasePath: join(mkdtempSync(join(tmpdir(), "palimpsest-g8-")), "ops.sqlite"),
-    git: new FakeGitPort(HEAD),
+    git,
   });
   const controller = new ProjectController({
     store,
@@ -35,7 +36,7 @@ function makeRig() {
     policy: new TaskPolicy({
       policy_id: "trusted-default",
       read_paths: ["src"],
-      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }, { executable: "pytest", argv_prefix: [] }],
       network_policy: "deny",
       network_allowlist: [],
       timeout_s: 60,
@@ -48,6 +49,7 @@ function makeRig() {
   return {
     store,
     controller,
+    git,
     cleanup: async () => {
       await effects.close();
       store.close();
@@ -98,7 +100,6 @@ describe("gate-gated promotion (R8)", () => {
         attemptId,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const allowed = await controller.promoteWhenGatePasses(
         attemptId,
@@ -117,15 +118,16 @@ describe("gate-gated promotion (R8)", () => {
   });
 
   it("refuses promotion on FAIL (contradicted evidence) with the fact surfaced", async () => {
-    const { controller, cleanup } = makeRig();
+    const { controller, git, cleanup } = makeRig();
     try {
       const { attemptId, commit } = await driveCompleted(controller);
       controller.step(); // VERIFYING
+      // The observation must actually fail: tests_fail requires a nonzero exit code.
+      git.setGateOutcome(attemptId, "pytest", [], 1);
       await controller.gate({
         attemptId,
         predicate: "tests_fail",
         command: ["pytest"],
-        exitCode: 1,
       });
       // A release gate that insists on tests_pass now sees a contradiction.
       controller.declareGate(

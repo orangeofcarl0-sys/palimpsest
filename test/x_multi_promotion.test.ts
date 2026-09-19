@@ -605,9 +605,13 @@ describe("G10-X X-M5/X-M6: crash windows converge on restart", () => {
 
 describe("G10-X X-M7: the runTurn drift barrier settles, syncs and resumes without deadlock", () => {
   it("under drift new activation is blocked, settlement proceeds, then sync and activation resume", async () => {
-    const r = await rig();
+    const git = new FakeGitPort(H0);
+    const r = await rig(git);
     try {
       const { controller, store } = r;
+      // B's auto-gated attempts observe "no result" (null): unknown is not a sample, so each run
+      // fails and the budget drives the project to terminal.
+      for (let i = 0; i < 8; i += 1) git.queueGateOutcome("python", ["-m", "pytest"], null);
       controller.start({
         projectId: PROJECT,
         goal: "barrier",

@@ -173,11 +173,12 @@ describe("context distribution (PLMP-CTX-4)", () => {
       await controller.claim(first.entity_id);
       // A failed attempt with active gate evidence feeds the next compile's
       // evidence subjects.
+      // The observation must actually fail: tests_fail requires a nonzero exit code.
+      git.setGateOutcome(first.entity_id, "python", ["-m", "pytest"], 1);
       const gateEvent = await controller.gate({
         attemptId: first.entity_id,
         predicate: "tests_fail",
         command: ["python", "-m", "pytest"],
-        exitCode: 1,
       });
       const evidenceId = gateEvent.entity_id;
       controller.report(first.entity_id, { workerStatus: "failed", summary: "broke" });

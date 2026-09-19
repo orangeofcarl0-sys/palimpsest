@@ -309,7 +309,6 @@ describe("Gate DSL (Research line)", () => {
         attemptId: created.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       const engine = new GateEngine();
       declareInRegistry(controller.store, "scheduler-project", gateOf([

@@ -629,7 +629,6 @@ describe("H1-D6: self-rebuild by declaration (spec 3.4 G4)", () => {
         attemptId: attempts[0]!.entity_id,
         predicate: "tests_pass",
         command: ["python", "-m", "pytest"],
-        exitCode: 0,
       });
       expect(gate.event_type).toBe("EVIDENCE_ADDED");
       const promotion = await controller.promote(attempts[0]!.entity_id, commits[0]!, HEAD);

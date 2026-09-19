@@ -36,7 +36,7 @@ function makeRig() {
     policy: new TaskPolicy({
       policy_id: "trusted-default",
       read_paths: ["src"],
-      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }],
+      allowed_commands: [{ executable: "python", argv_prefix: ["-m", "pytest"] }, { executable: "pytest", argv_prefix: [] }],
       network_policy: "deny",
       network_allowlist: [],
       timeout_s: 60,
@@ -103,7 +103,6 @@ describe("verified -> selected -> gated-promoted chain (R9)", () => {
           attemptId: attempt.entity_id,
           predicate: "tests_pass",
           command: ["pytest"],
-          exitCode: 0,
         });
       }
       // The judge always prefers the lexicographically last candidate.
