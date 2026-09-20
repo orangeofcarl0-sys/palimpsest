@@ -354,6 +354,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "projectId",
       "localPeer",
       "repository",
+      "execution",
       "persistentPoint",
       "transport",
       "databases",

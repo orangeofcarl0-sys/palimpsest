@@ -30,7 +30,12 @@ function runExecutable(
       let exitCode: number | null = 0;
       if (error !== null) {
         const code = (error as { code?: unknown }).code;
-        exitCode = typeof code === "number" || typeof code === "string" ? Number(code) : null;
+        /* Only a NUMBER is a process exit code. A string code is a spawn-level errno name
+           (ENOENT, EACCES) — the process never ran, so there is no exit code to observe, and
+           `Number("ENOENT")` is NaN, which is neither a code nor an honest null. Measured: a
+           deployment whose PATH lacks the gate executable reported `exitCode must be an integer
+           or null` instead of "no observation", because NaN travelled through the action output. */
+        exitCode = typeof code === "number" && Number.isInteger(code) ? code : null;
       }
       resolve({ exitCode, outputTail: output.slice(-500) });
     });
