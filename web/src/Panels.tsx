@@ -29,7 +29,7 @@ import {
   canvasRemoveGroup,
   canvasRemoveNode,
 } from "./canvasMutate";
-import { anchorCanvas } from "./api";
+import { anchorCanvas, type ProjectGovernance } from "./api";
 
 const PREDICATES = ["tests_pass", "process_exit_zero", "lint_pass", "tests_fail", "expected_files_exist", "write_scope_valid"];
 
@@ -89,14 +89,38 @@ export function ControlBar(props: { paused: boolean; onMessage(message: string):
 
 export function GateForm(props: {
   attemptIds: string[];
+  /** PLMP-LEAN-1 §1/§4: what this deployment authorizes and requires. */
+  governance?: ProjectGovernance | null | undefined;
   onMessage(message: string): void;
   refresh(): void;
 }) {
-  const [predicate, setPredicate] = useState("tests_pass");
-  const [exitCode, setExitCode] = useState("0");
-  const [command, setCommand] = useState("python -m pytest");
+  const authorized = props.governance?.authorizedCommands ?? [];
+  // The predicate comes from the confirmed standard's clauses, never from a vocabulary menu: the
+  // release gate the product declared IS the standard, so recording anything else cannot authorize
+  // a promotion.
+  const predicates = (props.governance?.standard?.clauses ?? [])
+    .map((clause) => clause.predicate)
+    .filter((value): value is string => typeof value === "string");
+  const options = predicates.length > 0 ? [...new Set(predicates)] : PREDICATES;
+  const [predicate, setPredicate] = useState(options[0] ?? "tests_pass");
+  const [commandIndex, setCommandIndex] = useState(0);
   const [attemptId, setAttemptId] = useState(props.attemptIds[0] ?? "");
   const effective = props.attemptIds.includes(attemptId) ? attemptId : (props.attemptIds[0] ?? "");
+  const command = authorized[commandIndex];
+  const rendered = command === undefined ? "" : [command.executable, ...command.argv_prefix].join(" ");
+
+  if (authorized.length === 0) {
+    // Honest empty state: without a confirmed standard (or with a policy that authorizes nothing)
+    // there is no command this deployment may run, so the form would be a lie.
+    return (
+      <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
+        这个部署还没有确认的项目完成标准，因此没有可执行的授权命令。请在 deployment profile 里写一句
+        <code> standard.statement </code>
+        （例如"测试通过且不越界改文件"），产品会据此推导命令与门禁。
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: "grid", gap: 6 }}>
       <div style={{ display: "flex", gap: 6 }}>
@@ -108,7 +132,7 @@ export function GateForm(props: {
           ))}
         </select>
         <select style={field} value={predicate} onChange={(event) => setPredicate(event.target.value)}>
-          {PREDICATES.map((p) => (
+          {options.map((p) => (
             <option key={p} value={p}>
               {p}
             </option>
@@ -116,8 +140,20 @@ export function GateForm(props: {
         </select>
       </div>
       <div style={{ display: "flex", gap: 6 }}>
-        <input style={{ ...field, width: 70 }} value={exitCode} onChange={(event) => setExitCode(event.target.value)} />
-        <input style={field} value={command} onChange={(event) => setCommand(event.target.value)} />
+        {/* The command is a CHOICE among authorized commands: the deployment executes what it
+            authorizes, so a free-text command (or an exit code, which the server no longer reads)
+            would be a control that lies. */}
+        <select
+          style={field}
+          value={String(commandIndex)}
+          onChange={(event) => setCommandIndex(Number(event.target.value))}
+        >
+          {authorized.map((entry, index) => (
+            <option key={`${entry.executable} ${entry.argv_prefix.join(" ")}`} value={String(index)}>
+              {[entry.executable, ...entry.argv_prefix].join(" ")}
+            </option>
+          ))}
+        </select>
       </div>
       <button
         style={button(true)}
@@ -128,8 +164,7 @@ export function GateForm(props: {
               await control("gate", {
                 attemptId: effective,
                 predicate,
-                exitCode: Number(exitCode) || 0,
-                command: command.trim().split(/\s+/),
+                command: rendered.trim().split(/\s+/),
               });
               props.onMessage("门禁证据已记录 ✓");
               props.refresh();
@@ -145,17 +180,37 @@ export function GateForm(props: {
   );
 }
 
-export function PromoteForm(props: { onMessage(message: string): void; refresh(): void }) {
-  const [gateId, setGateId] = useState("gate-release");
+export function PromoteForm(props: {
+  /** PLMP-LEAN-1 §4: the gates that actually exist, so this control cannot name a phantom one. */
+  governance?: ProjectGovernance | null | undefined;
+  onMessage(message: string): void;
+  refresh(): void;
+}) {
+  const declared = props.governance?.declaredGateIds ?? [];
+  const [gateId, setGateId] = useState(declared[0] ?? "");
+  const effective = declared.includes(gateId) ? gateId : (declared[0] ?? "");
+  if (declared.length === 0) {
+    return (
+      <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
+        还没有已声明的门禁，因此没有可用的晋升裁决。确认项目完成标准后，产品会自动声明 release 门禁。
+      </div>
+    );
+  }
   return (
     <div style={{ display: "flex", gap: 6 }}>
-      <input style={field} value={gateId} onChange={(event) => setGateId(event.target.value)} />
+      <select style={field} value={effective} onChange={(event) => setGateId(event.target.value)}>
+        {declared.map((id) => (
+          <option key={id} value={id}>
+            {id}
+          </option>
+        ))}
+      </select>
       <button
         style={button(true)}
         onClick={() =>
           void (async () => {
             try {
-              const { result } = await control("promote", { gateId });
+              const { result } = await control("promote", { gateId: effective });
               const promoted = (result as { promoted?: boolean }).promoted === true;
               props.onMessage(promoted ? "已晋升 ✓" : "门禁未 PASS，未晋升");
               props.refresh();

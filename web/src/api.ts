@@ -182,8 +182,28 @@ export const patchCanvas = (doc: CanvasDoc, patch: unknown): Promise<CanvasPatch
  * G10-O unified application surface (typed routes; same canonical state as the tools)
  * ------------------------------------------------------------------ */
 
+/**
+ * PLMP-LEAN-1 §1/§4: the project's governance in one place — the confirmed done-ness, the commands
+ * this deployment authorizes, and the gates already declared. A gate or promotion control reads
+ * ONLY from here, so it can offer real commands and real gate ids instead of asking a person for
+ * machine vocabulary (and never a free-text exit code, which the server stopped honouring).
+ */
+export interface ProjectGovernance {
+  readonly standard: {
+    readonly statement: string;
+    readonly confirmed: boolean;
+    readonly derivedFrom: readonly string[];
+    readonly notes: readonly string[];
+    readonly clauses: readonly { readonly kind: string; readonly command?: readonly string[]; readonly predicate?: string }[];
+  } | null;
+  readonly authorizedCommands: readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[];
+  readonly declaredGateIds: readonly string[];
+}
+
 export interface ApplicationSurfaceAvailability {
   readonly work: boolean;
+  /** Present on deployments composed with the application surface; absent on legacy servers. */
+  readonly governance?: ProjectGovernance | undefined;
   readonly federation: boolean;
   readonly boundary: boolean;
   readonly runtime: boolean;

@@ -337,7 +337,10 @@ async function main() {
           | "expected_files_exist"
           | "write_scope_valid";
         // The gate executes and records its own observation; a CLI-side number would be a claim.
-        const command = rest.length > 0 ? rest.slice(0) : [];
+        // PLMP-LEAN-1 §1: no packaged default command either — the envelope authorizes commands
+        // (derived from the repository + the operator's policy), so an omitted command means
+        // "run what this project's standard authorizes", and an empty result is refused below.
+        const command = rest.length > 0 ? rest.slice(0) : controller.authorizedGateCommand(attemptId);
         const event = await controller.gate({
           attemptId,
           predicate,

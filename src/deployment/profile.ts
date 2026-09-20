@@ -122,6 +122,22 @@ function parsePolicy(value: unknown, what: string): {
   };
 }
 
+/** The operator's confirmation sentence: one non-empty string, nothing else. */
+function parseStandard(value: unknown, what: string): { statement: string } {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    fail("invalid_value", `${what}.standard must be an object`);
+  }
+  const record = value as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (key !== "statement") fail("unknown_field", `${what}.standard has unknown field "${key}"`);
+  }
+  const statement = record.statement;
+  if (typeof statement !== "string" || statement.trim() === "") {
+    fail("invalid_value", `${what}.standard.statement must be a non-empty sentence`);
+  }
+  return { statement };
+}
+
 function parseExecutionMode(value: string): "worktree" | "in-place" {
   if (value === "worktree" || value === "in-place") return value;
   return fail("invalid_value", `execution must be "worktree" or "in-place", got "${value}"`);
@@ -149,6 +165,13 @@ export interface ProjectAgentDeploymentProfile {
   readonly policy?: {
     readonly allowed_commands: ReadonlyArray<{ readonly executable: string; readonly argv_prefix: readonly string[] }>;
   } | undefined;
+  /**
+   * PLMP-LEAN-1 §1: the operator's CONFIRMATION of this project's done-ness, in their own words.
+   * Its presence is what turns the derived candidate into an effective standard (and therefore into
+   * the release gate the product declares). Absent ⇒ the derivation is reported as an unconfirmed
+   * candidate and no gate is declared, so nothing can be promoted on a standard nobody stated.
+   */
+  readonly standard?: { readonly statement: string } | undefined;
   /** Durable continuity locus id (PersistentPoint) bound to `localPeer`. */
   readonly persistentPoint?: string | undefined;
   readonly transport: {
@@ -397,6 +420,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "repository",
       "execution",
       "policy",
+      "standard",
       "persistentPoint",
       "transport",
       "databases",
@@ -433,6 +457,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ? {}
       : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
     ...(object.policy === undefined ? {} : { policy: parsePolicy(object.policy, what) }),
+    ...(object.standard === undefined ? {} : { standard: parseStandard(object.standard, what) }),
     ...(optionalStableId(object, "persistentPoint", what) === undefined ? {} : { persistentPoint: optionalStableId(object, "persistentPoint", what)! }),
     transport: Object.freeze({
       namespace: stableId(transportObject.namespace, `${what}.transport.namespace`),

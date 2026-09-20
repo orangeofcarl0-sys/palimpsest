@@ -40,6 +40,7 @@ export function installPalimpsest(
     ordariumDatabasePath: options.ordariumDatabasePath,
     policy: options.policy,
     execution: options.execution,
+    standard: options.standard,
     clock: options.clock,
     effectsClock: options.effectsClock,
     leaseMs: options.leaseMs,
