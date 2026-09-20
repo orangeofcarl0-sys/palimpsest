@@ -305,3 +305,62 @@ describe("in-place gate: it runs where the work is", () => {
     expect(String(gate.outputTail)).toContain("gate ran here");
   });
 });
+
+describe("in-place promotion: the tree must not move past the report", () => {
+  const POLICY = [
+    { executable: "python", argv_prefix: ["-m", "pytest"] },
+    { executable: "python", argv_prefix: ["-c"] },
+  ];
+
+  const driveToVerifying = async (repo: string, base: string, call: (name: string, args: Record<string, unknown>) => Promise<Record<string, unknown>>) => {
+    await call("palimpsest_start", {
+      projectId: "inplace",
+      goal: "promote only what was observed",
+      headCommit: base,
+      tasks: [
+        { task_id: "t1", objective: "edit dedupe", depends_on: [], write_paths: ["src"], required_artifacts: ["src/dedupe.ts"] },
+      ],
+    });
+    await call("palimpsest_next", {});
+    const created = (await call("palimpsest_next", {})) as { entityId: string };
+    const attemptId = created.entityId;
+    await call("palimpsest_claim", { attemptId });
+    return attemptId;
+  };
+
+  it("refuses promotion when work landed after the report, naming both commits", async () => {
+    const { repo, head: base } = workspace();
+    const { call, installed } = makeStack(repo, POLICY);
+    const attemptId = await driveToVerifying(repo, base, call);
+
+    // Report with a clean tree (the mechanical pump's behaviour), then do the work afterwards.
+    await call("palimpsest_report", { attemptId, workerStatus: "completed", summary: "nothing yet" });
+    writeFileSync(join(repo, "src", "dedupe.ts"), "export const dedupe = (v: number[]) => [...new Set(v)];");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "real work"], { cwd: repo });
+
+    // The defect this pins, found live: promoting would merge the recorded (pre-work) commit —
+    // a no-op that moves the head to a commit which does not contain the work.
+    await expect(installed.controller.promoteAttempt({ attemptId })).rejects.toThrow(
+      /work landed after the report.*report the attempt again/s,
+    );
+  });
+
+  it("allows promotion when the recorded commit IS the current head", async () => {
+    const { repo, head: base } = workspace();
+    const { call, installed } = makeStack(repo, POLICY);
+    const attemptId = await driveToVerifying(repo, base, call);
+
+    // Work first, commit, then report: the observation records the commit that contains it.
+    writeFileSync(join(repo, "src", "dedupe.ts"), "export const dedupe = (v: number[]) => [...new Set(v)]; // counted");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "counted"], { cwd: repo });
+    await call("palimpsest_report", { attemptId, workerStatus: "completed", summary: "done" });
+
+    // The precondition passes; eligibility (not the staleness rule) decides the rest, so the call
+    // must not throw the staleness error.
+    await installed.controller.promoteAttempt({ attemptId }).catch((error: unknown) => {
+      expect(String((error as Error).message)).not.toMatch(/work landed after the report/);
+    });
+  });
+});

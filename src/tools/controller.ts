@@ -2200,12 +2200,48 @@ export class ProjectController {
    * either. `promote(attemptId, sourceCommit, expectedHeadCommit)` below stays
    * reachable only as the expert/internal path.
    */
-  promoteAttempt(input: {
+  async promoteAttempt(input: {
     attemptId: string;
     gateId?: string | undefined;
     reason?: string | undefined;
   }): Promise<PromoteResult> {
+    // async on purpose: the in-place precondition below fails by THROWING, and every caller of
+    // this entry point expects a promise (the tool and HTTP surfaces await it), so a synchronous
+    // throw would escape their rejection handling.
+    if (this.execution === "in-place") this.#assertInPlaceAttemptCurrent(input.attemptId);
     return this.promotions.promoteAttempt(input);
+  }
+
+  /**
+   * In-place promotion precondition: the tree must not have moved past what the attempt's report
+   * observed.
+   *
+   * Measured live: the mechanical pump reported an attempt before the agent had written anything
+   * (result_commit = the base), the agent then committed its real work as a CHILD of that commit,
+   * and promotion would have merged the recorded commit — a no-op that moves the head to a commit
+   * which does not contain the work, silently leaving it behind. A worktree attempt cannot drift
+   * like this (its tree is private); an in-place one can, so the recorded commit and the current
+   * head must agree, and the remedy is to report again from the current state.
+   */
+  #assertInPlaceAttemptCurrent(attemptId: string): void {
+    const row = this.store.connection
+      .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { report_json: Uint8Array | null } | undefined;
+    if (row?.report_json == null) return; // no report yet: eligibility itself will refuse
+    const report = JSON.parse(Buffer.from(row.report_json).toString("utf8")) as {
+      result_commit?: string | null;
+    };
+    const recorded = report.result_commit ?? null;
+    if (recorded === null) return;
+    const head = execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd: this.#inPlaceRepository(),
+      encoding: "utf8",
+    }).trim();
+    if (head !== recorded) {
+      throw new DomainValidationError(
+        `in-place attempt ${attemptId} recorded commit ${recorded.slice(0, 12)} but the repository is at ${head.slice(0, 12)}: work landed after the report, so promoting the recorded commit would not contain it — report the attempt again from the current state`,
+      );
+    }
   }
 
   /**
