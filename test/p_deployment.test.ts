@@ -230,6 +230,55 @@ process.on("exit", () => {
 
 });
 
+describe("deployment profile: the operator's gate commands", () => {
+  const base = () => ({
+    schemaVersion: 1 as const,
+    profileId: "p",
+    projectId: "p",
+    localPeer: "peer",
+    repository: "/tmp/repo",
+    transport: { namespace: "n", databasePath: "/tmp/t.sqlite" },
+    databases: {
+      orchestration: "/tmp/o.sqlite",
+      ordarium: "/tmp/ord.sqlite",
+      coordination: "/tmp/c.sqlite",
+      transportCursors: "/tmp/cur.sqlite",
+      attentionMarks: "/tmp/a.sqlite",
+      boundaryMemory: "/tmp/b.sqlite",
+      runtimeScope: "/tmp/rs.sqlite",
+      projectAssociations: "/tmp/as.sqlite",
+      projectJournal: "/tmp/j.sqlite",
+      management: "/tmp/m.sqlite",
+    },
+  });
+
+  it("declares the commands this project's toolchain actually uses", () => {
+    // Measured live: the packaged default is `python -m pytest`, and a non-Python project could
+    // not record ANY gate evidence — every attempt reached VERIFYING with zero evidence, because
+    // only the policy can authorize commands and no caller could declare the project's own.
+    const parsed = parseDeploymentProfile({
+      ...base(),
+      policy: { allowed_commands: [{ executable: "node", argv_prefix: ["--test"] }] },
+    });
+    expect(parsed.policy?.allowed_commands).toEqual([{ executable: "node", argv_prefix: ["--test"] }]);
+    // Absent ⇒ the packaged default, unchanged for every existing deployment.
+    expect(parseDeploymentProfile(base()).policy).toBeUndefined();
+  });
+
+  it("refuses a malformed or widened policy loudly", () => {
+    const bad = [
+      { policy: {} },
+      { policy: { allowed_commands: [] } },
+      { policy: { allowed_commands: [{ executable: "", argv_prefix: [] }] } },
+      { policy: { allowed_commands: [{ executable: "node", argv_prefix: "not-an-array" }] } },
+      { policy: { allowed_commands: [{ executable: "node", argv_prefix: [] }], extra: true } },
+    ];
+    for (const entry of bad) {
+      expect(() => parseDeploymentProfile({ ...base(), ...entry }), JSON.stringify(entry)).toThrow();
+    }
+  });
+});
+
 describe("deployment profile: execution mode", () => {
   it("accepts in-place and worktree, and rejects anything else", () => {
     const base = {
