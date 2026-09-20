@@ -51,6 +51,14 @@ export const WORK_ROUTES: readonly ApplicationRouteDescriptor[] = [
         // this discovery list omits is invisible to a client, so a false here is the
         // truthful "this deployment has no project directory", never an empty list.
         crossProject: application.crossProject !== undefined,
+        // PLMP-LEAN-1 §1/§4: the project's governance, in one place. A client that shows a gate or
+        // promotion control reads it from here, so it can offer only commands this deployment
+        // authorizes and only gates that exist — instead of asking a person for machine vocabulary.
+        governance: {
+          standard: application.work.standard() ?? null,
+          authorizedCommands: application.work.authorizedCommands(),
+          declaredGateIds: application.work.declaredGateIds(),
+        },
       });
     },
   }),

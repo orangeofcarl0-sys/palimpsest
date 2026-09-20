@@ -8,6 +8,7 @@
 
 import type { ProjectController } from "../../tools/controller.js";
 import type { HostDeploymentFactsPort } from "../common.js";
+import type { ProjectStandard } from "../../domain/standard.js";
 import { definePalimpsestControl } from "../../tools/control_surface.js";
 
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
@@ -34,6 +35,16 @@ export interface WorkApplicationSurface {
   dashboardAuth(): "fence" | "token" | null;
   /** Token mode only: the file holding the person's handoff link. Null otherwise. */
   dashboardHandoffFile(): string | null;
+  /**
+   * PLMP-LEAN-1 §1/§4: the project's confirmed done-ness, or null when the operator has not stated
+   * one (a derivation candidate is NOT a standard). This is what lets a user-facing surface show
+   * "what counts as done here" instead of asking a person to choose predicates.
+   */
+  standard(): ProjectStandard | undefined;
+  /** The commands this deployment authorizes — the options a gate form may offer, and nothing else. */
+  authorizedCommands(): readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[];
+  /** The gate ids already declared, so a promotion control offers real ids instead of a text box. */
+  declaredGateIds(): readonly string[];
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
@@ -46,6 +57,9 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       dashboardUrl: () => deps.hostFacts?.dashboardUrl() ?? null,
       dashboardAuth: () => deps.hostFacts?.dashboardAuth() ?? null,
       dashboardHandoffFile: () => deps.hostFacts?.dashboardHandoffFile() ?? null,
+      standard: () => deps.controller.standard(),
+      authorizedCommands: () => deps.controller.authorizedCommands(),
+      declaredGateIds: () => deps.controller.declaredGateIds(),
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),

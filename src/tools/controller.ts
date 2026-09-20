@@ -78,7 +78,7 @@ import {
   type ChangeClass,
   type EvidenceInvalidationPlan,
 } from "../evidence/invalidation.js";
-import { GateEngine, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
+import { GateEngine, parseGateDefinition, type GateDefinition, type GateResult } from "../evidence/gate_dsl.js";
 import { compilePromotionFenceBlocker } from "../domain/promotion_eligibility.js";
 import type { PromotionEligibilityAssessment } from "../domain/promotion_eligibility.js";
 import {
@@ -107,6 +107,7 @@ import {
   type ParallelOptions,
 } from "./parallel.js";
 import { PromotionManager, type PromoteResult } from "../effects/promotion.js";
+import { standardGateChain } from "../domain/standard.js";
 import {
   createPromotionRecoveryService,
   type PromotionRecoveryService,
@@ -118,6 +119,9 @@ import type { TaskPolicy } from "../domain/policy.js";
 import type { AttemptExecutor } from "../effects/executor.js";
 
 export const DEFAULT_HEAD_COMMIT = "c".repeat(40);
+
+/** The one gate a confirmed project standard declares; promotion names it by this id. */
+export const RELEASE_GATE_ID = "gate-release";
 
 export interface StartProjectInput {
   projectId: string;
@@ -393,6 +397,14 @@ export interface ProjectControllerOptions {
   policy: TaskPolicy;
   /** Attempt work/observation model; default "worktree" (every existing deployment). */
   execution?: ExecutionMode | undefined;
+  /**
+   * PLMP-LEAN-1 §1: the project's confirmed done-ness. On `start()` the controller declares the
+   * release gate from it (once), so a confirmed standard is the only thing a person had to state —
+   * the gate, its clauses and its predicates are derived from that sentence plus the repository.
+   * An UNCONFIRMED standard declares nothing: a promotion must never rest on a standard nobody
+   * stated.
+   */
+  standard?: import("../domain/standard.js").ProjectStandard | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -409,6 +421,7 @@ export class ProjectController {
   readonly promotions: PromotionManager;
   readonly recovery: PromotionRecoveryService;
   readonly execution: ExecutionMode;
+  readonly #standard: import("../domain/standard.js").ProjectStandard | undefined;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
    * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
@@ -499,6 +512,7 @@ export class ProjectController {
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
     this.execution = options.execution ?? "worktree";
+    this.#standard = options.standard;
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId, this.execution);
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -647,6 +661,25 @@ export class ProjectController {
         expected_project_revision: null,
       }),
     );
+    // PLMP-LEAN-1 §1: a CONFIRMED standard declares the release gate here, once, at genesis.
+    // That is what removes the two things a person used to have to do by hand: recite predicate
+    // vocabulary for a gate, and declare it through the CLI before "accept" could work at all.
+    // An unconfirmed standard declares nothing (see the option's doc): no promotion may rest on a
+    // standard nobody stated.
+    if (this.#standard !== undefined && this.#standard.confirmed && this.#releaseGateDeclared() === false) {
+      const chain = standardGateChain(this.#standard);
+      if (chain.length > 0) {
+        this.declareGate(
+          parseGateDefinition({
+            gate_id: RELEASE_GATE_ID,
+            version: 1,
+            subject_type: "attempt",
+            require: { all: chain },
+          }),
+          "derived from the confirmed project standard",
+        );
+      }
+    }
     // H1 §3.4 genesis: the default role table is itself a declaration on the
     // log, so the previous hardcoded defaults remain replayable facts.
     this.declareRoleTable({
@@ -2223,6 +2256,48 @@ export class ProjectController {
    * like this (its tree is private); an in-place one can, so the recorded commit and the current
    * head must agree, and the remedy is to report again from the current state.
    */
+  /**
+   * PLMP-LEAN-1 §1/§4: the operator's one-stop view of this project's governance — the confirmed
+   * standard, the commands it authorizes, and the gates already declared. Read-only; it exists so a
+   * user-facing surface never has to ask a person for predicate vocabulary or a gate id.
+   */
+  standard(): import("../domain/standard.js").ProjectStandard | undefined {
+    return this.#standard;
+  }
+
+  /** The commands this deployment authorizes (the policy bound the envelopes are cut from). */
+  authorizedCommands(): readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[] {
+    return this.policy.allowed_commands;
+  }
+
+  /** The gate ids already declared on this project's log. */
+  declaredGateIds(): readonly string[] {
+    return (
+      this.store.connection
+        .prepare("SELECT gate_id FROM gate_registry WHERE project_id=? ORDER BY gate_id")
+        .all(this.projectId) as { gate_id: string }[]
+    ).map((row) => row.gate_id);
+  }
+
+  /**
+   * PLMP-LEAN-1 §1: the command this attempt's envelope authorizes, so no caller needs a packaged
+   * default. Returns the envelope's first allowed command; an empty array means the envelope
+   * authorizes nothing and the caller must refuse rather than invent one.
+   */
+  authorizedGateCommand(attemptId: string): string[] {
+    const [, envelope] = this.#attemptContext(attemptId);
+    const first = envelope.allowed_commands[0];
+    return first === undefined ? [] : [first.executable, ...first.argv_prefix];
+  }
+
+  /** Whether the release gate this deployment would declare is already on the log. */
+  #releaseGateDeclared(): boolean {
+    const row = this.store.connection
+      .prepare("SELECT COUNT(*) AS c FROM gate_registry WHERE project_id=? AND gate_id=?")
+      .get(this.projectId, RELEASE_GATE_ID) as { c: number } | undefined;
+    return (row?.c ?? 0) > 0;
+  }
+
   #assertInPlaceAttemptCurrent(attemptId: string): void {
     const row = this.store.connection
       .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")

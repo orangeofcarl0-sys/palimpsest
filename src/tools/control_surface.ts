@@ -32,6 +32,7 @@ export type OrchestrationControlTarget = Pick<
   | "claim"
   | "selectCandidate"
   | "gate"
+  | "authorizedGateCommand"
   | "evaluateAttemptGate"
   | "report"
   | "plan"
@@ -96,6 +97,8 @@ export function definePalimpsestControl(target: OrchestrationControlTarget) {
     },
     /** 记录门禁证据。 */
     gate: (input: GateInput): Promise<SchedulerEvent> => target.gate(input),
+    /** PLMP-LEAN-1 §1: the attempt's authorized command, so a surface never invents a default. */
+    authorizedGateCommand: (attemptId: string): string[] => target.authorizedGateCommand(attemptId),
     /** 提交执行报告。 */
     report: (attemptId: string, input: ReportInput): SchedulerEvent =>
       target.report(attemptId, input),

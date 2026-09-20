@@ -458,7 +458,8 @@ export function serveOrchestration(
         return surface.gate({
           attemptId: String(body.attemptId),
           predicate: body.predicate as "tests_pass",
-          command: (body.command as string[]) ?? ["python", "-m", "pytest"],
+          // PLMP-LEAN-1 §1: no packaged default — the attempt's envelope authorizes the commands.
+          command: (body.command as string[]) ?? surface.authorizedGateCommand(String(body.attemptId)),
         });
       case "report":
         return surface.report(String(body.attemptId), {

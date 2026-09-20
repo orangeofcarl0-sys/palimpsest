@@ -13,7 +13,13 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
+
+/** The commands a deployment with no policy of its own starts from. */
+const PACKAGED_DEFAULT_COMMANDS: ReadonlyArray<{ executable: string; argv_prefix: string[] }> = [
+  { executable: "python", argv_prefix: ["-m", "pytest"] },
+];
 import { trustedDefaultPolicy } from "../composition/core.js";
+import { authorizedCommands, deriveProjectStandard } from "./standard.js";
 import type { HostDeploymentFactsPort } from "../composition/install_contract.js";
 import type { DshPluginContext, DshToolDefinition, DshToolRegistry } from "../tools/index.js";
 import { SqliteCoordinationStore, SqliteAttemptCatalog, ParticipationError } from "../coordination/index.js";
@@ -398,23 +404,40 @@ export function launchDeployment(
     },
   };
 
+  const policyCommands =
+    profile.policy?.allowed_commands.map((command) => ({
+      executable: command.executable,
+      argv_prefix: [...command.argv_prefix],
+    })) ?? PACKAGED_DEFAULT_COMMANDS;
+  const deploymentStandard = deriveProjectStandard({
+    repository: profile.repository,
+    policyCommands,
+    ...(profile.standard === undefined ? {} : { statement: profile.standard.statement }),
+    confirmed: profile.standard !== undefined,
+  });
+  // The policy is the operator's bound; the standard narrows it to what this repository can
+  // actually run. A deployment with a repository never falls back to a packaged command.
+  const authorized = authorizedCommands(deploymentStandard, policyCommands);
+  const deploymentPolicy = trustedDefaultPolicy({
+    allowed_commands: (authorized.length > 0 ? authorized : policyCommands).map((command) => ({
+      executable: command.executable,
+      argv_prefix: [...command.argv_prefix],
+    })),
+  });
+
   const installed = installPalimpsest(context, {
     projectId: profile.projectId,
     databasePath: profile.databases.orchestration,
     ordariumDatabasePath: profile.databases.ordarium,
     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
     ...(profile.execution === undefined ? {} : { execution: profile.execution }),
-    // The operator's declared gate commands. Absent ⇒ the packaged default (python -m pytest).
-    ...(profile.policy === undefined
-      ? {}
-      : {
-          policy: trustedDefaultPolicy({
-            allowed_commands: profile.policy.allowed_commands.map((command) => ({
-              executable: command.executable,
-              argv_prefix: [...command.argv_prefix],
-            })),
-          }),
-        }),
+    // PLMP-LEAN-1 §1: the project's done-ness is DERIVED here from the repository, intersected
+    // with the operator's policy bound (never widened by it), and — when the operator confirmed it
+    // with a `standard` sentence — handed to the controller, which declares the release gate at
+    // genesis. This is what removes "recite predicate vocabulary" and "declare a gate through the
+    // CLI" from the operator's job; the derivation is reported either way, notes included.
+    policy: deploymentPolicy,
+    standard: deploymentStandard,
     localPeer,
     coordinationStore,
     peerTransportPort: peerTransportFromDurable(transport, { localPeer }),
