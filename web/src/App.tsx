@@ -532,11 +532,16 @@ export function App() {
             </section>
             <section style={{ display: "grid", gap: 8, borderTop: "1px solid #1e293b", paddingTop: 10 }}>
               <h3 style={{ margin: 0, fontSize: 13 }}>门禁证据</h3>
-              <GateForm attemptIds={attemptIds} onMessage={setMessage} refresh={() => void refresh()} />
+              <GateForm
+                attemptIds={attemptIds}
+                governance={surfaces?.governance ?? null}
+                onMessage={setMessage}
+                refresh={() => void refresh()}
+              />
             </section>
             <section style={{ display: "grid", gap: 8, borderTop: "1px solid #1e293b", paddingTop: 10 }}>
               <h3 style={{ margin: 0, fontSize: 13 }}>晋升</h3>
-              <PromoteForm onMessage={setMessage} refresh={() => void refresh()} />
+              <PromoteForm governance={surfaces?.governance ?? null} onMessage={setMessage} refresh={() => void refresh()} />
             </section>
             <section style={{ display: "grid", gap: 8, borderTop: "1px solid #1e293b", paddingTop: 10 }}>
               <h3 style={{ margin: 0, fontSize: 13 }}>选中任务</h3>

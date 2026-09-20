@@ -80,6 +80,12 @@ export interface InstallPalimpsestOptions {
    * tree, for an agent whose cwd is the repository; its report is then observed, not claimed).
    */
   execution?: import("../tools/controller.js").ExecutionMode | undefined;
+  /**
+   * PLMP-LEAN-1 §1: the project's derived-and-confirmed done-ness. When present the controller
+   * declares the release gate from it at project start, so the operator's "accept" has something
+   * to evaluate without anyone reciting predicate vocabulary first.
+   */
+  standard?: import("../domain/standard.js").ProjectStandard | undefined;
   /** Palimpsest-side wire clock (ProjectIR/evidence timestamps). */
   clock?: (() => string) | undefined;
   /** Ordarium-side Date clock (leases/recovery); tests pass a ManualClock. */
