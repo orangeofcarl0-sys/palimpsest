@@ -13,6 +13,7 @@ import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
+import { trustedDefaultPolicy } from "../composition/core.js";
 import type { HostDeploymentFactsPort } from "../composition/install_contract.js";
 import type { DshPluginContext, DshToolDefinition, DshToolRegistry } from "../tools/index.js";
 import { SqliteCoordinationStore, SqliteAttemptCatalog, ParticipationError } from "../coordination/index.js";
@@ -403,6 +404,17 @@ export function launchDeployment(
     ordariumDatabasePath: profile.databases.ordarium,
     ...(profile.repository === undefined ? {} : { repository: profile.repository }),
     ...(profile.execution === undefined ? {} : { execution: profile.execution }),
+    // The operator's declared gate commands. Absent ⇒ the packaged default (python -m pytest).
+    ...(profile.policy === undefined
+      ? {}
+      : {
+          policy: trustedDefaultPolicy({
+            allowed_commands: profile.policy.allowed_commands.map((command) => ({
+              executable: command.executable,
+              argv_prefix: [...command.argv_prefix],
+            })),
+          }),
+        }),
     localPeer,
     coordinationStore,
     peerTransportPort: peerTransportFromDurable(transport, { localPeer }),

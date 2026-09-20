@@ -46,6 +46,8 @@ export interface GateCommandInput extends Record<string, JsonValue> {
   worktreeId: string;
   executable: string;
   argv: string[];
+  /** Where to run; absent ⇒ the attempt's worktree. In-place attempts pass the repository. */
+  cwd?: JsonValue;
 }
 
 export interface DispatchInput extends Record<string, JsonValue> {
@@ -217,6 +219,7 @@ export function defineEffects(git: GitPort) {
           worktreeId: { type: "string" },
           executable: { type: "string" },
           argv: { type: "array", items: { type: "string" } },
+          cwd: { type: "string" },
         },
         ["worktreeId", "executable", "argv"],
       ) as Record<string, JsonValue>,
@@ -239,6 +242,10 @@ export function defineEffects(git: GitPort) {
           if (typeof item !== "string") throw new TypeError("argv entries must be strings");
           return item;
         });
+        if (record.cwd !== undefined) {
+          if (typeof record.cwd !== "string") throw new TypeError("cwd must be a string");
+          result.cwd = record.cwd as JsonValue;
+        }
         return result as unknown as GateCommandInput;
       },
     },
@@ -263,10 +270,13 @@ export function defineEffects(git: GitPort) {
     },
     effect: effects.readOnly(),
     async execute(input) {
+      // The parse above is the type gate; `input` reaches execute as the parsed JSON record.
+      const request = input as unknown as GateCommandInput;
       const result = await git.runGate({
-        worktreeId: input.worktreeId,
-        executable: input.executable,
-        argv: input.argv,
+        worktreeId: request.worktreeId,
+        executable: request.executable,
+        argv: request.argv,
+        ...(typeof request.cwd === "string" ? { cwd: request.cwd } : {}),
       });
       return { exitCode: result.exitCode, outputTail: result.outputTail };
     },

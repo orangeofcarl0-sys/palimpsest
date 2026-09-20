@@ -64,6 +64,15 @@ interface GateCommandInput {
   readonly worktreeId: string;
   readonly executable: string;
   readonly argv: readonly string[];
+  /**
+   * Where to run. Absent ⇒ the attempt's worktree (`worktreePath(worktreeId)`).
+   *
+   * In-place attempts have NO worktree — their work happens in the canonical repository — so the
+   * caller passes the repository here. Measured live: without this the gate spawned with a cwd
+   * that does not exist, `execFile` failed with ENOENT, and in-place could not record evidence at
+   * all (the attempt reached VERIFYING with zero evidence and nothing to promote).
+   */
+  readonly cwd?: string | undefined;
 }
 
 /** PLMP-CTX-2 §2: read-only lexical scan over a worktree's text files. */
@@ -449,7 +458,7 @@ export class GitCliPort implements GitPort {
   }
 
   async runGate(input: GateCommandInput): Promise<{ exitCode: number | null; outputTail: string }> {
-    return runExecutable(input.executable, input.argv, this.worktreePath(input.worktreeId));
+    return runExecutable(input.executable, input.argv, input.cwd ?? this.worktreePath(input.worktreeId));
   }
 
   async scanLexical(input: LexicalScanInput): Promise<LexicalMatch[]> {

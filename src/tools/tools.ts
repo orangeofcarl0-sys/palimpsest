@@ -330,13 +330,15 @@ export function definePalimpsestTools(controller: ProjectController): DshToolDef
             evidence_id: string;
             status: string;
             exit_code: number | null;
-            value: { exit_code?: number; output_tail?: string };
           };
+          const tail = controller.gateObservationOutput(attemptId, predicate, command);
           result = {
             evidenceId: evidence.evidence_id,
             status: evidence.status,
             exitCode: evidence.exit_code,
-            ...(evidence.value.output_tail === undefined ? {} : { outputTail: evidence.value.output_tail }),
+            // Transient diagnostics (never persisted): an opaque exit code is unreadable without
+            // the command's own output, and the caller cannot see the host's stdout any other way.
+            ...(tail === undefined ? {} : { outputTail: tail }),
           };
         }
         if (gateId !== undefined) {

@@ -20,6 +20,8 @@ export interface GateCommandRequest {
   worktreeId: string;
   executable: string;
   argv: string[];
+  /** Absent ⇒ the attempt's worktree; in-place attempts pass the canonical repository. */
+  cwd?: string | undefined;
   scope: string;
   callId: string;
   /** Plan revision the gate runs under (authorization evidence derivation). */
@@ -49,7 +51,12 @@ export async function runGateCommand(
     try {
       return await effects.invoke(
         effects.actions.gateCommand,
-        { worktreeId: request.worktreeId, executable: request.executable, argv: request.argv },
+        {
+          worktreeId: request.worktreeId,
+          executable: request.executable,
+          argv: request.argv,
+          ...(request.cwd === undefined ? {} : { cwd: request.cwd }),
+        },
         { scope: request.scope, callId: request.callId, revision: request.revision },
       );
     } catch (error) {

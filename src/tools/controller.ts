@@ -410,6 +410,13 @@ export class ProjectController {
   readonly recovery: PromotionRecoveryService;
   readonly execution: ExecutionMode;
   /**
+   * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
+   * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
+   * conformance fixtures — but an opaque exit code (pytest's 5) is unreadable without it, and the
+   * agent cannot see the host's stdout any other way. Bounded: the oldest entries are dropped.
+   */
+  readonly #gateOutputs = new Map<string, string>();
+  /**
    * H1 §3.4 D-2: the slot policy is read from the declared role table on every
    * use - the declaration on the log is the single source of truth. Missing
    * declaration fails closed (claims only exist after genesis).
@@ -1805,6 +1812,23 @@ export class ProjectController {
    * match: `executable` plus the declared argv prefix (`python -m pytest` authorizes
    * `python -m pytest -q`, not `python -m blackout`). An empty allowlist authorizes nothing.
    */
+  /** Read the transient tail of the last observation for one gate (see #gateOutputs). */
+  gateObservationOutput(attemptId: string, predicate: string, command: readonly string[]): string | undefined {
+    return this.#gateOutputs.get(this.#gateOutputKey(attemptId, predicate, command));
+  }
+
+  #gateOutputKey(attemptId: string, predicate: string, command: readonly string[]): string {
+    return `${attemptId} ${predicate} ${command.join(" ")}`;
+  }
+
+  #rememberGateOutput(attemptId: string, predicate: string, command: readonly string[], tail: string): void {
+    if (this.#gateOutputs.size >= 64) {
+      const oldest = this.#gateOutputs.keys().next().value;
+      if (oldest !== undefined) this.#gateOutputs.delete(oldest);
+    }
+    this.#gateOutputs.set(this.#gateOutputKey(attemptId, predicate, command), tail);
+  }
+
   #assertGateCommandAllowed(envelope: TaskEnvelope, command: readonly string[]): void {
     const authorized = (envelope.allowed_commands ?? []).some(
       (entry) =>
@@ -1844,6 +1868,9 @@ export class ProjectController {
       worktreeId: input.attemptId,
       executable,
       argv: input.command.slice(1),
+      // In-place attempts have no worktree: their tree IS the repository, and the gate must run
+      // where the work is (measured live: a missing cwd made every in-place gate unobservable).
+      ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
       scope: this.projectId,
       callId: `gate:${input.attemptId}:${canonicalDigest({
         predicate: input.predicate,
@@ -1856,6 +1883,7 @@ export class ProjectController {
         `gate command ${input.command.join(" ")} produced no observable exit code — evidence is not recorded (an unobserved run is not a negative result)${observation.outputTail === "" ? "" : `; output: ${observation.outputTail}`}`,
       );
     }
+    this.#rememberGateOutput(input.attemptId, input.predicate, input.command, observation.outputTail);
     const evidenceId = stableEntityId(
       "evidence",
       actionKey("evidence-v1", {
@@ -2053,6 +2081,7 @@ export class ProjectController {
       worktreeId: attemptId,
       executable: command.executable,
       argv: command.argv_prefix,
+      ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
       scope: this.projectId,
       callId: `gate:auto:${attemptId}`,
       revision: this.promotions.projectRevision(),

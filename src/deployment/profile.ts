@@ -89,6 +89,39 @@ export interface DeploymentServeConfig {
   readonly token?: string | undefined;
 }
 
+/** The operator's allowed gate commands: a closed, validated list (no widening, no defaults). */
+function parsePolicy(value: unknown, what: string): {
+  allowed_commands: Array<{ executable: string; argv_prefix: string[] }>;
+} {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    fail("invalid_value", `${what}.policy must be an object`);
+  }
+  const record = value as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    if (key !== "allowed_commands") fail("unknown_field", `${what}.policy has unknown field "${key}"`);
+  }
+  const commands = record.allowed_commands;
+  if (!Array.isArray(commands) || commands.length === 0) {
+    fail("invalid_value", `${what}.policy.allowed_commands must be a non-empty array`);
+  }
+  return {
+    allowed_commands: commands.map((entry) => {
+      if (typeof entry !== "object" || entry === null || Array.isArray(entry)) {
+        fail("invalid_value", `${what}.policy.allowed_commands entries must be objects`);
+      }
+      const item = entry as Record<string, unknown>;
+      if (typeof item.executable !== "string" || item.executable.length === 0) {
+        fail("invalid_value", `${what}.policy.allowed_commands[].executable must be a non-empty string`);
+      }
+      const prefix = item.argv_prefix;
+      if (!Array.isArray(prefix) || prefix.some((token) => typeof token !== "string")) {
+        fail("invalid_value", `${what}.policy.allowed_commands[].argv_prefix must be an array of strings`);
+      }
+      return { executable: item.executable, argv_prefix: prefix as string[] };
+    }),
+  };
+}
+
 function parseExecutionMode(value: string): "worktree" | "in-place" {
   if (value === "worktree" || value === "in-place") return value;
   return fail("invalid_value", `execution must be "worktree" or "in-place", got "${value}"`);
@@ -108,6 +141,14 @@ export interface ProjectAgentDeploymentProfile {
    * checked against the envelope's write_paths) rather than assembled from caller claims.
    */
   readonly execution?: "worktree" | "in-place" | undefined;
+  /**
+   * The OPERATOR's task policy for this deployment: at minimum the gate commands this project's
+   * toolchain actually uses (`node --test`, `cargo test`, …). It is a bound, never a suggestion —
+   * the envelope authorizes only commands named here, and no tool lets an agent widen it.
+   */
+  readonly policy?: {
+    readonly allowed_commands: ReadonlyArray<{ readonly executable: string; readonly argv_prefix: readonly string[] }>;
+  } | undefined;
   /** Durable continuity locus id (PersistentPoint) bound to `localPeer`. */
   readonly persistentPoint?: string | undefined;
   readonly transport: {
@@ -355,6 +396,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "localPeer",
       "repository",
       "execution",
+      "policy",
       "persistentPoint",
       "transport",
       "databases",
@@ -390,6 +432,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     ...(optionalString(object, "execution", what) === undefined
       ? {}
       : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
+    ...(object.policy === undefined ? {} : { policy: parsePolicy(object.policy, what) }),
     ...(optionalStableId(object, "persistentPoint", what) === undefined ? {} : { persistentPoint: optionalStableId(object, "persistentPoint", what)! }),
     transport: Object.freeze({
       namespace: stableId(transportObject.namespace, `${what}.transport.namespace`),
