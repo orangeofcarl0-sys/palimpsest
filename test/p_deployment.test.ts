@@ -227,4 +227,36 @@ describe("G10-P deployment profile", () => {
 
 process.on("exit", () => {
   for (const child of CHILD_PIDS) child.kill();
+
+});
+
+describe("deployment profile: execution mode", () => {
+  it("accepts in-place and worktree, and rejects anything else", () => {
+    const base = {
+      schemaVersion: 1,
+      profileId: "p",
+      projectId: "p",
+      localPeer: "peer",
+      repository: "/tmp/repo",
+      transport: { namespace: "n", databasePath: "/tmp/t.sqlite" },
+      databases: {
+        orchestration: "/tmp/o.sqlite",
+        ordarium: "/tmp/ord.sqlite",
+        coordination: "/tmp/c.sqlite",
+        transportCursors: "/tmp/cur.sqlite",
+        attentionMarks: "/tmp/a.sqlite",
+        boundaryMemory: "/tmp/b.sqlite",
+        runtimeScope: "/tmp/rs.sqlite",
+        projectAssociations: "/tmp/as.sqlite",
+        projectJournal: "/tmp/j.sqlite",
+        management: "/tmp/m.sqlite",
+      },
+    };
+    expect(parseDeploymentProfile({ ...base, execution: "in-place" }).execution).toBe("in-place");
+    expect(parseDeploymentProfile({ ...base, execution: "worktree" }).execution).toBe("worktree");
+    expect(parseDeploymentProfile(base).execution).toBeUndefined();
+    // The closed key set must name it: a typo'd or unknown value fails loudly, and the field is
+    // not an unknown-key rejection (the live defect: the host refused to boot until it was listed).
+    expect(() => parseDeploymentProfile({ ...base, execution: "inplace" })).toThrow(/in-place/);
+  });
 });
