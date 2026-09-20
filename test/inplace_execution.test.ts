@@ -16,6 +16,7 @@ import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { installPalimpsest, trustedDefaultPolicy } from "../src/install.js";
+import { parseGateDefinition } from "../src/evidence/index.js";
 import { GitCliPort } from "../src/effects/index.js";
 import { definePalimpsestTools } from "../src/tools/index.js";
 
@@ -362,5 +363,77 @@ describe("in-place promotion: the tree must not move past the report", () => {
     await installed.controller.promoteAttempt({ attemptId }).catch((error: unknown) => {
       expect(String((error as Error).message)).not.toMatch(/work landed after the report/);
     });
+  });
+});
+
+describe("in-place promotion: the ledger advances to the work that is already in the tree", () => {
+  const POLICY = [
+    { executable: "python", argv_prefix: ["-m", "pytest"] },
+    { executable: "python", argv_prefix: ["-c"] },
+  ];
+
+  it("promotes: the task is satisfied and the ledger head becomes the recorded commit", async () => {
+    const { repo, head: base } = workspace();
+    const { call, installed } = makeStack(repo, POLICY);
+    await call("palimpsest_start", {
+      projectId: "inplace",
+      goal: "close the loop in place",
+      headCommit: base,
+      tasks: [
+        { task_id: "t1", objective: "edit dedupe", depends_on: [], write_paths: ["src"], required_artifacts: ["src/dedupe.ts"] },
+      ],
+    });
+    await call("palimpsest_next", {});
+    const created = (await call("palimpsest_next", {})) as { entityId: string };
+    const attemptId = created.entityId;
+    await call("palimpsest_claim", { attemptId });
+
+    // Work, commit, then observe: the recorded commit contains the work and IS the repo head.
+    writeFileSync(join(repo, "src", "dedupe.ts"), "export const dedupe = (v: number[]) => [...new Set(v)]; // counted");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "counted"], { cwd: repo });
+    const recorded = execFileSync("git", ["rev-parse", "HEAD"], { cwd: repo }).toString().trim();
+    await call("palimpsest_report", { attemptId, workerStatus: "completed", summary: "done" });
+
+    // Evidence the release gate will require, observed by the product.
+    await call("palimpsest_gate", { attemptId, predicate: "process_exit_zero", command: ["python", "-c", "pass"] });
+
+    // The scheduler settles the batch, then the operator declares and evaluates the gate.
+    for (let step = 0; step < 8; step += 1) {
+      if (installed.controller.status().tasks[0]?.state === "VERIFYING") break;
+      if (installed.controller.step() === null) break;
+    }
+    installed.controller.declareGate(
+      parseGateDefinition({
+        gate_id: "gate-release",
+        version: 1,
+        subject_type: "attempt",
+        require: { all: [{ exists: { predicate: "process_exit_zero" } }] },
+      }),
+      "in-place loop",
+    );
+    expect(installed.controller.evaluateAttemptGate("gate-release", attemptId).verdict).toBe("PASS");
+
+    // The defect this pins, found live: promotion ran a worktree-style merge whose precondition
+    // (repo head == the ledger's proven head) can NEVER hold in-place, because the agent's own
+    // commit is the repo head. The merge is now performed against the repository's head — git's
+    // honest "Already up to date" — while the recorded fact still advances from the chain head.
+    const outcome = await installed.controller.promoteAttempt({ attemptId, gateId: "gate-release" });
+    expect(outcome.resultingHeadCommit).toBe(recorded);
+
+    // The operator's last step: the promotion advanced the head, and the machine reconciles that
+    // advance and settles the batch — exactly what `palimpsest control next` does for a person.
+    for (let turn = 0; turn < 6; turn += 1) {
+      const state = installed.controller.status();
+      if (state.tasks.every((entry) => entry.state === "SATISFIED") && state.head?.state === "IN_SYNC") break;
+      await installed.controller.runTurn();
+    }
+    const after = installed.controller.status();
+    expect(after.tasks[0]?.state).toBe("SATISFIED");
+    expect(after.head?.projectHeadCommit).toBe(recorded);
+    expect(after.head?.state).toBe("IN_SYNC");
+    expect(after.promotions.length).toBe(1);
+    // And the work is in the canonical head, not merely adjacent to it.
+    expect(execFileSync("git", ["show", "HEAD:src/dedupe.ts"], { cwd: repo }).toString()).toContain("counted");
   });
 });

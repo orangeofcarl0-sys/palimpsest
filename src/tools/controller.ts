@@ -499,7 +499,7 @@ export class ProjectController {
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
     this.execution = options.execution ?? "worktree";
-    this.promotions = new PromotionManager(options.store, options.effects, options.projectId);
+    this.promotions = new PromotionManager(options.store, options.effects, options.projectId, this.execution);
     this.recovery = createPromotionRecoveryService({
       store: options.store,
       effects: options.effects,

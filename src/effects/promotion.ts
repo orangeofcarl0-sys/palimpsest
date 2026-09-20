@@ -102,11 +102,29 @@ export class PromotionManager {
   readonly #effects: PalimpsestEffectsRuntime;
   readonly projectId: string;
 
-  constructor(store: EventStore, effects: PalimpsestEffectsRuntime, projectId: string) {
+  /**
+   * @param execution - where attempts work. "worktree" (default): the promotion merges the
+   *   attempt's worktree commit into the canonical branch, and the repository head must equal the
+   *   proven effect head for that merge to be the effect it claims to be. "in-place": the agent's
+   *   commits ARE the canonical tree, so the repository head is already the recorded commit and the
+   *   merge is a no-op ("Already up to date"); the git effect still runs — the audit trail records
+   *   a real effect with a real outcome — but the head it is performed AGAINST is the repository's,
+   *   not the chain's. Measured live: passing the chain head there made every in-place promotion
+   *   fail its precondition, because the agent's own commit had already moved the repository head.
+   */
+  constructor(
+    store: EventStore,
+    effects: PalimpsestEffectsRuntime,
+    projectId: string,
+    execution: "worktree" | "in-place" = "worktree",
+  ) {
     this.#store = store;
     this.#effects = effects;
     this.projectId = projectId;
+    this.#execution = execution;
   }
+
+  readonly #execution: "worktree" | "in-place";
 
   projectRevision(): number {
     const row = this.#store.connection
@@ -451,12 +469,18 @@ export class PromotionManager {
     const revision = this.projectRevision();
 
     try {
+      // The head the merge is performed AGAINST. Worktree: the proven effect head, because the
+      // worktree's commit is not on the canonical branch yet. In-place: the repository's own head,
+      // which the controller has already proven equals the attempt's recorded commit — so the
+      // merge is git's honest "Already up to date" rather than a refusal.
+      const mergeExpectedHead =
+        this.#execution === "in-place" ? options.sourceCommit : options.expectedHeadCommit;
       const outcome = await this.#effects.invoke(
         this.#effects.actions.gitPromote,
         {
           promotionId,
           sourceCommit: options.sourceCommit,
-          expectedHeadCommit: options.expectedHeadCommit,
+          expectedHeadCommit: mergeExpectedHead,
         },
         { scope: this.projectId, callId: `promote:${promotionId}`, revision: revision },
       );
