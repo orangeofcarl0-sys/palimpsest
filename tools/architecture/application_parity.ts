@@ -306,6 +306,33 @@ export const REVIEWED_ROUTE_ADDITIONS: readonly { readonly path: string; readonl
 ]);
 
 /**
+ * Tools added AFTER the canonical baseline, each with a reason.
+ *
+ * Routes have had this escape since the reasoning index was added; tools had none, which made a new
+ * tool inexpressible. That is a real gap rather than a deliberate strictness: the product grows by
+ * adding tools, and the only alternatives were re-capturing the baseline — which would erase the
+ * very thing the fixture exists for — or never adding one.
+ *
+ * Teeth are the same as the route list and no looser: the name set is still compared in BOTH
+ * directions, so a REMOVED tool still fails, an unlisted ADDITION still fails, and a listed addition
+ * must carry a written reason. Nothing here relaxes an existing tool's contract; that is
+ * `REVIEWED_TOOL_CONTRACT_CHANGES`, which covers the description alone.
+ */
+export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly reason: string }[] = Object.freeze([
+  {
+    name: "palimpsest_finish",
+    reason:
+      "PLMP-LEAN-1 appendix A. The agent could state done-ness only by operating the governance " +
+      "machinery itself — choosing a predicate, naming a gate id, running the command and reporting " +
+      "the result — and the live sessions measured the cost: work finished with the attempt left " +
+      "RUNNING, because the last step was the product's job done by hand. This tool lets the agent " +
+      "say it once and the product derive the rest (which commands to run, what the write scope " +
+      "actually was, whether the declared artifacts exist), with every mechanical fact OBSERVED " +
+      "rather than reported. It adds a tool and changes no existing contract.",
+  },
+]);
+
+/**
  * Tool contracts changed AFTER the canonical baseline, each with a reason.
  *
  * Same idiom, deliberately narrower teeth. The allowance covers the DESCRIPTION of the named tool
@@ -569,10 +596,14 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
     compareList(`${label}.installedCapabilityKeys`, expected.installedCapabilityKeys, actual.installedCapabilityKeys);
     compareList(`${label}.applicationSurfaceKeys`, expected.applicationSurfaceKeys, actual.applicationSurfaceKeys);
     compareList(`${label}.applicationFacesPresent`, expected.applicationFacesPresent, actual.applicationFacesPresent);
+    /* §2/§3 with the one reasoned escape the routes already have: a tool added after the baseline
+       and recorded in REVIEWED_TOOL_ADDITIONS is not an "unexpected" entry — while a REMOVED tool,
+       or an addition nobody recorded, still is. */
+    const reviewedTools = new Set(REVIEWED_TOOL_ADDITIONS.map((entry) => entry.name));
     compareList(
       `${label}.dshTools`,
       expected.dshTools.map((tool) => tool.name),
-      actual.dshTools.map((tool) => tool.name),
+      actual.dshTools.map((tool) => tool.name).filter((name) => !reviewedTools.has(name)),
     );
     for (const tool of expected.dshTools) {
       const found = actual.dshTools.find((candidate) => candidate.name === tool.name);
