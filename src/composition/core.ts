@@ -93,7 +93,16 @@ export function defaultAllocateActivationId(subject: string, context: string): s
  * The trusted default task policy of the golden path. Public API, like
  * `defaultAllocateActivationId`; it lives here because it belongs to the core composition.
  */
-export function trustedDefaultPolicy(): TaskPolicy {
+/**
+ * @param override - the OPERATOR's narrowing of the default. Measured live: the default gate
+ *   command is `python -m pytest`, and a project whose toolchain is not Python could not record
+ *   any gate evidence at all — every attempt reached VERIFYING with zero evidence, because the
+ *   envelope authorizes only commands from this policy and no caller could declare the project's
+ *   own. A deployment therefore declares its commands in the profile; nothing else widens them.
+ */
+export function trustedDefaultPolicy(
+  override: Partial<ConstructorParameters<typeof TaskPolicy>[0]> = {},
+): TaskPolicy {
   return new TaskPolicy({
     policy_id: "trusted-default",
     read_paths: ["src"],
@@ -104,5 +113,6 @@ export function trustedDefaultPolicy(): TaskPolicy {
     lease_s: 10,
     attempt_limit: 2,
     candidate_limit: 1,
+    ...override,
   });
 }

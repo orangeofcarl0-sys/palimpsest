@@ -15,7 +15,7 @@ import { join } from "node:path";
 
 import { afterAll, describe, expect, it } from "vitest";
 
-import { installPalimpsest } from "../src/install.js";
+import { installPalimpsest, trustedDefaultPolicy } from "../src/install.js";
 import { GitCliPort } from "../src/effects/index.js";
 import { definePalimpsestTools } from "../src/tools/index.js";
 
@@ -60,7 +60,10 @@ function hostStub() {
   };
 }
 
-function makeStack(repo: string) {
+function makeStack(
+  repo: string,
+  allowedCommands?: Array<{ executable: string; argv_prefix: string[] }>,
+) {
   const git = new GitCliPort(repo, join(repo, ".palimpsest", "worktrees"));
   const host = hostStub();
   const installed = installPalimpsest(host as never, {
@@ -70,6 +73,9 @@ function makeStack(repo: string) {
     repository: repo,
     git,
     execution: "in-place",
+    ...(allowedCommands === undefined
+      ? {}
+      : { policy: trustedDefaultPolicy({ allowed_commands: allowedCommands }) }),
   } as never);
   cleanups.push(() => {
     try {
@@ -261,5 +267,41 @@ describe("gate observation: only a number is an exit code", () => {
     // A real command's real code is still observed exactly.
     const failing = await git.runGate({ worktreeId: "attempt-x", executable: "python", argv: ["-c", "import sys; sys.exit(5)"] });
     expect(failing.exitCode).toBe(5);
+  });
+});
+
+describe("in-place gate: it runs where the work is", () => {
+  it("the gate executes in the repository and records the observed exit code", async () => {
+    const { repo, head: base } = workspace();
+    // The OPERATOR declares this project's gate commands (the profile's policy block); nothing
+    // else can widen them, which is why the agent could not fix this itself in the live session.
+    const { call } = makeStack(repo, [
+      { executable: "python", argv_prefix: ["-m", "pytest"] },
+      { executable: "python", argv_prefix: ["-c"] },
+    ]);
+    await call("palimpsest_start", {
+      projectId: "inplace",
+      goal: "a gate that can actually run",
+      headCommit: base,
+      tasks: [
+        { task_id: "t1", objective: "check the tree", depends_on: [], write_paths: ["src"], required_artifacts: ["src/dedupe.ts"] },
+      ],
+    });
+    await call("palimpsest_next", {});
+    const created = (await call("palimpsest_next", {})) as { entityId: string };
+    const attemptId = created.entityId;
+    await call("palimpsest_claim", { attemptId });
+
+    // The defect this pins, found live: in-place claim creates NO worktree, yet the gate spawned
+    // with the (nonexistent) worktree path as cwd → ENOENT → every in-place gate was unobservable
+    // and the project could never record evidence. The gate must run in the repository.
+    const gate = (await call("palimpsest_gate", {
+      attemptId,
+      predicate: "process_exit_zero",
+      // A real command, allowed by the envelope's default policy, that succeeds in this directory.
+      command: ["python", "-c", "print('gate ran here')"],
+    })) as { exitCode: number | null; outputTail?: string };
+    expect(gate.exitCode).toBe(0);
+    expect(String(gate.outputTail)).toContain("gate ran here");
   });
 });
