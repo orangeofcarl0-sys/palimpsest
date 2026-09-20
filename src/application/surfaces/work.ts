@@ -45,6 +45,19 @@ export interface WorkApplicationSurface {
   authorizedCommands(): readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[];
   /** The gate ids already declared, so a promotion control offers real ids instead of a text box. */
   declaredGateIds(): readonly string[];
+  /**
+   * PLMP-LEAN-1 appendix A: the agent says "this piece is done" ONCE and the product derives the
+   * rest — which commands to run, what the write scope was, whether the declared artifacts exist,
+   * and what the attempt's report must say. The caller supplies no attempt id, predicate, command,
+   * exit code or changed-file list. Every failure leaves the attempt RUNNING.
+   */
+  finish(input?: { readonly summary?: string | undefined } | undefined): Promise<{
+    readonly attemptId: string;
+    readonly state: "COMPLETED";
+    readonly changedFiles: readonly string[];
+    readonly evidenceRecorded: readonly string[];
+    readonly nextEvidenceNeeded: readonly string[];
+  }>;
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
@@ -60,6 +73,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       standard: () => deps.controller.standard(),
       authorizedCommands: () => deps.controller.authorizedCommands(),
       declaredGateIds: () => deps.controller.declaredGateIds(),
+      finish: (input) => deps.controller.finish(input ?? {}),
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),

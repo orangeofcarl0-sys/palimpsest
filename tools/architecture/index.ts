@@ -27,6 +27,7 @@ export { checkPublicApiParity, collectPublicApi } from "./public-api.js";
 export type { ExportKind, PublicApiBaseline, PublicApiParityResult, PublicApiSurface } from "./public-api.js";
 export {
   REVIEWED_ROUTE_ADDITIONS,
+  REVIEWED_TOOL_ADDITIONS,
   REVIEWED_TOOL_CONTRACT_CHANGES,
   canonicalJson,
   captureApplicationParity,
