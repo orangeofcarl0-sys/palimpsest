@@ -15,6 +15,8 @@
 
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 
 import {
   actionKey,
@@ -1851,7 +1853,7 @@ export class ProjectController {
   }
 
   #gateOutputKey(attemptId: string, predicate: string, command: readonly string[]): string {
-    return `${attemptId} ${predicate} ${command.join(" ")}`;
+    return `${attemptId}\u0000${predicate}\u0000${command.join(" ")}`;
   }
 
   #rememberGateOutput(attemptId: string, predicate: string, command: readonly string[], tail: string): void {
@@ -1917,34 +1919,52 @@ export class ProjectController {
       );
     }
     this.#rememberGateOutput(input.attemptId, input.predicate, input.command, observation.outputTail);
-    const evidenceId = stableEntityId(
-      "evidence",
-      actionKey("evidence-v1", {
-        project_id: this.projectId,
-        attempt_id: input.attemptId,
-        predicate: input.predicate,
-        command: input.command,
-      }),
+    return this.#recordCommandEvidence(
+      input.attemptId,
+      input.predicate,
+      input.command,
+      observation.exitCode,
+      input.observedArtifacts,
     );
+  }
+
+  /**
+   * The single place a COMMAND predicate's EVIDENCE_ADDED event is built, so `gate` and `finish`
+   * cannot drift apart: `gate` runs the caller's command and hands the observed exit code here,
+   * and `finish` does the same after running the project standard's own commands. The exit code is
+   * always an OBSERVATION — no caller-supplied value reaches this point (SR-1 #134).
+   */
+  #recordCommandEvidence(
+    attemptId: string,
+    predicate: EvidenceAtom["predicate"],
+    command: readonly string[],
+    exitCode: number,
+    observedArtifacts?: readonly string[] | undefined,
+  ): SchedulerEvent {
+    const [row, envelope] = this.#attemptContext(attemptId);
+    const key = actionKey("evidence-v1", {
+      project_id: this.projectId,
+      attempt_id: attemptId,
+      predicate,
+      command,
+    });
+    const evidenceId = stableEntityId("evidence", key);
     const evidence: EvidenceAtom = {
       schema_version: 1,
       project_id: this.projectId,
       evidence_id: evidenceId,
       subject_type: "attempt",
-      subject_id: input.attemptId,
-      subject_digest: canonicalDigest({
-        attempt_id: input.attemptId,
-        command: input.command,
-      }),
-      predicate: input.predicate,
-      value: { exit_code: observation.exitCode },
+      subject_id: attemptId,
+      subject_digest: canonicalDigest({ attempt_id: attemptId, command }),
+      predicate,
+      value: { exit_code: exitCode },
       project_revision: envelope.project_revision,
       input_fingerprint: envelope.project_digest,
-      command: [...input.command],
-      exit_code: observation.exitCode,
+      command: [...command],
+      exit_code: exitCode,
       environment_digest: "e".repeat(64),
       dependency_digest: null,
-      observed_artifacts: [...(input.observedArtifacts ?? envelope.required_artifacts)],
+      observed_artifacts: [...(observedArtifacts ?? envelope.required_artifacts)],
       producer: "palimpsest-gate",
       created_at: this.#now(),
       status: "active",
@@ -1960,15 +1980,234 @@ export class ProjectController {
         payload: { evidence },
         causation_id: row.last_event_id,
         correlation_id: `evidence:${evidenceId}`,
-        idempotency_key: actionKey("evidence-v1", {
-          project_id: this.projectId,
-          attempt_id: input.attemptId,
-          predicate: input.predicate,
-          command: input.command,
-        }),
+        idempotency_key: key,
         expected_project_revision: envelope.project_revision,
       }),
     );
+  }
+
+  /**
+   * PLMP-LEAN-1 §2.6 / `INV-5`: record evidence the PRODUCT observed without running a command.
+   *
+   * `write_scope_valid` and `expected_files_exist` are observations of the tree and the filesystem,
+   * not protocol runs, so they carry `command: null` / `exit_code: null`. The frozen evidence
+   * contract already permits exactly that — its "requires command and exit_code" rule is scoped to
+   * the four process predicates (src/schema/models.ts) — so scope evidence stops being a caller's
+   * label stuck onto somebody else's command, which is what it was in the first live session.
+   */
+  #recordObservedEvidence(
+    attemptId: string,
+    predicate: EvidenceAtom["predicate"],
+    value: EvidenceAtom["value"],
+  ): SchedulerEvent {
+    const [row, envelope] = this.#attemptContext(attemptId);
+    const key = actionKey("evidence-observed-v1", {
+      project_id: this.projectId,
+      attempt_id: attemptId,
+      predicate,
+    });
+    const evidenceId = stableEntityId("evidence", key);
+    const evidence: EvidenceAtom = {
+      schema_version: 1,
+      project_id: this.projectId,
+      evidence_id: evidenceId,
+      subject_type: "attempt",
+      subject_id: attemptId,
+      subject_digest: canonicalDigest({ attempt_id: attemptId, predicate }),
+      predicate,
+      value,
+      project_revision: envelope.project_revision,
+      input_fingerprint: envelope.project_digest,
+      command: null,
+      exit_code: null,
+      environment_digest: "e".repeat(64),
+      dependency_digest: null,
+      observed_artifacts: [...envelope.required_artifacts],
+      producer: "palimpsest-finish",
+      created_at: this.#now(),
+      status: "active",
+    };
+    return this.store.append(
+      parseNewEvent({
+        schema_version: 1,
+        project_id: this.projectId,
+        event_type: "EVIDENCE_ADDED",
+        payload_version: 1,
+        entity_type: "evidence",
+        entity_id: evidenceId,
+        payload: { evidence },
+        causation_id: row.last_event_id,
+        correlation_id: `evidence:${evidenceId}`,
+        idempotency_key: key,
+        expected_project_revision: envelope.project_revision,
+      }),
+    );
+  }
+
+  /** The one attempt this principal currently has RUNNING; 0 or more than 1 is a refusal, not a guess. */
+  #uniqueRunningAttempt(): string {
+    const rows = this.store.connection
+      .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id")
+      .all(this.projectId, "RUNNING") as { attempt_id: string }[];
+    if (rows.length === 1) return rows[0]!.attempt_id;
+    if (rows.length === 0) {
+      throw new DomainValidationError(
+        "no attempt is running, so there is no work to finish — claim a task first (the plan's ready set decides which), then do the work and call finish again",
+      );
+    }
+    throw new DomainValidationError(
+      `${rows.length} attempts are running (${rows.map((row) => row.attempt_id).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
+    );
+  }
+
+  /**
+   * PLMP-LEAN-1 appendix A: the agent states done-ness ONCE and the product derives the rest.
+   *
+   * The caller says "I think this piece is done" and nothing else — no attempt id, no predicate, no
+   * command, no exit code, no changed-file list. Everything mechanical is derived from the confirmed
+   * project standard and the attempt's own envelope: which commands to run, what the write scope
+   * actually was, whether the declared artifacts exist, and what the attempt's report must say.
+   *
+   * Every failure path leaves the attempt RUNNING. A failing command, an out-of-scope change and an
+   * empty result are all still fixable; settling the attempt would turn them into a result nobody
+   * can correct.
+   */
+  async finish(input: { readonly summary?: string | undefined } = {}): Promise<{
+    readonly attemptId: string;
+    readonly state: "COMPLETED";
+    readonly changedFiles: readonly string[];
+    readonly evidenceRecorded: readonly string[];
+    readonly nextEvidenceNeeded: readonly string[];
+  }> {
+    const attemptId = this.#uniqueRunningAttempt();
+    const [, envelope] = this.#attemptContext(attemptId);
+    const standard = this.#standard;
+    if (standard === undefined) {
+      throw new DomainValidationError(
+        "this project has no confirmed completion standard, so nothing can be derived as done — the operator states one sentence first (it is proposed from the repository and confirmed once), and finish becomes available",
+      );
+    }
+
+    // The product observes the tree. In-place attempts have no worktree: their tree IS the
+    // repository, and the observation — never the caller — decides what the report says changed.
+    const observed =
+      this.execution === "in-place" ? this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit) : null;
+    const changedFiles = observed?.changedFiles ?? [];
+
+    // Empty work is refused rather than settled (§3.3): the agent can still route the task to the
+    // locus it actually belongs to, and a settled attempt with nothing in it is the waste the live
+    // session measured.
+    if (observed !== null && changedFiles.length === 0 && envelope.required_artifacts.length === 0) {
+      throw new DomainValidationError(
+        `attempt ${attemptId} has no observable work: the repository shows no changed file since ${envelope.base_commit.slice(0, 12)}, so there is nothing to finish — if this task only needed analysis it belongs to a reasoning branch, a verification or a cross-project ask rather than a work attempt; otherwise make the change and call finish again`,
+      );
+    }
+
+    // The write scope the envelope declared, checked against what the product OBSERVED.
+    const scope = envelope.write_paths;
+    const outOfScope = changedFiles.filter(
+      (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
+    );
+    if (outOfScope.length > 0) {
+      throw new DomainValidationError(
+        `attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan; the attempt is still running`,
+      );
+    }
+
+    const evidenceRecorded: string[] = [];
+    // The standard's command clauses, executed by the product in the attempt's own tree. The exit
+    // code is observed here, so a failure returns as a failure instead of being recorded as a
+    // passing predicate (which the evidence contract would reject anyway).
+    for (const clause of standard.clauses) {
+      if (clause.kind !== "command_succeeds") continue;
+      const command = [...clause.command];
+      const executable = command[0];
+      if (executable === undefined) continue;
+      this.#assertGateCommandAllowed(envelope, command);
+      const observation = (await runGateCommand(this.effects, {
+        worktreeId: attemptId,
+        executable,
+        argv: command.slice(1),
+        ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
+        scope: this.projectId,
+        callId: `finish:${attemptId}:${canonicalDigest({ predicate: clause.predicate, command }).slice(0, 16)}`,
+        revision: this.promotions.projectRevision(),
+      })) as { exitCode: number | null; outputTail: string };
+      if (observation.exitCode === null) {
+        throw new DomainValidationError(
+          `the completion standard's command ${command.join(" ")} produced no observable exit code, so no evidence is recorded — fix that command in the project standard and call finish again`,
+        );
+      }
+      if (observation.exitCode !== 0) {
+        throw new DomainValidationError(
+          `the completion standard's command ${command.join(" ")} failed (exit ${observation.exitCode})${observation.outputTail === "" ? "" : `: ${observation.outputTail}`} — the attempt is still running; fix the failure and call finish again`,
+        );
+      }
+      this.#rememberGateOutput(attemptId, clause.predicate, command, observation.outputTail);
+      this.#recordCommandEvidence(attemptId, clause.predicate, command, observation.exitCode);
+      evidenceRecorded.push(clause.predicate);
+    }
+
+    // The two observations the product makes without running anything.
+    this.#recordObservedEvidence(attemptId, "write_scope_valid", {
+      changed_files: changedFiles,
+      write_paths: [...scope],
+      out_of_scope: [],
+    });
+    evidenceRecorded.push("write_scope_valid");
+
+    if (envelope.required_artifacts.length > 0) {
+      // In-place only: the required artifacts sit in the repository this controller can read. Under
+      // worktree execution the tree lives in the attempt's worktree, whose path the git port owns,
+      // so that mode keeps using the explicit report path rather than a check that could only
+      // pretend to look.
+      if (this.execution === "in-place") {
+        const root = this.#inPlaceRepository();
+        const missing = envelope.required_artifacts.filter((path) => !existsSync(join(root, path)));
+        if (missing.length > 0) {
+          throw new DomainValidationError(
+            `attempt ${attemptId} is missing required artifacts: ${missing.join(", ")} — the attempt is still running; produce them and call finish again`,
+          );
+        }
+        this.#recordObservedEvidence(attemptId, "expected_files_exist", {
+          paths: [...envelope.required_artifacts],
+          missing: [],
+        });
+        evidenceRecorded.push("expected_files_exist");
+      }
+    }
+
+    // The report and the settlement. In-place reports re-observe the tree, so the recorded
+    // changed_files and result_commit are the product's observation rather than the caller's claim.
+    // The summary is the agent's own words when it gave any; otherwise the product states what it
+    // observed rather than asking the caller for a sentence it does not need.
+    this.report(attemptId, {
+      workerStatus: "completed",
+      summary:
+        input.summary ??
+        (observed === null
+          ? "finished"
+          : `finished: ${changedFiles.length} changed file(s) observed in the repository`),
+    });
+
+    return {
+      attemptId,
+      state: "COMPLETED",
+      changedFiles,
+      evidenceRecorded,
+      nextEvidenceNeeded: this.#nextEvidenceNeeded(attemptId),
+    };
+  }
+
+  /** What this attempt still owes before it may be promoted, in plain predicate names. */
+  #nextEvidenceNeeded(attemptId: string): readonly string[] {
+    const missing = new Set<string>();
+    for (const gateId of this.declaredGateIds()) {
+      for (const clause of this.evaluateAttemptGate(gateId, attemptId).next_evidence_needed) {
+        missing.add(clause);
+      }
+    }
+    return [...missing].sort();
   }
 
   /**

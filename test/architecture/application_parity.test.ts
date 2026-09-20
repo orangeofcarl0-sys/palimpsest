@@ -24,6 +24,7 @@ import { fileURLToPath } from "node:url";
 import { beforeAll, describe, expect, it } from "vitest";
 
 import {
+  REVIEWED_TOOL_ADDITIONS,
   REVIEWED_TOOL_CONTRACT_CHANGES,
   canonicalJson,
   captureApplicationParity,
@@ -362,9 +363,14 @@ describe("SR-1C §21 golden structural parity", () => {
     expect(FIXTURE.capture.minimalInstallation.applicationSurfaceKeys).toEqual(["work"]);
     expect(FIXTURE.capture.minimalInstallation.dshTools.map((tool) => tool.name)).toEqual(["palimpsest_surfaces"]);
     expect(live.minimalInstallation.applicationSurfaceKeys).toEqual(FIXTURE.capture.minimalInstallation.applicationSurfaceKeys);
-    expect(live.minimalInstallation.dshTools.map((tool) => tool.name)).toEqual(
-      FIXTURE.capture.minimalInstallation.dshTools.map((tool) => tool.name),
-    );
+    // The fixture stays the CANONICAL baseline, captured before any reviewed addition. The live set
+    // is that baseline plus the recorded additions, so the addition shows up as exactly that — a
+    // named, reasoned entry — rather than as silent drift. A minimal install still composes the Work
+    // face and nothing else; absence is still absence, not a stub.
+    const reviewedTools = REVIEWED_TOOL_ADDITIONS.map((entry) => entry.name);
+    expect(
+      live.minimalInstallation.dshTools.map((tool) => tool.name).filter((name) => !reviewedTools.includes(name)),
+    ).toEqual(FIXTURE.capture.minimalInstallation.dshTools.map((tool) => tool.name));
   });
 
   it("A15 the two live-qualified product tools keep their qualified contract", () => {

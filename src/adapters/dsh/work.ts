@@ -8,7 +8,7 @@
 
 import type { PalimpsestApplicationSurface } from "../../application/surface.js";
 import type { DshToolDefinition } from "../../tools/dsh_types.js";
-import { tool } from "./common.js";
+import { tool, ToolArgsError } from "./common.js";
 
 export function defineWorkTools(application: PalimpsestApplicationSurface): DshToolDefinition[] {
   const tools: DshToolDefinition[] = [];
@@ -54,5 +54,30 @@ tools.push(
       }),
     }),
   );
+
+  tools.push(
+    tool({
+      name: "palimpsest_finish",
+      description:
+        "STATE DONE-NESS ONCE, IN YOUR OWN WORDS (PLMP-LEAN-1 appendix A). Call this when the work of the currently running attempt is finished — you have made the changes and you believe the project's completion standard is met. Say only what you believe: this tool derives everything mechanical from the operator's confirmed completion standard and the attempt's own envelope — which commands to run, what the write scope actually was, whether the declared artifacts exist — and the PRODUCT runs and observes them. Do NOT supply an attempt id, a predicate, a command, an exit code, a gate id or a changed-file list; those are not arguments here and the product never trusts a caller's word for them (mechanical facts are observed, never reported). Every refusal leaves the attempt RUNNING so you can still fix it: a failing command returns the exact failure and remedy, a change outside the envelope's write scope names the offending paths, and an attempt with no observable work is refused (a task that only needed analysis belongs to a reasoning branch, a verification or a cross-project ask, not to a work attempt). On success the attempt is settled COMPLETED and the reply names the evidence recorded and any evidence still needed before promotion. The operator alone accepts or returns the result afterwards — this tool never promotes.",
+      mode: "mutating",
+      actions: ["run"],
+      extraProperties: {
+        summary: {
+          type: "string",
+          description:
+            "optional: what you consider done, in your own words (e.g. “去重改成 Set，测试通过”). Omit it and the product states what it observed instead.",
+        },
+      },
+      run: async (_action, object) => {
+        const summary = object.summary;
+        if (summary !== undefined && (typeof summary !== "string" || summary.length === 0)) {
+          throw new ToolArgsError('argument "summary" must be a non-empty string when given');
+        }
+        return application.work.finish(summary === undefined ? {} : { summary });
+      },
+    }),
+  );
+
   return tools;
 }
