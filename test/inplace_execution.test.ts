@@ -245,3 +245,21 @@ describe("in-place execution: work and observation are the same tree", () => {
     expect(existsSync(claim.worktreePath)).toBe(true);
   });
 });
+
+describe("gate observation: only a number is an exit code", () => {
+  it("a missing executable observes as null, never NaN (the live defect)", async () => {
+    const { repo } = workspace();
+    const git = new GitCliPort(repo, join(repo, ".palimpsest", "worktrees"));
+    // The gate runs with cwd = the attempt's tree; create it so only the EXECUTABLE can be missing.
+    mkdirSync(join(repo, ".palimpsest", "worktrees", "attempt-x"), { recursive: true });
+    // Measured live: a deployment whose PATH lacked the gate executable reported
+    // "exitCode must be an integer or null" because Number("ENOENT") is NaN — neither a code nor
+    // an honest null. The observation must say "no process ran", which the controller then reports
+    // as no-observation rather than recording anything.
+    const missing = await git.runGate({ worktreeId: "attempt-x", executable: "definitely-not-a-real-command-xyz", argv: [] });
+    expect(missing).toEqual({ exitCode: null, outputTail: "" });
+    // A real command's real code is still observed exactly.
+    const failing = await git.runGate({ worktreeId: "attempt-x", executable: "python", argv: ["-c", "import sys; sys.exit(5)"] });
+    expect(failing.exitCode).toBe(5);
+  });
+});
