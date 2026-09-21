@@ -1,19 +1,22 @@
 /**
- * PLMP-LEAN-1 phase 2A-Q — the derived completion contract and two-layer readiness.
- * Acceptance LEAN-A05, LEAN-A06, LEAN-A14.
+ * PLMP-LEAN-1 phase 2A-Q / 2A-Q-R — the derived completion contract, its verification policy, and
+ * two-layer readiness. Acceptance LEAN-A05, LEAN-A06, LEAN-A14.
  *
  * The contract is a PURE FUNCTION, so most of these are pure tests: no store, no git, no clock. That
  * is the point of the design — what a task must show is derivable, so it can be displayed before the
  * work starts and demanded after it, from the same object.
  *
- * The two properties worth stating plainly, because they are what the phase exists for:
+ * Four properties are worth stating plainly, because they are what these phases exist for:
  *
  *   - The ENVELOPE IS BASIS, NOT STORAGE. Nothing here adds `required_evidence` or
- *     `verification_requirement` to the envelope or to any event: the requirement is derived, and the
- *     envelope is one of its inputs.
- *   - Readiness has TWO LAYERS. "No independent verifier is composed" is a deployment fact, and it is
- *     a TASK blocker only when this task actually needs one. Marking every project NOT READY for a
- *     requirement it does not have would be dishonest.
+ *     `verification_requirement` to the envelope or to any event.
+ *   - `RequirementBasis ≠ CapabilityAssessment`. Capabilities are not an input to the contract at all,
+ *     so a verifier being configured mid-task cannot change `basisDigest` while the bar stands still.
+ *   - Verification has TWO STRENGTHS. Conflating them made the product manufacture executors for
+ *     ordinary work, which contradicts `INV-6`.
+ *   - `Task readiness is actionable; deployment readiness is descriptive.` A deployment gap is a
+ *     blocker only where a task needs that capability, and the rule is exactly
+ *     `known requirement ∧ missing capability ⇒ early blocker` — nothing weaker, nothing broader.
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
@@ -33,6 +36,7 @@ import {
 import type { ProjectStandard } from "../src/domain/standard.js";
 
 const CAPABLE: CompletionCapabilities = { independentVerifierAvailable: true, sandboxSpawnVerified: true };
+const NO_VERIFIER: CompletionCapabilities = { independentVerifierAvailable: false, sandboxSpawnVerified: true };
 const BARE: CompletionCapabilities = { independentVerifierAvailable: false, sandboxSpawnVerified: false };
 
 function standardWith(clauses: ProjectStandard["clauses"], confirmed = true): ProjectStandard {
@@ -46,19 +50,28 @@ function standardWith(clauses: ProjectStandard["clauses"], confirmed = true): Pr
 }
 
 const TEST_COMMAND = ["node", "-e", "process.exit(0)"];
+const LINT_COMMAND = ["node", "--version"];
+
 const TEST_STANDARD = standardWith([
   Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze([...TEST_COMMAND]), predicate: "tests_pass" as const }),
   Object.freeze({ kind: "scope_respected" as const }),
 ]);
 
+/** Two command clauses, so the mechanical oracle is not a single command. */
+const WIDE_STANDARD = standardWith([
+  Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze([...TEST_COMMAND]), predicate: "tests_pass" as const }),
+  Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze([...LINT_COMMAND]), predicate: "lint_pass" as const }),
+  Object.freeze({ kind: "scope_respected" as const }),
+]);
+
 const ALLOWED = [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }];
+const ALLOWED_WIDE = [...ALLOWED, { executable: "node", argv_prefix: ["--version"] }];
 
 function contractFor(input: {
   standard?: ProjectStandard;
   writePaths?: readonly string[];
   requiredArtifacts?: readonly string[];
   allowedCommands?: readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[];
-  capabilities?: CompletionCapabilities;
 }): AttemptCompletionContract {
   const writePaths = input.writePaths ?? ["src/dedupe.ts"];
   const requiredArtifacts = input.requiredArtifacts ?? [];
@@ -70,7 +83,6 @@ function contractFor(input: {
       required_artifacts: requiredArtifacts,
       allowed_commands: input.allowedCommands ?? ALLOWED,
     },
-    capabilities: input.capabilities ?? CAPABLE,
   });
 }
 
@@ -84,10 +96,7 @@ describe("LEAN-A05: the requirement is DERIVED, and the envelope is basis rather
   });
 
   it("A05 no evidence requirement is stored anywhere — the envelope is an INPUT", () => {
-    // Two derivations from identical inputs are byte-identical, which is what makes "the bar did not
-    // move after the result was seen" checkable rather than promised.
     expect(contractFor({}).basisDigest).toBe(contractFor({}).basisDigest);
-    // Changing the standard changes the digest: the bar is a function of the stated standard.
     const other = standardWith([Object.freeze({ kind: "scope_respected" as const })]);
     expect(contractFor({ standard: other }).basisDigest).not.toBe(contractFor({}).basisDigest);
   });
@@ -96,28 +105,23 @@ describe("LEAN-A05: the requirement is DERIVED, and the envelope is basis rather
     const contract = contractFor({ writePaths: ["docs/notes.md"] });
     expect(contract.mechanical.some((check) => check.kind === "run_standard_command")).toBe(false);
     expect(contract.diagnostics.join(" ")).toContain("does not apply here");
-    // The narrowing names its rule and disclaims the agent, so it is auditable rather than silent.
     expect(contract.diagnostics.join(" ")).toContain("not by the agent");
-    // Narrowing may never remove the scope assertion: that one is unconditional.
     expect(contract.mechanical.some((check) => check.kind === "assert_write_scope")).toBe(true);
   });
 });
 
 describe("LEAN-A06: scope is unconditional; expected artifacts only ever come from PRE-DECLARED paths", () => {
   it("A06 write scope is required unconditionally — even for a task that declares no write path", () => {
-    const contract = contractFor({ writePaths: [] });
-    expect(contract.mechanical).toContainEqual({ kind: "assert_write_scope" });
+    expect(contractFor({ writePaths: [] }).mechanical).toContainEqual({ kind: "assert_write_scope" });
   });
 
   it("A06 expected_files_exist is required only from pre-declared paths", () => {
-    const withArtifacts = contractFor({ requiredArtifacts: ["src/dedupe.ts"] });
-    expect(withArtifacts.mechanical).toContainEqual({
+    expect(contractFor({ requiredArtifacts: ["src/dedupe.ts"] }).mechanical).toContainEqual({
       kind: "assert_required_artifacts",
       paths: ["src/dedupe.ts"],
     });
-    // A task that declares no artifact requires no artifact check — even though it will change a file.
-    const withoutArtifacts = contractFor({ writePaths: ["src/a.ts", "src/b/c.ts"] });
-    expect(withoutArtifacts.mechanical.some((check) => check.kind === "assert_required_artifacts")).toBe(false);
+    // A task that declares no artifact requires no artifact check — even though it will change files.
+    expect(contractFor({ writePaths: ["src/a.ts", "src/b/c.ts"] }).mechanical.some((check) => check.kind === "assert_required_artifacts")).toBe(false);
   });
 
   it("A06 the standard's own declared paths join the requirement; the observed diff never does", () => {
@@ -125,100 +129,134 @@ describe("LEAN-A06: scope is unconditional; expected artifacts only ever come fr
       Object.freeze({ kind: "scope_respected" as const }),
       Object.freeze({ kind: "files_exist" as const, paths: Object.freeze(["README.md"]) }),
     ]);
-    const contract = contractFor({ standard, requiredArtifacts: ["src/dedupe.ts"] });
-    expect(contract.mechanical).toContainEqual({
+    expect(contractFor({ standard, requiredArtifacts: ["src/dedupe.ts"] }).mechanical).toContainEqual({
       kind: "assert_required_artifacts",
       paths: ["README.md", "src/dedupe.ts"],
     });
   });
 });
 
-describe("2A-Q: the verification requirement is DERIVED here and EXECUTED in 2B", () => {
-  it("a contract-boundary write path requires independent verification, with a named reason", () => {
+describe("2A-Q-R calibration: verification has two strengths, and REQUIRED stays narrow", () => {
+  it("a contract-boundary write path is REQUIRED — a strong risk knowable before the work runs", () => {
     const contract = contractFor({ writePaths: ["src/schema/models.ts"] });
     expect(contract.verification.required).toBe(true);
-    expect(contract.verification.reasons.join(" ")).toContain("contract_boundary");
+    expect(contract.verification.requiredReasons.join(" ")).toContain("contract_boundary");
   });
 
-  it("a single-command mechanical bar is thin evidence and requires verification", () => {
+  it("a single-command mechanical bar is RECOMMENDED, never REQUIRED", () => {
     const contract = contractFor({});
-    expect(contract.verification.reasons.join(" ")).toContain("single_evidence");
+    // The calibration: "one command" is a poor proxy for "one evidence fact" — one `npm test` may run
+    // five checks or five hundred — so it must not manufacture an executor for ordinary work.
+    expect(contract.verification.required).toBe(false);
+    expect(contract.verification.requiredReasons).toEqual([]);
+    expect(contract.verification.recommended).toBe(true);
+    expect(contract.verification.recommendationReasons.join(" ")).toContain("single_command_bar");
   });
 
-  it("a task with a wide mechanical bar and no boundary path needs no verification", () => {
-    const standard = standardWith([
-      Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze([...TEST_COMMAND]), predicate: "tests_pass" as const }),
-      Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze(["node", "--version"]), predicate: "lint_pass" as const }),
-      Object.freeze({ kind: "scope_respected" as const }),
-    ]);
-    const contract = deriveAttemptCompletionContract({
-      standard,
-      task: { write_paths: ["src/a.ts"], required_artifacts: [] },
-      envelope: {
-        write_paths: ["src/a.ts"],
-        required_artifacts: [],
-        allowed_commands: [...ALLOWED, { executable: "node", argv_prefix: ["--version"] }],
-      },
-      capabilities: CAPABLE,
-    });
+  it("a wide mechanical bar with no boundary path recommends nothing either", () => {
+    const contract = contractFor({ standard: WIDE_STANDARD, allowedCommands: ALLOWED_WIDE });
     expect(contract.verification.required).toBe(false);
-    expect(contract.verification.reasons).toEqual([]);
+    expect(contract.verification.recommended).toBe(false);
+  });
+
+  it("the trigger name says what it measures: single_command_bar, not single_evidence", () => {
+    const contract = contractFor({});
+    const text = contract.verification.recommendationReasons.join(" ");
+    expect(text).toContain("single_command_bar");
+    expect(text).not.toContain("single_evidence");
   });
 });
 
-describe("LEAN-A14: readiness has two layers, and a deployment gap is only a task blocker when it matters", () => {
+describe("2A-Q-R: RequirementBasis ≠ CapabilityAssessment", () => {
+  it("capabilities are not an input, so a verifier appearing mid-task cannot move basisDigest", () => {
+    // `deriveAttemptCompletionContract` takes no capabilities at all — the separation is structural,
+    // not a convention. Two derivations from the same normative inputs are identical, and the
+    // readiness assessment is where capability differences show up.
+    const contract = contractFor({});
+    const atT0 = deriveCompletionReadiness({
+      standard: TEST_STANDARD,
+      authorizedCommands: ALLOWED,
+      capabilities: NO_VERIFIER,
+      contract,
+    });
+    const atT1 = deriveCompletionReadiness({
+      standard: TEST_STANDARD,
+      authorizedCommands: ALLOWED,
+      capabilities: CAPABLE,
+      contract,
+    });
+    // The bar is the same object...
+    expect(atT1.deployment.independentVerifierAvailable).not.toBe(atT0.deployment.independentVerifierAvailable);
+    // ...and only the ASSESSMENT moved.
+    expect(contract.basisDigest).toBe(contractFor({}).basisDigest);
+  });
+
+  it("no capability appears in the contract's diagnostics either", () => {
+    const text = contractFor({}).diagnostics.join(" ");
+    expect(text).not.toContain("verifier");
+    expect(text).not.toContain("sandbox");
+  });
+});
+
+describe("LEAN-A14: task readiness is actionable, deployment readiness is descriptive", () => {
   const readiness = (input: Parameters<typeof deriveCompletionReadiness>[0]) => deriveCompletionReadiness(input);
 
-  it("A14 an unconfirmed standard blocks the DEPLOYMENT layer, naming the operator's action", () => {
+  it("A14 an unconfirmed standard is INCOMPLETE — nothing can be derived at all", () => {
     const result = readiness({
       standard: standardWith([], false),
       authorizedCommands: ALLOWED,
       capabilities: CAPABLE,
     });
     expect(result.deployment.standardConfirmed).toBe(false);
-    expect(result.deployment.state).toBe("BLOCKED");
-    expect(result.deployment.blockers.join(" ")).toContain("no confirmed completion standard");
-    // No task exists yet, so the task layer is not answerable — and says so rather than guessing.
+    expect(result.deployment.state).toBe("INCOMPLETE");
+    expect(result.deployment.gaps.join(" ")).toContain("no confirmed completion standard");
     expect(result.task).toBeNull();
   });
 
-  it("A14 a deployment with no verifier is READY for a task that does not need one", () => {
-    const standard = standardWith([
-      Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze([...TEST_COMMAND]), predicate: "tests_pass" as const }),
-      Object.freeze({ kind: "command_succeeds" as const, command: Object.freeze(["node", "--version"]), predicate: "lint_pass" as const }),
-      Object.freeze({ kind: "scope_respected" as const }),
-    ]);
-    const contract = deriveAttemptCompletionContract({
-      standard,
-      task: { write_paths: ["src/a.ts"], required_artifacts: [] },
-      envelope: {
-        write_paths: ["src/a.ts"],
-        required_artifacts: [],
-        allowed_commands: [...ALLOWED, { executable: "node", argv_prefix: ["--version"] }],
-      },
-      capabilities: BARE,
+  it("A14 a deployment with no verifier is DEGRADED, NOT blocked — and a task needing none is READY", () => {
+    const contract = contractFor({ standard: WIDE_STANDARD, allowedCommands: ALLOWED_WIDE });
+    const result = readiness({
+      standard: WIDE_STANDARD,
+      authorizedCommands: ALLOWED_WIDE,
+      capabilities: NO_VERIFIER,
+      contract,
     });
-    expect(contract.verification.required).toBe(false);
-    const result = readiness({ standard, authorizedCommands: ALLOWED, capabilities: BARE, contract });
-    // The deployment honestly reports the absence...
-    expect(result.deployment.independentVerifierAvailable).toBe(false);
-    // ...and the TASK is still READY, because it does not require what is absent.
+    // Descriptive layer: the gap is named...
+    expect(result.deployment.state).toBe("DEGRADED");
+    expect(result.deployment.gaps.join(" ")).toContain("no verifier");
+    // ...and the actionable layer still says READY, because this task needs nothing that is missing.
+    // A global BLOCKED here would contradict the task layer — the two answer different questions.
     expect(result.task?.verificationRequired).toBe(false);
-    expect(result.task?.verificationSatisfiable).toBe(true);
     expect(result.task?.state).toBe("READY");
+    expect(result.task?.blockers).toEqual([]);
   });
 
-  it("A14 a task that DOES need verification is BLOCKED before the work starts, not at promotion", () => {
-    const contract = contractFor({ writePaths: ["src/schema/models.ts"], capabilities: BARE });
+  it("A14 a task that REQUIRES verification is blocked before the work starts, not at promotion", () => {
+    const contract = contractFor({ writePaths: ["src/schema/models.ts"] });
     const result = readiness({
       standard: TEST_STANDARD,
       authorizedCommands: ALLOWED,
-      capabilities: BARE,
+      capabilities: NO_VERIFIER,
       contract,
     });
     expect(result.task?.state).toBe("BLOCKED");
     expect(result.task?.verificationSatisfiable).toBe(false);
-    expect(result.task?.blockers.join(" ")).toContain("requires independent verification");
+    expect(result.task?.blockers.join(" ")).toContain("REQUIRES independent verification");
+  });
+
+  it("A14 a RECOMMENDED-but-unavailable verifier is an advisory, never a blocker", () => {
+    const contract = contractFor({});
+    expect(contract.verification.recommended).toBe(true);
+    const result = readiness({
+      standard: TEST_STANDARD,
+      authorizedCommands: ALLOWED,
+      capabilities: NO_VERIFIER,
+      contract,
+    });
+    expect(result.task?.state).toBe("READY");
+    expect(result.task?.blockers).toEqual([]);
+    expect(result.task?.advisories.join(" ")).toContain("recommended");
+    expect(result.task?.advisories.join(" ")).toContain("not a reason to refuse");
   });
 
   it("A14 a required command the envelope does not authorize is surfaced NOW, not discovered at finish", () => {
@@ -233,6 +271,18 @@ describe("LEAN-A14: readiness has two layers, and a deployment gap is only a tas
     });
     expect(result.task?.state).toBe("BLOCKED");
     expect(result.task?.blockers.join(" ")).toContain("does not authorize it");
+  });
+
+  it("A14 a task that must RUN something is blocked when the sandbox cannot spawn", () => {
+    const contract = contractFor({});
+    const result = readiness({
+      standard: TEST_STANDARD,
+      authorizedCommands: ALLOWED,
+      capabilities: BARE,
+      contract,
+    });
+    expect(result.task?.state).toBe("BLOCKED");
+    expect(result.task?.blockers.join(" ")).toContain("sandbox can spawn");
   });
 });
 
@@ -314,22 +364,19 @@ describe("2A-Q: readiness is reachable and the derivation stores nothing", () =>
     expect(countEvents()).toBe(before);
     expect(second).toEqual(first);
 
-    // The deployment layer is READY (standard confirmed, commands authorized, repository bound), and
-    // the task layer now exists because a task is running.
     expect(first.deployment.standardConfirmed).toBe(true);
     expect(first.deployment.commandsAuthorized).toBe(true);
     expect(first.task).not.toBeNull();
-    // No verifier is composed in this fixture, and this task's mechanical bar is ONE command — which
-    // the derivation reads as thin evidence (`single_evidence`). The honest verdict is therefore
-    // BLOCKED for the TASK while the deployment merely reports the absence: the two layers disagree
-    // on purpose, and the task layer is the one that decides. In phase 2B this requirement becomes
-    // enforceable at promotion; until then readiness is the only place it is visible, which is why it
-    // is stated here rather than discovered later.
+    // This fixture composes no verifier and no verification store, so the deployment layer is
+    // DEGRADED and names the gap — while the TASK stays READY, because a single-command bar is only a
+    // RECOMMENDATION. That disagreement is the calibration working: the deployment is descriptive,
+    // the task layer is what decides, and ordinary work is not blocked for want of an executor.
     expect(first.deployment.independentVerifierAvailable).toBe(false);
-    expect(first.task?.verificationRequired).toBe(true);
-    expect(first.task?.verificationReasons.join(" ")).toContain("single_evidence");
-    expect(first.task?.verificationSatisfiable).toBe(false);
-    expect(first.task?.state).toBe("BLOCKED");
+    expect(first.deployment.state).toBe("DEGRADED");
+    expect(first.task?.verificationRequired).toBe(false);
+    expect(first.task?.verificationRecommended).toBe(true);
+    expect(first.task?.state).toBe("READY");
+    expect(first.task?.advisories.join(" ")).toContain("recommended");
 
     // The contract itself is reachable and deterministic for the same attempt.
     const direct = installed.controller.completionContract(created.entityId);

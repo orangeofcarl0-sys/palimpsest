@@ -40,10 +40,20 @@ export type MechanicalCheck =
   | { readonly kind: "assert_required_artifacts"; readonly paths: readonly string[] };
 
 export interface VerificationRequirement {
-  /** True when this task must be independently verified before promotion. */
+  /**
+   * True when this task must be independently verified before promotion. Deliberately NARROW: only
+   * risks that are strong AND knowable before the work runs belong here.
+   */
   readonly required: boolean;
-  /** Why, in a stable machine word plus the human sentence that names the trigger. */
-  readonly reasons: readonly string[];
+  readonly requiredReasons: readonly string[];
+  /**
+   * True when independent verification would be worth having but must NOT block promotion. A thin
+   * mechanical bar is a reason to offer a second look, not a reason to manufacture an executor —
+   * "one command" is a poor proxy for "one evidence fact", since one `npm test` may run five tests
+   * or five hundred.
+   */
+  readonly recommended: boolean;
+  readonly recommendationReasons: readonly string[];
 }
 
 export interface AttemptCompletionContract {
@@ -82,7 +92,6 @@ export interface DeriveAttemptCompletionContractInput {
   readonly standard: ProjectStandard;
   readonly task: CompletionTaskBasis;
   readonly envelope: CompletionEnvelopeBasis;
-  readonly capabilities: CompletionCapabilities;
 }
 
 /**
@@ -134,7 +143,7 @@ function commandAllowed(
 export function deriveAttemptCompletionContract(
   input: DeriveAttemptCompletionContractInput,
 ): AttemptCompletionContract {
-  const { standard, task, envelope, capabilities } = input;
+  const { standard, task, envelope } = input;
   const diagnostics: string[] = [];
 
   // The mechanical checks are emitted in the order they should be REPORTED — materialization (held by
@@ -181,32 +190,47 @@ export function deriveAttemptCompletionContract(
     );
   }
 
-  // Verification: DERIVED now, EXECUTED in phase 2B. Only triggers derivable BEFORE the work runs
-  // are used — a "large change" threshold cannot be known yet and is deliberately not guessed at.
-  const reasons: string[] = [];
+  // Verification: DERIVED now, EXECUTED in phase 2B. Two strengths, because conflating them made the
+  // product manufacture executors for ordinary work — which contradicts `INV-6`
+  // ("exploit useful independence; never manufacture agents") and the measured G10-R finding that an
+  // artificial planner/reviewer split can be pure overhead.
+  //
+  // REQUIRED is reserved for risks that are both STRONG and knowable BEFORE the work runs. A "large
+  // change" threshold cannot be known yet and is deliberately not guessed at; if one is ever wanted,
+  // the condition must be declared in advance and merely OBSERVED afterwards, so `INV-7` still holds.
+  const requiredReasons: string[] = [];
   const boundary = touchesBoundary(envelope.write_paths);
   if (boundary.length > 0) {
-    reasons.push(`contract_boundary (${boundary.join(", ")})`);
+    requiredReasons.push(`contract_boundary (${boundary.join(", ")})`);
   }
-  if (mechanical.filter((check) => check.kind === "run_standard_command").length === 1) {
-    reasons.push("single_evidence (one command is the whole mechanical bar)");
-  }
-  const verification: VerificationRequirement = Object.freeze({
-    required: reasons.length > 0,
-    reasons: Object.freeze(reasons),
-  });
-  if (verification.required && !capabilities.independentVerifierAvailable) {
-    diagnostics.push(
-      `this task requires independent verification (${reasons.join("; ")}) but this deployment has no verifier that satisfies the independence contract — fix the deployment before starting, or the requirement cannot be met later`,
-    );
-  }
-  if (!capabilities.sandboxSpawnVerified) {
-    diagnostics.push(
-      "this deployment has not verified that the sandbox can spawn the standard's commands; a command that cannot run produces no observation, which is a dead end discovered at finish time rather than now",
+  // `operator_requires_independent_verification` will live here once `ProjectStandard` can express it;
+  // there is no clause kind for it yet, and inventing one would change the operator's confirmed shape.
+
+  // RECOMMENDED: worth offering, never promotion-blocking.
+  const recommendationReasons: string[] = [];
+  const commandChecks = mechanical.filter((check) => check.kind === "run_standard_command");
+  if (commandChecks.length === 1) {
+    recommendationReasons.push(
+      "single_command_bar (one standard command is the whole mechanical oracle — a weak signal about evidence STRENGTH, since one command may run five checks or five hundred)",
     );
   }
 
+  const verification: VerificationRequirement = Object.freeze({
+    required: requiredReasons.length > 0,
+    requiredReasons: Object.freeze(requiredReasons),
+    recommended: recommendationReasons.length > 0,
+    recommendationReasons: Object.freeze(recommendationReasons),
+  });
+
+  // NOTE: no capability appears in `diagnostics` and none reaches `basisDigest`. Whether this
+  // deployment can MEET a requirement is an operational assessment (readiness), not part of what the
+  // task requires — see `deriveCompletionReadiness`.
+
   return Object.freeze({
+    // NORMATIVE basis only. Capabilities are excluded on purpose: a verifier being configured
+    // mid-task does not change what the task must show, and folding it in would make `basisDigest`
+    // differ while the bar stood still — weakening `INV-7` for no gain. Phase 2B will cite this
+    // digest as the identity of the requirement, so it must mean "the bar", nothing else.
     basisDigest: canonicalDigest({
       standard,
       task: { write_paths: [...task.write_paths].sort(), required_artifacts: [...task.required_artifacts].sort() },
@@ -215,7 +239,6 @@ export function deriveAttemptCompletionContract(
         required_artifacts: [...envelope.required_artifacts].sort(),
         allowed_commands: [...envelope.allowed_commands],
       },
-      capabilities: { ...capabilities },
     }),
     mechanical: Object.freeze(mechanical),
     verification,
@@ -227,32 +250,40 @@ export function deriveAttemptCompletionContract(
  * Readiness — two layers, because they answer different questions
  * -------------------------------------------------------------------------- */
 
-export type ReadinessState = "READY" | "BLOCKED";
+/** DESCRIPTIVE: what this deployment can do. Never a verdict on whether work may proceed. */
+export type DeploymentCompletionState = "CONFIGURED" | "DEGRADED" | "INCOMPLETE";
+
+/** ACTIONABLE: whether THIS task can meet its own completion requirement here. */
+export type TaskReadinessState = "READY" | "BLOCKED";
 
 export interface DeploymentCompletionReadiness {
   readonly standardConfirmed: boolean;
   readonly commandsAuthorized: boolean;
   readonly sandboxSpawnVerified: boolean;
   readonly independentVerifierAvailable: boolean;
-  readonly state: ReadinessState;
-  /** Every reason the DEPLOYMENT layer is not ready, in plain language. */
-  readonly blockers: readonly string[];
+  readonly state: DeploymentCompletionState;
+  /**
+   * Capability gaps in plain language. Descriptive, and deliberately NOT called "blockers": a gap is
+   * a blocker only where a specific task needs that capability. Reporting a global BLOCKED because a
+   * verifier is absent would contradict the task layer saying READY for a task that needs none.
+   */
+  readonly gaps: readonly string[];
 }
 
 export interface TaskCompletionReadiness {
-  readonly state: ReadinessState;
+  readonly state: TaskReadinessState;
   readonly blockers: readonly string[];
   readonly verificationRequired: boolean;
-  readonly verificationReasons: readonly string[];
-  /**
-   * The whole point of two layers: "no independent verifier is composed" is a DEPLOYMENT fact, and
-   * it is only a TASK blocker when this task actually requires one. Marking every project NOT READY
-   * because some task somewhere might need verification would be dishonest.
-   */
+  readonly verificationRequiredReasons: readonly string[];
+  readonly verificationRecommended: boolean;
+  readonly verificationRecommendedReasons: readonly string[];
   readonly verificationSatisfiable: boolean;
+  /** Recommended-but-unavailable: worth telling the agent, never a reason to refuse. */
+  readonly advisories: readonly string[];
 }
 
 export interface CompletionReadiness {
+  /** `Task readiness is actionable; deployment readiness is descriptive.` */
   readonly deployment: DeploymentCompletionReadiness;
   /** Absent until a task exists — task readiness is not answerable without one. */
   readonly task: TaskCompletionReadiness | null;
@@ -260,7 +291,15 @@ export interface CompletionReadiness {
 
 /**
  * Derive readiness. `contract` is optional because the deployment layer is answerable at startup,
- * before any task exists; passing a contract adds the task layer and the EFFECTIVE verdict.
+ * before any task exists; passing a contract adds the task layer and the actionable verdict.
+ *
+ * The rule for turning a capability gap into an early blocker is exact:
+ *
+ *     known requirement ∧ missing capability ⇒ early blocker
+ *
+ * and nothing weaker. A gap the current task does not need is reported as a gap, not as a refusal —
+ * requiring every capability some future task might want would make startup a false alarm, which is
+ * the mirror image of the late failure this exists to prevent.
  */
 export function deriveCompletionReadiness(input: {
   readonly standard: ProjectStandard | undefined;
@@ -269,52 +308,79 @@ export function deriveCompletionReadiness(input: {
   readonly contract?: AttemptCompletionContract | undefined;
 }): CompletionReadiness {
   const { standard, authorizedCommands, capabilities, contract } = input;
-  const deploymentBlockers: string[] = [];
+  const gaps: string[] = [];
   const standardConfirmed = standard !== undefined && standard.confirmed;
   if (!standardConfirmed) {
-    deploymentBlockers.push(
+    gaps.push(
       "no confirmed completion standard: the operator states one sentence, the product proposes it from the repository, and nothing can be derived as done until they confirm it",
     );
   }
   const commandsAuthorized = authorizedCommands.length > 0;
   if (!commandsAuthorized) {
-    deploymentBlockers.push(
-      "policy.allowed_commands authorizes nothing, so no command can ever produce evidence — the operator must declare at least one",
+    gaps.push(
+      "policy.allowed_commands authorizes nothing, so no command can produce evidence — the operator must declare at least one",
     );
   }
   if (!capabilities.sandboxSpawnVerified) {
-    deploymentBlockers.push(
-      "the sandbox has not been shown to spawn the authorized commands, so a run may produce no observation",
-    );
+    gaps.push("the sandbox has not been shown to spawn the authorized commands, so a run may produce no observation");
   }
   if (!capabilities.independentVerifierAvailable) {
-    deploymentBlockers.push(
-      "no verifier satisfying the independence contract is composed — tasks that require independent verification cannot be completed here",
+    gaps.push(
+      "no verifier satisfying the independence contract is composed — tasks whose risk policy REQUIRES independent verification cannot be completed here",
     );
   }
+  // INCOMPLETE when nothing can be derived or no evidence can exist at all; DEGRADED when the
+  // deployment works but some capability is absent; CONFIGURED when everything is present.
+  const deploymentState: DeploymentCompletionState =
+    !standardConfirmed || !commandsAuthorized
+      ? "INCOMPLETE"
+      : gaps.length > 0
+        ? "DEGRADED"
+        : "CONFIGURED";
 
   const task: TaskCompletionReadiness | null =
     contract === undefined
       ? null
       : (() => {
           const blockers: string[] = [];
+          const advisories: string[] = [];
+
+          // Known requirement: a required command the envelope does not authorize. A dead end at
+          // finish time, surfaced here instead.
+          blockers.push(...contract.diagnostics.filter((note) => note.includes("does not authorize it")));
+
+          // Known requirement: the task must RUN something, and the sandbox cannot.
+          const runsCommands = contract.mechanical.some((check) => check.kind === "run_standard_command");
+          if (runsCommands && !capabilities.sandboxSpawnVerified) {
+            blockers.push(
+              "this task's completion requires running the standard's command, and this deployment has not shown the sandbox can spawn it",
+            );
+          }
+
+          // Known requirement: independent verification, and none is available.
           const needsVerifier = contract.verification.required;
           const satisfiable = !needsVerifier || capabilities.independentVerifierAvailable;
           if (!satisfiable) {
             blockers.push(
-              `this task requires independent verification (${contract.verification.reasons.join("; ")}) and this deployment has none`,
+              `this task REQUIRES independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment has none`,
+            );
+          } else if (contract.verification.recommended && !capabilities.independentVerifierAvailable) {
+            // Recommended, not required: said out loud, never a refusal. This is what lets ASSIST
+            // mention a second look without MANAGE/DIRECT being forced to manufacture an executor.
+            advisories.push(
+              `independent verification is recommended for this task (${contract.verification.recommendationReasons.join("; ")}) and this deployment has no verifier — worth knowing, not a reason to refuse`,
             );
           }
-          // A required command the envelope does not authorize is a dead end at finish time, so it is
-          // surfaced here, before the work starts.
-          const unauthorized = contract.diagnostics.filter((note) => note.includes("does not authorize it"));
-          blockers.push(...unauthorized);
+
           return Object.freeze({
-            state: (blockers.length === 0 ? "READY" : "BLOCKED") as ReadinessState,
+            state: (blockers.length === 0 ? "READY" : "BLOCKED") as TaskReadinessState,
             blockers: Object.freeze(blockers),
             verificationRequired: needsVerifier,
-            verificationReasons: contract.verification.reasons,
+            verificationRequiredReasons: contract.verification.requiredReasons,
+            verificationRecommended: contract.verification.recommended,
+            verificationRecommendedReasons: contract.verification.recommendationReasons,
             verificationSatisfiable: satisfiable,
+            advisories: Object.freeze(advisories),
           });
         })();
 
@@ -324,8 +390,8 @@ export function deriveCompletionReadiness(input: {
       commandsAuthorized,
       sandboxSpawnVerified: capabilities.sandboxSpawnVerified,
       independentVerifierAvailable: capabilities.independentVerifierAvailable,
-      state: (deploymentBlockers.length === 0 ? "READY" : "BLOCKED") as ReadinessState,
-      blockers: Object.freeze(deploymentBlockers),
+      state: deploymentState,
+      gaps: Object.freeze(gaps),
     }),
     task,
   });
