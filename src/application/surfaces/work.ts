@@ -59,6 +59,27 @@ export interface WorkApplicationSurface {
     readonly nextEvidenceNeeded: readonly string[];
   }>;
   /**
+   * PLMP-LEAN-1 appendix E (2A-B): the **begin** protocol, symmetric with `finish`. The agent states
+   * what the work is (a goal and the write scope it intends to touch) and the product MECHANICALLY
+   * establishes the single managed work position — project, task, envelope, attempt, claim — so the
+   * principal can just start working. The agent never operates the scheduler and never sees an
+   * attempt id. Every precondition is checked before anything is written.
+   */
+  begin(input: {
+    readonly goal: string;
+    readonly writePaths: readonly string[];
+    readonly requiredArtifacts?: readonly string[] | undefined;
+  }): Promise<{
+    readonly state: "READY" | "RESUMED";
+    readonly goal: string;
+    readonly writeScope: readonly string[];
+    readonly requiredArtifacts: readonly string[];
+    readonly completion: {
+      readonly mechanicalChecks: readonly string[];
+      readonly independentVerificationRequired: boolean;
+    };
+  }>;
+  /**
    * PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers — what the DEPLOYMENT can do, and what the
    * CURRENT task requires. The deployment layer is answerable at startup; the task layer only once a
    * task exists. A deployment gap ("no independent verifier") is a task blocker only when this task
@@ -81,6 +102,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       authorizedCommands: () => deps.controller.authorizedCommands(),
       declaredGateIds: () => deps.controller.declaredGateIds(),
       finish: (input) => deps.controller.finish(input ?? {}),
+      begin: (input) => deps.controller.begin(input),
       completionReadiness: () => deps.controller.completionReadiness(),
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
