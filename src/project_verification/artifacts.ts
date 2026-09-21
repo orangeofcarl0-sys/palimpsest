@@ -204,7 +204,7 @@ function refDigest(domain: string, digest: string, prefix: string): string {
  * §1 ProjectHeadVerificationSubject — the ONLY v1 subject
  * -------------------------------------------------------------------------- */
 
-export const PROJECT_VERIFICATION_SUBJECT_KINDS = ["CURRENT_PROJECT_HEAD"] as const;
+export const PROJECT_VERIFICATION_SUBJECT_KINDS = ["CURRENT_PROJECT_HEAD", "ATTEMPT_RESULT"] as const;
 export type ProjectVerificationSubjectKind = (typeof PROJECT_VERIFICATION_SUBJECT_KINDS)[number];
 
 export function isProjectVerificationSubjectKind(
@@ -218,7 +218,8 @@ export function isProjectVerificationSubjectKind(
 
 export interface ProjectHeadVerificationSubject {
   readonly schemaVersion: 1;
-  readonly kind: ProjectVerificationSubjectKind;
+  /** The LITERAL, not the kind union: this subject is only ever the current head. */
+  readonly kind: "CURRENT_PROJECT_HEAD";
   readonly projectId: string;
   readonly projectRevision: number;
   readonly projectDigest: string;
@@ -273,7 +274,10 @@ export function parseProjectHeadVerificationSubject(
   if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
   const body: Omit<ProjectHeadVerificationSubject, "digest"> = {
     schemaVersion: 1,
-    kind: pvEnum(object.kind, PROJECT_VERIFICATION_SUBJECT_KINDS, `${what}.kind`),
+    // Explicit, not `pvEnum` over the kind union: the head parser must keep REJECTING ATTEMPT_RESULT
+    // now that the union exists, or widening the kinds list would have silently changed a frozen
+    // semantic.
+    kind: object.kind === "CURRENT_PROJECT_HEAD" ? "CURRENT_PROJECT_HEAD" : pvEnum(object.kind, ["CURRENT_PROJECT_HEAD"] as const, `${what}.kind`),
     projectId: pvId(object.projectId, `${what}.projectId`),
     projectRevision: pvNonNegInt(object.projectRevision, `${what}.projectRevision`),
     projectDigest: pvDigest(object.projectDigest, `${what}.projectDigest`),
@@ -288,10 +292,140 @@ export function parseProjectHeadVerificationSubject(
 
 /** The two subjects denote the same verified input. */
 export function sameSubject(
-  left: Pick<ProjectHeadVerificationSubject, "digest">,
-  right: Pick<ProjectHeadVerificationSubject, "digest">,
+  left: Pick<ProjectVerificationSubject, "digest">,
+  right: Pick<ProjectVerificationSubject, "digest">,
 ): boolean {
   return left.digest === right.digest;
+}
+
+/* -------------------------------------------------------------------------- *
+ * §1b AttemptResultVerificationSubject — the SECOND subject kind (PLMP-LEAN-1
+ * appendix B / B-r1). A UNION MEMBER, not a second verification system.
+ *
+ * It describes a HISTORICAL, IMMUTABLE Work result, so it deliberately carries
+ * no projectRevision / projectDigest / currentHead: those describe the moving
+ * present, and this subject must not move with it. The commit and the report
+ * digest are materialized from canonical Work state by the Work owner — a
+ * caller never names a verification target (§4, unchanged).
+ * -------------------------------------------------------------------------- */
+
+export const ATTEMPT_RESULT_SUBJECT_DOMAIN = "palimpsest.project-verification.attempt-result-subject.v1";
+
+export interface AttemptResultVerificationSubject {
+  readonly schemaVersion: 1;
+  readonly kind: "ATTEMPT_RESULT";
+  readonly projectId: string;
+  readonly taskId: string;
+  readonly attemptId: string;
+  readonly envelopeId: string;
+  readonly baseCommit: string;
+  readonly resultCommit: string;
+  readonly reportDigest: string;
+  readonly digest: string;
+}
+
+export function attemptResultSubjectDigestOf(
+  input: Omit<AttemptResultVerificationSubject, "digest">,
+): string {
+  return canonicalDigest({ domain: ATTEMPT_RESULT_SUBJECT_DOMAIN, subject: input });
+}
+
+/**
+ * Materialize the subject from canonical Work state — the attempt row, its
+ * AttemptReport and its TaskEnvelope. Every identity field is an ARGUMENT the
+ * Work owner read, never a value a caller chose.
+ */
+export function materializeAttemptResultVerificationSubject(input: {
+  readonly projectId: string;
+  readonly taskId: string;
+  readonly attemptId: string;
+  readonly envelopeId: string;
+  readonly baseCommit: string;
+  readonly resultCommit: string;
+  readonly reportDigest: string;
+}): AttemptResultVerificationSubject {
+  const body: Omit<AttemptResultVerificationSubject, "digest"> = {
+    schemaVersion: 1,
+    kind: "ATTEMPT_RESULT",
+    projectId: pvId(input.projectId, "subject.projectId"),
+    taskId: pvId(input.taskId, "subject.taskId"),
+    attemptId: pvId(input.attemptId, "subject.attemptId"),
+    envelopeId: pvId(input.envelopeId, "subject.envelopeId"),
+    baseCommit: pvCommit(input.baseCommit, "subject.baseCommit"),
+    resultCommit: pvCommit(input.resultCommit, "subject.resultCommit"),
+    reportDigest: pvDigest(input.reportDigest, "subject.reportDigest"),
+  };
+  return Object.freeze({ ...body, digest: attemptResultSubjectDigestOf(body) });
+}
+
+const ATTEMPT_RESULT_SUBJECT_KEYS = [
+  "schemaVersion",
+  "kind",
+  "projectId",
+  "taskId",
+  "attemptId",
+  "envelopeId",
+  "baseCommit",
+  "resultCommit",
+  "reportDigest",
+  "digest",
+] as const;
+
+export function parseAttemptResultVerificationSubject(
+  raw: unknown,
+  what = "AttemptResultVerificationSubject",
+): AttemptResultVerificationSubject {
+  const object = pvObject(raw, what);
+  pvKeys(object, ATTEMPT_RESULT_SUBJECT_KEYS, ATTEMPT_RESULT_SUBJECT_KEYS, what);
+  if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
+  if (object.kind !== "ATTEMPT_RESULT") fail("invalid_value", `${what}.kind must be ATTEMPT_RESULT`);
+  const body: Omit<AttemptResultVerificationSubject, "digest"> = {
+    schemaVersion: 1,
+    kind: "ATTEMPT_RESULT",
+    projectId: pvId(object.projectId, `${what}.projectId`),
+    taskId: pvId(object.taskId, `${what}.taskId`),
+    attemptId: pvId(object.attemptId, `${what}.attemptId`),
+    envelopeId: pvId(object.envelopeId, `${what}.envelopeId`),
+    baseCommit: pvCommit(object.baseCommit, `${what}.baseCommit`),
+    resultCommit: pvCommit(object.resultCommit, `${what}.resultCommit`),
+    reportDigest: pvDigest(object.reportDigest, `${what}.reportDigest`),
+  };
+  const digest = pvDigest(object.digest, `${what}.digest`);
+  if (attemptResultSubjectDigestOf(body) !== digest) {
+    fail("invalid_value", `${what}.digest does not match its content`);
+  }
+  return Object.freeze({ ...body, digest });
+}
+
+/**
+ * The discriminated union every subject consumer takes. `kind` is what
+ * dispatches, so a head subject can never be parsed as an attempt result (or
+ * the reverse) — the two are told apart by identity, not by guessing.
+ *
+ * NOTE: `ProjectHeadVerificationSubject.kind` stays the LITERAL
+ * "CURRENT_PROJECT_HEAD" (below), deliberately not widened to the kind union —
+ * otherwise the head parser's `pvEnum` would start accepting ATTEMPT_RESULT and
+ * a frozen semantic would have been changed by a type alias.
+ */
+export type ProjectVerificationSubject =
+  | ProjectHeadVerificationSubject
+  | AttemptResultVerificationSubject;
+
+/** Parse either subject kind. Dispatch is on `kind`, so a mismatch fails loudly. */
+export function parseProjectVerificationSubject(
+  raw: unknown,
+  what = "ProjectVerificationSubject",
+): ProjectVerificationSubject {
+  const object = pvObject(raw, what);
+  if (object.kind === "ATTEMPT_RESULT") return parseAttemptResultVerificationSubject(raw, what);
+  return parseProjectHeadVerificationSubject(raw, what);
+}
+
+/** Whether a subject is the immutable result of one attempt. */
+export function isAttemptResultSubject(
+  subject: ProjectVerificationSubject,
+): subject is AttemptResultVerificationSubject {
+  return subject.kind === "ATTEMPT_RESULT";
 }
 
 /* -------------------------------------------------------------------------- *
