@@ -14,6 +14,7 @@
 > - `LEAN-1` **第 2A-Q-R 期（verification policy calibration）交付**（2026-09-21）：复核发现 `single_evidence` 作为 hard requirement **把风险代理搞错了**——命令**数量**不是证据**强度**的代理（一条 `npm test` 可能跑 5 个断言也可能跑 500 个），且会让普通任务被迫启动第二执行者，与 `INV-6`（exploit useful independence; never manufacture agents）和 G10-R 的"人为 role split 可为纯开销"冲突。四处校准：① 复核分**两个强度**（`required`/`requiredReasons` 与 `recommended`/`recommendationReasons`），`REQUIRED` 保持窄，2B v1 只做 `contract_boundary`，不加 size threshold（"大 diff"执行前不可知）；② 触发**改名** `single_evidence → single_command_bar`（旧名本身是比它实际测量更强的 epistemic 主张）；③ **`RequirementBasis ≠ CapabilityAssessment`**——`deriveAttemptCompletionContract` **不再接收 capabilities**（分层由构造保证），`basisDigest` 只覆盖规范性输入，capability 说明移出契约 `diagnostics`；否则 verifier 中途配置好会移动摘要而标准未动，削弱 `INV-7`；④ readiness 两层**强度不同**——部署层**描述性**（`CONFIGURED`/`DEGRADED`/`INCOMPLETE` + `gaps`，不叫 blockers），任务层**可行动**（`READY`/`BLOCKED` + `blockers` + `advisories` 承载 RECOMMENDED 但不可用）。阻断规则精确为 `已知要求 ∧ 缺失能力 ⇒ 提前阻断`，不多不少。验收 `LEAN-A05`/`A06`/`A14` 扩到 19 项。门禁：单元 186 文件 / 2118 测试、e2e 38/38、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 > - `LEAN-1` **2A final live gate 实测（两次，均未通过）+ 零产出泵修复**（2026-09-21，`6302a20`）：装置 `rs-test/lean-2a-live-gate.mjs`（真实 DSH 单轮 + 离线核对 attempt/证据/门禁/转录）。**第 1 轮**：agent 干对了活但 `claim` 早一步（`palimpsest_next` 每次只提交一个事件），改调 `palimpsest_run` —— 机械泵在**未改动**的树上跑策略命令退出 0，留下 `COMPLETED` + `changed_files: []` + `result_commit` = base + 零证据，**正是 `finish` 专门要拒绝的状态**。修复：`#assertCompletionHasWork` 由 `report` 与 `finish` **共用**（§3.3 此前只在 `finish` 强制），去掉 `finish` 的 `required_artifacts.length === 0` **逃逸口**（预先存在的产物不是工作），泵的无命令分支由 `completed` 改 `failed`。回归 `LEAN-A26` 确定性复现该失败；`test/inplace_execution.test.ts` 的陈旧性测试改**前提**（原先"在干净树上 report"——正是刚被判非法的状态）。**第 2 轮**：agent 按指示只调一次 `finish` 被拒 `no attempt is running`，自行查证后正确诊断 **`project "livegate" has no ProjectIR`**（无计划/无 ready set/无可认领 attempt），并**拒绝自行铸造治理状态**。**结论：`LEAN-A15` 活体那一半未证明，2A 未闭合**；缺口不是 scheduler 补丁，而是 direct path 缺少与 `finish` **对称的开始协议**。据此起草**附录 E（第 2A-B 期，Direct Work Bootstrap，`palimpsest_begin`，规划未实现）**：`Agent decides what the work is. Palimpsest makes the work governable.` —— 主代理把目标编译成最小 direct proposal（含 `writePaths`，属**工作语义**而非机器词汇），产品验证并机械建立唯一受管工作位（只用 `preview`/`step`/`claim`，**禁止** `run`/pump），readiness **全部前置、拒绝时零项目事件**，`begin` 前只读勘察允许而 mutation 不允许，标准确认**不得**从 `begin` 铸造，已有计划**不得**静默改写，retry 必须**收敛**且用派生摘要判同一性。门禁：单元 186 文件 / 2119 测试、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 > - `LEAN-1` **附录 E 的 E-r1 修订**（2026-09-21，docs-only，实现前）：逐段对照 `start`/`preview`/`step`/`claim` 后，把 2A-B 的实现前边界收紧。**核实两处代码事实**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）；且 `start()` 的 genesis 是**多事件**序列（`PROJECT_CREATED` → release `GATE_DEFINED` → `ROLE_TABLE_DEFINED` → `STAGE_GRAPH_DEFINED` → task registration），因此 crash 可落在任意两个声明之间，retry **不得**用新 clock 重建 creation basis（否则同幂等键 + 不同载荷）。修订九项：v1 仅 **repository-bound + in-place**；fresh begin **绑定真实 HEAD** 并加机器验收；clean-tree **分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work）；restart 覆盖 **partial genesis 每个落点**；Case B/C 改 **语义等价而非来源**（无 marker 时来源不可判），比较 normalized shape / `D_direct` 而非完整 digest；`goal` 改称 agent-compiled；`writePaths` 明确为 self-binding scope 并说明与 ARCH-2 确认规则的窄例外关系；`A29` 改 **event delta 0**、`A33` 改 **低层工具调用计数 0** 并注明 fixture 已预置确认标准（不声称单轮确认 goal+standard）；新增 `A34` pre-claim **HEAD drift fail-closed** 与 **S0–S3 状态机**。验收 `A27`–`A34`。**仍为规划、未实现。**
+> - `LEAN-1` **附录 E 的 E-r2 修订**（2026-09-21，docs-only，实现前）：E-r1 判为 **architecture PASS / implementation HOLD**——仍有 4 个会让 `A27`/`A30` **假绿**的 blocker。**新核 5 处代码事实**：`ProjectIR.digest` 含 `committed_at`（`src/schema/models.ts:468`）；`StartProjectInput` **已含** `committedAt?`（`src/tools/controller.ts:136`，故修法**不动既有面**）；`#advanceActiveStage()` 在任务已占位该 stage 时返回 `null`（`src/scheduler/scheduler.ts:232`）；`TASK_CREATED` 已固定 `task_envelope` 与 `policy_digest`（`src/scheduler/scheduler.ts`、`src/domain/policy.ts` 的 `AuthorizedTaskEnvelope`）。**四个 blocker**：① **S0 一次性冻结 `liveHead` + `genesisCommittedAt`** 并原样传两侧，加断言 `prospective.digest == canonical.digest` 与 `envelopeId`/`projectDigest` 一致——**只对齐 HEAD 不够**，`project_digest`/`envelope_id` 会不同（§E.15.1）；② **S1 先读 canonical attempt**，已有可 claim 的 CREATED attempt 直接 claim，不再 `preview/step`（§E.15.2）；③ **2B 之前 `verification.required` fail closed**（`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`，零写）或把 capability 升级为"attempt-result verification executable"，**不得**让旧的 current-head verifier 假装满足（§E.14.1）；④ **`writePaths` 必须非空**（否则与"完成需 `changed_files > 0`"矛盾，begin 时即可证明不可完成，§E.4.2）。**三处边界**：⑤ **语义等价 ≠ 授权 basis 等价**——已有 `TASK_CREATED` 则复用 canonical envelope、**绝不重授权**，v1 保证范围写明为"同一 operator configuration 之下"，不暗示解决任意配置漂移（§E.13）；⑥ **"begin before first mutation" 是 principal protocol precondition，不是可检测的安全属性**——先改后 commit 再 begin 时工作树仍干净，产品无法追溯，`Palimpsest does not retroactively claim work`（§E.6）；⑦ **判 dirty 须复用与 `finish` 相同的脚手架过滤规则**（`.palimpsest/`），否则产品会被自己的状态目录卡死（§E.7）。另：`E.10` 完成摘要由 `testsRequired` 改为 `mechanicalChecks` 人话摘要（标准可能要求 `lint_pass`/`process_exit_zero`）；S0–S3 精确化并写出三个 basis 的分工 `Work semantics ≠ Governance basis ≠ Runtime capability`（`D_direct` 只负责第一项）。**实现门禁：E-r2 后 2A-B = GO。仍为规划、未实现。**
 
 ---
 
@@ -565,7 +566,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-Q** | Completion Contract + readiness（**已交付** 2026-09-21） | §2.1 完成契约**纯派生**（`deriveAttemptCompletionContract`，**不是新的真值属主**、不落任何事件）+ §2.7 三种 check kind + §5.1 readiness 分两层（标准已确认？命令可执行？沙箱可 spawn？所需 verifier 可用？） | 很少 | `A05`、`A06`、`A14` **全部通过** |
 | **2A-Q-R** | verification policy calibration（**已交付** 2026-09-21） | 复核两强度（`single_command_bar` 降为 RECOMMENDED 并改名）、`basisDigest` 排除 capabilities、capability 说明移出契约、部署层 readiness 改为描述性 | 很少 | `A05`/`A06`/`A14` 扩到 19 项全通过；**校准后普通低风险任务 `required = false`，direct path 不再被阻断** |
 | **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS，主代理上下文零 predicate/gateId/attemptId/report | 无 | **实测两次，均未通过**（见附录 E §E.1）：第 1 轮暴露零产出泵（已修，`A26`）；第 2 轮暴露 **direct path 无开始入口**。`A15` 活体一半**仍未证明** |
-| **2A-B** | Direct Work Bootstrap（**规划，附录 E；E-r1 已修订**） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A34`；**`A33` 正式关闭 `A15` 活体那一半**。v1 仅 repository-bound + in-place |
+| **2A-B** | Direct Work Bootstrap（**规划，附录 E；E-r1 + E-r2 已修订**） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A34`；**`A33` 正式关闭 `A15` 活体那一半**。v1 仅 repository-bound + in-place、`writePaths` 非空 |
 | **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
@@ -995,6 +996,7 @@ Principal API = opinionated （主代理的首选路径是少量高层工具）
 
 > **状态：规划（2026-09-21）**。本附录是**草案**，未实现。它闭合 2A final live gate 实测暴露的缺口。
 > **E-r1 修订（2026-09-21，实现前）**：逐段对照现有 `start`/`preview`/`step`/`claim` 后补入 5 个 correctness/recovery blocker 与 4 处收紧——① v1 冻结 **repository-bound + in-place**（§E.4.1）；② fresh begin **必须绑定真实 Git HEAD**，因 `start()` 在缺省时用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（§E.15.1）；③ clean-tree 规则**分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work，§E.7）；④ restart 覆盖扩到 **partial genesis 每个落点**，且 retry 只能 replay canonical basis、**不得**用新 clock 重新规划（§E.13）；⑤ Case B/C 判据改为**语义等价而非来源**（无 direct marker 时来源不可判），比较对象是 normalized shape / `D_direct` 而非完整 `ProjectIR.digest`（§E.12）；⑥ `goal` 改称 agent-compiled goal，不声称用户原话（§E.4）；⑦ 明确 `writePaths` 是 self-binding scope 及与 ARCH-2 确认规则的关系（§E.5）；⑧ `A29` 改断言 **event delta 0**、`A33` 改断言**低层工具调用计数为 0**（§E.19）；⑨ 新增 `A34` **pre-claim HEAD drift fail-closed**，并新增 **S0–S3 状态机**（§E.16）。验收 `LEAN-A27`–`A34`。
+> **E-r2 修订（2026-09-21，实现前 basis/recovery closure）**：E-r1 判为 **architecture PASS / implementation HOLD**，因仍有 4 个会让 `A27`/`A30` **假绿**的 blocker 与 3 处边界。**又核了 5 处代码事实**：`ProjectIR.digest` 含 `committed_at`（`models.ts:468`）；`StartProjectInput` **已含** `committedAt?`（`controller.ts:136`，故修法不动既有面）；`#advanceActiveStage()` 在任务已占位时返回 `null`（`scheduler.ts:232`）；`TASK_CREATED` 已固定 `task_envelope` + `policy_digest`（`scheduler.ts` / `policy.ts`）。修订：**① S0 一次性冻结 `liveHead` + `genesisCommittedAt`**，两侧原样传入，并加机器断言 `prospective.digest == canonical.digest` 与 `envelopeId`/`projectDigest` 一致（§E.15.1）——只对齐 HEAD 不够，`project_digest` 与 `envelope_id` 会不同；**② S1 先读 canonical attempt**：已有可 claim 的 CREATED attempt 就直接 claim，不再 `preview/step`（§E.15.2）；**③ 2B 之前 `verification.required` fail closed**（`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`）或把 capability 升级为"attempt-result verification executable"，**不得**让旧的 current-head verifier 假装满足（§E.14.1）；**④ `writePaths` 必须非空**（否则与"完成需 `changed_files > 0`"矛盾，begin 时即可证明不可完成，§E.4.2）。边界：**⑤ 语义等价 ≠ 授权 basis 等价**——已有 `TASK_CREATED` 则复用 canonical envelope、绝不重授权，v1 保证范围写明为"同一 operator configuration"（§E.13）；**⑥ "begin before first mutation" 是 principal protocol precondition，不是可检测属性**，`Palimpsest does not retroactively claim work`（§E.6）；**⑦ 判 dirty 复用与 `finish` 相同的脚手架过滤规则**，否则产品会被自己的 `.palimpsest/` 卡死（§E.7）。另：`E.10` 的完成摘要由 `testsRequired` 改为 `mechanicalChecks` 人话摘要（标准可能要求 `lint_pass`/`process_exit_zero`）。S0–S3 精确化，并写出三个 basis 的分工：`Work semantics ≠ Governance basis ≠ Runtime capability`。验收在 `A27`/`A29`/`A30` 内补机器断言。
 
 ### E.1 问题：有结束协议，没有开始协议
 
@@ -1071,6 +1073,16 @@ DirectBegin_v1  ⇒  repository bound  ∧  execution = in-place
 
 **禁止**为了让 `begin` 看起来通用而提前解决 D2。
 
+### E.4.2 v1 前置：`writePaths` **必须非空**（fail-before-write）
+
+Direct Work 的完成要求 `changed_files.length > 0`（§A.8 / `#assertCompletionHasWork`）。若 `writePaths = []`，则任何真实改动都会被 scope 断言判为**越界**——这是一个**在 begin 时即可证明的不可完成任务**。
+
+```
+writePaths.length === 0  ⇒  fail-before-write，零项目事件，进入 A29
+```
+
+分析型任务本来就应该去 Reasoning / Verification / CrossProject，而不是 Work attempt（§3.3 的收窄）。
+
 ### E.5 谁提供什么：Agent 提供工作语义，产品推导机器
 
 必须区分两类东西：
@@ -1110,13 +1122,30 @@ User task → Main Agent → read / grep / inspect / search  → palimpsest_begi
 
 > **纪律：begin before first mutation, not necessarily before first read.**
 
+**但这**不是** v1 可检测的安全属性，必须如实标注。** 若主代理已经 `edit` + `commit` 然后才 `begin`，工作树**仍然是干净的**，产品**无法知道**刚才那个 commit 属于用户任务——sidecar 架构天然做不到追溯，`baseCommit` 就是那个已改动的 HEAD。
+
+因此本条是 **principal protocol precondition**，不是系统能拒绝所有违规情形的保证：
+
+```
+Palimpsest does not retroactively claim work.
+```
+
+`A33` 只需证明**正常主路径遵守它**；**不得**把它写成"系统会拒绝一切先改后 begin 的情形"。
+
 ### E.7 入口侧：工作树规则**分阶段**（未归属必须拒绝，已归属是正常 Work）
 
 这是 2A-R 教训的入口侧对应版本，但**不能无条件执行**——否则会拒绝一个完全合法的恢复状态。分两段：
 
-**S0/S1（尚未建立或尚未 claim principal attempt：没有合法 owner）** → `git status --porcelain` 必须干净，否则拒绝：
+**S0/S1（尚未建立或尚未 claim principal attempt：没有合法 owner）** → **unowned project changes 必须为零**，否则拒绝：
 
 > 当前工作树已有未归属变更。请先处理这些变更再开始受管工作；否则产品无法证明哪些改动属于本任务。
+
+**判 dirty 必须复用与 `finish` 相同的产品脚手架过滤规则**（in-place observation 已明确排除 `.palimpsest/`）。**禁止**裸用 `git status --porcelain`：若部署恰好留下未被 ignore 的 `.palimpsest/`，产品会被**自己的状态目录**卡死。
+
+```
+unowned PROJECT changes == 0
+product-owned scaffolding（.palimpsest/ 等）按同一 canonical filter 排除
+```
 
 **S2（已有 matching RUNNING principal attempt）** → 树**可以**脏、**可以**有新提交：
 
@@ -1184,7 +1213,13 @@ loop (bounded, 防御上限 maxSteps = 16):
   goal,
   writeScope,             // 允许改哪些路径
   requiredArtifacts,
-  completion: { testsRequired, independentVerificationRequired },
+  // 完成要求的**人话摘要**，不是只有 tests：
+  // 标准可能要求的是 lint_pass 或 process_exit_zero，而非 tests，
+  // 因此不要给出一个"看似简单但错误"的质量概览。
+  completion: {
+    mechanicalChecks: string[],            // 例如 ["运行 `node --test …`", "写入范围校验"]
+    independentVerificationRequired: boolean,
+  },
 }
 ```
 
@@ -1280,6 +1315,27 @@ D_direct = H(goal, writePaths, requiredArtifacts)
 恰好一个 principal attempt
 ```
 
+**但"语义等价"不等于"授权 basis 等价"**（blocker）：
+
+**已核**：`TASK_CREATED` 的载荷已固定 `task_envelope` 与 `policy_digest`（`src/scheduler/scheduler.ts`；`AuthorizedTaskEnvelope = { envelope, policy_id, policy_digest }`，`src/domain/policy.ts`）。因此 envelope 是**不可变**的。
+
+若 crash 之后 profile policy 变了，**不得**因为 `D_direct` 相同就重新 `policy.authorize()` 并静默换一个 envelope：
+
+```
+已有 TASK_CREATED  ⇒  复用 canonical envelope，绝不重授权
+task 尚未注册      ⇒  才可用当前 policy 重新 preflight
+```
+
+更严格的做法（可选）：pre-claim 检测到 policy drift 时直接 `POLICY_BASIS_CONFLICT`。
+
+**`ProjectStandard` 跨 restart 的 drift 属同一类问题**，但当前没有独立的 durable standard digest。因此 **v1 的保证范围必须写明**：
+
+```
+crash/retry 的保证范围 = 同一 operator configuration 之下
+```
+
+**不得**暗示已经解决了任意配置漂移。
+
 ### E.14 fail-before-write：readiness 在任何写入之前
 
 `begin()` 必须**先**全部推导完，再决定是否落账：
@@ -1297,6 +1353,24 @@ ZERO PROJECT EVENTS
 
 **禁止** `先 PROJECT_CREATED，然后发现永远无法完成`。这是 `begin` 最重要的保证，也是 `A14`（不能晚失败）在入口侧的延续。
 
+### E.14.1 2B 之前：`verification.required` 必须 **fail closed**（blocker）
+
+**已核**：当前 `independentVerifierAvailable` 在 `install.ts` 里本质只是 `projectVerificationStore !== undefined`，而现有 Verification **只支持 `CURRENT_PROJECT_HEAD`**（§2.3）。
+
+于是会出现一个**假可满足**：一个 `contract_boundary` 任务得到 `verification.required = true`，readiness 因"有 verifier store"而认为可满足，**但 `ATTEMPT_RESULT` 根本还不能验证**。旧的 current-head verifier **不得**假装满足它。
+
+**2A-B 在 2B 之前必须**：
+
+```
+contract.verification.required === true
+  ⇒  ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE
+     零写，进入 A29
+```
+
+或者把 capability 明确升级为**"attempt-result verification executable"**（语义上更强、可被 2B 兑现的那种），而不是复用一个语义更弱的旧标志。**二者择一，不得两者都不做。**
+
+普通 direct task 不受影响——`single_command_bar` 已只是 recommendation（§2.7），`required` 只在 `contract_boundary` 这类强风险上为真。
+
 ### E.15 prospective envelope（实现注意）
 
 `CompletionContract` 依赖 `TaskEnvelope`，而 envelope 通常由 `TaskPolicy.authorize(ProjectIR, taskId)` 产生——`start()` 之前还没有 canonical project。这是可以**纯构造**的：
@@ -1310,52 +1384,94 @@ build proposed ProjectIR in memory
 → 仅当 READY 才 controller.start(...)
 ```
 
-### E.15.1 fresh begin **必须绑定真实 Git HEAD**（blocker）
+### E.15.1 S0 必须**一次性冻结 genesis basis**（HEAD **与** committedAt）（blocker）
 
-**已核**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）。若 `begin` 忘记传，ProjectIR 会拿到一个**假 head**，后面所有 diff / materialization 都建立在假 base 上——而 `A27` 看起来仍会"成功"。
+**已核两处代码事实**：
 
-因此 fresh begin 必须：
+- `controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）。
+- `ProjectIR.digest` **包含 `committed_at`**（`src/schema/models.ts:468`：`canonicalDigest({ ...value, committed_at: canonicalDatetime(...) })`），而 `TaskEnvelope` 的 identity 又包含 `project_digest`。
 
-```
-liveHead = git HEAD（preflight 时观察）
-工作树已确认干净（§E.7 的 S0/S1 段）
+因此**只对齐 HEAD 是不够的**：若 preflight 用 `T0` 构造 proposed ProjectIR，而 `start()` 自己用 `now() = T1`，则即使 goal / task / HEAD 全同，也会得到**不同的 `project_digest` 与不同的 `envelope_id`** —— preflight 里算出的 `CompletionContract` 与 readiness 描述的就不是最终生效的那份 basis。这正是 `A27` 会**假绿**的路径。
 
-proposedProject.headCommit = liveHead
-controller.start({ ..., headCommit: liveHead })
-```
+**S0 必须一次冻结两个值，并原样传给两侧**：
 
 ```
-fresh begin:
-  ProjectIR.headCommit  ==  观察到的 repository HEAD  ==  principal attempt.baseCommit
+liveHead           = git HEAD（preflight 观察）
+genesisCommittedAt = 单一时刻（S0 冻结一次）
+
+build proposed ProjectIR { headCommit: liveHead, committedAt: genesisCommittedAt }
+  → policy.authorize(proposed, "task-1") → CompletionContract → readiness
+（全部不落账）
+
+controller.start({ ..., headCommit: liveHead, committedAt: genesisCommittedAt })
 ```
 
-**机器验收**：fresh `begin` 之后，canonical `ProjectIR.head_commit` 必须**严格等于** preflight 观察到的 Git HEAD。不传 `headCommit` 视为缺陷。
+> **无需改动既有面**：`StartProjectInput` 已含 `committedAt?: string`（`src/tools/controller.ts:136`）。
+
+**机器验收**（`A27`）：
+
+```
+prospectiveProject.digest   ==  canonicalProject.digest
+prospective envelope_id / project_digest
+                            ==  最终 TASK_CREATED 里的对应值
+```
+
+必须同时钉住 `committedAt` / `headCommit` / `projectDigest` / `envelopeId` 四项。
+
+### E.15.2 S1 必须**先读 canonical attempt**，不能只靠 `preview()`（blocker）
+
+**已核**：scheduler 在某个 task 已占位该 stage 时，`#advanceActiveStage()` 返回 `null`（`src/scheduler/scheduler.ts:232`：`if (rows.length >= (stage.concurrency ?? 1)) return null;`）。
+
+于是"crash 于 `ATTEMPT_CREATED` 之后"这一落点上，retry 的 `preview()` **不会**再给出 `ATTEMPT_CREATED` —— 按 §E.9 原伪代码会**卡死**，而 `A30` 恰恰声称覆盖这个落点。
+
+**S1 的正确顺序是先读 canonical attempt**：
+
+```
+1. 已有 matching、可 claim 的 CREATED attempt  → claim(existingAttempt)   ← 不 step
+2. 已有 matching RUNNING principal attempt     → 进入 S2
+3. 完全没有 attempt                            → preview/step 直到 CREATED → claim
+```
+
+**禁止**在已有可 claim 的 attempt 时再 step（会重复创建或空转）。
 
 ### E.16 begin 状态机（S0–S3，实现时最不容易出错的模型）
 
 比"新项目 / crash / 普通 ProjectIR"更**机器可判**，且完全不需要新的 truth species。
 
 ```
-S0 — NO PROJECT
-     require: repository bound ∧ in-place ∧ confirmed standard
-              ∧ 工作树干净 ∧ readiness READY
-     action : 创建精确的 direct ProjectIR/genesis（绑定真实 HEAD，§E.15.1）
+S0  NO PROJECT
+    freeze  liveHead + genesisCommittedAt（一次冻结，§E.15.1）
+    build   精确的 prospective ProjectIR / envelope / contract
+    require repository bound ∧ in-place ∧ confirmed standard
+            ∧ writePaths 非空（§E.4.2）∧ unowned changes == 0（§E.7）
+            ∧ readiness READY ∧ required-verification 可满足（§E.14.1）
+    fail-before-write（event delta 0）
+    start   using THE SAME liveHead + genesisCommittedAt
 
-S1 — PROJECT EXISTS, NO CLAIMED PRINCIPAL ATTEMPT
-     require: canonical direct shape ≡ request（§E.12 语义等价）
-              ∧ ambient HEAD == canonical project head   ← pre-claim 必须相等
-              ∧ 工作树干净
-     action : 补齐缺失的 genesis 声明（replay canonical basis，§E.13）
-              → activation-only step → 创建/claim attempt
+S1  MATCHING PROJECT, NO RUNNING ATTEMPT
+    require direct shape 语义等价（§E.12）
+            ∧ governance/authorization basis 兼容（§E.13：已有 TASK_CREATED 则复用 canonical envelope）
+            ∧ ambient HEAD == canonical project head   ← pre-claim 必须相等
+            ∧ unowned changes == 0（按同一 canonical scaffolding filter）
+    action  已有 matching 可 claim 的 CREATED attempt → claim IT（不 step，§E.15.2）
+            否则 → activation-only step 直到 CREATED → claim
 
-S2 — MATCHING PRINCIPAL ATTEMPT RUNNING
-     require: canonical direct shape ≡ request
-     tree   : MAY BE DIRTY / MAY HAVE NEW COMMITS（§E.7）
-     action : 无生命周期变更；返回 RESUMED / READY
+S2  MATCHING RUNNING ATTEMPT
+    require direct shape 语义等价
+    tree    MAY BE DIRTY / MAY HAVE NEW COMMITS（§E.7）
+    action  不 re-claim、不做 scheduler 变更；返回 RESUMED
 
-S3 — OTHER CANONICAL STATE
-     action : CONFLICT，零写
+S3  EVERYTHING ELSE
+    action  CONFLICT，零写
 ```
+
+**这样 `begin` 的三个 basis 就分得非常清楚**：
+
+```
+Work semantics  ≠  Governance basis  ≠  Runtime capability
+```
+
+`D_direct` **只负责第一项**，不应被迫证明另外两项——这正是 §E.12（语义等价）、§E.13（授权 basis 复用）、§E.14.1（运行期能力可满足）各管一段的原因。
 
 **S1 的 HEAD 规则是本状态机的关键不变量**：
 
@@ -1406,10 +1522,24 @@ Main Agent chooses when managed Work begins.
 
 ### E.19 验收
 
-- `LEAN-A27` **one-call bootstrap**：新部署、无 ProjectIR，一次 `palimpsest_begin(...)` 后 `ProjectIR` 存在、一个 task、一个 attempt **RUNNING**；Principal **从未**调用 `start`/`plan`/`next`/`claim`/`run`。**并断言** `ProjectIR.head_commit` **严格等于** preflight 观察到的 Git HEAD（§E.15.1）。
+- `LEAN-A27` **one-call bootstrap**：新部署、无 ProjectIR，一次 `palimpsest_begin(...)` 后 `ProjectIR` 存在、一个 task、一个 attempt **RUNNING**；Principal **从未**调用 `start`/`plan`/`next`/`claim`/`run`。**并断言 prospective basis 与 canonical basis 字节级一致**（§E.15.1）：
+
+  ```
+  prospectiveProject.digest == canonicalProject.digest
+  committedAt / headCommit / projectDigest / envelopeId
+      == 最终 TASK_CREATED 中的对应值
+  ```
+
+  以及 `ProjectIR.head_commit` **严格等于** preflight 观察到的 Git HEAD。
 - `LEAN-A28` **begin does no work**：`begin` 后 `changed_files = []`、`evidence = []`、无 report —— 只准备工作位，**绝不复活 pump**。
-- `LEAN-A29` **preflight before write**：标准缺失 / 所需命令未授权 / task readiness blocked / **工作树脏** / **execution ≠ in-place** —— 五种情形**均须** `begin` 被拒，且断言 **orchestration project log 的 event delta == 0**（`events_after == events_before`），**不只**是"`PROJECT_CREATED` 计数为 0"（否则"没建 ProjectIR 但先写了一条 role/gate 事件"仍会通过）。
-- `LEAN-A30` **restart convergence**：在 **partial genesis 的每一个落点**模拟 crash —— `PROJECT_CREATED` 后 / release gate 声明后 / role table 后 / stage graph 后 / task registration 后 / `TASK_STARTED` 后 / `ATTEMPT_CREATED` 后 / claim 后。每次 retry `begin` 后收敛终态满足 §E.13：恰好一个 ProjectIR、一个生效 gate definition/version、一个 role declaration、一个 stage graph v1、一个 direct task、一个 principal attempt（RUNNING）；**且不得因 retry 产生语义版本升级**。另加一例：claim → 编辑但未提交 → 模拟重启 → `begin(same proposal)` → **RESUMED，零新增 attempt**（§E.7 的 S2 段）。
+- `LEAN-A29` **preflight before write**：以下情形**均须** `begin` 被拒，且断言 **orchestration project log 的 event delta == 0**（`events_after == events_before`），**不只**是"`PROJECT_CREATED` 计数为 0"（否则"没建 ProjectIR 但先写了一条 role/gate 事件"仍会通过）：
+  - 标准缺失 / 所需命令未授权 / task readiness blocked / **unowned changes 非零** / **execution ≠ in-place**；
+  - **`writePaths = []`**（§E.4.2，可证明不可完成）；
+  - **`verification.required = true` 而 `ATTEMPT_RESULT` 运行期不可用**（§E.14.1，`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`）。
+- `LEAN-A30` **restart convergence**：在 **partial genesis 的每一个落点**模拟 crash —— `PROJECT_CREATED` 后 / release gate 声明后 / role table 后 / stage graph 后 / task registration 后 / `TASK_STARTED` 后 / `ATTEMPT_CREATED` 后 / claim 后。每次 retry `begin` 后收敛终态满足 §E.13：恰好一个 ProjectIR、一个生效 gate definition/version、一个 role declaration、一个 stage graph v1、一个 direct task、一个 principal attempt（RUNNING）；**且不得因 retry 产生语义版本升级**。另加三例：
+  - claim → 编辑但未提交 → 模拟重启 → `begin(same proposal)` → **RESUMED，零新增 attempt**（§E.7 的 S2 段）；
+  - **已有 `ATTEMPT_CREATED` → retry `claim` 的必须是那一个 attempt，不得产生第二个**（§E.15.2）；
+  - **task 已注册后 policy 改变** → **不得**生成第二个 envelope（§E.13：复用 canonical envelope，绝不重授权）。
 - `LEAN-A31` **conflicting existing state**：已有**语义不等价**的 canonical state 时 `begin(new proposal)` **不得** plan/rewrite，返回冲突且**零写**。
 - `LEAN-A32` **principal projection hygiene**：返回中不存在 `projectId`/`taskId`/`attemptId`/`gateId`/`eventType`/`lease`/scheduler。
 - `LEAN-A34` **pre-claim HEAD drift fails closed**：`begin` 在 H0 创建 `PROJECT_CREATED`，claim 前 crash，外部 git 动作把 HEAD 推到 HX，retry `begin(same proposal)` → **拒绝 `HEAD_CONFLICT`**、**不 claim**、**不采纳 HX**（§E.16 的 S1 不变量）。
@@ -1443,3 +1573,11 @@ Main Agent chooses when managed Work begins.
 - **禁止**新增 `DirectWorkPlan` / `DirectProjectStore` / `DirectTask` / `DirectAttempt` / `DirectPlanEvent`。
 - **禁止**在 Principal 投影里泄漏编排状态。
 - **禁止**把 `begin` 做成请求中间件（纯问答不 begin）。
+- **禁止**只对齐 HEAD 而不对齐 `committedAt`（prospective 与 canonical 的 `project_digest`/`envelope_id` 必须一致，§E.15.1）。
+- **禁止**在已有可 claim 的 CREATED attempt 时再 step（§E.15.2）。
+- **禁止**接受 `writePaths = []`（可证明不可完成，§E.4.2）。
+- **禁止**让语义更弱的旧 verifier 标志假装满足 `verification.required`（§E.14.1）。
+- **禁止**在已有 `TASK_CREATED` 时重新 `policy.authorize()` 或替换 canonical envelope（§E.13）。
+- **禁止**声称 crash/retry 已解决任意配置漂移（v1 保证范围 = 同一 operator configuration）。
+- **禁止**把"begin before first mutation"写成系统可检测的安全属性（它是 principal protocol precondition，§E.6）。
+- **禁止**裸用 `git status --porcelain` 判 dirty（须复用与 `finish` 相同的脚手架过滤规则，§E.7）。
