@@ -11,6 +11,7 @@
 > - `LEAN-1` **第 2A 期部分交付**（2026-09-21）：`palimpsest_finish` 落地——主代理只陈述一次"我认为完成了"，产品从已确认标准与 envelope 推导其余。控制器新增**无命令产品观察路径**（`#recordObservedEvidence`，`command: null` / `exit_code: null`）并把命令类证据构造收敛为单一来源（`#recordCommandEvidence`，`gate` 与 `finish` 共用，避免命令被执行两次）；`gate()` 的越界拒绝与 `report()` 的产品观察被 `finish` 复用。验收 `LEAN-A16`/`A17`/`A18` 全通过；**`LEAN-A15` 只通过确定性一半**——一次 `finish` 后 attempt 为 COMPLETED、证据齐、且工具契约无处安放 `attemptId`/`predicate`/`exitCode`/`changedFiles`/`gateId`（源码级断言）均已证明，但 `A15` 还要求**活体**双证与 **gate PASS**，二者本轮**未做**（活体 DSH 会话未跑；测试断言到证据齐与结算，未断言门禁判定为 PASS）。**并根治第 1 期暴露的 `write_scope_valid` 语义**——那条证据如今是产品对 `git diff` 的观察，调用方无任何参数可以冒充它（`LEAN-A18`）。**本轮未交付**：`LEAN-A05`/`A06`（§2.1 证据要求推导）与 `LEAN-A14`（§5 readiness 校验操作者配置）——它们是独立于 `finish` 的工作，仍待做。工具侧新增**已审阅新增机制** `REVIEWED_TOOL_ADDITIONS`（route 早有、工具此前没有，导致新工具无法表达）：名称集合仍是双向精确比较，删除或未登记的新增仍失败。门禁：单元 184 文件 / 2095 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。附带修复：`src/tools/controller.ts` 中 `#gateOutputKey` 的两个**字面 NUL 字节**改为 `\u0000` 转义（值等价，但裸字节让该文件被工具链判定为二进制，Edit/grep 均无法工作）。
 > - `LEAN-1` **第 2A-R 期（Completion Integrity Closure）交付**（2026-09-21）：独立复核发现并**实测确认**一个 correctness gap——`finish` 的 in-place 观察同时统计已提交与未提交变更，于是**未提交的工作也会被接受**：探针在 `main@89377c7` 上得到 `finish ACCEPTED`、`changed_files: ["src/dedupe.ts"]`、而 `result_commit` = **base**（不含该改动）。更严重的是 in-place 晋升守卫只比较"记录的提交 == 仓库 HEAD"，该状态下两者都是 base，**守卫会通过**，于是晋升可能记录一个 canonical head 并不含工作内容的 COMMITTED 结果。**新增并冻结不变量**：`Attempt COMPLETED ⇒ resultCommit 是包含所观察工作的不可变提交`（即 `changed_files == Diff(base, resultCommit)`）；拒绝而非代提交——`git commit` 是普通 agent 工作（read/edit/test/commit），不是治理机器，产品不得代写提交。同时：worktree 模式下 `finish` **fail closed**（该模式的工作树路径属 git port，高层路径无法观察，不假装支持）；DSH 结果**投影掉 `attemptId`**（`INV-4`：编排状态不进主上下文，应用层结果仍保留）；并把误挂的 `#assertInPlaceAttemptCurrent` 文档注释归位（它恰好描述的就是这个缺陷，注释中补记"必要但不充分"）。验收 `LEAN-A22`–`A25`（`test/lean_finish_integrity.test.ts`）；§8 第 5 条按操作者裁决定为 **(a′) Commit-bound isolated verification**，附录 B §B.3 据此修正（`ATTEMPT_RESULT` 的一致性**不是**"ambient HEAD == resultCommit"——那会把主代理锁死在已完成的工作上；而是 subject 由 canonical 报告物化、提交对象存在、verifier 精确物化该提交）。门禁：单元 185 文件 / 2099 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
 > - `LEAN-1` **第 2A-Q 期（Completion Contract + readiness）交付**（2026-09-21）：新增 **L1 纯派生** `src/domain/completion_contract.ts`——`deriveAttemptCompletionContract(standard, task, envelope, capabilities)` 产出 `{basisDigest, mechanical, verification, diagnostics}`，**不落任何事件、不读任何存储**（`Envelope is basis ≠ Envelope stores every derived requirement`：**未**给 `TaskEnvelope` 增加任何 evidence/verification 字段）。机械部分用**三种 check kind**（`run_standard_command` / `assert_write_scope` / `assert_required_artifacts`）而非谓词列表，谓词映射单点单向。`finish` 改为**消费同一个派生**（一条派生、多个消费者，禁止 readiness/finish/2B 各持一套规则）；`A05`/`A06` 按"envelope 是 basis"与"`expected_files_exist` 只来自执行前已声明路径"改写；`write_scope_valid` 无条件要求。readiness **分两层**（`R_deployment` 启动可答 / `R_task` 需任务），部署缺 verifier **只在任务确实需要复核时**才算 task blocker；`A14` 的判据是"不能晚失败"（策略不允许所需命令必须在任务开始前出现并指明补救方是操作者）。capabilities 由 composition 如实注入（有 repository 才 `sandboxSpawnVerified`，有 verification store 才 `independentVerifierAvailable`），未声明一律按缺失处理。验收 `LEAN-A05`/`A06`/`A14`（`test/lean_completion_contract.test.ts`，14 项）；readiness 经 `/api/application/surfaces` 的 `governance.completionReadiness` 暴露。**D2 两条硬前置已登记**（worktree-aware `observeAttemptResult` 复用同一 materialization 断言；principal attempt attribution 需 host-local 绑定、不得创造 Agent identity 真值）。**已知中间缺口**：`verification.required` 已派生但 2B 之前不强制，只在 readiness 上可见。门禁：单元 186 文件 / 2113 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
+> - `LEAN-1` **第 2A-Q-R 期（verification policy calibration）交付**（2026-09-21）：复核发现 `single_evidence` 作为 hard requirement **把风险代理搞错了**——命令**数量**不是证据**强度**的代理（一条 `npm test` 可能跑 5 个断言也可能跑 500 个），且会让普通任务被迫启动第二执行者，与 `INV-6`（exploit useful independence; never manufacture agents）和 G10-R 的"人为 role split 可为纯开销"冲突。四处校准：① 复核分**两个强度**（`required`/`requiredReasons` 与 `recommended`/`recommendationReasons`），`REQUIRED` 保持窄，2B v1 只做 `contract_boundary`，不加 size threshold（"大 diff"执行前不可知）；② 触发**改名** `single_evidence → single_command_bar`（旧名本身是比它实际测量更强的 epistemic 主张）；③ **`RequirementBasis ≠ CapabilityAssessment`**——`deriveAttemptCompletionContract` **不再接收 capabilities**（分层由构造保证），`basisDigest` 只覆盖规范性输入，capability 说明移出契约 `diagnostics`；否则 verifier 中途配置好会移动摘要而标准未动，削弱 `INV-7`；④ readiness 两层**强度不同**——部署层**描述性**（`CONFIGURED`/`DEGRADED`/`INCOMPLETE` + `gaps`，不叫 blockers），任务层**可行动**（`READY`/`BLOCKED` + `blockers` + `advisories` 承载 RECOMMENDED 但不可用）。阻断规则精确为 `已知要求 ∧ 缺失能力 ⇒ 提前阻断`，不多不少。验收 `LEAN-A05`/`A06`/`A14` 扩到 19 项。门禁：单元 186 文件 / 2118 测试、e2e 38/38、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 
 ---
 
@@ -355,17 +356,45 @@ deriveAttemptCompletionContract(...)
 
 **禁止**让 readiness、finish、2B 各持一套规则——那必然漂移。任何一处要改"任务需要什么"，改的都是这一个派生。
 
-**readiness 分两层**（§5.1）：`R_deployment` 在启动时即可回答（标准已确认？命令可执行？沙箱可 spawn？有满足独立性契约的 verifier？）；`R_task` 需要具体任务（本任务要测试吗？要产物检查吗？要独立复核吗？所需 verifier 可用吗？）。**不得**因为部署缺 verifier 就把所有项目标成 NOT READY——若当前任务根本不需要认知复核，那是不诚实的。正确形态：
+**复核有两个强度**（**2A-Q-R 校准**）：`REQUIRED` 只留给**强且执行前可知**的风险；其余是 `RECOMMENDED`（值得再看一眼，但**不阻断晋升**）。
+
+| 触发 | 强度 | 理由 |
+|---|---|---|
+| `contract_boundary`（schema / contract / security / auth / proto / public-api） | **REQUIRED** | 强风险，且执行前即可判定 |
+| `operator_requires_independent_verification` | **REQUIRED** | 尚无子句种类可表达，待 `ProjectStandard` 支持后再启用 |
+| `single_command_bar`（标准只有一条命令） | **RECOMMENDED** | 见下 |
+
+**为什么 `single_command_bar` 不能是 hard requirement**：命令**数量**不是证据**强度**的代理——一条 `npm test` 可能跑 5 个断言，也可能跑 500 个。把它当硬要求，会让"主代理修一个小函数 → tests PASS → scope PASS → commit materialized"仍然被迫启动第二执行者，等于重新滑向"为了多 Agent 而多 Agent"，与 `INV-6`（**exploit useful independence; never manufacture agents**）和 G10-R 测到的"人为 role split 可能是纯开销"直接冲突。**触发名必须说清它测的是什么**：叫 `single_command_bar`，不叫 `single_evidence`——后者的措辞本身就是一个比它实际测量更强的 epistemic 主张。
+
+**`REQUIRED` 保持窄**（2B v1 只做 `contract_boundary`）：不要一开始就加"大 diff""文件很多""感觉复杂"这类触发——**尤其"大 diff"在执行前根本不知道**。若将来确需 size threshold，唯一严谨的做法是**提前声明条件、事后只观察是否成立**（例：执行前固定 `changed_files > 8 ⇒ required`），这样仍满足 `INV-7`。
+
+**`RequirementBasis ≠ CapabilityAssessment`**（冻结）：
 
 ```
-deployment capability: independent verifier unavailable
-task requirement:      not required
-effective:             READY
+basisDigest          = H(ProjectStandard, TaskSpec, TaskEnvelope)      ← 只含规范性输入
+CompletionReadiness  = assess(CompletionContract, CurrentCapabilities) ← 动态评估
 ```
 
-**`A14` 的真正判据是"不能晚失败"**：任何确定会在 finish/复核阶段形成死路的配置问题（如"测试是完成要求、但当前策略不允许该命令"），必须在**任务开始前**就出现，并指明补救方是操作者（agent 无权调整）。
+**capabilities 不是契约派生的入参**（由构造保证，不靠约定）。否则 verifier 在任务中途被配置好，会让 `basisDigest` 变化而**标准本身没动**——那会削弱 `INV-7` 的语义。2B 会引用这个摘要作为**要求的身份**，所以它必须只表示"标准"，不表示别的。
 
-> **本期与 2B 的边界**：`verification.required` 在 2A-Q **已派生但不执行**——2B 之前它只是 readiness 上的诚实陈述，尚不能在晋升时强制。这个中间缺口是已知的，且是本规格要它显式可见的原因，而不是等 2B 再重新发明"哪些任务需要复核"。
+**readiness 分两层，且两层强度不同**：
+
+- `R_deployment` 是**描述性**的：`CONFIGURED` / `DEGRADED` / `INCOMPLETE` + capability 事实 + `gaps`。**不叫 blockers**——缺 capability 只在具体任务需要它时才是 blocker。若部署层也报 `BLOCKED`，就会出现"系统显示 BLOCKED、这个 task 又是 READY"这种产品语言上的自相矛盾。
+- `R_task` 是**可行动**的：`READY` / `BLOCKED` + `blockers`（外加 `advisories`，承载 RECOMMENDED 但当前不可用的情况——说出来，但绝不拒绝）。
+
+```
+Task readiness is actionable; deployment readiness is descriptive.
+```
+
+**`A14` 的真正判据是"不能晚失败"，且规则要精确**：
+
+```
+已知要求 ∧ 缺失能力  ⇒  提前阻断
+```
+
+不多也不少。当前任务要跑测试而沙箱不可用 → `BLOCKED`；当前任务是纯文档 → 沙箱不可用**无关**；当前任务要独立复核而无 verifier → `BLOCKED`；当前任务不要求复核 → 那是 **capability gap，不是 blocker**。要求"所有未来可能用到的能力启动时都在"会让启动变成误报，那正是本机制要防的晚失败的镜像。
+
+> **本期与 2B 的边界**：`verification.required` 在 2A-Q **已派生但不执行**——2B 之前它只是 readiness 上的诚实陈述，尚不能在晋升时强制。这个中间缺口是已知的，且是本规格要它显式可见的原因，而不是等 2B 再重新发明"哪些任务需要复核"。**校准后的后果**：普通低风险 code task 的 `required = false`（只是 recommended），因此 direct path 不会因缺 verifier 而被阻断——这才是"2A 的产品证明"要跑的那条路径。
 
 ---
 
@@ -532,6 +561,8 @@ write-set 不相交是必要条件，不是充分条件
 | **2A** | Completion Handoff（**部分交付** 2026-09-21） | `palimpsest_finish`：主代理做完工作后不再亲自操作治理机器 | 很少 | `A16`–`A18` **已通过**；`A15` **仅确定性一半**（活体与 gate PASS 未做） |
 | **2A-R** | Completion Integrity Closure（**已交付** 2026-09-21） | 冻结"完成的 in-place 工作必须 commit-materialized"；worktree 下 `finish` fail closed；主代理投影去掉 `attemptId` | 很少 | `A22`–`A25` **全部通过**；**2B 的前置**——没有它，`ATTEMPT_RESULT` 的 subject 可能指向不含工作的提交 |
 | **2A-Q** | Completion Contract + readiness（**已交付** 2026-09-21） | §2.1 完成契约**纯派生**（`deriveAttemptCompletionContract`，**不是新的真值属主**、不落任何事件）+ §2.7 三种 check kind + §5.1 readiness 分两层（标准已确认？命令可执行？沙箱可 spawn？所需 verifier 可用？） | 很少 | `A05`、`A06`、`A14` **全部通过** |
+| **2A-Q-R** | verification policy calibration（**已交付** 2026-09-21） | 复核两强度（`single_command_bar` 降为 RECOMMENDED 并改名）、`basisDigest` 排除 capabilities、capability 说明移出契约、部署层 readiness 改为描述性 | 很少 | `A05`/`A06`/`A14` 扩到 19 项全通过；**校准后普通低风险任务 `required = false`，direct path 不再被阻断** |
+| **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS，主代理上下文零 predicate/gateId/attemptId/report | 无 | `A15` **活体一半** |
 | **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
