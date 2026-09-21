@@ -16,6 +16,7 @@
 > - `LEAN-1` **附录 E 的 E-r1 修订**（2026-09-21，docs-only，实现前）：逐段对照 `start`/`preview`/`step`/`claim` 后，把 2A-B 的实现前边界收紧。**核实两处代码事实**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）；且 `start()` 的 genesis 是**多事件**序列（`PROJECT_CREATED` → release `GATE_DEFINED` → `ROLE_TABLE_DEFINED` → `STAGE_GRAPH_DEFINED` → task registration），因此 crash 可落在任意两个声明之间，retry **不得**用新 clock 重建 creation basis（否则同幂等键 + 不同载荷）。修订九项：v1 仅 **repository-bound + in-place**；fresh begin **绑定真实 HEAD** 并加机器验收；clean-tree **分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work）；restart 覆盖 **partial genesis 每个落点**；Case B/C 改 **语义等价而非来源**（无 marker 时来源不可判），比较 normalized shape / `D_direct` 而非完整 digest；`goal` 改称 agent-compiled；`writePaths` 明确为 self-binding scope 并说明与 ARCH-2 确认规则的窄例外关系；`A29` 改 **event delta 0**、`A33` 改 **低层工具调用计数 0** 并注明 fixture 已预置确认标准（不声称单轮确认 goal+standard）；新增 `A34` pre-claim **HEAD drift fail-closed** 与 **S0–S3 状态机**。验收 `A27`–`A34`。**仍为规划、未实现。**
 > - `LEAN-1` **附录 E 的 E-r2 修订**（2026-09-21，docs-only，实现前）：E-r1 判为 **architecture PASS / implementation HOLD**——仍有 4 个会让 `A27`/`A30` **假绿**的 blocker。**新核 5 处代码事实**：`ProjectIR.digest` 含 `committed_at`（`src/schema/models.ts:468`）；`StartProjectInput` **已含** `committedAt?`（`src/tools/controller.ts:136`，故修法**不动既有面**）；`#advanceActiveStage()` 在任务已占位该 stage 时返回 `null`（`src/scheduler/scheduler.ts:232`）；`TASK_CREATED` 已固定 `task_envelope` 与 `policy_digest`（`src/scheduler/scheduler.ts`、`src/domain/policy.ts` 的 `AuthorizedTaskEnvelope`）。**四个 blocker**：① **S0 一次性冻结 `liveHead` + `genesisCommittedAt`** 并原样传两侧，加断言 `prospective.digest == canonical.digest` 与 `envelopeId`/`projectDigest` 一致——**只对齐 HEAD 不够**，`project_digest`/`envelope_id` 会不同（§E.15.1）；② **S1 先读 canonical attempt**，已有可 claim 的 CREATED attempt 直接 claim，不再 `preview/step`（§E.15.2）；③ **2B 之前 `verification.required` fail closed**（`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`，零写）或把 capability 升级为"attempt-result verification executable"，**不得**让旧的 current-head verifier 假装满足（§E.14.1）；④ **`writePaths` 必须非空**（否则与"完成需 `changed_files > 0`"矛盾，begin 时即可证明不可完成，§E.4.2）。**三处边界**：⑤ **语义等价 ≠ 授权 basis 等价**——已有 `TASK_CREATED` 则复用 canonical envelope、**绝不重授权**，v1 保证范围写明为"同一 operator configuration 之下"，不暗示解决任意配置漂移（§E.13）；⑥ **"begin before first mutation" 是 principal protocol precondition，不是可检测的安全属性**——先改后 commit 再 begin 时工作树仍干净，产品无法追溯，`Palimpsest does not retroactively claim work`（§E.6）；⑦ **判 dirty 须复用与 `finish` 相同的脚手架过滤规则**（`.palimpsest/`），否则产品会被自己的状态目录卡死（§E.7）。另：`E.10` 完成摘要由 `testsRequired` 改为 `mechanicalChecks` 人话摘要（标准可能要求 `lint_pass`/`process_exit_zero`）；S0–S3 精确化并写出三个 basis 的分工 `Work semantics ≠ Governance basis ≠ Runtime capability`（`D_direct` 只负责第一项）。**实现门禁：E-r2 后 2A-B = GO。仍为规划、未实现。**
 > - `LEAN-1` **第 2A-B 期交付**（2026-09-22）：`palimpsest_begin` 落地——direct path 终于有了与 `finish` 对称的开始协议。实现按 §E.16 的 S0–S3，全部前置在任何写入之前求值：`ProjectController.begin()`（preflight → prospective basis → `start({headCommit, committedAt})` → S1 先读 canonical attempt 再 claim）、application work 面 `begin()`、DSH 工具 `palimpsest_begin`（登记 `REVIEWED_TOOL_ADDITIONS`）、`test/lean_begin.test.ts`（9 项）。**实现中发现并修掉一处规格未覆盖的自身缺陷**：`#assertNoUnownedWork` 原本只在 S1 分支调用，S0（无项目）漏检——`A29` 的"stray file"一例当场暴露，已改为 S2 早返回之后**无条件**执行（S2 的 RUNNING attempt 合法拥有脏树，不得被拒）。另有两处测试构造被纠正：用手改 `attempts` 行模拟 crash 会让账本与投影不一致（retry 会死在幂等键不匹配），改为用公开生命周期原语**忠实构造** `ATTEMPT_CREATED` 未 claim 的状态。**验收**：`A27`–`A32`、`A34` 确定性通过（含 prospective basis 与 canonical basis 的 `projectDigest`/`envelopeId` 一致、每次拒绝的 event delta 0、`ATTEMPT_CREATED` 落点 retry claim 同一个 attempt、pre-claim HEAD drift 拒绝）；**`A33` 活体通过**——真实 DSH：只读勘察 → `begin`×1 → 改代码/测试/提交 → `finish`×1，`toolCalls(begin)=1`、`toolCalls(finish)=1`、`toolCalls(start|next|claim|run|gate|report)=0`，最终 `Attempt COMPLETED`、`result_commit` 含工作、`gate-release PASS (missing: [])`。**据此 `A15` 活体那一半关闭**。门禁：单元 187 文件 / 2128 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。**活体一处次要观察（非 blocker）**：`begin` 之后 agent 的首次 `write` 报 "file changed since it was read"，重读后内容未变、重试成功——疑似 begin 触碰了文件元数据，留待观察。
+> - `LEAN-1` **附录 B 的 B-r1 修订**（2026-09-22，docs-only，实现前）：2A-B 判为 **STRONG PASS / CLOSED**，2B 判为 **architecture direction PASS / implementation HOLD**。**新核三处代码事实**：first-party verifier 即 `commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] })`（`src/composition/governance.ts:176`）——**在 clean checkout 里必然 PASS**，故把它的 `supportedSubjects` 扩成含 `ATTEMPT_RESULT` 会同时造成**假验证**与**既有 head verification history 全部 stale**（改 definition digest）；`ProjectHeadVerificationSubject` 硬编码于 `provider.ts`/`status.ts`/`artifacts.ts`/`store.ts` 四处；`PromotionManager.assessEligibility()` 是唯一 assessor（5 处调用点）。修订九项：**① B.4 与 #147 校准**（唯一硬触发是 `contract_boundary`；`single_command_bar` 仅 RECOMMENDED；v1 不实现 diff-size threshold；operator-requires 等 `ProjectStandard` 有 clause 后再做）；**② subject 改 union**（`ProjectVerificationSubject = Head | AttemptResult`，`CURRENT_PROJECT_HEAD` 语义不动，`new subject kind ≠ new verification system`）；**③ Work-backed materialization owner**（窄 read port，调用方永不提供 `resultCommit`/`baseCommit`/`reportDigest`）；**④ agent-facing 不接收 `attemptId`**（恰好一个 current-batch COMPLETED promotion candidate → 验它；0 → `NO_ATTEMPT_RESULT`；>1 → `AMBIGUOUS_ATTEMPT_RESULT`，不猜）；**⑤ 新建 verifier ref** `project.attempt.git-diff-check.v1`，旧 `project.head.git-diff-check.v1` 不动，新 provider 的 commit 来自 canonical subject 故无 injection；**⑥ Verification service 控制的隔离检出 port**（`materialize` → detached checkout @ R → `release()`，throw/timeout/ERROR 也 cleanup；不是 Work truth、不是 project mutation、不是 durable artifact）；**⑦ freshness 按 kind 分开**（`ATTEMPT_RESULT` **绝不**查 ambient HEAD）＋ **runtime capability subject-aware**（`supportsIndependent(kind)`，这才是解锁 `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` 的正确条件——不是"store 存在"）；**⑧ promotion 显式 admission bridge**（Verification-agnostic 投影 + typed blocker `required_verification_missing`/`_unsatisfied`，挂在唯一 `assessEligibility()` 上，promotion domain **不** import Verification）；**⑨ 正常 `finish` 在 application 层自动触发 required verification**（Work owner + Verification owner 编排，`ProjectController` 不 import Verification），且 **`Verification FAIL ≠ Work FAIL`**（Attempt 保持 COMPLETED，不改历史报告，v1 不发明自动 reopen）。验收增补 `A35`（exact isolated materialization + cleanup）、`A36`（RA/RB adversarial：HEAD 推到 RB 后 RA 的 run 仍 CURRENT，而 promotion(RA) 仍可因 head_conflict 被拒——机器证明 `Verification freshness ≠ Promotion authority freshness`）、`A37`（双向 subject firewall）、`A38`（promotion bridge，并断言 **`EvidenceAtom` 计数在 Verification PASS 前后不增加**——证明没有 evidence laundering）。**仍为规划、未实现。**
 
 ---
 
@@ -568,7 +569,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-Q-R** | verification policy calibration（**已交付** 2026-09-21） | 复核两强度（`single_command_bar` 降为 RECOMMENDED 并改名）、`basisDigest` 排除 capabilities、capability 说明移出契约、部署层 readiness 改为描述性 | 很少 | `A05`/`A06`/`A14` 扩到 19 项全通过；**校准后普通低风险任务 `required = false`，direct path 不再被阻断** |
 | **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS | 无 | **`A15` 活体那一半已由 `A33` 关闭**（2026-09-22）。此前两轮失败暴露的零产出泵（`A26` 已修）与"无开始入口"（2A-B 已修）均已闭合 |
 | **2A-B** | Direct Work Bootstrap（**已交付** 2026-09-22，附录 E） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A32`、`A34` **确定性通过**；**`A33` 活体通过**（`begin`×1、`finish`×1、低层工具调用 ×0、gate PASS）。v1 仅 repository-bound + in-place、`writePaths` 非空 |
-| **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
+| **2B** | Attempt-bound Verification（**规划，附录 B；B-r1 已修订**） | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交；subject union + 新 verifier ref + promotion admission bridge + application 层 finish 编排 | 是，小而明确 | `A07`、`A08`、`A19`–`A21`、**`A35`–`A38`**。唯一硬触发是 `contract_boundary` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
@@ -720,6 +721,8 @@ Agent: 修改 → commit → palimpsest_finish()
 
 ## 附录 B（第 2B 期）：Attempt-bound Verification
 
+> **状态：规划（未实现）**。`B-r1` 修订（2026-09-22，实现前）：逐段对照当前 Verification runtime 后，把 2B 从 *architecture direction PASS / implementation HOLD* 推到可开工。**新核两处代码事实**：first-party verifier 就是 `commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] })`（`src/composition/governance.ts:176`）——在 clean checkout 里必然 PASS，故**旧 head verifier 绝不能扩成 attempt verifier**（§B.11）；`ProjectHeadVerificationSubject` 硬编码于 `provider/status/artifacts/store` 四处（§B.8）；`PromotionManager.assessEligibility()` 是唯一 assessor、有 5 处调用点（§B.14）。修订九项：① B.4 与 #147 校准；② subject **union**（不是新系统）；③ Work-backed materialization owner，调用方永不提供 commit/digest；④ agent-facing **不接收 `attemptId`**（0/1/>1 目标推导）；⑤ **新建 verifier ref**，旧 head verifier 不动（避免假验证 + 旧历史 stale）；⑥ Verification service 控制的隔离检出 port（throw/timeout 也 cleanup）；⑦ freshness **按 kind 分开**、`ATTEMPT_RESULT` 绝不查 ambient HEAD，且 runtime capability **subject-aware**；⑧ promotion **显式 admission bridge**（Verification-agnostic 投影 + typed blocker + 挂在唯一 assessor 上，promotion domain 不 import Verification）；⑨ 正常 `finish` 在 **application 层**自动触发 required verification（`Verification FAIL ≠ Work FAIL`）。验收增补 `A35`–`A38`。
+
 ### B.1 触发 `CF-AD-01`
 
 `CF-AD-01` 的原文触发条件是"A product need to verify something that is not the project head, **WITH a different admission design**"（`docs/engineering/audits/G10-AD-CARRY-FORWARD.md:15`）。§2.3 的实测正是这个需求，本期即其产品触发。
@@ -771,15 +774,21 @@ AttemptReport → resultCommit R → verifier 建立/复用 @R 的隔离检出 �
 
 **独立性分级沿用现有模型，不改**：机械 verifier 用 `MECHANICAL_INDEPENDENT` 在独立检出中跑确定协议（不需要另一个 LLM）；模型 verifier 若要算独立，仍须满足既有的显式分离契约（`SEPARATE_PROCESS` / `SEPARATE_SERVICE` / `SEPARATE_HOST`）——**同模型、同上下文、只换提示词不构成独立**。
 
-### B.4 风险推导（何时要求独立复核）
+### B.4 风险推导（**B-r1：与 #147 校准后的真实 policy 对齐**）
 
-| 任务形状 | 复核要求 |
+**旧表述已过期**：本附录原写"大任务 → REQUIRED""只有一条证据命令 → REQUIRED"。二者均已被 §2.7 的 2A-Q-R 校准**否决**——`single_command_bar` 降为 RECOMMENDED 且**不阻断晋升**，2B v1 也**不实现** diff-size threshold。
+
+**2B v1 的实际 policy**（以 `src/domain/completion_contract.ts` 为准，本表只是它的复述）：
+
+| 任务形状 | 2B v1 |
 |---|---|
-| 小 / 本地 / 机械（单文件、有测试、不触边界） | **不要求**认知复核（机械证据足够） |
-| 触及边界 / 契约 / 安全相关路径 | 要求独立复核 |
-| 大（改文件数或行数超阈） | 要求独立复核 |
-| 只有一条证据命令 | 要求独立复核 |
-| `ProjectStandard` 明确要求 | 要求独立复核 |
+| 普通本地代码任务 | verification **not required** |
+| `single_command_bar`（标准只有一条命令） | **RECOMMENDED** only，不阻断 promotion |
+| `contract_boundary`（schema / contract / security / auth / proto / public-api） | **REQUIRED** |
+| 大 diff / 文件数多 | v1 **不实现**（"大 diff"执行前不可知；将来若加，条件必须提前声明、事后只观察） |
+| operator 显式要求 | **等 `ProjectStandard` 有相应 clause 之后**再实现（当前无该 clause kind） |
+
+**禁止**在 2B 的验收测试里把已经校准掉的错误策略重新实现回来。**唯一**的硬触发是 `contract_boundary`。
 
 ### B.5 工具契约变更登记
 
@@ -794,12 +803,268 @@ AttemptReport → resultCommit R → verifier 建立/复用 @R 的隔离检出 �
 - **禁止**用 `CURRENT_PROJECT_HEAD` 的 PASS 满足 attempt 级复核要求（`LEAN-A20` 要求机器证明二者不等价）。
 - **禁止**让调用方指定 `resultCommit`。
 - **禁止**在 in-place 工作未提交时声称"复核了结果"。
+- **禁止**把 `ATTEMPT_RESULT` 加进**旧** head verifier 的 `supportedSubjects`（既是假验证，也会让既有 head verification history 全部 stale，§B.11）。
+- **禁止**让 provider 自己决定在哪个目录跑（隔离检出必须由 Verification service 的 materialization port 控制，§B.12）。
+- **禁止**在 provider throws / timeout / ERROR 时跳过 cleanup（§B.12）。
+- **禁止**对 `ATTEMPT_RESULT` 检查 ambient HEAD（§B.13）。
+- **禁止**让 `ATTEMPT_RESULT` 的 run 影响 current-head status，或反之（双向 anti-alias，§B.13）。
+- **禁止**用"verification store 存在"当作 `ATTEMPT_RESULT` 可满足的条件（须是"存在 executable independent verifier 且 `ATTEMPT_RESULT ∈ supportedSubjects`"，§B.13）。
+- **禁止**让 promotion domain import `ProjectVerificationRun`（只看 admission 投影，§B.14）。
+- **禁止**在 `assessEligibility()` 之外另加 promotion 检查（所有入口必须共享唯一 assessor，§B.14）。
+- **禁止**让 `ProjectController` import Verification（编排属于 application composition，§B.15）。
+- **禁止** `Verification FAIL → TASK_FAILED`，或改写历史 `AttemptReport`（§B.16）。
+- **禁止**为 2B 顺手发明"verification fail 自动 reopen task"（先 dogfood，§B.16）。
+- **禁止**让 Principal 手工调用 verifier 成为正常路径（`verify_attempt_result` 是 expert/debug 路径，§B.15）。
 
 ### B.7 验收
 
 - `LEAN-A19`：`ATTEMPT_RESULT` 复核可跑通——in-place 下 attempt 提交后、晋升前，`subject.resultCommit` 成立且复核 PASS。
 - `LEAN-A20`：**机器证明** `CURRENT_PROJECT_HEAD` 复核 ≠ `ATTEMPT_RESULT` 复核：一个旧 head 的 PASS **不能**满足 attempt 级要求。
-- `LEAN-A21`：风险推导生效——小/本地任务不要求认知复核；边界/大/单证据任务缺复核时晋升被拒并点名缺哪条、由谁补（承接 `LEAN-A07`）。
+- `LEAN-A21`：风险推导生效——小/本地任务不要求认知复核；**边界任务**缺复核时晋升被拒并点名缺哪条、由谁补（承接 `LEAN-A07`；**B-r1 已按 §2.7 校准修正文案**：不再是"单证据/大任务"，而是 `contract_boundary` 为唯一硬触发）。
+
+---
+
+## B-r1 修订（2B 实现前）：把"验证真的跑了但语义仍不对"的风险钉死
+
+> **状态：规划**。B-r1 是 docs-only 修订，未实现。它把 2B 从 *architecture direction PASS / implementation HOLD* 推到可开工。
+
+### B.8 subject 是 **union**，不是新的 verification 系统
+
+**已核**：`ProjectHeadVerificationSubject` 当前被硬编码在四处——`provider.ts` / `status.ts` / `artifacts.ts` / `store.ts`——并贯穿 `ProjectVerificationRequest` / `RunEvent` / `Run` / `ProjectVerifierVerifyInput` / status / store parser。
+
+正确改法是**扩展既有 subject union**：
+
+```ts
+type ProjectVerificationSubject =
+  | ProjectHeadVerificationSubject
+  | AttemptResultVerificationSubject;
+```
+
+`parseProjectVerificationSubject()` / `sameSubject()` / `Request.subject` / `RunEvent.subject` / `Run.subject` / `VerifyInput.subject` **全部改用该 discriminated union**。`CURRENT_PROJECT_HEAD` 的语义**完全不动**。
+
+```
+new subject kind  ≠  new verification system
+```
+
+### B.9 materialization owner 是 **Work**（窄 read port）
+
+subject 形状**保持 B.2 所写**，**不加** `projectRevision` / `projectDigest` / `currentHead` —— 它描述的是一个**历史上已完成、不可变的 Work result**。
+
+新增一个**很窄**的 Work-backed read port（概念形状）：
+
+```ts
+AttemptResultVerificationSource {
+  materialize(attemptId): AttemptResultVerificationSubject
+  rematerialize(attemptId): AttemptResultVerificationSubject
+}
+```
+
+**只**从 canonical 读：`attempt row` / `AttemptReport` / `TaskEnvelope`。必须保证：
+
+```
+attempt.state == COMPLETED
+report.result_commit != null
+report envelope == canonical envelope
+reportDigest == canonical AttemptReport digest
+```
+
+调用方**永不**提供 `resultCommit` / `baseCommit` / `reportDigest`。内部用 `attemptId` 无妨；**禁止**的是"agent 自己挑一个 commit 然后说验证它"。
+
+### B.10 目标推导：agent-facing **不接收 `attemptId`**
+
+`palimpsest_verification` 可增 action `verify_attempt_result`，但 Principal **不得**再看到 `attemptId`。2B v1 明确限定：
+
+```
+恰好一个 current-batch COMPLETED promotion candidate  → 验它
+0 个   → NO_ATTEMPT_RESULT
+>1 个  → AMBIGUOUS_ATTEMPT_RESULT（不猜；先走既有 candidate selection）
+```
+
+内部 application/service 可以有 `verifyAttemptResult(attemptId)`；**DSH 投影不暴露该参数**。
+
+```
+Internal identity  ≠  Principal vocabulary
+```
+
+Direct path 天然只有一个 candidate，因此不受影响。
+
+### B.11 **必须新建 verifier ref**——旧 head verifier **绝不能**扩成 attempt verifier
+
+**已核**：first-party verifier 就是 `commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] })`（`src/composition/governance.ts:176`）。
+
+把它的 `supportedSubjects` 从 `[CURRENT_PROJECT_HEAD]` 扩成 `[CURRENT_PROJECT_HEAD, ATTEMPT_RESULT]` 会造成**两个**严重后果：
+
+1. **假验证**：`git diff --check` 检查的是**工作树 diff**。在一个 clean checkout @ R 里它**没有 diff 可查**，必然 PASS——于是产品会宣布"`ATTEMPT_RESULT` 已独立验证"，而实际上只证明了"干净检出没有未提交的空白错误"。
+2. **旧历史全部 stale**：改 `supportedSubjects` 会改变该 verifier 的 **definition digest**，使既有 head verification history 因 protocol definition change 而失效。
+
+因此 2B 新建一个**独立 verifier ref**（概念名）：
+
+```
+project.attempt.git-diff-check.v1      ← 新
+project.head.git-diff-check.v1         ← 保持不动
+```
+
+新 provider 是 **subject-aware** 的：命令里的 commit 来自 canonical `ATTEMPT_RESULT` subject，**不是 caller**，因此没有 command/commit injection：
+
+```
+git diff --check <baseCommit>..<resultCommit>
+```
+
+运行形态：
+
+```
+AttemptReport → ATTEMPT_RESULT(R) → 隔离检出 @ R → git diff --check base..R → PASS/FAIL/ERROR
+```
+
+**产品语言必须准确**：只能说 `MECHANICAL_INDEPENDENT protocol passed`，**不得**说"契约变更已被语义审查证明正确"。
+
+```
+Verification PASS  ≠  Truth
+```
+
+### B.12 隔离检出由 **Verification service** 控制（窄 materialization port）
+
+```
+VerificationMaterializationPort {
+  materialize(subject): Promise<{ repository, materializedCommit, release() }>
+}
+```
+
+| subject kind | 规则 |
+|---|---|
+| `CURRENT_PROJECT_HEAD` | 沿用现状：`ambient repo HEAD == subject.headCommit`，provider 可在当前 repo 跑 |
+| `ATTEMPT_RESULT` | `git object R exists` → **isolated detached checkout @ R** → `materializedCommit == R` → provider 在其中跑 → `finally` cleanup |
+
+**即使 provider throws / times out / 返回 ERROR 也必须 cleanup。** Materializer **不是** Work truth、**不是** project mutation、**不是** durable artifact——它只是 Verification runtime 的 ephemeral 执行环境（与 Reasoning branch 的 ephemeral 思路一致）。
+
+### B.13 freshness **按 subject kind 分开**；能力也必须 subject-aware
+
+**freshness**（当前实现只做"重读 ProjectIR + 重读 ambient HEAD"，仅适用于 head）：
+
+```
+CURRENT_PROJECT_HEAD:  same canonical head subject  ∧  ambient HEAD 仍然相等
+ATTEMPT_RESULT:        rematerialize canonical attempt result  ∧  subject digest 仍然相等
+```
+
+**`ATTEMPT_RESULT` 绝不检查 ambient HEAD。** 这正是对抗测试要证明的：
+
+```
+Attempt A → RA，复核在 RA 上启动；期间 HEAD → RB
+⇒ run.subject.resultCommit == RA 且 freshness == CURRENT（不是 STALE）
+```
+
+而 `promotion(RA)` 仍可因 `head_conflict` / `cross_revision_promotion_not_supported` 被拒。这机器证明了：
+
+```
+Verification freshness  ≠  Promotion authority freshness
+```
+
+**status 不得被 attempt run 污染**：现有 `deriveProjectVerificationStatus()` 已用 `sameSubject(run.subject, currentHeadSubject)` 精确筛，是好基础；但内部大量代码直接读 `run.subject.projectRevision` / `.headCommit`，加 union 后**必须 kind-aware**。并需**双向 anti-alias**：
+
+```
+HEAD PASS          不能使 ATTEMPT_RESULT 变成已满足
+ATTEMPT_RESULT PASS 不能使 current-head status 变成 PASS
+```
+
+**runtime capability 也必须 subject-aware**：`runtimeAvailable` / `independentVerifierRefs` / `defaultVerifierRef` 现在是**全 verifier 集合**，会让"只有 attempt verifier 的部署"错误地告诉 current-head status "VERIFY available"。因此把单个 bool 升级为至少能回答：
+
+```
+supportsIndependent("CURRENT_PROJECT_HEAD")
+supportsIndependent("ATTEMPT_RESULT")
+```
+
+这也是解锁 §E.14.1 那道 `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` 的**正确条件**——不是"verification store 存在"，而是：
+
+```
+∃ executable independent verifier : ATTEMPT_RESULT ∈ supportedSubjects
+```
+
+### B.14 Promotion 集成必须是**显式 bridge**（唯一 assessor）
+
+**绝对禁止** `Verification PASS → mint EvidenceAtom → release gate PASS`。正确关系仍是：
+
+```
+Ready = G_work ∧ V_required ∧ E_promotion
+```
+
+给 `PromotionEligibilityInput` 增加一个**极窄、Verification-agnostic** 的投影：
+
+```ts
+verification: {
+  required: boolean;
+  satisfied: boolean;
+  subjectDigest: string | null;
+  runRef: string | null;
+  detail: string | null;
+}
+```
+
+**promotion domain 不得 import `ProjectVerificationRun`**——它只看"required quality admission 是否满足"。由 Project Verification owner 把自己的历史投影成这张 admission fact。
+
+新增 typed blocker（detail 再说具体原因：no run / FAIL / ERROR / not independent / wrong subject / stale input）：
+
+```
+required_verification_missing
+required_verification_unsatisfied
+```
+
+```
+PromotionEligibility  ≠  Verification
+但 Promotion admission 可以明确要求 Verification
+```
+
+这正是 `CF-AD-01` 所说的 **"WITH a different admission design"**。
+
+**必须挂在唯一 assessor 上**：不能只在 UI / `palimpsest_finish` / `promoteWhenGatePasses` 外面加检查——G10-Z 的核心设计就是"所有 promotion 入口共享同一个 eligibility assessor"（**已核**：`PromotionManager.assessEligibility()` 有 5 处调用点，含 expert promote / product promote / selection / recovery preview）。给 `assessEligibility()` 注入一个很窄的 `AttemptVerificationAdmissionPort`，**而不是**让 PromotionManager 直接读 `ProjectVerificationStore`。
+
+### B.15 正常 `finish` 路径**自动**触发 required verification（application 层编排）
+
+若 2B 之后正常路径变成"Principal 自己想起来调 `verify_attempt_result`"，等于刚把 gate/report/scheduler 藏掉又把 verifier 状态机暴露回去。正确做法是在 **application 产品层**：
+
+```
+controller.finish() → 内部 attemptId
+  → CompletionContract.verification.required ?
+      是 → verification.verifyAttemptResult(内部 attemptId) → 返回压缩结果
+```
+
+**不是**让 `ProjectController` import Verification，而是 Application composition 编排 **Work owner + Verification owner**。这才是之前一直在找的"产品中间层"位置。
+
+因此普通 Principal 仍然只是 `begin → work → finish`，而 finish 的结果可能是：
+
+```
+work completed ✓  mechanical checks ✓  independent verification PASS ✓  ready for acceptance
+```
+
+或
+
+```
+verification FAIL → promotion blocked, review finding: …
+```
+
+`palimpsest_verification verify_attempt_result` 保留为 **expert / debug / re-run** 路径。
+
+### B.16 `Verification FAIL` **不是** `Work FAIL`
+
+```
+Attempt COMPLETED ∧ Verification FAIL
+```
+
+是**合法状态**。**禁止** `Verification FAIL → TASK_FAILED`，**禁止**改历史 `AttemptReport`。它的含义是"这个完成候选被独立协议否决、不能 promotion"，主代理/用户可以据此重做 Work。
+
+v1 若重做仍需显式 plan / new attempt，**先接受这个摩擦**；**不要**为 2B 顺手发明"verification fail 自动 reopen task"——先 dogfood 再决定。
+
+### B.17 验收（B-r1 增补）
+
+`A19`–`A21` 保留（`A21` 已按 §2.7 修正文案），另增：
+
+- `LEAN-A35` **exact isolated materialization**：断言 `checkout HEAD == subject.resultCommit`、ambient HEAD 与之无关、且**无论成功失败 cleanup 都执行**。
+- `LEAN-A36` **RA/RB adversarial**：复核期间 main HEAD 从 RA 推到 RB，`RA` 的 run 仍为 `CURRENT`、`run.subject.resultCommit == RA`；而 `promotion(RA)` 可因 `head_conflict` 被拒——机器证明 `Verification freshness ≠ Promotion authority freshness`。
+- `LEAN-A37` **bidirectional subject firewall**：同时证明 `HEAD PASS` **不能**满足 `ATTEMPT_RESULT`，且 `ATTEMPT_RESULT PASS` **不能**使 current-head status 变 PASS。
+- `LEAN-A38` **promotion bridge**：同一 attempt 在 `gate PASS`、其余 eligibility 通过、但缺 required verification 时 promotion 被拒；补上**精确 subject 的独立 PASS** 后同一 promotion 变为 eligible。**并断言 `EvidenceAtom` 计数在 Verification PASS 前后不增加**——机器证明：
+
+  ```
+  Verification admission happened without evidence laundering
+  ```
 
 ---
 
