@@ -1717,6 +1717,12 @@ export class ProjectController {
           `in-place attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan`,
         );
       }
+      // §2.6: a COMPLETED attempt must have materialized its work as a commit. Only completion is
+      // held to this — a failed or cancelled attempt is allowed to stop mid-edit, and its report is
+      // still worth observing.
+      if (input.workerStatus === "completed") {
+        this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
+      }
       input = {
         ...input,
         changedFiles: observed.changedFiles,
@@ -1744,7 +1750,10 @@ export class ProjectController {
    * repository's current HEAD commit; the caller commits through the normal git flow before
    * reporting, so this head IS the attempt's result.
    */
-  #observeInPlaceAttemptSync(attemptId: string, baseCommit: string): { changedFiles: string[]; head: string | null } {
+  #observeInPlaceAttemptSync(
+    attemptId: string,
+    baseCommit: string,
+  ): { changedFiles: string[]; head: string | null; uncommitted: string[] } {
     const repo = this.#inPlaceRepository();
     const run = (args: string[]): string => execFileSync("git", args, { cwd: repo, encoding: "utf8" });
     // The observation covers BOTH states a change can be in at report time: committed since the
@@ -1755,14 +1764,39 @@ export class ProjectController {
       .split(String.fromCharCode(10))
       .map((path: string) => path.trim())
       .filter((path: string) => path !== "" && !path.startsWith(".palimpsest/"));
-    const status = run(["status", "--porcelain"])
+    const uncommitted = run(["status", "--porcelain"])
       .split(String.fromCharCode(10))
       .filter((line: string) => line.trim() !== "")
       .map((line: string) => line.slice(3).trim())
       .filter((path: string) => !path.startsWith(".palimpsest/"));
-    const changedFiles = [...new Set([...committed, ...status])].sort();
+    const changedFiles = [...new Set([...committed, ...uncommitted])].sort();
     const head = run(["rev-parse", "HEAD"]).trim();
-    return { changedFiles, head };
+    // `uncommitted` is returned SEPARATELY, not merely folded into changedFiles: a completed attempt
+    // must have materialized its work as a commit, and only the two sets apart can say whether it
+    // did (see #assertCompletionMaterialized).
+    return { changedFiles, head, uncommitted };
+  }
+
+  /**
+   * PLMP-LEAN-1 §2.6: **completed in-place work must be commit-materialized.**
+   *
+   * Measured (probe, 2026-09-21): an agent edited a file, never committed, and called `finish`. The
+   * attempt went COMPLETED with `changed_files: ["src/dedupe.ts"]` while `result_commit` was the BASE
+   * commit — a commit that does not contain the edit. Worse, the in-place promotion guard compares
+   * the recorded commit against the repository HEAD, and both were the base, so the guard passed:
+   * the promotion could record a COMMITTED outcome whose canonical head contains none of the work.
+   *
+   * The invariant is one line to state and closes both the promotion hole and the 2B subject
+   * question at once: a successful completion implies `changed_files == Diff(base, resultCommit)`.
+   * Refusing is the right remedy rather than committing on the agent's behalf — committing is
+   * ordinary agent work (read / edit / test / commit), not governance machinery, so the product must
+   * not author commits for it.
+   */
+  #assertCompletionMaterialized(attemptId: string, uncommitted: readonly string[]): void {
+    if (uncommitted.length === 0) return;
+    throw new DomainValidationError(
+      `attempt ${attemptId} has work that is not committed: ${uncommitted.join(", ")} — a completed attempt's result commit must contain its work, and right now it would not (the recorded commit is the current HEAD, which does not include these files). Commit or revert them, then finish again`,
+    );
   }
 
   #inPlaceRepository(): string {
@@ -2080,6 +2114,15 @@ export class ProjectController {
     readonly nextEvidenceNeeded: readonly string[];
   }> {
     const attemptId = this.#uniqueRunningAttempt();
+    // Fail closed rather than pretend. This path derives its facts from an observation of the tree,
+    // and only in-place execution puts the work in a tree this controller can read: under worktree
+    // execution the tree lives in the attempt's worktree, whose path the git port owns, so a
+    // "completion" here would record scope and artifact checks that nothing actually performed.
+    if (this.execution !== "in-place") {
+      throw new DomainValidationError(
+        "this deployment runs worktree execution, and the high-level finish path can only observe an in-place tree — report the attempt explicitly (palimpsest_report) instead, or run the profile with in-place execution",
+      );
+    }
     const [, envelope] = this.#attemptContext(attemptId);
     const standard = this.#standard;
     if (standard === undefined) {
@@ -2090,14 +2133,16 @@ export class ProjectController {
 
     // The product observes the tree. In-place attempts have no worktree: their tree IS the
     // repository, and the observation — never the caller — decides what the report says changed.
-    const observed =
-      this.execution === "in-place" ? this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit) : null;
-    const changedFiles = observed?.changedFiles ?? [];
+    const observed = this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit);
+    const changedFiles = observed.changedFiles;
+    // Before any command runs and before any evidence is recorded, so a refusal leaves nothing
+    // behind. `report` holds the same invariant as the last line of defence.
+    this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
 
     // Empty work is refused rather than settled (§3.3): the agent can still route the task to the
     // locus it actually belongs to, and a settled attempt with nothing in it is the waste the live
     // session measured.
-    if (observed !== null && changedFiles.length === 0 && envelope.required_artifacts.length === 0) {
+    if (changedFiles.length === 0 && envelope.required_artifacts.length === 0) {
       throw new DomainValidationError(
         `attempt ${attemptId} has no observable work: the repository shows no changed file since ${envelope.base_commit.slice(0, 12)}, so there is nothing to finish — if this task only needed analysis it belongs to a reasoning branch, a verification or a cross-project ask rather than a work attempt; otherwise make the change and call finish again`,
       );
@@ -2157,24 +2202,18 @@ export class ProjectController {
     evidenceRecorded.push("write_scope_valid");
 
     if (envelope.required_artifacts.length > 0) {
-      // In-place only: the required artifacts sit in the repository this controller can read. Under
-      // worktree execution the tree lives in the attempt's worktree, whose path the git port owns,
-      // so that mode keeps using the explicit report path rather than a check that could only
-      // pretend to look.
-      if (this.execution === "in-place") {
-        const root = this.#inPlaceRepository();
-        const missing = envelope.required_artifacts.filter((path) => !existsSync(join(root, path)));
-        if (missing.length > 0) {
-          throw new DomainValidationError(
-            `attempt ${attemptId} is missing required artifacts: ${missing.join(", ")} — the attempt is still running; produce them and call finish again`,
-          );
-        }
-        this.#recordObservedEvidence(attemptId, "expected_files_exist", {
-          paths: [...envelope.required_artifacts],
-          missing: [],
-        });
-        evidenceRecorded.push("expected_files_exist");
+      const root = this.#inPlaceRepository();
+      const missing = envelope.required_artifacts.filter((path) => !existsSync(join(root, path)));
+      if (missing.length > 0) {
+        throw new DomainValidationError(
+          `attempt ${attemptId} is missing required artifacts: ${missing.join(", ")} — the attempt is still running; produce them and call finish again`,
+        );
       }
+      this.#recordObservedEvidence(attemptId, "expected_files_exist", {
+        paths: [...envelope.required_artifacts],
+        missing: [],
+      });
+      evidenceRecorded.push("expected_files_exist");
     }
 
     // The report and the settlement. In-place reports re-observe the tree, so the recorded
@@ -2485,17 +2524,6 @@ export class ProjectController {
   }
 
   /**
-   * In-place promotion precondition: the tree must not have moved past what the attempt's report
-   * observed.
-   *
-   * Measured live: the mechanical pump reported an attempt before the agent had written anything
-   * (result_commit = the base), the agent then committed its real work as a CHILD of that commit,
-   * and promotion would have merged the recorded commit — a no-op that moves the head to a commit
-   * which does not contain the work, silently leaving it behind. A worktree attempt cannot drift
-   * like this (its tree is private); an in-place one can, so the recorded commit and the current
-   * head must agree, and the remedy is to report again from the current state.
-   */
-  /**
    * PLMP-LEAN-1 §1/§4: the operator's one-stop view of this project's governance — the confirmed
    * standard, the commands it authorizes, and the gates already declared. Read-only; it exists so a
    * user-facing surface never has to ask a person for predicate vocabulary or a gate id.
@@ -2537,6 +2565,22 @@ export class ProjectController {
     return (row?.c ?? 0) > 0;
   }
 
+  /**
+   * In-place promotion precondition: the tree must not have moved past what the attempt's report
+   * observed.
+   *
+   * Measured live: the mechanical pump reported an attempt before the agent had written anything
+   * (result_commit = the base), the agent then committed its real work as a CHILD of that commit,
+   * and promotion would have merged the recorded commit — a no-op that moves the head to a commit
+   * which does not contain the work, silently leaving it behind. A worktree attempt cannot drift
+   * like this (its tree is private); an in-place one can, so the recorded commit and the current
+   * head must agree, and the remedy is to report again from the current state.
+   *
+   * This guard is NECESSARY BUT NOT SUFFICIENT on its own, which a probe settled on 2026-09-21: if
+   * the agent never committed at all, the recorded commit and the head are both the BASE and agree,
+   * so the guard passes while the work sits uncommitted. `#assertCompletionMaterialized` is what
+   * makes the two agree on a commit that CONTAINS the work; together they close the hole.
+   */
   #assertInPlaceAttemptCurrent(attemptId: string): void {
     const row = this.store.connection
       .prepare("SELECT report_json FROM attempts WHERE project_id=? AND attempt_id=?")
