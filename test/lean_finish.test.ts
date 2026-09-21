@@ -179,7 +179,8 @@ describe("LEAN-A15..A18: finish derives the mechanical facts, the agent states d
 
     // ONE call, and the only thing the agent states is that it considers the work done.
     const result = await finish({ summary: "去重改成 Set 并排序，测试通过" });
-    expect(result.attemptId).toBe(attemptId);
+    // INV-4: the projection the MODEL sees names no attempt — orchestration state stays inside.
+    expect(result).not.toHaveProperty("attemptId");
     expect(result.state).toBe("COMPLETED");
     expect(result.changedFiles).toEqual(["src/dedupe.ts"]);
     expect(result.evidenceRecorded).toContain("tests_pass");
