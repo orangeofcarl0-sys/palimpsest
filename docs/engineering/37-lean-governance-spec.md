@@ -13,6 +13,7 @@
 > - `LEAN-1` **第 2A-Q 期（Completion Contract + readiness）交付**（2026-09-21）：新增 **L1 纯派生** `src/domain/completion_contract.ts`——`deriveAttemptCompletionContract(standard, task, envelope, capabilities)` 产出 `{basisDigest, mechanical, verification, diagnostics}`，**不落任何事件、不读任何存储**（`Envelope is basis ≠ Envelope stores every derived requirement`：**未**给 `TaskEnvelope` 增加任何 evidence/verification 字段）。机械部分用**三种 check kind**（`run_standard_command` / `assert_write_scope` / `assert_required_artifacts`）而非谓词列表，谓词映射单点单向。`finish` 改为**消费同一个派生**（一条派生、多个消费者，禁止 readiness/finish/2B 各持一套规则）；`A05`/`A06` 按"envelope 是 basis"与"`expected_files_exist` 只来自执行前已声明路径"改写；`write_scope_valid` 无条件要求。readiness **分两层**（`R_deployment` 启动可答 / `R_task` 需任务），部署缺 verifier **只在任务确实需要复核时**才算 task blocker；`A14` 的判据是"不能晚失败"（策略不允许所需命令必须在任务开始前出现并指明补救方是操作者）。capabilities 由 composition 如实注入（有 repository 才 `sandboxSpawnVerified`，有 verification store 才 `independentVerifierAvailable`），未声明一律按缺失处理。验收 `LEAN-A05`/`A06`/`A14`（`test/lean_completion_contract.test.ts`，14 项）；readiness 经 `/api/application/surfaces` 的 `governance.completionReadiness` 暴露。**D2 两条硬前置已登记**（worktree-aware `observeAttemptResult` 复用同一 materialization 断言；principal attempt attribution 需 host-local 绑定、不得创造 Agent identity 真值）。**已知中间缺口**：`verification.required` 已派生但 2B 之前不强制，只在 readiness 上可见。门禁：单元 186 文件 / 2113 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
 > - `LEAN-1` **第 2A-Q-R 期（verification policy calibration）交付**（2026-09-21）：复核发现 `single_evidence` 作为 hard requirement **把风险代理搞错了**——命令**数量**不是证据**强度**的代理（一条 `npm test` 可能跑 5 个断言也可能跑 500 个），且会让普通任务被迫启动第二执行者，与 `INV-6`（exploit useful independence; never manufacture agents）和 G10-R 的"人为 role split 可为纯开销"冲突。四处校准：① 复核分**两个强度**（`required`/`requiredReasons` 与 `recommended`/`recommendationReasons`），`REQUIRED` 保持窄，2B v1 只做 `contract_boundary`，不加 size threshold（"大 diff"执行前不可知）；② 触发**改名** `single_evidence → single_command_bar`（旧名本身是比它实际测量更强的 epistemic 主张）；③ **`RequirementBasis ≠ CapabilityAssessment`**——`deriveAttemptCompletionContract` **不再接收 capabilities**（分层由构造保证），`basisDigest` 只覆盖规范性输入，capability 说明移出契约 `diagnostics`；否则 verifier 中途配置好会移动摘要而标准未动，削弱 `INV-7`；④ readiness 两层**强度不同**——部署层**描述性**（`CONFIGURED`/`DEGRADED`/`INCOMPLETE` + `gaps`，不叫 blockers），任务层**可行动**（`READY`/`BLOCKED` + `blockers` + `advisories` 承载 RECOMMENDED 但不可用）。阻断规则精确为 `已知要求 ∧ 缺失能力 ⇒ 提前阻断`，不多不少。验收 `LEAN-A05`/`A06`/`A14` 扩到 19 项。门禁：单元 186 文件 / 2118 测试、e2e 38/38、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 > - `LEAN-1` **2A final live gate 实测（两次，均未通过）+ 零产出泵修复**（2026-09-21，`6302a20`）：装置 `rs-test/lean-2a-live-gate.mjs`（真实 DSH 单轮 + 离线核对 attempt/证据/门禁/转录）。**第 1 轮**：agent 干对了活但 `claim` 早一步（`palimpsest_next` 每次只提交一个事件），改调 `palimpsest_run` —— 机械泵在**未改动**的树上跑策略命令退出 0，留下 `COMPLETED` + `changed_files: []` + `result_commit` = base + 零证据，**正是 `finish` 专门要拒绝的状态**。修复：`#assertCompletionHasWork` 由 `report` 与 `finish` **共用**（§3.3 此前只在 `finish` 强制），去掉 `finish` 的 `required_artifacts.length === 0` **逃逸口**（预先存在的产物不是工作），泵的无命令分支由 `completed` 改 `failed`。回归 `LEAN-A26` 确定性复现该失败；`test/inplace_execution.test.ts` 的陈旧性测试改**前提**（原先"在干净树上 report"——正是刚被判非法的状态）。**第 2 轮**：agent 按指示只调一次 `finish` 被拒 `no attempt is running`，自行查证后正确诊断 **`project "livegate" has no ProjectIR`**（无计划/无 ready set/无可认领 attempt），并**拒绝自行铸造治理状态**。**结论：`LEAN-A15` 活体那一半未证明，2A 未闭合**；缺口不是 scheduler 补丁，而是 direct path 缺少与 `finish` **对称的开始协议**。据此起草**附录 E（第 2A-B 期，Direct Work Bootstrap，`palimpsest_begin`，规划未实现）**：`Agent decides what the work is. Palimpsest makes the work governable.` —— 主代理把目标编译成最小 direct proposal（含 `writePaths`，属**工作语义**而非机器词汇），产品验证并机械建立唯一受管工作位（只用 `preview`/`step`/`claim`，**禁止** `run`/pump），readiness **全部前置、拒绝时零项目事件**，`begin` 前只读勘察允许而 mutation 不允许，标准确认**不得**从 `begin` 铸造，已有计划**不得**静默改写，retry 必须**收敛**且用派生摘要判同一性。门禁：单元 186 文件 / 2119 测试、`architecture:check` 0 violation、`check-public-api` 0/0/0。
+> - `LEAN-1` **附录 E 的 E-r1 修订**（2026-09-21，docs-only，实现前）：逐段对照 `start`/`preview`/`step`/`claim` 后，把 2A-B 的实现前边界收紧。**核实两处代码事实**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）；且 `start()` 的 genesis 是**多事件**序列（`PROJECT_CREATED` → release `GATE_DEFINED` → `ROLE_TABLE_DEFINED` → `STAGE_GRAPH_DEFINED` → task registration），因此 crash 可落在任意两个声明之间，retry **不得**用新 clock 重建 creation basis（否则同幂等键 + 不同载荷）。修订九项：v1 仅 **repository-bound + in-place**；fresh begin **绑定真实 HEAD** 并加机器验收；clean-tree **分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work）；restart 覆盖 **partial genesis 每个落点**；Case B/C 改 **语义等价而非来源**（无 marker 时来源不可判），比较 normalized shape / `D_direct` 而非完整 digest；`goal` 改称 agent-compiled；`writePaths` 明确为 self-binding scope 并说明与 ARCH-2 确认规则的窄例外关系；`A29` 改 **event delta 0**、`A33` 改 **低层工具调用计数 0** 并注明 fixture 已预置确认标准（不声称单轮确认 goal+standard）；新增 `A34` pre-claim **HEAD drift fail-closed** 与 **S0–S3 状态机**。验收 `A27`–`A34`。**仍为规划、未实现。**
 
 ---
 
@@ -564,7 +565,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-Q** | Completion Contract + readiness（**已交付** 2026-09-21） | §2.1 完成契约**纯派生**（`deriveAttemptCompletionContract`，**不是新的真值属主**、不落任何事件）+ §2.7 三种 check kind + §5.1 readiness 分两层（标准已确认？命令可执行？沙箱可 spawn？所需 verifier 可用？） | 很少 | `A05`、`A06`、`A14` **全部通过** |
 | **2A-Q-R** | verification policy calibration（**已交付** 2026-09-21） | 复核两强度（`single_command_bar` 降为 RECOMMENDED 并改名）、`basisDigest` 排除 capabilities、capability 说明移出契约、部署层 readiness 改为描述性 | 很少 | `A05`/`A06`/`A14` 扩到 19 项全通过；**校准后普通低风险任务 `required = false`，direct path 不再被阻断** |
 | **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS，主代理上下文零 predicate/gateId/attemptId/report | 无 | **实测两次，均未通过**（见附录 E §E.1）：第 1 轮暴露零产出泵（已修，`A26`）；第 2 轮暴露 **direct path 无开始入口**。`A15` 活体一半**仍未证明** |
-| **2A-B** | Direct Work Bootstrap（**规划，附录 E**） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A33`；**`A33` 正式关闭 `A15` 活体那一半** |
+| **2A-B** | Direct Work Bootstrap（**规划，附录 E；E-r1 已修订**） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A34`；**`A33` 正式关闭 `A15` 活体那一半**。v1 仅 repository-bound + in-place |
 | **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
@@ -993,6 +994,7 @@ Principal API = opinionated （主代理的首选路径是少量高层工具）
 ## 附录 E（第 2A-B 期）：Direct Work Bootstrap —— `palimpsest_begin`
 
 > **状态：规划（2026-09-21）**。本附录是**草案**，未实现。它闭合 2A final live gate 实测暴露的缺口。
+> **E-r1 修订（2026-09-21，实现前）**：逐段对照现有 `start`/`preview`/`step`/`claim` 后补入 5 个 correctness/recovery blocker 与 4 处收紧——① v1 冻结 **repository-bound + in-place**（§E.4.1）；② fresh begin **必须绑定真实 Git HEAD**，因 `start()` 在缺省时用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（§E.15.1）；③ clean-tree 规则**分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work，§E.7）；④ restart 覆盖扩到 **partial genesis 每个落点**，且 retry 只能 replay canonical basis、**不得**用新 clock 重新规划（§E.13）；⑤ Case B/C 判据改为**语义等价而非来源**（无 direct marker 时来源不可判），比较对象是 normalized shape / `D_direct` 而非完整 `ProjectIR.digest`（§E.12）；⑥ `goal` 改称 agent-compiled goal，不声称用户原话（§E.4）；⑦ 明确 `writePaths` 是 self-binding scope 及与 ARCH-2 确认规则的关系（§E.5）；⑧ `A29` 改断言 **event delta 0**、`A33` 改断言**低层工具调用计数为 0**（§E.19）；⑨ 新增 `A34` **pre-claim HEAD drift fail-closed**，并新增 **S0–S3 状态机**（§E.16）。验收 `LEAN-A27`–`A34`。
 
 ### E.1 问题：有结束协议，没有开始协议
 
@@ -1036,8 +1038,8 @@ one goal → one direct task → one principal attempt
 
 ```ts
 palimpsest_begin({
-  goal: string,                    // 操作者的目标，原样
-  writePaths: string[],            // 主代理判断自己准备改什么
+  goal: string,                    // 主代理从用户意图编译出的 direct-work goal
+  writePaths: string[],            // 主代理对自己本次 Work 的 self-binding scope
   requiredArtifacts?: string[],    // 可选；缺省空
 })
 ```
@@ -1045,6 +1047,29 @@ palimpsest_begin({
 **拒绝**（Principal 不提供）：`projectId` / `taskId` / `attemptId` / `role` / `gateId` / `predicate` / `exitCode` / scheduler 状态 / `standard` / `confirmed`。
 
 `objective = goal`，不再单独要一个 `objective`。
+
+> **`goal` 不是"用户原话"**。tool args 来自主代理，所以产品能证明的只有"主代理提交了这个 goal 作为它对用户意图的语义编译"，**不能**证明这是用户原话。除非将来 host 提供 trusted human-turn provenance，否则不得如此措辞。这与 §E.11 对 standard authority 的严谨性一致：`agent-authored proposal ≠ verified user quotation`。
+
+### E.4.1 v1 前置：仅 **repository-bound + in-place**（fail-before-write）
+
+**这是 v1 必须冻结的硬前置**，否则 `begin` 会主动造出一条必然走不完的 direct path：
+
+```
+execution = worktree
+  begin → claim → 产品创建 worker worktree
+  Main Agent → 仍在自己的 cwd / 主仓库编辑
+  finish → worktree 模式 fail closed（§A.4）→ 拒绝
+```
+
+```
+DirectBegin_v1  ⇒  repository bound  ∧  execution = in-place
+```
+
+不满足则 **fail-before-write**，零项目事件，并给出明确补救：
+
+> 当前 deployment 的工作位是 isolated worktree；direct principal bootstrap v1 只支持 in-place。Worktree 执行留给 D2 worker path。
+
+**禁止**为了让 `begin` 看起来通用而提前解决 D2。
 
 ### E.5 谁提供什么：Agent 提供工作语义，产品推导机器
 
@@ -1061,6 +1086,19 @@ palimpsest_begin({
 Agent proposes work semantics; product derives machinery.
 ```
 
+**`writePaths` 的 authority 含义必须写明**：它是主代理对**本次 Work 的 self-binding scope**，**不是**主代理给自己扩权。它只能：
+
+- 限定本 attempt 什么算合法改动；
+- 作为 completion observation 的 basis（§A.3 的 scope 断言）。
+
+它**不能**：
+
+- 扩大 operator policy（`policy.allowed_commands` 仍是上界）；
+- 扩大宿主文件系统权限；
+- 创造任何外部 commitment。
+
+> **与 ARCH-2 确认规则的关系（必须显式说明，否则两个规格读起来会矛盾）**：`18-architecture-modes-spec.md` 的 ARCH-2 要求"agent proposal → 用户确认 → 才可声明"。**Direct bootstrap 是该规则的窄例外**：它只允许一个 principal self-bound task，不能扩大 policy/authority、不能创建 peer/commitment、不能 promotion。因此它的声明**不等价于"用户批准了一套项目架构"**。窄例外成立的理由是：这个 proposal 的作用域就是主代理自己马上要做的那一次改动，而该改动的最终结果仍由操作者的接受/退回（§4）裁决。
+
 ### E.6 时机纪律：begin 在**第一次 mutation 之前**（read-only 勘察允许）
 
 ```
@@ -1072,11 +1110,25 @@ User task → Main Agent → read / grep / inspect / search  → palimpsest_begi
 
 > **纪律：begin before first mutation, not necessarily before first read.**
 
-### E.7 入口侧：工作树必须干净
+### E.7 入口侧：工作树规则**分阶段**（未归属必须拒绝，已归属是正常 Work）
 
-这是 2A-R 教训的**入口侧对应版本**。创建 attempt 之前 `git status --porcelain` 必须没有项目工作残留，否则拒绝：
+这是 2A-R 教训的入口侧对应版本，但**不能无条件执行**——否则会拒绝一个完全合法的恢复状态。分两段：
+
+**S0/S1（尚未建立或尚未 claim principal attempt：没有合法 owner）** → `git status --porcelain` 必须干净，否则拒绝：
 
 > 当前工作树已有未归属变更。请先处理这些变更再开始受管工作；否则产品无法证明哪些改动属于本任务。
+
+**S2（已有 matching RUNNING principal attempt）** → 树**可以**脏、**可以**有新提交：
+
+```
+RUNNING attempt  ⇒  之后的仓库变更属于该 attempt
+```
+
+这正是 crash 恢复的常见形态（claim → 编辑未提交 → host crash → retry begin）。此时 retry **不再次 claim、不要求 clean**，直接返回 `RESUMED/READY`，后续仍由 `finish()` 的 materialization/scope 规则收口。
+
+```
+unowned dirty tree 必须拒绝；owned dirty tree 是正常 Work。
+```
 
 **禁止**把现存 dirty tree 默认为本任务的工作。
 
@@ -1104,12 +1156,21 @@ preview() / step() / claim()
 
 ```
 start(project)
-loop (bounded, 上限 8–16 步):
+loop (bounded, 防御上限 maxSteps = 16):
     preview()
       TASK_STARTED    → step(); continue
       ATTEMPT_CREATED → event = step(); claim(event.entityId); break
       其它             → fail closed
 ```
+
+**真正的不变量不是"最多 16 步"，而是允许提交的事件种类**：
+
+| | 事件 |
+|---|---|
+| **允许**（activation-only lifecycle，仅为到达一个可 claim 的 direct attempt） | `PROJECT_CREATED` / release `GATE_DEFINED` / `ROLE_TABLE_DEFINED` / `STAGE_GRAPH_DEFINED` / task registration / `TASK_STARTED` / `ATTEMPT_CREATED` / `ATTEMPT_STARTED` |
+| **禁止** | `ATTEMPT_COMPLETED` / `ATTEMPT_FAILED` / `EVIDENCE_ADDED` / 任何 promotion effect / verifier 执行 / worker dispatch |
+
+`maxSteps = 16` 是**防失控上限**，不是语义——不要把它读成"begin 最多做 16 件事"。
 
 **禁止**调用 `runTurn()` / `pumpCommandAttempts()` / `palimpsest_run`。用户不再需要操作 N 次 `next`。
 
@@ -1149,28 +1210,54 @@ palimpsest_begin({ standard: "…", confirmed: true })   // ← Agent 声称"用
 same human interaction is desirable  ≠  agent may mint operator confirmation
 ```
 
-### E.12 已有状态的处理（三例，不得静默改计划）
+### E.12 判据是**语义等价**，不是来源（不得静默改计划）
 
-| 情形 | 行为 |
-|---|---|
-| **A** 无 ProjectIR | 创建 one-task direct project（**当前实测失败对应的主场景**） |
-| **B** 已有**同一个** direct task，因 crash 停在中间 | 恢复并继续推进到 RUNNING |
-| **C** 已有普通 ProjectIR | **拒绝**，零写：*"当前项目已有计划；direct bootstrap 不会静默重写现有计划。请使用现有 ready task 或显式计划修订。"* |
+**不能靠"这个 ProjectIR 是不是 `begin` 创建的"来区分**：本附录已冻结"不新增 direct marker、`D_direct` 纯派生"，那么一个与请求完全同形的 ProjectIR 究竟由 `begin` 还是由 architect/start 创建，**在 canonical 形态上一模一样，来源不可判**。要判来源就必须加 durable marker——而那正是明确不要做的。
+
+因此判据是**语义等价**：
+
+| 情形 | 判据 | 行为 |
+|---|---|---|
+| **A** 无 canonical project | — | 创建 one-task direct project（**当前实测失败对应的主场景**） |
+| **B** 已有 canonical state，与 requested direct projection **语义等价** | `goal` 同、**恰好一个** task、`objective` 同、`depends_on = []`、`write_paths` 同、`required_artifacts` 同、相关 genesis 配置兼容 | 安全收敛（无论它由谁创建） |
+| **C** 已有 canonical state 与 requested projection **不等价** | 上述任一项不符 | `CONFLICT`，**零新写**：*"当前项目已有计划；direct bootstrap 不会静默重写现有计划。请使用现有 ready task 或显式计划修订。"* |
+
+```
+semantic equivalence, not provenance
+```
 
 **禁止** `begin(goal) → 隐式 plan revision`。闭合 A15 不顺势重做 project planning UX。
 
-### E.13 crash/retry **收敛**，不追求一个大事务
+> **比较对象是 normalized direct shape 或 `D_direct`，不是完整 `ProjectIR.digest`**：后者包含 `committedAt` 等运行期字段，与 direct proposal identity 不是一回事（见 §E.13）。
 
-不必把多个 store 写成一个事务——Palimpsest 已是 durable event machine。要证明的是 **retry converges**：
+### E.13 crash/retry **收敛**：replay canonical basis，**不得**用新 clock 重新规划
 
-| crash 位置 | retry 行为 |
-|---|---|
-| `PROJECT_CREATED` 后 | 识别同一 ProjectIR → 不重复 start → 继续 scheduler |
-| `TASK_STARTED` 后 | 继续 step |
-| `ATTEMPT_CREATED` 后、claim 前 | claim 这个**已有** attempt |
-| claim 后 | 已有唯一 RUNNING principal attempt → 返回 READY |
+不必把多个 store 写成一个事务——Palimpsest 已是 durable event machine。要证明的是 **retry converges**。
 
-若**已有 project digest ≠ 请求的 direct proposal** → `CONFLICT`，**绝不覆盖**。
+**但 `controller.start()` 本身不是单事件原子操作**。它依次提交（已核 `src/tools/controller.ts`）：
+
+```
+PROJECT_CREATED
+  → release GATE_DEFINED（标准已确认时）
+  → ROLE_TABLE_DEFINED
+  → STAGE_GRAPH_DEFINED（v1）
+  → task registration（每 task 一次）
+```
+
+因此 crash 可能落在**任意一个** genesis 声明之间：
+
+```
+PROJECT_CREATED ✓  GATE_DEFINED ✓  ROLE_TABLE_DEFINED ✗ ← crash
+```
+
+**retry 绝不能天真地重跑一个新的 `start()`**：`PROJECT_CREATED` 的幂等键基于 `projectId`，而 ProjectIR 带 `committedAt`。若 retry 用 `now()` 重建 ProjectIR，就会出现**同幂等键 + 不同请求载荷**——那不是收敛。
+
+```
+retry = replay / complete the canonical basis
+      ≠ re-plan with the current clock
+```
+
+**规则**：若 canonical `PROJECT_CREATED` 已存在，resume **不得**用新的 clock/head 重新生成 project creation basis；必须从 canonical ProjectIR 读取原 `committedAt`、head 与 task shape，重建 byte-equivalent 的 genesis 输入，或**逐项 ensure 缺失的 genesis 声明**。
 
 **同一性用派生摘要**（不新增 durable 字段）：
 
@@ -1178,7 +1265,20 @@ same human interaction is desirable  ≠  agent may mint operator confirmation
 D_direct = H(goal, writePaths, requiredArtifacts)
 ```
 
-与当前 canonical `ProjectIR` / `TaskSpec` 重新推导比较即可——`derived identity, no second truth`。
+与当前 canonical `ProjectIR` / `TaskSpec` **规范化后**重新推导比较即可——`derived identity, no second truth`。**不要**比较完整 `ProjectIR.digest`（含运行期字段）。
+
+若语义等价性不成立 → `CONFLICT`，**绝不覆盖**。
+
+**收敛终态**（不要求"每种事件严格一个"，但**不得因 retry 产生语义版本升级**）：
+
+```
+恰好一个 ProjectIR
+恰好一个生效的 gate definition/version
+恰好一个 role declaration
+恰好一个 stage graph v1
+恰好一个 direct task
+恰好一个 principal attempt
+```
 
 ### E.14 fail-before-write：readiness 在任何写入之前
 
@@ -1210,7 +1310,72 @@ build proposed ProjectIR in memory
 → 仅当 READY 才 controller.start(...)
 ```
 
-### E.16 对称边界
+### E.15.1 fresh begin **必须绑定真实 Git HEAD**（blocker）
+
+**已核**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）。若 `begin` 忘记传，ProjectIR 会拿到一个**假 head**，后面所有 diff / materialization 都建立在假 base 上——而 `A27` 看起来仍会"成功"。
+
+因此 fresh begin 必须：
+
+```
+liveHead = git HEAD（preflight 时观察）
+工作树已确认干净（§E.7 的 S0/S1 段）
+
+proposedProject.headCommit = liveHead
+controller.start({ ..., headCommit: liveHead })
+```
+
+```
+fresh begin:
+  ProjectIR.headCommit  ==  观察到的 repository HEAD  ==  principal attempt.baseCommit
+```
+
+**机器验收**：fresh `begin` 之后，canonical `ProjectIR.head_commit` 必须**严格等于** preflight 观察到的 Git HEAD。不传 `headCommit` 视为缺陷。
+
+### E.16 begin 状态机（S0–S3，实现时最不容易出错的模型）
+
+比"新项目 / crash / 普通 ProjectIR"更**机器可判**，且完全不需要新的 truth species。
+
+```
+S0 — NO PROJECT
+     require: repository bound ∧ in-place ∧ confirmed standard
+              ∧ 工作树干净 ∧ readiness READY
+     action : 创建精确的 direct ProjectIR/genesis（绑定真实 HEAD，§E.15.1）
+
+S1 — PROJECT EXISTS, NO CLAIMED PRINCIPAL ATTEMPT
+     require: canonical direct shape ≡ request（§E.12 语义等价）
+              ∧ ambient HEAD == canonical project head   ← pre-claim 必须相等
+              ∧ 工作树干净
+     action : 补齐缺失的 genesis 声明（replay canonical basis，§E.13）
+              → activation-only step → 创建/claim attempt
+
+S2 — MATCHING PRINCIPAL ATTEMPT RUNNING
+     require: canonical direct shape ≡ request
+     tree   : MAY BE DIRTY / MAY HAVE NEW COMMITS（§E.7）
+     action : 无生命周期变更；返回 RESUMED / READY
+
+S3 — OTHER CANONICAL STATE
+     action : CONFLICT，零写
+```
+
+**S1 的 HEAD 规则是本状态机的关键不变量**：
+
+```
+pre-claim resume  ⇒  ambient HEAD == canonical project head
+```
+
+若不等（例如 `begin` 在 H0 创建了 `PROJECT_CREATED`，crash 于 claim 之前，随后外部/native git 动作把 HEAD 推到 HX），必须 **fail closed**：
+
+```
+REFUSE HEAD_CONFLICT
+不 claim attempt
+不采纳 HX
+```
+
+否则 `ProjectIR.base = H0` 而仓库 HEAD = HX，Principal 一旦开始工作，`finish` 的 `Diff(H0, resultCommit)` 会把 **HX 的外部改动也归到当前 task**。这与 G10-X 的精神一致：**ambient state 不得悄悄成为 canonical truth。**
+
+注意两段不同：**claim 前**必须相等；**claim 后**不能再要求 `HEAD == base`，因为 Principal 的合法工作本来就会推进 HEAD。这与 §E.7 的分阶段规则是同一个状态边界。
+
+### E.17 对称边界
 
 ```
 BEGIN   ← agent: "我准备做这块工作"
@@ -1230,7 +1395,7 @@ begin()  →  normal coding  →  finish()
 
 而 `ProjectIR` / `TaskSpec` / `Envelope` / `TASK_STARTED` / `ATTEMPT_CREATED` / `claim` / gate predicates / `AttemptReport` **全部留在下面**。
 
-### E.17 `begin` 是 Agent 选择的产品工具，**不是请求中间件**
+### E.18 `begin` 是 Agent 选择的产品工具，**不是请求中间件**
 
 Palimpsest 仍是 sidecar。纯问答（"解释这个函数"）**不应** begin Work；只有要改代码才调用 `begin`。
 
@@ -1239,25 +1404,42 @@ Main Agent works.
 Main Agent chooses when managed Work begins.
 ```
 
-### E.18 验收
+### E.19 验收
 
-- `LEAN-A27` **one-call bootstrap**：新部署、无 ProjectIR，一次 `palimpsest_begin(...)` 后 `ProjectIR` 存在、一个 task、一个 attempt **RUNNING**；Principal **从未**调用 `start`/`plan`/`next`/`claim`/`run`。
+- `LEAN-A27` **one-call bootstrap**：新部署、无 ProjectIR，一次 `palimpsest_begin(...)` 后 `ProjectIR` 存在、一个 task、一个 attempt **RUNNING**；Principal **从未**调用 `start`/`plan`/`next`/`claim`/`run`。**并断言** `ProjectIR.head_commit` **严格等于** preflight 观察到的 Git HEAD（§E.15.1）。
 - `LEAN-A28` **begin does no work**：`begin` 后 `changed_files = []`、`evidence = []`、无 report —— 只准备工作位，**绝不复活 pump**。
-- `LEAN-A29` **preflight before write**：标准缺失 / 所需命令未授权 / task readiness blocked / 工作树脏 —— 四种情形**均须** `begin` 被拒且 **`ProjectIR` 事件数 = 0**。
-- `LEAN-A30` **restart convergence**：分别在 `PROJECT_CREATED` / `TASK_STARTED` / `ATTEMPT_CREATED` 后模拟 crash，重试 `begin` 最终**只有一个 project、一个 task、一个 attempt，且 attempt RUNNING**。
-- `LEAN-A31` **conflicting existing state**：已有**不同** `ProjectIR` 时 `begin(new proposal)` **不得** plan/rewrite，返回冲突且**零写**。
+- `LEAN-A29` **preflight before write**：标准缺失 / 所需命令未授权 / task readiness blocked / **工作树脏** / **execution ≠ in-place** —— 五种情形**均须** `begin` 被拒，且断言 **orchestration project log 的 event delta == 0**（`events_after == events_before`），**不只**是"`PROJECT_CREATED` 计数为 0"（否则"没建 ProjectIR 但先写了一条 role/gate 事件"仍会通过）。
+- `LEAN-A30` **restart convergence**：在 **partial genesis 的每一个落点**模拟 crash —— `PROJECT_CREATED` 后 / release gate 声明后 / role table 后 / stage graph 后 / task registration 后 / `TASK_STARTED` 后 / `ATTEMPT_CREATED` 后 / claim 后。每次 retry `begin` 后收敛终态满足 §E.13：恰好一个 ProjectIR、一个生效 gate definition/version、一个 role declaration、一个 stage graph v1、一个 direct task、一个 principal attempt（RUNNING）；**且不得因 retry 产生语义版本升级**。另加一例：claim → 编辑但未提交 → 模拟重启 → `begin(same proposal)` → **RESUMED，零新增 attempt**（§E.7 的 S2 段）。
+- `LEAN-A31` **conflicting existing state**：已有**语义不等价**的 canonical state 时 `begin(new proposal)` **不得** plan/rewrite，返回冲突且**零写**。
 - `LEAN-A32` **principal projection hygiene**：返回中不存在 `projectId`/`taskId`/`attemptId`/`gateId`/`eventType`/`lease`/scheduler。
-- `LEAN-A33` **full live direct path**（**正式关闭 `A15` 活体那一半**）：真实 DSH —— 用户给目标 → 主代理只读勘察 → `begin` **一次** → edit → test → commit → `finish` **一次**；最终 `Attempt COMPLETED`、materialization true、gate **PASS**；且模型 session 内**不存在** `palimpsest_start` / `palimpsest_next` / `palimpsest_claim` / `palimpsest_run` / `palimpsest_gate` / `palimpsest_report`。
+- `LEAN-A34` **pre-claim HEAD drift fails closed**：`begin` 在 H0 创建 `PROJECT_CREATED`，claim 前 crash，外部 git 动作把 HEAD 推到 HX，retry `begin(same proposal)` → **拒绝 `HEAD_CONFLICT`**、**不 claim**、**不采纳 HX**（§E.16 的 S1 不变量）。
+- `LEAN-A33` **full live direct path**（**正式关闭 `A15` 活体那一半**）：真实 DSH —— 用户给目标 → 主代理只读勘察 → `begin` **一次** → edit → test → commit → `finish` **一次**；最终 `Attempt COMPLETED`、materialization true、gate **PASS**。
+  - **验收判据是 tool-call 计数，不是文本匹配**：DSH 的 tool catalogue / description 本身就会包含 `palimpsest_start` 等字符串，所以**不能**断言 session 文本里没有这些串。必须断言 execution trace 中：
 
-### E.19 禁止（本附录）
+    ```
+    toolCalls("palimpsest_begin")  == 1
+    toolCalls("palimpsest_finish") == 1
+    toolCalls(start | next | claim | run | gate | report) == 0
+    ```
+  - **前置须注明**：本 fixture 的 deployment **已携带一个预先确认的 `ProjectStandard`**（因为 §E.11 已冻结 `begin` 不能铸造操作者确认）。**不得**把 A33 读成"单个 human turn 同时确认了 goal 与 standard"——trusted human-turn bridge 尚未实现。
+
+### E.20 禁止（本附录）
 
 - **禁止**让产品自己"规划"（无 LLM；主代理是 architect）。
 - **禁止**把 `begin` 扩成 Project Architect（拆多 task / fan-out / spawn worker）。
-- **禁止** `begin` 内部调用 `run` / pump / `runTurn` / `pumpCommandAttempts`。
+- **禁止** `begin` 内部调用 `run` / pump / `runTurn` / `pumpCommandAttempts`；也**禁止**提交 §E.9 禁止表里的任何事件种类。
 - **禁止**从 `begin` 的入参接受或铸造操作者确认（`standard`/`confirmed`）。
-- **禁止**把现存 dirty tree 默认为本任务工作。
+- **禁止**把 `goal` 措辞成"用户原话"（它是 agent-compiled goal）。
+- **禁止**把 `writePaths` 当作扩权手段（它只是 self-binding scope）。
+- **禁止**把现存 dirty tree 默认为本任务工作（**未归属**必须拒绝；**已归属**的 RUNNING attempt 是正常 Work）。
+- **禁止**在 v1 支持 `execution ≠ in-place` 或未绑定 repository 的部署（须 fail-before-write）。
+- **禁止** fresh begin 不传 `headCommit`（会落成 `DEFAULT_HEAD_COMMIT = "c".repeat(40)` 的假 head）。
+- **禁止**在 pre-claim 阶段接受 `ambient HEAD ≠ canonical project head`。
+- **禁止**用新的 clock/head 重新生成已存在的 project creation basis（retry 只能 replay/补齐 canonical basis）。
+- **禁止**用**来源**区分 Case B/C（判据是语义等价，不是 provenance）。
+- **禁止**用完整 `ProjectIR.digest` 作同一性比较（含运行期字段；应用 normalized shape / `D_direct`）。
 - **禁止**静默改写已有计划（Case C 必须拒绝）。
-- **禁止**在 preflight 之前落任何项目事件。
+- **禁止**在 preflight 之前落任何项目事件（判据是 event delta 0）。
 - **禁止**新增 `DirectWorkPlan` / `DirectProjectStore` / `DirectTask` / `DirectAttempt` / `DirectPlanEvent`。
 - **禁止**在 Principal 投影里泄漏编排状态。
 - **禁止**把 `begin` 做成请求中间件（纯问答不 begin）。
