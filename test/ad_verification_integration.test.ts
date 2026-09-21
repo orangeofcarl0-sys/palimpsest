@@ -54,6 +54,7 @@ import {
   projectVerificationRunRef,
   SqliteProjectVerificationStore,
   verificationIsDue,
+  asHeadSubject,
 } from "../src/project_verification/index.js";
 import type { VerifierDefinition } from "../src/project_verification/index.js";
 import { DEFAULT_HEAD_COMMIT } from "../src/tools/controller.js";
@@ -580,7 +581,7 @@ describe("G10-AD AD-N24/N25: RecipeExecution executes bind_verification", () => 
     const history = await rig.installed.verification!.history();
     expect(history).toHaveLength(1);
     expect(history[0]!.runId).toBe(verification.runId);
-    expect(history[0]!.subject.headCommit).toBe(HEAD);
+    expect(asHeadSubject(history[0]!.subject).headCommit).toBe(HEAD);
     expect(history[0]!.subject.kind).toBe("CURRENT_PROJECT_HEAD");
     expect(history[0]!.verdict).toBe("PASS");
     expect(rig.installed.verification!.store.verifyChain(rig.projectId).ok).toBe(true);
@@ -700,7 +701,7 @@ describe("G10-AD AD-N26: EXPLORE+VERIFY does not re-verify reasoning claims", ()
     // The verification run is about the PROJECT HEAD, never about a reasoning claim.
     const subject = (await rig.installed.verification!.history())[0]!.subject;
     expect(subject.kind).toBe("CURRENT_PROJECT_HEAD");
-    expect(subject.projectRevision).toBeGreaterThanOrEqual(0);
+    expect(asHeadSubject(subject).projectRevision).toBeGreaterThanOrEqual(0);
     expect(JSON.stringify(subject)).not.toMatch(/claim|cell|branch/i);
     // …and it never wrote a reasoning record: the admitted claims came from the cell.
     expect(await rig.installed.reasoningCells!.service.cellView({ cellId: explored.cellId })).toBeDefined();
@@ -956,7 +957,7 @@ describe("G10-AD §22/§23: the explicit verification surface", () => {
     const outcome = await surface.verifyCurrentHead({ reason: "explicit integration request" });
     expect(outcome.status).toBe("recorded");
     expect(outcome.run!.verdict).toBe("PASS");
-    expect(outcome.run!.subject.headCommit).toBe(HEAD);
+    expect(asHeadSubject(outcome.run!.subject).headCommit).toBe(HEAD);
     const after = await surface.status();
     expect(after.state).toBe("PASS");
     expect(after.freshIndependentRun!.run.runId).toBe(outcome.run!.runId);
@@ -1024,7 +1025,7 @@ describe("G10-AD §22/§23: the explicit verification surface", () => {
     });
     expect(injected.status).toBe(200);
     const injectedRun = (injected.body as { run: { subject: { headCommit: string } } }).run;
-    expect(injectedRun.subject.headCommit).toBe(HEAD);
+    expect((injectedRun.subject as { headCommit: string }).headCommit).toBe(HEAD);
 
     // Wrong method and wrong routes are refused, never silently accepted.
     expect((await http(rig.installed, "POST", "/api/verification/status")).status).toBe(400);

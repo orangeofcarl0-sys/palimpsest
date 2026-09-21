@@ -21,6 +21,7 @@ import {
   ProjectVerificationError,
   materializeProjectHeadVerificationSubject,
   type ProjectHeadVerificationSubject,
+  type ProjectVerificationSubject,
   type ProjectVerifierRawResult,
   type VerifierDefinition,
 } from "./artifacts.js";
@@ -45,7 +46,11 @@ export interface ProjectHeadVerificationSource {
  * -------------------------------------------------------------------------- */
 
 export interface ProjectVerifierVerifyInput {
-  readonly subject: ProjectHeadVerificationSubject;
+  /**
+   * The subject to verify — either kind. A provider that understands only one must refuse the other
+   * rather than guess, and `supportedSubjects` is how a deployment says which it can serve.
+   */
+  readonly subject: ProjectVerificationSubject;
   /** The repository/workspace the protocol runs against, when one applies. */
   readonly repository?: string | undefined;
   readonly signal?: AbortSignal | undefined;
