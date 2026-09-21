@@ -41,6 +41,15 @@ export function installPalimpsest(
     policy: options.policy,
     execution: options.execution,
     standard: options.standard,
+    /**
+     * PLMP-LEAN-1 §2.1 / 2A-Q: this is the only place that knows whether a verifier is composed, so
+     * it is where the capability is stated. Readiness then reports it honestly rather than guessing,
+     * and a task requiring independent verification is told the truth before the work starts.
+     */
+    capabilities: options.capabilities ?? {
+      independentVerifierAvailable: options.projectVerificationStore !== undefined,
+      sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
+    },
     clock: options.clock,
     effectsClock: options.effectsClock,
     leaseMs: options.leaseMs,

@@ -45,6 +45,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
 import {
   compilePlanRevision,
   type PlanReconciliationBlocker,
@@ -407,6 +408,13 @@ export interface ProjectControllerOptions {
    * stated.
    */
   standard?: import("../domain/standard.js").ProjectStandard | undefined;
+  /**
+   * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do. Capabilities gate READINESS —
+   * they never change what a task REQUIRES. Injected from the composition, which alone knows whether
+   * a verifier satisfying the independence contract is composed; the conservative default assumes
+   * nothing, so a deployment that says nothing is told the truth rather than a comfortable guess.
+   */
+  capabilities?: import("../domain/completion_contract.js").CompletionCapabilities | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -424,6 +432,7 @@ export class ProjectController {
   readonly recovery: PromotionRecoveryService;
   readonly execution: ExecutionMode;
   readonly #standard: import("../domain/standard.js").ProjectStandard | undefined;
+  readonly #capabilities: import("../domain/completion_contract.js").CompletionCapabilities;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
    * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
@@ -515,6 +524,12 @@ export class ProjectController {
     this.scheduler.registerPolicy(options.policy);
     this.execution = options.execution ?? "worktree";
     this.#standard = options.standard;
+    // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
+    // truth instead of a comfortable guess.
+    this.#capabilities = options.capabilities ?? {
+      independentVerifierAvailable: false,
+      sandboxSpawnVerified: false,
+    };
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId, this.execution);
     this.recovery = createPromotionRecoveryService({
       store: options.store,
@@ -2148,24 +2163,48 @@ export class ProjectController {
       );
     }
 
-    // The write scope the envelope declared, checked against what the product OBSERVED.
-    const scope = envelope.write_paths;
-    const outOfScope = changedFiles.filter(
-      (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
-    );
-    if (outOfScope.length > 0) {
-      throw new DomainValidationError(
-        `attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan; the attempt is still running`,
-      );
-    }
+    // ONE derivation, several consumers (§2.1 / 2A-Q): finish executes the contract's mechanical
+    // part, and readiness plus `nextEvidenceNeeded` project the same object — so the bar shown before
+    // the work cannot differ from the bar demanded after it.
+    const contract = this.#completionContractFor(attemptId);
 
     const evidenceRecorded: string[] = [];
-    // The standard's command clauses, executed by the product in the attempt's own tree. The exit
-    // code is observed here, so a failure returns as a failure instead of being recorded as a
-    // passing predicate (which the evidence contract would reject anyway).
-    for (const clause of standard.clauses) {
-      if (clause.kind !== "command_succeeds") continue;
-      const command = [...clause.command];
+    for (const check of contract.mechanical) {
+      if (check.kind === "assert_write_scope") {
+        const scope = envelope.write_paths;
+        const outOfScope = changedFiles.filter(
+          (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
+        );
+        if (outOfScope.length > 0) {
+          throw new DomainValidationError(
+            `attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan; the attempt is still running`,
+          );
+        }
+        this.#recordObservedEvidence(attemptId, "write_scope_valid", {
+          changed_files: changedFiles,
+          write_paths: [...scope],
+          out_of_scope: [],
+        });
+        evidenceRecorded.push("write_scope_valid");
+        continue;
+      }
+      if (check.kind === "assert_required_artifacts") {
+        const root = this.#inPlaceRepository();
+        const missing = check.paths.filter((path) => !existsSync(join(root, path)));
+        if (missing.length > 0) {
+          throw new DomainValidationError(
+            `attempt ${attemptId} is missing required artifacts: ${missing.join(", ")} — the attempt is still running; produce them and call finish again`,
+          );
+        }
+        this.#recordObservedEvidence(attemptId, "expected_files_exist", { paths: [...check.paths], missing: [] });
+        evidenceRecorded.push("expected_files_exist");
+        continue;
+      }
+
+      // run_standard_command: executed by the product in the attempt's own tree. The exit code is
+      // observed here, so a failure returns as a failure instead of being recorded as a passing
+      // predicate (which the evidence contract would reject anyway).
+      const command = [...check.command];
       const executable = command[0];
       if (executable === undefined) continue;
       this.#assertGateCommandAllowed(envelope, command);
@@ -2175,7 +2214,7 @@ export class ProjectController {
         argv: command.slice(1),
         ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
         scope: this.projectId,
-        callId: `finish:${attemptId}:${canonicalDigest({ predicate: clause.predicate, command }).slice(0, 16)}`,
+        callId: `finish:${attemptId}:${canonicalDigest({ predicate: check.predicate, command }).slice(0, 16)}`,
         revision: this.promotions.projectRevision(),
       })) as { exitCode: number | null; outputTail: string };
       if (observation.exitCode === null) {
@@ -2188,32 +2227,9 @@ export class ProjectController {
           `the completion standard's command ${command.join(" ")} failed (exit ${observation.exitCode})${observation.outputTail === "" ? "" : `: ${observation.outputTail}`} — the attempt is still running; fix the failure and call finish again`,
         );
       }
-      this.#rememberGateOutput(attemptId, clause.predicate, command, observation.outputTail);
-      this.#recordCommandEvidence(attemptId, clause.predicate, command, observation.exitCode);
-      evidenceRecorded.push(clause.predicate);
-    }
-
-    // The two observations the product makes without running anything.
-    this.#recordObservedEvidence(attemptId, "write_scope_valid", {
-      changed_files: changedFiles,
-      write_paths: [...scope],
-      out_of_scope: [],
-    });
-    evidenceRecorded.push("write_scope_valid");
-
-    if (envelope.required_artifacts.length > 0) {
-      const root = this.#inPlaceRepository();
-      const missing = envelope.required_artifacts.filter((path) => !existsSync(join(root, path)));
-      if (missing.length > 0) {
-        throw new DomainValidationError(
-          `attempt ${attemptId} is missing required artifacts: ${missing.join(", ")} — the attempt is still running; produce them and call finish again`,
-        );
-      }
-      this.#recordObservedEvidence(attemptId, "expected_files_exist", {
-        paths: [...envelope.required_artifacts],
-        missing: [],
-      });
-      evidenceRecorded.push("expected_files_exist");
+      this.#rememberGateOutput(attemptId, check.predicate, command, observation.outputTail);
+      this.#recordCommandEvidence(attemptId, check.predicate, command, observation.exitCode);
+      evidenceRecorded.push(check.predicate);
     }
 
     // The report and the settlement. In-place reports re-observe the tree, so the recorded
@@ -2535,6 +2551,63 @@ export class ProjectController {
   /** The commands this deployment authorizes (the policy bound the envelopes are cut from). */
   authorizedCommands(): readonly { readonly executable: string; readonly argv_prefix: readonly string[] }[] {
     return this.policy.allowed_commands;
+  }
+
+  /**
+   * PLMP-LEAN-1 §2.1 / 2A-Q: the DERIVED completion contract for one attempt. Pure — the same
+   * standard, task declaration, envelope and capabilities always produce the same `basisDigest`, so
+   * "the bar did not move after the result was seen" (`INV-7`) is a machine check rather than a
+   * promise. It is a function result, not a durable artifact: nothing is stored and no event is
+   * appended.
+   */
+  #completionContractFor(attemptId: string): import("../domain/completion_contract.js").AttemptCompletionContract {
+    const [, envelope] = this.#attemptContext(attemptId);
+    const standard = this.#standard;
+    if (standard === undefined) {
+      throw new DomainValidationError(
+        "this project has no confirmed completion standard, so no completion contract can be derived — the operator states one sentence first",
+      );
+    }
+    return deriveAttemptCompletionContract({
+      standard,
+      task: { write_paths: envelope.write_paths, required_artifacts: envelope.required_artifacts },
+      envelope: {
+        write_paths: envelope.write_paths,
+        required_artifacts: envelope.required_artifacts,
+        allowed_commands: envelope.allowed_commands,
+      },
+      capabilities: this.#capabilities,
+    });
+  }
+
+  /** The contract for one attempt, or null when the project has no confirmed standard yet. */
+  completionContract(
+    attemptId: string,
+  ): import("../domain/completion_contract.js").AttemptCompletionContract | null {
+    return this.#standard === undefined ? null : this.#completionContractFor(attemptId);
+  }
+
+  /**
+   * PLMP-LEAN-1 §5 / 2A-Q: readiness in TWO layers. The deployment layer is answerable at startup;
+   * the task layer needs a task, so it is derived from the running attempt's contract when one
+   * exists. A deployment fact ("no independent verifier is composed") is a TASK blocker only when
+   * this task actually requires one — marking every project NOT READY because some task somewhere
+   * might need verification would be dishonest.
+   */
+  completionReadiness(): import("../domain/completion_contract.js").CompletionReadiness {
+    let contract: import("../domain/completion_contract.js").AttemptCompletionContract | undefined;
+    if (this.#standard !== undefined) {
+      const running = this.store.connection
+        .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id LIMIT 1")
+        .get(this.projectId, "RUNNING") as { attempt_id: string } | undefined;
+      if (running !== undefined) contract = this.#completionContractFor(running.attempt_id);
+    }
+    return deriveCompletionReadiness({
+      standard: this.#standard,
+      authorizedCommands: this.authorizedCommands(),
+      capabilities: this.#capabilities,
+      ...(contract === undefined ? {} : { contract }),
+    });
   }
 
   /** The gate ids already declared on this project's log. */
