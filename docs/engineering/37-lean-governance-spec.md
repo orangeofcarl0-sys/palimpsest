@@ -12,6 +12,7 @@
 > - `LEAN-1` **第 2A-R 期（Completion Integrity Closure）交付**（2026-09-21）：独立复核发现并**实测确认**一个 correctness gap——`finish` 的 in-place 观察同时统计已提交与未提交变更，于是**未提交的工作也会被接受**：探针在 `main@89377c7` 上得到 `finish ACCEPTED`、`changed_files: ["src/dedupe.ts"]`、而 `result_commit` = **base**（不含该改动）。更严重的是 in-place 晋升守卫只比较"记录的提交 == 仓库 HEAD"，该状态下两者都是 base，**守卫会通过**，于是晋升可能记录一个 canonical head 并不含工作内容的 COMMITTED 结果。**新增并冻结不变量**：`Attempt COMPLETED ⇒ resultCommit 是包含所观察工作的不可变提交`（即 `changed_files == Diff(base, resultCommit)`）；拒绝而非代提交——`git commit` 是普通 agent 工作（read/edit/test/commit），不是治理机器，产品不得代写提交。同时：worktree 模式下 `finish` **fail closed**（该模式的工作树路径属 git port，高层路径无法观察，不假装支持）；DSH 结果**投影掉 `attemptId`**（`INV-4`：编排状态不进主上下文，应用层结果仍保留）；并把误挂的 `#assertInPlaceAttemptCurrent` 文档注释归位（它恰好描述的就是这个缺陷，注释中补记"必要但不充分"）。验收 `LEAN-A22`–`A25`（`test/lean_finish_integrity.test.ts`）；§8 第 5 条按操作者裁决定为 **(a′) Commit-bound isolated verification**，附录 B §B.3 据此修正（`ATTEMPT_RESULT` 的一致性**不是**"ambient HEAD == resultCommit"——那会把主代理锁死在已完成的工作上；而是 subject 由 canonical 报告物化、提交对象存在、verifier 精确物化该提交）。门禁：单元 185 文件 / 2099 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
 > - `LEAN-1` **第 2A-Q 期（Completion Contract + readiness）交付**（2026-09-21）：新增 **L1 纯派生** `src/domain/completion_contract.ts`——`deriveAttemptCompletionContract(standard, task, envelope, capabilities)` 产出 `{basisDigest, mechanical, verification, diagnostics}`，**不落任何事件、不读任何存储**（`Envelope is basis ≠ Envelope stores every derived requirement`：**未**给 `TaskEnvelope` 增加任何 evidence/verification 字段）。机械部分用**三种 check kind**（`run_standard_command` / `assert_write_scope` / `assert_required_artifacts`）而非谓词列表，谓词映射单点单向。`finish` 改为**消费同一个派生**（一条派生、多个消费者，禁止 readiness/finish/2B 各持一套规则）；`A05`/`A06` 按"envelope 是 basis"与"`expected_files_exist` 只来自执行前已声明路径"改写；`write_scope_valid` 无条件要求。readiness **分两层**（`R_deployment` 启动可答 / `R_task` 需任务），部署缺 verifier **只在任务确实需要复核时**才算 task blocker；`A14` 的判据是"不能晚失败"（策略不允许所需命令必须在任务开始前出现并指明补救方是操作者）。capabilities 由 composition 如实注入（有 repository 才 `sandboxSpawnVerified`，有 verification store 才 `independentVerifierAvailable`），未声明一律按缺失处理。验收 `LEAN-A05`/`A06`/`A14`（`test/lean_completion_contract.test.ts`，14 项）；readiness 经 `/api/application/surfaces` 的 `governance.completionReadiness` 暴露。**D2 两条硬前置已登记**（worktree-aware `observeAttemptResult` 复用同一 materialization 断言；principal attempt attribution 需 host-local 绑定、不得创造 Agent identity 真值）。**已知中间缺口**：`verification.required` 已派生但 2B 之前不强制，只在 readiness 上可见。门禁：单元 186 文件 / 2113 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
 > - `LEAN-1` **第 2A-Q-R 期（verification policy calibration）交付**（2026-09-21）：复核发现 `single_evidence` 作为 hard requirement **把风险代理搞错了**——命令**数量**不是证据**强度**的代理（一条 `npm test` 可能跑 5 个断言也可能跑 500 个），且会让普通任务被迫启动第二执行者，与 `INV-6`（exploit useful independence; never manufacture agents）和 G10-R 的"人为 role split 可为纯开销"冲突。四处校准：① 复核分**两个强度**（`required`/`requiredReasons` 与 `recommended`/`recommendationReasons`），`REQUIRED` 保持窄，2B v1 只做 `contract_boundary`，不加 size threshold（"大 diff"执行前不可知）；② 触发**改名** `single_evidence → single_command_bar`（旧名本身是比它实际测量更强的 epistemic 主张）；③ **`RequirementBasis ≠ CapabilityAssessment`**——`deriveAttemptCompletionContract` **不再接收 capabilities**（分层由构造保证），`basisDigest` 只覆盖规范性输入，capability 说明移出契约 `diagnostics`；否则 verifier 中途配置好会移动摘要而标准未动，削弱 `INV-7`；④ readiness 两层**强度不同**——部署层**描述性**（`CONFIGURED`/`DEGRADED`/`INCOMPLETE` + `gaps`，不叫 blockers），任务层**可行动**（`READY`/`BLOCKED` + `blockers` + `advisories` 承载 RECOMMENDED 但不可用）。阻断规则精确为 `已知要求 ∧ 缺失能力 ⇒ 提前阻断`，不多不少。验收 `LEAN-A05`/`A06`/`A14` 扩到 19 项。门禁：单元 186 文件 / 2118 测试、e2e 38/38、`architecture:check` 0 violation、`check-public-api` 0/0/0。
+> - `LEAN-1` **2A final live gate 实测（两次，均未通过）+ 零产出泵修复**（2026-09-21，`6302a20`）：装置 `rs-test/lean-2a-live-gate.mjs`（真实 DSH 单轮 + 离线核对 attempt/证据/门禁/转录）。**第 1 轮**：agent 干对了活但 `claim` 早一步（`palimpsest_next` 每次只提交一个事件），改调 `palimpsest_run` —— 机械泵在**未改动**的树上跑策略命令退出 0，留下 `COMPLETED` + `changed_files: []` + `result_commit` = base + 零证据，**正是 `finish` 专门要拒绝的状态**。修复：`#assertCompletionHasWork` 由 `report` 与 `finish` **共用**（§3.3 此前只在 `finish` 强制），去掉 `finish` 的 `required_artifacts.length === 0` **逃逸口**（预先存在的产物不是工作），泵的无命令分支由 `completed` 改 `failed`。回归 `LEAN-A26` 确定性复现该失败；`test/inplace_execution.test.ts` 的陈旧性测试改**前提**（原先"在干净树上 report"——正是刚被判非法的状态）。**第 2 轮**：agent 按指示只调一次 `finish` 被拒 `no attempt is running`，自行查证后正确诊断 **`project "livegate" has no ProjectIR`**（无计划/无 ready set/无可认领 attempt），并**拒绝自行铸造治理状态**。**结论：`LEAN-A15` 活体那一半未证明，2A 未闭合**；缺口不是 scheduler 补丁，而是 direct path 缺少与 `finish` **对称的开始协议**。据此起草**附录 E（第 2A-B 期，Direct Work Bootstrap，`palimpsest_begin`，规划未实现）**：`Agent decides what the work is. Palimpsest makes the work governable.` —— 主代理把目标编译成最小 direct proposal（含 `writePaths`，属**工作语义**而非机器词汇），产品验证并机械建立唯一受管工作位（只用 `preview`/`step`/`claim`，**禁止** `run`/pump），readiness **全部前置、拒绝时零项目事件**，`begin` 前只读勘察允许而 mutation 不允许，标准确认**不得**从 `begin` 铸造，已有计划**不得**静默改写，retry 必须**收敛**且用派生摘要判同一性。门禁：单元 186 文件 / 2119 测试、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 
 ---
 
@@ -562,7 +563,8 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-R** | Completion Integrity Closure（**已交付** 2026-09-21） | 冻结"完成的 in-place 工作必须 commit-materialized"；worktree 下 `finish` fail closed；主代理投影去掉 `attemptId` | 很少 | `A22`–`A25` **全部通过**；**2B 的前置**——没有它，`ATTEMPT_RESULT` 的 subject 可能指向不含工作的提交 |
 | **2A-Q** | Completion Contract + readiness（**已交付** 2026-09-21） | §2.1 完成契约**纯派生**（`deriveAttemptCompletionContract`，**不是新的真值属主**、不落任何事件）+ §2.7 三种 check kind + §5.1 readiness 分两层（标准已确认？命令可执行？沙箱可 spawn？所需 verifier 可用？） | 很少 | `A05`、`A06`、`A14` **全部通过** |
 | **2A-Q-R** | verification policy calibration（**已交付** 2026-09-21） | 复核两强度（`single_command_bar` 降为 RECOMMENDED 并改名）、`basisDigest` 排除 capabilities、capability 说明移出契约、部署层 readiness 改为描述性 | 很少 | `A05`/`A06`/`A14` 扩到 19 项全通过；**校准后普通低风险任务 `required = false`，direct path 不再被阻断** |
-| **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS，主代理上下文零 predicate/gateId/attemptId/report | 无 | `A15` **活体一半** |
+| **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS，主代理上下文零 predicate/gateId/attemptId/report | 无 | **实测两次，均未通过**（见附录 E §E.1）：第 1 轮暴露零产出泵（已修，`A26`）；第 2 轮暴露 **direct path 无开始入口**。`A15` 活体一半**仍未证明** |
+| **2A-B** | Direct Work Bootstrap（**规划，附录 E**） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A33`；**`A33` 正式关闭 `A15` 活体那一半** |
 | **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
@@ -985,3 +987,277 @@ Palimpsest 在 H1 上开一个【新的】B attempt
 Kernel API   = expressive   （可操作的多 Agent 内核，研究/调试/自定义能力不损失）
 Principal API = opinionated （主代理的首选路径是少量高层工具）
 ```
+
+---
+
+## 附录 E（第 2A-B 期）：Direct Work Bootstrap —— `palimpsest_begin`
+
+> **状态：规划（2026-09-21）**。本附录是**草案**，未实现。它闭合 2A final live gate 实测暴露的缺口。
+
+### E.1 问题：有结束协议，没有开始协议
+
+**实测（`rs-test/lean-2a-live-gate.mjs`，两轮真实 DSH）**：
+
+- **第 1 轮**：agent 把活干对了，但 `claim` 早了一步（`palimpsest_next` **每次只提交一个事件**），于是改调 `palimpsest_run` —— 机械泵自己创建/领取/结算了 attempt，在**未改动的旧代码**上跑策略命令退出 0，留下 `COMPLETED` + `changed_files: []` + `result_commit` = base + 零证据。（该零产出缺口已在 `#assertCompletionHasWork` 修复，见 §3.3。）
+- **第 2 轮**：agent 按指示只调一次 `finish`，被拒 `no attempt is running`；它自行查证后正确诊断 **`project "livegate" has no ProjectIR`** —— 没有计划、没有 ready set、没有可认领的 attempt。它**拒绝自行铸造治理状态**（那属于操作者），并如实报告。
+
+于是主代理只能在两个坏选择之间：**A. 自己操作 `start`/`next`×N/`claim`；B. 直接工作，但 `finish` 找不到 attempt。** 一个诚实的 agent 选 B 并拒绝，是**正确行为**——要改的是产品。
+
+**缺口不是又一个 scheduler 补丁，而是 direct path 缺少与 `finish()` 对称的入口。**
+
+### E.2 核心句与公式
+
+> **操作者只表达目标与标准；主代理把目标编译成最小 direct-work proposal；Palimpsest 验证该提案并机械地建立唯一受管工作位，直到 Principal 可以直接开始工作。**
+
+```
+Agent decides what the work is.
+Palimpsest makes the work governable.
+```
+
+**明确排除**"用户一句话 → Palimpsest 自己生成 ProjectIR / 计划"：**Palimpsest 没有 LLM，不得重新变成 planner**。正确链路：
+
+```
+User intent → Main Agent semantic compilation → Palimpsest mechanical bootstrap
+```
+
+这与 `18-architecture-modes-spec.md` 既有原则一致：**主代理是 architect，Palimpsest 是验证与执行 substrate。**
+
+### E.3 边界：只服务 Direct Work，不是另一个 Project Architect
+
+第一版严格限定：
+
+```
+one goal → one direct task → one principal attempt
+```
+
+**不做**：自动拆 N 个 task、自动决定 fan-out、自动 spawn worker —— 那是 `PLMP-DELEGATE-1` / 架构线的职责。
+
+### E.4 形状
+
+```ts
+palimpsest_begin({
+  goal: string,                    // 操作者的目标，原样
+  writePaths: string[],            // 主代理判断自己准备改什么
+  requiredArtifacts?: string[],    // 可选；缺省空
+})
+```
+
+**拒绝**（Principal 不提供）：`projectId` / `taskId` / `attemptId` / `role` / `gateId` / `predicate` / `exitCode` / scheduler 状态 / `standard` / `confirmed`。
+
+`objective = goal`，不再单独要一个 `objective`。
+
+### E.5 谁提供什么：Agent 提供工作语义，产品推导机器
+
+必须区分两类东西：
+
+| 类别 | 例子 | 谁提供 |
+|---|---|---|
+| **机器编排词汇** | `attemptId` / `gateId` / event sequence / lease | **产品**（Principal 永不接触） |
+| **工作语义** | "我准备修改 `src/dedupe.ts`" | **主代理** |
+
+主代理本来就在读文件、改文件，它提供计划写范围**没有问题**。反过来，若让 Palimpsest 从"修一下这个 bug"自行推导出 `src/a.ts`、`src/b.ts`，那才是**在插件里偷偷实现 planner**。
+
+```
+Agent proposes work semantics; product derives machinery.
+```
+
+### E.6 时机纪律：begin 在**第一次 mutation 之前**（read-only 勘察允许）
+
+```
+User task → Main Agent → read / grep / inspect / search  → palimpsest_begin → mutation begins
+```
+
+- **允许**：begin 之前的只读勘察（否则主代理根本不知道 `writePaths`）。
+- **不允许**：begin 之前的 mutation。若 agent 已 `edit`+`commit` 才 `begin`，则 `baseCommit` = 已改动的 HEAD，**产品不可能知道这些工作属于本任务**，attribution 失效。
+
+> **纪律：begin before first mutation, not necessarily before first read.**
+
+### E.7 入口侧：工作树必须干净
+
+这是 2A-R 教训的**入口侧对应版本**。创建 attempt 之前 `git status --porcelain` 必须没有项目工作残留，否则拒绝：
+
+> 当前工作树已有未归属变更。请先处理这些变更再开始受管工作；否则产品无法证明哪些改动属于本任务。
+
+**禁止**把现存 dirty tree 默认为本任务的工作。
+
+### E.8 复用既有原语：Direct begin 是**组合**，不是新的语义种类
+
+**不新增** durable `DirectWorkPlan` / `DirectProjectStore` / `DirectTask` / `DirectAttempt` / `DirectPlanEvent`。内部走既有面：
+
+```
+pipelinePreset({ goal, stages: [{ title: goal, writePaths, requiredArtifacts }] })
+  → 单阶段 ProjectProposal
+  → validateProjectProposal()
+  → proposalTaskSpecs()
+  → controller.start(...)
+```
+
+### E.9 内部循环：只用生命周期原语，**禁止** `run`/pump
+
+**实测已经证明为什么**：`palimpsest_run` 是机械执行器，有机会**真的执行 attempt**（第 1 轮就是这么毁掉的）。`begin` 的任务只是"把状态机推进到 Principal 可以开始工作"，因此只允许：
+
+```
+preview() / step() / claim()
+```
+
+内部循环（**产品拥有顺序**，这正是 §5.2 原本要解决的）：
+
+```
+start(project)
+loop (bounded, 上限 8–16 步):
+    preview()
+      TASK_STARTED    → step(); continue
+      ATTEMPT_CREATED → event = step(); claim(event.entityId); break
+      其它             → fail closed
+```
+
+**禁止**调用 `runTurn()` / `pumpCommandAttempts()` / `palimpsest_run`。用户不再需要操作 N 次 `next`。
+
+### E.10 返回值：Principal 投影不泄漏编排状态
+
+应用层可以知道 `projectId`/`taskId`/`attemptId`/`baseCommit`，但 Principal 投影只有：
+
+```ts
+{
+  state: "READY",
+  goal,
+  writeScope,             // 允许改哪些路径
+  requiredArtifacts,
+  completion: { testsRequired, independentVerificationRequired },
+}
+```
+
+**不得**返回 `attempt-7338` / `TASK_STARTED seq 14` / `lease` / scheduler 状态。继续遵守：
+
+```
+Application result ≠ Principal projection
+```
+
+### E.11 标准确认**不得**从 `begin` 进入（authority 边界）
+
+**禁止**：
+
+```ts
+palimpsest_begin({ standard: "…", confirmed: true })   // ← Agent 声称"用户确认了"
+```
+
+该调用来自 Agent，等于**让 Agent 铸造操作者确认**。`begin` 只**消费**已确认的 `ProjectStandard`；没有则返回 `NEEDS_STANDARD_CONFIRMATION` + 人话候选。
+
+未来若 DSH host 能**证明**某段文本来自当前 human user turn，才可建立 trusted user-intent/standard bridge，那时才能真正做到"一条用户消息 → goal + confirmed standard"。
+
+```
+same human interaction is desirable  ≠  agent may mint operator confirmation
+```
+
+### E.12 已有状态的处理（三例，不得静默改计划）
+
+| 情形 | 行为 |
+|---|---|
+| **A** 无 ProjectIR | 创建 one-task direct project（**当前实测失败对应的主场景**） |
+| **B** 已有**同一个** direct task，因 crash 停在中间 | 恢复并继续推进到 RUNNING |
+| **C** 已有普通 ProjectIR | **拒绝**，零写：*"当前项目已有计划；direct bootstrap 不会静默重写现有计划。请使用现有 ready task 或显式计划修订。"* |
+
+**禁止** `begin(goal) → 隐式 plan revision`。闭合 A15 不顺势重做 project planning UX。
+
+### E.13 crash/retry **收敛**，不追求一个大事务
+
+不必把多个 store 写成一个事务——Palimpsest 已是 durable event machine。要证明的是 **retry converges**：
+
+| crash 位置 | retry 行为 |
+|---|---|
+| `PROJECT_CREATED` 后 | 识别同一 ProjectIR → 不重复 start → 继续 scheduler |
+| `TASK_STARTED` 后 | 继续 step |
+| `ATTEMPT_CREATED` 后、claim 前 | claim 这个**已有** attempt |
+| claim 后 | 已有唯一 RUNNING principal attempt → 返回 READY |
+
+若**已有 project digest ≠ 请求的 direct proposal** → `CONFLICT`，**绝不覆盖**。
+
+**同一性用派生摘要**（不新增 durable 字段）：
+
+```
+D_direct = H(goal, writePaths, requiredArtifacts)
+```
+
+与当前 canonical `ProjectIR` / `TaskSpec` 重新推导比较即可——`derived identity, no second truth`。
+
+### E.14 fail-before-write：readiness 在任何写入之前
+
+`begin()` 必须**先**全部推导完，再决定是否落账：
+
+```
+derive standard → derive one-task proposal → derive prospective envelope
+→ derive completion contract → derive task readiness
+```
+
+若出现 `required command unauthorized` / `sandbox unavailable` / `required verifier unavailable` / `standard unconfirmed` / `invalid write scope` / **工作树脏**，则：
+
+```
+ZERO PROJECT EVENTS
+```
+
+**禁止** `先 PROJECT_CREATED，然后发现永远无法完成`。这是 `begin` 最重要的保证，也是 `A14`（不能晚失败）在入口侧的延续。
+
+### E.15 prospective envelope（实现注意）
+
+`CompletionContract` 依赖 `TaskEnvelope`，而 envelope 通常由 `TaskPolicy.authorize(ProjectIR, taskId)` 产生——`start()` 之前还没有 canonical project。这是可以**纯构造**的：
+
+```
+build proposed ProjectIR in memory
+  → policy.authorize(proposedProject, "task-1")
+  → derive CompletionContract
+  → readiness
+（全部不落账）
+→ 仅当 READY 才 controller.start(...)
+```
+
+### E.16 对称边界
+
+```
+BEGIN   ← agent: "我准备做这块工作"
+        → product: ProjectIR / Task / Envelope / scheduler 推进 / attempt 创建 / claim
+
+中间    ← agent 完全传统地工作: read / edit / shell / test / commit
+
+FINISH  ← agent: "我认为做完了"
+        → product: materialization / scope / commands / artifacts / evidence / report / completion
+```
+
+Principal 的 direct path 最终收敛为：
+
+```
+begin()  →  normal coding  →  finish()
+```
+
+而 `ProjectIR` / `TaskSpec` / `Envelope` / `TASK_STARTED` / `ATTEMPT_CREATED` / `claim` / gate predicates / `AttemptReport` **全部留在下面**。
+
+### E.17 `begin` 是 Agent 选择的产品工具，**不是请求中间件**
+
+Palimpsest 仍是 sidecar。纯问答（"解释这个函数"）**不应** begin Work；只有要改代码才调用 `begin`。
+
+```
+Main Agent works.
+Main Agent chooses when managed Work begins.
+```
+
+### E.18 验收
+
+- `LEAN-A27` **one-call bootstrap**：新部署、无 ProjectIR，一次 `palimpsest_begin(...)` 后 `ProjectIR` 存在、一个 task、一个 attempt **RUNNING**；Principal **从未**调用 `start`/`plan`/`next`/`claim`/`run`。
+- `LEAN-A28` **begin does no work**：`begin` 后 `changed_files = []`、`evidence = []`、无 report —— 只准备工作位，**绝不复活 pump**。
+- `LEAN-A29` **preflight before write**：标准缺失 / 所需命令未授权 / task readiness blocked / 工作树脏 —— 四种情形**均须** `begin` 被拒且 **`ProjectIR` 事件数 = 0**。
+- `LEAN-A30` **restart convergence**：分别在 `PROJECT_CREATED` / `TASK_STARTED` / `ATTEMPT_CREATED` 后模拟 crash，重试 `begin` 最终**只有一个 project、一个 task、一个 attempt，且 attempt RUNNING**。
+- `LEAN-A31` **conflicting existing state**：已有**不同** `ProjectIR` 时 `begin(new proposal)` **不得** plan/rewrite，返回冲突且**零写**。
+- `LEAN-A32` **principal projection hygiene**：返回中不存在 `projectId`/`taskId`/`attemptId`/`gateId`/`eventType`/`lease`/scheduler。
+- `LEAN-A33` **full live direct path**（**正式关闭 `A15` 活体那一半**）：真实 DSH —— 用户给目标 → 主代理只读勘察 → `begin` **一次** → edit → test → commit → `finish` **一次**；最终 `Attempt COMPLETED`、materialization true、gate **PASS**；且模型 session 内**不存在** `palimpsest_start` / `palimpsest_next` / `palimpsest_claim` / `palimpsest_run` / `palimpsest_gate` / `palimpsest_report`。
+
+### E.19 禁止（本附录）
+
+- **禁止**让产品自己"规划"（无 LLM；主代理是 architect）。
+- **禁止**把 `begin` 扩成 Project Architect（拆多 task / fan-out / spawn worker）。
+- **禁止** `begin` 内部调用 `run` / pump / `runTurn` / `pumpCommandAttempts`。
+- **禁止**从 `begin` 的入参接受或铸造操作者确认（`standard`/`confirmed`）。
+- **禁止**把现存 dirty tree 默认为本任务工作。
+- **禁止**静默改写已有计划（Case C 必须拒绝）。
+- **禁止**在 preflight 之前落任何项目事件。
+- **禁止**新增 `DirectWorkPlan` / `DirectProjectStore` / `DirectTask` / `DirectAttempt` / `DirectPlanEvent`。
+- **禁止**在 Principal 投影里泄漏编排状态。
+- **禁止**把 `begin` 做成请求中间件（纯问答不 begin）。
