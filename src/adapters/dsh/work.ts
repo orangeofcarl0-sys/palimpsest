@@ -88,5 +88,55 @@ tools.push(
     }),
   );
 
+  tools.push(
+    tool({
+      name: "palimpsest_begin",
+      description:
+        "START MANAGED WORK ON THIS PROJECT, ONCE, IN YOUR OWN WORDS (PLMP-LEAN-1 appendix E). Call this when you are about to change the project and you want the work governed — normally right after reading enough to know what you intend to touch, and BEFORE your first edit. You state only two things: the goal, and the write scope you intend to touch. Palimpsest does the rest mechanically — it creates the project if there is none, registers the single task, advances the scheduler and claims the attempt — so you never touch the scheduler, never claim anything and never see an attempt id. Read-only reconnaissance BEFORE calling this is expected; changing files before calling it is not, because then the product cannot tell which changes belong to this task. It refuses, writing nothing, when: the deployment is not in-place, the write scope is empty, no completion standard has been confirmed, the working tree already holds changes belonging to no attempt, HEAD has moved away from the project's canonical head, the project already has a DIFFERENT plan (a direct bootstrap never silently rewrites an existing plan), or the task would require independent verification this deployment cannot yet perform. On success the reply says what scope you may change and what completion will require; when the work is done, commit it and call palimpsest_finish.",
+      mode: "mutating",
+      actions: ["run"],
+      extraProperties: {
+        goal: {
+          type: "string",
+          description:
+            "what the work is, in your own words (e.g. “把 dedupe 改成 Set 实现”). This is your compilation of the user's intent, not a quotation of them.",
+        },
+        writePaths: {
+          type: "array",
+          items: { type: "string" },
+          description:
+            "the paths you intend to change, relative to the project root. This bounds what counts as a legal change for this work; it does not widen policy or filesystem authority. Must be non-empty.",
+        },
+        requiredArtifacts: {
+          type: "array",
+          items: { type: "string" },
+          description: "optional: paths this work must leave in place (they must already be declared, never inferred from what changed)",
+        },
+      },
+      run: async (_action, object) => {
+        const goal = object.goal;
+        if (typeof goal !== "string" || goal.length === 0) {
+          throw new ToolArgsError('argument "goal" must be a non-empty string');
+        }
+        const writePaths = object.writePaths;
+        if (!Array.isArray(writePaths) || !writePaths.every((entry) => typeof entry === "string" && entry.length > 0)) {
+          throw new ToolArgsError('argument "writePaths" must be a non-empty array of non-empty strings');
+        }
+        const requiredArtifacts = object.requiredArtifacts;
+        if (
+          requiredArtifacts !== undefined &&
+          (!Array.isArray(requiredArtifacts) || !requiredArtifacts.every((entry) => typeof entry === "string" && entry.length > 0))
+        ) {
+          throw new ToolArgsError('argument "requiredArtifacts" must be an array of non-empty strings when given');
+        }
+        return application.work.begin({
+          goal,
+          writePaths: writePaths as string[],
+          ...(requiredArtifacts === undefined ? {} : { requiredArtifacts: requiredArtifacts as string[] }),
+        });
+      },
+    }),
+  );
+
   return tools;
 }

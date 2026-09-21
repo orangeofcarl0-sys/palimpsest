@@ -330,6 +330,19 @@ export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly
       "actually was, whether the declared artifacts exist), with every mechanical fact OBSERVED " +
       "rather than reported. It adds a tool and changes no existing contract.",
   },
+  {
+    name: "palimpsest_begin",
+    reason:
+      "PLMP-LEAN-1 appendix E (phase 2A-B). There was a FINISH protocol and no BEGIN protocol, which " +
+      "the 2A final live gate measured: an agent that worked correctly and called finish was told " +
+      "'no attempt is running', because reaching a claimable attempt still required operating the " +
+      "scheduler by hand — start, advance it N times, claim. An honest agent refuses to mint that " +
+      "governance state itself, so the product left it two bad choices. This tool lets the agent " +
+      "state what the work is (goal + intended write scope, i.e. work semantics) while the product " +
+      "establishes the managed work position mechanically (project, task, envelope, attempt, claim), " +
+      "with every precondition checked before anything is written. It adds a tool and changes no " +
+      "existing contract.",
+  },
 ]);
 
 /**

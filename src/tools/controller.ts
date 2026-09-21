@@ -123,6 +123,33 @@ import type { AttemptExecutor } from "../effects/executor.js";
 
 export const DEFAULT_HEAD_COMMIT = "c".repeat(40);
 
+/** The one task a direct bootstrap creates. Stable so a retry recognises the SAME work. */
+const DIRECT_TASK_ID = "direct-1";
+/** Runaway guard for the activation loop — a defensive cap, never a semantic budget (§E.9). */
+const DIRECT_BEGIN_MAX_STEPS = 16;
+
+/**
+ * Semantic equivalence between a canonical project and a requested direct proposal (§E.12).
+ *
+ * Deliberately NOT provenance: with no direct marker, a one-task project created by `begin` and an
+ * identical one created through architect/start are indistinguishable, and adding a marker is exactly
+ * what the appendix forbids. Equivalence is the decidable question, so it is the one asked.
+ *
+ * `task_id` is not compared: it is runtime identity, not part of the work's meaning.
+ */
+function directShapeEquivalent(project: ProjectIr, task: TaskSpec): boolean {
+  if (project.tasks.length !== 1) return false;
+  const existing = project.tasks[0]!;
+  const sameList = (left: readonly string[], right: readonly string[]): boolean =>
+    JSON.stringify([...left].sort()) === JSON.stringify([...right].sort());
+  return (
+    existing.objective === task.objective &&
+    existing.depends_on.length === 0 &&
+    sameList(existing.write_paths, task.write_paths) &&
+    sameList(existing.required_artifacts, task.required_artifacts)
+  );
+}
+
 /** The one gate a confirmed project standard declares; promotion names it by this id. */
 export const RELEASE_GATE_ID = "gate-release";
 
@@ -2131,6 +2158,279 @@ export class ProjectController {
     }
     throw new DomainValidationError(
       `${rows.length} attempts are running (${rows.map((row) => row.attempt_id).join(", ")}), so finishing would have to guess which one is yours — settle them one at a time, or narrow the plan so only one task is ready`,
+    );
+  }
+
+  /**
+   * PLMP-LEAN-1 appendix E (2A-B): the **begin** protocol — symmetric with `finish`.
+   *
+   *   Agent decides what the work is. Palimpsest makes the work governable.
+   *
+   * The agent compiles the user's intent into a minimal direct-work proposal (a goal and the write
+   * scope it intends to touch); the product validates it and MECHANICALLY establishes the single
+   * managed work position, so the principal can just start working. The agent never operates the
+   * scheduler, never claims, and never sees an attempt id.
+   *
+   * The state machine is S0-S3 (appendix E §E.16), and every precondition is evaluated BEFORE
+   * anything is appended: a refusal leaves the event log exactly as it was.
+   */
+  async begin(input: {
+    readonly goal: string;
+    readonly writePaths: readonly string[];
+    readonly requiredArtifacts?: readonly string[] | undefined;
+  }): Promise<{
+    readonly state: "READY" | "RESUMED";
+    readonly goal: string;
+    readonly writeScope: readonly string[];
+    readonly requiredArtifacts: readonly string[];
+    readonly completion: {
+      readonly mechanicalChecks: readonly string[];
+      readonly independentVerificationRequired: boolean;
+    };
+  }> {
+    const goal = input.goal.trim();
+    if (goal === "") {
+      throw new DomainValidationError("begin requires a non-empty goal — state what the work is");
+    }
+    // §E.4.1: v1 is repository-bound + in-place only. Under worktree execution this would create a
+    // direct path that cannot be walked to the end: the principal edits its own cwd while the product
+    // made a worker worktree, and `finish` fails closed there.
+    if (this.execution !== "in-place") {
+      throw new DomainValidationError(
+        "this deployment's work position is an isolated worktree; direct principal bootstrap v1 supports in-place execution only — worktree execution belongs to the D2 worker path",
+      );
+    }
+    const repository = this.#inPlaceRepository();
+    // §E.4.2: an empty write scope is a task that provably cannot complete, since a completed attempt
+    // must have observable changes and every change would fall outside the scope.
+    if (input.writePaths.length === 0) {
+      throw new DomainValidationError(
+        "begin requires a non-empty write scope: a completed attempt must have observable work, and with no declared write path every change would be out of scope — if this task only needs analysis it belongs to a reasoning branch, a verification or a cross-project ask",
+      );
+    }
+    const standard = this.#standard;
+    if (standard === undefined || !standard.confirmed) {
+      throw new DomainValidationError(
+        "NEEDS_STANDARD_CONFIRMATION: this project has no confirmed completion standard, and begin cannot mint one — the operator states one sentence, the product proposes it from the repository, and begin becomes available once they confirm it",
+      );
+    }
+
+    const requiredArtifacts = [...(input.requiredArtifacts ?? [])];
+    const taskSpec: TaskSpec = {
+      task_id: DIRECT_TASK_ID,
+      objective: goal,
+      depends_on: [],
+      write_paths: [...input.writePaths],
+      required_artifacts: requiredArtifacts,
+    };
+
+    const canonical = this.isProjectInitialized() ? this.#project() : null;
+
+    // S3: a canonical project that is not the SAME direct work is a conflict, never a silent rewrite.
+    // The judgement is semantic equivalence, not provenance — with no direct marker, "who created
+    // this one-task project" is undecidable, and adding a marker is exactly what the spec forbids.
+    if (canonical !== null && !directShapeEquivalent(canonical, taskSpec)) {
+      throw new DomainValidationError(
+        "CONFLICT: this project already has a plan, and direct bootstrap will not silently rewrite an existing plan — use an existing ready task, or make an explicit plan revision",
+      );
+    }
+
+    // S2: the principal already has a RUNNING attempt for this same work. Its tree may be dirty and
+    // may carry new commits: those changes belong to THAT attempt, so nothing is re-claimed and the
+    // scheduler is left alone.
+    const running = this.#principalAttemptInState("RUNNING");
+    if (canonical !== null && running !== null) {
+      return this.#beginProjection("RESUMED", goal, input.writePaths, requiredArtifacts, standard);
+    }
+
+    // S1 (and S0): pre-claim there is no legitimate owner yet, so unowned project changes must be
+    // zero. Checked HERE, after the S2 early return, because a RUNNING attempt legitimately owns a
+    // dirty tree and must not be refused for it.
+    this.#assertNoUnownedWork(repository);
+
+    // S1: the project exists but no attempt is running. Pre-claim, the ambient head must still equal
+    // the canonical project head — otherwise work done outside this task would be attributed to it.
+    if (canonical !== null) {
+      const head = this.#observedHead(repository);
+      if (head !== canonical.head_commit) {
+        throw new DomainValidationError(
+          `HEAD_CONFLICT: the canonical project head is ${canonical.head_commit.slice(0, 12)} but the repository is at ${head.slice(0, 12)} — resuming before an attempt exists requires them to agree, or the changes made in between would be attributed to this task`,
+        );
+      }
+    }
+
+    // S0: freeze the WHOLE genesis basis once. Aligning the head alone is not enough — ProjectIR's
+    // digest includes committed_at, and the envelope's identity includes the project digest, so a
+    // prospective basis built at one instant and a canonical one built at another would differ even
+    // when goal, task and head all match.
+    const liveHead = this.#observedHead(repository);
+    const genesisCommittedAt = this.#now();
+
+    // Prospective basis: build it EXACTLY as start() will, so the digest is byte-identical, then
+    // authorize and derive the completion contract from it — all in memory, nothing appended.
+    const prospective = buildProjectIr({
+      projectId: this.projectId,
+      goal,
+      requirements: [],
+      decisions: [],
+      tasks: [taskSpec],
+      headCommit: liveHead,
+      committedAt: genesisCommittedAt,
+    });
+    const authorized = this.policy.authorize(prospective, DIRECT_TASK_ID);
+    const contract = deriveAttemptCompletionContract({
+      standard,
+      task: { write_paths: taskSpec.write_paths, required_artifacts: taskSpec.required_artifacts },
+      envelope: {
+        write_paths: authorized.envelope.write_paths,
+        required_artifacts: authorized.envelope.required_artifacts,
+        allowed_commands: authorized.envelope.allowed_commands,
+      },
+    });
+
+    // §E.14.1: before phase 2B exists, a REQUIRED independent verification cannot be met — the
+    // composed verifier only understands CURRENT_PROJECT_HEAD, so it must not stand in for an
+    // ATTEMPT_RESULT requirement. Fail closed rather than begin work that cannot complete.
+    if (contract.verification.required) {
+      throw new DomainValidationError(
+        `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE: this task requires independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment cannot verify an attempt result yet — that arrives with the ATTEMPT_RESULT subject, and until then this work must not begin`,
+      );
+    }
+
+    const readiness = deriveCompletionReadiness({
+      standard,
+      authorizedCommands: this.authorizedCommands(),
+      capabilities: this.#capabilities,
+      contract,
+    });
+    if (readiness.task !== null && readiness.task.state !== "READY") {
+      throw new DomainValidationError(
+        `begin refused before writing anything: ${readiness.task.blockers.join("; ")}`,
+      );
+    }
+
+    if (canonical === null) {
+      // S0: the prospective basis IS the canonical one — same head, same instant.
+      this.start({
+        projectId: this.projectId,
+        goal,
+        tasks: [taskSpec],
+        headCommit: liveHead,
+        committedAt: genesisCommittedAt,
+      });
+    }
+
+    // S1 continued: claim the attempt. An attempt may ALREADY exist and be claimable — a retry after
+    // a crash at the ATTEMPT_CREATED landing point finds it, and stepping again would deadlock
+    // because the scheduler returns null once a task occupies the stage.
+    const claimable = this.#principalAttemptInState("CREATED");
+    if (claimable !== null) {
+      await this.claim(claimable);
+      return this.#beginProjection("READY", goal, input.writePaths, requiredArtifacts, standard);
+    }
+    const created = this.#advanceToClaimableAttempt();
+    await this.claim(created);
+    return this.#beginProjection("READY", goal, input.writePaths, requiredArtifacts, standard);
+  }
+
+  /**
+   * Drive the scheduler to one claimable direct attempt using lifecycle primitives only.
+   *
+   * `palimpsest_run` and the pump are FORBIDDEN here: they are mechanical executors and will settle
+   * the attempt for the agent. This loop may only reach the point where the principal can start
+   * working, and the step bound is a runaway guard, not a semantic budget.
+   */
+  #advanceToClaimableAttempt(): string {
+    for (let step = 0; step < DIRECT_BEGIN_MAX_STEPS; step += 1) {
+      const preview = this.preview();
+      if (preview.decision !== "next") break;
+      if (preview.eventType === "TASK_STARTED") {
+        this.step();
+        continue;
+      }
+      if (preview.eventType === "ATTEMPT_CREATED") {
+        const entityId = preview.entityId;
+        this.step();
+        if (entityId !== undefined) return entityId;
+        break;
+      }
+      throw new DomainValidationError(
+        `begin refuses to advance past an unexpected scheduler decision (${preview.eventType ?? "unknown"}): direct bootstrap may only commit activation lifecycle events`,
+      );
+    }
+    throw new DomainValidationError(
+      "begin could not reach a claimable attempt within its step bound — the plan's ready set produced no direct attempt",
+    );
+  }
+
+  /** The principal's attempt in one state, or null. Direct bootstrap owns exactly one. */
+  #principalAttemptInState(state: "CREATED" | "RUNNING"): string | null {
+    const row = this.store.connection
+      .prepare("SELECT attempt_id FROM attempts WHERE project_id=? AND state=? ORDER BY attempt_id LIMIT 1")
+      .get(this.projectId, state) as { attempt_id: string } | undefined;
+    return row?.attempt_id ?? null;
+  }
+
+  /** The principal projection: no project, task or attempt id ever crosses this boundary. */
+  #beginProjection(
+    state: "READY" | "RESUMED",
+    goal: string,
+    writePaths: readonly string[],
+    requiredArtifacts: readonly string[],
+    standard: import("../domain/standard.js").ProjectStandard,
+  ): {
+    readonly state: "READY" | "RESUMED";
+    readonly goal: string;
+    readonly writeScope: readonly string[];
+    readonly requiredArtifacts: readonly string[];
+    readonly completion: {
+      readonly mechanicalChecks: readonly string[];
+      readonly independentVerificationRequired: boolean;
+    };
+  } {
+    // A human-readable summary of what will be required — NOT "testsRequired", because the standard
+    // may ask for lint_pass or process_exit_zero, and a wrong-but-simple quality summary is worse
+    // than none.
+    const checks: string[] = [];
+    for (const clause of standard.clauses) {
+      if (clause.kind === "command_succeeds") {
+        checks.push(`run \`${clause.command.join(" ")}\` and it must succeed (${clause.predicate})`);
+      } else if (clause.kind === "files_exist") {
+        checks.push(`these declared paths must exist: ${clause.paths.join(", ")}`);
+      } else {
+        checks.push("changes must stay inside the declared write scope");
+      }
+    }
+    return Object.freeze({
+      state,
+      goal,
+      writeScope: Object.freeze([...writePaths]),
+      requiredArtifacts: Object.freeze([...requiredArtifacts]),
+      completion: Object.freeze({
+        mechanicalChecks: Object.freeze(checks),
+        independentVerificationRequired: false,
+      }),
+    });
+  }
+
+  #observedHead(repository: string): string {
+    return execFileSync("git", ["rev-parse", "HEAD"], { cwd: repository, encoding: "utf8" }).trim();
+  }
+
+  /**
+   * Unowned project changes must be zero before an attempt exists (§E.7). The filter is the SAME one
+   * `finish` observes with: `.palimpsest/` is the product's own scaffolding, and a naive
+   * `git status --porcelain` would let the product deadlock on its own state directory.
+   */
+  #assertNoUnownedWork(repository: string): void {
+    const unowned = execFileSync("git", ["status", "--porcelain"], { cwd: repository, encoding: "utf8" })
+      .split(String.fromCharCode(10))
+      .filter((line: string) => line.trim() !== "")
+      .map((line: string) => line.slice(3).trim())
+      .filter((path: string) => !path.startsWith(".palimpsest/"));
+    if (unowned.length === 0) return;
+    throw new DomainValidationError(
+      `the working tree already has changes that belong to no attempt: ${unowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`,
     );
   }
 
