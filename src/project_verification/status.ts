@@ -126,9 +126,19 @@ export function deriveRunFreshness(input: {
   if (subject === null) {
     return Object.freeze({ freshness: "STALE_SUBJECT", reasons: Object.freeze(["the current project head cannot be materialized"]) });
   }
-  if (!sameSubject(run.subject, subject)) {
+  // §B.13: the head rule applies ONLY to head subjects. A run over an attempt result is not a
+  // current-head verification and must never be counted as one (A37's head side), and it must never
+  // be judged by the ambient head — its freshness is rematerialized from canonical Work instead.
+  if (run.subject.kind !== "CURRENT_PROJECT_HEAD") {
     reasons.push(
-      `the project head moved: this run verified revision ${run.subject.projectRevision} (commit ${run.subject.headCommit}), the current head is revision ${subject.projectRevision} (commit ${subject.headCommit})`,
+      "this run verified an attempt result, not the project head — the head-staleness rule does not apply to it",
+    );
+    return Object.freeze({ freshness: "STALE_SUBJECT", reasons: Object.freeze(reasons) });
+  }
+  const runSubject = run.subject;
+  if (!sameSubject(runSubject, subject)) {
+    reasons.push(
+      `the project head moved: this run verified revision ${runSubject.projectRevision} (commit ${runSubject.headCommit}), the current head is revision ${subject.projectRevision} (commit ${subject.headCommit})`,
     );
     return Object.freeze({ freshness: "STALE_SUBJECT", reasons: Object.freeze(reasons) });
   }
@@ -149,9 +159,9 @@ export function deriveRunFreshness(input: {
     );
     return Object.freeze({ freshness: "STALE_VERIFIER_DEFINITION", reasons: Object.freeze(reasons) });
   }
-  if (repositoryHead !== null && repositoryHead !== run.subject.headCommit) {
+  if (repositoryHead !== null && repositoryHead !== runSubject.headCommit) {
     reasons.push(
-      `the repository head moved to ${repositoryHead} after this run verified ${run.subject.headCommit}`,
+      `the repository head moved to ${repositoryHead} after this run verified ${runSubject.headCommit}`,
     );
     return Object.freeze({ freshness: "STALE_INPUT", reasons: Object.freeze(reasons) });
   }
