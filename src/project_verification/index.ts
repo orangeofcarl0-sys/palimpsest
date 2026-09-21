@@ -20,6 +20,7 @@
 export * from "./artifacts.js";
 export * from "./independence.js";
 export * from "./provider.js";
+export * from "./attempt_result_source.js";
 export * from "./registry.js";
 export * from "./experiment_adapter.js";
 export * from "./store.js";
