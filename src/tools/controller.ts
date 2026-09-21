@@ -2576,7 +2576,6 @@ export class ProjectController {
         required_artifacts: envelope.required_artifacts,
         allowed_commands: envelope.allowed_commands,
       },
-      capabilities: this.#capabilities,
     });
   }
 
