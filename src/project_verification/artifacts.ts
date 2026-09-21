@@ -421,6 +421,21 @@ export function parseProjectVerificationSubject(
   return parseProjectHeadVerificationSubject(raw, what);
 }
 
+/**
+ * Narrow a union subject to the head subject, refusing anything else. Used wherever the HEAD rule is
+ * being applied: reading head-only fields off a union without narrowing is how a kind confusion
+ * becomes a silent `undefined`.
+ */
+export function asHeadSubject(subject: ProjectVerificationSubject): ProjectHeadVerificationSubject {
+  if (subject.kind !== "CURRENT_PROJECT_HEAD") {
+    throw new ProjectVerificationError(
+      "invalid_value",
+      `expected a CURRENT_PROJECT_HEAD subject, got ${subject.kind}`,
+    );
+  }
+  return subject;
+}
+
 /** Whether a subject is the immutable result of one attempt. */
 export function isAttemptResultSubject(
   subject: ProjectVerificationSubject,
@@ -657,7 +672,7 @@ export interface ProjectVerificationRequest {
   readonly schemaVersion: 1;
   readonly verificationRequestId: string;
   readonly projectId: string;
-  readonly subject: ProjectHeadVerificationSubject;
+  readonly subject: ProjectVerificationSubject;
   readonly verifierRef: string;
   readonly verifierDefinitionDigest: string;
   readonly requestedBy: string;
@@ -676,7 +691,7 @@ export function projectVerificationRequestIdOf(contentDigest: string): string {
 }
 
 export function materializeProjectVerificationRequest(input: {
-  readonly subject: ProjectHeadVerificationSubject;
+  readonly subject: ProjectVerificationSubject;
   readonly verifierRef: string;
   readonly verifierDefinitionDigest: string;
   readonly requestedBy: string;
@@ -722,7 +737,7 @@ export function parseProjectVerificationRequest(
     schemaVersion: 1 as const,
     verificationRequestId: pvString(object.verificationRequestId, `${what}.verificationRequestId`),
     projectId: pvId(object.projectId, `${what}.projectId`),
-    subject: parseProjectHeadVerificationSubject(object.subject, `${what}.subject`),
+    subject: parseProjectVerificationSubject(object.subject, `${what}.subject`),
     verifierRef: pvId(object.verifierRef, `${what}.verifierRef`),
     verifierDefinitionDigest: pvDigest(object.verifierDefinitionDigest, `${what}.verifierDefinitionDigest`),
     requestedBy: pvId(object.requestedBy, `${what}.requestedBy`),
@@ -878,7 +893,7 @@ export interface ProjectVerificationRunEvent {
   readonly kind: ProjectVerificationEventKind;
   readonly requestRef: string;
   readonly requestDigest: string;
-  readonly subject: ProjectHeadVerificationSubject;
+  readonly subject: ProjectVerificationSubject;
   readonly verifierRef: string;
   readonly verifierDefinitionDigest: string;
   readonly independence: VerifierIndependenceClass;
@@ -964,7 +979,7 @@ export function projectVerificationRunIdOf(input: {
   );
 }
 
-function freezeSubject(subject: ProjectHeadVerificationSubject): ProjectHeadVerificationSubject {
+function freezeSubject(subject: ProjectVerificationSubject): ProjectVerificationSubject {
   return Object.freeze({ ...subject });
 }
 
@@ -1074,7 +1089,7 @@ export function parseProjectVerificationRunEvent(
     kind: pvEnum(object.kind, PROJECT_VERIFICATION_EVENT_KINDS, `${what}.kind`),
     requestRef: pvString(object.requestRef, `${what}.requestRef`),
     requestDigest: pvDigest(object.requestDigest, `${what}.requestDigest`),
-    subject: parseProjectHeadVerificationSubject(object.subject, `${what}.subject`),
+    subject: parseProjectVerificationSubject(object.subject, `${what}.subject`),
     verifierRef: pvId(object.verifierRef, `${what}.verifierRef`),
     verifierDefinitionDigest: pvDigest(object.verifierDefinitionDigest, `${what}.verifierDefinitionDigest`),
     independence: pvEnum(object.independence, VERIFIER_INDEPENDENCE_CLASSES, `${what}.independence`),
@@ -1129,7 +1144,7 @@ export interface ProjectVerificationRun {
   readonly sequence: number;
   readonly requestRef: string;
   readonly requestDigest: string;
-  readonly subject: ProjectHeadVerificationSubject;
+  readonly subject: ProjectVerificationSubject;
   readonly verifierRef: string;
   readonly verifierDefinitionDigest: string;
   readonly independence: VerifierIndependenceClass;
@@ -1283,7 +1298,7 @@ export function parseProjectVerificationRun(
     sequence: pvNonNegInt(object.sequence, `${what}.sequence`),
     requestRef: pvString(object.requestRef, `${what}.requestRef`),
     requestDigest: pvDigest(object.requestDigest, `${what}.requestDigest`),
-    subject: parseProjectHeadVerificationSubject(object.subject, `${what}.subject`),
+    subject: parseProjectVerificationSubject(object.subject, `${what}.subject`),
     verifierRef: pvId(object.verifierRef, `${what}.verifierRef`),
     verifierDefinitionDigest: pvDigest(object.verifierDefinitionDigest, `${what}.verifierDefinitionDigest`),
     independence: pvEnum(object.independence, VERIFIER_INDEPENDENCE_CLASSES, `${what}.independence`),

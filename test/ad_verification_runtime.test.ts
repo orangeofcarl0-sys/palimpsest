@@ -55,6 +55,7 @@ import {
   materializeVerifierRegistry,
   stateForVerdict,
   verificationIsDue,
+  asHeadSubject,
 } from "../src/project_verification/index.js";
 import type {
   ProjectHeadVerificationSource,
@@ -734,7 +735,7 @@ describe("G10-AD AD-N08/N09: the subject is the canonical ProjectIR head", () =>
 
     const row = projectRow(core.workStore);
     const outcome = await service.verifyCurrentHead({ requestedBy: "operator:test" });
-    const subject = outcome.run!.subject;
+    const subject = asHeadSubject(outcome.run!.subject);
     expect(subject.projectId).toBe(PROJECT);
     expect(subject.projectRevision).toBe(row.revision);
     expect(subject.projectDigest).toBe(row.digest);
@@ -763,10 +764,10 @@ describe("G10-AD AD-N08/N09: the subject is the canonical ProjectIR head", () =>
     };
     const outcome = await service.verifyCurrentHead(injected as never);
     const canonical = projectRow(core.workStore);
-    expect(outcome.run!.subject.headCommit).toBe(canonical.head_commit);
-    expect(outcome.run!.subject.headCommit).not.toBe(injected.headCommit);
-    expect(outcome.run!.subject.projectDigest).toBe(canonical.digest);
-    expect(outcome.run!.subject.projectRevision).toBe(canonical.revision);
+    expect(asHeadSubject(outcome.run!.subject).headCommit).toBe(canonical.head_commit);
+    expect(asHeadSubject(outcome.run!.subject).headCommit).not.toBe(injected.headCommit);
+    expect(asHeadSubject(outcome.run!.subject).projectDigest).toBe(canonical.digest);
+    expect(asHeadSubject(outcome.run!.subject).projectRevision).toBe(canonical.revision);
     // The durable request has no caller-chosen commit field either.
     expect(Object.keys(outcome.run!).some((key) => /commit$/i.test(key))).toBe(false);
   });
@@ -858,7 +859,7 @@ describe("G10-AD AD-N11: a mid-run head change is STALE_INPUT, not a verdict on 
     expect(outcome.run!.status).toBe("COMPLETED");
     expect(outcome.run!.verdict).toBe("PASS");
     expect(outcome.run!.freshness).toBe("STALE_INPUT");
-    expect(outcome.run!.subject.projectRevision).toBe(before.revision);
+    expect(asHeadSubject(outcome.run!.subject).projectRevision).toBe(before.revision);
 
     // The input really moved.
     const after = projectRow(core.workStore);
