@@ -86,6 +86,11 @@ export interface InstallPalimpsestOptions {
    * to evaluate without anyone reciting predicate vocabulary first.
    */
   standard?: import("../domain/standard.js").ProjectStandard | undefined;
+  /**
+   * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do. Absent ⇒ derived from what is
+   * composed (a bound repository, a verification store), never assumed.
+   */
+  capabilities?: import("../domain/completion_contract.js").CompletionCapabilities | undefined;
   /** Palimpsest-side wire clock (ProjectIR/evidence timestamps). */
   clock?: (() => string) | undefined;
   /** Ordarium-side Date clock (leases/recovery); tests pass a ManualClock. */

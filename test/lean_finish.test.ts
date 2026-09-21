@@ -40,7 +40,7 @@ const FAILING = ["node", "-e", "process.exit(1)"];
 
 /** The narrow slice of the store these assertions read; avoids leaning on the full install type. */
 interface Connection {
-  prepare: (sql: string) => { get: (...args: never[]) => unknown };
+  prepare: (sql: string) => { get: (...args: never[]) => unknown; all: (...args: never[]) => unknown[] };
 }
 
 function standardOf(command: readonly string[]): ProjectStandard {
@@ -201,12 +201,22 @@ describe("LEAN-A15..A18: finish derives the mechanical facts, the agent states d
     commitAll(repo, "work");
 
     await expect(finish({})).rejects.toThrow(/failed \(exit 1\)/);
-    // Still running: the agent can fix it, and no passing predicate was recorded.
+    // Still running: the agent can fix it. And crucially no PASSING predicate was recorded — the
+    // failing command observed an exit code and refused rather than dressing it as `tests_pass`.
+    // `write_scope_valid` may legitimately be present already: the contract reports scope BEFORE the
+    // commands (an out-of-scope change is more actionable than a failing test), that observation is
+    // true, and recording it is idempotent, so re-finishing re-appends nothing.
     expect(attemptState(connection, attemptId)).toBe("RUNNING");
-    const evidence = connection.prepare("SELECT COUNT(*) AS c FROM evidence WHERE project_id=?").get("finish" as never) as {
-      c: number;
-    };
-    expect(evidence.c).toBe(0);
+    const rows = connection
+      .prepare("SELECT evidence_json FROM evidence WHERE project_id=?")
+      .all("finish" as never) as { evidence_json: Uint8Array }[];
+    const predicates = rows.map(
+      (row) => (JSON.parse(new TextDecoder().decode(row.evidence_json)) as { predicate: string }).predicate,
+    );
+    // The failing command left NO passing predicate behind...
+    expect(predicates).not.toContain("tests_pass");
+    // ...while the scope observation it made on the way is present and true.
+    expect(predicates).toContain("write_scope_valid");
   });
 
   it("A17 no observable work is refused, and the refusal names the locus the task belongs to", async () => {
