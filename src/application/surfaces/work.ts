@@ -58,6 +58,13 @@ export interface WorkApplicationSurface {
     readonly evidenceRecorded: readonly string[];
     readonly nextEvidenceNeeded: readonly string[];
   }>;
+  /**
+   * PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers — what the DEPLOYMENT can do, and what the
+   * CURRENT task requires. The deployment layer is answerable at startup; the task layer only once a
+   * task exists. A deployment gap ("no independent verifier") is a task blocker only when this task
+   * actually needs one, so a project is never marked NOT READY for a requirement it does not have.
+   */
+  completionReadiness(): import("../../domain/completion_contract.js").CompletionReadiness;
   status(): unknown;
   graph(): unknown;
   preview(): unknown;
@@ -74,6 +81,7 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       authorizedCommands: () => deps.controller.authorizedCommands(),
       declaredGateIds: () => deps.controller.declaredGateIds(),
       finish: (input) => deps.controller.finish(input ?? {}),
+      completionReadiness: () => deps.controller.completionReadiness(),
       status: () => deps.controller.status(),
       graph: () => deps.controller.orchestrationGraph(),
       preview: () => deps.controller.preview(),

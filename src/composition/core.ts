@@ -37,6 +37,11 @@ export interface CoreCompositionOptions {
   readonly policy?: TaskPolicy | undefined;
   readonly execution?: import("../tools/controller.js").ExecutionMode | undefined;
   readonly standard?: import("../domain/standard.js").ProjectStandard | undefined;
+  /**
+   * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do. Absent ⇒ a conservative default
+   * (nothing available), so an unstated capability reads as ABSENT rather than assumed present.
+   */
+  readonly capabilities?: import("../domain/completion_contract.js").CompletionCapabilities | undefined;
   readonly clock?: (() => string) | undefined;
   readonly effectsClock?: (() => Date) | undefined;
   readonly leaseMs?: number | undefined;
@@ -76,6 +81,17 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     policy,
     execution: options.execution,
     standard: options.standard,
+    /**
+     * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do, so readiness states the truth
+     * rather than a guess. `sandboxSpawnVerified` is true exactly when a REAL repository is bound: a
+     * deployment with none cannot spawn anything in a project tree, and one that says nothing gets
+     * the controller's conservative default instead of a comfortable assumption. The verifier half is
+     * filled in where verification is composed, which is the only place that knows.
+     */
+    capabilities: options.capabilities ?? {
+      independentVerifierAvailable: false,
+      sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
+    },
     clock: options.clock,
   });
   const baseTools = definePalimpsestTools(controller);

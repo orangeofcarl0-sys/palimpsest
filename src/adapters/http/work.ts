@@ -58,6 +58,10 @@ export const WORK_ROUTES: readonly ApplicationRouteDescriptor[] = [
           standard: application.work.standard() ?? null,
           authorizedCommands: application.work.authorizedCommands(),
           declaredGateIds: application.work.declaredGateIds(),
+          // PLMP-LEAN-1 §5 / 2A-Q: readiness in two layers, so a client can name WHAT IS MISSING
+          // before the work starts rather than after it dead-ends. The deployment layer is always
+          // answerable; the task layer is null until a task exists.
+          completionReadiness: application.work.completionReadiness(),
         },
       });
     },
