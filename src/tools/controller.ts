@@ -1737,6 +1737,10 @@ export class ProjectController {
       // still worth observing.
       if (input.workerStatus === "completed") {
         this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
+        // §3.3: and it must have left observable work at all. Enforced HERE, on the report path, so
+        // the automatic pump cannot mint the zero-work COMPLETED attempt that `finish` refuses —
+        // which is exactly what the 2A live gate measured it doing.
+        this.#assertCompletionHasWork(attemptId, observed.changedFiles);
       }
       input = {
         ...input,
@@ -2093,6 +2097,27 @@ export class ProjectController {
     );
   }
 
+  /**
+   * PLMP-LEAN-1 §3.3: **a completed attempt must have left observable work.**
+   *
+   * Measured live (2A final gate, 2026-09-21): the agent rewrote the module, ran the tests and
+   * committed — then called `palimpsest_run` by mistake. The mechanical pump claimed its own attempt,
+   * ran the policy command against the UNCHANGED tree, and settled it COMPLETED with
+   * `changed_files: []`, `result_commit` = the base commit and zero evidence. That is precisely the
+   * state `finish` exists to refuse, reached through the automatic path instead.
+   *
+   * The rule is `changed_files` non-empty, and it is deliberately not softened by "the required
+   * artifacts exist": a declared artifact that already existed before the attempt is not work. Any
+   * task whose only real output is analysis belongs to another locus (a reasoning branch, a
+   * verification, a cross-project ask) rather than to a Work attempt.
+   */
+  #assertCompletionHasWork(attemptId: string, changedFiles: readonly string[]): void {
+    if (changedFiles.length > 0) return;
+    throw new DomainValidationError(
+      `attempt ${attemptId} has no observable work: nothing changed in the repository, so there is nothing to complete — if this task only needed analysis it belongs to a reasoning branch, a verification or a cross-project ask rather than a work attempt; otherwise make the change and report again`,
+    );
+  }
+
   /** The one attempt this principal currently has RUNNING; 0 or more than 1 is a refusal, not a guess. */
   #uniqueRunningAttempt(): string {
     const rows = this.store.connection
@@ -2154,14 +2179,9 @@ export class ProjectController {
     // behind. `report` holds the same invariant as the last line of defence.
     this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
 
-    // Empty work is refused rather than settled (§3.3): the agent can still route the task to the
-    // locus it actually belongs to, and a settled attempt with nothing in it is the waste the live
-    // session measured.
-    if (changedFiles.length === 0 && envelope.required_artifacts.length === 0) {
-      throw new DomainValidationError(
-        `attempt ${attemptId} has no observable work: the repository shows no changed file since ${envelope.base_commit.slice(0, 12)}, so there is nothing to finish — if this task only needed analysis it belongs to a reasoning branch, a verification or a cross-project ask rather than a work attempt; otherwise make the change and call finish again`,
-      );
-    }
+    // Empty work is refused rather than settled (§3.3). Shared with the report path so the automatic
+    // pump cannot produce a state this path would refuse.
+    this.#assertCompletionHasWork(attemptId, changedFiles);
 
     // ONE derivation, several consumers (§2.1 / 2A-Q): finish executes the contract's mechanical
     // part, and readiness plus `nextEvidenceNeeded` project the same object — so the bar shown before
@@ -2398,9 +2418,14 @@ export class ProjectController {
     const [, envelope] = this.#attemptContext(attemptId);
     const command = envelope.allowed_commands[0];
     if (command === undefined) {
+      // There is nothing to run, so nothing can be OBSERVED — and a completed attempt must have left
+      // observable work (§3.3). Settling this COMPLETED would mint exactly the zero-work attempt the
+      // live gate measured the pump producing, so it is reported as a failure that names the real
+      // cause: the deployment, not the work.
       const reportEvent = this.report(attemptId, {
-        workerStatus: "completed",
-        summary: "no gate command configured; accepted by policy",
+        workerStatus: "failed",
+        summary:
+          "this envelope authorizes no command, so the automatic executor cannot observe any work — declare a policy command for this project, or run this task through the direct path (palimpsest_finish)",
       });
       return { exitCode: null, reportEvent: reportEvent.event_type };
     }

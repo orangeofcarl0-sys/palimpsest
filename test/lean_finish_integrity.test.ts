@@ -232,6 +232,42 @@ describe("LEAN-A22..A25: completed in-place work must be commit-materialized", (
     await expect(finish({})).rejects.toThrow(/palimpsest_report/);
   });
 
+  it("A26 the mechanical pump cannot settle a zero-work COMPLETED attempt", async () => {
+    const { repo, head } = workspace();
+    const { call, installed, connection } = makeStack(repo, "in-place");
+
+    // Drive to an attempt that exists but is not yet claimed: `start` → `next` (TASK_STARTED) →
+    // `next` (ATTEMPT_CREATED). The pump claims it itself, which is what the live session hit.
+    await call("palimpsest_start", {
+      projectId: "integrity",
+      goal: "make dedupe cheap",
+      headCommit: head,
+      tasks: [
+        { task_id: "t1", objective: "rewrite dedupe", depends_on: [], write_paths: ["src/dedupe.ts"], required_artifacts: ["src/dedupe.ts"] },
+      ],
+    });
+    await call("palimpsest_next", {});
+    const created = (await call("palimpsest_next", {})) as { entityId: string };
+    const attemptId = created.entityId;
+
+    // THE LIVE FAILURE, reproduced deterministically: the tree is untouched, the pump runs the
+    // policy command against the UNCHANGED code (exit 0), and would settle the attempt COMPLETED
+    // with `changed_files: []`, `result_commit` = the base commit and zero evidence — the exact
+    // state `finish` refuses, reached through the automatic path instead.
+    const refusal = await installed.controller
+      .runAttemptWithCommandExecutor(attemptId)
+      .then(() => null)
+      .catch((error: unknown) => (error instanceof Error ? error.message : String(error)));
+    expect(refusal).not.toBeNull();
+    expect(refusal).toMatch(/no observable work/);
+    // And the refusal names the locus the task belongs to, not just the symptom.
+    expect(refusal).toMatch(/reasoning branch/);
+
+    // Nothing was settled: no COMPLETED attempt, and no evidence invented for one.
+    expect(attemptState(connection, attemptId)).not.toBe("COMPLETED");
+    expect(evidenceCount(connection)).toBe(0);
+  });
+
   it("A25 the principal projection carries no attempt id, while the application result still does", async () => {
     const first = workspace();
     const firstStack = makeStack(first.repo, "in-place");

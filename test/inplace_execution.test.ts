@@ -334,14 +334,23 @@ describe("in-place promotion: the tree must not move past the report", () => {
     const { call, installed } = makeStack(repo, POLICY);
     const attemptId = await driveToVerifying(repo, base, call);
 
-    // Report with a clean tree (the mechanical pump's behaviour), then do the work afterwards.
-    await call("palimpsest_report", { attemptId, workerStatus: "completed", summary: "nothing yet" });
+    // Report over COMMITTED work — now the only way a completed report is reachable, since §3.3
+    // refuses a completion with no observable work. (This test previously reported over a CLEAN tree
+    // to model "the mechanical pump's behaviour"; the 2A live gate then measured the pump doing
+    // exactly that and minting a zero-work COMPLETED attempt, so that state is no longer legal and
+    // the scenario is built the reachable way instead.)
     writeFileSync(join(repo, "src", "dedupe.ts"), "export const dedupe = (v: number[]) => [...new Set(v)];");
     execFileSync("git", ["add", "-A"], { cwd: repo });
-    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "real work"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "first work"], { cwd: repo });
+    await call("palimpsest_report", { attemptId, workerStatus: "completed", summary: "first work" });
 
-    // The defect this pins, found live: promoting would merge the recorded (pre-work) commit —
-    // a no-op that moves the head to a commit which does not contain the work.
+    // More work lands AFTER the report, so the recorded commit no longer contains everything.
+    writeFileSync(join(repo, "src", "dedupe.ts"), "export const dedupe = (v: number[]) => [...new Set(v)].sort();");
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "more work"], { cwd: repo });
+
+    // The defect this pins, found live: promoting would merge the recorded commit — a no-op that
+    // moves the head to a commit which does not contain the later work.
     await expect(installed.controller.promoteAttempt({ attemptId })).rejects.toThrow(
       /work landed after the report.*report the attempt again/s,
     );
