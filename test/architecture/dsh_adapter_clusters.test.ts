@@ -185,11 +185,11 @@ describe("SR-1 §15 A05 defineApplicationTools is still the aggregate entry", ()
     const tools = (direct.defineApplicationTools as (application: unknown) => readonly { readonly name: string }[])({
       attention: undefined,
     });
-    // The work cluster is the aggregate `palimpsest_surfaces` plus the agent-facing
-    // `palimpsest_finish` (PLMP-LEAN-1 appendix A, recorded in REVIEWED_TOOL_ADDITIONS). Both are
-    // unconditional because the Work face is composed in EVERY installation — the minimal one
-    // included — so neither depends on an optional face being present.
-    expect(tools.map((tool) => tool.name)).toEqual(["palimpsest_surfaces", "palimpsest_finish"]);
+    // The work cluster is the aggregate `palimpsest_surfaces` plus the two agent-facing handoffs:
+    // `palimpsest_begin` and `palimpsest_finish` (PLMP-LEAN-1 appendices E and A, both recorded in
+    // REVIEWED_TOOL_ADDITIONS). All three are unconditional because the Work face is composed in
+    // EVERY installation — the minimal one included — so none depends on an optional face.
+    expect(tools.map((tool) => tool.name)).toEqual(["palimpsest_surfaces", "palimpsest_finish", "palimpsest_begin"]);
   });
 });
 
