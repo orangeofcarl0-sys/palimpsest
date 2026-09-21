@@ -9,6 +9,7 @@
 > - `LEAN-1` 第 1 期交付（2026-09-21，`217214c`）：§1 标准推导 + §4 操作者控件清理落地；`LEAN-A01`–`A04`、`A12`、`A13` 通过；活体验证：操作者只写一句中文，产品推导出命令、门禁、谓词与授权集，闭环 `verdict: PASS | missing: []`。
 > - `LEAN-1` **amendment**（2026-09-21）：**主代理身份修正**——新增 §0.5 产品身份与 §0.6 七条不变量；**废除旧 L3**（多执行者默认律），代以 §0.6 `INV-6` 独立执行机会律；§3.1 派发主体从"产品默认派发"改为"主代理选择性委派 + 产品负责汇合"；§3.4 禁止条款加范围限定并显式承认直接工作路径；**§2.3 复核主体修正**——实测确认 `CURRENT_PROJECT_HEAD` 是当前运行时唯一的 subject kind（`src/project_verification/artifacts.ts:207`），其唯一入口 action 名即 `verify_current_head`（`src/adapters/dsh/project.ts:191`），且 §5 一致性规则在仓库 head ≠ 规范 head 时拒绝（`src/project_verification/service.ts:256`），因此 **in-place 执行下独立复核结构性不可能触发**——这是 `CF-AD-01` 的产品触发条件，拆出 §2.6 两层质量模型与第 2B 期；新增附录 A（第 2A 期 Completion Handoff 详细设计）、附录 B（第 2B 期 Attempt-bound Verification 详细设计）、附录 C（`PLMP-DELEGATE-1` 立项）、附录 D（近期不做清单）。
 > - `LEAN-1` **第 2A 期部分交付**（2026-09-21）：`palimpsest_finish` 落地——主代理只陈述一次"我认为完成了"，产品从已确认标准与 envelope 推导其余。控制器新增**无命令产品观察路径**（`#recordObservedEvidence`，`command: null` / `exit_code: null`）并把命令类证据构造收敛为单一来源（`#recordCommandEvidence`，`gate` 与 `finish` 共用，避免命令被执行两次）；`gate()` 的越界拒绝与 `report()` 的产品观察被 `finish` 复用。验收 `LEAN-A16`/`A17`/`A18` 全通过；**`LEAN-A15` 只通过确定性一半**——一次 `finish` 后 attempt 为 COMPLETED、证据齐、且工具契约无处安放 `attemptId`/`predicate`/`exitCode`/`changedFiles`/`gateId`（源码级断言）均已证明，但 `A15` 还要求**活体**双证与 **gate PASS**，二者本轮**未做**（活体 DSH 会话未跑；测试断言到证据齐与结算，未断言门禁判定为 PASS）。**并根治第 1 期暴露的 `write_scope_valid` 语义**——那条证据如今是产品对 `git diff` 的观察，调用方无任何参数可以冒充它（`LEAN-A18`）。**本轮未交付**：`LEAN-A05`/`A06`（§2.1 证据要求推导）与 `LEAN-A14`（§5 readiness 校验操作者配置）——它们是独立于 `finish` 的工作，仍待做。工具侧新增**已审阅新增机制** `REVIEWED_TOOL_ADDITIONS`（route 早有、工具此前没有，导致新工具无法表达）：名称集合仍是双向精确比较，删除或未登记的新增仍失败。门禁：单元 184 文件 / 2095 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。附带修复：`src/tools/controller.ts` 中 `#gateOutputKey` 的两个**字面 NUL 字节**改为 `\u0000` 转义（值等价，但裸字节让该文件被工具链判定为二进制，Edit/grep 均无法工作）。
+> - `LEAN-1` **第 2A-R 期（Completion Integrity Closure）交付**（2026-09-21）：独立复核发现并**实测确认**一个 correctness gap——`finish` 的 in-place 观察同时统计已提交与未提交变更，于是**未提交的工作也会被接受**：探针在 `main@89377c7` 上得到 `finish ACCEPTED`、`changed_files: ["src/dedupe.ts"]`、而 `result_commit` = **base**（不含该改动）。更严重的是 in-place 晋升守卫只比较"记录的提交 == 仓库 HEAD"，该状态下两者都是 base，**守卫会通过**，于是晋升可能记录一个 canonical head 并不含工作内容的 COMMITTED 结果。**新增并冻结不变量**：`Attempt COMPLETED ⇒ resultCommit 是包含所观察工作的不可变提交`（即 `changed_files == Diff(base, resultCommit)`）；拒绝而非代提交——`git commit` 是普通 agent 工作（read/edit/test/commit），不是治理机器，产品不得代写提交。同时：worktree 模式下 `finish` **fail closed**（该模式的工作树路径属 git port，高层路径无法观察，不假装支持）；DSH 结果**投影掉 `attemptId`**（`INV-4`：编排状态不进主上下文，应用层结果仍保留）；并把误挂的 `#assertInPlaceAttemptCurrent` 文档注释归位（它恰好描述的就是这个缺陷，注释中补记"必要但不充分"）。验收 `LEAN-A22`–`A25`（`test/lean_finish_integrity.test.ts`）；§8 第 5 条按操作者裁决定为 **(a′) Commit-bound isolated verification**，附录 B §B.3 据此修正（`ATTEMPT_RESULT` 的一致性**不是**"ambient HEAD == resultCommit"——那会把主代理锁死在已完成的工作上；而是 subject 由 canonical 报告物化、提交对象存在、verifier 精确物化该提交）。门禁：单元 185 文件 / 2099 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。
 
 ---
 
@@ -287,6 +288,8 @@ release gate 的 require                        = Standard 的 clauses → GateD
 | `expected_files_exist` | 产品检查文件系统 |
 | `artifact present` | 产品检查声明的产物 |
 
+**第一层的入场条件（2A-R 冻结）**：`Attempt COMPLETED ⇒ resultCommit 是包含所观察工作的不可变提交`（`changed_files == Diff(base, resultCommit)`）。这不是又一条判据，而是**其余判据有意义的前提**——若记录的提交不含工作，则"证据齐、scope 通过"描述的是一个 canonical head 里并不存在的东西。详见附录 A §A.8。
+
 **第二层：独立复核（Independent Verification）**——仅当风险政策要求时在环。**subject 必须绑定本次尝试**，而不是当前项目 head：
 
 ```
@@ -472,8 +475,10 @@ write-set 不相交是必要条件，不是充分条件
 |---:|---|---|---|---|
 | **0** | `LEAN-1` amendment（**本文**） | 修正 L3、冻结七条不变量与 direct path、修正复核主体 | 否（仅文档） | 本文合并且全文无自相矛盾；无验收项 |
 | **1** | `LEAN-1` 第 1 期（**已交付** `217214c`） | 标准推导 + 操作者控件清理 | 很少 | `A01`–`A04`、`A12`、`A13` |
-| **2A** | Completion Handoff（**部分交付** 2026-09-21） | `palimpsest_finish`：主代理做完工作后不再亲自操作治理机器 | 很少 | `A16`–`A18` **已通过**；`A15` **仅确定性一半**（活体与 gate PASS 未做）；**`A05`、`A06`、`A14` 未交付**——属 §2.1 证据要求推导与 §5 readiness 校验，仍待做 |
-| **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01` | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
+| **2A** | Completion Handoff（**部分交付** 2026-09-21） | `palimpsest_finish`：主代理做完工作后不再亲自操作治理机器 | 很少 | `A16`–`A18` **已通过**；`A15` **仅确定性一半**（活体与 gate PASS 未做） |
+| **2A-R** | Completion Integrity Closure（**已交付** 2026-09-21） | 冻结"完成的 in-place 工作必须 commit-materialized"；worktree 下 `finish` fail closed；主代理投影去掉 `attemptId` | 很少 | `A22`–`A25` **全部通过**；**2B 的前置**——没有它，`ATTEMPT_RESULT` 的 subject 可能指向不含工作的提交 |
+| **2A-Q** | Completion Contract + readiness | §2.1 证据要求推导（纯派生 `AttemptCompletionContract`，**不是新的真值属主**）+ §5 readiness 校验操作者自己的配置（标准已确认？命令可执行？沙箱可 spawn？所需 verifier 可用且真的算独立？） | 很少 | `A05`、`A06`、`A14` |
+| **2B** | Attempt-bound Verification | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交 | 是，小而明确 | `A07`、`A08`、`A19`–`A21` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
@@ -494,10 +499,11 @@ write-set 不相交是必要条件，不是充分条件
 2. **独立复核阈值**：全部任务默认在环，还是仅超阈任务？（影响成本与延迟。**amendment 收窄为 §2.6 的两层模型 + 附录 B 的风险推导表**。）
 3. **并发上限与冲突策略**：默认并发数，以及写路径重叠时的处理（拒绝计划 vs 串行化重排）。
 4. **`ProjectStandard` 的确认时机**：项目启动时一次确认（推荐），还是每次晋升时确认？（`INV-7` 只要求"执行前固定"，不指定时机。）
-5. **in-place 执行与独立复核的关系**（**amendment 新增，第 2B 期前必须裁决**）：§2.3 实测显示 in-place 下当前复核无法触发，三条路——
-   - **(a)（推荐）** in-place 下复核改验"**提交后的结果提交**"：`subject.resultCommit` = attempt 记录的提交，在 in-place 下它就等于仓库 head，§5 一致性规则自然通过，**不需要改执行模式**。
-   - (b) 独立复核只在 promotion **之后**进行，以结果提交为 subject。
-   - (c) 要求需要独立复核的任务改走 **worktree** 执行器（复核对象天然隔离，但放弃 in-place 的即时性）。
+5. **in-place 执行与独立复核的关系**（**amendment 新增；2A-R 已按操作者裁决定为 (a′)**）：§2.3 实测显示 in-place 下当前复核无法触发，三条路——
+   - **(a′)（已裁决）Commit-bound isolated verification**：`finish` 成功即保证工作已 commit-materialized（§A.8），于是 `AttemptResultSubject` 绑定的是一个**真正不可变的 Git 对象**；verifier 用**隔离 checkout** 精确物化该提交并跑协议，**不**要求 ambient HEAD 等于 `resultCommit`（否则主代理一继续推进，已完成工作的复核就无法运行）。作者执行位与 verifier 执行位无关：作者 in-place，verifier 隔离检出。
+   - ~~(a)~~ 已被 (a′) 取代：(a) 的"仓库 head == subject.resultCommit"会把主代理锁死在已完成的工作上。
+   - (b) 独立复核只在 promotion **之后**进行，以结果提交为 subject。**反对**：这会把 Verification 从 admission input 降为 post-hoc audit，无法阻止有问题的结果进入 canonical head。可作为 promotion 后的 monitor/audit 存在，但不能替代晋升前的 attempt 复核。
+   - (c) 要求需要独立复核的任务改走 **worktree** 执行器。**反对**：这会把主代理的直接路径重新变成二等公民（`Author placement ≠ Verifier placement`）。
 6. **委派时的写范围 claim 是否自动**（**amendment 新增**）：§3.2 要求 mutating 委派在 `PrincipalWriteSet` 未知时 fail closed。是把"先进入受管任务"这句话推给主代理（违反 `INV-1`），还是由 `palimpsest_delegate` / `palimpsest_finish` **自动 claim**（**推荐**）？以及产品是否可以在被问到时**建议**某块工作适合委派（`ASSIST` 模式）？
 
 ---
@@ -551,8 +557,10 @@ palimpsest_finish
 |---|---|
 | 测试/命令失败 | attempt 保持 RUNNING；返回**确切失败 + 补救**（哪条命令、观察到什么） |
 | scope 越界 | attempt 保持 RUNNING；**点名越界路径** |
+| **有未提交的工作**（§A.8） | attempt 保持 RUNNING；**点名未提交路径**并要求 commit 或 revert（在任何命令执行、任何证据记录**之前**拒绝） |
 | 空产出（§3.3） | 拒绝，并**指出正确的执行位**（认知分支 / 复核 / 跨项目 Ask） |
 | 无 active attempt | 拒绝，给出进入受管任务的入口 |
+| **worktree 执行** | **fail closed**：该模式的工作树路径属 git port，高层路径无法观察，不得假装检查过 scope 与产物 |
 
 ### A.5 禁止
 
@@ -568,6 +576,13 @@ palimpsest_finish
 - `LEAN-A17`：空产出 `finish` 被拒，拒绝文本指出正确执行位（**取代旧 `LEAN-A11`**）。
 - `LEAN-A18`：`finish` 记录的 `write_scope_valid` 是**产品观察**——构造"agent 声称在范围内、实际越界"必须被拒（**根治第 1 期暴露的 scope 证据语义问题**：当时那条证据是同一条测试命令被打上标签，本身不独立证明范围）。
 
+**2A-R 验收（Completion Integrity，`test/lean_finish_integrity.test.ts`）**：
+
+- `LEAN-A22`：**未提交的工作不能 finish**——拒绝文本点名未提交路径、给出 commit/revert 补救，attempt 保持 RUNNING，且**一条证据都没记录**（检查发生在任何命令执行之前）。
+- `LEAN-A23`：**成功 finish 后 `resultCommit` 真的包含工作**——`git diff --name-only base..resultCommit` 等于 `changedFiles`、该提交里确实有改动内容、工作树在该提交上干净。
+- `LEAN-A24`：worktree 模式下 `finish` **fail closed**，拒绝文本给出补救（改用 `palimpsest_report` 或切到 in-place），**不假装**检查过 scope 与产物。
+- `LEAN-A25`：主代理投影**不含 `attemptId`**，而应用层结果仍含它（`INV-4`：编排状态不进主上下文）。
+
 ### A.7 活体场景
 
 ```
@@ -579,6 +594,39 @@ palimpsest_finish
 ```
 
 ---
+
+### A.8 `finish` 成功必须满足：工作已 commit-materialized（**2A-R 冻结**）
+
+**不变量**：
+
+```
+finish 成功  ⇒  工作树干净
+                且 changed_files == Diff(baseCommit, resultCommit)
+```
+
+**为什么必须冻结（实测）**：2A 的观察同时统计 `git diff --name-only base..HEAD` 与 `git status --porcelain`，因此**未提交的工作也会被计入 changed_files**，而 `result_commit` 取的是当前 HEAD——**一个不包含这些工作的提交**。探针在 `main@89377c7` 上得到：
+
+```
+finish outcome       : ACCEPTED
+changedFiles         : ["src/dedupe.ts"]
+HEAD == base         : 327f7724efef
+working tree dirty   : "M src/dedupe.ts"
+report.result_commit : 327f7724efef
+resultCommit 包含该工作: NO
+```
+
+**为什么它同时是 2B 的前置**：in-place 晋升守卫（`#assertInPlaceAttemptCurrent`）只比较"记录的提交 == 仓库 HEAD"，在上述状态下两者都是 base，**守卫通过**，晋升可能记录一个 canonical head 不含工作内容的 COMMITTED 结果。而 2B 的 `ATTEMPT_RESULT` subject 若指向一个不含工作的提交，就会得到"验证跑得很漂亮、但 subject 错了"——这正是本类系统最该防的错误。**必要条件与充分条件**：守卫是必要的但不充分，`#assertCompletionMaterialized` 补上另一半。
+
+**为什么拒绝而不是代提交**：`git commit` 是普通 coding agent 的正常工作（read / edit / test / commit），不是治理机器。产品要隐藏的是 `gateId`/`predicate`/`attemptId`/`lease`/晋升协议/证据构造，**不是普通 Git 工作**。因此正确体验是：
+
+```
+Agent: 修改 → commit → palimpsest_finish()
+若忘了 commit：finish 拒绝并列出未提交路径，补救路径明确
+```
+
+### A.9 `INV-4` 在 `finish` 返回面上的体现
+
+应用层结果**保留** `attemptId`（操作者面板可能需要它），但 **DSH 适配器投影掉它**——主代理看到的只有 `state` / `changedFiles` / `evidenceRecorded` / `nextEvidenceNeeded`。"这是哪个 attempt"从不是主代理要做的判断。这正是 `Application/Internal result ≠ Principal result projection`。
 
 ## 附录 B（第 2B 期）：Attempt-bound Verification
 
@@ -609,17 +657,29 @@ interface AttemptResultVerificationSubject {
 - **不是**新的真值种类。`VerifierRegistry`、`IndependenceClass`、`VerificationHistory`、`PASS|FAIL|SCORE|UNRESOLVED|ERROR` **全部复用**。
 - 新增一个 **Work-backed read port** 供物化：从 attempt 的 canonical 记录读 `resultCommit` / `reportDigest`，**调用方永不指定验证目标**（沿用既有 §4 纪律）。
 
-### B.3 §5 一致性规则的推广
+### B.3 一致性规则：两种 subject 的**规则不同**（2A-R 修正）
 
-保持两条既有纪律不变——"subject 必须由 canonical 状态物化"、"ambient git 永不被当作 subject"——只是比较对象随 subject kind 变化：
+两条既有纪律不变——"subject 必须由 canonical 状态物化"、"ambient git 永不被当作 subject"——但 **`ATTEMPT_RESULT` 不能沿用 head 的 ambient 比较**。
 
-| subject kind | 一致性比较 |
+| subject kind | 一致性要求 |
 |---|---|
-| `CURRENT_PROJECT_HEAD`（现状） | 仓库 head == `subject.headCommit` |
-| `ATTEMPT_RESULT`（新增）· in-place | 仓库 head == `subject.resultCommit`（attempt 待晋升期间成立：`report()` 记录的 `resultCommit` 就是仓库 HEAD） |
-| `ATTEMPT_RESULT`（新增）· worktree | 该 attempt 的 worktree head == `subject.resultCommit` |
+| `CURRENT_PROJECT_HEAD`（现状） | 仓库 head == `subject.headCommit`。**保留**：它声称验证的是"当前 head"，所以 ambient head 必须等于 subject。 |
+| `ATTEMPT_RESULT`（新增） | **不比较 ambient HEAD。** 三条：① subject 由 canonical `AttemptReport` 物化（`resultCommit = R`，调用方永不指定）；② Git 对象 `R` 存在；③ **verifier 在隔离检出中精确物化 `R`** 并跑协议。 |
 
-不一致 → **拒绝**（与现状同一精神）。
+**为什么不要求 ambient HEAD == `resultCommit`**：那会重新锁死主代理的自由。例如 `finish` 任务 A 得到不可变提交 `RA`，复核启动；此时主代理继续读代码、甚至进入下一项工作，`HEAD` 变成 `RB`——若复核依赖 `HEAD == RA`，A 的复核就永远无法运行，而 `RA` 本身仍是完全有效的不可变产物。因此：
+
+```
+VerificationSubject = R          （不可变产物）
+current repository HEAD          （属 promotion / current-authority，不属 verifier subject identity）
+```
+
+**为什么这反而提升独立性**：verifier 检查的是 `exact immutable result artifact`，而不是"主代理当前工作目录此刻碰巧长什么样"。运行形态：
+
+```
+AttemptReport → resultCommit R → verifier 建立/复用 @R 的隔离检出 → 跑协议 → VerificationRun(subject = R)
+```
+
+**独立性分级沿用现有模型，不改**：机械 verifier 用 `MECHANICAL_INDEPENDENT` 在独立检出中跑确定协议（不需要另一个 LLM）；模型 verifier 若要算独立，仍须满足既有的显式分离契约（`SEPARATE_PROCESS` / `SEPARATE_SERVICE` / `SEPARATE_HOST`）——**同模型、同上下文、只换提示词不构成独立**。
 
 ### B.4 风险推导（何时要求独立复核）
 

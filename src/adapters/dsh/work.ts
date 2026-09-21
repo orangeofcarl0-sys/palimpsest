@@ -74,7 +74,16 @@ tools.push(
         if (summary !== undefined && (typeof summary !== "string" || summary.length === 0)) {
           throw new ToolArgsError('argument "summary" must be a non-empty string when given');
         }
-        return application.work.finish(summary === undefined ? {} : { summary });
+        const result = await application.work.finish(summary === undefined ? {} : { summary });
+        // `INV-4`: the attempt id is orchestration state, and the principal context must not carry it.
+        // The application result keeps it — an operator surface may legitimately want it — but this
+        // projection is what the MODEL sees, and "which attempt" is never a decision the agent makes.
+        return {
+          state: result.state,
+          changedFiles: result.changedFiles,
+          evidenceRecorded: result.evidenceRecorded,
+          nextEvidenceNeeded: result.nextEvidenceNeeded,
+        };
       },
     }),
   );
