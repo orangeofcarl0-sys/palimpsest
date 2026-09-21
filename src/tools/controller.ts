@@ -2865,6 +2865,64 @@ export class ProjectController {
   }
 
   /**
+   * PLMP-LEAN-1 §B.9: the canonical Work record for one attempt, as the VERIFICATION plane reads it.
+   *
+   * The read lives here, on the Work owner, so the verification plane names no storage column and
+   * keeps no shadow envelope cache — the G10-W source firewall pins `envelope_json`'s writers to the
+   * projector and its namers to a short list, and this keeps that list short rather than widening it.
+   */
+  attemptWorkRecord(attemptId: string): {
+    readonly state: string;
+    readonly taskId: string | null;
+    readonly report: unknown;
+    readonly envelope: TaskEnvelope | null;
+  } | null {
+    const attempt = this.store.connection
+      .prepare("SELECT task_id, state, report_json FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as
+      | { task_id: string | null; state: string; report_json: unknown }
+      | undefined;
+    if (attempt === undefined) return null;
+    const envelopeRow =
+      attempt.task_id === null
+        ? undefined
+        : (this.store.connection
+            .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
+            .get(this.projectId, attempt.task_id) as { envelope_json: unknown } | undefined);
+    const rawEnvelope = envelopeRow?.envelope_json;
+    // A canonical row that cannot be READ is a corrupted record, so it fails loudly here rather than
+    // leaking a raw parse error to whichever plane asked.
+    const decode = (value: unknown, what: string): unknown => {
+      try {
+        return decodeJsonBlob(value);
+      } catch (error) {
+        throw new DomainValidationError(
+          `${what} is unreadable: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    };
+    let envelope: TaskEnvelope | null = null;
+    if (rawEnvelope !== null && rawEnvelope !== undefined) {
+      try {
+        envelope = parseTaskEnvelope(decode(rawEnvelope, `task "${attempt.task_id}" envelope`));
+      } catch (error) {
+        throw new DomainValidationError(
+          `task "${attempt.task_id}" has an unreadable envelope: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+    return Object.freeze({
+      state: attempt.state,
+      taskId: attempt.task_id,
+      report:
+        attempt.report_json === null || attempt.report_json === undefined
+          ? null
+          : decode(attempt.report_json, `attempt "${attemptId}" report`),
+      envelope,
+    });
+  }
+
+  /**
    * PLMP-LEAN-1 §1/§4: the operator's one-stop view of this project's governance — the confirmed
    * standard, the commands it authorizes, and the gates already declared. Read-only; it exists so a
    * user-facing surface never has to ask a person for predicate vocabulary or a gate id.
