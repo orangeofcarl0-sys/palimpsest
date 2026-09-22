@@ -57,6 +57,13 @@ export interface CoreComposition {
   readonly policy: TaskPolicy;
   readonly controller: ProjectController;
   readonly baseTools: readonly DshToolDefinition[];
+  /**
+   * §B.14: the late-bound admission resolver. A later composition group binds it ONCE, when both the
+   * Work owner (the contract) and the verification owner (the qualification) exist.
+   */
+  readonly verificationAdmission: {
+    resolver: ((attemptId: string) => import("../domain/promotion_eligibility.js").PromotionVerificationAdmission | null) | null;
+  };
 }
 
 /** §12: explicit typed input, explicit typed output, no discovery, no string keys. */
@@ -73,6 +80,17 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     leaseMs: options.leaseMs,
     hooks: options.hooks,
   });
+  /**
+   * PLMP-LEAN-1 §B.14: the late-bound admission wiring, in the shape this repo already uses for
+   * `verificationWiring`. The PORT is stable from birth (so the promotion manager never observes a
+   * changing dependency); only its RESOLVER is bound once, later, when both owners exist.
+   */
+  const verificationAdmission: {
+    resolver: ((attemptId: string) => import("../domain/promotion_eligibility.js").PromotionVerificationAdmission | null) | null;
+  } = { resolver: null };
+  const verificationAdmissionPort = {
+    read: (attemptId: string) => verificationAdmission.resolver?.(attemptId) ?? null,
+  };
   const policy = options.policy ?? trustedDefaultPolicy();
   const controller = new ProjectController({
     store,
@@ -93,10 +111,11 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
       attemptResultVerificationAvailable: false,
       sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
     },
+    verificationAdmission: verificationAdmissionPort,
     clock: options.clock,
   });
   const baseTools = definePalimpsestTools(controller);
-  return { repository, git, store, effects, policy, controller, baseTools };
+  return { repository, git, store, effects, policy, controller, baseTools, verificationAdmission };
 }
 
 /**

@@ -442,6 +442,11 @@ export interface ProjectControllerOptions {
    * nothing, so a deployment that says nothing is told the truth rather than a comfortable guess.
    */
   capabilities?: import("../domain/completion_contract.js").CompletionCapabilities | undefined;
+  /**
+   * PLMP-LEAN-1 §B.14: the STABLE admission read port. The controller holds it from birth and passes
+   * it to the promotion manager, so admission is a per-assessment read rather than a cached copy.
+   */
+  verificationAdmission?: import("../domain/promotion_eligibility.js").PromotionVerificationAdmissionPort | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -558,7 +563,13 @@ export class ProjectController {
       attemptResultVerificationAvailable: false,
       sandboxSpawnVerified: false,
     };
-    this.promotions = new PromotionManager(options.store, options.effects, options.projectId, this.execution);
+    this.promotions = new PromotionManager(
+      options.store,
+      options.effects,
+      options.projectId,
+      this.execution,
+      options.verificationAdmission,
+    );
     this.recovery = createPromotionRecoveryService({
       store: options.store,
       effects: options.effects,

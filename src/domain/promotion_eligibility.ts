@@ -76,6 +76,17 @@ export interface PromotionVerificationAdmission {
   readonly detail: string | null;
 }
 
+/**
+ * PLMP-LEAN-1 §B.14: the STABLE, late-bound read port the promotion manager holds from birth.
+ *
+ * `read` is called per assessment, so admission is always derived from current state — never a
+ * cached projection or a copied run. The port is created early and its resolver is bound once, after
+ * both owners exist; nothing here imports the verification plane.
+ */
+export interface PromotionVerificationAdmissionPort {
+  read(attemptId: string): PromotionVerificationAdmission | null;
+}
+
 /** Which half of the input world a staleness blocker is about. */
 export type InputWorldFacet = "envelope" | "report";
 
