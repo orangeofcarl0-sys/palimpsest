@@ -30,6 +30,36 @@ import { join } from "node:path";
  * caller never inspects private reasoning and the host never inspects anything
  * but the frozen brief it is handed.
  */
+/**
+ * PLMP-LEAN-1 §C.12: one branch job's HANDLE. `completion` settles when the child finishes (or the
+ * timeout/abort path fires); `cancel()` asks the child to stop without waiting for it.
+ *
+ * INTERNAL: exported from this module so in-repository consumers can import it directly, but NOT
+ * re-exported by the reasoning-cell barrel, so it stays out of the package public API.
+ */
+export interface BranchExecutionJob {
+  readonly completion: Promise<BranchExecutionResult>;
+  cancel(): void;
+}
+
+/**
+ * The ASYNC seam over the SAME cognition backend.
+ *
+ *   same cognition backend  ·  different interaction lifecycle
+ *
+ * `run` stays the blocking UX (`palimpsest_collaborate`); `start` returns immediately so a caller can
+ * keep working (`palimpsest_delegate`). It EXTENDS `ReasoningBranchExecutionPort` rather than changing
+ * it, so an existing implementation keeps working. INTERNAL, for the same reason as the job handle.
+ */
+export interface AsyncReasoningBranchExecutionPort extends ReasoningBranchExecutionPort {
+  start(input: {
+    readonly brief: unknown;
+    readonly executionBudget?: unknown;
+    readonly signal?: AbortSignal;
+    readonly evidenceContext?: unknown;
+  }): BranchExecutionJob;
+}
+
 export interface ReasoningBranchExecutionPort {
   readonly adapterId: string;
   run(input: {
@@ -170,16 +200,26 @@ function normalizeOutcome(raw: RawDshOutcome): DshBranchExecutionOutcome {
  */
 export function dshSubprocessBranchExecutionPort(
   input: DshSubprocessBranchExecutionPortInput,
-): ReasoningBranchExecutionPort {
+): AsyncReasoningBranchExecutionPort {
   const timeoutMs = input.timeoutMs ?? 180_000;
   const nodeExecPath = input.nodeExecPath ?? process.execPath;
   const adapterId = `dsh-subprocess-branch:${input.profile}`;
 
   return {
     adapterId,
-    async run(runInput): Promise<BranchExecutionResult> {
+    /**
+     * §C.12: return a HANDLE immediately — the brief is serialized and the child spawned here, and
+     * only the RESULT is deferred. A pre-flight failure yields a handle whose completion is already a
+     * failed outcome, so a caller has one shape to handle either way.
+     */
+    start(runInput): BranchExecutionJob {
       const signal = runInput.signal;
-      if (signal?.aborted === true) return failed("branch execution aborted by caller before start");
+      if (signal?.aborted === true) {
+        return {
+          completion: Promise.resolve(failed("branch execution aborted by caller before start")),
+          cancel: () => undefined,
+        };
+      }
 
       let briefJson: string;
       try {
@@ -189,24 +229,28 @@ export function dshSubprocessBranchExecutionPort(
           runInput.evidenceContext === undefined ? runInput.brief : { brief: runInput.brief, evidenceContext: runInput.evidenceContext },
         );
       } catch {
-        return failed("branch brief is not JSON-serializable");
+        return { completion: Promise.resolve(failed("branch brief is not JSON-serializable")), cancel: () => undefined };
       }
-      if (typeof briefJson !== "string" || briefJson === "undefined") return failed("branch brief could not be serialized");
+      if (typeof briefJson !== "string" || briefJson === "undefined") {
+        return { completion: Promise.resolve(failed("branch brief could not be serialized")), cancel: () => undefined };
+      }
 
       const dir = mkdtempSync(join(tmpdir(), "palimpsest-branch-"));
       const briefFile = join(dir, "brief.json");
-      try {
+      let child: ReturnType<typeof spawn> | undefined;
+      {
         writeFileSync(briefFile, briefJson, "utf8");
 
-        return await new Promise<BranchExecutionResult>((resolve) => {
+        const completion = new Promise<BranchExecutionResult>((resolve) => {
           let settled = false;
           let stdout = "";
           let stderr = "";
 
-          const child = spawn(nodeExecPath, [input.dshBin, "--profile", input.profile, "--branch", briefFile], {
+          const spawned = spawn(nodeExecPath, [input.dshBin, "--profile", input.profile, "--branch", briefFile], {
             cwd: input.workDir,
             stdio: ["ignore", "pipe", "pipe"],
           });
+          child = spawned;
 
           let timer: NodeJS.Timeout | undefined;
 
@@ -220,7 +264,7 @@ export function dshSubprocessBranchExecutionPort(
 
           const onAbort = (): void => {
             try {
-              child.kill();
+              spawned.kill();
             } catch {
               /* the process may already be gone */
             }
@@ -229,7 +273,7 @@ export function dshSubprocessBranchExecutionPort(
 
           timer = setTimeout(() => {
             try {
-              child.kill();
+              spawned.kill();
             } catch {
               /* the process may already be gone */
             }
@@ -238,16 +282,16 @@ export function dshSubprocessBranchExecutionPort(
 
           signal?.addEventListener("abort", onAbort, { once: true });
 
-          child.stdout?.on("data", (chunk: Buffer | string) => {
+          spawned.stdout?.on("data", (chunk: Buffer | string) => {
             stdout += chunk.toString();
           });
-          child.stderr?.on("data", (chunk: Buffer | string) => {
+          spawned.stderr?.on("data", (chunk: Buffer | string) => {
             stderr += chunk.toString();
           });
-          child.on("error", (error: Error) => {
+          spawned.on("error", (error: Error) => {
             finish(failed(`branch host failed to start: ${error.message}`));
           });
-          child.on("close", (code: number | null) => {
+          spawned.on("close", (code: number | null) => {
             const raw = parseDshOutcome(stdout);
             if (raw !== undefined) {
               finish(normalizeOutcome(raw));
@@ -257,9 +301,24 @@ export function dshSubprocessBranchExecutionPort(
             finish(failed(`branch host exited ${code ?? "unknown"} without a result line${tail === "" ? "" : `: ${tail}`}`));
           });
         });
-      } finally {
-        rmSync(dir, { recursive: true, force: true });
+
+        return {
+          // Cleanup rides on the COMPLETION rather than an enclosing `await`: a caller that returns
+          // immediately and never awaits the frame still cannot leak the temp directory.
+          completion: completion.finally(() => rmSync(dir, { recursive: true, force: true })),
+          cancel: (): void => {
+            try {
+              child?.kill();
+            } catch {
+              /* the process may already be gone */
+            }
+          },
+        };
       }
+    },
+    /** The blocking UX, unchanged: start, then wait. Never a second subprocess implementation. */
+    run(runInput): Promise<BranchExecutionResult> {
+      return this.start(runInput).completion;
     },
   };
 }
