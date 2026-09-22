@@ -39,6 +39,7 @@ import type { PeerRef } from "../federation/peer.js";
 import { projectVerificationRunRef } from "../project_verification/artifacts.js";
 import type { ReasoningBranchBrief } from "../reasoning_cell/artifacts.js";
 import { REASONING_STATEMENT_TYPE } from "../reasoning_cell/claims.js";
+import { settleBranchFromOutput } from "../reasoning_cell/branch_settlement.js";
 import type { ReasoningPolicyRef } from "../reasoning_cell/ref.js";
 import type { ReasoningCellService } from "../reasoning_cell/service.js";
 import type { ExperimentValidatorPort } from "../experiment/validators.js";
@@ -202,40 +203,6 @@ function derivedCellId(planDigest: string): string {
   return `recipe-${planDigest.slice(0, 32)}`;
 }
 
-/** Extract a structured statement from an opaque branch result; unknown shapes stay unresolved. */
-function statementFromOutput(output: unknown): string | undefined {
-  if (typeof output === "string") {
-    return output.trim() === "" ? undefined : output;
-  }
-  if (typeof output === "object" && output !== null && !Array.isArray(output)) {
-    const statement = (output as { readonly statement?: unknown }).statement;
-    if (typeof statement === "string" && statement.trim() !== "") return statement;
-  }
-  return undefined;
-}
-
-/**
- * UX-C §15/SC-3: the evidence refs the BRANCH actually cited. They must reach
- * `submitCandidate` as `externalEvidenceRefs`; before UX-C they were dropped here,
- * so a branch that cited evidence produced a different `candidateDigest` whose
- * candidate was never evaluated and whose citation was lost. The branch HOST has
- * already enforced the frozen allowlist structurally; this only normalizes.
- */
-function evidenceRefsFromOutput(output: unknown): readonly string[] {
-  if (typeof output !== "object" || output === null || Array.isArray(output)) return Object.freeze([] as string[]);
-  const raw = (output as { readonly evidenceRefs?: unknown }).evidenceRefs;
-  if (!Array.isArray(raw)) return Object.freeze([] as string[]);
-  const out = new Set<string>();
-  for (const entry of raw) {
-    if (typeof entry === "string" && entry.length > 0) out.add(entry);
-    else if (typeof entry === "object" && entry !== null && typeof (entry as { readonly evidenceId?: unknown }).evidenceId === "string") {
-      const evidenceId = (entry as { readonly evidenceId: string }).evidenceId;
-      if (evidenceId.length > 0) out.add(evidenceId);
-    }
-  }
-  return Object.freeze([...out].sort());
-}
-
 export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExecutionService {
   async function executeExplore(compiled: CompiledRecipePlan, context: RecipeExecutionContext): Promise<RecipeModeOutcome> {
     const step = stepOf(compiled, "open_reasoning_cell");
@@ -281,34 +248,17 @@ export function makeRecipeExecutionService(deps: RecipeExecutionDeps): RecipeExe
       }
       branchExecutions += 1;
 
-      const statement = statementFromOutput(output);
-      if (statement === undefined) {
-        unresolved += 1;
-        continue;
-      }
-      // UX-C §15/SC-3: forward the branch's OWN cited evidence refs. RecipeExecution
-      // remains the SOLE candidate submit/evaluate owner; the branch host submits
-      // nothing. The refs stay subject to the frozen allowlist, which the host
-      // enforced structurally before this result existed.
-      const citedEvidenceRefs = evidenceRefsFromOutput(output);
-      const submitted = await reasoning.submitCandidate({
+      // §C.13: settlement is SHARED with the async delegation path, so `collaborate` and `delegate`
+      // cannot drift into two different ideas of what settling a branch means. This call site owns
+      // HOW the output was produced (the blocking `run`); the coordinator owns what happens to it.
+      const settlement = await settleBranchFromOutput({
+        reasoning,
         cellId,
         branchId: opened.branch.ref.branchId,
-        type: REASONING_STATEMENT_TYPE,
-        content: { statement },
-        ...(citedEvidenceRefs.length === 0
-          ? {}
-          : { externalEvidenceRefs: citedEvidenceRefs.map((evidenceId) => Object.freeze({ evidenceId })) }),
+        output,
       });
-      if (submitted.status !== "PENDING") continue; // DEDUPLICATED converges on an existing claim.
-
-      const evaluation = await reasoning.evaluateCandidate({ cellId, candidateDigest: submitted.candidate.candidateDigest });
-      if (evaluation.status === "admitted") {
-        admittedClaimIds.push(evaluation.claimId);
-      } else {
-        // rejected / unresolved / blocked / stale / verification error all stay honest.
-        unresolved += 1;
-      }
+      if (settlement.admittedClaimId !== null) admittedClaimIds.push(settlement.admittedClaimId);
+      else if (!settlement.converged) unresolved += 1;
     }
 
     return Object.freeze({
