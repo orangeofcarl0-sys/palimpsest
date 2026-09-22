@@ -47,7 +47,34 @@ export type PromotionBlockerKind =
   | "gate_not_pass"
   | "promotion_effect_in_flight"
   | "promotion_settlement_required"
-  | "promotion_semantic_settlement_required";
+  | "promotion_semantic_settlement_required"
+  /**
+   * PLMP-LEAN-1 §B.14: the task's derived completion contract REQUIRES independent verification and
+   * no run satisfies it — `_missing` when there is no run at all, `_unsatisfied` when there is one
+   * that does not qualify. Never a substitute for the gate: a separate admission requirement.
+   */
+  | "required_verification_missing"
+  | "required_verification_unsatisfied";
+
+/**
+ * PLMP-LEAN-1 §B.14: what the verification owner says about one attempt's required independent
+ * verification, as a PLAIN fact.
+ *
+ * Deliberately not `ProjectVerificationRun`: this domain must not import the verification plane, and
+ * it does not need to. It asks one question — is a required admission satisfied — and the verification
+ * owner answers it.
+ *
+ *   PromotionEligibility  !=  Verification
+ */
+export interface PromotionVerificationAdmission {
+  readonly required: boolean;
+  readonly satisfied: boolean;
+  /** The exact subject digest the qualifying run covered, when there is one. */
+  readonly subjectDigest: string | null;
+  readonly runRef: string | null;
+  /** Why it is unsatisfied, in plain language, so a refusal can name what is missing. */
+  readonly detail: string | null;
+}
 
 /** Which half of the input world a staleness blocker is about. */
 export type InputWorldFacet = "envelope" | "report";
@@ -112,6 +139,12 @@ export interface PromotionEligibilityInput {
   readonly canonicalExpectedHead: string | null;
   /** Set when the promotion chain is broken and no expected head can be derived. */
   readonly headConflict: string | null;
+  /**
+   * §B.14: the verification admission projection. ABSENT means no verification is required, which is
+   * what keeps every existing call site's behaviour exactly as it was — the requirement only appears
+   * once a completion contract asks for one.
+   */
+  readonly verification?: PromotionVerificationAdmission | null | undefined;
   /** An unresolved promotion intent owned by this attempt, if any. */
   readonly pendingPromotion: PromotionFenceRow | null;
   /**
@@ -340,6 +373,20 @@ export function assessPromotionEligibility(
         "gate_not_pass",
         `gate ${input.gate.gateId} verdict ${input.gate.verdict} does not authorize a promotion`,
         [input.gate.gateId, input.gate.verdict],
+      ),
+    );
+  }
+
+  // §B.14: a required independent verification is its own admission requirement, checked HERE in the
+  // single assessor so no promotion entry point can bypass it.
+  const verification = input.verification;
+  if (verification !== null && verification !== undefined && verification.required && !verification.satisfied) {
+    blockers.push(
+      blocker(
+        verification.runRef === null ? "required_verification_missing" : "required_verification_unsatisfied",
+        verification.detail ??
+          "this attempt's completion contract requires independent verification and no qualifying run exists",
+        [verification.subjectDigest ?? "", verification.runRef ?? ""].filter((ref) => ref !== ""),
       ),
     );
   }
