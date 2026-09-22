@@ -159,6 +159,7 @@ export function installPalimpsest(
   // verification, external-asset bridge, monitor, project management) composes itself from a
   // narrow typed input; this file only decides to compose it.
   const governance = composeGovernanceCapabilities({
+    verificationAdmission: core.verificationAdmission,
     options,
     store,
     controller,

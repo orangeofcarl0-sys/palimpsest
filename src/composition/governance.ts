@@ -74,6 +74,10 @@ export interface GovernanceCompositionInput {
   readonly options: GovernanceCompositionOptions;
   readonly store: EventStore;
   readonly controller: ProjectController;
+  /** §B.14: the late-bound admission holder created by the core composition. */
+  readonly verificationAdmission: {
+    resolver: ((attemptId: string) => import("../domain/promotion_eligibility.js").PromotionVerificationAdmission | null) | null;
+  };
   readonly effects: PalimpsestEffectsRuntime;
   readonly repository: string;
   readonly git: GitPort;
@@ -374,6 +378,33 @@ export function composeGovernanceCapabilities(input: GovernanceCompositionInput)
       externalAssetBridgeStoreCreated = false;
     }
   }
+
+  // §B.14: the TWO OWNERS MEET HERE, and only here. The controller answers "is it REQUIRED" (from the
+  // attempt's derived completion contract); the verification service answers "is it SATISFIED for the
+  // exact result". Neither decides the other's fact, neither is imported by the promotion domain, and
+  // the resolver is bound exactly once.
+  input.verificationAdmission.resolver = (attemptId: string) => {
+    const contract = controller.completionContract(attemptId);
+    if (contract === null || !contract.verification.required) return null;
+    if (verification === undefined) {
+      return {
+        required: true,
+        satisfied: false,
+        subjectDigest: null,
+        runRef: null,
+        detail:
+          "this deployment composes no attempt-result verification runtime, so the required verification cannot be satisfied",
+      };
+    }
+    const qualification = verification.service.attemptResultQualification(attemptId);
+    return {
+      required: true,
+      satisfied: qualification.satisfied,
+      subjectDigest: qualification.subjectDigest,
+      runRef: qualification.runRef,
+      detail: qualification.detail,
+    };
+  };
 
   const monitorWiring: { capability: MonitorRuntimeCapability | undefined } = { capability: undefined };
   function liveMonitorCapability(): MonitorRuntimeCapability | undefined {
