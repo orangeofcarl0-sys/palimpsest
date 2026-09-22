@@ -2252,7 +2252,14 @@ export class ProjectController {
     // scheduler is left alone.
     const running = this.#principalAttemptInState("RUNNING");
     if (canonical !== null && running !== null) {
-      return this.#beginProjection("RESUMED", goal, input.writePaths, requiredArtifacts, standard);
+      return this.#beginProjection(
+        "RESUMED",
+        goal,
+        input.writePaths,
+        requiredArtifacts,
+        standard,
+        this.#completionContractFor(running).verification.required,
+      );
     }
 
     // S1 (and S0): pre-claim there is no legitimate owner yet, so unowned project changes must be
@@ -2341,11 +2348,25 @@ export class ProjectController {
     const claimable = this.#principalAttemptInState("CREATED");
     if (claimable !== null) {
       await this.claim(claimable);
-      return this.#beginProjection("READY", goal, input.writePaths, requiredArtifacts, standard);
+      return this.#beginProjection(
+        "READY",
+        goal,
+        input.writePaths,
+        requiredArtifacts,
+        standard,
+        contract.verification.required,
+      );
     }
     const created = this.#advanceToClaimableAttempt();
     await this.claim(created);
-    return this.#beginProjection("READY", goal, input.writePaths, requiredArtifacts, standard);
+    return this.#beginProjection(
+      "READY",
+      goal,
+      input.writePaths,
+      requiredArtifacts,
+      standard,
+      contract.verification.required,
+    );
   }
 
   /**
@@ -2393,6 +2414,8 @@ export class ProjectController {
     writePaths: readonly string[],
     requiredArtifacts: readonly string[],
     standard: import("../domain/standard.js").ProjectStandard,
+    /** §B.14: from the SAME CompletionContract the admission bridge reads — never recomputed. */
+    verificationRequired: boolean,
   ): {
     readonly state: "READY" | "RESUMED";
     readonly goal: string;
@@ -2423,7 +2446,7 @@ export class ProjectController {
       requiredArtifacts: Object.freeze([...requiredArtifacts]),
       completion: Object.freeze({
         mechanicalChecks: Object.freeze(checks),
-        independentVerificationRequired: false,
+        independentVerificationRequired: verificationRequired,
       }),
     });
   }

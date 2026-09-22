@@ -164,3 +164,40 @@ describe("LEAN-A21 / A38: required verification is an admission requirement, and
     expect(evidenceCount(connection)).toBe(evidenceBefore);
   });
 });
+
+describe("B.15: finish orchestrates the required verification, and a FAILURE is not a work failure", () => {
+  it("finish resolves normally when the auto verification fails — the attempt really is COMPLETED", async () => {
+    const { repo, installed, connection } = fixture();
+    const controller = (installed as {
+      controller: { begin(i: unknown): Promise<unknown> };
+    }).controller;
+    await controller.begin({ goal: "widen the schema version field", writePaths: [BOUNDARY] });
+    // A trailing-whitespace line, so `git diff --check H0..RA` has something to FAIL on while the
+    // mechanical completion (scope + tests) still passes.
+    writeFileSync(join(repo, BOUNDARY), `export const schemaVersion = 2;${"   "}\n`);
+    execFileSync("git", ["add", "-A"], { cwd: repo });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "widen"], { cwd: repo });
+
+    // The APPLICATION surface, not the controller: this is where the two owners meet.
+    const work = (installed as { application: { work: { finish(i?: unknown): Promise<{
+      state: string;
+      verification: { required: boolean; satisfied: boolean; verdict: string | null };
+    }> } } }).application.work;
+
+    // It must RESOLVE. Throwing here would tell the agent finish never happened while the attempt is
+    // already COMPLETED — the principal would keep editing a settled attempt.
+    const result = await work.finish({ summary: "done" });
+    expect(result.state).toBe("COMPLETED");
+    expect(result.verification.required).toBe(true);
+    expect(result.verification.verdict).toBe("FAIL");
+    expect(result.verification.satisfied).toBe(false);
+
+    // And the attempt is genuinely settled, with promotion blocked by the failed requirement.
+    const attemptId = (connection.prepare("SELECT attempt_id FROM attempts ORDER BY attempt_id").all() as { attempt_id: string }[])[0]!.attempt_id;
+    expect((connection.prepare("SELECT state FROM attempts WHERE attempt_id=?").get(attemptId as never) as { state: string }).state).toBe("COMPLETED");
+    const blockers = (installed as {
+      controller: { promotionEligibility(id: string): { blockers: readonly { kind: string }[] } };
+    }).controller.promotionEligibility(attemptId).blockers.map((b) => b.kind);
+    expect(blockers).toContain("required_verification_unsatisfied");
+  });
+});

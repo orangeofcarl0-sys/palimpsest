@@ -83,6 +83,10 @@ tools.push(
           changedFiles: result.changedFiles,
           evidenceRecorded: result.evidenceRecorded,
           nextEvidenceNeeded: result.nextEvidenceNeeded,
+          // §B.15: the verification CONCLUSION is decision evidence, so it belongs in the principal
+          // projection. The run id, subject digest and attempt id stay out of it: those are audit
+          // drill-down, and `compress orchestration != hide decision evidence`.
+          verification: result.verification,
         };
       },
     }),

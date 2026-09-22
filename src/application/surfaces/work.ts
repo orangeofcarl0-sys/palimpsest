@@ -11,11 +11,27 @@ import type { HostDeploymentFactsPort } from "../common.js";
 import type { ProjectStandard } from "../../domain/standard.js";
 import { definePalimpsestControl } from "../../tools/control_surface.js";
 
+/**
+ * PLMP-LEAN-1 §B.15: the narrow verification face the finish composition needs. Structural on
+ * purpose — the application layer composes the two owners without depending on the verification
+ * plane's own types, and `ProjectController` never imports it at all.
+ */
+export interface FinishVerificationFace {
+  readonly service: {
+    verifyAttemptResult(input: { readonly attemptId: string; readonly requestedBy: string }): Promise<{
+      readonly run: { readonly verdict: string | null; readonly status: string } | null;
+      readonly detail: string;
+    }>;
+  };
+}
+
 /** Exactly the dependencies this cluster reads — nothing else is visible to it (§9). */
 export interface WorkSurfaceDeps {
   readonly controller: ProjectController;
   /** Host facts about the running deployment; absent means no dashboard is known of. */
   readonly hostFacts?: HostDeploymentFactsPort | undefined;
+  /** §B.15: present when this deployment composes an attempt-result verification runtime. */
+  readonly verification?: FinishVerificationFace | undefined;
 }
 
 export interface WorkApplicationSurface {
@@ -57,6 +73,17 @@ export interface WorkApplicationSurface {
     readonly changedFiles: readonly string[];
     readonly evidenceRecorded: readonly string[];
     readonly nextEvidenceNeeded: readonly string[];
+    /**
+     * §B.15: the verification conclusion, when this attempt's contract requires one. A verification
+     * FAILURE is reported here and NEVER as a thrown error — the attempt really is COMPLETED, and
+     * pretending otherwise would leave the principal editing a settled attempt.
+     */
+    readonly verification: {
+      readonly required: boolean;
+      readonly satisfied: boolean;
+      readonly verdict: string | null;
+      readonly detail: string | null;
+    };
   }>;
   /**
    * PLMP-LEAN-1 appendix E (2A-B): the **begin** protocol, symmetric with `finish`. The agent states
@@ -101,7 +128,45 @@ export function makeWorkSurfaces(deps: WorkSurfaceDeps): { readonly work: WorkAp
       standard: () => deps.controller.standard(),
       authorizedCommands: () => deps.controller.authorizedCommands(),
       declaredGateIds: () => deps.controller.declaredGateIds(),
-      finish: (input) => deps.controller.finish(input ?? {}),
+      finish: async (input) => {
+        // The WORK half first: once this returns, the attempt really is COMPLETED.
+        const completed = await deps.controller.finish(input ?? {});
+        // §B.15: the two owners meet HERE, in the product layer. `ProjectController` must not import
+        // Verification, so the orchestration lives in the application composition instead.
+        const contract = deps.controller.completionContract(completed.attemptId);
+        if (contract === null || !contract.verification.required) {
+          return {
+            ...completed,
+            verification: { required: false, satisfied: false, verdict: null, detail: null },
+          };
+        }
+        if (deps.verification === undefined) {
+          return {
+            ...completed,
+            verification: {
+              required: true,
+              satisfied: false,
+              verdict: null,
+              detail:
+                "this attempt's contract requires independent verification and this deployment composes no runtime for it",
+            },
+          };
+        }
+        const outcome = await deps.verification.service.verifyAttemptResult({
+          attemptId: completed.attemptId,
+          requestedBy: "agent:palimpsest_finish",
+        });
+        const verdict = outcome.run?.verdict ?? null;
+        return {
+          ...completed,
+          verification: {
+            required: true,
+            satisfied: verdict === "PASS",
+            verdict,
+            detail: outcome.detail,
+          },
+        };
+      },
       begin: (input) => deps.controller.begin(input),
       completionReadiness: () => deps.controller.completionReadiness(),
       status: () => deps.controller.status(),

@@ -179,7 +179,20 @@ export function makeProjectVerificationService(
       return deps.defaultVerifierRef;
     }
     const executable = executableVerifierRefsFor(kind);
-    return executable.length === 0 ? null : executable[0]!;
+    if (kind === "CURRENT_PROJECT_HEAD") {
+      // The head default is UNCHANGED: the first executable ref, exactly as before.
+      return executable.length === 0 ? null : executable[0]!;
+    }
+    // §B.14: an ATTEMPT_RESULT default must be INDEPENDENT-first. Taking "the first executable ref"
+    // here can pick a non-independent verifier, whose run then cannot satisfy the requirement — a
+    // dead end the product would have manufactured for itself (begin says READY because an
+    // independent runtime exists; finish auto-selects the other one; promotion refuses). An expert
+    // caller may still NAME a non-independent ref for diagnostics; the automatic path never picks one.
+    for (const ref of executable) {
+      const definition = registry.get(ref);
+      if (definition !== undefined && countsAsIndependent(definition)) return ref;
+    }
+    return null;
   }
 
   function defaultVerifierRef(): string | null {
