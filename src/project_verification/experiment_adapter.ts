@@ -30,7 +30,80 @@ import {
 } from "./artifacts.js";
 import type { VerifierIndependenceClass } from "./independence.js";
 import type { ProjectVerifierPort, ProjectVerifierVerifyInput } from "./provider.js";
-import { firstPartyMechanicalVerifierDefinition } from "./registry.js";
+import { commandVerifierDefinition, firstPartyMechanicalVerifierDefinition } from "./registry.js";
+
+/** The first-party ref for the ATTEMPT-RESULT protocol. Deliberately NOT the head ref (B.11). */
+export const FIRST_PARTY_ATTEMPT_RESULT_VERIFIER_REF = "project.attempt.git-diff-check.v1";
+const FIRST_PARTY_ATTEMPT_RESULT_PROVIDER = "palimpsest-first-party";
+const FIRST_PARTY_ATTEMPT_RESULT_PROVIDER_VERSION = "1";
+
+export interface CommandAttemptResultVerifierOptions {
+  readonly verifierRef?: string | undefined;
+  readonly version?: number | undefined;
+  readonly timeoutMs?: number | undefined;
+  readonly independenceClass?: VerifierIndependenceClass | undefined;
+}
+
+/**
+ * PLMP-LEAN-1 §B.11: a SEPARATE verifier for an attempt's result, and the head verifier is left
+ * exactly as it was.
+ *
+ * The reason is not tidiness. The head protocol is `git diff --check`, which inspects the
+ * WORKING-TREE diff — run inside a clean checkout of R it finds nothing to check and PASSES
+ * trivially, so extending the head verifier's `supportedSubjects` would manufacture a verification
+ * that proves nothing. It would also change that verifier's definition digest and stale every
+ * existing head verification.
+ *
+ * So this one is subject-aware: the commits come from the canonical subject, never from the caller,
+ * and the protocol runs `git diff --check <baseCommit>..<resultCommit>` — a statement about THIS
+ * patch rather than about a working tree. It runs in the materialized checkout it is given, and it
+ * refuses any other subject kind rather than guessing.
+ *
+ * A PASS here means "the named mechanical protocol passed", never "the change is correct".
+ */
+export function commandAttemptResultVerifier(
+  options: CommandAttemptResultVerifierOptions = {},
+): ProjectVerifierPort {
+  const definition = commandVerifierDefinition({
+    verifierRef: options.verifierRef ?? FIRST_PARTY_ATTEMPT_RESULT_VERIFIER_REF,
+    ...(options.version === undefined ? {} : { version: options.version }),
+    command: "git",
+    // A TEMPLATE: the real commits are substituted from the subject at run time.
+    args: ["diff", "--check", "<baseCommit>..<resultCommit>"],
+    supportedSubjects: ["ATTEMPT_RESULT"],
+    protocolNote:
+      "bounded subprocess over the attempt's own commit range: a non-zero exit is a protocol FAIL and a spawn/timeout fault is ERROR (never FAIL); the range comes from the canonical subject and never from the caller",
+    ...(options.independenceClass === undefined
+      ? {}
+      : { independenceClass: options.independenceClass }),
+    provider: FIRST_PARTY_ATTEMPT_RESULT_PROVIDER,
+    providerVersion: FIRST_PARTY_ATTEMPT_RESULT_PROVIDER_VERSION,
+    implementation: "git diff --check <baseCommit>..<resultCommit>",
+  });
+  return experimentValidatorProjectHeadAdapter({
+    definition,
+    validator: (input: ProjectVerifierVerifyInput) => {
+      const subject = input.subject;
+      if (subject.kind !== "ATTEMPT_RESULT") {
+        throw new Error(
+          `verifier "${definition.verifierRef}" verifies ATTEMPT_RESULT subjects only, not ${subject.kind}`,
+        );
+      }
+      if (input.repository === undefined) {
+        throw new Error(
+          `verifier "${definition.verifierRef}" needs the materialized checkout of ${subject.resultCommit.slice(0, 12)}`,
+        );
+      }
+      return commandValidator({
+        validatorRef: definition.verifierRef,
+        command: "git",
+        args: ["diff", "--check", `${subject.baseCommit}..${subject.resultCommit}`],
+        cwd: input.repository,
+        ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+      });
+    },
+  });
+}
 
 /** The default mapping from a verification subject to the validator's input. */
 export function validatorInputForSubject(
