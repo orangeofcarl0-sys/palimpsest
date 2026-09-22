@@ -36,6 +36,8 @@ import {
 import type { ProjectHeadVerificationSource, ProjectVerifierPort } from "./provider.js";
 import type { AttemptResultMaterializerPort, AttemptResultVerificationSource } from "./attempt_result_source.js";
 import type { ProjectVerificationSubject, ProjectVerificationSubjectKind } from "./artifacts.js";
+import { sameSubject } from "./artifacts.js";
+import { countsAsIndependent } from "./independence.js";
 import type { ProjectVerifierRegistry } from "./registry.js";
 import type { ProjectVerificationHistoryStore } from "./store.js";
 
@@ -67,6 +69,22 @@ export interface VerifyCurrentHeadInput {
   readonly signal?: AbortSignal | undefined;
 }
 
+/**
+ * PLMP-LEAN-1 §B.14: whether one attempt's REQUIRED independent verification is satisfied, as a plain
+ * synchronous fact.
+ *
+ * Synchronous on purpose: `PromotionManager.assessEligibility()` is synchronous and recovery/redispatch
+ * depend on it, so this must be a read rather than a status() round trip. It imports no promotion type.
+ */
+export interface AttemptResultVerificationQualification {
+  /** The exact subject digest the newest candidate run covered, or null when none exists. */
+  readonly subjectDigest: string | null;
+  /** The newest exact-subject run, qualifying or not — so a refusal can name it. */
+  readonly runRef: string | null;
+  readonly satisfied: boolean;
+  readonly detail: string;
+}
+
 export interface VerifyAttemptResultInput {
   readonly attemptId: string;
   readonly verifierRef?: string | undefined;
@@ -96,6 +114,11 @@ export interface ProjectVerificationService {
    * canonical Work, never from the caller.
    */
   verifyAttemptResult(input: VerifyAttemptResultInput): Promise<ProjectVerificationOutcome>;
+  /**
+   * §B.14: the synchronous qualification read the promotion admission bridge consumes. Pure: it
+   * materializes the subject from canonical Work and reads the run history; it writes nothing.
+   */
+  attemptResultQualification(attemptId: string): AttemptResultVerificationQualification;
   status(): Promise<ProjectVerificationStatus>;
   /** Newest first (a UI/agent history read), never a rewrite of the chain. */
   history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
@@ -528,6 +551,86 @@ export function makeProjectVerificationService(
         }
       }
     },
+    attemptResultQualification(attemptId: string): AttemptResultVerificationQualification {
+      const source = deps.attemptResultSource;
+      if (source === undefined) {
+        return Object.freeze({
+          subjectDigest: null,
+          runRef: null,
+          satisfied: false,
+          detail: "this deployment composes no attempt-result subject source, so a required attempt verification cannot be evaluated",
+        });
+      }
+      // 1. The exact subject, from canonical Work. A subject that cannot be derived is not a
+      //    qualification failure to paper over — it means the requirement cannot be shown to be met.
+      let subject;
+      try {
+        subject = source.materialize(attemptId);
+      } catch (error) {
+        return Object.freeze({
+          subjectDigest: null,
+          runRef: null,
+          satisfied: false,
+          detail: `the canonical result of attempt "${attemptId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
+        });
+      }
+
+      // 2. Runs over THAT exact subject, newest first.
+      const exact = deps.store
+        .list(deps.projectId)
+        .filter((run) => sameSubject(run.subject, subject))
+        .sort((left, right) => (left.startedAt < right.startedAt ? 1 : left.startedAt > right.startedAt ? -1 : 0));
+      if (exact.length === 0) {
+        return Object.freeze({
+          subjectDigest: subject.digest,
+          runRef: null,
+          satisfied: false,
+          detail: "no verification run covers this attempt's exact result",
+        });
+      }
+      const newest = exact[0]!;
+
+      // 3. Only a run whose protocol is still the registered one AND which counts as independent is
+      //    an admission candidate. A stale or non-independent run never authorizes a promotion.
+      const definition = registry.get(newest.verifierRef);
+      const protocolCurrent = definition !== undefined && definition.digest === newest.verifierDefinitionDigest;
+      const independent = definition === undefined ? newest.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(definition);
+
+      // 4. The newest INDEPENDENT, current-protocol run decides — so a newer independent FAIL
+      //    overrides an older PASS instead of "once passed, always authorized".
+      const candidate = exact.find((run) => {
+        const runDefinition = registry.get(run.verifierRef);
+        const runProtocolCurrent = runDefinition !== undefined && runDefinition.digest === run.verifierDefinitionDigest;
+        const runIndependent = runDefinition === undefined ? run.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(runDefinition);
+        return runProtocolCurrent && runIndependent;
+      });
+      if (candidate === undefined) {
+        return Object.freeze({
+          subjectDigest: subject.digest,
+          runRef: newest.runId,
+          satisfied: false,
+          detail: protocolCurrent && !independent
+            ? `the newest run over this result (${newest.runId}) does not count as independent`
+            : "no run over this result uses the currently registered protocol and counts as independent",
+        });
+      }
+
+      // 5. Satisfied only when that run completed, is still CURRENT, and passed. Currency for an
+      //    attempt result is `SameCanonicalAttemptResult` — the ambient head is never consulted.
+      const current = subject.digest === candidate.subject.digest;
+      const satisfied = candidate.status === "COMPLETED" && candidate.freshness === "CURRENT" && candidate.verdict === "PASS";
+      return Object.freeze({
+        subjectDigest: subject.digest,
+        runRef: candidate.runId,
+        satisfied,
+        detail: satisfied
+          ? `independent protocol "${candidate.verifierRef}" passed over this exact result`
+          : current
+            ? `the newest independent run over this result is ${candidate.status}${candidate.verdict === null ? "" : `/${candidate.verdict}`} (freshness ${candidate.freshness})`
+            : "the newest independent run no longer covers this exact result",
+      });
+    },
+
     status,
 
     async history(limit?: number): Promise<readonly ProjectVerificationRun[]> {

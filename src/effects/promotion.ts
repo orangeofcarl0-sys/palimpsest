@@ -52,6 +52,7 @@ import {
   type PromotionBlocker,
   type PromotionEligibilityAssessment,
   type PromotionFenceRow,
+  type PromotionVerificationAdmissionPort,
 } from "../domain/promotion_eligibility.js";
 import {
   PromotionIntentPermit,
@@ -117,12 +118,20 @@ export class PromotionManager {
     effects: PalimpsestEffectsRuntime,
     projectId: string,
     execution: "worktree" | "in-place" = "worktree",
+    /**
+     * PLMP-LEAN-1 §B.14: the verification admission read port. Optional, and absent means "no
+     * verification is required" — which is what keeps every existing construction unchanged.
+     */
+    verificationAdmission?: PromotionVerificationAdmissionPort | undefined,
   ) {
     this.#store = store;
     this.#effects = effects;
     this.projectId = projectId;
     this.#execution = execution;
+    this.#verificationAdmission = verificationAdmission;
   }
+
+  readonly #verificationAdmission: PromotionVerificationAdmissionPort | undefined;
 
   readonly #execution: "worktree" | "in-place";
 
@@ -355,7 +364,7 @@ export class PromotionManager {
       gate = { gateId, verdict: verdict.verdict };
     }
     const promotionId = promotionIdFor(this.projectId, attemptId);
-    return readPromotionEligibilityInput({
+    const base = readPromotionEligibilityInput({
       connection: this.#store.connection,
       projectId: this.projectId,
       attemptId,
@@ -376,6 +385,11 @@ export class PromotionManager {
       // identity and must not be refused as fresh authority.
       retryOfPromotionId: promotionId,
     });
+    // §B.14: ONE place reads the admission port, so every path that assesses eligibility — the
+    // preview, promoteAttempt, the expert promote, recovery reconciliation and the redispatch
+    // defence — inherits the requirement. No second admission path.
+    const verification = this.#verificationAdmission?.read(attemptId) ?? null;
+    return verification === null ? base : { ...base, verification };
   }
 
   /**
