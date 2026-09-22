@@ -179,7 +179,7 @@ export interface ApplicationSurfaceDeps {
   readonly verification?: {
     readonly service: Pick<
       ProjectVerificationService,
-      "status" | "history" | "verifyCurrentHead"
+      "status" | "history" | "verifyCurrentHead" | "verifyAttemptResult"
     >;
   } | undefined;
   /**

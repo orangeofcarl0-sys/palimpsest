@@ -277,7 +277,15 @@ describe("LEAN-A22..A25: completed in-place work must be commit-materialized", (
     const principal = await firstStack.finish({});
     // INV-4: orchestration state does not enter the principal context.
     expect(principal).not.toHaveProperty("attemptId");
-    expect(Object.keys(principal).sort()).toEqual(["changedFiles", "evidenceRecorded", "nextEvidenceNeeded", "state"]);
+    // `verification` is now part of the principal projection too: the verification CONCLUSION is
+    // decision evidence (B.15), unlike the run id, subject digest and attempt id, which stay out.
+    expect(Object.keys(principal).sort()).toEqual([
+      "changedFiles",
+      "evidenceRecorded",
+      "nextEvidenceNeeded",
+      "state",
+      "verification",
+    ]);
 
     // The application result keeps it — an operator surface may legitimately want to name the attempt.
     const second = workspace();
