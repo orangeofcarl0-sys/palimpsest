@@ -15,6 +15,7 @@
 > - `LEAN-1` **2A final live gate 实测（两次，均未通过）+ 零产出泵修复**（2026-09-21，`6302a20`）：装置 `rs-test/lean-2a-live-gate.mjs`（真实 DSH 单轮 + 离线核对 attempt/证据/门禁/转录）。**第 1 轮**：agent 干对了活但 `claim` 早一步（`palimpsest_next` 每次只提交一个事件），改调 `palimpsest_run` —— 机械泵在**未改动**的树上跑策略命令退出 0，留下 `COMPLETED` + `changed_files: []` + `result_commit` = base + 零证据，**正是 `finish` 专门要拒绝的状态**。修复：`#assertCompletionHasWork` 由 `report` 与 `finish` **共用**（§3.3 此前只在 `finish` 强制），去掉 `finish` 的 `required_artifacts.length === 0` **逃逸口**（预先存在的产物不是工作），泵的无命令分支由 `completed` 改 `failed`。回归 `LEAN-A26` 确定性复现该失败；`test/inplace_execution.test.ts` 的陈旧性测试改**前提**（原先"在干净树上 report"——正是刚被判非法的状态）。**第 2 轮**：agent 按指示只调一次 `finish` 被拒 `no attempt is running`，自行查证后正确诊断 **`project "livegate" has no ProjectIR`**（无计划/无 ready set/无可认领 attempt），并**拒绝自行铸造治理状态**。**结论：`LEAN-A15` 活体那一半未证明，2A 未闭合**；缺口不是 scheduler 补丁，而是 direct path 缺少与 `finish` **对称的开始协议**。据此起草**附录 E（第 2A-B 期，Direct Work Bootstrap，`palimpsest_begin`，规划未实现）**：`Agent decides what the work is. Palimpsest makes the work governable.` —— 主代理把目标编译成最小 direct proposal（含 `writePaths`，属**工作语义**而非机器词汇），产品验证并机械建立唯一受管工作位（只用 `preview`/`step`/`claim`，**禁止** `run`/pump），readiness **全部前置、拒绝时零项目事件**，`begin` 前只读勘察允许而 mutation 不允许，标准确认**不得**从 `begin` 铸造，已有计划**不得**静默改写，retry 必须**收敛**且用派生摘要判同一性。门禁：单元 186 文件 / 2119 测试、`architecture:check` 0 violation、`check-public-api` 0/0/0。
 > - `LEAN-1` **附录 E 的 E-r1 修订**（2026-09-21，docs-only，实现前）：逐段对照 `start`/`preview`/`step`/`claim` 后，把 2A-B 的实现前边界收紧。**核实两处代码事实**：`controller.start()` 在未传 `headCommit` 时使用 `DEFAULT_HEAD_COMMIT = "c".repeat(40)`（`src/tools/controller.ts:124`）；且 `start()` 的 genesis 是**多事件**序列（`PROJECT_CREATED` → release `GATE_DEFINED` → `ROLE_TABLE_DEFINED` → `STAGE_GRAPH_DEFINED` → task registration），因此 crash 可落在任意两个声明之间，retry **不得**用新 clock 重建 creation basis（否则同幂等键 + 不同载荷）。修订九项：v1 仅 **repository-bound + in-place**；fresh begin **绑定真实 HEAD** 并加机器验收；clean-tree **分阶段**（未归属拒绝 / 已归属 RUNNING 是正常 Work）；restart 覆盖 **partial genesis 每个落点**；Case B/C 改 **语义等价而非来源**（无 marker 时来源不可判），比较 normalized shape / `D_direct` 而非完整 digest；`goal` 改称 agent-compiled；`writePaths` 明确为 self-binding scope 并说明与 ARCH-2 确认规则的窄例外关系；`A29` 改 **event delta 0**、`A33` 改 **低层工具调用计数 0** 并注明 fixture 已预置确认标准（不声称单轮确认 goal+standard）；新增 `A34` pre-claim **HEAD drift fail-closed** 与 **S0–S3 状态机**。验收 `A27`–`A34`。**仍为规划、未实现。**
 > - `LEAN-1` **附录 E 的 E-r2 修订**（2026-09-21，docs-only，实现前）：E-r1 判为 **architecture PASS / implementation HOLD**——仍有 4 个会让 `A27`/`A30` **假绿**的 blocker。**新核 5 处代码事实**：`ProjectIR.digest` 含 `committed_at`（`src/schema/models.ts:468`）；`StartProjectInput` **已含** `committedAt?`（`src/tools/controller.ts:136`，故修法**不动既有面**）；`#advanceActiveStage()` 在任务已占位该 stage 时返回 `null`（`src/scheduler/scheduler.ts:232`）；`TASK_CREATED` 已固定 `task_envelope` 与 `policy_digest`（`src/scheduler/scheduler.ts`、`src/domain/policy.ts` 的 `AuthorizedTaskEnvelope`）。**四个 blocker**：① **S0 一次性冻结 `liveHead` + `genesisCommittedAt`** 并原样传两侧，加断言 `prospective.digest == canonical.digest` 与 `envelopeId`/`projectDigest` 一致——**只对齐 HEAD 不够**，`project_digest`/`envelope_id` 会不同（§E.15.1）；② **S1 先读 canonical attempt**，已有可 claim 的 CREATED attempt 直接 claim，不再 `preview/step`（§E.15.2）；③ **2B 之前 `verification.required` fail closed**（`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`，零写）或把 capability 升级为"attempt-result verification executable"，**不得**让旧的 current-head verifier 假装满足（§E.14.1）；④ **`writePaths` 必须非空**（否则与"完成需 `changed_files > 0`"矛盾，begin 时即可证明不可完成，§E.4.2）。**三处边界**：⑤ **语义等价 ≠ 授权 basis 等价**——已有 `TASK_CREATED` 则复用 canonical envelope、**绝不重授权**，v1 保证范围写明为"同一 operator configuration 之下"，不暗示解决任意配置漂移（§E.13）；⑥ **"begin before first mutation" 是 principal protocol precondition，不是可检测的安全属性**——先改后 commit 再 begin 时工作树仍干净，产品无法追溯，`Palimpsest does not retroactively claim work`（§E.6）；⑦ **判 dirty 须复用与 `finish` 相同的脚手架过滤规则**（`.palimpsest/`），否则产品会被自己的状态目录卡死（§E.7）。另：`E.10` 完成摘要由 `testsRequired` 改为 `mechanicalChecks` 人话摘要（标准可能要求 `lint_pass`/`process_exit_zero`）；S0–S3 精确化并写出三个 basis 的分工 `Work semantics ≠ Governance basis ≠ Runtime capability`（`D_direct` 只负责第一项）。**实现门禁：E-r2 后 2A-B = GO。仍为规划、未实现。**
+> - `LEAN-1` **附录 C 的 C-r1 修订**（2026-09-22，docs-only，D1 实现前）：2B 冻结为 **CLOSED / STRONG PASS**，direct path 基线为 `begin → native work → finish → G_work ∧ V_required ∧ E_promotion`。附录 C 判 **architecture PASS / D1 implementation HOLD**——原规格把「ReasoningCell 是 canonical owner」与「后台 OS job 的执行生命周期」混在了一起。**四条新原则**：**① `Reasoning semantic state ≠ host job state`**（ReasoningCell 能持久表达 `BRANCH_OPENED`/`CANDIDATE_SUBMITTED`/`BRANCH_CLOSED`，**不能**表达 PID/进程存活/Promise；D1 状态由两层组合派生为 `RUNNING`/`COMPLETED`/`FAILED`/`INTERRUPTED`/`UNKNOWN`，且 `OPEN branch after restart ≠ RUNNING worker`，v1 **不自动重跑** `INTERRUPTED`）；**② `WriteSet_project(worker) = ∅` 靠 ephemeral snapshot**（对 delegation 时 committed HEAD 建 detached 临时 checkout，冻结 `ReadBasis`；未提交的 Principal 修改**不**复制过去；约束是 canonical project 零写，而非禁止一切临时文件写入）；**③ 正常路径不 polling，restart 可如实 `INTERRUPTED`**（只送 terminal actionable 经 attention/followup；**不声称**跨 crash 的可靠投递队列；delivery mark 非 canonical）；**④ D1 认知与 Work/Evidence/Verification/Promotion 完全正交**（不建 Task/Attempt、不产 `EvidenceAtom`、不满足 Work Gate 或 `ATTEMPT_RESULT` 复核、不改 `PromotionEligibility`、不需 `palimpsest_begin`）。另：**现有 branch host 改为 async seam**（`start() → {completion, cancel()}`，`run()` 保留为同步包装——同一认知后端、不同交互生命周期，**禁止**第二套 Agent runtime）；**抽共用的 `runBranchToSettlement`**（不复制 candidate settlement；host 失败则关 branch 且**不制造伪 epistemic claim**）；**D1 公共面收窄**为 `start {task, kind?: RESEARCH}` / `status` / `inspect`（`WORK` 留 D2、跨项目复用 `palimpsest_cross_project`、`receive` 本地无必要、`AUTO` 不急）；**context firewall 精确化**（`No Principal conversation/session by default` + brief + evidence allowlist + frozen snapshot，即 `context firewall ≠ no project context`）。**修正 C.3 与 DEL-A04 的自相矛盾**：只禁止新的 canonical `DelegationStore`/`Event`/`Authority`/event type，应用层 DTO（`DelegationRef`/`DelegationResultProjection`）不在禁止之列；且**不冻结** `dlg:v1:…` 具体字符串，只要求 opaque、可严格解析、可往返。**验收** `DEL-A01`–`A04` 保留（A01 barrier 式、A02 记 frozen basis、A03 status 调用数为 0、A04 修正措辞），新增 `DEL-A05`–`A08`（snapshot 写隔离 / `INTERRUPTED ≠ RUNNING` / 与 Work·Evidence·Verification·Promotion 正交 / `collaborate` blocking 行为不变以证明 delegate 是加法）。**实现门禁：C-r1 后 D1 = GO。仍为规划、未实现。**
 > - `LEAN-1` **第 2A-B 期交付**（2026-09-22）：`palimpsest_begin` 落地——direct path 终于有了与 `finish` 对称的开始协议。实现按 §E.16 的 S0–S3，全部前置在任何写入之前求值：`ProjectController.begin()`（preflight → prospective basis → `start({headCommit, committedAt})` → S1 先读 canonical attempt 再 claim）、application work 面 `begin()`、DSH 工具 `palimpsest_begin`（登记 `REVIEWED_TOOL_ADDITIONS`）、`test/lean_begin.test.ts`（9 项）。**实现中发现并修掉一处规格未覆盖的自身缺陷**：`#assertNoUnownedWork` 原本只在 S1 分支调用，S0（无项目）漏检——`A29` 的"stray file"一例当场暴露，已改为 S2 早返回之后**无条件**执行（S2 的 RUNNING attempt 合法拥有脏树，不得被拒）。另有两处测试构造被纠正：用手改 `attempts` 行模拟 crash 会让账本与投影不一致（retry 会死在幂等键不匹配），改为用公开生命周期原语**忠实构造** `ATTEMPT_CREATED` 未 claim 的状态。**验收**：`A27`–`A32`、`A34` 确定性通过（含 prospective basis 与 canonical basis 的 `projectDigest`/`envelopeId` 一致、每次拒绝的 event delta 0、`ATTEMPT_CREATED` 落点 retry claim 同一个 attempt、pre-claim HEAD drift 拒绝）；**`A33` 活体通过**——真实 DSH：只读勘察 → `begin`×1 → 改代码/测试/提交 → `finish`×1，`toolCalls(begin)=1`、`toolCalls(finish)=1`、`toolCalls(start|next|claim|run|gate|report)=0`，最终 `Attempt COMPLETED`、`result_commit` 含工作、`gate-release PASS (missing: [])`。**据此 `A15` 活体那一半关闭**。门禁：单元 187 文件 / 2128 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。**活体一处次要观察（非 blocker）**：`begin` 之后 agent 的首次 `write` 报 "file changed since it was read"，重读后内容未变、重试成功——疑似 begin 触碰了文件元数据，留待观察。
 > - `LEAN-1` **附录 B 的 B-r1 修订**（2026-09-22，docs-only，实现前）：2A-B 判为 **STRONG PASS / CLOSED**，2B 判为 **architecture direction PASS / implementation HOLD**。**新核三处代码事实**：first-party verifier 即 `commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] })`（`src/composition/governance.ts:176`）——**在 clean checkout 里必然 PASS**，故把它的 `supportedSubjects` 扩成含 `ATTEMPT_RESULT` 会同时造成**假验证**与**既有 head verification history 全部 stale**（改 definition digest）；`ProjectHeadVerificationSubject` 硬编码于 `provider.ts`/`status.ts`/`artifacts.ts`/`store.ts` 四处；`PromotionManager.assessEligibility()` 是唯一 assessor（5 处调用点）。修订九项：**① B.4 与 #147 校准**（唯一硬触发是 `contract_boundary`；`single_command_bar` 仅 RECOMMENDED；v1 不实现 diff-size threshold；operator-requires 等 `ProjectStandard` 有 clause 后再做）；**② subject 改 union**（`ProjectVerificationSubject = Head | AttemptResult`，`CURRENT_PROJECT_HEAD` 语义不动，`new subject kind ≠ new verification system`）；**③ Work-backed materialization owner**（窄 read port，调用方永不提供 `resultCommit`/`baseCommit`/`reportDigest`）；**④ agent-facing 不接收 `attemptId`**（恰好一个 current-batch COMPLETED promotion candidate → 验它；0 → `NO_ATTEMPT_RESULT`；>1 → `AMBIGUOUS_ATTEMPT_RESULT`，不猜）；**⑤ 新建 verifier ref** `project.attempt.git-diff-check.v1`，旧 `project.head.git-diff-check.v1` 不动，新 provider 的 commit 来自 canonical subject 故无 injection；**⑥ Verification service 控制的隔离检出 port**（`materialize` → detached checkout @ R → `release()`，throw/timeout/ERROR 也 cleanup；不是 Work truth、不是 project mutation、不是 durable artifact）；**⑦ freshness 按 kind 分开**（`ATTEMPT_RESULT` **绝不**查 ambient HEAD）＋ **runtime capability subject-aware**（`supportsIndependent(kind)`，这才是解锁 `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` 的正确条件——不是"store 存在"）；**⑧ promotion 显式 admission bridge**（Verification-agnostic 投影 + typed blocker `required_verification_missing`/`_unsatisfied`，挂在唯一 `assessEligibility()` 上，promotion domain **不** import Verification）；**⑨ 正常 `finish` 在 application 层自动触发 required verification**（Work owner + Verification owner 编排，`ProjectController` 不 import Verification），且 **`Verification FAIL ≠ Work FAIL`**（Attempt 保持 COMPLETED，不改历史报告，v1 不发明自动 reopen）。验收增补 `A35`（exact isolated materialization + cleanup）、`A36`（RA/RB adversarial：HEAD 推到 RB 后 RA 的 run 仍 CURRENT，而 promotion(RA) 仍可因 head_conflict 被拒——机器证明 `Verification freshness ≠ Promotion authority freshness`）、`A37`（双向 subject firewall）、`A38`（promotion bridge，并断言 **`EvidenceAtom` 计数在 Verification PASS 前后不增加**——证明没有 evidence laundering）。**仍为规划、未实现。**
 
@@ -570,7 +571,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS | 无 | **`A15` 活体那一半已由 `A33` 关闭**（2026-09-22）。此前两轮失败暴露的零产出泵（`A26` 已修）与"无开始入口"（2A-B 已修）均已闭合 |
 | **2A-B** | Direct Work Bootstrap（**已交付** 2026-09-22，附录 E） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A32`、`A34` **确定性通过**；**`A33` 活体通过**（`begin`×1、`finish`×1、低层工具调用 ×0、gate PASS）。v1 仅 repository-bound + in-place、`writePaths` 非空 |
 | **2B** | Attempt-bound Verification（**规划，附录 B；B-r1 已修订**） | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交；subject union + 新 verifier ref + promotion admission bridge + application 层 finish 编排 | 是，小而明确 | `A07`、`A08`、`A19`–`A21`、**`A35`–`A38`**。唯一硬触发是 `contract_boundary` |
-| **3** | `PLMP-DELEGATE-1` D1：异步认知委派 | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A04`；且 `WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
+| **3** | `PLMP-DELEGATE-1` D1：异步认知委派（**规划，附录 C + C-r1**） | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A08`；D1 公共面收窄为 `RESEARCH`（`start`/`status`/`inspect`）；`WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
 | **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
 | **6** | `PLMP-DELEGATE-1` D3：并发写 | Result Transplant + multi-writer | 只有真实需求才做 | D3 专属验收在 `PLMP-DELEGATE-1` 内定义 |
@@ -1070,6 +1071,8 @@ v1 若重做仍需显式 plan / new attempt，**先接受这个摩擦**；**不�
 
 ## 附录 C（立项）：`PLMP-DELEGATE-1` —— 选择性委派运行时
 
+> **状态：立项（D1 未实现）**。`C-r1` 修订（2026-09-22，实现前）：2B 已冻结为 **CLOSED / STRONG PASS**，direct path 基线为 `begin → native work → finish → G_work ∧ V_required ∧ E_promotion`。附录 C 的方向判为 **architecture PASS**，但 D1 判为 **implementation HOLD**——当前规格把「ReasoningCell 是 canonical owner」与「后台 OS job 的执行生命周期」混在了一起。C-r1 钉住四条新原则并把 D1 的公共面收窄。
+
 > **另起规格的理由**：`LEAN-1` 解决"**人**不操作治理机器"；`PLMP-DELEGATE-1` 解决"**主代理**不管理 worker 机器"。两者关联，但不是同一个问题。本附录只做立项与边界冻结，不写完整设计。
 
 ### C.1 问题
@@ -1104,7 +1107,11 @@ palimpsest_delegate
 Delegation is a projection, not a new truth species.
 ```
 
-`delegationRef` 只是一个**可解析的 routing reference**，概念形状：
+`delegationRef` 只是一个 **opaque、可严格解析、可往返（round-trippable）的 routing reference**；内部必须能还原到 canonical `ReasoningCell` + branch ref。**不冻结具体字符串格式**（早期草案里的 `dlg:v1:…` 只是示意，不是契约）：格式可以演进，只要解析与还原仍然严格。
+
+> **C-r1 修正（自相矛盾）**：本节说 `delegationRef` 是正式概念，而 `DEL-A04` 原写「不存在 `Delegation*` 类型」——按字面执行连 `DelegationRef` 自己都被禁止。已改为：**不存在新的 canonical `DelegationStore` / `DelegationEvent` / `DelegationAuthority` / delegation event type**；普通 application DTO（`DelegationRef`、`DelegationResultProjection`）**不是新的 ontology**，无需为通过 grep 测试而故意改怪名字。
+
+概念形状（示意，非契约）：
 
 ```
 dlg:v1:reasoning:<cell>:<branch>
@@ -1229,12 +1236,177 @@ Palimpsest 在 H1 上开一个【新的】B attempt
 
 ### C.10 验收（D1 出口）
 
-- `DEL-A01`：`start` 立即返回 `delegationRef`，主代理在同一 turn 内**继续直接编辑**；后台完成后经 attention 呈现终态投影。
-- `DEL-A02`：worker 上下文 == `ReasoningBranchBrief`，**不含**主代理对话（断言 brief 形状）。
-- `DEL-A03`：主代理全程**不需要** status 轮询（源码 + 活体断言）。
-- `DEL-A04`：架构断言——**不存在** `Delegation*` 类型 / 事件 / 存储。
+- `DEL-A01`（**C-r1 收紧为 barrier 式证明**）：用 barrier 证明 `start` **已经返回**、主代理**已经执行了下一次 direct mutation**，而 worker **尚未完成**；后台完成后经 attention 呈现终态投影。
+- `DEL-A02`（**C-r1 收紧**）：branch input **不含 Principal conversation/session**（断言 brief 形状），**并记录 frozen project basis**（snapshot 的 `H0`）。
+- `DEL-A03`（**C-r1 收紧**）：真实 DSH transcript 中 **`status` 调用次数为 0**，终态结果由 **followup** 送达。
+- `DEL-A04`（**C-r1 修正措辞**）：架构断言——**不存在新的 canonical `DelegationStore` / `DelegationEvent` / `DelegationAuthority` / delegation event type**。应用层 DTO 不在禁止之列。
+- `DEL-A05` **snapshot write-isolation**：worker 即使尝试在自己的 snapshot 里 `edit`/`shell` 写文件，canonical repository **零变化**（`git status --porcelain` 与 HEAD 均不变），且 snapshot 在结束后被丢弃。
+- `DEL-A06` **INTERRUPTED ≠ RUNNING**：模拟 host crash（branch 仍 OPEN、进程已无对应 job）后，`status(ref)` 必须报 **`INTERRUPTED`**，**不得**报 `RUNNING`；v1 **不自动重跑**。
+- `DEL-A07` **orthogonality**：D1 前后 **Work event / `EvidenceAtom` / Project Verification / Promotion event 的数量均不因 research 本身增加**；research 不创建 Task、不创建 Attempt、不满足 Work Gate、不满足 `ATTEMPT_RESULT` 复核、不改 `PromotionEligibility`、也不需要 `palimpsest_begin`。
+- `DEL-A08` **additive surface**：原有 `palimpsest_collaborate` 的 blocking 行为**保持不变**（同一执行器、不同交互生命周期），证明 `delegate` 是**加法**而非替换。
 
 ---
+
+## C-r1 修订（D1 实现前）：语义生命周期与 host 执行生命周期必须分开
+
+> **状态：规划**。C-r1 是 docs-only 修订。它把 D1 从 *architecture PASS / implementation HOLD* 推到可开工。
+
+### C.11 四条新原则
+
+**① `Reasoning semantic state ≠ host job state`（最重要的冻结）**
+
+ReasoningCell 今天能**持久表达**的是：`BRANCH_OPENED` / `CANDIDATE_SUBMITTED` / verification·admission / `BRANCH_CLOSED`。它**不能**持久表达：subprocess PID、宿主进程是否还活着、某个 Promise 是否还在跑。
+
+```
+Semantic lifecycle  ≠  Host execution lifecycle
+```
+
+ReasoningCell 继续是**语义真值 owner**；后台 DSH 子进程只是**可丢失的 host execution**。
+
+**D1 的产品状态由两层组合派生**：
+
+| 状态 | 含义 |
+|---|---|
+| `RUNNING` | branch OPEN，**且当前进程确实持有活跃 host job** |
+| `COMPLETED` | branch 已产生 terminal candidate/evaluation 并关闭 |
+| `FAILED` | branch 已关闭且无有效 candidate（host failure / timeout） |
+| `INTERRUPTED` | branch 仍 OPEN，但**当前进程没有对应 host job**（典型：restart / crash） |
+| `UNKNOWN` | ref 无法解析，或 canonical branch 不存在 |
+
+```
+OPEN branch after restart  ≠  RUNNING worker
+```
+
+否则会制造「系统说 worker 还在跑、其实进程早没了」的**假状态**。
+
+**D1 v1 不自动重跑 `INTERRUPTED` branch**：自动重跑会立刻遇到重复 stochastic cognition、旧 child 是否幸存等问题。`status`/`inspect` 在 restart recovery 时**如实报告 `INTERRUPTED`**；透明重启以后真有需求再做。这仍满足「正常路径不 polling」，因为**无故障**运行依靠 terminal attention。
+
+**② `WriteSet_project(worker) = ∅`，靠 ephemeral project snapshot**
+
+`ReasoningBranchBrief` 只带 `objective` / `question` / accepted frontier（好：防止整段 Principal conversation 被复制）。但 branch runner 的 `workDir` 是显式参数，若直接指向 Principal 正在改的主仓库，worker 会看到一个**不断变化的 filesystem**：虽然 `WriteSet(worker) = ∅`，但 `ReadBasis(worker)` **没有冻结**。
+
+D1 在 delegation start 时对**当时的 committed HEAD = H0** 建一个 **detached 临时 checkout**：
+
+```
+Principal repo    H0 → edits continue...
+                        │
+delegate snapshot  H0 ──┴─ research worker reads here
+```
+
+worker 即便误用 `edit`/`shell` 改这个临时 checkout，也**不会**改到 canonical project；退出后整个 snapshot 丢弃。因此 D1 的真正约束是：
+
+```
+WriteSet_canonical_project(worker) = ∅
+```
+
+而**不是**要求 worker 在整个 OS 上不能写任何临时文件。
+
+若 Principal 在启动 delegation 时主仓库已有**未提交**修改，D1 v1 明确：**research snapshot 基于 delegation 时的 committed HEAD，未提交的 Principal 修改不自动复制过去**。这比偷偷读一个移动中的 dirty tree 更诚实；而 `DEL-A01` 的目标场景本就是「先 delegate B，再开始改 A」，核心体验不受限。
+
+**③ 正常路径不 polling；restart 可以如实是 `INTERRUPTED`**
+
+```
+background job settles
+  → application-level terminal result projection
+  → PrincipalAttentionComposer / host wake
+  → agent.followup(...)
+```
+
+只送 **terminal actionable**，不送进度。delivery mark 继续是**非 canonical** 的机械标记。
+
+D1 v1 **不声称**拥有「跨 host crash 的可靠 notification queue」：进程 crash 后 branch OPEN 而 host job 消失，restart 后 `status(ref)` 报 `INTERRUPTED`，**不得**伪称自动恢复了投递。以后若 dogfood 证明「crash 后也必须自动重新投递」有价值，再加基于 ReasoningCell history 的 restart reconciliation。
+
+**④ D1 的认知与 Work/Evidence/Verification/Promotion **完全正交**（新硬不变量）**
+
+D1 `RESEARCH`：
+
+```
+不创建 Work Task
+不创建 Attempt
+不产生 EvidenceAtom
+不满足 Work Gate
+不满足 ATTEMPT_RESULT 复核
+不改 PromotionEligibility
+不需要 palimpsest_begin
+```
+
+因此 Principal 可以「delegate research B → begin/edit/finish Work A」，也可以在一个**已经 RUNNING 的 direct attempt 中**启动 research。research branch 自己的 ReasoningCell verification/admission **仍然只是 cell-local epistemic standing**，不变成 Work Truth/Evidence。
+
+```
+Direct Work  ∥  Optional cognitive delegation
+```
+
+而不是让 D1 变成另一种 Work mode。
+
+### C.12 把现有 branch host 改成 async seam（不写第二套 adapter）
+
+当前 `dshSubprocessBranchExecutionPort()` 已具备大部分能力：显式 `workDir`、超时、abort、规范化 result、临时 brief 文件与 cleanup。唯一问题是 `run(...)` 的 Promise **只在 child 结束时 settle**，所以 `palimpsest_delegate start` 无法立即返回。
+
+**不新建第二套 subprocess adapter**，而是把 host 层抽成：
+
+```ts
+start(...) → { completion: Promise<BranchExecutionResult>, cancel() }
+run(input) { const job = await start(input); return job.completion; }   // 旧同步接口保留
+```
+
+于是 `palimpsest_collaborate` 仍是现有 **blocking UX**，而 `palimpsest_delegate` 用**同一执行器**的 `start()` 立即返回：
+
+```
+same cognition backend  ·  different interaction lifecycle
+```
+
+**禁止**为 D1 创建第二套 Agent runtime。
+
+### C.13 不要重新实现 Reasoning candidate settlement
+
+`RecipeExecution.executeExplore()` 已有正确链条：`branch execution → structured statement → submitCandidate → evaluateCandidate`。D1 **不得**复制一份「差不多」的实现，否则很快出现「`collaborate` 的 candidate semantics ≠ `delegate` 的 candidate semantics」。
+
+抽一个内部共用 helper：把**一个已打开 branch 从 brief 跑到 candidate/evaluation**的逻辑变成**单一来源**：
+
+```ts
+await runBranchToSettlement(...)                 // 同步 recipe
+void runBranchToSettlement(...).then(...)        // 异步 D1
+```
+
+ReasoningCell 仍是 candidate/admission owner。若 host execution `FAILED`/`TIMEOUT`，则**关闭 branch、无 candidate**——**不得**制造「host crashed」这种伪 epistemic claim。
+
+### C.14 D1 的公共面比 C.2 更窄
+
+C.2 是**长期总形状**（`AUTO | RESEARCH | WORK`、`paths`、`projectRefs`、`prepare/start/status/receive/inspect`）。对 D1 来说太早。**保留长期接口设想，但明确 D1 实现子集**：
+
+```
+palimpsest_delegate
+  start   { task, kind?: RESEARCH }
+  status  { delegationRef }    // debug / restart recovery
+  inspect { delegationRef }    // progressive disclosure
+```
+
+正常路径**只有 `start`**。
+
+- `WORK` → 留给 D2；
+- `projectRefs` / 跨项目 → 已有成熟的 `palimpsest_cross_project`，**不在 D1 重做一条路**；
+- `receive` → 本地 research 没有类似 Federation ACK 的语义必要性；terminal projection 直接经 attention/followup 送给 Principal；
+- `AUTO` → 不急。D1 的目标是证明**Principal 主动选择委派时**能真正异步，而不是先解决分类器问题。
+
+### C.15 context firewall 的精确表述
+
+既然 branch host 的 cwd 是显式 `workDir`，正确规则**不是**「worker 除 brief 外什么上下文都没有」，而是：
+
+```
+No Principal conversation/session by default
+```
+
+同时允许：
+
+```
+ReasoningBranchBrief  +  explicit evidence allowlist  +  frozen project read snapshot
+```
+
+```
+context firewall  ≠  no project context
+```
+
+这才是一个**真正可用的 research worker**，而不是脱离项目的裸模型。
 
 ## 附录 D：近期明确不做（anti-waste）
 
