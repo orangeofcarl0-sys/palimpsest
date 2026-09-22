@@ -32,6 +32,7 @@ import {
   projectVerificationEventDigestOf,
   projectVerificationRunIdOf,
   type ProjectHeadVerificationSubject,
+  type ProjectVerificationSubject,
   type ProjectVerificationFreshness,
   type ProjectVerificationRun,
   type ProjectVerificationRunEvent,
@@ -56,7 +57,7 @@ export interface AppendProjectVerificationStartInput {
   readonly projectId: string;
   readonly requestRef: string;
   readonly requestDigest: string;
-  readonly subject: ProjectHeadVerificationSubject;
+  readonly subject: ProjectVerificationSubject;
   readonly verifierRef: string;
   readonly verifierDefinitionDigest: string;
   readonly independence: VerifierIndependenceClass;
