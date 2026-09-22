@@ -29,6 +29,7 @@ const ADVISOR_DIR = fileURLToPath(new URL("../src/advisor", import.meta.url));
 const RECIPES_DIR = fileURLToPath(new URL("../src/recipes", import.meta.url));
 const EXECUTION_FILE = fileURLToPath(new URL("../src/recipes/execution.ts", import.meta.url));
 const BRANCH_EXECUTION_FILE = fileURLToPath(new URL("../src/reasoning_cell/branch_execution.ts", import.meta.url));
+const SETTLEMENT_FILE = fileURLToPath(new URL("../src/reasoning_cell/branch_settlement.ts", import.meta.url));
 
 const strip = (code: string): string => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
@@ -118,12 +119,20 @@ describe("G10-S recipe/advisor source firewall", () => {
   });
 
   it("the EXPLORE execution path reaches the service but never an admission port", () => {
-    const execution = readFileSync(EXECUTION_FILE, "utf-8");
-    const code = strip(execution);
-    expect(code).toContain("submitCandidate");
-    expect(code).toContain("evaluateCandidate");
-    expect(code).not.toMatch(/\.admit\(/u);
-    expect(code).not.toMatch(/AdmissionPort|admissionDecision|AdmissionDecision/u);
+    // §C.13 moved the candidate submit/evaluate pair into a SHARED settlement coordinator (so
+    // `collaborate` and `delegate` cannot drift), so the property is checked across the whole
+    // settlement path rather than in one file. The property itself is unchanged: the path reaches the
+    // reasoning SERVICE and never an admission port.
+    const execution = strip(readFileSync(EXECUTION_FILE, "utf-8"));
+    const settlement = strip(readFileSync(SETTLEMENT_FILE, "utf-8"));
+    const path = `${execution}
+${settlement}`;
+    expect(path).toContain("submitCandidate");
+    expect(path).toContain("evaluateCandidate");
+    expect(path).not.toMatch(/\.admit\(/u);
+    expect(path).not.toMatch(/AdmissionPort|admissionDecision|AdmissionDecision/u);
+    // And the execution file still DELEGATES to that coordinator rather than doing it inline.
+    expect(execution).toContain("settleBranchFromOutput");
     // The branch execution seam itself constructs no identity locus.
     const branch = strip(readFileSync(BRANCH_EXECUTION_FILE, "utf-8"));
     expect(branch).not.toMatch(/materializePeerRef|PersistentPoint|continuity/iu);
