@@ -29,7 +29,8 @@ import { SqliteManagementActivityStore, SqliteWorkModePreferenceStore, withMonit
 import type { UserWorkModeControlPort, VerificationRuntimeCapabilityView } from "../project_operating/index.js";
 import { SqliteMonitorDeliveryMarkStore, makeCampaignMonitorDriver, nullCampaignWakeActivation } from "../monitor/index.js";
 import type { CampaignMonitorDriver, MonitorRuntimeCapability } from "../monitor/index.js";
-import { SqliteProjectVerificationStore, commandProjectHeadVerifier, firstPartyProjectHeadVerificationSource, independenceSummary, makeProjectVerificationService, verifierRegistryFromPorts } from "../project_verification/index.js";
+import { gitAttemptResultMaterializer } from "../project_verification/attempt_result_source.js";
+import { SqliteProjectVerificationStore, commandAttemptResultVerifier, commandProjectHeadVerifier, firstPartyAttemptResultVerificationSource, firstPartyProjectHeadVerificationSource, independenceSummary, makeProjectVerificationService, verifierRegistryFromPorts } from "../project_verification/index.js";
 import type { ProjectVerifierPort, ProjectVerifierRegistry } from "../project_verification/index.js";
 import { makeProjectManagementService } from "../project_management/index.js";
 import type { EventStore } from "../state/index.js";
@@ -170,10 +171,23 @@ export function composeGovernanceCapabilities(input: GovernanceCompositionInput)
       projectVerificationStore = undefined;
     }
   }
+  // PLMP-LEAN-1 §B.11/§B.12: the ATTEMPT_RESULT seams. All four of definition, provider, source and
+  // materializer are required for attempt-result verification to be EXECUTABLE — a registered
+  // definition is not a runtime, and a runtime with no way to materialize the result is not one
+  // either. Absent a repository there is nothing to check out, so the seams are simply not composed.
+  const attemptResultSeams =
+    options.repository === undefined || options.repository === ""
+      ? null
+      : Object.freeze({
+          source: firstPartyAttemptResultVerificationSource(controller),
+          materializer: gitAttemptResultMaterializer({ repository: options.repository }),
+        });
   const verificationProviders: readonly ProjectVerifierPort[] =
     options.projectVerifierProviders ??
     Object.freeze([
       commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] }),
+      // A SEPARATE ref, never the head one widened (B.11).
+      ...(attemptResultSeams === null ? [] : [commandAttemptResultVerifier()]),
     ]);
   const verificationRegistry: ProjectVerifierRegistry =
     options.projectVerifierRegistry ?? verifierRegistryFromPorts(verificationProviders);
@@ -208,6 +222,12 @@ export function composeGovernanceCapabilities(input: GovernanceCompositionInput)
               ? {}
               : { defaultVerifierRef: options.projectVerificationDefaultVerifierRef }),
             ...(repository === null ? {} : { repository }),
+            ...(attemptResultSeams === null
+              ? {}
+              : {
+                  attemptResultSource: attemptResultSeams.source,
+                  attemptResultMaterializer: attemptResultSeams.materializer,
+                }),
             ...(options.clock === undefined ? {} : { clock: options.clock }),
           });
           return {

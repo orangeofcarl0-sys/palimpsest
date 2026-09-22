@@ -84,7 +84,18 @@ export interface CompletionEnvelopeBasis {
 
 /** What this deployment can actually do. Capabilities gate READINESS, never the requirement itself. */
 export interface CompletionCapabilities {
+  /**
+   * A verifier that can serve a CURRENT_PROJECT_HEAD subject. Deliberately NOT the same fact as the
+   * one below: a deployment may compose one and not the other, and conflating them is how
+   * "a verification store exists" came to stand in for "an attempt result can be verified".
+   */
   readonly independentVerifierAvailable: boolean;
+  /**
+   * PLMP-LEAN-1 §B.11: an EXECUTABLE independent verifier whose supportedSubjects include
+   * ATTEMPT_RESULT. That is definition AND provider AND source AND materializer — not merely a
+   * registered definition.
+   */
+  readonly attemptResultVerificationAvailable: boolean;
   readonly sandboxSpawnVerified: boolean;
 }
 

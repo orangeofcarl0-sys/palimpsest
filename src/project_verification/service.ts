@@ -34,6 +34,8 @@ import {
   type ProjectVerificationState,
 } from "./status.js";
 import type { ProjectHeadVerificationSource, ProjectVerifierPort } from "./provider.js";
+import type { AttemptResultMaterializerPort, AttemptResultVerificationSource } from "./attempt_result_source.js";
+import type { ProjectVerificationSubject, ProjectVerificationSubjectKind } from "./artifacts.js";
 import type { ProjectVerifierRegistry } from "./registry.js";
 import type { ProjectVerificationHistoryStore } from "./store.js";
 
@@ -47,6 +49,13 @@ export interface ProjectVerificationServiceDeps {
   readonly defaultVerifierRef?: string | null | undefined;
   /** The repository the mechanical protocol runs against, when one applies. */
   readonly repository?: string | undefined;
+  /**
+   * PLMP-LEAN-1 §B.9/§B.12: the two attempt-result seams. Both are required for an ATTEMPT_RESULT
+   * verification to be executable — a registered definition is not a runtime, and a runtime without a
+   * way to materialize the result is not one either.
+   */
+  readonly attemptResultSource?: AttemptResultVerificationSource | undefined;
+  readonly attemptResultMaterializer?: AttemptResultMaterializerPort | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -55,6 +64,14 @@ export interface VerifyCurrentHeadInput {
   readonly requestedBy: string;
   readonly reason?: string | undefined;
   readonly repository?: string | undefined;
+  readonly signal?: AbortSignal | undefined;
+}
+
+export interface VerifyAttemptResultInput {
+  readonly attemptId: string;
+  readonly verifierRef?: string | undefined;
+  readonly requestedBy: string;
+  readonly reason?: string | undefined;
   readonly signal?: AbortSignal | undefined;
 }
 
@@ -73,6 +90,12 @@ export interface ProjectVerificationOutcome {
 
 export interface ProjectVerificationService {
   verifyCurrentHead(input: VerifyCurrentHeadInput): Promise<ProjectVerificationOutcome>;
+  /**
+   * PLMP-LEAN-1 §B.10: verify the immutable result of one attempt. `attemptId` is INTERNAL
+   * application identity — a principal never supplies it, and the subject's commits are read from
+   * canonical Work, never from the caller.
+   */
+  verifyAttemptResult(input: VerifyAttemptResultInput): Promise<ProjectVerificationOutcome>;
   status(): Promise<ProjectVerificationStatus>;
   /** Newest first (a UI/agent history read), never a rewrite of the chain. */
   history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
@@ -93,6 +116,10 @@ export const PROJECT_VERIFICATION_REASON_CODES = [
   "verifier_definition_mismatch",
   /** §5: the actual git head is not the canonical project head. */
   "project_head_not_materialized",
+  /** §B.9: canonical Work cannot yield a subject (not completed, no report, inconsistent record). */
+  "attempt_result_unavailable",
+  /** §B.12: the subject exists but its commit cannot be checked out — blocked before any run. */
+  "attempt_result_not_materializable",
   "verification_aborted",
 ] as const;
 export type ProjectVerificationReasonCode = (typeof PROJECT_VERIFICATION_REASON_CODES)[number];
@@ -106,21 +133,34 @@ export function makeProjectVerificationService(
   );
   const now = (): string => canonicalDatetime((deps.clock ?? (() => new Date().toISOString()))());
 
-  function executableVerifierRefs(): readonly string[] {
+  function executableVerifierRefsFor(kind: ProjectVerificationSubjectKind): readonly string[] {
     return Object.freeze(
       registry
         .list()
-        .filter((definition) => providerByRef.has(definition.verifierRef))
+        .filter((definition) => providerByRef.has(definition.verifierRef) && definition.supportedSubjects.includes(kind))
         .map((definition) => definition.verifierRef),
     );
   }
 
-  function defaultVerifierRef(): string | null {
-    if (deps.defaultVerifierRef !== undefined && deps.defaultVerifierRef !== null) {
+  /** The head view, unchanged in meaning: only verifiers that can serve a head subject count. */
+  function executableVerifierRefs(): readonly string[] {
+    return executableVerifierRefsFor("CURRENT_PROJECT_HEAD");
+  }
+
+  /**
+   * §B.11: the default is resolved PER KIND. Resolving "the first executable ref" globally would
+   * hand `verifyAttemptResult` the head verifier — a runtime bug that reads as a protocol choice.
+   */
+  function defaultVerifierRefFor(kind: ProjectVerificationSubjectKind): string | null {
+    if (kind === "CURRENT_PROJECT_HEAD" && deps.defaultVerifierRef !== undefined && deps.defaultVerifierRef !== null) {
       return deps.defaultVerifierRef;
     }
-    const executable = executableVerifierRefs();
+    const executable = executableVerifierRefsFor(kind);
     return executable.length === 0 ? null : executable[0]!;
+  }
+
+  function defaultVerifierRef(): string | null {
+    return defaultVerifierRefFor("CURRENT_PROJECT_HEAD");
   }
 
   async function readRepositoryHead(): Promise<string | null> {
@@ -194,6 +234,128 @@ export function makeProjectVerificationService(
     return Object.freeze({ ...outcome, statusView: await status() });
   }
 
+  /**
+   * §B.13: an attempt result's freshness is `SameCanonicalAttemptResult` — rematerialize the subject
+   * from canonical Work and compare digests. It NEVER reads the ambient head, the ProjectIR revision
+   * or the project digest: the result is a historical immutable artifact, and the repository moving
+   * on says nothing about whether it is still the same result.
+   */
+  async function attemptResultFreshnessAfterRun(
+    attemptId: string,
+    subjectDigest: string,
+  ): Promise<ProjectVerificationFreshness> {
+    const source = deps.attemptResultSource;
+    if (source === undefined) return "STALE_INPUT";
+    try {
+      return source.materialize(attemptId).digest === subjectDigest ? "CURRENT" : "STALE_INPUT";
+    } catch {
+      // The subject can no longer be established: never claim the input was current.
+      return "STALE_INPUT";
+    }
+  }
+
+  /**
+   * The shared execution core: request -> STARTED -> provider -> freshness -> COMPLETED/INTERRUPTED.
+   *
+   * NOT exported, and NOT reachable from the returned service object. A public "verify this subject"
+   * entry point would let a caller construct a verification target, which §4 forbids; both entry
+   * points derive their subject from canonical state and only then hand it here.
+   *
+   *   shared implementation  !=  generic public target API
+   */
+  async function executeVerification(input: {
+    readonly subject: ProjectVerificationSubject;
+    readonly selectedVerifierRef: string;
+    readonly definition: VerifierDefinition;
+    readonly provider: ProjectVerifierPort;
+    readonly repository?: string | undefined;
+    readonly requestedBy: string;
+    readonly reason: string;
+    readonly signal?: AbortSignal | undefined;
+    readonly freshness: () => Promise<ProjectVerificationFreshness>;
+  }): Promise<ProjectVerificationOutcome> {
+    const subject = input.subject;
+    // §11 + §12: the request is digest-bound, and STARTED is written BEFORE the provider call so a
+    // crash can only leave an unresolved STARTED.
+    const request = materializeProjectVerificationRequest({
+      subject,
+      verifierRef: input.selectedVerifierRef,
+      verifierDefinitionDigest: input.definition.digest,
+      requestedBy: input.requestedBy,
+      reason: input.reason,
+    });
+    const started = deps.store.appendStart({
+      projectId: deps.projectId,
+      requestRef: request.verificationRequestId,
+      requestDigest: request.digest,
+      subject,
+      verifierRef: input.selectedVerifierRef,
+      verifierDefinitionDigest: input.definition.digest,
+      independence: input.definition.independenceClass,
+      startedAt: now(),
+    });
+
+    let raw: ProjectVerifierRawResult | null = null;
+    let failure: string | null = null;
+    try {
+      raw = parseProjectVerifierRawResult(
+        await input.provider.verify({
+          subject,
+          ...(input.repository === undefined ? {} : { repository: input.repository }),
+          ...(input.signal === undefined ? {} : { signal: input.signal }),
+        }),
+      );
+    } catch (error) {
+      failure = error instanceof Error ? error.message : String(error);
+    }
+    const finishedAt = now();
+    const freshness = await input.freshness();
+
+    if (failure !== null && input.signal?.aborted === true) {
+      // An abort is NOT an evaluation: the run is closed with no verdict.
+      const run = deps.store.appendInterruption({
+        projectId: deps.projectId,
+        runId: started.runId,
+        detail: `the run was aborted before the protocol produced a result: ${failure}`,
+        freshness,
+        finishedAt,
+      });
+      return withStatus({
+        status: "recorded",
+        typedReasonCode: "verification_aborted",
+        detail: run.detail ?? "the run was aborted",
+        run,
+      });
+    }
+    if (raw === null) {
+      // An infrastructure fault is ERROR, never FAIL (§8).
+      raw = materializeProjectVerifierRawResult({
+        verifierRef: input.selectedVerifierRef,
+        verdict: "ERROR",
+        detail: `the verifier runtime failed before it produced a result: ${failure ?? "unknown failure"}`,
+      });
+    }
+    const run = deps.store.appendCompletion({
+      projectId: deps.projectId,
+      runId: started.runId,
+      verdict: raw.verdict,
+      score: raw.score,
+      detail: raw.detail,
+      freshness,
+      resultDigest: raw.digest,
+      finishedAt,
+    });
+    return withStatus({
+      status: "recorded",
+      typedReasonCode: "verified",
+      detail:
+        run.status === "COMPLETED"
+          ? `the verifier protocol "${input.selectedVerifierRef}" returned ${run.verdict} (${run.freshness})`
+          : `the run ended as ${run.status}`,
+      run,
+    });
+  }
+
   return Object.freeze({
     async verifyCurrentHead(input: VerifyCurrentHeadInput): Promise<ProjectVerificationOutcome> {
       const reason = input.reason ?? "explicit request to verify the current project head";
@@ -260,90 +422,112 @@ export function makeProjectVerificationService(
         );
       }
 
-      // §11 + §12: the request is digest-bound, and STARTED is written BEFORE the
-      // provider call so a crash can only leave an unresolved STARTED.
-      const request = materializeProjectVerificationRequest({
+      return executeVerification({
         subject,
-        verifierRef: selectedVerifierRef,
-        verifierDefinitionDigest: definition.digest,
+        selectedVerifierRef,
+        definition,
+        provider,
+        ...(repository === undefined ? {} : { repository }),
         requestedBy: input.requestedBy,
         reason,
-      });
-      const started = deps.store.appendStart({
-        projectId: deps.projectId,
-        requestRef: request.verificationRequestId,
-        requestDigest: request.digest,
-        subject,
-        verifierRef: selectedVerifierRef,
-        verifierDefinitionDigest: definition.digest,
-        independence: definition.independenceClass,
-        startedAt: now(),
-      });
-
-      let raw: ProjectVerifierRawResult | null = null;
-      let failure: string | null = null;
-      try {
-        raw = parseProjectVerifierRawResult(
-          await provider.verify({
-            subject,
-            ...(repository === undefined ? {} : { repository }),
-            ...(input.signal === undefined ? {} : { signal: input.signal }),
-          }),
-        );
-      } catch (error) {
-        failure = error instanceof Error ? error.message : String(error);
-      }
-      const finishedAt = now();
-      const freshness = await freshnessAfterRun({
-        subjectDigest: subject.digest,
-        headCommit: subject.headCommit,
-      });
-
-      if (failure !== null && input.signal?.aborted === true) {
-        // An abort is NOT an evaluation: the run is closed with no verdict.
-        const run = deps.store.appendInterruption({
-          projectId: deps.projectId,
-          runId: started.runId,
-          detail: `the run was aborted before the protocol produced a result: ${failure}`,
-          freshness,
-          finishedAt,
-        });
-        return withStatus({
-          status: "recorded",
-          typedReasonCode: "verification_aborted",
-          detail: run.detail ?? "the run was aborted",
-          run,
-        });
-      }
-      if (raw === null) {
-        // An infrastructure fault is ERROR, never FAIL (§8).
-        raw = materializeProjectVerifierRawResult({
-          verifierRef: selectedVerifierRef,
-          verdict: "ERROR",
-          detail: `the verifier runtime failed before it produced a result: ${failure ?? "unknown failure"}`,
-        });
-      }
-      const run = deps.store.appendCompletion({
-        projectId: deps.projectId,
-        runId: started.runId,
-        verdict: raw.verdict,
-        score: raw.score,
-        detail: raw.detail,
-        freshness,
-        resultDigest: raw.digest,
-        finishedAt,
-      });
-      return withStatus({
-        status: "recorded",
-        typedReasonCode: "verified",
-        detail:
-          run.status === "COMPLETED"
-            ? `the verifier protocol "${selectedVerifierRef}" returned ${run.verdict} (${run.freshness})`
-            : `the run ended as ${run.status}`,
-        run,
+        ...(input.signal === undefined ? {} : { signal: input.signal }),
+        freshness: () => freshnessAfterRun({ subjectDigest: subject.digest, headCommit: subject.headCommit }),
       });
     },
 
+    async verifyAttemptResult(input: VerifyAttemptResultInput): Promise<ProjectVerificationOutcome> {
+      const reason = input.reason ?? "explicit request to verify a completed attempt's result";
+      const source = deps.attemptResultSource;
+      const materializer = deps.attemptResultMaterializer;
+      if (source === undefined || materializer === undefined) {
+        return blocked(
+          "verifier_runtime_unavailable",
+          "this deployment composes no attempt-result verification runtime: a subject source AND a materializer are both required",
+        );
+      }
+
+      // §B.9: the subject comes from canonical Work. `attemptId` is internal identity; the commits
+      // are never arguments.
+      let subject;
+      try {
+        subject = source.materialize(input.attemptId);
+      } catch (error) {
+        return blocked(
+          "attempt_result_unavailable",
+          `the canonical result of attempt "${input.attemptId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+
+      const selectedVerifierRef = input.verifierRef ?? defaultVerifierRefFor("ATTEMPT_RESULT");
+      if (selectedVerifierRef === null) {
+        return blocked(
+          "no_registered_verifier",
+          "no verifier that supports ATTEMPT_RESULT is registered in this deployment, so there is nothing to execute",
+        );
+      }
+      const definition: VerifierDefinition | undefined = registry.get(selectedVerifierRef);
+      if (definition === undefined) {
+        return blocked(
+          "unknown_verifier_ref",
+          `"${selectedVerifierRef}" is not a registered verifier ref; only registered verifiers may be selected`,
+        );
+      }
+      // §B.11: an explicitly named ref that cannot serve this subject is refused, never silently
+      // swapped for one that can.
+      if (!definition.supportedSubjects.includes("ATTEMPT_RESULT")) {
+        return blocked(
+          "unsupported_verification_subject",
+          `verifier "${selectedVerifierRef}" does not support ATTEMPT_RESULT`,
+        );
+      }
+      const provider = providerByRef.get(selectedVerifierRef);
+      if (provider === undefined) {
+        return blocked(
+          "verifier_runtime_unavailable",
+          `verifier "${selectedVerifierRef}" is registered as configuration but no runtime is bound to it`,
+        );
+      }
+      if (provider.definition.digest !== definition.digest) {
+        return blocked(
+          "verifier_definition_mismatch",
+          `the runtime for "${selectedVerifierRef}" implements definition ${provider.definition.digest}, but the registry lists ${definition.digest}`,
+        );
+      }
+
+      // §B.12 and the ordering rule: materialize BEFORE STARTED. A subject whose commit cannot be
+      // checked out is an EXECUTION blocker, not an evaluation, so no run history is written for it.
+      let materialized;
+      try {
+        materialized = await materializer.materialize(subject);
+      } catch (error) {
+        return blocked(
+          "attempt_result_not_materializable",
+          `the result commit of attempt "${input.attemptId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      try {
+        return await executeVerification({
+          subject,
+          selectedVerifierRef,
+          definition,
+          provider,
+          repository: materialized.repository,
+          requestedBy: input.requestedBy,
+          reason,
+          ...(input.signal === undefined ? {} : { signal: input.signal }),
+          freshness: () => attemptResultFreshnessAfterRun(input.attemptId, subject.digest),
+        });
+      } finally {
+        // §B.12: release ALWAYS. A cleanup failure is runtime hygiene and must never rewrite the
+        // verdict — the protocol already ran, and turning a recorded PASS into ERROR because a
+        // directory could not be removed would be exactly the dishonesty this plane prevents.
+        try {
+          await materialized.release();
+        } catch {
+          /* hygiene only */
+        }
+      }
+    },
     status,
 
     async history(limit?: number): Promise<readonly ProjectVerificationRun[]> {

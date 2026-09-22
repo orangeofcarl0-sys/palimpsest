@@ -35,9 +35,9 @@ import {
 } from "../src/domain/completion_contract.js";
 import type { ProjectStandard } from "../src/domain/standard.js";
 
-const CAPABLE: CompletionCapabilities = { independentVerifierAvailable: true, sandboxSpawnVerified: true };
-const NO_VERIFIER: CompletionCapabilities = { independentVerifierAvailable: false, sandboxSpawnVerified: true };
-const BARE: CompletionCapabilities = { independentVerifierAvailable: false, sandboxSpawnVerified: false };
+const CAPABLE: CompletionCapabilities = { independentVerifierAvailable: true, attemptResultVerificationAvailable: true, sandboxSpawnVerified: true };
+const NO_VERIFIER: CompletionCapabilities = { independentVerifierAvailable: false, attemptResultVerificationAvailable: false, sandboxSpawnVerified: true };
+const BARE: CompletionCapabilities = { independentVerifierAvailable: false, attemptResultVerificationAvailable: false, sandboxSpawnVerified: false };
 
 function standardWith(clauses: ProjectStandard["clauses"], confirmed = true): ProjectStandard {
   return Object.freeze({

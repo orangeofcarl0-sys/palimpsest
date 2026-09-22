@@ -90,6 +90,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
      */
     capabilities: options.capabilities ?? {
       independentVerifierAvailable: false,
+      attemptResultVerificationAvailable: false,
       sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
     },
     clock: options.clock,
