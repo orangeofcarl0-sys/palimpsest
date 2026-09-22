@@ -555,6 +555,7 @@ export class ProjectController {
     // truth instead of a comfortable guess.
     this.#capabilities = options.capabilities ?? {
       independentVerifierAvailable: false,
+      attemptResultVerificationAvailable: false,
       sandboxSpawnVerified: false,
     };
     this.promotions = new PromotionManager(options.store, options.effects, options.projectId, this.execution);
@@ -2291,9 +2292,12 @@ export class ProjectController {
     // §E.14.1: before phase 2B exists, a REQUIRED independent verification cannot be met — the
     // composed verifier only understands CURRENT_PROJECT_HEAD, so it must not stand in for an
     // ATTEMPT_RESULT requirement. Fail closed rather than begin work that cannot complete.
-    if (contract.verification.required) {
+    if (contract.verification.required && !this.#capabilities.attemptResultVerificationAvailable) {
+      // §B.11: the condition is an EXECUTABLE independent ATTEMPT_RESULT verifier — not "a
+      // verification store exists". A boundary task begins only where its requirement can actually be
+      // met, which is what makes this a preflight rather than a late dead end.
       throw new DomainValidationError(
-        `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE: this task requires independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment cannot verify an attempt result yet — that arrives with the ATTEMPT_RESULT subject, and until then this work must not begin`,
+        `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE: this task requires independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment composes no executable verifier for an attempt result — the operator must register one, and until then this work must not begin`,
       );
     }
 

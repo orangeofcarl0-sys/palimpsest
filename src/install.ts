@@ -48,6 +48,12 @@ export function installPalimpsest(
      */
     capabilities: options.capabilities ?? {
       independentVerifierAvailable: options.projectVerificationStore !== undefined,
+      // The attempt-result seams are composed only when a repository exists, and they need the
+      // verification store too — so this is the honest conjunction, not a copy of the line above.
+      attemptResultVerificationAvailable:
+        options.projectVerificationStore !== undefined &&
+        options.repository !== undefined &&
+        options.repository !== "",
       sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
     },
     clock: options.clock,
