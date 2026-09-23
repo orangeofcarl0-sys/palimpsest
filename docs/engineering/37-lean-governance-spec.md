@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**第 1 期已交付，第 2 期规划**（2026-09-21）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2 设计冻结（D2-r1）待实现**（2026-09-23）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -18,6 +18,8 @@
 > - `LEAN-1` **附录 C 的 C-r1 修订**（2026-09-22，docs-only，D1 实现前）：2B 冻结为 **CLOSED / STRONG PASS**，direct path 基线为 `begin → native work → finish → G_work ∧ V_required ∧ E_promotion`。附录 C 判 **architecture PASS / D1 implementation HOLD**——原规格把「ReasoningCell 是 canonical owner」与「后台 OS job 的执行生命周期」混在了一起。**四条新原则**：**① `Reasoning semantic state ≠ host job state`**（ReasoningCell 能持久表达 `BRANCH_OPENED`/`CANDIDATE_SUBMITTED`/`BRANCH_CLOSED`，**不能**表达 PID/进程存活/Promise；D1 状态由两层组合派生为 `RUNNING`/`COMPLETED`/`FAILED`/`INTERRUPTED`/`UNKNOWN`，且 `OPEN branch after restart ≠ RUNNING worker`，v1 **不自动重跑** `INTERRUPTED`）；**② `WriteSet_project(worker) = ∅` 靠 ephemeral snapshot**（对 delegation 时 committed HEAD 建 detached 临时 checkout，冻结 `ReadBasis`；未提交的 Principal 修改**不**复制过去；约束是 canonical project 零写，而非禁止一切临时文件写入）；**③ 正常路径不 polling，restart 可如实 `INTERRUPTED`**（只送 terminal actionable 经 attention/followup；**不声称**跨 crash 的可靠投递队列；delivery mark 非 canonical）；**④ D1 认知与 Work/Evidence/Verification/Promotion 完全正交**（不建 Task/Attempt、不产 `EvidenceAtom`、不满足 Work Gate 或 `ATTEMPT_RESULT` 复核、不改 `PromotionEligibility`、不需 `palimpsest_begin`）。另：**现有 branch host 改为 async seam**（`start() → {completion, cancel()}`，`run()` 保留为同步包装——同一认知后端、不同交互生命周期，**禁止**第二套 Agent runtime）；**抽共用的 `runBranchToSettlement`**（不复制 candidate settlement；host 失败则关 branch 且**不制造伪 epistemic claim**）；**D1 公共面收窄**为 `start {task, kind?: RESEARCH}` / `status` / `inspect`（`WORK` 留 D2、跨项目复用 `palimpsest_cross_project`、`receive` 本地无必要、`AUTO` 不急）；**context firewall 精确化**（`No Principal conversation/session by default` + brief + evidence allowlist + frozen snapshot，即 `context firewall ≠ no project context`）。**修正 C.3 与 DEL-A04 的自相矛盾**：只禁止新的 canonical `DelegationStore`/`Event`/`Authority`/event type，应用层 DTO（`DelegationRef`/`DelegationResultProjection`）不在禁止之列；且**不冻结** `dlg:v1:…` 具体字符串，只要求 opaque、可严格解析、可往返。**验收** `DEL-A01`–`A04` 保留（A01 barrier 式、A02 记 frozen basis、A03 status 调用数为 0、A04 修正措辞），新增 `DEL-A05`–`A08`（snapshot 写隔离 / `INTERRUPTED ≠ RUNNING` / 与 Work·Evidence·Verification·Promotion 正交 / `collaborate` blocking 行为不变以证明 delegate 是加法）。**实现门禁：C-r1 后 D1 = GO。仍为规划、未实现。**
 > - `LEAN-1` **第 2A-B 期交付**（2026-09-22）：`palimpsest_begin` 落地——direct path 终于有了与 `finish` 对称的开始协议。实现按 §E.16 的 S0–S3，全部前置在任何写入之前求值：`ProjectController.begin()`（preflight → prospective basis → `start({headCommit, committedAt})` → S1 先读 canonical attempt 再 claim）、application work 面 `begin()`、DSH 工具 `palimpsest_begin`（登记 `REVIEWED_TOOL_ADDITIONS`）、`test/lean_begin.test.ts`（9 项）。**实现中发现并修掉一处规格未覆盖的自身缺陷**：`#assertNoUnownedWork` 原本只在 S1 分支调用，S0（无项目）漏检——`A29` 的"stray file"一例当场暴露，已改为 S2 早返回之后**无条件**执行（S2 的 RUNNING attempt 合法拥有脏树，不得被拒）。另有两处测试构造被纠正：用手改 `attempts` 行模拟 crash 会让账本与投影不一致（retry 会死在幂等键不匹配），改为用公开生命周期原语**忠实构造** `ATTEMPT_CREATED` 未 claim 的状态。**验收**：`A27`–`A32`、`A34` 确定性通过（含 prospective basis 与 canonical basis 的 `projectDigest`/`envelopeId` 一致、每次拒绝的 event delta 0、`ATTEMPT_CREATED` 落点 retry claim 同一个 attempt、pre-claim HEAD drift 拒绝）；**`A33` 活体通过**——真实 DSH：只读勘察 → `begin`×1 → 改代码/测试/提交 → `finish`×1，`toolCalls(begin)=1`、`toolCalls(finish)=1`、`toolCalls(start|next|claim|run|gate|report)=0`，最终 `Attempt COMPLETED`、`result_commit` 含工作、`gate-release PASS (missing: [])`。**据此 `A15` 活体那一半关闭**。门禁：单元 187 文件 / 2128 测试、e2e 38/38、`architecture:check` 0 violation（12 baseline exceptions）、`check-public-api` 0/0/0。**活体一处次要观察（非 blocker）**：`begin` 之后 agent 的首次 `write` 报 "file changed since it was read"，重读后内容未变、重试成功——疑似 begin 触碰了文件元数据，留待观察。
 > - `LEAN-1` **附录 B 的 B-r1 修订**（2026-09-22，docs-only，实现前）：2A-B 判为 **STRONG PASS / CLOSED**，2B 判为 **architecture direction PASS / implementation HOLD**。**新核三处代码事实**：first-party verifier 即 `commandProjectHeadVerifier({ command: "git", args: ["diff", "--check"] })`（`src/composition/governance.ts:176`）——**在 clean checkout 里必然 PASS**，故把它的 `supportedSubjects` 扩成含 `ATTEMPT_RESULT` 会同时造成**假验证**与**既有 head verification history 全部 stale**（改 definition digest）；`ProjectHeadVerificationSubject` 硬编码于 `provider.ts`/`status.ts`/`artifacts.ts`/`store.ts` 四处；`PromotionManager.assessEligibility()` 是唯一 assessor（5 处调用点）。修订九项：**① B.4 与 #147 校准**（唯一硬触发是 `contract_boundary`；`single_command_bar` 仅 RECOMMENDED；v1 不实现 diff-size threshold；operator-requires 等 `ProjectStandard` 有 clause 后再做）；**② subject 改 union**（`ProjectVerificationSubject = Head | AttemptResult`，`CURRENT_PROJECT_HEAD` 语义不动，`new subject kind ≠ new verification system`）；**③ Work-backed materialization owner**（窄 read port，调用方永不提供 `resultCommit`/`baseCommit`/`reportDigest`）；**④ agent-facing 不接收 `attemptId`**（恰好一个 current-batch COMPLETED promotion candidate → 验它；0 → `NO_ATTEMPT_RESULT`；>1 → `AMBIGUOUS_ATTEMPT_RESULT`，不猜）；**⑤ 新建 verifier ref** `project.attempt.git-diff-check.v1`，旧 `project.head.git-diff-check.v1` 不动，新 provider 的 commit 来自 canonical subject 故无 injection；**⑥ Verification service 控制的隔离检出 port**（`materialize` → detached checkout @ R → `release()`，throw/timeout/ERROR 也 cleanup；不是 Work truth、不是 project mutation、不是 durable artifact）；**⑦ freshness 按 kind 分开**（`ATTEMPT_RESULT` **绝不**查 ambient HEAD）＋ **runtime capability subject-aware**（`supportsIndependent(kind)`，这才是解锁 `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` 的正确条件——不是"store 存在"）；**⑧ promotion 显式 admission bridge**（Verification-agnostic 投影 + typed blocker `required_verification_missing`/`_unsatisfied`，挂在唯一 `assessEligibility()` 上，promotion domain **不** import Verification）；**⑨ 正常 `finish` 在 application 层自动触发 required verification**（Work owner + Verification owner 编排，`ProjectController` 不 import Verification），且 **`Verification FAIL ≠ Work FAIL`**（Attempt 保持 COMPLETED，不改历史报告，v1 不发明自动 reopen）。验收增补 `A35`（exact isolated materialization + cleanup）、`A36`（RA/RB adversarial：HEAD 推到 RB 后 RA 的 run 仍 CURRENT，而 promotion(RA) 仍可因 head_conflict 被拒——机器证明 `Verification freshness ≠ Promotion authority freshness`）、`A37`（双向 subject firewall）、`A38`（promotion bridge，并断言 **`EvidenceAtom` 计数在 Verification PASS 前后不增加**——证明没有 evidence laundering）。**仍为规划、未实现。**
+> - `LEAN-1` **2B 交付 + `PLMP-DELEGATE-1` D1 全程交付（2026-09-22/23）**：2B 按 B-r1 九项落地（subject union、新 verifier ref `project.attempt.git-diff-check.v1`、Work-backed materialization、application 层 finish 编排、promotion admission bridge、按 kind 分开的 freshness 与 subject-aware capability、隔离检出 materialization port），`A35`–`A38` 通过并**冻结为 CLOSED / STRONG PASS**。随后 D1 分片交付（`#163`–`#168`）：**D1-a** async branch-host seam（`start()→{completion,cancel()}`，`run()` 为同实现的同步包装；内部类型不进公共面，barrel 收窄为六个既有符号）；**D1-b** 共用 settlement（`branch_settlement.ts`：`statementFromOutput`/`evidenceRefsFromOutput`/`settleBranchFromOutput`，两个生命周期同源，消除候选语义漂移）；**D1-c** ephemeral snapshot（detached worktree @ committed HEAD，未提交修改不复制，每条路径都 release）；**D1-d** delegation runtime（状态由 canonical branch view + 本进程 job map **两层**派生，`OPEN + 无 job ⇒ INTERRUPTED`，`DEL-A06`）；**D1-e** 四道 pre-surface hardening + 表面接线（identity 由 `H(projectId, basisCommit, task)` **推导**，顺序 `freeze → identity → 读已有 canonical/host 状态 → 才 open/start`；`delegationRef` 改为 `dlg2.<basisCommit>.<cellId>.<branchId>` **携带 exact basis**，terminal projection 亦带 `basisCommit`；host / settlement / **delivery** 三类故障分离 + 每 ref 至多一次 terminal projection；`DEDUPLICATED` 与 blocking 路径统一为 `COMPLETED`；并修掉 cell 用**编造 policy ref** 打开的真实缺陷——那会让每次委派的验证永远失败却像"从不收敛"）；**D1-f** 活体 barrier gate（`rs-test/lean-d1-live-gate.mjs`：`worker spawned < principal edited < worker released` 是**测量**出来的；`palimpsest_delegate`×1 即 `status`/`inspect`×0；终态经**未经请求的 followup turn** 到达且排在主代理自己那一轮之后；`collaborate` 仍 blocking 且不委派）；**D1-g** frozen-read closure（见 §C.23：branch 请求带 capability profile，`RESULT_ONLY` 默认 / `PROJECT_READ_ONLY` = `read`/`glob`/`grep` + result，无任何写/shell 工具；`rs-test/lean-d1g-read-gate.mjs` 实测 worker 在 live 树已被 Principal 改掉之后仍报出 **H0 第一行的 frozen marker**）。**裁决：`PLMP-DELEGATE-1` D1 = CLOSED / STRONG PASS**——两个活体 barrier 使结论不只依赖单元测试与架构推演。门禁：单元 197 files / 2190 tests、e2e 38/38、`architecture:check` 0 violation（12 baseline）、`check-public-api` 0/0/0。
+> - `LEAN-1` **附录 C 的 D2-r1 修订**（2026-09-23，docs-only，D2 实现前）：D1 冻结后**不回头重构**，只冻结 D2 的形状。**六条原则**：① **Worker 是 Work executor，不是 ReasoningBranch**（`RESEARCH → ReasoningCell`、`WORK → Work Task/Attempt`；可复用 DSH agent/subprocess backend，但禁止"给 branch host 加第三档写权限"——`Do not turn Reasoning branch into a code worker`）；② **isolated worktree execution world，且圈内不削工具**（`Free cognition inside bounded execution world`；边界是**世界**而不是工具集）；③ **只有一条 mutating lane**（Principal 可继续 read/reason/search/chat/delegate RESEARCH，但不得启动第二条 canonical mutation；D2 的准入不是"write-set 不交叠"而是"不存在第二条 mutating line"，**严格强于**旧 `A10` 的"重叠即拒"）；④ **严格性放在出口**（`attempt → immutable result commit → mechanical evidence → required verification → promotion eligibility`）；⑤ **`Worker COMPLETED ≠ Promoted`**（唯一 assessor `assessEligibility()` 不变，不新增第二条晋升路径）；⑥ **worktree completion observation 是第一硬前置**（2A-R 的 `Completed ⇒ resultCommit` 必须**复用同一 completion invariant**，不得新写"worker 大概改完了"的近似逻辑）。**旧假设重新评估**：`principal attempt attribution` **移出 D2**——D2 v1 直接规定"启动 mutating WORK delegation 时不允许已有正在执行的 Principal direct Work attempt"（fail closed，任何写入之前），不变量仍是 `one mutating Work attempt`，host-local 的 principal-attempt 绑定**下移 D3**，符合 `do not solve D3 inside D2`；这是 D2-r1 中唯一需要一句话裁决的点。**明确不属于 D2 的四件事**：write-path disjoint 并发（D3）；Result Transplant（D3，并写死 **"write disjointness is necessary for concurrent mutation, but not sufficient for promotion authority"**——A 可 promote `H0 → H1`，而 B 的 authority 仍绑 `base = H0`，不能因为 B 改的是别的文件就把 `B(H0)` promote 到 `H1`，否则绕开 G10-Z 的 exact-head protection）；blocking Explore enrichment / cognition capability parity（独立项，理由：DEL-A08 已证明 delegate 是加法，立刻再改 collaborate 会让 D1 的 closure boundary 重新漂移）；给 Reasoning branch 加写权限（永不在 D2 出现——D2 worker 的写能力属于**它的 disposable execution world 的边界**，不属于 branch 的能力档）。准入三条在任何写入之前求值（无 RUNNING Principal attempt、工作树无未归属变更、无另一个活跃 mutating delegation），并在**出口复核 `HEAD == base`**、漂移即拒绝结算——这是 `cross_revision_promotion_not_supported`（§3.2）在 D2 的落点，保证 D2 **永远不会**绕开 G10-Z exact-head protection。**`PROJECT_READ_ONLY` 的地位**同时写清：它是"当前最小、已通过活体的 cognition profile"，**不是**"Palimpsest 的研究 Agent 原则上只能 read/glob/grep"；真正冻结的是 `WriteSet_canonical_world(worker) = ∅`，而不是 `WriteSet_worker_disposable_world(worker) = ∅`；因此将来扩展研究 Agent 的 disposable execution world **不构成重开 D1 correctness**。验收：`A10`/`A09` 按 §D2.6 **重定形**（第二条 mutating lane 在任何写入之前被拒，event delta 0；旧"比较集合含主代理 in-place attempt"的机制因此**不需要**在 D2 出现）+ 新增提案 `DEL-D2-A01`–`A06`（含 D2 专属活体与 `DEL-D2-A06` crash/restart 诚实）。**仍为设计冻结、未实现。**
 
 ---
 
@@ -474,9 +476,9 @@ write-set 不相交是必要条件，不是充分条件
 
 ### 3.5 验收
 
-- `LEAN-A10`：写路径重叠的计划在启动校验期被拒，并给出串行化修订建议；比较集合**包含**主代理的 in-place attempt（构造"主代理改 A、委派 worker 也改 A"必须被拒）。
+- `LEAN-A10`：写路径重叠的计划在启动校验期被拒，并给出串行化修订建议；比较集合**包含**主代理的 in-place attempt（构造"主代理改 A、委派 worker 也改 A"必须被拒）。**（D2-r1 重定形：见 §D2.6——D2 的准入不是"重叠即拒"而是"不存在第二条 mutating lane"，严格更强；write-set 比较属 D3。）**
 - `LEAN-A11`：**移交第 2A 期**（`palimpsest_finish` 是空产出拒绝的落点，见附录 A `LEAN-A17`）。
-- `LEAN-A09`：**移交 `PLMP-DELEGATE-1`（附录 C，D2 阶段）**——它要求"两个执行者完成三任务项目"，在旧 §3.1（产品默认派发）下成立，在新方向下必须由主代理发起委派才成立，故随 §3 重新定界。
+- `LEAN-A09`：**移交 `PLMP-DELEGATE-1`（附录 C，D2 阶段）**——它要求"两个执行者完成三任务项目"，在旧 §3.1（产品默认派发）下成立，在新方向下必须由主代理发起委派才成立，故随 §3 重新定界。**（D2-r1 重定形：见 §D2.6——exclusive mutation 下同一时刻只有一条 mutating line，"两个执行者同时改项目"不再适用。）**
 
 ---
 
@@ -571,8 +573,8 @@ write-set 不相交是必要条件，不是充分条件
 | **2A live** | 2A final live gate | 一次真实 DSH 收口：用户一句标准 → read/edit/test/commit/finish → materialized / scope / tests / gate 全 PASS | 无 | **`A15` 活体那一半已由 `A33` 关闭**（2026-09-22）。此前两轮失败暴露的零产出泵（`A26` 已修）与"无开始入口"（2A-B 已修）均已闭合 |
 | **2A-B** | Direct Work Bootstrap（**已交付** 2026-09-22，附录 E） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A32`、`A34` **确定性通过**；**`A33` 活体通过**（`begin`×1、`finish`×1、低层工具调用 ×0、gate PASS）。v1 仅 repository-bound + in-place、`writePaths` 非空 |
 | **2B** | Attempt-bound Verification（**规划，附录 B；B-r1 已修订**） | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交；subject union + 新 verifier ref + promotion admission bridge + application 层 finish 编排 | 是，小而明确 | `A07`、`A08`、`A19`–`A21`、**`A35`–`A38`**。唯一硬触发是 `contract_boundary` |
-| **3** | `PLMP-DELEGATE-1` D1：异步认知委派（**规划，附录 C + C-r1**） | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A08`；D1 公共面收窄为 `RESEARCH`（`start`/`status`/`inspect`）；`WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
-| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派 | isolated worker，exclusive mutation | 中 | `A10`（承接旧 §3.5）；`A09` 随 D2 重新定界；D2 专属活体 |
+| **3** | `PLMP-DELEGATE-1` D1：异步认知委派（**CLOSED / STRONG PASS**，`4b77321`/`8ecc783`） | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A08` **全部通过**（含两个活体 barrier：D1-f 异步 barrier、D1-g frozen-read barrier）；公共面 `RESEARCH`（`start`/`status`/`inspect`）；`delegate → PROJECT_READ_ONLY`、`collaborate → RESULT_ONLY`；`WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
+| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派（**设计冻结：D2-r1，未实现**） | isolated worker，exclusive mutation：把"后台认知 worker"升级为"后台真实 Work executor"，同时仍只有一条 mutating line | 中 | `A10`/`A09`（按 §D2.6 **重定形**）+ `DEL-D2-A01`–`A06`；D2 专属活体；第一硬前置 = worktree completion observation（复用同一 completion invariant） |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
 | **6** | `PLMP-DELEGATE-1` D3：并发写 | Result Transplant + multi-writer | 只有真实需求才做 | D3 专属验收在 `PLMP-DELEGATE-1` 内定义 |
 | **7** | Adaptive delegation | 用 empirical history 改善委派选择 | 产品层 | 产品层验收（无内核门禁） |
@@ -1645,6 +1647,232 @@ Direct Work_Principal  ∥  Independent Research_worker@H0
 ```
 
 （D1-f 测出的缺口属"产品能力面"而非 Agent 行为：当时的 worker 拒绝编造答案是**正确**行为。D1-g 只改能力面。）
+
+## D2-r1 修订（D2 实现前，docs-only）：exclusive mutating Work delegation
+
+> **状态：设计冻结（未实现）**。D1 已判 **CLOSED / STRONG PASS**（活体见 §C.21/D1-f barrier 与 §C.23/D1-g frozen-read barrier），
+> 本修订**不回头改 D1**，只回答 D2 的三个问题：**D2 是什么、不是什么、第一硬前置是什么**。实现前只剩一句话裁决（§D2.3）。
+
+### D2.1 一句话目标
+
+```
+Principal 把一项**会改项目**的工作异步交出去，worker 在自己的 isolated execution world 里用**正常工程能力**完成它，
+而 canonical project 在任何时刻只有**一条 mutating line**；worker 的成果只能从**出口**进入 canonical。
+```
+
+它是 D1 的自然下一步，但**不是** D1 的放大：D1 的 canonical owner 是 `ReasoningCell`，D2 的 canonical owner 是
+**真实 Work Task/Attempt**。
+
+### D2.2 六条冻结原则
+
+**① Worker 是 Work executor，不是 ReasoningBranch。**
+
+```
+RESEARCH → ReasoningCell        （D1，已冻结）
+WORK     → Work Task / Attempt  （D2）
+```
+
+底层 DSH agent / subprocess machinery **可以复用**，但 canonical owner 必须是真实 Task/Attempt，因此：
+
+```
+Do not turn Reasoning branch into a code worker.
+```
+
+**禁止**把它做成"给 branch host 加第三档写权限然后继续用 branch 协议"。那是把两种 owner semantics 混成一种，
+重新违反早已冻结的边界。
+
+**② Worker 拿到 isolated worktree execution world，并且在那个世界里不被削成几个工具。**
+
+```
+Free cognition inside bounded execution world
+```
+
+世界内它可以有正常工程能力：`read` / `edit` / `write` / 跑测试 / shell / 分析。边界**是世界本身**，不是工具集——
+这与 D1 的 `PROJECT_READ_ONLY` 是两种不同的机制，不要互相套用（§D2.5）。
+
+**③ D2 只有一条 mutating lane。**
+
+Worker 在 mutate 期间，Principal 可以继续：
+
+```
+read ✓   reason ✓   search ✓   chat ✓   delegate RESEARCH ✓
+mutate canonical / 启动第二条 direct Work attempt ✗
+```
+
+因此 D2 的准入规则**不是**"write-set 不交叠"，而是**"不存在第二条 mutating line"**。这比旧 `LEAN-A10` 的
+"重叠即拒"**更强也更简单**：不是比较集合再决定是否放行，而是根本不允许并行 mutation。
+
+准入在**任何写入之前**求值，共三条，缺一即 **fail closed**（与 §3.2 的"未知即拒绝"一致）：
+
+```
+① 不存在正在执行的 Principal direct Work attempt
+② canonical 工作树没有**未归属**变更（复用 begin 的同一判据与 `.palimpsest/` 脚手架过滤）
+③ 不存在另一个活跃的 mutating delegation（每 project 至多一条）
+```
+
+求值通过之后，`HEAD` 被**冻结为该 delegation 的 base**，并在出口复核：
+
+```
+出口时 HEAD ≠ base  ⇒  拒绝结算（诚实失败），不把基于旧 base 的结果当作基于新 HEAD
+```
+
+这条正是 §3.2/`cross_revision_promotion_not_supported` 在 D2 的落点：它保证 D2 **永远不会**绕开 G10-Z 的 exact-head
+protection——即使 Principal 违反了协议去改仓库，产品也只是拒绝，而不是晋升一个 base 不成立的结果。
+
+（"Principal 在 delegation 活跃期间不得 mutate"因此是 §E.6 同类的 **principal protocol precondition**：产品无法追溯
+"他到底改没改过"，但产品能检测 `HEAD` 漂移并在出口 fail closed。）
+
+**④ 严格性放在出口。**
+
+Worker 可以大胆探索（甚至在 disposable world 里写 reproducer、改临时文件、跑实验），canonical 只认出口：
+
+```
+Work attempt → immutable result commit → mechanical evidence
+             → required independent verification → promotion eligibility
+```
+
+**⑤ `Worker COMPLETED ≠ Promoted`。**
+
+Worker 完成不等于项目已经接受。promotion authority 不因 worker 完成而弱化，唯一 assessor 不变（`assessEligibility()`），
+不新增第二条晋升路径。
+
+**⑥ worktree completion observation 是 D2 的第一硬前置。**
+
+2A-R 冻结的
+
+```
+Attempt COMPLETED ⇒ resultCommit 是包含所观察工作的不可变提交
+```
+
+必须**扩展到 worktree execution**，且**复用同一 completion invariant**（同一断言、同一 materialization）。
+**不得**新写"worker 大概改完了"的近似逻辑——那正是 2A-R 修掉的东西，换个执行世界重犯一次没有任何理由。
+
+### D2.3 旧假设的重新评估：`principal attempt attribution` **移出 D2**
+
+旧附录 C 假设 D2 之后可能出现：
+
+```
+Principal RUNNING attempt
++  Worker RUNNING attempt
+```
+
+因此把「principal attempt attribution（host-local 绑定主代理的 in-place attempt）」列为 D2 硬前置。
+
+从 **exclusive mutation** 的目标重新看，这个前置**不需要在 D2 解决**。D2 v1 可以直接规定：
+
+> **启动 mutating WORK delegation 时，不允许已经存在正在执行的 Principal direct Work attempt。**
+> （fail closed，在任何写入之前求值）
+
+于是不变量仍然是 `one mutating Work attempt`，而 host-local 的 principal-attempt 绑定**下移 D3**——那才是真正需要
+并发 mutation 的阶段。好处是明显的复杂度下降，且符合：
+
+```
+do not solve D3 inside D2
+```
+
+**这是 D2-r1 中唯一需要一句话裁决的点**（见 §D2.4 的重新开启条件）。
+
+### D2.4 明确**不属于** D2 的四件事（各带重新开启条件）
+
+**1. write-path disjoint 并发（→ D3）。** D2 不该存在两条 mutating line，所以"两个不交叠 write-set 并发"不是 D2 的准入规则。
+
+**2. Result Transplant / 跨 head 晋升（→ D3）。** 理由必须写死，因为它是**必要不充分**的：
+
+```
+Principal A @ H0            WriteSet_A ∩ WriteSet_B = ∅
+Worker B    @ H0
+
+A promotes:  H0 → H1
+             ↑
+             B 的 authority 仍绑定 base = H0
+```
+
+即使 B 改的是另一个文件，也**不能**因此把 `B(H0)` 直接 promote 到 `H1`——那会绕开 G10-Z 的 exact-head protection。
+
+```
+Write disjointness is necessary for concurrent mutation,
+but not sufficient for promotion authority.
+```
+
+这正是 D3 需要 Result Transplant 的原因，也正是它不能提前到 D2 的原因。
+
+**3. blocking Explore enrichment / cognition capability parity（独立项，不进 D2）。** 见 §D2.5——现在改 `collaborate`
+会让 D1 的 closure boundary 重新漂移。
+
+**4. 给 Reasoning branch 加写权限（永不在 D2 出现）。** 第三档**不是** `PROJECT_WRITE`：D2 worker 的写能力属于
+**它的 disposable execution world 的边界**，不属于 branch 的能力档。
+
+### D2.5 与 D1 的关系：D1 冻结、branch 词汇不扩写档
+
+D1 的冻结态是：
+
+```
+delegate RESEARCH → PROJECT_READ_ONLY
+collaborate       → RESULT_ONLY
+```
+
+本修订**不改**这两条。但要注意 `PROJECT_READ_ONLY` 的**地位**：它是
+
+> **当前最小、已经通过活体的 cognition profile**
+
+而**不是**"Palimpsest 的研究 Agent 原则上只能 read/glob/grep"。以后真实 dogfood 若表明研究 Agent 经常需要写 reproducer、
+改临时代码、跑局部实验，可以扩展它的 **disposable execution world**——那**不构成重开 D1 correctness**，因为真正冻结的是：
+
+```
+WriteSet_canonical_world(worker) = ∅
+```
+
+而不是：
+
+```
+WriteSet_worker_disposable_world(worker) = ∅
+```
+
+**阶段冻结之后停止优化是健康的**：D1 刚通过活体，不因为"Free cognition / strict authority"的新认识回头重构它。
+
+关于 blocking `collaborate = RESULT_ONLY`（D1-g 活体观察到：PARALLEL 分支对源码问题会答"材料不足"）：
+它确实存在能力上限，但登记为**未来的独立项**，而不是混入 D2：
+
+| 项 | 内容 | 重新开启条件 |
+|---|---|---|
+| cognition capability parity / blocking Explore enrichment | 给 blocking `collaborate` 的 branch 也开只读项目能力（复用同一 profile 机制） | dogfood 表明 blocking Explore 的 brief-only **经常**损害价值 |
+
+理由：DEL-A08 已证明 delegate 是**加法**、collaborate 行为没有偷偷变化；立刻再改 collaborate 会让 D1 的 closure boundary 重新漂移。
+
+### D2.6 验收（D2 出口）
+
+**既有两项按 D2-r1 重新定形：**
+
+- `LEAN-A10`（**重定形**）：不再表述为"write-set 重叠即拒"，而是**第二条 mutating lane 在任何写入之前被拒**：
+  ① 已存在 RUNNING 的 Principal direct Work attempt 时，启动 mutating WORK delegation → 拒；
+  ② canonical 工作树存在未归属变更时，启动 mutating WORK delegation → 拒；
+  ③ mutating WORK delegation 活跃时，Principal `begin`/claim 另一条 attempt → 拒。
+  三次拒绝都必须 **event delta 0**；并且**出口复核 `HEAD == base`**，漂移则拒绝结算（构造"Principal 偷偷 commit 后
+  再 finish delegation"必须被拒）。（"比较集合含主代理 in-place attempt"的机制因此**不需要**在 D2 出现。）
+- `LEAN-A09`（**重定形**）：主代理发起 mutating WORK 委派后**继续只读认知**，worker 在 isolated worktree 完成 →
+  出口链完整；整个过程中项目只有一条 mutating line（旧表述"两个执行者完成三任务项目"在 exclusive mutation 下不再适用）。
+
+**D2-r1 新增提案：**
+
+| ID | 断言 |
+|---|---|
+| `DEL-D2-A01` | **活体（barrier 式）**：worker 在 worktree 中 mutate 期间，Principal 完成自己的 read/search 与一次 RESEARCH 委派；worker 完成后，**出口之前** canonical repo 零变化 |
+| `DEL-D2-A02` | worker 成果**只从出口**进入 canonical（`attempt → result commit → mechanical evidence → required verification → promotion eligibility`），并显式断言 **`Worker COMPLETED ≠ Promoted`** |
+| `DEL-D2-A03` | worktree execution 下 `Attempt COMPLETED ⇒ resultCommit` 成立，且**复用同一 completion invariant**（同一断言路径，无第二套近似） |
+| `DEL-D2-A04` | **无第二真值面**：无 `DelegationStore`/`WorkerTask`/`ManagerAgent`；canonical owner 是同一账本里的 Task/Attempt；worker 不产 `EvidenceAtom`、不改 `PromotionEligibility` |
+| `DEL-D2-A05` | **D1 不回归**：`delegate RESEARCH` 仍 `PROJECT_READ_ONLY`、`collaborate` 仍 `RESULT_ONLY`、`DEL-A01`–`A08` 全绿（加法而非替换） |
+| `DEL-D2-A06` | crash/restart 诚实：被打断的 mutating worker 报 `INTERRUPTED`（不假装 RUNNING），v1 不自动重跑，canonical world 不留半成品 |
+
+D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿（`tsc -b`、vitest、`architecture:check`、`check-public-api`、playwright）。
+
+### D2.7 禁止（本附录）
+
+1. 不在 D2 内做并发 mutation、Result Transplant 或 principal-attempt 绑定（它们都是 D3）。
+2. 不把 Reasoning branch 当 code worker（不给 branch 加写档）。
+3. 不为 D2 新增 authority / identity / truth plane。
+4. 不把"write-set 不交叠"当作放开并行 mutation 的依据。
+5. 不因为 worker 完成而弱化 promotion authority。
+6. 不回头重构已冻结的 D1。
 
 ## 附录 D：近期明确不做（anti-waste）
 
