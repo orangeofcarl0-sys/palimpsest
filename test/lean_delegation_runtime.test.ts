@@ -209,6 +209,7 @@ function harness(
   const terminals: DelegationTerminalProjection[] = [];
   const reasoning = fakeReasoning(options);
   const jobs: ReturnType<typeof controllableJob>[] = [];
+  const branchStarts: { readonly workDir: string; readonly capabilityProfile?: string }[] = [];
   const released: string[] = [];
   const bases = [options.basisCommit ?? "a".repeat(40)];
   let frozen = 0;
@@ -216,9 +217,10 @@ function harness(
   const deps: DelegationServiceDeps = {
     projectId: options.projectId ?? "project-1",
     reasoning: reasoning as never,
-    branchExecutionFor: () => ({
+    branchExecutionFor: (workDir: string) => ({
       adapterId: "test-branch-host",
-      start: () => {
+      start: (input: { readonly capabilityProfile?: string }) => {
+        branchStarts.push({ workDir, ...(input.capabilityProfile === undefined ? {} : { capabilityProfile: input.capabilityProfile }) });
         const next = controllableJob();
         jobs.push(next);
         return next.job;
@@ -245,6 +247,7 @@ function harness(
     deps,
     reasoning,
     jobs,
+    branchStarts,
     terminals,
     released,
     /** A NEW PROCESS over the SAME canonical cells: the job map is empty. */
@@ -419,6 +422,17 @@ describe("§C.11 ② hardening: the delegation's identity is derived, so a retry
     expect(again.state).toBe("INTERRUPTED");
     expect(again.delegationRef).toBe(first.delegationRef);
     expect(h.jobs).toHaveLength(1);
+  });
+
+  it("the delegated branch is asked for the READ-ONLY project profile, against the frozen snapshot", async () => {
+    const h = harness();
+    await h.service.start({ task: "investigate the cache race" });
+    expect(h.branchStarts).toHaveLength(1);
+    // §C.23: without this the worker gets a frozen snapshot it cannot open, and can only answer from
+    // the brief — which is the gap the D1 live gate measured.
+    expect(h.branchStarts[0]!.capabilityProfile).toBe("PROJECT_READ_ONLY");
+    // ...and the workDir it reads is the SNAPSHOT, never the canonical repository.
+    expect(h.branchStarts[0]!.workDir).toContain("/frozen/basis");
   });
 
   it("the cell is opened with the policy refs the deployment's policy ports actually serve", async () => {

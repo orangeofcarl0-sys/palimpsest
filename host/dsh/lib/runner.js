@@ -163,11 +163,20 @@ async function runBranch(ctx, deps) {
       } else {
         // Block body on purpose: `tools.restrict()` returns a disposer (truthy), and
         // a truthy setup return is read as a commit handle by the agent factory.
+        // PLMP-LEAN-1 §C.23 (D1-g): the allowlist is whatever the composed environment DECLARED —
+        // `[palimpsest_branch_result]` for a RESULT_ONLY branch (every blocking `collaborate`
+        // branch, unchanged), plus the host's read-only project tools for a PROJECT_READ_ONLY one (a
+        // delegated research branch, which reads its frozen snapshot). The list is not guessed here:
+        // the environment that owns the capability boundary publishes it.
+        const allowedTools =
+          Array.isArray(environment.allowedTools) && environment.allowedTools.length > 0
+            ? environment.allowedTools
+            : [branchToolName];
         const branchSetup = (agentCtx) => {
           setup(agentCtx);
           // Scope-local, structural, fail-closed: an unknown/scope-local name throws
           // here and the branch fails rather than silently keeping a wider tool set.
-          agentCtx.tools.restrict({ allow: [branchToolName] });
+          agentCtx.tools.restrict({ allow: allowedTools });
         };
         const handle = await agents.create({
           sessionId: brandString(`branch-${randomUUID()}`),

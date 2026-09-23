@@ -24,6 +24,7 @@
 
 import type { ReasoningBranchBrief } from "../reasoning_cell/artifacts.js";
 import { parseReasoningBranchBrief } from "../reasoning_cell/artifacts.js";
+import { BRANCH_CAPABILITY_PROFILES, type BranchCapabilityProfile } from "../reasoning_cell/branch_execution.js";
 import type { DshContentBlock, DshToolDefinition } from "../tools/dsh_types.js";
 
 /** The ONE host-private tool name a packaged branch may call. */
@@ -95,6 +96,22 @@ export interface BranchHostEvidenceContext {
   readonly selections: readonly unknown[];
 }
 
+/**
+ * PLMP-LEAN-1 §C.23 (D1-g): the host-native READ-ONLY tools a `PROJECT_READ_ONLY` branch may call.
+ *
+ * These are the DSH registry's own names, and the list is deliberately THREE tools: `read`, `glob`,
+ * `grep`. Everything that could change bytes — `write`, `edit`, the shell/pwsh tools, the terminal —
+ * is absent, so "the worker cannot modify the canonical project" is a property of its CAPABILITY SET
+ * rather than of a prompt line or a path check.
+ *
+ * The frozen snapshot's `cwd` is what confines them: a branch is spawned with the delegation's
+ * snapshot as its working directory, so these tools read the basis commit while the principal keeps
+ * editing the live repository. This is NOT an OS-level sandbox and must never be described as one —
+ * a host-native reader can still open an absolute path. The guarantee D1 makes is the one that
+ * matters here: the worker has no way to WRITE, and its normal read basis is the frozen snapshot.
+ */
+const PROJECT_READ_TOOL_NAMES: readonly string[] = Object.freeze(["read", "glob", "grep"]);
+
 export interface BranchHostPayload {
   readonly brief: ReasoningBranchBrief;
   readonly cellId: string;
@@ -105,6 +122,8 @@ export interface BranchHostPayload {
   readonly allowlist: readonly string[];
   /** TRUE iff an evidenceContext with an explicit `allowedEvidenceRefs` array was supplied. */
   readonly enforceAllowlist: boolean;
+  /** §C.23: what this branch may DO. Defaults to `RESULT_ONLY` — today's behaviour, byte for byte. */
+  readonly capabilityProfile: BranchCapabilityProfile;
 }
 
 export type BranchHostPayloadParse =
@@ -160,6 +179,20 @@ export function parseBranchHostPayload(raw: unknown): BranchHostPayloadParse {
   const parsedContext = parseEvidenceContext(evidenceContextRaw);
   if (parsedContext.detail !== undefined) return { ok: false, detail: parsedContext.detail };
 
+  // §C.23: what the branch may DO. Strict, and defaulted rather than guessed: an absent profile is
+  // `RESULT_ONLY`, which is exactly what this environment composed before the profile existed — so
+  // every existing blocking caller keeps its capability set byte for byte, and a widened one has to
+  // be asked for explicitly.
+  const rawProfile = isEnvelope ? object.capabilityProfile : undefined;
+  if (rawProfile !== undefined && !(BRANCH_CAPABILITY_PROFILES as readonly unknown[]).includes(rawProfile)) {
+    return {
+      ok: false,
+      detail: `branch payload capabilityProfile must be one of ${BRANCH_CAPABILITY_PROFILES.join(", ")}`,
+    };
+  }
+  const capabilityProfile: BranchCapabilityProfile =
+    rawProfile === undefined ? "RESULT_ONLY" : (rawProfile as BranchCapabilityProfile);
+
   const allowlist = parsedContext.context?.allowedEvidenceRefs ?? Object.freeze([] as string[]);
   return {
     ok: true,
@@ -170,6 +203,7 @@ export function parseBranchHostPayload(raw: unknown): BranchHostPayloadParse {
       ...(parsedContext.context === undefined ? {} : { evidenceContext: parsedContext.context }),
       allowlist,
       enforceAllowlist: isEnvelope && Array.isArray((evidenceContextRaw as Record<string, unknown> | undefined)?.allowedEvidenceRefs),
+      capabilityProfile,
     }),
   };
 }
@@ -272,8 +306,14 @@ export interface BranchHostEnvironment {
   readonly payload: BranchHostPayload;
   readonly recorder: BranchResultRecorder;
   readonly tool: DshToolDefinition;
-  /** Exactly `[BRANCH_RESULT_TOOL_NAME]`; asserted by the structural firewall proof. */
+  /** Exactly `[BRANCH_RESULT_TOOL_NAME]`: the tools PALIMPSEST composes for a branch. */
   readonly toolNames: readonly string[];
+  /**
+   * §C.23: every tool the branch agent may call — the composed result tool PLUS, for a
+   * `PROJECT_READ_ONLY` branch, the host's own read-only project tools. The runner restricts to THIS
+   * list, so the capability set is structural: a tool outside it is not merely discouraged.
+   */
+  readonly allowedTools: readonly string[];
   /** Always empty: a branch composes no principal surface. */
   readonly principalTools: readonly string[];
 }
@@ -298,6 +338,11 @@ export function composeBranchHostEnvironment(raw: unknown): BranchHostEnvironmen
       recorder,
       tool,
       toolNames: Object.freeze([BRANCH_RESULT_TOOL_NAME]),
+      allowedTools: Object.freeze(
+        parsed.payload.capabilityProfile === "PROJECT_READ_ONLY"
+          ? [...PROJECT_READ_TOOL_NAMES, BRANCH_RESULT_TOOL_NAME]
+          : [BRANCH_RESULT_TOOL_NAME],
+      ),
       principalTools: Object.freeze([] as string[]),
     }),
   };

@@ -76,6 +76,14 @@ export interface DelegationBranchHost {
     readonly executionBudget?: unknown;
     readonly signal?: AbortSignal;
     readonly evidenceContext?: unknown;
+    /**
+     * §C.23 (D1-g): a delegated branch is `PROJECT_READ_ONLY` — it may READ its own frozen snapshot
+     * (`read`/`glob`/`grep`) and still may not write, shell or reach the canonical repository. Asking
+     * for it here is what makes "independent research over the basis commit" more than a promise:
+     * without a read capability the frozen snapshot is a directory the worker cannot open, and the
+     * branch can only answer from its brief.
+     */
+    readonly capabilityProfile?: "RESULT_ONLY" | "PROJECT_READ_ONLY";
   }): DelegationBranchJob;
 }
 
@@ -506,7 +514,7 @@ export function makeDelegationService(deps: DelegationServiceDeps): DelegationSe
         branchId = opened.branch.ref.branchId;
         ref = delegationRefOf({ cellId, branchId, basisCommit });
         const brief = await deps.reasoning.branchBrief({ cellId, branchId });
-        job = deps.branchExecutionFor(snapshot.workDir).start({ brief });
+        job = deps.branchExecutionFor(snapshot.workDir).start({ brief, capabilityProfile: "PROJECT_READ_ONLY" });
       } catch (error) {
         // A delegation that never started owns nothing: release the snapshot we froze for it.
         await release(snapshot);
