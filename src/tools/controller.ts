@@ -420,6 +420,44 @@ export interface ControllerStatusView {
  */
 export type ExecutionMode = "worktree" | "in-place";
 
+/**
+ * PLMP-LEAN-1 §D2-a: which execution world an attempt's work actually happened in.
+ *
+ * The distinction exists because the two worlds differ in WHERE work is observed, not in HOW it is
+ * judged: `begin`'s direct path is in-place only (§E.4.1), the worker path may place an attempt in
+ * its own isolated worktree, and the completion invariant is the same one either way.
+ */
+type AttemptPlacement = ExecutionMode;
+
+/**
+ * PLMP-LEAN-1 §D2-a: ONE observation of an attempt's work, in whatever world it ran.
+ *
+ * Deliberately module-local rather than exported: it is the shape a caller reads, not a new name in
+ * the package's public face, and the read itself (`observeAttemptResult`) is the interface.
+ *
+ * `baseCommit` and `observedHead` are kept apart on purpose. `baseCommit` is the attempt's frozen
+ * starting point (from the canonical envelope), and `observedHead` is what the tree says NOW — for a
+ * placed attempt, the commit the worker made inside its own worktree. Result identity (`base →
+ * observedHead`) is not promotion authority: whether that result may be promoted onto the CANONICAL
+ * head is a separate question asked at the exit, and answering it here would conflate the two.
+ */
+interface AttemptResultObservation {
+  readonly attemptId: string;
+  readonly placement: AttemptPlacement;
+  /** The tree the observation was taken in: the repository (in-place) or the attempt's worktree. */
+  readonly workDir: string;
+  readonly baseCommit: string;
+  readonly observedHead: string;
+  /** Paths committed since the base (`git diff --name-only base..HEAD`), scaffold excluded. */
+  readonly committedChanges: readonly string[];
+  /** Paths present in the tree but in no commit (`git status --porcelain`), scaffold excluded. */
+  readonly uncommittedChanges: readonly string[];
+  /** The union, sorted — what the attempt CHANGED, whichever state each change is in. */
+  readonly changedFiles: readonly string[];
+  /** Every artifact the task declared, and whether THIS tree actually has it. */
+  readonly requiredArtifacts: readonly { readonly path: string; readonly present: boolean }[];
+}
+
 export interface ProjectControllerOptions {
   store: EventStore;
   effects: PalimpsestEffectsRuntime;
@@ -1754,28 +1792,33 @@ export class ProjectController {
       cancelled: "ATTEMPT_CANCELLED",
       expired: "ATTEMPT_EXPIRED",
     };
-    // In-place: the product observes the tree itself, synchronously. The caller's changed_files
-    // and result_commit are overwritten by what `git status`/HEAD actually say, so the report
-    // records an observation, not a claim. The envelope's write_paths are then the CONTRACT the
-    // observation is checked against: an out-of-scope change fails here, at the moment it can be
-    // named, instead of surfacing later as a gate that can only count evidence atoms.
-    if (this.execution === "in-place") {
+    // The product observes the tree itself, synchronously, whatever the execution PLACEMENT is. The
+    // caller's changed_files and result_commit are overwritten by what `git status`/HEAD actually
+    // say, so the report records an observation, not a claim — the SAME rule for an in-place attempt
+    // and for one that ran in its own isolated worktree (§D2-a). The envelope's write_paths are then
+    // the CONTRACT the observation is checked against: an out-of-scope change fails here, at the
+    // moment it can be named, instead of surfacing later as a gate that can only count evidence
+    // atoms.
+    const observed = (() => {
       const envelope = this.#attemptContext(attemptId)[1];
-      const observed = this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit);
+      return this.#observeAttemptResultSync(attemptId, envelope.base_commit);
+    })();
+    if (observed !== null) {
+      const envelope = this.#attemptContext(attemptId)[1];
       const scope = envelope.write_paths;
       const outOfScope = observed.changedFiles.filter(
         (path) => !scope.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
       );
       if (outOfScope.length > 0) {
         throw new DomainValidationError(
-          `in-place attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan`,
+          `${observed.placement} attempt ${attemptId} changed paths outside the task envelope's write_paths [${scope.join(", ")}]: ${outOfScope.join(", ")} — revert them or revise the plan with palimpsest_plan`,
         );
       }
-      // §2.6: a COMPLETED attempt must have materialized its work as a commit. Only completion is
-      // held to this — a failed or cancelled attempt is allowed to stop mid-edit, and its report is
-      // still worth observing.
+      // §2.6: a COMPLETED attempt must have materialized its work as a commit, in EITHER placement.
+      // Only completion is held to this — a failed or cancelled attempt is allowed to stop
+      // mid-edit, and its report is still worth observing.
       if (input.workerStatus === "completed") {
-        this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
+        this.#assertCompletionMaterialized(attemptId, observed.uncommittedChanges);
         // §3.3: and it must have left observable work at all. Enforced HERE, on the report path, so
         // the automatic pump cannot mint the zero-work COMPLETED attempt that `finish` refuses —
         // which is exactly what the 2A live gate measured it doing.
@@ -1784,7 +1827,9 @@ export class ProjectController {
       input = {
         ...input,
         changedFiles: observed.changedFiles,
-        ...(observed.head === null ? {} : { resultCommit: observed.head }),
+        // The observed HEAD is the tree's result commit: a placed worktree starts at the base and
+        // moves only when the worker commits inside it.
+        ...(observed.observedHead === "" ? {} : { resultCommit: observed.observedHead }),
       };
     }
     const report = this.#buildReport(attemptId, input);
@@ -1801,38 +1846,101 @@ export class ProjectController {
   }
 
   /**
-   * In-place observation of one attempt's work: `git status --porcelain` over the canonical
-   * repository (synchronous by necessity — the report path is synchronous — and safe: status is
-   * read-only). Untracked-but-ignored scaffolding (`.palimpsest/` state, caches) is excluded so
-   * the observation names what the attempt CHANGED, not what the tooling left behind. head is the
-   * repository's current HEAD commit; the caller commits through the normal git flow before
-   * reporting, so this head IS the attempt's result.
+   * PLMP-LEAN-1 §D2-a: WHERE an attempt's work actually happens, and whether it can be observed.
+   *
+   *   in-place   the canonical repository is the tree, and the attempt is judged in it;
+   *   worktree   the attempt works in its OWN isolated git worktree, whose path the git port owns.
+   *
+   * The second half used to be unobservable from here, which is why the worktree path could only
+   * trust what a worker claimed. It is observable now, and it fails CLOSED when it is not: an
+   * execution world that does not exist is never reported as a clean one.
    */
-  #observeInPlaceAttemptSync(
-    attemptId: string,
-    baseCommit: string,
-  ): { changedFiles: string[]; head: string | null; uncommitted: string[] } {
-    const repo = this.#inPlaceRepository();
-    const run = (args: string[]): string => execFileSync("git", args, { cwd: repo, encoding: "utf8" });
-    // The observation covers BOTH states a change can be in at report time: committed since the
-    // attempt's base (`git diff --name-only base..HEAD` — the normal case, the agent commits as it
-    // works) and still-uncommitted (`git status --porcelain`). `.palimpsest/` is the product's own
-    // scaffolding, never the attempt's work.
-    const committed = run(["diff", "--name-only", baseCommit, "HEAD"])
+  #attemptWorkDirSync(attemptId: string): { placement: AttemptPlacement; workDir: string } | null {
+    if (this.execution === "in-place") {
+      return { placement: "in-place", workDir: this.#inPlaceRepository() };
+    }
+    // The git worktree id IS the attempt id (see `claim`); the report's `worktree_id` field is a
+    // display id and is deliberately not used to locate anything.
+    const workDir = this.effects.git.worktreePath?.(attemptId);
+    if (workDir === undefined || workDir === "") {
+      /**
+       * A port that cannot NAME a tree has no trees: there is nothing on disk to be wrong about, so
+       * there is nothing to observe and this attempt's completion rests on its caller's report, as it
+       * did before this observation existed. That is the in-memory port's world, and it is why the
+       * rule is stated as a property of the PLACEMENT rather than as a blanket requirement: the
+       * first-party port always names a tree (`GitCliPort`), so a real deployment is always observed.
+       *
+       * A port that DOES name a tree and has none is a different case, and it is refused below.
+       */
+      return null;
+    }
+    if (!existsSync(workDir)) {
+      throw new DomainValidationError(
+        `attempt ${attemptId} has no work execution world at "${workDir}" — nothing can be observed there, and an absent tree is not an empty one`,
+      );
+    }
+    return { placement: "worktree", workDir };
+  }
+
+  /**
+   * PLMP-LEAN-1 §D2-a: ONE observation of what an attempt's work actually is, in WHATEVER world it
+   * ran. This is the input the completion invariant consumes, and there is deliberately only one of
+   * it: `CompletionInvariant(in-place) == CompletionInvariant(worktree)` is the property that keeps a
+   * second execution world from becoming a second, weaker set of rules.
+   *
+   * The commands are the same in both placements, run in the tree that placement names:
+   *
+   *   committedChanges    `git diff --name-only base..HEAD` — the normal case, the worker commits;
+   *   uncommittedChanges  `git status --porcelain` — work that is IN the tree but not in a commit;
+   *   observedHead        the tree's HEAD, which for a placed attempt is its result commit;
+   *   requiredArtifacts   whether each declared artifact is present IN THAT TREE.
+   *
+   * `.palimpsest/` scaffolding is excluded in both: it is the product's own state, never the
+   * attempt's work.
+   */
+  #observeAttemptResultSync(attemptId: string, baseCommit: string): AttemptResultObservation | null {
+    const target = this.#attemptWorkDirSync(attemptId);
+    if (target === null) return null;
+    const { placement, workDir } = target;
+    const run = (args: string[]): string => execFileSync("git", args, { cwd: workDir, encoding: "utf8" });
+    const committedChanges = run(["diff", "--name-only", baseCommit, "HEAD"])
       .split(String.fromCharCode(10))
       .map((path: string) => path.trim())
       .filter((path: string) => path !== "" && !path.startsWith(".palimpsest/"));
-    const uncommitted = run(["status", "--porcelain"])
+    const uncommittedChanges = run(["status", "--porcelain"])
       .split(String.fromCharCode(10))
       .filter((line: string) => line.trim() !== "")
       .map((line: string) => line.slice(3).trim())
       .filter((path: string) => !path.startsWith(".palimpsest/"));
-    const changedFiles = [...new Set([...committed, ...uncommitted])].sort();
-    const head = run(["rev-parse", "HEAD"]).trim();
-    // `uncommitted` is returned SEPARATELY, not merely folded into changedFiles: a completed attempt
-    // must have materialized its work as a commit, and only the two sets apart can say whether it
-    // did (see #assertCompletionMaterialized).
-    return { changedFiles, head, uncommitted };
+    const changedFiles = [...new Set([...committedChanges, ...uncommittedChanges])].sort();
+    const observedHead = run(["rev-parse", "HEAD"]).trim();
+    const [, envelope] = this.#attemptContext(attemptId);
+    const requiredArtifacts = envelope.required_artifacts.map((path) =>
+      Object.freeze({ path, present: existsSync(join(workDir, path)) }),
+    );
+    // `uncommittedChanges` is returned SEPARATELY, not merely folded into changedFiles: a completed
+    // attempt must have materialized its work as a commit, and only the two sets apart can say
+    // whether it did (see #assertCompletionMaterialized).
+    return Object.freeze({
+      attemptId,
+      placement,
+      workDir,
+      baseCommit,
+      observedHead,
+      committedChanges: Object.freeze(committedChanges),
+      uncommittedChanges: Object.freeze(uncommittedChanges),
+      changedFiles: Object.freeze(changedFiles),
+      requiredArtifacts: Object.freeze(requiredArtifacts),
+    });
+  }
+
+  /**
+   * The public read of the SAME observation `finish` and `report` consume, so a caller (a harness, a
+   * verification bridge, an operator surface) never has to reconstruct it from a report's claims.
+   */
+  observeAttemptResult(attemptId: string): AttemptResultObservation | null {
+    const [, envelope] = this.#attemptContext(attemptId);
+    return this.#observeAttemptResultSync(attemptId, envelope.base_commit);
   }
 
   /**
@@ -2492,13 +2600,15 @@ export class ProjectController {
     readonly nextEvidenceNeeded: readonly string[];
   }> {
     const attemptId = this.#uniqueRunningAttempt();
-    // Fail closed rather than pretend. This path derives its facts from an observation of the tree,
-    // and only in-place execution puts the work in a tree this controller can read: under worktree
-    // execution the tree lives in the attempt's worktree, whose path the git port owns, so a
-    // "completion" here would record scope and artifact checks that nothing actually performed.
+    // §D2-a restated the reason this refuses, because the old one stopped being true: the tree CAN
+    // now be observed in either placement (that is what `#observeAttemptResultSync` does). What is
+    // still missing is not observation but the WORK POSITION this verb belongs to: `finish` settles
+    // the direct attempt the principal began, and `begin` is in-place only (§E.4.1), so under
+    // worktree execution there is no direct work position for it to close. A worker-placed attempt is
+    // settled by its own report path. Fail closed rather than guess which of the two a caller meant.
     if (this.execution !== "in-place") {
       throw new DomainValidationError(
-        "this deployment runs worktree execution, and the high-level finish path can only observe an in-place tree — report the attempt explicitly (palimpsest_report) instead, or run the profile with in-place execution",
+        "this deployment places work in isolated worktrees, and finish closes a DIRECT attempt (the one palimpsest_begin opened, which is in-place only) — a worker-placed attempt is settled by its own report path (palimpsest_report), or run the profile with in-place execution",
       );
     }
     const [, envelope] = this.#attemptContext(attemptId);
@@ -2511,11 +2621,18 @@ export class ProjectController {
 
     // The product observes the tree. In-place attempts have no worktree: their tree IS the
     // repository, and the observation — never the caller — decides what the report says changed.
-    const observed = this.#observeInPlaceAttemptSync(attemptId, envelope.base_commit);
-    const changedFiles = observed.changedFiles;
+    const observed = this.#observeAttemptResultSync(attemptId, envelope.base_commit);
+    if (observed === null) {
+      throw new DomainValidationError(
+        `attempt ${attemptId} runs in a world this deployment cannot observe, so nothing can be established as done from it`,
+      );
+    }
+    // A local mutable copy: the observation is a frozen read, while the evidence payload and the
+    // report want ordinary arrays.
+    const changedFiles = [...observed.changedFiles];
     // Before any command runs and before any evidence is recorded, so a refusal leaves nothing
     // behind. `report` holds the same invariant as the last line of defence.
-    this.#assertCompletionMaterialized(attemptId, observed.uncommitted);
+    this.#assertCompletionMaterialized(attemptId, observed.uncommittedChanges);
 
     // Empty work is refused rather than settled (§3.3). Shared with the report path so the automatic
     // pump cannot produce a state this path would refuse.

@@ -224,11 +224,18 @@ describe("LEAN-A22..A25: completed in-place work must be commit-materialized", (
     expect(dirtyWorkFiles(repo)).toEqual([]);
   });
 
-  it("A24 worktree-mode finish fails closed rather than pretending to observe a tree it cannot read", async () => {
+  it("A24 worktree-mode finish fails closed, and names the path that settles a placed attempt", async () => {
     const { repo, head } = workspace();
     const { call, finish } = makeStack(repo, "worktree");
     await runningAttempt(call, head);
-    await expect(finish({})).rejects.toThrow(/can only observe an in-place tree/);
+    /**
+     * §D2-a rewrote this test's PREMISE, not just its message. It used to refuse because a worktree
+     * "cannot be observed" — and that stopped being true when the completion observation became
+     * placement-aware (`#observeAttemptResultSync`). What still refuses, and for a real reason, is
+     * that `finish` closes a DIRECT attempt: `begin` is in-place only (§E.4.1), so a worktree-placed
+     * attempt has no direct work position to close and is settled by its own report path.
+     */
+    await expect(finish({})).rejects.toThrow(/finish closes a DIRECT attempt/);
     await expect(finish({})).rejects.toThrow(/palimpsest_report/);
   });
 
