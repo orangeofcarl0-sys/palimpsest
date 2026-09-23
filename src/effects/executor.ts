@@ -16,6 +16,8 @@ export interface AttemptContext {
   readonly envelope: TaskEnvelope;
   /** Stable, resolvable path of the isolated worktree. */
   readonly worktreePath: string;
+  /** PLMP-LEAN-1 §D2-cR: the execution world this attempt works in (same value as the alias above). */
+  readonly worldPath?: string;
 }
 
 export interface AttemptExecution {

@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c 运行时已交付（1 个 blocker 待评审）**（2026-09-24）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR 已交付（D2-c = STRONG PASS）**（2026-09-24）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -1879,9 +1879,10 @@ D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿
 ```
 D2-a  Execution world + observation          ← 纯机械、无模型（已交付，§D2.8）
 D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
-D2-c  Worker runtime / execution inside the world   ← 运行时已交付；1 个世界形状 blocker（§D2.10）
+D2-c  Worker runtime / execution inside the world   ← **STRONG PASS**（runtime + live gate；blocker 由 D2-cR 关闭）
 D2-d  Async lifecycle + terminal projection
 D2-e  Evidence / finish / verification / promotion closed loop
+D2-cR Self-contained Work Execution World Closure      ← 已交付（§D2.11）
 D2 live gate
 ```
 
@@ -2166,6 +2167,166 @@ danger-full-access requires approval"。
 escalation 诚实），**"worker 自己提交"这一步被世界形状阻塞**。因此 D2-c 判
 **runtime PASS / live gate PARTIAL（1 个结构性 blocker，需评审）**，而不是 STRONG PASS。
 
+#### D2-cR 交付（2026-09-24）：Self-contained Work Execution World Closure
+
+**裁决**：采用**世界拥有自身可变 Git 状态**的方案，**拒绝** host-side commit，也**不**为了保住旧 backend 去把
+linked worktree 的 `.git/worktrees/...` 变成 DSH 的第二可写根。
+
+理由不是"worktree 有个 sandbox 兼容小 bug"，而是一条更值得冻结的架构事实：
+
+```
+Work Execution World must own its mutable execution state.
+```
+
+host-side commit 被拒的根本原因是 ownership：一旦变成
+
+```
+Worker edits → Host decides what to add/commit
+```
+
+host 就同时承担**选择哪些文件属于成果**、**创建结果 artifact**、**再验证这个 artifact** 三件事，
+executor 与 governor 又混在一起。继续维持：
+
+```
+Worker authors the candidate artifact;  Palimpsest observes and admits it.
+```
+
+##### 新增的是**契约**，不是"git clone"
+
+```
+Canonical Work basis
+      ↓
+ExecutionWorld contract      create / open-or-resume · exact basis · worldDir · observe · result export · release
+      ↓
+first-party backend: GitRepositoryWorld（本片实现）        · LinkedWorktreeWorld（legacy / 测试兼容）
+future:              ContainerWorld / RemoteSandboxWorld / MicroVMWorld
+```
+
+"Palimpsest 的 Worker 就是 Git linked worktree"这句话从来没有被冻结；被冻结的是 D2-a 真正证明的那条：
+
+```
+CompletionInvariant is placement-independent
+```
+
+linked worktree 只是当时用来证明它的 backend；backend 被实测淘汰，invariant 不因此动摇。因此
+`observeAttemptResult()` 一行未改，变的只是 **workDir 如何被 materialize**。
+
+##### 第一方 backend 的精确形态与命名
+
+```
+git clone --shared --no-checkout <canonical> <world>   ← 借用不可变对象，不复制历史
+git checkout --detach <basisCommit>                    ← 精确 basis
+git remote remove origin                               ← 不给 Worker 一条显式"push 回 canonical"的路
+user.name/user.email                                   ← 操作性 commit identity
+```
+
+术语必须写准：这是 **self-contained MUTABLE repository world**（或 world-owned Git control plane with
+borrowed immutable object backing），**不是** fully self-contained——`--shared` 让
+`.git/objects/info/alternates` 仍指向 canonical object store。真正要解决的是：
+
+```
+所有 MUTABLE Git state（HEAD / refs / index / config / new objects）都必须在 sandbox writable root 内。
+```
+
+而不是"每次都复制 500MB/5GB 的对象"。将来若出现 remote execution、world 搬迁、canonical object store
+生命周期不可靠、更强 read isolation，backend 可换成 `--dissociate` / full clone / bundle materialization /
+remote image，**Work 语义不变**。
+
+##### commit identity
+
+```
+GitAuthorMetadata  ≠  PalimpsestAgentIdentity
+```
+
+`Palimpsest Worker <worker@palimpsest.invalid>` 只表示"这个 candidate commit 来自 Worker execution"，
+**不**冒充用户，**不**声称 durable Agent identity。Work truth 不依赖它。
+
+##### World lifecycle（现在冻结，D2-d 才用）
+
+| 状态 | 含义 |
+|---|---|
+| `PREPARED` | world 存在，`HEAD = TaskEnvelope.base_commit`，不保证有 worker |
+| `ACTIVE` | host-local worker 正在使用它——**host execution fact，不是 canonical Work state** |
+| `QUIESCENT` | worker 已停（`READY_FOR_SETTLEMENT` / `NEEDS_ESCALATION` / `HOST_FAILURE` / host restart），**world 保留** |
+| `RELEASED` | **只有**产品明确知道结果已被安全记录/导出，或用户明确丢弃，才 cleanup |
+
+**禁止**：`worker process exits → rm -rf world`。`release()` 只能被显式调用。
+
+##### crash / restart（现在冻结）
+
+世界路径确定性：`.palimpsest/worlds/<attemptId>`（`worldPath`；`worktreePath` 保留为冻结低层面的兼容别名）。
+于是 restart 后：
+
+```
+Attempt RUNNING + world exists + no host worker  → INTERRUPTED（D2-d）
+Attempt RUNNING + world missing                  → WORLD_MISSING / recovery_required
+```
+
+**绝不**"那就重新 clone 一个 H0"——旧 world 里可能有数小时工作、未提交修改、本地 commit、实验文件；
+重建等于悄悄丢数据。
+
+##### 结果导出：现在定义，D2-e 调用
+
+```
+Result export  ≠  Promotion
+```
+
+host-owned primitive `exportResultCommit(world, R)`：把对象导入 canonical repository 的 object database，
+**不移动 HEAD、不更新任何 ref、不改 ProjectIR、不动 working tree**。之后 `git cat-file -e R^{commit}` 成立。
+即：
+
+```
+Object availability  ≠  Canonical project state
+```
+
+与 Verification materialization 同一哲学。实现用 object-only fetch（`git fetch --no-tags <world> HEAD`，
+无 refspec 目的地 ⇒ 只写 `FETCH_HEAD`）。
+
+##### 验收（`test/lean_execution_world.test.ts`，7 项 + D2-a/D2-b 全套回归）
+
+| # | 断言 |
+|---|---|
+| 1 | world 的**可变 git state 在 world 内**（`.git/HEAD`、`config`），不可变 base 走 alternates **借用**，HEAD == basis，**无 origin**，commit identity 是操作性身份，且 canonical **不把它列为 linked worktree** |
+| 2 | Worker 在 world 内**自己提交**（不带任何 `-c user.*` 覆盖，用 world 自己的身份），canonical HEAD/内容/工作树零变化 |
+| 3 | `open()` 对缺失 world **fail closed**（`WORLD_MISSING`，明说"不重建"），且不会顺手造一个 |
+| 4 | restart **重开同一个 world**（同路径、同 HEAD、同结果），不产生第二个 world、不换 basis |
+| 5 | `exportResultCommit` 后 canonical **可读**该提交，而 HEAD/工作树/refs/文件内容**逐项不变** |
+| 6 | 对已消失的 world 导出 ⇒ 拒绝（`WORLD_MISSING`） |
+| 7 | worker 进程结束后 world **仍在**（含未提交工作），只有显式 `release()` 才删除；重复 release 不报错 |
+
+**活体**（`rs-test/lean-d2c-worker-gate.mjs`，真实 DSH + 真实模型 + 真实世界）：
+
+```
+worker run ended                           : exit:0
+worker cwd == prepared world               : YES
+presentation / wire                        : ptc / PTC-only (run_code)
+inherited Palimpsest authority tools       : NONE (authority-closed)
+outcome                                    : READY_FOR_SETTLEMENT
+world owns its git state (.git inside)     : YES
+world has no origin remote                 : YES
+world committed (HEAD moved to R)          : YES      ← D2-c 的 blocker 关闭
+COMMIT BLOCKER                             : (not observed)
+the fix is IN the world's commit           : YES
+canonical HEAD / 树 / 内容                  : 不变 / 不变 / 仍有 bug
+ledger events / attempts / evidence        : 8→8 / 1→1 / 0→0
+ledger ATTEMPT_COMPLETED / attemptStates   : 0→0 / RUNNING→RUNNING
+```
+
+即完整链路成立：
+
+```
+Worker really did Work（读/改/测/commit R）  ∧  canonical world still did not accept it
+```
+
+**D2-c = STRONG PASS**（runtime + live gate 双证）。
+
+##### 命名迁移
+
+内部 D2 代码改用 `executionWorld` / `worldDir` / `worldPath`（`PreparedMutatingWork.worldPath`、
+`GitPort.worldPath` / `createWorld`、effects action `palimpsest.world.create`）；被冻结的低层面保留
+`GitPort.worktreePath` / `createWorktree` / `palimpsest.worktree.create` 作为**兼容别名**（同值）。
+不为 public API freeze 把内部设计继续叫 worktree。
+
 ### D2.7 禁止（本附录）
 
 1. 不在 D2 内做并发 mutation、Result Transplant 或 principal-attempt 绑定（它们都是 D3）。
@@ -2176,6 +2337,25 @@ escalation 诚实），**"worker 自己提交"这一步被世界形状阻塞**�
 6. 不回头重构已冻结的 D1。
 
 ## 附录 D：近期明确不做（anti-waste）
+
+> **原则修订（2026-09-24）**：`Anti-waste ≠ 等问题出现再设计`。以前有时把"没有真实 trigger 就不要做"用得太广，
+> 于是把**已经证明长期必要、且形态基本可判定的承重底座**也拖成了迁移债（Execution World 就是这一例：D2-c 的
+> blocker 已经证明 linked worktree 不适合长期做 Worker Execution World）。修订后分三类：
+>
+> | 类型 | 策略 |
+> |---|---|
+> | **承重 invariant / substrate abstraction** | 已证明长期必要时，**主动设计并尽早实现** |
+> | 产品策略 / 行为偏好 | dogfood / 真实需求驱动 |
+> | 性能优化 / 多 backend / 复杂容错 | **有测量后**再实现 |
+>
+> 更准确的表述：
+>
+> ```
+> Don't build speculative semantics;  do build obvious foundations before they fragment.
+> ```
+>
+> 属于第三类、因此**仍然不做**的例子：microVM backend、pause/resume 资源回收、remote world migration、
+> write-disjoint 并发（D3）。
 
 1. 不新增 `ManagerAgent`。
 2. 不新增 `DelegationStore` / `DelegationEvent` / `DelegationAuthority`。

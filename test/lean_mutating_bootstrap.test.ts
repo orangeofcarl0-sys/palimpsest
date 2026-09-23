@@ -188,7 +188,7 @@ describe("§D2-b 3/4. envelope authority is reused, and the lane is exclusive", 
     expect(record?.envelope?.base_commit).toBe(canonicalEnvelope.base_commit);
     // And no second authority vocabulary exists in the result.
     expect(Object.keys(prepared).sort()).toEqual(
-      ["attemptId", "baseCommit", "completion", "detail", "placement", "requiredArtifacts", "state", "taskId", "worktreePath", "writeScope"].sort(),
+      ["attemptId", "baseCommit", "completion", "detail", "placement", "requiredArtifacts", "state", "taskId", "worldPath", "writeScope"].sort(),
     );
   });
 
@@ -276,7 +276,7 @@ describe("§D2-b 7/8. retry converges, and nothing claims a worker is running", 
     const prepared = await controller.prepareMutatingWork();
     expect(prepared.attemptId).toBe(created.attempt_id);
     expect(prepared.state).toBe("PREPARED");
-    expect(existsSync(prepared.worktreePath)).toBe(true);
+    expect(existsSync(prepared.worldPath)).toBe(true);
     // ONE attempt, and the only events added are the claim's.
     expect(attemptStates(connection)).toEqual(["RUNNING"]);
     expect(eventCount(connection)).toBeGreaterThan(before);
@@ -286,7 +286,7 @@ describe("§D2-b 7/8. retry converges, and nothing claims a worker is running", 
     const resumed = await controller.prepareMutatingWork();
     expect(resumed.state).toBe("RESUMED");
     expect(resumed.attemptId).toBe(prepared.attemptId);
-    expect(resumed.worktreePath).toBe(prepared.worktreePath);
+    expect(resumed.worldPath).toBe(prepared.worldPath);
     expect(eventCount(connection)).toBe(settled);
     expect(attemptStates(connection)).toEqual(["RUNNING"]);
   });
@@ -303,8 +303,8 @@ describe("§D2-b 7/8. retry converges, and nothing claims a worker is running", 
     expect(JSON.stringify(prepared)).not.toMatch(/WORKER_RUNNING|workerRunning/u);
     // The execution world is real and holds none of the work yet.
     expect(prepared.placement).toBe("worktree");
-    expect(existsSync(prepared.worktreePath)).toBe(true);
-    expect(porcelain(prepared.worktreePath)).toEqual([]);
+    expect(existsSync(prepared.worldPath)).toBe(true);
+    expect(porcelain(prepared.worldPath)).toEqual([]);
     // The principal's canonical tree is untouched by having prepared a worker lane.
     expect(porcelain(repo)).toEqual([]);
   });
