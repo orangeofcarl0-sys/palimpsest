@@ -421,6 +421,33 @@ export interface ControllerStatusView {
 export type ExecutionMode = "worktree" | "in-place";
 
 /**
+ * PLMP-LEAN-1 §D2-b: the outcome of bootstrapping an EXISTING canonical Work task into an isolated
+ * execution position for a worker.
+ *
+ * `state` is `PREPARED` or `RESUMED` and deliberately NOT anything like `WORKER_RUNNING`: this slice
+ * only establishes the work position (task started, attempt created and claimed, worktree made). No
+ * host process exists yet — `Attempt RUNNING != host worker running` is D1's lesson applied to Work,
+ * and D2-d is where host job state is composed on top.
+ */
+interface PreparedMutatingWork {
+  readonly state: "PREPARED" | "RESUMED";
+  readonly taskId: string;
+  readonly attemptId: string;
+  readonly placement: "worktree";
+  /** The isolated execution world: a real git worktree at the task's canonical base. */
+  readonly worktreePath: string;
+  /** `TaskEnvelope.base_commit` — the ONLY Work base. Delegation never mints a second one. */
+  readonly baseCommit: string;
+  readonly writeScope: readonly string[];
+  readonly requiredArtifacts: readonly string[];
+  readonly completion: {
+    readonly mechanicalChecks: readonly string[];
+    readonly independentVerificationRequired: boolean;
+  };
+  readonly detail: string;
+}
+
+/**
  * PLMP-LEAN-1 §D2-a: which execution world an attempt's work actually happened in.
  *
  * The distinction exists because the two worlds differ in WHERE work is observed, not in HOW it is
@@ -1857,7 +1884,7 @@ export class ProjectController {
    */
   #attemptWorkDirSync(attemptId: string): { placement: AttemptPlacement; workDir: string } | null {
     if (this.execution === "in-place") {
-      return { placement: "in-place", workDir: this.#inPlaceRepository() };
+      return { placement: "in-place", workDir: this.#canonicalRepository() };
     }
     // The git worktree id IS the attempt id (see `claim`); the report's `worktree_id` field is a
     // display id and is deliberately not used to locate anything.
@@ -1965,11 +1992,17 @@ export class ProjectController {
     );
   }
 
-  #inPlaceRepository(): string {
-    const candidate = (this.effects.git as { repository?: string }).repository;
+  /**
+   * The canonical repository — the tree the project's head is about, whichever placement an attempt
+   * runs in. Renamed from `#inPlaceRepository` in §D2-b: it stopped being an in-place detail the
+   * moment a worktree-placed bootstrap also had to reason about the canonical tree's cleanliness and
+   * head.
+   */
+  #canonicalRepository(): string {
+    const candidate = this.effects.git.repository;
     if (candidate === undefined || candidate === "") {
       throw new DomainValidationError(
-        "in-place execution requires a git port bound to the repository (GitCliPort) — the fake port cannot observe a real tree",
+        "this deployment's git port is not bound to a repository, so the canonical tree cannot be observed — the in-memory port has no real tree to look at, and guessing is not an option",
       );
     }
     return candidate;
@@ -2105,7 +2138,7 @@ export class ProjectController {
       argv: input.command.slice(1),
       // In-place attempts have no worktree: their tree IS the repository, and the gate must run
       // where the work is (measured live: a missing cwd made every in-place gate unobservable).
-      ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
+      ...(this.execution === "in-place" ? { cwd: this.#canonicalRepository() } : {}),
       scope: this.projectId,
       callId: `gate:${input.attemptId}:${canonicalDigest({
         predicate: input.predicate,
@@ -2320,7 +2353,7 @@ export class ProjectController {
         "this deployment's work position is an isolated worktree; direct principal bootstrap v1 supports in-place execution only — worktree execution belongs to the D2 worker path",
       );
     }
-    const repository = this.#inPlaceRepository();
+    const repository = this.#canonicalRepository();
     // §E.4.2: an empty write scope is a task that provably cannot complete, since a completed attempt
     // must have observable changes and every change would fall outside the scope.
     if (input.writePaths.length === 0) {
@@ -2478,6 +2511,208 @@ export class ProjectController {
   }
 
   /**
+   * PLMP-LEAN-1 §D2-b: bootstrap an EXISTING, scheduler-admissible canonical Work task into an
+   * isolated execution position for a worker.
+   *
+   * What this is NOT, and the boundary is the whole design:
+   *
+   *   - it does not take a `goal`, `writePaths` or `requiredArtifacts`, and it cannot create a task.
+   *     `palimpsest_begin` is the DIRECT entrance, where the principal states what the work is; this
+   *     one executes work the project has ALREADY declared and authorized. With no canonical task it
+   *     refuses, because `What work exists? != Who executes that work?` and only the first belongs to
+   *     planning;
+   *   - it is not a second scheduler. It bootstraps the task the scheduler itself makes next, and
+   *     `expectedTaskId` is an ASSERTION on that decision, never a way to reorder, hold or skip work;
+   *   - it mints no authority: the worker's authority IS the canonical `TaskEnvelope` (base commit,
+   *     write scope, artifacts, allowed commands, policy identity), so everything downstream —
+   *     completion contract, scope observation, mechanical checks, attempt-result verification,
+   *     promotion eligibility — is the existing machinery, unchanged;
+   *   - it runs no model and produces no result. D2-c runs a worker in what this prepares.
+   *
+   * Every precondition is evaluated BEFORE the first event, so a refusal is a no-op: `TASK_STARTED`
+   * committed and then abandoned would already be canonical mutation.
+   */
+  async prepareMutatingWork(input: { readonly expectedTaskId?: string | undefined } = {}): Promise<PreparedMutatingWork> {
+    const requested = input.expectedTaskId === undefined ? undefined : input.expectedTaskId.trim();
+    const expectedTaskId = requested === "" ? undefined : requested;
+
+    // P0 — placement. A worker lane is an ISOLATED world by definition (§D2.2 ②), and in-place is the
+    // principal's own tree. The two lanes are therefore mutually exclusive per deployment, which is
+    // also why D2 v1 needs no principal-attempt attribution at all (§D2.3): an in-place deployment
+    // cannot host a worker lane, and a worktree deployment cannot host a direct attempt (§E.4.1).
+    if (this.execution !== "worktree") {
+      throw new DomainValidationError(
+        "WORKTREE_PLACEMENT_REQUIRED: a mutating delegation runs in an isolated work execution world, and this deployment works in the canonical tree (in-place) — the principal's own tree is not a worker lane",
+      );
+    }
+
+    // P1 — the work must already exist. Delegation does not plan.
+    if (!this.isProjectInitialized()) {
+      throw new DomainValidationError(
+        "WORK_NOT_DECLARED: this project has no canonical plan, so there is no task to execute — declare the work first (a plan, or palimpsest_begin for direct work); delegation executes work the project already recognizes, it does not invent it",
+      );
+    }
+
+    // P2 — the head basis must be settled. This is not a D2 rule: G10-X already forbids activating new
+    // READY work while the project head needs reconciliation, and a bootstrap is exactly that.
+    const headStatus = this.promotions.projectHeadStatusSync();
+    if (headStatus.state !== "IN_SYNC") {
+      throw new DomainValidationError(
+        `HEAD_NOT_IN_SYNC: this project's head is ${headStatus.state} (project head ${headStatus.projectHeadCommit.slice(0, 12)}, proven effect head ${headStatus.provenEffectHeadCommit.slice(0, 12)}) — new work must not be activated until the head is reconciled`,
+      );
+    }
+
+    const repository = this.#canonicalRepository();
+
+    // P3 — lane occupancy, which is also the retry path. One mutating Work line, so a nonterminal
+    // attempt is either THIS work resuming or another line entirely.
+    const lane = this.#nonterminalAttempts();
+    if (lane.length > 1) {
+      throw new DomainValidationError(
+        `MUTATING_LANE_OCCUPIED: ${String(lane.length)} nonterminal attempts already exist (${lane.map((entry) => `${entry.attemptId}@${entry.state}`).join(", ")}) — D2 keeps exactly one mutating Work line, and it will not add another to an already-diverged project`,
+      );
+    }
+    if (lane.length === 1) {
+      const holder = lane[0]!;
+      if (expectedTaskId !== undefined && holder.taskId !== expectedTaskId) {
+        throw new DomainValidationError(
+          `MUTATING_LANE_OCCUPIED: the mutating lane is held by task "${holder.taskId}" (attempt ${holder.attemptId}@${holder.state}), not by the requested task "${expectedTaskId}" — settle it first; a bootstrap never displaces a running line`,
+        );
+      }
+      const envelope = this.#taskEnvelope(holder.taskId);
+      const contract = this.#completionContractForEnvelope(envelope);
+      const resumedStandard = this.#standard;
+      if (resumedStandard === undefined) {
+        throw new DomainValidationError(
+          "NEEDS_STANDARD_CONFIRMATION: this project has no confirmed completion standard, so nothing can be derived as done — the operator states one sentence first, and delegation does not mint one",
+        );
+      }
+      if (holder.state === "CREATED") {
+        // A retry after a crash between ATTEMPT_CREATED and the claim: the attempt exists, the
+        // worktree does not. Claim THAT attempt — stepping again would deadlock, because the
+        // scheduler returns nothing while a task occupies the stage.
+        const claimed = await this.claim(holder.attemptId);
+        return this.#preparedProjection("PREPARED", holder.taskId, holder.attemptId, claimed.worktreePath, envelope, contract, resumedStandard, "the task's attempt existed and was claimed; its isolated work world is ready");
+      }
+      // LEASED or RUNNING: the position already exists. Nothing is re-claimed and no second worktree
+      // is made — the attempt keeps its own world, whatever state its worker is in.
+      const observed = this.#attemptWorkDirSync(holder.attemptId);
+      return this.#preparedProjection(
+        "RESUMED",
+        holder.taskId,
+        holder.attemptId,
+        observed?.workDir ?? "",
+        envelope,
+        contract,
+        resumedStandard,
+        "this work already holds the mutating lane; its execution world is unchanged and nothing was re-claimed",
+      );
+    }
+
+    // P4 — scheduler sovereignty. The task to execute is the one the PROJECT makes next.
+    const preview = this.preview();
+    if (preview.decision !== "next" || preview.eventType !== "TASK_STARTED" || preview.entityId === undefined) {
+      throw new DomainValidationError(
+        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next decision is ${preview.decision === "next" ? String(preview.eventType) : preview.decision} — a mutating delegation bootstraps the task the project itself makes next, and it never reorders, holds or skips work to reach another one`,
+      );
+    }
+    const taskId = preview.entityId;
+    if (expectedTaskId !== undefined && taskId !== expectedTaskId) {
+      throw new DomainValidationError(
+        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next task is "${taskId}", not the requested "${expectedTaskId}" — expectedTaskId is an assertion, not a scheduling command`,
+      );
+    }
+
+    const envelope = this.#taskEnvelope(taskId);
+
+    // P5 — what completion will require, derived from the canonical envelope BEFORE anything is
+    // written, and refused here if this deployment cannot meet it. Same rule `begin` applies.
+    const standard = this.#standard;
+    if (standard === undefined || !standard.confirmed) {
+      throw new DomainValidationError(
+        "NEEDS_STANDARD_CONFIRMATION: this project has no confirmed completion standard, so nothing can be derived as done — the operator states one sentence first, and delegation does not mint one",
+      );
+    }
+    const contract = this.#completionContractForEnvelope(envelope);
+    if (contract.verification.required && !this.#capabilities.attemptResultVerificationAvailable) {
+      throw new DomainValidationError(
+        `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE: this task requires independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment composes no executable verifier for an attempt result — the operator must register one, and until then this work must not begin`,
+      );
+    }
+    const readiness = deriveCompletionReadiness({
+      standard: this.#standard,
+      authorizedCommands: this.authorizedCommands(),
+      capabilities: this.#capabilities,
+      contract,
+    });
+    if (readiness.task !== null && readiness.task.state !== "READY") {
+      throw new DomainValidationError(
+        `prepareMutatingWork refused before writing anything: ${readiness.task.blockers.join("; ")}`,
+      );
+    }
+
+    // P6 — the canonical tree must hold no work nobody owns, judged by the SAME predicate `begin`
+    // uses (§E.7): a second definition of "clean" over one repository is how two entrances drift.
+    this.#assertNoUnownedWork(repository);
+
+    // P7 — one base, agreed four ways. `TaskEnvelope.base_commit` IS the Work base; this only proves
+    // the world still agrees with it. Nothing is "frozen" here and no second base value is stored,
+    // because two bases is how `Result identity != promotion authority` gets quietly broken.
+    const liveHead = this.#observedHead(repository);
+    if (
+      liveHead !== headStatus.projectHeadCommit ||
+      headStatus.projectHeadCommit !== headStatus.provenEffectHeadCommit ||
+      liveHead !== envelope.base_commit
+    ) {
+      throw new DomainValidationError(
+        `HEAD_BASIS_MISMATCH: the repository is at ${liveHead.slice(0, 12)}, the project head at ${headStatus.projectHeadCommit.slice(0, 12)}, the proven effect head at ${headStatus.provenEffectHeadCommit.slice(0, 12)} and the task's base at ${envelope.base_commit.slice(0, 12)} — a worker's world must start where its envelope says the work starts`,
+      );
+    }
+
+    // ONLY NOW: lifecycle events, then the isolated world.
+    const attemptId = this.#advanceToClaimableAttempt();
+    const claimed = await this.claim(attemptId);
+    return this.#preparedProjection(
+      "PREPARED",
+      taskId,
+      attemptId,
+      claimed.worktreePath,
+      envelope,
+      contract,
+      standard,
+      "the task was started, its attempt claimed and its isolated work world created; no worker is running yet",
+    );
+  }
+
+  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
+  #preparedProjection(
+    state: "PREPARED" | "RESUMED",
+    taskId: string,
+    attemptId: string,
+    worktreePath: string,
+    envelope: TaskEnvelope,
+    contract: import("../domain/completion_contract.js").AttemptCompletionContract,
+    standard: import("../domain/standard.js").ProjectStandard,
+    detail: string,
+  ): PreparedMutatingWork {
+    return Object.freeze({
+      state,
+      taskId,
+      attemptId,
+      placement: "worktree" as const,
+      worktreePath,
+      baseCommit: envelope.base_commit,
+      writeScope: Object.freeze([...envelope.write_paths]),
+      requiredArtifacts: Object.freeze([...envelope.required_artifacts]),
+      completion: Object.freeze({
+        mechanicalChecks: this.#mechanicalCheckSummary(standard),
+        independentVerificationRequired: contract.verification.required,
+      }),
+      detail,
+    });
+  }
+
+  /**
    * Drive the scheduler to one claimable direct attempt using lifecycle primitives only.
    *
    * `palimpsest_run` and the pump are FORBIDDEN here: they are mechanical executors and will settle
@@ -2534,9 +2769,25 @@ export class ProjectController {
       readonly independentVerificationRequired: boolean;
     };
   } {
-    // A human-readable summary of what will be required — NOT "testsRequired", because the standard
-    // may ask for lint_pass or process_exit_zero, and a wrong-but-simple quality summary is worse
-    // than none.
+    return Object.freeze({
+      state,
+      goal,
+      writeScope: Object.freeze([...writePaths]),
+      requiredArtifacts: Object.freeze([...requiredArtifacts]),
+      completion: Object.freeze({
+        mechanicalChecks: Object.freeze(this.#mechanicalCheckSummary(standard)),
+        independentVerificationRequired: verificationRequired,
+      }),
+    });
+  }
+
+  /**
+   * A human-readable summary of what completion will require — NOT "testsRequired", because the
+   * standard may ask for lint_pass or process_exit_zero, and a wrong-but-simple quality summary is
+   * worse than none. Shared by the direct and the delegated entrance so both tell a caller the same
+   * story about the same standard.
+   */
+  #mechanicalCheckSummary(standard: import("../domain/standard.js").ProjectStandard): readonly string[] {
     const checks: string[] = [];
     for (const clause of standard.clauses) {
       if (clause.kind === "command_succeeds") {
@@ -2547,16 +2798,7 @@ export class ProjectController {
         checks.push("changes must stay inside the declared write scope");
       }
     }
-    return Object.freeze({
-      state,
-      goal,
-      writeScope: Object.freeze([...writePaths]),
-      requiredArtifacts: Object.freeze([...requiredArtifacts]),
-      completion: Object.freeze({
-        mechanicalChecks: Object.freeze(checks),
-        independentVerificationRequired: verificationRequired,
-      }),
-    });
+    return Object.freeze(checks);
   }
 
   #observedHead(repository: string): string {
@@ -2564,16 +2806,31 @@ export class ProjectController {
   }
 
   /**
-   * Unowned project changes must be zero before an attempt exists (§E.7). The filter is the SAME one
-   * `finish` observes with: `.palimpsest/` is the product's own scaffolding, and a naive
-   * `git status --porcelain` would let the product deadlock on its own state directory.
+   * PLMP-LEAN-1 §D2-b: the canonical mutation basis, in ONE place.
+   *
+   * "Is this tree free of work nobody owns?" is asked by BOTH entrances — the direct one (`begin`,
+   * §E.7) and the delegated one (`prepareMutatingWork`) — and two definitions of "clean" over one
+   * canonical repository is exactly how two entrances start disagreeing. So the predicate lives here
+   * and is CONSUMED, never copied.
+   *
+   * The filter is the SAME one `finish` observes with: `.palimpsest/` is the product's own
+   * scaffolding, and a naive `git status --porcelain` would let the product deadlock on its own state
+   * directory.
    */
-  #assertNoUnownedWork(repository: string): void {
-    const unowned = execFileSync("git", ["status", "--porcelain"], { cwd: repository, encoding: "utf8" })
+  #observeCanonicalMutationBasis(repository: string): { readonly unownedPaths: readonly string[] } {
+    const unownedPaths = execFileSync("git", ["status", "--porcelain"], { cwd: repository, encoding: "utf8" })
       .split(String.fromCharCode(10))
       .filter((line: string) => line.trim() !== "")
       .map((line: string) => line.slice(3).trim())
       .filter((path: string) => !path.startsWith(".palimpsest/"));
+    return Object.freeze({ unownedPaths: Object.freeze(unownedPaths) });
+  }
+
+  /**
+   * Unowned project changes must be zero before an attempt exists (§E.7).
+   */
+  #assertNoUnownedWork(repository: string): void {
+    const unowned = this.#observeCanonicalMutationBasis(repository).unownedPaths;
     if (unowned.length === 0) return;
     throw new DomainValidationError(
       `the working tree already has changes that belong to no attempt: ${unowned.join(", ")} — deal with them before managed work begins, or the product cannot prove which changes belong to this task`,
@@ -2664,7 +2921,7 @@ export class ProjectController {
         continue;
       }
       if (check.kind === "assert_required_artifacts") {
-        const root = this.#inPlaceRepository();
+        const root = this.#canonicalRepository();
         const missing = check.paths.filter((path) => !existsSync(join(root, path)));
         if (missing.length > 0) {
           throw new DomainValidationError(
@@ -2687,7 +2944,7 @@ export class ProjectController {
         worktreeId: attemptId,
         executable,
         argv: command.slice(1),
-        ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
+        ...(this.execution === "in-place" ? { cwd: this.#canonicalRepository() } : {}),
         scope: this.projectId,
         callId: `finish:${attemptId}:${canonicalDigest({ predicate: check.predicate, command }).slice(0, 16)}`,
         revision: this.promotions.projectRevision(),
@@ -2888,7 +3145,7 @@ export class ProjectController {
       worktreeId: attemptId,
       executable: command.executable,
       argv: command.argv_prefix,
-      ...(this.execution === "in-place" ? { cwd: this.#inPlaceRepository() } : {}),
+      ...(this.execution === "in-place" ? { cwd: this.#canonicalRepository() } : {}),
       scope: this.projectId,
       callId: `gate:auto:${attemptId}`,
       revision: this.promotions.projectRevision(),
@@ -3099,7 +3356,17 @@ export class ProjectController {
    * appended.
    */
   #completionContractFor(attemptId: string): import("../domain/completion_contract.js").AttemptCompletionContract {
-    const [, envelope] = this.#attemptContext(attemptId);
+    return this.#completionContractForEnvelope(this.#attemptContext(attemptId)[1]);
+  }
+
+  /**
+   * The same derivation from an ENVELOPE, so a bootstrap can ask what completion will require BEFORE
+   * any attempt exists (§D2-b preflight) and get byte-for-byte the contract the attempt's own
+   * `finish`/readiness derives later.
+   */
+  #completionContractForEnvelope(
+    envelope: TaskEnvelope,
+  ): import("../domain/completion_contract.js").AttemptCompletionContract {
     const standard = this.#standard;
     if (standard === undefined) {
       throw new DomainValidationError(
@@ -3115,6 +3382,51 @@ export class ProjectController {
         allowed_commands: envelope.allowed_commands,
       },
     });
+  }
+
+  /**
+   * The canonical envelope of one task, as the Work owner reads it.
+   *
+   * The SAME row `attemptWorkRecord` reads (and the same short list of `envelope_json` namers the
+   * G10-W firewall pins), addressed by task instead of by attempt — which is what a bootstrap needs,
+   * since it runs before any attempt exists.
+   */
+  #taskEnvelope(taskId: string): TaskEnvelope {
+    const row = this.store.connection
+      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
+      .get(this.projectId, taskId) as { envelope_json: unknown } | undefined;
+    if (row?.envelope_json === null || row?.envelope_json === undefined) {
+      throw new DomainValidationError(
+        `task "${taskId}" has no canonical envelope — a task without an authorized envelope has no execution authority, and delegation does not mint one`,
+      );
+    }
+    try {
+      return parseTaskEnvelope(decodeJsonBlob(row.envelope_json));
+    } catch (error) {
+      throw new DomainValidationError(
+        `task "${taskId}" has an unreadable envelope: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * PLMP-LEAN-1 §D2-b: every attempt that still HOLDS the mutating lane.
+   *
+   * The judgement is OCCUPANCY, not ownership. D2 v1 keeps exactly one mutating Work line, so any
+   * nonterminal attempt — CREATED, LEASED or RUNNING — means the lane is taken. There is deliberately
+   * no "is this the principal's attempt?" question (§D2.3 defers principal-to-attempt attribution to
+   * D3) and deliberately no active-delegations store: canonical occupancy is DERIVED from task,
+   * attempt, placement and state, exactly as D1 learned that semantic state is not host state.
+   */
+  #nonterminalAttempts(): readonly { readonly attemptId: string; readonly taskId: string; readonly state: string }[] {
+    const rows = this.store.connection
+      .prepare(
+        "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING') ORDER BY attempt_id",
+      )
+      .all(this.projectId) as unknown as readonly { attempt_id: string; task_id: string | null; state: string }[];
+    return Object.freeze(
+      rows.map((row) => Object.freeze({ attemptId: row.attempt_id, taskId: row.task_id ?? "", state: row.state })),
+    );
   }
 
   /** The contract for one attempt, or null when the project has no confirmed standard yet. */
@@ -3202,7 +3514,7 @@ export class ProjectController {
     const recorded = report.result_commit ?? null;
     if (recorded === null) return;
     const head = execFileSync("git", ["rev-parse", "HEAD"], {
-      cwd: this.#inPlaceRepository(),
+      cwd: this.#canonicalRepository(),
       encoding: "utf8",
     }).trim();
     if (head !== recorded) {

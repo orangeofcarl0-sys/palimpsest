@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a 已交付**（2026-09-23）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付**（2026-09-23）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -574,7 +574,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-B** | Direct Work Bootstrap（**已交付** 2026-09-22，附录 E） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A32`、`A34` **确定性通过**；**`A33` 活体通过**（`begin`×1、`finish`×1、低层工具调用 ×0、gate PASS）。v1 仅 repository-bound + in-place、`writePaths` 非空 |
 | **2B** | Attempt-bound Verification（**规划，附录 B；B-r1 已修订**） | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交；subject union + 新 verifier ref + promotion admission bridge + application 层 finish 编排 | 是，小而明确 | `A07`、`A08`、`A19`–`A21`、**`A35`–`A38`**。唯一硬触发是 `contract_boundary` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派（**CLOSED / STRONG PASS**，`4b77321`/`8ecc783`） | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A08` **全部通过**（含两个活体 barrier：D1-f 异步 barrier、D1-g frozen-read barrier）；公共面 `RESEARCH`（`start`/`status`/`inspect`）；`delegate → PROJECT_READ_ONLY`、`collaborate → RESULT_ONLY`；`WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
-| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派（**D2-r1 DESIGN FROZEN / PASS；D2 = IMPLEMENTATION GO；D2-a 已交付**） | isolated worker，exclusive mutation：把"后台认知 worker"升级为"后台真实 Work executor"，同时仍只有一条 mutating line | 中 | `A10`/`A09`（按 §D2.6 **重定形**）+ `DEL-D2-A01`–`A06`；D2 专属活体；**已交付 D2-a**（execution world + 统一 completion observation，7 项验收，纯机械无模型；见 §D2.8） |
+| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派（**D2-r1 DESIGN FROZEN / PASS；D2 = IMPLEMENTATION GO；D2-a 已交付**） | isolated worker，exclusive mutation：把"后台认知 worker"升级为"后台真实 Work executor"，同时仍只有一条 mutating line | 中 | `A10`/`A09`（按 §D2.6 **重定形**）+ `DEL-D2-A01`–`A06`；D2 专属活体；**已交付 D2-a**（execution world + 统一 completion observation，7 项验收）与 **D2-b**（bootstrap existing scheduler-admissible canonical Work task：入口形状、envelope authority 复用、lane 占用、P0–P7 preflight、retry 收敛，9 项验收；见 §D2.8/§D2.9）——两片均**无 LLM** |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
 | **6** | `PLMP-DELEGATE-1` D3：并发写 | Result Transplant + multi-writer | 只有真实需求才做 | D3 专属验收在 `PLMP-DELEGATE-1` 内定义 |
 | **7** | Adaptive delegation | 用 empirical history 改善委派选择 | 产品层 | 产品层验收（无内核门禁） |
@@ -1877,8 +1877,8 @@ D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿
 ### D2.8 切片计划与 D2-a 交付记录
 
 ```
-D2-a  Execution world + observation          ← 纯机械、无模型（本片）
-D2-b  Work-attempt bootstrap / exclusive admission
+D2-a  Execution world + observation          ← 纯机械、无模型（已交付，§D2.8）
+D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
 D2-c  Worker runtime / execution inside the world
 D2-d  Async lifecycle + terminal projection
 D2-e  Evidence / finish / verification / promotion closed loop
@@ -1949,6 +1949,115 @@ CompletionInvariant(in-place) == CompletionInvariant(worktree)
 与 `test/e2_host_demo.test.ts`（它原本在真实 worktree 里产出 `out/report.pptx` 后**不提交就 report**，靠旧的自述路径通过；
 现在按真实工作纪律提交后再 report，并额外断言账本记录的是**被观察到的**提交与文件）。后者是本片最有价值的副作用：
 **新的完成规则当场抓出了一个编码了旧弱行为的测试**。
+
+#### D2-b 交付（2026-09-23）
+
+**入口形状（评审冻结）**：
+
+```
+D2-b bootstraps execution of an EXISTING scheduler-admissible canonical Work task.
+```
+
+```
+palimpsest_begin   = 声明最小 direct Work + bootstrap Principal attempt
+D2-b               = 把一个**已经声明并已获授权**的 canonical task bootstrap 成 isolated worker attempt
+```
+
+因此 D2-b **不接收** `goal` / `writePaths` / `requiredArtifacts`，也**不能**创建 TaskSpec；它只消费已经存在于
+ProjectIR、已经通过 `TaskPolicy` 获得 canonical `TaskEnvelope` 的任务：
+
+```
+What work exists?  ≠  Who executes that work?
+```
+
+前者属于 ProjectIR / planning，后者才属于 delegation。没有 canonical task ⇒ **`WORK_NOT_DECLARED`**（零事件），
+产品**不会**顺手变成 planner。
+
+**复用关系**：
+
+```
+复用   TaskPolicy / TaskEnvelope / CompletionContract 语义
+不复用 palimpsest_begin 作为 worker bootstrap API
+```
+
+worker 的 authority **就是** canonical `TaskEnvelope`（project revision/digest、base commit、write_paths、
+required_artifacts、allowed_commands、policy identity）——不出现 `DelegationEnvelope` / `WorkerEnvelope` / `WorkerAuthority`。
+于是下游的 completion contract、scope 观察、mechanical checks、`ATTEMPT_RESULT` 复核、`PromotionEligibility` 全部直接复用。
+
+**唯一 base**：`Base_D2 = TaskEnvelope.base_commit`。admission 只**证明当前世界仍与它一致**，不"冻结"第二个 base
+值——否则立刻出现 `TaskEnvelope base` vs `Delegation base` 两个真值。
+
+**scheduler 主权**：D2-b 只推进 scheduler 自己认为 next 的那个任务（`preview()` → `TASK_STARTED` → 该 task）。
+`expectedTaskId` 是**断言**而非调度命令：
+
+```
+expectedTaskId = assertion  ≠  scheduling command
+```
+
+不一致 ⇒ `TASK_NOT_NEXT_SCHEDULABLE`（零事件），**绝不** hold A / skip A / force B。
+
+**lane 占用（取代三条分别的 source）**：核心判据是 `there is no existing mutating Work owner`。因为 D2 的 mutating
+delegation 本身就是 Work Attempt，canonical Work 投影已能回答：任何 `CREATED`/`LEASED`/`RUNNING` 的 mutating attempt
+都算 lane occupied（in-place RUNNING 即 Principal lane，worktree 的即 worker lane）。**没有** `activeDelegations`
+durable state，也**不问**"这是谁的 attempt"（§D2.3）。
+
+**preflight 顺序**（全部在第一条事件之前，任何失败 `Δevents = 0`）：
+
+```
+P0 placement: execution == worktree（in-place 部署没有 worker lane）
+P1 canonical project 存在                    → 否则 WORK_NOT_DECLARED
+P2 ProjectHeadStatus.state == IN_SYNC        → 否则 HEAD_NOT_IN_SYNC（G10-X 既有规则，不绕过）
+P3 lane 占用 / resume（见下）
+P4 scheduler next 必须是 TASK_STARTED 且等于 expectedTaskId → 否则 TASK_NOT_NEXT_SCHEDULABLE
+P5 由 canonical envelope 派生 CompletionContract + task readiness（能力不满足则 fail closed）
+P6 canonical 树无未归属变更（与 begin **同一**判据）
+P7 live HEAD == projectHeadCommit == provenEffectHeadCommit == envelope.base_commit
+   → 否则 HEAD_BASIS_MISMATCH
+ONLY THEN: step TASK_STARTED → step ATTEMPT_CREATED → claim（建 worktree）
+```
+
+**dirty 判定复用**：新增内部 `#observeCanonicalMutationBasis(repository)`，`begin` 与 D2-b **共同消费**（不是复制判断），
+`.palimpsest/` 过滤一致——否则 Direct 与 Delegated 两条入口会对同一个 canonical repo 产生两种 clean 定义。
+
+**crash/retry 收敛**（v1 直接定义）：
+
+| 状态 | 行为 |
+|---|---|
+| 已有 matching `CREATED` attempt | **claim 它**（不再 step——scheduler 在 stage 被占用时返回 null，再 step 会死锁） |
+| 已有 matching `LEASED`/`RUNNING` attempt | 返回 `RESUMED`：不 re-claim、不新建 worktree |
+| lane 被**别的** task 持有 | `MUTATING_LANE_OCCUPIED`，零写 |
+| 同一 task 已 terminal | 不自动开下一 batch，交给正常 scheduler |
+
+**返回状态不叫 `WORKER_RUNNING`**：D2-b 只建立 work position，所以是 `PREPARED` / `RESUMED`。因为
+
+```
+Attempt RUNNING  ≠  Host worker running
+```
+
+（与 D1 的 `Reasoning semantic state ≠ host job state` 同一条教训）。D2-d 才组合 host job state。
+
+**出口 `HEAD == base` 不塞进 `report()`**：D2-a 已证明"canonical HEAD 后来移动，worktree 结果仍可诚实观察"，所以这条
+不能变成所有 worktree attempt 的普遍完成 invariant——那又会把 result identity 与 promotion authority 混起来。
+它属于 **mutating delegation settlement admission**（D2-e 交付）：结算时若 `current canonical expected head !=
+envelope.base_commit` ⇒ `BASE_DRIFT` 拒绝，但**不删除** worktree、不宣称结果不存在（那是 D3 Result Transplant 的输入）。
+
+**验收**（`test/lean_mutating_bootstrap.test.ts`，9 项，全程无 LLM）：
+
+| # | 断言 |
+|---|---|
+| 1 | `WORK_NOT_DECLARED`：无 canonical task 时拒绝、零事件、且**不能**创建 ProjectIR/TaskSpec |
+| 2 | `TASK_NOT_NEXT_SCHEDULABLE`：expected ≠ scheduler next 时拒绝零事件；一致时通过（断言形式可用） |
+| 3 | **envelope authority 复用**：attempt 绑定的 envelope 就是 canonical task envelope（经 Work owner 自己的 `attemptWorkRecord` 读回），结果里没有第二个 authority 词汇 |
+| 4 | `MUTATING_LANE_OCCUPIED`：同 task 重复调用走 `RESUMED`（不新增事件/attempt）；别的 task 请求被拒且零事件 |
+| 5 | **clean canonical basis**：未归属变更拒绝（同一 filter），`.palimpsest/` 脚手架不算阻塞 |
+| 6 | `HEAD_BASIS_MISMATCH`：canonical head 前移时拒绝，零事件、零 attempt |
+| 7 | **retry 收敛**：`ATTEMPT_CREATED` 后 crash ⇒ 重试 claim **同一个** attempt（用公开生命周期原语忠实构造），再重试零事件 |
+| 8 | **no worker yet**：`state=PREPARED`、detail 明说没有 worker 在跑、worktree 真实且干净、canonical 树零变化 |
+| 9 | in-place 部署**没有** worker lane：`WORKTREE_PLACEMENT_REQUIRED` |
+
+**D2-b 顺带说明的一条结构性质**：`execution` 的取值本身就让两条 lane 互斥——in-place 部署 `begin` 可用而 worker lane
+不可用，worktree 部署反之（§E.4.1）。这**不是** D2 v1 的额外规则，而是既有 placement 语义的结果，也正是 §D2.3 能成立
+的原因：在 D2 v1 里，"哪个 RUNNING attempt 属于 Principal"根本不会成为一个问题。
 
 ### D2.7 禁止（本附录）
 
