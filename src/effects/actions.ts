@@ -85,6 +85,42 @@ function stringFields(input: unknown, expected: readonly string[]): JsonRecord {
 }
 
 export function defineEffects(git: GitPort) {
+  /**
+   * PLMP-LEAN-1 §D2-cR: materialize the EXECUTION WORLD for one attempt.
+   *
+   * Same effect discipline as the worktree action it supersedes (idempotent: the same world id reuses
+   * the path), but it creates a repository that OWNS its mutable git state, so a worker confined to
+   * that directory can actually commit. A port without `createWorld` is a legacy backend and falls back
+   * to the linked worktree — the compatibility layer, not the D2 path.
+   */
+  const worldCreate = defineAction({
+    name: "palimpsest.world.create",
+    version: "1",
+    description: "Create (or reuse) the isolated execution world for one attempt at its base commit",
+    input: {
+      jsonSchema: objectSchema(
+        { worldId: { type: "string" }, baseCommit: { type: "string" } },
+        ["worldId", "baseCommit"],
+      ) as Record<string, JsonValue>,
+      parse: (input) =>
+        stringFields(input, ["worldId", "baseCommit"]) as unknown as { worldId: string; baseCommit: string },
+    },
+    output: {
+      jsonSchema: objectSchema({ worldPath: { type: "string" } }, ["worldPath"]) as Record<string, JsonValue>,
+      parse: (input) => stringFields(input, ["worldPath"]) as unknown as { worldPath: string },
+    },
+    effect: effects.idempotent(),
+    async execute(input) {
+      const created =
+        git.createWorld === undefined
+          ? await git
+              .createWorktree({ worktreeId: input.worldId, baseCommit: input.baseCommit })
+              .then((legacy) => ({ worldPath: legacy.worktreePath }))
+          : await git.createWorld({ worktreeId: input.worldId, baseCommit: input.baseCommit });
+      return { worldPath: created.worldPath };
+    },
+  });
+
   const worktreeCreate = defineAction({
     name: "palimpsest.worktree.create",
     version: "1",
@@ -326,7 +362,7 @@ export function defineEffects(git: GitPort) {
     },
   });
 
-  return { worktreeCreate, gitCommit, gitPromote, gateCommand, workerDispatch };
+  return { worldCreate, worktreeCreate, gitCommit, gitPromote, gateCommand, workerDispatch };
 }
 
 export type PalimpsestEffects = ReturnType<typeof defineEffects>;

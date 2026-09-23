@@ -172,25 +172,46 @@ function eventCount(connection: Connection): number {
 }
 
 describe("§D2-a A. the Work execution world is a real, isolated, attempt-bound worktree", () => {
-  it("placing an attempt creates an isolated worktree at the attempt's base commit", async () => {
+  it("placing an attempt materializes a world that OWNS its mutable git state", async () => {
     const { repo, head } = workspace();
     const { controller, call } = makeStack(repo, "worktree");
 
     const attemptId = await runningAttempt(call, head);
     const observation = controller.observeAttemptResult(attemptId);
-    if (observation === null) throw new Error("a real worktree placement must be observable");
+    if (observation === null) throw new Error("a real world must be observable");
 
     expect(observation.placement).toBe("worktree");
     expect(observation.baseCommit).toBe(head);
-    // A REAL git worktree, not a copy: git knows it, and it is the attempt's own directory.
     // Separator-agnostic: the product builds this path with forward slashes (it is a git path), and
     // the assertion is about WHERE the world is, not about which slash names it.
-    expect(observation.workDir.split(String.fromCharCode(92)).join("/")).toContain(`.palimpsest/worktrees/${attemptId}`);
+    const worldDir = observation.workDir.split(String.fromCharCode(92)).join("/");
+    expect(worldDir).toContain(`.palimpsest/worktrees/${attemptId}`);
     expect(existsSync(observation.workDir)).toBe(true);
-    expect(git(repo, ["worktree", "list"]).split("\n").some((line) => line.includes(attemptId))).toBe(true);
-    // It is the BASE, and the canonical tree is untouched by having created it.
+
+    /**
+     * §D2-cR — the property the D2-c live gate bought us. A linked worktree keeps HEAD/refs/index in
+     * the CANONICAL repository (`<repo>/.git/worktrees/<id>`), which is outside the world, so a worker
+     * confined to its own directory can never commit. The world must own everything it has to write:
+     */
+    expect(existsSync(join(observation.workDir, ".git")), "the world's git control state is INSIDE it").toBe(true);
+    expect(existsSync(join(observation.workDir, ".git", "HEAD"))).toBe(true);
+    // It is a repository in its own right, at the exact basis…
     expect(git(observation.workDir, ["rev-parse", "HEAD"])).toBe(head);
+    expect(git(observation.workDir, ["rev-parse", "--is-inside-work-tree"])).toBe("true");
+    // …and NOT a linked worktree of the canonical repository (which is the shape that could not commit).
+    expect(git(repo, ["worktree", "list"])).not.toContain(attemptId);
+    // No explicit path back into the canonical project: a strong worker with a shell gets no "push".
+    expect(git(observation.workDir, ["remote"])).toBe("");
+    // A worker can commit here, as the world's own operational identity (never the user's).
+    writeFileSync(join(observation.workDir, "src", "dedupe.ts"), EDITED);
+    // A plain commit with NO `-c user.*` overrides: the world's own configured identity is what a
+    // worker's commit actually carries.
+    execFileSync("git", ["add", "-A"], { cwd: observation.workDir });
+    execFileSync("git", ["commit", "-qm", "worker commit"], { cwd: observation.workDir });
+    expect(git(observation.workDir, ["log", "-1", "--format=%an <%ae>"])).toBe("Palimpsest Worker <worker@palimpsest.invalid>");
+    // And the canonical tree is untouched by any of it.
     expect(porcelain(repo)).toEqual([]);
+    expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);
   });
 
   it("a missing execution world is refused, never reported as a clean one", async () => {
