@@ -144,5 +144,43 @@ if (application.collaboration !== undefined) {
       }),
     );
   }
+  if (application.delegation !== undefined) {
+    const delegation = application.delegation;
+    tools.push(
+      tool({
+        name: "palimpsest_delegate",
+        description:
+          "DELEGATE ONE RESEARCH QUESTION AND CARRY ON (PLMP-LEAN-1 §C.14): use this when a question would genuinely improve your next decision, but answering it is not the work you are doing — 顺便研究一下 / 后台查一下 / 同时研究这个问题, or English equivalents such as look into this in the background, research this while I keep working, find out whether … BEFORE I decide. `start` [mutating] returns IMMEDIATELY: it opens an EPHEMERAL exploratory reasoning branch against a FROZEN snapshot of this project's committed HEAD (the delegation's read basis) and runs it on the same cognition backend as `palimpsest_collaborate`. Do NOT wait, do NOT poll and do NOT call `status` in a loop — a terminal result is delivered to YOU on its own, as a follow-up message naming its basis and its conclusion. Keep doing your own work in the meantime; delegating never blocks and never requires `palimpsest_begin`. The result is cell-local EXPLORATORY standing: it is NOT Evidence, NOT verified truth and NOT a project verification, and nothing about it creates a Task, an Attempt or a promotion. Re-issuing the SAME task on the SAME basis returns the SAME delegation (it never runs twice), and on a NEW basis it is a new one. `status` [read-only] and `inspect` [read-only] exist for restart recovery and explicit drill-down: an OPEN branch with no live job reports INTERRUPTED — honest, never a claim that a worker is still running, and v1 does not re-run it. `kind` is RESEARCH only for now.",
+        mode: "mutating",
+        actions: ["start", "status", "inspect"],
+        extraProperties: {
+          task: {
+            type: "string",
+            description:
+              "the research question in your own words (e.g. “查一下这个仓库里 invalidate() 的竞态是不是已知问题” / “find out whether the cache race is a known problem here”) — the delegation's identity is derived from the task, the project and the read basis, so the same wording is the same delegation",
+          },
+          kind: {
+            type: "string",
+            enum: ["RESEARCH"],
+            description: "RESEARCH (the only kind D1 implements; WORK and cross-project have their own tools)",
+          },
+          delegationRef: {
+            type: "string",
+            description: "the opaque ref returned by `start`, required by `status`/`inspect` (never construct one yourself)",
+          },
+        },
+        run: async (action, object) => {
+          if (action === "status") return delegation.status({ delegationRef: requiredString(object, "delegationRef") });
+          if (action === "inspect") return delegation.inspect({ delegationRef: requiredString(object, "delegationRef") });
+          const kind = object.kind;
+          if (kind !== undefined && kind !== "RESEARCH") {
+            throw new ToolArgsError('argument "kind" must be "RESEARCH" (WORK and cross-project are not delegated here)');
+          }
+          return delegation.start({ task: requiredString(object, "task"), kind: "RESEARCH" });
+        },
+      }),
+    );
+  }
+
   return tools;
 }

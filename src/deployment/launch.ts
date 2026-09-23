@@ -59,6 +59,8 @@ import { staticBoundaryRoute } from "../boundary_memory/index.js";
 import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "../project_workspace/index.js";
 import { SqliteManagementPreferenceStore } from "../project_management/index.js";
 import { staticProjectPeerDirectory, type ProjectPeerDirectoryPort } from "../interaction/index.js";
+import type { DelegationBranchHost } from "../interaction/delegation.js";
+import type { PrincipalDeliveryPort } from "../interaction/delegation_terminal.js";
 import { SqliteReasoningCellStore } from "../reasoning_cell/index.js";
 import type { ReasoningBranchExecutionPort } from "../recipes/execution.js";
 import type { RemoteSubmissionPort } from "../application/surface.js";
@@ -77,6 +79,13 @@ export interface DeploymentHostServices {
    * profile carries the `reasoning` bundle.
    */
   readonly branchExecution?: ReasoningBranchExecutionPort | undefined;
+  /**
+   * PLMP-LEAN-1 §C.11 ② (additive): the SAME branch host, bound at run time to a FROZEN `workDir`. A
+   * delegation must not hand its worker the live repository, so it needs a port PER delegation
+   * snapshot rather than the one blocking port above. Supplying it is what makes the delegation face
+   * available at all; absent ⇒ the face is absent, never a stub.
+   */
+  readonly branchExecutionFor?: ((workDir: string) => DelegationBranchHost) | undefined;
   /**
    * §"two surfaces know each other": facts about the running deployment, supplied as a port because
    * the dashboard url only exists after the host has bound a port.
@@ -120,6 +129,13 @@ export interface Deployment {
    * mode: binding is accepted but never turns it active (§26).
    */
   bindAttentionActivation(activation: AttentionActivationPort | undefined): void;
+  /**
+   * PLMP-LEAN-1 §C.11 ③: the host LATE-BINDING seam for a delegated research branch's terminal
+   * result, mirroring {@link bindAttentionActivation} for the same reason — the principal session
+   * exists only after the deployment does. Unlike activation there is no pull mode to protect: an
+   * unbound delivery reports `delivered: false`, and the canonical state is unchanged either way.
+   */
+  bindDelegationDelivery(delivery: PrincipalDeliveryPort | undefined): void;
   /** UX-C §30: the derived, non-authoritative readiness view (no numeric score). */
   collaborationReadiness(): HostCollaborationReadiness;
   /**
@@ -325,6 +341,26 @@ export function launchDeployment(
   }
   const reasoningBranchExecution =
     profile.reasoning === undefined ? undefined : options.host?.branchExecution;
+  /**
+   * PLMP-LEAN-1 §C.11 ②: the async branch host, alongside the blocking one above. Both are the same
+   * adapter bound to a different `workDir`; a delegation gets a frozen snapshot's directory, the
+   * blocking collaboration path gets the live one.
+   */
+  const delegationBranchExecution = options.host?.branchExecutionFor;
+  /**
+   * §C.11 ③: the principal's delivery seam is LATE-BOUND, exactly like attention activation — the host
+   * creates or resumes the persistent principal session AFTER this deployment exists.
+   *
+   * It exists only where a followup is a legitimate path: a reachable DSH agent AND a profile that
+   * asked for DSH activation. `activation: "none"` is an operator saying "pull mode only", and a
+   * delegation whose terminal result could never come back would be a trap — an agent would start
+   * research and wait for an answer that cannot arrive. Absence is the honest answer there, so
+   * `palimpsest_delegate` is absent too.
+   */
+  const delegationDelivery: { port: PrincipalDeliveryPort | undefined } | undefined =
+    options.host?.dshAgents === undefined || profile.attention?.activation !== "dsh"
+      ? undefined
+      : { port: undefined };
 
   // UX-C §23/§26: a DSH activation is LATE-BOUND by the host to the persisted principal
   // session it creates/resumes, so a profile may omit `sessionId`. Until the host binds
@@ -472,6 +508,30 @@ export function launchDeployment(
           reasoningAdmissionPolicy: firstPartyExploratoryAdmissionPolicy(),
         }),
     ...(reasoningBranchExecution === undefined ? {} : { reasoningBranchExecution }),
+    ...(delegationBranchExecution === undefined ? {} : { delegationBranchExecution }),
+    // The stable late-bound READ port: the delegation service holds THIS object for its whole life,
+    // and whatever the host binds later becomes the delivery. A terminal result that arrives before a
+    // binding reports `delivered: false` with that reason instead of vanishing.
+    ...(delegationDelivery === undefined
+      ? {}
+      : {
+          delegationDelivery: {
+            get adapterId(): string {
+              return delegationDelivery.port?.adapterId ?? "unbound";
+            },
+            deliver: async (text: string) => {
+              const port = delegationDelivery.port;
+              if (port === undefined) {
+                return {
+                  delivered: false,
+                  detail:
+                    "no principal delivery is bound yet; the host binds one once it has created or resumed the principal session",
+                };
+              }
+              return port.deliver(text);
+            },
+          },
+        }),
     ...(options.host?.facts === undefined ? {} : { hostFacts: options.host.facts }),
     remoteTransport,
   });
@@ -536,6 +596,13 @@ export function launchDeployment(
     activation = next;
   }
 
+  function bindDelegationDelivery(next: PrincipalDeliveryPort | undefined): void {
+    // A deployment with no delivery seam (pull mode, or no DSH agent) has nothing to bind, and binding
+    // one must not silently CREATE the capability the install already decided against.
+    if (delegationDelivery === undefined) return;
+    delegationDelivery.port = next;
+  }
+
   function collaborationReadiness(): HostCollaborationReadiness {
     return deriveHostCollaborationReadiness({
       advisorPresent: installed.application.advisor !== undefined,
@@ -568,6 +635,7 @@ export function launchDeployment(
     ...(boundaryClient === undefined ? {} : { boundaryClient }),
     pumpAndActivate,
     bindAttentionActivation,
+    bindDelegationDelivery,
     collaborationReadiness,
     async close() {
       await installed.dispose();
