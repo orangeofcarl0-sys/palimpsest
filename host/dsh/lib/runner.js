@@ -100,6 +100,45 @@ function printBranchResult(result) {
   process.stdout.write(`PALIMPSEST_BRANCH_RESULT ${JSON.stringify(result)}\n`);
 }
 
+/** The worker's ONE machine-readable outcome line, printed by the worker process itself. */
+function printWorkResult(result) {
+  process.stdout.write(`PALIMPSEST_WORK_RESULT ${JSON.stringify(result)}\n`);
+}
+
+/**
+ * The task text a worker receives: the canonical task-sufficient context and the working rules.
+ *
+ * It carries NO orchestration state — no attempt id, no scheduler sequence, no gate id, no lease — and
+ * it does not offer a settlement verb, because the worker cannot settle anything. What it DOES say is
+ * where it may work (this world), that it must commit what it wants delivered, and that its outcome is
+ * a report rather than a completion.
+ */
+function workTask(context) {
+  const list = (values) => (Array.isArray(values) && values.length > 0 ? values.map((value) => `  - ${value}`).join('\n') : '  (none)');
+  return [
+    'You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.',
+    'You are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.',
+    '',
+    `Project goal: ${context.projectGoal}`,
+    `Requirements:\n${list(context.requirements)}`,
+    `Decisions in force:\n${list(context.decisions)}`,
+    '',
+    `Your task: ${context.objective}`,
+    `Write scope (changes outside it are refused when the product observes the tree):\n${list(context.writeScope)}`,
+    `Required artifacts:\n${list(context.requiredArtifacts)}`,
+    `Base commit: ${context.baseCommit}`,
+    `What completion will require:\n${list(context.completionChecks)}`,
+    `Independent verification required: ${context.independentVerificationRequired === true ? 'yes' : 'no'}`,
+    '',
+    'How to work:',
+    '  - your working directory IS your world: read, search, edit, run tests and commands, experiment freely inside it;',
+    '  - commit the changes you want delivered, inside this worktree, before you report — an uncommitted tree cannot be settled;',
+    `  - when you are done, call \`palimpsest_worker_result\` ONCE with kind READY_FOR_SETTLEMENT and a short summary of what you did;`,
+    '  - if the task as defined cannot be finished inside your authority (scope too narrow, task wrong, a person must decide, an irreversible external action is needed), report kind NEEDS_ESCALATION with a reason instead — proposing is not authorizing;',
+    '  - do not claim files, commits, passing tests, evidence or verification results in your report: the product observes all of that for itself.',
+  ].join('\n');
+}
+
 /**
  * The tool catalogue the model was ACTUALLY offered, read from the branch agent's
  * OWN real `request/header` session event — not from the in-process environment
@@ -131,6 +170,119 @@ function offeredToolNames(session) {
  * branch process (see the anti-waste doc): treat that artifact as host-local
  * telemetry, not as a Palimpsest store or a durable principal.
  */
+/**
+ * Run ONE worker: create a fresh agent whose world is the prepared worktree, hand it the canonical task
+ * context, read the ONE outcome it reported, and exit.
+ *
+ * THE CAPABILITY RULE (`capability-open + authority-closed`): the worker INHERITS the host's normal
+ * engineering tools and denies the inherited Palimpsest semantic surface. The deny list is ENUMERATED
+ * from the scope's own visible schemas rather than hard-coded, because `restrict()` refuses unknown
+ * names — a static list would break the moment a deployment composed a different Palimpsest surface,
+ * and would silently stop covering tools added later. The worker's own result tool is registered into
+ * its OWN scope layer, which a restriction never filters.
+ *
+ * THE PRESENTATION RULE: the worker's scope presents PTC-first (`presentAs('ptc')`), so a multi-step
+ * engineering task can gather and transform inside one program and cross the boundary once, through a
+ * governed sink. Presentation is HOST CONFIGURATION: it never enters the TaskEnvelope, the
+ * AttemptReport or any Work event, because how a worker uses its capabilities is not Work semantics.
+ */
+async function runWorker(ctx, deps) {
+  const { host, agents, sessions, agentOptions, setup } = deps;
+  const exitWith = (code) => {
+    const exit = ctx.get('appExit');
+    if (typeof exit === 'function') exit(code);
+    else process.exit(code);
+  };
+
+  let reported = null;
+  let failure = null;
+  let offeredTools = [];
+  let denied = [];
+  let presentation = null;
+
+  try {
+    const environment = host.work;
+    if (environment === undefined || environment.recorder === undefined) {
+      failure = environment?.error ?? 'the worker environment was not composed';
+    } else {
+      // The name comes from the environment's OWN definition — the data Palimpsest sent — never from a
+      // literal here, so the two sides cannot disagree about what the worker answers through.
+      const resultToolName =
+        typeof environment.tool?.name === 'string' && environment.tool.name.length > 0 ? environment.tool.name : undefined;
+      if (resultToolName === undefined) {
+        failure = 'the worker result tool name is unavailable; refusing to run a worker without a structural outcome boundary';
+      } else {
+        const workerSetup = (agentCtx) => {
+          setup(agentCtx);
+          // Enumerate what this scope INHERITS, then close the authority surface. The prefix comes from
+          // the composed environment (one place knows what Palimpsest's tools are called).
+          const prefix = typeof environment.deniedAuthorityPrefix === 'string' ? environment.deniedAuthorityPrefix : 'palimpsest_';
+          const visible = typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas() : [];
+          denied = visible
+            .map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined))
+            .filter((name) => typeof name === 'string' && name.startsWith(prefix) && name !== resultToolName);
+          if (denied.length > 0) agentCtx.tools.restrict({ deny: denied });
+          // The worker's OWN layer: a restriction filters what a scope inherits and never what it
+          // registers, so the outcome tool survives the deny above. The definition arrives already
+          // converted by the plugin layer, which owns that conversion.
+          agentCtx.tools.register(environment.tool);
+          if (typeof agentCtx.tools.presentAs === 'function') {
+            agentCtx.tools.presentAs('ptc');
+            presentation = 'ptc';
+          }
+        };
+        const handle = await agents.create({
+          sessionId: brandString(`worker-${randomUUID()}`),
+          meta: { cwd: process.cwd() },
+          agentOptions,
+          setup: workerSetup,
+        });
+        const agent = handle.agent;
+        await agent.whenIdle();
+        agent.followup(userMessage(workTask(environment.context)));
+        await agent.whenIdle();
+        offeredTools = offeredToolNames(agent.session);
+        if (typeof sessions?.flush === 'function') {
+          try {
+            await sessions.flush(agent.session);
+          } catch (error) {
+            process.stderr.write(`palimpsest-runner: worker session flush failed: ${error?.message ?? String(error)}\n`);
+          }
+        }
+        const recorder = environment.recorder;
+        if (recorder.status === 'reported') {
+          reported = recorder.outcome;
+        } else {
+          failure = recorder.violations.length > 0 ? recorder.violations.join('; ') : 'the worker finished without reporting an outcome';
+        }
+      }
+    }
+  } catch (error) {
+    failure = error?.message ?? String(error);
+  }
+
+  // Noncanonical telemetry, exactly like PALIMPSEST_TURN: the worker's OWN recorded capability facts.
+  // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
+  process.stdout.write(
+    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools })}
+`,
+  );
+
+  if (reported !== null && reported !== undefined) {
+    printWorkResult({
+      kind: reported.kind,
+      summary: reported.summary,
+      ...(reported.reason === undefined ? {} : { reason: reported.reason }),
+      ...(reported.proposedAction === undefined ? {} : { proposedAction: reported.proposedAction }),
+    });
+    exitWith(0);
+    return;
+  }
+  // A worker that did not report is a HOST fact, never a Work outcome: no attempt is failed here.
+  printWorkResult({ kind: 'HOST_FAILURE', detail: failure ?? 'the worker produced no outcome' });
+  exitWith(1);
+}
+
 async function runBranch(ctx, deps) {
   const { host, agents, sessions, agentOptions, setup } = deps;
   const exitWith = (code) => {
@@ -238,6 +390,11 @@ async function run(ctx, deps) {
 
   if (startup.mode === 'branch') {
     await runBranch(ctx, { startup, host, agents, sessions, agentOptions, setup });
+    return;
+  }
+
+  if (startup.mode === 'work') {
+    await runWorker(ctx, { startup, host, agents, sessions, agentOptions, setup });
     return;
   }
 
