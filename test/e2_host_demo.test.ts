@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync, execSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync, mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -97,6 +97,20 @@ describe("E2 host-demo equivalent: a worker honors the envelope skill hint", () 
       expect(used).toEqual(["document-skills:pptx"]);
       expect(existsSync(join(claimed.worktreePath, "out", "report.pptx"))).toBe(true);
 
+      /**
+       * §D2-a: the worktree PLACEMENT is observed now, so the artifact has to be committed INSIDE
+       * the attempt's world before the attempt can call itself complete — the same rule in-place has
+       * enforced since 2A-R. This test previously produced the artifact and reported: it passed only
+       * because a placed attempt's report was taken on the worker's word. The commit here is what a
+       * real worker does anyway ("commit your work, then report"), and it makes the recorded
+       * `result_commit` an artifact that actually contains the deck.
+       */
+      execFileSync("git", ["add", "-A"], { cwd: claimed.worktreePath });
+      execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "author the deck"], {
+        cwd: claimed.worktreePath,
+      });
+      const resultCommit = execFileSync("git", ["rev-parse", "HEAD"], { cwd: claimed.worktreePath, encoding: "utf8" }).trim();
+
       // Self-claims are never evidence; a deterministic gate records evidence.
       // The gate runs a real command inside the real worktree (readOnly profile).
       const report = (await host.call("palimpsest_report", {
@@ -105,6 +119,17 @@ describe("E2 host-demo equivalent: a worker honors the envelope skill hint", () 
         summary: "deck authored via the document-skills:pptx hint",
       })) as { eventType: string };
       expect(report.eventType).toBe("ATTEMPT_COMPLETED");
+      // And the ledger recorded the OBSERVED commit and the OBSERVED file, not the caller's claims
+      // (this call passed neither).
+      const recorded = installed.controller.store.connection
+        .prepare("SELECT report_json FROM attempts WHERE attempt_id=?")
+        .get(attemptId) as { report_json: Uint8Array };
+      const recordedReport = JSON.parse(new TextDecoder().decode(recorded.report_json)) as {
+        result_commit: string;
+        changed_files: string[];
+      };
+      expect(recordedReport.result_commit).toBe(resultCommit);
+      expect(recordedReport.changed_files).toEqual(["out/report.pptx"]);
       const gate = (await host.call("palimpsest_gate", {
         attemptId,
         predicate: "tests_pass",

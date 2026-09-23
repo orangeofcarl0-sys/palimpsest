@@ -93,6 +93,24 @@ export interface LexicalMatch {
 }
 
 export interface GitPort {
+  /**
+   * The canonical repository directory, when this port is bound to one.
+   *
+   * PLMP-LEAN-1 §D2-a: this is the tree an in-place attempt works in and is judged in, so the Work
+   * owner must be able to name it through the port instead of reaching into the implementation.
+   * Absent on an in-memory port, which cannot observe a real tree — and a caller that needs one then
+   * fails closed rather than observing nothing and calling it clean.
+   */
+  readonly repository?: string | undefined;
+  /**
+   * The deterministic path of one attempt's execution worktree. Pure path arithmetic: it says where
+   * the world WOULD be, never that it exists or that anything was created.
+   *
+   * PLMP-LEAN-1 §D2-a: `create` is an effect; reading is not. The Work owner needs the second half
+   * to OBSERVE a worktree-placed attempt, and it must not have to create a tree in order to find out
+   * whether one is already there.
+   */
+  worktreePath?(worktreeId: string): string;
   /** Create (or reuse) an isolated worktree at baseCommit. */
   createWorktree(input: CreateWorktreeInput): Promise<{ worktreePath: string }>;
   /** Commit the current worktree state; returns the new commit id. */

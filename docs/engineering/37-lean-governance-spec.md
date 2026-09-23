@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2 设计冻结（D2-r1）待实现**（2026-09-23）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a 已交付**（2026-09-23）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -574,7 +574,7 @@ write-set 不相交是必要条件，不是充分条件
 | **2A-B** | Direct Work Bootstrap（**已交付** 2026-09-22，附录 E） | `palimpsest_begin`：与 `finish` 对称的开始协议。主代理把目标编译成最小 direct proposal，产品验证并机械建立唯一受管工作位 | 很少（组合既有原语） | `A27`–`A32`、`A34` **确定性通过**；**`A33` 活体通过**（`begin`×1、`finish`×1、低层工具调用 ×0、gate PASS）。v1 仅 repository-bound + in-place、`writePaths` 非空 |
 | **2B** | Attempt-bound Verification（**规划，附录 B；B-r1 已修订**） | 正确的复核 subject（`ATTEMPT_RESULT`），触发 `CF-AD-01`，按 §8(5) 的 **(a′)** 以隔离检出物化不可变提交；subject union + 新 verifier ref + promotion admission bridge + application 层 finish 编排 | 是，小而明确 | `A07`、`A08`、`A19`–`A21`、**`A35`–`A38`**。唯一硬触发是 `contract_boundary` |
 | **3** | `PLMP-DELEGATE-1` D1：异步认知委派（**CLOSED / STRONG PASS**，`4b77321`/`8ecc783`） | 主代理自己工作 + 后台认知并行 | 否/极少 | `DEL-A01`–`DEL-A08` **全部通过**（含两个活体 barrier：D1-f 异步 barrier、D1-g frozen-read barrier）；公共面 `RESEARCH`（`start`/`status`/`inspect`）；`delegate → PROJECT_READ_ONLY`、`collaborate → RESULT_ONLY`；`WORK` 类委派在写范围未知时 **fail closed**（§3.2） |
-| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派（**设计冻结：D2-r1，未实现**） | isolated worker，exclusive mutation：把"后台认知 worker"升级为"后台真实 Work executor"，同时仍只有一条 mutating line | 中 | `A10`/`A09`（按 §D2.6 **重定形**）+ `DEL-D2-A01`–`A06`；D2 专属活体；第一硬前置 = worktree completion observation（复用同一 completion invariant） |
+| **4** | `PLMP-DELEGATE-1` D2：异步 Work 委派（**D2-r1 DESIGN FROZEN / PASS；D2 = IMPLEMENTATION GO；D2-a 已交付**） | isolated worker，exclusive mutation：把"后台认知 worker"升级为"后台真实 Work executor"，同时仍只有一条 mutating line | 中 | `A10`/`A09`（按 §D2.6 **重定形**）+ `DEL-D2-A01`–`A06`；D2 专属活体；**已交付 D2-a**（execution world + 统一 completion observation，7 项验收，纯机械无模型；见 §D2.8） |
 | **5** | Dogfood checkpoint | 判断是否**真的**需要并发写 | 无 | 一份判断结论（无验收项） |
 | **6** | `PLMP-DELEGATE-1` D3：并发写 | Result Transplant + multi-writer | 只有真实需求才做 | D3 专属验收在 `PLMP-DELEGATE-1` 内定义 |
 | **7** | Adaptive delegation | 用 empirical history 改善委派选择 | 产品层 | 产品层验收（无内核门禁） |
@@ -1772,6 +1772,15 @@ do not solve D3 inside D2
 
 **这是 D2-r1 中唯一需要一句话裁决的点**（见 §D2.4 的重新开启条件）。
 
+**裁决（2026-09-23，已确认）**：
+
+> **D2 v1 does not require principal-attempt attribution: a mutating delegation is inadmissible while a Principal
+> direct Work attempt is running, preserving one mutating Work attempt. Host-local Principal↔Attempt attribution is
+> therefore deferred to D3, where concurrent mutation first makes that distinction necessary.**
+
+理由一句话：D2 已经主动维持 `one mutating Work attempt`，所以"哪个 RUNNING attempt 属于 Principal"在 D2 **根本不会成为问题**；
+提前把它做进 D2，只是在为尚不存在的 D3 并发状态付复杂度成本（`Do not solve concurrency before concurrency exists.`）。
+
 ### D2.4 明确**不属于** D2 的四件事（各带重新开启条件）
 
 **1. write-path disjoint 并发（→ D3）。** D2 不该存在两条 mutating line，所以"两个不交叠 write-set 并发"不是 D2 的准入规则。
@@ -1864,6 +1873,82 @@ WriteSet_worker_disposable_world(worker) = ∅
 | `DEL-D2-A06` | crash/restart 诚实：被打断的 mutating worker 报 `INTERRUPTED`（不假装 RUNNING），v1 不自动重跑，canonical world 不留半成品 |
 
 D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿（`tsc -b`、vitest、`architecture:check`、`check-public-api`、playwright）。
+
+### D2.8 切片计划与 D2-a 交付记录
+
+```
+D2-a  Execution world + observation          ← 纯机械、无模型（本片）
+D2-b  Work-attempt bootstrap / exclusive admission
+D2-c  Worker runtime / execution inside the world
+D2-d  Async lifecycle + terminal projection
+D2-e  Evidence / finish / verification / promotion closed loop
+D2 live gate
+```
+
+切片顺序会按代码实际情况调整，但**D2-a 必须保持纯机械、无模型**：它要证明的不是"怎么 spawn 一个 coder"，而是
+
+> 一个真实 Work attempt 放到 isolated worktree 后，Palimpsest 仍能像 in-place 一样准确回答：它到底做了什么、
+> 有没有未提交工作、最终 immutable result commit 是什么。
+
+**D2-a 明确排除**：DSH worker launch、PTC/native 决策、`palimpsest_delegate(kind=WORK)`、terminal followup、
+worker crash lifecycle、promotion、verification、management mode、write-set concurrency、principal attribution。
+
+#### D2-a 交付（2026-09-23）
+
+**Work execution world 是既有的、真实的、attempt 绑定的 git worktree**——不是新造的第二套，也不是 D1 的 delegation
+snapshot（那是**读**冻结，这是**执行**世界，两者的语义与生命周期不同）。它在 `claim` 时由 `GitPort.createWorktree`
+创建于 `.palimpsest/worktrees/<attemptId>`，并新增两条**只读**的 port 成员让 Work owner 能命名它而不必自建第二套机制：
+
+```
+GitPort.repository?: string                      // in-place 判断所在的树
+GitPort.worktreePath?(worktreeId): string        // 纯路径算术：只说树在哪里，不说它存在、更不创建
+```
+
+**统一 completion observation**（本片真正承重的部分）：
+
+```
+observeAttemptResult(attemptId) → {
+  attemptId, placement, workDir, baseCommit, observedHead,
+  committedChanges,       // git diff --name-only base..HEAD
+  uncommittedChanges,     // git status --porcelain
+  changedFiles,           // 两者并集（排序）
+  requiredArtifacts,      // 每个声明产物在该树里是否存在
+}
+```
+
+它现在是 `finish` 与 `report` **共同**的输入，`#assertCompletionMaterialized` 与 `#assertCompletionHasWork` 是**同一条**
+规则，与 placement 无关。`report` 在 worktree placement 下**不再采信调用方的 `changedFiles`/`resultCommit`**——
+这正是 D2-a 之前那条路径的漏洞：placed attempt 的完成只凭 worker 自述。于是：
+
+```
+CompletionInvariant(in-place) == CompletionInvariant(worktree)
+```
+
+**可观察性是 placement 的性质，不是一刀切要求**：port **能命名一棵树**（first-party `GitCliPort` 恒能）⇒ 观察它；
+**命名了却没有那棵树** ⇒ 拒绝（"看不见"绝不等于"干净"）；**port 根本无法命名树**（内存 port，只存在于测试世界，
+磁盘上没有树也就无所谓看错）⇒ 该 placement 的完成仍回到调用方报告，行为与本片之前一致。这条分界写进了代码注释与
+`observeAttemptResult` 的返回类型（`null` = 该 placement 不可观察）。
+
+**`finish` 仍然只服务 in-place**，但理由换了：不再是"树观察不到"（已经不成立），而是**工作位**——`finish` 关闭的是
+`begin` 打开的直接 attempt，而 `begin` 是 in-place only（§E.4.1），worktree placement 下不存在这样的工作位。错误信息
+如实改为这一点，并保留"placed attempt 由自己的 report 路径结算"。
+
+**验收**（`test/lean_work_execution_world.test.ts`，7 项）：
+
+| 用例 | 断言 |
+|---|---|
+| world 存在且绑定 base | 真实 git worktree（`git worktree list` 认得）、`workDir` 指向 `.palimpsest/worktrees/<attemptId>`、HEAD == base、canonical 树零变化 |
+| **world 缺失** | 拒绝（`has no work execution world`），绝不报成"干净" |
+| **未提交的完成** | 拒绝且 event delta 0、attempt 仍 RUNNING（与 in-place 同一规则、同一信息） |
+| **已提交的完成** | 结算到**world 内的提交**，且调用方谎报的 `changedFiles`/`resultCommit` 被观察覆盖；canonical 树仍为零变化 |
+| **提交后又漂移** | 拒绝（"已有 result commit"不是忽略后续工作的理由） |
+| **越界工作** | 拒绝，且错误信息点名 placement |
+| **canonical HEAD 前移** | 观察仍诚实（base H0 / result R）；"结果身份 ≠ 晋升权威"由出口那一层回答（§3.2 / `cross_revision_promotion_not_supported`） |
+
+同片还发现并修正了两处**既有测试的陈旧前提**：`A24`（原判据是"worktree 读不到树"——该理由已被本片推翻，改为"没有直接工作位"）
+与 `test/e2_host_demo.test.ts`（它原本在真实 worktree 里产出 `out/report.pptx` 后**不提交就 report**，靠旧的自述路径通过；
+现在按真实工作纪律提交后再 report，并额外断言账本记录的是**被观察到的**提交与文件）。后者是本片最有价值的副作用：
+**新的完成规则当场抓出了一个编码了旧弱行为的测试**。
 
 ### D2.7 禁止（本附录）
 
