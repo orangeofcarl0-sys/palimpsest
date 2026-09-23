@@ -119,6 +119,102 @@ function deriveBranchHost(palimpsest, profile) {
 }
 
 /**
+ * WORK WORKER MODE: compose the worker environment and nothing else. The runner reads `host.work` and
+ * prints the ONE outcome line.
+ *
+ * The environment crosses the process boundary as DATA — the canonical task context plus the ONE tool
+ * definition the worker answers through — because the host reaches Palimpsest only through its entry
+ * module, and the outcome vocabulary must live in exactly one place (Palimpsest generates the enum
+ * below from its own constant). The host's part is deliberately trivial: register the tool, keep the
+ * FIRST report, print it. Every rule about what an outcome may say is enforced on the way back, in
+ * `parseWorkWorkerResult`, so a lenient host cannot widen the vocabulary.
+ */
+async function applyWork(ctx, palimpsest, workFile) {
+  const toolNames = [];
+  const context = {
+    tools: {
+      register(definition) {
+        toolNames.push(definition.name);
+        return ctx.tools.register(toRealTool(definition));
+      },
+    },
+  };
+  let raw;
+  try {
+    raw = JSON.parse(readFileSync(workFile, 'utf8'));
+  } catch (error) {
+    ctx.provide('palimpsestHost', {
+      work: { error: `the worker environment could not be read: ${error?.message ?? String(error)}` },
+      palimpsest,
+      toolNames,
+    });
+    return;
+  }
+  const definition = raw?.resultTool;
+  if (typeof definition?.name !== 'string' || definition.name.length === 0 || typeof definition?.parameters !== 'object' || definition.parameters === null) {
+    ctx.provide('palimpsestHost', {
+      work: { error: 'the worker environment carries no usable result tool definition' },
+      palimpsest,
+      toolNames,
+    });
+    return;
+  }
+
+  let reported = null;
+  const recorder = {
+    get status() {
+      return reported === null ? 'pending' : 'reported';
+    },
+    get outcome() {
+      return reported;
+    },
+    get detail() {
+      return reported === null ? 'the worker has not reported an outcome yet' : 'the worker reported its ONE outcome';
+    },
+    get violations() {
+      return Object.freeze([]);
+    },
+    record(args) {
+      // ONE outcome per worker. The rules about WHAT it may say are not enforced here: the reported
+      // payload is re-read strictly on the Palimpsest side, where the vocabulary lives.
+      if (reported !== null) {
+        const violation = 'the worker already reported its ONE outcome';
+        throw new Error(`WORKER_RESULT_ALREADY_RECORDED: ${violation}`);
+      }
+      reported = args;
+      return { accepted: true, detail: 'recorded the worker outcome' };
+    },
+  };
+  const tool = {
+    name: definition.name,
+    description: typeof definition.description === 'string' ? definition.description : '',
+    parameters: definition.parameters,
+    output: { schema: { type: 'object' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value, null, 2) }] },
+    mode: 'read-only',
+    async execute(args) {
+      return recorder.record(args);
+    },
+  };
+
+  ctx.provide('palimpsestHost', {
+    palimpsest,
+    work: {
+      context: raw.context,
+      recorder,
+      // Already converted to the host's own definition shape: the runner registers it into the WORKER
+      // AGENT's scope (not the plugin scope), which is what keeps it out of reach of the restriction
+      // that closes the inherited authority surface.
+      tool: toRealTool(tool),
+      deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',
+      principalTools: [],
+    },
+    toolNames,
+  });
+  // A worker holds NO deployment and NO durable identity, so there is no lifecycle effect to register:
+  // the process prints its outcome line and exits.
+}
+
+/**
  * BRANCH MODE: compose the minimal branch environment and nothing else. The
  * runner reads `host.branch` and prints the ONE result line.
  */
@@ -162,6 +258,13 @@ export async function apply(ctx, config) {
   const branchFile = flagValue('--branch');
   if (branchFile !== undefined) {
     return applyBranch(ctx, palimpsest, branchFile);
+  }
+  // PLMP-LEAN-1 §D2-c: the WORK WORKER mode. It composes the worker environment and NOTHING else —
+  // no deployment, no store, no federation, no principal surface — exactly like branch mode, because a
+  // worker is an ephemeral engineering agent inside one prepared execution world.
+  const workFile = flagValue('--work');
+  if (workFile !== undefined) {
+    return applyWork(ctx, palimpsest, workFile);
   }
 
   const profile = palimpsest.loadDeploymentProfile(config.deploymentProfile);
