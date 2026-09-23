@@ -429,6 +429,22 @@ export type ExecutionMode = "worktree" | "in-place";
  * host process exists yet — `Attempt RUNNING != host worker running` is D1's lesson applied to Work,
  * and D2-d is where host job state is composed on top.
  */
+/**
+ * PLMP-LEAN-1 §D2-c: the canonical task context a worker is given. Module-local on purpose — the read
+ * (`workWorkerTaskContext`) is the interface, and it adds no name to the package's public face.
+ */
+interface WorkWorkerTaskContext {
+  readonly projectGoal: string;
+  readonly requirements: readonly string[];
+  readonly decisions: readonly string[];
+  readonly objective: string;
+  readonly writeScope: readonly string[];
+  readonly requiredArtifacts: readonly string[];
+  readonly baseCommit: string;
+  readonly completionChecks: readonly string[];
+  readonly independentVerificationRequired: boolean;
+}
+
 interface PreparedMutatingWork {
   readonly state: "PREPARED" | "RESUMED";
   readonly taskId: string;
@@ -3381,6 +3397,40 @@ export class ProjectController {
         required_artifacts: envelope.required_artifacts,
         allowed_commands: envelope.allowed_commands,
       },
+    });
+  }
+
+  /**
+   * PLMP-LEAN-1 §D2-c: the canonical, TASK-SUFFICIENT context a worker is given.
+   *
+   * Enough to work with — the project's goal, requirements and decisions, the task's objective, the
+   * write scope, the required artifacts, the base commit, a plain-language completion summary and
+   * whether independent verification will be required — and deliberately nothing else. No principal
+   * conversation, no scratchpad, no scheduler sequence, no attempt id, no gate id, no lease state:
+   * orchestration state is not a worker's business, and a worker that knows its attempt id is one step
+   * from believing it may settle it.
+   *
+   *     Context isolation != Context starvation
+   */
+  workWorkerTaskContext(taskId: string): WorkWorkerTaskContext {
+    const envelope = this.#taskEnvelope(taskId);
+    const project = this.#project();
+    const task = project.tasks.find((entry) => entry.task_id === taskId);
+    if (task === undefined) {
+      throw new DomainValidationError(`task "${taskId}" is not part of the canonical project`);
+    }
+    const contract = this.#completionContractForEnvelope(envelope);
+    const standard = this.#standard;
+    return Object.freeze({
+      projectGoal: project.goal,
+      requirements: Object.freeze(project.requirements.map((entry) => entry.statement)),
+      decisions: Object.freeze(project.decisions.map((entry) => entry.statement)),
+      objective: task.objective,
+      writeScope: Object.freeze([...envelope.write_paths]),
+      requiredArtifacts: Object.freeze([...envelope.required_artifacts]),
+      baseCommit: envelope.base_commit,
+      completionChecks: standard === undefined ? Object.freeze([] as string[]) : this.#mechanicalCheckSummary(standard),
+      independentVerificationRequired: contract.verification.required,
     });
   }
 

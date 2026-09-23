@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付**（2026-09-23）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c 运行时已交付（1 个 blocker 待评审）**（2026-09-24）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -1879,7 +1879,7 @@ D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿
 ```
 D2-a  Execution world + observation          ← 纯机械、无模型（已交付，§D2.8）
 D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
-D2-c  Worker runtime / execution inside the world
+D2-c  Worker runtime / execution inside the world   ← 运行时已交付；1 个世界形状 blocker（§D2.10）
 D2-d  Async lifecycle + terminal projection
 D2-e  Evidence / finish / verification / promotion closed loop
 D2 live gate
@@ -2058,6 +2058,113 @@ envelope.base_commit` ⇒ `BASE_DRIFT` 拒绝，但**不删除** worktree、不�
 **D2-b 顺带说明的一条结构性质**：`execution` 的取值本身就让两条 lane 互斥——in-place 部署 `begin` 可用而 worker lane
 不可用，worktree 部署反之（§E.4.1）。这**不是** D2 v1 的额外规则，而是既有 placement 语义的结果，也正是 §D2.3 能成立
 的原因：在 D2 v1 里，"哪个 RUNNING attempt 属于 Principal"根本不会成为一个问题。
+
+#### D2-c 交付（2026-09-24）
+
+**一句话**：
+
+```
+Run a capable, PTC-first engineering Agent inside the already-prepared Work execution world,
+but let it export only a non-authoritative worker outcome.
+```
+
+```
+D2-b  canonical TaskEnvelope → RUNNING Attempt → isolated worktree @ H0 → PREPARED
+D2-c  PREPARED → strong worker cognition → edits/tests/experiments INSIDE the world → WorkerOutcome
+      NO ATTEMPT_COMPLETED / Evidence / Verification / Promotion / canonical mutation
+```
+
+```
+D2-c = execution  ≠  settlement（D2-e）
+```
+
+**交付**：
+
+- `WorkWorkerExecutionPort.run()`（**blocking**；D2-d 再扩成 `start()` + host-local job map，与 D1 同一片切法）；
+- 结果词表 `READY_FOR_SETTLEMENT | NEEDS_ESCALATION`（端口级另有 `HOST_FAILURE`）；**没有 `COMPLETED`**——
+  `Worker says READY_FOR_SETTLEMENT ≠ Attempt is COMPLETED`；
+- 工具定义作为**数据**跨进程边界：host 只做"注册 + 取第一次上报 + 打印"，而词表、允许的参数、escalation 必须带 reason
+  等规则全部在**回来的路上**由 `parseWorkWorkerResult` 严格执行（`enum` 由 `WORK_WORKER_OUTCOME_KINDS` 生成，不是
+  JS 里第二份清单）。之所以这样切：host 只能通过 entry 触达 Palimpsest，而公共 API 面已冻结（**不得新增导出名**），
+  所以环境像 context 一样以序列化描述跨界，而"语义只有一处"这条没有被牺牲；
+- **capability-open + authority-closed**：worker 继承宿主普通工程工具，`deny` 掉继承来的 `palimpsest_*`。deny 清单按
+  **scope 自己可见的 schema 枚举**而非硬编码——因为 `restrict()` 对未知名字 fail，静态清单会在部署组合出不同
+  Palimpsest 面时直接崩，并会悄悄漏掉以后新增的 authority 工具。worker 的 result 工具注册进**它自己那一层**：
+  DSH 明文规定 restriction 只过滤"继承来的"层、从不过滤本层注册；
+- **PTC-first**：worker scope `presentAs('ptc')`。presentation 是 **host 配置 / runtime provenance**，**不进入**
+  TaskEnvelope、AttemptReport 或任何 Work event——它只说明"这个 worker 怎样使用同一组 capability"；
+- **context**：canonical task-sufficient（project goal/requirements/decisions + task objective + write scope +
+  required artifacts + base commit + completion 人话摘要 + verification-required），并排除
+  principal conversation、scratchpad、scheduler seq、**attempt id**、gate id、lease state
+  （`Context isolation ≠ Context starvation`）；
+- **escalation 不 terminalize attempt**：host worker 停了 ≠ canonical Work terminal；**host failure 只是
+  `HOST_FAILURE`**，绝不自动制造 `ATTEMPT_FAILED`（D2-d 才组合 `INTERRUPTED`）；
+- `TaskEnvelope.allowed_commands` **不是** worker 的 shell ACL：它仍然只决定"哪些命令结果能成为受管 mechanical
+  evidence"（`Worker experiment ≠ Work Evidence`，worker 自己跑测试通过也不产生 `EvidenceAtom`）；
+- 未暴露 `palimpsest_delegate(kind=WORK)` 给 Principal（那是 D2-d）。
+
+**活体实测**（`rs-test/lean-d2c-worker-gate.mjs`；真实 DSH、真实模型、真实仓库、真实 worktree）：
+
+```
+worker run ended                       : exit:0
+worker cwd == prepared world           : YES
+presentation                           : ptc
+offered tools (count)                  : 1
+  has run_code (PTC transport)         : YES
+  wire is PTC-only (run_code)          : YES
+  inherited Palimpsest authority tools : NONE (authority-closed)
+outcome                                : NEEDS_ESCALATION
+worker actually edited the world       : YES ["M src/ranges.ts"]
+world committed                        : NO
+COMMIT BLOCKER                         : (见下)
+canonical HEAD unchanged               : YES
+canonical tree unchanged               : YES
+canonical ranges.ts still buggy        : YES
+ledger events / attempts / evidence    : 8→8 / 1→1 / 0→0 (unchanged)
+ledger ATTEMPT_COMPLETED               : 0 → 0 (unchanged)
+ledger attemptStates                   : RUNNING → RUNNING (unchanged)
+```
+
+即：
+
+```
+Worker really did Work   ∧   the canonical world still did not accept it
+```
+
+而且这一轮**恰好演示了词表的设计意图**：worker 找到了并修好了 bug（`M src/ranges.ts`），却因为**无法提交**而如实上报
+`NEEDS_ESCALATION`（带 reason），**没有**谎报 `READY_FOR_SETTLEMENT`。PTC 下 wire header 只有 `run_code`，所以
+"它有 `palimpsest_worker_result` 吗"不能从 header 判断——它能上报，本身就是它可达的证明。
+
+#### D2-c 的 OPEN 缺口：worker **无法提交**（需评审）
+
+```
+execution world = git worktree            （D2-a 复用既有基础设施）
+world boundary  = workspace-write @ cwd    （本片强制：世界边界必须成立，否则 fail closed）
+worker commits its own work                （本片要求：git commit 是 agent 工作，产品不代写提交）
+⇒ 结构性不可能：git worktree 的 .git 在 worktree 之外
+```
+
+DSH 的 `workspace-write` 恰好是「session cwd + host `/tmp` + `os.tmpdir()`」，**没有第二可写根**（已核
+`dsh-sandbox/roots`：`writableRoots(policy)` 的语义就是这一条）；唯一能放开的是 `danger-full-access`，而那是明确
+禁止的（不能 PTC + full-access + 只靠 prompt 承诺不碰 canonical repo）。实测中 worker 自己给出了同样的诊断：
+"the worktree's .git directory lies outside the sandboxed workspace (workspace-write) and the escalation to
+danger-full-access requires approval"。
+
+两个候选解（**都改 D2-a 的世界形状，因此必须评审**，本片不擅自选）：
+
+1. **世界改为自包含仓库**：`git clone --shared/--reference` 到 `.palimpsest/worlds/<attemptId>`，`.git` 就在**世界内** ⇒
+   `workspace-write` 足够、worker 正常提交。代价：结果提交的 object 落在**世界自己的 store**（canonical 晋升需要
+   fetch/bundle 或 alternates），且每次 prepare 多一次 clone（小仓库 + 硬链接/alternate 可接受）。
+2. **由 host 在出口代提交**：与本片冻结的"worker 自己提交、产品不代写提交"冲突，**不推荐**；若将来要，必须作为一次
+   显式评审。
+
+**顺带说明 D2-a 的观察规则是对的**：本片结束时世界是 dirty 的，于是 `observeAttemptResult` 的 `uncommittedChanges`
+非空 ⇒ D2-e 的 settlement 会拒绝结算。也就是说"worker 说自己 READY"与"产品能否结算"确实是两件事，而第二条由
+**产品观察**决定——这正是 `Agent discipline improves UX; product observation preserves correctness`。
+
+**结论**：D2-c 的**运行时与边界**已实证（PTC、capability-open/authority-closed、outcome ≠ fact、canonical 零变化、
+escalation 诚实），**"worker 自己提交"这一步被世界形状阻塞**。因此 D2-c 判
+**runtime PASS / live gate PARTIAL（1 个结构性 blocker，需评审）**，而不是 STRONG PASS。
 
 ### D2.7 禁止（本附录）
 
