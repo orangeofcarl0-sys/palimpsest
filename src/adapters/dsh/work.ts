@@ -42,6 +42,8 @@ tools.push(
         collaboration: application.collaboration !== undefined,
         // UX-B §28: the cross-project face (a missing one is never an empty directory).
         crossProject: application.crossProject !== undefined,
+        // PLMP-LEAN-1 §C.14: the RESEARCH delegation face (a missing one is never "nothing to research").
+        delegation: application.delegation !== undefined,
         proof: application.proof !== undefined,
         disclosure: application.disclosure !== undefined,
         projectWorkspace: application.projectWorkspace !== undefined,

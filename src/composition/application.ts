@@ -14,6 +14,7 @@
 import type { PeerRef } from "../federation/index.js";
 import type { CrossProjectService } from "../interaction/cross_project.js";
 import type { CollaborationService } from "../interaction/collaboration.js";
+import type { DelegationService } from "../interaction/delegation.js";
 import type { PalimpsestApplicationSurface } from "../application/surface.js";
 import { makePalimpsestApplicationSurface } from "../application/surface.js";
 import { defineApplicationTools } from "../tools/application_tools.js";
@@ -35,6 +36,8 @@ export interface ApplicationAssemblyInput {
   /** The UX-A / UX-B services, composed after the groups. */
   readonly collaborationService: CollaborationService | undefined;
   readonly crossProjectService: CrossProjectService | undefined;
+  /** PLMP-LEAN-1 §C.14: the D1 RESEARCH delegation runtime, composed after the groups. */
+  readonly delegationService: DelegationService | undefined;
   /** Exactly the option fields the assembly reads. */
   readonly assemblyOptions: ApplicationAssemblyOptions;
 }
@@ -74,7 +77,7 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
   const { organization, institution, runtimeScopes, holons, organizationDynamics, organizationEvolutionInstalled, runtimeEvolutionInstalled, reasoningCellsInstalled } = input.organization;
   const { proofExtraction, organizationMemory, recipeRegistry, taskProfiler, verificationWiring, liveVerification, advisor, recipeExecution, recipeExecutionStatus, attention, externalAssetsRef, projectWorkspace } = input.cognition;
   const { verification, externalAssets, projectManagement, operatingStores, monitor } = input.governance;
-  const { controller, baseTools, collaborationService, crossProjectService, assemblyOptions } = input;
+  const { controller, baseTools, collaborationService, crossProjectService, delegationService, assemblyOptions } = input;
   void campaignEvidence;
   void boundaryHome;
   void federatedBoundaryMemory;
@@ -127,6 +130,9 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // UX-B §28: the cross-project face over the SAME composed federation. ABSENT ⇒
     // no such surface, never a stub (the G10-AC-R §11 lesson).
     ...(crossProjectService === undefined ? {} : { crossProject: crossProjectService }),
+    // PLMP-LEAN-1 §C.14: the RESEARCH delegation face. ABSENT ⇒ no such surface, never a stub (the
+    // same lesson as the collaboration/cross-project faces above).
+    ...(delegationService === undefined ? {} : { delegation: delegationService }),
     ...(assemblyOptions.remoteTransport === undefined ? {} : { remoteTransport: assemblyOptions.remoteTransport }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
@@ -177,6 +183,9 @@ export function composeApplicationAssembly(input: ApplicationAssemblyInput): App
     // UX-B §29: a cross-project-only deployment still gets its tool face, so
     // `palimpsest_cross_project` is composed exactly when the service is.
     application.crossProject !== undefined ||
+    // PLMP-LEAN-1 §C.14: a delegation-only deployment still gets its tool face, so
+    // `palimpsest_delegate` is composed exactly when the service is.
+    application.delegation !== undefined ||
     application.proof !== undefined ||
     application.disclosure !== undefined ||
     application.projectWorkspace !== undefined ||

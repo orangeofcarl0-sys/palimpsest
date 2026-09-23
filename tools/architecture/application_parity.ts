@@ -343,6 +343,21 @@ export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly
       "with every precondition checked before anything is written. It adds a tool and changes no " +
       "existing contract.",
   },
+  {
+    name: "palimpsest_delegate",
+    reason:
+      "PLMP-LEAN-1 appendix C (phase D1-e). `palimpsest_collaborate` could only ever CONFIRM a task: " +
+      "it runs its branches and returns, so an agent that wanted to research one question while " +
+      "continuing its own work had no way to say so — it either blocked or dropped the question. This " +
+      "is the same cognition backend and the same settlement path on a different interaction " +
+      "lifecycle (§C.12/§C.13), so the blocking path is unchanged and the async one is additive: " +
+      "`start` returns as soon as the branch job exists, the branch reads a FROZEN snapshot of the " +
+      "committed head (§C.11 ②), and the terminal result reaches the principal on its own. It creates " +
+      "no Work truth — no Task, no Attempt, no EvidenceAtom, no verification, no promotion. It is " +
+      "composed only where a reasoning store, a repository and an async branch host are all present, " +
+      "and neither captured installation wires one, so both still show the canonical catalogue plus " +
+      "this named entry. It adds a tool and changes no existing contract.",
+  },
 ]);
 
 /**
