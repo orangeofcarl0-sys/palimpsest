@@ -450,8 +450,8 @@ interface PreparedMutatingWork {
   readonly taskId: string;
   readonly attemptId: string;
   readonly placement: "worktree";
-  /** The isolated execution world: a real git worktree at the task's canonical base. */
-  readonly worktreePath: string;
+  /** The isolated EXECUTION WORLD: a repository at the task's canonical base that owns its own git state. */
+  readonly worldPath: string;
   /** `TaskEnvelope.base_commit` — the ONLY Work base. Delegation never mints a second one. */
   readonly baseCommit: string;
   readonly writeScope: readonly string[];
@@ -1786,7 +1786,7 @@ export class ProjectController {
   async claim(
     attemptId: string,
     attribution?: AttemptAttribution | undefined,
-  ): Promise<{ worktreePath: string; baseCommit?: string }> {
+  ): Promise<{ worldPath: string; worktreePath: string; baseCommit?: string }> {
     // G9-F2 VIEW-INV-5: validate + snapshot BEFORE any side effect - a
     // malformed attribution fails the whole claim with zero partial state,
     // and the stored value is controller-owned (never a caller alias).
@@ -1808,14 +1808,20 @@ export class ProjectController {
         );
       }
       this.scheduler.startAttempt(attemptId);
-      return { worktreePath: "", baseCommit: project.head_commit };
+      // In-place: there is no world — the attempt works in the canonical repository itself, and both
+      // spellings are empty rather than invented.
+      return { worldPath: "", worktreePath: "", baseCommit: project.head_commit };
     }
-    const worktree = await this.effects.invoke(
-      this.effects.actions.worktreeCreate,
-      { worktreeId: attemptId, baseCommit: project.head_commit },
+    // §D2-cR: the attempt's EXECUTION WORLD, not a linked worktree. The world owns its mutable git
+    // state (HEAD, refs, index, config, new objects) so a worker confined to this directory can
+    // commit; the immutable base objects stay borrowed read-only. A port without `createWorld` is a
+    // legacy backend, and the action falls back to the linked worktree it always used.
+    const world = await this.effects.invoke(
+      this.effects.actions.worldCreate,
+      { worldId: attemptId, baseCommit: project.head_commit },
       {
         scope: this.projectId,
-        callId: `worktree:${attemptId}`,
+        callId: `world:${attemptId}`,
         revision: this.promotions.projectRevision(),
       },
     );
@@ -1824,7 +1830,9 @@ export class ProjectController {
       this.#attemptAttribution.set(attemptId, ownedAttribution);
       this.#viewGeneration += 1;
     }
-    return { worktreePath: worktree.worktreePath };
+    // `worktreePath` is the frozen low-level spelling of the same value; both are returned so no
+    // existing caller breaks while new code reads the honest name.
+    return { worldPath: world.worldPath, worktreePath: world.worldPath };
   }
 
   /** Submit an attempt report; the report's claims are never evidence. */
@@ -1902,9 +1910,11 @@ export class ProjectController {
     if (this.execution === "in-place") {
       return { placement: "in-place", workDir: this.#canonicalRepository() };
     }
-    // The git worktree id IS the attempt id (see `claim`); the report's `worktree_id` field is a
-    // display id and is deliberately not used to locate anything.
-    const workDir = this.effects.git.worktreePath?.(attemptId);
+    // The world id IS the attempt id (see `claim`); the report's `worktree_id` field is a display id
+    // and is deliberately not used to locate anything. `worldPath` is the D2 vocabulary; the
+    // `worktreePath` fallback keeps a legacy port (a linked-worktree backend) observable.
+    const git = this.effects.git;
+    const workDir = git.worldPath?.(attemptId) ?? git.worktreePath?.(attemptId);
     if (workDir === undefined || workDir === "") {
       /**
        * A port that cannot NAME a tree has no trees: there is nothing on disk to be wrong about, so
@@ -2705,7 +2715,7 @@ export class ProjectController {
     state: "PREPARED" | "RESUMED",
     taskId: string,
     attemptId: string,
-    worktreePath: string,
+    worldPath: string,
     envelope: TaskEnvelope,
     contract: import("../domain/completion_contract.js").AttemptCompletionContract,
     standard: import("../domain/standard.js").ProjectStandard,
@@ -2716,7 +2726,7 @@ export class ProjectController {
       taskId,
       attemptId,
       placement: "worktree" as const,
-      worktreePath,
+      worldPath,
       baseCommit: envelope.base_commit,
       writeScope: Object.freeze([...envelope.write_paths]),
       requiredArtifacts: Object.freeze([...envelope.required_artifacts]),

@@ -44,6 +44,17 @@ function runExecutable(
   });
 }
 
+/**
+ * The OPERATIONAL git identity a world's candidate commits carry.
+ *
+ *   GitAuthorMetadata  !=  PalimpsestAgentIdentity
+ *
+ * It records where the commit came from ("a Palimpsest worker execution"), never that it is the user
+ * and never that it is a durable agent. Work truth does not depend on it.
+ */
+export const WORKER_COMMIT_NAME = "Palimpsest Worker";
+export const WORKER_COMMIT_EMAIL = "worker@palimpsest.invalid";
+
 interface CreateWorktreeInput {
   readonly worktreeId: string;
   readonly baseCommit: string;
@@ -103,15 +114,34 @@ export interface GitPort {
    */
   readonly repository?: string | undefined;
   /**
-   * The deterministic path of one attempt's execution worktree. Pure path arithmetic: it says where
-   * the world WOULD be, never that it exists or that anything was created.
+   * The deterministic path of one attempt's EXECUTION WORLD. Pure path arithmetic: it says where the
+   * world WOULD be, never that it exists or that anything was created.
    *
-   * PLMP-LEAN-1 §D2-a: `create` is an effect; reading is not. The Work owner needs the second half
-   * to OBSERVE a worktree-placed attempt, and it must not have to create a tree in order to find out
-   * whether one is already there.
+   * PLMP-LEAN-1 §D2-a: `create` is an effect; reading is not. The Work owner needs the second half to
+   * OBSERVE a placed attempt, and it must not have to create a world in order to find out whether one
+   * is already there.
+   */
+  worldPath?(worldId: string): string;
+  /**
+   * Materialize the execution world for one attempt at its base commit.
+   *
+   * PLMP-LEAN-1 §D2-cR: the world OWNS ITS MUTABLE GIT STATE. A linked git worktree cannot: its
+   * `.git` lives in the canonical repository (`<repo>/.git/worktrees/<id>`), which lies OUTSIDE the
+   * world, so a worker confined to its own directory can never `git add` or `git commit` — measured
+   * live, where the worker reported exactly that. The world is therefore a repository of its own with
+   * its mutable state inside it, borrowing the canonical object store read-only through git's own
+   * alternates mechanism rather than copying history.
+   *
+   * The canonical repository is never a remote of the world: a strong worker with a shell should not
+   * be handed an explicit "push back into the canonical project" path.
+   */
+  createWorld?(input: CreateWorktreeInput): Promise<{ worldPath: string }>;
+  /**
+   * Compatibility alias for {@link worldPath}. The ontology is EXECUTION WORLD (§D2-cR); "worktree"
+   * survives only because a frozen low-level surface names it, and no new code should spread it.
    */
   worktreePath?(worktreeId: string): string;
-  /** Create (or reuse) an isolated worktree at baseCommit. */
+  /** Compatibility alias for {@link createWorld}, kept for the frozen low-level surface. */
   createWorktree(input: CreateWorktreeInput): Promise<{ worktreePath: string }>;
   /** Commit the current worktree state; returns the new commit id. */
   commit(input: CommitInput): Promise<{ commit: string }>;
@@ -189,6 +219,16 @@ export class FakeGitPort implements GitPort {
       message: "initial",
       worktreeId: null,
     });
+  }
+
+  /**
+   * The in-memory world. It deliberately exposes NO `worldPath`: there is no filesystem here, so a
+   * placement in this port is not observable, and the Work owner's observation returns null for it
+   * rather than pretending to read a tree (that is exactly the rule §D2-a established).
+   */
+  async createWorld(input: CreateWorktreeInput): Promise<{ worldPath: string }> {
+    const created = await this.createWorktree(input);
+    return { worldPath: created.worktreePath };
   }
 
   async createWorktree(input: CreateWorktreeInput): Promise<{ worktreePath: string }> {
@@ -406,8 +446,55 @@ export class GitCliPort implements GitPort {
     return stdout.trim();
   }
 
+  /**
+   * The world root: `.palimpsest/worlds/<attemptId>`, deterministic so a restart can REOPEN the same
+   * world instead of inventing a new one.
+   */
+  worldPath(worldId: string): string {
+    return `${this.#worktreeRoot}/${worldId}`;
+  }
+
+  /**
+   * Compatibility alias: the linked-worktree spelling of the same path.
+   *
+   * PLMP-LEAN-1 §D2-cR: this is a NAME, not a mechanism. The old `createWorktree` really did create a
+   * linked worktree; `worldPath` now points at the same deterministic location so nothing that only
+   * reads the path has to care which backend materialized it.
+   */
   worktreePath(worktreeId: string): string {
-    return `${this.#worktreeRoot}/${worktreeId}`;
+    return this.worldPath(worktreeId);
+  }
+
+  /**
+   * Materialize the EXECUTION WORLD: a repository that owns its mutable git state.
+   *
+   *   git clone --shared --no-checkout <canonical> <world>   borrowed objects, no history copy
+   *   git checkout --detach <basisCommit>                    the exact basis
+   *   git remote remove origin                               no explicit path back into the project
+   *   user.name/user.email                                   who authored the candidate commit
+   *
+   * `--shared` is deliberate and so is the naming: this is a "self-contained MUTABLE repository
+   * world", not a fully self-contained one. Immutable objects stay borrowed read-only through
+   * `.git/objects/info/alternates`; everything that must be WRITABLE — HEAD, refs, index, config and
+   * new objects — lives inside the world, which is exactly what a `workspace-write` sandbox rooted at
+   * the world's directory can grant.
+   *
+   * The commit identity is OPERATIONAL, not an agent identity: it says "this candidate commit came
+   * from a Palimpsest worker", never "this is the user" and never "this is a durable agent".
+   */
+  async createWorld(input: CreateWorktreeInput): Promise<{ worldPath: string }> {
+    const path = this.worldPath(input.worktreeId);
+    await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
+    await this.#git(["checkout", "--detach", input.baseCommit], path);
+    try {
+      await this.#git(["remote", "remove", "origin"], path);
+    } catch {
+      // A clone always has an origin; a port reused over an existing world may not. Either way the
+      // contract is "no remote pointing at the canonical project", and its absence satisfies it.
+    }
+    await this.#git(["config", "user.name", WORKER_COMMIT_NAME], path);
+    await this.#git(["config", "user.email", WORKER_COMMIT_EMAIL], path);
+    return { worldPath: path };
   }
 
   /** The canonical repository directory — the tree an in-place attempt works in and is judged in. */
