@@ -1559,6 +1559,9 @@ delegation 投递 ×0（DEL-A08 的活体一半）。
 
 ### C.22 D1 的**已确认缺口**：research worker 没有读取能力（活体实测）
 
+> **状态：已由 §C.23（D1-g）关闭**（delegated branch 现为 `PROJECT_READ_ONLY`；blocking `collaborate` 保持
+> `RESULT_ONLY`，其工具集逐字节不变）。本节保留原样，因为它是"缺口如何被**测量**出来"的记录。
+
 同一个装置还测出一条**规格与实现的分歧**，必须如实登记，且**不擅自修复**（两个候选修法都要动已冻结的边界，
 属于必须评审的架构决定）：
 
@@ -1592,6 +1595,56 @@ ReadBasis(worker)                          ← 快照已冻结，但 worker 读�
 
 因此 D1 的对外结论必须精确：**生命周期（A01/A03/A08）已闭合；认知的输入面目前仍是 brief-only**，不得表述为
 "worker 会去读你的项目"。
+
+### C.23 D1-g：delegated research branch 的**只读项目能力**（缺口闭合）
+
+修法不是把项目文件塞进 `evidenceContext`（`ProjectContext ≠ EvidenceContext`，且 selector 模式要求 Principal
+预先猜出 worker 需要哪些文件，会削弱独立研究价值），也不是自建 project filesystem，而是给 branch 请求增加一个
+**能力档（capability profile）**，由 host 组合成具体的工具集：
+
+```
+RESULT_ONLY        [ palimpsest_branch_result ]                      ← 默认
+PROJECT_READ_ONLY  [ read, glob, grep, palimpsest_branch_result ]
+```
+
+三条性质让它成为**能力边界**而不是承诺：
+
+1. **默认是 `RESULT_ONLY`**：blocking `palimpsest_collaborate` 的 branch 工具集**逐字节不变**（空请求不可能
+   放宽任何东西）——这就是 DEL-A08 的"能力面"那一半；
+2. **只读集里没有任何能改字节或跑程序的东西**：没有 `write`/`edit`/`str_replace`/`pwsh`/`bash`/shell/terminal/
+   subagent。于是"worker 不能修改 canonical project"来自**工具集**，而不是来自 prompt 或路径检查；
+3. **档位随 branch payload 传递**（`parseBranchHostPayload` 严格解析，未知档位 fail closed 而非静默降级），
+   所以 branch host 读到的是**它真正被授予的**能力，而不是被口头告知的。
+
+`palimpsest_delegate` 请求 `PROJECT_READ_ONLY`，作用对象是 snapshot 的 `workDir`。
+
+**这版不声称什么**（必须写准）：这不是 OS 级沙箱——host 原生 reader 仍可打开绝对路径，恶意 worker 不在 D1 的
+threat model 内（D1 的模型是 **Principal 主动启动、受信但能力受限的辅助 cognition**）。D1 保证的是两条：
+`WriteSet_canonical_project(worker) = ∅`，以及正常路径下 `ReadBasis(worker) = delegation-time frozen snapshot`。
+不可信第三方 worker / 外部模型供应商 / 敏感 monorepo / 远程执行 / 多租户隔离出现时再谈更强隔离。
+
+活体（`rs-test/lean-d1g-read-gate.mjs`，barrier 与 D1-f 同构）实测：
+
+```
+live tree still holds the FROZEN marker : NO      ← Principal 已把 live 第一行改成 LIVE marker
+live tree holds the LIVE marker         : YES
+worker quoted the FROZEN marker         : YES     ← 它读的是冻结快照
+worker quoted the LIVE marker           : NO
+delegated branch offeredTools           : ["glob","grep","palimpsest_branch_result","read"]
+  has read/glob/grep                    : YES
+  has NO writer/shell tool              : YES
+T2 blocking branches offeredTools       : [["palimpsest_branch_result"],["palimpsest_branch_result"]]
+T2 every blocking branch is RESULT_ONLY : YES
+```
+
+即 worker 在被放行（此时 live 树已是 LIVE marker）之后，仍然报出 **H0 第一行的 FROZEN marker**——"它读的是冻结
+快照"因此不是时序巧合可以解释的。D1 的原始目标随之成立：
+
+```
+Direct Work_Principal  ∥  Independent Research_worker@H0
+```
+
+（D1-f 测出的缺口属"产品能力面"而非 Agent 行为：当时的 worker 拒绝编造答案是**正确**行为。D1-g 只改能力面。）
 
 ## 附录 D：近期明确不做（anti-waste）
 
