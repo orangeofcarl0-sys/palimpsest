@@ -1536,6 +1536,63 @@ DelegationService.onTerminal
 活体（barrier 式）见 DEL-A01/DEL-A03：`start` 已返回、主代理已执行下一次 direct mutation、worker 尚未完成；
 真实 DSH transcript 中 `status` 调用数为 **0**，终态由 **followup** 送达。
 
+实测装置：`rs-test/lean-d1-live-gate.mjs`。它把 branch host 指向一个**中继 wrapper**：wrapper 先在 barrier 上
+park，rig 观察到主代理已经改完文件之后才放行，wrapper 再把 stdout 原样交给**真实**的 DSH branch worker。于是
+
+```
+worker spawned  <  principal edited  <  worker released
+```
+
+是被**测量**出来的，而不是从意图推断的。测量结果（真实一轮）：
+
+```
+principal called palimpsest_delegate            06:28:48.009
+worker spawned（start 已返回）                   06:28:48.274
+principal edited src/dedupe.ts（worker 仍 park） 06:28:48.791
+worker released                                  06:28:48.792
+terminal result delivered                        06:29:00.537
+```
+
+工具调用：`palimpsest_delegate` ×1（即 `status`/`inspect` ×0）、`palimpsest_begin` ×1、`palimpsest_finish` ×1、
+低层工具 ×0；`Attempt COMPLETED` 且 `result_commit` 含该改动。第二回合 `palimpsest_collaborate` ×1、`delegate` ×0、
+delegation 投递 ×0（DEL-A08 的活体一半）。
+
+### C.22 D1 的**已确认缺口**：research worker 没有读取能力（活体实测）
+
+同一个装置还测出一条**规格与实现的分歧**，必须如实登记，且**不擅自修复**（两个候选修法都要动已冻结的边界，
+属于必须评审的架构决定）：
+
+- 实测：branch 的 cwd 确实是冻结快照（`…\.palimpsest\delegationasis-<digest>`），**不是** live repo；
+- 但 worker 拿不到读能力：`host/dsh/lib/runner.js` 的 `runBranch` 在 `setup` 里执行
+  `agentCtx.tools.restrict({ allow: [branchToolName] })`，能力集**恰好**是 `palimpsest_branch_result`
+  （UX-C §17/§37 的 CAPABILITY BOUNDARY，原文即 "a prompt line is NOT the boundary, the capability set is"）；
+- 于是 branch 只能凭空回答，而它**诚实地拒绝了编造**：
+
+```
+本分支没有任何文件读取工具，且上下文中未提供 src/dedupe.ts 的任何内容（acceptedClaims 为空），
+因此无法原样引用 dedupe 函数体的第一行代码，也无法据此判断其时间复杂度。
+```
+
+  这句话本身是好消息（没有让裸模型假装读过代码），但它说明 §C.11 ②/§C.15 写的
+  `ReasoningBranchBrief + explicit evidence allowlist + frozen project read snapshot` 里，最后一项今天是一个
+  **读不到的 cwd**：
+
+```
+WriteSet_canonical_project(worker) = ∅      ← 成立（DEL-A05）
+ReadBasis(worker)                          ← 快照已冻结，但 worker 读不到 ⇒ 目前等价于 brief-only
+```
+
+两个候选修法（**需要评审后再做**）：
+
+1. **放宽 branch 能力集**到只读的项目工具（`read`/`glob`/`grep`）。注意 `palimpsest_collaborate` 的 branch 走的
+   是**同一个 adapter**，其 cwd 是 **live** 工作树——所以这同时会改变 blocking 路径的边界，与 DEL-A08「collaborate
+   行为不变」冲突，除非把能力集变成 branch 环境的**显式参数**（delegate = 只读快照 / collaborate = 仅 result）。
+2. **把快照内容作为 branch input 的一部分物化**（沿用 UX-C 的 `evidenceContext` selector-only 机制：不新增工具、
+   不动边界），代价是只能读"被显式选中的部分"，而不是通用研究。
+
+因此 D1 的对外结论必须精确：**生命周期（A01/A03/A08）已闭合；认知的输入面目前仍是 brief-only**，不得表述为
+"worker 会去读你的项目"。
+
 ## 附录 D：近期明确不做（anti-waste）
 
 1. 不新增 `ManagerAgent`。
