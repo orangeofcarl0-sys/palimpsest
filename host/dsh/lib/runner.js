@@ -281,6 +281,10 @@ async function run(ctx, deps) {
   // The deployment owns pump → drain → activate → mark-after-success (§24); the runner
   // only binds the host session this launcher could not know, then SCHEDULES the loop.
   host.deployment.bindAttentionActivation(activation);
+  // PLMP-LEAN-1 §C.11 ③: the SAME resolved principal is also the delivery path for a delegated
+  // research branch's terminal result. `composeRunnerActivation` exposes the plain-text half of
+  // exactly this wiring, so the cold-resume dance is not written a second time here.
+  host.deployment.bindDelegationDelivery(activation);
 
   // Machine-readable readiness line for the dogfood harness (noncanonical). It reports
   // composed CAPABILITIES only — never any credential (§31) and never any private

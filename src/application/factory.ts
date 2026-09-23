@@ -9,7 +9,7 @@
 import { makeWorkSurfaces } from "./surfaces/work.js";
 import type { WorkApplicationSurface } from "./surfaces/work.js";
 import { makeProductSurfaces } from "./surfaces/product.js";
-import type { CollaborationApplicationSurface, CrossProjectApplicationSurface } from "./surfaces/product.js";
+import type { CollaborationApplicationSurface, CrossProjectApplicationSurface, DelegationApplicationSurface } from "./surfaces/product.js";
 import { makeFederationSurfaces } from "./surfaces/federation.js";
 import type { FederationApplicationSurface, BoundaryApplicationSurface, AttentionApplicationSurface, RemoteSubmissionPort } from "./surfaces/federation.js";
 import { makeCognitionSurfaces } from "./surfaces/cognition.js";
@@ -38,6 +38,7 @@ import type { ReasoningCellService } from "../reasoning_cell/index.js";
 import type { DisclosureService, EvidenceExtractionService, ProofEvidenceService } from "../proof_asset/index.js";
 import type { CollaborationService } from "../interaction/collaboration.js";
 import type { CrossProjectService } from "../interaction/cross_project.js";
+import type { DelegationService } from "../interaction/delegation.js";
 import type { OrganizationMemoryService } from "../organization_memory/index.js";
 import type { RecipeRegistry } from "../recipes/registry.js";
 import type { RecipeExecutionService } from "../recipes/execution.js";
@@ -82,6 +83,12 @@ export interface PalimpsestApplicationSurface {  readonly work: WorkApplicationS
    * absent rather than stubbed (the same rule every optional face follows).
    */
   readonly crossProject?: CrossProjectApplicationSurface | undefined;
+  /**
+   * PLMP-LEAN-1 §C.14 (additive): RESEARCH delegation (D1) — the ASYNC sibling of `collaboration`.
+   * ABSENT ⇒ this deployment has no reasoning store, no repository to snapshot or no async branch
+   * host, so the face is absent rather than stubbed (the same rule every optional face follows).
+   */
+  readonly delegation?: DelegationApplicationSurface | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence plane; absent ⇒ no proof surface. */
   readonly proof?: ProofApplicationSurface | undefined;
   /** G10-T (additive): local purpose-scoped disclosure; absent ⇒ no disclosure surface. */
@@ -156,6 +163,13 @@ export interface ApplicationSurfaceDeps {
    * `surface_absent` rather than pretending it can reach another project.
    */
   readonly crossProject?: CrossProjectService | undefined;
+  /**
+   * PLMP-LEAN-1 §C.14 (additive): the composed RESEARCH delegation runtime. ABSENT ⇒
+   * `application.delegation` (and `palimpsest_delegate`) are absent — the surface is never a stub, so
+   * a deployment with no reasoning store or no async branch host answers `surface_absent` rather than
+   * pretending it can research something in the background.
+   */
+  readonly delegation?: DelegationService | undefined;
   /** G10-T (additive): the authoritative Proof/Evidence service; absent ⇒ no proof surface. */
   readonly proof?: ProofEvidenceService | undefined;
   /** G10-T CF-T-02 (additive): evidence-grounded extraction behind the proof surface. */
@@ -203,7 +217,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
   const organizationCluster = makeOrganizationSurfaces(deps);
   const projectionsCluster = makeProjectionsSurfaces(deps);
   const { work } = workCluster;
-  const { collaboration, crossProject } = productCluster;
+  const { collaboration, crossProject, delegation } = productCluster;
   const { federation, boundary, attention } = federationCluster;
   const { reasoning, empirical, recipes, advisor, recipeExecution } = cognitionCluster;
   const { proof, disclosure } = proofCluster;
@@ -230,6 +244,7 @@ export function makePalimpsestApplicationSurface(deps: ApplicationSurfaceDeps): 
     // UX-B §28/SC-15: mapped here, not merely declared. The monitor 501 bug
     // documented above `const monitor` is the reason this line ships WITH the face.
     ...(crossProject === undefined ? {} : { crossProject }),
+    ...(delegation === undefined ? {} : { delegation }),
     ...(proof === undefined ? {} : { proof }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),

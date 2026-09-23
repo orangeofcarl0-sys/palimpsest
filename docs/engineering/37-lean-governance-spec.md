@@ -1408,6 +1408,130 @@ context firewall  ≠  no project context
 
 这才是一个**真正可用的 research worker**，而不是脱离项目的裸模型。
 
+## C-r2 修订（D1-e 实现前）：把工具交给 Principal 之前的四个 runtime 缺口
+
+> **状态：已实现（D1-e）**。C-r1 冻结了「语义生命周期 ≠ host 执行生命周期」。C-r2 冻结另外四件事：
+> 它们都很局部，但每一个在**公开之后**都会变成「看起来在工作、其实不对」的状态。原则是：**先关掉这
+> 四个，再接 application 面与工具**，而不是先注册工具再修。
+
+### C.16 delegation identity 是**推导**的，不是分配的
+
+```
+D_delegation = H(projectId, basisCommit, task)
+```
+
+D1-d 之前，cellId 只由 `task` 推导，于是「同一进程里连续两次 `start({task:"X"})`」会得到**同一个 ref**，
+却**再次 freeze snapshot、再次 `port.start()`**，然后 `active.set(ref, …)` 直接覆盖第一份 job：
+两个 child 共用一个 semantic branch，而 host map 只认识第二个。
+
+identity 加入 `projectId` 与 `basisCommit` 后：
+
+- 同 project / 同 task / 同 basis 的重试**收敛**（不启动第二个 worker）；
+- 同 task、**新 HEAD** 是**新的** delegation，旧 candidate 不会污染新一次 delegation；
+- 不同 project 即便共享 ReasoningCell store 也不会碰撞；
+- 附带一个重要性质：**ref 可恢复**——主代理丢了 ref 后重发同一个 task，就能拿回已有结论。
+
+顺序也随之钉死：**freeze basis → 推导 identity → 读已有 canonical/host 状态 → 才 open/start**。
+先 open 再判断会抹掉唯一需要的事实（branch 是不是本来就在）。
+
+`start` 的返回因此不再是「我启动了」，而是**它实际做了什么**：
+
+| `outcome` | 含义 | `state` |
+|---|---|---|
+| `STARTED` | 真的起了新 job | `RUNNING` |
+| `ALREADY_RUNNING` | 同一 delegation 已在本进程运行（**没有**第二个 worker） | `RUNNING` |
+| `EXISTING` | 已存在且没启动任何东西（terminal 回放 / `INTERRUPTED`） | 派生状态 |
+
+### C.17 `delegationRef` **携带 exact basis**
+
+`basisCommit` 原本只存在于 `active.get(ref).snapshot.basisCommit`，settlement 后 `active.delete(ref)` 就
+丢了——与 C-r1「finding can name its own basis」不闭合。解法**不是**建 store（C.3 禁止），而是让 opaque
+ref 自身携带 basis，并让 **terminal projection 也带 `basisCommit`**：
+
+```
+delegationRef = dlg2.<basisCommit>.<cellId>.<branchId>      parser 严格校验每一段
+```
+
+`dlg2` 是**新的版本号**：载荷不兼容地变了，v1 ref 必须解析为 `null`（`UNKNOWN`），而不是被误读成 v2。
+于是 restart 之后只要持有 ref，`inspect(ref)` 仍能回答「这个结论计算于 R」。
+
+### C.18 三类故障必须分开
+
+```
+host execution failure  ≠  semantic settlement failure  ≠  terminal delivery failure
+```
+
+只有前两类决定 outcome。D1-d 的链条是 `job.completion.then(conclude).catch(conclude)`，而 `conclude`
+**最后**才调用 `onTerminal`——所以一旦 D1-e 把它接到真实 followup，投递错误会让第一个 `conclude` reject，
+外层 `.catch` 再调用一次 `conclude`：**二次 close、二次 release、二次 terminal delivery**，同一份研究被结算两次。
+
+实测（把投递隔离与 exactly-once guard 一起移除，`test/lean_delegation_runtime.test.ts`）：
+`expected 2 to be 1`。修复分两层：
+
+1. 投递被隔离（`try/catch`）：`onTerminal` 失败最多意味着「notification delivery failed」，绝不改写 research
+   outcome；
+2. exactly-once guard：一个 ref 在本进程**最多**产生一次 terminal projection。
+
+投递本身是 host-local、noncanonical、best-effort，**不声称 crash-durable**；真正的结果状态仍从
+ReasoningCell 推导。`Notification ≠ Result truth`。
+
+### C.19 `DEDUPLICATED` 在两条生命周期里都是收敛，不是失败
+
+`settleBranchFromOutput()` 对 DEDUPLICATED 明确返回 `converged=true, unresolved=false`；blocking
+`collaborate` 也不把它计为 unresolved。但 delegation 曾把它设为 `FAILED`，且 `stateOf()` 只认 `ADMITTED`。
+统一之后：`ADMITTED` 或 `DEDUPLICATED-to-existing-claim` 都是 **`COMPLETED`**，detail 写明
+"converged on an existing exploratory conclusion"。这正是抽共享 settlement coordinator 原本要防止的漂移，
+所以它同时是 C.13 的回归。
+
+### C.20 D1-e 交付的表面
+
+```
+palimpsest_delegate
+  start   { task, kind?: "RESEARCH" }      ← 正常路径只有这一个
+  status  { delegationRef }                ← debug / restart recovery
+  inspect { delegationRef }                ← explicit drill-down
+```
+
+- **工具面保持极窄**：不加 `AUTO` / `WORK` / `receive` / `projectRefs`；
+- 组合：新的 `composition/delegation` 簇（**不新增 store**），仅当 reasoning store + repository +
+  async branch host 都在时存在，否则**缺席而非 stub**；
+- **terminal 投递不进 canonical `AttentionService`**（它的 ontology 是 peer message / boundary decision /
+  commitment）。走的是 application/host 组合：
+
+```
+DelegationService.onTerminal
+   → PrincipalTerminalComposer（产品层：格式、standing、投递失败记录）
+   → host followup adapter（composeRunnerActivation.deliver）
+   → principal agent.followup(...)
+```
+
+  DSH 的 principal session 在 deployment **之后**才创建，所以 delivery 是 **late-bound**（与
+  `bindAttentionActivation` 同形）；未绑定时报 `delivered: false`，**绝不静默丢弃**。
+  并且它只在「有可达的 DSH agent **且** profile 要求 DSH activation」时存在：`activation: "none"` 是操作者
+  在说 pull mode only，一个「终态永远回不来」的 delegation 会变成陷阱——agent 会开始研究并等待一个不可能
+  到达的答案。那里缺席才是诚实答案，`palimpsest_delegate` 也随之缺席。
+- followup 文本带 **basis + exploratory conclusion + standing**，**不带** ref/cellId/branchId；
+- `palimpsest_collaborate` 的 blocking 行为**不变**（同一执行器、不同交互生命周期）。
+
+### C.21 D1-e 验收（增补）
+
+在 DEL-A01–A08 之外，以下每一条都有机器验收：
+
+| 增补 | 断言 |
+|---|---|
+| 同 basis 重复 `start` | 只有一个 host job，ref 相同，`outcome=ALREADY_RUNNING` |
+| 同 task 新 HEAD | 不同 ref、不同 cell，`outcome=STARTED` |
+| 不同 project、同 task、同 basis | 不同 ref，不碰撞 |
+| terminal 之后 `inspect` | 仍返回 exact `basisCommit`，且 `conclusion` 可读 |
+| terminal 后重发同一 task | `outcome=EXISTING`，**不重跑**（submit/evaluate 计数不变） |
+| `INTERRUPTED` 后重发同一 task | 仍是 `EXISTING`，**不自动重跑** |
+| `onTerminal` 抛错 | 一次 settle、一次 release、一次投递；outcome 不变 |
+| `DEDUPLICATED` | `COMPLETED`，与 blocking 路径一致，且 restart 后仍是 `COMPLETED` |
+| cell 的 policy ref | 必须是 first-party exploratory bundle 服务的 `recipe.explore.*`，否则验证永远失败却像"从不收敛" |
+
+活体（barrier 式）见 DEL-A01/DEL-A03：`start` 已返回、主代理已执行下一次 direct mutation、worker 尚未完成；
+真实 DSH transcript 中 `status` 调用数为 **0**，终态由 **followup** 送达。
+
 ## 附录 D：近期明确不做（anti-waste）
 
 1. 不新增 `ManagerAgent`。

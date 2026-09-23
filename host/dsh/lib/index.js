@@ -93,22 +93,29 @@ function flagValue(name) {
  * UX-C §20: the HOST derives the ephemeral branch execution port from its own
  * runtime knowledge — the DSH bin it was launched with and the profile it runs
  * under. A normal user supplies neither the bin path nor a separate branch profile.
+ *
+ * PLMP-LEAN-1 §C.11 ②: the SAME derivation also yields the per-`workDir` factory a
+ * delegation needs, because a delegated branch must read a FROZEN snapshot rather than
+ * the live tree. One derivation, two bindings — never a second branch runtime.
  */
-function deriveBranchExecution(palimpsest, profile) {
+function deriveBranchHost(palimpsest, profile) {
   if (profile.reasoning === undefined) return undefined;
   const profileName = flagValue('--profile');
   const bin = process.env.PALIMPSEST_DSH_BIN?.trim() || (typeof process.argv[1] === 'string' && process.argv[1].endsWith('.js') ? process.argv[1] : undefined);
   if (profileName === undefined || bin === undefined) return undefined;
   if (typeof palimpsest.dshSubprocessBranchExecutionPort !== 'function') return undefined;
-  try {
-    return palimpsest.dshSubprocessBranchExecutionPort({
-      dshBin: bin,
-      profile: profileName,
-      workDir: process.cwd(),
-    });
-  } catch {
-    return undefined;
-  }
+  const build = (workDir) =>
+    palimpsest.dshSubprocessBranchExecutionPort({ dshBin: bin, profile: profileName, workDir });
+  return {
+    build,
+    blocking: () => {
+      try {
+        return build(process.cwd());
+      } catch {
+        return undefined;
+      }
+    },
+  };
 }
 
 /**
@@ -175,7 +182,8 @@ export async function apply(ctx, config) {
   // packaged reasoning policies and store come from the DEPLOYMENT PROFILE, not from
   // any hard-coded host policy: the fabricating SUPPORTED policy is gone (SC-5).
   const agents = ctx.get('agents');
-  const branchExecution = deriveBranchExecution(palimpsest, profile);
+  const branchHost = deriveBranchHost(palimpsest, profile);
+  const branchExecution = branchHost?.blocking();
 
   // The dashboard url exists only AFTER serving (a profile may ask for port 0 and let the OS pick),
   // so the deployment reads it through a getter rather than receiving a value it cannot know yet.
@@ -185,6 +193,9 @@ export async function apply(ctx, config) {
     host: {
       ...(agents === undefined ? {} : { dshAgents: agents }),
       ...(branchExecution === undefined ? {} : { branchExecution }),
+      // PLMP-LEAN-1 §C.11 ②: a delegated branch is bound to a frozen snapshot's workDir, so the
+      // delegation needs the factory rather than the one port above.
+      ...(branchHost === undefined ? {} : { branchExecutionFor: branchHost.build }),
       facts: {
         dashboardUrl: () => (serve === undefined ? null : serve.url),
         dashboardAuth: () => (serve === undefined ? null : serve.auth),
@@ -263,4 +274,4 @@ export async function apply(ctx, config) {
   }, 'palimpsest-host lifecycle');
 }
 
-export { toRealTool, flagValue, deriveBranchExecution };
+export { toRealTool, flagValue, deriveBranchHost };
