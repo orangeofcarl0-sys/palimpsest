@@ -51,6 +51,11 @@ export const WORK_ROUTES: readonly ApplicationRouteDescriptor[] = [
         // this discovery list omits is invisible to a client, so a false here is the
         // truthful "this deployment has no project directory", never an empty list.
         crossProject: application.crossProject !== undefined,
+        // PLMP-LEAN-1 §C.14: the RESEARCH delegation face. The same rule a third time — a composed
+        // surface this discovery list omits is invisible to a client, so the entry ships WITH the
+        // surface. A false here is the truthful "no reasoning store, no repository or no async branch
+        // host", never "nothing to research".
+        delegation: application.delegation !== undefined,
         // PLMP-LEAN-1 §1/§4: the project's governance, in one place. A client that shows a gate or
         // promotion control reads it from here, so it can offer only commands this deployment
         // authorizes and only gates that exist — instead of asking a person for machine vocabulary.

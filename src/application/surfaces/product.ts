@@ -12,6 +12,12 @@ import type { CollaborationPlanView } from "../../interaction/intent.js";
 import type { CollaborationResult } from "../../interaction/result_view.js";
 import type { CrossProjectService, CrossProjectDirectoryView, CrossProjectPendingAsk } from "../../interaction/cross_project.js";
 import type { CrossProjectCollaborationResult } from "../../interaction/cross_project_result.js";
+import type {
+  DelegationInspection,
+  DelegationService,
+  DelegationStartResult,
+  DelegationStatusView,
+} from "../../interaction/delegation.js";
 import { parsePeerMessage } from "../../federation/messages.js";
 import type { PeerRef } from "../../federation/peer.js";
 
@@ -19,6 +25,7 @@ import type { PeerRef } from "../../federation/peer.js";
 export interface ProductSurfaceDeps {
   readonly collaboration?: CollaborationService | undefined;
   readonly crossProject?: CrossProjectService | undefined;
+  readonly delegation?: DelegationService | undefined;
   readonly federation?: FederationService | undefined;
 }
 
@@ -74,7 +81,35 @@ export interface CrossProjectApplicationSurface {
   acknowledge(message: unknown): Promise<unknown>;
 }
 
-export function makeProductSurfaces(deps: ProductSurfaceDeps): { readonly collaboration: CollaborationApplicationSurface | undefined; readonly crossProject: CrossProjectApplicationSurface | undefined } {
+/**
+ * PLMP-LEAN-1 §C.14 — RESEARCH DELEGATION (D1).
+ *
+ * The ASYNC sibling of the collaboration face, over the same cognition backend: `start` returns as
+ * soon as the branch job exists, and the terminal result arrives on its own. `status` and `inspect`
+ * exist for restart recovery and explicit drill-down; the normal path is `start` alone, and polling is
+ * never required.
+ *
+ * The face adds NO logic: every method is the service's own projection, because those projections are
+ * already the principal-facing ones (no cell id, branch id or CoT). A delegation creates no Task, no
+ * Attempt, no EvidenceAtom and no verification standing — its finding is cell-local and exploratory.
+ */
+export interface DelegationApplicationSurface {
+  /** §C.14: the ONE normal-path verb. Returns immediately; no answer is awaited. */
+  start(input: {
+    readonly task: string;
+    readonly kind?: "RESEARCH" | undefined;
+  }): Promise<DelegationStartResult>;
+  /** Debug / restart recovery only — a running delegation needs no status check. */
+  status(input: { readonly delegationRef: string }): Promise<DelegationStatusView>;
+  /** Progressive disclosure: the same state plus the question, the basis and the conclusion. */
+  inspect(input: { readonly delegationRef: string }): Promise<DelegationInspection>;
+}
+
+export function makeProductSurfaces(deps: ProductSurfaceDeps): {
+  readonly collaboration: CollaborationApplicationSurface | undefined;
+  readonly crossProject: CrossProjectApplicationSurface | undefined;
+  readonly delegation: DelegationApplicationSurface | undefined;
+} {
     const collaboration: CollaborationApplicationSurface | undefined =
       deps.collaboration === undefined
         ? undefined
@@ -116,6 +151,15 @@ export function makeProductSurfaces(deps: ProductSurfaceDeps): { readonly collab
             },
           };
 
+    const delegation: DelegationApplicationSurface | undefined =
+      deps.delegation === undefined
+        ? undefined
+        : {
+            start: (input) => deps.delegation!.start(input),
+            status: (input) => deps.delegation!.status(input),
+            inspect: (input) => deps.delegation!.inspect(input),
+          };
 
-  return { collaboration, crossProject };
+
+  return { collaboration, crossProject, delegation };
 }

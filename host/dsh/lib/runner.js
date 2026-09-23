@@ -336,6 +336,27 @@ async function run(ctx, deps) {
     printTurn(fromSeq);
   };
 
+  // PLMP-LEAN-1 §C.11 ③: a delegated research branch's TERMINAL result reaches the principal as one
+  // ordinary turn on THIS agent — the same path the launch message and an activated attention turn
+  // take, so it is a first-class, flushed, reported turn rather than an invisible one. The binding is
+  // late (the deployment exists before this session does) and it is NOT attention: no signal is
+  // minted and the canonical attention plane is untouched, because "a local research branch finished"
+  // is not a peer message, a boundary decision or a commitment.
+  host.deployment.bindDelegationDelivery({
+    adapterId: 'dsh-delegation-terminal',
+    async deliver(text) {
+      try {
+        await deliver(text);
+        process.stdout.write(`PALIMPSEST_DELEGATION ${JSON.stringify({ delivered: true, text })}\n`);
+        return { delivered: true, detail: 'delivered a terminal delegation result as a turn' };
+      } catch (error) {
+        const detail = `delivery failed: ${error?.message ?? String(error)}`;
+        process.stdout.write(`PALIMPSEST_DELEGATION ${JSON.stringify({ delivered: false, detail })}\n`);
+        return { delivered: false, detail };
+      }
+    },
+  });
+
   if (typeof startup.message === 'string' && startup.message.trim() !== '') {
     await deliver(startup.message);
   }

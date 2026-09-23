@@ -19,6 +19,7 @@ import type { DshPluginContext } from "./tools/dsh_types.js";
 import { evaluate } from "./experiment/index.js";
 import { makeCollaborationService, makeCrossProjectService } from "./interaction/index.js";
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
+import { composeDelegationCapability } from "./composition/delegation.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -252,6 +253,19 @@ export function installPalimpsest(
           ...(collaboration === undefined ? {} : { collaboration }),
         });
 
+  /*
+   * PLMP-LEAN-1 §C.11–§C.14 (D1-e): the RESEARCH delegation composition.
+   *
+   * It is the ASYNC sibling of the collaboration service above: the SAME cognition backend, the SAME
+   * settlement path, a different interaction lifecycle. The cluster decides for itself whether this
+   * deployment can truthfully delegate (a reasoning store, a repository and an async branch host) and
+   * composes nothing otherwise, so absence here stays absence.
+   */
+  const delegation = composeDelegationCapability({
+    options,
+    reasoning: reasoningCellsInstalled?.service,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -263,6 +277,7 @@ export function installPalimpsest(
     governance,
     collaborationService: collaboration,
     crossProjectService: crossProject,
+    delegationService: delegation,
     assemblyOptions: options,
   });
   const { application, tools } = assembly;
@@ -337,6 +352,7 @@ export function installPalimpsest(
     ...(recipeExecution === undefined ? {} : { recipeExecution }),
     ...(collaboration === undefined ? {} : { collaboration }),
     ...(crossProject === undefined ? {} : { crossProject }),
+    ...(delegation === undefined ? {} : { delegation }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
