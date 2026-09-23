@@ -1501,9 +1501,13 @@ palimpsest_delegate
 ```
 DelegationService.onTerminal
    → PrincipalTerminalComposer（产品层：格式、standing、投递失败记录）
-   → host followup adapter（composeRunnerActivation.deliver）
+   → host followup adapter（DSH：runner 自己那条 turn 投递路径）
    → principal agent.followup(...)
 ```
+
+  host 侧**不新增投递实现**：DSH runner 已经有一个把文本变成"一次被 flush、被报告的 turn"的函数
+  （launch message 与 attention 激活都走它），delegation 终态复用它，因此终态是 transcript 里的一等 turn，
+  而不是一次不可见的 turn。
 
   DSH 的 principal session 在 deployment **之后**才创建，所以 delivery 是 **late-bound**（与
   `bindAttentionActivation` 同形）；未绑定时报 `delivered: false`，**绝不静默丢弃**。
