@@ -57,8 +57,28 @@ export interface AsyncReasoningBranchExecutionPort extends ReasoningBranchExecut
     readonly executionBudget?: unknown;
     readonly signal?: AbortSignal;
     readonly evidenceContext?: unknown;
+    /** §C.23: what this branch host may do. Absent ⇒ `RESULT_ONLY` (today's behaviour, unchanged). */
+    readonly capabilityProfile?: BranchCapabilityProfile;
   }): BranchExecutionJob;
 }
+
+/**
+ * PLMP-LEAN-1 §C.23 (D1-g): WHAT A BRANCH HOST PROCESS MAY DO, declared by the branch request.
+ *
+ * A branch is ephemeral cognition over a frozen input, and how much of its (frozen) working tree it may
+ * touch is part of what the branch IS — not a prompt line and not a policy the host guesses:
+ *
+ *   RESULT_ONLY        answer from the brief alone and report ONE structured result (the default, and
+ *                      exactly what the blocking `palimpsest_collaborate` path has always been);
+ *   PROJECT_READ_ONLY  additionally read its OWN frozen snapshot (`read` / `glob` / `grep`), so an
+ *                      independent researcher can investigate the project as of the delegation basis —
+ *                      and still cannot write, shell, or reach the canonical repository.
+ *
+ * The first-party host composes the concrete tool set from this (see `src/deployment/branch_host.ts`);
+ * the port only carries the request, because the port is host-neutral.
+ */
+export const BRANCH_CAPABILITY_PROFILES = ["RESULT_ONLY", "PROJECT_READ_ONLY"] as const;
+export type BranchCapabilityProfile = (typeof BRANCH_CAPABILITY_PROFILES)[number];
 
 export interface ReasoningBranchExecutionPort {
   readonly adapterId: string;
@@ -223,10 +243,16 @@ export function dshSubprocessBranchExecutionPort(
 
       let briefJson: string;
       try {
-        // Backward compatible: a bare brief is written when no evidence context is
-        // supplied; otherwise the host receives `{ brief, evidenceContext }`.
+        // Backward compatible: a bare brief is written when no evidence context and no capability
+        // profile are supplied; otherwise the host receives the envelope it strictly parses.
         briefJson = JSON.stringify(
-          runInput.evidenceContext === undefined ? runInput.brief : { brief: runInput.brief, evidenceContext: runInput.evidenceContext },
+          runInput.evidenceContext === undefined && runInput.capabilityProfile === undefined
+            ? runInput.brief
+            : {
+                brief: runInput.brief,
+                ...(runInput.evidenceContext === undefined ? {} : { evidenceContext: runInput.evidenceContext }),
+                ...(runInput.capabilityProfile === undefined ? {} : { capabilityProfile: runInput.capabilityProfile }),
+              },
         );
       } catch {
         return { completion: Promise.resolve(failed("branch brief is not JSON-serializable")), cancel: () => undefined };
