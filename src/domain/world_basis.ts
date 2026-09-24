@@ -86,8 +86,19 @@ export function unknown<T>(detail: string): FacetBinding<T> {
 export type ResourceSelector =
   /** The canonical project's SEMANTIC projection: task, work, envelope, policy, output obligations. */
   | { readonly domain: "project_semantic"; readonly aspect: "task" | "work" | "envelope" | "verification_policy" | "authority_policy" }
-  /** Canonical source, at whatever granularity the resolver can honestly observe. */
+  /**
+   * Canonical source, at whatever granularity the resolver can honestly observe.
+   *
+   * §D3-b adds the two finer scopes beside `repository`. They exist because a DISJOINTNESS PROOF needs
+   * narrower selectors than "the whole repository" — but only where the narrowing is itself proven, so
+   * the conservative `repository` scope remains the honest answer whenever completeness cannot be
+   * established (see `CoveredFootprint` in `project_world/footprint.ts`).
+   */
   | { readonly domain: "source"; readonly scope: "repository" }
+  /** One exact source path. */
+  | { readonly domain: "source"; readonly scope: "path"; readonly path: string }
+  /** A directory subtree: everything under `prefix`. */
+  | { readonly domain: "source"; readonly scope: "subtree"; readonly prefix: string }
   /** A canonical asset, by ref; the revision is resolved, never declared by the caller. */
   | { readonly domain: "asset"; readonly assetRef: string }
   /** A semantically relevant environment component (toolchain, runtime, lock state). */
@@ -95,16 +106,42 @@ export type ResourceSelector =
 
 /** A stable, order-comparable spelling of one selector — the identity used for digests and set algebra. */
 export function resourceSelectorKey(selector: ResourceSelector): string {
+  if (selector.domain === "source") {
+    switch (selector.scope) {
+      case "repository":
+        return "source:repository";
+      case "path":
+        return `source:path:${normalizeSourcePath(selector.path)}`;
+      case "subtree":
+        return `source:subtree:${normalizeSourcePath(selector.prefix)}`;
+    }
+  }
+  // The source case returned above, so this switch is exhaustive over the REMAINING domains.
   switch (selector.domain) {
     case "project_semantic":
       return `project_semantic:${selector.aspect}`;
-    case "source":
-      return `source:${selector.scope}`;
     case "asset":
       return `asset:${selector.assetRef}`;
     case "environment":
       return `environment:${selector.component}`;
   }
+}
+
+/**
+ * One spelling of a source path, so two selectors that name the same place compare equal.
+ *
+ * Deliberately NOT lowercased: source paths are case-sensitive as a rule, and folding case would make
+ * two genuinely different files look like one resource — an over-approximation that could turn a real
+ * conflict into a claimed disjointness. Separator normalization is the only rewriting done, because
+ * `/` and `\` are the same character to every backend here.
+ */
+export function normalizeSourcePath(path: string): string {
+  return path
+    .split(String.fromCharCode(92))
+    .join("/")
+    .replace(/\/+/gu, "/")
+    .replace(/^\.\//u, "")
+    .replace(/\/$/u, "");
 }
 
 /** A sorted, de-duplicated selector set: the canonical form, so digests never depend on input order. */
