@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR 已交付（D2-c = STRONG PASS）**（2026-09-24）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR / D2-e1 已交付（D2-c = STRONG PASS）**（2026-09-24）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -1881,7 +1881,10 @@ D2-a  Execution world + observation          ← 纯机械、无模型（已交�
 D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
 D2-c  Worker runtime / execution inside the world   ← **STRONG PASS**（runtime + live gate；blocker 由 D2-cR 关闭）
 D2-d  Async lifecycle + terminal projection
-D2-e  Evidence / finish / verification / promotion closed loop
+D2-e1 Settlement closure（WorkerOutcome → Canonical Work result）   ← 已交付（§D2.12）
+D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）
+D2-d  Async lifecycle + palimpsest_delegate WORK + followup
+D2 live gate（端到端异步 delegated Work）
 D2-cR Self-contained Work Execution World Closure      ← 已交付（§D2.11）
 D2 live gate
 ```
@@ -2326,6 +2329,71 @@ Worker really did Work（读/改/测/commit R）  ∧  canonical world still did
 `GitPort.worldPath` / `createWorld`、effects action `palimpsest.world.create`）；被冻结的低层面保留
 `GitPort.worktreePath` / `createWorktree` / `palimpsest.worktree.create` 作为**兼容别名**（同值）。
 不为 public API freeze 把内部设计继续叫 worktree。
+
+#### D2-e1 交付（2026-09-24）：Settlement Closure
+
+**只解决一件事**：
+
+```
+WorkerOutcome  →  Canonical Work result
+```
+
+完整路径（顺序本身就是语义）：
+
+```
+READY_FOR_SETTLEMENT
+      ↓  observeAttemptResult()            ← D2-a 的观察，一行未改
+      ↓  completion invariant              ← 与 in-place 同一条规则
+      ↓  basis settlement admission        ← 最新 head 四方一致
+      ↓  exportResultCommit(R)             ← 先 export
+      ↓  report()                          ← 后 report
+      ↓  ATTEMPT_COMPLETED
+```
+
+入口：`ProjectController.settleMutatingWork({ attemptId, workerOutcome })`。三条铁律：
+
+**① `WorkerOutcome ≠ AttemptReport`**：worker 不生成 report，也**不能**写账本。产品记录的一切都来自观察；`settleMutatingWork` 调 `report()` 时**不传**任何 `changedFiles`/`resultCommit`——传无可传，正是设计。
+
+**② basis 在 export/report 之前**：先 export 再发现 drift，会留下一个"已导出、已记账、却对着项目已经不存在的 head"的世界。四方一致（`IN_SYNC` ∧ project head == proven effect head == live repo HEAD == `envelope.base_commit`）任一不满足 ⇒ `BASE_DRIFT`：**no export / no report / no verification / no promotion / world retained / R retained**。
+
+**③ 先 export 后 report**：report 会写下 `result_commit = R`，这个名字必须在 canonical object universe 里可解析，否则世界释放后账本就指着一个谁都物化不出来的提交。export 不成立 ⇒ `NOT_READY`（`RESULT_NOT_EXPORTED`），不记账。
+
+**④ BASE_DRIFT 不自动修复、不 terminalize**：不做 auto rebase / cherry-pick / transplant，也不新建 H1 world。返回 `BASE_DRIFT` + `resultAvailable` + `worldRetained`，**attempt 仍是 RUNNING**（lane 故意保持 fenced）。一条外部/违规的 head 漂移**绝不能**顺带释放 mutation authority——这是 fail-closed，不是 deadlock bug；后续由显式的恢复/取消/未来 transplant 决定。
+
+**其余拒绝**（都保持 attempt RUNNING、世界不动）：`UNCOMMITTED_WORK`（世界还有未提交工作——D2-c 活体里 worker 无法提交时正是这条会拦）、`NO_WORK`（空产出）、`OUT_OF_SCOPE`（越界，点名 envelope 的 `write_paths`）、`WORLD_UNOBSERVABLE`，以及 `NEEDS_ESCALATION`/`HOST_FAILURE`（worker 没交出工作 ⇒ 什么都不观察、不导出、不记账）。
+
+**新 backend 带来的三个 crash window 都钉住了**：
+
+| 窗口 | 状态 | retry 结果 |
+|---|---|---|
+| A：R 只在 world（未导出未记账） | 进程死在 settlement 前 | 重跑同一 settlement ⇒ `SETTLED` |
+| B：R 已导出、未 report | 死在 export 与 report 之间 | 重跑 ⇒ 导出幂等（object availability 无副作用）⇒ `SETTLED`，无重复事实 |
+| C：已 report | worker/world 仍在 | retry ⇒ **replay**：调度器以 `(attempt, terminal event type, report digest)` 为身份返回已提交事件；断言 attempt 数、`ATTEMPT_COMPLETED` 事件数、`result_commit` 三者均不重复 |
+
+**实现说明（一处架构取舍）**：`ProjectController` 是 L2，`ExecutionWorldPort` 的第一方实现在 L5，直接 import 会构成 `L2 → L5` 越界（实测被 `architecture:check` 拦下，1 violation）。因此 controller 侧**结构化声明**它唯一需要的那一件事：
+
+```ts
+interface SettlingExecutionWorldPort {
+  exportResultCommit(input: { attemptId: string; commit: string }):
+    Promise<{ imported: boolean; detail: string }>;
+}
+```
+
+与 `FinishVerificationFace`、D1 的 snapshot port 同一手法：形状即契约，第一方实现仍在 `src/deployment/`，Work owner 不知道它的名字。`executionWorld` 选项可选——最小安装没有 world，此时 settlement 会如实报告"未能导入结果"，而不是假装导入过。
+
+**验收**（`test/lean_settlement_closure.test.ts`，9 项，真实仓库 + 真实 world + 真实 git）：
+
+| 用例 | 断言 |
+|---|---|
+| 正常闭环 | `SETTLED`；`result_commit` == 观察到的 R 且 canonical 可 `cat-file -e`；`changed_files` 来自观察；canonical HEAD 与文件**仍未接受**该工作 |
+| 未提交 | `NOT_READY/UNCOMMITTED_WORK`，attempt 仍 RUNNING，工作仍在世界内 |
+| 空产出 | `NOT_READY/NO_WORK` |
+| escalation / host failure | `NOT_READY`，且**即使世界里有完美提交**也什么都不做：未记账、未导出 |
+| HEAD 漂移 | `BASE_DRIFT` + `resultCommit` + `worldRetained`；未记账、未导出（`cat-file -e` 失败）、attempt 仍 RUNNING、世界与 R 完好 |
+| 漂移撤销后重试 | 同一世界 `SETTLED`——结果在拒绝中存活，这正是"不删"的理由 |
+| Crash A / B / C | 如上表 |
+
+**下一步（D2-e2）**：复用 2B 已证明的路径，**不造 Worker verification**——`ATTEMPT_COMPLETED → ATTEMPT_RESULT subject → independent verifier（若 required）→ PromotionVerificationAdmission → assessPromotionEligibility()`，且闭合到 **promotion eligibility** 为止（`Worker COMPLETED ≠ Promoted`，D2 不再发明 "worker finished → auto promote" 的特殊通路）。类型上按评审意见预留 `sourceResultCommit` 与未来的 `producedAssetRefs`，措辞上把 result commit 说成 **source result facet**，不写成"Work 的全部输出"。
 
 ### D2.7 禁止（本附录）
 

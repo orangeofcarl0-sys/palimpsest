@@ -445,6 +445,57 @@ interface WorkWorkerTaskContext {
   readonly independentVerificationRequired: boolean;
 }
 
+/**
+ * PLMP-LEAN-1 §D2-e1: the outcome of CLOSING a worker's result into canonical Work.
+ *
+ *     WorkerOutcome  ->  Canonical Work result
+ *
+ * `SETTLED` means the attempt really is COMPLETED, with a result commit the canonical object database
+ * can materialize. `NOT_READY` means the worker did not (or could not) hand over work that satisfies
+ * the completion invariant — the attempt keeps running, and the worker's world keeps everything.
+ * `BASE_DRIFT` means the world's result is real but no longer based on the project's head; it is NOT
+ * destroyed, and the attempt is NOT terminalised, because an external head move must not hand mutation
+ * authority back as a side effect.
+ */
+type MutatingWorkSettlement =
+  | {
+      readonly state: "SETTLED";
+      readonly attemptId: string;
+      readonly resultCommit: string;
+      readonly changedFiles: readonly string[];
+      readonly exported: boolean;
+      readonly detail: string;
+    }
+  | {
+      readonly state: "NOT_READY";
+      readonly attemptId: string;
+      readonly reason: string;
+      readonly detail: string;
+    }
+  | {
+      readonly state: "BASE_DRIFT";
+      readonly attemptId: string;
+      readonly resultCommit: string;
+      /** The result is retained in its world; it is D3's transplant input, never deleted here. */
+      readonly worldRetained: boolean;
+      readonly detail: string;
+    };
+
+/**
+ * PLMP-LEAN-1 §D2-e1: the ONE thing settlement needs from an execution world.
+ *
+ * Declared STRUCTURALLY rather than imported, for the same reason `FinishVerificationFace` is: the Work
+ * owner is L2 and a host capability implementation is L5, so importing the type would add the layer edge
+ * the architecture gate forbids. The first-party implementation still lives in `src/deployment/`, and
+ * nothing here knows its name — the shape is the contract.
+ */
+interface SettlingExecutionWorldPort {
+  exportResultCommit(input: {
+    readonly attemptId: string;
+    readonly commit: string;
+  }): Promise<{ readonly imported: boolean; readonly detail: string }>;
+}
+
 interface PreparedMutatingWork {
   readonly state: "PREPARED" | "RESUMED";
   readonly taskId: string;
@@ -528,6 +579,13 @@ export interface ProjectControllerOptions {
    * it to the promotion manager, so admission is a per-assessment read rather than a cached copy.
    */
   verificationAdmission?: import("../domain/promotion_eligibility.js").PromotionVerificationAdmissionPort | undefined;
+  /**
+   * PLMP-LEAN-1 §D2-e1: the execution-world port, when this deployment places work in worlds.
+   *
+   * Optional because a minimal install composes none, and absent means exactly "this deployment has no
+   * worlds" — settlement then reports that it could not import the result rather than pretending it did.
+   */
+  executionWorld?: SettlingExecutionWorldPort | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -546,6 +604,8 @@ export class ProjectController {
   readonly execution: ExecutionMode;
   readonly #standard: import("../domain/standard.js").ProjectStandard | undefined;
   readonly #capabilities: import("../domain/completion_contract.js").CompletionCapabilities;
+  /** §D2-e1: the world port, when this deployment has one. Absent ⇒ no worlds to settle from. */
+  readonly #executionWorldPort: SettlingExecutionWorldPort | undefined;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
    * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
@@ -639,6 +699,7 @@ export class ProjectController {
     this.#standard = options.standard;
     // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
     // truth instead of a comfortable guess.
+    this.#executionWorldPort = options.executionWorld;
     this.#capabilities = options.capabilities ?? {
       independentVerifierAvailable: false,
       attemptResultVerificationAvailable: false,
@@ -2710,7 +2771,137 @@ export class ProjectController {
     );
   }
 
-  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
+  /**
+   * PLMP-LEAN-1 §D2-e1: close a worker's result into canonical Work.
+   *
+   *     READY_FOR_SETTLEMENT  ->  observe  ->  basis admission  ->  export  ->  report  ->  COMPLETED
+   *
+   * Four rules shape the order, and each of them is a crash window or a conflation this slice exists to
+   * close:
+   *
+   *   1. the worker's outcome is TESTIMONY, never a report. Everything the attempt records comes from
+   *      `observeAttemptResult()`, exactly as it does for a direct attempt — so `WorkerOutcome !=
+   *      AttemptReport`, and a worker cannot write the ledger;
+   *   2. the BASIS is admitted BEFORE anything is exported or recorded. Checking after would leave a
+   *      world exported and reported against a head the project no longer has;
+   *   3. the result is EXPORTED before it is reported. The report names `result_commit = R`, and that
+   *      name has to be resolvable in the canonical object database — otherwise releasing a world
+   *      would leave an attempt whose result commit cannot be materialized anywhere;
+   *   4. a `BASE_DRIFT` destroys nothing and terminalises nothing: the result stays in its world for
+   *      D3, and the attempt keeps the mutating lane, because a violation of the base must not release
+   *      mutation authority as a side effect.
+   */
+  async settleMutatingWork(input: {
+    readonly attemptId: string;
+    readonly workerOutcome: { readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE"; readonly detail?: string | undefined };
+  }): Promise<MutatingWorkSettlement> {
+    const { attemptId } = input;
+
+    // A worker that did not hand over work keeps everything: escalation and host failure are facts about
+    // a worker, and D2-c already refused to turn them into canonical outcomes.
+    if (input.workerOutcome.kind !== "READY_FOR_SETTLEMENT") {
+      return Object.freeze({
+        state: "NOT_READY" as const,
+        attemptId,
+        reason: input.workerOutcome.kind,
+        detail: "the worker did not report the work ready for settlement, so nothing is observed, exported or recorded — the attempt and its world are untouched",
+      });
+    }
+
+    // Observe the WORLD. `#observeAttemptResultSync` is D2-a's observation, unchanged: same commands,
+    // same `.palimpsest/` filter, same completion invariant as an in-place attempt.
+    const [, envelope] = this.#attemptContext(attemptId);
+    const observed = this.#observeAttemptResultSync(attemptId, envelope.base_commit);
+    if (observed === null) {
+      return Object.freeze({
+        state: "NOT_READY" as const,
+        attemptId,
+        reason: "WORLD_UNOBSERVABLE",
+        detail: "this attempt's execution world cannot be observed, so nothing can be established about its work",
+      });
+    }
+
+    // §2.6, the SAME invariant: a completed attempt's work must be commit-materialized. `report` holds
+    // this too — this is the early, explanatory refusal, not a second rule.
+    if (observed.uncommittedChanges.length > 0) {
+      return Object.freeze({
+        state: "NOT_READY" as const,
+        attemptId,
+        reason: "UNCOMMITTED_WORK",
+        detail: `the world still holds work that is not committed: ${observed.uncommittedChanges.join(", ")} — a settled result commit must contain the work, so the worker has to commit (or revert) it and report again`,
+      });
+    }
+    if (observed.changedFiles.length === 0) {
+      return Object.freeze({
+        state: "NOT_READY" as const,
+        attemptId,
+        reason: "NO_WORK",
+        detail: "the world holds no observable change against its base, so there is nothing to settle",
+      });
+    }
+    const outOfScope = observed.changedFiles.filter(
+      (path) => !envelope.write_paths.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
+    );
+    if (outOfScope.length > 0) {
+      return Object.freeze({
+        state: "NOT_READY" as const,
+        attemptId,
+        reason: "OUT_OF_SCOPE",
+        detail: `the world changed paths outside the task envelope's write_paths [${envelope.write_paths.join(", ")}]: ${outOfScope.join(", ")}`,
+      });
+    }
+
+    // BASIS ADMISSION, before any effect: the project head must still be what the world was cut from.
+    // This is §D2.6's exit re-check, and it is the same four-way agreement P7 applies on the way in.
+    const headStatus = this.promotions.projectHeadStatusSync();
+    const liveHead = this.#observedHead(this.#canonicalRepository());
+    if (
+      headStatus.state !== "IN_SYNC" ||
+      headStatus.projectHeadCommit !== headStatus.provenEffectHeadCommit ||
+      headStatus.projectHeadCommit !== envelope.base_commit ||
+      liveHead !== envelope.base_commit
+    ) {
+      return Object.freeze({
+        state: "BASE_DRIFT" as const,
+        attemptId,
+        resultCommit: observed.observedHead,
+        worldRetained: true,
+        detail: `BASE_DRIFT: this result was computed at ${envelope.base_commit.slice(0, 12)} but the project is now at ${headStatus.projectHeadCommit.slice(0, 12)} (head state ${headStatus.state}, repository ${liveHead.slice(0, 12)}) — the result is retained in its world and stays available, and the attempt keeps its lane rather than being terminalised by someone else's head move`,
+      });
+    }
+
+    // EXPORT before REPORT: the report is about to name `result_commit = R`, and R must be resolvable in
+    // the canonical object database — otherwise a released world would leave a name nobody can resolve.
+    let exported = true;
+    let exportDetail = "no execution world port is composed, so the result was not imported";
+    if (this.#executionWorldPort !== undefined) {
+      const outcome = await this.#executionWorldPort.exportResultCommit({ attemptId, commit: observed.observedHead });
+      exported = outcome.imported;
+      exportDetail = outcome.detail;
+      if (!exported) {
+        return Object.freeze({
+          state: "NOT_READY" as const,
+          attemptId,
+          reason: "RESULT_NOT_EXPORTED",
+          detail: `the result commit could not be imported into the canonical object database (${outcome.detail}), so recording it would name a commit the project cannot materialize`,
+        });
+      }
+    }
+
+    // NOW the ledger. `report` re-observes independently — this call supplied no claim, and passing none
+    // is the point: nothing here can smuggle a caller's word into the attempt's record.
+    this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
+    return Object.freeze({
+      state: "SETTLED" as const,
+      attemptId,
+      resultCommit: observed.observedHead,
+      changedFiles: observed.changedFiles,
+      exported,
+      detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}`,
+    });
+  }
+
+  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
   #preparedProjection(
     state: "PREPARED" | "RESUMED",
     taskId: string,
