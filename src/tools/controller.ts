@@ -496,6 +496,40 @@ interface SettlingExecutionWorldPort {
   }): Promise<{ readonly imported: boolean; readonly detail: string }>;
 }
 
+/**
+ * PLMP-LEAN-1 §D3-a: the world-basis capture seam, declared STRUCTURALLY for the same layer reason as
+ * `SettlingExecutionWorldPort` — the Work owner is L2 and the first-party runtime is L2 too, but the
+ * PORT SHAPE is what the controller depends on, so a test or an alternative backend can satisfy it
+ * without the Work owner naming an implementation.
+ *
+ * The contract the controller relies on is only this: capture reports whether a basis was recorded, and
+ * the attempt it names keeps that basis for life.
+ */
+interface WorldBasisCapturePort {
+  capture(input: {
+    readonly attemptId: string;
+    readonly taskId: string;
+    readonly envelope: TaskEnvelope;
+  }): { readonly state: "CAPTURED" | "ALREADY_CAPTURED" | "UNOBSERVABLE"; readonly detail?: string | undefined };
+}
+
+/**
+ * §D3-a: the READ half of the same capability — declared separately from the write half so a caller can
+ * be given one without the other, and so the read shape (`assessCurrentness`) is visible to the Work
+ * owner without naming any implementation.
+ */
+interface WorldBasisReadPort {
+  read(input: { readonly attemptId: string }): { readonly basis: { readonly basisDigest: string }; readonly taskId: string; readonly capturedAt: string } | null;
+  assessCurrentness(input: { readonly attemptId: string }): {
+    readonly currentness: "CURRENT" | "STALE" | "UNKNOWN";
+    readonly compatibility: "EXACT" | "COMPATIBLE" | "INCOMPATIBLE" | "UNKNOWN";
+    readonly basisDigest: string;
+    readonly currentBasisDigest: string;
+    readonly reasons: readonly string[];
+    readonly detail: string;
+  } | null;
+}
+
 interface PreparedMutatingWork {
   readonly state: "PREPARED" | "RESUMED";
   readonly taskId: string;
@@ -586,6 +620,19 @@ export interface ProjectControllerOptions {
    * worlds" — settlement then reports that it could not import the result rather than pretending it did.
    */
   executionWorld?: SettlingExecutionWorldPort | undefined;
+  /**
+   * PLMP-LEAN-1 §D3-a: the world-basis capture port, when this deployment records execution provenance.
+   *
+   * Optional for the same reason as the world port: a minimal install composes none, and absent means
+   * exactly "this deployment does not capture bases" — the attempt then has no recorded basis, and
+   * `assessCurrentness` reports that honestly rather than reconstructing one.
+   */
+  worldBasis?: WorldBasisCapturePort | undefined;
+  /**
+   * §D3-a: the currentness READ port. Separate from `worldBasis` so a deployment can be given the read
+   * without the write, and so a test can assess a basis it recorded itself.
+   */
+  worldBasisRead?: WorldBasisReadPort | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   clock?: (() => string) | undefined;
@@ -606,6 +653,10 @@ export class ProjectController {
   readonly #capabilities: import("../domain/completion_contract.js").CompletionCapabilities;
   /** §D2-e1: the world port, when this deployment has one. Absent ⇒ no worlds to settle from. */
   readonly #executionWorldPort: SettlingExecutionWorldPort | undefined;
+  /** §D3-a: the basis-capture port, when this deployment records execution provenance. */
+  readonly #worldBasisPort: WorldBasisCapturePort | undefined;
+  /** §D3-a: the currentness read port. Composed together with the capture port, read independently. */
+  readonly #worldBasisReadPort: WorldBasisReadPort | undefined;
   /**
    * Transient gate diagnostics: the output tail of the last observation per (attempt, predicate,
    * command). Deliberately NOT persisted — the evidence atom's bytes are pinned by the Python
@@ -700,6 +751,8 @@ export class ProjectController {
     // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
     // truth instead of a comfortable guess.
     this.#executionWorldPort = options.executionWorld;
+    this.#worldBasisPort = options.worldBasis;
+    this.#worldBasisReadPort = options.worldBasisRead;
     this.#capabilities = options.capabilities ?? {
       independentVerifierAvailable: false,
       attemptResultVerificationAvailable: false,
@@ -1858,6 +1911,40 @@ export class ProjectController {
     const runningRoles = this.#runningRoles();
     this.slots.assertAdmissible(role, runningRoles);
     this.budget.admit();
+
+    /**
+     * PLMP-LEAN-1 §D3-a: CAPTURE THE BASIS BEFORE ANY EFFECT.
+     *
+     *     capture basis  ≺  mutation authority / world effects
+     *
+     * `claim` is where an attempt stops being a plan and becomes execution: it starts the attempt and
+     * (for a placed attempt) materializes the world. Capturing after either would make the attempt's
+     * provenance a RECONSTRUCTION from a world that has already moved, which is exactly what §D3-a
+     * forbids. So the capture happens here, before `startAttempt` and before `worldCreate`.
+     *
+     * It is idempotent by construction: the store appends ONCE per attempt and a second capture reports
+     * `ALREADY_CAPTURED` rather than overwriting. A resumed or retried claim therefore keeps the basis
+     * the attempt started from.
+     *
+     * FAIL CLOSED when a deployment composes the capability but the world cannot be observed: an
+     * attempt that proceeds without provenance is worse than a refused claim, because the gap is
+     * invisible afterwards. A deployment that composes NO basis port is unchanged — it simply records
+     * no basis, and later assessment reports that honestly instead of inventing one.
+     */
+    if (this.#worldBasisPort !== undefined) {
+      const [, basisEnvelope] = this.#attemptContext(attemptId);
+      const captured = this.#worldBasisPort.capture({
+        attemptId,
+        taskId: basisEnvelope.task_id,
+        envelope: basisEnvelope,
+      });
+      if (captured.state === "UNOBSERVABLE") {
+        throw new DomainValidationError(
+          `WORLD_BASIS_UNOBSERVABLE: this attempt's world basis could not be captured (${captured.detail ?? "the current world is not observable"}), so the attempt must not begin — an attempt whose provenance cannot be recorded would carry a basis gap nobody could see later`,
+        );
+      }
+    }
+
     if (this.execution === "in-place") {
       // No isolated tree: the attempt works in the canonical repository, so the claimed base is
       // the head the work will be diffed against, and a second concurrent writer is refused —
@@ -3749,6 +3836,74 @@ export class ProjectController {
     attemptId: string,
   ): import("../domain/completion_contract.js").AttemptCompletionContract | null {
     return this.#standard === undefined ? null : this.#completionContractFor(attemptId);
+  }
+
+  /**
+   * PLMP-LEAN-1 §D3-a: one task's canonical envelope, or null when this project has no such task.
+   *
+   * The Work owner is the ONE place that names the `envelope_json` column (the G10-W source firewall
+   * pins its writers and keeps its namers to a short audited list), so a capability that needs a task's
+   * envelope asks HERE rather than querying the column itself. `null` is the honest "no such task",
+   * which the caller turns into a verdict rather than an error.
+   */
+  taskEnvelopeOrNull(taskId: string): TaskEnvelope | null {
+    const row = this.store.connection
+      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
+      .get(this.projectId, taskId) as { envelope_json: unknown } | undefined;
+    if (row?.envelope_json === null || row?.envelope_json === undefined) return null;
+    try {
+      return parseTaskEnvelope(decodeJsonBlob(row.envelope_json));
+    } catch {
+      // An unreadable envelope is reported as absent here and diagnosed by the caller, which can say
+      // WHICH task and why; throwing from a read would make "no such task" and "corrupt task" the same
+      // failure, and those need different verdicts.
+      return null;
+    }
+  }
+
+  /**
+   * PLMP-LEAN-1 §D3-a: the attempt's captured WORLD BASIS, or null when none was ever recorded.
+   *
+   * Read-only. `null` is a fact about the record, not a verdict: a D2 attempt never captured one, and
+   * an absent basis must stay distinguishable from a basis that is merely stale.
+   */
+  attemptWorldBasis(
+    attemptId: string,
+  ): { readonly basisDigest: string; readonly taskId: string; readonly capturedAt: string } | null {
+    const port = this.#worldBasisReadPort;
+    if (port === undefined) return null;
+    const record = port.read({ attemptId });
+    if (record === null) return null;
+    return Object.freeze({
+      basisDigest: record.basis.basisDigest,
+      taskId: record.taskId,
+      capturedAt: record.capturedAt,
+    });
+  }
+
+  /**
+   * PLMP-LEAN-1 §D3-a: EXACT currentness for one attempt, or null when it has no captured basis.
+   *
+   * The read is READ-ONLY: it re-resolves the attempt's dependency projection against the current world
+   * and reports CURRENT / STALE / UNKNOWN. It never rewrites the attempt's basis and never returns
+   * COMPATIBLE — "it changed but looks harmless" is D3-b's claim to make.
+   *
+   *     CapabilityGap  ≠  WorldBasisMismatch
+   *
+   * A STALE attempt is NOT a degraded deployment. `completionReadiness()` answers "does this deployment
+   * have the capabilities to execute and verify?", while this answers "does this specific attempt still
+   * hold against the current world?". They may meet in a caller's decision, but the reasons stay
+   * structurally separate, so neither can masquerade as the other.
+   */
+  attemptCurrentness(attemptId: string): {
+    readonly currentness: "CURRENT" | "STALE" | "UNKNOWN";
+    readonly compatibility: "EXACT" | "COMPATIBLE" | "INCOMPATIBLE" | "UNKNOWN";
+    readonly basisDigest: string;
+    readonly currentBasisDigest: string;
+    readonly reasons: readonly string[];
+    readonly detail: string;
+  } | null {
+    return this.#worldBasisReadPort?.assessCurrentness({ attemptId }) ?? null;
   }
 
   /**
