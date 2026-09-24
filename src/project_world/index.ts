@@ -123,3 +123,10 @@ export {
   SqliteDerivedResultCandidateStore,
   type DerivedResultCandidateStore,
 } from "./candidate_store.js";
+export {
+  COMPOSITION_ORDER_AUTHORITY,
+  SUCCESSION_STATES,
+  assessSuccession,
+  type SuccessionAssessment,
+  type SuccessionState,
+} from "./serialization.js";
