@@ -269,6 +269,7 @@ describe("§D2-d equation 1: CanonicalOutcome(sync) == CanonicalOutcome(async)",
         outcome: canonicalOutcome(stack.connection, result.attemptId),
         taskId: result.taskId,
         settlement: result.settlement,
+        baseCommit: head,
       };
     })();
 
@@ -287,24 +288,33 @@ describe("§D2-d equation 1: CanonicalOutcome(sync) == CanonicalOutcome(async)",
         "the async job to produce an attempt and settle",
       );
       if (!("attemptId" in view) || view.attemptId === null) throw new Error("the async job produced no attempt");
-      return { outcome: canonicalOutcome(stack.connection, view.attemptId), taskId: view.taskId, settlement: view.settlement };
+      return {
+        outcome: canonicalOutcome(stack.connection, view.attemptId),
+        taskId: view.taskId,
+        settlement: view.settlement,
+        baseCommit: head,
+      };
     })();
 
     /**
-     * Same task, same attempt state, same observed file set, same settlement state, and a result commit
-     * that is real and not the base — in BOTH paths.
+     * Same task, same attempt state, same observed file set, same settlement state — in BOTH paths. The
+     * claim is that the CANONICAL FACTS agree: the transport changed, the semantics did not.
      *
-     * The commit HASHES differ, and must: each run materializes its own world and the commit carries its
-     * own timestamp. Asserting hash equality would be asserting that two separate executions produced one
-     * commit, which is not the claim. The claim is that the CANONICAL FACTS agree — the transport changed,
-     * the semantics did not.
+     * Deliberately NO assertion about the two commit hashes beyond "each is a real commit". An earlier
+     * version of this test required them to DIFFER, on the reasoning that two executions each materialize
+     * their own world — and it passed locally while failing on CI, where the two runs produced byte-identical
+     * commits (same content, same author, same second). That assertion was about git's deduplication
+     * behaviour, not about anything this slice promises, so it is gone rather than made conditional.
      */
     expect(asyncRun.taskId).toBe(syncRun.taskId);
     expect(asyncRun.outcome.state).toBe(syncRun.outcome.state);
     expect(asyncRun.outcome.changedFiles).toEqual(syncRun.outcome.changedFiles);
     expect(asyncRun.outcome.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
     expect(syncRun.outcome.resultCommit).toMatch(/^[0-9a-f]{40}$/u);
-    expect(asyncRun.outcome.resultCommit).not.toBe(syncRun.outcome.resultCommit);
+    // Each result is a commit that CONTAINS the work, which is the property the completion invariant
+    // actually asserts — and it is checkable without comparing the two hashes to each other.
+    expect(asyncRun.outcome.resultCommit).not.toBe(asyncRun.baseCommit);
+    expect(syncRun.outcome.resultCommit).not.toBe(syncRun.baseCommit);
     expect((syncRun.settlement as { state: string }).state).toBe("SETTLED");
     expect((asyncRun.settlement as { state: string }).state).toBe("SETTLED");
   });
