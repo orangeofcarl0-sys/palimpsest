@@ -2598,6 +2598,70 @@ export class ProjectController {
   }
 
   /**
+   * PLMP-LEAN-1 §D2-d: resolve WHICH existing canonical work a delegation would execute — read-only.
+   *
+   * An async transport has to freeze its execution request at `start`, or the background callback would
+   * re-resolve later and could run a DIFFERENT candidate than the caller started:
+   *
+   *     t0 start(W)   t1 ProjectIR changes   t2 callback wakes   t3 re-resolves W'
+   *
+   * That would make async transport into deferred semantic recompilation, which is not a transport
+   * concern at all. So `start` resolves the target ONCE, through this read, and the background job is
+   * handed the frozen `taskId`; `prepareMutatingWork` then re-ASSERTS it (and the head basis) before any
+   * effect, so a world that moved in between is refused rather than silently reinterpreted.
+   *
+   * Nothing here writes: no event, no attempt, no world. A target that cannot be resolved is refused
+   * with the same typed messages the write path uses, so a caller sees one vocabulary either way.
+   */
+  mutatingWorkTarget(input: { readonly expectedTaskId?: string | undefined } = {}): {
+    readonly taskId: string;
+    readonly baseCommit: string;
+    /** True when an existing attempt already holds the lane, so the delegation resumes rather than starts. */
+    readonly resumed: boolean;
+  } {
+    const requested = input.expectedTaskId === undefined ? undefined : input.expectedTaskId.trim();
+    const expectedTaskId = requested === "" ? undefined : requested;
+    if (this.execution !== "worktree") {
+      throw new DomainValidationError(
+        "WORKTREE_PLACEMENT_REQUIRED: a mutating delegation runs in an isolated work execution world, and this deployment works in the canonical tree (in-place) — the principal's own tree is not a worker lane",
+      );
+    }
+    if (!this.isProjectInitialized()) {
+      throw new DomainValidationError(
+        "WORK_NOT_DECLARED: this project has no canonical plan, so there is no task to execute — declare the work first (a plan, or palimpsest_begin for direct work); delegation executes work the project already recognizes, it does not invent it",
+      );
+    }
+    const lane = this.#nonterminalAttempts();
+    if (lane.length > 1) {
+      throw new DomainValidationError(
+        `MUTATING_LANE_OCCUPIED: ${String(lane.length)} nonterminal attempts already exist (${lane.map((entry) => `${entry.attemptId}@${entry.state}`).join(", ")}) — D2 keeps exactly one mutating Work line, and it will not add another to an already-diverged project`,
+      );
+    }
+    if (lane.length === 1) {
+      const holder = lane[0]!;
+      if (expectedTaskId !== undefined && holder.taskId !== expectedTaskId) {
+        throw new DomainValidationError(
+          `MUTATING_LANE_OCCUPIED: the mutating lane is held by task "${holder.taskId}" (attempt ${holder.attemptId}@${holder.state}), not by the requested task "${expectedTaskId}" — settle it first; a bootstrap never displaces a running line`,
+        );
+      }
+      return Object.freeze({ taskId: holder.taskId, baseCommit: this.#taskEnvelope(holder.taskId).base_commit, resumed: true });
+    }
+    const preview = this.preview();
+    if (preview.decision !== "next" || preview.eventType !== "TASK_STARTED" || preview.entityId === undefined) {
+      throw new DomainValidationError(
+        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next decision is ${preview.decision === "next" ? String(preview.eventType) : preview.decision} — a mutating delegation bootstraps the task the project itself makes next, and it never reorders, holds or skips work to reach another one`,
+      );
+    }
+    const taskId = preview.entityId;
+    if (expectedTaskId !== undefined && taskId !== expectedTaskId) {
+      throw new DomainValidationError(
+        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next task is "${taskId}", not the requested "${expectedTaskId}" — expectedTaskId is an assertion, not a scheduling command`,
+      );
+    }
+    return Object.freeze({ taskId, baseCommit: this.#taskEnvelope(taskId).base_commit, resumed: false });
+  }
+
+  /**
    * PLMP-LEAN-1 §D2-b: bootstrap an EXISTING, scheduler-admissible canonical Work task into an
    * isolated execution position for a worker.
    *
