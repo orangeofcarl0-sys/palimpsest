@@ -99,3 +99,27 @@ export {
   unobservedDependency,
   type CrossBasisAdmissionRuntime,
 } from "./cross_basis.js";
+export {
+  RESULT_DERIVATION_KINDS,
+  derivedResultManifestDigest,
+  materializeDerivedResultCandidate,
+  materializeResultDerivation,
+  resultDerivationIdOf,
+  type DerivedResultCandidate,
+  type ResultDerivation,
+  type ResultDerivationKind,
+} from "./derivation.js";
+export {
+  REMATERIALIZATION_STATES,
+  makeRematerializationRuntime,
+  type RematerializationOutcome,
+  type RematerializationResult,
+  type RematerializationRuntime,
+  type RematerializationState,
+  type RematerializationDelta,
+  type ResultRematerializerPort,
+} from "./rematerialization.js";
+export {
+  SqliteDerivedResultCandidateStore,
+  type DerivedResultCandidateStore,
+} from "./candidate_store.js";
