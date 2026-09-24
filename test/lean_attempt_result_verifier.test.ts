@@ -128,7 +128,12 @@ describe("LEAN-A19 / B.11: a SEPARATE attempt-result verifier, and the head veri
       headCommit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: dir }).toString().trim(),
     });
     const attempt = commandAttemptResultVerifier();
-    await expect(attempt.verify({ subject: head, repository: dir })).rejects.toThrow(/ATTEMPT_RESULT subjects only/);
+    /**
+     * §D3-d3: the refusal now names the RESULT-SUBJECT family, because one protocol serves both result
+     * kinds. What has NOT changed is the property this test exists for — a head subject is refused rather
+     * than guessed at, so the head rule can never be applied by a result verifier.
+     */
+    await expect(attempt.verify({ subject: head, repository: dir })).rejects.toThrow(/result subjects \(ATTEMPT_RESULT, DERIVED_RESULT\) only/u);
   });
 
   it("needs the materialized checkout, and says so instead of running somewhere arbitrary", async () => {

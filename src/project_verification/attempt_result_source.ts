@@ -35,7 +35,9 @@ import { attemptReportDigestOf, parseAttemptReport, parseTaskEnvelope, type Atte
 import {
   ProjectVerificationError,
   materializeAttemptResultVerificationSubject,
+  resultSubjectRevisionRange,
   type AttemptResultVerificationSubject,
+  type ResultVerificationSubject,
 } from "./artifacts.js";
 
 /* -------------------------------------------------------------------------- *
@@ -182,8 +184,13 @@ export interface AttemptResultMaterialization {
  * A runtime capability, not a canonical port. Deliberately NOT `GitPort.createWorktree()`: that is a
  * Work execution primitive with a persistent, attempt-named workspace and no removal operation.
  */
+/**
+ * §D3-d3: the materializer is generic over a COMMIT, so it serves every result subject kind. It is
+ * deliberately not duplicated per kind — a second materializer would be a second place for "checkout
+ * exactly this revision" to be got wrong.
+ */
 export interface AttemptResultMaterializerPort {
-  materialize(subject: AttemptResultVerificationSubject): Promise<AttemptResultMaterialization>;
+  materialize(subject: ResultVerificationSubject): Promise<AttemptResultMaterialization>;
 }
 
 /**
@@ -209,8 +216,8 @@ export function gitAttemptResultMaterializer(input: {
     execFileSync("git", [...args], { cwd, encoding: "utf8" });
 
   return Object.freeze({
-    async materialize(subject: AttemptResultVerificationSubject): Promise<AttemptResultMaterialization> {
-      const commit = subject.resultCommit;
+    async materialize(subject: ResultVerificationSubject): Promise<AttemptResultMaterialization> {
+      const commit = resultSubjectRevisionRange(subject).resultRevision;
       // The canonical record may name a commit this repository can no longer produce (pruned, a
       // different clone, a corrupted object store). Work history stays canonical; execution fails
       // closed here rather than the other way round.
