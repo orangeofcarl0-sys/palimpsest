@@ -4020,3 +4020,246 @@ $$\boxed{\text{A logically valid conclusion from untrusted premises} \not\Righta
 $$\boxed{D3\text{-}a:\ Observe}\quad\boxed{D3\text{-}b:\ Prove}\quad\boxed{D3\text{-}c:\ Admit}\quad\boxed{D3\text{-}d:\ Effect}$$
 
 D3-d 之前，`effect capability unavailable` 应作为**独立 blocker** 保留，不通过重定义 eligibility 绕过。
+
+## 附录 J（第 D3-d 期）：Result Rematerialization —— 第一个 effect，且只在 candidate space
+
+D3-d 是第一个**允许 effect** 的阶段，所以边界必须最严：
+
+$$\boxed{D3\text{-}d\ Effect \neq Canonical\ Effect}$$
+
+$$\boxed{D3\text{-}d = \text{candidate-space materialization effect}}$$
+
+它确实创建 world、修改文件、冻结 revision —— 但**不改变 Project canonical truth**。canonical source 最终仍只由既有
+**Promotion authority** 修改。
+
+**为什么不能直接 transplant 到 canonical source**：那等于把 `compatibility admission` 偷偷变成 `promotion`
+（source canonical state 已改变），于是 `verification` / `expected-head` / `promotion policy` / `current-state admission`
+全部退化为事后检查，与一路坚持的
+
+$$\boxed{\text{admissibility precedes canonicalization}}$$
+
+冲突。因此正确链是：
+
+```
+origin result R0 @ basis B0
+  → authoritative compatibility proof → D3-c cross-basis admission → current target basis B1
+  → D3-d ISOLATED rematerialization → new candidate result R1 @ B1
+  → verification → existing promotion eligibility → (eventually) Promotion authority
+```
+
+由此得到一个极漂亮的性质：`R1.baseRevision = H1`（当前 canonical），canonical branch 仍指 `H1`，于是既有
+expected-head 纪律**原封不动**继续可用；若 promotion 前 `H1 → H2`，`R1` 自然又 stale，**不需要任何特殊跨 basis
+promotion 规则** —— 只需重走 observe → prove → admit → rematerialize。
+
+代码：`src/project_world/derivation.ts` / `rematerialization.ts` / `candidate_store.ts`（L2）、
+`src/deployment/source_rematerializer.ts` / `derived_result_source.ts`（L5）。
+machine proofs：`test/lean_result_rematerialization.test.ts`（13）、`test/lean_derived_result_verification.test.ts`（14）、
+`test/lean_d3d_composition.test.ts`（5，真实仓库）。
+
+### J.1 不是新的 Work Attempt
+
+`Attempt A → worker executed → result R0` 是真实历史。`R0 → rematerialize onto B1 → R1` **没有**再跑一次 worker，
+所以伪造 `ATTEMPT_STARTED` / `ATTEMPT_COMPLETED` 会让 execution history **说谎**。因此引入独立概念：
+
+```
+ResultDerivation
+└── REMATERIALIZATION          （第一 kind，但概念留有余地）
+DerivedResultCandidate
+```
+
+留有余地是刻意的：asset rematerialization、deterministic conversion、format migration、result composition
+都不是 Work execution。
+
+**上层概念不叫 "transplant"**：`GitSourceRematerializer` 只是 source facet 的**一个第一方实现**；以 git 机制命名概念，
+会在专门为逃离该模型而建的层上重新锁回 `Project result == Git commit`。
+
+### J.2 candidate 绑定完整 provenance
+
+```
+DerivedResultCandidate
+├── candidateId / projectId / taskId
+├── derivation { derivationId, kind, mechanism, mechanismVersion,
+│                originResultManifestDigest, originBasisDigest, targetBasisDigest, admissionRef }
+├── sourceResult? { backend, baseRevision = B1, resultRevision = R1 }
+├── producedAssetRefs[]
+└── resultManifestDigest
+```
+
+$$\boxed{R_1 \text{ is a new result identity}}$$
+
+而不是修改 `Attempt A.resultCommit = R1`。原始 Attempt 永远保持 `A.basis = B0`、`A.result = R0` ——
+provenance immutability 的自然延续。
+
+**operation identity 而非 output identity**：
+
+$$\boxed{(originResult,\ targetBasis,\ admission,\ mechanismVersion) \rightarrow \text{一条 ResultDerivation}}$$
+
+要求 `same operation identity → same canonical derivation record`，**不**要求重复运行产生同一个 Git hash
+（D2-d 已给过这个教训）。实测确认：同 operation 两次运行得**同 derivationId**，且第二次命中已有 candidate。
+
+### J.3 effect 的唯一入口是 admission identity
+
+不是 `rematerialize({ result, targetBasis, compatible: true })`，而是由 certificate 驱动的
+`AdmissionRecord → Effect`，调用者没有机会拼接"真 result + 另一份 target + 另一张 certificate"。
+继续沿用 D3-c 的 authority discipline。
+
+$$\boxed{AdmissionStillApplies \prec WorldCreation}$$
+
+实测：把针对 `H1` 签发的证书拿去 effect `H2`，结果 `ADMISSION_REFUSED`，**没有 world、没有 candidate、
+没有 canonical mutation**（worlds 目录计数前后相同）。未签发证书同样 `ADMISSION_REFUSED`；
+`INCOMPATIBLE` 证书报 `CONFLICT`。这与 D2-d `start()` 冻结 request identity、effect 前再次 assertion 同一纪律。
+
+### J.4 effect engine 不得超出授权它的证明
+
+第一版**非常保守**：
+
+```
+derive exact admitted delta → preflight apply → clean deterministic application → freeze candidate
+```
+
+不能无歧义应用 ⇒ `REMATERIALIZATION_FAILED` **停止**。**没有** three-way merge、rename heuristic、
+conflict resolution、LLM resolution，**也没有 partial application**：
+
+$$\boxed{Effect\ engine\ must\ not\ exceed\ the\ proof\ that\ authorized\ it}$$
+
+$$\boxed{DerivedResultCandidate \Rightarrow all\ declared\ rematerialization\ effects\ completed}$$
+
+半搬运的 candidate 不得被 freeze 成 authoritative result（world 可保留作调试现场）。
+
+**Git backend 的语义是 tree delta，不是 commit**：
+
+$$\boxed{\Delta_S = Diff(H_0,R_0)}\qquad\boxed{R_1 = Apply(H_1,\Delta_S)}$$
+
+`git diff --binary` + `git apply`，**不用** `--3way`（三方应用就是 merge，而 merge 是本层无权做的
+compatibility 决定），**不用** cherry-pick（那会把 commit-graph 语义变成 Project 级定义）。机器检查断言
+代码中同时存在 `"diff"` 与 `"apply"`，且不含 `--3way` / cherry-pick。
+
+### J.5 crash / replay：effect 阶段第一次重遇 D2-e1 类问题
+
+顺序是语义：
+
+```
+validate admission ≺ create world ≺ apply delta ≺ EXPORT ≺ freeze candidate ≺ record
+```
+
+**实测发现了一个真实缺陷**：candidate 的 revision 起初**只存在于 world 里**（world 拥有可变 git state、借用不可变对象），
+于是 canonical 仓库无法 materialize 它，verification 直接 `attempt_result_not_materializable`。修法与 D2-e1 同构 ——
+**record 之前先 export**：
+
+$$\boxed{object\ availability \neq canonical\ project\ state}$$
+
+export 只把对象变为**可读**（`fetch --no-tags <world> HEAD`，无 refspec 目标故不建/不移 ref），
+因此 `ΔCanonicalProjectState = 0` 仍成立。**验证过**：把 export 关掉并让失败不再阻断，三个测试立刻红。
+
+**replay 收敛**：world id 即 operation identity，故重试命中同一个 world；若该 world 已越过 target basis，
+说明派生已完成，其冻结 revision 就是答案 —— 重新 apply 会因"工作已应用"而失败，正是 D2-e1 教过要关闭而非重新发现的窗口。
+
+### J.6 失败不改写任何东西
+
+```
+R0 COMPATIBLE / admission PASS / rematerialization FAILED
+⇒ origin Attempt = COMPLETED、origin R0 不变、assessment 不变、admission record 是历史事实、
+   no DerivedResultCandidate、canonical source 不变、promotion facts 不变
+```
+
+绝不出现 `Attempt FAILED` / `verification FAIL` / `compatibility INCOMPATIBLE`。继续坚持：
+
+$$\boxed{\text{Later-stage failure does not rewrite earlier-stage truth}}$$
+
+### J.7 `ResultSubject` 泛化：本阶段唯一值得做的既有语义泛化
+
+第一次出现 `DERIVED_RESULT`，**不能**为复用 verifier 而伪造一个 Attempt。正确方向是最小泛化：
+
+```
+ResultSubject
+├── ATTEMPT_RESULT   Work execution 的不可变结果
+└── DERIVED_RESULT   derivation 的 candidate（没有跑 Work）
+```
+
+**同一个 verifier runtime、同一个 verification lifecycle、同一套 independence/freshness 语义**，只把
+subject identity 加宽；`ATTEMPT_RESULT` 完全向后兼容。不建第二套 verifier。
+
+**关键约束（实测过）**：把既有 verifier 的 `supportedSubjects` 加宽到 `DERIVED_RESULT` **会改变它的
+definition digest**，从而让**所有已记录的 attempt-result verification 变为 non-current 而不再合格** ——
+正是 B.11 已经记录过的危害。所以 kind 接受放在**协议**与 resolver 的 result-subject 家族关系里
+（`definitionServes`），**零 digest 代价**：
+
+```
+definition.digest = 38d455e0a8f61fe6f35612a0950c4330359cab162f60bfc039bb79a202fb10ca   （未变，已钉住）
+```
+
+$$\boxed{Verification(R_0) \not\Rightarrow Verification(R_1)}$$
+
+compatibility proof 证明的是 resource non-interference，**不等于**证明 build / tests / generated output /
+tool behavior 都仍然相同。所以 rematerialized candidate **必须重新验证**，且 freshness 是 candidate 自己
+的 subject 重新 materialize 后比较（`SameCanonicalDerivedResult`），**绝不**看 origin 的裁决。
+qualification 用**同一个** `qualifySubject` 演算（newest independent + current-protocol + COMPLETED +
+still CURRENT + PASS），两个实现就是两个 authority。
+
+### J.8 最终 golden gate
+
+`test/lean_d3d_composition.test.ts` 真实仓库端到端：
+
+```
+R0 @ B0 → compatible → admitted → rematerialized at B1 → R1 @ B1
+  → 独立 re-verification（同一 runtime，subject.kind = DERIVED_RESULT）→ qualification satisfied
+```
+
+同时：
+
+$$\boxed{\Delta CandidateState \neq 0 \quad\wedge\quad \Delta CanonicalProjectState = 0}$$
+
+（canonical HEAD / working tree / refs 逐项不变，promotion facts 为零）。并且 origin 的验证**不转移**：
+candidate 在**没有自己的 run 之前** qualification 为 false（尽管 origin result 是完全合格的已验证结果），
+只有对 candidate 跑过 verification 才转 true；一个 candidate 的 run 也不满足另一个 candidate。
+
+### J.9 D3 复杂度终止于 Promotion 边界之前
+
+`R1` 是**当前 basis 上的普通候选结果**，所以 promotion 根本不需要知道它最初来自跨 basis rematerialization：
+
+$$\boxed{\text{D3 complexity terminates before Promotion boundary}}$$
+
+实测：`composeCore` 不含 `rematerializ` / `DerivedResultCandidate`；promotion eligibility 不含
+`ResultDerivation` / `DerivedResultCandidate` / `derivationId` / `rematerializ` / `cross_basis` /
+`admitCrossBasis` / `CompatibilityAssessment`（按**标识符**检查，不用 "candidate" 这类既有领域词）。
+`effect capability unavailable` 保持**独立 blocker**，不通过重定义 `ELIGIBLE` 绕过。
+
+这也直接决定 D3-e 可复用：`RB @ B0 → B1` 后对 RB 重走 observe → prove → admit → rematerialize，`RB'` 又回到
+普通 current-basis candidate，于是
+
+$$\boxed{D3\text{-}e \text{ 可由 repeated compatibility + rematerialization 构成}}$$
+
+不需要另造 multi-worker merge subsystem。
+
+### J.10 OUT（本轮明确未做）
+
+canonical source mutation、automatic promotion、automatic conflict resolution、three-way semantic merge、
+LLM conflict resolution、cross-result composition、parallel scheduler、asset CAS、general asset rematerialization、
+verification reuse inference、automatic retry。
+
+$$\boxed{Rematerialization\ failure \not\Rightarrow try\ a\ smarter\ merge}$$
+
+那会把 effect engine 重新变成 reasoning engine。asset facet 第一版保守：需要 asset rematerialization 的 result
+报 `EFFECT_CAPABILITY_UNAVAILABLE`（接口写成 `ResultRematerializerPort`，第一实现 `GitSourceRematerializer`），
+**不**"source 搬了、asset 先忽略"然后仍生成完整 candidate。
+
+### J.11 四条核心验收式（全部闭合）
+
+$$\boxed{CrossBasisAdmission \Rightarrow \text{PermissionToAttemptRematerialization}}$$
+
+（而不是 permission to mutate canonical state）
+
+$$\boxed{Rematerialization(R_0,B_1) \Rightarrow NewCandidate(R_1,B_1)}$$
+
+$$\boxed{Verification(R_0) \not\Rightarrow Verification(R_1)}$$
+
+$$\boxed{\Delta CandidateState \neq 0 \quad\wedge\quad \Delta CanonicalProjectState = 0}$$
+
+### J.12 门禁
+
+单元 **215 files / 2402 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。未新增公开名。
+
+### J.13 阶段结构
+
+$$\boxed{Observe \rightarrow Prove \rightarrow Admit \rightarrow Rematerialize \rightarrow Verify \rightarrow Promote}$$

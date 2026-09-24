@@ -29,6 +29,7 @@ import {
   type VerifierDefinition,
 } from "./artifacts.js";
 import type { VerifierIndependenceClass } from "./independence.js";
+import { resultSubjectRevisionRange } from "./artifacts.js";
 import type { ProjectVerifierPort, ProjectVerifierVerifyInput } from "./provider.js";
 import { commandVerifierDefinition, firstPartyMechanicalVerifierDefinition } from "./registry.js";
 
@@ -70,6 +71,17 @@ export function commandAttemptResultVerifier(
     command: "git",
     // A TEMPLATE: the real commits are substituted from the subject at run time.
     args: ["diff", "--check", "<baseCommit>..<resultCommit>"],
+    /**
+     * §D3-d3: the protocol is a statement about a RESULT'S COMMIT RANGE, and it is identical for both
+     * result kinds — `git diff --check <base>..<result>` does not care whether a Work execution or a
+     * derivation produced the range.
+     *
+     * The registered `supportedSubjects` is deliberately NOT widened to DERIVED_RESULT. Widening it would
+     * change this verifier's definition digest, and B.11 already recorded why that matters: every existing
+     * recorded attempt-result verification would become non-current and stop qualifying. The kind
+     * acceptance is therefore expressed in the VALIDATOR (below), where it costs no digest, and the
+     * registry entry keeps meaning exactly what it meant before.
+     */
     supportedSubjects: ["ATTEMPT_RESULT"],
     protocolNote:
       "bounded subprocess over the attempt's own commit range: a non-zero exit is a protocol FAIL and a spawn/timeout fault is ERROR (never FAIL); the range comes from the canonical subject and never from the caller",
@@ -84,20 +96,23 @@ export function commandAttemptResultVerifier(
     definition,
     validator: (input: ProjectVerifierVerifyInput) => {
       const subject = input.subject;
-      if (subject.kind !== "ATTEMPT_RESULT") {
+      // ONE runtime, TWO result kinds, and no second verifier species: the range comes from the subject
+      // either way, and a subject kind this protocol cannot serve is refused rather than guessed at.
+      if (subject.kind !== "ATTEMPT_RESULT" && subject.kind !== "DERIVED_RESULT") {
         throw new Error(
-          `verifier "${definition.verifierRef}" verifies ATTEMPT_RESULT subjects only, not ${subject.kind}`,
+          `verifier "${definition.verifierRef}" verifies result subjects (ATTEMPT_RESULT, DERIVED_RESULT) only, not ${subject.kind}`,
         );
       }
+      const range = resultSubjectRevisionRange(subject);
       if (input.repository === undefined) {
         throw new Error(
-          `verifier "${definition.verifierRef}" needs the materialized checkout of ${subject.resultCommit.slice(0, 12)}`,
+          `verifier "${definition.verifierRef}" needs the materialized checkout of ${range.resultRevision.slice(0, 12)}`,
         );
       }
       return commandValidator({
         validatorRef: definition.verifierRef,
         command: "git",
-        args: ["diff", "--check", `${subject.baseCommit}..${subject.resultCommit}`],
+        args: ["diff", "--check", `${range.baseRevision}..${range.resultRevision}`],
         cwd: input.repository,
         ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
       });

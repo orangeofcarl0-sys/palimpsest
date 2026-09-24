@@ -35,7 +35,12 @@ import {
 } from "./status.js";
 import type { ProjectHeadVerificationSource, ProjectVerifierPort } from "./provider.js";
 import type { AttemptResultMaterializerPort, AttemptResultVerificationSource } from "./attempt_result_source.js";
-import type { ProjectVerificationSubject, ProjectVerificationSubjectKind } from "./artifacts.js";
+import type {
+  DerivedResultVerificationSubject,
+  ProjectVerificationSubject,
+  ProjectVerificationSubjectKind,
+  ResultVerificationSubject,
+} from "./artifacts.js";
 import { sameSubject } from "./artifacts.js";
 import { countsAsIndependent } from "./independence.js";
 import type { ProjectVerifierRegistry } from "./registry.js";
@@ -57,6 +62,8 @@ export interface ProjectVerificationServiceDeps {
    * way to materialize the result is not one either.
    */
   readonly attemptResultSource?: AttemptResultVerificationSource | undefined;
+  /** §D3-d3: the derived-result subject source. Absent ⇒ a deployment verifies no derived results. */
+  readonly derivedResultSource?: DerivedResultVerificationSource | undefined;
   readonly attemptResultMaterializer?: AttemptResultMaterializerPort | undefined;
   readonly clock?: (() => string) | undefined;
 }
@@ -83,6 +90,25 @@ export interface AttemptResultVerificationQualification {
   readonly runRef: string | null;
   readonly satisfied: boolean;
   readonly detail: string;
+}
+
+/**
+ * §D3-d3: the subject source for a DERIVED result, mirroring the attempt-result source.
+ *
+ * A PORT rather than a subject parameter, for the same §4 reason: a public "verify this subject" entry
+ * point would let a caller construct a verification target, and the subject's every identity field must
+ * come from what the runtime recorded rather than from the caller.
+ */
+export interface DerivedResultVerificationSource {
+  materialize(candidateId: string): DerivedResultVerificationSubject;
+}
+
+export interface VerifyDerivedResultInput {
+  readonly candidateId: string;
+  readonly verifierRef?: string | undefined;
+  readonly requestedBy: string;
+  readonly reason?: string | undefined;
+  readonly signal?: AbortSignal | undefined;
 }
 
 export interface VerifyAttemptResultInput {
@@ -115,10 +141,20 @@ export interface ProjectVerificationService {
    */
   verifyAttemptResult(input: VerifyAttemptResultInput): Promise<ProjectVerificationOutcome>;
   /**
+   * §D3-d3: verify a DERIVED result. The SAME runtime, lifecycle and independence semantics as
+   * `verifyAttemptResult` — only the subject kind differs, and no second verifier species exists.
+   *
+   * A rematerialized candidate MUST be re-verified: a compatibility proof establishes resource
+   * non-interference, which is NOT a statement about builds, tests, generated output or tool behaviour.
+   */
+  verifyDerivedResult(input: VerifyDerivedResultInput): Promise<ProjectVerificationOutcome>;
+  /**
    * §B.14: the synchronous qualification read the promotion admission bridge consumes. Pure: it
    * materializes the subject from canonical Work and reads the run history; it writes nothing.
    */
   attemptResultQualification(attemptId: string): AttemptResultVerificationQualification;
+  /** §D3-d3: the same qualification calculus over a derived result's subject. */
+  derivedResultQualification(candidateId: string): AttemptResultVerificationQualification;
   status(): Promise<ProjectVerificationStatus>;
   /** Newest first (a UI/agent history read), never a rewrite of the chain. */
   history(limit?: number): Promise<readonly ProjectVerificationRun[]>;
@@ -156,11 +192,27 @@ export function makeProjectVerificationService(
   );
   const now = (): string => canonicalDatetime((deps.clock ?? (() => new Date().toISOString()))());
 
+  /**
+   * §D3-d3: does this registered verifier SERVE this subject kind?
+   *
+   * A definition that registers `ATTEMPT_RESULT` is a RESULT-SUBJECT verifier: its protocol runs over a
+   * commit range, and that is the same statement for a derived candidate. The relation lives HERE rather
+   * than in the definition because widening `supportedSubjects` would change the verifier's definition
+   * digest — and B.11 already recorded the consequence, which is that every recorded attempt-result
+   * verification would stop qualifying.
+   *
+   *     ResultSubject = { ATTEMPT_RESULT, DERIVED_RESULT }  served by one protocol
+   */
+  function definitionServes(definition: VerifierDefinition, kind: ProjectVerificationSubjectKind): boolean {
+    if (definition.supportedSubjects.includes(kind)) return true;
+    return kind === "DERIVED_RESULT" && definition.supportedSubjects.includes("ATTEMPT_RESULT");
+  }
+
   function executableVerifierRefsFor(kind: ProjectVerificationSubjectKind): readonly string[] {
     return Object.freeze(
       registry
         .list()
-        .filter((definition) => providerByRef.has(definition.verifierRef) && definition.supportedSubjects.includes(kind))
+        .filter((definition) => providerByRef.has(definition.verifierRef) && definitionServes(definition, kind))
         .map((definition) => definition.verifierRef),
     );
   }
@@ -276,6 +328,25 @@ export function makeProjectVerificationService(
    * or the project digest: the result is a historical immutable artifact, and the repository moving
    * on says nothing about whether it is still the same result.
    */
+  /**
+   * §D3-d3: a derived candidate's freshness is `SameCanonicalDerivedResult` — the subject re-materialized
+   * from the candidate record and compared. It never consults the ambient head, and it never consults the
+   * ORIGIN result: carrying the origin's verdict across would be exactly the verification reuse this
+   * slice refuses to infer.
+   */
+  async function derivedResultFreshnessAfterRun(
+    candidateId: string,
+    subjectDigest: string,
+  ): Promise<ProjectVerificationFreshness> {
+    const source = deps.derivedResultSource;
+    if (source === undefined) return "STALE_INPUT";
+    try {
+      return source.materialize(candidateId).digest === subjectDigest ? "CURRENT" : "STALE_INPUT";
+    } catch {
+      return "STALE_INPUT";
+    }
+  }
+
   async function attemptResultFreshnessAfterRun(
     attemptId: string,
     subjectDigest: string,
@@ -389,6 +460,73 @@ export function makeProjectVerificationService(
           ? `the verifier protocol "${input.selectedVerifierRef}" returned ${run.verdict} (${run.freshness})`
           : `the run ended as ${run.status}`,
       run,
+    });
+  }
+
+  /**
+   * §D3-d3: THE qualification calculus, over any result subject.
+   *
+   *     newest INDEPENDENT + current-protocol + COMPLETED + still CURRENT + PASS
+   *
+   * ONE implementation, because two would be two authorities answering the same question. The caller
+   * supplies only the subject; everything else is read from the run history. This is what makes the
+   * generalization minimal: the verifier runtime, the lifecycle and the independence/freshness semantics
+   * are untouched, and only the SUBJECT IDENTITY widened.
+   */
+  function qualifySubject(subject: ResultVerificationSubject): AttemptResultVerificationQualification {
+    // 2. Runs over THAT exact subject, newest first.
+    const exact = deps.store
+      .list(deps.projectId)
+      .filter((run) => sameSubject(run.subject, subject))
+      .sort((left, right) => (left.startedAt < right.startedAt ? 1 : left.startedAt > right.startedAt ? -1 : 0));
+    if (exact.length === 0) {
+      return Object.freeze({
+        subjectDigest: subject.digest,
+        runRef: null,
+        satisfied: false,
+        detail: "no verification run covers this result's exact subject",
+      });
+    }
+    const newest = exact[0]!;
+
+    // 3. Only a run whose protocol is still the registered one AND which counts as independent is
+    //    an admission candidate. A stale or non-independent run never authorizes anything.
+    const definition = registry.get(newest.verifierRef);
+    const protocolCurrent = definition !== undefined && definition.digest === newest.verifierDefinitionDigest;
+    const independent = definition === undefined ? newest.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(definition);
+
+    // 4. The newest INDEPENDENT, current-protocol run decides — so a newer independent FAIL
+    //    overrides an older PASS instead of "once passed, always authorized".
+    const candidate = exact.find((run) => {
+      const runDefinition = registry.get(run.verifierRef);
+      const runProtocolCurrent = runDefinition !== undefined && runDefinition.digest === run.verifierDefinitionDigest;
+      const runIndependent = runDefinition === undefined ? run.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(runDefinition);
+      return runProtocolCurrent && runIndependent;
+    });
+    if (candidate === undefined) {
+      return Object.freeze({
+        subjectDigest: subject.digest,
+        runRef: newest.runId,
+        satisfied: false,
+        detail: protocolCurrent && !independent
+          ? `the newest run over this result (${newest.runId}) does not count as independent`
+          : "no run over this result uses the currently registered protocol and counts as independent",
+      });
+    }
+
+    // 5. Satisfied only when that run completed, is still CURRENT, and passed. Currency is the subject
+    //    re-materialized and compared — the ambient head is never consulted, for either result kind.
+    const current = subject.digest === candidate.subject.digest;
+    const satisfied = candidate.status === "COMPLETED" && candidate.freshness === "CURRENT" && candidate.verdict === "PASS";
+    return Object.freeze({
+      subjectDigest: subject.digest,
+      runRef: candidate.runId,
+      satisfied,
+      detail: satisfied
+        ? `independent protocol "${candidate.verifierRef}" passed over this exact result`
+        : current
+          ? `the newest independent run over this result is ${candidate.status}${candidate.verdict === null ? "" : `/${candidate.verdict}`} (freshness ${candidate.freshness})`
+          : "the newest independent run no longer covers this exact result",
     });
   }
 
@@ -564,6 +702,109 @@ export function makeProjectVerificationService(
         }
       }
     },
+    /**
+     * §D3-d3: verify a DERIVED result, through the SAME execution core.
+     *
+     * The only differences from `verifyAttemptResult` are the subject source and the freshness rule; the
+     * lifecycle, the independence requirement, the digest-bound request and the release discipline are
+     * shared, so a second verifier species cannot appear by accident.
+     *
+     * FRESHNESS IS RE-DERIVED, NOT INHERITED. `Verification(R_0) ⇏ Verification(R_1)`: a compatibility
+     * proof establishes resource non-interference, which says nothing about whether the build, the tests,
+     * the generated output or the tool behaviour are unchanged. So the candidate's freshness is its OWN
+     * subject re-materialized and compared — never the origin's verdict carried across.
+     */
+    async verifyDerivedResult(input: VerifyDerivedResultInput): Promise<ProjectVerificationOutcome> {
+      const reason = input.reason ?? "explicit request to verify a derived result candidate";
+      const source = deps.derivedResultSource;
+      const materializer = deps.attemptResultMaterializer;
+      if (source === undefined || materializer === undefined) {
+        return blocked(
+          "verifier_runtime_unavailable",
+          "this deployment composes no derived-result verification runtime: a subject source AND a materializer are both required",
+        );
+      }
+
+      let subject: DerivedResultVerificationSubject;
+      try {
+        subject = source.materialize(input.candidateId);
+      } catch (error) {
+        return blocked(
+          "attempt_result_unavailable",
+          `the derived result "${input.candidateId}" cannot be materialized as a subject: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+
+      const selectedVerifierRef = input.verifierRef ?? defaultVerifierRefFor("DERIVED_RESULT");
+      if (selectedVerifierRef === null) {
+        return blocked(
+          "no_registered_verifier",
+          "no verifier that supports DERIVED_RESULT is registered in this deployment, so there is nothing to execute",
+        );
+      }
+      const definition: VerifierDefinition | undefined = registry.get(selectedVerifierRef);
+      if (definition === undefined) {
+        return blocked(
+          "unknown_verifier_ref",
+          `"${selectedVerifierRef}" is not a registered verifier ref; only registered verifiers may be selected`,
+        );
+      }
+      /**
+       * The registered definition is what the registry says; the subject kind is what the PROTOCOL
+       * accepts. They are separate facts on purpose: the first-party result verifier registers
+       * `ATTEMPT_RESULT` (so its definition digest is unchanged and existing runs stay current) while its
+       * protocol serves every result kind. Requiring the registry list to name the kind would force a
+       * digest change and stale recorded verification.
+       */
+      if (!definition.supportedSubjects.some((kind) => kind === "ATTEMPT_RESULT" || kind === "DERIVED_RESULT")) {
+        return blocked(
+          "unsupported_verification_subject",
+          `verifier "${selectedVerifierRef}" does not support a result subject`,
+        );
+      }
+      const provider = providerByRef.get(selectedVerifierRef);
+      if (provider === undefined) {
+        return blocked(
+          "verifier_runtime_unavailable",
+          `verifier "${selectedVerifierRef}" is registered as configuration but no runtime is bound to it`,
+        );
+      }
+      if (provider.definition.digest !== definition.digest) {
+        return blocked(
+          "verifier_definition_mismatch",
+          `the runtime for "${selectedVerifierRef}" implements definition ${provider.definition.digest}, but the registry lists ${definition.digest}`,
+        );
+      }
+
+      let materialized;
+      try {
+        materialized = await materializer.materialize(subject);
+      } catch (error) {
+        return blocked(
+          "attempt_result_not_materializable",
+          `the result revision of derived result "${input.candidateId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+      try {
+        return await executeVerification({
+          subject,
+          selectedVerifierRef,
+          definition,
+          provider,
+          repository: materialized.repository,
+          requestedBy: input.requestedBy,
+          reason,
+          ...(input.signal === undefined ? {} : { signal: input.signal }),
+          freshness: () => derivedResultFreshnessAfterRun(input.candidateId, subject.digest),
+        });
+      } finally {
+        try {
+          await materialized.release();
+        } catch {
+          /* hygiene only */
+        }
+      }
+    },
     attemptResultQualification(attemptId: string): AttemptResultVerificationQualification {
       const source = deps.attemptResultSource;
       if (source === undefined) {
@@ -588,60 +829,39 @@ export function makeProjectVerificationService(
         });
       }
 
-      // 2. Runs over THAT exact subject, newest first.
-      const exact = deps.store
-        .list(deps.projectId)
-        .filter((run) => sameSubject(run.subject, subject))
-        .sort((left, right) => (left.startedAt < right.startedAt ? 1 : left.startedAt > right.startedAt ? -1 : 0));
-      if (exact.length === 0) {
+      return qualifySubject(subject);
+    },
+
+    /**
+     * §D3-d3: the SAME qualification calculus over a derived result's subject.
+     *
+     * Deliberately the identical function rather than a parallel implementation: "is there a newest
+     * independent, current-protocol run that completed, is still current and passed" is ONE question, and
+     * two answers to it would be two authorities. What differs between the kinds is only where the subject
+     * comes from and what "still current" is rematerialized against.
+     */
+    derivedResultQualification(candidateId: string): AttemptResultVerificationQualification {
+      const source = deps.derivedResultSource;
+      if (source === undefined) {
         return Object.freeze({
-          subjectDigest: subject.digest,
+          subjectDigest: null,
           runRef: null,
           satisfied: false,
-          detail: "no verification run covers this attempt's exact result",
+          detail: "this deployment composes no derived-result subject source, so a required derived verification cannot be evaluated",
         });
       }
-      const newest = exact[0]!;
-
-      // 3. Only a run whose protocol is still the registered one AND which counts as independent is
-      //    an admission candidate. A stale or non-independent run never authorizes a promotion.
-      const definition = registry.get(newest.verifierRef);
-      const protocolCurrent = definition !== undefined && definition.digest === newest.verifierDefinitionDigest;
-      const independent = definition === undefined ? newest.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(definition);
-
-      // 4. The newest INDEPENDENT, current-protocol run decides — so a newer independent FAIL
-      //    overrides an older PASS instead of "once passed, always authorized".
-      const candidate = exact.find((run) => {
-        const runDefinition = registry.get(run.verifierRef);
-        const runProtocolCurrent = runDefinition !== undefined && runDefinition.digest === run.verifierDefinitionDigest;
-        const runIndependent = runDefinition === undefined ? run.independence === "MECHANICAL_INDEPENDENT" : countsAsIndependent(runDefinition);
-        return runProtocolCurrent && runIndependent;
-      });
-      if (candidate === undefined) {
+      let subject;
+      try {
+        subject = source.materialize(candidateId);
+      } catch (error) {
         return Object.freeze({
-          subjectDigest: subject.digest,
-          runRef: newest.runId,
+          subjectDigest: null,
+          runRef: null,
           satisfied: false,
-          detail: protocolCurrent && !independent
-            ? `the newest run over this result (${newest.runId}) does not count as independent`
-            : "no run over this result uses the currently registered protocol and counts as independent",
+          detail: `the derived result "${candidateId}" cannot be materialized: ${error instanceof Error ? error.message : String(error)}`,
         });
       }
-
-      // 5. Satisfied only when that run completed, is still CURRENT, and passed. Currency for an
-      //    attempt result is `SameCanonicalAttemptResult` — the ambient head is never consulted.
-      const current = subject.digest === candidate.subject.digest;
-      const satisfied = candidate.status === "COMPLETED" && candidate.freshness === "CURRENT" && candidate.verdict === "PASS";
-      return Object.freeze({
-        subjectDigest: subject.digest,
-        runRef: candidate.runId,
-        satisfied,
-        detail: satisfied
-          ? `independent protocol "${candidate.verifierRef}" passed over this exact result`
-          : current
-            ? `the newest independent run over this result is ${candidate.status}${candidate.verdict === null ? "" : `/${candidate.verdict}`} (freshness ${candidate.freshness})`
-            : "the newest independent run no longer covers this exact result",
-      });
+      return qualifySubject(subject);
     },
 
     status,
