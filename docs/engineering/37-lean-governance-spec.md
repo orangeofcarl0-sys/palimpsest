@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR / D2-e1 / D2-e2 已交付（D2-c = STRONG PASS；D2-d NEXT）**（2026-09-24）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR / D2-e1 / D2-e2 / D2-d 已交付（D2-c = STRONG PASS；D2 live gate NEXT）**（2026-09-24）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -1883,7 +1883,7 @@ D2-c  Worker runtime / execution inside the world   ← **STRONG PASS**（runtim
 D2-d  Async lifecycle + terminal projection
 D2-e1 Settlement closure（WorkerOutcome → Canonical Work result）   ← 已交付（§D2.12）
 D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）   ← 已交付（§D2.13）
-D2-d  Async lifecycle + palimpsest_delegate WORK + followup
+D2-d  Async lifecycle + host-local job map + followup   ← 已交付（§D2.14）
 D2 live gate（端到端异步 delegated Work）
 D2-cR Self-contained Work Execution World Closure      ← 已交付（§D2.11）
 D2 live gate
@@ -2477,6 +2477,123 @@ D2-e2  CLOSED（本片）
 D2-d   NEXT —— 只改 transport/lifetime，不改 semantics
 D3     NOT YET
 ```
+
+#### D2-d 交付（2026-09-24）：Host-local Asynchronous Work Execution Transport
+
+**定义（评审冻结）**：
+
+```
+Async D2 = existing synchronous semantics + different lifetime/transport
+```
+
+**不是** `new scheduler semantics`。以下全部不变：prepare / run / settle / completion invariant / basis admission /
+verification / eligibility / promotion authority。本片只增加：non-blocking `start`、host-local execution lifetime、
+job observation/followup、restart honesty。
+
+##### 只有一个 prepare→run→settle 实现
+
+```ts
+executeMutatingWorkBlocking(deps, { expectedTaskId })   // 唯一同步内核：prepare → run → settle
+```
+
+blocking 入口与**每一个** async job 都调用它。**禁止**出现 `syncPrepare` + `asyncRun` + `asyncSpecificSettlement`
+——那会在一个发布周期内漂移，而漂移直到某次 async attempt 按 sync 路径不共享的规则结算才会被发现。
+
+##### `start` 冻结执行请求身份（不是 deferred semantic recompilation）
+
+```
+t0 start(W)  →  t1 ProjectIR 变化  →  t2 callback 唤醒  →  t3 重新解析 W'
+```
+
+若 t3 从当前 ProjectIR 重新编译输入，后台可能跑的不是用户在 t0 启动的那个候选。因此新增**只读**解析
+`mutatingWorkTarget()`（无事件、无 attempt、无 world），`start` 只解析**一次**并把 `taskId` 冻结进 job；
+`prepareMutatingWork({ expectedTaskId })` 在任何 effect 前**再断言**它（连同 head basis），世界若已移动则**拒绝**，
+绝不静默重解释。
+
+##### 两个平面，绝不混淆
+
+```
+HostJobState  ≠  AttemptState        HostJob ∉ canonical Project truth
+```
+
+job map 极薄：invocation handle + execution promise + 最小观察元数据（`jobId` / `taskId` / `attemptId` / `phase` /
+`settlement` / `hostError`）。**禁止**塞入 task definition、authority state、retry count、verification status、
+promotion status、dependency graph——那是一个没有 durability 的 scheduler database，正是最危险的工程退化。
+`phase ∈ {QUEUED, RUNNING, FINISHED, HOST_ERROR}` 是 **host transport 词汇**，不是 project lifecycle。
+
+因此不存在 `job FINISHED ⇒ ATTEMPT_COMPLETED`，也不存在 `job HOST_ERROR ⇒ ATTEMPT_FAILED`：唯一能让 attempt 完成
+的仍是 `settleMutatingWork()`。
+
+##### `HOST_ERROR` 不 terminalize
+
+prepare 成功 → attempt RUNNING → world 存在 → worker 进程异常：host job 记 `HOST_ERROR`，Project 保持
+**ATTEMPT RUNNING、world retained、lane fenced**，不产生 `ATTEMPT_FAILED`。因为
+
+```
+host failed to continue observing work  ≠  work is semantically failed
+```
+
+里面甚至可能已经有一个完整 commit。
+
+##### Restart honesty：host-local jobs **不 durable**
+
+| crash 位置 | 重启后 |
+|---|---|
+| prepare 前 | 什么都没开始（`start` 只是"当前 host 接受了这次调用"，**不是** durable scheduling ack） |
+| prepare 后 | `ATTEMPT RUNNING` + world 保留：**orphaned execution stays canonically UNRESOLVED**（不 FAILED、不自动 resume） |
+| worker commit 后、settle 前 | 同上，且 world 里有 R（未来显式 recovery 的输入）；D2-d 不碰 |
+| settle 内 | D2-e1 三个窗口已闭合：export/report/terminal replay，无重复事实；D2-d **不重新解决一遍** |
+| settle 完成后 | `ATTEMPT COMPLETED`；host map 丢失**不改变** Project truth |
+
+##### `followup` 严格只读
+
+可返回 host-local status、`attemptId`（若已产生）、settlement（若已有）、host error、canonical attempt snapshot。
+**不做** retry / resume / settle / verify / promote。也**不**因为 job 不见就把 attempt 改成 FAILED。
+旧 `jobId` 在新进程返回 `UNKNOWN`（"host-local jobs are not durable…"），而不是 `FAILED`；调用者若持有 `attemptId`，
+canonical inspection 仍如实回答。两个查询空间：
+
+```
+jobId      = transport handle      （ephemeral）
+attemptId  = durable execution identity
+```
+
+`attemptId` 在 prepare 成功那一刻即通过 followup 暴露，之后调用者不再只依赖 ephemeral handle。
+
+##### 重复 `start` 不重新发明 exactly-once
+
+不引入 durable idempotency registry。canonical 层已有 attempt admission 与 lane fencing，所以最坏情况是第二个 job 被
+canonical 拒绝。真正需要 machine-proof 的是：
+
+```
+canonical exactly-one-owner  >  host exactly-one-Promise
+```
+
+##### 结构断言（CI-only）
+
+`src/interaction/work_delegation.ts` **代码中**（注释剥离后）不得出现 `ATTEMPT_COMPLETED` / `ATTEMPT_FAILED` /
+`ATTEMPT_CANCELLED` / `PROMOTION` / `promoteAttempt` / `assessPromotionEligibility` /
+`commandAttemptResultVerifier` / `verifyAttemptResult` / `recordCallback`，也不得出现 `retryCount` /
+`authorityState` / `verificationStatus` / `promotionStatus` / `dependencyGraph`。即：transport 不能写 project lifecycle、
+不能自行 verify/promote、job map 不能长成 scheduler。
+
+##### 验收（`test/lean_work_delegation_transport.test.ts`，10 项）
+
+| 用例 | 断言 |
+|---|---|
+| **golden async** | `start` 在完成前返回（attempt 已达 RUNNING 而 worker 仍 parked）→ 放行 → `FINISHED` → attempt `COMPLETED`；result commit 是真提交且 ≠ base；canonical 树仍未被接受 |
+| **existing Work only** | 无 canonical work ⇒ `WORK_NOT_DECLARED`，零事件零 attempt；API **没有** `task` 参数（prose 在结构上不可能） |
+| **expectedTaskId mismatch** | `TASK_NOT_NEXT_SCHEDULABLE`，**在任何 job/attempt/world/event 之前** |
+| **equation 1** | `CanonicalOutcome(sync) == CanonicalOutcome(async)`：同 task、同 attempt state、同 changed files、同 settlement state；commit **哈希不同是必须的**（两次独立执行各自的 world 与时间戳），断言的是 canonical facts 相等而非哈希相等 |
+| **equation 2** | worker 抛异常 ⇒ host 记 `HOST_ERROR`，Project 仍 RUNNING、无 `ATTEMPT_FAILED`/`ATTEMPT_COMPLETED`；且第二次 `start` **resume** 而非抢占（`canonical exactly-one-owner`），attempt 数恒为 1 |
+| **equation 2b** | worker 报 `HOST_FAILURE` ⇒ settlement `NOT_READY`，attempt 仍 RUNNING |
+| **restart honesty** | 新 host 对旧 `jobId` 返回 `UNKNOWN`；canonical attempt 不变；旧 worker 事后结束也**不**追溯改变状态 |
+| **Project truth outlives host** | settle 已完成后重启：host 忘记 job，但 `inspectAttempt` 仍 `COMPLETED` |
+| **followup purity** | 重复 followup（含不存在的 jobId）后 events / attempt states / HEAD / 工作树 / refs 逐项不变 |
+| **结构断言** | 见上 |
+
+**D2-d 明确未做**（评审 OUT 清单，逐条未动）：durable queue、restart auto-resume、retry scheduler、cross-host dispatch、
+remote worker protocol、BASE_DRIFT recovery、automatic transplant/rebase/verification/eligibility/promotion、
+prose-to-WORK creation、asset CAS、ProjectWorldBasis generalization、D3 compatibility。
 
 ### D2.7 禁止（本附录）
 
