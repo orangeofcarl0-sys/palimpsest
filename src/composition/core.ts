@@ -25,6 +25,7 @@ import type { PalimpsestEffectsRuntime } from "../effects/index.js";
 import { EventStore, dshDefaultStatePath } from "../state/index.js";
 import type { DshToolDefinition } from "../tools/dsh_types.js";
 import { ProjectController } from "../tools/controller.js";
+import { gitRepositoryWorldPort } from "../deployment/execution_world.js";
 import { definePalimpsestTools } from "../tools/tools.js";
 
 /** Exactly the options the core composition needs — nothing else is visible to it. */
@@ -112,6 +113,19 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
       sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
     },
     verificationAdmission: verificationAdmissionPort,
+    /**
+     * §D2-e1: the execution-world port exists exactly where this deployment PLACES work in worlds — a
+     * real repository that can be observed. It owns no authority: it imports objects and deletes
+     * directories, and settlement decides whether that is allowed to mean anything.
+     */
+    ...(options.repository === undefined || options.repository === ""
+      ? {}
+      : {
+          executionWorld: gitRepositoryWorldPort({
+            repository,
+            worldsRoot: join(repository, ".palimpsest", "worlds"),
+          }),
+        }),
     clock: options.clock,
   });
   const baseTools = definePalimpsestTools(controller);
