@@ -30,7 +30,7 @@ import type { UserWorkModeControlPort, VerificationRuntimeCapabilityView } from 
 import { SqliteMonitorDeliveryMarkStore, makeCampaignMonitorDriver, nullCampaignWakeActivation } from "../monitor/index.js";
 import type { CampaignMonitorDriver, MonitorRuntimeCapability } from "../monitor/index.js";
 import { gitAttemptResultMaterializer } from "../project_verification/attempt_result_source.js";
-import { SqliteProjectVerificationStore, commandAttemptResultVerifier, commandProjectHeadVerifier, firstPartyAttemptResultVerificationSource, firstPartyProjectHeadVerificationSource, independenceSummary, makeProjectVerificationService, verifierRegistryFromPorts } from "../project_verification/index.js";
+import { SqliteProjectVerificationStore, commandAttemptResultVerifier, commandProjectHeadVerifier, countsAsIndependent, firstPartyAttemptResultVerificationSource, firstPartyProjectHeadVerificationSource, independenceSummary, makeProjectVerificationService, verifierRegistryFromPorts } from "../project_verification/index.js";
 import type { ProjectVerifierPort, ProjectVerifierRegistry } from "../project_verification/index.js";
 import { makeProjectManagementService } from "../project_management/index.js";
 import type { EventStore } from "../state/index.js";
@@ -89,6 +89,15 @@ export interface GovernanceCompositionInput {
   readonly verificationWiring: { runtime: InstalledVerification | undefined };
   /** The install-local live verification probe (defined with the verification wiring). */
   readonly liveVerification: () => InstalledVerification | undefined;
+  /**
+   * §D2-LIVE: the late-bound capability holder. THIS cluster composes the verification runtime, so it
+   * is the one place that can say truthfully whether an executable independent ATTEMPT_RESULT
+   * verifier exists — a fact that is NOT knowable from the options, because this cluster CREATES the
+   * store when the deployment did not pass one.
+   */
+  readonly verificationCapabilities: {
+    bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
+  };
 }
 
 /** What this cluster produced — including the two stores whose OWNERSHIP the install computed. */
@@ -273,6 +282,32 @@ export function composeGovernanceCapabilities(input: GovernanceCompositionInput)
   // Hand the LIVE runtime to whatever was composed before it (recipe execution, and
   // any later reader). This mirrors the monitor's `monitorWiring` hand-over.
   verificationWiring.runtime = verification;
+
+  /**
+   * §D2-LIVE: state the capability from what was COMPOSED, per SUBJECT KIND.
+   *
+   * The controller reads this to decide whether a verification-requiring task may start, so it has to
+   * be derived from the real runtime rather than from the options that requested it. Three conditions
+   * are all required, and each is a distinct way for the answer to be "no":
+   *
+   *   a RUNTIME       `verification` exists — the service is composed only with a store, and a
+   *                   registry full of definitions with no store is not something that can run;
+   *   a VERIFIER      a registered definition for that subject kind whose provider is executable and
+   *                   which counts as independent;
+   *   the SEAMS       for ATTEMPT_RESULT only: a subject source and a materializer, without which
+   *                   there is nothing to check out — a definition alone is not an executable
+   *                   attempt verifier (§B.11/B.12).
+   */
+  const independentVerifierFor = (kind: "CURRENT_PROJECT_HEAD" | "ATTEMPT_RESULT"): boolean =>
+    executableVerifierDefinitions.some(
+      (definition) => definition.supportedSubjects.includes(kind) && countsAsIndependent(definition),
+    );
+  input.verificationCapabilities.bind({
+    independentVerifierAvailable: verification !== undefined && independentVerifierFor("CURRENT_PROJECT_HEAD"),
+    attemptResultVerificationAvailable:
+      verification !== undefined && attemptResultSeams !== null && independentVerifierFor("ATTEMPT_RESULT"),
+    sandboxSpawnVerified: repository !== "" && repository !== undefined,
+  });
 
   /*
    * G10-AE §7/§17/§21/§22: the EXTERNAL ASSET LIBRARY bridge, composed ADDITIVELY.
