@@ -1,6 +1,6 @@
 # 轻度治理与选择性委派规格（用户只表达标准，机械前置由产品推导；主代理保持直接工作能力）
 
-> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR / D2-e1 已交付（D2-c = STRONG PASS）**（2026-09-24）
+> **Spec ID**：`PLMP-LEAN-1` ｜ 状态：**2A-B / 2B 已 CLOSED；`PLMP-DELEGATE-1` D1 已 CLOSED / STRONG PASS；D2-r1 设计冻结（DESIGN FROZEN / PASS）；D2 实现 = GO，D2-a / D2-b 已交付，D2-c / D2-cR / D2-e1 / D2-e2 已交付（D2-c = STRONG PASS；D2-d NEXT）**（2026-09-24）
 > **愿景句**：用户只需要**轻度治理**；palimpsest 形成**自洽高效的多执行者协作**，从而提高**最终结果质量**与**项目管理稳定性**。
 > **产品身份句**：**Palimpsest 让主代理保持正常工作能力，在值得时选择性委派，并把协作状态、证据、复核与恢复留在项目 sidecar 中，而不是塞进主代理的上下文。**
 > **权威序**：系统设计以 `03-system-design-spec.md`（PLMP-SDS）为准；证据/晋升/账本语义沿用既有冻结规格，**本文不改**；"DSH 主代理当架构师、插件零内嵌 LLM"的宿主中立红线沿用 `18-architecture-modes-spec.md`。
@@ -1882,7 +1882,7 @@ D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
 D2-c  Worker runtime / execution inside the world   ← **STRONG PASS**（runtime + live gate；blocker 由 D2-cR 关闭）
 D2-d  Async lifecycle + terminal projection
 D2-e1 Settlement closure（WorkerOutcome → Canonical Work result）   ← 已交付（§D2.12）
-D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）
+D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）   ← 已交付（§D2.13）
 D2-d  Async lifecycle + palimpsest_delegate WORK + followup
 D2 live gate（端到端异步 delegated Work）
 D2-cR Self-contained Work Execution World Closure      ← 已交付（§D2.11）
@@ -2394,6 +2394,89 @@ interface SettlingExecutionWorldPort {
 | Crash A / B / C | 如上表 |
 
 **下一步（D2-e2）**：复用 2B 已证明的路径，**不造 Worker verification**——`ATTEMPT_COMPLETED → ATTEMPT_RESULT subject → independent verifier（若 required）→ PromotionVerificationAdmission → assessPromotionEligibility()`，且闭合到 **promotion eligibility** 为止（`Worker COMPLETED ≠ Promoted`，D2 不再发明 "worker finished → auto promote" 的特殊通路）。类型上按评审意见预留 `sourceResultCommit` 与未来的 `producedAssetRefs`，措辞上把 result commit 说成 **source result facet**，不写成"Work 的全部输出"。
+
+#### D2-e2 交付（2026-09-24）：Worker Result Settlement & Promotion Readiness
+
+**这一片只回答一个问题**：
+
+```
+一个刚完成的真实 Work attempt，怎样进入 2B 已经证明过的 verification / admission 语义？
+```
+
+它是 **integration closure，不是 subsystem construction**。判据（评审给定，并已落成机器检查）：
+
+> 删掉本片新增的 orchestration glue，既有的 2B verification / admission 原语必须仍然独立成立；如果必须重写 2B 才能接上 D2 Work，说明 integration boundary 错了。
+
+**本片未新增任何 semantic primitive**：
+
+```
+不加 verifier            （仍用 commandAttemptResultVerifier()，ref 与 2B 相同）
+不加 verification 生命周期 （仍用 ATTEMPT_RESULT subject + 既有 run/protocol/independence/freshness）
+不加 promotion 通路       （仍用唯一 assessor assessPromotionEligibility）
+不加状态词汇              （NOT_READY 已有表达，见下）
+```
+
+`test/lean_promotion_readiness.test.ts` 里有一条 CI-only 结构断言守这条线：上述四个 plane 的源文件不得出现
+`WorkerVerification` / `DelegationVerification` / `WorkVerification` / `AIReviewResult` / 第二个 eligibility assessor，
+且 `commandAttemptResultVerifier()` 与 `assessPromotionEligibility(` 仍是唯一入口。
+
+**`NOT_READY` vs `INELIGIBLE` 不需要新状态**（评审指定唯一要重点审计的一点）。既有 blocker taxonomy 恰好已经区分：
+
+```
+required_verification_missing      无 run 存在        ⇒ 事实不足（NOT_READY）
+required_verification_unsatisfied  有 run 但不合格     ⇒ 已证明不可采纳（INELIGIBLE）
+```
+
+**五条 invariant 的验收**（`test/lean_promotion_readiness.test.ts`，6 项）：
+
+| invariant | 断言 |
+|---|---|
+| **A** `ATTEMPT_COMPLETED ⇏ PROMOTION_ELIGIBLE` | 真实 D2 spine 产生的 attempt 为 COMPLETED，而 eligibility 为 false |
+| **B** verification 判断不改写 Work 历史 | 跑完真实 verifier 后：attempt 仍 COMPLETED、`report` 逐字节不变（含 `result_commit`）、事件/晋升计数不变 |
+| **C** 需要时 PASS 是必要而非充分 | 存在 PASS 时 eligibility 仍由 current state 决定（见 D）；本片中 required 未被满足时 blocker 为 `_missing`，绝非 `_unsatisfied` |
+| **D** eligibility 针对**当前状态**求值 | 同一 attempt、同一 recorded result、项目 head 前移后重新求值，答**由当前状态算出**；且 digest 可重复读取一致（`f(f(x)) = f(x)`） |
+| **E** eligibility **零 project mutation** | 前后 `head` / 工作树 / refs / 事件数 / 晋升数逐项相等 |
+
+**两处实测发现，都改进了规格而不是迁就实现**：
+
+1. **required + 未组合 verifier ⇒ 在 bootstrap 就被拒**（`ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE`，§E.14.1）。这不是"没有 run"，
+   而是**该部署根本不能开始这份工作**：`TASK_STARTED` 为 0、attempt 为 null、零事件。原来那版用例把它当"没有 run"来测，
+   与规格不符，现已改成断言这条 fail-closed 语义本身。
+2. **`canonicalExpectedHead` 是晋升链的 head**，在没有晋升时**合理地**等于 envelope base——所以 head 前移**不**通过它体现。
+   本片把这个观察写进注释：漂移体现在**可采纳性**（ineligible + 相应 blocker + digest 变化），以及"verdict 从不被当作 authority"。
+   我最初写的断言要求一个 currentness blocker 出现，实测该 attempt 早已因 `task_not_verifying` 不可采纳（COMPLETED 但 task 已越过该 batch），
+   于是把断言收紧为**证据支持的确切命题**，而不是更漂亮的更强命题。
+
+**同步 Work spine 现在闭合为**：
+
+```
+prepare  → materialize execution authority
+run      → perform mutable work
+settle   → freeze and record execution result
+verify   → independently test result claims
+eligible → judge whether CURRENT state permits acceptance
+```
+
+每个箭头语义不同，且 `ELIGIBLE → PROMOTE` 这条边**不归本片**（既有 Promotion authority 拥有；`Worker COMPLETED ≠ Promoted`）。
+类型上按评审预留：result commit 是 **source result facet**，`AttemptResult` 未来可加 `producedAssetRefs` / `artifactManifestDigest`，
+而 verifier 看到的 subject identity 仍是 `ATTEMPT_RESULT`，不随 Asset Plane 出现而重写。
+
+**D2-e2 明确未做**（评审列出的清单，逐条未动）：auto promote / auto merge / auto transplant / auto rebase、
+verification rollback、asset CAS、通用 ProjectWorldBasis schema、async scheduler、background verifier worker、
+D3 compatibility analysis、BASE_DRIFT recovery。
+
+**阶段状态**：
+
+```
+D2-a   PASS
+D2-b   STRONG PASS
+D2-c   STRONG PASS
+D2-cR  CLOSED
+D2-e1  CLOSED
+D2-e2  CLOSED（本片）
+D2-d   NEXT —— 只改 transport/lifetime，不改 semantics
+D3     NOT YET
+```
 
 ### D2.7 禁止（本附录）
 
