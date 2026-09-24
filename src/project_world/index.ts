@@ -36,3 +36,32 @@ export {
   type ProjectWorldBasisRuntime,
   type ProjectWorldObservationPort,
 } from "./runtime.js";
+export {
+  COVERAGE_EVIDENCE,
+  covered,
+  materializeWorldChangeFootprint,
+  noChanges,
+  provenComplete,
+  resultFootprints,
+  sourceChangeFootprintFromPaths,
+  unproven,
+  wholeRepositoryRead,
+  worldChangeFootprintDigest,
+  type CoveredFootprint,
+  type CoverageEvidence,
+  type FootprintCoverage,
+  type ResultFootprints,
+  type WorldChangeFootprint,
+} from "./footprint.js";
+export {
+  COMPATIBILITY_OUTCOMES,
+  DIRECT_COMPATIBILITY_POLICY_VERSION,
+  assessmentStillAppliesTo,
+  assessCompatibility,
+  type AssessCompatibilityInput,
+  type CompatibilityAssessment,
+  type CompatibilityOutcome,
+  type CompatibilityUnknown,
+  type ConflictWitness,
+  type DisjointnessProof,
+} from "./compatibility.js";
