@@ -4263,3 +4263,184 @@ $$\boxed{\Delta CandidateState \neq 0 \quad\wedge\quad \Delta CanonicalProjectSt
 ### J.13 阶段结构
 
 $$\boxed{Observe \rightarrow Prove \rightarrow Admit \rightarrow Rematerialize \rightarrow Verify \rightarrow Promote}$$
+
+## 附录 K（第 D3-e 期）：Serializable Concurrent Result Composition —— 并发执行，串行 canonicalization
+
+D3-e 的名字本身就是裁决：
+
+> **D3-e — Serializable Concurrent Result Composition**（不是 "Parallel Merge"）
+
+$$\boxed{\text{Execute concurrently; canonicalize serially.}}$$
+
+$$\boxed{ConcurrentExecution \neq ConcurrentCanonicalization}$$
+
+$$\boxed{\text{Every canonical result has ONE exact predecessor world.}}$$
+
+第一版**不定义"同时接受"这一新语义**。若将来确有强需求（"A 和 B 要么一起进、要么都不进"），那应当显式定义为
+**新的 effect kind**（`ResultComposition`：inputs / joint compatibility proof / composition result / atomic
+admission / one canonical promotion），而不是偷偷优化现有 sequential path —— 因为 `B1 → B2` 会立刻引出
+"B2 到底是谁产生的？"，而在两个结果被同时接受时，这个问题没有诚实答案。
+
+代码：`src/project_world/serialization.ts`（L2）。machine proofs：`test/lean_serializable_composition.test.ts`（15 项）。
+活体门禁：`rs-test/lean-d3e-live-gate.mjs`（真实仓库，9 项判定）。
+
+### K.1 为什么不需要第二套并发理论
+
+A 被 canonicalize 之后，B 必须存活的 world change 恰好是 `Δ = W_A`。所以 B 能否跟随就是：
+
+$$W_A\cap R_B=\varnothing \quad\wedge\quad W_A\cap W_B=\varnothing$$
+
+这正是 **D3-b 已经实现的** `compareFootprints`。因此本模块**不含自己的 conflict algebra**（机器检查：不出现
+`assessConcurrentCompatibility` / `concurrencyAlgebra` / `conflictMatrix` / `jointEligibility`）。第二套理论就是
+对同一问题的第二个 authority，两者必然漂移。
+
+$$\boxed{Concurrent\ composition = repeated\ ordinary\ compatibility\ assessment}$$
+
+### K.2 一个实测发现的设计错误：succession 是**有向**的
+
+我第一版直接写 `compareFootprints(predecessor, candidate)`，两个测试立刻红。原因是
+`compareFootprints` 回答的是**对称**问题 ——"两个同 basis 的结果能否一起被接受？"（两者都还没发生，所以对称是
+对的）；而 succession **不对称**：predecessor **已经完成**，所以唯一能使 candidate 失效的是 predecessor
+**改变了什么**，它的 read 不可能追溯性地使任何东西失效。
+
+正确做法是把 predecessor 的效果表达成**变化**再交给 D3-b 的演算：
+
+```
+Δ = { reads: [], writes: predecessor.writes }
+conflicts = compareFootprints(Δ, candidate)
+```
+
+即恰好检查 `W_A∩R_B=∅` 与 `W_A∩W_B=∅`，**故意不检查反向**。于是"复用同一理论"与"方向性"同时成立 ——
+不对称是**输入的属性**，不是第二个算法。**验证过**：换回对称调用，两个测试立刻红。
+
+$$\boxed{\text{serialization order is semantic, not an implementation detail}}$$
+
+实测的顺序敏感例（评审给的正是这一例）：
+
+```
+A: reads X, writes Y        B: writes X
+A then B  → COMPOSABLE      （A 的 write 是 Y，不触及 B）
+B then A  → CONFLICT        （B 的 write 触及 A 读过的 X，write_read_invalidation）
+```
+
+### K.3 目标是 serializability，不是 commutativity
+
+第一版只要求最终结果等价于**某个**合法串行顺序；**不**要求 `A then B` 与 `B then A` 都成立或结果相同。
+也**不比较 commit identity** —— D2 已经给过教训（parent / timestamp / provenance 不同，语义相同而 hash 不同）。
+D3-e 第一版甚至无需证明 commutativity。
+
+### K.4 facts persist; authorities expire
+
+这是本轮最重要的一句话，适用于整个 Palimpsest：
+
+$$\boxed{\textbf{Facts persist; authorities expire.}}$$
+
+$$\boxed{HistoricalAdmission\ persists}\qquad\boxed{AdmissionAuthority(RB,B_1)\not\Rightarrow AdmissionAuthority(RB,B_2)}$$
+
+实测：RB 曾 `COMPATIBLE against B0` → `admitted against B0`；A 被 promotion 后 `B0 → B1`，旧 admission
+拿去 effect 新世界 ⇒ `ADMISSION_REFUSED` / `STALE_PROOF`，**但 `issuer.recall(旧 issuanceDigest)` 仍返回
+`COMPATIBLE`，且仍指向它自己的 target `B0`**。系统绝不改写成"RB 从未被 admitted"。
+
+**绝不"更新" RB 的 admission**（那会篡改历史）。正确形态是新增：
+
+```
+Admission A1: RB @ B0 → admitted against B0
+promotion A happens
+Assessment A2: RB against B1 → Admission A2 → Derived RB1' @ B1
+```
+
+derived candidate 也**链式不可变**：`RB0 →(REMATERIALIZATION) RB1 →(REMATERIALIZATION) RB2`，
+每一步都是新 identity 并指名前驱，**没有**任何"把 `RB1.base` 改成 B2"的操作。实测：两个 candidate 各自可寻址，
+`RB2.derivation.originResultManifestDigest === RB1.resultManifestDigest`。
+
+### K.5 预计算 pairwise compatibility 不能授权 effect
+
+可以分析 `"If A lands first, B should probably remain compatible."`，但那只能是 **preflight / planning
+evidence**，**不能**成为 `Admission(B, B2)` —— 因为 `B2` **还不存在**。类型上写死：
+
+```ts
+readonly isAdmission: false;   // 没有任何取值能让它成为 admission
+```
+
+对未来世界提前签发 authority，正是本项目一贯拒绝的错误。真正的 admission 仍必须等真实世界产生后
+observe → prove → admit。
+
+### K.6 不做自动排序
+
+顺序由 **Promotion authority / caller** 决定，本 plane 不计算。**没有** `computeOptimalOrdering`、
+candidate permutation 搜索、priority、retryCount、worker ranking、`pendingCandidates`（机器检查）。
+D3-e 是 **result composition semantics**，不是 multi-agent scheduler；而"最佳顺序"即使算出来也不带 authority ——
+真正的答案永远来自**实际当前世界 + fresh proof + fresh admission**。
+
+### K.7 后续失败不回滚先前 canonicalization
+
+$$\boxed{\text{Later serialization failure does not rewrite earlier canonicalization}}$$
+
+实测：第一个 composition 成功、第二个 `REMATERIALIZATION_FAILED` ⇒ 第一个 candidate 及其记录**逐字段不变**，
+第二个**没有产生任何 candidate**，且**没有**"回滚 A 让 B 塞进去"。若用户真要 all-or-nothing，那是
+`AtomicMultiResultTransaction`，D3-e 不做。
+
+### K.8 活体门禁（`lean-d3e-live-gate.mjs`，真实仓库，9/9 PASS）
+
+```
+两个 worker 各自从同一 H0 分支产出 RA / RB（改 alpha.ts / beta.ts）
+→ 二者对 B0 都 COMPATIBLE（此刻 world change 为空，正是二者各自可接受的原因）
+→ succession RA→RB = COMPOSABLE 且 isAdmission=false（planning evidence）
+→ RA rematerialize → canonical B0 → B1，含 alpha=2
+→ RB 的旧 admission 对新世界 = ADMISSION_REFUSED / STALE_PROOF，而事实仍在
+→ RB 重新 assess B1 → COMPATIBLE → rematerialize → RB' @ B1（同时含 alpha=2 与 beta=2）
+→ RB' 独立 verify（subject=DERIVED_RESULT，PASS）→ qualified on its OWN run
+→ canonical B1 → B2
+```
+
+最终：`canonical history is a SERIES`（2 个 first-parent commit，**没有 merge commit**）、
+`shared.ts` 未被触碰、两个 candidate 各 1 条 derivation 记录、RB 的早期 candidate 仍在（immutable chain）。
+
+$$\boxed{\text{two concurrently produced results} \rightarrow \text{one serializable canonical history}}$$
+
+全程只用 `D3-a observe / D3-b prove / D3-c admit / D3-d rematerialize / existing verification / existing promotion`：
+**没有** multi-result merge primitive、**没有** special promotion path、**没有** automatic three-way merge。
+
+### K.9 本阶段的 machine proofs（对应评审 A–G）
+
+| | 断言 |
+|---|---|
+| **A** | 既有 expected-head 纪律（`cross_revision_promotion_not_supported`，`canonicalExpectedHead !== envelope.base_commit`）才是拒绝 stale-base result 的东西；D3-e **未新增**任何 blocker（promotion eligibility 不含 `serializ`/`succession`/`composab` 等） |
+| **B** | 旧 admission 记录仍在、仍指向自己的 target，但对新世界 effect 失败（`STALE_PROOF`） |
+| **C** | fresh chain（assess → fresh admission → rematerialize → reverify → qualified）成功，且是新 identity |
+| **D** | 无第二并发 assessor（见 K.1 的机器检查） |
+| **E** | 无 multi-result effect（不含 `applyResults`/`promoteBatch`/`mergeCandidates`/`ResultComposition`/`MultiResult`） |
+| **F** | 第二个 composition 失败时第一个 canonical fact 与 candidate 逐字段不变 |
+| **G** | 不建 candidate queue/scheduler，也不建总 idempotency database（各既有层各自负责幂等：store append-once、derivation 由 operation 标识、verification 有自己的 history） |
+
+### K.10 门禁
+
+单元 **216 files / 2417 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。未新增公开名。
+
+### K.11 D3 整体闭合
+
+```
+D3-0  STRONG CLOSED @ 4e9fba1   ontology / semantics
+D3-a  STRONG CLOSED @ 5fb0851   exact basis capture + currentness runtime
+D3-b  STRONG CLOSED @ a363a04   compatibility assessment（三值 selector algebra + coverage + witness）
+D3-c  STRONG CLOSED @ 2b6fa7d   authoritative observation + issuance + cross-basis admission
+D3-d  STRONG CLOSED @ 606d378   result rematerialization（candidate-space effect + ResultSubject 泛化）
+D3-e  STRONG CLOSED              serializable concurrent composition
+================
+D3    CLOSED
+================
+```
+
+D3 的最终能力陈述（D4 的输入契约）：
+
+> **Concurrently produced results can be independently observed, proved compatible, authoritatively admitted,
+> rematerialized into new immutable candidates on the current basis, re-verified, and canonicalized in a
+> serializable order — while canonical source is changed only by Promotion authority, facts persist after
+> their authorities expire, and no multi-result effect, second concurrency theory or merge primitive is
+> introduced.**
+
+$$\boxed{Observe \rightarrow Prove \rightarrow Admit \rightarrow Rematerialize \rightarrow Verify \rightarrow Promote}$$
+
+且这一整套等价于 **optimistic concurrency control**：snapshot/basis capture → speculative work →
+validate compatibility → admit → rematerialize → reverify → canonical commit。
