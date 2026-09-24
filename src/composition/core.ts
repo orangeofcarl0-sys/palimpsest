@@ -13,7 +13,7 @@
  *   `git`     — caller-supplied or a `GitCliPort` over the repository; owns no handle.
  */
 
-import { join } from "node:path";
+import { join, dirname } from "node:path";
 
 import type { RuntimeHooks } from "@ordarium/core";
 
@@ -27,6 +27,9 @@ import { EventStore, dshDefaultStatePath } from "../state/index.js";
 import type { DshToolDefinition } from "../tools/dsh_types.js";
 import { ProjectController } from "../tools/controller.js";
 import { gitRepositoryWorldPort } from "../deployment/execution_world.js";
+import { firstPartyProjectWorldObservation } from "../deployment/world_observation.js";
+import { SqliteAttemptWorldBasisStore } from "../project_world/basis_store.js";
+import { makeProjectWorldBasisRuntime } from "../project_world/runtime.js";
 import { definePalimpsestTools } from "../tools/tools.js";
 
 /** Exactly the options the core composition needs — nothing else is visible to it. */
@@ -77,6 +80,11 @@ export interface CoreComposition {
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
   };
+  /**
+   * §D3-a: the basis store this composition CREATED, when it created one. Exposed so `lifecycle` closes
+   * it with the other install-created resources — a store whose owner is unnamed leaks its handle.
+   */
+  readonly worldBasisStore: import("../project_world/basis_store.js").AttemptWorldBasisStore | undefined;
 }
 
 /** §12: explicit typed input, explicit typed output, no discovery, no string keys. */
@@ -120,6 +128,48 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     read: (attemptId: string) => verificationAdmission.resolver?.(attemptId) ?? null,
   };
   const policy = options.policy ?? trustedDefaultPolicy();
+
+  /**
+   * §D3-a: the world-basis runtime. Composed only where a real project can be OBSERVED — a repository to
+   * name a source revision, and the Work ledger to re-derive a semantic projection. Absent elsewhere,
+   * which is the honest "this deployment captures no basis" rather than a stub.
+   *
+   * The store is its own file beside the project's databases (the same derivation the operating and
+   * verification stores use), and `lifecycle` closes it with the other install-created resources.
+   */
+  const worldBasisStore =
+    options.repository === undefined || options.repository === ""
+      ? undefined
+      : new SqliteAttemptWorldBasisStore(
+          options.databasePath === undefined || options.databasePath === ":memory:"
+            ? ":memory:"
+            : join(dirname(options.databasePath), "attempt_world_basis.sqlite"),
+        );
+  /**
+   * The observation port reads through the WORK OWNER, which does not exist until the controller below
+   * is constructed. The holder is the same late-binding idiom `verificationAdmission` uses: the port is
+   * stable from birth and its ONE dependency is bound immediately afterwards, so nothing can observe a
+   * changing dependency.
+   */
+  const worldOwner: {
+    current: { taskEnvelope(taskId: string): unknown | null; projectRevision(): number } | null;
+  } = { current: null };
+  const worldBasisRuntime =
+    worldBasisStore === undefined || options.repository === undefined || options.repository === ""
+      ? undefined
+      : makeProjectWorldBasisRuntime({
+          projectId: options.projectId,
+          store: worldBasisStore,
+          observation: firstPartyProjectWorldObservation({
+            owner: {
+              taskEnvelope: (taskId) => worldOwner.current?.taskEnvelope(taskId) ?? null,
+              projectRevision: () => worldOwner.current?.projectRevision() ?? 0,
+            },
+            repository: options.repository,
+          }),
+          ...(options.clock === undefined ? {} : { clock: options.clock }),
+        });
+
   /**
    * §D2-LIVE: the capability statement is LATE-BOUND, exactly like `verificationAdmission` below.
    *
@@ -182,8 +232,29 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
             worldsRoot,
           }),
         }),
+    /**
+     * §D3-a: the world-basis capability, composed where a real project can be OBSERVED.
+     *
+     * It needs the repository (to name a source revision) and the task rows (to re-derive a semantic
+     * projection), so it is absent exactly when the world cannot be observed — and absent means "this
+     * deployment records no basis", which the assessment reports honestly instead of reconstructing.
+     *
+     * The store lives in its own file beside the project's databases, and THIS composition owns its
+     * lifetime: it is created here and closed by `lifecycle` with the other install-created resources.
+     */
+    ...(worldBasisRuntime === undefined
+      ? {}
+      : {
+          worldBasis: worldBasisRuntime,
+          worldBasisRead: worldBasisRuntime,
+        }),
     clock: options.clock,
   });
+  // §D3-a: bind the Work owner the observation port reads through, ONCE, now that it exists.
+  worldOwner.current = {
+    taskEnvelope: (taskId) => controller.taskEnvelopeOrNull(taskId),
+    projectRevision: () => controller.promotions.projectRevision(),
+  };
   const baseTools = definePalimpsestTools(controller);
   return {
     repository,
@@ -201,6 +272,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
         verificationCapabilities.bound = next;
       },
     },
+    worldBasisStore,
   };
 }
 

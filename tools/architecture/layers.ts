@@ -47,6 +47,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   reasoning_cell: "L2",
   proof_asset: "L2",
   project_verification: "L2",
+  // PLMP-LEAN-1 §D3-a: the world-basis capability. It resolves a work's dependency
+  // projection against the current world and stores the result append-once — a semantic
+  // owner of execution provenance, not kernel substrate and not a host adapter.
+  project_world: "L2",
   project_workspace: "L2",
   boundary_memory: "L2",
   monitor: "L2",
