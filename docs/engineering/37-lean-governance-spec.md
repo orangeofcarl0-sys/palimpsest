@@ -3854,3 +3854,169 @@ D3-e 因此不需要新的 conflict language。
 
 单元 **210 files / 2344 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
 `check-public-api` **0/0/0**。未新增公开名（`selector_algebra.ts` 与 `project_world/*` 均不从 domain barrel 再导出）。
+
+## 附录 I（第 D3-c 期）：Cross-Basis Admission —— 证明的**凭据**，而非再证一遍
+
+D3-b 证明了一个定理：**若**前提成立，则 `COMPATIBLE`。这个定理是 sound 的，但它不够 —— 因为以普通对象字面量
+形式传入的前提是一个**声明**，不是事实：
+
+```ts
+{ coverage: "PROVEN_COMPLETE", evidence: "SANDBOX_ENFORCED" }
+```
+
+这个对象里没有任何东西表明真的存在强制机制。所以 D3-b 的结论实际上是：
+
+$$\boxed{\text{if the supplied premises are true, then } COMPATIBLE}$$
+
+而缺的另一半是：
+
+$$\boxed{\text{Palimpsest has established that } COMPATIBLE \text{ is true}}$$
+
+本阶段提供的就是这另一半，而且**位置放对**：
+
+$$\boxed{\text{Proof generation} \neq \text{Proof validation}}$$
+
+D3-b 负责 **proof search**，D3-c 负责 **proof certificate validation**。裁决规则是通用的，**不是**给 change set 打补丁：
+
+$$\boxed{\text{任何能够授予正向 authority 的前提} \Rightarrow \text{必须有权威 provenance}}$$
+
+**每一个**正向前提都算：change coverage、read coverage、write coverage，以及观测到的 write 集合。
+只修 change observation 只是把洞从 `change coverage` 挪到 `read coverage`。
+
+代码：`src/project_world/observation.ts` / `issuance.ts` / `admission.ts` / `cross_basis.ts`（均 L2）、
+`src/deployment/source_change_observer.ts`（L5）。machine proofs：`test/lean_cross_basis_admission.test.ts`（19 项）
+与 `test/lean_cross_basis_composition.test.ts`（7 项，真实仓库）。
+
+### I.1 mechanism / attestation 必须分开
+
+`CoverageEvidence`（现更接近 `CoverageMechanism`）说明的是**理论上通过什么机制**得到 completeness；
+它**不能**说明**这一次具体 observation 确实经过了这个机制**。所以一个 observation 不是"footprint + 标签"，而是
+footprint + **provenance**：
+
+```
+ObservationProvenance
+├── observerId / observerVersion
+├── mechanism            ← 由 OBSERVER 自己声明，绝不由 caller 声明
+└── scope
+    ├── domain / scopeRef
+    └── from / to
+```
+
+$$\boxed{\text{Completeness is always completeness over a scope.}}$$
+
+只有 `complete = true` 是没有量词的，所以 `scopeRef` 与 revision 对是 provenance 的一部分，而不是附带元数据。
+而 mechanism **由 observer 声明**：没有执行过某个边界的当事方无法诚实地标注它，**类型也不给它标注的途径** ——
+`observedPremise` 是唯一能产出 `PROVEN_COMPLETE` 前提的构造器，它从自己的 provenance 参数取 mechanism；
+没有 observer 的调用方只有 `unavailablePremise`，而它**不携带任何 coverage**。
+
+**未观测的 domain 是 `UNAVAILABLE`，不是空 observation**："没有 asset observer"与"asset observer 看到什么都没变"
+是两个事实；合并它们会让**缺失的能力读作健康证明**。
+
+### I.2 不可变签发：authority 是记录，不是对象属性
+
+$$\boxed{\text{a logically valid conclusion from untrusted premises} \not\Rightarrow \text{system authority}}$$
+
+assessment 只有在**被本 authority 从可接受的观测前提签发**之后才可用于 admission，且**被记住**：
+
+```
+issue   →  系统为之背书的证书
+recall  →  这份确切的证书是否存在，且是否仍关于这个 result 与这个 target
+```
+
+**为什么用 registry 而不是 assessment 上的一个签名字段**：boolean 或 token 可以被构造 assessment 的人一并构造。
+registry 相反 —— 除非存在"本 authority 从**这些**观测前提签发了它"的记录，否则该 assessment 对 admission 毫无价值，
+而模块外部无法创建该记录。
+
+**assessment 从前提重新推导，绝不与前提一并接受**：如果调用方既能传前提又能传现成 assessment，两者可能不一致，
+证书就会为一桩没人做过的证明背书。所以 `issue` 只接受**观测**，并自己运行 D3-b。
+
+### I.3 两个正交检查，缺一不可
+
+$$\boxed{StillApplies}\qquad\wedge\qquad\boxed{AuthoritativelyIssued}$$
+
+**互不蕴含**：一份伪造的观测可以完美绑定正确的 target；一份真实的 `B_1` 证书对 `B_2` 什么也没说。
+admission 因此：
+
+1. **先查 authority**，而且校验的是**记录中的那一份**（用 digest 去 recall，而不是信任传入对象）——
+   于是调用方无法"保留真实 digest、换上被编辑的 assessment"；记录是系统自己"从什么推出了什么"的记忆；
+2. 再查 **freshness**（`assessmentStillAppliesTo`）：witness 绑定 `(result, origin basis, target observation)`，
+   且 runtime **每次 admission 都重新观测 target**，而不是信任调用方对"现在"的看法。
+
+### I.4 四种拒绝理由必须保持可区分
+
+```
+NO_BASIS                  attempt 从未捕获 basis，没有可 admission 的对象
+INSUFFICIENT_PROOF        没有证明        → 更多证据可能有用
+CONFLICT                  已证明的冲突    → 再多观测也**不**能消除
+STALE_PROOF               证明存在，但针对另一个 target → 针对当前世界重新评估
+UNTRUSTED_PROOF           结论存在，但本 authority 从未签发 → 前提 provenance 无效
+ADMITTED                  authoritative + current + 关于这个 result
+```
+
+其中 `moreEvidenceCouldHelp` 显式区分：`INSUFFICIENT_PROOF` 为 `true`（更好的 observer 可能补齐证明），
+`CONFLICT` 为 `false`（witness 是**事实**）。把两者压成一个 "blocked" 会丢掉恢复路径唯一需要的信息。
+
+### I.5 Git 的地位彻底干净
+
+$$\boxed{Git = \text{authoritative observer of its own Source domain}} \neq \text{project compatibility authority}$$
+
+只要 Source State 定义为两个 immutable revision 之间的状态，第一方 observer 就可以合理承诺"对给定 repository scope、
+H0→H1，列举 source-tree changed paths 是 complete 的"。于是 `COMPLETE` **不是** assessor 猜出来的，
+而是 `GitSourceChangeObserver` 的契约保证的 —— 而它**不**决定任何东西。
+
+Asset / Environment 因此自然 fail closed：没有 `CanonicalAssetChangeObserver` 时，就不该假装
+"asset changes complete"，于是 `相关 asset 依赖 + 无权威 asset 观测 → UNKNOWN`，正好符合既有模型。
+以后增加 asset provider 时只需让它能出具 `AssetChangeObservation`，**不必改 compatibility algebra** ——
+这说明 D3-b 的抽象选对了。
+
+（path 大小写不折叠的决定同样保持：resource identity 服从 source backend 的对象模型；某个 Windows host
+能否 materialize 特定路径组合是 ExecutionHost capability 问题，不能让宿主文件系统习惯反向污染 Source Graph identity。）
+
+### I.6 本阶段明确**不**做的两件事
+
+$$\boxed{COMPATIBLE \not\Rightarrow PROMOTION\_ELIGIBLE}$$
+
+`ADMITTED` 只意味着 **basis divergence 不再是语义阻断**。它**不**意味着系统能把结果搬过去，因为
+transplant / re-materialization effect 尚不存在。因此 admission runtime **暴露为 admission read，
+且不接入 promotion eligibility**：
+
+- 不出现第二个 promotion assessor（无 `assessCrossBasisPromotionEligibility`）；
+- 现有 `PromotionEligibility` 的 blocker 词汇**未增长**（机器检查：不含 `cross_basis_` / `basis_mismatch` /
+  `CompatibilityAssessment` / `admitCrossBasis`）。
+
+守住这条线的方式是**让现有 blocker 原样不动**，而不是重定义 `ELIGIBLE` 去越过阶段边界。
+
+$$\boxed{CrossBasisAdmission \neq TransplantEffect}$$
+
+### I.7 三条核心验收式
+
+$$\boxed{COMPATIBLE_{\text{analysis}} + UntrustedPremises \not\Rightarrow Admission}$$
+
+$$\boxed{AuthoritativePremises + CurrentCompatibilityWitness \Rightarrow CrossBasisAdmission}$$
+
+$$\boxed{CrossBasisAdmission \neq TransplantEffect}$$
+
+### I.8 headline negative test（本阶段最有价值的证明）
+
+$$\boxed{\text{A logically valid conclusion from untrusted premises} \not\Rightarrow \text{system authority}}$$
+
+测试构造：手工前提（`changes = []`、全部 `PROVEN_COMPLETE`、selector 互不相交）→ D3-b **必须**得出 `COMPATIBLE`
+（纯函数只能基于传入前提推理，它这样推理是对的）→ 该 assessment **从未被签发** → admission 报 `UNTRUSTED_PROOF`，
+且 issuer 的记录计数仍为 0（**presentation 不改动 authority 的记忆**）。
+
+配套第二条（防止只修 change coverage）：**read coverage 同样不能伪造**。change set 是权威观测、但 read 前提
+`UNAVAILABLE` 时，outcome 为 `UNKNOWN` 且 **read 侧零 proof**（write 侧因 coverage 合格而合法产出 proof）——
+洞被**关掉**而不是挪走。
+
+两条均**验证过**：把 authority 检查改成信任传入对象，三个测试立刻红。
+
+### I.9 门禁
+
+单元 **212 files / 2370 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。未新增公开名。
+
+### I.10 阶段结构（D3）
+
+$$\boxed{D3\text{-}a:\ Observe}\quad\boxed{D3\text{-}b:\ Prove}\quad\boxed{D3\text{-}c:\ Admit}\quad\boxed{D3\text{-}d:\ Effect}$$
+
+D3-d 之前，`effect capability unavailable` 应作为**独立 blocker** 保留，不通过重定义 eligibility 绕过。
