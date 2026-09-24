@@ -1877,17 +1877,27 @@ D2 必须有自己的活体装置（落 `rs-test/`），且确定性门禁全绿
 ### D2.8 切片计划与 D2-a 交付记录
 
 ```
-D2-a  Execution world + observation          ← 纯机械、无模型（已交付，§D2.8）
-D2-b  Work-attempt bootstrap / exclusive admission   ← 已交付（§D2.9）
-D2-c  Worker runtime / execution inside the world   ← **STRONG PASS**（runtime + live gate；blocker 由 D2-cR 关闭）
-D2-d  Async lifecycle + terminal projection
-D2-e1 Settlement closure（WorkerOutcome → Canonical Work result）   ← 已交付（§D2.12）
-D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）   ← 已交付（§D2.13）
-D2-d  Async lifecycle + host-local job map + followup   ← 已交付（§D2.14）
-D2 live gate（端到端异步 delegated Work）
-D2-cR Self-contained Work Execution World Closure      ← 已交付（§D2.11）
-D2 live gate
+D2-a  Execution world + observation          ← PASS（纯机械、无模型；§D2.8）
+D2-b  Work-attempt bootstrap / exclusive admission   ← STRONG PASS（§D2.9）
+D2-c  Worker runtime / execution inside the world   ← STRONG PASS（runtime + live gate；commit blocker 由 D2-cR 关闭）
+D2-cR Self-contained Work Execution World Closure   ← CLOSED（§D2.11）
+D2-e1 Settlement closure（WorkerOutcome → Canonical Work result）   ← CLOSED（§D2.12）
+D2-e2 Verification + promotion readiness（复用 2B 路径，不造 worker verification）   ← CLOSED（§D2.13）
+D2-d  Async lifecycle + host-local job map + followup   ← CLOSED（§D2.14）
+D2-LIVE 端到端异步 delegated Work 达到 promotion eligibility   ← PASS（§D2-LIVE）
+=== D2 CLOSED === 
 ```
+
+**D2 最终能力陈述**（D3 的输入契约）：
+
+> **An existing canonical Work can be executed asynchronously in an isolated real ExecutionWorld, produce an
+> immutable source-result facet, settle crash-safely into canonical execution history, undergo independent
+> verification and current-state promotion admission, and reach ELIGIBLE without changing canonical project source
+> or exercising Promotion authority.**
+
+D2 不再追加阶段（不开 D2-e3 / D2-f）；下一阶段是 **D3-0：World-Basis / Resource-Domain semantic foundation**
+（先冻结 `ProjectWorldBasis = (P, S, A, E)` 与 `AttemptResult = source facet + asset facets + …`，再重新定义 currentness
+与 compatibility），而不是直接做 "H0 commit → H1 commit" 的 transplant —— 否则很容易把 D3 再次锁回 Git-centric 模型。
 
 切片顺序会按代码实际情况调整，但**D2-a 必须保持纯机械、无模型**：它要证明的不是"怎么 spawn 一个 coder"，而是
 
@@ -2594,6 +2604,89 @@ canonical exactly-one-owner  >  host exactly-one-Promise
 **D2-d 明确未做**（评审 OUT 清单，逐条未动）：durable queue、restart auto-resume、retry scheduler、cross-host dispatch、
 remote worker protocol、BASE_DRIFT recovery、automatic transplant/rebase/verification/eligibility/promotion、
 prose-to-WORK creation、asset CAS、ProjectWorldBasis generalization、D3 compatibility。
+
+#### §D2-LIVE 交付（2026-09-24）：real async Work reaches promotion eligibility without exercising promotion authority
+
+这是 **D2 的最终系统级验收**，不是又一个子阶段。它回答的问题不是"每个部件是否工作"（D2-a…D2-d 各自已证明），而是：
+
+> 这些**分别证明过的部件，真实组合以后是否仍然组成同一个系统**？
+
+因此它是**纵向**测试，只有一个 golden scenario，不重新穷举 BASE_DRIFT / UNCOMMITTED_WORK / crash 窗口 / 重复 start /
+verification FAIL —— 那些属于拥有它们的切片，重复只会让清单更长。
+
+```
+real ProjectIR WORK → async start → real ExecutionWorld → worker edit/test/commit
+  → settle（唯一 D2-e1 spine）→ followup 观察完成 → 独立 verification（2B runtime）
+  → ELIGIBLE → canonical source 未变、promotion facts 为零
+```
+
+装置 `rs-test/lean-d2-live-gate.mjs`，用**已交付的 seam** 端到端：真实 deployment profile → `launchDeployment` →
+真实 `makeWorkDelegationService` → 真实 `dshSubprocessWorkWorkerPort` 跑真实 PTC DSH worker。rig 自有部分只有：
+fixture 仓库、包在 worker 进程外的 tee/barrier wrapper、观测辅助。
+
+**非阻塞是 barrier 证明，不是墙钟断言**：`start` 已返回而 worker 进程停在被 park 的位置（`PALIMPSEST_LIVE_GATE_BARRIER`
+未出现即不 spawn），随后放行 —— 而不是 `elapsed < N ms` 这类机器负载敏感的断言。
+
+15 项判定：work 在委派前已存在（非 prose 创建）／async start 早于 worker 返回（barrier）／worker 在自己的 world 内运行／
+worker authority-closed（继承的 `palimpsest_*` 恰好为 0）／attempt `COMPLETED`／result 已导出且 canonical 可读／
+R 携带声明文件并在其上通过仓库自带测试／followup 零副作用／verification 的 subject 是 `ATTEMPT_RESULT` 且 `PASS`／
+qualification satisfied／**ELIGIBLE**／canonical source（HEAD+工作树+refs）未变／**promotion events 与 rows 均为 0**／
+execution history 确有推进（`Δattempts ≠ 0`）。
+
+这正是 `ELIGIBLE ⇏ PROMOTED` 在活体链上的显式证明，也是
+`R exported into canonical Git object universe ≠ R promoted into canonical source` 的显式证明。
+
+##### 活体门禁测出的两个**打包缺陷**（均已修复并落确定性回归）
+
+两个缺陷对**所有切片测试都不可见**，因为每个切片各自搭 stack，从不经过"把两个部件接起来"的 composition；而打包部署
+恰恰只走那条路。
+
+| 缺陷 | 现象（实测） | 根因 | 修复 |
+|---|---|---|---|
+| **一个世界两个名字** | packaged 部署上 settlement 返回 `NOT_READY`/`RESULT_NOT_EXPORTED`（`WORLD_MISSING`），**任何** delegated attempt 都无法到达 COMPLETED | git port 把 world 建在 `.palimpsest/worktrees`，execution-world port 却从 `.palimpsest/worlds` 导出 —— 两个位置都"正确"，接起来就错 | `composeCore` 计算**一次** `worldsRoot` 并同时交给两者；拼写取 `worlds`（本体是 EXECUTION WORLD，§D2-cR），`worktrees` 只作为调用方自带 port 的旧路径 |
+| **capability 由"请求方式"而非"实际组合"推导** | boundary task 被 `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` 拒绝，readiness 报 `DEGRADED` —— 而同一部署**确实**composed 了可执行的独立 attempt-result verifier（实测跑出 PASS） | controller gate 的 `attemptResultVerificationAvailable` 在 verification runtime 组合**之前**、由 proxy（"`projectVerificationStore` 是否作为 option 传入"）算出；打包路径不传 store 而是**创建** store，于是 flag 说 `false`，随后却组合出真实 verifier | capability 改为 **late-bound**（与既有 `verificationAdmission` 同一 idiom）：core 持稳定 holder，由**真正组合 verification runtime 的那个 cluster** 一次 bind；`begin`/`prepareMutatingWork` 的 gate、readiness 的 gap、task 层 satisfiable 判定**统一按 subject kind** 取 attempt-result capability（`CURRENT_PROJECT_HEAD` 与 `ATTEMPT_RESULT` 是两个独立事实） |
+
+原则落定（正式修正进工程方法）：
+
+$$\boxed{\text{a capability must be derived from what was COMPOSED, never from how it was requested}}$$
+
+以及同一类缺陷的通名：**同一事实的第二种拼写法**（两个 world 根名、两个 "clean" 定义、请求式 capability）——
+它们各自都能通过 review，只有接起来才失败。
+
+两个缺陷用 `test/lean_d2_live_composition.test.ts`（3 项）在**打包路径**上钉死：world 存在且与 settlement 导出口径一致、
+packaged 部署的 boundary task 被**准入**且确实带 `contract_boundary` 要求、以及反方向——bare install 仍**无** runtime、
+仍报 gap、仍拒绝（防止修复退化为"把常量翻成 true"）。两项均已**临时回退修复验证过会失败**，再恢复。
+
+##### 第三处同类缺陷：readiness 用 head-verifier capability 判断 attempt-result 要求
+
+上表缺陷 2 的修复过程中，`deriveCompletionReadiness` 暴露出同一种混淆的第三份：`contract_boundary` 触发的是
+**ATTEMPT_RESULT** 要求（`contract.verification.required` 由 §B.4 触发、由 §B.14 的 attempt-result qualification 满足），
+但 readiness 的 deployment gap 与 task-layer `verificationSatisfiable` 都拿 `independentVerifierAvailable`
+（head 面）去判断。后果是：一个组合了 attempt-result verifier 而没有 head verifier 的部署，会声称"必需验证的活
+**在这里无法完成**"，而它其实完全做得到。两处都改为按 attempt-result capability 判断。
+
+##### 一条环境事实（不是产品缺陷，但决定了 rig 的位置）
+
+DSH 的 PTC sandbox（`dsh-sandbox-windows-acl`）通过对 workspace 目录调用 `SetNamedSecurityInfoW` 来授予 worker 写能力，
+需要 `WRITE_DAC`。本机实测：用户在自己 profile 内是 FullControl，但在 `F:`/`E:` 卷与 `C:\` 根上只有继承来的 `Modify`
+（**无** `WRITE_DAC`），于是每个 PTC `run_code` 都在
+`SetNamedSecurityInfoW failed (Win32 5): grantWrite(<dir>)` 处中止 —— 在 F: 的仓库 fixture、F: 的裸目录、`F:\`、`E:\`、
+`C:\` 都如此，**包括此前活体门禁用过的 D2-c world**；给一个测试目录授予 FullControl 后立刻恢复正常。
+
+这是**宿主 sandbox 的属性，不是 Palimpsest 的缺陷**：产品的契约恰恰是 PTC worker **fail closed 而非静默降级**，
+而它做到了 —— worker 如实报告"无法在此 world 内完成"，没有伪造任何 canonical outcome（attempt 保持 RUNNING，
+无 `ATTEMPT_FAILED`）。因此 rig 把 fixture 放在宿主能真正提供 sandbox 的位置，使它测量的是 D2 链而不是本机卷的 ACL。
+
+##### 顺带修复：host bundle 挂载了已不存在的 PTC 包
+
+`host/dsh/cordis.patch.yml` 曾 insert 一条名为 `@deepseek-ai/dsh-code-runtime-worker-thread` 的 `code-runtime` 条目。
+该包在当前 DSH 中**已不存在**（现为 `@deepseek-ai/dsh-ptc-runtime-node`，且 `dsh-base` 自己已挂载），所以这条 insert 解析为空，
+每个 worker session 都记 `code-runtime … failed to import`，PTC-presented worker 因此**没有任何可用 transport** 去调用自己的工具
+（实测：模型反复尝试 `run_code` 全失败，最后只能以纯文本收尾 —— 对用户表现为"worker 什么都没做"）。该过期条目已删除并注明原因。
+
+**D2-LIVE 明确未做**：不新增任何产品接口（无 test-only promotion shortcut、无 special live verifier、无 force-settle、
+无 `waitUntilDone` product API、无 special worker mode）；允许新增的只有 fixture / test barrier / test harness / observation helper。
+不重测下层已证明的 adversarial 矩阵。不把 `ELIGIBLE` 变成 promotion。
 
 ### D2.7 禁止（本附录）
 

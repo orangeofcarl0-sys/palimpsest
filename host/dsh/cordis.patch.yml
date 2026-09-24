@@ -10,13 +10,15 @@
 # A profile overrides the palimpsest-tools config by id (see the dogfood profiles):
 #   - id: palimpsest-tools
 #     config: { palimpsestEntry: <abs dist/src/advanced.js>, deploymentProfile: <abs profile.json>, serve: true, port: 0 }
+#
+# PTC: this bundle deliberately mounts NO code-runtime entry. It used to insert one named
+# `@deepseek-ai/dsh-code-runtime-worker-thread`, which no longer exists in the installed DSH —
+# `dsh-base` now mounts `@deepseek-ai/dsh-ptc-runtime-node` itself. The stale entry resolved to
+# nothing, so every worker session logged "code-runtime … failed to import" and a PTC-presented
+# worker had no working transport to call its tools through. Measured by the D2 live gate, where a
+# real worker finished without reporting anything for exactly that reason.
 
 - insert:
-    # PTC execution capability the base bundle does not mount on its own (same as
-    # the shipped headless bundle).
-    - id: code-runtime
-      name: '@deepseek-ai/dsh-code-runtime-worker-thread'
-
     - id: palimpsest-startup
       name: 'palimpsest-dsh-host/startup'
 
