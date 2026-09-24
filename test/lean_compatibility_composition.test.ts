@@ -29,7 +29,8 @@ import { fileURLToPath } from "node:url";
 
 import { afterAll, describe, expect, it } from "vitest";
 
-import { gitSourceChangeObserver } from "../src/deployment/source_change_observer.js";
+import { GIT_SOURCE_OBSERVER_ID, gitSourceChangeObserver } from "../src/deployment/source_change_observer.js";
+import type { PremiseObservation } from "../src/project_world/index.js";
 import {
   assessCompatibility,
   covered,
@@ -48,6 +49,13 @@ const cleanups: Array<() => void> = [];
 afterAll(() => {
   for (const fn of cleanups) fn();
 });
+
+/** The footprint an observation contributes; an UNAVAILABLE premise contributes an UNPROVEN empty set. */
+function observationFootprint(observation: PremiseObservation): CoveredFootprint {
+  return observation.state === "OBSERVED"
+    ? observation.footprint
+    : { selectors: [], coverage: { status: "UNPROVEN" as const, detail: observation.detail } };
+}
 
 const git = (cwd: string, args: readonly string[]): string =>
   execFileSync("git", [...args], { cwd, encoding: "utf8" }).trim();
@@ -90,17 +98,26 @@ describe("§D3-b4 the real source change observer", () => {
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H1"], { cwd: repo });
     const h1 = git(repo, ["rev-parse", "HEAD"]);
 
-    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: h1 });
-    expect(observed.coverage.status).toBe("PROVEN_COMPLETE");
-    expect(observed.coverage.status === "PROVEN_COMPLETE" && observed.coverage.evidence).toBe("RUNTIME_OBSERVED");
-    expect(observed.selectors).toEqual([{ domain: "source", scope: "path", path: "src/network.ts" }]);
+    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: h1, scopeRef: repo });
+    // §D3-c1: the result is an OBSERVATION, not a bare footprint — it names who observed, by what
+    // mechanism, over what scope, and that provenance is what gives the premise authority.
+    expect(observed.state).toBe("OBSERVED");
+    if (observed.state !== "OBSERVED") throw new Error("expected an observation");
+    expect(observed.provenance.observerId).toBe(GIT_SOURCE_OBSERVER_ID);
+    expect(observed.provenance.mechanism).toBe("RUNTIME_OBSERVED");
+    expect(observed.provenance.scope).toEqual({ domain: "source", scopeRef: repo, from: h0, to: h1 });
+    expect(observed.observationId).toMatch(/^obs-[0-9a-f]{32}$/u);
+
+    expect(observed.footprint.coverage.status).toBe("PROVEN_COMPLETE");
+    expect(observed.footprint.selectors).toEqual([{ domain: "source", scope: "path", path: "src/network.ts" }]);
   });
 
   it("identical revisions report an EMPTY PROVEN change set", () => {
     const { repo, h0 } = repository();
-    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: h0 });
-    expect(observed.selectors).toEqual([]);
-    expect(observed.coverage.status).toBe("PROVEN_COMPLETE");
+    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: h0, scopeRef: repo });
+    if (observed.state !== "OBSERVED") throw new Error("expected an observation");
+    expect(observed.footprint.selectors).toEqual([]);
+    expect(observed.footprint.coverage.status).toBe("PROVEN_COMPLETE");
   });
 
   it("an UNCOMPARABLE revision pair is an UNPROVEN empty set, never a proven empty one", () => {
@@ -108,11 +125,14 @@ describe("§D3-b4 the real source change observer", () => {
     const observed = gitSourceChangeObserver({ repository: repo }).observeChange({
       fromRevision: h0,
       toRevision: "0".repeat(40),
+      scopeRef: repo,
     });
-    expect(observed.selectors).toEqual([]);
     // "I could not compare them" must not read as "nothing changed" — that inversion is the whole
-    // reason coverage exists.
-    expect(observed.coverage.status).toBe("UNPROVEN");
+    // reason coverage exists, so the premise is UNAVAILABLE rather than an empty observation.
+    expect(observed.state).toBe("UNAVAILABLE");
+    if (observed.state !== "UNAVAILABLE") throw new Error("expected an unavailable premise");
+    expect(observed.domain).toBe("source");
+    expect(observed.detail).toContain("could not be compared");
   });
 
   it("a rename names BOTH paths, so an old path's readers see the change", () => {
@@ -120,8 +140,9 @@ describe("§D3-b4 the real source change observer", () => {
     execFileSync("git", ["mv", "src/network.ts", "src/transport.ts"], { cwd: repo });
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "rename"], { cwd: repo });
     const after = git(repo, ["rev-parse", "HEAD"]);
-    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: after });
-    const paths = observed.selectors.map((selector) => (selector.domain === "source" && selector.scope === "path" ? selector.path : ""));
+    const observed = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: after, scopeRef: repo });
+    if (observed.state !== "OBSERVED") throw new Error("expected an observation");
+    const paths = observed.footprint.selectors.map((selector) => (selector.domain === "source" && selector.scope === "path" ? selector.path : ""));
     expect(paths.sort()).toEqual(["src/network.ts", "src/transport.ts"]);
   });
 });
@@ -147,8 +168,9 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
     const change = gitSourceChangeObserver({ repository: repo }).observeChange({
       fromRevision: resultRevision,
       toRevision: worldRevision,
+      scopeRef: repo,
     });
-    expect(change.selectors).toEqual([{ domain: "source", scope: "path", path: "src/network.ts" }]);
+    expect(observationFootprint(change).selectors).toEqual([{ domain: "source", scope: "path", path: "src/network.ts" }]);
 
     /**
      * THE FINDING. The write side is provably disjoint, and the read side is the WHOLE REPOSITORY —
@@ -163,7 +185,7 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
       originBasisDigest: "basis-real",
       targetObservationDigest: worldRevision,
       exactlyCurrent: false,
-      change: materializeWorldChangeFootprint({ ...otherParts(), source: change }),
+      change: materializeWorldChangeFootprint({ ...otherParts(), source: observationFootprint(change) }),
       reads: wholeRepositoryRead(),
       writes: resultWrite,
     });
@@ -180,7 +202,7 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
       originBasisDigest: "basis-real",
       targetObservationDigest: worldRevision,
       exactlyCurrent: false,
-      change: materializeWorldChangeFootprint({ ...otherParts(), source: change }),
+      change: materializeWorldChangeFootprint({ ...otherParts(), source: observationFootprint(change) }),
       reads: covered({ selectors: [], coverage: provenComplete("CONSERVATIVE_DOMAIN", "this result declares no read dependency") }),
       writes: resultWrite,
     });
@@ -194,7 +216,7 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
     execFileSync("git", ["add", "-A"], { cwd: repo });
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "world moves"], { cwd: repo });
     const after = git(repo, ["rev-parse", "HEAD"]);
-    const change = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: after });
+    const change = gitSourceChangeObserver({ repository: repo }).observeChange({ fromRevision: h0, toRevision: after, scopeRef: repo });
 
     // A result that DECLARES it reads only `src/parser.ts`. Nothing enforced that, so the declared
     // footprint is not a proof of completeness — and the narrow declaration buys nothing.
@@ -207,7 +229,7 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
       originBasisDigest: "basis-declared",
       targetObservationDigest: after,
       exactlyCurrent: false,
-      change: materializeWorldChangeFootprint({ ...otherParts(), source: change }),
+      change: materializeWorldChangeFootprint({ ...otherParts(), source: observationFootprint(change) }),
       reads: declaredRead,
       writes: covered({ selectors: [], coverage: provenComplete("CONSERVATIVE_DOMAIN", "no write declared") }),
     });

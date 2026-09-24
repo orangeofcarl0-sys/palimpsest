@@ -65,3 +65,37 @@ export {
   type ConflictWitness,
   type DisjointnessProof,
 } from "./compatibility.js";
+export {
+  OBSERVATION_DOMAINS,
+  changePremises,
+  dependencyPremises,
+  domainsOf,
+  materializePremiseSet,
+  observedPremise,
+  premiseObservationDigest,
+  unavailablePremise,
+  type ObservationDomain,
+  type ObservationProvenance,
+  type ObservationScope,
+  type PremiseObservation,
+  type PremiseSet,
+} from "./observation.js";
+export {
+  makeCompatibilityIssuer,
+  premiseSetDigestOf,
+  type CompatibilityIssuer,
+  type IssuedCompatibilityAssessment,
+  type PremiseReferences,
+} from "./issuance.js";
+export {
+  CROSS_BASIS_ADMISSION_STATES,
+  admitCrossBasis,
+  type CrossBasisAdmissionResult,
+  type CrossBasisAdmissionState,
+} from "./admission.js";
+export {
+  makeCrossBasisAdmissionRuntime,
+  targetWorldObservationDigest,
+  unobservedDependency,
+  type CrossBasisAdmissionRuntime,
+} from "./cross_basis.js";
