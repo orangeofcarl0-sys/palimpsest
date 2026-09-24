@@ -3327,3 +3327,212 @@ Main Agent chooses when managed Work begins.
 - **禁止**声称 crash/retry 已解决任意配置漂移（v1 保证范围 = 同一 operator configuration）。
 - **禁止**把"begin before first mutation"写成系统可检测的安全属性（它是 principal protocol precondition，§E.6）。
 - **禁止**裸用 `git status --porcelain` 判 dirty（须复用与 `finish` 相同的脚手架过滤规则，§E.7）。
+
+## 附录 F（第 D3-0 期）：World Basis / Resource Domain —— D3 的语义底座
+
+D3 的第一步**不是** transplant 算法，而是先冻结它所依赖的抽象。理由是实测出来的：如果以
+`H0 commit → H1 commit` 开做 transplant，D3 会立刻被锁回 Git-centric 模型，之后每次修正都要迁移。
+所以 D3-0 是一轮**语义底座 closure**：只定义意义，不实现机制。
+
+代码：`src/domain/world_basis.ts`（L1，与 `standard.ts` / `completion_contract.ts` 同层）。
+**不**从 domain barrel 再导出（公开面是封死的，加一个导出就 parity 失败）。
+machine proofs：`test/lean_world_basis.test.ts`（28 项）。
+
+### F.1 四条宪法
+
+$$\boxed{ProjectWorldBasis = \text{dependency projection, not global snapshot}}$$
+
+$$\boxed{AttemptResult = \text{immutable output facets bound to one basis}}$$
+
+$$\boxed{Compatibility \neq \text{revision equality}}$$
+
+$$\boxed{\text{Concurrency safety requires read/write reasoning, not merely write/write disjointness}}$$
+
+另加一条由 D2 live gate 换来的架构规则：
+
+$$\boxed{\text{Capability claims must be derived from the composed system, not configuration syntax.}}$$
+
+### F.2 `ProjectWorldState` ≠ `ProjectWorldBasis`
+
+完整当前世界记作 $W_t=(P_t,S_t,A_t,E_t)$；某个 Work 真正绑定的**不是** $W_t$，而是它依赖的投影：
+
+$$\boxed{B_w=\pi_w(W_t)}$$
+
+`ProjectWorldState` 是当前完整世界（`revision` 只在 provenance/诊断意义上存在）；`ProjectWorldBasis` 是
+某次 Work 被绑定的**不可变 dependency projection**。一个只改 `src/parser.ts` 的任务，不该因为无关文档变化而 stale；
+一个消费数据集的**分析任务**，即使 Git HEAD 完全没动，也可能立刻 stale。后者是 HEAD-equality 模型**根本无法表达**的情形。
+
+`capturedAtRevision` 属于 **provenance**，被**排除**在 `basisDigest` 之外 —— 若把它算进去，就等于把
+"全局计数器变了"重新变成 currentness predicate，正是本模块要消灭的缺陷。
+
+$P_w$ 同样不等于整个 ProjectIR revision：`semanticProjectionDigest` 只覆盖与该 Work 相关的语义投影
+（task / work / envelope / verification policy / authority policy / output obligations）。无关 Task 加一行说明
+导致 `revision 41 → 42`，**不得**成为 stale 理由。
+
+### F.3 facet 的**三态**真值（这是 D3-0 最值得现在做对的地方）
+
+```ts
+type FacetBinding<T> =
+  | { state: "BOUND"; value: T }        // 这是 basis 的一部分，且解析为 value
+  | { state: "NOT_REQUIRED" }           // 系统**知道**这类变化不影响该 Work
+  | { state: "UNKNOWN"; detail: string }// 系统**没有足够信息**
+```
+
+`undefined`/optional 会把三件不同的事混成一件：
+
+1. Work 明确不依赖（`NOT_REQUIRED`）；
+2. Work 依赖但旧版本系统**没有捕获**（`UNKNOWN`）；
+3. 现在暂时不知道（`UNKNOWN`）。
+
+而：
+
+$$\boxed{UNKNOWN \not\Rightarrow compatible}$$
+
+这让 D2 遗留数据**自然进入** D3 而**不伪造历史知识**：D2 attempt 只有 `base_commit`，于是
+`source = BOUND(H0)`、`assets = UNKNOWN`、`environment = UNKNOWN`。只有当 Work schema **能证明**它不依赖某类资源时，
+才可以写 `NOT_REQUIRED` —— 由调用方显式声明（`assetsWereProvenNotRequired`），不由函数猜。
+
+### F.4 exact currentness 与 compatibility 是**两个**概念
+
+$$\boxed{CurrentExact(B_0,W_1)\iff \pi_w(W_1)=B_0}$$
+
+只有 **BOUND** facet 参与：`NOT_REQUIRED` 是"这类变化不影响该 Work"的**知识**，故其变化不是 stale。
+`UNKNOWN` 使 exactness **不可证**，报 `UNKNOWN` —— 既不报 `CURRENT`（谎称知道），也不报 `STALE`（谎称证明了失效）。
+
+判定优先级：**已证明的分歧压过不可证**。若某依赖确实动了，则 STALE，无论还有多少 facet 无法核对；
+只有在**无分歧**且**有不可证**时才报 UNKNOWN。两个理由都会一并列出，读者能看到"证明了什么"与"没能核对什么"。
+
+compatibility 是更宽的关系，且**四值**而非 boolean：
+
+```
+EXACT        当前世界仍把 basis 解析成完全相同（CurrentExact ⇒ EXACT）
+COMPATIBLE   不同了，但已**证明**这些变化不会使 result 失效或与其输出冲突
+INCOMPATIBLE 已证明会失效或冲突
+UNKNOWN      两者都未证明
+```
+
+因为：
+
+$$\boxed{UNKNOWN \neq COMPATIBLE}$$
+
+"没有证明冲突"与"证明了兼容"不是同一件事；把两者合并，就等于让"没有分析"读作"分析通过"。
+D3-0 只实现**词汇**与一个保守默认（可证 exact 则 `EXACT`，否则 `UNKNOWN`），**不实现**任何推断 ——
+证明兼容是 D3-b 的事，一个会猜的 stub 比诚实的 UNKNOWN 更糟。
+
+### F.5 并发：读/写推理，而不只是写/写不相交
+
+$$\boxed{W_A \cap (R_B\cup W_B)=\varnothing \quad\wedge\quad W_B\cap(R_A\cup W_A)=\varnothing}$$
+
+$W_A\cap W_B=\varnothing$ 只是**必要**条件。反例（本模块直接作为测试）：
+
+```
+Worker A: 写 dataset D
+Worker B: 读 dataset D，写 report R
+```
+
+两人的写集合完全不相交，但若 A 先被接受，B 的 report 已基于被替换的输入 —— 接受两者就是接受一个**已经失效**的输出。
+`compareFootprints` 因此同时报告 `write_write` 与 `write_read_invalidation`（双向、对称），
+且只比较**已声明**的 footprint：未声明的 read 在此不可见，这正是 `WorkDependency` 必须是 admission 的**输入**而非提示的原因。
+
+### F.6 typed resource domain（`start coarse, model general`）
+
+```ts
+type ResourceSelector =
+  | { domain: "project_semantic"; aspect: "task"|"work"|"envelope"|"verification_policy"|"authority_policy" }
+  | { domain: "source"; scope: "repository" }
+  | { domain: "asset"; assetRef: string }
+  | { domain: "environment"; component: string }
+```
+
+第一版可以在 `source` 上只做 repository 粒度，但**类型本身**允许以后缩细到 symbol 级；
+而不是以后从 `string[] gitPaths` 再迁出去。`source:repository` 与 `asset:repository` 是**不同**资源（key 前缀区分）。
+
+依赖关系与 basis 的关系：
+
+$$\boxed{B_w = Resolve(W_t, R_w)}$$
+
+`reads` 决定 basis 由什么解析而来；`writes` 是 result 被允许影响的范围，也是冲突演算的输入。
+Work **未声明** asset read ⇒ `assets = NOT_REQUIRED`（因为投影恰是它声明的选择器）；
+当前世界该 facet 为 UNKNOWN 时**向上传播**，而不是被丢弃。
+
+### F.7 `EnvironmentBasis` ≠ `ExecutionHostCapabilities`
+
+D2 live gate 给了一个精确的反例：Windows 上 PTC file sandbox 需要 workspace 目录的 `WRITE_DAC`，
+本机在用户 profile 内有、在别的卷上没有。这**不属于** environment basis ——
+否则"把 checkout 换到另一块盘"就会变成"结果版本变化"。
+
+- `EnvironmentBasis`（basis 的 facet）：会影响 Work/result **语义或可复现性**的环境
+  （container/toolchain image digest、compiler/runtime 版本、依赖锁状态、模拟环境、语义相关的 model/tool identity）；
+- `ExecutionHostCapabilities`（**不是** facet）：这台机器**现在能不能跑**
+  （sandbox 支持、`WRITE_DAC`、内存、GPU、网络、host transport），属于 **execution admission**。
+
+### F.8 `AttemptResult` 脱离 Git-centric 定义
+
+```text
+AttemptResultFacets
+├── attemptId / taskId
+├── basisDigest            ← 恰好一个 basis（硬不变量）
+├── sourceResult?          { backend, baseRevision, resultRevision }
+└── producedAssets[]       { assetRef, revision, digest, assetKind, mediaType }
+    + resultManifestDigest
+```
+
+D2 关系是**升级**而非废弃：
+
+$$\boxed{resultCommit \rightarrow sourceResult.resultRevision}$$
+
+D2 的一切事实仍然有效；新增的是 result **知道**自己产自哪个 basis，于是 D3 的 admission 可以问
+
+$$Compatible(R,B_0,W_1)?$$
+
+这比 `merge-base(R, HEAD)` 信息完整得多。两条约束：
+
+- **恰好一个 basis**：不存在没有 basis 的 result（`basisDigest` 必填，`manifestDigest` 覆盖它）；
+- **只含声明的权威产出**：`producedAssets` **不是**"执行期间产生的所有文件"。world 里会有 `tmp.log`/`debug.png`/
+  `node_modules/`/`test-output/`/cache —— 把它们列进去会让 asset graph 在一个 release 内垃圾化。
+  runtime artifacts 与 authoritative outputs 是两类东西。
+
+以及关系写死（D3-0 不实现其中任何一个）：
+
+$$\boxed{CAS\ object \neq Asset \neq ProjectAssetAssociation \neq Evidence}$$
+
+CAS object 只是 **bytes identity**；Asset 是 canonical identity/version；Association 是 project semantics；
+AttemptResult entry 是 execution provenance。现在写死，后面省大量麻烦。
+
+### F.9 machine proofs（`test/lean_world_basis.test.ts`，28 项）
+
+| 组 | 断言 |
+|---|---|
+| **basis immutability** | 同一 facets 重复 materialize 得同 digest；asset 顺序不影响 digest（且存下来的值本身已规范化）；`capturedAtRevision` 被排除（改它 digest 不变，且 digest 可由语义体重算）；同一解析结果下两个 task 的 basis **不可互换** |
+| **无关全局 revision** | ProjectIR `41→42` 而本 Work 语义投影未变 ⇒ **CURRENT**；但**自身**语义投影变化 ⇒ STALE |
+| **asset invalidation**（核心） | **source 完全相同**、BOUND asset `A3→A4` ⇒ 非 exact（STALE），且不得被判为 COMPATIBLE —— 这是证明真正离开 Git-centric 的测试 |
+| **反向** | 只读 asset 而不读 source 的 Work，source 移动 ⇒ 仍 **CURRENT** |
+| **显式非依赖** | 未声明 asset read ⇒ `NOT_REQUIRED`；asset 移动仍 CURRENT。且 `NOT_REQUIRED` 与 `UNKNOWN` 在同一世界下给出**不同**答案 |
+| **UNKNOWN 不是证明** | UNKNOWN facet ⇒ exactness 不可证、compatibility `UNKNOWN`（**不是** COMPATIBLE）；legacy D2 basis 的两个未观测 facet 均为 UNKNOWN；只有被证明时才可为 `NOT_REQUIRED`（且不影响 environment 仍为 UNKNOWN）；**已证明分歧压过不可证** |
+| **read/write 冲突** | `W_A∩W_B=∅` 单独**不能**推出并发兼容（A 写 D、B 读 D 写 R 一例，双向对称）；真 write/write 重叠报 `write_write`；互不相干报空；read/read 共享不是冲突 |
+| **typed domain** | 四个 domain 可区分且可规范排序、去重；`source:repository` ≠ `asset:repository` |
+| **result basis binding** | bytes 相同但 basis 不同的两个 result **不可互换**（manifest digest 不同，且可手算复现）；producedAssets 顺序不影响 digest；D2 映射保留全部 D2 事实；无 source revision 的 result 合法且显式 |
+| **scope（OUT list 的机器检查）** | 模块代码中不含 `cherry-pick`/`mergeBase`/`three-way`/`rebase`/`transplant`/`reconcile`/`inferCompatibility`/`proveCompatible`/`createHash`/`writeFileSync`/`DatabaseSync`；只 import **一个**模块（`canonicalDigest`）；不从 domain barrel 再导出（不新增公开名） |
+| **capability 规则** | 由 D2 live gate 换来的架构规则落成常驻断言：capability 由**组合出的 runtime** bind，`install.ts` 不再由 option 是否存在预计算 |
+
+### F.10 D3-0 明确未做（OUT）
+
+automatic rebase、cherry-pick、three-way merge policy、asset merge、compatibility inference algorithm、
+parallel worker scheduler、automatic conflict resolution、cross-basis promotion、transplant execution、
+CAS implementation、remote asset storage。**如果这一轮开始写 Git merge 代码，说明又快了。**
+
+### F.11 后续顺序（assessment 先于 effect）
+
+```
+D3-0  World-basis ontology（本附录，已交付）
+D3-a  Exact-basis capture + exact currentness runtime
+D3-b  Typed resource conflict / compatibility assessment
+D3-c  Cross-basis result admission（仍不变更任何东西）
+D3-d  Explicit transplant / re-materialization mechanisms
+D3-e  Concurrent result composition / multi-worker admission
+D3-LIVE  real divergent-world composition gate
+```
+
+系统必须先能回答"**这个旧结果与当前世界是什么关系**"，然后才有资格执行"**那我要怎样把它带过来**"：
+
+$$\boxed{Assessment \neq Effect}$$
