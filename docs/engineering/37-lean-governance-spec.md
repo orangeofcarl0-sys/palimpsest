@@ -3667,3 +3667,190 @@ automatic conflict resolution、cross-basis promotion、transplant execution、C
 
 D3-b 将第一次从"精确相等/不相等"跨入真正的 compatibility reasoning，并开始决定 resource selectors 与
 read/write footprints 究竟具有什么**证明能力** —— 那是 D3 的下一个架构转折点，值得在进入实现前再审一轮。
+
+## 附录 H（第 D3-b 期）：Compatibility Assessment —— 首次说出 COMPATIBLE 的凭据
+
+D3-a 回答"basis 是否仍**恰好**是原来的样子"。D3-b 回答更难的问题：当它**不**再 exact 时，
+是否存在一个**正向证明**，说明这个分歧不可能影响该 result？
+
+$$\boxed{B_0\neq B_1 \quad\text{但}\quad Result\ R\ \text{relative to } B_1 \text{ 可能仍然安全}}$$
+
+`COMPATIBLE` 在本阶段的精确定义（不是"结果大概还能用"）：
+
+> 在当前生效的 resource-dependency model 与 direct-admission policy 下，basis 分歧**既不使该 result
+> 所依赖的输入失效，也不与该 result 写出的资源冲突**。
+
+它是五个事实的合取，缺一不可：
+
+1. 相关分歧**已知**（change coverage）；
+2. 相关 domain 的 change footprint **完整**；
+3. result 的 **read** footprint 覆盖度足够；
+4. result 的 **write** footprint 覆盖度足够；
+5. 每个 change × read/write 的 selector 关系都被**证明 DISJOINT**。
+
+$$\boxed{COMPATIBLE = positive\ proof}\qquad\boxed{INCOMPATIBLE = positive\ conflict\ proof}\qquad\boxed{UNKNOWN = insufficient\ proof}$$
+
+`UNKNOWN` **不是** soft-compatible。它是"没有证明"，必须与"有证明"可区分，因为 D3-c 将凭它做 admission。
+
+代码：`src/domain/selector_algebra.ts`（L1）、`src/project_world/footprint.ts` / `compatibility.ts`（L2）、
+`src/deployment/source_change_observer.ts`（L5）。machine proofs：`test/lean_compatibility.test.ts`（33 项）
+与 `test/lean_compatibility_composition.test.ts`（6 项，真实仓库）。
+
+### H.1 第五条宪法：declared footprint ≠ proven-complete footprint
+
+这是 D3-b 最容易被漏掉、也最容易退化成 boolean 的一层。反例很小且真实：
+
+```
+Work 声明 reads: src/parser.ts
+current world 只改了 src/network.ts
+形式上有 R ∩ Δ = ∅
+```
+
+**结论仍然错**，因为 ExecutionWorld 实际交给 worker 的是**整个 repository**，worker 完全可能读了
+`src/network.ts`，而 ProjectIR 没有任何字段记录这件事。所以：
+
+$$\boxed{UNPROVEN\ footprint \not\Rightarrow COMPATIBLE}\qquad\text{即使每个 selector 看起来都不重叠}$$
+
+因此 coverage 是**与 selectors 并列**的一等值，**绝不**从 selectors 推断：
+
+```ts
+type FootprintCoverage =
+  | { status: "PROVEN_COMPLETE"; evidence: CoverageEvidence; detail: string }
+  | { status: "UNPROVEN"; detail: string }
+```
+
+`CoverageEvidence` 是**可指认的机制**（不是裸断言）：`CONSERVATIVE_DOMAIN`（该 selector 按定义就是整个 domain）、
+`SANDBOX_ENFORCED`、`RUNTIME_OBSERVED`（执行后观测而非执行前声明）、`AUTHORITATIVE_MANIFEST`。
+
+### H.2 read 与 write 的证据强度**天然不同**
+
+| | 证据 | 第一版结论 |
+|---|---|---|
+| **write** | 完成的 source result 是被**观测**的：`git diff --name-status base..result` 是执行事实而非意图 | 可 PATH 粒度 `PROVEN_COMPLETE`（**优先观测到的写，而非意图中的写**） |
+| **read** | Git **无法**告诉任何人一次构建/测试实际读了哪些源码 | 只要 world 允许整仓读取，唯一**严格安全**的 source read footprint 就是**整个 repository** |
+
+窄的 read 集合只有在**确有机制强制**时才算 `PROVEN_COMPLETE`（受限 materialization、sandbox 文件策略、
+hermetic manifest），且该证据由调用方提供，不在此处假定。`wholeRepositoryRead()` 因此**定义上**完整、
+**后果上**粗糙 —— 它必然与任何 source change 重叠，从而**永远**无法产出 disjointness proof。这正是
+"我们无法缩小这个 read"应当付出的代价。
+
+### H.3 selector algebra 是三值，不是 boolean
+
+$$\boxed{\neg provedOverlap \neq provedDisjoint}$$
+
+`boolean overlaps(a,b)` 对"我判断不了"返回 `false`，会让**没有分析**读作**分析通过** —— 与整个 Palimpsest
+的证据哲学相反；而下游 assessor 会把这个 `false` 变成 `COMPATIBLE`。
+
+```
+DISJOINT   可证明不可能重叠
+OVERLAP    可证明至少共享一个资源
+UNKNOWN    两者都未证明
+```
+
+**刻意做小**：不同 domain → `DISJOINT`（source path 永远不是 asset，这是**证明**而非保守默认，也正是 typed domain
+存在的理由）；整仓 vs 任何 source → `OVERLAP`；不同精确 path → `DISJOINT`；path/subtree 按**路径边界**包含判定；
+两个可证分离的 subtree → `DISJOINT`；其余 → `UNKNOWN`。**关系对称**（不对称的 disjointness 证明是一个 bug，
+会在某一个方向上表现为假 `COMPATIBLE`，测试直接断言对称性）。
+
+**path 规范化只统一分隔符，不折叠大小写** —— 折叠会让两个确实不同的文件看起来像同一个资源，这个
+over-approximation 会把真实冲突变成声称的 disjointness。
+
+**environment 是刻意的例外**：两个**名字不同**的 environment component **不**报 `DISJOINT`，因为没有任何东西
+定义它们的独立性（`compiler` 与 `python-runtime` 可能共享 libc / lock file / 容器镜像）。名字不同**不是**独立性证明。
+
+**一个 `UNKNOWN` 污染整个集合**：集合不是析取，disjointness 必须对**每个**成员成立。
+
+### H.4 change footprint：Git 在这里终于做它擅长的事
+
+Git **不再**回答"Project World 有没有变"，而只作为 source backend 回答：
+
+$$\boxed{\text{source change observer} \neq \text{project compatibility oracle}}$$
+
+`git diff --name-only --no-renames H0..H1` 给出 `SourceChangeFootprint`（PATH 粒度、`RUNTIME_OBSERVED`）。
+`--no-renames` 是**实测**的决定：开着 rename detection（现代默认）时重命名**只报新路径**，于是依赖旧路径的
+result 会被告知"那里什么都没变"；关掉后删除与新增分别列出，**两个路径都点名** —— 对 change set 的
+over-approximation，而在"漏掉一个变更的代价是假 compatibility 证明"时，这正是应当偏的方向。
+
+`WorldChangeFootprint` 同样携带 coverage，因为：
+
+$$\boxed{partial\ diff \not\Rightarrow absence\ of\ other\ changes}$$
+
+不可比较的 revision 对返回 **UNPROVEN 空集**，绝不返回 proven 空集 ——"我没法比较"与"什么都没变"是两个事实。
+
+### H.5 witness 是重点
+
+assessor 返回**证明与障碍**，不只是裁决，这样 D3-c 消费 assessment 而不必重新推理：
+
+```
+CompatibilityAssessment
+├── policyVersion / resultManifestDigest / originBasisDigest
+├── targetObservationDigest / changeFootprintDigest
+├── outcome
+├── disjointnessProofs[]     每个被证明的 change↔dependency 关系
+├── conflicts[]              read_invalidation | write_collision
+├── unknowns[]               change_coverage | read_coverage | write_coverage | selector_relation | unobserved_facet
+└── assessmentDigest
+```
+
+$$\boxed{CompatibilityAssessment = A(R,B_0,B_1)}$$
+
+witness **绑定 target observation**：`A(R,B_0,B_1)` **不**自动授权 $B_2$。
+`assessmentStillAppliesTo` 让 D3-c 的 admission 继续是 current-state 决策（与 promotion 面既有纪律一致）。
+
+### H.6 两处由 composition 证明逼出来的设计修正
+
+**其一**：不完整的 change coverage **只**记录障碍，**不**跳过遍历。第一版在 coverage 不完整时 `continue`，
+结果一个**已证明的冲突**被 coverage 缺口掩盖了。正确规则：
+
+$$\boxed{\text{coverage 缺口抑制 PROOF，绝不抑制 WITNESS}}$$
+
+已证明的冲突是**事实**，不因另一处未知而被稀释。
+
+**其二**：disjointness proof **只有在该 dependency 自身 coverage 已证明时才记录**。对
+"声明但未强制"的 read 集合，关系可以形式上 `DISJOINT`（`src/parser.ts` vs `src/network.ts`），
+但那**不是证明**——集合本身可能不完整。把它记成 proof，会让消费者从 UNKNOWN 里挑出一条 proof 读作兼容性，
+正是 coverage 规则要防的洗白。因此该情况下 assessment 携带障碍、**零** proof。
+
+两条都被测试钉住，并**验证过**：把 coverage 阻断规则改成 `if (false)`，两个测试立刻红。
+
+### H.7 明确不做（OUT）
+
+cherry-pick、merge、rebase、three-way、transplant、automatic revalidation、apply result、promotion、
+parallel worker scheduling、semantic conflict resolution、**LLM compatibility inference**、CAS、
+symbol dependency inference、dynamic read tracing。
+
+尤其：**不要为了让 `COMPATIBLE` 更常出现而临时发明一个不成熟的 read tracer**。证据不足就诚实返回 `UNKNOWN`。
+
+$$\boxed{LLM\ semantic\ plausibility \neq Compatibility\ proof}$$
+
+"README 的变化看起来与算法无关"最多是对人的 **recommendation**，永远不是 witness。本模块**不读文件内容、名字或散文**
+（机器检查：`compatibility.ts` 不含 `readFileSync` / `llmJudge` / `plausib`）。
+
+### H.8 第一版"很难返回 COMPATIBLE"是**正常**的
+
+预期分布 `EXACT 多 / UNKNOWN 多 / INCOMPATIBLE 一部分 / COMPATIBLE 很少`。这诚实暴露了
+"当前 observation / footprint precision 还不够"。能力增长路线是：
+
+$$\boxed{\text{better evidence} \Rightarrow \text{more compatibility}}$$
+
+而不是 `more optimistic heuristics ⇒ more compatibility`。composition proof 实测确认了这一点：真实仓库中
+"观测到的 result write vs 可证不同的 source change"，在**整仓 read** 下结论是 **INCOMPATIBLE**（冲突完全来自 read 侧，
+write 侧确实被证明 disjoint）；把 read 侧换成声明但未强制的窄集合，结论是 **UNKNOWN 且零 proof**。
+两者都是**正确**结果，也都不是 `COMPATIBLE`。
+
+### H.9 阶段结构（D3 最应守住的）
+
+$$\boxed{D3\text{-}a:\ Observe}\quad\boxed{D3\text{-}b:\ Prove}\quad\boxed{D3\text{-}c:\ Admit}\quad\boxed{D3\text{-}d:\ Effect}$$
+
+`Assessment ≠ Admission ≠ Effect`。D3-c 将几乎不再讨论"兼不兼容"，而只问
+"一个 positive compatibility witness 在**当前这一刻**是否仍具备 cross-basis admission authority"。
+
+并发 compatibility 复用同一理论，不另造一套：把 A 的 result 相对 B 看作 $\Delta_A = W_A$，则 B 是否仍 compatible
+就是 $W_A\cap R_B=\varnothing$ 且 $W_A\cap W_B=\varnothing$，反向同理 —— 即此前的
+$W_A\cap(R_B\cup W_B)=\varnothing$ 与 $W_B\cap(R_A\cup W_A)=\varnothing$ 只是 **compatibility reasoning 的对称特例**。
+D3-e 因此不需要新的 conflict language。
+
+### H.10 门禁
+
+单元 **210 files / 2344 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。未新增公开名（`selector_algebra.ts` 与 `project_world/*` 均不从 domain barrel 再导出）。
