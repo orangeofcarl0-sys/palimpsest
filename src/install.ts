@@ -325,6 +325,11 @@ export function installPalimpsest(
       ...(externalAssetBridgeStoreCreated && externalAssetBridgeStore !== undefined
         ? [{ what: "externalAssetBridgeStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => externalAssetBridgeStore?.close() }]
         : []),
+      // §D3-a: the attempt world-basis store. This install created it whenever it composed the basis
+      // runtime (a repository is present), so it closes it here with the other install-created stores.
+      ...(core.worldBasisStore === undefined
+        ? []
+        : [{ what: "attemptWorldBasisStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => core.worldBasisStore?.close() }]),
     ]),
   });
 

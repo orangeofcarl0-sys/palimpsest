@@ -3536,3 +3536,134 @@ D3-LIVE  real divergent-world composition gate
 系统必须先能回答"**这个旧结果与当前世界是什么关系**"，然后才有资格执行"**那我要怎样把它带过来**"：
 
 $$\boxed{Assessment \neq Effect}$$
+
+## 附录 G（第 D3-a 期）：Exact-basis Capture & Currentness Runtime
+
+D3-0 冻结了词汇；D3-a 是它第一次进入真实 runtime。切片只做两件事，并明确拒绝第三件：
+
+```
+capture:  canonical Work → 依赖足迹 → 对当前世界 resolve → B_0（append-once，不可改）
+assess:   B_0 + 当前世界 → 用同一个 R_w **重新 resolve** → B_1 → 比较 → CURRENT / STALE / UNKNOWN
+```
+
+$$\boxed{D3\text{-}a = exact\ currentness\ only}$$
+
+它**不能**返回 `COMPATIBLE`。"它变了但看起来无害"是一个需要证明的断言，那是 D3-b 的事；在这里推断，就等于制造 D3-0 用整套词汇拒绝伪造的证据。
+
+代码：`src/project_world/`（L2，与 `project_verification/` 同层）——`basis_store.ts` / `dependency.ts` / `runtime.ts` / `index.ts`；
+host 侧观测在 `src/deployment/world_observation.ts`。machine proofs：`test/lean_world_basis_runtime.test.ts`（24 项）。
+
+### G.1 两条塑造代码的规则
+
+$$\boxed{capture\ basis \prec mutation\ authority\ /\ world\ effects}$$
+
+basis 必须在**任何 effect 之前**冻结。落点在 `claim()`：它正是 attempt 从"计划"变成"执行"的地方（`startAttempt` + `worldCreate`）。
+放在之后，attempt 的 provenance 就变成"从一个已经移动过的世界反推"，而不是观测。
+
+**fail closed**：若部署组合了该能力但世界不可观测，claim 直接拒绝（`WORLD_BASIS_UNOBSERVABLE`）——
+一个带着不可见 provenance 缺口的 attempt 比一次被拒的 claim 更糟。没有组合该 port 的部署行为不变：它只是不记录 basis，
+后续评估如实报告"无 basis"而不是编一个。
+
+$$\boxed{Attempt\ provenance\ is\ immutable}$$
+
+attempt 的 basis 一旦记录，就永远是它**开始时的样子**。世界移动只体现在
+`assessCurrentness(A, W_1) → STALE / UNKNOWN`，绝不体现为改写历史。这条由**两层**共同保证，且两层都被测过：
+runtime 的 early-return（`ALREADY_CAPTURED`）与 store 的复合主键 + 纯 INSERT（**无 upsert、无 UPDATE**）。
+把两层同时拆掉，测试立刻红。
+
+### G.2 currentness 必须**重新 resolve**，不能比较快照
+
+$$\boxed{B_1 = Resolve(W_1, R_w) \quad\text{然后比较}\quad B_0 \leftrightarrow B_1}$$
+
+所以 store 同时保存**足迹**（`dependency`）与 basis：basis 记录依赖**解析成了什么**，足迹记录**是哪些选择器**，
+而后者无法从前者恢复。直接拿"存下来的 basis"对比"原始当前世界"，会让纯类型仍写着 `dependency projection`、
+而 runtime 退回 global snapshot —— 两头都不对。
+
+### G.3 `semanticProjectionDigest` 排除一切 positional 字段
+
+`TaskEnvelope` 有两类字段，混同就是把全局计数器变成新的 `HEAD`：
+
+| 类别 | 字段 | 是否入 digest |
+|---|---|---|
+| **SEMANTIC** | `task_id` / `objective` / `read_paths` / `write_paths` / `required_artifacts` / `allowed_commands` / network policy / timeouts / lease / attempt_limit / candidate_limit | ✅ |
+| **POSITIONAL** | `base_commit`（属于 source facet，单独解析）、`project_revision` / `project_digest`（全局计数器） | ❌ |
+
+字段清单是**逐条写出来**的，不是 spread-and-delete：新增 envelope 字段必须是一次有意识的决定，
+既不会悄悄进 digest，也不会因为漏加而让 digest 变盲。测试直接钉住两侧：改 `project_revision`/`project_digest`
+digest **不动**；改 `base_commit` 也**不动**；而每一个语义字段都会动。
+
+### G.4 `EnvironmentBasis` 与 `ExecutionHostCapabilities` 的边界在运行时也成立
+
+`ProjectWorldObservationPort` 的 `observeAssets?()` / `observeEnvironment?()` 是**可选**方法，且"缺失"有明确含义：
+第一方部署目前没有任何 canonical 字段声明 asset 依赖，所以它**看不见** asset revision，正确地不提供该方法。
+
+- 方法**缺失** ⇒ runtime 报 `UNKNOWN`（无知），**永不**报 `NOT_REQUIRED`；
+- 只有 **Work 自己的足迹**（`resolveWorkBasis`）才能把 facet 变成 `NOT_REQUIRED`（知识）。
+
+这条是 D3-0 三态设计是否真正进入 runtime 的关键，因此专门有一个用例：同一个 world、同一份 basis，
+**能**观测 asset 的部署报 `STALE`（source 完全没动），**看不见** asset 的部署报 `UNKNOWN`，两者都不是 `CURRENT`。
+
+### G.5 九类真实案例（含"currentness 已不是 Git currentness"）
+
+| # | 案例 | 期望 |
+|---|---|---|
+| 1+2 | 只有 `capturedAtRevision` 移动 | `CURRENT` / `EXACT` |
+| 3 | 无关 ProjectIR 状态变化、语义投影未变 | `CURRENT` |
+| 4 | 被 BOUND 的 source 变化 | `STALE`（理由含 source） |
+| **5** | **source 完全未变、被 BOUND 的 asset `A3→A4`** | **`STALE`（理由含 assets，且明确不含 source）** |
+| 6 | asset 变化但该 facet 是 `NOT_REQUIRED` | `CURRENT` |
+| 6b | 需要 asset 而部署看不见 asset | `UNKNOWN`（不是 `NOT_REQUIRED`，不是 `CURRENT`） |
+| 7 | 必需的 facet 世界报不出来 | `UNKNOWN` |
+| 8 | 从未捕获过 basis 的 attempt | `null`（不是 verdict，不伪造） |
+| 9 | 反复评估后 | 存储的 basis **逐字节不变**，而 verdict 跟随世界 |
+
+第 5 条是第一个 **runtime 级**证明：$\boxed{\text{Palimpsest currentness has ceased to be Git currentness}}$ ——
+一个 `HEAD` 完全没动的分歧。
+
+### G.6 已退役的 task 是**已证明**的分歧
+
+任务从当前项目中消失（退役/被重构掉）时，basis 所依据的语义投影**不再存在**，因此报 `STALE`，理由写明
+"no longer in the current project"。报 `UNKNOWN` 会**低估已知事实** —— 而这正是任务退役实际产生的情形。
+这与"世界报不出来"（真 `UNKNOWN`）在 port 上是两个不同的返回值：`observeSemanticProjection` 返回 `null`
+表示"当前世界没有这个 task"，返回 `{ok:false}` 表示"部署无法确认"。
+
+### G.7 能力就绪与 basis 不匹配是**两件事**
+
+$$\boxed{CapabilityGap \neq WorldBasisMismatch}$$
+
+D2 live gate 刚证明 capability 必须 late-bound 到真实组合。D3-a 不反过来把
+`this attempt is STALE` 变成 `deployment DEGRADED`：
+
+- `completionReadiness()` 回答"这个部署有没有执行/验证的能力"；
+- `attemptCurrentness(attemptId)` 回答"这个具体 attempt 对当前世界是否仍然成立"。
+
+两者可以在调用方的决策里汇合，但**理由保持结构化独立**，谁也不能冒充谁。
+
+### G.8 一处必须遵守的既有护栏（G10-W source firewall）
+
+`world_observation.ts` 起初直接 `SELECT envelope_json`，被 `test/w_adversarial.test.ts` 的
+"projector 是 envelope 列唯一 writer、namer 限定在短清单内"挡下。正确做法**不是**把新模块加进 allowlist，
+而是改为**向 Work owner 要**：controller 新增 `taskEnvelopeOrNull(taskId)`，观测 port 调用它。
+护栏的清单因此保持短，而它存在的意义正是这个。
+
+顺带：观测 port 需要 controller（Work owner），而 controller 需要 runtime，形成构造顺序环。
+解法沿用仓库既有的 late-binding idiom（同 `verificationAdmission`）：port 出生即稳定，其唯一依赖在 controller
+构造完成后**一次**bind，所以没有任何东西能观察到"会变化的依赖"。
+
+### G.9 OUT（本轮明确未做）
+
+automatic rebase、cherry-pick、three-way merge、asset merge、compatibility inference、parallel scheduler、
+automatic conflict resolution、cross-basis promotion、transplant execution、CAS implementation、remote asset storage。
+亦**未**改动任何 canonical Work 生命周期：该 plane 只记录 provenance、报告 verdict，
+不写 `ATTEMPT_COMPLETED`/`ATTEMPT_FAILED`、不 `recordCallback`、不 `promoteAttempt`、不 `assessPromotionEligibility`
+（代码级机器检查）。
+
+### G.10 门禁
+
+单元 **208 files / 2305 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。`project_world` 注册为 L2；该 plane **不**从 domain barrel 再导出，故未新增公开名。
+
+### G.11 下一步（按评审：D3-a 完成后停一次）
+
+D3-b 将第一次从"精确相等/不相等"跨入真正的 compatibility reasoning，并开始决定 resource selectors 与
+read/write footprints 究竟具有什么**证明能力** —— 那是 D3 的下一个架构转折点，值得在进入实现前再审一轮。
