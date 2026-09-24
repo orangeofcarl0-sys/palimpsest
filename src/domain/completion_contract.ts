@@ -335,9 +335,19 @@ export function deriveCompletionReadiness(input: {
   if (!capabilities.sandboxSpawnVerified) {
     gaps.push("the sandbox has not been shown to spawn the authorized commands, so a run may produce no observation");
   }
-  if (!capabilities.independentVerifierAvailable) {
+  /**
+   * §D2-LIVE: the gap is stated about the capability the requirement actually needs.
+   *
+   * `contract.verification.required` is raised by `contract_boundary`, and §B.11/B.14 make it an
+   * ATTEMPT_RESULT requirement: it is satisfied by a run over the attempt's own result, through the
+   * subject source and materializer. Reporting it against the HEAD-verifier capability was the same
+   * conflation this slice fixes elsewhere — a deployment that composes an attempt-result verifier but
+   * no head verifier would claim required work "cannot be completed here" while being perfectly able
+   * to complete it.
+   */
+  if (!capabilities.attemptResultVerificationAvailable) {
     gaps.push(
-      "no verifier satisfying the independence contract is composed — tasks whose risk policy REQUIRES independent verification cannot be completed here",
+      "no verifier satisfying the independence contract is composed for an attempt result — tasks whose risk policy REQUIRES independent verification cannot be completed here",
     );
   }
   // INCOMPLETE when nothing can be derived or no evidence can exist at all; DEGRADED when the
@@ -368,9 +378,17 @@ export function deriveCompletionReadiness(input: {
             );
           }
 
-          // Known requirement: independent verification, and none is available.
+          /**
+           * Known requirement: independent verification, and none is available.
+           *
+           * §D2-LIVE: a REQUIRED verification here is an ATTEMPT_RESULT requirement (§B.4's
+           * `contract_boundary` trigger, satisfied by §B.14's attempt-result qualification), so it is
+           * judged against THAT capability — not against the head verifier's. The two are separate
+           * facts on purpose, and using the head one here would block a task on a deployment whose
+           * attempt-result runtime is exactly what the requirement needs.
+           */
           const needsVerifier = contract.verification.required;
-          const satisfiable = !needsVerifier || capabilities.independentVerifierAvailable;
+          const satisfiable = !needsVerifier || capabilities.attemptResultVerificationAvailable;
           if (!satisfiable) {
             blockers.push(
               `this task REQUIRES independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment has none`,

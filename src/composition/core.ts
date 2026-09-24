@@ -18,6 +18,7 @@ import { join } from "node:path";
 import type { RuntimeHooks } from "@ordarium/core";
 
 import { canonicalDigest } from "../schema/canonical.js";
+import type { CompletionCapabilities } from "../domain/completion_contract.js";
 import { TaskPolicy } from "../domain/index.js";
 import type { GitPort } from "../effects/index.js";
 import { createPalimpsestEffects, defaultOrdariumPath, GitCliPort } from "../effects/index.js";
@@ -65,12 +66,38 @@ export interface CoreComposition {
   readonly verificationAdmission: {
     resolver: ((attemptId: string) => import("../domain/promotion_eligibility.js").PromotionVerificationAdmission | null) | null;
   };
+  /**
+   * §D2-LIVE: the late-bound capability holder, bound by the cluster that actually COMPOSES the
+   * verification runtime. Read-through, so a controller that already holds the object sees the
+   * binding; unbound ⇒ the conservative default (nothing available).
+   *
+   * A caller who passed explicit `options.capabilities` owns the value and this bind is a no-op —
+   * see `composeCore`.
+   */
+  readonly verificationCapabilities: {
+    bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
+  };
 }
 
 /** §12: explicit typed input, explicit typed output, no discovery, no string keys. */
 export function composeCore(options: CoreCompositionOptions): CoreComposition {
   const repository = options.repository ?? process.cwd();
-  const git = options.git ?? new GitCliPort(repository, join(repository, ".palimpsest", "worktrees"));
+  /**
+   * §D2-LIVE: ONE world root, named once.
+   *
+   * The git port MATERIALIZES a world and the execution-world port later EXPORTS its result, and both
+   * address it as `<worldsRoot>/<attemptId>`. They used to be given different roots — the port
+   * `.palimpsest/worktrees`, the exporter `.palimpsest/worlds` — so on every packaged deployment
+   * `exportResultCommit` looked in a directory the world was never created in, settlement returned
+   * `RESULT_NOT_EXPORTED`/`WORLD_MISSING`, and no delegated attempt could ever reach COMPLETED. The
+   * live gate measured exactly that. Two spellings of one location is the same defect class as two
+   * definitions of "clean", so the root is computed here and CONSUMED by both.
+   *
+   * The spelling is `worlds` because the ontology is the EXECUTION WORLD (§D2-cR); `worktrees` was the
+   * linked-worktree backend's name and survives only where a caller supplies its own port root.
+   */
+  const worldsRoot = join(repository, ".palimpsest", "worlds");
+  const git = options.git ?? new GitCliPort(repository, worldsRoot);
   const store = new EventStore(options.databasePath ?? dshDefaultStatePath(), {
     clock: options.clock ?? (() => new Date().toISOString()),
   });
@@ -93,6 +120,46 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     read: (attemptId: string) => verificationAdmission.resolver?.(attemptId) ?? null,
   };
   const policy = options.policy ?? trustedDefaultPolicy();
+  /**
+   * §D2-LIVE: the capability statement is LATE-BOUND, exactly like `verificationAdmission` below.
+   *
+   * The controller gates `begin`/`prepareMutatingWork` on `attemptResultVerificationAvailable`, so
+   * whichever value it reads decides whether a verification-requiring task may start at all. That
+   * value used to be computed HERE, from a PROXY — "was `projectVerificationStore` passed as an
+   * option?" — before the verification runtime was composed. On the packaged path the store is not
+   * passed; governance CREATES it (a project workspace is enough to configure verification), so the
+   * proxy said `false` while the deployment then composed a real, executable, independent
+   * attempt-result verifier.
+   *
+   * The live gate measured the consequence: a boundary task was refused with
+   * `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` on a deployment that verifies attempt results
+   * correctly, and readiness reported `DEGRADED` — the product refusing work it can actually do.
+   *
+   *     a capability must be derived from what was COMPOSED, never from how it was requested
+   *
+   * So the holder is stable from birth and bound ONCE, later, by the cluster that actually composes
+   * the runtime. An explicit `options.capabilities` still wins outright: a caller who states the
+   * capabilities is asserting them, and nothing here may overwrite an assertion with a derivation.
+   */
+  const verificationCapabilities: { bound: CompletionCapabilities | null } = {
+    bound: options.capabilities ?? null,
+  };
+  const conservativeCapabilities: CompletionCapabilities = Object.freeze({
+    independentVerifierAvailable: false,
+    attemptResultVerificationAvailable: false,
+    sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
+  });
+  const capabilities: CompletionCapabilities = Object.freeze({
+    get independentVerifierAvailable(): boolean {
+      return (verificationCapabilities.bound ?? conservativeCapabilities).independentVerifierAvailable;
+    },
+    get attemptResultVerificationAvailable(): boolean {
+      return (verificationCapabilities.bound ?? conservativeCapabilities).attemptResultVerificationAvailable;
+    },
+    get sandboxSpawnVerified(): boolean {
+      return (verificationCapabilities.bound ?? conservativeCapabilities).sandboxSpawnVerified;
+    },
+  });
   const controller = new ProjectController({
     store,
     effects,
@@ -100,18 +167,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     policy,
     execution: options.execution,
     standard: options.standard,
-    /**
-     * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do, so readiness states the truth
-     * rather than a guess. `sandboxSpawnVerified` is true exactly when a REAL repository is bound: a
-     * deployment with none cannot spawn anything in a project tree, and one that says nothing gets
-     * the controller's conservative default instead of a comfortable assumption. The verifier half is
-     * filled in where verification is composed, which is the only place that knows.
-     */
-    capabilities: options.capabilities ?? {
-      independentVerifierAvailable: false,
-      attemptResultVerificationAvailable: false,
-      sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
-    },
+    capabilities,
     verificationAdmission: verificationAdmissionPort,
     /**
      * §D2-e1: the execution-world port exists exactly where this deployment PLACES work in worlds — a
@@ -123,13 +179,29 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
       : {
           executionWorld: gitRepositoryWorldPort({
             repository,
-            worldsRoot: join(repository, ".palimpsest", "worlds"),
+            worldsRoot,
           }),
         }),
     clock: options.clock,
   });
   const baseTools = definePalimpsestTools(controller);
-  return { repository, git, store, effects, policy, controller, baseTools, verificationAdmission };
+  return {
+    repository,
+    git,
+    store,
+    effects,
+    policy,
+    controller,
+    baseTools,
+    verificationAdmission,
+    verificationCapabilities: {
+      bind(next) {
+        // An explicit assertion is not overwritten by a derivation.
+        if (options.capabilities !== undefined) return;
+        verificationCapabilities.bound = next;
+      },
+    },
+  };
 }
 
 /**

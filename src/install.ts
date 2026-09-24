@@ -43,20 +43,19 @@ export function installPalimpsest(
     execution: options.execution,
     standard: options.standard,
     /**
-     * PLMP-LEAN-1 §2.1 / 2A-Q: this is the only place that knows whether a verifier is composed, so
-     * it is where the capability is stated. Readiness then reports it honestly rather than guessing,
-     * and a task requiring independent verification is told the truth before the work starts.
+     * PLMP-LEAN-1 §2.1 / 2A-Q + §D2-LIVE: what this deployment can actually do.
+     *
+     * An explicit caller assertion is passed through untouched. Otherwise this stays UNSET here on
+     * purpose: whether a verifier is composed is decided further down, by the cluster that composes
+     * the verification runtime, and it is bound back through `core.verificationCapabilities`.
+     *
+     * It used to be guessed HERE from `options.projectVerificationStore !== undefined`, which is a
+     * statement about how verification was REQUESTED rather than about what was COMPOSED — and on the
+     * packaged path the store is not passed but CREATED, so the guess was `false` on a deployment that
+     * verifies attempt results correctly. Readiness then reported `DEGRADED` and every boundary task
+     * was refused with `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE` (measured by the D2 live gate).
      */
-    capabilities: options.capabilities ?? {
-      independentVerifierAvailable: options.projectVerificationStore !== undefined,
-      // The attempt-result seams are composed only when a repository exists, and they need the
-      // verification store too — so this is the honest conjunction, not a copy of the line above.
-      attemptResultVerificationAvailable:
-        options.projectVerificationStore !== undefined &&
-        options.repository !== undefined &&
-        options.repository !== "",
-      sandboxSpawnVerified: options.repository !== undefined && options.repository !== "",
-    },
+    ...(options.capabilities === undefined ? {} : { capabilities: options.capabilities }),
     clock: options.clock,
     effectsClock: options.effectsClock,
     leaseMs: options.leaseMs,
@@ -161,6 +160,9 @@ export function installPalimpsest(
   // narrow typed input; this file only decides to compose it.
   const governance = composeGovernanceCapabilities({
     verificationAdmission: core.verificationAdmission,
+    // §D2-LIVE: the cluster that COMPOSES the verification runtime states what it composed, so the
+    // controller's capability is a fact about the deployment rather than a guess from its options.
+    verificationCapabilities: core.verificationCapabilities,
     options,
     store,
     controller,
