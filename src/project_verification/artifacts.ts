@@ -204,7 +204,18 @@ function refDigest(domain: string, digest: string, prefix: string): string {
  * §1 ProjectHeadVerificationSubject — the ONLY v1 subject
  * -------------------------------------------------------------------------- */
 
-export const PROJECT_VERIFICATION_SUBJECT_KINDS = ["CURRENT_PROJECT_HEAD", "ATTEMPT_RESULT"] as const;
+export const PROJECT_VERIFICATION_SUBJECT_KINDS = [
+  "CURRENT_PROJECT_HEAD",
+  "ATTEMPT_RESULT",
+  /**
+   * PLMP-LEAN-1 §D3-d3: the result of a DERIVATION, which is not a Work execution.
+   *
+   * A rematerialized candidate is a real, verifiable result that no worker produced, so it needs a subject
+   * kind of its own. The alternative — pretending it is an ATTEMPT_RESULT — would require fabricating an
+   * attempt, and the execution history would then say a Work ran when none did.
+   */
+  "DERIVED_RESULT",
+] as const;
 export type ProjectVerificationSubjectKind = (typeof PROJECT_VERIFICATION_SUBJECT_KINDS)[number];
 
 export function isProjectVerificationSubjectKind(
@@ -409,7 +420,8 @@ export function parseAttemptResultVerificationSubject(
  */
 export type ProjectVerificationSubject =
   | ProjectHeadVerificationSubject
-  | AttemptResultVerificationSubject;
+  | AttemptResultVerificationSubject
+  | DerivedResultVerificationSubject;
 
 /** Parse either subject kind. Dispatch is on `kind`, so a mismatch fails loudly. */
 export function parseProjectVerificationSubject(
@@ -418,6 +430,7 @@ export function parseProjectVerificationSubject(
 ): ProjectVerificationSubject {
   const object = pvObject(raw, what);
   if (object.kind === "ATTEMPT_RESULT") return parseAttemptResultVerificationSubject(raw, what);
+  if (object.kind === "DERIVED_RESULT") return parseDerivedResultVerificationSubject(raw, what);
   return parseProjectHeadVerificationSubject(raw, what);
 }
 
@@ -441,6 +454,140 @@ export function isAttemptResultSubject(
   subject: ProjectVerificationSubject,
 ): subject is AttemptResultVerificationSubject {
   return subject.kind === "ATTEMPT_RESULT";
+}
+
+/* -------------------------------------------------------------------------- *
+ * §1c DerivedResultVerificationSubject — the THIRD subject kind (PLMP-LEAN-1 §D3-d3).
+ *
+ *     ResultSubject
+ *     ├── ATTEMPT_RESULT   a Work execution's immutable result
+ *     └── DERIVED_RESULT   a DERIVATION's candidate, which ran no Work
+ *
+ * A rematerialized candidate is a first-class verifiable result and NOT an attempt, so it must not borrow
+ * the attempt subject: doing so would require fabricating an attempt, and the execution history would then
+ * assert that a Work ran when none did. It carries the same source-facet shape (`baseRevision` /
+ * `resultRevision`) because a verifier that reasons about a commit range does not care which kind of
+ * result produced it — which is exactly why ONE verifier runtime can serve both, and why no second
+ * verifier species is created.
+ * -------------------------------------------------------------------------- */
+
+export const DERIVED_RESULT_SUBJECT_DOMAIN = "palimpsest.project-verification.derived-result-subject.v1";
+
+export interface DerivedResultVerificationSubject {
+  readonly schemaVersion: 1;
+  readonly kind: "DERIVED_RESULT";
+  readonly projectId: string;
+  readonly taskId: string;
+  readonly candidateId: string;
+  /** WHICH derivation produced it — the operation identity, so a candidate is never anonymous. */
+  readonly derivationId: string;
+  readonly originResultManifestDigest: string;
+  readonly baseRevision: string;
+  readonly resultRevision: string;
+  readonly resultManifestDigest: string;
+  readonly digest: string;
+}
+
+export function derivedResultSubjectDigestOf(
+  input: Omit<DerivedResultVerificationSubject, "digest">,
+): string {
+  return canonicalDigest({ domain: DERIVED_RESULT_SUBJECT_DOMAIN, subject: input });
+}
+
+export function materializeDerivedResultVerificationSubject(input: {
+  readonly projectId: string;
+  readonly taskId: string;
+  readonly candidateId: string;
+  readonly derivationId: string;
+  readonly originResultManifestDigest: string;
+  readonly baseRevision: string;
+  readonly resultRevision: string;
+  readonly resultManifestDigest: string;
+}): DerivedResultVerificationSubject {
+  const body: Omit<DerivedResultVerificationSubject, "digest"> = {
+    schemaVersion: 1,
+    kind: "DERIVED_RESULT",
+    projectId: pvId(input.projectId, "subject.projectId"),
+    taskId: pvId(input.taskId, "subject.taskId"),
+    candidateId: pvId(input.candidateId, "subject.candidateId"),
+    derivationId: pvId(input.derivationId, "subject.derivationId"),
+    originResultManifestDigest: pvDigest(input.originResultManifestDigest, "subject.originResultManifestDigest"),
+    baseRevision: pvCommit(input.baseRevision, "subject.baseRevision"),
+    resultRevision: pvCommit(input.resultRevision, "subject.resultRevision"),
+    resultManifestDigest: pvDigest(input.resultManifestDigest, "subject.resultManifestDigest"),
+  };
+  return Object.freeze({ ...body, digest: derivedResultSubjectDigestOf(body) });
+}
+
+const DERIVED_RESULT_SUBJECT_KEYS = [
+  "schemaVersion",
+  "kind",
+  "projectId",
+  "taskId",
+  "candidateId",
+  "derivationId",
+  "originResultManifestDigest",
+  "baseRevision",
+  "resultRevision",
+  "resultManifestDigest",
+  "digest",
+] as const;
+
+export function parseDerivedResultVerificationSubject(
+  raw: unknown,
+  what = "DerivedResultVerificationSubject",
+): DerivedResultVerificationSubject {
+  const object = pvObject(raw, what);
+  pvKeys(object, DERIVED_RESULT_SUBJECT_KEYS, DERIVED_RESULT_SUBJECT_KEYS, what);
+  if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
+  if (object.kind !== "DERIVED_RESULT") fail("invalid_value", `${what}.kind must be DERIVED_RESULT`);
+  const body: Omit<DerivedResultVerificationSubject, "digest"> = {
+    schemaVersion: 1,
+    kind: "DERIVED_RESULT",
+    projectId: pvId(object.projectId, `${what}.projectId`),
+    taskId: pvId(object.taskId, `${what}.taskId`),
+    candidateId: pvId(object.candidateId, `${what}.candidateId`),
+    derivationId: pvId(object.derivationId, `${what}.derivationId`),
+    originResultManifestDigest: pvDigest(object.originResultManifestDigest, `${what}.originResultManifestDigest`),
+    baseRevision: pvCommit(object.baseRevision, `${what}.baseRevision`),
+    resultRevision: pvCommit(object.resultRevision, `${what}.resultRevision`),
+    resultManifestDigest: pvDigest(object.resultManifestDigest, `${what}.resultManifestDigest`),
+  };
+  const digest = pvDigest(object.digest, `${what}.digest`);
+  if (derivedResultSubjectDigestOf(body) !== digest) {
+    fail("invalid_value", `${what}.digest does not match its content`);
+  }
+  return Object.freeze({ ...body, digest });
+}
+
+/**
+ * The COMMON shape a source-facet verifier actually needs, across both result kinds.
+ *
+ *     a verifier that reasons about a commit range does not care whether a Work execution or a derivation
+ *     produced it
+ *
+ * This is the minimal generalization the review authorized: the verifier runtime, the verification
+ * lifecycle and the independence/freshness semantics are all UNCHANGED, and only the subject identity is
+ * widened. `ATTEMPT_RESULT` stays fully backward compatible.
+ */
+export type ResultVerificationSubject =
+  | AttemptResultVerificationSubject
+  | DerivedResultVerificationSubject;
+
+/** The commit range of a result subject, whatever kind it is. Never a caller's values. */
+export function resultSubjectRevisionRange(subject: ResultVerificationSubject): {
+  readonly baseRevision: string;
+  readonly resultRevision: string;
+} {
+  return subject.kind === "ATTEMPT_RESULT"
+    ? { baseRevision: subject.baseCommit, resultRevision: subject.resultCommit }
+    : { baseRevision: subject.baseRevision, resultRevision: subject.resultRevision };
+}
+
+export function isDerivedResultSubject(
+  subject: ProjectVerificationSubject,
+): subject is DerivedResultVerificationSubject {
+  return subject.kind === "DERIVED_RESULT";
 }
 
 /* -------------------------------------------------------------------------- *

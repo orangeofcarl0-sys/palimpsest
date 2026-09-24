@@ -47,8 +47,17 @@ const ATTEMPT_INPUT = {
 };
 
 describe("LEAN-A20: the subject union distinguishes the two kinds, in both directions", () => {
-  it("both kinds are declared, and the head subject's kind stays the LITERAL", () => {
-    expect([...PROJECT_VERIFICATION_SUBJECT_KINDS]).toEqual(["CURRENT_PROJECT_HEAD", "ATTEMPT_RESULT"]);
+  it("the kinds are declared, and the head subject's kind stays the LITERAL", () => {
+    /**
+     * §D3-d3 added the third kind. The RESULT kinds are a family — `ATTEMPT_RESULT` is a Work execution's
+     * result and `DERIVED_RESULT` is a derivation's candidate — and they are told apart by identity rather
+     * than by guessing, which the round-trip tests below pin.
+     */
+    expect([...PROJECT_VERIFICATION_SUBJECT_KINDS]).toEqual([
+      "CURRENT_PROJECT_HEAD",
+      "ATTEMPT_RESULT",
+      "DERIVED_RESULT",
+    ]);
     const head = materializeProjectHeadVerificationSubject(HEAD_INPUT);
     // Not merely equal at runtime — the type is the literal, so a widened union cannot leak in.
     expect(head.kind).toBe("CURRENT_PROJECT_HEAD");
