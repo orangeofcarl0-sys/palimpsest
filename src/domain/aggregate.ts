@@ -36,6 +36,21 @@ import {
   PromotionAdmissionError,
   type PromotionGovernedAdmission,
 } from "./promotion_terminal_admission.js";
+import {
+  consumeReworkClosureSlot,
+  ReworkAdmissionError,
+} from "./rework_admission.js";
+
+/**
+ * §D5-b2: the live-only governed admissions one append may carry.
+ *
+ * Two families, deliberately separate rather than merged: a PROMOTION permit authorizes changing canonical
+ * source, and a REWORK permit authorizes reopening a verified Work task. Neither implies the other, and a
+ * single type would make "which authority admitted this" a question about the caller's intent.
+ */
+export type GovernedAdmission = PromotionGovernedAdmission & {
+  readonly reworkPass?: import("./rework_admission.js").ReworkClosurePass | undefined;
+};
 import { readPromotionEligibilityInput } from "./promotion_eligibility_read.js";
 import {
   ATTEMPT_ALLOWED_SOURCES,
@@ -133,7 +148,7 @@ export class AggregateValidator {
   validateAdmission(
     connection: DatabaseSync,
     event: NewEvent,
-    admission?: PromotionGovernedAdmission,
+    admission?: GovernedAdmission,
   ): void {
     if (event.event_type === "PROMOTION_PREPARED") {
       const permit = admission?.intentPermit;
@@ -188,6 +203,33 @@ export class AggregateValidator {
       });
       return;
     }
+    /**
+     * §D5-b2 — the `TASK_READY` half of the closure, governed on its own branch.
+     *
+     * `TASK_READY` from VERIFYING is structurally ordinary — it is the "no promotion arrived, retry" path —
+     * so it needs no envelope check. It is AUTHORITY-sensitive only when it reopens a VERIFYING task, which
+     * is why the gate sits here rather than in the batch-settlement validator: the closure pass is present
+     * only on the governed path.
+     */
+    if (event.event_type === "TASK_READY") {
+      if (this.#taskState(connection, event) === "VERIFYING") {
+        const pass = admission?.reworkPass;
+        if (pass === undefined) {
+          throw new ReworkAdmissionError(
+            "rework_admission_required",
+            "this TASK_READY reopens a VERIFYING task, which sets aside a completed result — it requires a governed rework closure pass rather than an ordinary Work revision",
+            [event.entity_id],
+          );
+        }
+        consumeReworkClosureSlot(pass, {
+          projectId: event.project_id,
+          taskId: event.entity_id,
+          eventType: "TASK_READY",
+          freshEnvelopeId: null,
+        });
+      }
+      return;
+    }
     if (event.event_type !== "TASK_CREATED" && event.event_type !== "TASK_REAUTHORIZED") return;
     const [, project] = this.#project(connection, event.project_id);
     const policyId = String(event.payload.policy_id);
@@ -201,6 +243,51 @@ export class AggregateValidator {
     if (!envelopesEqual(authorized.envelope, envelope)) {
       throw new PolicyError("TaskEnvelope differs from the trusted policy output");
     }
+
+    /**
+     * §D5-b2 — STRUCTURAL vs AUTHORITY, and the split is the point.
+     *
+     * STRUCTURAL: rebinding a task's authorization is legitimate for READY, BLOCKED **and** VERIFYING. A
+     * VERIFYING task whose completed result went stale is exactly the case D5 exists for, so refusing it
+     * structurally would make rework unexpressible — which the D5-b audit measured.
+     *
+     * AUTHORITY: reopening a VERIFYING task is not an ordinary edit, so it requires a governed admission.
+     * The measurement that forced this: the aggregate ALREADY accepts `TASK_READY` on a VERIFYING task
+     * (verified by driving a real append), because the state machine lists VERIFYING among TASK_READY's
+     * allowed sources. So declaring the stage-graph edge WITHOUT a gate would let any internal caller reopen
+     * verified work with no continuation assessment at all.
+     *
+     *     a structurally available transition  ≠  an authorized one
+     *
+     * THE AUTHORITY IS OVER THE CLOSURE, NOT OVER ONE EVENT. The reopening is the pair
+     * `TASK_REAUTHORIZED(E_1)` + `TASK_READY`, and each half is individually legitimate — `TASK_READY` from
+     * VERIFYING is the ordinary "no promotion arrived, retry" path, and rebinding a task's envelope is what
+     * plan reconciliation does. Gating either one alone leaves a two-step bypass through the other, so the
+     * governed closure presents ONE pass whose two slots are consumed by the two events.
+     */
+    if (this.#taskState(connection, event) !== "VERIFYING") return;
+    const pass = admission?.reworkPass;
+    if (pass === undefined) {
+      throw new ReworkAdmissionError(
+        "rework_admission_required",
+        "reauthorizing a VERIFYING task sets aside a completed result — it requires a governed rework closure pass rather than an ordinary Work revision",
+        [event.entity_id],
+      );
+    }
+    consumeReworkClosureSlot(pass, {
+      projectId: event.project_id,
+      taskId: event.entity_id,
+      eventType: "TASK_REAUTHORIZED",
+      freshEnvelopeId: envelope.envelope_id,
+    });
+  }
+
+  /** The current projected state of one task, for an admission that must name which transition this is. */
+  #taskState(connection: DatabaseSync, event: NewEvent): string {
+    const row = connection
+      .prepare("SELECT state FROM tasks WHERE project_id=? AND task_id=?")
+      .get(event.project_id, event.entity_id) as { state: string } | undefined;
+    return row === undefined ? "" : String(row.state);
   }
 
   validate(connection: DatabaseSync, event: NewEvent | SchedulerEvent): void {
