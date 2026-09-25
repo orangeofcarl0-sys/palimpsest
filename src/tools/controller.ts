@@ -622,6 +622,15 @@ export interface ProjectControllerOptions {
    */
   executionWorld?: SettlingExecutionWorldPort | undefined;
   /**
+   * PLMP-LEAN-1 §D4-a: how many canonical Work tasks this deployment may run at once.
+   *
+   * `SpeculativeMutationAuthority ≠ CanonicalMutationAuthority`, so two PLACED attempts are not two writers
+   * on one tree. The scheduler already declares the capacity (`StageGraphDefinition.concurrency`); this is
+   * how an OPERATOR states the value their deployment wants, since a plan may not name its own graph.
+   * Absent ⇒ the genesis default (1), which is exactly the pre-D4 behaviour.
+   */
+  concurrency?: number | undefined;
+  /**
    * PLMP-LEAN-1 §D3-a: the world-basis capture port, when this deployment records execution provenance.
    *
    * Optional for the same reason as the world port: a minimal install composes none, and absent means
@@ -654,6 +663,11 @@ export class ProjectController {
   readonly #capabilities: import("../domain/completion_contract.js").CompletionCapabilities;
   /** §D2-e1: the world port, when this deployment has one. Absent ⇒ no worlds to settle from. */
   readonly #executionWorldPort: SettlingExecutionWorldPort | undefined;
+  /**
+   * §D4-a: the operator's capacity bound, or undefined for the genesis default. Read when a project is
+   * started without a graph of its own.
+   */
+  readonly #declaredConcurrency: number | undefined;
   /** §D3-a: the basis-capture port, when this deployment records execution provenance. */
   readonly #worldBasisPort: WorldBasisCapturePort | undefined;
   /** §D3-a: the currentness read port. Composed together with the capture port, read independently. */
@@ -752,6 +766,7 @@ export class ProjectController {
     // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
     // truth instead of a comfortable guess.
     this.#executionWorldPort = options.executionWorld;
+    this.#declaredConcurrency = options.concurrency;
     this.#worldBasisPort = options.worldBasis;
     this.#worldBasisReadPort = options.worldBasisRead;
     this.#capabilities = options.capabilities ?? {
@@ -886,7 +901,7 @@ export class ProjectController {
     }
     // PLMP-SCHED-1: validate the declared stage graph BEFORE anything is
     // appended - a bad declaration must not leave a half-started project.
-    const declaredGraph = parseStageGraphDefinition(input.stageGraph ?? DEFAULT_STAGE_GRAPH);
+    const declaredGraph = parseStageGraphDefinition(input.stageGraph ?? this.#genesisGraph());
     const project = buildProjectIr({
       projectId: this.projectId,
       goal: input.goal,
@@ -3819,6 +3834,24 @@ export class ProjectController {
         ...(preview.entityId === undefined ? {} : { entityId: preview.entityId }),
       },
     });
+  }
+
+  /**
+   * §D4-a: the graph a project starts under when the caller declares none.
+   *
+   * The operator's `concurrency` is applied to the ACTIVE stage of the genesis pipeline, and NOTHING else
+   * about that pipeline changes — the transitions and guards are the verbatim phase0-2 declaration. A
+   * capacity of 1 (or no stated capacity) returns the default object itself, so the pre-D4 path is
+   * byte-identical.
+   */
+  #genesisGraph(): StageGraphDefinition {
+    if (this.#declaredConcurrency === undefined || this.#declaredConcurrency === 1) return DEFAULT_STAGE_GRAPH;
+    return {
+      ...DEFAULT_STAGE_GRAPH,
+      stages: DEFAULT_STAGE_GRAPH.stages.map((stage) =>
+        stage.state === "ACTIVE" ? { ...stage, concurrency: this.#declaredConcurrency } : stage,
+      ),
+    } as StageGraphDefinition;
   }
 
   #nonterminalAttempts(): readonly { readonly attemptId: string; readonly taskId: string; readonly state: string }[] {

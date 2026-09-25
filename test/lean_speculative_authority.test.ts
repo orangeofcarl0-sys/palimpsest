@@ -407,3 +407,138 @@ describe("§D4-0 the canonical-source authority is untouched by the split", () =
     expect(source).not.toContain("D2 keeps exactly one mutating Work line");
   });
 });
+
+/* ================================================================== *
+ * D4-a — the OPERATOR surface for capacity
+ * ================================================================== */
+
+describe("§D4-a the operator declares capacity, and the genesis pipeline is otherwise verbatim", () => {
+  it("a deployment that states concurrency 2 runs two speculative worlds, with canonical untouched", async () => {
+    const { repo, head } = workspace();
+    // The OPERATOR surface: profile → launch → install → controller. No test reaches for declareStageGraph.
+    const installed = installPalimpsest(
+      { tools: { register: () => () => undefined } } as never,
+      {
+        projectId: "d4a",
+        databasePath: join(repo, ".palimpsest", "p.sqlite"),
+        ordariumDatabasePath: join(repo, ".palimpsest", "o.sqlite"),
+        repository: repo,
+        git: new GitCliPort(repo, join(repo, ".palimpsest", "worlds")),
+        execution: "worktree",
+        concurrency: 2,
+        standard: standardOf(),
+        policy: trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
+      } as never,
+    );
+    cleanups.push(() => void installed.dispose());
+    const controller = installed.controller;
+    const call = async (name: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+      const tool = installed.tools.find((entry) => entry.name === name);
+      if (tool === undefined) throw new Error(`no core tool ${name}`);
+      return (await tool.execute(args, {
+        callId: `c-${name}`,
+        rootCallId: `r-${name}`,
+        name,
+        arguments: args,
+        signal: new AbortController().signal,
+      })) as Record<string, unknown>;
+    };
+    await call("palimpsest_start", {
+      projectId: "d4a",
+      goal: "two independent tasks",
+      headCommit: head,
+      tasks: [
+        { task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] },
+        { task_id: "t2", objective: "tidy b", depends_on: [], write_paths: ["src/b.ts"], required_artifacts: [] },
+      ],
+    });
+
+    const first = await controller.prepareMutatingWork();
+    const second = await controller.prepareMutatingWork({ expectedTaskId: "t2" });
+    expect(first.state).toBe("PREPARED");
+    expect(second.state).toBe("PREPARED");
+    expect(first.worldPath).not.toBe(second.worldPath);
+
+    // And canonical source is untouched by BOTH — the whole point of a speculative world.
+    expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);
+  }, 120_000);
+
+  it("an ABSENT concurrency is the pre-D4 behaviour: the scheduler refuses the second task", async () => {
+    const { repo, head } = workspace();
+    const { controller, call } = stack(repo);
+    await declareTwoTasks(call, head);
+    await controller.prepareMutatingWork();
+    await expect(controller.prepareMutatingWork({ expectedTaskId: "t2" })).rejects.toThrow(/TASK_NOT_NEXT_SCHEDULABLE/u);
+  }, 120_000);
+
+  it("the profile rejects a concurrency that is not a positive integer", async () => {
+    const { parseDeploymentProfile } = await import("../src/deployment/profile.js");
+    const base = {
+      schemaVersion: 1,
+      profileId: "p",
+      projectId: "p",
+      localPeer: "peer",
+      transport: { namespace: "n", databasePath: "t.sqlite" },
+      databases: {
+        orchestration: "o.sqlite",
+        ordarium: "r.sqlite",
+        coordination: "c.sqlite",
+        transportCursors: "u.sqlite",
+      },
+    };
+    // A capacity of 0 would forbid all work, and a fraction is not a count: both are refused rather than
+    // coerced, because a silently-adjusted bound is not an operator's bound.
+    for (const bad of [0, -1, 1.5, "2"]) {
+      expect(() => parseDeploymentProfile({ ...base, concurrency: bad } as never), JSON.stringify(bad)).toThrow(/concurrency must be a positive integer/u);
+    }
+    // And a stated 1 is accepted, meaning exactly what an absent one means.
+    expect(parseDeploymentProfile({ ...base, concurrency: 1 } as never).concurrency).toBe(1);
+    expect(parseDeploymentProfile(base as never).concurrency).toBeUndefined();
+  });
+
+  it("the genesis pipeline is otherwise VERBATIM: only the ACTIVE stage's concurrency changes", async () => {
+    const { repo, head } = workspace();
+    const installed = installPalimpsest(
+      { tools: { register: () => () => undefined } } as never,
+      {
+        projectId: "d4a-verbatim",
+        databasePath: join(repo, ".palimpsest", "p2.sqlite"),
+        ordariumDatabasePath: join(repo, ".palimpsest", "o2.sqlite"),
+        repository: repo,
+        git: new GitCliPort(repo, join(repo, ".palimpsest", "worlds")),
+        execution: "worktree",
+        concurrency: 3,
+        standard: standardOf(),
+        policy: trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
+      } as never,
+    );
+    cleanups.push(() => void installed.dispose());
+    const tool = installed.tools.find((entry) => entry.name === "palimpsest_start");
+    await tool!.execute(
+      {
+        projectId: "d4a-verbatim",
+        goal: "one task",
+        headCommit: head,
+        tasks: [{ task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] }],
+      },
+      { callId: "c1", rootCallId: "r1", name: "palimpsest_start", arguments: {}, signal: new AbortController().signal },
+    );
+    const row = installed.controller.store.connection
+      .prepare("SELECT graph_json FROM stage_graphs WHERE project_id=?")
+      .get("d4a-verbatim") as { graph_json: Uint8Array };
+    const graph = JSON.parse(new TextDecoder().decode(row.graph_json)) as {
+      stages: readonly { id: string; state: string; concurrency?: number }[];
+      transitions: readonly unknown[];
+    };
+    // The declared capacity, on the ACTIVE stage only.
+    expect(graph.stages.find((stage) => stage.state === "ACTIVE")?.concurrency).toBe(3);
+    // Everything else is the genesis pipeline, unchanged: same stage ids/states, same transitions.
+    expect(graph.stages.map((stage) => `${stage.id}:${stage.state}`)).toEqual(
+      DEFAULT_STAGE_GRAPH.stages.map((stage) => `${stage.id}:${stage.state}`),
+    );
+    expect(graph.transitions).toEqual(DEFAULT_STAGE_GRAPH.transitions);
+    // No OTHER stage gained a capacity: a latch declaration belongs to ACTIVE/VERIFYING, and only ACTIVE
+    // was touched.
+    expect(graph.stages.filter((stage) => stage.concurrency !== undefined)).toHaveLength(1);
+  }, 120_000);
+});
