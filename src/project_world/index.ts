@@ -146,3 +146,12 @@ export {
   type CrossBasisAdmissionStore,
   type TargetObservationRecord,
 } from "./admission_store.js";
+export {
+  RESULT_SUBJECT_KINDS,
+  resultSubjectRefDigest,
+  resultSubjectRefOf,
+  type AuthoritativeResultResolver,
+  type ResolvedResult,
+  type ResultSubjectKind,
+  type ResultSubjectRef,
+} from "./result_resolution.js";

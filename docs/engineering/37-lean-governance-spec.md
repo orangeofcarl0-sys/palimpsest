@@ -5109,3 +5109,142 @@ D4-LIVE  真实双 worker gate（本附录）                        PASS 21/21
 $$\boxed{\text{并发生产} \neq \text{并发复用}}$$
 
 这两件事必须分开陈述 —— 合并陈述就是本阶段最容易犯的过度声明。
+
+---
+
+## 附录 R（第 D5-0 期）：Effect Authority Closure —— 最后一处 caller-fact seam
+
+$$\boxed{\textbf{D5-0 — } AdmissionRecord \rightarrow Effect\text{，而不是 } CallerAssembledFacts \rightarrow Effect}$$
+
+D3 的语义体系已经 CLOSED，但 effect 入口还留着**一处 caller-fact seam**。D3-R2 把 admission 变成
+durable record、让 effect 从 record 里读 **target**，但那句话只说对了一半：
+
+```ts
+rematerialize({ admissionRef, originSource, projectId, taskId, producedAssetRefs })
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               仍然是 caller 组装的 facts
+```
+
+于是系统能证明"一个 admission 授权了一次 effect"，**不能**证明"这次 effect 是关于那个 admission 所针对的
+result"。caller 可以拿一个**真实**的 admission，喂进**另一份** delta。
+
+### R.1 本片关闭的三件事
+
+**其一：把 result 变成 record 指向的东西，而不是 caller 说出来的东西。**
+
+新增 `src/project_world/result_resolution.ts` —— 一个**只读聚合**，不是第二个 result 数据库。它声明：
+
+```
+ResultSubjectRef            ATTEMPT_RESULT | DERIVED_RESULT   （哪种 owner 持有它）
+ResolvedResult              manifest / project / task / origin basis / source facet / assets
+AuthoritativeResultResolver resolve(ref) → ResolvedResult | null
+```
+
+**关键设计**：`ResolvedResult` 里**没有** assessment、admission decision、verification verdict —— 这些权威问题
+各自有 record 回答，且在这里无法被制造。`originBasisDigest` 是**必填**：一个无法确立 basis 的 resolver 不支持
+"这就是该 admission 针对的 result"这个主张，所以它报 `null`（不可解析）而不是报一个 basis 未知的 result ——
+**basis 未知会让绑定不可反驳，而不可反驳的绑定不是绑定。**
+
+**其二：admission record 绑定 result identity。**
+
+`CrossBasisAdmissionRecord` 增加 `resultSubjectRef`（**必填**），admission ref 的公式也随之纳入它：
+
+$$\boxed{admissionRef = H(issuanceRef,\ targetObservationDigest,\ resultSubjectRef)}$$
+
+于是"只差 result 的两条 decision"不再可能同身份。
+
+**其三：整个 effect 只剩一个入参。**
+
+```ts
+rematerialize({ admissionRef })
+```
+
+effect 现在：recall admission → **resolve result** → 交叉校验 → 再观测 current world → 才建 world。
+`projectId` / `taskId` / `producedAssetRefs` 都从 **resolved result** 取，所以 candidate 是**那个 result** 的产物。
+`observeCurrentTarget` 从 optional 变成**硬依赖**（缺失 ⇒ `EFFECT_CAPABILITY_UNAVAILABLE`）：
+
+$$\boxed{AdmissionStillApplies \prec WorldCreation}$$
+
+以前只在 caller 恰好提供了 observer 时才成立 —— **一个 composition 可以省略的结构不变量不是结构不变量**。
+
+### R.2 首方 resolver：复用而不是重写
+
+`src/deployment/result_resolution.ts` 组装**已经拥有各事实的 reader**，自己不存任何东西：
+
+| result 种类 | 事实来源 |
+|---|---|
+| `ATTEMPT_RESULT` | verification plane 的 `AttemptResultVerificationSource`（它已经拥有"这个 attempt 产出了哪个 result"，并在 record 自相矛盾时 fail closed）+ D3-a 捕获的 world basis |
+| `DERIVED_RESULT` | candidate store（derivation + candidate 的 source facet） |
+
+**为什么复用 subject source 而不是重写一个 parser**：verification plane 的那份是"canonical Work → 这个 attempt
+产出了哪个 result"的**唯一**实现，重写会得到对同一问题的**第二种读法**，两者会漂移 —— 而且漂移方向取决于哪个
+caller 恰好走到哪一份。
+
+不确定的三种情形一律 `null`（不可解析）：attempt 不存在 / 未 COMPLETED / report 与 envelope 不一致；
+没有捕获过 basis（**每个 D2 attempt 都是这种**，此时重建 basis 就是伪造 provenance）；两个 owner 对 task 意见不一致。
+
+### R.3 机器证明（`test/lean_d5_0_effect_authority.test.ts`，17 项）
+
+| | 证明 |
+|---|---|
+| **A** | effect 的 interface 里没有 `originSource`/`projectId`/`taskId`/`producedAssetRefs`；运行期传进去也不被读（candidate 的 project/task/assets 来自 resolution，delta 是 result 自己的） |
+| **B** | 只差 result 的两条 admission 是**不同身份**；kind 也是身份的一部分（candidate ≠ attempt） |
+| **C** | resolver 返回**不同 manifest** ⇒ `ADMISSION_REFUSED` / `UNTRUSTED_PROOF`，**零 world**；返回**不同 origin basis** 同样拒绝 |
+| **D** | 没有 resolver ⇒ `EFFECT_CAPABILITY_UNAVAILABLE`（admission 本身仍是 `admitted`，缺口是**能力**不是 stale proof）；identity 解析不出来同样 |
+| **E** | `observeCurrentTarget` 不再是 optional，re-check 不在条件里；world 在 admission 之后移动 ⇒ 无 candidate |
+| **F** | 首方 resolver：ATTEMPT_RESULT 按其捕获 basis 得到 manifest；无 basis ⇒ null；两个 owner 不一致 ⇒ null；DERIVED_RESULT 从 candidate store 解析，未知 candidate ⇒ null |
+| **G** | resolved result 的 project/task/assets 进入 candidate |
+
+**三处修法都验证过是承重的**（把机制改回去，测试立刻红）：
+
+- 把 result 交叉校验改成 `if (false && ...)` ⇒ C 的两项红
+- 把 resolver 恢复成"缺失就跳过" ⇒ D 的一项红
+- 把 freshness re-check 恢复成 `if (input.observeCurrentTarget !== undefined)` ⇒ E 的一项红
+
+### R.4 live gate rig 纳入 Git
+
+评审要求：`checkout commit` 之后应当知道**怎样重新跑 closure gate**。新增 `scripts/gates/`：
+
+```
+scripts/gates/
+├── README.md                invocation / DSH 版本 / host 约束 / 期望断言数
+├── env.mjs                  路径解析（四个环境变量，全部有 default）
+├── d2-live-gate.mjs         §D2-LIVE（15 断言）
+├── d2-live-tee-worker.mjs   tee/barrier wrapper（单 worker）
+├── d4-live-gate.mjs         §D4-LIVE（21 断言）
+└── d4-live-tee-worker.mjs   tee/barrier wrapper（双 worker，marker 由各自 world 派生）
+```
+
+**默认 fixture 在用户 profile 内（`~/.palimpsest-gates`），这是实测的 host 要求而不是偏好**：DSH 的 PTC sandbox
+靠 `SetNamedSecurityInfoW` 授予写能力，需要 `WRITE_DAC`；参考机上用户在自己的 profile 内有 FullControl，
+但在 `F:`/`E:` 卷与 `C:\` 上只有继承来的 Modify（**没有** `WRITE_DAC`），于是每次 PTC `run_code` 都以
+`SetNamedSecurityInfoW failed (Win32 5)` 中止。这是 **host sandbox 的性质，不是 Palimpsest 的缺陷** ——
+产品自己的契约就是 PTC-presented worker 必须 **fail closed** 而不是静默降级，而它确实这么做了。
+
+**重跑验证**：参数化之后的 `scripts/gates/d4-live-gate.mjs` 在一个**干净**的 `~/.palimpsest-gates` 下
+重新跑出 **21/21 PASS** —— 即真正可重跑。gate 输出首行现在是 **host facts**（DSH 版本 /  checkout / fixture root），
+因为一次 gate 结果只有连同"跑它的宿主"才可解读。
+
+`package.json` 增加 `gate:d2-live` / `gate:d4-live` 两条命令。
+
+### R.5 明确不做
+
+- **不建第二个 result 数据库**：resolver 是 read-side aggregation，事实仍归原 owner。
+- **不重写 ATTEMPT_RESULT parser**：复用 verification plane 的那一份（见 R.2）。
+- **不在 D5-0 里做 rework / continuation**：那是 D5-a～D5-d。本片只关闭 effect 的 authority seam，
+  以及把 admission 的 identity 补全。
+- **不动 promotion authority**、**不动 canonical source**、**不新增公开名**。
+
+### R.6 状态
+
+```
+D5-0  Effect authority closure（本附录）    CLOSED
+D5-a  Continuation assessment                ← 下一步（纯 assessment，无 effect）
+D5-b  Current-basis rework admission         ← 唯一新增 authority transition；TASK_REAUTHORIZED 审计先行
+D5-c  Prior result context + worker execution
+D5-d  Packaged ResultContinuationService
+D5-LIVE 真实三段 gate
+```
+
+门禁：单元 **220 files / 2473 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。

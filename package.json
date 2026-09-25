@@ -30,7 +30,9 @@
     "dogfood:live": "pnpm run build && node scripts/dogfood/live-federation.mjs",
     "architecture:write": "pnpm run build && node scripts/audit/module-architecture.mjs --write",
     "architecture:check": "pnpm run build && node scripts/audit/module-architecture.mjs --check",
-    "architecture:check-public-api": "pnpm run build && node scripts/audit/module-architecture.mjs --check-public-api"
+    "architecture:check-public-api": "pnpm run build && node scripts/audit/module-architecture.mjs --check-public-api",
+    "gate:d2-live": "node scripts/gates/d2-live-gate.mjs",
+    "gate:d4-live": "node scripts/gates/d4-live-gate.mjs"
   },
   "dependencies": {
     "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz",

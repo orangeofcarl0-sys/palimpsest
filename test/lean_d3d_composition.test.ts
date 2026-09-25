@@ -122,20 +122,36 @@ function disjointRefs(rig: D3Rig) {
   };
 }
 
+/** The result identity every scenario in this file admits. */
+const RESULT_REF = Object.freeze({ kind: "ATTEMPT_RESULT" as const, ref: "attempt-R0" });
+
 /**
  * Build the full D3-d stack over one repository: the rig (observation + issuance + admission + candidates)
  * and the rematerialization runtime. The effect re-observes the current world, which the caller supplies.
+ *
+ * §D5-0: the RESULT is declared here, once, with the delta it carries. The effect reads the delta from the
+ * resolver rather than from its caller, so a test states what the result IS — the same statement a
+ * deployment's resolver would make from its own records.
  */
 function stackFor(input: {
   readonly repo: string;
   readonly worldsRoot: string;
   readonly current: { revision: string };
+  readonly originSource?: { readonly backend: string; readonly baseRevision: string; readonly resultRevision: string } | null | undefined;
 }) {
   const rig = makeD3Rig({
     rematerializer: gitSourceRematerializer({ repository: input.repo, worldsRoot: input.worldsRoot }),
     observeCurrentTarget: () => ({ targetObservationDigest: input.current.revision, targetBasisRevision: input.current.revision }),
   });
   cleanups.push(() => rig.close());
+  rig.declareResult({
+    resultSubjectRef: RESULT_REF,
+    resultManifestDigest: MANIFEST_R0,
+    originBasisDigest: BASIS_B0,
+    sourceResult: input.originSource ?? null,
+    projectId: "d3d4",
+    taskId: "t1",
+  });
   if (rig.runtime === undefined) throw new Error("the rig composed no rematerialization runtime");
   return { rig, runtime: rig.runtime, candidates: rig.candidates };
 }
@@ -150,7 +166,7 @@ describe("§D3-d4 the whole chain, end to end", () => {
     };
 
     // ---- 1. The stack: observation authority, issuance, admission and candidates. ----
-    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current: { revision: h1 } });
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current: { revision: h1 }, originSource: { backend: "git", baseRevision: h0, resultRevision: r0 } });
 
     // ---- 2. The certificate AND the admission record, from observed premises. ----
     const { admissionRef, certificate } = rig.admit({
@@ -159,16 +175,12 @@ describe("§D3-d4 the whole chain, end to end", () => {
       targetObservationDigest: h1,
       targetBasisRevision: h1,
       observationRefs: disjointRefs(rig),
+      resultSubjectRef: RESULT_REF,
     });
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
 
     // ---- 3. The rematerialization effect, in candidate space, driven by the admission ref alone. ----
-    const rematerialized = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d4",
-      taskId: "t1",
-    });
+    const rematerialized = await runtime.rematerialize({ admissionRef });
     expect(rematerialized.state).toBe("MATERIALIZED");
     const candidate = rematerialized.candidate;
     if (candidate === null) throw new Error("expected a candidate");
@@ -232,21 +244,17 @@ describe("§D3-d4 the whole chain, end to end", () => {
   it("the origin's verification does NOT transfer: the candidate needs its OWN run", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
     const current = { revision: h1 };
-    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current });
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current, originSource: { backend: "git", baseRevision: h0, resultRevision: r0 } });
     const { admissionRef, certificate } = rig.admit({
       resultManifestDigest: MANIFEST_R0,
       originBasisDigest: BASIS_B0,
       targetObservationDigest: h1,
       targetBasisRevision: h1,
       observationRefs: disjointRefs(rig),
+      resultSubjectRef: RESULT_REF,
     });
     
-    const rematerialized = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d4",
-      taskId: "t1",
-    });
+    const rematerialized = await runtime.rematerialize({ admissionRef });
     const candidate = rematerialized.candidate!;
 
     const provider = commandAttemptResultVerifier();
@@ -281,13 +289,14 @@ describe("§D3-d4 the whole chain, end to end", () => {
   it("the two qualifications are independent: one candidate's run does not satisfy another's", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
     const current = { revision: h1 };
-    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current });
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current, originSource: { backend: "git", baseRevision: h0, resultRevision: r0 } });
     const { admissionRef, certificate } = rig.admit({
       resultManifestDigest: MANIFEST_R0,
       originBasisDigest: BASIS_B0,
       targetObservationDigest: h1,
       targetBasisRevision: h1,
       observationRefs: disjointRefs(rig),
+      resultSubjectRef: RESULT_REF,
     });
     
     /**
@@ -304,14 +313,10 @@ describe("§D3-d4 the whole chain, end to end", () => {
         targetObservationDigest: target,
         targetBasisRevision: target,
         observationRefs: disjointRefs(rig),
+        resultSubjectRef: RESULT_REF,
       });
       current.revision = target;
-      return runtime.rematerialize({
-        admissionRef: scoped.admissionRef,
-        originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-        projectId: "d3d4",
-        taskId: "t1",
-      });
+      return runtime.rematerialize({ admissionRef: scoped.admissionRef });
     };
     const atH1 = await rematerialize(h1);
     const atH0 = await rematerialize(h0);
