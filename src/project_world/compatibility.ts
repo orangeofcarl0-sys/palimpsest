@@ -203,8 +203,19 @@ export function assessCompatibility(input: AssessCompatibilityInput): Compatibil
      */
     const dependencyCoverageProven = dependency.coverage.status === "PROVEN_COMPLETE";
     for (const [part, changes] of changeParts) {
-      if (changes.coverage.status !== "PROVEN_COMPLETE" && changes.selectors.length > 0) {
+      if (changes.coverage.status !== "PROVEN_COMPLETE") {
         /**
+         * An UNPROVEN change footprint is an obstacle EVEN WHEN IT LISTS NO SELECTORS.
+         *
+         * This condition used to also require `changes.selectors.length > 0`, which made an UNPROVEN
+         * EMPTY set indistinguishable from a PROVEN empty one — so an UNAVAILABLE observation ("the
+         * revisions could not be compared") was read as "nothing changed". The design says the
+         * opposite in as many words: an uncomparable pair yields an UNPROVEN empty set *precisely so
+         * that* "I could not compare them" and "nothing changed" stay two different facts. The extra
+         * conjunct nullified that distinction, and the D4-LIVE gate reached it through first-party
+         * code: a source comparison the observer could not perform produced a COMPATIBLE assessment
+         * while the result read the whole repository.
+         *
          * Incomplete coverage means there may be MORE changes than the ones listed — it does not
          * disqualify the ones we can SEE. So the obstacle is recorded and the walk continues: a
          * POSITIVE conflict witness is a fact that does not get diluted by an unrelated unknown, and
@@ -213,7 +224,9 @@ export function assessCompatibility(input: AssessCompatibilityInput): Compatibil
         unknowns.push(
           Object.freeze({
             part: "change_coverage" as const,
-            detail: `the ${part} change set is not PROVEN_COMPLETE (${changes.coverage.detail}), so the changes it does not list cannot be ruled out`,
+            detail: `the ${part} change set is not PROVEN_COMPLETE (${changes.coverage.detail}), so ${
+              changes.selectors.length === 0 ? "not even its emptiness" : "the changes it does not list"
+            } can be established`,
           }),
         );
       }

@@ -281,6 +281,47 @@ describe("§D3-b3 B. an UNPROVEN footprint blocks compatibility", () => {
     expect(assessment.unknowns.map((entry) => entry.part)).toContain("change_coverage");
   });
 
+  it("an UNPROVEN change set that lists NOTHING is still an obstacle — 'could not compare' ≠ 'nothing changed'", () => {
+    /**
+     * THE DEFECT THIS PINS, found by the D4-LIVE gate through first-party code.
+     *
+     * The obstacle rule used to require `selectors.length > 0` in addition to unproven coverage, so an
+     * UNPROVEN EMPTY set was indistinguishable from a PROVEN empty one. The first-party source observer
+     * produces exactly that set when it CANNOT COMPARE two revisions (`gitSourceChangeObserver` records
+     * UNAVAILABLE, which contributes an unproven empty footprint), so a comparison the system could not
+     * perform was read as "the world did not change" — and with a whole-repository read the assessment
+     * came back COMPATIBLE.
+     *
+     * The design states the opposite rule directly: an uncomparable pair returns an UNPROVEN empty set
+     * *so that* "I could not compare them" and "nothing changed" stay two different facts. An empty
+     * selector list is only evidence of no-change when its EMPTINESS was established.
+     */
+    const assessment = assess({
+      change: changeWith({ source: [], coverage: unproven("the source revisions could not be compared") }),
+      reads: wholeRepositoryRead(),
+      writes: covered({ selectors: [], coverage: proven() }),
+    });
+    expect(assessment.outcome).toBe("UNKNOWN");
+    expect(assessment.outcome).not.toBe("COMPATIBLE");
+    expect(assessment.unknowns.map((entry) => entry.part)).toContain("change_coverage");
+    // And the obstacle says WHICH fact is missing, so a reader is not left guessing at an empty list.
+    expect(assessment.unknowns.find((entry) => entry.part === "change_coverage")?.detail).toContain("not even its emptiness");
+  });
+
+  it("the same empty set is NOT an obstacle when its emptiness IS proven", () => {
+    /**
+     * The other half, so the fix is a distinction rather than a blanket refusal: a change set that is
+     * empty BECAUSE it was compared and found empty supports a proof exactly as before.
+     */
+    const assessment = assess({
+      change: changeWith({ source: [] }),
+      reads: covered({ selectors: [srcPath("src/parser.ts")], coverage: proven() }),
+      writes: covered({ selectors: [srcPath("src/parser.ts")], coverage: proven() }),
+    });
+    expect(assessment.outcome).toBe("COMPATIBLE");
+    expect(assessment.unknowns).toEqual([]);
+  });
+
   it("an undecidable selector relation ⇒ UNKNOWN, even with complete coverage on both sides", () => {
     const assessment = assess({
       change: changeWith({ environment: [{ domain: "environment", component: "python-runtime" }] }),
