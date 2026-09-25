@@ -264,4 +264,53 @@ describe("§D3-b4 the packaged composition: what the system actually concludes",
     expect(assessment.unknowns.map((entry) => entry.part)).toContain("read_coverage");
     expect(assessment.disjointnessProofs).toEqual([]);
   }, 120_000);
+
+  it("a source comparison the observer COULD NOT PERFORM never yields a certificate that says COMPATIBLE", () => {
+    /**
+     * THE D4-LIVE FINDING, at the level where it was actually reachable: the real observer, a real
+     * ISSUER, and a revision pair git cannot resolve.
+     *
+     * The previous test proves the observer RECORDS that failure honestly. That was already true, and it
+     * was not enough — the defect was one layer up: the assessor's obstacle rule additionally required a
+     * non-empty selector list, so the UNAVAILABLE record's unproven EMPTY footprint contributed no
+     * obstacle at all. The certificate came back COMPATIBLE while the result read the whole repository,
+     * which is the exact inversion (`no observed conflict ⇒ compatible`) this plane exists to refuse.
+     *
+     * Driving it through `issuer.issue()` rather than a hand-built footprint is deliberate: it is the
+     * shipped path, and it is the path the gate reached it by.
+     */
+    const { repo, h0 } = repository();
+    const rig = makeD3Rig();
+    cleanups.push(() => rig.close());
+    const uncomparable = sourceObserverFor(rig, repo).observeChange({
+      fromRevision: "0".repeat(40),
+      toRevision: h0,
+      scopeRef: repo,
+    });
+    expect(rig.observations.recall(uncomparable)?.state).toBe("UNAVAILABLE");
+
+    // The other change domains have no first-party observer either, so they are honestly UNAVAILABLE.
+    const unobservable = (domain: "project_semantic" | "assets" | "environment") =>
+      rig.unavailable(rig.conservativeObserver, domain, `no first-party observer exists for the ${domain} change domain`);
+    const wholeRepoRead = rig.observe(rig.conservativeObserver, [{ domain: "source", scope: "repository" }]);
+
+    const certificate = rig.issuer.issue({
+      resultManifestDigest: "manifest-uncomparable",
+      originBasisDigest: "basis-uncomparable",
+      targetObservationDigest: h0,
+      exactlyCurrent: false,
+      observationRefs: {
+        projectSemantic: unobservable("project_semantic"),
+        // THE REAL OBSERVER'S FAILED COMPARISON, cited as the source change premise.
+        source: uncomparable,
+        assets: unobservable("assets"),
+        environment: unobservable("environment"),
+        resultReads: wholeRepoRead,
+        resultWrites: rig.observe(rig.conservativeObserver, []),
+      },
+    });
+    expect(certificate.assessment.outcome).toBe("UNKNOWN");
+    expect(certificate.assessment.outcome).not.toBe("COMPATIBLE");
+    expect(certificate.assessment.unknowns.map((entry) => entry.part)).toContain("change_coverage");
+  }, 120_000);
 });
