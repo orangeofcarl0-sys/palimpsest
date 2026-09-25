@@ -38,6 +38,7 @@ import {
 } from "./promotion_terminal_admission.js";
 import {
   consumeReworkAdmissionPermit,
+  reworkProvenanceFromPermit,
   ReworkAdmissionError,
 } from "./rework_admission.js";
 
@@ -218,21 +219,63 @@ export class AggregateValidator {
      * the existing G10-X head authority, which this event merely unblocks by leaving VERIFYING.
      */
     if (event.event_type === "TASK_READY") {
-      if (this.#taskState(connection, event) === "VERIFYING") {
-        const permit = admission?.reworkPermit;
-        if (permit === undefined) {
+      const state = this.#taskState(connection, event);
+      const provenance = event.payload.rework_provenance as Record<string, unknown> | undefined;
+      if (state !== "VERIFYING") {
+        // §D5-c2 SPLICE GUARD: rework provenance is the HISTORY of the governed
+        // reopening, and an ordinary TASK_READY (batch retry, unblock) can never
+        // carry it. Without this check a caller could graft rework lineage onto a
+        // structurally ordinary transition and manufacture false history.
+        if (provenance !== undefined) {
           throw new ReworkAdmissionError(
-            "rework_admission_required",
-            "this TASK_READY reopens a VERIFYING task, which sets aside a completed result — it requires a governed rework admission rather than an ordinary Work revision",
+            "capability_binding_mismatch",
+            "rework provenance is only legal on the governed VERIFYING → READY reopening; an ordinary TASK_READY cannot carry it",
             [event.entity_id],
           );
         }
-        consumeReworkAdmissionPermit(permit, {
-          projectId: event.project_id,
-          taskId: event.entity_id,
-          currentEnvelopeId: this.#taskEnvelopeId(connection, event),
-          batchActivationEventId: Number(event.payload.batch_activation_event_id),
-        });
+        return;
+      }
+      const permit = admission?.reworkPermit;
+      if (permit === undefined) {
+        throw new ReworkAdmissionError(
+          "rework_admission_required",
+          "this TASK_READY reopens a VERIFYING task, which sets aside a completed result — it requires a governed rework admission rather than an ordinary Work revision",
+          [event.entity_id],
+        );
+      }
+      consumeReworkAdmissionPermit(permit, {
+        projectId: event.project_id,
+        taskId: event.entity_id,
+        currentEnvelopeId: this.#taskEnvelopeId(connection, event),
+        batchActivationEventId: Number(event.payload.batch_activation_event_id),
+      });
+      // §D5-c2: the event must CARRY the lineage the permit synthesizes, and it
+      // must be THAT lineage — the admission binds the durable history to the
+      // capability, so a governed reopening can never land with a missing or
+      // foreign record. (The optional assessment digest is not permit-bound and
+      // is not compared here.)
+      if (provenance === undefined) {
+        throw new ReworkAdmissionError(
+          "capability_binding_mismatch",
+          "the governed reopening must carry the rework provenance synthesized by the governed append path",
+          [event.entity_id],
+        );
+      }
+      const expected = reworkProvenanceFromPermit(permit);
+      for (const key of [
+        "origin_result_subject",
+        "origin_basis_digest",
+        "target_observation_digest",
+        "current_envelope_id",
+        "reason",
+      ] as const) {
+        if (canonicalDigest(provenance[key]) !== canonicalDigest(expected[key])) {
+          throw new ReworkAdmissionError(
+            "capability_binding_mismatch",
+            `the carried rework provenance does not match the permit (${key})`,
+            [event.entity_id],
+          );
+        }
       }
       return;
     }

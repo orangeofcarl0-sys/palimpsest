@@ -36,3 +36,5 @@ export {
   contextHandle,
 } from "./distribution.js";
 export type { ContextDistribution, ContextDistributionEntry } from "./distribution.js";
+export { compilePriorResultContext } from "./prior_result.js";
+export type { PriorResultContext, PriorResultContextInput } from "./prior_result.js";

@@ -5824,3 +5824,80 @@ D5-LIVE real concurrent → stale → governed reopen → head sync → re-execu
 
 门禁（本片实测）：单元 **225 files / 2554 tests** 全绿、e2e **38/38**、`architecture:check` **0 violation**
 （12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**。
+
+---
+
+## 附录 X（第 D5-c2 期）：PriorResultContext —— rework history 说 WHY，ContextManifest 说 WHAT
+
+$$\boxed{\textbf{D5-c2 — } ReworkLineage\ \neq\ ContextManifest\ \neq\ WorkerContextTransport}$$
+
+三层各司其职，后者消费前者、不自制事实：
+
+```text
+governed TASK_READY
+    \u2193 durable rework_provenance（由 permit 在 EventStore 合成）
+Context compiler for A1
+    \u2193 ContextManifest(A1) + continuation = PriorResultContext(R0)
+read-only worker context          （D5-c3 才动 transport）
+```
+
+### X.1 D5-c2a — durable rework lineage（不新增 EventType）
+
+governed `TASK_READY`（VERIFYING→READY）携带**可选** `rework_provenance`（closed contract：schema_version /
+origin_result_subject{kind,ref} / origin_basis_digest / target_observation_digest / current_envelope_id=E0 /
+reason / continuation_assessment_digest?）。四条纪律：
+
+1. **由 capability 合成**：`appendReworkReopening` 先 `requireIssuedReworkPermit`（伪造/已消费对象在触碰任何事件前即拒），再从 permit 合成 lineage——**caller 提供的一律丢弃**（Capability → durable provenance，不是 CallerFacts+Capability → history）。
+2. **admission 绑定 history**：aggregate 校验事件所载 provenance 与 permit 合成者一致（缺失或不匹配 ⇒ `capability_binding_mismatch`）。
+3. **splice guard**：非 VERIFYING 上的 `TASK_READY` 携带 provenance ⇒ 拒（普通转换永远无法伪造 rework 历史）。
+4. **旧事件完全兼容**：可选字段缺省时 canonical 形式不变（replay/parity 全绿）；`batch_activation_event_id` 留在顶层不重复。
+
+### X.2 D5-c2b — `src/context/prior_result.ts`
+
+`PriorResultContext` 与 `compilePriorResultContext`：lineage / origin_result / prior_execution / verification / world_transition。数据**只**来自权威 owner：Event Log（lineage）、attempt 历史记录（A0 的 report）、ProjectVerificationStore（独立验证 runs，按 subject 过滤）、promotion facts + ProjectIR head（world transition）。**evidence 强度编码在字段名里**：`workerSummary`（worker 的 interpretation）≠ `observedChangedFiles`（Palimpsest 观测）；`verification[]` 是 **HISTORICAL**——`Verification(R0) ⇏ Verification(R1)`，A1 的资格独立为空；`worldTransition` 只给**不可变坐标**（H0/H1/promotion refs），不做 diff、不做 merge 提案。
+
+进 manifest 的方式：**optional additive** `ContextManifest.continuation?`（单数——一次 rework 一个直接 origin result），closed-contract 解析（strict parser，非 `requirement` 的 open object），普通 attempt 的 manifest 语义逐字节不变。origin 无法解析时 **fail closed**（拒绝编译伪造的 prior-result context）。
+
+$$\boxed{ContextManifest\ \neq\ Evidence\ \neq\ Admission}$$
+
+机器守卫（测试钉住）：prior_result.ts 不 import 任何 authority plane；promotion/rework admission/effects 不 import PriorResultContext。
+
+### X.3 D5-c2c — 修复 context 时间穿越
+
+`fetchContext(attemptId)` 原实现按 `task_id ORDER BY last_event_id DESC LIMIT 1` 取 **task 最新** manifest——D5 引入 attempt 代际后即成时间穿越（`fetch(A0)` 可能返回 M1）。与 D5-b1 同类：读路径把 task-current 当 attempt-historical。修复：按与 `compileTaskContext` 相同的确定性 manifest 身份（project + attempt）读取。
+
+$$\boxed{TaskLatestContext\ \neq\ AttemptCompiledContext}$$
+
+### X.4 机器证明（`test/lean_d5c2_prior_result_context.test.ts`，15 项）
+
+| | 证明 |
+|---|---|
+| 1 | **合成即历史**：落盘 provenance 逐字段等于 permit 合成者；caller 塞入的 FORGED lineage 被丢弃 |
+| 2 | **Crash-safe**：store 关闭重开后，A1 的 context 仍从 log 解析出 R0/reason/target/assessmentDigest（不依赖内存 capability） |
+| 3 | **无新 EventType**：全链事件类型不含 REWORK/PRIOR/CONTINUATION；canonical 词汇只长出可选字段 |
+| 4 | **防伪造**：VERIFYING + 无 permit ⇒ `rework_admission_required`（零写入） |
+| 5 | **splice guard**：非 VERIFYING 的 TASK_READY 带 provenance ⇒ `capability_binding_mismatch`（admission seam 直接验证） |
+| 6 | **context ≠ basis**：编译前后 `semanticProjectionDigestOf(E1)` 不变、ProjectIR 整体不变、仅多一条 CONTEXT_MANIFEST_ADDED |
+| 7 | **per-attempt 确定性**：M0 无 continuation、M1 有；重编译幂等；id 不同 |
+| 8 | **no time travel**：fetch(A0) 走 M0；删 M0 行后 fetch(A0) **诚实地 undefined**（task-latest 会拿 M1 顶替），fetch(A1) 仍走 M1 |
+| 9 | **interpretation 贴标**：`worker_summary` 字段名即语义；不入 evidence 列表 |
+| 10 | **historical verification**：R0 的 PASS 出现在 context；A1 subject 的 runs 为空——R0 的 PASS 不是 A1 的资格 |
+| 11 | **诚实缺席**：deployment 未配置验证 store ⇒ verification 为空数组，绝不编造 |
+| 12 | **坐标化**：world_transition = H0/H1/promotion refs；编译幂等零事件；编译器无 cherry-pick/apply/spawn 机制 |
+| 13 | **普通 attempt 不变**：M0 无 continuation 且经 closed parser 逐字节 round-trip |
+
+### X.5 状态与门禁
+
+```text
+D5-c2   PriorResultContext                                CLOSED（本附录；a+b+c 三片）
+D5-c3   real current-basis re-execution                   ← 下一步
+        worker transport 改为 attempt-centric 的位置：
+        compileTaskContext(A1) 在 Attempt 身份与世界存在之后、worker 执行之前
+        （workWorkerTaskContext(taskId) → attempt-centric 可一并考虑）
+D5-d    Packaged ResultContinuationService
+        （含附录 W.5 验收准则：fresh observation → assessment → mint，caller 不自填 target digest）
+D5-LIVE real concurrent → stale → governed reopen → head sync → re-execute → verify → promote
+```
+
+门禁（本片实测）：tsc 干净、单元 **227 files / 2570 tests**、e2e **38/38**、`architecture:check` **0 violation**
+（12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**。

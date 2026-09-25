@@ -506,10 +506,11 @@ describe("§D5-b2 the ownership line — basis advance belongs to the existing h
       });
 
       // Refused by the structural guard — NOT by a rework admission. Rebinding is head-reconciliation's act,
-      // and no rework permit can produce it.
+      // and no rework permit can produce it. Asserted on the generic surface: the governed reopening path
+      // only accepts a TASK_READY at all, which is its own scope proof.
       let error: unknown;
       try {
-        r.store.appendReworkReopening(event, r.permit());
+        r.store.append(event);
       } catch (caught) {
         error = caught;
       }
@@ -636,7 +637,11 @@ describe("§D5-b2 the declared topology says exactly what the runtime does", () 
 
   it("NO new canonical vocabulary: the reopening is expressed by the event that already existed", () => {
     const models = source("src/schema/models.ts");
-    expect(models).toContain('TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id"]');
+    // §D5-c2 extended the TASK_READY payload with the OPTIONAL durable rework
+    // provenance — still the same event type, no new canonical vocabulary:
+    expect(models).toContain(
+      'TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id", "rework_provenance"]',
+    );
     expect(models).not.toMatch(/WORK_REWORK_AUTHORIZED|REWORK_ADMITTED|TASK_REWORK/u);
   });
 

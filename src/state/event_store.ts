@@ -33,6 +33,10 @@ import type {
   PromotionOutcomeWitness,
 } from "../domain/promotion_terminal_admission.js";
 import type { ReworkAdmissionPermit, ReworkGovernedAdmission } from "../domain/rework_admission.js";
+import {
+  requireIssuedReworkPermit,
+  reworkProvenanceFromPermit,
+} from "../domain/rework_admission.js";
 import type { TaskPolicy } from "../domain/policy.js";
 import { openDatabase } from "./database.js";
 import {
@@ -401,9 +405,31 @@ export class EventStore {
   appendReworkReopening(
     request: NewEvent,
     permit: ReworkAdmissionPermit,
-    options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
+    options: { assessmentDigest?: string; faultHook?: AtomicFaultHook; committedAt?: string } = {},
   ): SchedulerEvent {
-    const events = this.#appendBatchWith([request], { reworkPermit: permit }, options);
+    if (request.event_type !== "TASK_READY") {
+      // The governed reopening is exactly ONE event. This method is not a
+      // general governed append: threading a permit into any other event type
+      // would let lineage-adjacent machinery attach where it has no meaning.
+      throw new AtomicAppendError(
+        "appendReworkReopening appends the governed TASK_READY reopening, no other event",
+      );
+    }
+    // §D5-c2: ISSUANCE before synthesis — a forged or spent capability is
+    // refused here, before it can touch an event.
+    requireIssuedReworkPermit(permit);
+    // §D5-c2: the durable lineage is SYNTHESIZED from the capability here — the
+    // one seam that can spend it — never accepted from the caller. A
+    // `rework_provenance` arriving on the request is caller fact and is
+    // discarded; the landed event carries exactly what this permit justifies.
+    const governed: NewEvent = {
+      ...request,
+      payload: {
+        ...request.payload,
+        rework_provenance: reworkProvenanceFromPermit(permit, options.assessmentDigest),
+      },
+    };
+    const events = this.#appendBatchWith([governed], { reworkPermit: permit }, options);
     const appended = events[0];
     // #appendBatchWith refuses an empty batch, so this is unreachable; the check keeps the narrowing honest.
     if (appended === undefined) {
