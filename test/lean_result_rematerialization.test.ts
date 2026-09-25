@@ -105,28 +105,53 @@ function disjointRefs(rig: D3Rig) {
   };
 }
 
+/** The result identity every scenario in this file admits: one ATTEMPT_RESULT, fixed by name. */
+const RESULT_REF = Object.freeze({ kind: "ATTEMPT_RESULT" as const, ref: "attempt-R0" });
+
 /**
  * Issue a certificate AND record the admission decision — the two durable records the effect consumes.
  *
  * §D3-R2: the effect takes only the admission ref, so a test that wants an effect must first record a
  * decision. That is the shipped shape, not ceremony.
+ *
+ * §D5-0: the admission also names WHICH result it is about, and the result is DECLARED to the resolver with
+ * the delta it carries. The effect reads the delta from there rather than from its caller, so a test must
+ * state what the result IS — which is exactly the property under test.
  */
 function admitFor(input: {
   readonly rig: D3Rig;
   readonly targetDigest: string;
   readonly targetRevision: string;
+  /** §D5-0: the delta the RESULT carries — read by the effect from the resolver, not from a caller. */
+  readonly originSource: { readonly backend: string; readonly baseRevision: string; readonly resultRevision: string } | null;
   readonly exactlyCurrent?: boolean | undefined;
   readonly refs?: ReturnType<typeof disjointRefs> | undefined;
+  readonly resultManifestDigest?: string | undefined;
+  readonly originBasisDigest?: string | undefined;
 }) {
+  const resultManifestDigest = input.resultManifestDigest ?? "manifest-R0";
+  const originBasisDigest = input.originBasisDigest ?? "basis-B0";
+  input.rig.declareResult({
+    resultSubjectRef: RESULT_REF,
+    resultManifestDigest,
+    originBasisDigest,
+    sourceResult: input.originSource,
+    projectId: "d3d",
+    taskId: "t1",
+  });
   return input.rig.admit({
-    resultManifestDigest: "manifest-R0",
-    originBasisDigest: "basis-B0",
+    resultManifestDigest,
+    originBasisDigest,
     targetObservationDigest: input.targetDigest,
     targetBasisRevision: input.targetRevision,
     observationRefs: input.refs ?? disjointRefs(input.rig),
+    resultSubjectRef: RESULT_REF,
     ...(input.exactlyCurrent === undefined ? {} : { exactlyCurrent: input.exactlyCurrent }),
   });
 }
+
+/** The origin source facet of this file's scenario: the result H0 → R0. */
+const originOf = (h0: string, r0: string) => ({ backend: "git", baseRevision: h0, resultRevision: r0 });
 
 function runtimeFor(input: {
   readonly repo: string;
@@ -172,18 +197,13 @@ describe("§D3-d HEADLINE: ΔCandidateState ≠ 0 ∧ ΔCanonicalProjectState = 
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
     const before = canonicalFingerprint(repo);
 
-    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h1);
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
     // The world the admission named is the world that exists.
     atWorld(h1);
 
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("MATERIALIZED");
     const candidate = result.candidate;
     if (candidate === null) throw new Error("expected a candidate");
@@ -217,16 +237,11 @@ describe("§D3-d HEADLINE: ΔCandidateState ≠ 0 ∧ ΔCanonicalProjectState = 
   it("the origin result and its basis are untouched by the derivation", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
-    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h1);
 
     const before = { h0: git(repo, ["rev-parse", h0]), r0: git(repo, ["rev-parse", r0]) };
-    await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    await runtime.rematerialize({ admissionRef });
     // Provenance immutability carried one stage further: a later stage's effect cannot rewrite an
     // earlier stage's facts. Both revisions still resolve to exactly what they were.
     expect(git(repo, ["rev-parse", h0])).toBe(before.h0);
@@ -255,14 +270,9 @@ describe("§D3-d the effect is gated by the certificate, not by caller-assembled
      * disagreeing — rather than from a caller honestly passing a mismatched pair, which is all the previous
      * shape could check. So the rig is deliberately left observing H2 while the record names H1.
      */
-    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h2moved);
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("ADMISSION_REFUSED");
     expect(result.candidate).toBe(null);
     // `AdmissionStillApplies ≺ WorldCreation`: no world, no candidate, no canonical mutation.
@@ -283,12 +293,7 @@ describe("§D3-d the effect is gated by the certificate, not by caller-assembled
      * wrote authorizes nothing — which is now the SAME shape as an unissued certificate, because both are
      * "no record exists", rather than two separately-checked conditions.
      */
-    const result = await runtime.rematerialize({
-      admissionRef: "admission-never-recorded",
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef: "admission-never-recorded" });
     expect(result.state).toBe("ADMISSION_REFUSED");
     expect(result.admission.state).toBe("UNTRUSTED_PROOF");
     expect(result.detail).toContain("is not a recorded decision");
@@ -307,15 +312,10 @@ describe("§D3-d the effect is gated by the certificate, not by caller-assembled
       resultReads: rig.observe(rig.conservativeObserver, []),
       resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
     };
-    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1, refs: conflicting });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0), refs: conflicting });
     expect(certificate.assessment.outcome).toBe("INCOMPATIBLE");
 
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("ADMISSION_REFUSED");
     expect(result.admission.state).toBe("CONFLICT");
   }, 120_000);
@@ -336,15 +336,10 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
 
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
     const before = canonicalFingerprint(repo);
-    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h2, targetRevision: h2 });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h2, targetRevision: h2, originSource: originOf(h0, r0) });
     atWorld(h2);
 
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     // The certificate is legitimate and the delta still does not apply. The answer is a FAILURE, never a
     // three-way merge, a rename heuristic or a partial application.
     expect(result.state).toBe("REMATERIALIZATION_FAILED");
@@ -368,14 +363,9 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
     };
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot, rematerializer: failing });
     const before = canonicalFingerprint(repo);
-    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h1);
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("REMATERIALIZATION_FAILED");
     expect(result.candidate).toBe(null);
     expect(canonicalFingerprint(repo)).toEqual(before);
@@ -384,14 +374,9 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
   it("a result with no source facet reports EFFECT_CAPABILITY_UNAVAILABLE rather than inventing a candidate", async () => {
     const { repo, worldsRoot, h1 } = scenario();
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
-    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: null });
     atWorld(h1);
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: null,
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("EFFECT_CAPABILITY_UNAVAILABLE");
     expect(result.candidate).toBe(null);
     expect(result.detail).toContain("no delta to carry");
@@ -406,15 +391,10 @@ describe("§D3-d the derivation is identified by its operation, not by its outpu
   it("the same operation identity yields the same derivation id", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
-    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h1);
     const run = () =>
-      runtime.rematerialize({
-        admissionRef,
-        originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-        projectId: "d3d",
-        taskId: "t1",
-      });
+      runtime.rematerialize({ admissionRef });
     const first = await run();
     const second = await run();
     expect(first.state).toBe("MATERIALIZED");
@@ -435,23 +415,13 @@ describe("§D3-d the derivation is identified by its operation, not by its outpu
   it("a different target basis is a different derivation", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
     const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
-    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1, originSource: originOf(h0, r0) });
     atWorld(h1);
-    const atH1 = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const atH1 = await runtime.rematerialize({ admissionRef });
     // A second ADMISSION against a DIFFERENT target is a different operation, so its ref differs too.
-    const other = admitFor({ rig, targetDigest: h0, targetRevision: h0 });
+    const other = admitFor({ rig, targetDigest: h0, targetRevision: h0, originSource: originOf(h0, r0) });
     atWorld(h0);
-    const atH0 = await runtime.rematerialize({
-      admissionRef: other.admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3d",
-      taskId: "t1",
-    });
+    const atH0 = await runtime.rematerialize({ admissionRef: other.admissionRef });
     expect(atH1.candidate?.derivation.derivationId).not.toBe(atH0.candidate?.derivation.derivationId);
   }, 180_000);
 });

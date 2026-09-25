@@ -21,6 +21,11 @@ import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { gitSourceRematerializer } from "../src/deployment/source_rematerializer.js";
+import type {
+  AuthoritativeResultResolver,
+  ResolvedResult,
+  ResultSubjectRef,
+} from "../src/project_world/index.js";
 import {
   SqliteDerivedResultCandidateStore,
   admitCrossBasis,
@@ -46,6 +51,11 @@ const git = (cwd: string, args: readonly string[]): string =>
 const srcPath = (path: string) => ({ domain: "source", scope: "path", path }) as const;
 const MANIFEST = "a".repeat(64);
 const BASIS = "b".repeat(64);
+/**
+ * §D5-0: the result identity these fixtures admit. It is now a REQUIRED part of an admission, because the
+ * effect resolves the result from the record rather than accepting the caller's description of it.
+ */
+const HARDENING_RESULT_REF = Object.freeze({ kind: "ATTEMPT_RESULT" as const, ref: "attempt-hardening" });
 
 /* ================================================================== *
  * R1 — premise authority
@@ -171,6 +181,7 @@ describe("§D3-R2 the effect takes an admission identity, and the target comes f
       targetObservationDigest: "digest-of-B1",
       targetBasisRevision: "revision-of-B1",
       observationRefs: refs,
+      resultSubjectRef: HARDENING_RESULT_REF,
     });
     // The record holds ONE observation, and both halves come from it.
     expect(record.targetObservation.targetObservationDigest).toBe("digest-of-B1");
@@ -180,9 +191,9 @@ describe("§D3-R2 the effect takes an admission identity, and the target comes f
   });
 
   it("the admission ref is derived from the issuance AND the target, so it names both", () => {
-    const one = crossBasisAdmissionRefOf({ issuanceRef: "issuance-a", targetObservationDigest: "target-1" });
-    const other = crossBasisAdmissionRefOf({ issuanceRef: "issuance-a", targetObservationDigest: "target-2" });
-    const third = crossBasisAdmissionRefOf({ issuanceRef: "issuance-b", targetObservationDigest: "target-1" });
+    const one = crossBasisAdmissionRefOf({ issuanceRef: "issuance-a", targetObservationDigest: "target-1", resultSubjectRef: HARDENING_RESULT_REF });
+    const other = crossBasisAdmissionRefOf({ issuanceRef: "issuance-a", targetObservationDigest: "target-2", resultSubjectRef: HARDENING_RESULT_REF });
+    const third = crossBasisAdmissionRefOf({ issuanceRef: "issuance-b", targetObservationDigest: "target-1", resultSubjectRef: HARDENING_RESULT_REF });
     expect(new Set([one, other, third]).size).toBe(3);
   });
 
@@ -252,7 +263,7 @@ describe("§D3-R3 authority survives a restart, because the record is durable", 
       exactlyCurrent: false,
       observationRefs: refs,
     });
-    const admissionRef = crossBasisAdmissionRefOf({ issuanceRef: certificate.issuanceDigest, targetObservationDigest: "target-1" });
+    const admissionRef = crossBasisAdmissionRefOf({ issuanceRef: certificate.issuanceDigest, targetObservationDigest: "target-1", resultSubjectRef: HARDENING_RESULT_REF });
     const decision = admitCrossBasis({
       issuer: first.issuer,
       presented: certificate,
@@ -265,6 +276,7 @@ describe("§D3-R3 authority survives a restart, because the record is durable", 
       schemaVersion: 1,
       admissionRef,
       issuanceRef: certificate.issuanceDigest,
+      resultSubjectRef: HARDENING_RESULT_REF,
       resultManifestDigest: MANIFEST,
       originBasisDigest: BASIS,
       targetObservation: { targetObservationDigest: "target-1", targetBasisRevision: "H1", detail: "observed" },
@@ -384,16 +396,29 @@ describe("§D3-R4 the world is a materialized view, not an archive", () => {
       resultReads: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
       resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
     };
+    /**
+     * §D5-0: the result this admission is about, declared where it is resolved. The effect reads the delta
+     * from here, so the caller no longer describes the result at all.
+     */
+    rig.declareResult({
+      resultSubjectRef: HARDENING_RESULT_REF,
+      resultManifestDigest: MANIFEST,
+      originBasisDigest: BASIS,
+      sourceResult: { backend: "git", baseRevision: h0, resultRevision: r0 },
+      projectId: "p",
+      taskId: "t1",
+    });
     const { admissionRef } = rig.admit({
       resultManifestDigest: MANIFEST,
       originBasisDigest: BASIS,
       targetObservationDigest: h0,
       targetBasisRevision: h0,
       observationRefs: refs,
+      resultSubjectRef: HARDENING_RESULT_REF,
     });
 
     return rig.runtime
-      .rematerialize({ admissionRef, originSource: { backend: "git", fromRevision: h0, toRevision: r0 }, projectId: "p", taskId: "t1" })
+      .rematerialize({ admissionRef })
       .then((first) => {
         expect(first.state).toBe("MATERIALIZED");
         const candidate = first.candidate!;
@@ -411,12 +436,7 @@ describe("§D3-R4 the world is a materialized view, not an archive", () => {
          * added: without it a retry would re-create the released world and produce a SECOND candidate
          * identity for one operation.
          */
-        return rig.runtime!.rematerialize({
-          admissionRef,
-          originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-          projectId: "p",
-          taskId: "t1",
-        }).then((second) => {
+        return rig.runtime!.rematerialize({ admissionRef }).then((second) => {
           expect(second.state).toBe("MATERIALIZED");
           expect(second.candidate?.candidateId).toBe(candidate.candidateId);
           expect(rig.candidates.readByDerivation(candidate.derivation.derivationId)).toHaveLength(1);
@@ -451,19 +471,27 @@ describe("§D3-R4 the world is a materialized view, not an archive", () => {
       resultReads: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
       resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
     };
+    /**
+     * §D5-0: the result this admission is about, declared where it is resolved. The effect reads the delta
+     * from here, so the caller no longer describes the result at all.
+     */
+    rig.declareResult({
+      resultSubjectRef: HARDENING_RESULT_REF,
+      resultManifestDigest: MANIFEST,
+      originBasisDigest: BASIS,
+      sourceResult: { backend: "git", baseRevision: h0, resultRevision: r0 },
+      projectId: "p",
+      taskId: "t1",
+    });
     const { admissionRef } = rig.admit({
       resultManifestDigest: MANIFEST,
       originBasisDigest: BASIS,
       targetObservationDigest: h0,
       targetBasisRevision: h0,
       observationRefs: refs,
+      resultSubjectRef: HARDENING_RESULT_REF,
     });
-    const result = await rig.runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "p",
-      taskId: "t1",
-    });
+    const result = await rig.runtime.rematerialize({ admissionRef });
     // Hygiene failure is not a result failure: the candidate was recorded before the release was attempted.
     expect(result.state).toBe("MATERIALIZED");
     expect(result.candidate).not.toBe(null);
@@ -584,7 +612,7 @@ describe("§D3-R-LIVE a real deployment composes the authority trio and can carr
     });
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
 
-    const admissionRef = crossBasisAdmissionRefOf({ issuanceRef: certificate.issuanceDigest, targetObservationDigest: h0 });
+    const admissionRef = crossBasisAdmissionRefOf({ issuanceRef: certificate.issuanceDigest, targetObservationDigest: h0, resultSubjectRef: HARDENING_RESULT_REF });
     const decision = admitCrossBasis({
       issuer,
       presented: certificate,
@@ -598,6 +626,7 @@ describe("§D3-R-LIVE a real deployment composes the authority trio and can carr
       schemaVersion: 1,
       admissionRef,
       issuanceRef: certificate.issuanceDigest,
+      resultSubjectRef: HARDENING_RESULT_REF,
       resultManifestDigest: MANIFEST,
       originBasisDigest: BASIS,
       targetObservation: { targetObservationDigest: h0, targetBasisRevision: h0, detail: "the observed target" },
@@ -609,19 +638,35 @@ describe("§D3-R-LIVE a real deployment composes the authority trio and can carr
 
     const candidates = new SqliteDerivedResultCandidateStore(join(root, "cand.sqlite"));
     cleanups.push(() => candidates.close());
+    /**
+     * §D5-0: the resolver this chain needs. The runtime now REFUSES to run without one — a deployment that
+     * cannot say which result an admission is about cannot carry one forward — so this test composes one,
+     * exactly as a deployment would.
+     */
+    const results: AuthoritativeResultResolver = Object.freeze({
+      adapterId: "test-result-registry",
+      resolve: (ref: ResultSubjectRef): ResolvedResult | null =>
+        ref.ref === HARDENING_RESULT_REF.ref
+          ? Object.freeze({
+              resultSubjectRef: HARDENING_RESULT_REF,
+              resultManifestDigest: MANIFEST,
+              originBasisDigest: BASIS,
+              projectId: "d3rlive",
+              taskId: "t1",
+              sourceResult: Object.freeze({ backend: "git", baseRevision: h0, resultRevision: r0 }),
+              producedAssetRefs: Object.freeze([]),
+            })
+          : null,
+    });
     const runtime = makeRematerializationRuntime({
       issuer,
       rematerializer: gitSourceRematerializer({ repository: repo, worldsRoot }),
       candidates,
       admissions,
+      results,
       observeCurrentTarget: () => ({ targetObservationDigest: h0, targetBasisRevision: h0 }),
     });
-    const result = await runtime.rematerialize({
-      admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3rlive",
-      taskId: "t1",
-    });
+    const result = await runtime.rematerialize({ admissionRef });
     expect(result.state).toBe("MATERIALIZED");
     // Canonical source untouched: the effect stayed in candidate space.
     expect(git(repo, ["rev-parse", "HEAD"])).toBe(h0);

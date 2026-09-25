@@ -45,6 +45,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
 import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
 import {
@@ -520,7 +521,18 @@ interface WorldBasisCapturePort {
  * owner without naming any implementation.
  */
 interface WorldBasisReadPort {
-  read(input: { readonly attemptId: string }): { readonly basis: { readonly basisDigest: string }; readonly taskId: string; readonly capturedAt: string } | null;
+  /**
+   * §D5-0: the FULL captured basis, not only its digest.
+   *
+   * The authoritative result resolver derives an attempt's result manifest from its basis' SOURCE facet, so
+   * a digest-only read cannot support it. The runtime already returns the whole record; this type simply
+   * says so, rather than forcing a second reader for one field.
+   */
+  read(input: { readonly attemptId: string }): {
+    readonly basis: ProjectWorldBasis;
+    readonly taskId: string;
+    readonly capturedAt: string;
+  } | null;
   assessCurrentness(input: { readonly attemptId: string }): {
     readonly currentness: "CURRENT" | "STALE" | "UNKNOWN";
     readonly compatibility: "EXACT" | "COMPATIBLE" | "INCOMPATIBLE" | "UNKNOWN";
@@ -3913,6 +3925,24 @@ export class ProjectController {
       taskId: record.taskId,
       capturedAt: record.capturedAt,
     });
+  }
+
+  /**
+   * PLMP-LEAN-1 §D5-0: the attempt's FULL captured basis, for the authoritative result resolver.
+   *
+   * The resolver derives an attempt's result manifest from its basis' SOURCE facet, so it needs the record
+   * rather than its digest. This is the same read as `attemptWorldBasis` above — one reader, two
+   * projections — and it is on the Work owner for the same reason: the basis store is the only thing that
+   * knows an attempt's provenance, and the resolver must not reconstruct one.
+   */
+  attemptBasisForResolution(
+    attemptId: string,
+  ): { readonly basis: ProjectWorldBasis; readonly taskId: string } | null {
+    const port = this.#worldBasisReadPort;
+    if (port === undefined) return null;
+    const record = port.read({ attemptId });
+    if (record === null) return null;
+    return Object.freeze({ basis: record.basis, taskId: record.taskId });
   }
 
   /**
