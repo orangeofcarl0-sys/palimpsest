@@ -461,6 +461,21 @@ interface WorkWorkerTaskContext {
 }
 
 /**
+ * §D5-c3: the attempt-centric delivery — the task-level `work` half exactly as
+ * before, plus the attempt's OWN compiled manifest (its boot references, its
+ * pull handles, and — for a rework attempt — the read-only PriorResultContext).
+ */
+interface WorkWorkerAttemptContext {
+  readonly work: WorkWorkerTaskContext;
+  readonly compiled: {
+    readonly manifestId: string;
+    readonly boot: readonly Readonly<{ handle: string; kind: string; ref: string; bytes: number }>[];
+    readonly handles: readonly Readonly<{ handle: string; kind: string; ref: string }>[];
+    readonly continuation?: import("../context/prior_result.js").PriorResultContext | undefined;
+  };
+}
+
+/**
  * PLMP-LEAN-1 §D2-e1: the outcome of CLOSING a worker's result into canonical Work.
  *
  *     WorkerOutcome  ->  Canonical Work result
@@ -3775,6 +3790,49 @@ export class ProjectController {
    *
    *     Context isolation != Context starvation
    */
+  /**
+   * PLMP-LEAN-1 §D5-c3 — the ATTEMPT-CENTRIC worker context: what ONE attempt,
+   * under its own authorization and its own world, is told before it runs.
+   *
+   *     prepare A1  →  compileTaskContext(A1)  →  this composition  →  worker.run()
+   *
+   * The compilation happens at the only point where BOTH the attempt's identity
+   * and its world exist and NEITHER has produced work yet — which is what makes
+   * the delivered context attempt-scoped (M1 for A1, never the task's latest)
+   * and lets a rework attempt carry its PriorResultContext as read-only
+   * presentation. The worker receives COORDINATES and concise interpretations,
+   * and receives NO authority: no permit, no assessment, no promotion token,
+   * no settlement power ride in this object.
+   */
+  async workWorkerAttemptContext(
+    attemptId: string,
+    options: {
+      verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+    } = {},
+  ): Promise<WorkWorkerAttemptContext> {
+    const attemptRow = this.store.connection
+      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
+      .get(this.projectId, attemptId) as { task_id: string } | undefined;
+    if (attemptRow === undefined) {
+      throw new DomainValidationError(`attempt "${attemptId}" does not exist — worker context is compiled per attempt, after the attempt's identity and world exist`);
+    }
+    const work = this.workWorkerTaskContext(String(attemptRow.task_id));
+    const compiled = await this.compileTaskContext(attemptId, {
+      ...(options.verificationHistory === undefined ? {} : { verificationHistory: options.verificationHistory }),
+    });
+    return Object.freeze({
+      work,
+      compiled: Object.freeze({
+        manifestId: compiled.manifest.manifest_id,
+        boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
+        handles: Object.freeze(compiled.distribution.handles.map((entry) => Object.freeze({ ...entry }))),
+        ...(compiled.manifest.continuation === undefined
+          ? {}
+          : { continuation: compiled.manifest.continuation }),
+      }),
+    });
+  }
+
   workWorkerTaskContext(taskId: string): WorkWorkerTaskContext {
     const envelope = this.#taskEnvelope(taskId);
     const project = this.#project();

@@ -54,6 +54,9 @@ function runExecutable(
  */
 export const WORKER_COMMIT_NAME = "Palimpsest Worker";
 export const WORKER_COMMIT_EMAIL = "worker@palimpsest.invalid";
+/** §D5-c3: the promotion authority's own operational identity for its merge commits. */
+export const PROMOTION_COMMIT_NAME = "Palimpsest Promotion Authority";
+export const PROMOTION_COMMIT_EMAIL = "promotion@palimpsest.invalid";
 
 interface CreateWorktreeInput {
   readonly worktreeId: string;
@@ -543,7 +546,24 @@ export class GitCliPort implements GitPort {
     if (expected !== input.expectedHeadCommit) {
       throw new Error(`expected head ${input.expectedHeadCommit} does not match ${expected}`);
     }
-    await this.#git(["merge", "--no-ff", "-m", `promote ${input.promotionId}`, input.sourceCommit]);
+    // The merge commit is the PROMOTION AUTHORITY's operational commit, and it
+    // carries a stable operational identity injected per-invocation (`-c`): a
+    // machine without a global git identity must still be able to promote
+    // deterministically, and the authority's commits must be recognizable as
+    // the authority's — never as the operator's. (Measured §D5-c3: without
+    // this, `git merge --no-ff` fails on an identity-less runner and the
+    // crash window classifies the outcome as uncertain.)
+    await this.#git([
+      "-c",
+      `user.name=${PROMOTION_COMMIT_NAME}`,
+      "-c",
+      `user.email=${PROMOTION_COMMIT_EMAIL}`,
+      "merge",
+      "--no-ff",
+      "-m",
+      `promote ${input.promotionId}`,
+      input.sourceCommit,
+    ]);
     const head = await this.head();
     return { resultingHeadCommit: head };
   }
