@@ -4601,3 +4601,112 @@ $$\boxed{\text{D3 solved concurrent-result SEMANTICS, not concurrent-result PROD
 （优先调研 PTC/DSH sandbox 能否建立 read-access boundary），否则：
 
 $$\boxed{declared\ read\_paths \neq authoritative\ read\ footprint}$$
+
+## 附录 M（第 D4-0 期）：Authority Split —— 并发是 plan 声明的属性，不是产品硬编码
+
+$$\boxed{\text{SpeculativeMutationAuthority} \neq \text{CanonicalMutationAuthority}}$$
+
+D2 引入"exactly one mutating Work line"，理由是**分歧**：两个写者改一棵树就是损坏。该理由对 **in-place** 正确
+（attempt 的树**就是** canonical 树），但对 **placed** lane **过强**（attempt 拥有隔离 `ExecutionWorld`，
+canonical source 在 Promotion 接受结果之前完全未动）。于是 D2 把两种 authority 合成了一种：
+
+```
+SPECULATIVE_WORLD    这个 attempt 能否拥有隔离 world？   per-attempt，placement-scoped
+CANONICAL_SOURCE     这个结果能否改 canonical source？   一次一个，仅 Promotion
+```
+
+项目级"one nonterminal attempt"规则**用 canonical-source authority 去禁止 speculative world** ——
+这就是为什么产品无法并发产出两个结果，尽管 D3 已能把两个同 basis 的结果带进可串行化的 canonical history。
+
+代码：`src/domain/speculative_authority.ts`（L1，纯规则；不从 domain barrel 再导出）。
+machine proofs：`test/lean_speculative_authority.test.ts`（12 项）。装置：`rs-test/d4-lane-probe.mjs`。
+
+### M.1 替换成什么：scheduler 自己声明的 task concurrency
+
+$$\boxed{\text{declared concurrency 1} \Rightarrow \text{一个 ACTIVE task，第二个由 SCHEDULER 拒绝}}$$
+
+$$\boxed{\text{declared concurrency N} \Rightarrow \text{N 个 task 可同时持有 speculative world}}$$
+
+"多少 task 可以 ACTIVE"是 **plan 声明**的属性（`StageGraphDefinition.concurrency`），
+而产品硬编码的 1 **静默覆盖**了它。新规则因此**让位给 scheduler 自己的决定**，并发从"被禁止"变成"可声明"。
+
+**IN-PLACE 刻意不变**：那里 speculative world 与 canonical source **是同一棵树**，所以保持严格单写者，
+检查仍在 `claim()` 里（`in-place execution allows one RUNNING attempt at a time`）。两类拒绝的**理由保持可区分**：
+in-place 报 `CANONICAL_SOURCE_IS_THE_LANE`，placed 报 scheduler 的 `TASK_NOT_NEXT_SCHEDULABLE`。
+
+### M.2 实测（`d4-lane-probe.mjs`，真实 deployment）
+
+默认 graph（concurrency 缺省 ⇒ 1）：
+
+```
+第一个 prepareMutatingWork → PREPARED t1
+scheduler next decision after one ACTIVE task → idle
+第二个（t2）→ REFUSED: TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next decision is idle
+```
+
+**注意拒绝的 authority 变了**：以前是 `MUTATING_LANE_OCCUPIED`（产品级），现在是 scheduler 的声明容量。
+调用方看到的仍是"拒绝 + 零事件"，变的是**谁拥有这个问题** —— 因此一个**声明了**更多并发的 plan 才能用上它。
+
+声明 concurrency 2 后（`lean_speculative_authority.test.ts`）：
+
+```
+t1 → PREPARED，t2 → PREPARED
+attempts: 两条，均 RUNNING，worldPath 互不相同
+canonical HEAD 未变，工作树干净（两个 speculative world 都不碰 canonical）
+```
+
+### M.3 规则本身的形状（四条，全部有测试）
+
+| 情形 | 结果 |
+|---|---|
+| `placement = in-place` | `REFUSE / CANONICAL_SOURCE_IS_THE_LANE` —— **即使 lane 为空、scheduler 说 go**，placement 本身就是理由 |
+| placed + scheduler 说 next | `START`（新位置由 scheduler 决定，不由本规则） |
+| placed + 指名 task | `RESUME` 该 task 的位置，**无论还有多少其他 world 在飞** —— retry 路径不该依赖"同时还有多少事在发生" |
+| placed + 未指名 + 恰一个位置 | `RESUME` —— crash 后 `ATTEMPT_CREATED` 的 retry 必须能找到它；要求指名会把可恢复的 retry 变成拒绝 |
+| placed + 未指名 + 多个位置 | `REFUSE / SPECULATIVE_LANE_AMBIGUOUS` —— 猜是唯一绝不能做的事，指名才是诚实补救 |
+| 同一 task 两个位置 | `REFUSE / MULTIPLE_POSITIONS_FOR_ONE_TASK` —— 这是**已分歧**的工作线，拒绝而不是挑一个 |
+
+"未指名 + 恰一个"这条是**实测逼出来的**：我第一版对未指名一律要求指名，`ATTEMPT_CREATED` retry 测试立刻红 ——
+D2 的 retry 正是靠"lane 里只有一个就 resume 它"，删掉它会把可恢复的 crash 变成死路。
+
+### M.4 一处结构约束：两个入口消费**同一条**规则
+
+两个 mutating 入口（`mutatingWorkTarget` / `prepareMutatingWork`）都调用
+`#speculativeAdmission(expectedTaskId)`，规则本体在 domain。机器检查断言
+`#speculativeAdmission(` 恰好出现 3 次（1 处声明 + 2 处调用），且旧的内联规则文本
+（`D2 keeps exactly one mutating Work line`）**已从 controller 消失** —— 一个项目上两份"这条 lane 能否开"的定义，
+正是两个入口开始分歧的方式。
+
+### M.5 一条**新发现**的既有缺口（本轮不修，如实记录）
+
+`stageGraph` 是 `StartProjectInput` 上的字段，`controller.start()` 会解析并 `declareStageGraph(...)` ——
+但**它没有任何可达表面**：
+
+- 不是任何 tool 的参数（`palimpsest_start` 的 schema 只有 `projectId`/`goal`/`tasks`/`headCommit`）；
+- 不经 install / deployment profile 传递（`grep stageGraph src/composition src/install.ts src/deployment` 为空）。
+
+所以**当前所有部署的并发恒为 1**，`declareStageGraph` 虽是公开方法却只能被测试调用。
+这意味着 D4-0 的"并发可声明"目前**只在 API 层成立**；要让真实 plan 声明并发，需要把
+`concurrency` 暴露到 plan 入口（这是**受评审的产品面决定**，与 D3-R 里被 parity gate 正确挡回的
+`InstalledPalimpsest.crossBasis` 同类）。我没有擅自加，D4-a 需要它时再按产品面流程处理。
+
+### M.6 边界：canonical-source authority 未被本阶段触动
+
+- in-place 严格单写者**原样保留**（机器检查 `in-place execution allows one RUNNING attempt at a time` 仍在）；
+- 规则是**纯的**：无 store、无 clock、无 I/O（机器检查不含 `DatabaseSync` / `new Date(` / `node:fs`）；
+- 无 promotion 路径、无第二套 authority 词汇（机器检查不含 `promoteAttempt` / `assessPromotionEligibility` /
+  `ATTEMPT_COMPLETED` / `recordCallback`）。
+
+### M.7 门禁
+
+单元 **218 files / 2442 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。未新增公开名。
+
+**验证承重**：把 D2 的产品级规则（任何 nonterminal attempt 即拒绝）恢复回去，**6 个测试立刻红**；
+恢复后 12 项全绿。
+
+### M.8 下一步
+
+D4-a 需要先把 `concurrency` 暴露到 plan 入口（见 M.5），真实双 worker gate 仍留到 **D4-b/D4-LIVE**；
+**D4-c 不可省略**：`read_paths` 必须从 declaration 升级为 authority-bearing evidence，否则第二个并发结果
+几乎必然 `INCOMPATIBLE`。

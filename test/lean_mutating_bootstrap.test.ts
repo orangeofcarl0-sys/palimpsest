@@ -192,7 +192,7 @@ describe("§D2-b 3/4. envelope authority is reused, and the lane is exclusive", 
     );
   });
 
-  it("MUTATING_LANE_OCCUPIED: a second lane is refused while one is held, with zero events", async () => {
+  it("§D4-0 a second lane is refused by the SCHEDULER, with zero events", async () => {
     const { repo, head } = workspace();
     const { controller, call, connection } = makeStack(repo);
     await declarePlan(call, head);
@@ -205,9 +205,21 @@ describe("§D2-b 3/4. envelope authority is reused, and the lane is exclusive", 
     expect(again.attemptId).toBe(first.attemptId);
     expect(eventCount(connection)).toBe(before);
 
-    // A different task: the lane is held, so it is refused rather than displaced.
-    await expect(controller.prepareMutatingWork({ expectedTaskId: "t2" })).rejects.toThrow(/MUTATING_LANE_OCCUPIED/u);
+    /**
+     * A different task is refused — and WHICH authority refuses it is the point of §D4-0.
+     *
+     * Before the authority split this was `MUTATING_LANE_OCCUPIED`, a product-wide "one nonterminal
+     * attempt" rule that used the CANONICAL-SOURCE authority to forbid a speculative world. That rule is
+     * now the SCHEDULER's declared task concurrency, so the refusal names the scheduler's decision. The
+     * behaviour a caller sees is the same refusal with zero events; what changed is which authority owns
+     * the question, and therefore whether a plan that DECLARES more concurrency can use it.
+     */
+    await expect(controller.prepareMutatingWork({ expectedTaskId: "t2" })).rejects.toThrow(/TASK_NOT_NEXT_SCHEDULABLE/u);
     expect(eventCount(connection)).toBe(before);
+
+    // The canonical-source authority is still enforced where it applies: an in-place deployment keeps
+    // strict single-writer, because there the speculative world IS the canonical tree.
+    expect(controller.execution).toBe("worktree");
   });
 });
 

@@ -45,6 +45,7 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
 import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
 import {
   compilePlanRevision,
@@ -2718,34 +2719,21 @@ export class ProjectController {
         "WORK_NOT_DECLARED: this project has no canonical plan, so there is no task to execute — declare the work first (a plan, or palimpsest_begin for direct work); delegation executes work the project already recognizes, it does not invent it",
       );
     }
-    const lane = this.#nonterminalAttempts();
-    if (lane.length > 1) {
-      throw new DomainValidationError(
-        `MUTATING_LANE_OCCUPIED: ${String(lane.length)} nonterminal attempts already exist (${lane.map((entry) => `${entry.attemptId}@${entry.state}`).join(", ")}) — D2 keeps exactly one mutating Work line, and it will not add another to an already-diverged project`,
-      );
+    /**
+     * §D4-0: ONE admission read, shared with the bootstrap entrance below. It decides whether a
+     * SPECULATIVE world may open or resume, and defers to the scheduler for whether a NEW position may
+     * start — so how many tasks may be in flight is what the PLAN declares, not a product-wide constant.
+     */
+    const admission = this.#speculativeAdmission(expectedTaskId);
+    if (admission.kind === "REFUSE") throw speculativeAdmissionRefusal(admission);
+    if (admission.kind === "RESUME") {
+      return Object.freeze({
+        taskId: admission.taskId,
+        baseCommit: this.#taskEnvelope(admission.taskId).base_commit,
+        resumed: true,
+      });
     }
-    if (lane.length === 1) {
-      const holder = lane[0]!;
-      if (expectedTaskId !== undefined && holder.taskId !== expectedTaskId) {
-        throw new DomainValidationError(
-          `MUTATING_LANE_OCCUPIED: the mutating lane is held by task "${holder.taskId}" (attempt ${holder.attemptId}@${holder.state}), not by the requested task "${expectedTaskId}" — settle it first; a bootstrap never displaces a running line`,
-        );
-      }
-      return Object.freeze({ taskId: holder.taskId, baseCommit: this.#taskEnvelope(holder.taskId).base_commit, resumed: true });
-    }
-    const preview = this.preview();
-    if (preview.decision !== "next" || preview.eventType !== "TASK_STARTED" || preview.entityId === undefined) {
-      throw new DomainValidationError(
-        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next decision is ${preview.decision === "next" ? String(preview.eventType) : preview.decision} — a mutating delegation bootstraps the task the project itself makes next, and it never reorders, holds or skips work to reach another one`,
-      );
-    }
-    const taskId = preview.entityId;
-    if (expectedTaskId !== undefined && taskId !== expectedTaskId) {
-      throw new DomainValidationError(
-        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next task is "${taskId}", not the requested "${expectedTaskId}" — expectedTaskId is an assertion, not a scheduling command`,
-      );
-    }
-    return Object.freeze({ taskId, baseCommit: this.#taskEnvelope(taskId).base_commit, resumed: false });
+    return Object.freeze({ taskId: admission.taskId, baseCommit: this.#taskEnvelope(admission.taskId).base_commit, resumed: false });
   }
 
   /**
@@ -2802,19 +2790,21 @@ export class ProjectController {
 
     const repository = this.#canonicalRepository();
 
-    // P3 — lane occupancy, which is also the retry path. One mutating Work line, so a nonterminal
-    // attempt is either THIS work resuming or another line entirely.
-    const lane = this.#nonterminalAttempts();
-    if (lane.length > 1) {
-      throw new DomainValidationError(
-        `MUTATING_LANE_OCCUPIED: ${String(lane.length)} nonterminal attempts already exist (${lane.map((entry) => `${entry.attemptId}@${entry.state}`).join(", ")}) — D2 keeps exactly one mutating Work line, and it will not add another to an already-diverged project`,
-      );
-    }
-    if (lane.length === 1) {
-      const holder = lane[0]!;
-      if (expectedTaskId !== undefined && holder.taskId !== expectedTaskId) {
+    /**
+     * P3/P4 — §D4-0: the SAME admission read `mutatingWorkTarget` uses, so the two entrances cannot
+     * disagree about whether a speculative world may open. It answers three things at once: whether this
+     * work already holds a position (resume), whether the scheduler makes it next (start), or a typed
+     * refusal. Concurrency is what the PLAN declares, so this no longer imposes a product-wide 1.
+     */
+    const admission = this.#speculativeAdmission(expectedTaskId);
+    if (admission.kind === "REFUSE") throw speculativeAdmissionRefusal(admission);
+
+    if (admission.kind === "RESUME") {
+      // The position already exists. Nothing is re-claimed and no second world is made.
+      const holder = this.#nonterminalAttempts().find((attempt) => attempt.taskId === admission.taskId);
+      if (holder === undefined) {
         throw new DomainValidationError(
-          `MUTATING_LANE_OCCUPIED: the mutating lane is held by task "${holder.taskId}" (attempt ${holder.attemptId}@${holder.state}), not by the requested task "${expectedTaskId}" — settle it first; a bootstrap never displaces a running line`,
+          `the admission named task "${admission.taskId}" as holding a position, but no nonterminal attempt for it exists — the read and the state disagree, and this refuses rather than guessing`,
         );
       }
       const envelope = this.#taskEnvelope(holder.taskId);
@@ -2826,14 +2816,13 @@ export class ProjectController {
         );
       }
       if (holder.state === "CREATED") {
-        // A retry after a crash between ATTEMPT_CREATED and the claim: the attempt exists, the
-        // worktree does not. Claim THAT attempt — stepping again would deadlock, because the
-        // scheduler returns nothing while a task occupies the stage.
+        // A retry after a crash between ATTEMPT_CREATED and the claim: the attempt exists, the world does
+        // not. Claim THAT attempt — stepping again would deadlock, because the scheduler returns nothing
+        // while a task occupies the stage.
         const claimed = await this.claim(holder.attemptId);
         return this.#preparedProjection("PREPARED", holder.taskId, holder.attemptId, claimed.worktreePath, envelope, contract, resumedStandard, "the task's attempt existed and was claimed; its isolated work world is ready");
       }
-      // LEASED or RUNNING: the position already exists. Nothing is re-claimed and no second worktree
-      // is made — the attempt keeps its own world, whatever state its worker is in.
+      // LEASED or RUNNING: the position exists, whatever state its worker is in.
       const observed = this.#attemptWorkDirSync(holder.attemptId);
       return this.#preparedProjection(
         "RESUMED",
@@ -2843,24 +2832,11 @@ export class ProjectController {
         envelope,
         contract,
         resumedStandard,
-        "this work already holds the mutating lane; its execution world is unchanged and nothing was re-claimed",
+        "this work already holds a mutating position; its execution world is unchanged and nothing was re-claimed",
       );
     }
 
-    // P4 — scheduler sovereignty. The task to execute is the one the PROJECT makes next.
-    const preview = this.preview();
-    if (preview.decision !== "next" || preview.eventType !== "TASK_STARTED" || preview.entityId === undefined) {
-      throw new DomainValidationError(
-        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next decision is ${preview.decision === "next" ? String(preview.eventType) : preview.decision} — a mutating delegation bootstraps the task the project itself makes next, and it never reorders, holds or skips work to reach another one`,
-      );
-    }
-    const taskId = preview.entityId;
-    if (expectedTaskId !== undefined && taskId !== expectedTaskId) {
-      throw new DomainValidationError(
-        `TASK_NOT_NEXT_SCHEDULABLE: the scheduler's next task is "${taskId}", not the requested "${expectedTaskId}" — expectedTaskId is an assertion, not a scheduling command`,
-      );
-    }
-
+    const taskId = admission.taskId;
     const envelope = this.#taskEnvelope(taskId);
 
     // P5 — what completion will require, derived from the canonical envelope BEFORE anything is
@@ -3820,6 +3796,31 @@ export class ProjectController {
    * D3) and deliberately no active-delegations store: canonical occupancy is DERIVED from task,
    * attempt, placement and state, exactly as D1 learned that semantic state is not host state.
    */
+
+  /**
+   * PLMP-LEAN-1 §D4-0: the ONE read both mutating entrances use to decide whether a SPECULATIVE world may
+   * open or resume.
+   *
+   *     SpeculativeMutationAuthority  ≠  CanonicalMutationAuthority
+   *
+   * The rule itself lives in the domain (`assessSpeculativeAdmission`), so the two entrances consume it
+   * rather than each restating it — two definitions of "may this lane open" over one project is how two
+   * entrances start disagreeing.
+   */
+  #speculativeAdmission(expectedTaskId: string | undefined): import("../domain/speculative_authority.js").SpeculativeAdmission {
+    const preview = this.preview();
+    return assessSpeculativeAdmission({
+      placement: this.execution === "in-place" ? "in-place" : "worktree",
+      requestedTaskId: expectedTaskId,
+      nonterminal: this.#nonterminalAttempts(),
+      schedulerDecision: {
+        decision: preview.decision,
+        ...(preview.eventType === undefined ? {} : { eventType: preview.eventType }),
+        ...(preview.entityId === undefined ? {} : { entityId: preview.entityId }),
+      },
+    });
+  }
+
   #nonterminalAttempts(): readonly { readonly attemptId: string; readonly taskId: string; readonly state: string }[] {
     const rows = this.store.connection
       .prepare(
