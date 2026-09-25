@@ -226,12 +226,20 @@ describe("§D5-b B. the READY/BLOCKED restriction is load-bearing, not incidenta
     const tasksTable = schema.slice(schema.indexOf("CREATE TABLE tasks ("), schema.indexOf("CREATE TABLE attempts ("));
     const attemptsTable = schema.slice(schema.indexOf("CREATE TABLE attempts ("), schema.indexOf("CREATE TABLE evidence ("));
     expect(tasksTable).toContain("envelope_json");
-    // The decisive assertion: an attempt does NOT carry its own envelope snapshot.
+    // The decisive assertion, and it STILL holds after §D5-b1: an attempt does NOT carry its own envelope
+    // snapshot. That is exactly why the binding must be RESOLVED from the Event Log rather than read from a
+    // column — D5-b1 fixed the read path, not the schema.
     expect(attemptsTable).not.toContain("envelope");
-    // And the Work owner reads the CURRENT one, from the TASKS table, for any attempt it is asked about.
+    /**
+     * And the Work owner no longer reads the CURRENT binding for a historical attempt. This assertion is the
+     * INVERSE of what the audit measured: at 2c32b97 this read was
+     * `SELECT envelope_json FROM tasks ...`, which is what made a rebinding retroactive. §D5-b1 replaced it
+     * with the resolver, so the same test now pins the fix.
+     */
     const controller = source("src/tools/controller.ts");
-    const reader = controller.slice(controller.indexOf("attemptWorkRecord(attemptId: string)"), controller.indexOf("attemptWorkRecord(attemptId: string)") + 900);
-    expect(reader).toContain("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?");
+    const reader = controller.slice(controller.indexOf("attemptWorkRecord(attemptId: string)"), controller.indexOf("attemptWorkRecord(attemptId: string)") + 2200);
+    expect(reader).not.toContain("SELECT envelope_json FROM tasks");
+    expect(reader).toContain("#attemptAuthorization(attemptId)");
   });
 });
 
@@ -239,8 +247,8 @@ describe("§D5-b B. the READY/BLOCKED restriction is load-bearing, not incidenta
  * C. Rebinding destroys a historical attempt's verifiability
  * ================================================================== */
 
-describe("§D5-b C. rebinding a task's envelope rewrites a HISTORICAL attempt's provenance", () => {
-  it("the historical attempt's envelope changes and its verification subject becomes underivable", async () => {
+describe("§D5-b C. rebinding a task's envelope leaves a HISTORICAL attempt's provenance intact", () => {
+  it("the historical attempt keeps its own envelope, and its verification subject still resolves", async () => {
     const { repo, head } = scenario();
     const { controller, attemptId } = await completeOneTask(repo, head);
 
@@ -257,20 +265,20 @@ describe("§D5-b C. rebinding a task's envelope rewrites a HISTORICAL attempt's 
     const before = controller.attemptWorkRecord(attemptId);
     expect(before?.state).toBe("COMPLETED");
     expect(String(before?.envelope?.base_commit)).toBe(head);
-    // BEFORE: the historical attempt is verifiable — the verification plane can name its subject.
-    expect(verificationSource.materialize(attemptId).baseCommit).toBe(head);
+    const subjectBefore = verificationSource.materialize(attemptId);
 
     /**
-     * Perform the rebinding the way plan reconciliation does — a direct write of the task's envelope — and
-     * ask the SHIPPED readers what the historical attempt now claims about itself.
+     * THE SAME REBINDING the audit performed at 2c32b97, where it DESTROYED this attempt's verifiability.
      *
-     * This is not a hypothetical: it is what `TASK_REAUTHORIZED`'s projector does, and it is what the
-     * tempting minimal fix (declare `verifying → ready`, then reauthorize) would do to a real attempt.
+     * §D5-b1 fixed the read path rather than the schema, so this test now asserts the OPPOSITE outcome from
+     * the one the audit measured. That inversion is the point: the operation is still performed exactly as
+     * plan reconciliation performs it, and the historical attempt must not move.
      */
     writeFileSync(join(repo, "src", "other.js"), "export const o = 1;\n");
     execFileSync("git", ["add", "-A"], { cwd: repo });
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H1"], { cwd: repo });
     const newHead = git(repo, ["rev-parse", "HEAD"]);
+    expect(newHead).not.toBe(head);
     const row = controller.store.connection
       .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
       .get("d5baudit", "t1") as unknown as { envelope_json: Uint8Array };
@@ -286,23 +294,24 @@ describe("§D5-b C. rebinding a task's envelope rewrites a HISTORICAL attempt's 
       .run(new TextEncoder().encode(JSON.stringify(fresh)), "d5baudit", "t1");
 
     const after = controller.attemptWorkRecord(attemptId);
-    // The attempt's own STATE is untouched — no failure was fabricated.
     expect(after?.state).toBe("COMPLETED");
-    // But what it reports as its authorized envelope has MOVED, retroactively.
-    expect(String(after?.envelope?.base_commit)).toBe(newHead);
-    expect(String(after?.envelope?.base_commit)).not.toBe(head);
-
     /**
-     * THE HARM, measured on the shipped verification path. The plane cross-checks the (immutable) report
-     * against the (now rebound) envelope and refuses to name a subject — so the historical result stops
-     * being verifiable at all.
+     * THE INVERSION. The task's CURRENT binding has moved (asserted directly on the row, so this is not a
+     * claim about the resolver alone), while the historical attempt still reports the envelope that
+     * authorized IT.
      *
-     *     HistoricalExecutionFact ≠ CurrentAcceptanceAuthority
-     *
-     * D5 §1 says the historical FACT must survive; this shows the current binding can destroy its
-     * readability, which is the same violation one step earlier.
+     *     TaskCurrentEnvelope can evolve   while   AttemptAuthorization remains immutable
      */
-    expect(() => verificationSource.materialize(attemptId)).toThrow(/inconsistent canonical record/u);
+    const currentRow = controller.store.connection
+      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
+      .get("d5baudit", "t1") as unknown as { envelope_json: Uint8Array };
+    expect(parseTaskEnvelope(JSON.parse(new TextDecoder().decode(currentRow.envelope_json))).envelope_id).toBe(fresh.envelope_id);
+    expect(String(after?.envelope?.envelope_id)).toBe(oldEnvelope.envelope_id);
+    expect(String(after?.envelope?.base_commit)).toBe(head);
+    // And verification continuity: the subject's base commit is still H0.
+    const subjectAfter = verificationSource.materialize(attemptId);
+    expect(subjectAfter.baseCommit).toBe(head);
+    expect(subjectAfter.digest).toBe(subjectBefore.digest);
   }, 180_000);
 });
 
