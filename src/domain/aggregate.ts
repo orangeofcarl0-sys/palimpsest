@@ -247,10 +247,6 @@ export class AggregateValidator {
     /**
      * §D5-b2 — STRUCTURAL vs AUTHORITY, and the split is the point.
      *
-     * STRUCTURAL: rebinding a task's authorization is legitimate for READY, BLOCKED **and** VERIFYING. A
-     * VERIFYING task whose completed result went stale is exactly the case D5 exists for, so refusing it
-     * structurally would make rework unexpressible — which the D5-b audit measured.
-     *
      * AUTHORITY: reopening a VERIFYING task is not an ordinary edit, so it requires a governed admission.
      * The measurement that forced this: the aggregate ALREADY accepts `TASK_READY` on a VERIFYING task
      * (verified by driving a real append), because the state machine lists VERIFYING among TASK_READY's
@@ -264,6 +260,27 @@ export class AggregateValidator {
      * VERIFYING is the ordinary "no promotion arrived, retry" path, and rebinding a task's envelope is what
      * plan reconciliation does. Gating either one alone leaves a two-step bypass through the other, so the
      * governed closure presents ONE pass whose two slots are consumed by the two events.
+     *
+     * MEASURED STATE OF THE TWO HALVES (D5-b2, verified by driving real appends — see
+     * `test/lean_d5b2_governed_rework.test.ts`):
+     *
+     *   TASK_READY       LIVE. A fully and correctly caused append on a VERIFYING task reaches this gate and
+     *                    is refused without a closure pass.
+     *   TASK_REAUTHORIZED  NOT REACHABLE, so the branch below it is unreachable code. Two independent
+     *                    refusals stand in front of it, and BOTH are structural facts rather than oversights:
+     *
+     *                      · `#validateTaskReauthorized` admits only READY/BLOCKED, and it runs in
+     *                        `validate()` — BEFORE admissions are examined;
+     *                      · even past that, no fresh envelope EXISTS for a VERIFYING task. The envelope must
+     *                        match the CURRENT ProjectIR, `envelope_id`/`idempotency_key` are digests over
+     *                        exactly (project, task, revision, digest, policy), and the projects row can only
+     *                        advance via PROJECT_REVISED — which `planReconciled` gates on quiescence, which a
+     *                        VERIFYING task blocks.
+     *
+     *                    So `E_1` is unobtainable exactly when it is needed, and the honest reading is that
+     *                    the reauthorization half belongs to §D5-c (the basis advance), not here. The check is
+     *                    left in place rather than deleted: it is the correct gate for the shape D5-c will
+     *                    make reachable, and removing it would erase the record of what was intended.
      */
     if (this.#taskState(connection, event) !== "VERIFYING") return;
     const pass = admission?.reworkPass;
