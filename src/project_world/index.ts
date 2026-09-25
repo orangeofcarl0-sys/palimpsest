@@ -155,3 +155,15 @@ export {
   type ResultSubjectKind,
   type ResultSubjectRef,
 } from "./result_resolution.js";
+export {
+  CONTINUATION_COMPATIBILITY_INPUTS,
+  CONTINUATION_CURRENTNESS,
+  assessContinuation,
+  continuationStillAppliesTo,
+  type ContinuationAssessment,
+  type ContinuationCapabilities,
+  type ContinuationCompatibilityInput,
+  type ContinuationCurrentness,
+  type ContinuationFacts,
+  type ContinuationPath,
+} from "./continuation.js";
