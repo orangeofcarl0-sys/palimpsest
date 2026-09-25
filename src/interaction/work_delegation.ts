@@ -95,7 +95,7 @@ export interface WorkDelegationTerminal {
 export interface WorkDelegationServiceDeps {
   readonly controller: Pick<
     ProjectController,
-    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerTaskContext" | "settleMutatingWork" | "attemptWorkRecord"
+    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerAttemptContext" | "settleMutatingWork" | "attemptWorkRecord"
   >;
   /** A port PER job, bound to the world the job's prepare materializes. */
   readonly workerFor: (worldPath: string) => WorkWorkerRunPort;
@@ -141,7 +141,9 @@ export async function executeMutatingWorkBlocking(
   // Re-ASSERT the frozen target (and, inside, the head basis) before any effect: a world that moved
   // between `start` and here is refused rather than silently reinterpreted as a different request.
   const prepared = await deps.controller.prepareMutatingWork({ expectedTaskId: input.expectedTaskId });
-  const context = deps.controller.workWorkerTaskContext(prepared.taskId);
+  // §D5-c3: compiled AFTER the attempt's identity and world exist (prepared),
+  // BEFORE the worker runs — per attempt, never per task-latest.
+  const context = await deps.controller.workWorkerAttemptContext(prepared.attemptId);
   const worker = deps.workerFor(prepared.worldPath);
   const workerOutcome = await worker.run({
     workDir: prepared.worldPath,
@@ -216,7 +218,7 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
           // Exposed as soon as it exists: from here the caller has a DURABLE identity, not just this
           // process's ephemeral handle.
           entry.attemptId = prepared.attemptId;
-          const context = deps.controller.workWorkerTaskContext(prepared.taskId);
+          const context = await deps.controller.workWorkerAttemptContext(prepared.attemptId);
           const workerOutcome = await deps.workerFor(prepared.worldPath).run({ workDir: prepared.worldPath, context });
           entry.settlement = await deps.controller.settleMutatingWork({
             attemptId: prepared.attemptId,
