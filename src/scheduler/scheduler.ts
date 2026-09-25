@@ -48,6 +48,11 @@ import {
   type TaskEnvelope,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import {
+  authorizationEventsFrom,
+  resolveAttemptAuthorization,
+  type AttemptAuthorization,
+} from "../state/attempt_authorization.js";
 import { activeEvidenceViews } from "../evidence/gate_dsl.js";
 import type { EventStore } from "../state/index.js";
 
@@ -684,6 +689,26 @@ export class Scheduler {
     );
   }
 
+  /**
+   * §D5-b1: the ATTEMPT's own authorization — resolved from the Event Log, never from the task's current
+   * binding. The same rule and the same resolver as the Work owner's read, so "which envelope authorized
+   * this attempt" has ONE definition rather than one per module.
+   */
+  #attemptAuthorization(attemptId: string): AttemptAuthorization {
+    const resolution = resolveAttemptAuthorization({
+      projectId: this.projectId,
+      attemptId,
+      // The same adapted read the Work owner uses, so both resolve through ONE definition.
+      events: authorizationEventsFrom((projectId) => this.store.listEvents(projectId)).listProjectEvents(this.projectId),
+    });
+    if (resolution.state === "UNRESOLVED") {
+      throw new DomainValidationError(
+        `ATTEMPT_AUTHORIZATION_UNRESOLVED: ${resolution.reason}: ${resolution.detail}`,
+      );
+    }
+    return resolution.authorization;
+  }
+
   #attemptContext(attemptId: string): [Row, TaskEnvelope] {
     const row = this.connection
       .prepare("SELECT * FROM attempts WHERE project_id=? AND attempt_id=?")
@@ -691,12 +716,6 @@ export class Scheduler {
     if (row === undefined) {
       throw new DomainValidationError("attempt does not exist");
     }
-    const task = this.connection
-      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
-      .get(this.projectId, row.task_id) as Row | undefined;
-    if (task === undefined) {
-      throw new DomainValidationError("attempt does not exist");
-    }
-    return [row, parseTaskEnvelope(decodeJsonBlob(task.envelope_json))];
+    return [row, this.#attemptAuthorization(attemptId).envelope];
   }
 }

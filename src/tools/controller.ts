@@ -45,6 +45,11 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
+import {
+  authorizationEventsFrom,
+  resolveAttemptAuthorization,
+  type AttemptAuthorization,
+} from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
 import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
@@ -3666,13 +3671,18 @@ export class ProjectController {
       | { task_id: string | null; state: string; report_json: unknown }
       | undefined;
     if (attempt === undefined) return null;
-    const envelopeRow =
-      attempt.task_id === null
-        ? undefined
-        : (this.store.connection
-            .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
-            .get(this.projectId, attempt.task_id) as { envelope_json: unknown } | undefined);
-    const rawEnvelope = envelopeRow?.envelope_json;
+    /**
+     * §D5-b1: the envelope is the ATTEMPT's recorded authorization, resolved from the Event Log.
+     *
+     * This read path is how the verification plane learns what an attempt was authorized to do, so reading
+     * the task's CURRENT binding here is what made a historical result's provenance move when its task was
+     * rebound — measured in the D5-b audit as the historical attempt's verification subject becoming
+     * underivable. Resolving instead of re-deriving is the whole fix.
+     *
+     * A binding that cannot be resolved THROWS rather than yielding `null`, so no caller can mistake a
+     * corrupted history for an attempt without an envelope — and nothing falls back to today's authority.
+     */
+    const envelope = this.#attemptAuthorization(attemptId).envelope;
     // A canonical row that cannot be READ is a corrupted record, so it fails loudly here rather than
     // leaking a raw parse error to whichever plane asked.
     const decode = (value: unknown, what: string): unknown => {
@@ -3684,16 +3694,6 @@ export class ProjectController {
         );
       }
     };
-    let envelope: TaskEnvelope | null = null;
-    if (rawEnvelope !== null && rawEnvelope !== undefined) {
-      try {
-        envelope = parseTaskEnvelope(decode(rawEnvelope, `task "${attempt.task_id}" envelope`));
-      } catch (error) {
-        throw new DomainValidationError(
-          `task "${attempt.task_id}" has an unreadable envelope: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-    }
     return Object.freeze({
       state: attempt.state,
       taskId: attempt.task_id,
@@ -5038,6 +5038,34 @@ export class ProjectController {
     return parseProjectIr(decodeJsonBlob(row.state_json));
   }
 
+  /**
+   * §D5-b1: the ATTEMPT's OWN authorization — the envelope that authorized it WHEN IT RAN.
+   *
+   * This used to read `tasks.envelope_json`, which is the task's CURRENT binding. For a task whose envelope
+   * never moved the two agree, so the difference went unnoticed; they diverge exactly when D5 rework is what
+   * you want — and then the old read would report the historical attempt as having been authorized by an
+   * envelope that did not exist when it ran.
+   *
+   *     Attempt A_0 authorized by E_0   ≠   task T's current envelope
+   *
+   * The binding has been in the Event Log all along (`ATTEMPT_CREATED.envelope_id`), so this RESOLVES it
+   * rather than re-deriving it, and fails closed instead of substituting today's authority.
+   */
+  #attemptAuthorization(attemptId: string): AttemptAuthorization {
+    const resolution = resolveAttemptAuthorization({
+      projectId: this.projectId,
+      attemptId,
+      // The store's own list, adapted field-for-field; the resolver names no store implementation.
+      events: authorizationEventsFrom((projectId) => this.store.listEvents(projectId)).listProjectEvents(this.projectId),
+    });
+    if (resolution.state === "UNRESOLVED") {
+      throw new DomainValidationError(
+        `ATTEMPT_AUTHORIZATION_UNRESOLVED: ${resolution.reason}: ${resolution.detail}`,
+      );
+    }
+    return resolution.authorization;
+  }
+
   #attemptContext(attemptId: string): [Record<string, unknown>, TaskEnvelope] {
     const row = this.store.connection
       .prepare("SELECT * FROM attempts WHERE project_id=? AND attempt_id=?")
@@ -5045,13 +5073,11 @@ export class ProjectController {
     if (row === undefined) {
       throw new DomainValidationError("attempt does not exist");
     }
-    const task = this.store.connection
-      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
-      .get(this.projectId, String(row.task_id)) as { envelope_json: Uint8Array } | undefined;
-    if (task === undefined) {
-      throw new DomainValidationError("task does not exist");
-    }
-    return [row, parseTaskEnvelope(decodeJsonBlob(task.envelope_json))];
+    /**
+     * The envelope comes from the ATTEMPT's recorded authorization, not from the task's current binding.
+     * The task row is no longer consulted at all here, so a rebinding cannot reach this read path.
+     */
+    return [row, this.#attemptAuthorization(attemptId).envelope];
   }
 
   async close(): Promise<void> {

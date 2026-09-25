@@ -5500,3 +5500,147 @@ D5-LIVE 真实三段 gate
 ```
 
 按评审指定的停点，**D5-b 的实现不在本片**：等 (甲)/(乙) 的裁决，或评审给出的第三条路。
+
+---
+
+## 附录 U（第 D5-b1 期）：Attempt-Scoped Immutable Authorization —— 甲的**语义**，但不复制事实
+
+$$\boxed{\textbf{D5-b1 — } Every\ Attempt\ proves\ its\ own\ authorization.}$$
+
+评审的裁决把 D5-b 的收尾从"甲/乙二选一"推进到一个更准确的第三条路：
+
+> **甲的语义是对的，但实现上不应给 `attempts` 直接新增完整 envelope 快照。** 真正错的是 **read path**，
+> 而不是 write model。把已经存在于 append-only Event Log 里的 `Attempt → Envelope` 绑定**正式提升为
+> canonical read model** 即可。
+
+本片实现这条裁决。
+
+### U.1 审计确认：绑定**一直**存在，错的是读法
+
+$$\boxed{Attempt\ A_0 \rightarrow Envelope\ E_0 \text{ 早已是不可变的 canonical fact}}$$
+
+```text
+ATTEMPT_CREATED          payload = (task_id, envelope_id, attempt_no)     ← 绑定
+TASK_CREATED
+TASK_REAUTHORIZED        payload = task_envelope                          ← envelope 正文
+```
+
+机器核对（`models.ts`）：字段清单写着 `ATTEMPT_CREATED: ["task_id", "envelope_id", "attempt_no"]`，
+且 payload parser **`requireFields(raw, "task_id", "envelope_id", "attempt_no")`**；`#createAttempt` 在创建时
+就把 `envelope.envelope_id` 盖进去。仓库只有 **一个** baseline migration。
+
+所以真正的错在：
+
+```text
+attempt → task_id → tasks.envelope_json        ← CURRENT envelope   （错）
+```
+
+而不是：
+
+```text
+attempt → ATTEMPT_CREATED.envelope_id → 历史授权事件 → Envelope E0   （对）
+```
+
+$$\boxed{\text{write model 已经是 attempt-scoped；read model 错误地把它投影成 task-current。}}$$
+
+**这是一个好消息**：不必制造新事实，**也不必迁移旧历史**——因此**不需要** `UNKNOWN_LEGACY_ENVELOPE`
+之类的 legacy 规则。旧 D2 attempt 的 envelope 是**可精确恢复**的，而不是未知的。
+
+### U.2 交付：`AttemptAuthorizationResolver`
+
+`src/state/attempt_authorization.ts`（L1，与 projector/event store 同级）：
+
+```
+resolveAttemptAuthorization({ projectId, attemptId, events })
+  → { state: "RESOLVED", authorization } | { state: "UNRESOLVED", reason, detail }
+
+AttemptAuthorization
+├── projectId / attemptId / taskId
+├── envelopeId
+├── envelope                  ← 历史正文
+├── createdEventId            ← 说"这次 attempt 绑定 E0"的事件
+└── authorizationEventId      ← 提供 E0 正文的事件
+```
+
+**它是 read model，不是 store**：无数据库、无写入、无缓存；机器断言模块不含 `DatabaseSync`/`INSERT`/
+`UPDATE`/`DELETE`/`randomUUID`/`new Date`。若将来性能需要，可以加投影/缓存，但**必须能由 Event Log 完整重建**。
+
+**每处歧义 fail closed**，六个具名原因（`AUTHORIZATION_FAILURES`）：`ATTEMPT_NOT_RECORDED` ·
+`BINDING_NOT_RECORDED` · `AUTHORIZATION_NOT_FOUND` · `AUTHORIZATION_AMBIGUOUS` ·
+`AUTHORIZATION_MISMATCH` · `AUTHORIZATION_WRONG_SUBJECT`。
+
+**其中最关键的负向证明**：`ATTEMPT_CREATED` 引用了不存在的 `E404` ⇒ 只返回
+`AUTHORIZATION_NOT_FOUND`，**绝不 fallback 到 current task envelope**。回退一次，损坏的历史就与健康的
+历史不可区分了。
+
+**无歧义规则**：两个授权事件声明同一 `envelope_id` ⇒ `AUTHORIZATION_AMBIGUOUS`，并把两个 event id 都
+点出来；实现里**不存在**任何"取最新/取第一条"的选择。
+
+### U.3 冻结的结构规则
+
+$$\boxed{TaskCurrentEnvelope \neq AttemptAuthorizedEnvelope}$$
+
+| 读法 | 语义 | 实现 |
+|---|---|---|
+| **Task-current** | "这个 Task **现在**被什么 envelope 授权？" | `#taskEnvelope(taskId)` / `taskEnvelopeOrNull(taskId)` 继续读 `tasks` 行 |
+| **Attempt-historical** | "这个 Attempt **当时**被什么 envelope 授权？" | `#attemptContext(attemptId)` / `attemptWorkRecord(attemptId)` 走 resolver |
+
+controller 的 14 处 `#attemptContext` 调用点**逐一审过**，全部是 attempt-scoped（完成契约、scope 校验、
+report 构造、evidence、settle 观测、finish、gate 命令…），因此全部改走 resolver；**没有做全局替换**：
+`taskEnvelopeOrNull` 这类 task-current 读保持不动（它问的问题不同，答案也不同）。
+
+$$\boxed{\text{one definition of "which envelope authorized this attempt"}}$$
+
+controller 与 scheduler **共用同一个 resolver**，机器断言两者都含 `resolveAttemptAuthorization(`，且各自的
+`#attemptContext` **不再**出现 `SELECT envelope_json FROM tasks`——两处手写 SQL 正是两个答案开始分叉的方式。
+
+### U.4 机器证明（`test/lean_d5b1_attempt_authorization.test.ts`，16 项）
+
+| | 证明 |
+|---|---|
+| 1 | **Historical immutability**：重绑 task 后 `attemptWorkRecord(A0)` 逐字段不变 |
+| 2 | **Verification continuity**：A0 的 subject `baseCommit` 仍是 H0，且 **digest 不变** |
+| 3 | 新 attempt 得到新授权（两个 attempt 各自 `E0`/`E1`，base 各自 H0/H1） |
+| 4 | **Current Task 与 Historical Attempt 合法分叉**，不是 inconsistency：task 行说 E1、attempt 说 E0，**两者都对**；`taskEnvelopeOrNull` 仍返回当前 envelope |
+| 5 | **No schema fabrication**：`attempts` 表仍**没有** envelope 列（schema 断言），且未新增 durable store |
+| 6 | **corrupt history fails closed**：无授权事件 ⇒ 拒绝，**绝不** fallback |
+| 7 | **No ambiguous binding**：一 id 两事件 ⇒ 拒绝；源码不含 `LIMIT 1` |
+| 8 | 无绑定 ⇒ `BINDING_NOT_RECORDED`（而非被修补） |
+| 9 | 跨 task 借用授权 ⇒ 拒绝 |
+| 10 | **No legacy guess**：字段清单 + parser `requireFields` 双证据 |
+
+**且修复本身验证过是承重的**：把 `attemptWorkRecord` 改回审计时的读法（读 task 当前 envelope），
+**5 项立刻红**（跨 D5-b1 与 D5-b 两个文件，含"历史不变"与"verification 连续"）。
+
+**另一处反向证据**：D5-b 审计里那条"重绑会摧毁历史 attempt 可验证性"的测试，在**同一次重绑操作**下现在
+断言**相反**结果——provenance 不动、subject 仍可导出。**同一个操作，修复前是破坏，修复后是安全。**
+
+### U.5 `TASK_REAUTHORIZED` 现在**第一次真正安全**
+
+$$\boxed{TaskCurrentEnvelope\ can\ evolve \quad while \quad AttemptAuthorization\ remains\ immutable}$$
+
+```text
+A0 → E0 forever
+task current:  E0 → E1
+A1 → E1 forever
+```
+
+这正是 D5 rework 需要的模型（same Work + new Attempt + new basis）。**本片不动** `TASK_REAUTHORIZED`
+的 READY/BLOCKED 限制、不动 `DEFAULT_STAGE_GRAPH`、不新增事件类型——按评审的分片，governed 的
+`VERIFYING@E0 → READY@E1` 闭包属于 **D5-b2**。
+
+### U.6 状态与门禁
+
+```
+D5-0    Effect authority closure                    CLOSED @ c0e54d9
+D5-a    Continuation assessment                     CLOSED @ ea08d7a
+D5-b    Lifecycle / envelope-binding audit          CLOSED @ 2c32b97
+D5-b1   Attempt-scoped immutable authorization      CLOSED（本附录）
+D5-b2   Governed atomic VERIFYING@E0 → READY@E1     ← 下一步
+D5-c    Prior Result Context + real re-execution
+D5-d    Packaged ResultContinuationService
+D5-LIVE real concurrent → stale → rework → verify → promote
+```
+
+门禁：单元 **224 files / 2524 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。
