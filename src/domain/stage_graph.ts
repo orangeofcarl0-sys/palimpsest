@@ -55,6 +55,16 @@ export type StageTransitionWhen =
   | "attempt-limit-exhausted"
   | "promotion-committed"
   | "dependencies-satisfied"
+  /**
+   * §D5-b2: a governed rework admission reopened this Work on the current basis.
+   *
+   * Its own value rather than a reuse of `promotion-committed`, because the two say different things: a
+   * promotion committed the result this task verified, whereas this task's result could NOT be reused and the
+   * work is being redone. Naming it here is what keeps the declared topology and the runtime truth the same
+   * fact — the edge exists because the governed closure exists, not because the scheduler may reopen work on
+   * its own (it may not: `#advanceVerifyingStage` still only seeks `TASK_SATISFIED`).
+   */
+  | "rework-admitted"
   | "always";
 
 /**
@@ -67,6 +77,8 @@ export const STAGE_WHEN_SOURCE_STATES: Readonly<Record<StageTransitionWhen, Read
   "batch-failed-budget-remaining": new Set(["ACTIVE"]),
   "attempt-limit-exhausted": new Set(["ACTIVE"]),
   "promotion-committed": new Set(["VERIFYING"]),
+  // §D5-b2: leaving VERIFYING backwards is only ever a governed rework, so the source state is VERIFYING.
+  "rework-admitted": new Set(["VERIFYING"]),
   "dependencies-satisfied": new Set(["BLOCKED"]),
   "always": new Set(["READY"]),
 };
@@ -81,6 +93,7 @@ export const STAGE_TRANSITION_REASONS: Readonly<Record<Exclude<StageTransitionWh
   "batch-failed-budget-remaining": "batch failed with attempt budget remaining",
   "attempt-limit-exhausted": "attempt limit exhausted",
   "promotion-committed": "matching promotion committed",
+  "rework-admitted": "governed rework admission reopened this Work on the current basis",
   "dependencies-satisfied": "all dependencies satisfied",
 };
 
@@ -317,6 +330,16 @@ export const DEFAULT_STAGE_GRAPH: StageGraphDefinition = {
     { from: "active", event: "TASK_READY", to: "READY", when: "batch-failed-budget-remaining" },
     { from: "active", event: "TASK_FAILED", to: "FAILED", when: "attempt-limit-exhausted" },
     { from: "verifying", event: "TASK_SATISFIED", to: "SATISFIED", when: "promotion-committed" },
+    /**
+     * §D5-b2: the DECLARED backward edge. The state machine already permitted `verifying → ready`; the
+     * genesis graph did not declare it, so runtime truth and the declaration disagreed. Declaring it makes
+     * the legal TOPOLOGY explicit.
+     *
+     * It does NOT make reopening automatic: `#advanceVerifyingStage` still only seeks `TASK_SATISFIED`, and
+     * the aggregate refuses this transition unless a governed closure pass accompanies it. So the edge says
+     * "this is a legal shape", while the permit says "this particular reopening is authorized".
+     */
+    { from: "verifying", event: "TASK_READY", to: "READY", when: "rework-admitted" },
     { from: "blocked", event: "TASK_READY", to: "READY", when: "dependencies-satisfied" },
     { from: "ready", event: "TASK_STARTED", to: "ACTIVE", when: "always" },
   ],
