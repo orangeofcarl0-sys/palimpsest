@@ -41,6 +41,8 @@ export interface CoreCompositionOptions {
   readonly ordariumDatabasePath?: string | undefined;
   readonly policy?: TaskPolicy | undefined;
   readonly execution?: import("../tools/controller.js").ExecutionMode | undefined;
+  /** §D4-a: the operator's capacity bound for concurrent canonical Work. Absent ⇒ the genesis default. */
+  readonly concurrency?: number | undefined;
   readonly standard?: import("../domain/standard.js").ProjectStandard | undefined;
   /**
    * PLMP-LEAN-1 §2.1 / 2A-Q: what this deployment can actually do. Absent ⇒ a conservative default
@@ -216,6 +218,7 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
     projectId: options.projectId,
     policy,
     execution: options.execution,
+    ...(options.concurrency === undefined ? {} : { concurrency: options.concurrency }),
     standard: options.standard,
     capabilities,
     verificationAdmission: verificationAdmissionPort,

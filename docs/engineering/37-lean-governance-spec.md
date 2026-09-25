@@ -4710,3 +4710,89 @@ D2 的 retry 正是靠"lane 里只有一个就 resume 它"，删掉它会把可�
 D4-a 需要先把 `concurrency` 暴露到 plan 入口（见 M.5），真实双 worker gate 仍留到 **D4-b/D4-LIVE**；
 **D4-c 不可省略**：`read_paths` 必须从 declaration 升级为 authority-bearing evidence，否则第二个并发结果
 几乎必然 `INCOMPATIBLE`。
+
+## 附录 N（第 D4-a 期）：Multi-Attempt Execution —— 把容量交回 operator
+
+D4-0 完成了 authority split（`SpeculativeMutationAuthority ≠ CanonicalMutationAuthority`），
+但它在 M.5 里如实记录了一个**既有缺口**：并发容量虽然可声明，却**没有任何可达表面** ——
+`stageGraph` 是 `StartProjectInput` 字段且 `start()` 会解析它，但它不是任何 tool 的参数、
+也不经 install / deployment profile 传递。所以**当时所有部署的并发恒为 1**。
+
+D4-a 补上这个表面，并把容量**交回 operator**。
+
+### N.1 operator 表面，而非 plan 表面
+
+选择放在 **deployment profile**（`concurrency`），而不是 `palimpsest_plan` 的参数，理由是权限方向：
+
+$$\boxed{\text{容量是 operator 的 bound，不是 agent 可以自己放宽的建议}}$$
+
+与 `policy.allowed_commands` 同一纪律 —— 一个 agent 不该能给自己提高并发上限。同时
+`StageGraphDefinition.concurrency` 是 **latch 声明**（只允许出现在 ACTIVE/VERIFYING），
+而 plan 入口只接 `tasks`；把图交给 plan 会需要暴露整个 stage graph 语法，那是远超"声明容量"的表面扩张。
+
+```jsonc
+// deployment.json
+{
+  "execution": "worktree",
+  "concurrency": 2,          // ← 缺省 ⇒ 1（与 pre-D4 逐字节相同）
+  "policy": { "allowed_commands": [...] }
+}
+```
+
+### N.2 解析：拒绝而不是强转
+
+```
+concurrency 必须是正整数；0 / 负数 / 小数 / 字符串 ⇒ DeploymentProfileError(invalid_value)
+```
+
+理由：0 会**禁止一切工作**，小数**不是一个计数**。一个被静默调整过的 bound 不再是 operator 的 bound。
+缺省（未声明）与显式 `1` 语义相同。
+
+### N.3 genesis pipeline 保持逐字不变
+
+`#genesisGraph()` **只**改 ACTIVE stage 的 concurrency，其余原样：
+
+- 未声明或声明 1 ⇒ 直接返回 `DEFAULT_STAGE_GRAPH` **对象本身**，所以 pre-D4 路径逐字节相同；
+- 声明 N ⇒ `{...DEFAULT_STAGE_GRAPH, stages: map(...)}`，transitions / guards / id / state 全部不动。
+
+机器检查：声明 3 后，stage 的 `id:state` 序列与 `DEFAULT_STAGE_GRAPH` **完全相等**，
+transitions **完全相等**，且**恰有一个** stage 带 `concurrency` —— 没有顺手给 VERIFYING 也加上。
+
+### N.4 实测（`rs-test/d4-lane-probe.mjs`，真实 deployment，operator 表面）
+
+profile 里 `concurrency: 2`：
+
+```
+第一个 prepareMutatingWork → PREPARED t1
+scheduler next decision after one ACTIVE task → next TASK_STARTED t2   ← 与 concurrency 1 时的 idle 不同
+第二个（t2）→ PREPARED
+declared ACTIVE stage concurrency: 2
+```
+
+对比 `concurrency` 缺省（pre-D4）：
+
+```
+scheduler next decision after one ACTIVE task → idle
+第二个（t2）→ REFUSED: TASK_NOT_NEXT_SCHEDULABLE
+declared ACTIVE stage concurrency: (absent ⇒ 1)
+```
+
+并且两个 speculative world 同时存在时：attempt 两条均 RUNNING、`worldPath` 互不相同、
+**canonical HEAD 未变、工作树干净**。
+
+### N.5 门禁
+
+单元 **218 files / 2446 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**、`install_contract.ts` **700 行**（§25 上限 700）。
+
+**验证承重**：让 `start()` 忽略 operator 的容量（始终用 genesis 缺省），**2 个测试立刻红**；恢复后 16 项全绿。
+
+### N.6 本阶段**未**做（留给后续）
+
+- **没有**引入 `SpeculativeExecutionCoordinator`：D4-a 只补了容量表面，没有新增多 attempt 编排逻辑，
+  所以没有需要承载它的新模块；controller 仍 5045 行未增（改动是 option + 一个私有读 + 两处 plumb）。
+  真正需要 coordinator 的是 D4-b（真实并行 host execution），那时再按 L2 capability 抽取。
+- **没有**改 promotion / canonical-source authority（D4-0 的边界继续成立）。
+- **没有**跑真实双 worker gate —— 按评审，那属于 **D4-b / D4-LIVE**，是第一次值得花模型配额的地方。
+- **D4-c 仍不可省略**：`read_paths` 必须从 declaration 升级为 authority-bearing evidence，
+  否则第二个并发结果几乎必然 `INCOMPATIBLE`（当前 authoritative read footprint 是 `wholeRepositoryRead`）。
