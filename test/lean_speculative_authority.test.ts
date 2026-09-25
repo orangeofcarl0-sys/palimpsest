@@ -542,3 +542,166 @@ describe("§D4-a the operator declares capacity, and the genesis pipeline is oth
     expect(graph.stages.filter((stage) => stage.concurrency !== undefined)).toHaveLength(1);
   }, 120_000);
 });
+
+/* ================================================================== *
+ * D4-b — two CONCURRENT jobs through the async transport
+ * ================================================================== */
+
+describe("§D4-b the async transport runs two jobs over two speculative worlds at once", () => {
+  it("both jobs prepare, run and settle independently, and canonical source stays untouched", async () => {
+    const { makeWorkDelegationService } = await import("../src/interaction/work_delegation.js");
+    const { repo, head } = workspace();
+    const installed = installPalimpsest(
+      { tools: { register: () => () => undefined } } as never,
+      {
+        projectId: "d4b",
+        databasePath: join(repo, ".palimpsest", "p.sqlite"),
+        ordariumDatabasePath: join(repo, ".palimpsest", "o.sqlite"),
+        repository: repo,
+        git: new GitCliPort(repo, join(repo, ".palimpsest", "worlds")),
+        execution: "worktree",
+        concurrency: 2,
+        standard: standardOf(),
+        policy: trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
+      } as never,
+    );
+    cleanups.push(() => void installed.dispose());
+    const controller = installed.controller;
+    const call = async (name: string, args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+      const tool = installed.tools.find((entry) => entry.name === name);
+      if (tool === undefined) throw new Error(`no core tool ${name}`);
+      return (await tool.execute(args, {
+        callId: `c-${name}`,
+        rootCallId: `r-${name}`,
+        name,
+        arguments: args,
+        signal: new AbortController().signal,
+      })) as Record<string, unknown>;
+    };
+    await call("palimpsest_start", {
+      projectId: "d4b",
+      goal: "two independent tasks",
+      headCommit: head,
+      tasks: [
+        { task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] },
+        { task_id: "t2", objective: "tidy b", depends_on: [], write_paths: ["src/b.ts"], required_artifacts: [] },
+      ],
+    });
+
+    /**
+     * A GATED worker, so BOTH are provably in flight at the same moment: each parks until the test releases
+     * it, which is how "concurrent" is measured rather than inferred from timing.
+     *
+     * Each world is bound to its OWN declared file by the map the test builds up front — NOT by an index
+     * into the order workers happen to start, which would let both pick the same file and make the product
+     * correctly refuse both as OUT_OF_SCOPE (that was my first version's bug, and the refusal was right).
+     */
+    const gates = new Map<string, () => void>();
+    const gateFor = (worldPath: string): Promise<void> => {
+      const key = worldPath.slice(worldPath.lastIndexOf("attempt-"));
+      return new Promise<void>((resolve) => gates.set(key, resolve));
+    };
+    const fileForWorld = new Map<string, "src/a.ts" | "src/b.ts">();
+    const started: string[] = [];
+    const service = makeWorkDelegationService({
+      controller,
+      workerFor: (worldPath) => ({
+        adapterId: "gated-worker",
+        async run({ workDir }) {
+          started.push(worldPath);
+          await gateFor(worldPath);
+          const file = fileForWorld.get(workDir.slice(workDir.lastIndexOf("attempt-")));
+          if (file === undefined) throw new Error(`no declared file for ${workDir}`);
+          writeFileSync(join(workDir, file), "export const edited = true;" + String.fromCharCode(10));
+          execFileSync("git", ["add", "-A"], { cwd: workDir });
+          execFileSync("git", ["-c", "user.email=w@w.w", "-c", "user.name=w", "commit", "-qm", "worker commit"], { cwd: workDir });
+          return { kind: "READY_FOR_SETTLEMENT" as const };
+        },
+      }),
+    });
+
+    // Two jobs, each frozen onto ITS OWN task at start.
+    const first = await service.start({ expectedTaskId: "t1" });
+    const second = await service.start({ expectedTaskId: "t2" });
+    expect(first.taskId).toBe("t1");
+    expect(second.taskId).toBe("t2");
+    expect(first.jobId).not.toBe(second.jobId);
+
+    /**
+     * Bind each world to its OWN declared file the moment its attempt exists, so the two results are
+     * provably disjoint. The attempts are exposed as soon as prepare succeeds, which is what makes this
+     * possible before either worker starts editing.
+     */
+    for (let attempt = 0; attempt < 400; attempt += 1) {
+      const rows = controller.store.connection
+        .prepare("SELECT task_id, attempt_id FROM attempts WHERE project_id=? ORDER BY task_id")
+        .all("d4b") as unknown as readonly { task_id: string; attempt_id: string }[];
+      for (const row of rows) {
+        const workDir = controller.attemptWorkRecord(row.attempt_id) === null ? null : row.attempt_id;
+        if (workDir !== null && !fileForWorld.has(row.attempt_id)) {
+          fileForWorld.set(row.attempt_id, row.task_id === "t1" ? "src/a.ts" : "src/b.ts");
+        }
+      }
+      if (fileForWorld.size === 2) break;
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    // The world id IS the attempt id (see `claim`), so the mapping is by durable identity.
+    expect(fileForWorld.size).toBe(2);
+
+    // Wait until BOTH workers are parked, i.e. both worlds exist and both jobs are RUNNING.
+    for (let attempt = 0; attempt < 400 && started.length < 2; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    expect(started).toHaveLength(2);
+    expect(started[0]).not.toBe(started[1]);
+
+    const midStates = controller.store.connection
+      .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? ORDER BY task_id")
+      .all("d4b") as unknown as readonly { attempt_id: string; task_id: string; state: string }[];
+    // TWO attempts, both RUNNING, in two different worlds — the state D2's lane rule forbade.
+    expect(midStates).toHaveLength(2);
+    expect(midStates.map((row) => row.task_id)).toEqual(["t1", "t2"]);
+    expect(midStates.every((row) => row.state === "RUNNING")).toBe(true);
+    // And canonical source is untouched while both are in flight.
+    expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);
+
+    // Release both, and both settle on their own.
+    for (const release of gates.values()) release();
+    const settled = await (async () => {
+      for (let attempt = 0; attempt < 600; attempt += 1) {
+        const rows = controller.store.connection
+          .prepare("SELECT state FROM attempts WHERE project_id=? ORDER BY task_id")
+          .all("d4b") as unknown as readonly { state: string }[];
+        if (rows.length === 2 && rows.every((row) => row.state === "COMPLETED")) return rows;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
+      return null;
+    })();
+    if (settled === null) {
+      const diagnostic = controller.store.connection
+        .prepare("SELECT task_id, state FROM attempts WHERE project_id=? ORDER BY task_id")
+        .all("d4b") as unknown as readonly { task_id: string; state: string }[];
+      const followups = await Promise.all([
+        service.followup({ jobId: first.jobId }),
+        service.followup({ jobId: second.jobId }),
+      ]);
+      throw new Error(`jobs did not both settle: attempts=${JSON.stringify(diagnostic)} followups=${JSON.stringify(followups.map((view) => ({ phase: "phase" in view ? view.phase : "?", settlement: "settlement" in view ? view.settlement : null, hostError: "hostError" in view ? view.hostError : null })))}`);
+    }
+
+    // Each attempt carries its OWN result commit, and the two are different commits in different worlds.
+    const reports = controller.store.connection
+      .prepare("SELECT task_id, report_json FROM attempts WHERE project_id=? ORDER BY task_id")
+      .all("d4b") as unknown as readonly { task_id: string; report_json: Uint8Array }[];
+    const commits = reports.map((row) => (JSON.parse(new TextDecoder().decode(row.report_json)) as { result_commit: string }).result_commit);
+    expect(commits[0]).toMatch(/^[0-9a-f]{40}$/u);
+    expect(commits[1]).toMatch(/^[0-9a-f]{40}$/u);
+    expect(commits[0]).not.toBe(commits[1]);
+
+    /**
+     * ΔCanonicalProjectState = 0 while ΔExecutionState ≠ 0: two speculative worlds produced two results,
+     * and canonical source never moved — which is the whole claim of the D4 authority split.
+     */
+    expect(git(repo, ["rev-parse", "HEAD"])).toBe(head);
+    expect(git(repo, ["status", "--porcelain"]).split("\n").filter((line) => line.trim() !== "" && !line.endsWith(".palimpsest/"))).toEqual([]);
+  }, 300_000);
+});
