@@ -41,6 +41,7 @@ export function installPalimpsest(
     ordariumDatabasePath: options.ordariumDatabasePath,
     policy: options.policy,
     execution: options.execution,
+    ...(options.concurrency === undefined ? {} : { concurrency: options.concurrency }),
     standard: options.standard,
     /**
      * PLMP-LEAN-1 §2.1 / 2A-Q + §D2-LIVE: what this deployment can actually do.

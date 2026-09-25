@@ -158,6 +158,18 @@ export interface ProjectAgentDeploymentProfile {
    */
   readonly execution?: "worktree" | "in-place" | undefined;
   /**
+   * PLMP-LEAN-1 §D4-a: HOW MANY canonical Work tasks this deployment may run at once.
+   *
+   * `SpeculativeMutationAuthority ≠ CanonicalMutationAuthority`: a placed attempt owns an isolated
+   * ExecutionWorld, so two of them running is not two writers on one tree. Before D4 the product
+   * hardcoded a project-wide 1 and silently overrode the scheduler's own declared capacity; this is
+   * where the operator states the capacity they actually want.
+   *
+   * It is an OPERATOR bound, never a suggestion an agent can widen — the same discipline as
+   * `policy.allowed_commands`. Absent ⇒ 1, which is exactly the pre-D4 behaviour.
+   */
+  readonly concurrency?: number | undefined;
+  /**
    * The OPERATOR's task policy for this deployment: at minimum the gate commands this project's
    * toolchain actually uses (`node --test`, `cargo test`, …). It is a bound, never a suggestion —
    * the envelope authorizes only commands named here, and no tool lets an agent widen it.
@@ -419,6 +431,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "localPeer",
       "repository",
       "execution",
+      "concurrency",
       "policy",
       "standard",
       "persistentPoint",
@@ -436,6 +449,19 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
   );
   if (object.schemaVersion !== DEPLOYMENT_PROFILE_SCHEMA_VERSION) {
     fail("unknown_schema_version", `${what}.schemaVersion must be ${DEPLOYMENT_PROFILE_SCHEMA_VERSION}`);
+  }
+
+  /**
+   * §D4-a: the operator's capacity bound. A positive integer, or absent for 1 — never a value that would
+   * make the scheduler's own declaration meaningless (0 would forbid all work, a fraction is not a count).
+   */
+  const rawConcurrency = object.concurrency;
+  let concurrency: number | undefined;
+  if (rawConcurrency !== undefined) {
+    if (typeof rawConcurrency !== "number" || !Number.isInteger(rawConcurrency) || rawConcurrency < 1) {
+      fail("invalid_value", `${what}.concurrency must be a positive integer (how many canonical Work tasks may run at once), got ${JSON.stringify(rawConcurrency)}`);
+    }
+    concurrency = rawConcurrency;
   }
 
   const transportObject = asObject(object.transport, `${what}.transport`);
@@ -456,6 +482,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
     ...(optionalString(object, "execution", what) === undefined
       ? {}
       : { execution: parseExecutionMode(optionalString(object, "execution", what)!) }),
+    ...(concurrency === undefined ? {} : { concurrency }),
     ...(object.policy === undefined ? {} : { policy: parsePolicy(object.policy, what) }),
     ...(object.standard === undefined ? {} : { standard: parseStandard(object.standard, what) }),
     ...(optionalStableId(object, "persistentPoint", what) === undefined ? {} : { persistentPoint: optionalStableId(object, "persistentPoint", what)! }),
