@@ -289,21 +289,37 @@ async function composeOnce(input: {
   readonly changePaths: readonly ReturnType<typeof srcPath>[];
   readonly current: { revision: string };
 }) {
+  /**
+   * §D5-0: the result being carried forward is DECLARED under the identity the admission will name, and the
+   * delta comes from that declaration rather than from this call. Note the chain this file builds: the
+   * second cycle's origin IS the first cycle's candidate, so the identity is keyed on the result's own
+   * manifest — a candidate is a DERIVED_RESULT, and addressing it as an attempt would be a lie about what
+   * produced it.
+   */
+  const resultSubjectRef = { kind: "DERIVED_RESULT" as const, ref: `candidate-${input.resultManifestDigest.slice(0, 16)}` };
+  input.stack.rig.declareResult({
+    resultSubjectRef,
+    resultManifestDigest: input.resultManifestDigest,
+    originBasisDigest: input.originBasisDigest,
+    sourceResult: {
+      backend: input.originSource.backend,
+      baseRevision: input.originSource.fromRevision,
+      resultRevision: input.originSource.toRevision,
+    },
+    projectId: "d3e",
+    taskId: "t1",
+  });
   const { admissionRef, certificate } = input.stack.rig.admit({
     resultManifestDigest: input.resultManifestDigest,
     originBasisDigest: input.originBasisDigest,
     targetObservationDigest: input.target,
     targetBasisRevision: input.target,
     observationRefs: refsFor(input.stack.rig, input.changePaths),
+    resultSubjectRef,
   });
   // The rig is placed at the world the admission names, so the effect's re-observation agrees.
   input.current.revision = input.target;
-  const rematerialized = await input.stack.runtime.rematerialize({
-    admissionRef,
-    originSource: input.originSource,
-    projectId: "d3e",
-    taskId: "t1",
-  });
+  const rematerialized = await input.stack.runtime.rematerialize({ admissionRef });
   return { admissionRef, certificate, rematerialized };
 }
 
@@ -337,12 +353,7 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
      */
     // The world has moved to H2; the rig is placed there, while the record still names H1.
     current.revision = h2;
-    const expired = await s.runtime.rematerialize({
-      admissionRef: atH1.admissionRef,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      projectId: "d3e",
-      taskId: "t1",
-    });
+    const expired = await s.runtime.rematerialize({ admissionRef: atH1.admissionRef });
     expect(expired.state).toBe("ADMISSION_REFUSED");
     expect(expired.admission.state).toBe("STALE_PROOF");
     // The fact is still recallable, and the record is untouched by the refusal.

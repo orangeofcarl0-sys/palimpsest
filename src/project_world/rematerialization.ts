@@ -1,5 +1,5 @@
 /**
- * PLMP-LEAN-1 §D3-d2 — the ISOLATED REMATERIALIZATION runtime.
+ * PLMP-LEAN-1 §D3-d2 + §D5-0 — the ISOLATED REMATERIALIZATION runtime.
  *
  * The first effect in D3, and it is deliberately a CANDIDATE-SPACE effect: it creates a world, changes
  * files and freezes a revision, and it does NOT touch canonical Project state. Canonical source remains
@@ -17,9 +17,17 @@
  * neither. This continues the authority discipline D3-c established: `AdmissionRecord → Effect`, never
  * `CallerAssembledFacts → Effect`.
  *
+ * §D5-0 FINISHED THAT SENTENCE. The paragraph above was already true of the TARGET after D3-R2 and was
+ * still false of the RESULT: `originSource`, `projectId`, `taskId` and `producedAssetRefs` arrived as
+ * arguments, so a caller could name a genuine admission and hand it a different delta. The effect now
+ * RESOLVES the result from the identity the admission recorded (`result_resolution.ts`) and refuses if what
+ * it resolves to is not the result the admission was issued for, and the freshness observer it re-checks
+ * against is a REQUIRED dependency rather than an optional one.
+ *
  * ORDER IS THE SEMANTICS, as in D2-e1:
  *
- *     validate admission  ≺  create world  ≺  apply delta  ≺  freeze candidate  ≺  record
+ *     validate admission  ≺  resolve result  ≺  re-check target  ≺  create world  ≺  apply delta
+ *       ≺  freeze candidate  ≺  record
  *
  * with a RE-CHECK of the target immediately before the world exists. A certificate that was valid when
  * it was issued does not authorize an effect later: if the world moved from B1 to B2 in between, there
@@ -51,6 +59,7 @@ import {
 } from "./derivation.js";
 import type { CompatibilityIssuer, IssuedCompatibilityAssessment } from "./issuance.js";
 import type { DerivedResultCandidateStore } from "./candidate_store.js";
+import type { AuthoritativeResultResolver } from "./result_resolution.js";
 
 /* ================================================================== *
  * The port: one facet's mechanism, as a contract
@@ -147,18 +156,16 @@ export interface RematerializationResult {
 export interface RematerializationRuntime {
   readonly adapterId: string;
   /**
-   * Attempt a rematerialization. The ONLY input that carries facts is the certificate; everything else
-   * is what the system already knows.
+   * Attempt a rematerialization.
+   *
+   * §D5-0: THE ONLY INPUT IS THE ADMISSION REF. Every fact the effect needs — which result, which project
+   * and task, which delta to carry, which assets it produced — is RESOLVED from the durable records the
+   * admission names, so a caller cannot stitch a genuine admission to a different result or a different
+   * delta. The entry point is now what D3-d claimed it was.
    */
   rematerialize(input: {
-    /** §D3-R2: the ONLY fact-carrying input. Everything else is recalled from the record. */
+    /** The ONE fact-carrying input. Everything else is recalled or resolved from the records it names. */
     readonly admissionRef: string;
-    /** The origin source facet, which is what the delta is taken from. */
-    readonly originSource: { readonly backend: string; readonly fromRevision: string; readonly toRevision: string } | null;
-    readonly projectId: string;
-    readonly taskId: string;
-    /** Authoritative outputs the derivation carries. A derivation never guesses these. */
-    readonly producedAssetRefs?: readonly string[] | undefined;
   }): Promise<RematerializationResult>;
 }
 
@@ -167,16 +174,32 @@ export function makeRematerializationRuntime(input: {
   readonly rematerializer: ResultRematerializerPort;
   /** §D3-d2: where a produced candidate is recorded, so later stages can name it by identity. */
   readonly candidates?: DerivedResultCandidateStore | undefined;
-  /** §D3-R2: where admission decisions live. The effect recalls the target FROM this record. */
+  /** §D3-R2: where admission decisions live. The effect recalls the target AND the result FROM this record. */
   readonly admissions?: CrossBasisAdmissionStore | undefined;
   /**
-   * §D3-R2: how the effect RE-OBSERVES the current world immediately before creating one.
+   * §D5-0: how the effect resolves the RESULT an admission is about.
    *
-   * `AdmissionStillApplies ≺ WorldCreation` cannot be satisfied by trusting the record alone: the record
-   * says which world was admitted, and this says which world is CURRENT. If they disagree, the world moved
-   * between admission and effect, and there is no world, no candidate and no canonical mutation.
+   * This is what closed the last caller-fact seam: `originSource`, `projectId`, `taskId` and
+   * `producedAssetRefs` used to arrive as arguments, so an admission could authorize an effect about a
+   * different result than the one it was issued for. They are resolved from the owner now, and the
+   * resolved manifest digest is cross-checked against the admission's own record.
+   *
+   * ABSENT ⇒ `EFFECT_CAPABILITY_UNAVAILABLE`, never a fallback to caller-supplied facts. A deployment that
+   * cannot resolve results cannot carry one forward, and saying so is the honest answer.
    */
-  readonly observeCurrentTarget?: ((taskId: string) => { readonly targetObservationDigest: string; readonly targetBasisRevision: string }) | undefined;
+  readonly results?: AuthoritativeResultResolver | undefined;
+  /**
+   * §D5-0: how the effect RE-OBSERVES the current world immediately before creating one.
+   *
+   * REQUIRED, and the change from optional is the point. `AdmissionStillApplies ≺ WorldCreation` was
+   * enforced only when a caller happened to supply this, so a deployment without it silently skipped the
+   * freshness re-check and effected against a world that might have moved. A structural invariant that a
+   * composition can omit is not structural; absent now means the capability is unavailable.
+   */
+  readonly observeCurrentTarget: (taskId: string) => {
+    readonly targetObservationDigest: string;
+    readonly targetBasisRevision: string;
+  };
   readonly clock?: (() => string) | undefined;
 }): RematerializationRuntime {
   const now = (): string => (input.clock ?? (() => new Date().toISOString()))();
@@ -184,21 +207,7 @@ export function makeRematerializationRuntime(input: {
   return Object.freeze({
     adapterId: `result-rematerialization:${input.rematerializer.adapterId}`,
 
-    async rematerialize(runInput: {
-      /**
-       * §D3-R2: THE ONLY FACT-CARRYING INPUT IS THE ADMISSION REF.
-       *
-       * The result, the origin basis, the target digest and — crucially — the target REVISION all come from
-       * the recorded admission, so a caller cannot admit against one world and effect in another. The
-       * remaining fields are the operation's own description (which project/task, which source delta to
-       * carry), not authority.
-       */
-      readonly admissionRef: string;
-      readonly originSource: { readonly backend: string; readonly fromRevision: string; readonly toRevision: string } | null;
-      readonly projectId: string;
-      readonly taskId: string;
-      readonly producedAssetRefs?: readonly string[] | undefined;
-    }): Promise<RematerializationResult> {
+    async rematerialize(runInput: { readonly admissionRef: string }): Promise<RematerializationResult> {
       const admissionRecord = input.admissions?.recall(runInput.admissionRef) ?? null;
       if (admissionRecord === null) {
         return Object.freeze({
@@ -245,6 +254,76 @@ export function makeRematerializationRuntime(input: {
       const originBasisDigest = admissionRecord.originBasisDigest;
 
       /**
+       * §D5-0 — RESOLVE THE RESULT. This is the seam that closed: the result is no longer described by the
+       * caller, it is looked up by the identity the admission recorded.
+       *
+       * THREE things must agree, and each failure is its own honest answer:
+       *
+       *   the deployment must be able to resolve results at all      → EFFECT_CAPABILITY_UNAVAILABLE
+       *   the identity must resolve to something                     → EFFECT_CAPABILITY_UNAVAILABLE
+       *   what it resolves to must BE this admission's result        → ADMISSION_REFUSED
+       *
+       * The last is the one that matters: a resolved result whose manifest or origin basis disagrees with
+       * the admission means the admission is being pointed at a result it was not issued for, and that is a
+       * refusal rather than a capability gap.
+       */
+      if (input.results === undefined) {
+        return Object.freeze({
+          schemaVersion: 1 as const,
+          state: "EFFECT_CAPABILITY_UNAVAILABLE" as const,
+          candidate: null,
+          admission: Object.freeze({
+            schemaVersion: 1 as const,
+            state: "ADMITTED" as const,
+            admitted: true,
+            moreEvidenceCouldHelp: false,
+            issuanceDigest: admissionRecord.issuanceRef,
+            detail: admissionRecord.detail,
+          }),
+          detail:
+            "this deployment composes no authoritative result resolver, so it cannot establish which result this admission is about — a rematerialization would have to take the caller's word for the delta and the result identity, which is exactly what this effect no longer accepts",
+        });
+      }
+      const resolved = input.results.resolve(admissionRecord.resultSubjectRef);
+      if (resolved === null) {
+        return Object.freeze({
+          schemaVersion: 1 as const,
+          state: "EFFECT_CAPABILITY_UNAVAILABLE" as const,
+          candidate: null,
+          admission: Object.freeze({
+            schemaVersion: 1 as const,
+            state: "ADMITTED" as const,
+            admitted: true,
+            moreEvidenceCouldHelp: false,
+            issuanceDigest: admissionRecord.issuanceRef,
+            detail: admissionRecord.detail,
+          }),
+          detail: `this deployment cannot authoritatively resolve the result this admission names (${admissionRecord.resultSubjectRef.kind} ${admissionRecord.resultSubjectRef.ref}), so the delta to carry is unknown`,
+        });
+      }
+      if (resolved.resultManifestDigest !== resultManifestDigest || resolved.originBasisDigest !== originBasisDigest) {
+        return Object.freeze({
+          schemaVersion: 1 as const,
+          state: "ADMISSION_REFUSED" as const,
+          candidate: null,
+          admission: Object.freeze({
+            schemaVersion: 1 as const,
+            state: "UNTRUSTED_PROOF" as const,
+            admitted: false,
+            moreEvidenceCouldHelp: false,
+            issuanceDigest: admissionRecord.issuanceRef,
+            detail: `the admission names result ${admissionRecord.resultSubjectRef.kind} ${admissionRecord.resultSubjectRef.ref}, which resolves to a DIFFERENT result than the one this admission was issued for`,
+          }),
+          detail: `no rematerialization was attempted: the admission's result identity does not match the result it resolves to (admission says manifest ${resultManifestDigest.slice(0, 12)} at basis ${originBasisDigest.slice(0, 12)}; the resolved result is manifest ${resolved.resultManifestDigest.slice(0, 12)} at basis ${resolved.originBasisDigest.slice(0, 12)})`,
+        });
+      }
+      // The task the world is observed through comes from the RESOLVED result, so the freshness check below
+      // asks about the result's own task rather than about whatever the caller named.
+      const taskId = resolved.taskId;
+      const projectId = resolved.projectId;
+      const producedAssetRefs = resolved.producedAssetRefs;
+
+      /**
        * RE-OBSERVE, and refuse if the world moved since the admission was recorded.
        *
        * This is the second half of the binding: the record says which world was admitted, and this says
@@ -252,8 +331,8 @@ export function makeRematerializationRuntime(input: {
        * between admission and effect produces no world, no candidate and no canonical mutation — the same
        * discipline as D2-d re-asserting its frozen request before any effect.
        */
-      if (input.observeCurrentTarget !== undefined) {
-        const current = input.observeCurrentTarget(runInput.taskId);
+      {
+        const current = input.observeCurrentTarget(taskId);
         if (
           current.targetObservationDigest !== target.targetObservationDigest ||
           current.targetBasisRevision !== target.targetBasisRevision
@@ -290,7 +369,7 @@ export function makeRematerializationRuntime(input: {
        * `EFFECT_CAPABILITY_UNAVAILABLE` is the honest answer; inventing an empty candidate would claim a
        * derivation that produced nothing.
        */
-      if (runInput.originSource === null) {
+      if (resolved.sourceResult === null) {
         return Object.freeze({
           schemaVersion: 1 as const,
           state: "EFFECT_CAPABILITY_UNAVAILABLE" as const,
@@ -300,7 +379,7 @@ export function makeRematerializationRuntime(input: {
             "this result carries no source facet, so a source rematerializer has no delta to carry — the deployment composes no rematerializer for its remaining facets, and guessing one would claim a derivation that produced nothing",
         });
       }
-      const originSource = runInput.originSource;
+      const originSource = resolved.sourceResult;
 
       // STEP 3 — the effect. A world id derived from the operation identity, so a retry addresses the
       // SAME world rather than accumulating new ones.
@@ -336,8 +415,13 @@ export function makeRematerializationRuntime(input: {
       const outcome = await input.rematerializer.rematerialize({
         delta: {
           backend: originSource.backend,
-          fromRevision: originSource.fromRevision,
-          toRevision: originSource.toRevision,
+          /**
+           * The delta is the RESULT'S OWN change: from the basis it was produced at to the revision it
+           * produced. Read off the resolved source facet rather than supplied by a caller, so the effect
+           * carries the change the admission's result actually expresses.
+           */
+          fromRevision: originSource.baseRevision,
+          toRevision: originSource.resultRevision,
         },
         targetBasisRevision: target.targetBasisRevision,
         worldId: derivation.derivationId,
@@ -386,16 +470,20 @@ export function makeRematerializationRuntime(input: {
 
       // STEP 5 — freeze the candidate. Its base IS the target basis, which is what makes it an ordinary
       // same-basis candidate for verification, eligibility and promotion downstream.
+      //
+      // §D5-0: project, task and produced assets come from the RESOLVED result, not from the caller. That is
+      // what makes the candidate an artifact of the result the admission is about, rather than of whatever
+      // identity a caller attached to the same admission.
       const candidate = materializeDerivedResultCandidate({
-        projectId: runInput.projectId,
-        taskId: runInput.taskId,
+        projectId,
+        taskId,
         derivation,
         sourceResult: {
           backend: originSource.backend,
           baseRevision: target.targetBasisRevision,
           resultRevision: outcome.resultRevision,
         },
-        producedAssetRefs: runInput.producedAssetRefs ?? [],
+        producedAssetRefs,
         derivedAt: now(),
       });
       /**
