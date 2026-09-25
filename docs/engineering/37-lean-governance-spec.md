@@ -5248,3 +5248,126 @@ D5-LIVE 真实三段 gate
 
 门禁：单元 **220 files / 2473 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
 `check-public-api` **0/0/0**。
+
+---
+
+## 附录 S（第 D5-a 期）：Continuation Assessment —— 安全路径**集合**，而不是一个 route
+
+$$\boxed{\textbf{D5-a — } Assess \rightarrow Choose\ safe\ continuation \rightarrow Admit \rightarrow Continue}$$
+
+D3 能回答"这个 result 还能用吗"（D3-a currentness、D3-b compatibility），D3-d 能把 result 搬过**已证明**的
+divergence。但长期项目在并发结果变 stale 时真正要问的问题，此前无人回答：
+
+> 一个结果进了 canonical，这个没进，复用又证不出来 —— **现在怎么办？**
+
+答案**不是一个 route，而是一组安全路径**。把它压成一个 enum 正是本片拒绝的错误：
+
+| D3-b 结论 | 续行图景 |
+|---|---|
+| `EXACT` | 就停在它被产出的那个 basis 上 —— 没有 divergence 需要搬 |
+| `COMPATIBLE` | 搬到 target，然后照常 reverify + promote |
+| `INCOMPATIBLE` | 复用被**证明**不可能 —— 工作必须在 current basis 上重做 |
+| `UNKNOWN` | 复用**未证明** —— 工作**同样**可以在 current basis 上重做 |
+
+### S.1 宪法：UNKNOWN ≠ INCOMPATIBLE，两者都不是"工作作废"
+
+$$\boxed{\text{lack of proof blocks } REUSE,\ \text{not } FUTURE\ WORK}$$
+
+两种都阻塞复用，但**只有一种**说明原因：
+
+```
+INCOMPATIBLE   存在 positive conflict witness，所以 NO further evidence 能让这个 result 可复用
+UNKNOWN        没有完成证明，所以 MORE EVIDENCE 仍然可以
+```
+
+因此 `rework.available` **刻意与 compatibility 完全无关**。它只看两件事：有没有一个可命名、可重做的 current
+world，以及这个 deployment 能不能在那里起 attempt。**一个复用不可证的结果，仍然是一个工作正当的结果。**
+
+一个 `route = "REWORK"` 会把这两者抹平，而抹掉的恰好是人用来决定"补证据还是重做"的那一半。
+
+### S.2 词表上的三处刻意区分
+
+**其一：`NOT_ASSESSED` 独立于 `UNKNOWN`。** `UNKNOWN` 是"试过但没完成"——那是**信息**；`NOT_ASSESSED` 是
+"没人试过"——那是更弱的事实，而正在决定要不要投入精力的人需要分清这两者。
+
+**其二：`moreCouldHelp` 只关于 REUSE。** 已证明的冲突 ⇒ `false`（答案已经是"不行"，证据改变不了它）；
+证明不完整 ⇒ `true`（答案是"还没行"）。这个字段就是防止 `UNKNOWN` 被读成 `INCOMPATIBLE` 的那道闸。
+
+**其三：只有 `STALE` 是否定。** `EXACT`（D3-b 的短路，按定义就是"D3-a 已证明 basis 成立"）与非 CURRENT 的
+currentness 同时出现时，唯一诚实的回答是**拒绝复用**而不是挑更宽容的一半。
+
+**这里我的第一版实现是错的**，并且是测试把它逼出来的：我把 `UNKNOWN` 也当成否定，于是 `UNKNOWN` 与 `STALE`
+在冲突判定里塌成了一样东西 —— 那正好破坏了本项目到处在守的区分（`UNKNOWN ≠ INCOMPATIBLE`、
+`¬provedOverlap ≠ provedDisjoint`）。修法是把否定收窄到 `STALE` 一个值，并把这个区分单独钉成一条测试。
+`NONE`（从未捕获过 basis，即每个 D2 attempt 的情形）同样不是否定：它说的是"这个问题不成立"，而不是"答案是否"。
+
+### S.3 机器证明
+
+**单元层（`test/lean_d5a_continuation_assessment.test.ts`，23 项）**：四种结论各自的续行图景 · UNKNOWN 与
+INCOMPATIBLE 是**两个不同图景**（`moreCouldHelp`/`gaps`/`detail`/digest 全不同）· `NOT_ASSESSED` 独立 ·
+**扫过整个 compatibility 空间，rework 的可用性不变**（这是宪法主张的最强形式）· 已证明冲突仍允许 rework ·
+能力缺口（无 rematerializer）被报成**能力缺口**而不是证明缺口 · 矛盾输入被拒绝 · witness 绑定单一 target ·
+纯函数（结构上证明：模块不含 store/random/clock）· 本模块**不计算** compatibility（不含
+`assessCompatibility`/`relateSelector`/`covered(`）。
+
+**返工验证**：把 rework 挂到 reuse 的裁决上 ⇒ **4 项红**；把 `moreCouldHelp` 恒置 `false`（即把 UNKNOWN
+塌进 INCOMPATIBLE）⇒ **5 项红**。
+
+**组合层（`test/lean_d5a_continuation_composition.test.ts`，7 项）**：评审指定的那个 gate ——
+**source observation unavailable ⇒ D3-b 真实结论 UNKNOWN ⇒ 无 rematerialization ⇒ rework 仍可用**。
+这里的 UNKNOWN 来自**真实 issuer**，不是测试手写的输入。
+
+### S.4 组合层测出的一个**能力事实**（不是缺陷）
+
+我在写"有真实观测时应当允许 rematerialization"时断言了 `COMPATIBLE`。**它不可达**，原因值得写清楚，因为它
+决定了 D5 能主张什么：
+
+> 首方 deployment 只组装了**一个** change observer（`gitSourceChangeObserver`），所以
+> `project_semantic` / `assets` / `environment` 三个 **change domain 在真实链路上恒为 UNPROVEN**。
+
+D3-b 要求每个 change domain 的覆盖都 `PROVEN_COMPLETE`，因为一个 work 可能依赖未声明的 facet —— D3-0 正是
+刻意把那些 facet 解析为 `UNKNOWN` 而不是 `NOT_REQUIRED`（"canonical envelope 目前不声明任何 asset 依赖，
+所以 deployment **不能**声称该 work 不依赖它们"）。所以一个不可观测的 asset 变更**可能**影响一个 source-only
+结果，记录障碍是**正确**答案，不是实现缺口。
+
+这正是规范自己写下的增长路线，不是意外：
+
+$$\boxed{\text{better evidence} \Rightarrow \text{more compatibility}}\qquad\text{而不是}\qquad\text{more optimistic heuristics}$$
+
+所以诚实的现状陈述是：
+
+| 结论 | 首方组合下 |
+|---|---|
+| `EXACT` | **可达**（D3-a exact currentness） |
+| `INCOMPATIBLE` | **可达**（source 侧已证明冲突） |
+| `UNKNOWN` | **常见情形**，因为 4 个 change domain 里 3 个没有 observer |
+| `COMPATIBLE` | **今日不可达** |
+
+测试把两面都钉住：**真实首方链路上 COMPATIBLE 不可达**（并说明原因是可观测性），以及**补齐四个 domain 的
+change observer 后 COMPATIBLE 确实可达、carry 路径打开** —— 后者使前者的陈述成为关于**证据**的陈述，而不是
+关于 assessor 根本产不出 COMPATIBLE 的陈述。
+
+### S.5 明确不做
+
+- **不选路**：不建"rematerialization 成本 vs rework 成本"模型、不做 route 排序、不做 candidate queue —— 那些属于
+  后续调度/经济层，在这里建一个 chooser 会把它的策略藏进一个 assessment 里。
+- **不 admit**：`CrossBasisAdmission` 仍是 D3-c 从证书做的。
+- **不起 attempt / 不建 world**：`REWORK may be available` 是**陈述**，不是命令。
+- **不重算 compatibility**：D3-b 是唯一 assessor（`Proof generation ≠ Proof validation`）。
+- **不改 D3-b 的 domain 覆盖规则**：S.4 的能力缺口要用**更好的证据**补，不是放宽规则；把 domain 分区
+  细化成"与 result 无关的 domain 不阻塞"是一个**独立的 D3-b 变更**，需要自己的评审。
+- **不读任何东西**：纯函数。
+
+### S.6 状态
+
+```
+D5-0  Effect authority closure                    CLOSED @ c0e54d9
+D5-a  Continuation assessment（本附录）             CLOSED
+D5-b  Current-basis rework admission               ← 下一步；TASK_REAUTHORIZED 审计先行
+D5-c  Prior result context + worker execution
+D5-d  Packaged ResultContinuationService
+D5-LIVE 真实三段 gate
+```
+
+门禁：单元 **222 files / 2503 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。
