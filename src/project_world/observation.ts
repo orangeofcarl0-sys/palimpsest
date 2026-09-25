@@ -107,27 +107,18 @@ export function premiseObservationDigest(input: {
  * that did not observe anything cannot reach this function with a mechanism it does not implement,
  * because the only way to call it is to be the observer.
  */
-export function observedPremise(input: {
-  readonly provenance: ObservationProvenance;
-  readonly selectors: readonly ResourceSelector[];
-}): PremiseObservation {
-  const selectors = canonicallyOrderedSelectors(input.selectors);
-  const digest = premiseObservationDigest({ provenance: input.provenance, selectors });
-  return Object.freeze({
-    state: "OBSERVED" as const,
-    observationId: `obs-${digest.slice(0, 32)}`,
-    provenance: Object.freeze({ ...input.provenance, scope: Object.freeze({ ...input.provenance.scope }) }),
-    footprint: covered({
-      selectors,
-      coverage: provenComplete(
-        input.provenance.mechanism,
-        `observed by ${input.provenance.observerId}@${input.provenance.observerVersion} over ${input.provenance.scope.scopeRef} (${input.provenance.scope.from}..${input.provenance.scope.to})`,
-      ),
-    }),
-    digest,
-  });
-}
-
+/**
+ * §D3-R1: the free POSITIVE constructor is GONE.
+ *
+ * There used to be an `observedPremise({ provenance, selectors })` here, and a caller could pass the real
+ * observer's identity and mechanism in a hand-built literal — I verified the forgery by doing it. Positive
+ * premises now come only from `ObservationAuthority.registerObserver(...).record(...)`, which writes a
+ * durable record the issuer recalls by ref.
+ *
+ * `unavailablePremise` SURVIVES, deliberately and asymmetrically: an `UNAVAILABLE` premise can never grant
+ * positive authority — it contributes no coverage, so it only ever produces an obstacle. That is what keeps
+ * the honest "I cannot see this" answer cheap for any caller, including one with no observer at all.
+ */
 export function unavailablePremise(domain: ObservationDomain, detail: string): PremiseObservation {
   return Object.freeze({ state: "UNAVAILABLE" as const, domain, detail });
 }

@@ -28,15 +28,10 @@ import {
   gitSourceRematerializer,
 } from "../src/deployment/source_rematerializer.js";
 import {
-  makeCompatibilityIssuer,
-  makeRematerializationRuntime,
-  materializePremiseSet,
-  observedPremise,
-  unavailablePremise,
-  type PremiseSet,
   type RematerializationRuntime,
   type ResultRematerializerPort,
 } from "../src/project_world/index.js";
+import { makeD3Rig, type D3Rig } from "./d3_rig.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -92,47 +87,44 @@ function scenario(): { repo: string; worldsRoot: string; h0: string; r0: string;
   return { repo, worldsRoot, h0, r0, h1 };
 }
 
-/** An observation helper: a premise whose mechanism the test stands behind. */
-const observed = (selectors: readonly ReturnType<typeof srcPath>[]) =>
-  observedPremise({
-    provenance: {
-      observerId: "test-observer",
-      observerVersion: "1",
-      mechanism: "CONSERVATIVE_DOMAIN",
-      scope: { domain: "source", scopeRef: "repo", from: "H0", to: "H1" },
-    },
-    selectors,
-  });
-
 /**
- * A premise set whose source change is `src/b.ts` — provably disjoint from everything R0 touched.
+ * The premise refs for the disjoint case, recorded through a REGISTERED observer.
  *
- * R0 modified `src/a.ts`, so it both read and wrote that file. The world's move in `src/b.ts` therefore
- * overlaps neither side, which is what makes this the positive case.
+ * §D3-R1: there is no longer a way to hand the issuer a premise object — a test must go through a recorder
+ * exactly as a deployment does, which is what makes "a caller cannot mint an authority-bearing premise" a
+ * property of the API rather than of a comment.
  */
-function disjointPremises(): PremiseSet {
-  return materializePremiseSet({
-    projectSemantic: observed([]),
-    source: observed([srcPath("src/b.ts")]),
-    assets: observed([]),
-    environment: observed([]),
-    resultReads: observed([srcPath("src/a.ts")]),
-    resultWrites: observed([srcPath("src/a.ts")]),
-  });
+function disjointRefs(rig: D3Rig) {
+  return {
+    projectSemantic: rig.observe(rig.conservativeObserver, []),
+    source: rig.observe(rig.sourceObserver, [srcPath("src/b.ts")]),
+    assets: rig.observe(rig.conservativeObserver, []),
+    environment: rig.observe(rig.conservativeObserver, []),
+    resultReads: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+    resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+  };
 }
 
-function issueFor(input: {
-  readonly issuer: ReturnType<typeof makeCompatibilityIssuer>;
+/**
+ * Issue a certificate AND record the admission decision — the two durable records the effect consumes.
+ *
+ * §D3-R2: the effect takes only the admission ref, so a test that wants an effect must first record a
+ * decision. That is the shipped shape, not ceremony.
+ */
+function admitFor(input: {
+  readonly rig: D3Rig;
   readonly targetDigest: string;
-  readonly premises: PremiseSet;
+  readonly targetRevision: string;
   readonly exactlyCurrent?: boolean | undefined;
+  readonly refs?: ReturnType<typeof disjointRefs> | undefined;
 }) {
-  return input.issuer.issue({
+  return input.rig.admit({
     resultManifestDigest: "manifest-R0",
     originBasisDigest: "basis-B0",
     targetObservationDigest: input.targetDigest,
-    exactlyCurrent: input.exactlyCurrent ?? false,
-    premises: input.premises,
+    targetBasisRevision: input.targetRevision,
+    observationRefs: input.refs ?? disjointRefs(input.rig),
+    ...(input.exactlyCurrent === undefined ? {} : { exactlyCurrent: input.exactlyCurrent }),
   });
 }
 
@@ -140,14 +132,24 @@ function runtimeFor(input: {
   readonly repo: string;
   readonly worldsRoot: string;
   readonly rematerializer?: ResultRematerializerPort | undefined;
-}): { issuer: ReturnType<typeof makeCompatibilityIssuer>; runtime: RematerializationRuntime } {
-  const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
-  const runtime = makeRematerializationRuntime({
-    issuer,
+}): { rig: D3Rig; runtime: RematerializationRuntime; issuer: D3Rig["issuer"]; atWorld: (revision: string) => void } {
+  /**
+   * The rig's notion of "the current world", which the effect RE-OBSERVES before creating one. A test sets
+   * `current` to whatever world it is simulating; the default is the repository's HEAD, which is what a
+   * deployment would read.
+   */
+  const current: { revision: string } = { revision: git(input.repo, ["rev-parse", "HEAD"]) };
+  const rig = makeD3Rig({
     rematerializer: input.rematerializer ?? gitSourceRematerializer({ repository: input.repo, worldsRoot: input.worldsRoot }),
-    clock: () => "2026-09-24T00:00:00.000Z",
+    observeCurrentTarget: () => ({ targetObservationDigest: current.revision, targetBasisRevision: current.revision }),
   });
-  return { issuer, runtime };
+  cleanups.push(() => rig.close());
+  if (rig.runtime === undefined) throw new Error("the rig composed no rematerialization runtime");
+  /** Point the rig at a world. The admission and the re-observation must agree for an effect to happen. */
+  const atWorld = (revision: string): void => {
+    current.revision = revision;
+  };
+  return { rig, runtime: rig.runtime, issuer: rig.issuer, atWorld };
 }
 
 /** The canonical fingerprint the effect must never move. */
@@ -167,22 +169,20 @@ function canonicalFingerprint(repo: string) {
 describe("§D3-d HEADLINE: ΔCandidateState ≠ 0 ∧ ΔCanonicalProjectState = 0", () => {
   it("a clean rematerialization produces a candidate based at the target, with canonical source untouched", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
     const before = canonicalFingerprint(repo);
 
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
+    // The world the admission named is the world that exists.
+    atWorld(h1);
 
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("MATERIALIZED");
     const candidate = result.candidate;
@@ -201,30 +201,31 @@ describe("§D3-d HEADLINE: ΔCandidateState ≠ 0 ∧ ΔCanonicalProjectState = 
      */
     expect(canonicalFingerprint(repo)).toEqual(before);
 
-    // The candidate really carries BOTH: the target's state and the origin's admitted delta.
-    const worldPath = `${worldsRoot}/${candidate.derivation.derivationId}`;
-    expect(readFileSync(join(worldPath, "src", "a.ts"), "utf8")).toContain("export const a = 2");
-    expect(readFileSync(join(worldPath, "src", "b.ts"), "utf8")).toContain("export const b = 2");
+    /**
+     * The candidate carries BOTH the target's state and the origin's admitted delta, read from the EXPORTED
+     * revision — the canonical object database, which is where a recorded result must be materializable
+     * from. (The world itself is released after recording; the exported revision is what persists.)
+     */
+    expect(git(repo, ["show", `${candidate.sourceResult!.resultRevision}:src/a.ts`])).toContain("export const a = 2");
+    expect(git(repo, ["show", `${candidate.sourceResult!.resultRevision}:src/b.ts`])).toContain("export const b = 2");
     // …and it is based on the target, not on the origin.
-    expect(git(worldPath, ["rev-parse", `${candidate.sourceResult!.resultRevision}^`])).toBe(h1);
+    expect(git(repo, ["rev-parse", `${candidate.sourceResult!.resultRevision}^`])).toBe(h1);
+    // The world was released: its work lives in the exported revision, not in a directory.
+    expect(existsSync(`${worldsRoot}/${candidate.derivation.derivationId}`)).toBe(false);
   }, 120_000);
 
   it("the origin result and its basis are untouched by the derivation", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
 
     const before = { h0: git(repo, ["rev-parse", h0]), r0: git(repo, ["rev-parse", r0]) };
     await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     // Provenance immutability carried one stage further: a later stage's effect cannot rewrite an
     // earlier stage's facts. Both revisions still resolve to exactly what they were.
@@ -242,22 +243,25 @@ describe("§D3-d HEADLINE: ΔCandidateState ≠ 0 ∧ ΔCanonicalProjectState = 
 describe("§D3-d the effect is gated by the certificate, not by caller-assembled facts", () => {
   it("a STALE certificate attempts no effect at all", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
+    const h2moved = `${h1}-moved-on`;
     const before = canonicalFingerprint(repo);
     const worldsBefore = existsSync(worldsRoot) ? execFileSync(process.execPath, ["-e", `process.stdout.write(String(require('node:fs').readdirSync(${JSON.stringify(worldsRoot)}).length))`], { encoding: "utf8" }) : "0";
 
-    // Issued against H1, presented against H2.
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    /**
+     * Admitted against H1, and the world then MOVES to H2 before the effect is requested.
+     *
+     * The refusal must come from the RE-OBSERVATION — the recorded admission and the current world
+     * disagreeing — rather than from a caller honestly passing a mismatched pair, which is all the previous
+     * shape could check. So the rig is deliberately left observing H2 while the record names H1.
+     */
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h2moved);
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: "H2-moved-on",
-      targetBasisRevision: "H2-moved-on",
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("ADMISSION_REFUSED");
     expect(result.candidate).toBe(null);
@@ -265,73 +269,52 @@ describe("§D3-d the effect is gated by the certificate, not by caller-assembled
     expect(canonicalFingerprint(repo)).toEqual(before);
     const worldsAfter = existsSync(worldsRoot) ? execFileSync(process.execPath, ["-e", `process.stdout.write(String(require('node:fs').readdirSync(${JSON.stringify(worldsRoot)}).length))`], { encoding: "utf8" }) : "0";
     expect(worldsAfter).toBe(worldsBefore);
+    // And the refusal names the divergence, so a reader sees WHICH world was admitted and which exists.
+    expect(result.admission.state).toBe("STALE_PROOF");
+    expect(result.detail).toContain(h1.slice(0, 12));
   }, 120_000);
 
-  it("an UNISSUED certificate attempts no effect", async () => {
-    const { repo, worldsRoot, h0, r0, h1 } = scenario();
+  it("an UNRECORDED admission attempts no effect", async () => {
+    const { repo, worldsRoot, h0, r0 } = scenario();
     const { runtime } = runtimeFor({ repo, worldsRoot });
     const before = canonicalFingerprint(repo);
+    /**
+     * §D3-R2: the effect takes an admission REF and recalls the record itself. A ref this authority never
+     * wrote authorizes nothing — which is now the SAME shape as an unissued certificate, because both are
+     * "no record exists", rather than two separately-checked conditions.
+     */
     const result = await runtime.rematerialize({
-      presented: {
-        schemaVersion: 1,
-        issuerId: "palimpsest-first-party",
-        assessment: {
-          schemaVersion: 1,
-          policyVersion: "v",
-          resultManifestDigest: "manifest-R0",
-          originBasisDigest: "basis-B0",
-          targetObservationDigest: h1,
-          changeFootprintDigest: "x",
-          outcome: "COMPATIBLE",
-          disjointnessProofs: [],
-          conflicts: [],
-          unknowns: [],
-          detail: "trust me",
-          assessmentDigest: "y",
-        },
-        premiseRefs: { projectSemantic: null, source: null, assets: null, environment: null, resultReads: null, resultWrites: null },
-        premiseSetDigest: "g",
-        issuanceDigest: "h",
-      },
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef: "admission-never-recorded",
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("ADMISSION_REFUSED");
-    expect(result.detail).toContain("no rematerialization was attempted");
+    expect(result.admission.state).toBe("UNTRUSTED_PROOF");
+    expect(result.detail).toContain("is not a recorded decision");
     expect(canonicalFingerprint(repo)).toEqual(before);
   }, 120_000);
 
   it("an INCOMPATIBLE certificate cannot authorize an effect", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
     // The change overlaps what the result WROTE, so the proof is a positive conflict.
-    const conflicting = materializePremiseSet({
-      projectSemantic: observed([]),
-      source: observed([srcPath("src/a.ts")]),
-      assets: observed([]),
-      environment: observed([]),
-      resultReads: observed([]),
-      resultWrites: observed([srcPath("src/a.ts")]),
-    });
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: conflicting });
+    const conflicting = {
+      projectSemantic: rig.observe(rig.conservativeObserver, []),
+      source: rig.observe(rig.sourceObserver, [srcPath("src/a.ts")]),
+      assets: rig.observe(rig.conservativeObserver, []),
+      environment: rig.observe(rig.conservativeObserver, []),
+      resultReads: rig.observe(rig.conservativeObserver, []),
+      resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+    };
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h1, targetRevision: h1, refs: conflicting });
     expect(certificate.assessment.outcome).toBe("INCOMPATIBLE");
 
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("ADMISSION_REFUSED");
     expect(result.admission.state).toBe("CONFLICT");
@@ -351,20 +334,16 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H2 conflicts"], { cwd: repo });
     const h2 = git(repo, ["rev-parse", "HEAD"]);
 
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
     const before = canonicalFingerprint(repo);
-    const certificate = issueFor({ issuer, targetDigest: h2, premises: disjointPremises() });
+    const { admissionRef, certificate } = admitFor({ rig, targetDigest: h2, targetRevision: h2 });
+    atWorld(h2);
 
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h2,
-      targetBasisRevision: h2,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     // The certificate is legitimate and the delta still does not apply. The answer is a FAILURE, never a
     // three-way merge, a rename heuristic or a partial application.
@@ -387,19 +366,15 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
       exportRevision: async () => ({ imported: true, detail: "unused" }),
       release: async () => undefined,
     };
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot, rematerializer: failing });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot, rematerializer: failing });
     const before = canonicalFingerprint(repo);
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("REMATERIALIZATION_FAILED");
     expect(result.candidate).toBe(null);
@@ -408,18 +383,14 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
 
   it("a result with no source facet reports EFFECT_CAPABILITY_UNAVAILABLE rather than inventing a candidate", async () => {
     const { repo, worldsRoot, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
     const result = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: null,
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(result.state).toBe("EFFECT_CAPABILITY_UNAVAILABLE");
     expect(result.candidate).toBe(null);
@@ -434,19 +405,15 @@ describe("§D3-d a failed rematerialization fails closed, and rewrites nothing",
 describe("§D3-d the derivation is identified by its operation, not by its output", () => {
   it("the same operation identity yields the same derivation id", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
     const run = () =>
       runtime.rematerialize({
-        presented: certificate,
-        resultManifestDigest: "manifest-R0",
-        originBasisDigest: "basis-B0",
+        admissionRef,
         originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-        targetBasisDigest: h1,
-        targetBasisRevision: h1,
         projectId: "d3d",
         taskId: "t1",
-        hasBasis: true,
       });
     const first = await run();
     const second = await run();
@@ -457,42 +424,33 @@ describe("§D3-d the derivation is identified by its operation, not by its outpu
     // measured that two runs producing byte-identical commits is legitimate, and requiring a stable hash
     // would be asserting git's deduplication rather than this product's promise.
     expect(second.candidate?.derivation.derivationId).toBe(first.candidate?.derivation.derivationId);
-    expect(existsSync(`${worldsRoot}/${first.candidate!.derivation.derivationId}`)).toBe(true);
+    /**
+     * §D3-R4: the world is RELEASED once its result is recorded — an ExecutionWorld is a materialized view,
+     * not an archive. So the convergence that matters is on the RECORD (which the store keeps) rather than
+     * on the directory (which is collected).
+     */
+    expect(rig.candidates.readByDerivation(first.candidate!.derivation.derivationId)).toHaveLength(1);
   }, 180_000);
 
   it("a different target basis is a different derivation", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const { issuer, runtime } = runtimeFor({ repo, worldsRoot });
-    const certificate = issueFor({ issuer, targetDigest: h1, premises: disjointPremises() });
+    const { rig, runtime, atWorld } = runtimeFor({ repo, worldsRoot });
+    const { admissionRef } = admitFor({ rig, targetDigest: h1, targetRevision: h1 });
+    atWorld(h1);
     const atH1 = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
-    // A second certificate against a DIFFERENT target is a different operation.
-    const other = issuer.issue({
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
-      targetObservationDigest: h0,
-      exactlyCurrent: false,
-      premises: disjointPremises(),
-    });
+    // A second ADMISSION against a DIFFERENT target is a different operation, so its ref differs too.
+    const other = admitFor({ rig, targetDigest: h0, targetRevision: h0 });
+    atWorld(h0);
     const atH0 = await runtime.rematerialize({
-      presented: other,
-      resultManifestDigest: "manifest-R0",
-      originBasisDigest: "basis-B0",
+      admissionRef: other.admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h0,
-      targetBasisRevision: h0,
       projectId: "d3d",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(atH1.candidate?.derivation.derivationId).not.toBe(atH0.candidate?.derivation.derivationId);
   }, 180_000);

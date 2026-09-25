@@ -71,7 +71,6 @@ export {
   dependencyPremises,
   domainsOf,
   materializePremiseSet,
-  observedPremise,
   premiseObservationDigest,
   unavailablePremise,
   type ObservationDomain,
@@ -82,11 +81,21 @@ export {
 } from "./observation.js";
 export {
   makeCompatibilityIssuer,
-  premiseSetDigestOf,
   type CompatibilityIssuer,
   type IssuedCompatibilityAssessment,
   type PremiseReferences,
 } from "./issuance.js";
+/**
+ * §D3-R1: the observation AUTHORITY is exported, but `registerObserver` deliberately is not surfaced as a
+ * convenience: a module that wants to observe is handed a RECORDER by the composition, rather than
+ * reaching for the registration API and minting itself an observer identity.
+ */
+export {
+  makeObservationAuthority,
+  type ObservationAuthority,
+  type ObservationRecorder,
+  type RecordedObservation,
+} from "./observation_authority.js";
 export {
   CROSS_BASIS_ADMISSION_STATES,
   admitCrossBasis,
@@ -130,3 +139,10 @@ export {
   type SuccessionAssessment,
   type SuccessionState,
 } from "./serialization.js";
+export {
+  crossBasisAdmissionRefOf,
+  makeCrossBasisAdmissionStore,
+  type CrossBasisAdmissionRecord,
+  type CrossBasisAdmissionStore,
+  type TargetObservationRecord,
+} from "./admission_store.js";

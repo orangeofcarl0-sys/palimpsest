@@ -23,21 +23,15 @@ import { fileURLToPath } from "node:url";
 
 import { afterAll, describe, expect, it } from "vitest";
 
-import {
-  GIT_SOURCE_OBSERVER_ID,
-  gitSourceChangeObserver,
-} from "../src/deployment/source_change_observer.js";
+import { gitSourceChangeObserver } from "../src/deployment/source_change_observer.js";
+import { makeD3Rig, type D3Rig } from "./d3_rig.js";
 import {
   covered,
-  makeCompatibilityIssuer,
   makeCrossBasisAdmissionRuntime,
-  materializePremiseSet,
   noChanges,
-  observedPremise,
   provenComplete,
   unavailablePremise,
-  type PremiseObservation,
-  type PremiseSet,
+  type PremiseReferences,
   type ProjectWorldObservationPort,
 } from "../src/project_world/index.js";
 
@@ -80,24 +74,19 @@ function worldAt(revision: string, semanticDigest: string): ProjectWorldObservat
   };
 }
 
-/** A source dependency observed by the REAL observer, since a test has no sandbox to attest one. */
+/**
+ * A source dependency recorded through a REGISTERED observer.
+ *
+ * §D3-R1: a test has no sandbox to attest a read set, so it declares the CONSERVATIVE_DOMAIN mechanism —
+ * "these selectors ARE the whole dependency, and nothing more is implied" — through a recorder, exactly as
+ * a deployment would. The result is an observation REF.
+ */
 function observedSourceDependency(input: {
-  readonly repo: string;
-  readonly from: string;
-  readonly to: string;
+  readonly rig: D3Rig;
   readonly selectors: readonly { readonly domain: "source"; readonly scope: "path"; readonly path: string }[];
-}): PremiseObservation {
-  return observedPremise({
-    provenance: {
-      observerId: GIT_SOURCE_OBSERVER_ID,
-      observerVersion: "1",
-      // A result's read set cannot be narrowed by git, so this fixture attests the CONSERVATIVE_DOMAIN
-      // mechanism: the selectors ARE the whole dependency it claims, and nothing more is implied.
-      mechanism: "CONSERVATIVE_DOMAIN",
-      scope: { domain: "source", scopeRef: input.repo, from: input.from, to: input.to },
-    },
-    selectors: input.selectors,
-  });
+  readonly scope: { readonly domain: "source"; readonly scopeRef: string; readonly from: string; readonly to: string };
+}): string {
+  return input.rig.conservativeObserver.record({ scope: input.scope, selectors: input.selectors });
 }
 
 describe("§D3-c4 the composed chain, against a real repository", () => {
@@ -109,67 +98,39 @@ describe("§D3-c4 the composed chain, against a real repository", () => {
     execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H1"], { cwd: repo });
     const h1 = git(repo, ["rev-parse", "HEAD"]);
 
-    const change = gitSourceChangeObserver({ repository: repo }).observeChange({
+    const rig = makeD3Rig();
+    cleanups.push(() => rig.close());
+    const issuer = rig.issuer;
+    const change = gitSourceChangeObserver({ repository: repo, recorder: rig.sourceObserver }).observeChange({
       fromRevision: h0,
       toRevision: h1,
       scopeRef: repo,
     });
-    expect(change.state).toBe("OBSERVED");
-
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
+    // §D3-R1: an observation REF whose record the authority can recall.
+    expect(rig.observations.recall(change)?.state).toBe("OBSERVED");
     const runtime = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt(h1, "sem-1") });
     const target = runtime.observeTarget("t1");
 
     // The result reads src/a.ts and writes src/b.ts, both observed; the change is in src/c.ts.
-    const premises: PremiseSet = materializePremiseSet({
-      projectSemantic: observedPremise({
-        provenance: {
-          observerId: "project-projection",
-          observerVersion: "1",
-          mechanism: "CONSERVATIVE_DOMAIN",
-          scope: { domain: "project_semantic", scopeRef: "d3c4", from: "41", to: "41" },
-        },
-        selectors: [],
-      }),
+    /**
+     * Every premise as an observation REF. §D3-R1: a test observes through registered recorders exactly as
+     * a deployment does, so there is no premise object for it to assemble.
+     */
+    const observationRefs: PremiseReferences = {
+      projectSemantic: rig.conservativeObserver.record({ scope: { domain: "project_semantic", scopeRef: "d3c4", from: "41", to: "41" }, selectors: [] }),
       source: change,
-      assets: observedPremise({
-        provenance: {
-          observerId: "no-asset-observer",
-          observerVersion: "1",
-          mechanism: "CONSERVATIVE_DOMAIN",
-          scope: { domain: "assets", scopeRef: "none", from: "-", to: "-" },
-        },
-        selectors: [],
-      }),
-      environment: observedPremise({
-        provenance: {
-          observerId: "no-environment-observer",
-          observerVersion: "1",
-          mechanism: "CONSERVATIVE_DOMAIN",
-          scope: { domain: "environment", scopeRef: "none", from: "-", to: "-" },
-        },
-        selectors: [],
-      }),
-      resultReads: observedSourceDependency({
-        repo,
-        from: h0,
-        to: h1,
-        selectors: [{ domain: "source", scope: "path", path: "src/a.ts" }],
-      }),
-      resultWrites: observedSourceDependency({
-        repo,
-        from: h0,
-        to: h1,
-        selectors: [{ domain: "source", scope: "path", path: "src/b.ts" }],
-      }),
-    });
+      assets: rig.conservativeObserver.record({ scope: { domain: "assets", scopeRef: "none", from: "-", to: "-" }, selectors: [] }),
+      environment: rig.conservativeObserver.record({ scope: { domain: "environment", scopeRef: "none", from: "-", to: "-" }, selectors: [] }),
+      resultReads: observedSourceDependency({ rig, scope: { domain: "source", scopeRef: repo, from: h0, to: h1 }, selectors: [{ domain: "source", scope: "path", path: "src/a.ts" }] }),
+      resultWrites: observedSourceDependency({ rig, scope: { domain: "source", scopeRef: repo, from: h0, to: h1 }, selectors: [{ domain: "source", scope: "path", path: "src/b.ts" }] }),
+    };
 
     const certificate = issuer.issue({
       resultManifestDigest: "manifest-real",
       originBasisDigest: "basis-real",
       targetObservationDigest: target.digest,
       exactlyCurrent: false,
-      premises,
+      observationRefs,
     });
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
 
@@ -208,25 +169,33 @@ describe("§D3-c4 the composed chain, against a real repository", () => {
      * The headline, at composition level. Both branches describe the same world; only one of them has a
      * provenance chain behind it, and the system's answer depends on that difference alone.
      */
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
+    const rig = makeD3Rig();
+    cleanups.push(() => rig.close());
+    const issuer = rig.issuer;
     const runtime = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt("H1", "sem-1") });
     const target = runtime.observeTarget("t1");
 
-    // (a) Hand-built premises: everything claims PROVEN_COMPLETE and nothing is observed.
-    const forged: PremiseSet = materializePremiseSet({
-      projectSemantic: unavailablePremise("project_semantic", "not observed"),
-      source: unavailablePremise("source", "not observed"),
-      assets: unavailablePremise("assets", "not observed"),
-      environment: unavailablePremise("environment", "not observed"),
-      resultReads: unavailablePremise("source", "not observed"),
-      resultWrites: unavailablePremise("source", "not observed"),
-    });
+    /**
+     * (a) NOTHING OBSERVED: every slot cites no observation.
+     *
+     * §D3-R1 makes this the honest form of the old forged case — a caller cannot hand in a premise object
+     * claiming the real observer's identity, so the strongest thing it can do is cite nothing, and an
+     * unobserved slot contributes no coverage.
+     */
+    const forged: PremiseReferences = {
+      projectSemantic: null,
+      source: null,
+      assets: null,
+      environment: null,
+      resultReads: null,
+      resultWrites: null,
+    };
     const forgedCertificate = issuer.issue({
       resultManifestDigest: "manifest-real",
       originBasisDigest: "basis-real",
       targetObservationDigest: target.digest,
       exactlyCurrent: false,
-      premises: forged,
+      observationRefs: forged,
     });
     // Even issued through the real authority, unavailable premises yield no proof — so the certificate is
     // honest about it and admission reports a gap rather than a pass.
@@ -281,7 +250,9 @@ describe("§D3-c4 the composed chain, against a real repository", () => {
   }, 120_000);
 
   it("the runtime reports NO_BASIS for an attempt whose provenance was never captured", () => {
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
+    const rig = makeD3Rig();
+    cleanups.push(() => rig.close());
+    const issuer = rig.issuer;
     const runtime = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt("H1", "sem-1") });
     const decision = runtime.admit({
       presented: null,
@@ -296,7 +267,9 @@ describe("§D3-c4 the composed chain, against a real repository", () => {
   });
 
   it("the target observation digest moves when the world moves, and is stable when it does not", () => {
-    const issuer = makeCompatibilityIssuer({ issuerId: "x" });
+    const rig = makeD3Rig({ issuerId: "x" });
+    cleanups.push(() => rig.close());
+    const issuer = rig.issuer;
     const first = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt("H1", "sem-1") });
     const again = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt("H1", "sem-1") });
     const moved = makeCrossBasisAdmissionRuntime({ issuer, observation: worldAt("H2", "sem-1") });

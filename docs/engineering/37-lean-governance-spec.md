@@ -4444,3 +4444,160 @@ $$\boxed{Observe \rightarrow Prove \rightarrow Admit \rightarrow Rematerialize \
 
 且这一整套等价于 **optimistic concurrency control**：snapshot/basis capture → speculative work →
 validate compatibility → admit → rematerialize → reverify → canonical commit。
+
+## 附录 L（第 D3-R 期）：Authority / Durability Closure —— 审计发现的四个真实缺口
+
+一次对 `main 5c97459` 的**代码级回看**（不是测试回看）发现：D3 的**语义**体系是 CLOSED，但**实现**上有四处
+"注释比代码更强"的地方。四者都是 module-level trust seam，不是理论问题。逐条实测确认后修复。
+
+$$\boxed{\text{D3 semantic model: unchanged}\qquad D3 implementation closure: hardened}$$
+
+### L.1 四项审计发现（均已实测确认，非推断）
+
+| | 发现 | 实测证据 |
+|---|---|---|
+| **R1** | premise authority 仍可伪造 | `observedPremise` 从 barrel 导出，且 `issue({ premises })` 收普通结构体 ⇒ 我用 `observerId: "git-source-change-observer"`、`mechanism: "RUNTIME_OBSERVED"` **真的伪造出了一条 premise**。issuer 能证明"这份 assessment 是我签发的"，但**不能**证明"这份 premise 是那个 observer 产出的" |
+| **R2** | target digest 与实际 apply 的 revision 未绑定 | `rematerialize()` 同时收 `targetBasisDigest`（送 admitCrossBasis）与 `targetBasisRevision`（建 world），两者是**独立 caller input** ⇒ 语义上存在 `digest(B1)` + `H2` 的组合，admission 过 digest、effect 跑在 H2 |
+| **R3** | authority history 不 durable | `makeCompatibilityIssuer()` 内是 `new Map()`；而同层 basis / candidate / verification 都是 SQLite ⇒ 重启后前者消失、后者存活，与已写下的 `Facts persist; authorities expire` 矛盾 |
+| **R4** | `release()` 定义了但从未调用 | `grep '\.release(' src/project_world/*.ts` 无结果 ⇒ world 持续累积，与"ExecutionWorld 是 materialized view、不是 archive"不一致 |
+
+### L.2 R1 修复：observation authority（记录，而非 flag）
+
+```
+real observer  →  ObservationAuthorityStore  →  observationRef
+issuer         →  按 ref recall 记录本身      →  CompatibilityIssuance
+```
+
+- **删除** free positive constructor `observedPremise`；`unavailablePremise` **保留**且有意**不对称** ——
+  它永不能授予正向 authority（不携带 coverage），只产出障碍，所以"I 看不见"这个诚实答案对任何调用方都便宜；
+- `observedPremise` 的替代是 `ObservationAuthority.registerObserver(...)` 返回的 **recorder**，它携带
+  **observer 自己在注册时确定的身份**，记录 API 不接受 per-call 身份 ⇒ 调用方没有途径冒充；
+- `issue()` 只收 **refs**，自己 recall；**引用了本 authority 没有的 ref** ⇒ 记为 `unheld observation refs`
+  障碍（诚实失败，而非静默通过）；
+- `registerObserver` **刻意不从 capability barrel 便利导出**：想观测的模块必须被**交给** recorder。
+
+**收益（诚实说明）**：
+- ✅ 每个正向前提都是 durable record，经注册 observer 身份写入；issuer 永不接受 premise 对象；
+- ❌ **不**声称能防"故意注册一个欺诈 observer 身份"的进程内代码 —— 那需要 observer 与其消费者之间的 OS/进程边界，
+  是部署属性，本 plane 造不出来。它做的是让伪造成为**针对具名注册的一次蓄意、可审计行为**，而非顺手写个字面量。
+
+### L.3 R2 修复：admission record 让 target 成为事实
+
+```
+CrossBasisAdmissionRecord
+├── admissionRef
+├── issuanceRef
+├── resultManifestDigest / originBasisDigest
+└── targetObservation
+    ├── targetObservationDigest
+    └── targetBasisRevision      ← 同一条记录，无法拆开
+```
+
+effect 只收 `admissionRef`，**自己 recall 记录并从记录中读取 revision** ⇒ "admitted 一个世界、effect 在另一个世界"
+不再**可表达**（不是"有一个检查可能被忘记"）。
+
+并且 `AdmissionStillApplies ≺ WorldCreation` 由**重新观测**闭合：effect 在建 world 前重新观测当前世界，
+与记录不一致则拒绝 —— 实测 `ADMISSION_REFUSED` / `STALE_PROOF`，且**无 world、无 candidate、无 canonical mutation**。
+
+**验证**：把重新观测关掉，`STALE` 测试立刻红。
+
+### L.4 R3 修复：issuance 与 admission 都 durable
+
+```
+CompatibilityIssuanceStore     append-only（PRIMARY KEY (issuance_digest)，无 upsert）
+CrossBasisAdmissionStore       append-only（PRIMARY KEY (admission_ref)，无 upsert）
+```
+
+实测：第一个"进程生命周期"签发 + 记录 admission，全部 close；第二个生命周期重新打开**同样的文件** ⇒
+`issuer.recall(digest)` 仍返回同一个 outcome、`issuedCount() === 1`、`admissions.recall(ref).admitted === true`、
+observation 记录仍可 recall（证书的引用仍然解析）。
+
+$$\boxed{\text{authority 因 world 变化而失效，绝不因 host 重启而遗忘}}$$
+
+并且 authority 仍是**记录而非形状**：另一 authority 签发的证书在本地 recall 为 `null` ⇒ `UNTRUSTED_PROOF`。
+
+### L.5 R4 修复：record 之后 release
+
+```
+validate admission ≺ create world ≺ apply ≺ EXPORT ≺ freeze candidate ≺ record ≺ RELEASE
+```
+
+**但 release 立刻暴露了一个真实的新问题**：world 被回收后，重试会**重新创建 world 并产出第二个 candidate identity**，
+于是 `same operation → same canonical derivation` 在 release 成功时反而为假。修法是评审点出的那条：
+
+$$\boxed{\text{先 lookup existing candidate，再决定是否执行}}$$
+
+即 `readByDerivation(derivationId)` 命中则直接返回已记录的 candidate，**不建 world**。实测：world 目录已回收、
+而候选 revision 仍可从 canonical object database 读出（`cat-file -t` = commit），且重试得到**同一 candidateId**、
+`readByDerivation` 长度恒为 1。
+
+release **失败不重写结果**：candidate 已先落盘，清理失败只是卫生问题 —— 实测 release 抛错时仍 `MATERIALIZED`
+且 candidate 完整。
+
+**验证**：把 replay lookup 关掉，`same derivation` 测试立刻红。
+
+### L.6 一处被 gate 正确挡回的产品面扩张
+
+我一度把 authority trio 暴露成 `InstalledPalimpsest.crossBasis`，被 **SR-1 §21 golden structural parity** 挡下：
+
+```
+unexpected: crossBasis   (packagedInstallation.installedCapabilityKeys)
+```
+
+这是 gate **做对了**：新增 install-result key 是**受评审的产品面决定**（需 `REVIEWED_*_ADDITIONS` 带书面理由），
+不是一次 hardening 的副作用。同时 `install_contract.ts` 触及 §25 的 700 行上限，我按既有先例
+（`delegation_contract.ts`）抽出模块 —— 但既然产品面回退了，抽出物也一并删除，避免留下**无人填充的半成品面**。
+
+$$\boxed{\text{四项发现都是 module-level seam，不是产品面变更}}$$
+
+### L.7 一处需要如实更正的判断
+
+我在 D3-e 结束时判"**D3 整体 CLOSED**"。按本次审计，正确的措辞是：
+
+$$\boxed{\text{D3 的语义体系 CLOSED；产品实现的 D3 在 authority/durability 上曾未闭合，现由 D3-R 闭合}}$$
+
+这不是 D3 的 OCC 理论有问题 —— `ProjectWorldBasis` / resource algebra / positive compatibility proof /
+certificate-admission 分离 / candidate rematerialization / serializable canonicalization **全部保持不变**，
+一行语义未改。
+
+### L.8 本阶段 machine proofs（`test/lean_d3r_hardening.test.ts`，13 项）
+
+| 组 | 断言 |
+|---|---|
+| **R1** | barrel 不再导出 `observedPremise`；`observation.ts` 中该函数**不存在**；`unavailablePremise` 保留；伪造 ref ⇒ `UNKNOWN` + `unheld observation refs` 障碍；注册身份决定记录的 observerId/mechanism（同 selectors 经不同 mechanism 是**不同** observation）；`UNAVAILABLE` 记录 `footprint === null` |
+| **R2** | 公开接口不含 `targetBasisRevision`/`targetBasisDigest`/`presented`；记录中 digest 与 revision 同源且可整体 recall；`admissionRef` 由 issuance + target 派生（三者互不相同）；store 无 upsert、主键为 `admission_ref` |
+| **R3** | 跨"重启"（close 后重开同文件）recall issuance/admission/observation 全部成功；另一 authority 的证书 ⇒ `UNTRUSTED_PROOF` |
+| **R4** | world 已回收而 revision 可读；重试得同一 candidateId 且 `readByDerivation` 长度 1；release 抛错仍 `MATERIALIZED` |
+| **LIVE** | 真实 install + 真实 repository + **shipped** `gitSourceChangeObserver` 走完 observe → prove → admit → rematerialize；canonical HEAD 未变；world 已回收 |
+
+并**验证过**三条关键性质是承重的：关掉重新观测 ⇒ STALE 测试红；关掉 replay lookup ⇒ 同 operation 测试红；
+（D3-d 阶段已验证）关掉 export 且不阻断 ⇒ 三个测试红。
+
+### L.9 门禁
+
+单元 **217 files / 2430 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**、`install_contract.ts` **697 行**（≤700）。未新增公开名。
+
+### L.10 下一步：D4 的准确形态
+
+$$\boxed{\textbf{D4 — Concurrent Speculative Mutation Worlds}}$$
+
+核心不是"并发 merge"，而是：
+
+$$\boxed{SpeculativeMutationAuthority \neq CanonicalMutationAuthority}$$
+
+D2 的 single mutating lane 实际上把两种 authority 合在一起了（有一个 mutating attempt RUNNING 就不许第二个），
+这对 in-place 正确，但对互相隔离的 speculative worlds **过强**。准确描述当前状态：
+
+$$\boxed{\text{D3 solved concurrent-result SEMANTICS, not concurrent-result PRODUCTION.}}$$
+
+`controller.ts` 仍写死 `MUTATING_LANE_OCCUPIED`，所以"两个真实 DSH worker 从同一 H0 并发生产"目前**产品入口不允许** ——
+因此**不该现在花模型配额**去跑双 worker gate（那只会验证一个不存在于 product runtime 的路径）。真实双 worker gate
+留到 **D4-b / D4-LIVE**。
+
+**D4-c 不可省略**：当前 `deriveWorkDependency` 有意不信任 `read_paths` 是完整依赖（D3-b 的正确选择），
+于是 authoritative read footprint 是 `wholeRepositoryRead` ⇒ 第二个结果几乎必然 `INCOMPATIBLE`。
+要让 D4 有工程价值，必须把 `read_paths` 从 declaration 升级成 **authority-bearing evidence**
+（优先调研 PTC/DSH sandbox 能否建立 read-access boundary），否则：
+
+$$\boxed{declared\ read\_paths \neq authoritative\ read\ footprint}$$
