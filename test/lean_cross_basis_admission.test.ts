@@ -18,62 +18,70 @@ import { execFileSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { describe, expect, it } from "vitest";
+import { afterAll, describe, expect, it } from "vitest";
 
 import {
   CROSS_BASIS_ADMISSION_STATES,
   admitCrossBasis,
   covered,
-  makeCompatibilityIssuer,
-  materializePremiseSet,
   noChanges,
-  observedPremise,
   provenComplete,
-  sourceChangeFootprintFromPaths,
   unavailablePremise,
   unproven,
   wholeRepositoryRead,
   type CoveredFootprint,
-  type PremiseObservation,
-  type PremiseSet,
+  type PremiseReferences,
 } from "../src/project_world/index.js";
+import { makeD3Rig, type D3Rig } from "./d3_rig.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+const cleanups: Array<() => void> = [];
+afterAll(() => {
+  for (const fn of cleanups) fn();
+});
 
 /* ------------------------------------------------------------------ fixtures */
 
 const srcPath = (path: string) => ({ domain: "source", scope: "path", path }) as const;
 
-/** A first-party-looking observer identity, used to show that a NAME is not an authority. */
-function provenance(overrides: { readonly observerId?: string; readonly mechanism?: "SANDBOX_ENFORCED" | "RUNTIME_OBSERVED" | "CONSERVATIVE_DOMAIN" | "AUTHORITATIVE_MANIFEST" } = {}) {
+/**
+ * §D3-R1: a rig whose observers are REGISTERED, so a positive premise is a durable record rather than an
+ * object a test assembled. The suite's headline property — that naming the real observer is not a route to
+ * authority — is now a property of the API: there is no `observedPremise` to call.
+ */
+const rig = () => {
+  const built = makeD3Rig();
+  cleanups.push(() => built.close());
+  return built;
+};
+
+/** The first-party-looking identity a forgery WOULD have named. */
+const REAL_OBSERVER_ID = "git-source-change-observer";
+
+/** All six premise slots observed, with the source change given. */
+function observedRefs(
+  r: D3Rig,
+  input: {
+    readonly sourceChanges: readonly ReturnType<typeof srcPath>[];
+    readonly reads?: readonly ReturnType<typeof srcPath>[] | undefined;
+    readonly writes?: readonly ReturnType<typeof srcPath>[] | undefined;
+  },
+) {
   return {
-    observerId: overrides.observerId ?? "test-observer",
-    observerVersion: "1",
-    mechanism: overrides.mechanism ?? ("RUNTIME_OBSERVED" as const),
-    scope: { domain: "source" as const, scopeRef: "repo-x", from: "H0", to: "H1" },
+    projectSemantic: r.observe(r.conservativeObserver, []),
+    source: r.observe(r.sourceObserver, input.sourceChanges),
+    assets: r.observe(r.conservativeObserver, []),
+    environment: r.observe(r.conservativeObserver, []),
+    resultReads: r.observe(r.conservativeObserver, input.reads ?? [srcPath("src/a.ts")]),
+    resultWrites: r.observe(r.conservativeObserver, input.writes ?? [srcPath("src/b.ts")]),
   };
 }
 
-const observed = (selectors: readonly ReturnType<typeof srcPath>[], overrides = {}) =>
-  observedPremise({ provenance: provenance(overrides), selectors });
-
-/** A premise set whose EVERY premise is an issued observation, with the source change given. */
-function observedPremises(input: {
-  readonly sourceChanges: readonly ReturnType<typeof srcPath>[];
-  readonly reads?: PremiseObservation | undefined;
-  readonly writes?: PremiseObservation | undefined;
-}): PremiseSet {
-  return materializePremiseSet({
-    projectSemantic: observed([]),
-    source: observed(input.sourceChanges),
-    assets: observed([]),
-    environment: observed([]),
-    resultReads: input.reads ?? observed([srcPath("src/a.ts")]),
-    resultWrites: input.writes ?? observed([srcPath("src/b.ts")]),
-  });
+/** An all-UNOBSERVED ref set: every slot cites nothing, which can only ever produce obstacles. */
+function nothingObserved(): PremiseReferences {
+  return { projectSemantic: null, source: null, assets: null, environment: null, resultReads: null, resultWrites: null };
 }
-
-const issuer = () => makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
 
 /* ================================================================== *
  * HEADLINE: forged premises cannot buy authority
@@ -112,7 +120,7 @@ describe("§D3-c HEADLINE: a valid conclusion from untrusted premises gains no a
      * THE POINT. That assessment was never ISSUED, so no authority stands behind its premises — and the
      * admission gate refuses it while naming exactly why.
      */
-    const authority = issuer();
+    const authority = rig();
     const presented = {
       schemaVersion: 1 as const,
       issuerId: "palimpsest-first-party",
@@ -129,7 +137,7 @@ describe("§D3-c HEADLINE: a valid conclusion from untrusted premises gains no a
       issuanceDigest: "forged-digest",
     };
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented,
       resultManifestDigest: "manifest-1",
       originBasisDigest: "basis-0",
@@ -140,21 +148,22 @@ describe("§D3-c HEADLINE: a valid conclusion from untrusted premises gains no a
     expect(decision.state).toBe("UNTRUSTED_PROOF");
     expect(decision.detail).toContain("not issued by an accepted authority");
     // And nothing was recorded: the authority's memory is untouched by a presentation.
-    expect(authority.issuedCount()).toBe(0);
+    expect(authority.issuer.issuedCount()).toBe(0);
   });
 
   it("the SAME premises, properly observed and issued, DO admit — the difference is provenance alone", () => {
-    const authority = issuer();
-    const certificate = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "manifest-1",
       originBasisDigest: "basis-0",
       targetObservationDigest: "target-1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/c.ts")] }),
+      observationRefs: observedRefs(r, { sourceChanges: [srcPath("src/c.ts")] }),
     });
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: certificate,
       resultManifestDigest: "manifest-1",
       originBasisDigest: "basis-0",
@@ -173,15 +182,16 @@ describe("§D3-c HEADLINE: a valid conclusion from untrusted premises gains no a
 
 describe("§D3-c2 the certificate is the issuer's record, not the caller's object", () => {
   it("the issuer re-derives the assessment from the observations; a supplied conclusion is not accepted", () => {
-    const authority = issuer();
+    const authority = rig();
+    const r = authority;
     // `issue` takes observations and NOT an assessment — there is no parameter for a conclusion, so a
     // caller cannot have one blessed.
-    const certificate = authority.issue({
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/a.ts")] }),
+      observationRefs: observedRefs(authority, { sourceChanges: [srcPath("src/a.ts")] }),
     });
     // The change overlaps the read dependency, so the issuer's OWN derivation says INCOMPATIBLE — which
     // a caller hoping for COMPATIBLE cannot talk it out of.
@@ -189,13 +199,14 @@ describe("§D3-c2 the certificate is the issuer's record, not the caller's objec
   });
 
   it("a MUTATED assessment under a genuine digest is not admitted: the recorded copy is validated", () => {
-    const authority = issuer();
-    const certificate = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/a.ts")] }),
+      observationRefs: observedRefs(authority, { sourceChanges: [srcPath("src/a.ts")] }),
     });
     expect(certificate.assessment.outcome).toBe("INCOMPATIBLE");
 
@@ -205,7 +216,7 @@ describe("§D3-c2 the certificate is the issuer's record, not the caller's objec
       assessment: { ...certificate.assessment, outcome: "COMPATIBLE" as const },
     };
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: mutated,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -218,42 +229,45 @@ describe("§D3-c2 the certificate is the issuer's record, not the caller's objec
   });
 
   it("issuance identity moves with the premises: a different observation is a different certificate", () => {
-    const authority = issuer();
-    const one = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const one = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/c.ts")] }),
+      observationRefs: observedRefs(r, { sourceChanges: [srcPath("src/c.ts")] }),
     });
-    const other = authority.issue({
+    const other = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/d.ts")] }),
+      observationRefs: observedRefs(r, { sourceChanges: [srcPath("src/d.ts")] }),
     });
     expect(other.issuanceDigest).not.toBe(one.issuanceDigest);
     expect(other.premiseSetDigest).not.toBe(one.premiseSetDigest);
-    expect(authority.issuedCount()).toBe(2);
+    expect(authority.issuer.issuedCount()).toBe(2);
     // Both are individually recallable, so identity is not positional.
-    expect(authority.recall(one.issuanceDigest)?.issuanceDigest).toBe(one.issuanceDigest);
-    expect(authority.recall("never-issued")).toBe(null);
+    expect(authority.issuer.recall(one.issuanceDigest)?.issuanceDigest).toBe(one.issuanceDigest);
+    expect(authority.issuer.recall("never-issued")).toBe(null);
   });
 
   it("a certificate carries WHICH observation each premise rests on", () => {
-    const authority = issuer();
-    const premises = observedPremises({ sourceChanges: [srcPath("src/c.ts")] });
-    const certificate = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const refs = observedRefs(authority, { sourceChanges: [srcPath("src/c.ts")] });
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises,
+      observationRefs: refs,
     });
-    expect(certificate.premiseRefs.source).toBe(
-      premises.source.state === "OBSERVED" ? premises.source.observationId : null,
-    );
+    // The certificate cites the OBSERVATION REFS it was issued from, and the authority can recall each
+    // one — which is the whole point of §D3-R1.
+    expect(certificate.premiseRefs.source).toBe(refs.source);
+    expect(authority.observations.recall(refs.source ?? "")?.state).toBe("OBSERVED");
     expect(certificate.premiseRefs.resultReads).toMatch(/^obs-[0-9a-f]{32}$/u);
     // Every premise was observed, so no reference is null.
     expect(Object.values(certificate.premiseRefs).every((ref) => ref !== null)).toBe(true);
@@ -265,20 +279,21 @@ describe("§D3-c2 the certificate is the issuer's record, not the caller's objec
  * ================================================================== */
 
 describe("§D3-c3 authority and freshness are orthogonal", () => {
-  const issueFor = (authority: ReturnType<typeof issuer>, target: string) =>
-    authority.issue({
+  const issueFor = (authority: D3Rig, target: string) =>
+    authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: target,
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/c.ts")] }),
+      observationRefs: observedRefs(authority, { sourceChanges: [srcPath("src/c.ts")] }),
     });
 
   it("a genuine certificate for one target does NOT authorize another", () => {
-    const authority = issuer();
+    const authority = rig();
+    const r = authority;
     const certificate = issueFor(authority, "t1");
     const moved = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: certificate,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -290,7 +305,7 @@ describe("§D3-c3 authority and freshness are orthogonal", () => {
     expect(moved.moreEvidenceCouldHelp).toBe(true);
     // A fresh assessment against the current target DOES admit — freshness is repairable, provenance is not.
     const fresh = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: issueFor(authority, "t2"),
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -301,14 +316,15 @@ describe("§D3-c3 authority and freshness are orthogonal", () => {
   });
 
   it("a certificate for another result or another origin basis is likewise not applicable", () => {
-    const authority = issuer();
+    const authority = rig();
+    const r = authority;
     const certificate = issueFor(authority, "t1");
     for (const input of [
       { resultManifestDigest: "other", originBasisDigest: "b0" },
       { resultManifestDigest: "m", originBasisDigest: "b9" },
     ]) {
       const decision = admitCrossBasis({
-        issuer: authority,
+        issuer: authority.issuer,
         presented: certificate,
         ...input,
         targetObservationDigest: "t1",
@@ -320,9 +336,10 @@ describe("§D3-c3 authority and freshness are orthogonal", () => {
   });
 
   it("a correct target binding does NOT rescue untrusted premises — the two checks are independent", () => {
-    const authority = issuer();
+    const authority = rig();
+    const r = authority;
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: {
         schemaVersion: 1,
         issuerId: "someone-else",
@@ -373,21 +390,26 @@ describe("§D3-c4 read and write coverage cannot be laundered either", () => {
      * assessment from the OBSERVATIONS, an unavailable read premise contributes no coverage, and the
      * outcome is UNKNOWN — so the hole is not moved, it is closed.
      */
-    const authority = issuer();
-    const certificate = authority.issue({
+    const authority = rig();
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: materializePremiseSet({
-        projectSemantic: observed([]),
-        source: observed([srcPath("src/c.ts")]),
-        assets: observed([]),
-        environment: observed([]),
-        // No observer exists that can attest to what the result read.
-        resultReads: unavailablePremise("source", "no mechanism established this read set, so it is declared rather than observed"),
-        resultWrites: observed([srcPath("src/b.ts")]),
-      }),
+      /**
+       * No observer exists that can attest to what the result read, so that slot cites NOTHING.
+       *
+       * §D3-R1 makes this sharper than a hand-built `UNAVAILABLE` premise: there is no premise object to
+       * supply at all, only the absence of a ref — and an absent ref contributes no coverage.
+       */
+      observationRefs: {
+        projectSemantic: authority.observe(authority.conservativeObserver, []),
+        source: authority.observe(authority.sourceObserver, [srcPath("src/c.ts")]),
+        assets: authority.observe(authority.conservativeObserver, []),
+        environment: authority.observe(authority.conservativeObserver, []),
+        resultReads: null,
+        resultWrites: authority.observe(authority.conservativeObserver, [srcPath("src/b.ts")]),
+      },
     });
     expect(certificate.assessment.outcome).toBe("UNKNOWN");
     // The hygiene rule in action: the WRITE dependency is coverage-qualified, so its disjointness proof
@@ -398,7 +420,7 @@ describe("§D3-c4 read and write coverage cannot be laundered either", () => {
     expect(certificate.premiseRefs.resultReads).toBe(null);
 
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: certificate,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -410,44 +432,48 @@ describe("§D3-c4 read and write coverage cannot be laundered either", () => {
     expect(decision.moreEvidenceCouldHelp).toBe(true);
   });
 
-  it("a mechanism is declared by the OBSERVER: an unobserved footprint cannot claim one", () => {
-    // `observedPremise` is the only constructor that can produce a PROVEN_COMPLETE premise, and it takes
-    // the mechanism from its own provenance argument. A caller with no observer has only
-    // `unavailablePremise`, which carries no coverage at all.
-    const declared: PremiseObservation = unavailablePremise("source", "the caller has no observer");
+  it("a mechanism is declared by the OBSERVER, and there is no way for a caller to claim one", () => {
+    /**
+     * §D3-R1: the free `observedPremise({ provenance, selectors })` constructor is GONE. A positive
+     * premise now exists only as a durable record written through a REGISTERED observer, so a caller
+     * cannot name the real observer's identity in a hand-built literal — which I verified was possible
+     * before this hardening, by doing it.
+     */
+    const authority = rig();
+    // The only freely-constructible premise is the one that can never grant authority.
+    const declared = unavailablePremise("source", "the caller has no observer");
     expect(declared.state).toBe("UNAVAILABLE");
     expect("footprint" in declared).toBe(false);
+    // And an UNAVAILABLE record contributes no coverage to an issuance.
+    const unavailableRef = authority.observe(authority.sourceObserver, [srcPath("src/a.ts")]);
+    const record = authority.observations.recall(unavailableRef);
+    expect(record?.state).toBe("OBSERVED");
+    // A ref the authority never wrote recalls as null, which the issuer turns into an obstacle.
+    expect(authority.observations.recall("obs-never-written")).toBe(null);
   });
 
   it("a whole-repository read observed honestly still cannot admit against a source change", () => {
-    const authority = issuer();
-    const certificate = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: materializePremiseSet({
-        projectSemantic: observed([]),
-        source: observed([srcPath("src/c.ts")]),
-        assets: observed([]),
-        environment: observed([]),
+      observationRefs: {
+        projectSemantic: authority.observe(authority.conservativeObserver, []),
+        source: authority.observe(authority.sourceObserver, [srcPath("src/c.ts")]),
+        assets: authority.observe(authority.conservativeObserver, []),
+        environment: authority.observe(authority.conservativeObserver, []),
         // The honest observation: this deployment CAN see the read set, and the read set is everything.
-        resultReads: observedPremise({
-          provenance: {
-            observerId: "world-materializer",
-            observerVersion: "1",
-            mechanism: "CONSERVATIVE_DOMAIN",
-            scope: { domain: "source", scopeRef: "repo-x", from: "H0", to: "H1" },
-          },
-          selectors: wholeRepositoryRead().selectors,
-        }),
-        resultWrites: observed([srcPath("src/b.ts")]),
-      }),
+        resultReads: authority.observe(authority.conservativeObserver, wholeRepositoryRead().selectors),
+        resultWrites: authority.observe(authority.conservativeObserver, [srcPath("src/b.ts")]),
+      },
     });
     // Authoritative premises, and the honest outcome is still a conflict: the read overlaps the change.
     expect(certificate.assessment.outcome).toBe("INCOMPATIBLE");
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: certificate,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -476,7 +502,7 @@ describe("§D3-c5 every refusal keeps its own reason", () => {
 
   it("NO_BASIS is its own state: an attempt with no recorded basis has nothing to admit against", () => {
     const decision = admitCrossBasis({
-      issuer: issuer(),
+      issuer: rig().issuer,
       presented: null,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -489,7 +515,7 @@ describe("§D3-c5 every refusal keeps its own reason", () => {
 
   it("an absent certificate is INSUFFICIENT_PROOF, and says more evidence could help", () => {
     const decision = admitCrossBasis({
-      issuer: issuer(),
+      issuer: rig().issuer,
       presented: null,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -501,16 +527,17 @@ describe("§D3-c5 every refusal keeps its own reason", () => {
   });
 
   it("CONFLICT is NOT repairable by observing more, while INSUFFICIENT_PROOF is", () => {
-    const authority = issuer();
-    const conflicting = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const conflicting = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: false,
-      premises: observedPremises({ sourceChanges: [srcPath("src/a.ts")] }),
+      observationRefs: observedRefs(authority, { sourceChanges: [srcPath("src/a.ts")] }),
     });
     const conflict = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: conflicting,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -518,7 +545,7 @@ describe("§D3-c5 every refusal keeps its own reason", () => {
       hasBasis: true,
     });
     const insufficient = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: null,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -537,17 +564,18 @@ describe("§D3-c5 every refusal keeps its own reason", () => {
   });
 
   it("EXACT admits without needing a compatibility proof at all", () => {
-    const authority = issuer();
-    const certificate = authority.issue({
+    const authority = rig();
+    const r = authority;
+    const certificate = authority.issuer.issue({
       resultManifestDigest: "m",
       originBasisDigest: "b0",
       targetObservationDigest: "t1",
       exactlyCurrent: true,
-      premises: observedPremises({ sourceChanges: [] }),
+      observationRefs: observedRefs(authority, { sourceChanges: [] }),
     });
     expect(certificate.assessment.outcome).toBe("EXACT");
     const decision = admitCrossBasis({
-      issuer: authority,
+      issuer: authority.issuer,
       presented: certificate,
       resultManifestDigest: "m",
       originBasisDigest: "b0",
@@ -581,13 +609,19 @@ describe("§D3-c6 admission is neither promotion nor an effect", () => {
       "ATTEMPT_COMPLETED",
       "recordCallback",
       "execFileSync",
-      "node:fs",
       "git diff",
     ];
+    /**
+     * §D3-R2 note: `node:fs`/`node:sqlite` are no longer forbidden here. The issuance and admission records
+     * became DURABLE, which is the point of the hardening — a durable record needs a store. What remains
+     * forbidden is every EFFECT and every second proof search, which is what this list is for.
+     */
     for (const file of [
       "src/project_world/admission.ts",
       "src/project_world/issuance.ts",
       "src/project_world/observation.ts",
+      "src/project_world/observation_authority.ts",
+      "src/project_world/admission_store.ts",
     ]) {
       const text = read(file);
       for (const forbidden of NO_EFFECT) {
@@ -613,9 +647,15 @@ describe("§D3-c6 admission is neither promotion nor an effect", () => {
       ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/issuance.ts"))},'utf8'))`],
       { encoding: "utf8" },
     );
-    // One writer, and it is inside the factory closure.
-    expect(text.match(/issued\.set\(/gu)?.length).toBe(1);
+    /**
+     * §D3-R2: the record is now DURABLE, so the writer is a SQLite INSERT inside the factory closure
+     * rather than an in-memory Map. The property is unchanged — one writer, reachable only through
+     * `issue()` — and it is now also true across a restart.
+     */
+    expect(text.match(/insert\.run\(/gu)?.length).toBe(1);
     // No exported way to write the record directly.
     expect(text).not.toMatch(/export function (register|record|remember)Issuance/u);
+    // And it is append-once by SCHEMA, not by caller discipline.
+    expect(text.toUpperCase()).toContain("PRIMARY KEY (ISSUANCE_DIGEST)");
   });
 });
