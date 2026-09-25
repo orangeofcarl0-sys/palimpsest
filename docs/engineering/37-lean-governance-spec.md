@@ -4892,3 +4892,98 @@ D4-b  Concurrent speculative execution（零产品改动）      CLOSED（本附
 D4-c  read-evidence（authority-bearing read footprint）   ← 不可省略，下一步
 D4-LIVE  真实双 worker gate                              ← 首次值得花模型配额
 ```
+
+## 附录 P（第 D4-c-1 期）：Read-Evidence 调研 —— 结论是"**做不到**"，且必须如实记录
+
+评审把 D4-c 列为**不可省略**，并指定第一步为：
+
+> 最优先调研 PTC/DSH sandbox 是否能够建立 **read-access boundary**。如果能：materialize / expose only
+> declared read domain ⇒ `read_paths → PROVEN_COMPLETE` 才成立。如果做不到，就需要完整 runtime
+> file-access observation 或 hermetic dependency mechanism。
+
+本附录是那次调研的结果。**结论：两条路目前都走不通**，所以 `read_paths` **不能**升级为 authority-bearing
+evidence —— 而按评审自己的规则，那就**不要硬造** positive source case。
+
+$$\boxed{\text{declared read\_paths} \neq \text{authoritative read footprint}}$$
+
+这条**继续保持**。
+
+### P.1 路径一：sandbox-enforced read boundary —— **不存在**
+
+DSH 的 sandbox 只表达**写**权限。逐条实测：
+
+| 检查 | 结果 |
+|---|---|
+| `dsh-sandbox` 的 mode 语义 | `read-only` / `workspace-write` / `danger-full-access`，`writableRoots(policy)` **只**派生可写根；`read-only` 的语义是"不允许任何写"（`if (policy.mode !== "workspace-write") return []`），**不是**"限制读" |
+| 是否存在 `readableRoots` / `readRoots` / `denyRead` | 在 `dsh-sandbox` / `dsh-fs-sandbox` / `dsh-sandbox-local` / `dsh-sandbox-windows-acl` **全部为空** |
+| `dsh-fs-sandbox`（进程内文件围栏）是否拦截读 | 该模块只围栏 `writeText` 一类的**写**路径；`grep -c 'readFileSync\|openSync'` = **0**，即**不拦截任何读** |
+| `dsh-sandbox-local`（Seatbelt 方言）/ `dsh-sandbox-windows-acl` | 同样 `grep -c` = **0**，无读门 |
+
+所以"只暴露声明的 read domain"这一机制**在 DSH 里不存在**，不是配置问题，是能力缺失。
+
+### P.2 路径二：runtime file-access observation —— **不完整，且无法补完**
+
+DSH 的 fs **读工具**确实会发事件：
+
+```
+ctx.emit("fs/observed", target, { kind: "present", version: info.version }, exec)   // read 工具
+ctx.emit("fs/observed", target, { kind: "absent" }, exec)                            // 探测不存在
+```
+
+看起来像 `RUNTIME_OBSERVED` 的来源。但**同一进程里还有 shell**：
+
+| 检查 | 结果 |
+|---|---|
+| 是否存在 shell 工具 | `dsh-tool-bash` / `dsh-tool-bash-persistent` / `dsh-tool-pwsh` / `dsh-tool-pwsh-persistent` **都存在** |
+| shell 是否发 `fs/observed` | `grep -c "fs/observed"` 在 `dsh-tool-bash` 与 `dsh-tool-pwsh` 中**都是 0** |
+| worker 实际能不能用 shell | **能**：D2-c 的真实 PTC worker session 里，模型程序调用过的工具是 `name, glob, read, pwsh, edit, palimpsest_worker_result` —— **`pwsh` 就在其中** |
+
+于是：worker 可以用 `pwsh` 执行 `cat src/b.ts`、`findstr`、`git show`、`node -e "fs.readFileSync(...)"`
+等**任意读**，而这些**一条事件都不产生**。因此 `fs/observed` 事件流**不是**一个完整的读集合 ——
+
+$$\boxed{\text{an incomplete observation is not an authoritative footprint}}$$
+
+把不完整的事件流标成 `RUNTIME_OBSERVED` + `PROVEN_COMPLETE`，正好是 D3-b 存在的意义所反对的那种"洗白"。
+
+### P.3 顺带否掉第三条捷径：`git diff` 不能给读
+
+`git` 只观测**变更**。它无法回答"这次构建/测试实际读了哪些源码"—— 这正是 D3-b 里 read 与 write 证据强度
+**天然不同**的原因（write 有 `git diff --name-only base..result` 这个执行事实；read 没有对应物）。
+
+### P.4 那么 D4-c 应当做什么（而不是硬造）
+
+评审的原话是"如果做不到，就诚实返回 `UNKNOWN`"，并且
+
+> 如果目前做不到，就不要硬造 positive source case，可以用一个真正 complete 的 asset/domain fixture。
+
+所以 D4-c 的正确形态是**保持保守并把结论固化**，而不是发明 read tracer：
+
+1. **`read_paths` 仍是 declaration**，`deriveWorkDependency` 继续产出 `wholeRepositoryRead` ——
+   D3-b 已经证明这会让第二个并发结果 `INCOMPATIBLE`，而**那是正确的结论**；
+2. 把"为什么做不到"写进 spec（本附录），并**钉住**它：任何把 `read_paths` 直接当
+   `PROVEN_COMPLETE` 的改动都必须先提供 P.1 或 P.2 的真实机制；
+3. 结论对 D4-LIVE 的**直接影响**必须说清：真实双 worker 能**并发生产**两个结果，
+   但在当前证据下第二个**几乎必然 INCOMPATIBLE** —— 所以 D4-LIVE 的价值是证明
+   **"串行 canonicalization 在真实并发下仍然成立"**（第一个进 canonical，第二个被正确判定为不可复用），
+   而**不是**证明"两个都能复用"。这两件事不能混为一谈。
+
+### P.5 一条**未做**但可选的后续（需要评审决定）
+
+若将来确实要让并发结果可复用，只有三条真实路径，且都超出 D4-c 的"调研 + 保守"范围：
+
+| 路径 | 代价 |
+|---|---|
+| DSH 增加 read-access boundary（sandbox 或 fs 层） | 需要改宿主（DSH），不是 Palimpsest 能单方面提供的 |
+| 一个**完整**的 runtime read observation（覆盖 shell 与 PTC 程序内的一切文件访问） | 需要 OS 级 tracing（如 ETW / strace 类），且必须证明**完备**，否则仍是洗白 |
+| hermetic dependency mechanism（受限 materialization + 声明式依赖） | 需要 worker 只能看到声明的输入，等价于第一条的 Palimpsest 侧版本 |
+
+三者都需要**真实机制**，而不是更聪明的推断。在此之前：
+
+$$\boxed{declared\ read\_paths \not\Rightarrow PROVEN\_COMPLETE}$$
+
+### P.6 本阶段门禁
+
+本附录是**调研 + 文档**，不改产品代码。为保持可核对性，相关断言落在
+`test/lean_d4c_read_evidence.test.ts`：它把 P.1/P.2 的两条否定结论**钉在代码上**（sandbox 无读门、
+shell 工具零 `fs/observed`、worker 能调 shell），从而任何"顺手把 read_paths 当 PROVEN_COMPLETE"的
+改动都会红。
