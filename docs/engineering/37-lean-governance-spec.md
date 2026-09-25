@@ -4987,3 +4987,125 @@ $$\boxed{declared\ read\_paths \not\Rightarrow PROVEN\_COMPLETE}$$
 `test/lean_d4c_read_evidence.test.ts`：它把 P.1/P.2 的两条否定结论**钉在代码上**（sandbox 无读门、
 shell 工具零 `fs/observed`、worker 能调 shell），从而任何"顺手把 read_paths 当 PROVEN_COMPLETE"的
 改动都会红。
+
+---
+
+## 附录 Q（第 D4-LIVE 期）：真实双 worker gate —— 真实并发下的**串行 canonicalization**
+
+$$\boxed{\textbf{D4-LIVE — two real workers, two speculative worlds, serial canonicalization}}$$
+
+这是 D4 的系统级验收，也是**第一次花模型配额**的地方。它跑的是一条完整的纵向链路，用**真实**的
+DSH PTC worker、真实 git、真实 promotion authority，而不是 gated fake worker：
+
+```
+concurrency=2 的真实 plan
+  → 两个真实 canonical Work（t1 / t2，各自声明自己的 write_path）
+  → 两次 async start，两个 worker 进程**同时**起在各自的 world 里（barrier 证明，不看时钟）
+  → 两个 worker 各自编辑 / 自测 / 提交
+  → 各自经 D2-e1 的**唯一** settlement spine 落地
+  → ΔCanonicalProjectState = 0（speculative ≠ canonical）
+  → scheduler 把**两个** task 都推进 VERIFYING
+  → 第一个结果由**真实** promotion authority 进 canonical
+  → 第二个结果**被正确地拒绝复用**
+```
+
+### Q.1 这个 gate 主张什么，**不**主张什么
+
+主张的是：
+
+$$\boxed{\text{serial canonicalization 在\textbf{真实}并发下依然成立}}$$
+
+**不**主张"两个结果都能复用"。D4-c-1 已实测：本 deployment 唯一诚实的 read footprint 是整仓
+（`wholeRepositoryRead`），所以第二个结果相对第一个造成的变更**本来就不该**被复用 —— 那是**当前证据下
+的正确结论**，不是需要粉饰的缺陷。gate 的价值在于把这个结论放在**真实并发**下检验，而不是在 fake
+worker + barrier 下推断。
+
+### Q.2 实测结果（21/21 PASS）
+
+关键几行（原样取自 gate 输出）：
+
+| 观测 | 结果 |
+|---|---|
+| 两个 world 同时存在、都 == H0、**目录不同** | YES |
+| 两个 attempt 同时 RUNNING | `t1:RUNNING t2:RUNNING` |
+| 两个 worker 进程在 `start()` 已返回后才起、且都被 park | YES (both parked) |
+| 两个 worker 的 cwd **各自**是自己的 world | YES |
+| 两个 worker 都 authority-closed | `offeredTools=["run_code"]`，**零** `palimpsest_*` |
+| 两个 attempt COMPLETED、两个**不同** result commit | YES |
+| settlement 后 canonical HEAD | `== H0 (unchanged)`；promotion facts `0/0` |
+| scheduler | 2 step 后 `t1:VERIFYING, t2:VERIFYING` |
+| 两者在**任何** canonicalization 之前都 eligible | `true` / `true`，同一 `expectedHead` |
+| 第一个由真实 authority 进 canonical | `promotion-050adc1e531c9f → 94382d21ccb8` |
+| 第二个 | `eligible=false blockers=cross_revision_promotion_not_supported` |
+| canonical history | **1** 个 first-parent commit（series，非 merge） |
+| promotion rows | `0 → 1`（恰好一次） |
+| 第二个的 world | **retained**（其工作的唯一副本）；result commit 仍可读 |
+| canonical 里 beta 的 BUG | **仍在**（未被复用） |
+
+**两个 worker 自己的话**（非 canonical telemetry，原文）：
+
+- t1：`Fixed src/alpha.js so alphaLabel returns ... change is limited to src/alpha.js and committed in the worktree.`
+- t2：`In src/beta.js, betaLabel now returns ... the change (nothing outside src/beta.js) is committed in the worktree.`
+
+两者都**只改了自己声明的文件**，且 t1 还主动指出"无过滤的 check 会连带跑 src/beta.js，那是本任务
+write scope 之外的另一个任务" —— 说明 scope 纪律是 worker 真实遵守的，不是 fixture 假装的。
+
+### Q.3 gate 逼出的一个**真实缺陷**（本阶段最重要的产出）
+
+gate 的 §9 步把 live 结果接进 D3 链路（observe → prove → admit），本意只是"证明拒绝是**语义**答案而非
+未实现的路径"。它却因此暴露了 `assessCompatibility` 里的一处真实缺陷：
+
+```ts
+if (changes.coverage.status !== "PROVEN_COMPLETE" && changes.selectors.length > 0) { ...障碍... }
+```
+
+多出来的 `&& selectors.length > 0` 让 **UNPROVEN 空集**与 **PROVEN 空集**不可区分。而第一方
+`gitSourceChangeObserver` 在**无法比较**两个 revision 时正是产出"UNAVAILABLE → UNPROVEN 空 footprint"。
+于是"我比不了"被读成"什么都没变"：**一次系统没能执行的比较，被当成了世界没变**。配上整仓 read，
+assessment 直接返回 `COMPATIBLE`。
+
+这与冻结设计**明文相反**。D3-b 的设计写着：不可比较的 revision 对返回 **UNPROVEN 空集**，
+*正是为了让*"我没法比较"和"什么都没变"保持为两个不同事实。那个多出来的 conjunct 恰好把这个区分抹掉了。
+用真实 observer + 真实 issuer 走第一方路径可以稳定复现（`rs-test/d4live-uncomparable-probe.mjs`）。
+
+**修法**（`src/project_world/compatibility.ts`）：去掉那个 conjunct，让 UNPROVEN 覆盖**在任何情况下**都是障碍；
+障碍文案区分两种情况（"连它的空性都无法确立" vs "它没列出的变更无法排除"）。这是一个**只会增加障碍**的
+保守改动，不会把任何 UNKNOWN 变成 COMPATIBLE。
+
+**两处测试钉住它，并验证过是承重的**：
+
+- `test/lean_compatibility.test.ts` —— 纯函数层：UNPROVEN 空集 ⇒ `UNKNOWN`（不是 `COMPATIBLE`），
+  且**对称的一半**也在：空集若**其空性已证**则照旧 `COMPATIBLE`，所以这是**区分**而不是一律拒绝。
+- `test/lean_compatibility_composition.test.ts` —— 第一方可达层：真实 observer 的 UNAVAILABLE ref
+  经真实 `issuer.issue()`，证书**不得**为 `COMPATIBLE`。
+
+把修法改回 `if (... && selectors.length > 0)`，两处立刻红（前者 `expected 'COMPATIBLE' to be 'UNKNOWN'`，
+后者同一断言）。这正是评审反复强调的那种证据：**缺陷由实测发现，修法由测量验证**。
+
+### Q.4 明确不做
+
+- **不**为让第二个结果可复用以任何方式放宽证据（发明 read tracer / 声明窄 read 集）—— 见附录 P。
+- **不**改 promotion authority 的 `cross_revision_promotion_not_supported` 边界：那是 D3-d/D3-e 的
+  rematerialization 入口要走的路径，不是 D4 的事。
+- **不**把 gate 写成产品接口：`rs-test/` 下的 rig 不属于产品面（`public-api` 仍 0/0/0）。
+- **不**在 gate 里重复 D2-LIVE 已证明的低层情形（BASE_DRIFT / UNCOMMITTED_WORK / 崩溃窗口 / 重复 start）。
+
+### Q.5 D4 状态
+
+```
+D4-0     Authority Split（speculative vs canonical）        CLOSED @ 1bcd70a
+D4-a     concurrency 容量表面（operator profile）           CLOSED @ 04ddd66
+D4-b     Concurrent speculative execution（零产品改动）     CLOSED @ ff7f17d
+D4-c-1   Read-evidence 调研（实测否定，保守保持）           CLOSED @ 39a31bc
+D4-LIVE  真实双 worker gate（本附录）                        PASS 21/21
+```
+
+**D4 的能力陈述（准确版）**：
+
+- 并发**生产**两个结果：**已成立**（真实双 worker 实测）。
+- 并发**复用**第二个结果：**未成立，且当前证据下不该成立**（D4-c-1 的三条真实路径未实现前保持保守）。
+- 串行 canonicalization 在真实并发下成立：**已成立**（本 gate）。
+
+$$\boxed{\text{并发生产} \neq \text{并发复用}}$$
+
+这两件事必须分开陈述 —— 合并陈述就是本阶段最容易犯的过度声明。
