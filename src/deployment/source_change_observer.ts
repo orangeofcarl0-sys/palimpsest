@@ -22,12 +22,8 @@
  */
 import { execFileSync } from "node:child_process";
 
-import {
-  observedPremise,
-  unavailablePremise,
-  type PremiseObservation,
-} from "../project_world/observation.js";
-import { provenComplete, sourceChangeFootprintFromPaths, type CoveredFootprint } from "../project_world/footprint.js";
+import { sourceChangeFootprintFromPaths, type CoveredFootprint } from "../project_world/footprint.js";
+import type { ObservationRecorder } from "../project_world/observation_authority.js";
 
 /**
  * The observer's own identity, and the mechanism it claims.
@@ -43,22 +39,28 @@ export const GIT_SOURCE_MECHANISM = "RUNTIME_OBSERVED" as const;
 export interface SourceChangeObserverPort {
   readonly adapterId: string;
   /**
-   * Which SOURCE resources moved between two revisions, as an AUTHORITY-BEARING observation.
+   * Which SOURCE resources moved between two revisions, recorded as an AUTHORITY-BEARING observation.
    *
-   * §D3-c1: the return value is not a footprint with a label but an observation with PROVENANCE — who
-   * observed, at which version, by which mechanism, over which scope. That is what lets a compatibility
-   * certificate rest on a premise whose completeness somebody actually established, rather than on a
-   * caller's assertion that it is complete.
+   * §D3-R1: the return value is an observation REF, not a premise object. The observer WRITES a durable
+   * record through its recorder and returns the ref; an issuance then cites that ref, and the issuer recalls
+   * the record itself. There is no longer a value a caller could construct in the observer's name.
    */
   observeChange(input: {
     readonly fromRevision: string;
     readonly toRevision: string;
     /** The repository the diff is over — part of the scope, because completeness is always over one. */
     readonly scopeRef: string;
-  }): PremiseObservation;
+  }): string;
 }
 
-export function gitSourceChangeObserver(input: { readonly repository: string }): SourceChangeObserverPort {
+export function gitSourceChangeObserver(input: {
+  readonly repository: string;
+  /**
+   * The recorder this observer writes through, carrying its own registered identity. The composition
+   * supplies it, so the observer cannot choose which identity it speaks as.
+   */
+  readonly recorder: ObservationRecorder;
+}): SourceChangeObserverPort {
   return Object.freeze({
     adapterId: GIT_SOURCE_OBSERVER_ID,
 
@@ -66,25 +68,19 @@ export function gitSourceChangeObserver(input: { readonly repository: string }):
       readonly fromRevision: string;
       readonly toRevision: string;
       readonly scopeRef: string;
-    }): PremiseObservation {
+    }): string {
       const { fromRevision, toRevision, scopeRef } = changeInput;
-      const provenance = {
-        observerId: GIT_SOURCE_OBSERVER_ID,
-        observerVersion: GIT_SOURCE_OBSERVER_VERSION,
-        mechanism: GIT_SOURCE_MECHANISM,
-        scope: { domain: "source" as const, scopeRef, from: fromRevision, to: toRevision },
-      };
+      const scope = { domain: "source" as const, scopeRef, from: fromRevision, to: toRevision };
       if (fromRevision === toRevision) {
         // Identical revisions: the diff is empty AND that emptiness is proven by the comparison.
-        return observedPremise({ provenance, selectors: [] });
+        return input.recorder.record({ scope, selectors: [] });
       }
       try {
         /**
-         * `--no-renames` is deliberate, and it was MEASURED rather than assumed: with rename detection
-         * on (the modern default) a rename reports only the NEW path, so a result that depended on the
-         * old path would be told nothing changed there. Disabling detection reports the delete and the
-         * add separately, naming BOTH paths — an over-approximation of the change set, which is the
-         * correct direction to err in when the cost of missing a change is a false compatibility proof.
+         * `--no-renames` is deliberate, and it was MEASURED rather than assumed: with rename detection on
+         * (the modern default) a rename reports only the NEW path, so a result depending on the old path
+         * would be told nothing changed there. Disabling it names both paths — an over-approximation, which
+         * is the correct direction to err in when the cost of missing a change is a false proof.
          */
         const stdout = execFileSync("git", ["diff", "--name-only", "--no-renames", `${fromRevision}..${toRevision}`], {
           cwd: input.repository,
@@ -94,23 +90,21 @@ export function gitSourceChangeObserver(input: { readonly repository: string }):
           .split(String.fromCharCode(10))
           .map((line) => line.trim())
           .filter((line) => line !== "");
-        const footprint = sourceChangeFootprintFromPaths({ paths });
-        return observedPremise({ provenance, selectors: footprint.selectors });
+        return input.recorder.record({ scope, selectors: sourceChangeFootprintFromPaths({ paths }).selectors });
       } catch (error) {
         /**
-         * An incomparable revision pair is `UNAVAILABLE`, NOT an empty observation: "I could not compare
-         * them" and "nothing changed" are different facts, and an unavailable premise contributes no
-         * coverage, so it can never support a proof.
+         * An incomparable revision pair is UNAVAILABLE, NOT an empty observation: "I could not compare them"
+         * and "nothing changed" are different facts, and an unavailable record contributes no coverage.
          */
-        return unavailablePremise(
-          "source",
-          `the source revisions could not be compared (${error instanceof Error ? error.message : String(error)}), so neither a change nor its absence is established`,
-        );
+        return input.recorder.unavailable({
+          domain: "source",
+          detail: `the source revisions could not be compared (${error instanceof Error ? error.message : String(error)}), so neither a change nor its absence is established`,
+        });
       }
     },
   });
 }
 
 /** Re-exported so a caller of this module has the coverage vocabulary in one import. */
-export { provenComplete, type CoveredFootprint };
+export { type CoveredFootprint };
 

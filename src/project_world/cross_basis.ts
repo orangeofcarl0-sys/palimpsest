@@ -28,10 +28,7 @@
 import { canonicalDigest } from "../schema/canonical.js";
 
 import { admitCrossBasis, type CrossBasisAdmissionResult } from "./admission.js";
-import {
-  unavailablePremise,
-  type PremiseObservation,
-} from "./observation.js";
+import { unavailablePremise, type PremiseObservation } from "./observation.js";
 import type { CompatibilityIssuer, IssuedCompatibilityAssessment } from "./issuance.js";
 import type { ProjectWorldObservationPort } from "./runtime.js";
 
