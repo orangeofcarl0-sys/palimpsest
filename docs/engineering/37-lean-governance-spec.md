@@ -4796,3 +4796,99 @@ declared ACTIVE stage concurrency: (absent ⇒ 1)
 - **没有**跑真实双 worker gate —— 按评审，那属于 **D4-b / D4-LIVE**，是第一次值得花模型配额的地方。
 - **D4-c 仍不可省略**：`read_paths` 必须从 declaration 升级为 authority-bearing evidence，
   否则第二个并发结果几乎必然 `INCOMPATIBLE`（当前 authoritative read footprint 是 `wholeRepositoryRead`）。
+
+## 附录 O（第 D4-b 期）：Concurrent Speculative Execution —— 零产品代码变更
+
+### O.1 结论先写：本阶段**没有改动任何产品代码**
+
+```
+git diff --stat
+  test/lean_speculative_authority.test.ts | 163 ++++++++++++++++++++++++++++++++
+  1 file changed, 163 insertions(+)
+```
+
+D4-b 是**唯一一次改动量为零的产品切片**。这不是省事，而是一个**强证据**：
+
+$$\boxed{\text{D4-0 的 authority split 才是真正的阻塞点}}$$
+
+D2-d 的 async transport（`makeWorkDelegationService`）从一开始就是 **job-keyed** 的
+（`jobs = new Map<jobId, …>`、`start` 冻结 `expectedTaskId`、`followup(jobId)`、每 job 一个 `workerFor(worldPath)`），
+D3-R 之后它也已经消费 admission/authority 纪律。真正让它"只能有一个 job"的，从来不是 transport 自身，
+而是 `mutatingWorkTarget()` 里那条**项目级 lane 规则**。D4-0 把它换成 scheduler 声明的容量之后，
+**两个 job 立刻就能并行**，transport 一行未改。
+
+### O.2 实测（真实 deployment + 真实 async transport + 真实 git world）
+
+```
+concurrency: 2
+  start({expectedTaskId:"t1"}) → job A（冻结到 t1）
+  start({expectedTaskId:"t2"}) → job B（冻结到 t2）
+  两个 worker 都被 gate 停住 ⇒ 两个 world 同时存在、两个 attempt 同时 RUNNING
+  canonical HEAD 未变（两个 speculative world 都不碰 canonical）
+  放行两个 gate
+  两个 attempt 各自 COMPLETED，各自持有自己的 result_commit，且两个 commit 不同
+  canonical HEAD 仍然未变，工作树干净
+```
+
+即：
+
+$$\boxed{\Delta ExecutionState \neq 0 \quad\wedge\quad \Delta CanonicalProjectState = 0}$$
+
+### O.3 一个被 gate 正确挡回的**测试**缺陷（值得记录）
+
+我第一版 fixture 用"worker 启动顺序的 index"决定每个 worker 改哪个文件：
+
+```ts
+const file = started.indexOf(worldPath) === 0 ? "src/a.ts" : "src/b.ts";
+```
+
+两个 worker 都在 `await gate` **之前**就 push 了 `started`，于是 `indexOf` 对两者都返回 0 —— **两个都改 `src/a.ts`**。
+产品的回应是**正确的**：
+
+```
+settlement: NOT_READY / OUT_OF_SCOPE
+  "the world changed paths outside the task envelope's write_paths [src/a.ts]: src/b.ts"
+```
+
+（两个 world 各自都改了 `a.ts` 与 `b.ts`，于是各自都越界。）这是**scope observation 在正常工作** ——
+它观察的是**真实树**，而不是 worker 的声明。修法不是放宽产品，而是让 fixture 按**durable identity** 绑定文件
+（world id **就是** attempt id，见 `claim`），于是两个结果**可证不相交**。
+
+$$\boxed{\text{a fixture that lets two workers collide is testing the product's scope rule, not concurrency}}$$
+
+### O.4 关于 `SpeculativeExecutionCoordinator`：**本阶段不需要，且理由不是省事**
+
+评审建议 D4-b 可引入 `SpeculativeExecutionCoordinator` 以免继续撑大 controller。实测表明**现在没有东西需要它承载**：
+
+- transport 已经是 job-keyed，多 job 天然成立；
+- 容量由 operator 声明（D4-a），由 scheduler 执行；
+- 每个 job 的 attempt/world/settlement 各自独立，没有跨 job 的共享可变状态需要协调。
+
+$$\boxed{\text{a coordinator that owns no state is an empty module with a good name}}$$
+
+所以不建。**等到真有跨 job 状态需要承载时**（D4-c 的 read-evidence 可能带来"多个 world 的依赖合并"，
+或 D4-LIVE 需要观察多 job 的共同进展），再按 L2 capability 抽取 —— 那时它会有真实职责。
+
+### O.5 本阶段**未**做（留给后续）
+
+- **未跑真实双 DSH worker**：本轮用的是 gated fake worker（确定性、可证明"同时在飞"）。
+  真实双 worker 属于 **D4-LIVE**，是第一次值得花模型配额的地方；
+- **D4-c 仍不可省略**：`read_paths` 必须从 declaration 升级为 authority-bearing evidence。
+  当前 authoritative read footprint 是 `wholeRepositoryRead`，所以**两个真实结果在 D3 语义下几乎必然
+  `INCOMPATIBLE`** —— 并发**生产**已经成立，并发**复用**还没有。这正是评审把 D4-c 列为不可省略的原因。
+- 未改 promotion / canonical-source authority。
+
+### O.6 门禁
+
+单元 **218 files / 2447 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**。
+
+### O.7 阶段状态
+
+```
+D4-0  Authority Split（speculative vs canonical）        CLOSED @ 1bcd70a
+D4-a  concurrency 容量表面（operator profile）            CLOSED @ 04ddd66
+D4-b  Concurrent speculative execution（零产品改动）      CLOSED（本附录）
+D4-c  read-evidence（authority-bearing read footprint）   ← 不可省略，下一步
+D4-LIVE  真实双 worker gate                              ← 首次值得花模型配额
+```
