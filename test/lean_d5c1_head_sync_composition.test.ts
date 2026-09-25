@@ -47,8 +47,8 @@ import {
   type ProjectHeadReconciliationCandidate,
 } from "../src/domain/project_head.js";
 import { firstPartyAttemptResultVerificationSource } from "../src/project_verification/index.js";
-import { canonicalDigest } from "../src/schema/canonical.js";
-import { normalizeEventPayload, parseNewEvent, parseProjectIr, parseTaskEnvelope, type TaskEnvelope } from "../src/schema/index.js";
+import { semanticProjectionDigestOf } from "../src/project_world/index.js";
+import { normalizeEventPayload, parseNewEvent, parseProjectIr, parseTaskEnvelope } from "../src/schema/index.js";
 import { actionKey } from "../src/domain/index.js";
 
 import { FakeClock, taskSpec } from "./helpers.js";
@@ -97,36 +97,6 @@ const cleanups: Array<() => void> = [];
 afterAll(() => {
   for (const fn of cleanups) fn();
 });
-
-/* ================================================================== *
- * The semantic projection of an envelope: what "same Work" means here
- * ================================================================== */
-
-const SEMANTIC_FIELDS = [
-  "objective",
-  "read_paths",
-  "write_paths",
-  "required_artifacts",
-  "suggested_skills",
-  "allowed_commands",
-  "network_policy",
-  "network_allowlist",
-  "timeout_s",
-  "lease_s",
-  "attempt_limit",
-  "candidate_limit",
-] as const;
-
-const semanticDigest = (envelope: TaskEnvelope): string => {
-  const raw = envelope as unknown as Record<string, unknown>;
-  const projection: Record<string, unknown> = {};
-  for (const field of SEMANTIC_FIELDS) {
-    // Absent optional fields are skipped on BOTH sides, so a field that appears on one envelope and not the
-    // other still changes the digest — the comparison stays meaningful, and canonical JSON stays valid.
-    if (raw[field] !== undefined) projection[field] = raw[field];
-  }
-  return canonicalDigest(projection);
-};
 
 /* ================================================================== *
  * Rig
@@ -573,16 +543,31 @@ describe("§D5-c1 after reopening, the EXISTING G10-X authority advances the bas
  * ================================================================== */
 
 describe("§D5-c1 E_0 ≠ E_1, and the semantic projection is identical", () => {
+  it("proof 6 speaks the CANONICAL semantic language — no second definition lives in this file", () => {
+    /**
+     * D3-a froze the semantic projection (`semanticProjectionDigestOf`): the digest of what the work IS,
+     * with every positional field excluded and the field list written out so a new envelope field is a
+     * deliberate decision. A second, local "same Work" definition here would let this suite stay green
+     * while the canonical Work identity actually changed. The patterns are assembled from fragments so
+     * this assertion cannot match its own source.
+     */
+    const text = source("test/lean_d5c1_head_sync_composition.test.ts");
+    for (const fragment of ["SEMANTIC_FIELDS", "semanticDigest"]) {
+      expect(text).not.toMatch(new RegExp(`(?:const|function) ${fragment}`));
+    }
+    expect(text).toContain("semanticProjectionDigestOf(");
+  });
+
   it("same Work, new basis: positional identity moves, semantic identity does not", async () => {
     const r = await scenario(["task-b", "task-c"]);
     try {
       const e0 = r.envelopeOf("task-b");
-      const semanticBefore = semanticDigest(e0);
+      const semanticBefore = semanticProjectionDigestOf(e0);
       await r.controller.reconcileProjectHead();
       const e1 = r.envelopeOf("task-b");
 
-      // Same Work:
-      expect(semanticDigest(e1)).toBe(semanticBefore);
+      // Same Work — measured by the CANONICAL projection D3-a froze, never by a local re-definition:
+      expect(semanticProjectionDigestOf(e1)).toBe(semanticBefore);
       // New position:
       expect(e1.envelope_id).not.toBe(e0.envelope_id);
       expect(e1.base_commit).not.toBe(e0.base_commit);
