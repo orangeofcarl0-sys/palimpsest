@@ -1,9 +1,9 @@
 /**
  * PLMP-LEAN-1 §D5-b2 — governed rework admission (live-only).
  *
- *     VERIFYING@E_0 → READY@E_1   requires a governed ReworkAdmission
+ *     VERIFYING@E_0  →  READY@E_0     requires a governed ReworkAdmissionPermit
  *
- * D5-b1 fixed the READ path, so a task's current authorization can now evolve while its attempts' provenances
+ * D5-b1 fixed the READ path, so a task's current authorization can evolve while its attempts' provenances
  * cannot. That makes reopening a VERIFYING task *safe* — but safe is not the same as *permitted*, and the
  * audit measured exactly why a bare transition is not enough:
  *
@@ -15,18 +15,45 @@
  *
  *     ordinary append  ≠  governed rework append
  *
- * This module is the governed half, modelled exactly on `PromotionIntentPermit`, which solved the same shape
- * for promotion: a capability records WHERE A REQUEST CAME FROM, not that it is justified. It is ephemeral,
- * request-bound, one-shot and never persisted — the HISTORY is still written by the two ordinary events.
+ * This module is the governed half, modelled on `PromotionIntentPermit`: a capability records WHERE A REQUEST
+ * CAME FROM, not that it is justified. It is ephemeral, request-bound, one-shot and never persisted — the
+ * HISTORY is still written by the ordinary `TASK_READY` event.
  *
- * WHY A PERMIT AND NOT A NEW EVENT TYPE. The Event Log already expresses the fact:
+ * ## THE PERMIT AUTHORIZES EXACTLY ONE TRANSITION, AND DELIBERATELY NOTHING MORE
  *
- *   `TASK_REAUTHORIZED`   this Work is now bound to a new current authorization
- *   `TASK_READY`          this Work may enter execution again
+ * What is being authorized: setting aside a completed candidate that sits in VERIFYING. What is NOT being
+ * authorized: anything that happens afterwards.
  *
- * together meaning *same Work, current authorization, new execution opportunity*. What was missing is a
- * LIVE authority over that transition, not a new historical word. Adding `WORK_REWORK_AUTHORIZED` would
- * enlarge the canonical vocabulary to say something the log already says.
+ *     rework admission  ≠  basis advance
+ *
+ * An earlier draft bound the permit to a FRESH envelope E_1 and gated a two-event closure
+ * `TASK_REAUTHORIZED(E_1)` + `TASK_READY` behind one shared pass. Measured against the shipped system, that
+ * draft was unbuildable: no fresh envelope can exist for a VERIFYING task, because envelope identity is a
+ * digest over state only `PROJECT_REVISED` can advance, and plan reconciliation's quiescence is broken by the
+ * very task being reopened. The measurement is a REFUTATION, not an obstacle — E_1 is not rework's to
+ * promise. So the draft's second slot, its pass and its future-world fields were deleted rather than kept
+ * "until D5-c makes them reachable", and the permit is bound instead to what EXISTS at admission time:
+ *
+ *     currentEnvelopeId        the verifying authority being set aside (E_0)
+ *     batchActivationEventId   the batch whose completed candidate is being set aside
+ *     targetObservationDigest  the observed world the rework is authorized against
+ *
+ * Everything that follows belongs to the authorities that already own it:
+ *
+ *     D5 rework authority    "may this completed candidate's claim be set aside?"   VERIFYING → READY
+ *     G10-X head authority   "is the promoted head the new ProjectIR basis?"      PROJECT_REVISED + TASK_REAUTHORIZED(E_1)
+ *
+ * `READY@E_0` is a safe intermediate state, not a limbo: G10-X already blocks NEW work activation while the
+ * promoted effect head is ahead of the ProjectIR (SYNC_REQUIRED), and `runTurn()` settles existing work and
+ * reconciles the head before resuming activation. The reopened task is REOPENABLE but NOT EXECUTABLE until
+ * the existing head reconciliation rebinds it to E_1. The reopened task also un-blocks quiescence by
+ * leaving VERIFYING, which is precisely what lets the EXISTING reconciliation run — the state precondition
+ * is repaired, not bypassed, and no second head authority (`advanceBasisForRework`,
+ * `reconcileHeadIgnoringVerifying`) is created.
+ *
+ * WHY A PERMIT AND NOT A NEW EVENT TYPE. The Event Log already expresses the fact — `TASK_READY` on a
+ * VERIFYING task means *same Work, completed candidate set aside, new execution opportunity* — so adding
+ * `WORK_REWORK_AUTHORIZED` would enlarge the canonical vocabulary to say something the log already says.
  *
  * ## Architectural trust boundary (the same one the promotion permits declare)
  *
@@ -38,12 +65,9 @@
 import { canonicalDigest } from "../schema/canonical.js";
 
 const REWORK_PERMIT_BRAND: unique symbol = Symbol("palimpsest.rework-admission-permit");
-const REWORK_PASS_BRAND: unique symbol = Symbol("palimpsest.rework-closure-pass");
 
 /** Issued-and-unconsumed permits. Module-private: nothing else can read it. */
 const livePermits = new WeakSet<object>();
-/** Live closure passes. Module-private, same discipline. */
-const livePasses = new WeakSet<object>();
 
 export const REWORK_ADMISSION_DIGEST_DOMAIN = "palimpsest.rework-admission.v1";
 
@@ -62,8 +86,7 @@ export type ReworkAdmissionErrorKind =
   | "rework_admission_required"
   | "capability_not_issued"
   | "capability_already_consumed"
-  | "capability_binding_mismatch"
-  | "rework_closure_slot_unavailable";
+  | "capability_binding_mismatch";
 
 export class ReworkAdmissionError extends Error {
   readonly kind: ReworkAdmissionErrorKind;
@@ -86,9 +109,10 @@ export interface ReworkAdmissionPermitInput {
   readonly originBasisDigest: string;
   /** The observed world the rework is authorized against. A permit for B1 does not authorize work at B2. */
   readonly targetObservationDigest: string;
-  /** The CURRENT envelope the task will be rebound to. */
-  readonly freshEnvelopeId: string;
-  readonly freshEnvelopeDigest: string;
+  /** The verifying authority being SET ASIDE — the envelope the task still carries, E_0. Never a future E_1. */
+  readonly currentEnvelopeId: string;
+  /** The batch whose completed candidate is being set aside. */
+  readonly batchActivationEventId: number;
   readonly reason: ReworkReason;
 }
 
@@ -104,8 +128,8 @@ export class ReworkAdmissionPermit {
   readonly originResultSubjectRef: string;
   readonly originBasisDigest: string;
   readonly targetObservationDigest: string;
-  readonly freshEnvelopeId: string;
-  readonly freshEnvelopeDigest: string;
+  readonly currentEnvelopeId: string;
+  readonly batchActivationEventId: number;
   readonly reason: ReworkReason;
   readonly permitDigest: string;
 
@@ -116,8 +140,8 @@ export class ReworkAdmissionPermit {
     this.originResultSubjectRef = input.originResultSubjectRef;
     this.originBasisDigest = input.originBasisDigest;
     this.targetObservationDigest = input.targetObservationDigest;
-    this.freshEnvelopeId = input.freshEnvelopeId;
-    this.freshEnvelopeDigest = input.freshEnvelopeDigest;
+    this.currentEnvelopeId = input.currentEnvelopeId;
+    this.batchActivationEventId = input.batchActivationEventId;
     this.reason = input.reason;
     this.permitDigest = canonicalDigest({
       domain: REWORK_ADMISSION_DIGEST_DOMAIN,
@@ -128,15 +152,15 @@ export class ReworkAdmissionPermit {
       originResultSubjectRef: input.originResultSubjectRef,
       originBasisDigest: input.originBasisDigest,
       targetObservationDigest: input.targetObservationDigest,
-      freshEnvelopeId: input.freshEnvelopeId,
-      freshEnvelopeDigest: input.freshEnvelopeDigest,
+      currentEnvelopeId: input.currentEnvelopeId,
+      batchActivationEventId: input.batchActivationEventId,
       reason: input.reason,
     });
   }
 
   /**
-   * Mint a fresh permit. Called by the governed rework closure immediately after a continuation assessment
-   * has said rework is a safe path, and only there.
+   * Mint a fresh permit. Called by the governed rework entry point immediately after a continuation
+   * assessment has said rework is a safe path and the target world has been re-observed, and only there.
    */
   static issue(input: ReworkAdmissionPermitInput): ReworkAdmissionPermit {
     const permit = new ReworkAdmissionPermit(input);
@@ -151,27 +175,27 @@ export class ReworkAdmissionPermit {
 }
 
 /**
- * Validate and CONSUME a permit for one rework closure. Throws a typed `ReworkAdmissionError`; on success
- * the permit is dead, so one admission authorizes exactly one reopening.
+ * Validate and CONSUME a permit for the ONE governed reopening. Throws a typed `ReworkAdmissionError`; on
+ * success the permit is dead, so one admission reopens exactly one Work.
  *
- * WHICH BINDINGS ARE CHECKED HERE, AND WHY NOT ALL OF THEM. The three below are facts the EVENT LOG can see,
- * so an admission that cannot confirm them must refuse:
+ * WHICH BINDINGS ARE CHECKED HERE, AND WHY NOT ALL OF THEM. The four below are facts the EVENT LOG AND TASK
+ * ROW can see, so an admission that cannot confirm them must refuse:
  *
- *   projectId · taskId · freshEnvelopeId
+ *   projectId · taskId · currentEnvelopeId · batchActivationEventId
  *
  * `targetObservationDigest` is DELIBERATELY ABSENT from the required set. The admission runs inside a
  * transaction over the log and cannot observe the world, so a "check" against it here could only compare the
  * permit with itself — a comparison that always passes is worse than none, because it would read as a
- * binding. That binding belongs where the world IS visible: the governed closure re-observes the target
- * immediately before minting, exactly as D3-d re-checks the target immediately before creating a world. The
- * permit still CARRIES the digest, so the admission record stays auditable.
+ * binding. That binding belongs where the world IS visible: the governed entry point re-observes the target
+ * immediately before minting. The permit still CARRIES the digest, so the admission record stays auditable.
  */
 export function consumeReworkAdmissionPermit(
   permit: ReworkAdmissionPermit,
   expected: {
     readonly projectId: string;
     readonly taskId: string;
-    readonly freshEnvelopeId: string;
+    readonly currentEnvelopeId: string;
+    readonly batchActivationEventId: number;
   },
 ): void {
   if (!livePermits.has(permit)) {
@@ -183,16 +207,18 @@ export function consumeReworkAdmissionPermit(
     );
   }
   const refs: string[] = [];
-  const compare = (label: string, actual: string, expectedValue: string): void => {
-    if (actual !== expectedValue) refs.push(`expected ${label} ${expectedValue}, got ${actual}`);
+  const compare = (label: string, actual: string | number, expectedValue: string | number): void => {
+    if (actual !== expectedValue) refs.push(`expected ${label} ${String(expectedValue)}, got ${String(actual)}`);
   };
   compare("projectId", permit.projectId, expected.projectId);
   compare("taskId", permit.taskId, expected.taskId);
-  compare("freshEnvelopeId", permit.freshEnvelopeId, expected.freshEnvelopeId);
+  // The CURRENT-state binding: a permit is spent on the envelope the task still carries, or not at all.
+  compare("currentEnvelopeId", permit.currentEnvelopeId, expected.currentEnvelopeId);
+  compare("batchActivationEventId", permit.batchActivationEventId, expected.batchActivationEventId);
   if (refs.length > 0) {
     throw new ReworkAdmissionError(
       "capability_binding_mismatch",
-      `rework admission permit does not authorize this closure: ${refs.join("; ")}`,
+      `rework admission permit does not authorize this reopening: ${refs.join("; ")}`,
       refs,
     );
   }
@@ -203,151 +229,4 @@ export function consumeReworkAdmissionPermit(
 /** The live-only rework admission an EventStore passes to `validateAdmission`. */
 export interface ReworkGovernedAdmission {
   readonly reworkPermit?: ReworkAdmissionPermit | undefined;
-  readonly reworkPass?: ReworkClosurePass | undefined;
-}
-
-/* -------------------------------------------------------------------------- *
- * Closure pass
- * -------------------------------------------------------------------------- */
-
-/**
- * The two events a rework closure consists of, and the ONE pass that authorizes both.
- *
- * WHY A PASS AND NOT TWO PERMITS, OR A GATE ON EITHER EVENT ALONE. The closure is
- *
- *     TASK_REAUTHORIZED(E_1)  →  TASK_READY          i.e.  VERIFYING@E_0 → READY@E_1
- *
- * and gating only one of them leaves a two-step bypass:
- *
- *   · gate only TASK_REAUTHORIZED → a caller emits TASK_READY first (VERIFYING → READY, which the aggregate
- *     accepts today) and THEN reauthorizes a now-READY task, which is ordinary plan reconciliation;
- *   · gate only TASK_READY        → a caller rebinds the VERIFYING task's envelope directly and never asks
- *     for READY at all.
- *
- * Both halves are individually legitimate transitions, so neither is suspicious on its own. Only the
- * COMBINATION is the reopening, which is why the authority has to be over the closure:
- *
- *     a structurally available transition  ≠  an authorized one
- *
- * The pass is bound to one task, one target world and one fresh envelope, and each of its two slots is
- * consumed by exactly the event it expects — so a pass cannot authorize a third event, a different task, or
- * an event that does not belong to this closure.
- */
-export class ReworkClosurePass {
-  readonly [REWORK_PASS_BRAND] = true as const;
-  readonly projectId: string;
-  readonly taskId: string;
-  readonly permitDigest: string;
-  readonly targetObservationDigest: string;
-  readonly freshEnvelopeId: string;
-  /** Which slots remain. Module-private state, reachable only through `consumeReworkClosureSlot`. */
-  readonly #remaining: Set<"TASK_REAUTHORIZED" | "TASK_READY">;
-  readonly passDigest: string;
-
-  private constructor(input: {
-    readonly projectId: string;
-    readonly taskId: string;
-    readonly permitDigest: string;
-    readonly targetObservationDigest: string;
-    readonly freshEnvelopeId: string;
-  }) {
-    this.projectId = input.projectId;
-    this.taskId = input.taskId;
-    this.permitDigest = input.permitDigest;
-    this.targetObservationDigest = input.targetObservationDigest;
-    this.freshEnvelopeId = input.freshEnvelopeId;
-    this.#remaining = new Set(["TASK_REAUTHORIZED", "TASK_READY"]);
-    this.passDigest = canonicalDigest({
-      domain: REWORK_ADMISSION_DIGEST_DOMAIN,
-      kind: "rework_closure_pass",
-      projectId: input.projectId,
-      taskId: input.taskId,
-      permitDigest: input.permitDigest,
-      targetObservationDigest: input.targetObservationDigest,
-      freshEnvelopeId: input.freshEnvelopeId,
-    });
-  }
-
-  /**
-   * Mint a closure pass. Called ONLY by the governed closure entry point, immediately after it has
-   * re-observed the target world — which is where the world binding is actually established, because this
-   * module (and the admission that consumes the pass) cannot see the world.
-   */
-  static issue(input: {
-    readonly permit: ReworkAdmissionPermit;
-    readonly targetObservationDigest: string;
-  }): ReworkClosurePass {
-    const pass = new ReworkClosurePass({
-      projectId: input.permit.projectId,
-      taskId: input.permit.taskId,
-      permitDigest: input.permit.permitDigest,
-      targetObservationDigest: input.targetObservationDigest,
-      freshEnvelopeId: input.permit.freshEnvelopeId,
-    });
-    livePasses.add(pass);
-    return pass;
-  }
-
-  static isLive(pass: unknown): boolean {
-    return typeof pass === "object" && pass !== null && livePasses.has(pass);
-  }
-
-  /** Diagnostic: the slots this pass still authorizes. Never authoritative. */
-  remainingSlots(): readonly string[] {
-    return Object.freeze([...this.#remaining]);
-  }
-
-  /** Module-private: the aggregate consumes through `consumeReworkClosureSlot`, never directly. */
-  consumeSlot(eventType: "TASK_REAUTHORIZED" | "TASK_READY", expectedEnvelopeId: string | null): void {
-    if (!this.#remaining.has(eventType)) {
-      throw new ReworkAdmissionError(
-        "rework_closure_slot_unavailable",
-        `this rework closure pass does not authorize another ${eventType}: each slot is consumed once, so one admission reopens one Work exactly once`,
-      );
-    }
-    if (eventType === "TASK_REAUTHORIZED" && expectedEnvelopeId !== this.freshEnvelopeId) {
-      throw new ReworkAdmissionError(
-        "capability_binding_mismatch",
-        `this rework closure pass authorizes rebinding to envelope ${this.freshEnvelopeId}, not to ${String(expectedEnvelopeId)}`,
-        [this.freshEnvelopeId, String(expectedEnvelopeId)],
-      );
-    }
-    this.#remaining.delete(eventType);
-    if (this.#remaining.size === 0) livePasses.delete(this);
-  }
-}
-
-/**
- * Consume one slot of a closure pass for one event.
- *
- * `expectedEnvelopeId` is `null` for `TASK_READY`, which carries no envelope of its own — the rebinding is
- * the other half of the same pass, and the task's envelope is verified against the trusted policy by the
- * ordinary admission path regardless.
- */
-export function consumeReworkClosureSlot(
-  pass: ReworkClosurePass,
-  expected: {
-    readonly projectId: string;
-    readonly taskId: string;
-    readonly eventType: "TASK_REAUTHORIZED" | "TASK_READY";
-    readonly freshEnvelopeId: string | null;
-  },
-): void {
-  if (!livePasses.has(pass)) {
-    throw new ReworkAdmissionError(
-      "capability_not_issued",
-      "rework closure pass was not issued by the trusted rework admission module, or its slots are exhausted",
-    );
-  }
-  const refs: string[] = [];
-  if (pass.projectId !== expected.projectId) refs.push(`expected projectId ${pass.projectId}, got ${expected.projectId}`);
-  if (pass.taskId !== expected.taskId) refs.push(`expected taskId ${pass.taskId}, got ${expected.taskId}`);
-  if (refs.length > 0) {
-    throw new ReworkAdmissionError(
-      "capability_binding_mismatch",
-      `rework closure pass does not authorize this event: ${refs.join("; ")}`,
-      refs,
-    );
-  }
-  pass.consumeSlot(expected.eventType, expected.freshEnvelopeId);
 }

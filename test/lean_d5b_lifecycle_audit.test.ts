@@ -334,7 +334,7 @@ describe("§D5-b D. the tempting minimal fix is reachable — §D5-b2 declared i
      * AT 2c32b97 THAT WAS A TRAP: following the cheap path would have required rebinding the envelope, which
      * §C measured to be destructive. §D5-b1 removed the destructiveness by resolving each attempt's own
      * historical authorization, so the trap's teeth are gone — and §D5-b2 then declared the edge AND gated it
-     * behind a governed closure pass, because "reachable" was never the same claim as "authorized".
+     * behind a governed rework admission, because "reachable" was never the same claim as "authorized".
      *
      *     a structurally available transition  ≠  an authorized one
      */
@@ -344,7 +344,7 @@ describe("§D5-b D. the tempting minimal fix is reachable — §D5-b2 declared i
 
     /**
      * The genesis graph now declares TWO transitions out of `verifying`: the forward one, and the governed
-     * rework edge §D5-b2 added. The second is DECLARED and refused at runtime without a closure pass — that
+     * rework edge §D5-b2 added. The second is DECLARED and refused at runtime without a rework permit — that
      * difference is the whole slice, and it is why the cheap path is no longer the only alternative.
      */
     const genesis = source("src/domain/stage_graph.ts");

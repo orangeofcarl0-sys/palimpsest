@@ -32,7 +32,7 @@ import type {
   PromotionIntentPermit,
   PromotionOutcomeWitness,
 } from "../domain/promotion_terminal_admission.js";
-import type { ReworkClosurePass, ReworkGovernedAdmission } from "../domain/rework_admission.js";
+import type { ReworkAdmissionPermit, ReworkGovernedAdmission } from "../domain/rework_admission.js";
 import type { TaskPolicy } from "../domain/policy.js";
 import { openDatabase } from "./database.js";
 import {
@@ -382,24 +382,34 @@ export class EventStore {
   }
 
   /**
-   * §D5-b2 — append a REWORK CLOSURE: the two events that reopen a verified Work, as ONE transaction.
+   * §D5-b2 — append the GOVERNED REOPENING: the one `TASK_READY` that sets aside a completed candidate and
+   * returns a VERIFYING task to the runnable set.
    *
-   *     VERIFYING@E_0  →  READY@E_1
+   *     VERIFYING@E_0  →  READY@E_0
    *
    * NOT agent-facing: no tool, route, port or barrel export reaches this method, and the generic `append`
-   * refuses either half outright when the task is VERIFYING. The pass is consumed by admission, one slot per
-   * event, so one admitted closure reopens exactly one Work.
+   * refuses this event outright while the task is VERIFYING. The permit is consumed by admission, so one
+   * admission reopens exactly one Work.
    *
-   * WHY ATOMIC. A crash between the two events would leave a task whose envelope has already moved while its
-   * state still says VERIFYING — a half-state in which the recorded authorization and the projected state
-   * disagree about which world the task is working against. One transaction makes the pair all-or-nothing.
+   * WHY ONE EVENT, AND WHY NOTHING HERE PROMISES A NEW BASIS. An earlier draft appended a two-event closure
+   * `TASK_REAUTHORIZED(E_1)` + `TASK_READY`; it was measured to be unbuildable (no fresh envelope exists for a
+   * VERIFYING task) and the measurement is the refutation: E_1 is not rework's to promise. What follows —
+   * head reconciliation, `PROJECT_REVISED`, `TASK_REAUTHORIZED(E_1)` — belongs to the existing G10-X head
+   * authority, which this event merely unblocks by leaving VERIFYING. The reopenable-but-not-executable
+   * window is safe: G10-X blocks new activation while the promoted head is ahead of the ProjectIR.
    */
-  appendReworkClosure(
-    requests: readonly NewEvent[],
-    pass: ReworkClosurePass,
+  appendReworkReopening(
+    request: NewEvent,
+    permit: ReworkAdmissionPermit,
     options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
-  ): readonly SchedulerEvent[] {
-    return this.#appendBatchWith(requests, { reworkPass: pass }, options);
+  ): SchedulerEvent {
+    const events = this.#appendBatchWith([request], { reworkPermit: permit }, options);
+    const appended = events[0];
+    // #appendBatchWith refuses an empty batch, so this is unreachable; the check keeps the narrowing honest.
+    if (appended === undefined) {
+      throw new AtomicAppendError("the governed reopening produced no event");
+    }
+    return appended;
   }
 
   /**
