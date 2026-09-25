@@ -230,3 +230,58 @@ export function consumeReworkAdmissionPermit(
 export interface ReworkGovernedAdmission {
   readonly reworkPermit?: ReworkAdmissionPermit | undefined;
 }
+
+/**
+ * §D5-c2 — the DURABLE lineage synthesized from a permit by the governed append
+ * path (`EventStore.appendReworkReopening`). The capability is ephemeral; this
+ * object is its historical shadow, written INTO the `TASK_READY` event so a
+ * restart — and the D5-c2b context compiler — can still answer "why was this
+ * Work reopened, for which origin result, against which observed world". The
+ * caller never supplies it: the EventStore derives it from the capability at the
+ * only seam that can spend the capability, which is the same direction D3-R
+ * fixed for caller facts generally.
+ *
+ *     Capability → durable historical provenance      (never CallerFacts + Capability → history)
+ */
+/**
+ * §D5-c2: the governed append path verifies ISSUANCE before synthesizing any
+ * lineage from the capability. A forged or spent object is refused HERE —
+ * before it can touch an event — rather than failing later as a malformed
+ * payload.
+ */
+export function requireIssuedReworkPermit(permit: ReworkAdmissionPermit): void {
+  if (!livePermits.has(permit)) {
+    throw new ReworkAdmissionError(
+      "capability_not_issued",
+      "rework admission permit was not issued by the trusted rework admission module, or was already consumed",
+    );
+  }
+}
+
+export function reworkProvenanceFromPermit(
+  permit: ReworkAdmissionPermit,
+  continuationAssessmentDigest?: string,
+): {
+  schema_version: 1;
+  origin_result_subject: { kind: string; ref: string };
+  origin_basis_digest: string;
+  target_observation_digest: string;
+  current_envelope_id: string;
+  reason: ReworkReason;
+  continuation_assessment_digest?: string;
+} {
+  return {
+    schema_version: 1,
+    origin_result_subject: {
+      kind: permit.originResultSubjectKind,
+      ref: permit.originResultSubjectRef,
+    },
+    origin_basis_digest: permit.originBasisDigest,
+    target_observation_digest: permit.targetObservationDigest,
+    current_envelope_id: permit.currentEnvelopeId,
+    reason: permit.reason,
+    ...(continuationAssessmentDigest === undefined
+      ? {}
+      : { continuation_assessment_digest: continuationAssessmentDigest }),
+  };
+}
