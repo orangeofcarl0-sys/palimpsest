@@ -5741,3 +5741,86 @@ D5-LIVE real concurrent → stale → governed reopen → head sync → re-execu
 
 两处**过时断言**随本片更新，各自记下旧测量：parity fixture 断言 v3 而 fixture 已是 **v4**（rework-admitted 边）；
 §D5-b 附录 D 断言 genesis graph 从 `verifying` 出发**只有一条**转换——本片声明了**两条**。
+
+---
+
+## 附录 W（第 D5-c1 期）：head-sync composition proof —— rework 只移除 quiescence blocker
+
+$$\boxed{\textbf{D5-c1 — } Governed\ reopening\ removes\ exactly\ the\ quiescence\ blocker\ that\ prevents\ the\ existing\ G10\text{-}X\ authority\ from\ advancing\ the\ Project\ basis.}$$
+
+**不新增任何 product semantics。** 整片是 `test/lean_d5c1_head_sync_composition.test.ts`（14 项）+ 本附录；
+产品代码零改动（源级断言钉住：head authority 模块与 scheduler 不含 rework 词汇）。
+
+### W.1 场景与命题
+
+三个任务经真实管线（真实 EventStore/aggregate/scheduler/promotion authority/rework admission/head
+reconciliation/attempt-authorization resolver；worker 与 git 为确定性 fake——本片不证明 DSH，D4-LIVE 已在
+真实 git 上验证过同一条 promotion 路径）全部到达 VERIFYING@E0；promote task-a ⇒
+Git/effect head H1、ProjectIR head 仍 H0；漂移窗口内做 governed reopen。
+
+$$\boxed{VERIFYING@E_0\xrightarrow{\text{governed reopen}}READY@E_0\xrightarrow{\text{existing G10-X}}READY@E_1\quad\land\quad Attempt_0@E_0\ remains\ immutable}$$
+
+### W.2 八条 headline proofs
+
+| # | 证明 |
+|---|---|
+| 1 | reopen 前 reconciliation 被**恰好** B/C 的 VERIFYING 阻塞：`SYNC_REQUIRED`、`quiescence_required` refs=[b,c]、`openAttemptIds=[]`；公开入口 `reconcileProjectHead()` 返回 blocked 且**零写入** |
+| 2 | governed reopen 后 **ΔReadiness≠0 ∧ ΔBasis=0**：log 恰好多一条 `TASK_READY`；ProjectIR（head/revision/digest 整体）、E_0、git head、promotion facts、attempt 数、A 的 attempt 记录逐项不变 |
+| 3 | **READY@E0 不可执行**（两个 sanctioned 入口）：`prepareMutatingWork` ⇒ `HEAD_NOT_IN_SYNC` 且零写入；`runTurn()` 在 C 仍 VERIFYING 时返回 `head_sync_required` + `quiescence_required`，整个 turn 无任何激活事件 |
+| 4 | **同一** reconciliation 变 compilable：`latestPromotionEventId` 与 `promotionChainBasis` 前后不变——D5 改变的是既有 head proof 的**可采纳性**，不是 head proof 本身 |
+| 5 | `reconcileProjectHead()` 落 `PROJECT_REVISED` + 对全部 retained runnable 任务 `TASK_REAUTHORIZED`；全 log 无任何 `REWORK*` 事件；ProjectIR head=H1、revision+1、B=READY@E1（base=H1） |
+| 6 | **E_0 ≠ E_1 且语义同一**：语义投影摘要相等；envelope_id/base_commit/revision/digest/idempotency_key 全部不同 |
+| 7 | **TaskAuthority evolves; AttemptProvenance does not**：rebind 后 task=E_1 而 `attemptWorkRecord(B0)` 逐字节不变，shipped verification subject 的 baseCommit 仍 H0、digest 不变（D5-b1 组合） |
+| 8 | **D5-c1 到此停止**：`mutatingWorkTarget({expectedTaskId:B})` ⇒ `{taskId:B, baseCommit:H1, resumed:false}`——D5-c3 有真实入口；reconcile 之后零追加、零新 Attempt |
+
+### W.3 四条 negatives
+
+| 负例 | 证明 |
+|---|---|
+| A | `Rework(B) ⇏ global quiescence`：B 重开后 reconciliation 仍 blocked，refs **恰为** [C] |
+| B | **open Attempt 独立阻塞**：C ACTIVE+LEASED 时 refs 同时含 task-c 与该 attempt id（open-attempt discipline 不被绕过） |
+| C | **无漂移则无事发生**：`IN_SYNC` 下 reopen ⇒ compiler 报 `no_drift`、`reconcileProjectHead()` 返回 `in_sync`、log 除 reopen 本身外零追加——D5 不是 basis-advance authority |
+| D | **broken chain 不可被 reopen 修复**：真实入口无法制造 CONFLICT（promotion admission 把 expected head 钉死在 canonical chain 上，伪造 expected head 在 eligibility 即拒）；compiler 的 `head_conflict` 分支以合成 facts 证明为纵深防御——全 quiescent 输入下唯一 blocker 是断链本身 |
+
+### W.4 实测记录（本片顺带钉住的调度器事实）
+
+1. **激活骑在三个声明容量闸门上**（H1 D-2）：ACTIVE stage 并发、VERIFYING stage 并发、**per-role slot
+   table**——三者缺一，READY 激活即静默停摆（`decide()` 返回 null）。本片场景经 `start({stageGraph})` +
+   `declareRoleTable()` 全部显式声明。
+2. **裸 `step()` 不查 head**：head barrier 只在 `runTurn()`（G10-X barrier：SYNC_REQUIRED 时只 pump
+   settlement → reconcile → 恢复激活）与 `prepareMutatingWork`（P2 `HEAD_NOT_IN_SYNC`）两处。worker/bootstrap
+   与 operator turn 两个 sanctioned 入口是安全的；bare step 是调试控制，不是委托入口。
+
+### W.5 D5-d 的 trust-boundary 验收准则（提前冻结）
+
+`ReworkAdmissionPermit.targetObservationDigest` 目前**只记录**观测身份并在 admission 记录中可审计；机械
+绑定检查的是 project/task/E_0/batch。"targetObservationDigest 是刚刚重新观测的当前 world"这一责任属于
+**未来 governed mint entry**。因此 D5-d 的 packaged continuation service 必须满足：
+
+```text
+fresh observation → continuation assessment → rework admission permit mint
+```
+
+普通 caller **不得**自行填写 target digest 后调用 `issue()`。此为 D5-d 的验收条件，不构成重开 D5-b2 的理由
+（D5-b2 解决的是 ungoverned reopening bypass，且已 CLOSED）。
+
+### W.6 状态与门禁
+
+```text
+D5-0    Effect authority closure                          CLOSED @ c0e54d9
+D5-a    Continuation assessment                           CLOSED @ ea08d7a
+D5-b    Lifecycle / envelope-binding audit                CLOSED @ 2c32b97
+D5-b1   Attempt-scoped immutable authorization            CLOSED @ 102dc80
+D5-b2   Governed VERIFYING→READY reopening                CLOSED @ feefe3c（附录 V）
+D5-c1   Head-sync composition proof                       CLOSED（本附录；产品零改动）
+D5-c2   PriorResultContext                                ← 下一步
+        冻结边界：CurrentBasis ≠ PriorResultContext —— continuationContext 绝不进入
+        ProjectWorldBasis / TaskEnvelope / Task semantic identity；正确形状是
+        Attempt A1 = { authorization: E1, basis: B1, continuationContext: C(R0) }
+D5-c3   real current-basis re-execution
+D5-d    Packaged ResultContinuationService（含 W.5 验收条件）
+D5-LIVE real concurrent → stale → governed reopen → head sync → re-execute → verify → promote
+```
+
+门禁（本片实测）：单元 **225 files / 2554 tests** 全绿、e2e **38/38**、`architecture:check` **0 violation**
+（12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**。
