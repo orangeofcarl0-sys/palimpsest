@@ -1156,7 +1156,7 @@ const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   PROJECT_REVISED: ["project_ir", "promotion_id"],
   TASK_CREATED: ["task_envelope", "initial_state", "policy_id", "policy_digest"],
   TASK_BLOCKED: ["previous_state", "new_state", "reason"],
-  TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
+  TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id", "rework_provenance"],
   TASK_STARTED: ["previous_state", "new_state", "reason", "planned_candidate_count", "first_attempt_no"],
   TASK_VERIFYING: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
   TASK_SATISFIED: ["previous_state", "new_state", "reason", "batch_activation_event_id"],
@@ -1243,6 +1243,244 @@ function provenanceOf(
   return provenance;
 }
 
+/**
+ * §D5-c2 — the DURABLE REWORK LINEAGE carried by a GOVERNED `TASK_READY`
+ * (VERIFYING → READY). This is HISTORY, not authority: it records why a
+ * completed candidate was set aside, synthesized from the one-shot rework
+ * admission permit by the governed append path. An ordinary `TASK_READY`
+ * must not carry it, and no caller may write it (closed contract).
+ */
+const REWORK_PROVENANCE_REASONS: ReadonlySet<string> = new Set([
+  "INCOMPATIBLE",
+  "UNKNOWN",
+  "REMATERIALIZATION_FAILED",
+]);
+
+function parseReworkProvenance(raw: unknown): Record<string, unknown> {
+  const provenance = expectObject(raw);
+  requireFields(
+    provenance,
+    "schema_version",
+    "origin_result_subject",
+    "origin_basis_digest",
+    "target_observation_digest",
+    "current_envelope_id",
+    "reason",
+  );
+  rejectUnknownFields(
+    provenance,
+    [
+      "schema_version",
+      "origin_result_subject",
+      "origin_basis_digest",
+      "target_observation_digest",
+      "current_envelope_id",
+      "reason",
+      "continuation_assessment_digest",
+    ],
+    "rework provenance",
+  );
+  if (provenance.schema_version !== 1) {
+    throw new ContractError("rework provenance schema_version must be 1");
+  }
+  const subject = expectObject(provenance.origin_result_subject);
+  requireFields(subject, "kind", "ref");
+  rejectUnknownFields(subject, ["kind", "ref"], "rework provenance origin_result_subject");
+  const reason = field(provenance.reason, "reason", (inner) => nonEmpty(expectString(inner)));
+  if (!REWORK_PROVENANCE_REASONS.has(reason)) {
+    throw new ContractError("rework provenance reason: invalid literal");
+  }
+  return {
+    schema_version: 1 as const,
+    origin_result_subject: {
+      kind: field(subject.kind, "kind", (inner) => nonEmpty(expectString(inner))),
+      ref: field(subject.ref, "ref", (inner) => nonEmpty(expectString(inner))),
+    },
+    origin_basis_digest: field(provenance.origin_basis_digest, "origin_basis_digest", (inner) =>
+      validateDigest(expectString(inner)),
+    ),
+    target_observation_digest: field(
+      provenance.target_observation_digest,
+      "target_observation_digest",
+      (inner) => validateDigest(expectString(inner)),
+    ),
+    current_envelope_id: field(provenance.current_envelope_id, "current_envelope_id", (inner) =>
+      validateIdentifier(expectString(inner)),
+    ),
+    reason,
+    ...(provenance.continuation_assessment_digest === undefined
+      ? {}
+      : {
+          continuation_assessment_digest: field(
+            provenance.continuation_assessment_digest,
+            "continuation_assessment_digest",
+            (inner) => validateDigest(expectString(inner)),
+          ),
+        }),
+  };
+}
+
+/**
+ * §D5-c2 — the PRIOR RESULT CONTEXT block of a rework attempt's ContextManifest
+ * (`continuation`, optional additive). It is COMPILED PRESENTATION for the worker:
+ * coordinates and concise interpretations, never authority, never a new Evidence
+ * store, and never a member of the Work identity (the envelope's semantic
+ * projection is untouched by it).
+ */
+function parsePriorResultContext(raw: unknown): Record<string, unknown> {
+  const context = expectObject(raw);
+  requireFields(
+    context,
+    "schema_version",
+    "lineage",
+    "origin_result",
+    "verification",
+    "world_transition",
+  );
+  rejectUnknownFields(
+    context,
+    ["schema_version", "lineage", "origin_result", "prior_execution", "verification", "world_transition"],
+    "prior result context",
+  );
+  if (context.schema_version !== 1) {
+    throw new ContractError("prior result context schema_version must be 1");
+  }
+  const lineage = expectObject(context.lineage);
+  requireFields(
+    lineage,
+    "rework_event_id",
+    "reason",
+    "target_observation_digest",
+    "origin_basis_digest",
+  );
+  rejectUnknownFields(
+    lineage,
+    ["rework_event_id", "reason", "continuation_assessment_digest", "target_observation_digest", "origin_basis_digest"],
+    "prior result context lineage",
+  );
+  const lineageReason = field(lineage.reason, "reason", (inner) => nonEmpty(expectString(inner)));
+  if (!REWORK_PROVENANCE_REASONS.has(lineageReason)) {
+    throw new ContractError("prior result context lineage reason: invalid literal");
+  }
+  const originResult = expectObject(context.origin_result);
+  requireFields(originResult, "subject", "result_manifest_digest");
+  rejectUnknownFields(
+    originResult,
+    ["subject", "result_manifest_digest", "source_result"],
+    "prior result context origin_result",
+  );
+  const subject = expectObject(originResult.subject);
+  requireFields(subject, "kind", "ref");
+  rejectUnknownFields(subject, ["kind", "ref"], "prior result context origin_result subject");
+  const verification = expectArray(context.verification).map((entry) => {
+    const run = expectObject(entry);
+    requireFields(run, "run_id", "verifier_ref", "verdict", "freshness", "independence");
+    rejectUnknownFields(
+      run,
+      ["run_id", "verifier_ref", "verdict", "freshness", "independence"],
+      "prior result context verification run",
+    );
+    return {
+      run_id: field(run.run_id, "run_id", (inner) => nonEmpty(expectString(inner))),
+      verifier_ref: field(run.verifier_ref, "verifier_ref", (inner) => nonEmpty(expectString(inner))),
+      verdict: field(run.verdict, "verdict", (inner) => nonEmpty(expectString(inner))),
+      freshness: field(run.freshness, "freshness", (inner) => nonEmpty(expectString(inner))),
+      independence: field(run.independence, "independence", (inner) => nonEmpty(expectString(inner))),
+    };
+  });
+  const worldTransition = expectObject(context.world_transition);
+  requireFields(worldTransition, "from_head", "to_head", "promotion_event_refs");
+  rejectUnknownFields(
+    worldTransition,
+    ["from_head", "to_head", "promotion_event_refs"],
+    "prior result context world_transition",
+  );
+  return {
+    schema_version: 1 as const,
+    lineage: {
+      rework_event_id: field(lineage.rework_event_id, "rework_event_id", expectInt),
+      reason: lineageReason,
+      ...(lineage.continuation_assessment_digest === undefined
+        ? {}
+        : {
+            continuation_assessment_digest: field(
+              lineage.continuation_assessment_digest,
+              "continuation_assessment_digest",
+              (inner) => validateDigest(expectString(inner)),
+            ),
+          }),
+      target_observation_digest: field(
+        lineage.target_observation_digest,
+        "target_observation_digest",
+        (inner) => validateDigest(expectString(inner)),
+      ),
+      origin_basis_digest: field(lineage.origin_basis_digest, "origin_basis_digest", (inner) =>
+        validateDigest(expectString(inner)),
+      ),
+    },
+    origin_result: {
+      subject: {
+        kind: field(subject.kind, "kind", (inner) => nonEmpty(expectString(inner))),
+        ref: field(subject.ref, "ref", (inner) => nonEmpty(expectString(inner))),
+      },
+      result_manifest_digest:
+        originResult.result_manifest_digest === null
+          ? null
+          : field(originResult.result_manifest_digest, "result_manifest_digest", (inner) =>
+              validateDigest(expectString(inner)),
+            ),
+      ...(originResult.source_result === undefined
+        ? {}
+        : (() => {
+            const sourceResult = expectObject(originResult.source_result);
+            requireFields(sourceResult, "base_revision", "result_revision");
+            rejectUnknownFields(
+              sourceResult,
+              ["base_revision", "result_revision"],
+              "prior result context source_result",
+            );
+            return {
+              source_result: {
+                base_revision: field(sourceResult.base_revision, "base_revision", (inner) =>
+                  nonEmpty(expectString(inner)),
+                ),
+                result_revision: field(sourceResult.result_revision, "result_revision", (inner) =>
+                  nonEmpty(expectString(inner)),
+                ),
+              },
+            };
+          })()),
+    },
+    ...(context.prior_execution === undefined
+      ? {}
+      : (() => {
+          const priorExecution = expectObject(context.prior_execution);
+          requireFields(priorExecution, "worker_summary", "observed_changed_files");
+          rejectUnknownFields(
+            priorExecution,
+            ["worker_summary", "observed_changed_files"],
+            "prior result context prior_execution",
+          );
+          return {
+            prior_execution: {
+              worker_summary: field(priorExecution.worker_summary, "worker_summary", expectString),
+              observed_changed_files: expectArray(priorExecution.observed_changed_files).map((item) =>
+                nonEmpty(expectString(item)),
+              ),
+            },
+          };
+        })()),
+    verification,
+    world_transition: {
+      from_head: field(worldTransition.from_head, "from_head", (inner) => nonEmpty(expectString(inner))),
+      to_head: field(worldTransition.to_head, "to_head", (inner) => nonEmpty(expectString(inner))),
+      promotion_event_refs: expectArray(worldTransition.promotion_event_refs).map((item) =>
+        nonEmpty(expectString(item)),
+      ),
+    },
+  };
+}
+
 export function normalizeEventPayload(
   eventType: EventType,
   payload: unknown,
@@ -1293,6 +1531,12 @@ export function normalizeEventPayload(
           raw.batch_activation_event_id,
           "batch_activation_event_id",
         ),
+        // §D5-c2: optional DURABLE REWORK LINEAGE. Legal only on the governed
+        // VERIFYING → READY reopening, whose admission (aggregate) binds it to
+        // the one-shot permit; an ordinary TASK_READY carrying one is refused.
+        ...(raw.rework_provenance === undefined
+          ? {}
+          : { rework_provenance: parseReworkProvenance(raw.rework_provenance) }),
       };
     }
     case "TASK_STARTED": {
@@ -1544,6 +1788,7 @@ export function normalizeEventPayload(
           "excluded_stale",
           "retrieval",
           "semantic",
+          "continuation",
           "created_at",
         ],
         "context manifest",
@@ -1603,6 +1848,10 @@ export function normalizeEventPayload(
           created_at: field(manifest.created_at, "created_at", (inner) =>
             nonEmpty(expectString(inner)),
           ),
+          // §D5-c2: the optional PRIOR RESULT CONTEXT of a rework attempt.
+          ...(manifest.continuation === undefined
+            ? {}
+            : { continuation: parsePriorResultContext(manifest.continuation) }),
         },
       };
     }

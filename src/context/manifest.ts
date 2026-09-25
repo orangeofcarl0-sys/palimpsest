@@ -14,6 +14,7 @@
 import { canonicalDigest } from "../schema/index.js";
 
 import type { ContextRequirement } from "./requirement.js";
+import type { PriorResultContext } from "./prior_result.js";
 
 export const CONTEXT_RETRIEVAL_METHOD = "lexical";
 
@@ -34,6 +35,12 @@ export interface ContextManifestInput {
   }>;
   /** PLMP-CTX-3 §1.3: semantic channel hits (absent = port not injected). */
   readonly semantic?: ReadonlyArray<{ readonly path: string; readonly score_permille: number }> | undefined;
+  /**
+   * §D5-c2: the PRIOR RESULT CONTEXT of a rework attempt (absent = this attempt
+   * did not reopen reworked Work). Compiled presentation, never authority, and
+   * never a member of the Work identity.
+   */
+  readonly continuation?: PriorResultContext | undefined;
   readonly createdAt: string;
 }
 
@@ -51,6 +58,7 @@ export interface ContextManifest {
     readonly term: string;
   }>;
   readonly semantic?: ReadonlyArray<{ readonly path: string; readonly score_permille: number }> | undefined;
+  readonly continuation?: PriorResultContext | undefined;
   readonly evidence: readonly string[];
   readonly excluded_stale: readonly string[];
   readonly retrieval: readonly string[];
@@ -69,6 +77,7 @@ export function buildContextManifest(input: ContextManifestInput): ContextManife
     })),
     source: [...input.source],
     ...(input.semantic === undefined ? {} : { semantic: [...input.semantic] }),
+    ...(input.continuation === undefined ? {} : { continuation: input.continuation }),
     evidence: [...input.requirement.evidenceSubjects],
     excluded_stale: [...input.requirement.forbiddenStale],
     retrieval:

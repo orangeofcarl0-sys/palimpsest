@@ -26,10 +26,16 @@ import {
   validateStageGraphReachability,
   type StageGraphDefinition,
 } from "../domain/index.js";
+import { promotionChainBasis } from "../domain/project_head.js";
+import {
+  attemptResultSubjectDigestOf,
+  type ProjectVerificationRun,
+} from "../project_verification/artifacts.js";
 import {
   attemptReportDigestOf,
   canonicalDatetime,
   canonicalDigest,
+  parseAttemptReport,
   parseProjectIr,
   parseTaskEnvelope,
   parseNewEvent,
@@ -73,11 +79,13 @@ import {
   buildContextManifest,
   compileContextBrief,
   compileContextRequirement,
+  compilePriorResultContext,
   cosineSimilarity,
   type ContextBrief,
   type ContextManifest,
   type ContextDistribution,
   type CoverageAssessment,
+  type PriorResultContext,
 } from "../context/index.js";
 import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
@@ -4613,7 +4621,19 @@ export class ProjectController {
    * (emitted as CONTEXT_MANIFEST_ADDED, idempotent per attempt) and the
    * coverage assessment. The worktree must exist (claim first).
    */
-  async compileTaskContext(attemptId: string): Promise<{
+  async compileTaskContext(
+    attemptId: string,
+    options: {
+      /**
+       * §D5-c2: the deployment's independent verification HISTORY store, when one
+       * exists. It is an OWNER the compiler reads — runs for the origin result's
+       * subject become the context's HISTORICAL verification entries; they are
+       * never a qualification of the new attempt. Absent ⇒ the context honestly
+       * carries no verification history.
+       */
+      verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+    } = {},
+  ): Promise<{
     manifest: ContextManifest;
     coverage: CoverageAssessment;
     distribution: ContextDistribution;
@@ -4766,6 +4786,89 @@ export class ProjectController {
         })
         .map(({ path, score_permille }) => ({ path, score_permille }));
     }
+    // §D5-c2: the PRIOR RESULT CONTEXT — compiled only for an attempt whose task
+    // was reopened by a governed rework, and only from owners that already hold
+    // each fact. An ordinary attempt's manifest carries no continuation block.
+    const lineage = this.#reworkLineageFor(attemptId, taskId);
+    let continuation: PriorResultContext | undefined;
+    if (lineage !== undefined) {
+      const subject = lineage.provenance.origin_result_subject as Record<string, unknown>;
+      const originAttemptId = String(subject.ref);
+      const originRecord = this.attemptWorkRecord(originAttemptId);
+      // FAIL CLOSED on an unresolvable origin: the durable lineage names a fact
+      // the owners must be able to produce. A silent empty-coordinate context
+      // would be exactly the kind of fabricated presentation this module exists
+      // to prevent.
+      if (originRecord === null || originRecord.envelope === undefined || originRecord.envelope === null) {
+        throw new DomainValidationError(
+          `the rework lineage names origin result "${originAttemptId}", whose authorization cannot be resolved — refusing to compile a fabricated prior-result context`,
+        );
+      }
+      const originEnvelope = parseTaskEnvelope(originRecord.envelope);
+      const rawReport = originRecord.report;
+      const originReport =
+        rawReport === undefined || rawReport === null
+          ? undefined
+          : (() => {
+              const report = decodeJsonBlob(
+                new TextEncoder().encode(JSON.stringify(rawReport)),
+              ) as Record<string, unknown>;
+              return {
+                summary: typeof report.summary === "string" ? report.summary : "",
+                changed_files: Array.isArray(report.changed_files)
+                  ? report.changed_files.map((item) => String(item))
+                  : [],
+                result_commit: typeof report.result_commit === "string" ? report.result_commit : null,
+              };
+            })();
+      const originSubjectDigest =
+        originEnvelope === undefined ||
+        originReport === undefined ||
+        originReport.result_commit === null
+          ? null
+          : attemptResultSubjectDigestOf({
+              schemaVersion: 1,
+              kind: "ATTEMPT_RESULT",
+              projectId: this.projectId,
+              taskId,
+              attemptId: originAttemptId,
+              envelopeId: originEnvelope.envelope_id,
+              baseCommit: originEnvelope.base_commit,
+              resultCommit: originReport.result_commit,
+              reportDigest: attemptReportDigestOf(parseAttemptReport(rawReport)),
+            });
+      continuation = compilePriorResultContext({
+        reworkEventId: lineage.reworkEventId,
+        provenance: {
+          origin_result_subject: {
+            kind: String(subject.kind),
+            ref: originAttemptId,
+          },
+          origin_basis_digest: String(lineage.provenance.origin_basis_digest),
+          target_observation_digest: String(lineage.provenance.target_observation_digest),
+          reason: String(lineage.provenance.reason),
+          ...(lineage.provenance.continuation_assessment_digest === undefined
+            ? {}
+            : {
+                continuation_assessment_digest: String(
+                  lineage.provenance.continuation_assessment_digest,
+                ),
+              }),
+        },
+        originEnvelope: {
+          envelope_id: originEnvelope.envelope_id,
+          base_commit: originEnvelope.base_commit,
+        },
+        originReport,
+        originSubjectDigest,
+        verificationRuns: options.verificationHistory?.list(this.projectId) ?? [],
+        promotionChain: promotionChainBasis(
+          originEnvelope.base_commit,
+          this.promotions.promotionFactsSync(),
+        ),
+        currentHead: this.#project().head_commit,
+      });
+    }
     const manifest = buildContextManifest({
       manifestId,
       taskId,
@@ -4773,6 +4876,7 @@ export class ProjectController {
       requirement,
       source,
       semantic,
+      continuation,
       createdAt: this.#now(),
     });
     this.store.append(
@@ -4821,11 +4925,23 @@ export class ProjectController {
       .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
       .get(this.projectId, attemptId) as { task_id: string } | undefined;
     if (attemptRow === undefined) return undefined;
+    // §D5-c2: an attempt fetches ITS OWN compiled manifest — the same
+    // deterministic identity `compileTaskContext` writes — never the task's
+    // latest one. After D5, one task can carry generations of attempts
+    // (A0 → M0, A1 → M1); resolving by task-latest was context time travel
+    // (fetch(A0) returning M1), the same TaskCurrentBinding ≠
+    // AttemptHistoricalBinding defect D5-b1 fixed for envelopes, now fixed for
+    // context: TaskLatestContext ≠ AttemptCompiledContext.
+    const manifestId = stableEntityId(
+      "context-manifest",
+      actionKey("context-manifest-v1", {
+        project_id: this.projectId,
+        attempt_id: attemptId,
+      }),
+    );
     const manifestRow = this.store.connection
-      .prepare(
-        "SELECT manifest_json FROM context_manifests WHERE project_id=? AND task_id=? ORDER BY last_event_id DESC LIMIT 1",
-      )
-      .get(this.projectId, String(attemptRow.task_id)) as { manifest_json: Uint8Array } | undefined;
+      .prepare("SELECT manifest_json FROM context_manifests WHERE project_id=? AND manifest_id=?")
+      .get(this.projectId, manifestId) as { manifest_json: Uint8Array } | undefined;
     if (manifestRow === undefined) return undefined;
     const manifest = JSON.parse(
       new TextDecoder().decode(manifestRow.manifest_json),
@@ -4849,6 +4965,40 @@ export class ProjectController {
     }
     const exact = manifest.exact.find((candidate) => candidate.ref === entry.ref);
     return exact === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: exact };
+  }
+
+  /**
+   * §D5-c2: the durable rework lineage for THIS attempt — the latest governed
+   * TASK_READY that carried `rework_provenance` for the task STRICTLY BEFORE the
+   * attempt's own creation event. Bounding by creation is what makes the context
+   * attempt-scoped: an attempt compiled later cannot absorb a rework that did not
+   * exist when it was created. Returns undefined for ordinary attempts.
+   */
+  #reworkLineageFor(
+    attemptId: string,
+    taskId: string,
+  ): { reworkEventId: number; provenance: Record<string, unknown> } | undefined {
+    const createdRow = this.store.connection
+      .prepare(
+        "SELECT MIN(event_id) AS id FROM events WHERE project_id=? AND event_type='ATTEMPT_CREATED' AND entity_id=?",
+      )
+      .get(this.projectId, attemptId) as { id: number | null };
+    const createdEventId =
+      createdRow === undefined || createdRow.id === null ? null : Number(createdRow.id);
+    if (createdEventId === null) return undefined;
+    const rows = this.store.connection
+      .prepare(
+        "SELECT event_id, payload_json FROM events WHERE project_id=? AND event_type='TASK_READY' AND entity_id=? AND event_id < ? ORDER BY event_id DESC",
+      )
+      .all(this.projectId, taskId, createdEventId) as Array<Record<string, unknown>>;
+    for (const row of rows) {
+      const payload = decodeJsonBlob(row.payload_json);
+      const provenance = payload.rework_provenance;
+      if (provenance !== undefined && provenance !== null) {
+        return { reworkEventId: Number(row.event_id), provenance: provenance as Record<string, unknown> };
+      }
+    }
+    return undefined;
   }
 
   /**
