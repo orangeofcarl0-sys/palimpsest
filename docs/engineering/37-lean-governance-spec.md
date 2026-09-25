@@ -5371,3 +5371,132 @@ D5-LIVE 真实三段 gate
 
 门禁：单元 **222 files / 2503 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
 `check-public-api` **0/0/0**。
+
+---
+
+## 附录 T（第 D5-b 审计）：`TASK_REAUTHORIZED` 不能表达 rework —— 而且缺口比"少一个事件"更深
+
+评审把这次审计定为 D5-b 的第一步，并附了一个停点：
+
+> 如果发现 `TASK_REAUTHORIZED` 无法诚实表达 rework，**又必须新增一个新的 canonical lifecycle event**，
+> 那么在新增 event 前停一次。
+
+**审计结论是"不能表达"，但修复方式不是新增事件。** 实际缺口是 **attempt 级的 envelope 绑定**，属于
+attempt 记录的结构问题。因此本片**停在这里等裁决**，产品代码零改动。
+
+### T.1 实测：`TASK_REAUTHORIZED` 拒绝 VERIFYING
+
+先把 D5 必须处理的那个状态做出来（与 §D4-LIVE 同构：两个任务都进 VERIFYING，t1 的结果进 canonical，
+t2 的已完成结果因此 stale），再把一个"同语义、新 positional 字段"的 envelope 交给**真实 aggregate validator**：
+
+```
+tasks after promotion: t1:VERIFYING  t2:VERIFYING
+t2 的 admission:        eligible=false  blockers=cross_revision_promotion_not_supported
+t2 状态:                task=VERIFYING  attempt=COMPLETED
+
+交入 TASK_REAUTHORIZED（新 head 上的 fresh envelope，objective/write_paths/artifacts 逐字段相同）
+  → REFUSED: TASK_REAUTHORIZED requires a READY or BLOCKED task
+```
+
+**所有语义字段都匹配**，唯一的原因是**状态**。所以现成事件类型确实表达不了这个情形。
+
+### T.2 那个 READY/BLOCKED 限制是**承重**的，不是随手加的
+
+这是本审计最关键、也最不显然的一点。可能的第一反应是"那就放开限制"或"补一条 transition"。实测表明
+**不能**，因为它会摧毁历史事实：
+
+```
+tasks.envelope_json     一行一个 TASK —— 这是**当前**绑定
+attempts                表里**没有** envelope 列（实测 schema 断言）
+attemptWorkRecord()     对任何 attempt 都读**当前** envelope：
+                        SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?
+```
+
+于是**重绑一个 task 的 envelope 会追溯性地改变该 task 所有历史 attempt 所声称的 envelope**。
+把这件事真做一遍（照 plan reconciliation 的写法直接 `UPDATE tasks SET envelope_json=…`），再用**shipped**
+verification source 去读那个历史 attempt：
+
+```
+BEFORE  envelope.base_commit = H0        verification source → baseCommit = H0        （可验证）
+AFTER   envelope.base_commit = H1        report.base_commit  = H0        （报告不变，是好的）
+        verification source → REFUSED: attempt "…" has an inconsistent canonical record
+```
+
+**attempt 的 state 没被动过**（`COMPLETED` 保持不变，没有伪造 `ATTEMPT_FAILED`），但它**报告的授权 envelope
+变了**，而 verification plane 交叉校验 report 与 envelope 后 fail closed —— **历史结果从此不可验证**。
+
+这正是 D5 §1 要防的东西：
+
+$$\boxed{HistoricalExecutionFact \neq CurrentAcceptanceAuthority}$$
+
+D5 §1 说的是历史**事实**必须留存；实测显示：**当前的绑定可以摧毁它的可读性**，这是同一个违规、只是早一步。
+
+### T.3 因此"最省事的修法"是一个陷阱
+
+第二个不显然之点：`state_machine.ts` **本来就允许** `verifying → ready`：
+
+```ts
+TASK_READY: new Set(["BLOCKED", "ACTIVE", "VERIFYING"]),
+```
+
+且 aggregate 对"有 completed candidate 的 VERIFYING 行"的 `TASK_READY` 也不拒绝（唯一剩下的门是
+`total < attempt_limit`）。**缺的只是 `DEFAULT_STAGE_GRAPH` 里那一条声明**（`verifying` 目前只有
+`TASK_SATISFIED` 一条出边）。
+
+所以"一行 stage-graph 改动"看起来就能打通。但打通之后**必须**重绑 envelope，而 T.2 实测那是破坏性的。
+**便宜的路径存在，这恰恰是它危险的原因。**
+
+### T.4 根因：envelope 绑定是 TASK 级，而两个 attempt 可以有不同的 basis
+
+把上面三点合起来，缺口可以一句话说清：
+
+> 当前模型无法表示"attempt A0 由 envelope E0 在 H0 授权，attempt A1 由 E1 在 H1 授权"——
+> 因为每个 **task** 只有一个 envelope 槽位。
+
+这正是 rework 的定义（same Work、new Attempt、**new basis**），所以它不是缺一个事件类型，而是
+**attempt 记录的绑定粒度**问题。
+
+### T.5 需要裁决的两条路（本片不自行选择）
+
+**（甲）把 envelope 绑定下沉到 ATTEMPT。** `attempts` 增加 envelope 快照（或 envelope_id + base_commit 的
+不可变快照），于是每个 attempt 自己证明"我是在哪个 envelope 下、由哪个 basis 授权的"。这使：
+`attemptWorkRecord` 不再读 task 的当前 binding；`TASK_REAUTHORIZED` 可以安全地重绑 task 的**当前**绑定；
+rework 成为"同一 task 的第二个 attempt，带新 envelope"。代价：一次 attempt 表结构/模型变更，且要迁移
+既有记录（D2 时代的 attempt 没有快照 → 需要一个诚实的 legacy 读取规则，而不是伪造快照）。
+
+**（乙）别的形状。** 例如为 rework 引入一个"继承 envelope 谱系"的显式对象、或让 rework 走一个
+task 之外的授权载体。这一条我没有设计，因为评审对"不要创建新 Task、不要用 `ATTEMPT_FAILED` 重开"的约束
+已经把最自然的几种绕法排除了，剩下的取舍需要评审定。
+
+**我倾向（甲）**，理由：它让"每个 attempt 证明自己的授权"成为结构事实，而不是靠调用方记得传对参数 ——
+与 D5-0 关闭 caller-fact seam 的方向一致；并且它使 `TASK_REAUTHORIZED` 的现有语义（重绑**当前**绑定、
+不动 state）第一次变得**安全**，而今天它只是因为"READY/BLOCKED 的 task 恰好没有 completed attempt"才安全。
+
+### T.6 本片交付（**零产品代码改动**）
+
+- `test/lean_d5b_lifecycle_audit.test.ts`（5 项）：把 T.1/T.2/T.3 三件事**钉在真实组件上**——
+  a. 真实 aggregate validator 拒绝 VERIFYING 的 reauthorization（按名字拒绝）
+  b. envelope 是 **TASK** 级绑定（schema 断言：`tasks` 有 `envelope_json`，`attempts` **没有** envelope 列；
+     且 Work owner 读的是 `tasks` 的当前行）
+  c. 重绑之后历史 attempt 的 verification subject **无法导出**（真实 verification source 抛
+     `inconsistent canonical record`）
+  d. 状态机**已允许** `verifying → ready`，genesis graph 只有一条 `verifying` 出边（`TASK_SATISFIED`）
+  e. `TASK_STALE` 可 retire VERIFYING，但 STALE 是**终态**，退役不是重开
+
+- 本附录。
+
+**没有**新增事件类型、**没有**改 `DEFAULT_STAGE_GRAPH`、**没有**动 `attempts` 表、**没有**改任何产品行为。
+门禁与 canonical main 一致。
+
+### T.7 状态
+
+```
+D5-0  Effect authority closure          CLOSED @ c0e54d9
+D5-a  Continuation assessment           CLOSED @ ea08d7a
+D5-b  Lifecycle audit（本附录）          AUDIT COMPLETE —— **停在裁决点**
+D5-c  Prior result context
+D5-d  Packaged ResultContinuationService
+D5-LIVE 真实三段 gate
+```
+
+按评审指定的停点，**D5-b 的实现不在本片**：等 (甲)/(乙) 的裁决，或评审给出的第三条路。
