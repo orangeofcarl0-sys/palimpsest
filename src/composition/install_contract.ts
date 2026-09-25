@@ -76,12 +76,14 @@ export interface InstallPalimpsestOptions extends DelegationInstallOptions {
   git?: GitPort | undefined;
   projectId: string;
   policy?: TaskPolicy | undefined;
-  /**
-   * Where an attempt's work happens: "worktree" (default — an isolated git worktree per attempt,
-   * for out-of-process workers) or "in-place" (the attempt works in the canonical repository
-   * tree, for an agent whose cwd is the repository; its report is then observed, not claimed).
-   */
+  /** Where an attempt's work happens: "worktree" (default, isolated) or "in-place" (observed, not claimed). */
   execution?: import("../tools/controller.js").ExecutionMode | undefined;
+  /**
+   * §D4-a: how many canonical Work tasks may run at once. `SpeculativeMutationAuthority ≠
+   * CanonicalMutationAuthority`, so two PLACED attempts are not two writers on one tree; the OPERATOR
+   * states the capacity here, since a plan may not name its own stage graph. Absent ⇒ 1 (pre-D4).
+   */
+  concurrency?: number | undefined;
   /**
    * PLMP-LEAN-1 §1: the project's derived-and-confirmed done-ness. When present the controller
    * declares the release gate from it at project start, so the operator's "accept" has something
