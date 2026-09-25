@@ -1,5 +1,5 @@
 {
-  "fixture_version": 3,
+  "fixture_version": 4,
   "scenario": "phase0-2-two-candidate-batch-retry-exhaustion",
   "events": [
     {
@@ -76,38 +76,44 @@
         ],
         "transitions": [
           {
-            "event": "TASK_VERIFYING",
             "from": "active",
+            "event": "TASK_VERIFYING",
             "to": "VERIFYING",
             "when": "batch-completed-candidate"
           },
           {
-            "event": "TASK_READY",
             "from": "active",
+            "event": "TASK_READY",
             "to": "READY",
             "when": "batch-failed-budget-remaining"
           },
           {
-            "event": "TASK_FAILED",
             "from": "active",
+            "event": "TASK_FAILED",
             "to": "FAILED",
             "when": "attempt-limit-exhausted"
           },
           {
-            "event": "TASK_SATISFIED",
             "from": "verifying",
+            "event": "TASK_SATISFIED",
             "to": "SATISFIED",
             "when": "promotion-committed"
           },
           {
+            "from": "verifying",
             "event": "TASK_READY",
+            "to": "READY",
+            "when": "rework-admitted"
+          },
+          {
             "from": "blocked",
+            "event": "TASK_READY",
             "to": "READY",
             "when": "dependencies-satisfied"
           },
           {
-            "event": "TASK_STARTED",
             "from": "ready",
+            "event": "TASK_STARTED",
             "to": "ACTIVE",
             "when": "always"
           }
@@ -122,9 +128,9 @@
       "expected_project_revision": 0,
       "event_id": 2,
       "project_sequence": 2,
-      "request_digest": "a7c0d8de6c27ed5118255c99c14c7dc743917b05d85f5107665f03d6a76eacb5",
+      "request_digest": "0483c48352251898c7764a986a661246e8193d7ecf47eec197f937e373f48177",
       "previous_event_digest": "45bb54a3a6fc4ce8278651ead76b85f71b1a85e93c1c2882be29f878b4be0e25",
-      "event_digest": "b1f86b82803798ea3061abc2fbf12258e523913d78c85bbf972ebd1683cf4cc6",
+      "event_digest": "32100da98656e6f3d45c46145d7d9096072f8d9b875c8c58451264f86421f5a7",
       "committed_at": "2026-08-13T00:00:02.000000Z"
     },
     {
@@ -181,8 +187,8 @@
       "event_id": 3,
       "project_sequence": 3,
       "request_digest": "8eb4335930df827b185d6eb0ea3860a0508376b575cd39f80ed7271d83568b89",
-      "previous_event_digest": "b1f86b82803798ea3061abc2fbf12258e523913d78c85bbf972ebd1683cf4cc6",
-      "event_digest": "f26c1e8decb2e19ab8dc82562967db89180233b81cba176eb5a57c991673ef0b",
+      "previous_event_digest": "32100da98656e6f3d45c46145d7d9096072f8d9b875c8c58451264f86421f5a7",
+      "event_digest": "0d03b50c8ea267d444a656c218706fe4f0926e67c2362f4290aae65163350ca5",
       "committed_at": "2026-08-13T00:00:03.000000Z"
     },
     {
@@ -206,8 +212,8 @@
       "event_id": 4,
       "project_sequence": 4,
       "request_digest": "cf3bcb21bdf94855fcc3cfbbe6c4c29479ce8852b3fee43a5959be9520edcf85",
-      "previous_event_digest": "f26c1e8decb2e19ab8dc82562967db89180233b81cba176eb5a57c991673ef0b",
-      "event_digest": "bd86263dbc5438db655d1ee5510a6d5f8944aab962428e1132d145c73e552c41",
+      "previous_event_digest": "0d03b50c8ea267d444a656c218706fe4f0926e67c2362f4290aae65163350ca5",
+      "event_digest": "c03bf330fbfeea2918a74393eaba0a10e9b538455a80e484c2284a4f2b21a2d7",
       "committed_at": "2026-08-13T00:00:04.000000Z"
     },
     {
@@ -229,8 +235,8 @@
       "event_id": 5,
       "project_sequence": 5,
       "request_digest": "72a275dfa18941c9f17c66eea9da3bd2d38b0214e92aaed8701ce67f2e9282f8",
-      "previous_event_digest": "bd86263dbc5438db655d1ee5510a6d5f8944aab962428e1132d145c73e552c41",
-      "event_digest": "e540318614586064e77b49c0df6283b48066f77aab7f5d986c41dceff74329dd",
+      "previous_event_digest": "c03bf330fbfeea2918a74393eaba0a10e9b538455a80e484c2284a4f2b21a2d7",
+      "event_digest": "b70cb45aa3035303dd85f9f704e9ef7fc45e6e48111fb42f59fdf7e08fed2138",
       "committed_at": "2026-08-13T00:00:05.000000Z"
     },
     {
@@ -252,8 +258,8 @@
       "event_id": 6,
       "project_sequence": 6,
       "request_digest": "50df9658b380b190a65034eab67e596431879c191f5663fd55bb68c2345a86c3",
-      "previous_event_digest": "e540318614586064e77b49c0df6283b48066f77aab7f5d986c41dceff74329dd",
-      "event_digest": "8b9b6e3531b5a9e810faeed17e2c3759954b866487f68eae657f1881d738ee9d",
+      "previous_event_digest": "b70cb45aa3035303dd85f9f704e9ef7fc45e6e48111fb42f59fdf7e08fed2138",
+      "event_digest": "f470f60a9bca1749cf66f6774d37297e64ab7f5d9dcfdd7ae021c4502335c406",
       "committed_at": "2026-08-13T00:00:06.000000Z"
     },
     {
@@ -276,8 +282,8 @@
       "event_id": 7,
       "project_sequence": 7,
       "request_digest": "05932654a0cca53580b9b6efbdf136b741bc3af64a2761322c43188d8d2e324d",
-      "previous_event_digest": "8b9b6e3531b5a9e810faeed17e2c3759954b866487f68eae657f1881d738ee9d",
-      "event_digest": "c79d293ae83412ad908db5e5c821d4f7384afb9d652a993a34c9867b5a17dffe",
+      "previous_event_digest": "f470f60a9bca1749cf66f6774d37297e64ab7f5d9dcfdd7ae021c4502335c406",
+      "event_digest": "033c7b42da3ce9900bbe8f1cbc8a2dd7749661c260a71b392bc779555ad64a34",
       "committed_at": "2026-08-13T00:00:07.000000Z"
     },
     {
@@ -300,8 +306,8 @@
       "event_id": 8,
       "project_sequence": 8,
       "request_digest": "24c7335a8d646c41b5e3a90433421471f5928a2c47e131d68a82208a09331a79",
-      "previous_event_digest": "c79d293ae83412ad908db5e5c821d4f7384afb9d652a993a34c9867b5a17dffe",
-      "event_digest": "1b284889ad1c6ed2e256b713a8e1d13eb8a605002b860881711f3e173234a120",
+      "previous_event_digest": "033c7b42da3ce9900bbe8f1cbc8a2dd7749661c260a71b392bc779555ad64a34",
+      "event_digest": "abd361427e14cbf4f5260baf3191f454c5c3ff22b2689ca8d0aa38b9b6cc0ee8",
       "committed_at": "2026-08-13T00:00:08.000000Z"
     },
     {
@@ -355,8 +361,8 @@
       "event_id": 9,
       "project_sequence": 9,
       "request_digest": "43983908684b62522ba1cadb8c8e28d7300a62f2f64924e235b17ad16c3edf16",
-      "previous_event_digest": "1b284889ad1c6ed2e256b713a8e1d13eb8a605002b860881711f3e173234a120",
-      "event_digest": "ee74be009a886c186022087c7929833d8626b51f69c1dbb610a41d4792ad7639",
+      "previous_event_digest": "abd361427e14cbf4f5260baf3191f454c5c3ff22b2689ca8d0aa38b9b6cc0ee8",
+      "event_digest": "05a71861c228562fd7fc69fd2eca29280bf3a3de711cb8affa36316bb1c9ac8d",
       "committed_at": "2026-08-13T00:00:09.000000Z"
     },
     {
@@ -410,8 +416,8 @@
       "event_id": 10,
       "project_sequence": 10,
       "request_digest": "677c8b32ad3810d935f2f19c77c61759d9f4d84b6cfe02d50d01f481c083bebc",
-      "previous_event_digest": "ee74be009a886c186022087c7929833d8626b51f69c1dbb610a41d4792ad7639",
-      "event_digest": "7e147403a653063642c12177ceb5399f02123be5bbfecd644dbf2c3f84be77bd",
+      "previous_event_digest": "05a71861c228562fd7fc69fd2eca29280bf3a3de711cb8affa36316bb1c9ac8d",
+      "event_digest": "6d0994952cbd5f202a084bc102f0f9368ea0e4a317eb93e77f315b13037c5521",
       "committed_at": "2026-08-13T00:00:10.000000Z"
     },
     {
@@ -434,8 +440,8 @@
       "event_id": 11,
       "project_sequence": 11,
       "request_digest": "606730e5f2453018231efec9c6249f928a3c190515af4cb9cec90882712348e6",
-      "previous_event_digest": "7e147403a653063642c12177ceb5399f02123be5bbfecd644dbf2c3f84be77bd",
-      "event_digest": "4cbb0505d4329168d892cc33494dd6424a6f4f5b91622983b6863af12dab8397",
+      "previous_event_digest": "6d0994952cbd5f202a084bc102f0f9368ea0e4a317eb93e77f315b13037c5521",
+      "event_digest": "14252755e1b961cae2d30ef85b6c0a92bdadb1b51bd757e228f28f47cd86194a",
       "committed_at": "2026-08-13T00:00:11.000000Z"
     },
     {
@@ -459,8 +465,8 @@
       "event_id": 12,
       "project_sequence": 12,
       "request_digest": "e1ea2372ce397b2170659e4df672b6a7334560e5bcedb36f45715560a8adb030",
-      "previous_event_digest": "4cbb0505d4329168d892cc33494dd6424a6f4f5b91622983b6863af12dab8397",
-      "event_digest": "a0968a0f1b4bfa177e6a627d6d144b9936cc1e681e3718f6d464886588473bca",
+      "previous_event_digest": "14252755e1b961cae2d30ef85b6c0a92bdadb1b51bd757e228f28f47cd86194a",
+      "event_digest": "6219d2a2c485d474bd4f7c5cf1e695a505844811aed68e344852f45597e1a35e",
       "committed_at": "2026-08-13T00:00:12.000000Z"
     },
     {
@@ -482,8 +488,8 @@
       "event_id": 13,
       "project_sequence": 13,
       "request_digest": "8c6c03ce675013476d4d526679489f32529a012efca0fc53029fae7cd3685e85",
-      "previous_event_digest": "a0968a0f1b4bfa177e6a627d6d144b9936cc1e681e3718f6d464886588473bca",
-      "event_digest": "e223e07c001e332163e8fa73e4645bfe789d2c8b9cd37cf7887f51a493bba6b7",
+      "previous_event_digest": "6219d2a2c485d474bd4f7c5cf1e695a505844811aed68e344852f45597e1a35e",
+      "event_digest": "87a3ed05af1318597a4c96ac452f6ffa5c4f95fcfc86a9d58219a3f0f8578bc0",
       "committed_at": "2026-08-13T00:00:13.000000Z"
     },
     {
@@ -506,8 +512,8 @@
       "event_id": 14,
       "project_sequence": 14,
       "request_digest": "246889d0e0a1d6f8dc54914265806a1efa8cefb58bd466e9cc555e59e9f3a285",
-      "previous_event_digest": "e223e07c001e332163e8fa73e4645bfe789d2c8b9cd37cf7887f51a493bba6b7",
-      "event_digest": "e85a79aeadb4abed5ceb524477293c515309373a02cdf44011be981620d7308f",
+      "previous_event_digest": "87a3ed05af1318597a4c96ac452f6ffa5c4f95fcfc86a9d58219a3f0f8578bc0",
+      "event_digest": "fe0830e6b88b4a91f55dde714811d6597c0df94520c71ec1efd03d398591a066",
       "committed_at": "2026-08-13T00:00:14.000000Z"
     },
     {
@@ -561,8 +567,8 @@
       "event_id": 15,
       "project_sequence": 15,
       "request_digest": "a4579f1af5d19665755f235017bb2e0a6a1ece7619facf8b967e44d13fb2773b",
-      "previous_event_digest": "e85a79aeadb4abed5ceb524477293c515309373a02cdf44011be981620d7308f",
-      "event_digest": "751ddabb1929816d5a80f24e6b32abe8edf76da5aa061e1f22a8c96bf2291c70",
+      "previous_event_digest": "fe0830e6b88b4a91f55dde714811d6597c0df94520c71ec1efd03d398591a066",
+      "event_digest": "1c022d83301882643b259df82998ab3077002023636245f75628bf6aafe6bbae",
       "committed_at": "2026-08-13T00:00:15.000000Z"
     },
     {
@@ -585,10 +591,10 @@
       "event_id": 16,
       "project_sequence": 16,
       "request_digest": "62fa7ed03acdb171b1cc75905ea282350d23eef2fc74e084a5f03b1b51fa3991",
-      "previous_event_digest": "751ddabb1929816d5a80f24e6b32abe8edf76da5aa061e1f22a8c96bf2291c70",
-      "event_digest": "89d3c557df50a8f4a4a385fc405fa8e4e9ad63528007093f62d2934e710804f8",
+      "previous_event_digest": "1c022d83301882643b259df82998ab3077002023636245f75628bf6aafe6bbae",
+      "event_digest": "094834444946c7b4ecf0eefeeaa43cb943992cc73a9e2b09707eeb372dbf4971",
       "committed_at": "2026-08-13T00:00:16.000000Z"
     }
   ],
-  "snapshot_digest": "8d613d42d2284fe896927a633efc7fc088d5762597b0a0a34aa3083c2af69266"
+  "snapshot_digest": "180a56f21260817634f744d76e6918a83929087b46b8b2b8c6e287678e1fef15"
 }

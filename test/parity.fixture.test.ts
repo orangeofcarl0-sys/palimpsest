@@ -25,7 +25,12 @@ describe("cross-language digest parity against the Python fixture", () => {
   it("fixture contract is the unified baseline", () => {
     // v2: the TS Scheduler regeneration adds the STAGE_GRAPH_DEFINED genesis
     // declaration (H1 §3.4 D-3) right after PROJECT_CREATED.
-    expect(fixture.fixture_version).toBe(3);
+    // v3: the canonical manifest event (ctx2-p3/p4/p5).
+    // v4: §D5-b2 declares the governed rework edge
+    //     {verifying, TASK_READY → READY, when: "rework-admitted"} in the genesis graph. The edge is
+    //     DECLARED here and the scenario does not exercise it — this version records the opening of a
+    //     legal path, never evidence that a rework was admitted.
+    expect(fixture.fixture_version).toBe(4);
     expect(fixture.scenario).toBe("phase0-2-two-candidate-batch-retry-exhaustion");
     expect(fixture.events.length).toBeGreaterThan(0);
   });

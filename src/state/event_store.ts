@@ -26,11 +26,13 @@ import {
   type SchedulerEvent,
 } from "../schema/index.js";
 import { AggregateValidator } from "../domain/aggregate.js";
+import type { GovernedAdmission } from "../domain/aggregate.js";
 import type {
   PromotionGovernedAdmission,
   PromotionIntentPermit,
   PromotionOutcomeWitness,
 } from "../domain/promotion_terminal_admission.js";
+import type { ReworkAdmissionPermit, ReworkGovernedAdmission } from "../domain/rework_admission.js";
 import type { TaskPolicy } from "../domain/policy.js";
 import { openDatabase } from "./database.js";
 import {
@@ -379,6 +381,86 @@ export class EventStore {
     });
   }
 
+  /**
+   * §D5-b2 — append the GOVERNED REOPENING: the one `TASK_READY` that sets aside a completed candidate and
+   * returns a VERIFYING task to the runnable set.
+   *
+   *     VERIFYING@E_0  →  READY@E_0
+   *
+   * NOT agent-facing: no tool, route, port or barrel export reaches this method, and the generic `append`
+   * refuses this event outright while the task is VERIFYING. The permit is consumed by admission, so one
+   * admission reopens exactly one Work.
+   *
+   * WHY ONE EVENT, AND WHY NOTHING HERE PROMISES A NEW BASIS. An earlier draft appended a two-event closure
+   * `TASK_REAUTHORIZED(E_1)` + `TASK_READY`; it was measured to be unbuildable (no fresh envelope exists for a
+   * VERIFYING task) and the measurement is the refutation: E_1 is not rework's to promise. What follows —
+   * head reconciliation, `PROJECT_REVISED`, `TASK_REAUTHORIZED(E_1)` — belongs to the existing G10-X head
+   * authority, which this event merely unblocks by leaving VERIFYING. The reopenable-but-not-executable
+   * window is safe: G10-X blocks new activation while the promoted head is ahead of the ProjectIR.
+   */
+  appendReworkReopening(
+    request: NewEvent,
+    permit: ReworkAdmissionPermit,
+    options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
+  ): SchedulerEvent {
+    const events = this.#appendBatchWith([request], { reworkPermit: permit }, options);
+    const appended = events[0];
+    // #appendBatchWith refuses an empty batch, so this is unreachable; the check keeps the narrowing honest.
+    if (appended === undefined) {
+      throw new AtomicAppendError("the governed reopening produced no event");
+    }
+    return appended;
+  }
+
+  /**
+   * `appendAtomic`, with a live-only governed admission threaded to every event in the batch.
+   *
+   * A SEPARATE METHOD rather than a widened `appendAtomic`: the plain batch path is used by plan
+   * reconciliation for ordinary Work evolution, and giving it an admission parameter would turn "this batch
+   * was governed" into a field anybody could pass `undefined` to.
+   */
+  #appendBatchWith(
+    requests: readonly NewEvent[],
+    admission: GovernedAdmission,
+    options: { faultHook?: AtomicFaultHook; committedAt?: string } = {},
+  ): readonly SchedulerEvent[] {
+    const parsed = requests.map((request) => parseNewEvent(request));
+    if (parsed.length === 0) {
+      throw new AtomicAppendError("a governed atomic batch requires at least one request");
+    }
+    return this.#runInTransaction(() => {
+      const present = parsed.map(
+        (request) =>
+          this.connection
+            .prepare("SELECT event_id FROM events WHERE project_id=? AND idempotency_key=?")
+            .get(request.project_id, request.idempotency_key) !== undefined,
+      );
+      if (present.some(Boolean) && !present.every(Boolean)) {
+        throw new AtomicAppendError(
+          "governed atomic batch is only partially present on the log; refusing a mixed commit (recovery_required)",
+          { recoveryRequired: true },
+        );
+      }
+      const events: SchedulerEvent[] = [];
+      for (const request of parsed) {
+        events.push(
+          this.#appendInTransaction(request, {
+            governedAdmission: admission,
+            ...(options.faultHook === undefined
+              ? {}
+              : {
+                  faultHook: (checkpoint: "after_event_insert", event: SchedulerEvent) =>
+                    options.faultHook?.(checkpoint, event),
+                }),
+            ...(options.committedAt === undefined ? {} : { committedAt: options.committedAt }),
+          }),
+        );
+      }
+      options.faultHook?.("before_commit");
+      return events;
+    });
+  }
+
   /** One transaction boundary: BEGIN IMMEDIATE → fn → COMMIT, ROLLBACK on any throw. */
   #runInTransaction<T>(fn: () => T): T {
     this.connection.exec("BEGIN IMMEDIATE");
@@ -412,6 +494,10 @@ export class EventStore {
       committedAt?: string;
       /** G10-AA: live-only governed-promotion admission. Never present on replay. */
       promotionAdmission?: PromotionGovernedAdmission | undefined;
+      /** §D5-b2: live-only governed-rework admission. Never present on replay. */
+      reworkAdmission?: ReworkGovernedAdmission | undefined;
+      /** Both families at once, for the atomic path that threads one admission through a batch. */
+      governedAdmission?: GovernedAdmission | undefined;
     },
   ): SchedulerEvent {
     const requestDigest = computeRequestDigest(parsed);
@@ -429,7 +515,18 @@ export class EventStore {
 
     this.#validatePreconditions(parsed);
     this.#aggregateValidator.validate(this.connection, parsed);
-    this.#aggregateValidator.validateAdmission(this.connection, parsed, options.promotionAdmission);
+    /**
+     * §D5-b2: the two GOVERNED families are merged into ONE admission object for the validator, which takes a
+     * single parameter so an event cannot be admitted by one authority and checked against another. The
+     * `governedAdmission` form supplies both at once; the per-family forms are the older single-append entry
+     * points, kept so their signatures did not change.
+     */
+    const governed: GovernedAdmission = {
+      ...options.promotionAdmission,
+      ...options.reworkAdmission,
+      ...options.governedAdmission,
+    };
+    this.#aggregateValidator.validateAdmission(this.connection, parsed, governed);
     const eventId = this.#nextEventId();
     this.#validateCausation(parsed, eventId);
     const [projectSequence, previousDigest] = this.#nextProjectPosition(parsed);
