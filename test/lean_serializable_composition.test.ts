@@ -28,6 +28,7 @@ import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { firstPartyDerivedResultVerificationSource } from "../src/deployment/derived_result_source.js";
+import { makeD3Rig, type D3Rig } from "./d3_rig.js";
 import { gitSourceRematerializer } from "../src/deployment/source_rematerializer.js";
 import {
   SqliteProjectVerificationStore,
@@ -45,8 +46,6 @@ import {
   assessSuccession,
   makeCompatibilityIssuer,
   makeRematerializationRuntime,
-  materializePremiseSet,
-  observedPremise,
   type PremiseSet,
   type ResultRematerializerPort,
 } from "../src/project_world/index.js";
@@ -230,39 +229,38 @@ function scenario() {
   return { repo, worldsRoot, h0, r0, h1, h2 };
 }
 
-const observed = (selectors: readonly ReturnType<typeof srcPath>[]) =>
-  observedPremise({
-    provenance: {
-      observerId: "test-observer",
-      observerVersion: "1",
-      mechanism: "CONSERVATIVE_DOMAIN",
-      scope: { domain: "source", scopeRef: "repo", from: "H0", to: "H2" },
-    },
-    selectors,
-  });
-
-/** The change from one basis to the next, as observed premises. */
-function premisesFor(changePaths: readonly ReturnType<typeof srcPath>[]): PremiseSet {
-  return materializePremiseSet({
-    projectSemantic: observed([]),
-    source: observed(changePaths),
-    assets: observed([]),
-    environment: observed([]),
-    // R0 read and wrote src/a.ts, so both sides of its footprint name that path.
-    resultReads: observed([srcPath("src/a.ts")]),
-    resultWrites: observed([srcPath("src/a.ts")]),
-  });
+/**
+ * The premise refs for one composition step, recorded through REGISTERED observers (§D3-R1).
+ *
+ * `changePaths` is what the WORLD did; the result's own footprint is separate, because the change set and
+ * the result's dependencies play different roles in the proof.
+ */
+function refsFor(rig: D3Rig, changePaths: readonly ReturnType<typeof srcPath>[]) {
+  return {
+    projectSemantic: rig.observe(rig.conservativeObserver, []),
+    source: rig.observe(rig.sourceObserver, changePaths),
+    assets: rig.observe(rig.conservativeObserver, []),
+    environment: rig.observe(rig.conservativeObserver, []),
+    resultReads: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+    resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+  };
 }
 
-function stack(input: { readonly repo: string; readonly worldsRoot: string; readonly rematerializer?: ResultRematerializerPort | undefined }) {
-  const candidateStore = new SqliteDerivedResultCandidateStore(join(input.repo, ".palimpsest", "candidates.sqlite"));
-  cleanups.push(() => candidateStore.close());
-  const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
-  const runtime = makeRematerializationRuntime({
-    issuer,
+function stack(input: {
+  readonly repo: string;
+  readonly worldsRoot: string;
+  readonly rematerializer?: ResultRematerializerPort | undefined;
+  readonly current: { revision: string };
+}) {
+  const rig = makeD3Rig({
     rematerializer: input.rematerializer ?? gitSourceRematerializer({ repository: input.repo, worldsRoot: input.worldsRoot }),
-    candidates: candidateStore,
+    observeCurrentTarget: () => ({ targetObservationDigest: input.current.revision, targetBasisRevision: input.current.revision }),
   });
+  cleanups.push(() => rig.close());
+  const candidateStore = rig.candidates;
+  const issuer = rig.issuer;
+  const runtime = rig.runtime;
+  if (runtime === undefined) throw new Error("the rig composed no rematerialization runtime");
   const provider = commandAttemptResultVerifier();
   const verification = makeProjectVerificationService({
     projectId: "d3e",
@@ -277,7 +275,7 @@ function stack(input: { readonly repo: string; readonly worldsRoot: string; read
     attemptResultMaterializer: gitAttemptResultMaterializer({ repository: input.repo }),
     derivedResultSource: firstPartyDerivedResultVerificationSource({ store: candidateStore }),
   });
-  return { candidateStore, issuer, runtime, verification };
+  return { rig, candidateStore, issuer, runtime, verification };
 }
 
 /** One full cycle of the D3 chain against one target. */
@@ -289,36 +287,36 @@ async function composeOnce(input: {
   readonly originSource: { readonly backend: string; readonly fromRevision: string; readonly toRevision: string };
   readonly target: string;
   readonly changePaths: readonly ReturnType<typeof srcPath>[];
+  readonly current: { revision: string };
 }) {
-  const certificate = input.stack.issuer.issue({
+  const { admissionRef, certificate } = input.stack.rig.admit({
     resultManifestDigest: input.resultManifestDigest,
     originBasisDigest: input.originBasisDigest,
     targetObservationDigest: input.target,
-    exactlyCurrent: false,
-    premises: premisesFor(input.changePaths),
-  });
-  const rematerialized = await input.stack.runtime.rematerialize({
-    presented: certificate,
-    resultManifestDigest: input.resultManifestDigest,
-    originBasisDigest: input.originBasisDigest,
-    originSource: input.originSource,
-    targetBasisDigest: input.target,
     targetBasisRevision: input.target,
+    observationRefs: refsFor(input.stack.rig, input.changePaths),
+  });
+  // The rig is placed at the world the admission names, so the effect's re-observation agrees.
+  input.current.revision = input.target;
+  const rematerialized = await input.stack.runtime.rematerialize({
+    admissionRef,
+    originSource: input.originSource,
     projectId: "d3e",
     taskId: "t1",
-    hasBasis: true,
   });
-  return { certificate, rematerialized };
+  return { admissionRef, certificate, rematerialized };
 }
 
 describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordinary path", () => {
   it("C. stale against B1 → assess B2 → fresh admission → rematerialize → reverify → qualified", async () => {
     const { repo, worldsRoot, h0, r0, h1, h2 } = scenario();
-    const s = stack({ repo, worldsRoot });
+    const current = { revision: h0 };
+  const s = stack({ repo, worldsRoot, current });
 
     // The candidate was admitted against H1 while canonical stood at H1.
     const atH1 = await composeOnce({
       stack: s,
+      current,
       repo,
       resultManifestDigest: MANIFEST_A,
       originBasisDigest: BASIS_B1,
@@ -337,16 +335,13 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
      * fact — the system must never claim it never happened — and it can no longer authorize an effect,
      * because the world it named is not the world any more.
      */
+    // The world has moved to H2; the rig is placed there, while the record still names H1.
+    current.revision = h2;
     const expired = await s.runtime.rematerialize({
-      presented: atH1.certificate,
-      resultManifestDigest: MANIFEST_A,
-      originBasisDigest: BASIS_B1,
+      admissionRef: atH1.admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h2,
-      targetBasisRevision: h2,
       projectId: "d3e",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(expired.state).toBe("ADMISSION_REFUSED");
     expect(expired.admission.state).toBe("STALE_PROOF");
@@ -357,6 +352,7 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
     // C. And a FRESH cycle against the real H2 succeeds, producing a NEW candidate based at H2.
     const atH2 = await composeOnce({
       stack: s,
+      current,
       repo,
       // The candidate at H1 becomes the origin, so the chain is RB0 → RB1 → RB2 with full provenance.
       resultManifestDigest: candidateAtH1.resultManifestDigest,
@@ -387,9 +383,11 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
 
   it("the chain is inspectable: each candidate names the one it came from", async () => {
     const { repo, worldsRoot, h0, r0, h1, h2 } = scenario();
-    const s = stack({ repo, worldsRoot });
+    const current = { revision: h0 };
+  const s = stack({ repo, worldsRoot, current });
     const first = await composeOnce({
       stack: s,
+      current,
       repo,
       resultManifestDigest: MANIFEST_A,
       originBasisDigest: BASIS_B1,
@@ -400,6 +398,7 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
     const c1 = first.rematerialized.candidate!;
     const second = await composeOnce({
       stack: s,
+      current,
       repo,
       resultManifestDigest: c1.resultManifestDigest,
       originBasisDigest: BASIS_B1,
@@ -435,10 +434,12 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
         return { state: "APPLY_FAILED", detail: "the second composition could not be applied cleanly" };
       },
     };
-    const s = stack({ repo, worldsRoot, rematerializer: flaky });
+    const current = { revision: h0 };
+  const s = stack({ repo, worldsRoot, rematerializer: flaky, current });
 
     const first = await composeOnce({
       stack: s,
+      current,
       repo,
       resultManifestDigest: MANIFEST_A,
       originBasisDigest: BASIS_B1,
@@ -451,6 +452,7 @@ describe("§D3-e2 the fresh chain: a stale candidate re-enters through the ordin
 
     const second = await composeOnce({
       stack: s,
+      current,
       repo,
       resultManifestDigest: MANIFEST_B,
       originBasisDigest: BASIS_B1,

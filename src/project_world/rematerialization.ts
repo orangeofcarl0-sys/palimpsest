@@ -40,6 +40,11 @@
  */
 import { admitCrossBasis, type CrossBasisAdmissionResult } from "./admission.js";
 import {
+  crossBasisAdmissionRefOf,
+  type CrossBasisAdmissionStore,
+  type CrossBasisAdmissionRecord,
+} from "./admission_store.js";
+import {
   materializeDerivedResultCandidate,
   materializeResultDerivation,
   type DerivedResultCandidate,
@@ -146,17 +151,12 @@ export interface RematerializationRuntime {
    * is what the system already knows.
    */
   rematerialize(input: {
-    readonly presented: IssuedCompatibilityAssessment | null;
-    readonly resultManifestDigest: string;
-    readonly originBasisDigest: string;
+    /** §D3-R2: the ONLY fact-carrying input. Everything else is recalled from the record. */
+    readonly admissionRef: string;
     /** The origin source facet, which is what the delta is taken from. */
     readonly originSource: { readonly backend: string; readonly fromRevision: string; readonly toRevision: string } | null;
-    /** The OBSERVED target basis, and the revision a candidate must be based at. */
-    readonly targetBasisDigest: string;
-    readonly targetBasisRevision: string;
     readonly projectId: string;
     readonly taskId: string;
-    readonly hasBasis: boolean;
     /** Authoritative outputs the derivation carries. A derivation never guesses these. */
     readonly producedAssetRefs?: readonly string[] | undefined;
   }): Promise<RematerializationResult>;
@@ -167,6 +167,16 @@ export function makeRematerializationRuntime(input: {
   readonly rematerializer: ResultRematerializerPort;
   /** §D3-d2: where a produced candidate is recorded, so later stages can name it by identity. */
   readonly candidates?: DerivedResultCandidateStore | undefined;
+  /** §D3-R2: where admission decisions live. The effect recalls the target FROM this record. */
+  readonly admissions?: CrossBasisAdmissionStore | undefined;
+  /**
+   * §D3-R2: how the effect RE-OBSERVES the current world immediately before creating one.
+   *
+   * `AdmissionStillApplies ≺ WorldCreation` cannot be satisfied by trusting the record alone: the record
+   * says which world was admitted, and this says which world is CURRENT. If they disagree, the world moved
+   * between admission and effect, and there is no world, no candidate and no canonical mutation.
+   */
+  readonly observeCurrentTarget?: ((taskId: string) => { readonly targetObservationDigest: string; readonly targetBasisRevision: string }) | undefined;
   readonly clock?: (() => string) | undefined;
 }): RematerializationRuntime {
   const now = (): string => (input.clock ?? (() => new Date().toISOString()))();
@@ -175,41 +185,103 @@ export function makeRematerializationRuntime(input: {
     adapterId: `result-rematerialization:${input.rematerializer.adapterId}`,
 
     async rematerialize(runInput: {
-      readonly presented: IssuedCompatibilityAssessment | null;
-      readonly resultManifestDigest: string;
-      readonly originBasisDigest: string;
+      /**
+       * §D3-R2: THE ONLY FACT-CARRYING INPUT IS THE ADMISSION REF.
+       *
+       * The result, the origin basis, the target digest and — crucially — the target REVISION all come from
+       * the recorded admission, so a caller cannot admit against one world and effect in another. The
+       * remaining fields are the operation's own description (which project/task, which source delta to
+       * carry), not authority.
+       */
+      readonly admissionRef: string;
       readonly originSource: { readonly backend: string; readonly fromRevision: string; readonly toRevision: string } | null;
-      readonly targetBasisDigest: string;
-      readonly targetBasisRevision: string;
       readonly projectId: string;
       readonly taskId: string;
-      readonly hasBasis: boolean;
       readonly producedAssetRefs?: readonly string[] | undefined;
     }): Promise<RematerializationResult> {
-      /**
-       * STEP 1 — the admission gate, and it is the ONLY source of permission.
-       *
-       * The target digest handed here is the caller's OBSERVATION of the current world, and `admitCrossBasis`
-       * checks it against the certificate. So a stale certificate is refused HERE, before any world exists:
-       * `AdmissionStillApplies ≺ WorldCreation`.
-       */
-      const admission = admitCrossBasis({
-        issuer: input.issuer,
-        presented: runInput.presented,
-        resultManifestDigest: runInput.resultManifestDigest,
-        originBasisDigest: runInput.originBasisDigest,
-        targetObservationDigest: runInput.targetBasisDigest,
-        hasBasis: runInput.hasBasis,
-      });
-      if (!admission.admitted) {
+      const admissionRecord = input.admissions?.recall(runInput.admissionRef) ?? null;
+      if (admissionRecord === null) {
         return Object.freeze({
           schemaVersion: 1 as const,
           state: "ADMISSION_REFUSED" as const,
           candidate: null,
-          admission,
-          detail: `no rematerialization was attempted: ${admission.detail}`,
+          admission: Object.freeze({
+            schemaVersion: 1 as const,
+            state: "UNTRUSTED_PROOF" as const,
+            admitted: false,
+            moreEvidenceCouldHelp: false,
+            issuanceDigest: null,
+            detail: `admission "${runInput.admissionRef}" is not a record this authority holds, so it authorizes nothing`,
+          }),
+          detail: `no rematerialization was attempted: admission "${runInput.admissionRef}" is not a recorded decision`,
         });
       }
+      if (!admissionRecord.admitted) {
+        return Object.freeze({
+          schemaVersion: 1 as const,
+          state: "ADMISSION_REFUSED" as const,
+          candidate: null,
+          admission: Object.freeze({
+            schemaVersion: 1 as const,
+            state: admissionRecord.state as "CONFLICT" | "INSUFFICIENT_PROOF" | "STALE_PROOF" | "UNTRUSTED_PROOF" | "NO_BASIS",
+            admitted: false,
+            moreEvidenceCouldHelp: admissionRecord.state === "INSUFFICIENT_PROOF" || admissionRecord.state === "STALE_PROOF",
+            issuanceDigest: admissionRecord.issuanceRef,
+            detail: admissionRecord.detail,
+          }),
+          detail: `no rematerialization was attempted: ${admissionRecord.detail}`,
+        });
+      }
+
+      /**
+       * THE TARGET COMES FROM THE RECORD — both halves of it.
+       *
+       * `targetBasisRevision` is read from the same observation record whose digest the certificate was
+       * checked against, so the effect cannot be built at a revision the admission never named. That is the
+       * binding the previous version only asserted in a comment.
+       */
+      const target = admissionRecord.targetObservation;
+      const resultManifestDigest = admissionRecord.resultManifestDigest;
+      const originBasisDigest = admissionRecord.originBasisDigest;
+
+      /**
+       * RE-OBSERVE, and refuse if the world moved since the admission was recorded.
+       *
+       * This is the second half of the binding: the record says which world was admitted, and this says
+       * which world exists NOW. A caller cannot make them agree by assertion, and a world that moved
+       * between admission and effect produces no world, no candidate and no canonical mutation — the same
+       * discipline as D2-d re-asserting its frozen request before any effect.
+       */
+      if (input.observeCurrentTarget !== undefined) {
+        const current = input.observeCurrentTarget(runInput.taskId);
+        if (
+          current.targetObservationDigest !== target.targetObservationDigest ||
+          current.targetBasisRevision !== target.targetBasisRevision
+        ) {
+          return Object.freeze({
+            schemaVersion: 1 as const,
+            state: "ADMISSION_REFUSED" as const,
+            candidate: null,
+            admission: Object.freeze({
+              schemaVersion: 1 as const,
+              state: "STALE_PROOF" as const,
+              admitted: false,
+              moreEvidenceCouldHelp: true,
+              issuanceDigest: admissionRecord.issuanceRef,
+              detail: `the world moved between admission and effect: the admission named ${target.targetBasisRevision.slice(0, 12)}, and the current target is ${current.targetBasisRevision.slice(0, 12)}`,
+            }),
+            detail: `no rematerialization was attempted: the admission is stale against the current world (admitted at ${target.targetBasisRevision.slice(0, 12)}, now ${current.targetBasisRevision.slice(0, 12)})`,
+          });
+        }
+      }
+      const admission: CrossBasisAdmissionResult = Object.freeze({
+        schemaVersion: 1 as const,
+        state: "ADMITTED" as const,
+        admitted: true,
+        moreEvidenceCouldHelp: false,
+        issuanceDigest: admissionRecord.issuanceRef,
+        detail: admissionRecord.detail,
+      });
 
       /**
        * STEP 2 — can this deployment carry this result's facets at all?
@@ -228,6 +300,7 @@ export function makeRematerializationRuntime(input: {
             "this result carries no source facet, so a source rematerializer has no delta to carry — the deployment composes no rematerializer for its remaining facets, and guessing one would claim a derivation that produced nothing",
         });
       }
+      const originSource = runInput.originSource;
 
       // STEP 3 — the effect. A world id derived from the operation identity, so a retry addresses the
       // SAME world rather than accumulating new ones.
@@ -235,18 +308,38 @@ export function makeRematerializationRuntime(input: {
         kind: "REMATERIALIZATION",
         mechanism: input.rematerializer.adapterId,
         mechanismVersion: input.rematerializer.mechanismVersion,
-        originResultManifestDigest: runInput.resultManifestDigest,
-        originBasisDigest: runInput.originBasisDigest,
-        targetBasisDigest: runInput.targetBasisDigest,
-        admissionRef: admission.issuanceDigest ?? "",
+        originResultManifestDigest: resultManifestDigest,
+        originBasisDigest,
+        targetBasisDigest: target.targetObservationDigest,
+        admissionRef: admissionRecord.admissionRef,
       });
+      /**
+       * §D3-R3/R4: LOOK UP AN EXISTING CANDIDATE BEFORE EXECUTING.
+       *
+       * This is what makes replay converge AND release safe. Without the lookup, a retry would re-create the
+       * world — which the release below has already collected — and produce a second candidate identity for
+       * one operation, so `same operation → same canonical derivation` would be false exactly when the
+       * release succeeded. With it, the operation is decided by its RECORD, and the world is only ever
+       * materialized when there is genuinely nothing recorded yet.
+       */
+      const existing = input.candidates?.readByDerivation(derivation.derivationId) ?? [];
+      if (existing.length > 0) {
+        return Object.freeze({
+          schemaVersion: 1 as const,
+          state: "MATERIALIZED" as const,
+          candidate: existing[0]!,
+          admission,
+          detail: `this derivation already produced a candidate, so the recorded one stands and no world was created; canonical project state was not touched`,
+        });
+      }
+
       const outcome = await input.rematerializer.rematerialize({
         delta: {
-          backend: runInput.originSource.backend,
-          fromRevision: runInput.originSource.fromRevision,
-          toRevision: runInput.originSource.toRevision,
+          backend: originSource.backend,
+          fromRevision: originSource.fromRevision,
+          toRevision: originSource.toRevision,
         },
-        targetBasisRevision: runInput.targetBasisRevision,
+        targetBasisRevision: target.targetBasisRevision,
         worldId: derivation.derivationId,
       });
 
@@ -298,8 +391,8 @@ export function makeRematerializationRuntime(input: {
         taskId: runInput.taskId,
         derivation,
         sourceResult: {
-          backend: runInput.originSource.backend,
-          baseRevision: runInput.targetBasisRevision,
+          backend: originSource.backend,
+          baseRevision: target.targetBasisRevision,
           resultRevision: outcome.resultRevision,
         },
         producedAssetRefs: runInput.producedAssetRefs ?? [],
@@ -313,6 +406,19 @@ export function makeRematerializationRuntime(input: {
        * convergence is on the RECORD, not on git's output.
        */
       const recorded = input.candidates?.appendOnce(candidate) ?? { state: "APPENDED" as const, candidate };
+      /**
+       * §D3-R4: RELEASE the world once its result is recorded.
+       *
+       * An ExecutionWorld is a materialized VIEW of an attempt's work, not an archive: its immutable
+       * revision has been exported and its candidate recorded, so keeping the directory would accumulate
+       * worlds without bound. A release failure is hygiene and must never rewrite the outcome — the
+       * candidate is already durable.
+       */
+      try {
+        await input.rematerializer.release(derivation.derivationId);
+      } catch {
+        /* hygiene only: the candidate is recorded, and the world can be collected later */
+      }
       return Object.freeze({
         schemaVersion: 1 as const,
         state: "MATERIALIZED" as const,
@@ -320,7 +426,7 @@ export function makeRematerializationRuntime(input: {
         admission,
         detail:
           recorded.state === "APPENDED"
-            ? `a candidate result was produced at ${runInput.targetBasisRevision.slice(0, 12)}, based on the target basis; canonical project state was not touched`
+            ? `a candidate result was produced at ${target.targetBasisRevision.slice(0, 12)}, based on the target basis; canonical project state was not touched`
             : `this derivation had already produced this candidate, so the recorded one stands; canonical project state was not touched`,
       });
     },

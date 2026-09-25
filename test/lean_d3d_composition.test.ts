@@ -26,6 +26,7 @@ import { fileURLToPath } from "node:url";
 import { afterAll, describe, expect, it } from "vitest";
 
 import { firstPartyDerivedResultVerificationSource } from "../src/deployment/derived_result_source.js";
+import { makeD3Rig, type D3Rig } from "./d3_rig.js";
 import { gitSourceRematerializer } from "../src/deployment/source_rematerializer.js";
 import { GitCliPort } from "../src/effects/index.js";
 import {
@@ -40,8 +41,6 @@ import {
   SqliteDerivedResultCandidateStore,
   makeCompatibilityIssuer,
   makeRematerializationRuntime,
-  materializePremiseSet,
-  observedPremise,
   type PremiseSet,
 } from "../src/project_world/index.js";
 
@@ -111,26 +110,34 @@ function scenario() {
   return { root, repo, worldsRoot, h0, r0, h1 };
 }
 
-const observed = (selectors: readonly ReturnType<typeof srcPath>[]) =>
-  observedPremise({
-    provenance: {
-      observerId: "test-observer",
-      observerVersion: "1",
-      mechanism: "CONSERVATIVE_DOMAIN",
-      scope: { domain: "source", scopeRef: "repo", from: "H0", to: "H1" },
-    },
-    selectors,
-  });
+/** The premise refs for the disjoint case, recorded through REGISTERED observers (§D3-R1). */
+function disjointRefs(rig: D3Rig) {
+  return {
+    projectSemantic: rig.observe(rig.conservativeObserver, []),
+    source: rig.observe(rig.sourceObserver, [srcPath("src/b.ts")]),
+    assets: rig.observe(rig.conservativeObserver, []),
+    environment: rig.observe(rig.conservativeObserver, []),
+    resultReads: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+    resultWrites: rig.observe(rig.conservativeObserver, [srcPath("src/a.ts")]),
+  };
+}
 
-function disjointPremises(): PremiseSet {
-  return materializePremiseSet({
-    projectSemantic: observed([]),
-    source: observed([srcPath("src/b.ts")]),
-    assets: observed([]),
-    environment: observed([]),
-    resultReads: observed([srcPath("src/a.ts")]),
-    resultWrites: observed([srcPath("src/a.ts")]),
+/**
+ * Build the full D3-d stack over one repository: the rig (observation + issuance + admission + candidates)
+ * and the rematerialization runtime. The effect re-observes the current world, which the caller supplies.
+ */
+function stackFor(input: {
+  readonly repo: string;
+  readonly worldsRoot: string;
+  readonly current: { revision: string };
+}) {
+  const rig = makeD3Rig({
+    rematerializer: gitSourceRematerializer({ repository: input.repo, worldsRoot: input.worldsRoot }),
+    observeCurrentTarget: () => ({ targetObservationDigest: input.current.revision, targetBasisRevision: input.current.revision }),
   });
+  cleanups.push(() => rig.close());
+  if (rig.runtime === undefined) throw new Error("the rig composed no rematerialization runtime");
+  return { rig, runtime: rig.runtime, candidates: rig.candidates };
 }
 
 describe("§D3-d4 the whole chain, end to end", () => {
@@ -142,37 +149,25 @@ describe("§D3-d4 the whole chain, end to end", () => {
       refs: git(repo, ["for-each-ref", "--format=%(refname) %(objectname)"]),
     };
 
-    // ---- 1. The candidate store and the admission authority. ----
-    const candidateStore = new SqliteDerivedResultCandidateStore(join(repo, ".palimpsest", "candidates.sqlite"));
-    cleanups.push(() => candidateStore.close());
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
+    // ---- 1. The stack: observation authority, issuance, admission and candidates. ----
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current: { revision: h1 } });
 
-    // ---- 2. The compatibility certificate, from observed premises. ----
-    const certificate = issuer.issue({
+    // ---- 2. The certificate AND the admission record, from observed premises. ----
+    const { admissionRef, certificate } = rig.admit({
       resultManifestDigest: MANIFEST_R0,
       originBasisDigest: BASIS_B0,
       targetObservationDigest: h1,
-      exactlyCurrent: false,
-      premises: disjointPremises(),
+      targetBasisRevision: h1,
+      observationRefs: disjointRefs(rig),
     });
     expect(certificate.assessment.outcome).toBe("COMPATIBLE");
 
-    // ---- 3. The rematerialization effect, in candidate space. ----
-    const runtime = makeRematerializationRuntime({
-      issuer,
-      rematerializer: gitSourceRematerializer({ repository: repo, worldsRoot }),
-      candidates: candidateStore,
-    });
+    // ---- 3. The rematerialization effect, in candidate space, driven by the admission ref alone. ----
     const rematerialized = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: MANIFEST_R0,
-      originBasisDigest: BASIS_B0,
+      admissionRef,
       originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
-      targetBasisRevision: h1,
       projectId: "d3d4",
       taskId: "t1",
-      hasBasis: true,
     });
     expect(rematerialized.state).toBe("MATERIALIZED");
     const candidate = rematerialized.candidate;
@@ -236,31 +231,21 @@ describe("§D3-d4 the whole chain, end to end", () => {
 
   it("the origin's verification does NOT transfer: the candidate needs its OWN run", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const candidateStore = new SqliteDerivedResultCandidateStore(join(repo, ".palimpsest", "candidates.sqlite"));
-    cleanups.push(() => candidateStore.close());
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
-    const certificate = issuer.issue({
+    const current = { revision: h1 };
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current });
+    const { admissionRef, certificate } = rig.admit({
       resultManifestDigest: MANIFEST_R0,
       originBasisDigest: BASIS_B0,
       targetObservationDigest: h1,
-      exactlyCurrent: false,
-      premises: disjointPremises(),
-    });
-    const runtime = makeRematerializationRuntime({
-      issuer,
-      rematerializer: gitSourceRematerializer({ repository: repo, worldsRoot }),
-      candidates: candidateStore,
-    });
-    const rematerialized = await runtime.rematerialize({
-      presented: certificate,
-      resultManifestDigest: MANIFEST_R0,
-      originBasisDigest: BASIS_B0,
-      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-      targetBasisDigest: h1,
       targetBasisRevision: h1,
+      observationRefs: disjointRefs(rig),
+    });
+    
+    const rematerialized = await runtime.rematerialize({
+      admissionRef,
+      originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
       projectId: "d3d4",
       taskId: "t1",
-      hasBasis: true,
     });
     const candidate = rematerialized.candidate!;
 
@@ -295,44 +280,37 @@ describe("§D3-d4 the whole chain, end to end", () => {
 
   it("the two qualifications are independent: one candidate's run does not satisfy another's", async () => {
     const { repo, worldsRoot, h0, r0, h1 } = scenario();
-    const candidateStore = new SqliteDerivedResultCandidateStore(join(repo, ".palimpsest", "candidates.sqlite"));
-    cleanups.push(() => candidateStore.close());
-    const issuer = makeCompatibilityIssuer({ issuerId: "palimpsest-first-party" });
-    const certificate = issuer.issue({
+    const current = { revision: h1 };
+    const { rig, runtime, candidates: candidateStore } = stackFor({ repo, worldsRoot, current });
+    const { admissionRef, certificate } = rig.admit({
       resultManifestDigest: MANIFEST_R0,
       originBasisDigest: BASIS_B0,
       targetObservationDigest: h1,
-      exactlyCurrent: false,
-      premises: disjointPremises(),
+      targetBasisRevision: h1,
+      observationRefs: disjointRefs(rig),
     });
-    const runtime = makeRematerializationRuntime({
-      issuer,
-      rematerializer: gitSourceRematerializer({ repository: repo, worldsRoot }),
-      candidates: candidateStore,
-    });
+    
     /**
      * Each target needs its OWN certificate: a witness for one target does not authorize another, so
      * presenting the H1 certificate against an H0 target is refused as stale. The fixture therefore issues
      * per target, which is the discipline working rather than an inconvenience.
      */
     const rematerialize = async (target: string) => {
-      const scoped = issuer.issue({
+      // Each target gets its own ADMISSION, and the rig is placed at that world so the effect's
+      // re-observation agrees with the record.
+      const scoped = rig.admit({
         resultManifestDigest: MANIFEST_R0,
         originBasisDigest: BASIS_B0,
         targetObservationDigest: target,
-        exactlyCurrent: false,
-        premises: disjointPremises(),
-      });
-      return runtime.rematerialize({
-        presented: scoped,
-        resultManifestDigest: MANIFEST_R0,
-        originBasisDigest: BASIS_B0,
-        originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
-        targetBasisDigest: target,
         targetBasisRevision: target,
+        observationRefs: disjointRefs(rig),
+      });
+      current.revision = target;
+      return runtime.rematerialize({
+        admissionRef: scoped.admissionRef,
+        originSource: { backend: "git", fromRevision: h0, toRevision: r0 },
         projectId: "d3d4",
         taskId: "t1",
-        hasBasis: true,
       });
     };
     const atH1 = await rematerialize(h1);
