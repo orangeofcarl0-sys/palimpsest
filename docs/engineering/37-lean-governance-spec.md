@@ -5901,3 +5901,77 @@ D5-LIVE real concurrent → stale → governed reopen → head sync → re-execu
 
 门禁（本片实测）：tsc 干净、单元 **227 files / 2570 tests**、e2e **38/38**、`architecture:check` **0 violation**
 （12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**。
+
+---
+
+## 附录 Y（第 D5-c3 期）：real current-basis re-execution —— transport 变为 attempt-centric
+
+$$\boxed{\textbf{D5-c3 — } context\ compilation\ happens\ after\ Attempt\ identity\ and\ world\ exist,\ before\ the\ worker\ runs.}$$
+
+### Y.1 交付面改变（一处 kernel，两个调用点）
+
+`work_delegation` 的 blocking kernel 与 async job 路径统一改为：
+
+```text
+prepareMutatingWork({expectedTaskId})          \u2192 prepared{attemptId, worldPath, baseCommit}
+workWorkerAttemptContext(prepared.attemptId)   \u2192 compileTaskContext(A1) \u2192 组装
+worker.run({workDir: world, context})          \u2192 只读交付
+settleMutatingWork({attemptId, workerOutcome})
+```
+
+新 controller 方法 `workWorkerAttemptContext(attemptId)`：
+
+```text
+{
+  work: WorkWorkerTaskContext,        // task 级静态半边，形状逐字节不变
+  compiled: {
+    manifestId,                       // 该 attempt 自己的 M
+    boot[], handles[],                // distributeContext 的 boot 与 pull handles
+    continuation?,                    // §D5-c2 的 PriorResultContext（仅 rework attempt）
+  }
+}
+```
+
+`workWorkerTaskContext(taskId)` 保留（普通调用面不变）；kernel 交付面换为 attempt-centric。
+
+### Y.2 冻结的纪律（证明钉住）
+
+| | 纪律 |
+|---|---|
+| authority-closed | 交付对象的键集**恰为** `{work, compiled}` / `{manifestId, boot, handles, continuation}`；无 permit/无 promotion token/无 settlement 权力 |
+| current basis | `work.baseCommit` = E1.base_commit = H1；A1 的授权即 E1（D5-b1 不变量贯穿执行） |
+| 坐标化交付 | continuation 的 world_transition 携带 H0→H1 refs——worker 在 H1 世界里自己 `git diff H0..H1`、`git show R0` |
+| per-attempt | kernel 现在为**每个** attempt 编译 manifest；普通 attempt 的 continuation 缺席、work 半边不变 |
+| 真实重执行 | A1 的 worker 在自己的 world 里产出 R1（≠R0）→ settle（观测事实）→ gate → VERIFYING → **普通 promotion 权威**晋升 → H2；A0 的 provenance 逐字节不动 |
+
+### Y.3 端到端链（真实 git，`test/lean_d5c3_current_basis_reexecution.test.ts`，5 项）
+
+```text
+H0: A0 → R0（stale，INCOMPATIBLE）
+  → governed reopen（D5-b2）→ quiescence → head sync H0→H1（G10-X，D5-c1）
+  → A1 @ E1，交付 M1 + C(R0)（D5-c2 + 本片）
+  → worker 在自己的 world @ H1 重执行 → R1
+  → settle → verify → promote → H2     且 Attempt(A0)@E0 永不移动
+```
+
+D5-LIVE（two real workers → stale → governed reopen → head sync → re-execute → verify → promote）的全部机制件至此就位，只差 D5-d 的 packaged continuation service（mint 权威，见附录 W.5）。
+
+### Y.4 实测记录
+
+1. **委托路径要求真实 repository**：`prepareMutatingWork` 的 canonical-tree 观测拒绝 in-memory git port
+   （`not bound to a repository`）——本片证明因此运行在真实 git 上（D4-LIVE 同理）。
+2. **worker 写入必须在 envelope 的 write_paths 内**（D2 观测的 OUT_OF_SCOPE 拒绝）——本片 fake worker 改写
+   `src/<taskId>.py`。
+3. **gate 时序 flake 一例**：本片 kernel 在 worker.run 前新增一次真实编译（git grep + 事件），d4-live 门
+   的 barrier 时序断言出现过一次 FAIL，随后连续两次完整 PASS（21/21）——机制无损，已如实记录。
+
+### Y.5 状态与门禁
+
+```text
+D5-c3   real current-basis re-execution     CLOSED（本附录；transport attempt-centric）
+D5-d    Packaged ResultContinuationService  ← 下一步（fresh observation → assessment → mint 的唯一权威入口）
+D5-LIVE real concurrent → stale → governed reopen → head sync → re-execute → verify → promote
+```
+
+门禁（本片实测）：tsc 干净、单元 **228 files / 2575 tests**、e2e **38/38**、`architecture:check` **0 violation**
+（12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**（2 连续）。
