@@ -319,37 +319,50 @@ describe("§D5-b C. rebinding a task's envelope leaves a HISTORICAL attempt's pr
  * D. The tempting minimal fix is available — and insufficient
  * ================================================================== */
 
-describe("§D5-b D. the tempting minimal fix is reachable, which is exactly why it must be refused", () => {
-  it("the state machine ALREADY permits verifying → ready; only the DECLARED graph lacks the transition", () => {
+describe("§D5-b D. the tempting minimal fix is reachable — §D5-b2 declared it, and GOVERNED it", () => {
+  it("the state machine ALREADY permits verifying → ready, so the DECLARATION alone was the cheap path", () => {
     /**
      * This is what makes the audit's answer non-obvious. A reader might expect the state machine to forbid
      * reopening VERIFYING work. It does not:
      *
      *     TASK_ALLOWED_SOURCES.TASK_READY = ["BLOCKED", "ACTIVE", "VERIFYING"]
      *
-     * so declaring `verifying --TASK_READY--> ready` in a stage graph would be accepted by the table, and
-     * the aggregate does not reject a VERIFYING row that HAS a completed candidate either. The only thing
-     * missing is the DECLARATION.
+     * so declaring `verifying --TASK_READY--> ready` in a stage graph is accepted by the table, and the
+     * aggregate does not reject a VERIFYING row that HAS a completed candidate either. The only thing missing
+     * was the DECLARATION.
      *
-     * Meaning: the fix is a one-line stage-graph addition. That is precisely why the finding matters — the
-     * cheap path exists, and following it would then require rebinding the envelope, which C measured to be
-     * destructive. The cheap path is a trap rather than a solution.
+     * AT 2c32b97 THAT WAS A TRAP: following the cheap path would have required rebinding the envelope, which
+     * §C measured to be destructive. §D5-b1 removed the destructiveness by resolving each attempt's own
+     * historical authorization, so the trap's teeth are gone — and §D5-b2 then declared the edge AND gated it
+     * behind a governed rework admission, because "reachable" was never the same claim as "authorized".
+     *
+     *     a structurally available transition  ≠  an authorized one
      */
     const machine = source("src/domain/state_machine.ts");
     const readySources = machine.slice(machine.indexOf("TASK_READY: new Set"), machine.indexOf("TASK_READY: new Set") + 120);
     expect(readySources).toContain("VERIFYING");
 
-    // The genesis graph declares exactly ONE transition out of `verifying`, and it is the forward one.
+    /**
+     * The genesis graph now declares TWO transitions out of `verifying`: the forward one, and the governed
+     * rework edge §D5-b2 added. The second is DECLARED and refused at runtime without a rework permit — that
+     * difference is the whole slice, and it is why the cheap path is no longer the only alternative.
+     */
     const genesis = source("src/domain/stage_graph.ts");
     const declared = genesis.slice(
       genesis.indexOf("export const DEFAULT_STAGE_GRAPH"),
       genesis.indexOf('declared_by: "genesis"'),
     );
     const fromVerifying = declared.split("\n").filter((line) => line.includes('from: "verifying"'));
-    expect(fromVerifying).toHaveLength(1);
-    expect(fromVerifying[0]).toContain("TASK_SATISFIED");
-    // No route back: `TASK_STALE` is a maintenance event the scheduler never emits, and STALE is terminal.
-    expect(declared).not.toMatch(/from: "verifying", event: "TASK_READY"/u);
+    expect(fromVerifying).toHaveLength(2);
+    const forward = fromVerifying.filter((line) => line.includes("TASK_SATISFIED"));
+    const backward = fromVerifying.filter((line) => line.includes("TASK_READY"));
+    expect(forward).toHaveLength(1);
+    expect(backward).toHaveLength(1);
+    // The route back exists — and it is NOT automatic: it carries the rework condition and nothing else.
+    // Declaring it is the cheap path the audit described; the gate in the aggregate
+    // (`rework_admission_required`) is what keeps it from being a trap. §D5-b2's own suite proves that.
+    expect(backward[0]).toContain('when: "rework-admitted"');
+    expect(backward[0]).toContain('to: "READY"');
   });
 
   it("TASK_STALE can retire a VERIFYING task, but STALE is terminal — retirement is not reopening", () => {

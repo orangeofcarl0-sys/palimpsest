@@ -5636,11 +5636,108 @@ D5-0    Effect authority closure                    CLOSED @ c0e54d9
 D5-a    Continuation assessment                     CLOSED @ ea08d7a
 D5-b    Lifecycle / envelope-binding audit          CLOSED @ 2c32b97
 D5-b1   Attempt-scoped immutable authorization      CLOSED（本附录）
-D5-b2   Governed atomic VERIFYING@E0 → READY@E1     ← 下一步
-D5-c    Prior Result Context + real re-execution
+D5-b2   Governed VERIFYING→READY reopening          CLOSED（附录 V；basis advance 归 G10-X）
+D5-c    Prior Result Context + current-basis re-execution   ← 下一步
 D5-d    Packaged ResultContinuationService
 D5-LIVE real concurrent → stale → rework → verify → promote
 ```
 
 门禁：单元 **224 files / 2524 tests**、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
 `check-public-api` **0/0/0**。
+
+---
+
+## 附录 V（第 D5-b2 期）：governed reopening —— 两事件闭包被测量否证后收缩
+
+$$oxed{	extbf{D5-b2 — } a\ structurally\ available\ transition\ 
+eq\ an\ authorized\ one.}$$
+
+$$oxed{	extbf{Rework does not own basis advance.}}$$
+
+### V.1 闭合的命题（窄，且 CLOSED）
+
+> A completed result sitting in VERIFYING cannot be set aside and reopened by ordinary append; reopening
+> requires an unforgeable, one-shot, current-state-bound rework authority.
+
+| 组件 | 位置 | 作用 |
+|---|---|---|
+| `ReworkAdmissionPermit` | `src/domain/rework_admission.ts` | 绑定**现存**事实：`currentEnvelopeId`(E_0) + `batchActivationEventId` + `targetObservationDigest`；一次性、防伪、不持久化 |
+| admission gate | `src/domain/aggregate.ts` | VERIFYING 上的 `TASK_READY` 无 permit ⇒ `rework_admission_required` |
+| `appendReworkReopening` | `src/state/event_store.ts` | 单个 `TASK_READY` 的 governed 注入点，非 agent-facing |
+| 声明边 | `DEFAULT_STAGE_GRAPH` | `{verifying, TASK_READY → READY, when: "rework-admitted"}`，source 恰为 `{VERIFYING}` |
+
+**机器证明**（`test/lean_d5b2_governed_rework.test.ts`，16 项）：generic 拒 / 许可开的**同一事件差分**（结构全对——
+previous_state、causation_id、batch anchor、确定性结算 key、attempt 预算——拒绝只可能关于权威）；one permit =
+one reopen（故障后也不复活：回滚不复活权威）；防伪三路（plain object / 结构拷贝〔spread 会复制 brand symbol——
+这正是担保建立在已签发实例的 WeakSet 而非属性检查上的原因〕/ prototype 派生）；`currentEnvelopeId` 与
+`batchActivationEventId` 绑定（许可命名**被搁置的**权威，而非假设它）；**所有权线**（`TASK_REAUTHORIZED` 无
+rework admission：结构守卫 READY/BLOCKED 原样，ACTIVE 仍拒，重绑定属 head reconciliation）；声明边与调度器
+自治互斥（`#advanceVerifyingStage` 仍只找 `TASK_SATISFIED`）；无新 canonical 词汇；模块纯度（无 DB/INSERT/时钟）。
+
+**承重性**：禁用 gate 的 throw ⇒ 标题项立刻红。
+
+### V.2 被否证并删除的中间设计：两事件闭包
+
+事故恢复后的第一版把本片建成 `TASK_REAUTHORIZED(E_1) + TASK_READY` 共用一张两槽 `ReworkClosurePass`。
+对**已装运系统**的实测否证了它：
+
+```text
+VERIFYING 任务
+→ envelope 身份是对只能由 PROJECT_REVISED 推进的状态的摘要
+→ planReconciled 的 quiescence 被 VERIFYING 任务自身阻断
+→ E_1 不存在 ⇒ TASK_REAUTHORIZED(E_1) 无从产生 ⇒ 该 admission 分支是死代码
+```
+
+对该测量的正确解读**不是**"D5-b2 做了一半，等 D5-c 把这一半变可达"，而是**顺序假设错了**：
+`E_1` 不是 rework 有权承诺的事实。两槽 pass 还自身产生四个缺陷：
+
+1. permit 从不被消费（`consumeReworkAdmissionPermit` 零调用，一 permit 可 mint N pass ⇒ N 次闭包）；
+2. `TASK_REAUTHORIZED` admission 分支死代码；
+3. READY-first 顺序下，重授权会在重开后看到普通 READY 任务而**永不消费 slot**——两步绕行等待一个排序 bug；
+4. `#remaining` 不清空 ⇒ `isLive` 恒真。
+
+四个缺陷全部随抽象一起**删除**，而不是修补——其中第 3 条正是"补一个顺序检查"修不了的：
+错误的是二事件耦合本身。
+
+### V.3 正确的链（全部复用既有权威）
+
+```text
+ReworkAdmission (D5)          "may this completed candidate's claim be set aside?"
+        ↓ governed TASK_READY
+READY@E_0                     可重开但不可执行：G10-X 的 SYNC_REQUIRED 挡住新 activation，
+        ↓ quiescence 自然成立   runTurn() 先 settle → reconcile → 再 resume
+head reconciliation (G10-X)   PROJECT_REVISED + TASK_REAUTHORIZED(E_1)    ← 既有权威，无新语义
+        ↓
+READY@E_1 → 新 Attempt (D5-c, with PriorResultContext(R_0))
+```
+
+$$oxed{Task\ is\ reopenable,\ but\ not\ executable.}$$
+
+**修复的是状态前置条件，而不是绕过权威**：不新增 `advanceBasisForRework()` /
+`reconcileHeadIgnoringVerifying()` 之类的第二套 Project head authority。D5 只需要合法离开 VERIFYING，
+让既有 quiescence 条件自然成立。
+
+### V.4 分层与状态
+
+```text
+D5-0    Effect authority closure                          CLOSED @ c0e54d9
+D5-a    Continuation assessment                           CLOSED @ ea08d7a
+D5-b    Lifecycle / envelope-binding audit                CLOSED @ 2c32b97
+D5-b1   Attempt-scoped immutable authorization            CLOSED @ 102dc80
+D5-b2   Governed VERIFYING→READY reopening                CLOSED（本附录）
+G10-X   Project head reconciliation（basis advance）       既有权威，无新语义
+D5-c    Prior Result Context + current-basis re-execution ← 下一步
+        D5-c1   head-sync composition proof（纯机器证明，不新增 product semantics）
+        D5-c2   PriorResultContext
+        D5-c3   real re-execution @ E_1
+D5-d    Packaged ResultContinuationService
+D5-LIVE real concurrent → stale → governed reopen → head sync → re-execute → verify → promote
+```
+
+### V.5 门禁（重构后的 PR 分支实测）
+
+单元 **225 files / 2540 tests** 全绿、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`check-public-api` **0/0/0**、`gate:d2-live` **PASS**（15 项）、`gate:d4-live` **PASS**（21 项）。
+
+两处**过时断言**随本片更新，各自记下旧测量：parity fixture 断言 v3 而 fixture 已是 **v4**（rework-admitted 边）；
+§D5-b 附录 D 断言 genesis graph 从 `verifying` 出发**只有一条**转换——本片声明了**两条**。
