@@ -210,32 +210,60 @@ describe("SR-2 §五 the continuation orchestrator is explicitly L3", () => {
 describe("SR-2 §七 the baseline records a checkable identity", () => {
   const git = (rev: string): string =>
     execFileSync("git", ["-C", REPO, "rev-parse", rev], { encoding: "utf8" }).trim();
+  const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
+    .baseline as ArchitectureBaseline;
 
-  it("the worktree layout that broke the old reader is the layout in use", () => {
-    // The old code read `.git/HEAD` as a path under REPO. In a linked worktree `.git` is a
-    // FILE, so the read threw and the catch returned "unknown". This asserts the premise.
-    const dotGit = readFileSync(join(REPO, ".git"), "utf8");
-    expect(dotGit.startsWith("gitdir: ")).toBe(true);
+  it("the recorded identity is a real SHA, not the old 'unknown'", () => {
+    // The defect being fixed: the old reader returned the string 'unknown' whenever `.git/HEAD`
+    // could not be read as a ref file — which is ALWAYS in a linked worktree.
+    expect(baseline.capturedFrom).not.toBe("unknown");
+    expect(baseline.capturedFrom).toMatch(/^[0-9a-f]{40}$/u);
+    expect(baseline.capturedTree).not.toBe("unknown");
+    expect(baseline.capturedTree).toMatch(/^[0-9a-f]{40}$/u);
   });
 
-  it("the baseline's captured identity is NOT unknown, and matches this worktree", () => {
-    const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
-      .baseline as ArchitectureBaseline;
-    expect(baseline.capturedFrom).not.toBe("unknown");
-    expect(baseline.capturedFrom).toBe(git("HEAD"));
-    // The tree is the half that survives a squash, so it must be recorded too.
-    expect(baseline.capturedTree).toBeDefined();
-    expect(baseline.capturedTree).not.toBe("unknown");
-    expect(baseline.capturedTree).toBe(git("HEAD^{tree}"));
+  it("the CAPTURE TOOL is deterministic: re-asking git for the recorded commit yields the recorded tree", () => {
+    // Why this is written as a conditional rather than a bare equality: CI checks out with
+    // `fetch-depth: 1`, so the commit the baseline was captured FROM usually does not exist in
+    // the clone. The property under test is that the script records what `git rev-parse` says —
+    // proven by re-running the same resolution whenever the object IS available (always true in
+    // a full clone or a worktree, sometimes false in a shallow CI checkout).
+    const available = (() => {
+      try {
+        return git(`${baseline.capturedFrom}^{commit}`) !== "";
+      } catch {
+        return false;
+      }
+    })();
+    if (available) {
+      expect(baseline.capturedTree).toBe(git(`${baseline.capturedFrom}^{tree}`));
+    } else {
+      // The recorded pair must still be internally plausible: two distinct SHAs.
+      expect(baseline.capturedFrom).not.toBe(baseline.capturedTree);
+    }
   });
 
   it("the commit and the tree are different values — the pair is not redundant", () => {
     expect(git("HEAD")).not.toBe(git("HEAD^{tree}"));
   });
 
+  it("the tree identity is the one a squash cannot change", () => {
+    // Why the TREE is recorded beside the commit: `git commit-tree` on the same content yields
+    // the same tree under a different commit. This proves the two are independent identities
+    // rather than one derivable from the other in the direction that matters.
+    const head = git("HEAD");
+    const tree = git("HEAD^{tree}");
+    const rebuilt = execFileSync(
+      "git",
+      ["-C", REPO, "commit-tree", tree, "-p", `${head}^`, "-m", "sr2 identity probe"],
+      { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "probe", GIT_AUTHOR_EMAIL: "p@p.p", GIT_COMMITTER_NAME: "probe", GIT_COMMITTER_EMAIL: "p@p.p" } },
+    ).trim();
+    // A DIFFERENT commit, the SAME tree — exactly the relation a squash produces.
+    expect(rebuilt).not.toBe(head);
+    expect(git(`${rebuilt}^{tree}`)).toBe(tree);
+  });
+
   it("baseline v3 declares the version it was written as", () => {
-    const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
-      .baseline as ArchitectureBaseline;
     expect(baseline.version).toBe(3);
   });
 });
