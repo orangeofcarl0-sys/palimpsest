@@ -29,8 +29,8 @@
 
 import { canonicalDigest } from "../schema/canonical.js";
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
-import type { PeerRef } from "../federation/peer.js";
-import { parsePeerRef } from "../federation/peer.js";
+import type { PeerRef } from "../identity/refs.js";
+import { parsePeerRef } from "../identity/refs.js";
 
 export type OrganizationDefinitionId = string;
 export type OrganizationRevision = number;

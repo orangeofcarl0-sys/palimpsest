@@ -33,8 +33,10 @@ import type { AgentDefinitionId } from "../architecture/index.js";
 import type { BindingResolutionRef } from "../binding/contract.js";
 import type { RunDefinitionRef } from "../run/index.js";
 import { isStableIdentifier } from "../schema/identifier.js";
-import type { CoordinationEventParsers } from "./store.js";
-import { CoordinationStoreError } from "./errors.js";
+// SR-2d3 §十九: the parser CONTRACT comes from the identity layer, so this artifact-domain module
+// no longer imports the store implementation to describe its own parser table.
+import type { CoordinationEventParsers } from "../identity/refs.js";
+import { CoordinationStoreError } from "../identity/errors.js";
 import {
   requireLiteral,
   requireOneOf,
@@ -42,7 +44,7 @@ import {
   requireStableId,
   requireString,
   strictObject,
-} from "./strict.js";
+} from "../identity/strict.js";
 
 export type InvocationId = string;
 export type ParticipationId = string;

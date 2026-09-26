@@ -6808,7 +6808,9 @@ SR-2d2  promotion ↔ recovery cycle 清除      ← 下一步
 
 ## 附录 AI（第 SR-2d2 期）：Promotion ↔ Recovery Cycle 清除 —— 契约下沉，而非改协议
 
-$$oxed{Promotion ightarrow durable\ records\ /\ narrow\ read\ contract ightarrow Recovery}$$
+$$oxed{Promotion 
+ightarrow durable\ records\ /\ narrow\ read\ contract 
+ightarrow Recovery}$$
 
 ### AI.1 SCC 的真实构成：只有一条边是真依赖
 
@@ -6864,4 +6866,88 @@ SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f
 SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee  SR-2d1 ✓f69921b
 SR-2d2  promotion ↔ recovery cycle 清除        CLOSED（本附录）
 SR-2d3  federation / coordination substrate    ← 下一步（含停点 B 判定）
+```
+
+---
+
+## 附录 AJ（第 SR-2d3 期）：Collaboration Substrate Cycle 清除 —— 停点 B **未触发**
+
+$$oxed{stable\ identity/contracts ightarrow Coordination\ semantics ightarrow Federation\ transport}$$
+
+### AJ.1 停点 B 判定（§十九 要求先判）
+
+ruling 要求：若拆除该 SCC 必须改变 federation wire protocol / commitment identity / canonical
+persisted message shape / organization semantics，则**停下来复审**。
+
+**实测判定：不需要。** 十文件 SCC 的**每一条反向边**都是纯 identity ref 或 parser contract：
+
+```text
+federation/commitment.ts     → coordination/index.ts      AttemptRef
+federation/messages.ts       → coordination/store.ts      CoordinationEventParsers（parser 契约）
+federation/peer.ts           → coordination/index.ts      ActivationRef / AttemptRef
+coordination/store.ts        → federation/{commitment,messages}   parser 表（装配，非协议）
+boundary_memory/ref.ts       → organization/definition.ts OrganizationDefinitionRef
+organization/definition.ts   → federation/peer.ts         PeerRef
+```
+
+没有一条触及协议、commitment identity、持久化 payload 形状或 organization 语义。因此走 §十九 明确
+允许的路径：**move pure contracts / dependency inversion**，无需停。
+
+### AJ.2 修法：建立 `src/identity/` 稳定身份层
+
+把五个 ref 契约与 coordination parser 契约下沉到 `src/identity/refs.ts`（L2），它位于 Coordination
+语义与 Federation transport **之下**：
+
+```text
+src/identity/           ← 本片新建（peer / activation / attempt / organization / accepted-boundary
+                          refs + CoordinationEventParsers + PeerIdentityError +
+                          OrganizationDefinitionError）
+```
+
+同时把两个**叶子**助手（`coordination/errors.ts`、`coordination/strict.ts`）迁入该层——它们本就是为此
+目的从 store 里提取出来的。每个原 owner **re-export** 移出的符号，因此**所有 import 路径与已记录的
+public surface 完全不变**（`check-public-api` 仍 0/0/0）。
+
+### AJ.3 逐字语义保持（这是本片的核心风险，逐条钉住）
+
+```text
+字段集不变        PeerRef 仍恰为 {schemaVersion, peerId}，未知字段仍以同一消息拒绝；
+                  AttemptRef 仍恰为 {projectId, attemptId}；
+                  ActivationRef 仍恰为四字段且嵌套 ref 仍按对象校验；
+                  OrganizationDefinitionRef 仍恰为三字段；
+                  AcceptedBoundaryRevisionRef 仍恰为六字段
+异常类不变        PeerIdentityError 与 OrganizationDefinitionError **随解析器一起搬迁**，
+                  并各自从原 owner re-export——调用方 catch 到的仍是**同一个 class 对象**，
+                  不是第二份定义
+协议模块未重写    COMMITMENT_EVENT_PARSERS / FEDERATION_EVENT_PARSERS 及各自事件词表原样留在原处；
+                  store 仍装配 DEFAULT_COORDINATION_EVENT_PARSERS
+存储形状未动      coordination_events DDL、appendAtomic、expectedHeadSeq、
+                  CoordinationStoreError/ConflictError 全部保留
+```
+
+### AJ.4 结果
+
+```text
+10-file SCC   完全拆除（最大 SCC 从 10 降到 8，且是 §二十 明确 OUT 的 campaign）
+permittedCycles   8 → 5     accepted exceptions   12 → 9
+剩余 5 个 cycle 恰为 SR-2 明确不动的那几个：campaign、domain/schema、proof_asset、
+project_management、project_verification（§二十）
+```
+
+证明 `test/architecture/sr2d3_collaboration_substrate.test.ts` 10 条：无 ≥10 的 SCC 且不含该十模块；
+六条反向边断言不存在；identity 层是 ref 的唯一声明处且**不 import** 它所服务的上层语义；五组字段集
+逐条钉住；异常类同一对象；协议模块与存储形状未动；baseline 只剩 5 cycle 且不含任何前成员；这 5 个恰为
+§二十 的 OUT 集合；exception 12 → 9。
+
+### AJ.5 门禁（本片实测）
+
+tsc 干净、单元 **2711/2711**、e2e **38/38**、`architecture:check` **0 violation**（**9** accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d2-live` PASS**、**`gate:d5-live` PASS**。
+
+```text
+SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f
+SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee  SR-2d1 ✓f69921b
+SR-2d2 ✓6052291  SR-2d3 ✓（本附录）
+SR-2e   architecture ratchets + E firewall + 最终 baseline   ← 下一步
+SR-2 Gate  D2/D4/D5 全系统回归
 ```

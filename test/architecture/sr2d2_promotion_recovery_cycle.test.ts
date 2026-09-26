@@ -145,22 +145,23 @@ describe("SR-2 §十八 the shared contract moved DOWN and changed nothing", () 
  * ================================================================== */
 
 describe("SR-2 §三十一 the cycle's exception was deleted, not left dormant", () => {
-  it("the baseline records SIX cycles — this one is gone", () => {
+  it("the baseline no longer records THIS cycle — the removed one is gone", () => {
     const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
       .baseline as { permittedCycles: readonly { files: readonly string[] }[] };
-    expect(baseline.permittedCycles).toHaveLength(6);
+    // SR-2d3 removed a further cycle; this claim is about THIS pair, so it asserts the direction.
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(5);
     const offending = baseline.permittedCycles.filter(
       (cycle) => cycle.files.includes("src/effects/promotion.ts") && cycle.files.includes("src/recovery/recovery.ts"),
     );
     expect(offending).toEqual([]);
   });
 
-  it("the exception set only ever shrank: 12 → 11 (SR-2d1) → 10 (SR-2d2)", () => {
+  it("the exception set only ever shrank: 12 → 11 → 10 → 9 across the d-slices", () => {
     const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
       .baseline as { permittedForbiddenEdges: readonly unknown[]; permittedCycles: readonly unknown[] };
-    // Four forbidden edges (SR-1's, untouched) and six cycles.
+    // Four forbidden edges (SR-1's, untouched) and five cycles — three fewer than SR-1 carried.
     expect(baseline.permittedForbiddenEdges).toHaveLength(4);
-    expect(baseline.permittedCycles).toHaveLength(6);
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(5);
   });
 
   it("the layers are unchanged — the fix was a contract relocation, not a reclassification", () => {

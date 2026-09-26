@@ -50,6 +50,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   run: "L1",
 
   // L2 — semantic capability owners
+  // SR-2d3 §十九: the STABLE IDENTITY contracts (peer / activation / attempt / organization /
+  // accepted-boundary refs and the coordination parser contract). It sits BELOW Coordination
+  // semantics and Federation transport, which is what makes their direction one-way.
+  identity: "L2",
   // SR-2 §十四/§十五: RESULT identity, derivation, candidate storage and rematerialization.
   // `Result ≠ World`: World Consistency JUDGES a result's relation to the world; it does not own
   // the result. These modules are a semantic capability of their own.
