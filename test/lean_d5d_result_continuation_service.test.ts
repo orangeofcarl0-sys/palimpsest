@@ -35,6 +35,14 @@ import { firstPartyProjectWorldObservation } from "../src/deployment/world_obser
 import { gitSourceChangeObserver, GIT_SOURCE_OBSERVER_ID, GIT_SOURCE_OBSERVER_VERSION, GIT_SOURCE_MECHANISM } from "../src/deployment/source_change_observer.js";
 import { firstPartyResultResolver } from "../src/deployment/result_resolution.js";
 import { firstPartyAttemptResultVerificationSource } from "../src/project_verification/index.js";
+import { actionKey } from "../src/domain/idempotency.js";
+import { normalizeEventPayload, parseNewEvent } from "../src/schema/index.js";
+import { REPOSITORY_SOURCE } from "../src/project_world/dependency.js";
+import type { IssuedCompatibilityAssessment } from "../src/project_world/issuance.js";
+import type { ObservationRecorder } from "../src/project_world/observation_authority.js";
+import type { AttemptWorldBasisStore } from "../src/project_world/basis_store.js";
+import type { CompatibilityIssuer } from "../src/project_world/issuance.js";
+import type { EventStore } from "../src/state/index.js";
 import { taskSpec } from "./helpers.js";
 
 const PROJECT = "d5d";
@@ -383,58 +391,192 @@ async function probeService(
     },
     admit: (input: Parameters<CrossBasisAdmissionRuntime["admit"]>[0]) => realCrossBasis.admit(input),
   });
+  /**
+   * SR-2 §八: the probe now implements the FIVE PORTS, exactly as the composition does — the
+   * service on the other side knows none of the concrete wiring this function builds.
+   */
   const service = makeResultContinuationService({
     projectId: PROJECT,
-    store,
-    readTask: (taskId) => {
-      const row = store.connection
-        .prepare("SELECT state, state_json, last_event_id FROM tasks WHERE project_id=? AND task_id=?")
-        .get(PROJECT, taskId) as { state: string; state_json: Uint8Array; last_event_id: number } | undefined;
-      if (row === undefined) return null;
-      const parsed = JSON.parse(new TextDecoder().decode(row.state_json)) as { batch_activation_event_id: number | null };
-      return {
-        state: row.state,
-        batchActivationEventId: parsed.batch_activation_event_id === null ? null : Number(parsed.batch_activation_event_id),
-        lastEventId: Number(row.last_event_id),
-      };
+    work: {
+      task: (taskId: string) => {
+        const row = store.connection
+          .prepare("SELECT state, state_json, last_event_id FROM tasks WHERE project_id=? AND task_id=?")
+          .get(PROJECT, taskId) as { state: string; state_json: Uint8Array; last_event_id: number } | undefined;
+        if (row === undefined) return null;
+        const parsed = JSON.parse(new TextDecoder().decode(row.state_json)) as { batch_activation_event_id: number | null };
+        const envelope = envelopeOf(taskId) as { envelope_id: string } | null;
+        return {
+          state: row.state,
+          batchActivationEventId: parsed.batch_activation_event_id === null ? null : Number(parsed.batch_activation_event_id),
+          lastEventId: Number(row.last_event_id),
+          envelopeId: envelope === null ? null : envelope.envelope_id,
+        };
+      },
+      attempt: (attemptId: string) => {
+        const row = store.connection
+          .prepare("SELECT task_id, state, state_json FROM attempts WHERE project_id=? AND attempt_id=?")
+          .get(PROJECT, attemptId) as { task_id: string; state: string; state_json: Uint8Array } | undefined;
+        if (row === undefined) return null;
+        const parsed = JSON.parse(new TextDecoder().decode(row.state_json)) as { batch_activation_event_id: number | null };
+        return {
+          taskId: String(row.task_id),
+          state: row.state,
+          batchActivationEventId: parsed.batch_activation_event_id === null ? null : Number(parsed.batch_activation_event_id),
+        };
+      },
+      openAttempt: () => null,
+      reworkLineage: ({ taskId, resultRef }) => {
+        for (const event of store.listEvents(PROJECT)) {
+          if (event.event_type !== "TASK_READY" || event.entity_id !== taskId) continue;
+          const provenance = (
+            event.payload as { rework_provenance?: { origin_result_subject?: { ref?: unknown } } }
+          ).rework_provenance;
+          const ref = provenance?.origin_result_subject?.ref;
+          if (typeof ref === "string" && ref === resultRef) return { eventId: Number(event.event_id) };
+        }
+        return null;
+      },
+      reopen: ({ taskId, batchActivationEventId, lastEventId, permit, assessmentDigest }) => {
+        const appended = store.appendReworkReopening(
+          parseNewEvent({
+            schema_version: 1,
+            project_id: PROJECT,
+            event_type: "TASK_READY",
+            payload_version: 1,
+            entity_type: "task",
+            entity_id: taskId,
+            payload: normalizeEventPayload("TASK_READY", {
+              previous_state: "VERIFYING",
+              new_state: "READY",
+              reason: "rework-admitted",
+              batch_activation_event_id: batchActivationEventId,
+            }),
+            causation_id: lastEventId,
+            correlation_id: `task:${taskId}:rework`,
+            idempotency_key: actionKey("task-batch-settle-v1", {
+              project_id: PROJECT,
+              task_id: taskId,
+              batch_activation_event_id: batchActivationEventId,
+              target_state: "READY",
+            }),
+            expected_project_revision: 0,
+          }),
+          permit,
+          { assessmentDigest },
+        );
+        return Number(appended.event_id);
+      },
     },
-    readTaskEnvelopeId: (taskId) => {
-      const envelope = envelopeOf(taskId) as { envelope_id: string } | null;
-      return envelope === null ? null : envelope.envelope_id;
+    world: {
+      inspect: ({ result }) => {
+        const resolved = results.resolve(result);
+        if (resolved === null) {
+          return { resolved: null, currentness: null, targetObservation: null, compatibility: null };
+        }
+        const currentness = basisRuntime.assessCurrentness({ attemptId: result.ref });
+        const target = crossBasis.observeTarget(resolved.taskId);
+        const certificate = issueCertificateForProbe({ resolved, currentness, target, store, basisStore, repo, sourceRecorder, conservative, issuer });
+        return {
+          resolved,
+          currentness: currentness === null ? null : currentness.currentness,
+          targetObservation: target,
+          compatibility:
+            certificate === null
+              ? null
+              : { outcome: certificate.assessment.outcome, issuanceDigest: certificate.issuanceDigest },
+        };
+      },
+      observeTarget: (taskId: string) => crossBasis.observeTarget(taskId),
+      rematerializationAvailable: false,
+      hasCapturedBasis: ({ attemptId }) => basisStore.read({ projectId: PROJECT, attemptId }) !== null,
     },
-    readAttempt: (attemptId) => {
-      const row = store.connection
-        .prepare("SELECT task_id, state, state_json FROM attempts WHERE project_id=? AND attempt_id=?")
-        .get(PROJECT, attemptId) as { task_id: string; state: string; state_json: Uint8Array } | undefined;
-      if (row === undefined) return null;
-      const parsed = JSON.parse(new TextDecoder().decode(row.state_json)) as { batch_activation_event_id: number | null };
-      return {
-        taskId: String(row.task_id),
-        state: row.state,
-        batchActivationEventId: parsed.batch_activation_event_id === null ? null : Number(parsed.batch_activation_event_id),
-      };
+    result: {
+      admitAndRematerialize: async () => ({
+        state: "EFFECT_CAPABILITY_UNAVAILABLE" as const,
+        admissionRef: null,
+        candidateRef: null,
+        detail: "the probe composes no rematerialization capability",
+      }),
     },
-    openAttempt: () => null,
-    reconcileHead: async () => {
-      const outcome = await controller.reconcileProjectHead();
-      return outcome.status === "blocked"
-        ? { status: "blocked" as const, blockers: outcome.blockers }
-        : { status: outcome.status, blockers: [] };
+    canonical: {
+      targetFence: () => controller.reworkTargetFence(),
+      reconcileHead: async () => {
+        const outcome = await controller.reconcileProjectHead();
+        return outcome.status === "blocked"
+          ? { status: "blocked" as const, blockers: outcome.blockers }
+          : { status: outcome.status, blockers: [] };
+      },
     },
-    workDelegation: null,
-    targetFence: () => controller.reworkTargetFence(),
-    results,
-    basisRuntime,
-    crossBasis,
-    issuer,
-    observation,
-    ...(options.omitSourceObserver === true ? { sourceObserver: null } : { sourceObserver: gitSourceChangeObserver({ repository: repo, recorder: sourceRecorder }) }),
-    conservative,
-    rematerialization: null,
-    admissionStore: null,
-    repository: repo,
+    execution: null,
   });
+
   return { service, calls: () => calls };
+}
+
+/**
+ * The fresh-facts certificate, for the probe's world port.
+ *
+ * This is the same D3-R chain the composition wires (D3-a → authority-bearing observations →
+ * the existing issuer). It lives here because the probe stands in for the composition on the
+ * consumer side of the ports; the SERVICE never sees any of it.
+ */
+function issueCertificateForProbe(input: {
+  readonly resolved: { readonly resultSubjectRef: { readonly kind: string; readonly ref: string }; readonly resultManifestDigest: string; readonly originBasisDigest: string; readonly taskId: string; readonly sourceResult: { readonly resultRevision: string } | null };
+  readonly currentness: { readonly currentness: string } | null;
+  readonly target: { readonly digest: string; readonly detail: string };
+  readonly store: EventStore;
+  readonly basisStore: AttemptWorldBasisStore;
+  readonly repo: string;
+  readonly sourceRecorder: ObservationRecorder;
+  readonly conservative: ObservationRecorder;
+  readonly issuer: CompatibilityIssuer;
+}): IssuedCompatibilityAssessment | null {
+  const { resolved, currentness, target } = input;
+  const record = input.basisStore.read({ projectId: PROJECT, attemptId: resolved.resultSubjectRef.ref });
+  const source = record?.basis.source;
+  const originSourceRevision = source !== undefined && source.state === "BOUND" ? source.value.revision : null;
+  const currentSource = (() => {
+    try {
+      return { ok: true as const, revision: execFileSync("git", ["-C", input.repo, "rev-parse", "HEAD"], { encoding: "utf8" }).trim() };
+    } catch {
+      return { ok: false as const, detail: "unreadable" };
+    }
+  })();
+  const scopeOf = (from: string, to: string) => ({ domain: "source" as const, scopeRef: input.repo, from, to });
+  const unavailable = (domain: "project_semantic" | "source" | "assets" | "environment", detail: string) =>
+    input.conservative.unavailable({ domain, detail });
+  const changeRef =
+    originSourceRevision !== null && currentSource.ok
+      ? input.sourceRecorder.record({
+          scope: scopeOf(originSourceRevision, currentSource.revision),
+          selectors: [],
+        })
+      : unavailable("source", "the basis-to-current source change could not be observed");
+  const writeRef =
+    originSourceRevision !== null && resolved.sourceResult !== null
+      ? input.sourceRecorder.record({
+          scope: scopeOf(originSourceRevision, resolved.sourceResult.resultRevision),
+          selectors: [],
+        })
+      : unavailable("source", "the result's write footprint could not be observed");
+  const readRef =
+    originSourceRevision === null
+      ? null
+      : input.conservative.record({ scope: scopeOf(originSourceRevision, originSourceRevision), selectors: [REPOSITORY_SOURCE] });
+  return input.issuer.issue({
+    resultManifestDigest: resolved.resultManifestDigest,
+    originBasisDigest: resolved.originBasisDigest,
+    targetObservationDigest: target.digest,
+    exactlyCurrent: currentness?.currentness === "CURRENT",
+    observationRefs: {
+      projectSemantic: unavailable("project_semantic", "no first-party observer exists for the project semantic change domain"),
+      source: changeRef,
+      assets: unavailable("assets", "no first-party observer exists for the asset change domain"),
+      environment: unavailable("environment", "no first-party observer exists for the environment change domain"),
+      resultReads: readRef,
+      resultWrites: writeRef,
+    },
+  });
 }
 
 /* ================================================================== *
@@ -759,18 +901,23 @@ describe("§D5-d the structural pins", () => {
     ]) {
       expect(source).not.toContain(forbidden);
     }
-    // The only head call is the G10-X owner; the only attempt starter is the D2-d owner:
-    expect(source).toContain("reconcileHead");
-    expect(source).toContain("workDelegation.start");
+    // The only head call is the G10-X owner; the only attempt starter is the D2-d owner — and
+    // SR-2 §八 made this STRONGER: the service no longer names the delegation service at all,
+    // it calls the execution port's one verb.
+    expect(source).toContain("deps.canonical.reconcileHead");
+    expect(source).toContain("deps.execution.startOrResume");
+    expect(source).not.toContain("workDelegation");
   });
 
     it("13. NO NEW CANONICAL VOCABULARY OR STORE: the continuation layer creates no event type and no database", () => {
     const service = stripComments(readSource("src/continuation/service.ts"));
     expect(service).not.toMatch(/CREATE TABLE/);
     expect(service).not.toMatch(/sqlite/i);
-    // The only event type the layer names is the governed reopening's own — no new vocabulary:
+    // SR-2 §八 made this STRONGER still: the service no longer names ANY event type, because
+    // building the governed TASK_READY payload is the work port's job now (the composition
+    // owns that wire shape). The vocabulary check therefore asserts the absence itself.
     const eventLiterals = [...service.matchAll(/"(TASK_[A-Z_]+)"/g)].map((match) => match[1]);
-    expect([...new Set(eventLiterals)]).toEqual(["TASK_READY"]);
+    expect([...new Set(eventLiterals)]).toEqual([]);
   });
 
   it("15. PACKAGE CAPABILITY HONESTY: no repository ⇒ no continuation face; no worker port ⇒ READY_FOR_DELEGATION, never a stub", async () => {

@@ -56,6 +56,19 @@ import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/wo
 import { makeWorkDelegationService } from "../interaction/work_delegation.js";
 import { ATTEMPT_OPEN_STATES } from "../domain/state_machine.js";
 import { makeResultContinuationService, type ResultContinuationService } from "../continuation/service.js";
+import type {
+  ContinuationCanonicalPort,
+  ContinuationExecutionPort,
+  ContinuationResolvedResult,
+  ContinuationResultPort,
+  ContinuationWorkPort,
+  ContinuationWorldPort,
+} from "../continuation/ports.js";
+import type { IssuedCompatibilityAssessment } from "../project_world/issuance.js";
+import { crossBasisAdmissionRefOf } from "../project_world/admission_store.js";
+import { REPOSITORY_SOURCE } from "../project_world/dependency.js";
+import { actionKey } from "../domain/idempotency.js";
+import { normalizeEventPayload, parseNewEvent } from "../schema/index.js";
 import type { EventStore } from "../state/index.js";
 import type { ProjectController } from "../tools/controller.js";
 import type { OwnedResource } from "./lifecycle.js";
@@ -98,6 +111,7 @@ export interface ContinuationComposition {
 export function composeContinuationCapability(input: ContinuationCompositionInput): ContinuationComposition {
   const { options, store, controller } = input;
   const repository = options.repository;
+  // Absence is decided once, above; these are the narrowed bindings the ports close over.
   const worldBasisRuntime = input.worldBasisRuntime;
   const worldObservation = input.worldObservation;
 
@@ -140,7 +154,11 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     return { continuation: undefined, workDelegation: undefined, ownedResources: Object.freeze([]) };
   }
 
-  const sourceRecorder: ObservationRecorder = observations.registerObserver({
+  // The try/catch above proves every one of these is present; `let` bindings lose that proof
+  // inside a closure, so they are frozen into consts for the ports to close over.
+  const openStores = { observations, issuer, admissions, candidates };
+
+  const sourceRecorder: ObservationRecorder = openStores.observations.registerObserver({
     observerId: GIT_SOURCE_OBSERVER_ID,
     observerVersion: GIT_SOURCE_OBSERVER_VERSION,
     mechanism: GIT_SOURCE_MECHANISM,
@@ -148,7 +166,7 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
   // The honest first-party reader: whole-repository read footprints and
   // honestly-unavailable facets. It grants no reach it does not have — the
   // conservative mechanism over-approximates, which is the correct direction.
-  const conservative: ObservationRecorder = observations.registerObserver({
+  const conservative: ObservationRecorder = openStores.observations.registerObserver({
     observerId: "world-materializer",
     observerVersion: "1",
     mechanism: "CONSERVATIVE_DOMAIN",
@@ -197,8 +215,20 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
       ? undefined
       : makeWorkDelegationService({ controller, workerFor: options.workWorkerPort });
 
-  // ── the narrow owner reads (§20) ──
+  // ── the narrow owner reads (SR-2 §20) ──
   const connection = store.connection;
+  /**
+   * ── THE FIVE PORTS (SR-2 §八) ───────────────────────────────────────────────────────────
+   *
+   * This is the ONE place allowed to see the concrete wiring: the D3-R authorities, the world
+   * runtime, the event log and the delegation service. The service on the other side of these
+   * ports knows none of those names.
+   *
+   *     composition knows wiring;  service knows semantics.
+   */
+  const readTaskEnvelopeId = (taskId: string): string | null =>
+    // The Work owner reads its own envelope column (G10-W keeps that list short).
+    controller.taskEnvelopeId(taskId);
   const readTask = (taskId: string) => {
     const row = connection
       .prepare("SELECT state, state_json, last_event_id FROM tasks WHERE project_id=? AND task_id=?")
@@ -206,16 +236,13 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
       | { state: unknown; state_json: Uint8Array; last_event_id: unknown }
       | undefined;
     if (row === undefined) return null;
-    const batch = batchAnchorOf(row.state_json);
     return {
       state: String(row.state),
-      batchActivationEventId: batch,
+      batchActivationEventId: batchAnchorOf(row.state_json),
       lastEventId: Number(row.last_event_id),
+      envelopeId: readTaskEnvelopeId(taskId),
     };
   };
-  const readTaskEnvelopeId = (taskId: string): string | null =>
-    // The Work owner reads its own envelope column (G10-W keeps that list short).
-    controller.taskEnvelopeId(taskId);
   const readAttempt = (attemptId: string) => {
     const row = connection
       .prepare("SELECT task_id, state, state_json FROM attempts WHERE project_id=? AND attempt_id=?")
@@ -241,31 +268,255 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
     return null;
   };
 
-  const continuation = makeResultContinuationService({
-    projectId: options.projectId,
-    store,
-    readTask,
-    readTaskEnvelopeId,
-    readAttempt,
+  /**
+   * The narrowing the early return established, restated for the closures below: TypeScript
+   * cannot carry a control-flow proof into a nested function body, and re-asserting it here is
+   * cheaper than threading optionals through every port.
+   */
+  const basisRuntime = worldBasisRuntime;
+  const observation = worldObservation;
+  const repo = repository;
+  const certificateIssuer = openStores.issuer;
+  const rematerializationRuntime = rematerialization;
+  const admissionStore = openStores.admissions;
+  const delegation = workDelegation;
+  const now = (): string => (options.clock ?? (() => new Date().toISOString()))();
+
+  /**
+   * THE FRESH-FACTS CERTIFICATE — the D3-R chain in the one order it may run:
+   * D3-a → authority-bearing observations → the existing issuer.
+   *
+   * It lives in the composition because it is WIRING: it says which observer observes which
+   * facet on THIS deployment. It adds no compatibility reasoning — the issuer stays the only
+   * engine, and the service never reaches one directly.
+   */
+  function issueCertificate(input: {
+    readonly result: ContinuationResolvedResult;
+    readonly currentness: { readonly currentness: string } | null;
+    readonly target: { readonly digest: string; readonly detail: string } | null;
+  }): IssuedCompatibilityAssessment | null {
+    const { result, currentness, target } = input;
+    if (target === null) return null;
+    const originSourceRevision = (() => {
+      const record = basisRuntime.read({ attemptId: result.resultSubjectRef.ref });
+      const source = record?.basis.source;
+      return source !== undefined && source.state === "BOUND" ? source.value.revision : null;
+    })();
+    const currentSource = observation.observeSource();
+    const scopeOf = (from: string, to: string) => ({ domain: "source" as const, scopeRef: repo, from, to });
+    const unavailable = (domain: "project_semantic" | "source" | "assets" | "environment", detail: string) =>
+      conservative.unavailable({ domain, detail });
+
+    const changeRef =
+      originSourceRevision !== null && currentSource.ok
+        ? sourceObserver.observeChange({
+            fromRevision: originSourceRevision,
+            toRevision: currentSource.revision.revision,
+            scopeRef: repo,
+          })
+        : unavailable("source", "the basis-to-current source change could not be observed");
+    const writeRef =
+      originSourceRevision !== null && result.sourceResult !== null
+        ? sourceObserver.observeChange({
+            fromRevision: originSourceRevision,
+            toRevision: result.sourceResult.resultRevision,
+            scopeRef: repo,
+          })
+        : unavailable(
+            "source",
+            result.sourceResult === null
+              ? "the result produced no canonical source revision, so its write footprint cannot be observed"
+              : "the result's write footprint could not be observed",
+          );
+    const readRef =
+      originSourceRevision === null
+        ? null
+        : conservative.record({
+            scope: scopeOf(originSourceRevision, originSourceRevision),
+            selectors: [REPOSITORY_SOURCE],
+          });
+
+    return certificateIssuer.issue({
+      resultManifestDigest: result.resultManifestDigest,
+      originBasisDigest: result.originBasisDigest,
+      targetObservationDigest: target.digest,
+      exactlyCurrent: currentness?.currentness === "CURRENT",
+      observationRefs: {
+        projectSemantic: unavailable("project_semantic", "no first-party observer exists for the project semantic change domain"),
+        source: changeRef,
+        assets: unavailable("assets", "no first-party observer exists for the asset change domain"),
+        environment: unavailable("environment", "no first-party observer exists for the environment change domain"),
+        resultReads: readRef,
+        resultWrites: writeRef,
+      },
+    });
+  }
+
+  /** The WORLD port: D3-a + the authority-bearing observations + the existing D3-b issuer. */
+  const worldPort: ContinuationWorldPort = {
+    inspect: ({ result }) => {
+      const resolvedResult = results.resolve(result);
+      if (resolvedResult === null) {
+        return { resolved: null, currentness: null, targetObservation: null, compatibility: null };
+      }
+      const currentness = worldBasisRuntime.assessCurrentness({ attemptId: result.ref });
+      const target = crossBasis.observeTarget(resolvedResult.taskId);
+      const certificate = issueCertificate({ result: resolvedResult, currentness, target });
+      return {
+        resolved: resolvedResult,
+        currentness: currentness === null ? null : currentness.currentness,
+        targetObservation: target,
+        compatibility:
+          certificate === null
+            ? null
+            : { outcome: certificate.assessment.outcome, issuanceDigest: certificate.issuanceDigest },
+      };
+    },
+    observeTarget: (taskId) => crossBasis.observeTarget(taskId),
+    rematerializationAvailable: rematerialization !== null && admissions !== null,
+    hasCapturedBasis: ({ attemptId }) => basisRuntime.read({ attemptId }) !== null,
+  };
+
+  /** The RESULT port: D3-c admission ≺ D3-d carry, as ONE ordered chain. */
+  const resultPort: ContinuationResultPort = {
+    admitAndRematerialize: async ({ result, resolved, issuanceDigest, taskId, hasBasis }) => {
+      if (rematerializationRuntime === null || admissionStore === null) {
+        return {
+          state: "EFFECT_CAPABILITY_UNAVAILABLE" as const,
+          admissionRef: null,
+          candidateRef: null,
+          detail: "no cross-basis admission runtime is composed, so the carry cannot be admitted",
+        };
+      }
+      const target = crossBasis.observeTarget(taskId);
+      const decision = crossBasis.admit({
+        presented: certificateIssuer.recall(issuanceDigest),
+        resultManifestDigest: resolved.resultManifestDigest,
+        originBasisDigest: resolved.originBasisDigest,
+        taskId,
+        hasBasis,
+      });
+      const source = observation.observeSource();
+      const admissionRecord = admissionStore.record({
+        schemaVersion: 1,
+        admissionRef: crossBasisAdmissionRefOf({
+          issuanceRef: decision.issuanceDigest ?? "",
+          targetObservationDigest: decision.targetObservationDigest,
+          resultSubjectRef: result,
+        }),
+        issuanceRef: decision.issuanceDigest ?? "",
+        resultSubjectRef: result,
+        resultManifestDigest: resolved.resultManifestDigest,
+        originBasisDigest: resolved.originBasisDigest,
+        targetObservation: {
+          targetObservationDigest: decision.targetObservationDigest,
+          targetBasisRevision: source.ok ? source.revision.revision : "",
+          detail: target.detail,
+        },
+        state: decision.state,
+        admitted: decision.admitted,
+        detail: decision.detail,
+        recordedAt: now(),
+      });
+      if (!decision.admitted) {
+        return {
+          state: "ADMISSION_REFUSED" as const,
+          admissionRef: admissionRecord.admissionRef,
+          candidateRef: null,
+          detail: decision.detail,
+        };
+      }
+      const outcome = await rematerializationRuntime.rematerialize({ admissionRef: admissionRecord.admissionRef });
+      return {
+        state: outcome.state === "MATERIALIZED" ? ("MATERIALIZED" as const) : ("REMATERIALIZATION_FAILED" as const),
+        admissionRef: admissionRecord.admissionRef,
+        candidateRef: outcome.candidate?.candidateId ?? null,
+        detail: outcome.detail,
+      };
+    },
+  };
+
+  /** The WORK port: the Work facts, the durable replay query, and the ONE governed append. */
+  const workPort: ContinuationWorkPort = {
+    task: readTask,
+    attempt: readAttempt,
     openAttempt,
+    reworkLineage: ({ taskId, resultRef }) => {
+      // The Event Log is the ONLY source: a lineage row exists iff a TASK_READY for this task
+      // carries a `rework_provenance` naming this result — the durable shadow of a spent permit.
+      // The ephemeral permit plays no part: after a restart it does not exist, and the record
+      // alone decides replay.
+      for (const event of store.listEvents(options.projectId)) {
+        if (event.event_type !== "TASK_READY" || event.entity_id !== taskId) continue;
+        const provenance = (
+          event.payload as { rework_provenance?: { origin_result_subject?: { ref?: unknown } } }
+        ).rework_provenance;
+        const ref = provenance?.origin_result_subject?.ref;
+        if (typeof ref === "string" && ref === resultRef) return { eventId: Number(event.event_id) };
+      }
+      return null;
+    },
+    reopen: ({ taskId, batchActivationEventId, lastEventId, permit, assessmentDigest }) => {
+      const appended = store.appendReworkReopening(
+        parseNewEvent({
+          schema_version: 1,
+          project_id: options.projectId,
+          event_type: "TASK_READY",
+          payload_version: 1,
+          entity_type: "task",
+          entity_id: taskId,
+          payload: normalizeEventPayload("TASK_READY", {
+            previous_state: "VERIFYING",
+            new_state: "READY",
+            reason: "rework-admitted",
+            batch_activation_event_id: batchActivationEventId,
+          }),
+          causation_id: lastEventId,
+          correlation_id: `task:${taskId}:rework`,
+          idempotency_key: actionKey("task-batch-settle-v1", {
+            project_id: options.projectId,
+            task_id: taskId,
+            batch_activation_event_id: batchActivationEventId,
+            target_state: "READY",
+          }),
+          expected_project_revision: 0,
+        }),
+        permit,
+        { assessmentDigest },
+      );
+      return Number(appended.event_id);
+    },
+  };
+
+  /** The CANONICAL port: the head authority. The service never sees PromotionManager. */
+  const canonicalPort: ContinuationCanonicalPort = {
+    targetFence: () => controller.reworkTargetFence(),
     reconcileHead: async () => {
       const outcome = await controller.reconcileProjectHead();
       return outcome.status === "blocked"
         ? { status: "blocked" as const, blockers: outcome.blockers }
         : { status: outcome.status, blockers: [] };
     },
-    workDelegation: workDelegation ?? null,
-    targetFence: () => controller.reworkTargetFence(),
-    results,
-    basisRuntime: worldBasisRuntime,
-    crossBasis,
-    issuer,
-    observation: worldObservation,
-    sourceObserver,
-    conservative,
-    rematerialization,
-    admissionStore: admissions,
-    repository,
+  };
+
+  /** The EXECUTION port: D2-d, unchanged, behind one verb. */
+  const executionPort: ContinuationExecutionPort | null = (() => {
+    // `workDelegation` is `undefined` when this deployment composed no worker port — an absence
+    // the service reports honestly rather than a stub.
+    if (delegation === undefined) return null;
+    const bound = delegation;
+    return {
+      startOrResume: async ({ taskId }) => ({ jobId: (await bound.start({ expectedTaskId: taskId })).jobId }),
+    };
+  })();
+
+  const continuation = makeResultContinuationService({
+    projectId: options.projectId,
+    work: workPort,
+    world: worldPort,
+    result: resultPort,
+    canonical: canonicalPort,
+    execution: executionPort,
     ...(options.clock === undefined ? {} : { clock: options.clock }),
   });
 
