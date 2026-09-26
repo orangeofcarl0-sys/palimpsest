@@ -248,17 +248,27 @@ describe("SR-2 §七 the baseline records a checkable identity", () => {
   });
 
   it("the tree identity is the one a squash cannot change", () => {
-    // Why the TREE is recorded beside the commit: `git commit-tree` on the same content yields
-    // the same tree under a different commit. This proves the two are independent identities
-    // rather than one derivable from the other in the direction that matters.
+    // Why the TREE is recorded beside the commit: `git commit-tree` over the same content yields
+    // a DIFFERENT commit with the SAME tree — exactly the relation a squash produces. The probe
+    // is built with no parent, because a shallow checkout (CI uses fetch-depth: 1) has no `HEAD^`.
     const head = git("HEAD");
     const tree = git("HEAD^{tree}");
     const rebuilt = execFileSync(
       "git",
-      ["-C", REPO, "commit-tree", tree, "-p", `${head}^`, "-m", "sr2 identity probe"],
-      { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "probe", GIT_AUTHOR_EMAIL: "p@p.p", GIT_COMMITTER_NAME: "probe", GIT_COMMITTER_EMAIL: "p@p.p" } },
+      ["-C", REPO, "commit-tree", tree, "-m", "sr2 identity probe"],
+      {
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          GIT_AUTHOR_NAME: "probe",
+          GIT_AUTHOR_EMAIL: "probe@palimpsest.invalid",
+          GIT_COMMITTER_NAME: "probe",
+          GIT_COMMITTER_EMAIL: "probe@palimpsest.invalid",
+        },
+      },
     ).trim();
-    // A DIFFERENT commit, the SAME tree — exactly the relation a squash produces.
+    // A DIFFERENT commit, the SAME tree. Nothing is written to the object store's refs: this
+    // creates a dangling object and no branch, so the probe cannot affect the repository.
     expect(rebuilt).not.toBe(head);
     expect(git(`${rebuilt}^{tree}`)).toBe(tree);
   });
