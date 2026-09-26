@@ -6097,17 +6097,62 @@ REOPENED_WAITING_FOR_QUIESCENCE / READY_FOR_DELEGATION / DELEGATED / ALREADY_IN_
 - derived candidate 的 packaged inspection / transport——D3 层继续服务，V1 不假装 candidate 是 Attempt。
 - 第二执行内核、第二 head authority、任何 continuation 状态库——被 §24 证明钉死为不存在。
 
-### Z.9 状态与门禁
+### Z.10 附录 Z-LIVE：D5-LIVE 系统级验收 gate —— D5 的最终闭合
+
+`scripts/gates/d5-live-gate.mjs`：真实 git 仓库 + 两个真实 DSH worker（`dshSubprocessWorkWorkerPort`，
+DSH 0.1.7-rc.2），全链由 **packaged** `ResultContinuationService` 承载：
+
+```text
+H0: 双 worker 并发（各自 world）→ 双双 COMPLETED → verify → 普通晋升 RA → H1
+  → packaged continuation.inspect(RB)         INCOMPATIBLE（真实 D3-b：whole-repo read × 实测 source change）
+  → caller 只给 {result, expectedAssessmentDigest}
+  → packaged startRework(RB)                  DELEGATED，reopened 事件唯一，headSynced=true
+      fresh observation → D3-b → D5-a → mint → governed TASK_READY → G10-X head sync → D2-d 委托
+  → B1 在 H1 的 world 重执行 → settle → 独立 verify → 普通晋升 → H2
+```
+
+验收 checklist（10 项全 PASS，连续两次完整 PASS）：packaged face 在位；双 worker 并发完成；stale 判
+INCOMPATIBLE；startRework 全链 DELEGATED；governed reopening 唯一；B1 在 H1 重执行完成；B1 普通晋升至
+H2；H0→H1→H2 为 first-parent promote series（范围内 merge 恰为两次 `promote <id>` --no-ff，无 rework
+特批合并/移植/侧分支）；origin 历史 3+ 事件不可变；B1 收到 M1 + C(RB) 且全部 worker 表面无任何权威对象。
+
+**D5-LIVE 抓到并修复了一个真回归**（这正是系统级 gate 存在的意义）：host bundle 的 worker runner
+（`host/dsh/lib/runner.js`）仍按 D2 时代的扁平字段（`context.projectGoal` 等）读取任务简报，而 D5-c3
+已把交付形状改为 attempt-centric `{work, compiled}` —— 打包 worker 的任务简报自 D5-c3 起实际为空
+（agent 只能靠仓库内 fixture 自行推断）。修复：runner 兼容读取 `{work, compiled}` 形状，并把
+`compiled.continuation`（PriorResultContext）作为只读背景呈现给 agent——"a prior attempt already
+worked here; the world has moved; re-verify everything"。**PriorResultContext 第一次真正到达了
+它设计时面向的读者。**
+
+gate 实测记录（诚实账）：
+1. **agent 规模越界是常态而非例外**：flash 级模型常顺手修掉兄弟缺陷，envelope write_paths 是 settlement
+   的硬契约 ⇒ OUT_OF_SCOPE 升级。gate 的恢复路径按产品语义走：revert world → report(cancelled) →
+   runTurn 泵批重试 → `palimpsest_plan` 重新武装 FAILED 任务（批预算被取消烧尽时的产品自述恢复路径）。
+2. **取消会烧批预算**：两次取消后任务落 FAILED（非 READY）——重试必须经 plan 修订重开新批，不能靠
+   调度器自发重试（实测 `runTurn` 不重排已耗尽的批）。
+3. **调度器 idle 语义**：兄弟批未结清时 scheduler decision 为 idle，mutating start 被正确拒绝——gate
+   等待调度器自己再次指向该任务后才重委托。
+4. fixture 的 write_paths 取重叠的 `["src"]`（路径校验禁止尾斜杠），使越界不致升级；scope 纪律的证明
+   属于 D2-LIVE，不属于本 gate 的判定面。
+
+### Z.11 状态与门禁 —— D5 CLOSED
 
 ```text
 D5-b2   STRONG CLOSED @ feefe3c
 D5-c1   STRONG CLOSED @ 8402fb2
 D5-c2   STRONG CLOSED @ 8b44006
 D5-c3   STRONG CLOSED @ 8c6d226
-D5-d    Packaged Result Continuation Authority   CLOSED（本附录）
-D5-LIVE real concurrent → stale → packaged startRework → re-execute → verify → promote   ← 下一步
+D5-d    STRONG CLOSED @ 3e267c5
+D5-LIVE PASS ×2（连续完整运行；gate: scripts/gates/d5-live-gate.mjs）
+
+$$oxed{	extbf{D5 CLOSED}}$$
+
+Reuse knowledge; restart authority. —— 并行投机执行 → 结果过期 → 安全复用评估 → 可证则复用，
+否则 governed rework → current-basis attempt → prior result as context, not authority →
+fresh verification → ordinary promotion。整条链第一次以打包产品形态、在真实 worker 与真实 git 上
+完整运行并通过验收。
 ```
 
-门禁（本片实测）：tsc 干净、单元 **229 files / 2587 tests**、e2e **38/38**、`architecture:check` **0
-violation**（12 baseline）、`architecture:check-public-api` **0/0/0**、`gate:d2-live` PASS、`gate:d4-live`
-PASS。H1→H2→H3 的两次重执行链已在打包安装上实测（Z.6 e2e 用例）。
+门禁（本片实测）：tsc 干净、单元全绿、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
+`architecture:check-public-api` **0/0/0**、`gate:d2-live` PASS、`gate:d4-live` PASS、`gate:d5-live`
+**PASS ×2**。
