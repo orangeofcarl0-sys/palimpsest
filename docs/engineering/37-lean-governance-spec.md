@@ -6409,3 +6409,78 @@ SR-2a    Continuation interface wall                CLOSED @ 4eae41c
 SR-2b1   Work read owner                            CLOSED（本附录）
 SR-2b2   ProjectHeadService 抽离                    ← 下一步
 ```
+
+---
+
+## 附录 AD（第 SR-2b2 期）：Project Head Owner —— 把 G10-X 的编排从 controller 里显影
+
+$$oxed{READY@E_0 ightarrow G10	ext{-}X ightarrow READY@E_1}$$
+
+### AD.1 已有的是 kernel，缺的是 owner
+
+head 机器早已有纯 kernel（`deriveProjectHeadStatus` / `compileProjectHeadReconciliation` /
+`promotionChainBasis`）与事实源（`PromotionManager` 的已提交 promotion 扫描）。它缺的是**编排的
+owner**：编译候选、重验新鲜度、拒绝无据/冲突的推进、然后才请求修订——这些都嵌在 `ProjectController`
+里，与 controller 的其他关切交织。
+
+`src/work/head.ts` 成为那个 owner，且**刻意不是第二个 head 权威**：
+
+```text
+· 状态由同一个纯 kernel、同一批已提交事实导出；
+· 它自己从不写 head —— 它请求 Work owner 的 plan 修订入口提交，传入 controller 已校验过的同一个
+  trusted headAdvance 形状；
+· 它拒绝的东西与 controller 完全相同，错误类型也相同。
+```
+
+$$oxed{a\ structurally\ available\ transition 
+eq an\ authorized\ one}$$
+
+### AD.2 两次新鲜度检查是重点
+
+`reconcile` 编译候选后**重新读取** ProjectIR 基线与 backing promotion 事实，才提交修订。编译时有效的
+候选**不**授权之后的修订——与 promotion 面同一纪律，也是过时候选**零写入**失败关闭（而不是把 head
+重新锚到一个已经移动的世界）的原因。
+
+### AD.3 逐字段等价（§十/§二十七）
+
+`test/architecture/sr2b2_head_owner.test.ts` 10 条：
+
+```text
+status()        创世即 IN_SYNC，projectHeadCommit === provenEffectHeadCommit，ref 为 null
+candidate()     无漂移时 compilable=false，blocker 具名为 no_drift
+reconcile()     无漂移 ⇒ in_sync 且零写入（log 未移动）
+targetFence()   owner 输出与 controller façade 逐字节相同；与 status/ProjectIR 各字段一致
+真实漂移推进     真实 promotion ⇒ SYNC_REQUIRED ⇒ reconcile ⇒ reconciled：
+                fromHead/toHead/blockers 精确、ProjectIR revision 递增、head_commit = provenEffectHeadCommit、
+                PROJECT_REVISED 恰 1 个且 tasks 保留 3 个（head-only 修订不改语义）、
+                goal 未动、随后 IN_SYNC、二次 reconcile 为 in_sync
+quiescence 拒绝  另一任务仍 VERIFYING ⇒ blocked 且 blocker 具名 quiescence，零写入，revision/head 均不动
+结构钉           head.ts 无 INSERT/UPDATE/DELETE、不读 git（注释剥离后判定）；
+                controller 不再 compile/derive head；提交路径仍经 controller 的 planReconciled；
+                head.ts 复用唯一纯 kernel
+```
+
+### AD.4 实测记录（诚实账）
+
+1. **multi-task 漂移不可直接推进**：attempt 在 H0 授权、effect head 移动后再晋升会被产品以
+   `cross_revision_promotion_not_supported` 拒绝——这是**正确行为**，且正说明多任务漂移必须走
+   governed rework 才能解决 quiescence。该链由 D5 套件端到端证明；本片证明只隔离 head 问题。
+2. **结构钉须剥离注释**：`head.ts` 的文档注释里**提到** `git.head()` 以说明 head 推导从不使用它，
+   裸文本搜索会命中解释本身——钉改为剥离注释后判定。
+3. **一次并发瞬态**：全量并行跑时 `lean_work_delegation_transport` 出现 1 例失败，单独跑 10/10 通过、
+   随后完整重跑 2647/2647 全绿——负载相关瞬态，非本片回归，如实记录。
+
+### AD.5 门禁（本片实测）
+
+tsc 干净、单元 **2647/2647**、e2e **38/38**、`architecture:check` **0 violation**（12 accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**。
+
+controller 5363 → **5276 行**；`src/work/head.ts` 264 行。
+
+```text
+SR-2.0   Architecture Constitution   CLOSED @ ce0e258
+SR-2a    Continuation interface wall CLOSED @ 4eae41c
+SR-2b1   Work read owner             CLOSED @ 68e0759
+SR-2b2   Project head owner          CLOSED（本附录）
+SR-2b3   Attempt execution owner     ← 下一步（承重：D2/D4/D5-LIVE 三 gate）
+```

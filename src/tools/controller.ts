@@ -51,6 +51,7 @@ import {
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
+import { makeProjectHeadService } from "../work/head.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
@@ -64,7 +65,6 @@ import {
   type ReconcileTaskRow,
 } from "../domain/plan_reconciliation.js";
 import {
-  compileProjectHeadReconciliation,
   ProjectHeadError,
   type ProjectHeadReconciliationCandidate,
   type ProjectHeadState,
@@ -790,6 +790,8 @@ export class ProjectController {
   readonly claims = new ClaimGraph();
   /** SR-2 §九: the Work projection reads, owned in one place (`src/work/read_model.ts`). */
   readonly work: import("../work/read_model.js").WorkReadModel;
+  /** SR-2 §十: the G10-X head reconciliation owner (`src/work/head.ts`). */
+  readonly head: import("../work/head.js").ProjectHeadService;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -808,6 +810,42 @@ export class ProjectController {
       connection: options.store.connection,
       projectId: options.projectId,
       store: options.store,
+    });
+    /**
+     * SR-2 §十: the head owner. The controller keeps its façade (`reconcileProjectHead`,
+     * `reworkTargetFence`) and delegates — the orchestration no longer lives here, but the
+     * commit path still goes through this controller's own trusted revision entry.
+     */
+    this.head = makeProjectHeadService({
+      projectId: options.projectId,
+      project: () => this.work.project(),
+      taskStates: () =>
+        (options.store.connection.prepare("SELECT task_id, state FROM tasks WHERE project_id=?").all(options.projectId) as Array<
+          Record<string, unknown>
+        >).map((row) => ({ taskId: String(row.task_id), state: String(row.state) })),
+      openAttempts: () => this.work.openAttempts().map((attempt) => ({ ...attempt })),
+      promotionFacts: () => this.promotions.promotionFactsSync(),
+      promotionEvent: (eventId: number) => {
+        const event = options.store.getEvent(eventId);
+        return event === undefined
+          ? null
+          : {
+              eventType: event.event_type,
+              resultingHeadCommit: String(event.payload.resulting_head_commit ?? ""),
+              expectedHeadCommit: String(event.payload.expected_head_commit ?? ""),
+            };
+      },
+      canonicalExpectedHead: () => this.promotions.canonicalExpectedHeadSync(),
+      commitHeadAdvance: (advance) => {
+        const outcome = this.planReconciled(
+          {
+            tasks: [...this.work.project().tasks],
+            reason: advance.reason,
+          },
+          { headAdvance: { fromPromotionEventId: advance.fromPromotionEventId, toHead: advance.toHead } },
+        );
+        return { revision: outcome.result.revision };
+      },
     });
     this.execution = options.execution ?? "worktree";
     this.#standard = options.standard;
@@ -1420,81 +1458,19 @@ export class ProjectController {
     advance: TrustedPlanOptions["headAdvance"],
   ): string {
     if (advance === undefined) return current.head_commit;
-    const refuse = (message: string, refs: readonly string[]): never => {
-      throw new ProjectHeadError("caller_head_not_canonical", message, refs);
-    };
-    const status = this.promotions.projectHeadStatusSync();
-    if (status.state !== "SYNC_REQUIRED") {
-      refuse(
-        `head advance refused: the canonical head state is ${status.state}, not SYNC_REQUIRED`,
-        [status.projectHeadCommit, status.provenEffectHeadCommit],
-      );
-    }
-    if (status.projectHeadCommit !== current.head_commit) {
-      refuse(
-        `head advance refused: the project head changed under the revision (${current.head_commit} -> ${status.projectHeadCommit})`,
-        [current.head_commit, status.projectHeadCommit],
-      );
-    }
-    const canonical = this.promotions.canonicalExpectedHeadSync();
-    if (advance.toHead !== canonical || advance.toHead !== status.provenEffectHeadCommit) {
-      refuse(
-        `head advance refused: toHead ${advance.toHead} is not the canonical proven effect head ${canonical}`,
-        [advance.toHead, canonical],
-      );
-    }
-    if (
-      status.latestPromotionEventRef === null ||
-      advance.fromPromotionEventId !== status.latestPromotionEventRef
-    ) {
-      refuse(
-        `head advance refused: fromPromotionEventId ${advance.fromPromotionEventId} is not the canonical chain tip`,
-        [advance.fromPromotionEventId],
-      );
-    }
-    const eventId = Number(advance.fromPromotionEventId);
-    const backing = Number.isInteger(eventId) ? this.store.getEvent(eventId) : undefined;
-    if (
-      backing === undefined ||
-      backing.event_type !== "PROMOTION_COMMITTED" ||
-      String(backing.payload.resulting_head_commit) !== advance.toHead ||
-      String(backing.payload.expected_head_commit) !== current.head_commit
-    ) {
-      refuse(
-        `head advance refused: promotion event ${advance.fromPromotionEventId} does not back ${current.head_commit} -> ${advance.toHead}`,
-        [advance.fromPromotionEventId],
-      );
-    }
-    return advance.toHead;
+    // SR-2 §十: the head owner makes the judgement — it is the one place that may decide whether
+    // the head actually backs the requested advance.
+    return this.head.validateHeadAdvance({
+      current,
+      toHead: advance.toHead,
+      fromPromotionEventId: advance.fromPromotionEventId,
+    });
   }
 
   /** The pure head-reconciliation proposal (no writes). */
   #headReconciliationCandidate(): ProjectHeadReconciliationCandidate {
-    const project = this.#project();
-    const status = this.promotions.projectHeadStatusSync();
-    const tasks = (
-      this.store.connection
-        .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
-        .all(this.projectId) as Array<Record<string, unknown>>
-    ).map((row) => ({ taskId: String(row.task_id), state: String(row.state) }));
-    const openAttempts = (
-      this.store.connection
-        .prepare(
-          "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING')",
-        )
-        .all(this.projectId) as Array<Record<string, unknown>>
-    ).map((row) => ({
-      attemptId: String(row.attempt_id),
-      taskId: String(row.task_id),
-      state: String(row.state),
-    }));
-    return compileProjectHeadReconciliation({
-      project,
-      status,
-      tasks,
-      openAttempts,
-      promotions: this.promotions.promotionFactsSync(),
-    });
+    // SR-2 §十: compiled by the head owner, over the SAME pure kernel and the SAME committed facts.
+    return this.head.candidate();
   }
 
   /**
@@ -1572,81 +1548,18 @@ export class ProjectController {
    * nothing; minting stays the continuation service's job.
    */
   reworkTargetFence(): import("../domain/rework_admission.js").ReworkTargetFence {
-    const project = this.#project();
-    const status = this.promotions.projectHeadStatusSync();
-    return Object.freeze({
-      projectRevision: project.revision,
-      projectDigest: project.digest,
-      projectHeadCommit: project.head_commit,
-      provenEffectHeadCommit: status.provenEffectHeadCommit,
-      latestPromotionEventRef: status.latestPromotionEventRef,
-    });
+    // SR-2 §十: the canonical authority picture is the head owner's read.
+    return this.head.targetFence();
   }
 
   async reconcileProjectHead(
     input: { operator?: boolean; candidate?: ProjectHeadReconciliationCandidate } = {},
   ): Promise<ProjectHeadReconciliationResult> {
     void input.operator;
-    const project = this.#project();
-    const fromHead = project.head_commit;
-    const status = await this.promotions.projectHeadStatus();
-    if (status.state === "IN_SYNC") {
-      return { status: "in_sync", fromHead, toHead: fromHead, blockers: [] };
-    }
-    // The candidate is ALWAYS re-validated below (freshness) and again inside
-    // `planReconciled` (canonical proof), so a supplied candidate is never a
-    // caller-settable head: a stale or forged one fails closed with zero writes.
-    const candidate = input.candidate ?? this.#headReconciliationCandidate();
-    if (!candidate.compilable) {
-      return {
-        status: "blocked",
-        fromHead: candidate.fromHead,
-        toHead: candidate.toHead,
-        blockers: candidate.blockers.map((blocker) => `${blocker.kind}: ${blocker.detail}`),
-      };
-    }
-    const promotionEventId = candidate.latestPromotionEventId;
-    if (promotionEventId === null) {
-      throw new ProjectHeadError(
-        "head_not_proven",
-        "the head drift has no backing promotion fact; refusing an unproven advance",
-        [fromHead, candidate.toHead],
-      );
-    }
-    // Freshness (zero writes on failure): the basis and the backing fact must
-    // still be exactly what the candidate was compiled from.
-    const freshProject = this.#project();
-    const freshStatus = await this.promotions.projectHeadStatus();
-    const freshBacking = candidate.promotionChainBasis.at(-1)?.eventId;
-    if (
-      freshProject.revision !== project.revision ||
-      freshProject.digest !== project.digest ||
-      freshProject.head_commit !== fromHead ||
-      freshStatus.state !== "SYNC_REQUIRED" ||
-      freshStatus.provenEffectHeadCommit !== candidate.toHead ||
-      freshStatus.latestPromotionEventRef !== promotionEventId ||
-      (freshBacking !== undefined && freshBacking !== promotionEventId)
-    ) {
-      throw new ProjectHeadError(
-        "stale_head_reconciliation",
-        "the ProjectIR basis or the backing promotion fact changed before the reconciliation committed; no events were written",
-        [String(project.revision), String(freshProject.revision), fromHead, freshProject.head_commit],
-      );
-    }
-    const outcome = this.planReconciled(
-      {
-        tasks: [...project.tasks],
-        reason: `project head reconciliation ${fromHead} -> ${candidate.toHead}`,
-      },
-      { headAdvance: { fromPromotionEventId: promotionEventId, toHead: candidate.toHead } },
-    );
-    return {
-      status: "reconciled",
-      revision: outcome.result.revision,
-      fromHead,
-      toHead: candidate.toHead,
-      blockers: [],
-    };
+    // SR-2 §十: the head owner reconciles; this method is the compatibility façade over it. The
+    // commit still runs through THIS controller's `planReconciled`, so the trusted revision path
+    // and its canonical proof are unchanged.
+    return this.head.reconcile(input.candidate === undefined ? {} : { candidate: input.candidate });
   }
 
   /**
