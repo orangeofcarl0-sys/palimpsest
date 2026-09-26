@@ -89,6 +89,15 @@ export interface WorkReadModel {
   attemptAuthorization(attemptId: string): AttemptAuthorization;
   /** Every attempt still holding the mutating lane (CREATED/LEASED/RUNNING). */
   openAttempts(): readonly WorkOpenAttempt[];
+  /**
+   * Every task's state, in the projection's own order — the quiescence input.
+   *
+   * A READ the head service and the record-set projections both need; it was being re-derived by
+   * each consumer, which is the duplication §九 exists to remove.
+   */
+  taskStates(): readonly { readonly taskId: string; readonly state: string }[];
+  /** Every attempt row, for the projections that report history rather than occupancy. */
+  allAttempts(): readonly WorkAttemptRow[];
   /** The nonterminal attempt for one task, when exactly one exists. */
   openAttemptFor(taskId: string): WorkOpenAttempt | null;
 }
@@ -225,6 +234,27 @@ export function makeWorkReadModel(input: {
       return resolution.authorization;
     },
     openAttempts,
+    taskStates(): readonly { readonly taskId: string; readonly state: string }[] {
+      const rows = connection
+        .prepare("SELECT task_id, state FROM tasks WHERE project_id=?")
+        .all(projectId) as unknown as readonly { task_id: unknown; state: unknown }[];
+      return Object.freeze(rows.map((row) => ({ taskId: String(row.task_id), state: String(row.state) })));
+    },
+    allAttempts(): readonly WorkAttemptRow[] {
+      const rows = connection
+        .prepare("SELECT attempt_id, task_id, state, state_json FROM attempts WHERE project_id=? ORDER BY last_event_id")
+        .all(projectId) as unknown as readonly { attempt_id: unknown; task_id: unknown; state: unknown; state_json: Uint8Array }[];
+      return Object.freeze(
+        rows.map((row) =>
+          Object.freeze({
+            attemptId: String(row.attempt_id),
+            taskId: String(row.task_id ?? ""),
+            state: String(row.state),
+            batchActivationEventId: batchAnchorOf(row.state_json),
+          }),
+        ),
+      );
+    },
     openAttemptFor(taskId: string): WorkOpenAttempt | null {
       const held = openAttempts().filter((candidate) => candidate.taskId === taskId);
       return held.length === 1 ? held[0]! : null;

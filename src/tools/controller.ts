@@ -845,10 +845,8 @@ export class ProjectController {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
       },
-      attempts: () =>
-        (this.store.connection.prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=?").all(options.projectId) as Array<
-          Record<string, unknown>
-        >).map((row) => ({ attemptId: String(row.attempt_id), taskId: String(row.task_id ?? ""), state: String(row.state) })),
+      // §九: the attempt family read is the Work owner's, not a second query.
+      attempts: () => this.work.allAttempts().map((row) => ({ attemptId: row.attemptId, taskId: row.taskId, state: row.state })),
       evidence: () =>
         (this.store.connection.prepare("SELECT evidence_id, status, evidence_json FROM evidence WHERE project_id=?").all(options.projectId) as Array<
           Record<string, unknown>
@@ -977,10 +975,8 @@ export class ProjectController {
     this.head = makeProjectHeadService({
       projectId: options.projectId,
       project: () => this.work.project(),
-      taskStates: () =>
-        (options.store.connection.prepare("SELECT task_id, state FROM tasks WHERE project_id=?").all(options.projectId) as Array<
-          Record<string, unknown>
-        >).map((row) => ({ taskId: String(row.task_id), state: String(row.state) })),
+      // §九: same reader as every other task-state question.
+      taskStates: () => this.work.taskStates(),
       openAttempts: () => this.work.openAttempts().map((attempt) => ({ ...attempt })),
       promotionFacts: () => this.promotions.promotionFactsSync(),
       promotionEvent: (eventId: number) => {
