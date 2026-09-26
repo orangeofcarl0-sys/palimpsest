@@ -6414,7 +6414,9 @@ SR-2b2   ProjectHeadService 抽离                    ← 下一步
 
 ## 附录 AD（第 SR-2b2 期）：Project Head Owner —— 把 G10-X 的编排从 controller 里显影
 
-$$oxed{READY@E_0 ightarrow G10	ext{-}X ightarrow READY@E_1}$$
+$$oxed{READY@E_0 
+ightarrow G10	ext{-}X 
+ightarrow READY@E_1}$$
 
 ### AD.1 已有的是 kernel，缺的是 owner
 
@@ -6483,4 +6485,79 @@ SR-2a    Continuation interface wall CLOSED @ 4eae41c
 SR-2b1   Work read owner             CLOSED @ 68e0759
 SR-2b2   Project head owner          CLOSED（本附录）
 SR-2b3   Attempt execution owner     ← 下一步（承重：D2/D4/D5-LIVE 三 gate）
+```
+
+---
+
+## 附录 AE（第 SR-2b3 期）：Mutating Attempt Execution Owner —— D2 的两条梯子整体搬家
+
+$$oxed{prepare ightarrow execute ightarrow observe ightarrow settle}$$
+
+### AE.1 搬家的是决策逻辑，不是原语
+
+D2 的 mutating 生命周期**原语**本就在正确的位置（`claim` / `report` / execution-world port /
+scheduler 的 admission 规则），但它的**决策逻辑**——prepare 的"首事件之前必须全部成立"的前置梯子，
+以及 settle 的"世界的工作能否成为 canonical 结果"的观测梯子——内联在 `ProjectController` 里，与
+controller 的其他关切交织。`src/work/attempt_execution.ts` 就是那套决策逻辑，整体搬过去。
+
+**刻意不搬**：
+
+$$oxed{worker.run()\ transport ightarrow still\ WorkDelegationService\ (D2	ext{-}d)}$$
+
+host 的 job 生命周期（排队、每 job 的 world 绑定、终态投递）是 host 关切，留在原地。本 owner 准备位置、
+观测世界、结算 attempt——它从不运行任何东西。
+
+### AE.2 顺序即语义（逐字保留）
+
+`prepare` 在**第一个事件之前**评估每一个前置条件，所以拒绝是 no-op：`TASK_STARTED` 已提交然后被放弃，
+本身就已经是 canonical 变更。`settle` 先观测再准入、先准入再导出、先导出再上报——因为上报即将**命名**
+一个 commit，而一个无人能解析的名字比一次拒绝更糟。每条顺序都是一个 D2-e1 存在的理由。
+
+两条梯子的每一处检查都逐字保留：同样的顺序、同样的类型化拒绝码、同样的消息文本。
+
+### AE.3 逐项等价（§十一/§二十七）
+
+`test/architecture/sr2b3_attempt_execution_owner.test.ts` 13 条：
+
+```text
+prepare 梯子   P0 in-place 拒绝（façade 与 owner 消息完全相同，零事件）
+                target() 与 prepare() 对任务与 base 一致（base === envelope.base_commit）
+                真实 position 的 world 位于 envelope base（四方一致），未运行 worker 时世界干净
+                第二次 prepare 是 RESUMED（同一 attemptId/worldPath，attempt 行恰 1 个）
+settle 梯子     NEEDS_ESCALATION / HOST_FAILURE ⇒ NOT_READY 且 reason 为 kind，attempt 未动
+                UNCOMMITTED_WORK（具名路径）/ NO_WORK / OUT_OF_SCOPE（列出越界路径）
+端到端内核      真实 worker 运行 ⇒ 同一 attempt identity、result commit 可在 canonical 对象库解析
+                （EXPORT BEFORE REPORT 成立）、changed_files === envelope.write_paths、
+                事件序列恰为 TASK_STARTED → ATTEMPT_CREATED → ATTEMPT_STARTED → ATTEMPT_COMPLETED、
+                canonical 树未移动（worktree attempt 在自己的 world 提交）
+                SETTLED 的 resultCommit === 世界 HEAD（观测而非声称）
+结构钉           owner 不持有 transport/job/scheduler，也不写事件；controller 保留原语并委派决策；
+                controller 内已无 D2 梯子文本残留
+```
+
+### AE.4 实测记录（诚实账）
+
+1. **事件序列是四个而非五个**：本部署的 `claim` 路径把执行记为 `ATTEMPT_STARTED`，此路径上没有独立的
+   `ATTEMPT_LEASED`。证明钉的是**实测事实**（其职责是检测变化），而非假设。
+2. **D4-0 结构钉需跨文件计数**：两个消费规则的入口现在位于不同文件（controller 保留声明与自己的
+   bootstrap 入口，owner 的 target/prepare 是另两个消费者）。钉改为跨两文件计数，并钉住真正的主张：
+   规则**声明一次**、两个消费者，且两边都没有重述（owner 不调用 `assessSpeculativeAdmission`）。
+3. **两处结构钉须剥离注释**：文档注释里**提到** `worker.run()` 与 `git.head()` 以说明它们不属于本模块，
+   裸文本搜索会命中解释本身。
+
+### AE.5 门禁（本片实测）
+
+tsc 干净、单元 **2660/2660**、e2e **38/38**、`architecture:check` **0 violation**（12 accepted）、
+`architecture:check-public-api` **0/0/0**，以及 §十一 要求的**三个承重 gate 全部 PASS**：
+**`gate:d2-live` PASS · `gate:d4-live` PASS · `gate:d5-live` PASS**。
+
+controller 5276 → **5048 行**；`src/work/attempt_execution.ts` 444 行。
+
+```text
+SR-2.0   Architecture Constitution      CLOSED @ ce0e258
+SR-2a    Continuation interface wall    CLOSED @ 4eae41c
+SR-2b1   Work read owner                CLOSED @ 68e0759
+SR-2b2   Project head owner             CLOSED @ a3b338f
+SR-2b3   Attempt execution owner        CLOSED（本附录）
+SR-2b4   Context owner                  ← 下一步
 ```
