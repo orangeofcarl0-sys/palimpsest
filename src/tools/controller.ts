@@ -52,6 +52,7 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
+import { makeMutatingAttemptService } from "../work/attempt_execution.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
@@ -792,6 +793,8 @@ export class ProjectController {
   readonly work: import("../work/read_model.js").WorkReadModel;
   /** SR-2 §十: the G10-X head reconciliation owner (`src/work/head.ts`). */
   readonly head: import("../work/head.js").ProjectHeadService;
+  /** SR-2 §十一: the D2 mutating attempt execution owner (`src/work/attempt_execution.ts`). */
+  readonly attemptExecution: import("../work/attempt_execution.js").MutatingAttemptService;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -848,6 +851,65 @@ export class ProjectController {
       },
     });
     this.execution = options.execution ?? "worktree";
+    /**
+     * SR-2 §十一: the D2 mutating execution owner. The two ladders (prepare's precondition ladder
+     * and settle's observation ladder) moved whole; this controller keeps the PRIMITIVES they
+     * compose and delegates the decisions.
+     */
+    this.attemptExecution = makeMutatingAttemptService({
+      execution: this.execution,
+      projectInitialized: () => this.isProjectInitialized(),
+      canonicalRepository: () => this.#canonicalRepository(),
+      observedHead: (repository: string) => this.#observedHead(repository),
+      headStatus: () => {
+        const status = this.promotions.projectHeadStatusSync();
+        return {
+          state: status.state,
+          projectHeadCommit: status.projectHeadCommit,
+          provenEffectHeadCommit: status.provenEffectHeadCommit,
+        };
+      },
+      speculativeAdmission: (expectedTaskId) => this.#speculativeAdmission(expectedTaskId),
+      taskEnvelope: (taskId: string) => this.#taskEnvelope(taskId),
+      nonterminalAttempts: () => this.#nonterminalAttempts(),
+      completionContractForEnvelope: (envelope) => this.#completionContractForEnvelope(envelope),
+      standard: () => this.#standard,
+      authorizedCommands: () => this.authorizedCommands(),
+      attemptResultVerificationAvailable: () => this.#capabilities.attemptResultVerificationAvailable,
+      completionReadiness: ({ contract }) =>
+        deriveCompletionReadiness({
+          standard: this.#standard,
+          authorizedCommands: this.authorizedCommands(),
+          capabilities: this.#capabilities,
+          contract: contract as import("../domain/completion_contract.js").AttemptCompletionContract,
+        }),
+      assertNoUnownedWork: (repository: string) => this.#assertNoUnownedWork(repository),
+      advanceToClaimableAttempt: () => this.#advanceToClaimableAttempt(),
+      claim: async (attemptId: string) => ({ worktreePath: (await this.claim(attemptId)).worktreePath }),
+      attemptContext: (attemptId: string) => this.#attemptContext(attemptId),
+      attemptWorkDir: (attemptId: string) => this.#attemptWorkDirSync(attemptId),
+      observeAttemptResult: (attemptId: string, baseCommit: string) => this.#observeAttemptResultSync(attemptId, baseCommit),
+      exportResultCommit: async ({ attemptId, commit }) => {
+        const port = this.#executionWorldPort;
+        if (port === undefined) return { imported: false, detail: "no execution world port is composed" };
+        return await port.exportResultCommit({ attemptId, commit });
+      },
+      hasExecutionWorldPort: () => this.#executionWorldPort !== undefined,
+      report: (attemptId: string) => {
+        this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
+      },
+      preparedProjection: (input) =>
+        this.#preparedProjection(
+          input.state,
+          input.taskId,
+          input.attemptId,
+          input.worldPath,
+          input.envelope,
+          input.contract as import("../domain/completion_contract.js").AttemptCompletionContract,
+          input.standard as import("../domain/standard.js").ProjectStandard,
+          input.detail,
+        ),
+    });
     this.#standard = options.standard;
     // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
     // truth instead of a comfortable guess.
@@ -2718,195 +2780,19 @@ export class ProjectController {
     /** True when an existing attempt already holds the lane, so the delegation resumes rather than starts. */
     readonly resumed: boolean;
   } {
-    const requested = input.expectedTaskId === undefined ? undefined : input.expectedTaskId.trim();
-    const expectedTaskId = requested === "" ? undefined : requested;
-    if (this.execution !== "worktree") {
-      throw new DomainValidationError(
-        "WORKTREE_PLACEMENT_REQUIRED: a mutating delegation runs in an isolated work execution world, and this deployment works in the canonical tree (in-place) — the principal's own tree is not a worker lane",
-      );
-    }
-    if (!this.isProjectInitialized()) {
-      throw new DomainValidationError(
-        "WORK_NOT_DECLARED: this project has no canonical plan, so there is no task to execute — declare the work first (a plan, or palimpsest_begin for direct work); delegation executes work the project already recognizes, it does not invent it",
-      );
-    }
-    /**
-     * §D4-0: ONE admission read, shared with the bootstrap entrance below. It decides whether a
-     * SPECULATIVE world may open or resume, and defers to the scheduler for whether a NEW position may
-     * start — so how many tasks may be in flight is what the PLAN declares, not a product-wide constant.
-     */
-    const admission = this.#speculativeAdmission(expectedTaskId);
-    if (admission.kind === "REFUSE") throw speculativeAdmissionRefusal(admission);
-    if (admission.kind === "RESUME") {
-      return Object.freeze({
-        taskId: admission.taskId,
-        baseCommit: this.#taskEnvelope(admission.taskId).base_commit,
-        resumed: true,
-      });
-    }
-    return Object.freeze({ taskId: admission.taskId, baseCommit: this.#taskEnvelope(admission.taskId).base_commit, resumed: false });
+    // SR-2 §十一: the D2 decision ladder is the execution owner's; this is the compatibility façade.
+    return this.attemptExecution.target(input);
   }
 
   /**
    * PLMP-LEAN-1 §D2-b: bootstrap an EXISTING, scheduler-admissible canonical Work task into an
    * isolated execution position for a worker.
    *
-   * What this is NOT, and the boundary is the whole design:
-   *
-   *   - it does not take a `goal`, `writePaths` or `requiredArtifacts`, and it cannot create a task.
-   *     `palimpsest_begin` is the DIRECT entrance, where the principal states what the work is; this
-   *     one executes work the project has ALREADY declared and authorized. With no canonical task it
-   *     refuses, because `What work exists? != Who executes that work?` and only the first belongs to
-   *     planning;
-   *   - it is not a second scheduler. It bootstraps the task the scheduler itself makes next, and
-   *     `expectedTaskId` is an ASSERTION on that decision, never a way to reorder, hold or skip work;
-   *   - it mints no authority: the worker's authority IS the canonical `TaskEnvelope` (base commit,
-   *     write scope, artifacts, allowed commands, policy identity), so everything downstream —
-   *     completion contract, scope observation, mechanical checks, attempt-result verification,
-   *     promotion eligibility — is the existing machinery, unchanged;
-   *   - it runs no model and produces no result. D2-c runs a worker in what this prepares.
-   *
-   * Every precondition is evaluated BEFORE the first event, so a refusal is a no-op: `TASK_STARTED`
-   * committed and then abandoned would already be canonical mutation.
+   * SR-2 §十一: the ladder moved to `src/work/attempt_execution.ts` whole — every precondition, in
+   * the same order, with the same typed refusals. This method is the façade existing callers use.
    */
   async prepareMutatingWork(input: { readonly expectedTaskId?: string | undefined } = {}): Promise<PreparedMutatingWork> {
-    const requested = input.expectedTaskId === undefined ? undefined : input.expectedTaskId.trim();
-    const expectedTaskId = requested === "" ? undefined : requested;
-
-    // P0 — placement. A worker lane is an ISOLATED world by definition (§D2.2 ②), and in-place is the
-    // principal's own tree. The two lanes are therefore mutually exclusive per deployment, which is
-    // also why D2 v1 needs no principal-attempt attribution at all (§D2.3): an in-place deployment
-    // cannot host a worker lane, and a worktree deployment cannot host a direct attempt (§E.4.1).
-    if (this.execution !== "worktree") {
-      throw new DomainValidationError(
-        "WORKTREE_PLACEMENT_REQUIRED: a mutating delegation runs in an isolated work execution world, and this deployment works in the canonical tree (in-place) — the principal's own tree is not a worker lane",
-      );
-    }
-
-    // P1 — the work must already exist. Delegation does not plan.
-    if (!this.isProjectInitialized()) {
-      throw new DomainValidationError(
-        "WORK_NOT_DECLARED: this project has no canonical plan, so there is no task to execute — declare the work first (a plan, or palimpsest_begin for direct work); delegation executes work the project already recognizes, it does not invent it",
-      );
-    }
-
-    // P2 — the head basis must be settled. This is not a D2 rule: G10-X already forbids activating new
-    // READY work while the project head needs reconciliation, and a bootstrap is exactly that.
-    const headStatus = this.promotions.projectHeadStatusSync();
-    if (headStatus.state !== "IN_SYNC") {
-      throw new DomainValidationError(
-        `HEAD_NOT_IN_SYNC: this project's head is ${headStatus.state} (project head ${headStatus.projectHeadCommit.slice(0, 12)}, proven effect head ${headStatus.provenEffectHeadCommit.slice(0, 12)}) — new work must not be activated until the head is reconciled`,
-      );
-    }
-
-    const repository = this.#canonicalRepository();
-
-    /**
-     * P3/P4 — §D4-0: the SAME admission read `mutatingWorkTarget` uses, so the two entrances cannot
-     * disagree about whether a speculative world may open. It answers three things at once: whether this
-     * work already holds a position (resume), whether the scheduler makes it next (start), or a typed
-     * refusal. Concurrency is what the PLAN declares, so this no longer imposes a product-wide 1.
-     */
-    const admission = this.#speculativeAdmission(expectedTaskId);
-    if (admission.kind === "REFUSE") throw speculativeAdmissionRefusal(admission);
-
-    if (admission.kind === "RESUME") {
-      // The position already exists. Nothing is re-claimed and no second world is made.
-      const holder = this.#nonterminalAttempts().find((attempt) => attempt.taskId === admission.taskId);
-      if (holder === undefined) {
-        throw new DomainValidationError(
-          `the admission named task "${admission.taskId}" as holding a position, but no nonterminal attempt for it exists — the read and the state disagree, and this refuses rather than guessing`,
-        );
-      }
-      const envelope = this.#taskEnvelope(holder.taskId);
-      const contract = this.#completionContractForEnvelope(envelope);
-      const resumedStandard = this.#standard;
-      if (resumedStandard === undefined) {
-        throw new DomainValidationError(
-          "NEEDS_STANDARD_CONFIRMATION: this project has no confirmed completion standard, so nothing can be derived as done — the operator states one sentence first, and delegation does not mint one",
-        );
-      }
-      if (holder.state === "CREATED") {
-        // A retry after a crash between ATTEMPT_CREATED and the claim: the attempt exists, the world does
-        // not. Claim THAT attempt — stepping again would deadlock, because the scheduler returns nothing
-        // while a task occupies the stage.
-        const claimed = await this.claim(holder.attemptId);
-        return this.#preparedProjection("PREPARED", holder.taskId, holder.attemptId, claimed.worktreePath, envelope, contract, resumedStandard, "the task's attempt existed and was claimed; its isolated work world is ready");
-      }
-      // LEASED or RUNNING: the position exists, whatever state its worker is in.
-      const observed = this.#attemptWorkDirSync(holder.attemptId);
-      return this.#preparedProjection(
-        "RESUMED",
-        holder.taskId,
-        holder.attemptId,
-        observed?.workDir ?? "",
-        envelope,
-        contract,
-        resumedStandard,
-        "this work already holds a mutating position; its execution world is unchanged and nothing was re-claimed",
-      );
-    }
-
-    const taskId = admission.taskId;
-    const envelope = this.#taskEnvelope(taskId);
-
-    // P5 — what completion will require, derived from the canonical envelope BEFORE anything is
-    // written, and refused here if this deployment cannot meet it. Same rule `begin` applies.
-    const standard = this.#standard;
-    if (standard === undefined || !standard.confirmed) {
-      throw new DomainValidationError(
-        "NEEDS_STANDARD_CONFIRMATION: this project has no confirmed completion standard, so nothing can be derived as done — the operator states one sentence first, and delegation does not mint one",
-      );
-    }
-    const contract = this.#completionContractForEnvelope(envelope);
-    if (contract.verification.required && !this.#capabilities.attemptResultVerificationAvailable) {
-      throw new DomainValidationError(
-        `ATTEMPT_RESULT_VERIFICATION_UNAVAILABLE: this task requires independent verification (${contract.verification.requiredReasons.join("; ")}) and this deployment composes no executable verifier for an attempt result — the operator must register one, and until then this work must not begin`,
-      );
-    }
-    const readiness = deriveCompletionReadiness({
-      standard: this.#standard,
-      authorizedCommands: this.authorizedCommands(),
-      capabilities: this.#capabilities,
-      contract,
-    });
-    if (readiness.task !== null && readiness.task.state !== "READY") {
-      throw new DomainValidationError(
-        `prepareMutatingWork refused before writing anything: ${readiness.task.blockers.join("; ")}`,
-      );
-    }
-
-    // P6 — the canonical tree must hold no work nobody owns, judged by the SAME predicate `begin`
-    // uses (§E.7): a second definition of "clean" over one repository is how two entrances drift.
-    this.#assertNoUnownedWork(repository);
-
-    // P7 — one base, agreed four ways. `TaskEnvelope.base_commit` IS the Work base; this only proves
-    // the world still agrees with it. Nothing is "frozen" here and no second base value is stored,
-    // because two bases is how `Result identity != promotion authority` gets quietly broken.
-    const liveHead = this.#observedHead(repository);
-    if (
-      liveHead !== headStatus.projectHeadCommit ||
-      headStatus.projectHeadCommit !== headStatus.provenEffectHeadCommit ||
-      liveHead !== envelope.base_commit
-    ) {
-      throw new DomainValidationError(
-        `HEAD_BASIS_MISMATCH: the repository is at ${liveHead.slice(0, 12)}, the project head at ${headStatus.projectHeadCommit.slice(0, 12)}, the proven effect head at ${headStatus.provenEffectHeadCommit.slice(0, 12)} and the task's base at ${envelope.base_commit.slice(0, 12)} — a worker's world must start where its envelope says the work starts`,
-      );
-    }
-
-    // ONLY NOW: lifecycle events, then the isolated world.
-    const attemptId = this.#advanceToClaimableAttempt();
-    const claimed = await this.claim(attemptId);
-    return this.#preparedProjection(
-      "PREPARED",
-      taskId,
-      attemptId,
-      claimed.worktreePath,
-      envelope,
-      contract,
-      standard,
-      "the task was started, its attempt claimed and its isolated work world created; no worker is running yet",
-    );
+    return this.attemptExecution.prepare(input);
   }
 
   /**
@@ -2914,129 +2800,15 @@ export class ProjectController {
    *
    *     READY_FOR_SETTLEMENT  ->  observe  ->  basis admission  ->  export  ->  report  ->  COMPLETED
    *
-   * Four rules shape the order, and each of them is a crash window or a conflation this slice exists to
-   * close:
-   *
-   *   1. the worker's outcome is TESTIMONY, never a report. Everything the attempt records comes from
-   *      `observeAttemptResult()`, exactly as it does for a direct attempt — so `WorkerOutcome !=
-   *      AttemptReport`, and a worker cannot write the ledger;
-   *   2. the BASIS is admitted BEFORE anything is exported or recorded. Checking after would leave a
-   *      world exported and reported against a head the project no longer has;
-   *   3. the result is EXPORTED before it is reported. The report names `result_commit = R`, and that
-   *      name has to be resolvable in the canonical object database — otherwise releasing a world
-   *      would leave an attempt whose result commit cannot be materialized anywhere;
-   *   4. a `BASE_DRIFT` destroys nothing and terminalises nothing: the result stays in its world for
-   *      D3, and the attempt keeps the mutating lane, because a violation of the base must not release
-   *      mutation authority as a side effect.
+   * SR-2 §十一: the ladder moved whole; the orderings it encodes (observe before admit, admit before
+   * export, export before report) are each a crash window D2-e1 exists to close, and they are
+   * unchanged.
    */
   async settleMutatingWork(input: {
     readonly attemptId: string;
     readonly workerOutcome: { readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE"; readonly detail?: string | undefined };
   }): Promise<MutatingWorkSettlement> {
-    const { attemptId } = input;
-
-    // A worker that did not hand over work keeps everything: escalation and host failure are facts about
-    // a worker, and D2-c already refused to turn them into canonical outcomes.
-    if (input.workerOutcome.kind !== "READY_FOR_SETTLEMENT") {
-      return Object.freeze({
-        state: "NOT_READY" as const,
-        attemptId,
-        reason: input.workerOutcome.kind,
-        detail: "the worker did not report the work ready for settlement, so nothing is observed, exported or recorded — the attempt and its world are untouched",
-      });
-    }
-
-    // Observe the WORLD. `#observeAttemptResultSync` is D2-a's observation, unchanged: same commands,
-    // same `.palimpsest/` filter, same completion invariant as an in-place attempt.
-    const [, envelope] = this.#attemptContext(attemptId);
-    const observed = this.#observeAttemptResultSync(attemptId, envelope.base_commit);
-    if (observed === null) {
-      return Object.freeze({
-        state: "NOT_READY" as const,
-        attemptId,
-        reason: "WORLD_UNOBSERVABLE",
-        detail: "this attempt's execution world cannot be observed, so nothing can be established about its work",
-      });
-    }
-
-    // §2.6, the SAME invariant: a completed attempt's work must be commit-materialized. `report` holds
-    // this too — this is the early, explanatory refusal, not a second rule.
-    if (observed.uncommittedChanges.length > 0) {
-      return Object.freeze({
-        state: "NOT_READY" as const,
-        attemptId,
-        reason: "UNCOMMITTED_WORK",
-        detail: `the world still holds work that is not committed: ${observed.uncommittedChanges.join(", ")} — a settled result commit must contain the work, so the worker has to commit (or revert) it and report again`,
-      });
-    }
-    if (observed.changedFiles.length === 0) {
-      return Object.freeze({
-        state: "NOT_READY" as const,
-        attemptId,
-        reason: "NO_WORK",
-        detail: "the world holds no observable change against its base, so there is nothing to settle",
-      });
-    }
-    const outOfScope = observed.changedFiles.filter(
-      (path) => !envelope.write_paths.some((allowed) => path === allowed || path.startsWith(`${allowed}/`)),
-    );
-    if (outOfScope.length > 0) {
-      return Object.freeze({
-        state: "NOT_READY" as const,
-        attemptId,
-        reason: "OUT_OF_SCOPE",
-        detail: `the world changed paths outside the task envelope's write_paths [${envelope.write_paths.join(", ")}]: ${outOfScope.join(", ")}`,
-      });
-    }
-
-    // BASIS ADMISSION, before any effect: the project head must still be what the world was cut from.
-    // This is §D2.6's exit re-check, and it is the same four-way agreement P7 applies on the way in.
-    const headStatus = this.promotions.projectHeadStatusSync();
-    const liveHead = this.#observedHead(this.#canonicalRepository());
-    if (
-      headStatus.state !== "IN_SYNC" ||
-      headStatus.projectHeadCommit !== headStatus.provenEffectHeadCommit ||
-      headStatus.projectHeadCommit !== envelope.base_commit ||
-      liveHead !== envelope.base_commit
-    ) {
-      return Object.freeze({
-        state: "BASE_DRIFT" as const,
-        attemptId,
-        resultCommit: observed.observedHead,
-        worldRetained: true,
-        detail: `BASE_DRIFT: this result was computed at ${envelope.base_commit.slice(0, 12)} but the project is now at ${headStatus.projectHeadCommit.slice(0, 12)} (head state ${headStatus.state}, repository ${liveHead.slice(0, 12)}) — the result is retained in its world and stays available, and the attempt keeps its lane rather than being terminalised by someone else's head move`,
-      });
-    }
-
-    // EXPORT before REPORT: the report is about to name `result_commit = R`, and R must be resolvable in
-    // the canonical object database — otherwise a released world would leave a name nobody can resolve.
-    let exported = true;
-    let exportDetail = "no execution world port is composed, so the result was not imported";
-    if (this.#executionWorldPort !== undefined) {
-      const outcome = await this.#executionWorldPort.exportResultCommit({ attemptId, commit: observed.observedHead });
-      exported = outcome.imported;
-      exportDetail = outcome.detail;
-      if (!exported) {
-        return Object.freeze({
-          state: "NOT_READY" as const,
-          attemptId,
-          reason: "RESULT_NOT_EXPORTED",
-          detail: `the result commit could not be imported into the canonical object database (${outcome.detail}), so recording it would name a commit the project cannot materialize`,
-        });
-      }
-    }
-
-    // NOW the ledger. `report` re-observes independently — this call supplied no claim, and passing none
-    // is the point: nothing here can smuggle a caller's word into the attempt's record.
-    this.report(attemptId, { workerStatus: "completed", summary: "delegated work settled from its execution world" });
-    return Object.freeze({
-      state: "SETTLED" as const,
-      attemptId,
-      resultCommit: observed.observedHead,
-      changedFiles: observed.changedFiles,
-      exported,
-      detail: `the attempt is COMPLETED with result commit ${observed.observedHead.slice(0, 12)}; ${exportDetail}`,
-    });
+    return this.attemptExecution.settle(input);
   }
 
   /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */  /** §D2-b projection: what a caller needs to place a worker, and nothing about how to run one. */
