@@ -80,6 +80,11 @@ if (mode === 'write') {
     capturedTree,
     edgeReasons: arch.BASELINE_EDGE_REASONS,
     cycleReasons: arch.BASELINE_CYCLE_REASONS,
+    // SR-2e §21/§22/§23: DECLARED rules, copied from the code-level tables — never derived from
+    // the graph they constrain.
+    firewalls: arch.DEPENDENCY_FIREWALLS,
+    ratchets: arch.HOTSPOT_RATCHETS,
+    allowlists: arch.IMPORTER_ALLOWLISTS,
   });
   mkdirSync(join(REPO, 'architecture'), { recursive: true });
   mkdirSync(join(REPO, 'docs', 'engineering', 'architecture'), { recursive: true });

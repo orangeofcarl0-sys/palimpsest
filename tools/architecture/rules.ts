@@ -21,7 +21,64 @@ import { forbiddenEdgeRule } from "./layers.js";
  * it was read from `.git/HEAD`, which is a FILE in a linked worktree (not a directory), so
  * every worktree-based capture silently recorded `unknown`.
  */
-export const ARCHITECTURE_BASELINE_VERSION = 3;
+/**
+ * SR-2e (§21/§22/§23) — v4 adds three constraints the layer model is too coarse to express, each
+ * as DATA so a reviewer reads the rule rather than inferring it from code:
+ *
+ *   §21  CONCRETE dependency firewalls — "src/continuation/** must not import src/state/**". The
+ *        layer map cannot say this: `state` and `continuation` are both legal targets of each
+ *        other's layers in general, and only the CONCRETE pair is wrong.
+ *   §22  HOTSPOT ratchets — a known hotspot may not silently grow again. Recorded as a measured
+ *        ceiling per file, not as a global "every file < N lines" rule.
+ *   §23  CONCRETE importer allowlists — which modules may name a given concrete module at all.
+ *        This is the one that keeps a future E plane from reaching into the kernel: it must fail
+ *        on the IMPORT, not on a downstream symptom.
+ *
+ * All three are DENY-BY-DEFAULT with EXPLICIT exceptions, matching the established idiom: a
+ * firewall names paths, and every allowance is a concrete edge with a written reason.
+ */
+export const ARCHITECTURE_BASELINE_VERSION = 4;
+
+/**
+ * §21 — a concrete dependency firewall: no module matching `from` may import one matching `to`.
+ *
+ * Prefixes, because a firewall is about a BOUNDARY rather than a file. The exclusions are
+ * concrete paths with written reasons, never a blanket "this layer may".
+ */
+export interface DependencyFirewall {
+  readonly id: string;
+  readonly from: readonly string[];
+  readonly to: readonly string[];
+  readonly reason: string;
+  /** Concrete exceptions, each with its own reason. Empty for a rule that must hold absolutely. */
+  readonly exclusions: readonly { readonly from: string; readonly to: string; readonly reason: string }[];
+}
+
+/**
+ * §22 — a hotspot ratchet: the file may not exceed the recorded size/dependency counts.
+ *
+ * `null` means "not ratcheted on this dimension" — deliberately explicit rather than 0, which
+ * would read as a real ceiling.
+ */
+export interface HotspotRatchet {
+  readonly file: string;
+  readonly maxLoc: number | null;
+  readonly maxFanOut: number | null;
+  readonly maxFanIn: number | null;
+  readonly reason: string;
+}
+
+/**
+ * §23 — a concrete importer allowlist: the named module may be imported ONLY by these prefixes.
+ *
+ * The strongest of the three, and the one the ruling singled out for the E plane: a new semantic
+ * module must fail on the import itself.
+ */
+export interface ImporterAllowlist {
+  readonly module: string;
+  readonly allowedImporters: readonly string[];
+  readonly reason: string;
+}
 
 /** ONE permitted forbidden IMPORT EDGE — a concrete file pair with a written reason. */
 export interface PermittedForbiddenEdge {
@@ -51,10 +108,23 @@ export interface ArchitectureBaseline {
   readonly permittedCycles: readonly { readonly files: readonly string[]; readonly reason: string }[];
   /** Modules that are allowed to have an unresolved relative import (should normally be empty). */
   readonly permittedUnresolvedImports: readonly string[];
+  /** §21: concrete firewalls. DATA, so the rule is reviewable rather than inferred. */
+  readonly dependencyFirewalls?: readonly DependencyFirewall[] | undefined;
+  /** §22: hotspot ratchets, measured after SR-2. */
+  readonly hotspotRatchets?: readonly HotspotRatchet[] | undefined;
+  /** §23: concrete importer allowlists. */
+  readonly importerAllowlists?: readonly ImporterAllowlist[] | undefined;
 }
 
 export interface ArchitectureViolation {
-  readonly kind: "forbidden_import" | "new_cycle" | "unresolved_import" | "unclassified_module";
+  readonly kind:
+    | "forbidden_import"
+    | "new_cycle"
+    | "unresolved_import"
+    | "unclassified_module"
+    | "firewall_breach"
+    | "hotspot_growth"
+    | "importer_not_allowed";
   readonly detail: string;
   readonly files: readonly string[];
 }
@@ -141,6 +211,89 @@ export function checkArchitecture(
     });
   }
 
+  /**
+   * §21 — CONCRETE DEPENDENCY FIREWALLS.
+   *
+   * The layer model cannot express "src/continuation/** must not import src/state/**": both
+   * modules' LAYERS permit the edge in general, and only the concrete pair is wrong. A firewall
+   * names the two path families and lists its allowances as concrete edges with reasons.
+   */
+  for (const firewall of baseline.dependencyFirewalls ?? []) {
+    const matchedFrom = (file: string): boolean => firewall.from.some((prefix) => file.startsWith(prefix));
+    const matchedTo = (file: string): boolean => firewall.to.some((prefix) => file.startsWith(prefix));
+    const excluded = (from: string, to: string): boolean =>
+      firewall.exclusions.some((exception) => exception.from === from && exception.to === to);
+    for (const node of architecture.modules) {
+      if (!matchedFrom(node.file)) continue;
+      for (const target of node.imports) {
+        if (!matchedTo(target)) continue;
+        if (excluded(node.file, target)) continue;
+        violations.push({
+          kind: "firewall_breach",
+          detail: `[${firewall.id}] ${node.file} imports ${target}, which this firewall forbids — ${firewall.reason}`,
+          files: [node.file, target],
+        });
+      }
+    }
+  }
+
+  /**
+   * §22 — HOTSPOT RATCHETS.
+   *
+   * A known hotspot may not silently grow again. The rule is per-FILE and measured, never a global
+   * "every file is under N lines": a mechanical size rule would be met by splitting a coherent
+   * module, which is exactly the "increase packaging, decrease knowledge" degeneration SR-2
+   * refuses. A `null` dimension means "not ratcheted on this axis", and it is spelled out so it
+   * cannot be misread as a ceiling of zero.
+   */
+  for (const ratchet of baseline.hotspotRatchets ?? []) {
+    const node = architecture.modules.find((module) => module.file === ratchet.file);
+    if (node === undefined) {
+      // A ratchet for a module that no longer exists is stale, not satisfied.
+      violations.push({
+        kind: "hotspot_growth",
+        detail: `[ratchet] ${ratchet.file} is ratcheted but no longer exists — remove the ratchet rather than leaving a rule that checks nothing`,
+        files: [ratchet.file],
+      });
+      continue;
+    }
+    const checks: readonly (readonly [string, number | null, number])[] = [
+      ["LOC", ratchet.maxLoc, node.loc],
+      ["fanOut", ratchet.maxFanOut, node.fanOut],
+      ["fanIn", ratchet.maxFanIn, node.fanIn],
+    ];
+    for (const [dimension, ceiling, actual] of checks) {
+      if (ceiling === null) continue;
+      if (actual <= ceiling) continue;
+      violations.push({
+        kind: "hotspot_growth",
+        detail: `[ratchet] ${ratchet.file} ${dimension} grew to ${String(actual)}, above its recorded ceiling ${String(ceiling)} — ${ratchet.reason}`,
+        files: [ratchet.file],
+      });
+    }
+  }
+
+  /**
+   * §23 — CONCRETE IMPORTER ALLOWLISTS.
+   *
+   * The strongest constraint, and the one the ruling named for the future E plane: a new semantic
+   * module must fail on the IMPORT itself, not on a symptom three layers away. Prefixes, so an
+   * allowlist covers a family (all of `src/composition/`), and every entry carries a reason at the
+   * rule level.
+   */
+  for (const allowlist of baseline.importerAllowlists ?? []) {
+    for (const node of architecture.modules) {
+      if (node.file === allowlist.module) continue;
+      if (!node.imports.includes(allowlist.module)) continue;
+      if (allowlist.allowedImporters.some((prefix) => node.file.startsWith(prefix))) continue;
+      violations.push({
+        kind: "importer_not_allowed",
+        detail: `${node.file} imports ${allowlist.module}, which only these importers may name: ${allowlist.allowedImporters.join(", ")} — ${allowlist.reason}`,
+        files: [node.file, allowlist.module],
+      });
+    }
+  }
+
   const unreasonedExceptions = [
     ...baseline.permittedForbiddenEdges
       .filter((entry) => entry.reason.startsWith("historical edge"))
@@ -176,6 +329,12 @@ export function baselineFrom(
   options: {
     readonly capturedFrom: string;
     readonly capturedTree?: string | undefined;
+    /** §21: the declared firewalls, supplied from the code-level table. */
+    readonly firewalls?: readonly DependencyFirewall[] | undefined;
+    /** §22: the measured ratchets, supplied from the code-level table. */
+    readonly ratchets?: readonly HotspotRatchet[] | undefined;
+    /** §23: the declared importer allowlists, supplied from the code-level table. */
+    readonly allowlists?: readonly ImporterAllowlist[] | undefined;
     /** Reasons keyed by `fromFile -> toFile`. */
     readonly edgeReasons?: ReadonlyMap<string, string>;
     readonly cycleReasons?: ReadonlyMap<string, string>;
@@ -211,5 +370,11 @@ export function baselineFrom(
           : "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"),
     })),
     permittedUnresolvedImports: [],
+    // §21/§22/§23: these are DECLARED rules rather than observed exceptions, so they are supplied
+    // from the code-level tables (below) and never inferred from the graph — a firewall derived
+    // from the current edges would permit exactly what it found.
+    ...(options.firewalls === undefined ? {} : { dependencyFirewalls: options.firewalls }),
+    ...(options.ratchets === undefined ? {} : { hotspotRatchets: options.ratchets }),
+    ...(options.allowlists === undefined ? {} : { importerAllowlists: options.allowlists }),
   };
 }

@@ -1,26 +1,26 @@
 {
-  "version": 3,
-  "capturedFrom": "a3915d725848cb88032957427e9994138ea6bce9",
+  "version": 4,
+  "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
   "totals": {
-    "files": 391,
-    "loc": 112648,
-    "bytes": 4955598,
-    "edges": 1629,
+    "files": 398,
+    "loc": 114025,
+    "bytes": 5019363,
+    "edges": 1644,
     "externalImports": 19,
     "unresolvedImports": 0
   },
   "layers": [
     {
       "layer": "L1",
-      "files": 66
+      "files": 67
     },
     {
       "layer": "L2",
-      "files": 189
+      "files": 193
     },
     {
       "layer": "L3",
-      "files": 53
+      "files": 55
     },
     {
       "layer": "L4",
@@ -87,10 +87,10 @@
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "loc": 5378,
-      "bytes": 236794,
-      "fanOut": 35,
-      "fanIn": 20
+      "loc": 4828,
+      "bytes": 212379,
+      "fanOut": 39,
+      "fanIn": 19
     }
   ],
   "topFanOut": [
@@ -105,14 +105,14 @@
       "fanOut": 40
     },
     {
+      "file": "src/tools/controller.ts",
+      "layer": "L2",
+      "fanOut": 39
+    },
+    {
       "file": "src/application/factory.ts",
       "layer": "L4",
       "fanOut": 36
-    },
-    {
-      "file": "src/tools/controller.ts",
-      "layer": "L2",
-      "fanOut": 35
     },
     {
       "file": "src/deployment/launch.ts",
@@ -120,23 +120,18 @@
       "fanOut": 24
     },
     {
+      "file": "src/composition/continuation.ts",
+      "layer": "L5",
+      "fanOut": 21
+    },
+    {
       "file": "src/project_management/service.ts",
       "layer": "L3",
       "fanOut": 19
     },
     {
-      "file": "src/composition/continuation.ts",
-      "layer": "L5",
-      "fanOut": 18
-    },
-    {
       "file": "src/composition/cognition.ts",
       "layer": "L5",
-      "fanOut": 17
-    },
-    {
-      "file": "src/project_world/index.ts",
-      "layer": "L2",
       "fanOut": 17
     },
     {
@@ -145,9 +140,9 @@
       "fanOut": 16
     },
     {
-      "file": "src/continuation/service.ts",
-      "layer": "L3",
-      "fanOut": 15
+      "file": "src/project_world/index.ts",
+      "layer": "L2",
+      "fanOut": 16
     },
     {
       "file": "src/composition/core.ts",
@@ -193,6 +188,11 @@
       "file": "src/adapters/http/router.ts",
       "layer": "L5",
       "fanOut": 11
+    },
+    {
+      "file": "src/application/surfaces/project.ts",
+      "layer": "L4",
+      "fanOut": 11
     }
   ],
   "topFanIn": [
@@ -202,24 +202,24 @@
       "fanIn": 107
     },
     {
-      "file": "src/schema/identifier.ts",
-      "layer": "L1",
-      "fanIn": 36
-    },
-    {
       "file": "src/schema/index.ts",
       "layer": "L1",
-      "fanIn": 36
+      "fanIn": 40
+    },
+    {
+      "file": "src/schema/identifier.ts",
+      "layer": "L1",
+      "fanIn": 37
     },
     {
       "file": "src/federation/peer.ts",
       "layer": "L2",
-      "fanIn": 35
+      "fanIn": 34
     },
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "fanIn": 20
+      "fanIn": 19
     },
     {
       "file": "src/tools/dsh_types.ts",
@@ -233,6 +233,11 @@
     },
     {
       "file": "src/binding/contract.ts",
+      "layer": "L1",
+      "fanIn": 17
+    },
+    {
+      "file": "src/domain/errors.ts",
       "layer": "L1",
       "fanIn": 17
     },
@@ -257,19 +262,9 @@
       "fanIn": 15
     },
     {
-      "file": "src/domain/errors.ts",
-      "layer": "L1",
-      "fanIn": 14
-    },
-    {
       "file": "src/recipes/execution.ts",
       "layer": "L3",
       "fanIn": 14
-    },
-    {
-      "file": "src/organization/definition.ts",
-      "layer": "L2",
-      "fanIn": 13
     },
     {
       "file": "src/adapters/http/common.ts",
@@ -277,13 +272,13 @@
       "fanIn": 12
     },
     {
-      "file": "src/coordination/index.ts",
-      "layer": "L2",
+      "file": "src/domain/world_basis.ts",
+      "layer": "L1",
       "fanIn": 12
     },
     {
-      "file": "src/domain/world_basis.ts",
-      "layer": "L1",
+      "file": "src/organization/definition.ts",
+      "layer": "L2",
       "fanIn": 12
     },
     {
@@ -295,18 +290,23 @@
       "file": "src/runtime_scope/index.ts",
       "layer": "L2",
       "fanIn": 12
+    },
+    {
+      "file": "src/boundary_memory/index.ts",
+      "layer": "L2",
+      "fanIn": 11
     }
   ],
   "layerEdges": [
     {
       "fromLayer": "L2",
       "toLayer": "L2",
-      "count": 571
+      "count": 578
     },
     {
       "fromLayer": "L2",
       "toLayer": "L1",
-      "count": 188
+      "count": 203
     },
     {
       "fromLayer": "L1",
@@ -320,13 +320,13 @@
     },
     {
       "fromLayer": "L5",
-      "toLayer": "L5",
+      "toLayer": "L2",
       "count": 111
     },
     {
       "fromLayer": "L5",
-      "toLayer": "L2",
-      "count": 110
+      "toLayer": "L5",
+      "count": 111
     },
     {
       "fromLayer": "L4",
@@ -334,24 +334,24 @@
       "count": 55
     },
     {
-      "fromLayer": "L3",
-      "toLayer": "L2",
+      "fromLayer": "L5",
+      "toLayer": "L3",
       "count": 50
     },
     {
-      "fromLayer": "L5",
-      "toLayer": "L3",
-      "count": 49
+      "fromLayer": "L3",
+      "toLayer": "L2",
+      "count": 42
     },
     {
       "fromLayer": "L3",
       "toLayer": "L1",
-      "count": 35
+      "count": 34
     },
     {
       "fromLayer": "L5",
       "toLayer": "L1",
-      "count": 30
+      "count": 31
     },
     {
       "fromLayer": "L4",
@@ -439,11 +439,6 @@
       "count": 2
     },
     {
-      "fromLayer": "L3",
-      "toLayer": "L5",
-      "count": 1
-    },
-    {
       "fromLayer": "L5",
       "toLayer": "ENTRY",
       "count": 1
@@ -453,29 +448,9 @@
     {
       "edge": "L2->L3",
       "count": 4
-    },
-    {
-      "edge": "L3->L5",
-      "count": 1
     }
   ],
   "cycles": [
-    {
-      "size": 10,
-      "files": [
-        "src/boundary_memory/ref.ts",
-        "src/coordination/attempts.ts",
-        "src/coordination/index.ts",
-        "src/coordination/participate.ts",
-        "src/coordination/participation.ts",
-        "src/coordination/store.ts",
-        "src/federation/commitment.ts",
-        "src/federation/messages.ts",
-        "src/federation/peer.ts",
-        "src/organization/definition.ts"
-      ],
-      "selfLoop": false
-    },
     {
       "size": 8,
       "files": [
@@ -503,26 +478,9 @@
     {
       "size": 3,
       "files": [
-        "src/canvas/derive.ts",
-        "src/tools/controller.ts",
-        "src/tools/graph.ts"
-      ],
-      "selfLoop": false
-    },
-    {
-      "size": 3,
-      "files": [
         "src/proof_asset/disclosure.ts",
         "src/proof_asset/service.ts",
         "src/proof_asset/store.ts"
-      ],
-      "selfLoop": false
-    },
-    {
-      "size": 2,
-      "files": [
-        "src/effects/promotion.ts",
-        "src/recovery/recovery.ts"
       ],
       "selfLoop": false
     },
@@ -544,11 +502,6 @@
     }
   ],
   "directoryEdges": [
-    {
-      "from": "src/federation",
-      "to": "src/coordination",
-      "count": 17
-    },
     {
       "from": "src/campaign",
       "to": "src/schema",
@@ -572,11 +525,6 @@
     {
       "from": "src/composition",
       "to": "src/interaction",
-      "count": 12
-    },
-    {
-      "from": "src/project_world",
-      "to": "src/schema",
       "count": 12
     },
     {
@@ -605,11 +553,6 @@
       "count": 10
     },
     {
-      "from": "src/composition",
-      "to": "src/project_world",
-      "count": 10
-    },
-    {
       "from": "src",
       "to": "src/composition",
       "count": 10
@@ -620,8 +563,13 @@
       "count": 9
     },
     {
-      "from": "src/continuation",
-      "to": "src/project_world",
+      "from": "src/federation",
+      "to": "src/identity",
+      "count": 9
+    },
+    {
+      "from": "src/project_world",
+      "to": "src/schema",
       "count": 9
     },
     {
@@ -635,13 +583,23 @@
       "count": 8
     },
     {
-      "from": "src/deployment",
+      "from": "src/composition",
       "to": "src/project_world",
+      "count": 8
+    },
+    {
+      "from": "src/effects",
+      "to": "src/domain",
       "count": 8
     },
     {
       "from": "src/external_assets",
       "to": "src/schema",
+      "count": 8
+    },
+    {
+      "from": "src/federation",
+      "to": "src/coordination",
       "count": 8
     },
     {
@@ -662,11 +620,6 @@
     {
       "from": "src/composition",
       "to": "src/state",
-      "count": 7
-    },
-    {
-      "from": "src/effects",
-      "to": "src/domain",
       "count": 7
     },
     {
@@ -735,6 +688,11 @@
       "count": 6
     },
     {
+      "from": "src/deployment",
+      "to": "src/project_world",
+      "count": 6
+    },
+    {
       "from": "src/external_assets",
       "to": "src/project_workspace",
       "count": 6
@@ -785,6 +743,11 @@
       "count": 5
     },
     {
+      "from": "src/coordination",
+      "to": "src/identity",
+      "count": 5
+    },
+    {
       "from": "src/experiment",
       "to": "src/organization_memory",
       "count": 5
@@ -797,6 +760,11 @@
     {
       "from": "src/project_management",
       "to": "src/recipes",
+      "count": 5
+    },
+    {
+      "from": "src/project_world",
+      "to": "src/result",
       "count": 5
     },
     {
@@ -890,11 +858,6 @@
       "count": 4
     },
     {
-      "from": "src/coordination",
-      "to": "src/schema",
-      "count": 4
-    },
-    {
       "from": "src/deployment",
       "to": "src/interaction",
       "count": 4
@@ -938,17 +901,12 @@
       "from": "src/state",
       "to": "src/domain",
       "count": 4
-    },
-    {
-      "from": "src/tools",
-      "to": "src/evidence",
-      "count": 4
     }
   ],
   "baseline": {
-    "version": 3,
-    "capturedFrom": "a3915d725848cb88032957427e9994138ea6bce9",
-    "capturedTree": "b72b8da88ca87739fa5f3ac397cdcef6e7712a31",
+    "version": 4,
+    "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
+    "capturedTree": "9793e63c9ff6cc1e9f5783ee19a1c6f5d7c8325e",
     "permittedForbiddenEdges": [
       {
         "from": "src/monitor/driver.ts",
@@ -1025,6 +983,171 @@
         "reason": "single-layer cycle accepted at the SR-1 baseline; see MODULE-ARCHITECTURE-BASELINE.md"
       }
     ],
-    "permittedUnresolvedImports": []
+    "permittedUnresolvedImports": [],
+    "dependencyFirewalls": [
+      {
+        "id": "continuation-not-world-internals",
+        "from": [
+          "src/continuation/"
+        ],
+        "to": [
+          "src/state/",
+          "src/tools/controller.ts",
+          "src/project_world/issuance.ts",
+          "src/project_world/observation_authority.ts",
+          "src/project_world/admission_store.ts",
+          "src/deployment/source_change_observer.ts"
+        ],
+        "reason": "the continuation layer reaches the world through its own consumer-owned ports; naming an authority module directly is exactly the dependency knowledge SR-2a removed. The port wall is a RULE now, not a convention a future slice may quietly reopen.",
+        "exclusions": []
+      },
+      {
+        "id": "identity-not-its-consumers",
+        "from": [
+          "src/identity/"
+        ],
+        "to": [
+          "src/coordination/",
+          "src/federation/",
+          "src/organization/",
+          "src/boundary_memory/"
+        ],
+        "reason": "the stable-identity layer sits BELOW Coordination semantics and Federation transport, which is what makes their direction one-way. Importing an upper layer would rebuild the ten-file cycle SR-2d3 removed.",
+        "exclusions": []
+      },
+      {
+        "id": "work-not-host",
+        "from": [
+          "src/work/"
+        ],
+        "to": [
+          "src/tools/controller.ts",
+          "src/deployment/",
+          "src/composition/"
+        ],
+        "reason": "a Work owner answers Work questions; the controller is one of its CONSUMERS, and the host bundle runs a worker. An upward edge from the owner to either inverts the ownership SR-2b established.",
+        "exclusions": []
+      },
+      {
+        "id": "context-not-host",
+        "from": [
+          "src/context/"
+        ],
+        "to": [
+          "src/tools/controller.ts",
+          "src/deployment/",
+          "src/composition/"
+        ],
+        "reason": "the context owner produces a manifest from owners it consumes; the host RUNS a worker and the controller is a consumer. SR-2b4 already moved one such edge (the worker-context contract is declared structurally) and this keeps it moved.",
+        "exclusions": []
+      },
+      {
+        "id": "result-not-world-internals",
+        "from": [
+          "src/result/"
+        ],
+        "to": [
+          "src/tools/controller.ts",
+          "src/state/",
+          "src/deployment/"
+        ],
+        "reason": "Result ≠ World, and SR-2c made that a module boundary. The result plane judges nothing about the world's consistency and must not reach the Work owner, the log or the host to do its job.",
+        "exclusions": []
+      }
+    ],
+    "hotspotRatchets": [
+      {
+        "file": "src/tools/controller.ts",
+        "maxLoc": 4830,
+        "maxFanOut": 39,
+        "maxFanIn": 19,
+        "reason": "the Work orchestration façade and the measured hotspot SR-2 exists for. It was 5378 LOC / fanOut 35 / fanIn 20 at the SR-2 start snapshot and 4828 / 39 / 19 after the b-slices: the KNOWLEDGE it owns fell even though its fan-out rose (it now composes its owners). The ceiling is where SR-2 left it — it may fall, and it may not grow back."
+      },
+      {
+        "file": "src/composition/install_contract.ts",
+        "maxLoc": 700,
+        "maxFanOut": 40,
+        "maxFanIn": null,
+        "reason": "the aggregate install contract, at the §25 size ceiling. It is a composition surface, so its fan-out is expected — what may not grow is its SIZE, because a contract that keeps absorbing fields stops being reviewable. A new cohesive contract belongs in its own module."
+      },
+      {
+        "file": "src/application/factory.ts",
+        "maxLoc": null,
+        "maxFanOut": 36,
+        "maxFanIn": null,
+        "reason": "the application factory composes every face; its fan-out is the assembly. Ratcheted on fan-out only, because that is the number that grows when a face is added without a decision."
+      },
+      {
+        "file": "src/advanced.ts",
+        "maxLoc": null,
+        "maxFanOut": 40,
+        "maxFanIn": null,
+        "reason": "the public entry barrel. Its fan-out is the public surface itself, so a NEW re-export is a public API change and should be visible as a ratchet breach rather than as an incidental diff."
+      }
+    ],
+    "importerAllowlists": [
+      {
+        "module": "src/tools/controller.ts",
+        "allowedImporters": [
+          "src/composition/",
+          "src/application/",
+          "src/tools/",
+          "src/interaction/",
+          "src/deployment/",
+          "src/install.ts",
+          "src/cli.ts",
+          "src/serve.ts",
+          "src/tui.ts",
+          "src/descriptor.ts",
+          "src/index.ts",
+          "src/advanced.ts",
+          "src/monitor/",
+          "src/project_management/",
+          "src/project_workspace/",
+          "src/project_verification/",
+          "src/external_assets/",
+          "src/recipes/",
+          "src/advisor/",
+          "src/campaign/",
+          "src/collaboration/",
+          "src/attention/",
+          "src/reasoning_cell/",
+          "src/coordination/",
+          "src/institution/",
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/continuity/",
+          "src/federation/",
+          "src/organization_dynamics/",
+          "src/boundary_memory/",
+          "src/evidence/"
+        ],
+        "reason": "the controller is a COMPATIBILITY FAÇADE over owners, not an implementation nexus. Existing consumers are recorded so this slice changes nothing; the point is the NEXT module — a new semantic or E-plane module must reach the owner it needs (src/work/, src/context/, src/result/, src/identity/) rather than this façade, and that now fails on the import."
+      },
+      {
+        "module": "src/state/event_store.ts",
+        "allowedImporters": [
+          "src/state/",
+          "src/composition/",
+          "src/domain/",
+          "src/scheduler/",
+          "src/tools/",
+          "src/effects/",
+          "src/recovery/",
+          "src/coordination/",
+          "src/evidence/",
+          "src/install.ts",
+          "src/cli.ts",
+          "src/serve.ts",
+          "src/tui.ts",
+          "src/descriptor.ts",
+          "src/index.ts",
+          "src/advanced.ts",
+          "src/continuity/",
+          "src/boundary_memory/"
+        ],
+        "reason": "the Event Log is the deepest owner in the system. SR-2a removed the continuation layer's direct reach into it; recording the current readers keeps that removal from being undone while making a NEW reader a deliberate, reviewable act."
+      }
+    ]
   }
 }

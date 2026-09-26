@@ -276,8 +276,13 @@ describe("SR-2 §七 the baseline records a checkable identity", () => {
     expect(git(`${rebuilt}^{tree}`)).toBe(tree);
   });
 
-  it("baseline v3 declares the version it was written as", () => {
-    expect(baseline.version).toBe(3);
+  it("the baseline declares the version it was written as", () => {
+    /**
+     * v3 was SR-2.0's version (the captured identity became checkable). SR-2e raised it to v4,
+     * which adds the three constraint tables. The pin asserts the CURRENT version, so a future
+     * bump must be a deliberate edit rather than an unnoticed `--write` side effect.
+     */
+    expect(baseline.version).toBe(4);
   });
 });
 
