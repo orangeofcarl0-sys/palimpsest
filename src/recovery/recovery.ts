@@ -9,33 +9,17 @@ import type { EventStore } from "../state/index.js";
 import type { PalimpsestEffectsRuntime } from "../effects/runtime.js";
 import { PromotionManager } from "../effects/promotion.js";
 
-export type PromotionRecoveryOutcome =
-  | {
-      promotionId: string;
-      outcome: "committed";
-      resultingHeadCommit: string;
-      /** receipt: Ordarium already held the success; reconcile: the action's
-       * reconcile query proved it; redispatch: the record was absent and the
-       * invocation re-ran. */
-      via: "receipt" | "reconcile" | "redispatch";
-    }
-  | { promotionId: string; outcome: "failed"; reason: string }
-  | { promotionId: string; outcome: "in-flight"; ordariumState: string }
-  | { promotionId: string; outcome: "blocked"; reason: string };
-
-export interface RecoveryReport {
-  /** PREPARED promotions found (before reconciliation). */
-  prepared: number;
-  /** Driven to a terminal state (PROMOTION_COMMITTED / PROMOTION_FAILED). */
-  terminal: PromotionRecoveryOutcome[];
-  /** Ordarium still owns the outcome (claimed/dispatched/redispatching). */
-  inFlight: PromotionRecoveryOutcome[];
-  /** Reconciliation cannot proceed; the operator must decide (H1-A2). */
-  blocked: PromotionRecoveryOutcome[];
-}
+/**
+ * SR-2 §十八: the outcome and report types MOVED to `src/domain/promotion_recovery_contract.ts`,
+ * a neutral contract module, so the promotion engine no longer imports this service to name a
+ * result type. Re-exported here so every existing import path is unchanged.
+ */
+export type { PromotionRecoveryOutcome, RecoveryReport } from "../domain/promotion_recovery_contract.js";
+// Imported as well as re-exported: this module's own signatures USE them.
+import type { PromotionRecoveryOutcome as PromotionRecoveryOutcomeLocal, RecoveryReport as RecoveryReportLocal } from "../domain/promotion_recovery_contract.js";
 
 export interface PromotionRecoveryService {
-  reconcileAll(): Promise<RecoveryReport>;
+  reconcileAll(): Promise<RecoveryReportLocal>;
 }
 
 export function createPromotionRecoveryService(options: {

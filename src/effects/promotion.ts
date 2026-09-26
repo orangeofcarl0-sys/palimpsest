@@ -63,7 +63,9 @@ import type { PromotionOutcomeBasis } from "../domain/promotion_terminal.js";
 import { canonicalDigest } from "../schema/canonical.js";
 import { isTransientOperationError } from "./errors.js";
 import { orchestrationAuthorization, type PalimpsestEffectsRuntime } from "./runtime.js";
-import type { PromotionRecoveryOutcome, RecoveryReport } from "../recovery/recovery.js";
+// SR-2 §十八: the shared contract lives in a neutral domain module; importing the recovery
+// SERVICE to name a result type is what closed the promotion ↔ recovery SCC.
+import type { PromotionRecoveryOutcome, RecoveryReport } from "../domain/promotion_recovery_contract.js";
 
 /**
  * Safe error codes that justify terminalizing a promotion during recovery.
