@@ -6737,7 +6737,8 @@ SR-2d1  controller ↔ graph/canvas SCC 清除             ← 下一步
 ## 附录 AH（第 SR-2d1 期）：Projection Cycle 清除 —— 投影不反向依赖 owner
 
 $$oxed{Projection 
-otightarrow Owner}$$
+ot
+ightarrow Owner}$$
 
 ### AH.1 SCC 的真实构成
 
@@ -6801,4 +6802,66 @@ SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f
 SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee
 SR-2d1  Projection cycle 清除                CLOSED（本附录）
 SR-2d2  promotion ↔ recovery cycle 清除      ← 下一步
+```
+
+---
+
+## 附录 AI（第 SR-2d2 期）：Promotion ↔ Recovery Cycle 清除 —— 契约下沉，而非改协议
+
+$$oxed{Promotion ightarrow durable\ records\ /\ narrow\ read\ contract ightarrow Recovery}$$
+
+### AI.1 SCC 的真实构成：只有一条边是真依赖
+
+```text
+recovery/recovery.ts → effects/promotion.ts   调用 —— recovery 驱动 promotion 引擎
+                                              （机制住在 PromotionManager 上）
+effects/promotion.ts → recovery/recovery.ts   类型 —— 两个结果类型，别无其他
+```
+
+反向边**纯粹**为了让引擎用其消费者的词汇命名自己的结果类型。于是：
+
+- 把两个纯数据契约（`PromotionRecoveryOutcome`、`RecoveryReport`）**下沉**到中性的
+  `src/domain/promotion_recovery_contract.ts`（L1，无行为、无 store、无权威）；
+- 两侧都从那里 import；`recovery.ts` 仍 re-export，**既有 import 路径全部不变**。
+
+$$oxed{这是契约搬迁，不是协议变更}$$
+
+**没有一个字段、标签或字符串改变含义**——`committed/failed/in-flight/blocked` 四臂、`via:
+receipt|reconcile|redispatch` 三值、report 的四个桶，逐字不变，并由证明钉住。
+
+§十八 明确禁止的退化（建 `shared/utils.ts` 垃圾桶）没有发生：契约放在**已有**的 `domain/`，且只承载
+这两个类型的语义。
+
+### AI.2 exception 随之删除（§三十一）
+
+```text
+permittedCycles: 7 → 6        accepted exceptions: 11 → 10
+```
+
+累计：**12 → 11（SR-2d1）→ 10（SR-2d2）**。三条"计数"钉一并改为钉**方向**或**只减不增**，使后续分片
+继续消除 cycle 时不会再打断它们（而**新增** cycle 仍必须失败）。
+
+### AI.3 证明（`test/architecture/sr2d2_promotion_recovery_cycle.test.ts`，11 条）
+
+```text
+无 SCC 含该对；剩余唯一边是 recovery→promotion（反向边断言不存在）；引擎不再 import recovery service
+且改指 contract；recovery 仍驱动引擎（机制 owner 未变）；
+contract 模块为 L1 且无任何运行时构造（无 DB/IO/clock/engine/class/function/const）；
+四臂/三 via 值/四桶/各字段逐字保留；recovery 仍导出两类型（既有路径不变）；
+两侧都不 DECLARE 该类型（同一契约，不是两份拷贝）；
+baseline 只剩 6 个 cycle 且不含该对；exception 12→11→10；层级为实测值（promotion L2 / recovery L2 /
+contract L1——契约在两者**之下**，这正是剩余方向合法的原因）
+```
+
+### AI.4 门禁（本片实测）
+
+tsc 干净、单元 **2701/2701**、e2e **38/38**、`architecture:check` **0 violation**（**10** accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d2-live` PASS**、**`gate:d5-live` PASS**
+（§十八 要求：normal promotion 一致、所有既有 crash window 一致、recovery 报告一致）。
+
+```text
+SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f
+SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee  SR-2d1 ✓f69921b
+SR-2d2  promotion ↔ recovery cycle 清除        CLOSED（本附录）
+SR-2d3  federation / coordination substrate    ← 下一步（含停点 B 判定）
 ```
