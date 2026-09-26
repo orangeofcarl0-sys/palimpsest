@@ -396,15 +396,35 @@ describe("§D4-0 the canonical-source authority is untouched by the split", () =
   });
 
   it("both mutating entrances consume the ONE rule rather than restating it", () => {
-    const source = execFileSync(
-      process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/tools/controller.ts"))},'utf8'))`],
-      { encoding: "utf8" },
-    ).replace(/\/\*[\s\S]*?\*\//gu, "");
-    // Two definitions of "may this lane open" over one project is how two entrances start disagreeing, so
-    // the shared read is used by both and the old inline rule is gone.
-    expect(source.match(/#speculativeAdmission\(/gu)?.length).toBe(3); // 1 declaration + 2 call sites
-    expect(source).not.toContain("D2 keeps exactly one mutating Work line");
+    /**
+     * SR-2 §十一 moved D2's decision ladders to `src/work/attempt_execution.ts`, so the two
+     * entrances that consume the rule now live in DIFFERENT files: the controller keeps the
+     * declaration (and its own bootstrap entrance), and the owner's `target`/`prepare` are the
+     * other two consumers.
+     *
+     * The claim is unchanged — two definitions of "may this lane open" over one project is how two
+     * entrances start disagreeing, so there is still ONE rule and no restated copy. What moved is
+     * WHERE the consumers are, so the count is taken across both files.
+     */
+    const read = (rel: string): string =>
+      execFileSync(
+        process.execPath,
+        ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, rel))},'utf8'))`],
+        { encoding: "utf8" },
+      ).replace(/\/\*[\s\S]*?\*\//gu, "");
+    const controller = read("src/tools/controller.ts");
+    const owner = read("src/work/attempt_execution.ts");
+    // 1 declaration in the controller + 1 delegation from it + 2 consumers in the owner.
+    expect(controller.match(/#speculativeAdmission\(/gu)?.length).toBe(2);
+    expect(owner.match(/speculativeAdmission\(/gu)?.length).toBe(2);
+    // The rule itself is declared ONCE (the controller's `#speculativeAdmission`), and the owner
+    // consumes it through the port rather than calling the domain rule a second time. That is the
+    // claim: one definition, two consumers — not "the domain function appears once".
+    expect(controller).toContain("return assessSpeculativeAdmission({");
+    expect(owner).not.toContain("assessSpeculativeAdmission");
+    // And the old inline rule is gone from both.
+    expect(controller).not.toContain("D2 keeps exactly one mutating Work line");
+    expect(owner).not.toContain("D2 keeps exactly one mutating Work line");
   });
 });
 
