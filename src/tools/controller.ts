@@ -53,6 +53,7 @@ import { DomainValidationError } from "../domain/errors.js";
 import { makeWorkReadModel } from "../work/read_model.js";
 import { makeProjectHeadService } from "../work/head.js";
 import { makeMutatingAttemptService } from "../work/attempt_execution.js";
+import { makeContextService } from "../context/service.js";
 import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
@@ -795,6 +796,8 @@ export class ProjectController {
   readonly head: import("../work/head.js").ProjectHeadService;
   /** SR-2 §十一: the D2 mutating attempt execution owner (`src/work/attempt_execution.ts`). */
   readonly attemptExecution: import("../work/attempt_execution.js").MutatingAttemptService;
+  /** SR-2 §十二: the context owner (`src/context/service.ts`). */
+  readonly context: import("../context/service.js").ContextService;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -813,6 +816,158 @@ export class ProjectController {
       connection: options.store.connection,
       projectId: options.projectId,
       store: options.store,
+    });
+    /**
+     * SR-2 §十二: the context owner. Compilation, handle resolution and the composed worker
+     * context moved to `src/context/service.ts`; this controller keeps the primitives (the
+     * lexical/semantic channels, the manifest append) and delegates the decisions.
+     */
+    this.context = makeContextService({
+      projectId: options.projectId,
+      project: () => {
+        const project = this.work.project();
+        return {
+          revision: project.revision,
+          headCommit: project.head_commit,
+          tasks: project.tasks.map((task) => ({
+            taskId: task.task_id,
+            objective: task.objective,
+            requiredArtifacts: task.required_artifacts,
+            writePaths: task.write_paths,
+            dependsOn: task.depends_on ?? [],
+          })),
+        };
+      },
+      projectGoal: () => this.work.project().goal,
+      requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
+      decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
+      attempt: (attemptId) => {
+        const row = this.work.attempt(attemptId);
+        return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
+      },
+      attempts: () =>
+        (this.store.connection.prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=?").all(options.projectId) as Array<
+          Record<string, unknown>
+        >).map((row) => ({ attemptId: String(row.attempt_id), taskId: String(row.task_id ?? ""), state: String(row.state) })),
+      evidence: () =>
+        (this.store.connection.prepare("SELECT evidence_id, status, evidence_json FROM evidence WHERE project_id=?").all(options.projectId) as Array<
+          Record<string, unknown>
+        >).map((row) => ({
+          evidenceId: String(row.evidence_id),
+          status: String(row.status),
+          subjectId: String((decodeJsonBlob(row.evidence_json) as Record<string, unknown>).subject_id ?? ""),
+        })),
+      scanLexical: async ({ attemptId, terms }) =>
+        await this.effects.git.scanLexical({ worktreeId: attemptId, terms: [...terms] }),
+      ...(this.effects.embedding === undefined
+        ? {}
+        : {
+            semanticHits: async ({ attemptId, query }: { readonly attemptId: string; readonly query: string }) => {
+              const texts = await this.effects.git.collectWorktreeTexts({ worktreeId: attemptId, maxFiles: 64, maxBytesPerFile: 65_536 });
+              const embeddings = await this.effects.embedding!.embed([query, ...texts.map((file) => file.content)]);
+              const queryVector = embeddings[0] ?? [];
+              const scored = texts
+                .map((file, index) => {
+                  const chunkVector = embeddings[index + 1] ?? [];
+                  return {
+                    path: file.path,
+                    dot: queryVector.reduce((sum, value, index2) => sum + value * (chunkVector[index2] ?? 0), 0),
+                    cosine: cosineSimilarity(queryVector, chunkVector),
+                    digest: canonicalDigest(file.content),
+                  };
+                })
+                .filter((entry) => entry.cosine >= 0.05)
+                .sort((a, b) => b.dot - a.dot)
+                .slice(0, 8);
+              const seen = new Set<string>();
+              return scored
+                .filter((entry) => {
+                  // Duplicate content is dropped here so the manifest never carries two entries for
+                  // the same body.
+                  if (seen.has(entry.digest)) return false;
+                  seen.add(entry.digest);
+                  return true;
+                })
+                .map((entry) => ({ path: entry.path, score_permille: Math.round(Math.max(0, Math.min(1, entry.dot)) * 1000) }));
+            },
+          }),
+      taskEnvelope: (taskId) => this.#taskEnvelope(taskId),
+      completionContractForEnvelope: (envelope) => this.#completionContractForEnvelope(envelope),
+      mechanicalCheckSummary: () => (this.#standard === undefined ? [] : this.#mechanicalCheckSummary(this.#standard)),
+      hasStandard: () => this.#standard !== undefined,
+      promotionFacts: () => this.promotions.promotionFactsSync(),
+      attemptCreatedEventId: (attemptId) => {
+        const row = this.store.connection
+          .prepare("SELECT MIN(event_id) AS id FROM events WHERE project_id=? AND event_type='ATTEMPT_CREATED' AND entity_id=?")
+          .get(options.projectId, attemptId) as { id: number | null } | undefined;
+        return row === undefined || row.id === null ? null : Number(row.id);
+      },
+      reworkProvenanceBefore: ({ taskId, beforeEventId }) =>
+        (this.store.connection
+          .prepare(
+            "SELECT event_id, payload_json FROM events WHERE project_id=? AND event_type='TASK_READY' AND entity_id=? AND event_id < ? ORDER BY event_id DESC",
+          )
+          .all(options.projectId, taskId, beforeEventId) as Array<Record<string, unknown>>).map((row) => ({
+          eventId: Number(row.event_id),
+          provenance: decodeJsonBlob(row.payload_json),
+        })),
+      originResult: (attemptId) => {
+        const record = this.attemptWorkRecord(attemptId);
+        if (record === null || record.envelope === undefined || record.envelope === null) return null;
+        const envelope = parseTaskEnvelope(record.envelope);
+        const rawReport = record.report;
+        const report =
+          rawReport === undefined || rawReport === null
+            ? undefined
+            : (() => {
+                const decoded = rawReport as Record<string, unknown>;
+                return {
+                  summary: typeof decoded.summary === "string" ? decoded.summary : "",
+                  changed_files: Array.isArray(decoded.changed_files) ? decoded.changed_files.map((item) => String(item)) : [],
+                  result_commit: typeof decoded.result_commit === "string" ? decoded.result_commit : null,
+                };
+              })();
+        // `rawReport` rides alongside: the subject digest is taken over the STORED report, exactly
+        // as the verification plane digests it, so the two cannot disagree.
+        return { envelopeId: envelope.envelope_id, baseCommit: envelope.base_commit, report, rawReport };
+      },
+      existingManifest: (manifestId) => {
+        const row = this.store.connection
+          .prepare("SELECT manifest_json FROM context_manifests WHERE project_id=? AND manifest_id=?")
+          .get(options.projectId, manifestId) as { manifest_json: Uint8Array } | undefined;
+        return row === undefined ? null : (JSON.parse(new TextDecoder().decode(row.manifest_json)) as import("../context/index.js").ContextManifest);
+      },
+      evidenceBody: (evidenceId) => {
+        const row = this.store.connection
+          .prepare("SELECT evidence_json FROM evidence WHERE project_id=? AND evidence_id=?")
+          .get(options.projectId, evidenceId) as { evidence_json: Uint8Array } | undefined;
+        return row === undefined ? undefined : JSON.parse(new TextDecoder().decode(row.evidence_json));
+      },
+      appendManifest: ({ attemptId, manifest, expectedProjectRevision }) => {
+        this.store.append(
+          parseNewEvent({
+            schema_version: 1,
+            project_id: options.projectId,
+            event_type: "CONTEXT_MANIFEST_ADDED",
+            payload_version: 1,
+            entity_type: "context-manifest",
+            entity_id: manifest.manifest_id,
+            payload: {
+              task_id: manifest.task_id,
+              project_revision: manifest.project_revision,
+              manifest,
+            },
+            causation_id: null,
+            correlation_id: `task:${manifest.task_id}:context`,
+            idempotency_key: actionKey("context-manifest-v1", {
+              project_id: options.projectId,
+              attempt_id: attemptId,
+            }),
+            expected_project_revision: expectedProjectRevision,
+          }),
+        );
+      },
+      ...(options.clock === undefined ? {} : { clock: options.clock }),
     });
     /**
      * SR-2 §十: the head owner. The controller keeps its façade (`reconcileProjectHead`,
@@ -3532,55 +3687,24 @@ export class ProjectController {
    * and receives NO authority: no permit, no assessment, no promotion token,
    * no settlement power ride in this object.
    */
+  /**
+   * §D5-c3: the attempt-centric worker context — the task half plus THIS attempt's compiled half.
+   *
+   * SR-2 §十二: the composition moved to the context owner; the ordering it encodes
+   * (identity and world exist ≺ compile ≺ deliver) is unchanged.
+   */
   async workWorkerAttemptContext(
     attemptId: string,
     options: {
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
     } = {},
   ): Promise<WorkWorkerAttemptContext> {
-    const attemptRow = this.store.connection
-      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
-      .get(this.projectId, attemptId) as { task_id: string } | undefined;
-    if (attemptRow === undefined) {
-      throw new DomainValidationError(`attempt "${attemptId}" does not exist — worker context is compiled per attempt, after the attempt's identity and world exist`);
-    }
-    const work = this.workWorkerTaskContext(String(attemptRow.task_id));
-    const compiled = await this.compileTaskContext(attemptId, {
-      ...(options.verificationHistory === undefined ? {} : { verificationHistory: options.verificationHistory }),
-    });
-    return Object.freeze({
-      work,
-      compiled: Object.freeze({
-        manifestId: compiled.manifest.manifest_id,
-        boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
-        handles: Object.freeze(compiled.distribution.handles.map((entry) => Object.freeze({ ...entry }))),
-        ...(compiled.manifest.continuation === undefined
-          ? {}
-          : { continuation: compiled.manifest.continuation }),
-      }),
-    });
+    return this.context.workWorkerContext(attemptId, options);
   }
 
   workWorkerTaskContext(taskId: string): WorkWorkerTaskContext {
-    const envelope = this.#taskEnvelope(taskId);
-    const project = this.#project();
-    const task = project.tasks.find((entry) => entry.task_id === taskId);
-    if (task === undefined) {
-      throw new DomainValidationError(`task "${taskId}" is not part of the canonical project`);
-    }
-    const contract = this.#completionContractForEnvelope(envelope);
-    const standard = this.#standard;
-    return Object.freeze({
-      projectGoal: project.goal,
-      requirements: Object.freeze(project.requirements.map((entry) => entry.statement)),
-      decisions: Object.freeze(project.decisions.map((entry) => entry.statement)),
-      objective: task.objective,
-      writeScope: Object.freeze([...envelope.write_paths]),
-      requiredArtifacts: Object.freeze([...envelope.required_artifacts]),
-      baseCommit: envelope.base_commit,
-      completionChecks: standard === undefined ? Object.freeze([] as string[]) : this.#mechanicalCheckSummary(standard),
-      independentVerificationRequired: contract.verification.required,
-    });
+    // SR-2 §十二: the task-level static half is the context owner's read.
+    return this.context.taskContext(taskId);
   }
 
   /**
@@ -4394,291 +4518,20 @@ export class ProjectController {
    * (emitted as CONTEXT_MANIFEST_ADDED, idempotent per attempt) and the
    * coverage assessment. The worktree must exist (claim first).
    */
+  /**
+   * PLMP-CTX-2 §1/§3: compile (or return) ONE attempt's context manifest.
+   *
+   * SR-2 §十二: the compilation moved to `src/context/service.ts` whole — the requirement, the
+   * deterministic retrieval, the optional semantic channel and the §D5-c2 prior-result block. This
+   * method is the façade existing callers use.
+   */
   async compileTaskContext(
     attemptId: string,
     options: {
-      /**
-       * §D5-c2: the deployment's independent verification HISTORY store, when one
-       * exists. It is an OWNER the compiler reads — runs for the origin result's
-       * subject become the context's HISTORICAL verification entries; they are
-       * never a qualification of the new attempt. Absent ⇒ the context honestly
-       * carries no verification history.
-       */
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
     } = {},
-  ): Promise<{
-    manifest: ContextManifest;
-    coverage: CoverageAssessment;
-    distribution: ContextDistribution;
-  }> {
-    const attemptRow = this.store.connection
-      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
-      .get(this.projectId, attemptId) as { task_id: string } | undefined;
-    if (attemptRow === undefined) {
-      throw new DomainValidationError("attempt does not exist");
-    }
-    const taskId = String(attemptRow.task_id);
-    const project = this.#project();
-    const task = project.tasks.find((item) => item.task_id === taskId);
-    if (task === undefined) {
-      throw new DomainValidationError("task does not exist");
-    }
-
-    const manifestId = stableEntityId(
-      "context-manifest",
-      actionKey("context-manifest-v1", {
-        project_id: this.projectId,
-        attempt_id: attemptId,
-      }),
-    );
-    const existing = this.store.connection
-      .prepare("SELECT manifest_json FROM context_manifests WHERE project_id=? AND manifest_id=?")
-      .get(this.projectId, manifestId) as { manifest_json: Uint8Array } | undefined;
-    if (existing !== undefined) {
-      const manifest = JSON.parse(
-        new TextDecoder().decode(existing.manifest_json),
-      ) as ContextManifest;
-      return {
-        manifest,
-        coverage: assessCoverage(manifest.requirement, manifest),
-        distribution: distributeContext(manifest),
-      };
-    }
-
-    // Requirement inputs: prior-failure evidence and the stale set come from
-    // the projections; upstream write surfaces come from depends_on tasks.
-    const attemptRows = this.store.connection
-      .prepare("SELECT attempt_id, task_id, state FROM attempts WHERE project_id=?")
-      .all(this.projectId) as Array<Record<string, unknown>>;
-    const evidenceRows = this.store.connection
-      .prepare("SELECT evidence_id, status, evidence_json FROM evidence WHERE project_id=?")
-      .all(this.projectId) as Array<Record<string, unknown>>;
-    const failedAttemptIds = new Set(
-      attemptRows
-        .filter((row) => String(row.task_id) === taskId && String(row.state) === "FAILED")
-        .map((row) => String(row.attempt_id)),
-    );
-    const priorFailureEvidence: string[] = [];
-    const staleRefs: string[] = [];
-    for (const row of attemptRows) {
-      if (String(row.state) === "STALE") staleRefs.push(String(row.attempt_id));
-    }
-    for (const row of evidenceRows) {
-      const atom = decodeJsonBlob(row.evidence_json) as Record<string, unknown>;
-      const subjectId = typeof atom.subject_id === "string" ? atom.subject_id : "";
-      if (String(row.status) === "stale") staleRefs.push(String(row.evidence_id));
-      if (failedAttemptIds.has(subjectId) && String(row.status) === "active") {
-        priorFailureEvidence.push(String(row.evidence_id));
-      }
-    }
-    const upstreamWritePaths = (task.depends_on ?? []).flatMap((dependency) => {
-      const upstream = project.tasks.find((item) => item.task_id === dependency);
-      return upstream?.write_paths ?? [];
-    });
-    const requirement = compileContextRequirement({
-      projectId: this.projectId,
-      taskId,
-      requiredArtifacts: task.required_artifacts,
-      writePaths: task.write_paths,
-      upstreamWritePaths,
-      priorFailureEvidence,
-      staleRefs,
-    });
-
-    // Deterministic retrieval terms: objective + artifact tokens (V0, no model).
-    const stopwords = new Set([
-      "the",
-      "and",
-      "for",
-      "with",
-      "this",
-      "that",
-      "from",
-      "into",
-      "complete",
-    ]);
-    const tokens = new Set<string>();
-    for (const token of `${task.objective} ${task.required_artifacts.join(" ")}`
-      .toLowerCase()
-      .split(/[^a-z0-9]+/)) {
-      if (token.length >= 4 && !stopwords.has(token)) tokens.add(token);
-    }
-    const source = await this.effects.git.scanLexical({
-      worktreeId: attemptId,
-      terms: [...tokens].slice(0, 8),
-    });
-
-    // PLMP-CTX-3 §1.3: the semantic channel (active only with an injected
-    // embedding port) - file-level cosine ranking over the worktree texts,
-    // §6 scoring V0: cosine minus a token-weight penalty minus a duplicate
-    // penalty; D/E/F/C features stay neutral in V0.
-    let semantic: ReadonlyArray<{ path: string; score_permille: number }> | undefined;
-    if (this.effects.embedding !== undefined) {
-      const texts = await this.effects.git.collectWorktreeTexts({
-        worktreeId: attemptId,
-        maxFiles: 64,
-        maxBytesPerFile: 65_536,
-      });
-      const query = `${task.objective} ${task.required_artifacts.join(" ")}`;
-      const embeddings = await this.effects.embedding.embed([
-        query,
-        ...texts.map((file) => file.content),
-      ]);
-      const queryVector = embeddings[0] ?? [];
-      const scored = texts
-        .map((file, index) => {
-          const chunkVector = embeddings[index + 1] ?? [];
-          return {
-            path: file.path,
-            // Dot product on the raw count vectors: density reward (r2).
-            dot: queryVector.reduce(
-              (sum, value, index2) => sum + value * (chunkVector[index2] ?? 0),
-              0,
-            ),
-            cosine: cosineSimilarity(queryVector, chunkVector),
-            bytes: Buffer.byteLength(file.content, "utf8"),
-            digest: canonicalDigest(file.content),
-          };
-        })
-        .filter((entry) => entry.cosine >= 0.05)
-        .sort((a, b) => b.dot - a.dot)
-        .slice(0, 8);
-      const seen = new Set<string>();
-      semantic = scored
-        .map((entry) => ({
-          path: entry.path,
-          score_permille: Math.round(Math.max(0, Math.min(1, entry.dot)) * 1000),
-          digest: entry.digest,
-        }))
-        .filter((entry) => {
-          // Duplicate content is penalized at scoring and dropped here so the
-          // manifest never carries two entries for the same body.
-          if (seen.has(entry.digest)) return false;
-          seen.add(entry.digest);
-          return true;
-        })
-        .map(({ path, score_permille }) => ({ path, score_permille }));
-    }
-    // §D5-c2: the PRIOR RESULT CONTEXT — compiled only for an attempt whose task
-    // was reopened by a governed rework, and only from owners that already hold
-    // each fact. An ordinary attempt's manifest carries no continuation block.
-    const lineage = this.#reworkLineageFor(attemptId, taskId);
-    let continuation: PriorResultContext | undefined;
-    if (lineage !== undefined) {
-      const subject = lineage.provenance.origin_result_subject as Record<string, unknown>;
-      const originAttemptId = String(subject.ref);
-      const originRecord = this.attemptWorkRecord(originAttemptId);
-      // FAIL CLOSED on an unresolvable origin: the durable lineage names a fact
-      // the owners must be able to produce. A silent empty-coordinate context
-      // would be exactly the kind of fabricated presentation this module exists
-      // to prevent.
-      if (originRecord === null || originRecord.envelope === undefined || originRecord.envelope === null) {
-        throw new DomainValidationError(
-          `the rework lineage names origin result "${originAttemptId}", whose authorization cannot be resolved — refusing to compile a fabricated prior-result context`,
-        );
-      }
-      const originEnvelope = parseTaskEnvelope(originRecord.envelope);
-      const rawReport = originRecord.report;
-      const originReport =
-        rawReport === undefined || rawReport === null
-          ? undefined
-          : (() => {
-              const report = decodeJsonBlob(
-                new TextEncoder().encode(JSON.stringify(rawReport)),
-              ) as Record<string, unknown>;
-              return {
-                summary: typeof report.summary === "string" ? report.summary : "",
-                changed_files: Array.isArray(report.changed_files)
-                  ? report.changed_files.map((item) => String(item))
-                  : [],
-                result_commit: typeof report.result_commit === "string" ? report.result_commit : null,
-              };
-            })();
-      const originSubjectDigest =
-        originEnvelope === undefined ||
-        originReport === undefined ||
-        originReport.result_commit === null
-          ? null
-          : attemptResultSubjectDigestOf({
-              schemaVersion: 1,
-              kind: "ATTEMPT_RESULT",
-              projectId: this.projectId,
-              taskId,
-              attemptId: originAttemptId,
-              envelopeId: originEnvelope.envelope_id,
-              baseCommit: originEnvelope.base_commit,
-              resultCommit: originReport.result_commit,
-              reportDigest: attemptReportDigestOf(parseAttemptReport(rawReport)),
-            });
-      continuation = compilePriorResultContext({
-        reworkEventId: lineage.reworkEventId,
-        provenance: {
-          origin_result_subject: {
-            kind: String(subject.kind),
-            ref: originAttemptId,
-          },
-          origin_basis_digest: String(lineage.provenance.origin_basis_digest),
-          target_observation_digest: String(lineage.provenance.target_observation_digest),
-          reason: String(lineage.provenance.reason),
-          ...(lineage.provenance.continuation_assessment_digest === undefined
-            ? {}
-            : {
-                continuation_assessment_digest: String(
-                  lineage.provenance.continuation_assessment_digest,
-                ),
-              }),
-        },
-        originEnvelope: {
-          envelope_id: originEnvelope.envelope_id,
-          base_commit: originEnvelope.base_commit,
-        },
-        originReport,
-        originSubjectDigest,
-        verificationRuns: options.verificationHistory?.list(this.projectId) ?? [],
-        promotionChain: promotionChainBasis(
-          originEnvelope.base_commit,
-          this.promotions.promotionFactsSync(),
-        ),
-        currentHead: this.#project().head_commit,
-      });
-    }
-    const manifest = buildContextManifest({
-      manifestId,
-      taskId,
-      projectRevision: this.promotions.projectRevision(),
-      requirement,
-      source,
-      semantic,
-      continuation,
-      createdAt: this.#now(),
-    });
-    this.store.append(
-      parseNewEvent({
-        schema_version: 1,
-        project_id: this.projectId,
-        event_type: "CONTEXT_MANIFEST_ADDED",
-        payload_version: 1,
-        entity_type: "context-manifest",
-        entity_id: manifest.manifest_id,
-        payload: {
-          task_id: manifest.task_id,
-          project_revision: manifest.project_revision,
-          manifest,
-        },
-        causation_id: null,
-        correlation_id: `task:${manifest.task_id}:context`,
-        idempotency_key: actionKey("context-manifest-v1", {
-          project_id: this.projectId,
-          attempt_id: attemptId,
-        }),
-        expected_project_revision: this.#project().revision,
-      }),
-    );
-    return {
-      manifest,
-      coverage: assessCoverage(manifest.requirement, manifest),
-      distribution: distributeContext(manifest),
-    };
+  ): Promise<{ manifest: ContextManifest; coverage: CoverageAssessment; distribution: ContextDistribution }> {
+    return this.context.compile(attemptId, options);
   }
 
   /**
@@ -4686,92 +4539,18 @@ export class ProjectController {
    * manifest of the attempt's task. Unknown handles resolve to undefined -
    * handles are an advisory index, not a contract assertion.
    */
+  /**
+   * PLMP-CTX-4 §1.2: resolve a `@ctx/…` handle against THIS ATTEMPT's own compiled manifest.
+   *
+   * SR-2 §十二: the resolution moved to the context owner. `TaskLatestContext ≠
+   * AttemptCompiledContext` — resolving by task-latest was context time travel, and the owner is
+   * where that rule now lives.
+   */
   async fetchContext(
     attemptId: string,
     handle: string,
-  ): Promise<{
-    kind: "exact" | "source" | "evidence";
-    ref: string;
-    body: unknown;
-  } | undefined> {
-    const attemptRow = this.store.connection
-      .prepare("SELECT task_id FROM attempts WHERE project_id=? AND attempt_id=?")
-      .get(this.projectId, attemptId) as { task_id: string } | undefined;
-    if (attemptRow === undefined) return undefined;
-    // §D5-c2: an attempt fetches ITS OWN compiled manifest — the same
-    // deterministic identity `compileTaskContext` writes — never the task's
-    // latest one. After D5, one task can carry generations of attempts
-    // (A0 → M0, A1 → M1); resolving by task-latest was context time travel
-    // (fetch(A0) returning M1), the same TaskCurrentBinding ≠
-    // AttemptHistoricalBinding defect D5-b1 fixed for envelopes, now fixed for
-    // context: TaskLatestContext ≠ AttemptCompiledContext.
-    const manifestId = stableEntityId(
-      "context-manifest",
-      actionKey("context-manifest-v1", {
-        project_id: this.projectId,
-        attempt_id: attemptId,
-      }),
-    );
-    const manifestRow = this.store.connection
-      .prepare("SELECT manifest_json FROM context_manifests WHERE project_id=? AND manifest_id=?")
-      .get(this.projectId, manifestId) as { manifest_json: Uint8Array } | undefined;
-    if (manifestRow === undefined) return undefined;
-    const manifest = JSON.parse(
-      new TextDecoder().decode(manifestRow.manifest_json),
-    ) as ContextManifest;
-    const distribution = distributeContext(manifest);
-    const entry = [...distribution.boot, ...distribution.handles].find(
-      (candidate) => candidate.handle === handle,
-    );
-    if (entry === undefined) return undefined;
-    if (entry.kind === "evidence") {
-      const row = this.store.connection
-        .prepare("SELECT evidence_json FROM evidence WHERE project_id=? AND evidence_id=?")
-        .get(this.projectId, entry.ref) as { evidence_json: Uint8Array } | undefined;
-      return row === undefined
-        ? undefined
-        : { kind: entry.kind, ref: entry.ref, body: JSON.parse(new TextDecoder().decode(row.evidence_json)) };
-    }
-    if (entry.kind === "source") {
-      const source = manifest.source.find((candidate) => candidate.path === entry.ref);
-      return source === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: source };
-    }
-    const exact = manifest.exact.find((candidate) => candidate.ref === entry.ref);
-    return exact === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: exact };
-  }
-
-  /**
-   * §D5-c2: the durable rework lineage for THIS attempt — the latest governed
-   * TASK_READY that carried `rework_provenance` for the task STRICTLY BEFORE the
-   * attempt's own creation event. Bounding by creation is what makes the context
-   * attempt-scoped: an attempt compiled later cannot absorb a rework that did not
-   * exist when it was created. Returns undefined for ordinary attempts.
-   */
-  #reworkLineageFor(
-    attemptId: string,
-    taskId: string,
-  ): { reworkEventId: number; provenance: Record<string, unknown> } | undefined {
-    const createdRow = this.store.connection
-      .prepare(
-        "SELECT MIN(event_id) AS id FROM events WHERE project_id=? AND event_type='ATTEMPT_CREATED' AND entity_id=?",
-      )
-      .get(this.projectId, attemptId) as { id: number | null };
-    const createdEventId =
-      createdRow === undefined || createdRow.id === null ? null : Number(createdRow.id);
-    if (createdEventId === null) return undefined;
-    const rows = this.store.connection
-      .prepare(
-        "SELECT event_id, payload_json FROM events WHERE project_id=? AND event_type='TASK_READY' AND entity_id=? AND event_id < ? ORDER BY event_id DESC",
-      )
-      .all(this.projectId, taskId, createdEventId) as Array<Record<string, unknown>>;
-    for (const row of rows) {
-      const payload = decodeJsonBlob(row.payload_json);
-      const provenance = payload.rework_provenance;
-      if (provenance !== undefined && provenance !== null) {
-        return { reworkEventId: Number(row.event_id), provenance: provenance as Record<string, unknown> };
-      }
-    }
-    return undefined;
+  ): Promise<{ kind: "exact" | "source" | "evidence"; ref: string; body: unknown } | undefined> {
+    return this.context.fetch(attemptId, handle);
   }
 
   /**
