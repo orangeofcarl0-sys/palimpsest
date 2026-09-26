@@ -1540,6 +1540,41 @@ export class ProjectController {
    * `planReconciled(..., { headAdvance })` path. The policy wiring lands in the
    * next stage; the seam is deliberately kept explicit here.
    */
+  /**
+   * §D5-d — the envelope the task CURRENTLY carries, as the Work owner reads
+   * it (the G10-W firewall keeps the envelope column's namers short: a reader
+   * asks the owner, it does not query the column). Null when the task carries
+   * none — a fact, not an error.
+   */
+  taskEnvelopeId(taskId: string): string | null {
+    try {
+      return this.#taskEnvelope(taskId).envelope_id;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * §D5-d — the CANONICAL TARGET FENCE: the canonical authority picture a
+   * governed rework mint is made under, as the Work owner reads it. Every field
+   * comes from an owner the aggregate can independently re-derive at admission
+   * time (the projects row + the chained PROMOTION_COMMITTED facts), so the
+   * fence is verifiable inside the admission transaction rather than trusted.
+   * This is a READ of existing truth — it derives nothing and authorizes
+   * nothing; minting stays the continuation service's job.
+   */
+  reworkTargetFence(): import("../domain/rework_admission.js").ReworkTargetFence {
+    const project = this.#project();
+    const status = this.promotions.projectHeadStatusSync();
+    return Object.freeze({
+      projectRevision: project.revision,
+      projectDigest: project.digest,
+      projectHeadCommit: project.head_commit,
+      provenEffectHeadCommit: status.provenEffectHeadCommit,
+      latestPromotionEventRef: status.latestPromotionEventRef,
+    });
+  }
+
   async reconcileProjectHead(
     input: { operator?: boolean; candidate?: ProjectHeadReconciliationCandidate } = {},
   ): Promise<ProjectHeadReconciliationResult> {

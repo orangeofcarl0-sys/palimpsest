@@ -361,6 +361,31 @@ export const REVIEWED_TOOL_ADDITIONS: readonly { readonly name: string; readonly
 ]);
 
 /**
+ * Top-level installed capability faces added AFTER the canonical baseline, each with a reason.
+ *
+ * Same idiom as REVIEWED_TOOL_ADDITIONS: an intentional additive face is the one case the exact
+ * two-way key comparison cannot decide on its own, so it is named here with a written reason while
+ * `missing` keeps its full teeth (no canonical capability may disappear). The list is deliberately
+ * about the INSTALLATION surface only — an application-surface face changes
+ * `applicationSurfaceKeys`/`applicationFacesPresent` and has no entry here.
+ */
+export const REVIEWED_CAPABILITY_ADDITIONS: readonly { readonly name: string; readonly reason: string }[] = Object.freeze([
+  {
+    name: "continuation",
+    reason:
+      "PLMP-LEAN-1 §D5-d. The mechanism authorities (result resolver, D3-a/b/c/d, continuation " +
+      "assessment, governed rework admission, head reconciliation, work delegation) each existed, " +
+      "but composing them was left to whoever called them, and one caller-fact seam survived: a " +
+      "caller could mint a structurally valid rework permit by filling every authority-bearing " +
+      "field by hand. The packaged ResultContinuationService is the single authoritative mint — " +
+      "fresh observation ≺ assessment ≺ permit ≺ TASK_READY — and it composes on every " +
+      "repository-bearing install (its capability honesty is per-route: without a worker port it " +
+      "reports READY_FOR_DELEGATION, never a stub). Additive: no existing face, surface, tool or " +
+      "route changes, and the face owns no store of its own.",
+  },
+]);
+
+/**
  * Tool contracts changed AFTER the canonical baseline, each with a reason.
  *
  * Same idiom, deliberately narrower teeth. The allowance covers the DESCRIPTION of the named tool
@@ -621,7 +646,15 @@ export function compareParity(baseline: ParityCapture, live: ParityCapture): rea
     if (unexpected.length > 0) differences.push({ where, detail: `unexpected: ${unexpected.join(", ")}` });
   };
   const compareInstallation = (label: string, expected: ParityInstallation, actual: ParityInstallation): void => {
-    compareList(`${label}.installedCapabilityKeys`, expected.installedCapabilityKeys, actual.installedCapabilityKeys);
+    /* Same reasoned escape for a capability face added after the baseline: a name recorded in
+       REVIEWED_CAPABILITY_ADDITIONS is not an "unexpected" key — a REMOVED one, or an addition
+       nobody recorded, still is. */
+    const reviewedCapabilities = new Set(REVIEWED_CAPABILITY_ADDITIONS.map((entry) => entry.name));
+    compareList(
+      `${label}.installedCapabilityKeys`,
+      expected.installedCapabilityKeys,
+      actual.installedCapabilityKeys.filter((name) => !reviewedCapabilities.has(name)),
+    );
     compareList(`${label}.applicationSurfaceKeys`, expected.applicationSurfaceKeys, actual.applicationSurfaceKeys);
     compareList(`${label}.applicationFacesPresent`, expected.applicationFacesPresent, actual.applicationFacesPresent);
     /* §2/§3 with the one reasoned escape the routes already have: a tool added after the baseline
