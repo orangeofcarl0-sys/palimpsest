@@ -36,7 +36,6 @@ import {
   canonicalDatetime,
   canonicalDigest,
   parseAttemptReport,
-  parseProjectIr,
   parseTaskEnvelope,
   parseNewEvent,
   type AttemptReport,
@@ -51,11 +50,8 @@ import {
   type TaskSpec,
 } from "../schema/index.js";
 import { DomainValidationError } from "../domain/errors.js";
-import {
-  authorizationEventsFrom,
-  resolveAttemptAuthorization,
-  type AttemptAuthorization,
-} from "../state/attempt_authorization.js";
+import { makeWorkReadModel } from "../work/read_model.js";
+import type { AttemptAuthorization } from "../state/attempt_authorization.js";
 import type { ProjectWorldBasis } from "../domain/world_basis.js";
 import { assessSpeculativeAdmission, speculativeAdmissionRefusal } from "../domain/speculative_authority.js";
 import { deriveAttemptCompletionContract, deriveCompletionReadiness } from "../domain/completion_contract.js";
@@ -792,6 +788,8 @@ export class ProjectController {
   }
   /** R7: scientific evidence graph recording claims/evidence/experiments. */
   readonly claims = new ClaimGraph();
+  /** SR-2 §九: the Work projection reads, owned in one place (`src/work/read_model.ts`). */
+  readonly work: import("../work/read_model.js").WorkReadModel;
   readonly #clock: () => string;
 
   constructor(options: ProjectControllerOptions) {
@@ -801,6 +799,16 @@ export class ProjectController {
     this.policy = options.policy;
     this.scheduler = new Scheduler(options.store, options.projectId);
     this.scheduler.registerPolicy(options.policy);
+    /**
+     * SR-2 §九: the ONE Work read owner. The controller keeps its public façade, but the reads
+     * themselves are answered here rather than re-derived locally — so a Work question has one
+     * answer, not one per caller.
+     */
+    this.work = makeWorkReadModel({
+      connection: options.store.connection,
+      projectId: options.projectId,
+      store: options.store,
+    });
     this.execution = options.execution ?? "worktree";
     this.#standard = options.standard;
     // Conservative by default: an unstated capability is an ABSENT one, so readiness reports the
@@ -3898,21 +3906,21 @@ export class ProjectController {
    * since it runs before any attempt exists.
    */
   #taskEnvelope(taskId: string): TaskEnvelope {
-    const row = this.store.connection
-      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
-      .get(this.projectId, taskId) as { envelope_json: unknown } | undefined;
-    if (row?.envelope_json === null || row?.envelope_json === undefined) {
+    /**
+     * SR-2 §九: the COLUMN read is the Work read owner's; the typed REFUSALS are the controller's
+     * façade contract. The owner reports what it can establish (null for absent or unreadable), and
+     * the controller turns that into the same two errors it always threw — so the observable
+     * behaviour is identical while the knowledge of `envelope_json` lives in one place.
+     */
+    const envelope = this.work.taskEnvelope(taskId);
+    if (envelope !== null) return envelope;
+    const row = this.work.task(taskId);
+    if (row === null || row.envelopeId === null) {
       throw new DomainValidationError(
         `task "${taskId}" has no canonical envelope — a task without an authorized envelope has no execution authority, and delegation does not mint one`,
       );
     }
-    try {
-      return parseTaskEnvelope(decodeJsonBlob(row.envelope_json));
-    } catch (error) {
-      throw new DomainValidationError(
-        `task "${taskId}" has an unreadable envelope: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+    throw new DomainValidationError(`task "${taskId}" has an unreadable envelope`);
   }
 
   /**
@@ -3968,14 +3976,9 @@ export class ProjectController {
   }
 
   #nonterminalAttempts(): readonly { readonly attemptId: string; readonly taskId: string; readonly state: string }[] {
-    const rows = this.store.connection
-      .prepare(
-        "SELECT attempt_id, task_id, state FROM attempts WHERE project_id=? AND state IN ('CREATED','LEASED','RUNNING') ORDER BY attempt_id",
-      )
-      .all(this.projectId) as unknown as readonly { attempt_id: string; task_id: string | null; state: string }[];
-    return Object.freeze(
-      rows.map((row) => Object.freeze({ attemptId: row.attempt_id, taskId: row.task_id ?? "", state: row.state })),
-    );
+    // SR-2 §九: the "who holds the mutating lane" question has ONE reader now. The owner's
+    // ordering is by attempt_id, matching this method's previous contract exactly.
+    return this.work.openAttempts();
   }
 
   /** The contract for one attempt, or null when the project has no confirmed standard yet. */
@@ -3994,18 +3997,10 @@ export class ProjectController {
    * which the caller turns into a verdict rather than an error.
    */
   taskEnvelopeOrNull(taskId: string): TaskEnvelope | null {
-    const row = this.store.connection
-      .prepare("SELECT envelope_json FROM tasks WHERE project_id=? AND task_id=?")
-      .get(this.projectId, taskId) as { envelope_json: unknown } | undefined;
-    if (row?.envelope_json === null || row?.envelope_json === undefined) return null;
-    try {
-      return parseTaskEnvelope(decodeJsonBlob(row.envelope_json));
-    } catch {
-      // An unreadable envelope is reported as absent here and diagnosed by the caller, which can say
-      // WHICH task and why; throwing from a read would make "no such task" and "corrupt task" the same
-      // failure, and those need different verdicts.
-      return null;
-    }
+    // SR-2 §九: the column read is the Work owner's. Its contract is already "null for absent or
+    // unreadable", which is exactly this façade's contract — an unreadable envelope is reported as
+    // absent here and diagnosed by the caller, which can say WHICH task and why.
+    return this.work.taskEnvelope(taskId);
   }
 
   /**
@@ -5272,13 +5267,9 @@ export class ProjectController {
   }
 
   #project(): ProjectIr {
-    const row = this.store.connection
-      .prepare("SELECT state_json FROM projects WHERE project_id=?")
-      .get(this.projectId) as { state_json: Uint8Array } | undefined;
-    if (row === undefined) {
-      throw new DomainValidationError("project does not exist");
-    }
-    return parseProjectIr(decodeJsonBlob(row.state_json));
+    // SR-2 §九: answered by the ONE Work read owner. The façade keeps its own contract (throw when
+    // the project does not exist), so no caller can observe a difference.
+    return this.work.project();
   }
 
   /**
@@ -5295,18 +5286,8 @@ export class ProjectController {
    * rather than re-deriving it, and fails closed instead of substituting today's authority.
    */
   #attemptAuthorization(attemptId: string): AttemptAuthorization {
-    const resolution = resolveAttemptAuthorization({
-      projectId: this.projectId,
-      attemptId,
-      // The store's own list, adapted field-for-field; the resolver names no store implementation.
-      events: authorizationEventsFrom((projectId) => this.store.listEvents(projectId)).listProjectEvents(this.projectId),
-    });
-    if (resolution.state === "UNRESOLVED") {
-      throw new DomainValidationError(
-        `ATTEMPT_AUTHORIZATION_UNRESOLVED: ${resolution.reason}: ${resolution.detail}`,
-      );
-    }
-    return resolution.authorization;
+    // SR-2 §九: the historical read belongs to the Work owner, which fails closed the same way.
+    return this.work.attemptAuthorization(attemptId);
   }
 
   #attemptContext(attemptId: string): [Record<string, unknown>, TaskEnvelope] {
@@ -5319,6 +5300,11 @@ export class ProjectController {
     /**
      * The envelope comes from the ATTEMPT's recorded authorization, not from the task's current binding.
      * The task row is no longer consulted at all here, so a rebinding cannot reach this read path.
+     *
+     * SR-2 §九: `attemptAuthorization` is answered by the Work read owner. The `SELECT *` row stays
+     * here because it is the controller's own working shape (many call sites read different columns
+     * of it), not a Work question with one answer — folding it into the model would move a blob of
+     * incidental columns rather than a semantic read.
      */
     return [row, this.#attemptAuthorization(attemptId).envelope];
   }

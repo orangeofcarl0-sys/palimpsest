@@ -448,21 +448,37 @@ describe("§D5-b1 the SHIPPED read paths resolve the attempt's own authorization
     expect(controller.taskEnvelopeOrNull("t1")?.envelope_id).toBe(newEnvelopeId);
   }, 180_000);
 
-  it("ONE definition: both the Work owner and the scheduler resolve through the same resolver", () => {
+  it("ONE definition: every shipped read path resolves through the same resolver", () => {
     /**
      * Two modules reading "which envelope authorized this attempt" with two hand-written queries is how the
-     * two answers start disagreeing. Both now call the resolver, and neither names the task's envelope column
-     * in its attempt-scoped read.
+     * two answers start disagreeing. SR-2b1 made this claim STRONGER rather than weaker: the controller no
+     * longer resolves at all — it delegates to `src/work/read_model.ts`, which is now the ONE caller of the
+     * resolver in product code, and the scheduler keeps its own call because it resolves at a different
+     * moment (during a scheduling decision, over its own store handle).
+     *
+     *     the controller's façade  →  the Work read owner  →  resolveAttemptAuthorization
+     *     the scheduler            →                       →  resolveAttemptAuthorization
+     *
+     * So there is still exactly ONE definition of the resolution, and the number of places that can
+     * disagree about it went DOWN.
      */
-    for (const file of ["src/tools/controller.ts", "src/scheduler/scheduler.ts"]) {
-      const text = source(file);
-      expect(text, `${file} must use the resolver`).toContain("resolveAttemptAuthorization(");
-      const context =
-        file === "src/tools/controller.ts"
-          ? text.slice(text.indexOf("#attemptContext(attemptId: string)"), text.indexOf("#attemptContext(attemptId: string)") + 700)
-          : text.slice(text.indexOf("#attemptContext(attemptId: string)"), text.indexOf("#attemptContext(attemptId: string)") + 700);
-      expect(context, `${file} #attemptContext must not read the task's envelope column`).not.toContain("SELECT envelope_json FROM tasks");
+    const resolverCallers = ["src/work/read_model.ts", "src/scheduler/scheduler.ts"];
+    for (const file of resolverCallers) {
+      expect(source(file), `${file} must use the resolver`).toContain("resolveAttemptAuthorization(");
     }
+    // The controller must NOT resolve it itself any more — it asks the owner.
+    const controller = source("src/tools/controller.ts");
+    expect(controller).not.toContain("resolveAttemptAuthorization(");
+    expect(controller).toContain("this.work.attemptAuthorization(");
+    // And no attempt-scoped read may name the task's envelope column.
+    const readModel = source("src/work/read_model.ts");
+    const context = readModel.slice(
+      readModel.indexOf("attemptAuthorization(attemptId: string)"),
+      readModel.indexOf("attemptAuthorization(attemptId: string)") + 700,
+    );
+    expect(context, "the owner's attempt-scoped read must not read the task's envelope column").not.toContain(
+      "SELECT envelope_json FROM tasks",
+    );
   });
 
   it("NO SCHEMA FABRICATION: the attempts table still has no envelope column", () => {

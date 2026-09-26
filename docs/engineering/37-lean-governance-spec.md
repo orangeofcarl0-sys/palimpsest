@@ -6331,3 +6331,81 @@ SR-2.0  Architecture Constitution                    CLOSED @ ce0e258
 SR-2a   Continuation dependency compression / 接口墙   CLOSED（本附录）
 SR-2b1  Work read owner 抽离                          ← 下一步
 ```
+
+---
+
+## 附录 AC（第 SR-2b1 期）：Work Read Owner —— 同一语义问题只有一个读者
+
+$$oxed{same\ semantic\ question \Rightarrow one\ reader}$$
+
+$$oxed{
+eq all\ SQL \Rightarrow one\ repository\ class}$$
+
+### AC.1 为什么必须做
+
+Work projections（`projects` / `tasks` / `attempts`）此前被 **controller、continuation composition、
+scheduler、promotion-eligibility reader、graph projector** 各自读一遍，各有自己的 SQL，各自可以对
+"这个 attempt 的授权是什么"给出不同答案。**D5-b1 的存在本身就是一次真实漂移的证据**：attempt 的授权
+曾从 task 的**当前** envelope 读取，而那是与"它运行时被哪个 envelope 授权"**不同的一个事实**。
+
+### AC.2 抽出的 owner：`src/work/read_model.ts`（L2）
+
+拥有 ruling §九 点名的读取：`project` / `task` / `attempt` / `currentBatch`（经 task 行）/ `taskEnvelope`
+/ `attemptAuthorization` / `openAttempt`。**它不写任何东西**——无 INSERT/UPDATE/DELETE、无 append、无
+transition，因此不可能成为第二个状态机。
+
+`src/work` 被**显式分类为 L2**：SR-2.0 的 `unclassified ⇒ FAIL` 规则要求新目录必须被分类，而不是被
+绕过。
+
+### AC.3 controller 保留 façade 并委派
+
+`#project`、`#taskEnvelope`、`#taskEnvelopeOrNull`、`#nonterminalAttempts`、`#attemptAuthorization`
+全部改为调用 owner；controller 不再自己解析 ProjectIR、不再自己 resolve 授权（相关 import 已删除）。
+**composition 里重复的 task/attempt/open-attempt SQL 一并删除**——那正是本片要消灭的重复。
+
+**刻意不收进去的两处**（边界，不是遗漏）：
+
+- `#attemptContext` 里的整行读取：多个调用点读的是**不同的附带列**，那是一个工作形状，不是"一个有答案的
+  Work 问题"；收进去只是搬动一堆偶然列，不是收束语义。
+- promotion-eligibility 的 replay reader：它的**语义不同**（必须在某个时间点上观测 log）。为图 import
+  图好看而合并它，是用真实的 replay 保证换一个更整齐的图。
+
+### AC.4 characterization + equivalence（§二十七）
+
+`test/architecture/sr2b1_work_read_owner.test.ts` 11 条：
+
+```text
+owner output === façade output      project / task（state+batch anchor+lastEventId+envelopeId）
+                                    attempt（行事实 + 未知 id 为 null 而非报错）
+                                    taskEnvelope（envelope_id 与整体序列化逐字节相等）
+D5-b1 时间穿越不变量                  task 行被重绑后，attempt 的授权仍解析自 LOG（E0 不变）
+open attempt 问题                    持有通道者被报告，COMPLETED 后释放（释放≠删除）
+结构钉                                read model 不写；controller 不再自行 parse/resolve；src/work = L2
+```
+
+**两条既有钉反而变强**：
+
+```text
+D5-b1 "ONE definition"   旧：controller 与 scheduler 都含 resolveAttemptAuthorization(
+                         新：controller 不再自行 resolve（改为 this.work.attemptAuthorization），
+                             产品代码中 resolver 调用点收敛到 read_model + scheduler
+G10-W envelope namer 表   新增 src/work/read_model —— 因为"读"移到了那里。
+                         该集合不是新增能力，而是标注唯一读取现在所在处；若仍只指向旧位置，
+                         firewall 会悄悄停止覆盖真正的读者。
+```
+
+### AC.5 门禁（本片实测）
+
+tsc 干净、单元 **2637/2637**、e2e **38/38**、`architecture:check` **0 violation**（12 accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**。
+
+controller 5378 → **5363 行**（本片只搬读取，未拆其余 owner——§十三 明确不以行数为唯一验收：真正的验收
+是 controller **不再实现** raw Work projection SQL reads 与 attempt authorization reconstruction，
+这两条现已成立）。
+
+```text
+SR-2.0   Architecture Constitution                  CLOSED @ ce0e258
+SR-2a    Continuation interface wall                CLOSED @ 4eae41c
+SR-2b1   Work read owner                            CLOSED（本附录）
+SR-2b2   ProjectHeadService 抽离                    ← 下一步
+```
