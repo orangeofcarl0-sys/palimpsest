@@ -228,6 +228,7 @@ async function rig(): Promise<Rig> {
         // permit STRUCTURALLY valid, so its refusal is about identity rather than a malformed capability.
         batchActivationEventId: taskId === TASK ? activationOf(taskId) : activationOf(TASK),
         reason: "INCOMPATIBLE",
+        targetFence: controller.reworkTargetFence(),
       }),
     close: async () => {
       await effects.close();
@@ -429,6 +430,7 @@ describe("§D5-b2 a rework permit cannot be forged, copied or spent on another r
         currentEnvelopeId: "envelope-not-what-the-task-carries",
         batchActivationEventId: r.batchActivationId(),
         reason: "INCOMPATIBLE",
+        targetFence: r.controller.reworkTargetFence(),
       });
       let error: unknown;
       try {
@@ -459,6 +461,7 @@ describe("§D5-b2 a rework permit cannot be forged, copied or spent on another r
         currentEnvelopeId: r.envelopeOf().envelope_id,
         batchActivationEventId: r.batchActivationId() + 1000,
         reason: "INCOMPATIBLE",
+        targetFence: r.controller.reworkTargetFence(),
       });
       let error: unknown;
       try {

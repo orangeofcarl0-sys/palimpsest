@@ -329,6 +329,7 @@ async function rig(): Promise<Rig> {
       currentEnvelopeId: readEnvelope(taskId).envelope_id,
       batchActivationEventId: activationOf(taskId),
       reason: "INCOMPATIBLE",
+      targetFence: controller.reworkTargetFence(),
     });
   }
 }

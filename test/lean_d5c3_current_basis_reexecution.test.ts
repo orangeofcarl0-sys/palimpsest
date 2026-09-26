@@ -265,6 +265,7 @@ async function rig(): Promise<Rig> {
         currentEnvelopeId: readEnvelope(taskId).envelope_id,
         batchActivationEventId: Number(anchor.batch_activation_event_id),
         reason: "INCOMPATIBLE",
+        targetFence: controller.reworkTargetFence(),
       });
       store.appendReworkReopening(
         parseNewEvent({

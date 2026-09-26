@@ -289,6 +289,7 @@ async function rig(): Promise<Rig> {
       currentEnvelopeId: readEnvelope(taskId).envelope_id,
       batchActivationEventId: activationOf(taskId),
       reason: "INCOMPATIBLE",
+      targetFence: controller.reworkTargetFence(),
     });
   }
 }
@@ -456,6 +457,7 @@ describe("§D5-c2 a caller cannot splice rework lineage", () => {
         currentEnvelopeId: "envelope-hypothetical",
         batchActivationEventId: 1,
         reason: "INCOMPATIBLE",
+        targetFence: r.controller.reworkTargetFence(),
       });
       const spliced = parseNewEvent({
         schema_version: 1,

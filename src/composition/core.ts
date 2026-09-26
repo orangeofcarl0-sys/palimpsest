@@ -79,6 +79,12 @@ export interface CoreComposition {
    * A caller who passed explicit `options.capabilities` owns the value and this bind is a no-op —
    * see `composeCore`.
    */
+  /** §D5-d: the world observation the basis runtime uses, shared with the continuation composition. */
+  readonly worldObservation: import("../project_world/runtime.js").ProjectWorldObservationPort | undefined;
+  /** §D5-d: the §D3-a runtime, when this deployment can observe a world. */
+  readonly worldBasisRuntime: import("../project_world/runtime.js").ProjectWorldBasisRuntime | undefined;
+  /** The ONE spelling of the execution-world root (`.palimpsest/worlds`), consumed by the effect ports. */
+  readonly worldsRoot: string;
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
   };
@@ -156,19 +162,28 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
   const worldOwner: {
     current: { taskEnvelope(taskId: string): unknown | null; projectRevision(): number } | null;
   } = { current: null };
+  /**
+   * §D5-d: the observation port is HOISTED to its own name so the continuation
+   * composition can share the SAME world observation the basis runtime uses —
+   * one spelling of "what is the current world", never two.
+   */
+  const worldObservation =
+    options.repository === undefined || options.repository === ""
+      ? undefined
+      : firstPartyProjectWorldObservation({
+          owner: {
+            taskEnvelope: (taskId) => worldOwner.current?.taskEnvelope(taskId) ?? null,
+            projectRevision: () => worldOwner.current?.projectRevision() ?? 0,
+          },
+          repository: options.repository,
+        });
   const worldBasisRuntime =
-    worldBasisStore === undefined || options.repository === undefined || options.repository === ""
+    worldBasisStore === undefined || worldObservation === undefined
       ? undefined
       : makeProjectWorldBasisRuntime({
           projectId: options.projectId,
           store: worldBasisStore,
-          observation: firstPartyProjectWorldObservation({
-            owner: {
-              taskEnvelope: (taskId) => worldOwner.current?.taskEnvelope(taskId) ?? null,
-              projectRevision: () => worldOwner.current?.projectRevision() ?? 0,
-            },
-            repository: options.repository,
-          }),
+          observation: worldObservation,
           ...(options.clock === undefined ? {} : { clock: options.clock }),
         });
 
@@ -276,6 +291,9 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
       },
     },
     worldBasisStore,
+    worldObservation,
+    worldBasisRuntime,
+    worldsRoot,
   };
 }
 
