@@ -44,9 +44,9 @@ import {
 import { makeCompatibilityIssuer, type CompatibilityIssuer } from "../project_world/issuance.js";
 import { makeCrossBasisAdmissionRuntime, type CrossBasisAdmissionRuntime } from "../project_world/cross_basis.js";
 import { makeCrossBasisAdmissionStore, type CrossBasisAdmissionStore } from "../project_world/admission_store.js";
-import { SqliteDerivedResultCandidateStore } from "../project_world/candidate_store.js";
-import { makeRematerializationRuntime, type RematerializationRuntime } from "../project_world/rematerialization.js";
-import type { AuthoritativeResultResolver } from "../project_world/result_resolution.js";
+import { SqliteDerivedResultCandidateStore } from "../result/candidate_store.js";
+import { makeRematerializationRuntime, type RematerializationRuntime } from "../result/rematerialization.js";
+import type { AuthoritativeResultResolver } from "../result/subject.js";
 import type { ProjectWorldBasisRuntime, ProjectWorldObservationPort } from "../project_world/runtime.js";
 import { gitSourceChangeObserver, GIT_SOURCE_OBSERVER_ID, GIT_SOURCE_OBSERVER_VERSION, GIT_SOURCE_MECHANISM } from "../deployment/source_change_observer.js";
 import { gitSourceRematerializer } from "../deployment/source_rematerializer.js";

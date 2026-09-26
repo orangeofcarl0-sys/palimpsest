@@ -46,20 +46,20 @@
  *
  * Layer: L2 (`src/project_world/`). Not re-exported from the domain barrel.
  */
-import { admitCrossBasis, type CrossBasisAdmissionResult } from "./admission.js";
+import { admitCrossBasis, type CrossBasisAdmissionResult } from "../project_world/admission.js";
 import {
   crossBasisAdmissionRefOf,
   type CrossBasisAdmissionStore,
   type CrossBasisAdmissionRecord,
-} from "./admission_store.js";
+} from "../project_world/admission_store.js";
 import {
   materializeDerivedResultCandidate,
   materializeResultDerivation,
   type DerivedResultCandidate,
 } from "./derivation.js";
-import type { CompatibilityIssuer, IssuedCompatibilityAssessment } from "./issuance.js";
+import type { CompatibilityIssuer, IssuedCompatibilityAssessment } from "../project_world/issuance.js";
 import type { DerivedResultCandidateStore } from "./candidate_store.js";
-import type { AuthoritativeResultResolver } from "./result_resolution.js";
+import type { AuthoritativeResultResolver } from "./subject.js";
 
 /* ================================================================== *
  * The port: one facet's mechanism, as a contract

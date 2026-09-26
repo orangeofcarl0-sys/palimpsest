@@ -31,7 +31,7 @@ import {
   type AuthoritativeResultResolver,
   type ResolvedResult,
   type ResultSubjectRef,
-} from "../project_world/result_resolution.js";
+} from "../result/subject.js";
 import type { DerivedResultCandidateStore } from "../project_world/index.js";
 import type { AttemptResultVerificationSource } from "../project_verification/index.js";
 import { attemptResultFacetsFromD2Attempt, type ProjectWorldBasis } from "../domain/world_basis.js";

@@ -6650,3 +6650,84 @@ SR-2c    World / Result / Continuation namespace 收束   ← 下一步
 至此 §十三 点名的 controller **不再实现**的六项已全部成立：raw Work projection SQL reads、
 attempt authorization reconstruction、head reconciliation compiler、raw git result observation、
 mutating prepare/settle kernel、ContextManifest compilation/fetch。
+
+---
+
+## 附录 AG（第 SR-2c 期）：World / Result / Continuation 命名空间收束
+
+$$oxed{Continuation\ is\ not\ part\ of\ OCC.}$$
+
+$$oxed{Result 
+eq World.}$$
+
+### AG.1 三件事（§十四/§十五/§十六）
+
+```text
+§十四  D5-a 的 calculus（assessContinuation）从 src/project_world/ 迁至 src/continuation/assessment.ts
+       —— 它 CONSUME World 的结论，本身不是 World OCC。
+§十五  Result 的 identity/derivation/candidate storage/rematerialization 从 src/project_world/ 迁至
+       src/result/ —— World Consistency 判断 Result 对 World 的**关系**，并不拥有 Result 本身。
+§十六  World barrel 停止 re-export 一个 consumer：宽 barrel 是 public surface，不是内部 service
+       locator；L2 kernel 命名 L3 consumer 是一条向上边。
+```
+
+迁移后 `project_world` 剩下的是**判据**：basis / dependency / runtime-currentness / footprint /
+compatibility / serialization / observation / observation_authority / issuance / cross_basis /
+admission / admission_store —— 即 ruling §十五 描述的那个容易解释的 **World Consistency Kernel**。
+
+### AG.2 抓到的真架构违规（诚实账）
+
+首次迁移后 `architecture:check` 报出**真实违规**：
+
+```text
+[forbidden_import] L2 → L3 is forbidden — src/project_world/index.ts → src/continuation/assessment.ts
+```
+
+这是我在 barrel 里保留 re-export 以求"public parity"造成的**向上反边**。按 §十六 的自身原则处理：**删除
+re-export**，把两个 D5-a 测试的 import 改指新 owner（D5-a 不在 public API 面上，实测
+`check-public-api` 仍 0/0/0）。即：
+
+$$oxed{一个 barrel 不是内部定位器；consumer 从 owner 处 import。}$$
+
+两条 SR-2a 的钉因此**变强**：service.ts 的三个 import 中**两个已是同层兄弟**
+（`./assessment.js`、`./ports.js`），唯一跨层 import 只剩 permit；service 不再触及 `project_world` 任何模块。
+
+### AG.3 未动的身份（§三）
+
+```text
+palimpsest.result-continuation-assessment.v1   （D5-a 的 assessment digest domain）
+palimpsest.result-subject-ref.v1               （ResultSubjectRef digest domain）
+palimpsest.result-derivation.v1                （derivation digest domain）
+```
+
+$$oxed{module\ move 
+ot\Rightarrow digest\-domain\ rename}$$
+
+identity 是历史，不是布局。
+
+### AG.4 边界证明（`test/architecture/sr2c_world_result_boundaries.test.ts`，11 条）
+
+```text
+§十四  assessment.ts 存在且为 L3；旧路径已删除（不是留第二份）；公开词汇与 digest domain 逐字不变；
+       依赖方向变为向下（L3 assessment → L2 world），且 project_world 对 continuation 的反边为 0
+§十五  四个 result 模块在 src/result 且为 L2，旧路径全部消失；World kernel 不再拥有 derivation/
+       candidate storage/carry effect；唯一允许的引用是 admission_store → subject（一条 admission
+       记录**必须**说明它关于哪个 result——那是边界在工作，不是泄漏）
+§十六  World barrel 不再 re-export continuation 符号；没有活跃模块经 barrel 拿 assessment；
+       continuation service 不再 import 任何 project_world 模块
+不变量   calculus 仍区分 INCOMPATIBLE/UNKNOWN/NOT_ASSESSED/EXACT/moreCouldHelp，且仍是纯函数
+       （无 DB、无 clock、无 I/O）
+```
+
+既有 D3/D5 套件的源码钉按新路径重指（**实质未变**）：D3-d/D3-R2/D5-0/D3-d3/D3-d/§D3-e1 共 8 处。
+
+### AG.5 门禁（本片实测）
+
+tsc 干净、单元 **2681/2681**、e2e **38/38**、`architecture:check` **0 violation**（12 accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**。
+
+```text
+SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f  SR-2b3 ✓7e9854f  SR-2b4 ✓291d776
+SR-2c   World / Result / Continuation namespace 收束   CLOSED（本附录）
+SR-2d1  controller ↔ graph/canvas SCC 清除             ← 下一步
+```
