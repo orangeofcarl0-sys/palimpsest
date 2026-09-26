@@ -166,27 +166,30 @@ describe("SR-2 §五 the continuation orchestrator is explicitly L3", () => {
     expect(unclassified.map((module) => module.file)).toEqual([]);
   });
 
-  it("classifying continuation SURFACED a real edge the BARREL fallback had been hiding", () => {
-    // The proof that the hole was load-bearing rather than cosmetic: with continuation as L3,
-    // the live graph reports an L3→L5 edge that was previously unreportable.
+  it("classifying continuation surfaced an edge that was TYPE-ONLY — the hole was load-bearing, not cosmetic", () => {
+    /**
+     * SR-2.0 classified continuation as L3 and the live graph immediately reported an L3→L5 edge
+     * (`service.ts → deployment/source_change_observer.ts`) that the BARREL fallback had made
+     * unreportable. SR-2a then REMOVED it behind the port wall.
+     *
+     * The SR-2.0 lesson survives the removal and is what this asserts: the edge existed, it was
+     * TYPE-ONLY (the service named the observer's port, never ran it), and continuation is still
+     * L3 — so the classification is what exposed it, rather than a misclassification creating it.
+     * The removal itself is proven in `sr2a_continuation_port_wall.test.ts`.
+     */
     const architecture = analyseModuleArchitecture(REPO);
-    const surfaced = architecture.forbiddenImports.filter((edge) => edge.from.startsWith("src/continuation/"));
-    expect(surfaced.length).toBeGreaterThan(0);
-    for (const edge of surfaced) {
-      expect(edge.fromLayer).toBe("L3");
-      expect(edge.toLayer).toBe("L5");
-    }
+    const node = architecture.modules.find((module) => module.file === "src/continuation/service.ts");
+    expect(node!.layer).toBe("L3");
+    // The wall's proof (the service's closed import set) is the surviving evidence that the
+    // surfaced edge was real: the composition had to absorb the observer to remove it.
+    const composition = readFileSync(join(REPO, "src", "composition", "continuation.ts"), "utf8");
+    expect(composition).toContain("gitSourceChangeObserver");
   });
 
-  it("that edge is recorded with a written reason that names SR-2a as its remover", () => {
-    const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
-      .baseline as ArchitectureBaseline;
-    const entry = baseline.permittedForbiddenEdges.find((edge) => edge.from.startsWith("src/continuation/"));
-    expect(entry).toBeDefined();
-    expect(entry!.reason.length).toBeGreaterThan(40);
-    expect(entry!.reason).toContain("SR-2a");
-    // The reason must say it was EXPOSED rather than created — the distinction the ruling drew.
-    expect(entry!.reason).toMatch(/EXPOSED/i);
+  it("the exposed edge is GONE — SR-2a removed it rather than tolerating it", () => {
+    const architecture = analyseModuleArchitecture(REPO);
+    const surfaced = architecture.forbiddenImports.filter((edge) => edge.from.startsWith("src/continuation/"));
+    expect(surfaced).toEqual([]);
   });
 
   it("known barrels remain legal — the fix did not reclassify them", () => {
@@ -286,12 +289,20 @@ describe("SR-2 §三十一 SR-2.0 re-stamped no debt", () => {
   const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
     .baseline as ArchitectureBaseline;
 
-  it("the exception set grew by exactly ONE edge and lost none", () => {
-    // The SR-1 baseline carried four forbidden edges; SR-2.0 carries five. The single addition
-    // is the continuation edge the classification surfaced — not a batch of new permissions.
-    expect(baseline.permittedForbiddenEdges).toHaveLength(5);
-    const continuationEdges = baseline.permittedForbiddenEdges.filter((edge) => edge.from.startsWith("src/continuation/"));
-    expect(continuationEdges).toHaveLength(1);
+  it("the exception set is back to the SR-1 four — SR-2.0 added one, SR-2a removed it", () => {
+    /**
+     * The exception set's whole history in one assertion:
+     *
+     *   SR-1 baseline   4 edges
+     *   SR-2.0          5 — the classification SURFACED the continuation edge, recorded by name
+     *                       with a reason naming SR-2a as its remover
+     *   SR-2a           4 — the port wall removed the edge, and its exception was DELETED with it
+     *
+     * A dormant exception for an edge that no longer exists is a hole (§三十一), so the count
+     * coming back down is the proof that SR-2a closed what SR-2.0 exposed rather than parking it.
+     */
+    expect(baseline.permittedForbiddenEdges).toHaveLength(4);
+    expect(baseline.permittedForbiddenEdges.filter((edge) => edge.from.startsWith("src/continuation/"))).toEqual([]);
   });
 
   it("the cycle set is unchanged — SR-2.0 removed nothing and tolerated nothing new", () => {
