@@ -12,7 +12,16 @@ import type { ModuleArchitecture, StronglyConnectedComponent } from "./graph.js"
 import { forbiddenEdgeRule } from "./layers.js";
 
 /** Bumped by SR-1C §6: the exception unit changed from a layer pair to a concrete edge. */
-export const ARCHITECTURE_BASELINE_VERSION = 2;
+/**
+ * SR-2 §七: v3 adds the TREE identity beside the commit.
+ *
+ * A PR squash rewrites the commit SHA but not the source tree, so the commit alone cannot
+ * answer "was this baseline captured from the code I am looking at?". The tree CAN, which is
+ * what makes it the checkable half of the pair. `capturedFrom` also stops being `unknown`:
+ * it was read from `.git/HEAD`, which is a FILE in a linked worktree (not a directory), so
+ * every worktree-based capture silently recorded `unknown`.
+ */
+export const ARCHITECTURE_BASELINE_VERSION = 3;
 
 /** ONE permitted forbidden IMPORT EDGE — a concrete file pair with a written reason. */
 export interface PermittedForbiddenEdge {
@@ -25,8 +34,17 @@ export interface PermittedForbiddenEdge {
 
 export interface ArchitectureBaseline {
   readonly version: number;
-  /** The commit/tree the exceptions were captured from. Informational only. */
+  /**
+   * The commit the exceptions were captured from. Informational only — a squash changes it
+   * without changing the code.
+   */
   readonly capturedFrom: string;
+  /**
+   * SR-2 §七: the SOURCE TREE the exceptions were captured from. This is the checkable
+   * identity: it survives a squash, so "is this baseline still about this code?" is a real
+   * question with a real answer. Absent on v2 baselines (which recorded neither).
+   */
+  readonly capturedTree?: string;
   /** Enumerated permitted-for-now forbidden import edges. No wildcards of any kind. */
   readonly permittedForbiddenEdges: readonly PermittedForbiddenEdge[];
   /** Enumerated permitted-for-now strongly connected components (exact file sets). */
@@ -36,7 +54,7 @@ export interface ArchitectureBaseline {
 }
 
 export interface ArchitectureViolation {
-  readonly kind: "forbidden_import" | "new_cycle" | "unresolved_import";
+  readonly kind: "forbidden_import" | "new_cycle" | "unresolved_import" | "unclassified_module";
   readonly detail: string;
   readonly files: readonly string[];
 }
@@ -74,6 +92,23 @@ export function checkArchitecture(
 ): ArchitectureCheckResult {
   const violations: ArchitectureViolation[] = [];
   const accepted: ArchitectureViolation[] = [];
+
+  /**
+   * SR-2 §五: an unclassified module fails FIRST and is NOT whitelistable.
+   *
+   * This is deliberately not an entry in the baseline schema: the baseline records which
+   * KNOWN violations are tolerated for now, and "nobody classified this directory" is not a
+   * tolerated violation — it is a missing decision. Adding a `permittedUnclassified` list
+   * would rebuild the very escape hatch this rule removes.
+   */
+  for (const node of architecture.modules) {
+    if (node.layer !== "UNCLASSIFIED") continue;
+    violations.push({
+      kind: "unclassified_module",
+      detail: `${node.file} is not classified in the architecture map — add it to DIRECTORY_LAYERS (or a FILE_LAYER_OVERRIDES entry) with a written reason; an unclassified module is refused rather than granted the widest dependency set`,
+      files: [node.file],
+    });
+  }
 
   const permittedImports = new Map(baseline.permittedForbiddenEdges.map((entry) => [importKeyOf(entry), entry.reason]));
   const permittedCycles = new Map(baseline.permittedCycles.map((entry) => [cycleKeyOf(entry.files), entry.reason]));
@@ -140,6 +175,7 @@ export function baselineFrom(
   architecture: ModuleArchitecture,
   options: {
     readonly capturedFrom: string;
+    readonly capturedTree?: string | undefined;
     /** Reasons keyed by `fromFile -> toFile`. */
     readonly edgeReasons?: ReadonlyMap<string, string>;
     readonly cycleReasons?: ReadonlyMap<string, string>;
@@ -164,6 +200,7 @@ export function baselineFrom(
   return {
     version: ARCHITECTURE_BASELINE_VERSION,
     capturedFrom: options.capturedFrom,
+    ...(options.capturedTree === undefined ? {} : { capturedTree: options.capturedTree }),
     permittedForbiddenEdges,
     permittedCycles: architecture.stronglyConnectedComponents.map((cycle) => ({
       files: cycle.files,
