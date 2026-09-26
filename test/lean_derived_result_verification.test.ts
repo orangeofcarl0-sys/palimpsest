@@ -266,9 +266,9 @@ describe("§D3-d3 scope: one verifier, no reuse inference", () => {
         { encoding: "utf8" },
       ).replace(/\/\*[\s\S]*?\*\//gu, "");
     for (const file of [
-      "src/project_world/derivation.ts",
+      "src/result/derivation.ts",
       "src/deployment/derived_result_source.ts",
-      "src/project_world/candidate_store.ts",
+      "src/result/candidate_store.ts",
     ]) {
       const text = read(file);
       for (const forbidden of [
@@ -291,7 +291,7 @@ describe("§D3-d3 scope: one verifier, no reuse inference", () => {
   it("the candidate store is append-once by schema, not by caller discipline", () => {
     const text = execFileSync(
       process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/candidate_store.ts"))},'utf8'))`],
+      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/result/candidate_store.ts"))},'utf8'))`],
       { encoding: "utf8" },
     ).toUpperCase();
     expect(text).not.toContain("ON CONFLICT");

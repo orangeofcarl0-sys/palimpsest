@@ -117,7 +117,7 @@ export {
   type DerivedResultCandidate,
   type ResultDerivation,
   type ResultDerivationKind,
-} from "./derivation.js";
+} from "../result/derivation.js";
 export {
   REMATERIALIZATION_STATES,
   makeRematerializationRuntime,
@@ -127,11 +127,11 @@ export {
   type RematerializationState,
   type RematerializationDelta,
   type ResultRematerializerPort,
-} from "./rematerialization.js";
+} from "../result/rematerialization.js";
 export {
   SqliteDerivedResultCandidateStore,
   type DerivedResultCandidateStore,
-} from "./candidate_store.js";
+} from "../result/candidate_store.js";
 export {
   COMPOSITION_ORDER_AUTHORITY,
   SUCCESSION_STATES,
@@ -154,16 +154,9 @@ export {
   type ResolvedResult,
   type ResultSubjectKind,
   type ResultSubjectRef,
-} from "./result_resolution.js";
-export {
-  CONTINUATION_COMPATIBILITY_INPUTS,
-  CONTINUATION_CURRENTNESS,
-  assessContinuation,
-  continuationStillAppliesTo,
-  type ContinuationAssessment,
-  type ContinuationCapabilities,
-  type ContinuationCompatibilityInput,
-  type ContinuationCurrentness,
-  type ContinuationFacts,
-  type ContinuationPath,
-} from "./continuation.js";
+} from "../result/subject.js";
+// SR-2 §十四: D5-a's calculus MOVED to `src/continuation/assessment.ts`. It is deliberately NOT
+// re-exported here: an L2 World kernel naming an L3 consumer would be an upward edge, and the
+// ruling's own principle is that a barrel is public surface rather than an internal locator.
+// Consumers import it from its owner.
+

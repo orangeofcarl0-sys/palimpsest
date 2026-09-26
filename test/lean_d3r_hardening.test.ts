@@ -148,7 +148,7 @@ describe("§D3-R2 the effect takes an admission identity, and the target comes f
   it("the effect has NO parameter for a target digest or revision", () => {
     const runtime = execFileSync(
       process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/rematerialization.ts"))},'utf8'))`],
+      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/result/rematerialization.ts"))},'utf8'))`],
       { encoding: "utf8" },
     ).replace(/\/\*[\s\S]*?\*\//gu, "");
     // The public interface takes an admissionRef and nothing that could name a world independently.

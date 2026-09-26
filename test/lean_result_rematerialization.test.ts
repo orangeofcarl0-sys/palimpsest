@@ -439,8 +439,8 @@ describe("§D3-d scope: no canonical mutation, no merge, no promotion", () => {
         { encoding: "utf8" },
       ).replace(/\/\*[\s\S]*?\*\//gu, "");
     for (const file of [
-      "src/project_world/derivation.ts",
-      "src/project_world/rematerialization.ts",
+      "src/result/derivation.ts",
+      "src/result/rematerialization.ts",
       "src/deployment/source_rematerializer.ts",
     ]) {
       const text = read(file);

@@ -51,9 +51,17 @@ describe("SR-2 §八 the continuation service's import set is closed", () => {
     const architecture = analyseModuleArchitecture(REPO);
     const node = architecture.modules.find((module) => module.file === SERVICE);
     expect(node).toBeDefined();
+    /**
+     * SR-2 §十四 made this STRONGER: D5-a's calculus moved into this layer, so TWO of the three
+     * imports are now the service's own siblings and only the PERMIT comes from outside
+     * `src/continuation/`. The service reaches no other layer at all.
+     */
     expect([...node!.imports].sort()).toEqual(
-      ["src/continuation/ports.ts", "src/domain/rework_admission.ts", "src/project_world/continuation.ts"].sort(),
+      ["src/continuation/assessment.ts", "src/continuation/ports.ts", "src/domain/rework_admission.ts"].sort(),
     );
+    // The only cross-layer import is the permit, which is the service's own minting authority.
+    const outsideLayer = node!.imports.filter((file) => !file.startsWith("src/continuation/"));
+    expect(outsideLayer).toEqual(["src/domain/rework_admission.ts"]);
   });
 
   it("it does NOT import the event log, the controller, or any D3-R authority", () => {
@@ -112,12 +120,13 @@ describe("SR-2 §八 the continuation service's import set is closed", () => {
     expect(service).toContain("deps.work.reworkLineage");
   });
 
-  it("the ONLY remaining import outside continuation is the permit and the pure calculus", () => {
-    // Both are deliberate. The permit is the service's own minting authority (D5-d's proof pins
-    // it as the only product-code caller), and `assessContinuation` is continuation's own
-    // calculus — SR-2c relocates it to `src/continuation/assessment.ts`.
+  it("the ONLY remaining import outside continuation is the permit", () => {
+    // The permit is the service's own minting authority (D5-d's proof pins it as the only
+    // product-code caller). SR-2 §十四 relocated the calculus to `src/continuation/assessment.ts`,
+    // so the service no longer reaches into `project_world` at all.
     expect(service).toContain('from "../domain/rework_admission.js"');
-    expect(service).toContain('from "../project_world/continuation.js"');
+    expect(service).toContain('from "./assessment.js"');
+    expect(service).not.toContain("../project_world/");
   });
 });
 

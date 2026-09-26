@@ -385,7 +385,7 @@ describe("§D3-d4 the D3 complexity terminates before the Promotion boundary", (
     // because wiring it would also mean wiring the effect — and the effect has no promotion path.
     const source = execFileSync(
       process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/candidate_store.ts"))},'utf8'))`],
+      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/result/candidate_store.ts"))},'utf8'))`],
       { encoding: "utf8" },
     );
     expect(source).toContain("close(): void");

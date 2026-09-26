@@ -520,8 +520,8 @@ describe("§D3-e1 the composition plane adds semantics, not machinery", () => {
       ).replace(/\/\*[\s\S]*?\*\//gu, "");
     for (const file of [
       "src/project_world/serialization.ts",
-      "src/project_world/rematerialization.ts",
-      "src/project_world/derivation.ts",
+      "src/result/rematerialization.ts",
+      "src/result/derivation.ts",
     ]) {
       const text = read(file);
       for (const forbidden of [

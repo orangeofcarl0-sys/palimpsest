@@ -47,7 +47,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 
 import { canonicalDigest } from "../schema/canonical.js";
-import type { ResultSubjectRef } from "./result_resolution.js";
+import type { ResultSubjectRef } from "../result/subject.js";
 
 /**
  * The observed target an admission is bound to.

@@ -50,6 +50,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   run: "L1",
 
   // L2 — semantic capability owners
+  // SR-2 §十四/§十五: RESULT identity, derivation, candidate storage and rematerialization.
+  // `Result ≠ World`: World Consistency JUDGES a result's relation to the world; it does not own
+  // the result. These modules are a semantic capability of their own.
+  result: "L2",
   // SR-2 §九: the Work read owner. It answers Work projection questions (project, task,
   // attempt, current batch, envelope, attempt authorization, open attempt) and produces no
   // transitions — a semantic capability, not kernel substrate and not a host adapter.

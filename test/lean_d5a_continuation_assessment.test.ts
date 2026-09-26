@@ -27,14 +27,14 @@ import {
   assessContinuation,
   continuationStillAppliesTo,
   type ContinuationFacts,
-} from "../src/project_world/index.js";
+} from "../src/continuation/assessment.js";
 import type { ResultSubjectRef } from "../src/project_world/index.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 /** The module's own source, so a structural claim is checked against what shipped rather than asserted. */
 const source = (): string =>
-  execFileSync(process.execPath, ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/continuation.ts"))},'utf8'))`], {
+  execFileSync(process.execPath, ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/continuation/assessment.ts"))},'utf8'))`], {
     encoding: "utf8",
   });
 
