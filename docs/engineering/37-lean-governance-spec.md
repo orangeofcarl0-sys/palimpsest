@@ -6083,6 +6083,11 @@ REOPENED_WAITING_FOR_QUIESCENCE / READY_FOR_DELEGATION / DELEGATED / ALREADY_IN_
    `composeInstalledLifecycle.ownedResources` 统一 close；无 ContinuationStore。
 4. **delegation 内核的 attempt 编译时序不变**（D5-c3 的 prepare → compile → run 顺序原样保留），service
    不触碰任何执行内核函数（证明 9/10 源码钉住）。
+5. **parity gate 的 reviewed-escape 首次覆盖 capability 层**：continuation 是第一个出现在 parity capture
+   的 minimal/packaged 两个安装上的"无选项依赖"additive face（凡有 repository 即在），旧 golden 必然报
+   unexpected。按 routes/tools 的既有惯例新增 `REVIEWED_CAPABILITY_ADDITIONS`（具名 + 书面理由，missing
+   保持全齿），golden fixture 本身不动——这保住了 A16 防陈旧检查（重录 fixture 会使已吸收的 tool-contract
+   change 条目"不再描述变化"而误报）。
 
 ### Z.8 明确不做（OUT）
 
