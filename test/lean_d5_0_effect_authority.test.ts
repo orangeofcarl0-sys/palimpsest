@@ -154,7 +154,7 @@ describe("§D5-0 A. the effect's only input is an admission identity", () => {
   it("the entry point has no parameter through which a caller can describe the result", () => {
     const text = execFileSync(
       process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/rematerialization.ts"))},'utf8'))`],
+      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/result/rematerialization.ts"))},'utf8'))`],
       { encoding: "utf8" },
     );
     /**
@@ -401,7 +401,7 @@ describe("§D5-0 E. AdmissionStillApplies ≺ WorldCreation is structural, not o
   it("the composition cannot omit the observer — it is a required dependency", () => {
     const text = execFileSync(
       process.execPath,
-      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/project_world/rematerialization.ts"))},'utf8'))`],
+      ["-e", `process.stdout.write(require('node:fs').readFileSync(${JSON.stringify(join(REPO, "src/result/rematerialization.ts"))},'utf8'))`],
       { encoding: "utf8" },
     );
     /**

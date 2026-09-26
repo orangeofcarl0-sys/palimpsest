@@ -44,12 +44,19 @@
  *   · it does NOT read anything               — every input is a fact the caller already established, so
  *                                                this is a pure function and cannot drift from its inputs
  *
- * Layer: L2 (`src/project_world/`). Not re-exported from the domain barrel.
+ * Layer: L3 (`src/continuation/`). SR-2 §十四 moved this here from `src/project_world/`:
+ *
+ *     ContinuationAssessment  consumes World conclusions;  it is not World OCC itself.
+ *
+ * The dependency direction is the point: an L3 assessment may READ the L2 World Consistency kernel
+ * (`compatibility`, `result_resolution`), and the World kernel no longer has to host a consumer of
+ * its own conclusions. `src/project_world/index.ts` keeps a re-export so existing import paths and
+ * the public surface are unchanged.
  */
 import { canonicalDigest } from "../schema/canonical.js";
 
-import { COMPATIBILITY_OUTCOMES, type CompatibilityOutcome } from "./compatibility.js";
-import type { ResultSubjectRef } from "./result_resolution.js";
+import { COMPATIBILITY_OUTCOMES, type CompatibilityOutcome } from "../project_world/compatibility.js";
+import type { ResultSubjectRef } from "../result/subject.js";
 
 /**
  * The currentness verdicts this assessment consumes, plus the two states an assessment needs and D3-a does

@@ -30,7 +30,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
 
-import type { RematerializationOutcome, ResultRematerializerPort } from "../project_world/rematerialization.js";
+import type { RematerializationOutcome, ResultRematerializerPort } from "../result/rematerialization.js";
 
 /** Operational commit identity: it says "a Palimpsest derivation produced this", never "this is the user". */
 export const REMATERIALIZER_COMMIT_NAME = "Palimpsest Rematerializer";

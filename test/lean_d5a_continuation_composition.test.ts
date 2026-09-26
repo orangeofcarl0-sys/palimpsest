@@ -32,14 +32,15 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { gitSourceChangeObserver } from "../src/deployment/source_change_observer.js";
 import {
-  assessContinuation,
   makeCompatibilityIssuer,
   makeObservationAuthority,
   REPOSITORY_SOURCE,
   sourceChangeFootprintFromPaths,
-  type ContinuationAssessment,
   type ResultSubjectRef,
 } from "../src/project_world/index.js";
+// SR-2 §十四: the assessment now belongs to the continuation layer, which consumes World
+// conclusions rather than being part of the World kernel.
+import { assessContinuation, type ContinuationAssessment } from "../src/continuation/assessment.js";
 
 const cleanups: Array<() => void> = [];
 afterAll(() => {

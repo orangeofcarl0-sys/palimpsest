@@ -60,7 +60,7 @@ import {
   ReworkAdmissionPermit,
   type ReworkReason,
 } from "../domain/rework_admission.js";
-import { assessContinuation, type ContinuationAssessment } from "../project_world/continuation.js";
+import { assessContinuation, type ContinuationAssessment } from "./assessment.js";
 
 import type {
   ContinuationResolvedResult,
