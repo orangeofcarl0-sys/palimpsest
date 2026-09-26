@@ -5975,3 +5975,134 @@ D5-LIVE real concurrent → stale → governed reopen → head sync → re-execu
 
 门禁（本片实测）：tsc 干净、单元 **228 files / 2575 tests**、e2e **38/38**、`architecture:check` **0 violation**
 （12 baseline）、`check-public-api` **0/0/0**、`gate:d2-live` **PASS**、`gate:d4-live` **PASS**（2 连续）。
+
+---
+
+## 附录 Z（第 D5-d 期）：Packaged Result Continuation Authority —— caller 选择路线，service 派生一切权威事实
+
+$$oxed{	extbf{fresh observation} \prec 	extbf{continuation assessment} \prec 	extbf{permit mint} \prec 	extbf{TASK\_READY}}$$
+
+### Z.1 闭合的命题（W.5 的洞）
+
+> A structurally valid permit could still be minted by a caller filling `targetObservationDigest`,
+> `currentEnvelopeId`, the batch anchor and the reason **by hand**. D5-b2 proved a FORGED permit cannot
+> pass admission; nothing yet proved a REAL permit must be born from a FRESH assessment.
+
+D5-d 是组装片，不是新算法：D5-0 / D3-a / D3-b / D3-c / D3-d / D5-a / D5-b2 / G10-X / D2-d 全部已存在，
+各有唯一 owner。新身只有两处：`src/continuation/service.ts`（编排）与 `src/composition/continuation.ts`
+（D3-R 组件第一次进入 packaged install），外加 permit 上的 canonical target fence（Z.3）。
+
+```text
+caller ── inspect(result)                    只读：fresh facts → D3-b → D5-a，产出 assessmentDigest
+caller ── rematerialize(result, digest)      fresh assessment → D3-c admission → D3-d carry
+caller ── startRework(result, digest)        mint 权威入口（唯一能产生真 permit 的路径）
+```
+
+`expectedAssessmentDigest` 不是 authority，而是 **caller 的决策 freshness fence**：caller 可以把"意图"
+绑到一个 assessment 上，但不能把 authority 绑到一个 world 上。世界一动，`STALE_INSPECTION`，零事件零
+permit——且**不自动重试**（否则 caller 选的是 inspection A，系统执行的可能是 inspection C）。
+
+### Z.2 权威核是同步的
+
+从最后一次 target re-observation 到 fence 读取、permit mint、governed append 之间**没有 await**：
+append 落在与验证同一个同步跨度内，交错突变无法挤进 check 与 effect 之间。观察不能覆盖的（git 世界在
+append 前一刻变动）由 fence 覆盖，fence 不能覆盖的（canonical picture 在 mint 后变动）由 aggregate 在
+admission 事务内重推导覆盖（Z.3）。后半程只调用既有 owner：`reconcileProjectHead()`（G10-X）与
+`WorkDelegationService.start()`（D2-d），顺序固定、不得复制。
+
+### Z.3 Canonical Target Fence（§10 的 hardening）
+
+`targetObservationDigest` 回答"service 当时观察到了哪个完整世界"——aggregate 在 SQLite 事务内无法重新
+做 git 观测，所以只随 permit 存档、不在事务内校验。fence 回答另一个问题："**append 时 canonical
+authority picture 还是不是那个 picture**"——五个字段全部可由 log + 投影行重推导：
+
+```text
+projectRevision / projectDigest / projectHeadCommit      ← projects 行
+provenEffectHeadCommit / latestPromotionEventRef         ← 链式 PROMOTION_COMMITTED（G10-X 推导）
+```
+
+它关闭的窗口正是 E_0 与 batch 锚看不到的：mint 与 append 之间落下的 promotion 会移动 proven effect
+head 而**不**移动 E_0（PROJECT_REVISED 还没跑）。mismatch ⇒ `capability_binding_mismatch`（stale
+target fence），零写入。`ObservationFreshness ≠ CanonicalAuthorityFreshness`。
+
+### Z.4 V1 保守策略与 origin 绑定（§7/§8/§11）
+
+- **不编造 reason**。packaged rework 只在 fresh assessment 为 `INCOMPATIBLE`（复用被正证据否定）或
+  `UNKNOWN`（从未证成）时 mint；`EXACT` / `COMPATIBLE` ⇒ `REFUSED`——durable `ReworkReason` 词表里没有
+  "复用可证而被拒绝"的诚实位置，映射成 `UNKNOWN` 是说谎。将来需要时引入显式的 `EXPLICIT_REWORK`。
+- **caller 永远不能声称 `REMATERIALIZATION_FAILED`**；V1 也不从 packaged service mint 它（尚无独立的
+  durable failure authority）。rematerialize 失败返回 FAILED 即停，绝不自动转 rework（§19）。
+- **packaged inspection 永远真跑 D3-b**：`NOT_ASSESSED` 从本层面不可达（ Thin evidence 只能得到真
+  `UNKNOWN`），两层区分不被懒惰 caller 洗掉（§4）。
+- **origin 必须是当前 batch 的 COMPLETED ATTEMPT_RESULT**（§11）：跨任务、非 COMPLETED、旧 batch 的
+  origin 一律在 mint 之前 `REFUSED`——坏 lineage 在历史写下之前被拒绝，不能靠 context compiler 事后发现。
+  V1 不支持 `DERIVED_RESULT → rework`；derived candidate 的 premise 是它的 derivation record 而非新鲜
+  观测，继续走 D3 authority 层。
+
+### Z.5 无恢复数据库；record 决定 replay（§15–§17）
+
+service 是 **stateless orchestrator over durable owners**：不建 `continuation_jobs` / `continuation.sqlite`
+（§13），进度从既有 truth 重建。`startRework` 第一步查 Event Log：是否已存在针对该 result 的
+`TASK_READY.rework_provenance`——有则不再 mint，直接从当前 Task/head/Attempt 状态继续（§17，与 D3-d
+derivation replay 同一哲学）。返回状态梯（§14）：`REFUSED / STALE_INSPECTION /
+REOPENED_WAITING_FOR_QUIESCENCE / READY_FOR_DELEGATION / DELEGATED / ALREADY_IN_PROGRESS`——刻意**没有**
+`REWORK_COMPLETED`：Work 还没有完成。capability 全部来自"实际 compose 结果"（§23）：worker port 未供给 ⇒
+诚实 `READY_FOR_DELEGATION`，绝不 stub。
+
+### Z.6 headline 机器证明（test/lean_d5d_result_continuation_service.test.ts，12 用例覆盖 18 条）
+
+| §24 条目 | 证明 |
+| --- | --- |
+| 1 caller-fact firewall | startRework 输入类型源码断言（无 target/E0/batch/reason/originBasis/fence）+ 双字段调用可用 |
+| 2 fresh assess before mint | inspect 后 promote 移动世界 ⇒ STALE_INSPECTION，事件数不变、rework 事件 0 |
+| 3 final reobserve | 计数包装 crossBasis：assessment 与 mint 之间目标变动 ⇒ STALE_INSPECTION（无变异时同路线可 mint） |
+| 4 no NOT_ASSESSED laundering | 真实 D3 栈去掉 source observer ⇒ `UNKNOWN`（非 NOT_ASSESSED），rework 仍诚实可选 |
+| 5 origin is current candidate | A0 不能授权 A1 批次的 rework ⇒ REFUSED（batch mismatch），rework 事件数不变 |
+| 6 permit unique mint surface | 产品代码中 `ReworkAdmissionPermit.issue` 唯一调用点 = continuation service |
+| 7 durable replay | retry 后 rework 事件仍为 1，reopenedEventId = null，事件数不变 |
+| 8 quiescence honest | 其它 VERIFYING 存在 ⇒ REOPENED_WAITING_FOR_QUIESCENCE（blockers 原样上报），他任务零事件 |
+| 9 head ownership unchanged | 源码断言：无 planReconciled/headAdvance/自建 head authority |
+| 10 attempt ownership unchanged | 源码断言：无 ATTEMPT_CREATED/TASK_STARTED/prepareMutatingWork/compileTaskContext |
+| 11 context delivery unchanged | A1 仍收 {work, compiled}（manifestId + continuation），由 D2-d kernel 交付 |
+| 12 no auto fallback | rematerialize 对 INCOMPATIBLE ⇒ REFUSED 且零事件；错 digest ⇒ STALE_INSPECTION |
+| 13 no new vocabulary/store | 无 CREATE TABLE/sqlite；TASK_ 字面量集合 === {TASK_READY}（parity fixture v4 另行钉住） |
+| 14 restart phase reconstruction | 三窗口：reopen 落地未同步（waiting 重放）、attempt 持通道（ALREADY_IN_PROGRESS 路径）、重启 install（同 ledger）均不二次 mint |
+| 15 package capability honesty | 无 repository ⇒ face absent；无 worker port ⇒ READY_FOR_DELEGATION（headSynced=true），绝不 stub |
+| 16 CurrentBasis ≠ PriorResultContext 回归 | A1 的 work.baseCommit 为当前 envelope；continuation 只读呈现（D5-c2 套件继续全绿） |
+| 17 historical verification ≠ A1 qualification 回归 | delivered `prior_execution.worker_summary` 标注在位（D5-c2 套件继续全绿） |
+| 18 no public authority leak | worker context + 全部返回值序列化后不含 permitDigest/targetFence/issuanceDigest/observationRefs |
+
+### Z.7 实测记录
+
+1. **调度器 next-decision 与单变异通道**：head sync 后两个 READY 任务并存时，`WorkDelegationService.start`
+   只会启动调度器自己决定的下一个任务，其余命令被诚实拒绝——service 将其映射为 `READY_FOR_DELEGATION`
+   （detail 携带拒绝原因），retry 由 record 决定继续。这是 §13/§14 设计行为的一次实测确认，不是缺陷。
+2. **fence 窗口的真实性**：mint 与 append 之间的 promotion 窗口由 aggregate 在事务内重推导五个 fence
+   字段关闭；`deriveProjectHeadStatus` 纯函数直接复用（同一 domain 层，无 I/O）。
+3. **D3-R 组件首次 packaged**：observation/issuance/admission/candidate 四个 store 进入
+   `composeInstalledLifecycle.ownedResources` 统一 close；无 ContinuationStore。
+4. **delegation 内核的 attempt 编译时序不变**（D5-c3 的 prepare → compile → run 顺序原样保留），service
+   不触碰任何执行内核函数（证明 9/10 源码钉住）。
+
+### Z.8 明确不做（OUT）
+
+- `continueAutomatically(...)`（policy/assessment/effect 混合体）——不建。
+- `EXPLICIT_REWORK` governance reason、durable derivation-failure record、`RematerializationFailureWitness`
+  ——留待真实需求，不顺手加。
+- derived candidate 的 packaged inspection / transport——D3 层继续服务，V1 不假装 candidate 是 Attempt。
+- 第二执行内核、第二 head authority、任何 continuation 状态库——被 §24 证明钉死为不存在。
+
+### Z.9 状态与门禁
+
+```text
+D5-b2   STRONG CLOSED @ feefe3c
+D5-c1   STRONG CLOSED @ 8402fb2
+D5-c2   STRONG CLOSED @ 8b44006
+D5-c3   STRONG CLOSED @ 8c6d226
+D5-d    Packaged Result Continuation Authority   CLOSED（本附录）
+D5-LIVE real concurrent → stale → packaged startRework → re-execute → verify → promote   ← 下一步
+```
+
+门禁（本片实测）：tsc 干净、单元 **229 files / 2587 tests**、e2e **38/38**、`architecture:check` **0
+violation**（12 baseline）、`architecture:check-public-api` **0/0/0**、`gate:d2-live` PASS、`gate:d4-live`
+PASS。H1→H2→H3 的两次重执行链已在打包安装上实测（Z.6 e2e 用例）。

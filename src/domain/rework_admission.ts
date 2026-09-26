@@ -100,6 +100,37 @@ export class ReworkAdmissionError extends Error {
   }
 }
 
+/**
+ * §D5-d — the CANONICAL TARGET FENCE: the canonical authority picture the mint
+ * was made under, verifiable INSIDE the admission transaction.
+ *
+ * `targetObservationDigest` answers "which full world did the service observe?"
+ * — it is carried for audit but the aggregate cannot re-observe a git world
+ * inside a SQLite transaction, so it is deliberately not verified there. The
+ * fence answers a different question that the aggregate CAN verify: "is the
+ * canonical authority picture still the one the mint was made under?" Every
+ * field is derivable from the log and the projection rows alone:
+ *
+ *   projectRevision / projectDigest / projectHeadCommit   the projects row
+ *   provenEffectHeadCommit / latestPromotionEventRef      the chained
+ *                          PROMOTION_COMMITTED facts (G10-X derivation)
+ *
+ * The dangerous window it closes is exactly the one E_0 and the batch anchor
+ * cannot see: a promotion landing between the mint and the append moves the
+ * proven effect head WITHOUT moving the task's envelope (no PROJECT_REVISED
+ * has run yet), so an unfenced permit would authorize a rework against a
+ * world that had already moved on. Mismatch ⇒ stale target, zero writes.
+ *
+ *     ObservationFreshness  ≠  CanonicalAuthorityFreshness
+ */
+export interface ReworkTargetFence {
+  readonly projectRevision: number;
+  readonly projectDigest: string;
+  readonly projectHeadCommit: string;
+  readonly provenEffectHeadCommit: string;
+  readonly latestPromotionEventRef: string | null;
+}
+
 export interface ReworkAdmissionPermitInput {
   readonly projectId: string;
   readonly taskId: string;
@@ -114,6 +145,8 @@ export interface ReworkAdmissionPermitInput {
   /** The batch whose completed candidate is being set aside. */
   readonly batchActivationEventId: number;
   readonly reason: ReworkReason;
+  /** The canonical authority picture at mint time, verified against the log at admission. */
+  readonly targetFence: ReworkTargetFence;
 }
 
 /**
@@ -131,6 +164,7 @@ export class ReworkAdmissionPermit {
   readonly currentEnvelopeId: string;
   readonly batchActivationEventId: number;
   readonly reason: ReworkReason;
+  readonly targetFence: ReworkTargetFence;
   readonly permitDigest: string;
 
   private constructor(input: ReworkAdmissionPermitInput) {
@@ -143,6 +177,7 @@ export class ReworkAdmissionPermit {
     this.currentEnvelopeId = input.currentEnvelopeId;
     this.batchActivationEventId = input.batchActivationEventId;
     this.reason = input.reason;
+    this.targetFence = Object.freeze({ ...input.targetFence });
     this.permitDigest = canonicalDigest({
       domain: REWORK_ADMISSION_DIGEST_DOMAIN,
       kind: "rework_admission_permit",
@@ -155,6 +190,7 @@ export class ReworkAdmissionPermit {
       currentEnvelopeId: input.currentEnvelopeId,
       batchActivationEventId: input.batchActivationEventId,
       reason: input.reason,
+      targetFence: input.targetFence,
     });
   }
 

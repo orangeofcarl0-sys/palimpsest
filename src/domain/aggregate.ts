@@ -41,6 +41,7 @@ import {
   reworkProvenanceFromPermit,
   ReworkAdmissionError,
 } from "./rework_admission.js";
+import { deriveProjectHeadStatus } from "./project_head.js";
 
 /**
  * §D5-b2: the live-only governed admissions one append may carry.
@@ -277,6 +278,15 @@ export class AggregateValidator {
           );
         }
       }
+      // §D5-d CANONICAL TARGET FENCE: the last seam check, against the picture
+      // the transaction itself can see. `targetObservationDigest` cannot be
+      // re-observed here (a git world is not visible inside SQLite), so it is
+      // carried for audit only — but the fence names facts this log OWNS, and
+      // every one of them must still be exactly what the mint was made under.
+      // A promotion that landed between the mint and this append moves the
+      // proven effect head WITHOUT moving E_0 (no PROJECT_REVISED has run), so
+      // the envelope binding alone cannot see that window; the fence can.
+      this.#verifyReworkTargetFence(connection, event, permit);
       return;
     }
     if (event.event_type !== "TASK_CREATED" && event.event_type !== "TASK_REAUTHORIZED") return;
@@ -328,6 +338,72 @@ export class AggregateValidator {
   #taskEnvelopeId(connection: DatabaseSync, event: NewEvent): string {
     const row = this.#taskRow(connection, event);
     return parseTaskEnvelope(decodeNullableJsonBlob(row.envelope_json)).envelope_id;
+  }
+
+  /**
+   * §D5-d — verify the permit's canonical target fence against the picture THIS
+   * transaction sees. Every fence field is derived from the log and the
+   * projection rows alone — the same sources the G10-X head derivation uses —
+   * so a mismatch is a fact about canonical authority, never about an ambient
+   * world. Zero writes on failure: the append is refused before any event
+   * exists.
+   */
+  #verifyReworkTargetFence(
+    connection: DatabaseSync,
+    event: NewEvent,
+    permit: import("./rework_admission.js").ReworkAdmissionPermit,
+  ): void {
+    const projectRow = connection
+      .prepare("SELECT revision, digest, head_commit FROM projects WHERE project_id=?")
+      .get(event.project_id) as { revision: number; digest: string; head_commit: string } | undefined;
+    if (projectRow === undefined) {
+      throw new ReworkAdmissionError(
+        "capability_binding_mismatch",
+        "the rework permit's target fence cannot be verified: the project row is missing",
+        [event.project_id],
+      );
+    }
+    const factRows = connection
+      .prepare(
+        "SELECT event_id, payload_json FROM events WHERE project_id=? AND event_type='PROMOTION_COMMITTED' ORDER BY event_id",
+      )
+      .all(event.project_id) as Array<{ event_id: number; payload_json: Uint8Array }>;
+    const promotions = factRows.map((row) => {
+      const payload = decodeJsonBlob(row.payload_json) as Record<string, unknown>;
+      return {
+        eventId: String(row.event_id),
+        promotionId: String(payload.promotion_id ?? ""),
+        attemptId: String(payload.attempt_id ?? ""),
+        sourceCommit: String(payload.source_commit ?? ""),
+        expectedHeadCommit: String(payload.expected_head_commit ?? ""),
+        resultingHeadCommit: String(payload.resulting_head_commit ?? ""),
+      };
+    });
+    const status = deriveProjectHeadStatus({
+      project: { revision: Number(projectRow.revision), headCommit: String(projectRow.head_commit) },
+      promotions,
+    });
+    const fence = permit.targetFence;
+    const mismatches: string[] = [];
+    if (fence.projectRevision !== Number(projectRow.revision))
+      mismatches.push(`projectRevision ${String(fence.projectRevision)} != ${String(projectRow.revision)}`);
+    if (fence.projectDigest !== String(projectRow.digest))
+      mismatches.push("projectDigest moved");
+    if (fence.projectHeadCommit !== String(projectRow.head_commit))
+      mismatches.push("projectHeadCommit moved");
+    if (fence.provenEffectHeadCommit !== status.provenEffectHeadCommit)
+      mismatches.push(
+        `provenEffectHeadCommit ${fence.provenEffectHeadCommit.slice(0, 12)} != ${status.provenEffectHeadCommit.slice(0, 12)}`,
+      );
+    if (fence.latestPromotionEventRef !== status.latestPromotionEventRef)
+      mismatches.push("latestPromotionEventRef moved");
+    if (mismatches.length > 0) {
+      throw new ReworkAdmissionError(
+        "capability_binding_mismatch",
+        `the canonical authority picture moved since the rework permit was minted (stale target fence): ${mismatches.join("; ")}`,
+        [event.entity_id],
+      );
+    }
   }
 
   validate(connection: DatabaseSync, event: NewEvent | SchedulerEvent): void {

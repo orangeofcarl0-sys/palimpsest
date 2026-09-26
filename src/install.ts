@@ -20,6 +20,7 @@ import { evaluate } from "./experiment/index.js";
 import { makeCollaborationService, makeCrossProjectService } from "./interaction/index.js";
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
 import { composeDelegationCapability } from "./composition/delegation.js";
+import { composeContinuationCapability } from "./composition/continuation.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -269,6 +270,32 @@ export function installPalimpsest(
     reasoning: reasoningCellsInstalled?.service,
   });
 
+  /*
+   * PLMP-LEAN-1 §D5-d: the PACKAGED RESULT CONTINUATION composition.
+   *
+   * It is composed LAST among the capability clusters, in the order the ruling
+   * fixed: core → governance/verification → work delegation → continuation —
+   * because it consumes the already-composed world observation, basis runtime,
+   * verification seams, controller reads and (optionally) the D2-d worker port.
+   * The D3 authority stores it creates are closed by the install lifecycle via
+   * `ownedResources`; there is deliberately NO continuation store of its own.
+   */
+  const continuationCluster = composeContinuationCapability({
+    options: {
+      projectId: options.projectId,
+      repository,
+      databasePath: options.databasePath,
+      ...(options.clock === undefined ? {} : { clock: options.clock }),
+      workWorkerPort: options.workWorkerPort,
+    },
+    store,
+    controller,
+    worldBasisRuntime: core.worldBasisRuntime,
+    worldObservation: core.worldObservation,
+    worldsRoot: core.worldsRoot,
+  });
+  const { continuation, workDelegation } = continuationCluster;
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -331,6 +358,10 @@ export function installPalimpsest(
       ...(core.worldBasisStore === undefined
         ? []
         : [{ what: "attemptWorldBasisStore", ownership: "INSTALL_CREATED_AND_MANAGED" as const, close: () => core.worldBasisStore?.close() }]),
+      // §D5-d: the D3 authority stores the continuation composition created (observation records,
+      // compatibility issuances, cross-basis admissions, derived candidates). There is deliberately no
+      // continuation store: the service is a stateless orchestrator and owns nothing.
+      ...continuationCluster.ownedResources,
     ]),
   });
 
@@ -361,6 +392,7 @@ export function installPalimpsest(
     ...(collaboration === undefined ? {} : { collaboration }),
     ...(crossProject === undefined ? {} : { crossProject }),
     ...(delegation === undefined ? {} : { delegation }),
+    ...(continuation === undefined ? {} : { continuation }),
     ...(options.attentionActivation === undefined ? {} : { attentionActivation: options.attentionActivation }),
     ...(proof === undefined ? {} : { proof }),
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
