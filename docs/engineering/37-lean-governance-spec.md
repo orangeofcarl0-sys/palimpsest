@@ -6491,7 +6491,10 @@ SR-2b3   Attempt execution owner     ← 下一步（承重：D2/D4/D5-LIVE 三 
 
 ## 附录 AE（第 SR-2b3 期）：Mutating Attempt Execution Owner —— D2 的两条梯子整体搬家
 
-$$oxed{prepare ightarrow execute ightarrow observe ightarrow settle}$$
+$$oxed{prepare 
+ightarrow execute 
+ightarrow observe 
+ightarrow settle}$$
 
 ### AE.1 搬家的是决策逻辑，不是原语
 
@@ -6502,7 +6505,8 @@ controller 的其他关切交织。`src/work/attempt_execution.ts` 就是那套�
 
 **刻意不搬**：
 
-$$oxed{worker.run()\ transport ightarrow still\ WorkDelegationService\ (D2	ext{-}d)}$$
+$$oxed{worker.run()\ transport 
+ightarrow still\ WorkDelegationService\ (D2	ext{-}d)}$$
 
 host 的 job 生命周期（排队、每 job 的 world 绑定、终态投递）是 host 关切，留在原地。本 owner 准备位置、
 观测世界、结算 attempt——它从不运行任何东西。
@@ -6561,3 +6565,88 @@ SR-2b2   Project head owner             CLOSED @ a3b338f
 SR-2b3   Attempt execution owner        CLOSED（本附录）
 SR-2b4   Context owner                  ← 下一步
 ```
+
+---
+
+## 附录 AF（第 SR-2b4 期）：Context Owner —— 把上下文编译从 controller 里显影
+
+$$oxed{TaskLatestContext 
+eq AttemptCompiledContext}$$
+
+### AF.1 搬家范围
+
+context 编译在 D5 里从辅助件长成了承重件：一个 attempt 的 manifest 是"这个 attempt 当时拿到了什么"
+的记录，其 `continuation` 块是 prior result 的只读呈现。四个入口此前堆在 `ProjectController` 里——
+`compileTaskContext`、`fetchContext`、`workWorkerAttemptContext` 与私有的 lineage 扫描。本片把它们整体
+搬到 `src/context/service.ts`。
+
+**它只写一个事件**（`CONTEXT_MANIFEST_ADDED`，每 attempt append-once），不写任何其他 canonical 事实。
+
+### AF.2 两条不可混淆的同一性
+
+```text
+TaskLatestContext ≠ AttemptCompiledContext    attempt 取自己的 manifest。按 task-latest 解析曾是
+                                             context 时间穿越（fetch(A0) 返回 M1）——与 D5-b1 为
+                                             envelope 修掉的是同一个缺陷，现在为 context 修掉。
+PriorResultContext 是 PRESENTATION           块里说的是 prior attempt 做了什么、世界怎么移动的。
+                                             其中没有任何东西为新 attempt 提供资格：历史
+                                             verification 条目被标注为历史。
+```
+
+### AF.3 本片抓到的真回归（诚实账，重要）
+
+首次提取后 D5-c2 套件 9 条失败，根因是**我自己的实现错误**：origin result 的 subject digest 被我用一个
+**合成**的 partial report 计算，而 `parseAttemptReport` 要求完整 wire shape（`project_id`/`attempt_id`/
+`envelope_id`/… 全部必需），且——更关键——**verification plane 是对存储的完整 report 计算 digest 的**。
+用合成体算出的 subject digest 会与 verification plane 的不一致，而这正是 subject digest 存在的意义所在。
+
+修复：port 同时携带 **shaped report**（呈现用）与 **rawReport**（digest 用），
+`attemptReportDigestOf(parseAttemptReport(origin.rawReport))` —— 与 controller 原实现逐字一致。
+
+**这正是 SR-2 要求的证明方式**：不是"新类能跑"，而是"同一事实产出同一结果"。若只做行为烟雾测试，这条
+digest 漂移会带着一个正确的外观活到 D5-LIVE 才暴露。
+
+### AF.4 另一条被抓到的架构违规
+
+提取后 `architecture:check` 报出一条真实违规：`src/context/service.ts → src/deployment/work_worker.ts`
+（L2→L5）——我为了 `WorkWorkerTaskContext` 类型引了 host bundle。按 SR-2a 同一纪律处理：该契约是**纯数据**
+（无行为），在 owner 内**结构化声明**，host 侧接口仍是 transport 的契约，两者因字段即事实而结构一致。
+
+### AF.5 证明（§十二）
+
+`test/architecture/sr2b4_context_owner.test.ts` 10 条：
+
+```text
+一次 attempt 一个 manifest   编译两次返回同一 manifest（identity 确定 + append-once，事件数不变）
+                             manifest.task_id 是 attempt 自己的 task；requirement 取自 task 声明
+TaskLatest ≠ AttemptCompiled 合成的第二个 attempt identity 得到不同 manifest id；
+                             未知 attempt / 未知 handle 解析为 undefined，绝不落到别的 attempt
+fetch(A0) 随 M0 一起消亡      删除 M0 行后 A0 的 handle 不可解析——没有 task-latest 回退
+worker context 不变          work + compiled（boot/handles/manifestId），与 task 级 façade 逐字节相等，
+                             序列化后无任何权威对象
+ordinary attempt            无 rework lineage ⇒ manifest 无 continuation 块（键不存在）
+结构钉                       owner 不命名任何事件类型（append 是 port 调用）、不持有 admission/
+                             verification/promotion/continuation 机制；controller 不再 build manifest、
+                             不再扫 lineage；src/context = L2 且不 import host 模块
+```
+
+### AF.6 门禁（本片实测）
+
+tsc 干净、单元 **2670/2670**、e2e **38/38**、`architecture:check` **0 violation**（12 accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**。
+
+controller 5048 → **4827 行**；`src/context/service.ts` 462 行。
+
+```text
+SR-2.0   Architecture Constitution      CLOSED @ ce0e258
+SR-2a    Continuation interface wall    CLOSED @ 4eae41c
+SR-2b1   Work read owner                CLOSED @ 68e0759
+SR-2b2   Project head owner             CLOSED @ a3b338f
+SR-2b3   Attempt execution owner        CLOSED @ 7e9854f
+SR-2b4   Context owner                  CLOSED（本附录）
+SR-2c    World / Result / Continuation namespace 收束   ← 下一步
+```
+
+至此 §十三 点名的 controller **不再实现**的六项已全部成立：raw Work projection SQL reads、
+attempt authorization reconstruction、head reconciliation compiler、raw git result observation、
+mutating prepare/settle kernel、ContextManifest compilation/fetch。
