@@ -32,30 +32,27 @@
  */
 
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
-import type { ActivationRef } from "../coordination/index.js";
-import type { AttemptRef } from "../coordination/index.js";
-import { parseActivationRef, parseAttemptRef } from "../coordination/index.js";
+import type { ActivationRef, AttemptRef } from "../identity/refs.js";
+
+import { parseActivationRef, parseAttemptRef } from "../identity/refs.js";
 // G10-H H6: the runtime-scope origin is a TYPED RuntimeScopeRef, never a bare string.
 import type { RuntimeScopeRef } from "../runtime_scope/ref.js";
 import { parseRuntimeScopeRef } from "../runtime_scope/ref.js";
 
-export type PeerId = string;
+/**
+ * SR-2d3 §十九: `PeerRef` and its parser MOVED to `src/identity/refs.ts`, the stable-identity
+ * layer, so `organization/definition.ts` no longer imports this TRANSPORT module to name a peer.
+ * Re-exported here so every existing import path and the recorded public surface are unchanged.
+ */
+export type { PeerId, PeerRef } from "../identity/refs.js";
+export { materializePeerRef, parsePeerRef, PeerIdentityError } from "../identity/refs.js";
 
-/** Stable addressable collaboration identity — identity ONLY (no transport address). */
-export interface PeerRef {
-  readonly schemaVersion: 1;
-  readonly peerId: PeerId;
-}
-
-export class PeerIdentityError extends Error {
-  constructor(message: string) {
-    super(message);
-    this.name = "PeerIdentityError";
-  }
-}
+import { PeerIdentityError as LocalPeerIdentityError } from "../identity/refs.js";
+// Imported as well as re-exported: this module's own remaining artifacts USE the ref type.
+import type { PeerRef as LocalPeerRef } from "../identity/refs.js";
 
 function fail(message: string): never {
-  throw new PeerIdentityError(message);
+  throw new LocalPeerIdentityError(message);
 }
 
 function exactKeys(object: Record<string, unknown>, keys: readonly string[], what: string): void {
@@ -67,44 +64,15 @@ function exactKeys(object: Record<string, unknown>, keys: readonly string[], wha
   }
 }
 
-/** Materialize a PeerRef (stable-identifier grammar; deep-frozen). */
-export function materializePeerRef(input: { readonly peerId: PeerId }): PeerRef {
-  if (typeof input.peerId !== "string") fail("peerId must be a string");
-  const id = normalizeStableIdentifier(input.peerId);
-  if (!isStableIdentifier(id)) {
-    fail(
-      "peerId must be a stable identifier: 1-128 ASCII characters, starting " +
-        "with an alphanumeric, then [A-Za-z0-9._:-] (no transport addresses, no whitespace)",
-    );
-  }
-  return Object.freeze({ schemaVersion: 1 as const, peerId: id });
-}
-
-/** Strict parser from `unknown`. */
-export function parsePeerRef(raw: unknown): PeerRef {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    fail("PeerRef must be an object");
-  }
-  const object = raw as Record<string, unknown>;
-  for (const key of Object.keys(object)) {
-    if (key !== "schemaVersion" && key !== "peerId") fail(`unknown PeerRef field "${key}"`);
-  }
-  if (!Object.hasOwn(object, "schemaVersion") || !Object.hasOwn(object, "peerId")) {
-    fail("PeerRef requires schemaVersion and peerId");
-  }
-  if (object.schemaVersion !== 1) fail("PeerRef.schemaVersion must be 1");
-  return materializePeerRef({ peerId: object.peerId as string });
-}
-
 /** A discoverability artifact. NOT evidence, NOT authority (§46/§47). */
 export interface PeerAdvertisement {
-  readonly peer: PeerRef;
+  readonly peer: LocalPeerRef;
   readonly competenceTags: readonly string[];
 }
 
 /** Explicit association artifact (§44): association ≠ identity; implemented for current use cases. */
 export interface PeerContinuityAssociation {
-  readonly peer: PeerRef;
+  readonly peer: LocalPeerRef;
   readonly point: string;
 }
 
@@ -119,7 +87,7 @@ function requireTags(tags: readonly string[], what: string): readonly string[] {
 }
 
 export function materializePeerAdvertisement(input: {
-  readonly peer: PeerRef;
+  readonly peer: LocalPeerRef;
   readonly competenceTags: readonly string[];
 }): PeerAdvertisement {
   return Object.freeze({
@@ -189,7 +157,7 @@ export function materializeContactNeed(input: {
 
 /** "A peer worth contacting" — NEVER a selection, assignment, or commitment (§54). */
 export interface ContactCandidate {
-  readonly peer: PeerRef;
+  readonly peer: LocalPeerRef;
   readonly advertisement: PeerAdvertisement;
 }
 

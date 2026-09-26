@@ -15,8 +15,8 @@
  */
 
 import { isStableIdentifier, normalizeStableIdentifier } from "../schema/identifier.js";
-import type { OrganizationDefinitionRef } from "../organization/definition.js";
-import { parseOrganizationRef } from "../organization/definition.js";
+import type { OrganizationDefinitionRef } from "../identity/refs.js";
+import { parseOrganizationRef } from "../identity/refs.js";
 import type { RuntimeScopeRef } from "../runtime_scope/ref.js";
 import { parseRuntimeScopeRef } from "../runtime_scope/ref.js";
 

@@ -31,14 +31,14 @@
 
 import { canonicalDigest } from "../schema/canonical.js";
 import type { CoordinationEvent, CoordinationStore } from "../coordination/store.js";
-import { CoordinationStoreError } from "../coordination/errors.js";
+import { CoordinationStoreError } from "../identity/errors.js";
 import {
   asObject,
   requireNonNegativeInteger,
   requireStableId,
   requireString,
   strictObject,
-} from "../coordination/strict.js";
+} from "../identity/strict.js";
 import type { AttemptRef, ParticipationId } from "../coordination/index.js";
 import type { PeerRef } from "./peer.js";
 import { parsePeerRef } from "./peer.js";

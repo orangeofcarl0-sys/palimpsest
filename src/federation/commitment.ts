@@ -25,8 +25,8 @@
 
 import type { PeerRef } from "./peer.js";
 import { parsePeerRef } from "./peer.js";
-import type { AttemptRef } from "../coordination/index.js";
-import { CoordinationStoreError as StoreError } from "../coordination/errors.js";
+import type { AttemptRef } from "../identity/refs.js";
+import { CoordinationStoreError as StoreError } from "../identity/errors.js";
 import { canonicalDigest } from "../schema/canonical.js";
 import type { AcceptedBoundaryRevisionRef } from "../boundary_memory/ref.js";
 import { parseAcceptedBoundaryRevisionRef } from "../boundary_memory/ref.js";
@@ -36,7 +36,7 @@ import {
   requireStableId,
   requireString,
   strictObject,
-} from "../coordination/strict.js";
+} from "../identity/strict.js";
 
 export type CommitmentId = string;
 export type HandoffId = string;
@@ -320,4 +320,4 @@ export const COMMITMENT_EVENT_PARSERS = Object.freeze({
   },
 });
 
-export type { CoordinationStoreError } from "../coordination/errors.js";
+export type { CoordinationStoreError } from "../identity/errors.js";
