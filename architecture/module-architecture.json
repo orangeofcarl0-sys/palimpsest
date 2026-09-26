@@ -951,13 +951,6 @@
     "capturedTree": "b72b8da88ca87739fa5f3ac397cdcef6e7712a31",
     "permittedForbiddenEdges": [
       {
-        "from": "src/continuation/service.ts",
-        "to": "src/deployment/source_change_observer.ts",
-        "fromLayer": "L3",
-        "toLayer": "L5",
-        "reason": "Newly EXPOSED, not newly created: this edge existed since D5-d but was invisible because src/continuation/** was unclassified and fell back to BARREL. SR-2 §五 classified it as L3, which surfaced the edge. It is type-only (the service names the observer's port, never runs it) and it is removed by SR-2a, whose machine proofs name this exact edge. Recorded here so it is visible and cannot grow, rather than silently re-baselined."
-      },
-      {
         "from": "src/monitor/driver.ts",
         "to": "src/project_operating/posture.ts",
         "fromLayer": "L2",

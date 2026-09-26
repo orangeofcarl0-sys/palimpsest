@@ -6244,3 +6244,90 @@ SR-2 Gate   D2/D4/D5 全系统回归
 
 门禁（本片实测）：tsc 干净、单元全绿、`architecture:check` **0 violation**（13 accepted exceptions，
 其中新增的一条即上述被暴露的边）、`architecture:check-public-api` **0/0/0**。
+
+---
+
+## 附录 AB（第 SR-2a 期）：Continuation Interface Wall —— 先立接口墙，再拆实现
+
+$$oxed{	extbf{先立接口墙，再拆实现。}}$$
+
+### AB.1 被修的不是算法，是知识半径
+
+D5-d 的 `ResultContinuationService` 算法从来没错。它错的是**认识太多**——逐个合理地命名了
+`EventStore`、D3-R 各 authority（`CompatibilityIssuer` / `ObservationRecorder` /
+`SourceChangeObserver` / `CrossBasisAdmissionRuntime` / `CrossBasisAdmissionStore` /
+`RematerializationRuntime` / `ProjectWorldBasisRuntime`）、world observation port 与
+`WorkDelegationService`。这正是 SR-2 存在的信号：
+
+$$oxed{算法没有失控，依赖知识开始失控。}$$
+
+### AB.2 五个 consumer-owned narrow ports（`src/continuation/ports.ts`）
+
+```text
+ResultContinuationService
+    ├── work       任务事实 + durable replay 查询 + 唯一 governed append
+    ├── world      D3-a currentness + authority-bearing observations + D3-b 证书
+    ├── result     D3-c admission ≺ D3-d carry（一条有序链，一次调用）
+    ├── canonical  head status/fence + G10-X reconcile
+    └── execution  startOrResume(taskId)  ← 底下仍是 D2-d
+```
+
+**端口全部是结构化纯数据**，不 re-export 任何 owner 类型——否则下一个读者又会伸手去拿具体类型，
+墙就成了装饰。`ports.ts` 的 import 集合为空（permit 以 inline `import(...)` 类型引用，那是服务自己
+的铸造权威）。
+
+**不是端口的两样**：`assessContinuation`（D5-a，服务自己的纯 calculus，SR-2c 将迁至
+`src/continuation/assessment.ts`）与 `ReworkAdmissionPermit`（铸造是服务自己的权威，D5-d 证明钉住
+它是产品代码中唯一调用点）。
+
+$$oxed{Facade = composition 
+eq second\ implementation}$$
+
+`world` port 内部仍走 **既有** `CompatibilityIssuer`——没有第二个 compatibility engine。
+
+### AB.3 效果：墙成立，且第一条违规被真删除
+
+service.ts 的 import 从 17 个降到 **3 个**：`./ports.js`、`../domain/rework_admission.js`、
+`../project_world/continuation.js`。它不再 import event log、controller、任何 D3-R authority、
+任何 owner 类型名（`EventStore`/`ProjectController`/`CompatibilityIssuer`/… 全部消失），不再构造事件
+payload（`parseNewEvent`/`normalizeEventPayload`/`actionKey` 消失，`TASK_*` 字面量集合为空），不再
+`listEvents` 自解 Event Log（replay 改为向 work port **提问**）。
+
+**SR-2.0 暴露的那条边（`service.ts → deployment/source_change_observer.ts`，L3→L5）现在为 0。**
+并且它的 baseline exception **被删除**——已消失的 exception 若保留，就是给这条边留的后门
+（§三十一）。exception 集合从 5 回到 **SR-1 的 4**：
+
+```text
+SR-1 baseline  4 edges
+SR-2.0         5   （分类暴露 continuation 边，具名记录，理由指明由 SR-2a 拆除）
+SR-2a          4   （接口墙删除该边，exception 随之删除）
+```
+
+### AB.4 D5-d 不变量全部原样
+
+`test/lean_d5d_result_continuation_service.test.ts` 12 条证明在重构后全绿（含打包端到端
+H0→H1→H2→H3 双重执行链）；两条结构钉反而**变强**了：
+
+```text
+旧：源码含 "workDelegation.start"        → 新：含 "deps.execution.startOrResume" 且不含 "workDelegation"
+旧：TASK_ 字面量集合 === {TASK_READY}     → 新：集合为空（payload 归 work port）
+```
+
+`test/architecture/sr2a_continuation_port_wall.test.ts` 18 条证明：import 集合精确等于三者、
+12 个禁止 import 全不出现、13 个 owner 类型名全不出现、payload 构造器全不出现、五个端口是结构化
+纯数据、execution port 只有一个动词、canonical port 不泄漏 PromotionManager、`fresh observation ≺
+assessment ≺ mint ≺ reopen` 的源码顺序、mint 唯一调用点、composition 是唯一看得见具体拼装的地方。
+
+### AB.5 门禁（本片实测）
+
+tsc 干净、单元全绿、e2e **38/38**、`architecture:check` **0 violation**（accepted 12）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**（承重 gate）。
+
+`service.ts` 836 → **629 行**；`ports.ts` 225；`composition/continuation.ts` 545（三者均在 §25 的
+700 行上限内）。**减少认识关系，而不是增加包装层**——composition 仍然是唯一认识全部能力的地方。
+
+```text
+SR-2.0  Architecture Constitution                    CLOSED @ ce0e258
+SR-2a   Continuation dependency compression / 接口墙   CLOSED（本附录）
+SR-2b1  Work read owner 抽离                          ← 下一步
+```
