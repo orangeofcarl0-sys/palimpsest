@@ -23,9 +23,9 @@
 import { isStableIdentifier } from "../schema/identifier.js";
 import type { PeerRef } from "./peer.js";
 import { parsePeerRef } from "./peer.js";
-import type { CoordinationEventParsers } from "../coordination/store.js";
-import { CoordinationStoreError } from "../coordination/errors.js";
-import { requireBoolean, requireLiteral, requireSchemaVersion, requireStableId, requireString, strictObject } from "../coordination/strict.js";
+import type { CoordinationEventParsers } from "../identity/refs.js";
+import { CoordinationStoreError } from "../identity/errors.js";
+import { requireBoolean, requireLiteral, requireSchemaVersion, requireStableId, requireString, strictObject } from "../identity/strict.js";
 
 export interface ThreadRef {
   readonly threadId: string;

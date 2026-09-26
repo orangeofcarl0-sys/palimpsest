@@ -56,7 +56,7 @@ export type {
   ParticipationStartedPayload,
   SqliteCoordinationStoreOptions,
 } from "./store.js";
-export type { CoordinationConflictCategory } from "./errors.js";
+export type { CoordinationConflictCategory } from "../identity/errors.js";
 export { makeParticipationService } from "./participate.js";
 export type { AttemptCatalogPort, ParticipationDeps, ParticipationService } from "./participate.js";
 export { SqliteAttemptCatalog } from "./attempts.js";

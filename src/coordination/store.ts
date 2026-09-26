@@ -38,7 +38,7 @@ import { mkdirSync } from "node:fs";
 import { canonicalJsonBytes } from "../schema/canonical.js";
 import type { Invocation, Participation, ParticipationEndReason } from "./participation.js";
 import { PARTICIPATION_EVENT_PARSERS } from "./participation.js";
-import { CoordinationStoreError, CoordinationConflictError } from "./errors.js";
+import { CoordinationStoreError, CoordinationConflictError } from "../identity/errors.js";
 import { FEDERATION_EVENT_PARSERS } from "../federation/messages.js";
 import { COMMITMENT_EVENT_PARSERS } from "../federation/commitment.js";
 
