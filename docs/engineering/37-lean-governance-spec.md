@@ -6156,3 +6156,91 @@ fresh verification → ordinary promotion。整条链第一次以打包产品形
 门禁（本片实测）：tsc 干净、单元全绿、e2e **38/38**、`architecture:check` **0 violation**（12 baseline）、
 `architecture:check-public-api` **0/0/0**、`gate:d2-live` PASS、`gate:d4-live` PASS、`gate:d5-live`
 **PASS ×2**。
+
+---
+
+## 附录 AA（第 SR-2.0 期）：Architecture Constitution —— 把 checker 的逃生通道堵上
+
+$$oxed{	extbf{SR-2 — Kernel Boundary Convergence}}$$
+
+SR-2 的唯一目标：$Behavior_{after} = Behavior_{before}$ 且 $KnowledgeRadius_{after} <
+KnowledgeRadius_{before}$。**同样的项目语义、同样的 authority、同样的事件、同样的结果，但每个模块只
+需要认识自己应该认识的那一部分系统。** 本片（SR-2.0）只改架构工具，产品实现零变更。
+
+### AA.1 起始快照（真实测量，非旧 baseline 数字）
+
+`a3915d7` / tree `b72b8da8`，命令 `node scripts/audit/module-architecture.mjs --json`：
+
+```text
+files 391  loc 112648  edges 1629  externalImports 19  unresolvedImports 0
+ProjectController 5378 LOC, fanOut 35, fanIn 20     （旧 baseline 记录约 3095 LOC）
+8 SCC：10 coordination/federation · 8 campaign · 4 domain/schema · 3 canvas-controller-graph
+        · 3 proof_asset · 2 promotion/recovery · 2 project_management · 2 project_verification
+```
+
+完整快照落在 `docs/engineering/architecture/SR-2-START-SNAPSHOT.md`。**未执行 `architecture:write`**
+——先把当前技术债盖章成新 baseline 正是 SR-2 禁止的事（§三十一）。
+
+### AA.2 堵住的两个洞（§五）
+
+**洞一：未知目录 ⇒ BARREL ⇒ 什么都能 import。** `src/continuation/**` 从未被分类，而旧 fallback 把
+未分类目录当作 BARREL，其允许集是 `L5/L4/L3/L2/L1/BARREL/ENTRY`——**D5-d 最重要的 orchestrator 事实
+上处在 checker 最宽的逃生通道里**。修复分两半：
+
+- `src/continuation/**` 显式分类为 **L3**（cross-kernel orchestration，不是 World Consistency，§四）；
+- `UNCLASSIFIED` 成为一等层，**允许集为空**，且其存在本身就是违规（`unclassified_module`）。
+
+分类之后**恰好浮现一条真实边**：`continuation/service.ts → deployment/source_change_observer.ts`
+（L3→L5，type-only）。这不是新造的依赖，而是被 BARREL 掩盖已久的真实信号——按机制具名记录（书面理由
+指明由 SR-2a 拆除），而不是静默重新盖章。
+
+**洞二：`capturedFrom = unknown`。** 旧代码读 `.git/HEAD`，而本仓库大量使用 worktree——在 linked
+worktree 里 `.git` 是**文件**（`gitdir: ...`），读取必然抛错，catch 返回 `unknown`。实测确认：
+`.git` 是文件，旧路径永远失败。改为问 git 自己：
+
+```text
+git rev-parse HEAD          → commit（squash 会改写）
+git rev-parse HEAD^{tree}   → source tree（squash 不改写，可跨 squash 验证）
+```
+
+baseline 升到 **v3**，同时记录 `capturedFrom` + `capturedTree`。
+
+### AA.3 未重新盖章的证据（§三十一）
+
+写新 baseline 前先把"全量重生成"与"已提交 baseline"做了 diff：
+
+```text
+edges:  committed=4  fresh=5     WOULD ADD: continuation/service.ts → deployment/source_change_observer.ts
+WOULD REMOVE: (none)
+cycles: committed=8  fresh=8     WOULD ADD: (none)   WOULD REMOVE: (none)
+```
+
+**只增一条边、零移除、cycle 集合不变**——新 baseline = 旧 baseline + 分类暴露的那一条边。该事实由
+`test/architecture/sr2_architecture_constitution.test.ts` 的 20 条证明钉住（含"违规无法通过 baseline
+白名单静默"的反向证明）。
+
+### AA.4 冻结的不变量（§三，本片全数遵守）
+
+事件词表、payload wire shape、DB schema、Work 生命周期、Attempt/Result identity、Basis/OCC 语义、
+Verification/Eligibility/Promotion authority、Continuation 路径、Ordarium 协议——**全部未动**。并且：
+
+$$oxed{module\ move 
+ot\Rightarrow digest\-domain\ rename}$$
+
+`palimpsest.xxx.v1`、`stableEntityId`、`actionKey`、`adapterId` 一律保持原值。SR-2 是抽象边界修复，
+不是借重构升级协议。
+
+### AA.5 状态与门禁
+
+```text
+SR-2.0  Architecture Constitution   CLOSED（本附录；产品行为零变更）
+SR-2a   Continuation dependency compression / 接口墙        ← 下一步
+SR-2b1..b4  Work read / Head / Attempt execution / Context owner 抽离
+SR-2c   World / Result / Continuation namespace 收束
+SR-2d1..d3  projection cycle · promotion/recovery cycle · collaboration substrate
+SR-2e   architecture ratchets + E firewall + 最终 baseline
+SR-2 Gate   D2/D4/D5 全系统回归
+```
+
+门禁（本片实测）：tsc 干净、单元全绿、`architecture:check` **0 violation**（13 accepted exceptions，
+其中新增的一条即上述被暴露的边）、`architecture:check-public-api` **0/0/0**。
