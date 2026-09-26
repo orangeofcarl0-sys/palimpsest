@@ -91,6 +91,15 @@ export interface DeploymentHostServices {
    * the dashboard url only exists after the host has bound a port.
    */
   readonly facts?: HostDeploymentFactsPort | undefined;
+  /**
+   * PLMP-LEAN-1 §D5-d (additive): the D2-d WORK worker port factory, bound to the execution world a
+   * delegated attempt's prepare materializes. The DSH host knows its own bin and runtime, so — like
+   * the branch hosts above — it constructs this from that knowledge; supplying it is what lets the
+   * packaged ResultContinuationService carry a governed rework all the way to a running attempt.
+   * Absent ⇒ the continuation service still inspects, rematerializes, reopens and reconciles, and
+   * honestly reports READY_FOR_DELEGATION (capability absent, never stubbed).
+   */
+  readonly workWorkerPort?: ((worldPath: string) => import("../interaction/work_delegation.js").WorkWorkerRunPort) | undefined;
 }
 
 export interface DeploymentActivationReport {
@@ -510,6 +519,8 @@ export function launchDeployment(
         }),
     ...(reasoningBranchExecution === undefined ? {} : { reasoningBranchExecution }),
     ...(delegationBranchExecution === undefined ? {} : { delegationBranchExecution }),
+    // §D5-d: the D2-d worker port, so packaged rework reaches a real execution world.
+    ...(options.host?.workWorkerPort === undefined ? {} : { workWorkerPort: options.host.workWorkerPort }),
     // The stable late-bound READ port: the delegation service holds THIS object for its whole life,
     // and whatever the host binds later becomes the delivery. A terminal result that arrives before a
     // binding reports `delivered: false` with that reason instead of vanishing.

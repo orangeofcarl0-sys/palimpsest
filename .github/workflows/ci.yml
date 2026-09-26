@@ -16,6 +16,13 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Platform workaround (D5-LIVE session, 2026-09-26): the pull_request event
+  # pipeline for this repository silently dropped every trigger after 03:35Z
+  # while the Actions backend itself stayed healthy (rerun and
+  # workflow_dispatch both created runs instantly). workflow_dispatch restores
+  # a way to run the gate on an exact ref without depending on the broken
+  # event delivery.
+  workflow_dispatch:
 
 jobs:
   unit:
