@@ -308,14 +308,15 @@ describe("SR-2 §三十一 SR-2.0 re-stamped no debt", () => {
   it("the cycle set only SHRINKS — SR-2.0 added none, and SR-2d1 removed one", () => {
     /**
      * SR-2.0's own claim was "removed nothing and tolerated nothing new" at 8 SCCs. SR-2d1 then
-     * removed the `controller ↔ graph/canvas` cycle, taking it to 7 — and the exception was
-     * DELETED with it, because a dormant cycle exception would silently re-permit the cycle (§三十一).
+     * removed the `controller ↔ graph/canvas` cycle (→7) and SR-2d2 the `promotion ↔ recovery` one
+     * (→6) — and each exception was DELETED with its cycle, because a dormant cycle exception would
+     * silently re-permit it (§三十一).
      *
      * The pin therefore asserts the direction that matters: the set never GROWS. A future slice
      * that tolerates a new cycle fails here.
      */
-    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(7);
-    expect(baseline.permittedCycles).toHaveLength(7);
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(6);
+    expect(baseline.permittedCycles).toHaveLength(6);
   });
 
   it("every recorded exception still carries a written reason", () => {

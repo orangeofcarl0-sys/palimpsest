@@ -97,10 +97,12 @@ describe("SR-2 §十七 the projection cycle is gone", () => {
  * ================================================================== */
 
 describe("SR-2 §三十一 the cycle's exception was deleted, not left dormant", () => {
-  it("the baseline records SEVEN cycles — the removed one is gone", () => {
+  it("the baseline no longer records THIS cycle — the removed one is gone", () => {
     const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
       .baseline as { permittedCycles: readonly { files: readonly string[] }[] };
-    expect(baseline.permittedCycles).toHaveLength(7);
+    // SR-2d2 removed a further cycle, so the set is 6 — the claim here is about THIS trio, and a
+    // later slice removing more must not break it.
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(6);
     const offending = baseline.permittedCycles.filter(
       (cycle) => cycle.files.some((file) => MEMBERS.includes(file)),
     );
@@ -113,12 +115,13 @@ describe("SR-2 §三十一 the cycle's exception was deleted, not left dormant",
     expect(reasons).not.toContain("unwinding it is a canonical SR-2 candidate");
   });
 
-  it("the exception set only shrank: 12 accepted at SR-2.0, 11 now", () => {
+  it("the exception set only ever SHRANK — SR-2d1 and SR-2d2 each removed one cycle", () => {
     const baseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
       .baseline as { permittedForbiddenEdges: readonly unknown[]; permittedCycles: readonly unknown[] };
-    // Four forbidden edges (SR-1's) and seven cycles: one fewer than the SR-1 baseline carried.
+    // Four forbidden edges (SR-1's, unchanged) and six cycles — two fewer than the SR-1 baseline
+    // carried. A future slice may remove more; it may never add.
     expect(baseline.permittedForbiddenEdges).toHaveLength(4);
-    expect(baseline.permittedCycles).toHaveLength(7);
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(6);
   });
 
   it("all three modules are still L3/L2 as they were — the fix was structural, not a reclassification", () => {
