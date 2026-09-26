@@ -6872,7 +6872,9 @@ SR-2d3  federation / coordination substrate    ← 下一步（含停点 B 判�
 
 ## 附录 AJ（第 SR-2d3 期）：Collaboration Substrate Cycle 清除 —— 停点 B **未触发**
 
-$$oxed{stable\ identity/contracts ightarrow Coordination\ semantics ightarrow Federation\ transport}$$
+$$oxed{stable\ identity/contracts 
+ightarrow Coordination\ semantics 
+ightarrow Federation\ transport}$$
 
 ### AJ.1 停点 B 判定（§十九 要求先判）
 
@@ -6950,4 +6952,87 @@ SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee  SR-2d1 ✓f69921b
 SR-2d2 ✓6052291  SR-2d3 ✓（本附录）
 SR-2e   architecture ratchets + E firewall + 最终 baseline   ← 下一步
 SR-2 Gate  D2/D4/D5 全系统回归
+```
+
+---
+
+## 附录 AK（第 SR-2e 期）：Architecture Ratchets + E Firewall —— 从"防违规"升级到"防腐化"
+
+### AK.1 三类新约束（§二十一/§二十二/§二十三）
+
+SR-2.0 修的是 checker **看不见**的东西（未分类模块继承"什么都能 import"、捕获身份恒为 `unknown`）。
+SR-2e 加的是**层模型无法表达**的东西——三条规则都是**具名 DATA**，不是从图里推导出来的：
+
+```text
+§21  concrete dependency firewalls    "src/continuation/** 不得 import src/state/**" 是**两个目录**之间
+                                      的陈述，而两层的层规则在一般意义上都允许这条边。5 条。
+§22  hotspot ratchets                 已知热点不得再次静默增长。**按文件、按实测值**记录上限，
+                                      而不是全局"所有文件 < N 行"。4 条。
+§23  concrete importer allowlists     哪些模块**可以**命名某个具体模块。这是 E 面的防火墙：
+                                      新语义模块必须在 **import 那一刻**失败。2 条。
+```
+
+**deny by default，例外必须是具名具体边 + 书面理由**——沿用既有惯例。
+
+### AK.2 规则是 DATA，写进 baseline v4
+
+```text
+baseline version 4：4 forbidden edges + 5 cycles + 5 firewalls + 4 ratchets + 2 allowlists
+```
+
+关键：这些是**声明式规则**，`baselineFrom` 只做拷贝（`firewalls: arch.DEPENDENCY_FIREWALLS`），
+**绝不从被约束的图里推导**——推导出来的 firewall 会恰好许可它发现的东西。
+
+### AK.3 每个热点上限都是**实测的 post-SR-2 值**
+
+```text
+src/tools/controller.ts            4830 LOC / fanOut 39 / fanIn 19
+src/composition/install_contract.ts 700 LOC / fanOut 40
+src/application/factory.ts               —   / fanOut 36
+src/advanced.ts                          —   / fanOut 40
+```
+
+`controller` 的 ratchet 理由记录了真实轨迹：SR-2 起点 5378 LOC / fanOut 35 / fanIn 20 → b 片后
+4828 / 39 / 19——**它拥有的知识下降了，尽管 fan-out 上升了**（它现在组合自己的 owner）。上限就是
+SR-2 交给它的位置：可以降，不可以涨回来。
+
+`null` 维度显式表示"此轴不设 ratchet"，避免被误读为上限 0。
+
+### AK.4 规则**实测会拒绝**（双向证明）
+
+```text
+firewall 探针   continuation/service.ts → state/migrations.ts        ⇒ 1 breach，具名 firewall id
+ratchet 探针    controller LOC +100                                  ⇒ 1 growth
+allowlist 探针  新模块 src/workforce/roster.ts → tools/controller.ts ⇒ 1 violation
+```
+
+`test/architecture/sr2e_architecture_ratchets.test.ts` 22 条覆盖：三表在 baseline 中、每条规则有书面
+理由、live 图三类违规为零、三条规则各自被探针触发、firewall 覆盖 ruling 全表且**没有任何 blanket
+例外**、ratchet 是多维的且**不是全局尺寸规则**（受 ratchet 文件数 < 全部模块的 1/10，且每个受 ratchet
+文件确实是热点）、ratchet 指向已消失模块算**陈旧而非满足**、allowlist 记录当下全部真实 importer（规则是
+"不得新增"而非"更少"）、controller allowlist 的理由指出新模块**应该**去哪（src/work · src/context ·
+src/result · src/identity）。
+
+### AK.5 E firewall 是**可执行的规则**，不是承诺
+
+§二十四 的原则冻结：
+
+$$oxed{If\ E\ needs\ an\ internal\ kernel\ noun,\ a\ northbound\ port\ is\ missing.}$$
+
+firewall（按边界）∪ allowlist（按具名模块）已覆盖 ruling 点名的 E 面清单（EventStore ·
+ProjectController · PromotionManager · CompatibilityIssuer · ReworkAdmissionPermit · WorldBasisRuntime）。
+allowlist 规则**没有** "未知模块 ⇒ 许可"分支：不在名单上的 importer 直接失败。
+
+### AK.6 门禁（SR-2 Gate，本片实测）
+
+```text
+tsc 干净 · 单元全绿 · e2e 38/38 · architecture:check 0 violation（9 accepted）
+architecture:check-public-api 0/0/0 · application parity clean
+gate:d2-live PASS · gate:d4-live PASS · gate:d5-live PASS
+```
+
+```text
+SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f  SR-2b3 ✓7e9854f
+SR-2b4 ✓291d776  SR-2c ✓0bc5aee  SR-2d1 ✓f69921b  SR-2d2 ✓6052291  SR-2d3 ✓e699450
+SR-2e  architecture ratchets + E firewall + 最终 baseline   CLOSED（本附录）
 ```
