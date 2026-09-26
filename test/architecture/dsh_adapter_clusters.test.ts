@@ -80,8 +80,13 @@ describe("SR-1 §14 the adapter layer is L5 and only L5", () => {
       component.files.some((file) => file.startsWith("src/adapters/")),
     );
     expect(offending).toEqual([]);
-    // The historical cycles are unchanged: this test is not vacuously true.
-    expect(analysis.stronglyConnectedComponents.length).toBe(8);
+    /**
+     * The test is not vacuously true — there ARE cycles, and no adapter is in one.
+     *
+     * SR-2d1 removed the `controller ↔ graph/canvas` cycle, so the count went 8 → 7. The pin is
+     * updated to the measured fact rather than loosened to a range: a NEW cycle must still fail.
+     */
+    expect(analysis.stronglyConnectedComponents.length).toBe(7);
   });
 
   it("the checks above are not vacuous: the live graph really does have adapters and cycles", () => {

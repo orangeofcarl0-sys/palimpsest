@@ -6731,3 +6731,74 @@ SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f  SR-2b
 SR-2c   World / Result / Continuation namespace 收束   CLOSED（本附录）
 SR-2d1  controller ↔ graph/canvas SCC 清除             ← 下一步
 ```
+
+---
+
+## 附录 AH（第 SR-2d1 期）：Projection Cycle 清除 —— 投影不反向依赖 owner
+
+$$oxed{Projection 
+otightarrow Owner}$$
+
+### AH.1 SCC 的真实构成
+
+baseline 自己标注为 "canonical SR-2 candidate" 的那个三文件 SCC，实测由四条边构成——而**其中两条是
+类型导入，且两条都指向错误方向**：
+
+```text
+src/canvas/derive.ts    → src/tools/graph.ts        （类型：OrchestrationGraph）
+src/tools/graph.ts      → src/canvas/derive.ts      （调用：satelliteAttempts / traceRows）
+src/tools/graph.ts      → src/tools/controller.ts   （类型：AttemptAttribution）
+src/tools/controller.ts → src/tools/graph.ts        （调用：buildOrchestrationGraph）
+```
+
+两个 CALL 是正确方向（owner 组合自己的投影）；两个 TYPE 是反向依赖——**投影用 owner 的术语描述自己**。
+
+### AH.2 修法：结构化声明，而非重分类
+
+- `canvas/derive.ts` 声明自己的 `GraphViewInput`（它只读 `graph.tasks` 的 6 个字段），不再 import 投影器
+  的类型；
+- `graph.ts` 声明自己的 `GraphAttemptAttribution`（一个 attribution 记录的**形状**），不再 import
+  controller 的类型。
+
+于是只剩**一个方向**：
+
+```text
+controller → graph → canvas/derive
+```
+
+`graphBuildCount()`/`viewCursor()` 等既有面不变；`satelliteAttempts`/`traceRows` 的名字、返回类型与调用点
+全部不变（e2e 38/38 证明 UI 投影未变）。
+
+### AH.3 exception 随之删除（§三十一）
+
+cycle 消失后，baseline 里的 cycle 记录**与它的理由**一并删除——一条针对已消失 cycle 的休眠例外会静默地
+重新许可该 cycle：
+
+```text
+permittedCycles: 8 → 7        accepted exceptions: 12 → 11
+```
+
+并把两条"计数"钉改为钉**方向**而非钉数字：`dsh_adapter_clusters` 断言 7（新实测值，而非放宽为区间——
+新 cycle 仍必须失败）；SR-2.0 的宪法钉改为"集合只减不增"，因为那才是它真正的主张。
+
+### AH.4 证明（`test/architecture/sr2d1_projection_cycle.test.ts`，9 条）
+
+```text
+无任何 SCC 含该三文件；剩余边恰为 controller→graph 与 graph→canvas 两条（反向两条断言不存在）；
+投影器声明自己的输入形状（不再 import controller 类型）；视图声明自己的读取形状（不再 import 投影器类型）；
+两个导出的名字/返回类型/调用点不变，且读取的字段仍是事实本身而非便利子集；
+baseline 只剩 7 个 cycle 且不含该 trio；理由文件里对该 cycle 的记载已删除；exception 集合 12 → 11；
+三个模块层级未变（L3/L3/L2）——修的是结构，不是重分类。
+```
+
+### AH.5 门禁（本片实测）
+
+tsc 干净、单元 **2690/2690**、e2e **38/38**、`architecture:check` **0 violation**（**11** accepted）、
+`architecture:check-public-api` **0/0/0**、**`gate:d5-live` PASS**。
+
+```text
+SR-2.0 ✓ce0e258  SR-2a ✓4eae41c  SR-2b1 ✓68e0759  SR-2b2 ✓a3b338f
+SR-2b3 ✓7e9854f  SR-2b4 ✓291d776  SR-2c ✓0bc5aee
+SR-2d1  Projection cycle 清除                CLOSED（本附录）
+SR-2d2  promotion ↔ recovery cycle 清除      ← 下一步
+```
