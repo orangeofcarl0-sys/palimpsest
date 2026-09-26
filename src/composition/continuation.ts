@@ -54,7 +54,6 @@ import { firstPartyResultResolver } from "../deployment/result_resolution.js";
 import { firstPartyAttemptResultVerificationSource } from "../project_verification/index.js";
 import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import { makeWorkDelegationService } from "../interaction/work_delegation.js";
-import { ATTEMPT_OPEN_STATES } from "../domain/state_machine.js";
 import { makeResultContinuationService, type ResultContinuationService } from "../continuation/service.js";
 import type {
   ContinuationCanonicalPort,
@@ -216,7 +215,6 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
       : makeWorkDelegationService({ controller, workerFor: options.workWorkerPort });
 
   // ── the narrow owner reads (SR-2 §20) ──
-  const connection = store.connection;
   /**
    * ── THE FIVE PORTS (SR-2 §八) ───────────────────────────────────────────────────────────
    *
@@ -226,46 +224,18 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
    *
    *     composition knows wiring;  service knows semantics.
    */
-  const readTaskEnvelopeId = (taskId: string): string | null =>
-    // The Work owner reads its own envelope column (G10-W keeps that list short).
-    controller.taskEnvelopeId(taskId);
-  const readTask = (taskId: string) => {
-    const row = connection
-      .prepare("SELECT state, state_json, last_event_id FROM tasks WHERE project_id=? AND task_id=?")
-      .get(options.projectId, taskId) as
-      | { state: unknown; state_json: Uint8Array; last_event_id: unknown }
-      | undefined;
-    if (row === undefined) return null;
-    return {
-      state: String(row.state),
-      batchActivationEventId: batchAnchorOf(row.state_json),
-      lastEventId: Number(row.last_event_id),
-      envelopeId: readTaskEnvelopeId(taskId),
-    };
-  };
-  const readAttempt = (attemptId: string) => {
-    const row = connection
-      .prepare("SELECT task_id, state, state_json FROM attempts WHERE project_id=? AND attempt_id=?")
-      .get(options.projectId, attemptId) as
-      | { task_id: unknown; state: unknown; state_json: Uint8Array }
-      | undefined;
-    if (row === undefined) return null;
-    return {
-      taskId: String(row.task_id ?? ""),
-      state: String(row.state),
-      batchActivationEventId: batchAnchorOf(row.state_json),
-    };
-  };
+  /**
+   * SR-2 §九: these three reads are the Work read owner's, not this composition's.
+   *
+   * They were written here as their own SQL — a second reading of the same facts the controller
+   * reads — which is precisely the duplication the slice removes ("same semantic question ⇒ one
+   * reader"). The composition still WIRES the work port; it no longer interprets the projections.
+   */
+  const readTask = (taskId: string) => controller.work.task(taskId);
+  const readAttempt = (attemptId: string) => controller.work.attempt(attemptId);
   const openAttempt = (taskId: string) => {
-    const rows = connection
-      .prepare("SELECT attempt_id, state FROM attempts WHERE project_id=? AND task_id=? ORDER BY rowid DESC")
-      .all(options.projectId, taskId) as Array<{ attempt_id: unknown; state: unknown }>;
-    for (const row of rows) {
-      if (ATTEMPT_OPEN_STATES.has(String(row.state))) {
-        return { attemptId: String(row.attempt_id), state: String(row.state) };
-      }
-    }
-    return null;
+    const held = controller.work.openAttemptFor(taskId);
+    return held === null ? null : { attemptId: held.attemptId, state: held.state };
   };
 
   /**
@@ -532,14 +502,3 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
   };
 }
 
-/** The batch anchor a task or attempt row carries in its projected state. */
-function batchAnchorOf(stateJson: Uint8Array): number | null {
-  try {
-    const parsed = JSON.parse(new TextDecoder().decode(stateJson)) as { batch_activation_event_id?: unknown };
-    return parsed.batch_activation_event_id === null || parsed.batch_activation_event_id === undefined
-      ? null
-      : Number(parsed.batch_activation_event_id);
-  } catch {
-    return null;
-  }
-}
