@@ -25,10 +25,4 @@ export const BASELINE_EDGE_REASONS: ReadonlyMap<string, string> = new Map([
 
 /** Cycles that exist at the SR-1 baseline, keyed by the sorted file list joined with `|`. */
 export const BASELINE_CYCLE_REASONS: ReadonlyMap<string, string> = new Map([
-  [
-    ["src/canvas/derive.ts", "src/tools/controller.ts", "src/tools/graph.ts"].sort().join("|"),
-    "cross-layer cycle (L3→L2→L3): tools/graph.ts imports canvas/derive.ts, tools/controller.ts imports the graph " +
-      "projection, and canvas/derive.ts reads the controller. Recorded so that it cannot grow; unwinding it is a " +
-      "canonical SR-2 candidate because it spans the Work orchestration owner and a derived projection.",
-  ],
 ]);
