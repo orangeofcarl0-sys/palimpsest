@@ -1019,14 +1019,6 @@
       },
       {
         "files": [
-          "src/canvas/derive.ts",
-          "src/tools/controller.ts",
-          "src/tools/graph.ts"
-        ],
-        "reason": "cross-layer cycle (L3→L2→L3): tools/graph.ts imports canvas/derive.ts, tools/controller.ts imports the graph projection, and canvas/derive.ts reads the controller. Recorded so that it cannot grow; unwinding it is a canonical SR-2 candidate because it spans the Work orchestration owner and a derived projection."
-      },
-      {
-        "files": [
           "src/proof_asset/disclosure.ts",
           "src/proof_asset/service.ts",
           "src/proof_asset/store.ts"

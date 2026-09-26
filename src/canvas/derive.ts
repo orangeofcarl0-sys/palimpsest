@@ -4,7 +4,30 @@
  * zero event ids on any human face - attempt ids and labels only).
  */
 
-import type { OrchestrationGraph } from "../tools/graph.js";
+/**
+ * SR-2 §十七 — the STRUCTURAL input these derivations read.
+ *
+ * This module is a DERIVED VIEW: it reads a graph and produces rows. Importing the projector's own
+ * type made the view depend on the projector, which closed the `controller ↔ graph/canvas` SCC
+ * (`graph → canvas/derive` as a call, `canvas/derive → graph` as a type). A projection must not
+ * depend on its owner, so the shape is declared HERE — the fields are the facts, and the projector
+ * satisfies it structurally.
+ */
+export interface GraphViewInput {
+  readonly tasks: ReadonlyArray<{
+    readonly taskId: string;
+    readonly objective: string;
+    readonly role: string;
+    readonly definitionId?: string | undefined;
+    readonly scopeId?: string | undefined;
+    readonly attempts: ReadonlyArray<{
+      readonly attemptId: string;
+      readonly state: string;
+      readonly timeline: ReadonlyArray<{ readonly at: string; readonly label: string }>;
+      readonly attribution?: { readonly model: string; readonly cost?: number | undefined } | undefined;
+    }>;
+  }>;
+}
 
 /** Attempts that still occupy a role slot - exactly the scheduler's open set. */
 const OPEN_STATES: ReadonlySet<string> = new Set(["CREATED", "LEASED", "RUNNING"]);
@@ -22,10 +45,10 @@ export interface SatelliteAttempt {
   readonly scopeId?: string;
   readonly origin: "scheduler-activation";
   readonly createdAt?: string;
-  readonly attribution?: { readonly model: string; readonly cost: number };
+  readonly attribution?: { readonly model: string; readonly cost?: number | undefined };
 }
 
-export function satelliteAttempts(graph: OrchestrationGraph): SatelliteAttempt[] {
+export function satelliteAttempts(graph: GraphViewInput): SatelliteAttempt[] {
   const satellites: SatelliteAttempt[] = [];
   for (const task of graph.tasks) {
     for (const attempt of task.attempts) {
@@ -67,7 +90,7 @@ export interface TraceRow {
 }
 
 /** Span per consecutive timeline pair; the final event ends as a marker point. */
-export function traceRows(graph: OrchestrationGraph): TraceRow[] {
+export function traceRows(graph: GraphViewInput): TraceRow[] {
   const rows: TraceRow[] = [];
   for (const task of graph.tasks) {
     for (const attempt of task.attempts) {

@@ -305,10 +305,17 @@ describe("SR-2 §三十一 SR-2.0 re-stamped no debt", () => {
     expect(baseline.permittedForbiddenEdges.filter((edge) => edge.from.startsWith("src/continuation/"))).toEqual([]);
   });
 
-  it("the cycle set is unchanged — SR-2.0 removed nothing and tolerated nothing new", () => {
-    // The eight SCCs are the D-kernel/E-substrate debt SR-2d owns. SR-2.0 must leave them
-    // exactly as it found them: neither newly whitelisted nor quietly dropped.
-    expect(baseline.permittedCycles).toHaveLength(8);
+  it("the cycle set only SHRINKS — SR-2.0 added none, and SR-2d1 removed one", () => {
+    /**
+     * SR-2.0's own claim was "removed nothing and tolerated nothing new" at 8 SCCs. SR-2d1 then
+     * removed the `controller ↔ graph/canvas` cycle, taking it to 7 — and the exception was
+     * DELETED with it, because a dormant cycle exception would silently re-permit the cycle (§三十一).
+     *
+     * The pin therefore asserts the direction that matters: the set never GROWS. A future slice
+     * that tolerates a new cycle fails here.
+     */
+    expect(baseline.permittedCycles.length).toBeLessThanOrEqual(7);
+    expect(baseline.permittedCycles).toHaveLength(7);
   });
 
   it("every recorded exception still carries a written reason", () => {

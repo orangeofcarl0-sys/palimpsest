@@ -13,7 +13,18 @@ import type { DatabaseSync } from "node:sqlite";
 import { actionKey, stableEntityId } from "../domain/index.js";
 import type { ProjectIr } from "../schema/index.js";
 
-import type { AttemptAttribution } from "./controller.js";
+/**
+ * SR-2 §十七: the attribution shape is declared HERE rather than imported from the controller.
+ * The projector reads what a producer recorded; naming the producer's concrete type made the
+ * projection depend on the Work owner, which is the edge this slice removes.
+ */
+export interface GraphAttemptAttribution {
+  readonly model: string;
+  /** Host-priced attempt cost (>= 0, finite); 0 leaves cost comparisons vacuous. */
+  readonly cost?: number | undefined;
+  /** Telemetry task_type; defaults to the attempt task's role. */
+  readonly taskType?: string | undefined;
+}
 import { satelliteAttempts, traceRows } from "../canvas/derive.js";
 
 export interface GraphAttempt {
@@ -124,7 +135,7 @@ export interface OrchestrationGraphInput {
   readonly projectId: string;
   readonly project: ProjectIr;
   readonly connection: DatabaseSync;
-  readonly attribution: ReadonlyMap<string, AttemptAttribution>;
+  readonly attribution: ReadonlyMap<string, GraphAttemptAttribution>;
 }
 
 export function buildOrchestrationGraph(input: OrchestrationGraphInput): OrchestrationGraph {
