@@ -439,12 +439,17 @@ describe("G10-W source firewall", () => {
     }
     expect(envelopeWriters).toHaveLength(1);
     expect(envelopeWriters[0]!.endsWith("src/state/projector.ts")).toBe(true);
-    // Only the projector (write), the schema/migrations (shape), the controller
-    // (read) and the G10-Z promotion-eligibility reader (read) may name the
-    // column - no third, shadow envelope cache. The firewall is about WRITERS,
-    // and `envelopeWriters` above already pins that set to exactly one file.
+    // Only the projector (write), the schema/migrations (shape), the Work read owner (read),
+    // the controller (read) and the G10-Z promotion-eligibility reader (read) may name the
+    // column - no third, shadow envelope cache. The firewall is about WRITERS, and
+    // `envelopeWriters` above already pins that set to exactly one file.
+    //
+    // SR-2 §九: `src/work/read_model.ts` joined this list because the READ MOVED there. The
+    // set did not grow a new capability; it names where the one read now lives, which is what
+    // keeps this firewall meaningful (a namer list that still pointed only at the old site
+    // would silently stop covering the actual reader).
     for (const owner of envelopeOwners) {
-      expect(owner).toMatch(/(state\/projector|state\/migrations|state\/migration_files|schema\/|tools\/controller|domain\/aggregate|domain\/promotion_eligibility_read|scheduler\/scheduler|cli\.ts)/);
+      expect(owner).toMatch(/(state\/projector|state\/migrations|state\/migration_files|schema\/|work\/read_model|tools\/controller|domain\/aggregate|domain\/promotion_eligibility_read|scheduler\/scheduler|cli\.ts)/);
     }
   });
 

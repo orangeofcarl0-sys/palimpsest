@@ -50,6 +50,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   run: "L1",
 
   // L2 — semantic capability owners
+  // SR-2 §九: the Work read owner. It answers Work projection questions (project, task,
+  // attempt, current batch, envelope, attempt authorization, open attempt) and produces no
+  // transitions — a semantic capability, not kernel substrate and not a host adapter.
+  work: "L2",
   campaign: "L2",
   federation: "L2",
   reasoning_cell: "L2",
