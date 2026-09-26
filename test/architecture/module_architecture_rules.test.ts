@@ -410,7 +410,10 @@ describe("SR1-A01/A02 the live repository has no new forbidden edge and no new c
       const key = `${edge.from} -> ${edge.to}`;
       expect(BASELINE_EDGE_REASONS.has(key), `unrecorded forbidden edge ${key}`).toBe(true);
     }
-    expect(architecture.forbiddenImports.length).toBeLessThanOrEqual(4);
+    // SR-2 §五: 4 at the SR-1 baseline, 5 since continuation was classified as L3 — which
+    // SURFACED an edge the old "unclassified ⇒ BARREL" fallback had been hiding. The count
+    // is a ceiling, not a target: SR-2a removes the continuation edge and this must go down.
+    expect(architecture.forbiddenImports.length).toBeLessThanOrEqual(5);
   });
 
   it("SR1-A02 no cross-layer cycle outside the recorded baseline", () => {

@@ -1,26 +1,26 @@
 {
-  "version": 2,
-  "capturedFrom": "unknown",
+  "version": 3,
+  "capturedFrom": "a3915d725848cb88032957427e9994138ea6bce9",
   "totals": {
-    "files": 344,
-    "loc": 96184,
-    "bytes": 4143206,
-    "edges": 1436,
+    "files": 391,
+    "loc": 112648,
+    "bytes": 4955598,
+    "edges": 1629,
     "externalImports": 19,
     "unresolvedImports": 0
   },
   "layers": [
     {
       "layer": "L1",
-      "files": 59
+      "files": 66
     },
     {
       "layer": "L2",
-      "files": 168
+      "files": 189
     },
     {
       "layer": "L3",
-      "files": 49
+      "files": 53
     },
     {
       "layer": "L4",
@@ -28,7 +28,7 @@
     },
     {
       "layer": "L5",
-      "files": 50
+      "files": 65
     },
     {
       "layer": "BARREL",
@@ -37,6 +37,10 @@
     {
       "layer": "ENTRY",
       "files": 2
+    },
+    {
+      "layer": "UNCLASSIFIED",
+      "files": 0
     }
   ],
   "hotspots": [
@@ -59,17 +63,17 @@
     {
       "file": "src/deployment/launch.ts",
       "layer": "L5",
-      "loc": 544,
-      "bytes": 24459,
-      "fanOut": 18,
+      "loc": 667,
+      "bytes": 31617,
+      "fanOut": 24,
       "fanIn": 1
     },
     {
       "file": "src/install.ts",
       "layer": "L5",
-      "loc": 336,
-      "bytes": 15615,
-      "fanOut": 11,
+      "loc": 410,
+      "bytes": 20234,
+      "fanOut": 13,
       "fanIn": 2
     },
     {
@@ -83,10 +87,10 @@
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "loc": 3095,
-      "bytes": 120186,
-      "fanOut": 27,
-      "fanIn": 18
+      "loc": 5378,
+      "bytes": 236794,
+      "fanOut": 35,
+      "fanIn": 20
     }
   ],
   "topFanOut": [
@@ -96,19 +100,24 @@
       "fanOut": 40
     },
     {
-      "file": "src/application/factory.ts",
-      "layer": "L4",
-      "fanOut": 34
-    },
-    {
       "file": "src/composition/install_contract.ts",
       "layer": "L5",
-      "fanOut": 34
+      "fanOut": 40
+    },
+    {
+      "file": "src/application/factory.ts",
+      "layer": "L4",
+      "fanOut": 36
     },
     {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "fanOut": 27
+      "fanOut": 35
+    },
+    {
+      "file": "src/deployment/launch.ts",
+      "layer": "L5",
+      "fanOut": 24
     },
     {
       "file": "src/project_management/service.ts",
@@ -116,7 +125,7 @@
       "fanOut": 19
     },
     {
-      "file": "src/deployment/launch.ts",
+      "file": "src/composition/continuation.ts",
       "layer": "L5",
       "fanOut": 18
     },
@@ -124,6 +133,26 @@
       "file": "src/composition/cognition.ts",
       "layer": "L5",
       "fanOut": 17
+    },
+    {
+      "file": "src/project_world/index.ts",
+      "layer": "L2",
+      "fanOut": 17
+    },
+    {
+      "file": "src/composition/governance.ts",
+      "layer": "L5",
+      "fanOut": 16
+    },
+    {
+      "file": "src/continuation/service.ts",
+      "layer": "L3",
+      "fanOut": 15
+    },
+    {
+      "file": "src/composition/core.ts",
+      "layer": "L5",
+      "fanOut": 14
     },
     {
       "file": "src/effects/promotion.ts",
@@ -136,7 +165,12 @@
       "fanOut": 14
     },
     {
-      "file": "src/composition/governance.ts",
+      "file": "src/composition/application.ts",
+      "layer": "L5",
+      "fanOut": 13
+    },
+    {
+      "file": "src/install.ts",
       "layer": "L5",
       "fanOut": 13
     },
@@ -151,54 +185,29 @@
       "fanOut": 12
     },
     {
-      "file": "src/composition/application.ts",
-      "layer": "L5",
+      "file": "src/domain/aggregate.ts",
+      "layer": "L1",
       "fanOut": 12
     },
     {
       "file": "src/adapters/http/router.ts",
       "layer": "L5",
       "fanOut": 11
-    },
-    {
-      "file": "src/application/surfaces/project.ts",
-      "layer": "L4",
-      "fanOut": 11
-    },
-    {
-      "file": "src/composition/collaboration.ts",
-      "layer": "L5",
-      "fanOut": 11
-    },
-    {
-      "file": "src/external_assets/service.ts",
-      "layer": "L2",
-      "fanOut": 11
-    },
-    {
-      "file": "src/install.ts",
-      "layer": "L5",
-      "fanOut": 11
-    },
-    {
-      "file": "src/monitor/driver.ts",
-      "layer": "L2",
-      "fanOut": 11
-    },
-    {
-      "file": "src/adapters/dsh/index.ts",
-      "layer": "L5",
-      "fanOut": 10
     }
   ],
   "topFanIn": [
     {
       "file": "src/schema/canonical.ts",
       "layer": "L1",
-      "fanIn": 92
+      "fanIn": 107
     },
     {
       "file": "src/schema/identifier.ts",
+      "layer": "L1",
+      "fanIn": 36
+    },
+    {
+      "file": "src/schema/index.ts",
       "layer": "L1",
       "fanIn": 36
     },
@@ -208,14 +217,9 @@
       "fanIn": 35
     },
     {
-      "file": "src/schema/index.ts",
-      "layer": "L1",
-      "fanIn": 31
-    },
-    {
       "file": "src/tools/controller.ts",
       "layer": "L2",
-      "fanIn": 18
+      "fanIn": 20
     },
     {
       "file": "src/tools/dsh_types.ts",
@@ -248,23 +252,23 @@
       "fanIn": 15
     },
     {
-      "file": "src/domain/errors.ts",
+      "file": "src/state/index.ts",
       "layer": "L1",
-      "fanIn": 13
+      "fanIn": 15
     },
     {
-      "file": "src/organization/definition.ts",
-      "layer": "L2",
-      "fanIn": 13
+      "file": "src/domain/errors.ts",
+      "layer": "L1",
+      "fanIn": 14
     },
     {
       "file": "src/recipes/execution.ts",
       "layer": "L3",
-      "fanIn": 13
+      "fanIn": 14
     },
     {
-      "file": "src/state/index.ts",
-      "layer": "L1",
+      "file": "src/organization/definition.ts",
+      "layer": "L2",
       "fanIn": 13
     },
     {
@@ -278,51 +282,51 @@
       "fanIn": 12
     },
     {
-      "file": "src/runtime_scope/index.ts",
+      "file": "src/domain/world_basis.ts",
+      "layer": "L1",
+      "fanIn": 12
+    },
+    {
+      "file": "src/project_verification/artifacts.ts",
       "layer": "L2",
       "fanIn": 12
     },
     {
-      "file": "src/boundary_memory/index.ts",
+      "file": "src/runtime_scope/index.ts",
       "layer": "L2",
-      "fanIn": 11
-    },
-    {
-      "file": "src/campaign/epistemic.ts",
-      "layer": "L2",
-      "fanIn": 11
+      "fanIn": 12
     }
   ],
   "layerEdges": [
     {
       "fromLayer": "L2",
       "toLayer": "L2",
-      "count": 518
+      "count": 571
     },
     {
       "fromLayer": "L2",
       "toLayer": "L1",
-      "count": 160
+      "count": 188
     },
     {
       "fromLayer": "L1",
       "toLayer": "L1",
-      "count": 146
+      "count": 158
     },
     {
       "fromLayer": "L3",
       "toLayer": "L3",
-      "count": 112
+      "count": 115
     },
     {
       "fromLayer": "L5",
       "toLayer": "L5",
-      "count": 94
+      "count": 111
     },
     {
       "fromLayer": "L5",
       "toLayer": "L2",
-      "count": 84
+      "count": 110
     },
     {
       "fromLayer": "L4",
@@ -332,27 +336,32 @@
     {
       "fromLayer": "L3",
       "toLayer": "L2",
-      "count": 36
+      "count": 50
     },
     {
       "fromLayer": "L5",
       "toLayer": "L3",
-      "count": 36
+      "count": 49
     },
     {
       "fromLayer": "L3",
+      "toLayer": "L1",
+      "count": 35
+    },
+    {
+      "fromLayer": "L5",
       "toLayer": "L1",
       "count": 30
     },
     {
       "fromLayer": "L4",
       "toLayer": "L3",
-      "count": 24
+      "count": 27
     },
     {
       "fromLayer": "L4",
       "toLayer": "L4",
-      "count": 23
+      "count": 25
     },
     {
       "fromLayer": "ENTRY",
@@ -361,13 +370,8 @@
     },
     {
       "fromLayer": "L5",
-      "toLayer": "L1",
-      "count": 17
-    },
-    {
-      "fromLayer": "L5",
       "toLayer": "L4",
-      "count": 16
+      "count": 17
     },
     {
       "fromLayer": "ENTRY",
@@ -410,6 +414,11 @@
       "count": 4
     },
     {
+      "fromLayer": "L4",
+      "toLayer": "L1",
+      "count": 4
+    },
+    {
       "fromLayer": "BARREL",
       "toLayer": "L4",
       "count": 3
@@ -430,9 +439,9 @@
       "count": 2
     },
     {
-      "fromLayer": "L4",
-      "toLayer": "L1",
-      "count": 2
+      "fromLayer": "L3",
+      "toLayer": "L5",
+      "count": 1
     },
     {
       "fromLayer": "L5",
@@ -444,6 +453,10 @@
     {
       "edge": "L2->L3",
       "count": 4
+    },
+    {
+      "edge": "L3->L5",
+      "count": 1
     }
   ],
   "cycles": [
@@ -542,8 +555,28 @@
       "count": 16
     },
     {
+      "from": "src/domain",
+      "to": "src/schema",
+      "count": 14
+    },
+    {
       "from": "src/composition",
       "to": "src/tools",
+      "count": 13
+    },
+    {
+      "from": "src/tools",
+      "to": "src/domain",
+      "count": 13
+    },
+    {
+      "from": "src/composition",
+      "to": "src/interaction",
+      "count": 12
+    },
+    {
+      "from": "src/project_world",
+      "to": "src/schema",
       "count": 12
     },
     {
@@ -567,9 +600,34 @@
       "count": 10
     },
     {
-      "from": "src/domain",
-      "to": "src/schema",
+      "from": "src/composition",
+      "to": "src/domain",
       "count": 10
+    },
+    {
+      "from": "src/composition",
+      "to": "src/project_world",
+      "count": 10
+    },
+    {
+      "from": "src",
+      "to": "src/composition",
+      "count": 10
+    },
+    {
+      "from": "src/application",
+      "to": "src/interaction",
+      "count": 9
+    },
+    {
+      "from": "src/continuation",
+      "to": "src/project_world",
+      "count": 9
+    },
+    {
+      "from": "src/project_world",
+      "to": "src/domain",
+      "count": 9
     },
     {
       "from": "src",
@@ -577,13 +635,13 @@
       "count": 8
     },
     {
-      "from": "src/external_assets",
-      "to": "src/schema",
+      "from": "src/deployment",
+      "to": "src/project_world",
       "count": 8
     },
     {
-      "from": "src",
-      "to": "src/composition",
+      "from": "src/external_assets",
+      "to": "src/schema",
       "count": 8
     },
     {
@@ -597,23 +655,28 @@
       "count": 8
     },
     {
-      "from": "src/tools",
-      "to": "src/domain",
-      "count": 8
-    },
-    {
       "from": "src",
       "to": "src/domain",
       "count": 7
     },
     {
-      "from": "src/application",
-      "to": "src/interaction",
+      "from": "src/composition",
+      "to": "src/state",
       "count": 7
     },
     {
       "from": "src/effects",
       "to": "src/domain",
+      "count": 7
+    },
+    {
+      "from": "src/interaction",
+      "to": "src/recipes",
+      "count": 7
+    },
+    {
+      "from": "src/interaction",
+      "to": "src/schema",
       "count": 7
     },
     {
@@ -642,6 +705,11 @@
       "count": 6
     },
     {
+      "from": "src/application",
+      "to": "src/tools",
+      "count": 6
+    },
+    {
       "from": "src/boundary_memory",
       "to": "src/schema",
       "count": 6
@@ -658,7 +726,12 @@
     },
     {
       "from": "src/composition",
-      "to": "src/state",
+      "to": "src/deployment",
+      "count": 6
+    },
+    {
+      "from": "src/deployment",
+      "to": "src/reasoning_cell",
       "count": 6
     },
     {
@@ -673,12 +746,7 @@
     },
     {
       "from": "src/interaction",
-      "to": "src/recipes",
-      "count": 6
-    },
-    {
-      "from": "src/interaction",
-      "to": "src/schema",
+      "to": "src/reasoning_cell",
       "count": 6
     },
     {
@@ -697,13 +765,13 @@
       "count": 6
     },
     {
-      "from": "src/application",
-      "to": "src/campaign",
-      "count": 5
+      "from": "src/project_verification",
+      "to": "src/schema",
+      "count": 6
     },
     {
       "from": "src/application",
-      "to": "src/tools",
+      "to": "src/campaign",
       "count": 5
     },
     {
@@ -714,11 +782,6 @@
     {
       "from": "src/composition",
       "to": "src/effects",
-      "count": 5
-    },
-    {
-      "from": "src/deployment",
-      "to": "src/reasoning_cell",
       "count": 5
     },
     {
@@ -737,12 +800,17 @@
       "count": 5
     },
     {
-      "from": "src/project_verification",
+      "from": "src/reasoning_cell",
       "to": "src/schema",
       "count": 5
     },
     {
-      "from": "src/reasoning_cell",
+      "from": "src/recipes",
+      "to": "src/reasoning_cell",
+      "count": 5
+    },
+    {
+      "from": "src/state",
       "to": "src/schema",
       "count": 5
     },
@@ -788,12 +856,12 @@
     },
     {
       "from": "src/composition",
-      "to": "src/federation",
+      "to": "src/application",
       "count": 4
     },
     {
       "from": "src/composition",
-      "to": "src/interaction",
+      "to": "src/federation",
       "count": 4
     },
     {
@@ -817,8 +885,18 @@
       "count": 4
     },
     {
+      "from": "src/composition",
+      "to": "src/project_verification",
+      "count": 4
+    },
+    {
       "from": "src/coordination",
       "to": "src/schema",
+      "count": 4
+    },
+    {
+      "from": "src/deployment",
+      "to": "src/interaction",
       "count": 4
     },
     {
@@ -847,11 +925,6 @@
       "count": 4
     },
     {
-      "from": "src/recipes",
-      "to": "src/reasoning_cell",
-      "count": 4
-    },
-    {
       "from": "src/runtime_evolution",
       "to": "src/schema",
       "count": 4
@@ -863,79 +936,27 @@
     },
     {
       "from": "src/state",
-      "to": "src/schema",
+      "to": "src/domain",
       "count": 4
     },
     {
       "from": "src/tools",
       "to": "src/evidence",
       "count": 4
-    },
-    {
-      "from": "src/adapters",
-      "to": "src/proof_asset",
-      "count": 3
-    },
-    {
-      "from": "src/adapters",
-      "to": "src/project_management",
-      "count": 3
-    },
-    {
-      "from": "src/adapters",
-      "to": "src/project_workspace",
-      "count": 3
-    },
-    {
-      "from": "src",
-      "to": "src/application",
-      "count": 3
-    },
-    {
-      "from": "src/application",
-      "to": "src/boundary_memory",
-      "count": 3
-    },
-    {
-      "from": "src/application",
-      "to": "src/organization",
-      "count": 3
-    },
-    {
-      "from": "src/application",
-      "to": "src/organization_memory",
-      "count": 3
-    },
-    {
-      "from": "src/application",
-      "to": "src/runtime_scope",
-      "count": 3
-    },
-    {
-      "from": "src/architecture",
-      "to": "src/schema",
-      "count": 3
-    },
-    {
-      "from": "src/binding",
-      "to": "src/architecture",
-      "count": 3
-    },
-    {
-      "from": "src/binding",
-      "to": "src/run",
-      "count": 3
-    },
-    {
-      "from": "src/canvas",
-      "to": "src/architecture",
-      "count": 3
     }
   ],
   "baseline": {
-    "version": 2,
-    "capturedFrom": "unknown",
+    "version": 3,
+    "capturedFrom": "a3915d725848cb88032957427e9994138ea6bce9",
+    "capturedTree": "b72b8da88ca87739fa5f3ac397cdcef6e7712a31",
     "permittedForbiddenEdges": [
+      {
+        "from": "src/continuation/service.ts",
+        "to": "src/deployment/source_change_observer.ts",
+        "fromLayer": "L3",
+        "toLayer": "L5",
+        "reason": "Newly EXPOSED, not newly created: this edge existed since D5-d but was invisible because src/continuation/** was unclassified and fell back to BARREL. SR-2 §五 classified it as L3, which surfaced the edge. It is type-only (the service names the observer's port, never runs it) and it is removed by SR-2a, whose machine proofs name this exact edge. Recorded here so it is visible and cannot grow, rather than silently re-baselined."
+      },
       {
         "from": "src/monitor/driver.ts",
         "to": "src/project_operating/posture.ts",

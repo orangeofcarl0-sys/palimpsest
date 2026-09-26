@@ -17,6 +17,7 @@
  * rule and no drift between the checker and its self-tests.
  */
 
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -43,15 +44,28 @@ const mode = argv.includes('--write')
           ? 'json'
           : 'report';
 
-const capturedFrom = (() => {
+/**
+ * SR-2 §七 — the captured identity, asked of GIT rather than guessed from `.git/`.
+ *
+ * The previous version read `.git/HEAD` directly. In a LINKED WORKTREE `.git` is a FILE
+ * containing `gitdir: <path>`, not a directory, so every worktree-based capture silently
+ * recorded `unknown` — and this repository does most of its work in worktrees.
+ *
+ *     git rev-parse HEAD            the commit (a squash rewrites it)
+ *     git rev-parse HEAD^{tree}     the source TREE (a squash does not)
+ *
+ * The tree is the checkable half: it answers "is this baseline still about this code?"
+ * even after the commit identity changes.
+ */
+const gitIdentity = (rev) => {
   try {
-    const head = readFileSync(join(REPO, '.git', 'HEAD'), 'utf8').trim();
-    if (head.startsWith('ref: ')) return readFileSync(join(REPO, '.git', head.slice(5).trim()), 'utf8').trim();
-    return head;
+    return execFileSync('git', ['-C', REPO, 'rev-parse', rev], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
   } catch {
     return 'unknown';
   }
-})();
+};
+const capturedFrom = gitIdentity('HEAD');
+const capturedTree = gitIdentity('HEAD^{tree}');
 
 const architecture = arch.analyseModuleArchitecture(REPO);
 
@@ -63,6 +77,7 @@ if (mode === 'json') {
 if (mode === 'write') {
   const baseline = arch.baselineFrom(architecture, {
     capturedFrom,
+    capturedTree,
     edgeReasons: arch.BASELINE_EDGE_REASONS,
     cycleReasons: arch.BASELINE_CYCLE_REASONS,
   });

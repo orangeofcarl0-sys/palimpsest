@@ -14,11 +14,19 @@
  *   L4  Application Facades    src/application/*
  *   L5  Host / Deployment      DSH tools, HTTP, CLI, deployment, install
  *   BARREL  root entry points that legitimately re-export from every layer
+ *   UNCLASSIFIED  a module the map does not name — a VIOLATION, never a permission
  *
  * Allowed direction: L5 → L4 → L3/L2 → L1, with peers inside L1 and L2 allowed.
+ *
+ * SR-2 §五: UNCLASSIFIED exists because the old fallback ("unknown directory ⇒ BARREL")
+ * handed every newly created `src/<name>/` the widest allowed-target set in the model —
+ * a module nobody classified could import anything, silently. D5-d's continuation
+ * orchestrator lived in exactly that escape hatch. An unclassified module is now its own
+ * layer with NO allowed targets, and `checkArchitecture` reports it as its own violation
+ * kind, so a forgotten classification fails CI instead of granting permission.
  */
 
-export const LOGICAL_LAYERS = ["L1", "L2", "L3", "L4", "L5", "BARREL", "ENTRY"] as const;
+export const LOGICAL_LAYERS = ["L1", "L2", "L3", "L4", "L5", "BARREL", "ENTRY", "UNCLASSIFIED"] as const;
 export type LogicalLayer = (typeof LOGICAL_LAYERS)[number];
 
 /** Directory-level defaults. A file path is matched by its directory under `src/`. */
@@ -77,6 +85,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
 
   // L3 — product interaction
   interaction: "L3",
+  // PLMP-LEAN-1 §D5-d / SR-2 §五: the cross-kernel CONTINUATION orchestrator. It composes
+  // World Consistency conclusions with the execution boundary, so it is product
+  // interaction (L3) — never a World Kernel member (§四: Continuation is not part of OCC).
+  continuation: "L3",
   advisor: "L3",
   recipes: "L3",
   project_management: "L3",
@@ -205,12 +217,12 @@ export function layerOf(relativePath: string): { readonly layer: LogicalLayer; r
     const known = new Set(["install.ts", "cli.ts", "serve.ts", "tui.ts"]);
     return known.has(second)
       ? { layer: "L5", why: "host/deployment entry point" }
-      : { layer: "BARREL", why: "unclassified src-root file" };
+      : { layer: "UNCLASSIFIED", why: `unclassified src-root file src/${second}` };
   }
   const directory = second;
   const mapped = DIRECTORY_LAYERS[directory];
   if (mapped !== undefined) return { layer: mapped, why: `directory default for src/${directory}/` };
-  return { layer: "BARREL", why: `unclassified directory src/${directory}/` };
+  return { layer: "UNCLASSIFIED", why: `unclassified directory src/${directory}/` };
 }
 
 /** Layers a module may legitimately depend on (§6 allowed direction). */
@@ -225,6 +237,11 @@ const ALLOWED_TARGETS: Readonly<Record<LogicalLayer, readonly LogicalLayer[]>> =
   // Barrels and entry points are re-export surfaces, not semantic modules.
   BARREL: ["L5", "L4", "L3", "L2", "L1", "BARREL", "ENTRY"],
   ENTRY: ["L5", "L4", "L3", "L2", "L1", "BARREL", "ENTRY"],
+  // SR-2 §五: a module nobody classified may depend on NOTHING. This is deliberately not
+  // "the strictest useful set" — it is the refusal to guess. The violation reported for an
+  // unclassified module is its classification, not each of its edges, so an unclassified
+  // module with no imports still fails.
+  UNCLASSIFIED: [],
 });
 
 export function isAllowedEdge(from: LogicalLayer, to: LogicalLayer): boolean {
