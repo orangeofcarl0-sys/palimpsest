@@ -20,7 +20,18 @@ export type { DirectoryEdge, LayerEdge, ModuleArchitecture, ModuleNode, Strongly
 export { LOGICAL_LAYERS, forbiddenEdgeRule, isAllowedEdge, layerOf } from "./layers.js";
 export type { LogicalLayer } from "./layers.js";
 export { ARCHITECTURE_BASELINE_VERSION, baselineFrom, checkArchitecture, cycleLayers } from "./rules.js";
-export { BASELINE_CYCLE_REASONS, BASELINE_EDGE_REASONS } from "./baseline-reasons.js";
+export type {
+  DependencyFirewall,
+  HotspotRatchet,
+  ImporterAllowlist,
+} from "./rules.js";
+export {
+  BASELINE_CYCLE_REASONS,
+  BASELINE_EDGE_REASONS,
+  DEPENDENCY_FIREWALLS,
+  HOTSPOT_RATCHETS,
+  IMPORTER_ALLOWLISTS,
+} from "./baseline-reasons.js";
 export type { ArchitectureBaseline, ArchitectureCheckResult, ArchitectureViolation } from "./rules.js";
 export { renderBaselineDocument, renderCheckSummary, toJson } from "./report.js";
 export { checkPublicApiParity, collectPublicApi } from "./public-api.js";

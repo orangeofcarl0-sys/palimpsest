@@ -92,3 +92,61 @@ cycles: committed=8  fresh=8      WOULD ADD: (none)   WOULD REMOVE: (none)
 One edge added, nothing removed, no cycle change — the new baseline is the old baseline plus the
 single edge the classification exposed. That is pinned by
 `test/architecture/sr2_architecture_constitution.test.ts`.
+
+---
+
+## SR-2 END SNAPSHOT — measured after SR-2e
+
+**Captured from** the SR-2e tree. Command: `pnpm build && node scripts/audit/module-architecture.mjs --json`
+
+| Dimension | SR-2 start | SR-2 end | Direction |
+|---|---|---|---|
+| files | 391 | 398 | +7 (the new owner modules) |
+| LOC | 112648 | 114025 | +1377 |
+| edges | 1629 | 1644 | +15 |
+| **ProjectController** | **5378** | **4828** | **−550** |
+| controller fanOut | 35 | 39 | +4 (it now composes its owners) |
+| controller fanIn | 20 | 19 | −1 |
+| **strongly connected components** | **8** | **5** | **−3** |
+| **accepted exceptions** | **12** | **9** | **−3** |
+
+### The three cycles SR-2 removed
+
+```text
+controller ↔ graph/canvas          SR-2d1   projection ¬→ owner (structural input shapes)
+promotion  ↔ recovery              SR-2d2   the shared contract sank into src/domain/
+coordination/federation/organization SR-2d3 the identity contracts sank into src/identity/
+```
+
+### The five that remain — all §二十 OUT of SR-2
+
+```text
+8  campaign
+4  domain / schema
+3  proof_asset
+2  project_management
+2  project_verification
+```
+
+### The new modules SR-2 introduced
+
+```text
+src/work/read_model.ts         233   Work projection reads      (§九)
+src/work/head.ts               265   G10-X head reconciliation  (§十)
+src/work/attempt_execution.ts  445   D2 prepare/observe/settle  (§十一)
+src/context/service.ts         463   context compilation        (§十二)
+src/result/*.ts                887   result identity/derivation (§十五)
+src/identity/refs.ts           258   stable identity contracts  (§十九)
+src/continuation/assessment.ts 329   D5-a calculus (moved)      (§十四)
+src/continuation/ports.ts      225   the five continuation ports (§八)
+```
+
+### What §十三 asked for, verified
+
+`ProjectController` no longer IMPLEMENTS any of the six things §十三 named: raw Work projection SQL
+reads, attempt-authorization reconstruction, the head reconciliation compiler, raw git result
+observation, the mutating prepare/settle kernel, or ContextManifest compilation/fetch. All six are
+now owned elsewhere, and the controller is a compatibility façade over them.
+
+Its line count fell 550 lines while its knowledge radius fell much further — which is the ruling's
+point: *the acceptance is what it no longer knows, not how many lines it has.*
