@@ -25,6 +25,7 @@ import { composeContextKnowledgePorts } from "./composition/context_knowledge.js
 import { composeProjectIntentCapability } from "./composition/project_intent.js";
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
+import { composeProcedureCapability } from "./composition/procedures.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -301,6 +302,34 @@ export function installPalimpsest(
   const { continuation, workDelegation } = continuationCluster;
 
   /*
+   * E5-P §26/§27: the GOVERNED PROCEDURAL CAPITALIZATION surface.
+   *
+   * It turns durable empirical experience into a grounded candidate, requires an INDEPENDENT
+   * authority to admit it, and keeps the admitted revision in its own append-only chain. It owns
+   * procedural capital and NOTHING else: the authoring seam is the caller's
+   * (`options.procedureAuthoring`), the authority is the caller's (`options.procedureAdmission`),
+   * and it reaches no Work, effect, promotion, commitment, intent or organization authority.
+   *
+   * It is composed BEFORE the context-knowledge binding because the procedure owner is one of the
+   * read capabilities that boundary adapts (E5-P §15).
+   *
+   * ABSENCE IS HONEST: without a durable store a procedure could not survive a restart and could
+   * therefore never be inherited, so the face is simply absent rather than stubbed.
+   */
+  const procedureStore = options.procedureStore;
+  const procedures = procedureStore === undefined
+    ? undefined
+    : composeProcedureCapability({
+        projectId: options.projectId,
+        store: procedureStore,
+        organizationMemory,
+        projectWorkspace,
+        authoring: options.procedureAuthoring,
+        admission: options.procedureAdmission,
+        clock: options.clock,
+      });
+
+  /*
    * E1-K §10.2/§10.3: the CONTEXT-KNOWLEDGE composition.
    *
    * It is composed HERE because this is the first point at which all three knowledge owners exist:
@@ -318,6 +347,9 @@ export function installPalimpsest(
     proof,
     reasoning: reasoningCellsInstalled?.service,
     projectWorkspace,
+    // E5-P §15: the procedure owner is an ADDITIVE read capability of the SAME knowledge boundary.
+    // Absent ⇒ a procedure selection honestly refuses rather than binding an empty capability.
+    ...(procedures === undefined ? {} : { procedures }),
   });
   if (contextKnowledgePorts !== undefined) core.contextKnowledge.bind(contextKnowledgePorts);
 
@@ -486,6 +518,7 @@ export function installPalimpsest(
     ...(intent === undefined ? {} : { intent }),
     ...(projectCollaboration === undefined ? {} : { projectCollaboration }),
     ...(institutionalLearning === undefined ? {} : { institutionalLearning }),
+    ...(procedures === undefined ? {} : { procedures }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),

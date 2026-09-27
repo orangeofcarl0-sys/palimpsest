@@ -259,6 +259,73 @@ export const DEPENDENCY_FIREWALLS: readonly DependencyFirewall[] = Object.freeze
       "governed structural path still begins with an independently authored DynamicsProposal.",
     exclusions: [],
   },
+  {
+    id: "procedures-not-authority-planes",
+    from: ["src/procedures/"],
+    to: [
+      "src/work/",
+      "src/scheduler/",
+      "src/effects/",
+      "src/proof_asset/",
+      "src/evidence/",
+      "src/reasoning_cell/",
+      "src/project_verification/",
+      "src/federation/",
+      "src/project_intent/",
+      "src/organization_evolution/",
+      "src/runtime_evolution/",
+      "src/organization/",
+      "src/runtime_scope/",
+    ],
+    reason:
+      "E5-P §19/§34: a procedure is COGNITIVE INFRASTRUCTURE, never authority infrastructure. " +
+      "`Procedure ≠ Work authorization / Effect authority / Proof / Evidence / Commitment authority / " +
+      "Intent authority / Organization evolution authority`. Holding these imports out is what makes " +
+      "the §19 machine proofs structural rather than aspirational: the owner that authors a method " +
+      "cannot reach a single plane that could act on it, so `Procedure inclusion ≠ automatic " +
+      "execution` is enforced by the import graph rather than by convention. A procedure that " +
+      "recommends a capability still cannot assert the capability exists or install it (§21).",
+    exclusions: [],
+  },
+  {
+    id: "procedures-not-recipe-or-context-owner",
+    from: ["src/procedures/"],
+    to: ["src/recipes/", "src/context/", "src/project_workspace/", "src/external_assets/"],
+    reason:
+      "E5-P §20/§22/§34: `Procedure ≠ Recipe` and `Procedure ≠ Journal note`, and the Context owner " +
+      "remains the INHERITANCE BOUNDARY. A procedure may carry descriptive `recommendedRecipeRefs` — " +
+      "`recommended recipe ≠ compiled recipe ≠ executed recipe` — so it must not reach the recipe " +
+      "compiler or executor. It must not write a project association itself (ProjectWorkspace owns " +
+      "that link, reached through a consumer-owned port) and must not become a second external-asset " +
+      "plane. Inheritance stays where E1-K put it: the context owner selects, the procedure owner only " +
+      "answers reads.",
+    exclusions: [],
+  },
+  {
+    id: "work-kernel-not-procedures",
+    from: ["src/work/", "src/domain/", "src/state/", "src/scheduler/"],
+    to: ["src/procedures/"],
+    reason:
+      "E5-P §4/§34: `Procedure ≠ Work authorization` and `Procedure inclusion ≠ automatic execution`. " +
+      "The Work kernel may not consume a procedure as if it were a work instruction with authority: a " +
+      "procedure tells a worker HOW prior experience suggests proceeding, and it authorizes nothing the " +
+      "current Work envelope and effects policy do not already allow. The only sanctioned direction is " +
+      "the procedure owner READING empirical history; the kernel never reaches into the module that " +
+      "stores learned methods.",
+    exclusions: [],
+  },
+  {
+    id: "organization-memory-not-procedure-standing",
+    from: ["src/organization_memory/"],
+    to: ["src/procedures/"],
+    reason:
+      "E5-P §23/§34: `Observation ≠ Procedure`. OrganizationMemory answers 'what did we observe?'; the " +
+      "procedure owner answers 'what method has the project admitted for reuse?'. Memory GROUNDS " +
+      "procedure authoring — the procedure owner reads it through its own narrow port — but it must " +
+      "not become procedure authority, and it must not be able to mutate a procedure's standing. " +
+      "Holding the import out means an evaluation cannot promote, supersede or retire a method.",
+    exclusions: [],
+  },
 ]);
 
 /**

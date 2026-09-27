@@ -488,3 +488,127 @@ describe("E4-L the institutional-learning boundary is enforced, not declared", (
     }
   });
 });
+
+/**
+ * E5-P §19/§34 — the PROCEDURAL-CAPITAL boundary, as machine proofs.
+ *
+ * §19 requires that a procedure cannot reach Work admission, task authorization, promotion
+ * eligibility, effect authorization, commitment authority, intent authority or organization-evolution
+ * authority. Those are held out at the IMPORT; these tests prove the rules BITE and that the module
+ * also cannot express the edge in CODE (no store of its own, no mutation verb, no executable field).
+ */
+describe("E5-P the procedural-capital boundary is enforced, not declared", () => {
+  const E5P_RULES = [
+    "procedures-not-authority-planes",
+    "procedures-not-recipe-or-context-owner",
+    "work-kernel-not-procedures",
+    "organization-memory-not-procedure-standing",
+  ] as const;
+
+  it("the four recorded procedure firewalls name their boundaries, with reasons", () => {
+    const ids = (baselineOf().dependencyFirewalls ?? []).map((firewall) => firewall.id);
+    for (const rule of E5P_RULES) expect(ids, rule).toContain(rule);
+    for (const firewall of baselineOf().dependencyFirewalls ?? []) {
+      if (!E5P_RULES.includes(firewall.id as (typeof E5P_RULES)[number])) continue;
+      expect(firewall.reason.length, firewall.id).toBeGreaterThan(80);
+      expect(firewall.exclusions, firewall.id).toEqual([]);
+    }
+  });
+
+  it("every procedure firewall BITES: a synthetic breach of each is reported", () => {
+    const cases: readonly [string, string, string][] = [
+      ["src/procedures/service.ts", "src/work/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/effects/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/candidate.ts", "src/proof_asset/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/revision.ts", "src/reasoning_cell/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/store.ts", "src/project_verification/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/federation/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/project_intent/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/organization_evolution/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/runtime_evolution/index.js", "procedures-not-authority-planes"],
+      ["src/procedures/service.ts", "src/recipes/compiler.js", "procedures-not-recipe-or-context-owner"],
+      ["src/procedures/content.ts", "src/context/knowledge.js", "procedures-not-recipe-or-context-owner"],
+      ["src/procedures/service.ts", "src/project_workspace/association.js", "procedures-not-recipe-or-context-owner"],
+      ["src/work/read_model.ts", "src/procedures/index.js", "work-kernel-not-procedures"],
+      ["src/domain/policy.ts", "src/procedures/service.js", "work-kernel-not-procedures"],
+      ["src/scheduler/scheduler.ts", "src/procedures/index.js", "work-kernel-not-procedures"],
+      ["src/organization_memory/service.ts", "src/procedures/index.js", "organization-memory-not-procedure-standing"],
+    ];
+    for (const [from, to, rule] of cases) {
+      const graph = clone();
+      const module = graph.modules.find((candidate) => candidate.file === from);
+      expect(module, `${from} must exist`).toBeDefined();
+      module!.imports.push(to);
+      expect(
+        firewallBreaches(graph).some((detail) => detail.includes(rule)),
+        `${from} -> ${to} must breach ${rule}`,
+      ).toBe(true);
+    }
+  });
+
+  it("the live repository reports none of the four procedure breaches", () => {
+    const live = firewallBreaches(clone());
+    for (const rule of E5P_RULES) {
+      expect(live.some((detail) => detail.includes(rule)), rule).toBe(false);
+    }
+  });
+
+  it("§19/§21: the procedure owner names no authority plane and no executable field", () => {
+    // A method-shaped body must not be able to NAME an authority or an execution. These pins read
+    // CODE (comments stripped), so a doc comment discussing the rule cannot trip its own proof.
+    const AUTHORITY_NAMES = [
+      "authorizeWork",
+      "grantAuthority",
+      "applyEffect",
+      "promoteOpportunity",
+      "advanceEvolution",
+      "advanceRuntimeEvolution",
+      "openCommitment",
+      "installCapability",
+      "registerCapability",
+      "execFile",
+      "spawnSync",
+      "child_process",
+    ];
+    for (const file of [
+      "src/procedures/content.ts",
+      "src/procedures/candidate.ts",
+      "src/procedures/admission.ts",
+      "src/procedures/revision.ts",
+      "src/procedures/service.ts",
+    ]) {
+      const source = stripComments(read(file));
+      for (const forbidden of AUTHORITY_NAMES) {
+        expect(source.includes(forbidden), `${file} must not name ${forbidden}`).toBe(false);
+      }
+      // §5: a method step is instructional TEXT. No field may carry an argv/command/script.
+      for (const forbidden of ["argv", "shellCommand", "executable", "scriptBody", "entrypoint"]) {
+        expect(source.includes(forbidden), `${file} must not carry ${forbidden}`).toBe(false);
+      }
+    }
+  });
+
+  it("§21/§22/§23: Procedure ≠ Recipe, Procedure ≠ Journal, Observation ≠ Procedure", () => {
+    // The procedure owner must not import the recipe compiler/executor, the journal, or the memory
+    // service: each is a different truth that it may at most READ through a consumer-owned port.
+    for (const file of ["src/procedures/service.ts", "src/procedures/candidate.ts", "src/procedures/content.ts"]) {
+      const source = stripComments(read(file));
+      for (const forbidden of ["compileRecipePlan", "RecipeExecutionService", "executeRecipePlan", "materializeProjectJournalEntry", "ProjectJournalKind", "OrganizationMemoryService"]) {
+        expect(source.includes(forbidden), `${file} must not name ${forbidden}`).toBe(false);
+      }
+    }
+  });
+
+  it("§16/§17: the context owner holds a procedure BINDING, never a procedure body, and its own namespace", () => {
+    const knowledge = stripComments(read("src/context/knowledge.ts"));
+    // §16: the binding declares no `body`/`preview` field.
+    const bindingBlock = knowledge.slice(knowledge.indexOf("interface ProcedureKnowledgeBinding"), knowledge.indexOf("interface ProcedureBasisAtCompile"));
+    expect(bindingBlock).not.toMatch(/\bbody\b/u);
+    expect(bindingBlock).not.toMatch(/\bpreview\b/u);
+    // §17: the namespace is procedure-specific, and there is still no generic knowledge umbrella.
+    expect(knowledge).toContain("@ctx/procedure/");
+    expect(knowledge).not.toContain("@ctx/knowledge/");
+    // §18: the compile-time standing is preserved verbatim as its own field.
+    expect(bindingBlock).toContain("standing_at_compile");
+  });
+});

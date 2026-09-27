@@ -23,8 +23,12 @@
 import type { ProofEvidenceService } from "../proof_asset/index.js";
 import type { ReasoningCellService } from "../reasoning_cell/index.js";
 import type { ProjectWorkspaceService } from "../project_workspace/index.js";
+import type { ProcedureService } from "../procedures/index.js";
 import type {
   ContextKnowledgePorts,
+  KnowledgeProcedureStanding,
+  ProcedureBasisAtCompile,
+  ProcedureRevisionObservation,
   ProofBasisAtCompile,
   ProofClaimObservation,
   ReasoningFrontierBasisAtCompile,
@@ -38,6 +42,12 @@ export interface ContextKnowledgeCompositionInput {
   readonly reasoning: ReasoningCellService | undefined;
   /** The composed ProjectWorkspace owner, when this deployment has one. */
   readonly projectWorkspace: ProjectWorkspaceService | undefined;
+  /**
+   * E5-P §15: the composed Procedure owner, when this deployment has one. Supplying it enables the
+   * explicit procedure selection; absent ⇒ a procedure request honestly refuses with
+   * `KNOWLEDGE_CAPABILITY_UNAVAILABLE`.
+   */
+  readonly procedures?: ProcedureService | undefined;
 }
 
 /**
@@ -50,8 +60,8 @@ export interface ContextKnowledgeCompositionInput {
 export function composeContextKnowledgePorts(
   input: ContextKnowledgeCompositionInput,
 ): ContextKnowledgePorts | undefined {
-  const { projectId, proof, reasoning, projectWorkspace } = input;
-  if (projectWorkspace === undefined && proof === undefined && reasoning === undefined) return undefined;
+  const { projectId, proof, reasoning, projectWorkspace, procedures } = input;
+  if (projectWorkspace === undefined && proof === undefined && reasoning === undefined && procedures === undefined) return undefined;
 
   /**
    * ProjectWorkspace READ: is this asset explicitly associated with THIS project?
@@ -60,6 +70,9 @@ export function composeContextKnowledgePorts(
    * not the workspace's project, so a caller cannot widen scope by passing a foreign id. Membership is
    * matched on `assetKind` + `canonicalRef.id`, which keeps the three truths separate: this answers
    * ASSOCIATION and says nothing about standing or activity.
+   *
+   * E5-P §14: `procedureAssociated` is the same read for an EXACT procedure REVISION. The
+   * association id is `<procedureId>@<revision>`, so an association of `P@1` cannot admit `P@2`.
    */
   const projectAssets =
     projectWorkspace === undefined
@@ -80,6 +93,18 @@ export function composeContextKnowledgePorts(
             }
             return associations.some(
               (association) => association.assetKind === kind && association.canonicalRef.id === id,
+            );
+          },
+          async procedureAssociated(targetProjectId: string, procedureId: string, revision: number): Promise<boolean> {
+            if (targetProjectId !== projectId) return false;
+            let associations: readonly { readonly assetKind: string; readonly canonicalRef: { readonly id: string } }[];
+            try {
+              associations = await projectWorkspace.projectScopedAssets(targetProjectId);
+            } catch {
+              return false;
+            }
+            return associations.some(
+              (association) => association.assetKind === "PROCEDURE" && association.canonicalRef.id === `${procedureId}@${revision}`,
             );
           },
         };
@@ -182,10 +207,45 @@ export function composeContextKnowledgePorts(
           },
         };
 
+  /**
+   * E5-P §16/§18: the Procedure owner READ.
+   *
+   *   observeBasis    → the procedure's OWN chain basis (never a derived view digest)
+   *   observeRevision → the exact revision's CURRENT standing, or a classified absence
+   *   readRevision    → the canonical BODY plus the CURRENT standing (pull)
+   *
+   * §18: `readRevision` resolves a SUPERSEDED or RETIRED revision too — an attempt bound to `P@1`
+   * must still be able to pull the method it was given. `observeBasis` on an unknown procedure is
+   * an honest absence, never a fabricated empty basis.
+   */
+  const procedureOwner =
+    procedures === undefined
+      ? undefined
+      : {
+          async observeBasis(procedureId: string): Promise<ProcedureBasisAtCompile | undefined> {
+            const basis = await procedures.basis(procedureId);
+            return basis === undefined ? undefined : { procedureId, throughSeq: basis.throughSeq, chainDigest: basis.chainDigest };
+          },
+          async observeRevision(procedureId: string, revision: number): Promise<ProcedureRevisionObservation> {
+            const view = await procedures.history(procedureId);
+            const entry = view.history.find((candidate) => candidate.ref.revision === revision);
+            return entry === undefined ? { classified: "NOT_FOUND" } : { classified: "observed", standing: entry.standing };
+          },
+          async readRevision(procedureId: string, revision: number) {
+            const view = await procedures.history(procedureId);
+            const entry = view.history.find((candidate) => candidate.ref.revision === revision);
+            if (entry === undefined) return undefined;
+            // §18: the standing reported here is the CURRENT one; the caller keeps its own
+            // compile-time snapshot and never overwrites it with this.
+            return { body: entry.revision.content, standing: entry.standing as KnowledgeProcedureStanding };
+          },
+        };
+
   return Object.freeze({
     ...(projectAssets === undefined ? {} : { projectAssets }),
     ...(proofAssets === undefined ? {} : { proofAssets }),
     ...(reasoningCells === undefined ? {} : { reasoningCells }),
+    ...(procedureOwner === undefined ? {} : { procedures: procedureOwner }),
   });
 }
 

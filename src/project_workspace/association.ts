@@ -44,6 +44,11 @@ export const PROJECT_ASSET_KINDS = [
   "REASONING_CELL",
   // G10-AE §5/§10 (additive): a project reference to an asset owned elsewhere.
   "EXTERNAL_ASSET",
+  // E5-P §14 (additive): a project's explicit reference to an ADMITTED procedure revision. A
+  // procedure becoming canonical does NOT make it context for every project, so the project must
+  // associate the exact revision it intends to use. `Procedure exists ≠ Project uses Procedure`,
+  // and `Project associates Procedure ≠ every Attempt receives Procedure`.
+  "PROCEDURE",
 ] as const;
 export type ProjectAssetKind = (typeof PROJECT_ASSET_KINDS)[number];
 
@@ -209,8 +214,14 @@ export function projectAssetAssociationDigestOf(input: Omit<ProjectAssetAssociat
  * (`ExternalLatest != ReferencedRevision`). The bridge port enforces this;
  * enforcing it on the artifact means no writer can bypass it. Every other kind
  * keeps its existing optional-digest semantics unchanged.
+ *
+ * E5-P §13/§14: `PROCEDURE` is held to the SAME rule for the same reason. A procedure
+ * reference without a digest would mean "whatever revision is current", which would destroy the
+ * §18 historical/current split: an attempt must be bound to the EXACT revision it compiled
+ * against, and a later supersession must not silently retarget it. `ProcedureRef` already carries
+ * `revision` + `digest`; requiring the digest here means no writer can drop it.
  */
-function requireExternalAssetDigest(
+function requireExactRevisionDigest(
   assetKind: ProjectAssetKind,
   canonicalRef: CanonicalAssetRef,
   what: string,
@@ -219,6 +230,12 @@ function requireExternalAssetDigest(
     pwFail(
       "invalid_value",
       `${what}: an EXTERNAL_ASSET reference must carry the exact external contentDigest`,
+    );
+  }
+  if (assetKind === "PROCEDURE" && canonicalRef.digest === undefined) {
+    pwFail(
+      "invalid_value",
+      `${what}: a PROCEDURE reference must carry the exact admitted revision digest (HistoricalProcedure != CurrentProcedure)`,
     );
   }
 }
@@ -240,7 +257,7 @@ export function materializeProjectAssetAssociation(input: {
     provenance: pwString(input.provenance, "provenance"),
     recordedAt: pwTimestamp(input.recordedAt, "recordedAt"),
   };
-  requireExternalAssetDigest(content.assetKind, content.canonicalRef, "canonicalRef");
+  requireExactRevisionDigest(content.assetKind, content.canonicalRef, "canonicalRef");
   const associationId = projectAssetAssociationIdOf(content);
   const withId = { ...content, associationId };
   return Object.freeze({ ...withId, digest: projectAssetAssociationDigestOf(withId) });
@@ -264,7 +281,7 @@ export function parseProjectAssetAssociation(raw: unknown, what = "ProjectAssetA
     provenance: pwString(object.provenance, `${what}.provenance`),
     recordedAt: pwTimestamp(object.recordedAt, `${what}.recordedAt`),
   };
-  requireExternalAssetDigest(content.assetKind, content.canonicalRef, `${what}.canonicalRef`);
+  requireExactRevisionDigest(content.assetKind, content.canonicalRef, `${what}.canonicalRef`);
   const associationId = pwString(object.associationId, `${what}.associationId`);
   if (projectAssetAssociationIdOf(content) !== associationId) {
     pwFail("invalid_value", `${what}.associationId does not match its content`);

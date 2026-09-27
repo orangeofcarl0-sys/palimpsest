@@ -14,7 +14,7 @@ import { knowledgeHandleBytes, type KnowledgeBinding } from "./knowledge.js";
 
 export interface ContextDistributionEntry {
   readonly handle: string;
-  readonly kind: "exact" | "source" | "evidence" | "proof" | "reasoning";
+  readonly kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure";
   readonly ref: string;
   readonly bytes: number;
 }
@@ -26,9 +26,11 @@ export interface ContextDistribution {
 
 export const DEFAULT_BOOT_BUDGET_BYTES = 40_960;
 
-/** E1-K §7.9: the knowledge index entry is minimal — `kind · ref · handle`, no standing/activity. */
+/** E1-K §7.9 / E5-P §16: the knowledge index entry is minimal — `kind · ref · handle`, no body. */
 export function knowledgeIndexRefOf(binding: KnowledgeBinding): string {
-  return binding.kind === "proof" ? binding.proof_claim_id : `${binding.cell_id}/${binding.claim_id}`;
+  if (binding.kind === "proof") return binding.proof_claim_id;
+  if (binding.kind === "reasoning") return `${binding.cell_id}/${binding.claim_id}`;
+  return `${binding.procedure_id}@${binding.procedure_revision}`;
 }
 
 export function distributeContext(
@@ -78,9 +80,9 @@ export function distributeContext(
   return { boot, handles };
 }
 
-/** PLMP-CTX-4 §1.1 (E1-K §9): the handle kinds and their prefixes. */
+/** PLMP-CTX-4 §1.1 (E1-K §9 / E5-P §17): the handle kinds and their prefixes. */
 export function contextHandle(
-  kind: "exact" | "source" | "evidence" | "proof" | "reasoning",
+  kind: "exact" | "source" | "evidence" | "proof" | "reasoning" | "procedure",
   ref: string,
 ): string {
   switch (kind) {
@@ -94,6 +96,8 @@ export function contextHandle(
       return `@ctx/proof/${ref}`;
     case "reasoning":
       return `@ctx/reasoning/${ref}`;
+    case "procedure":
+      return `@ctx/procedure/${ref}`;
   }
 }
 

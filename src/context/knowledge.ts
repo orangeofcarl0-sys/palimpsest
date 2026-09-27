@@ -67,6 +67,23 @@ export type KnowledgeProofFreshness = (typeof KNOWLEDGE_PROOF_FRESHNESS)[number]
 export const KNOWLEDGE_ASSET_KINDS = ["PROOF_CLAIM", "REASONING_CELL"] as const;
 export type KnowledgeAssetKind = (typeof KNOWLEDGE_ASSET_KINDS)[number];
 
+/**
+ * E5-P §14/§15: the PROJECT-ASSET kind a procedure binding is gated on. It is deliberately a
+ * SEPARATE constant rather than an addition to `KNOWLEDGE_ASSET_KINDS`: the two E1-K kinds are
+ * gated by a claim/cell standing the context owner revalidates itself, while a procedure is gated
+ * by its own ACTIVE standing plus a digest-exact project association. Keeping the lists apart
+ * means the existing Proof/Reasoning eligibility rules cannot be widened by accident.
+ */
+export const KNOWLEDGE_PROCEDURE_ASSET_KIND = "PROCEDURE" as const;
+
+/**
+ * E5-P §12: the procedure standings a binding may record. They MIRROR the procedure owner's
+ * `PROCEDURE_STANDINGS`; re-stated rather than imported because `src/context/` must not depend on
+ * `src/procedures/` (the E5-P firewall). A targeted test pins that the two lists agree.
+ */
+export const KNOWLEDGE_PROCEDURE_STANDINGS = ["ACTIVE", "SUPERSEDED", "RETIRED"] as const;
+export type KnowledgeProcedureStanding = (typeof KNOWLEDGE_PROCEDURE_STANDINGS)[number];
+
 /* ------------------------------------------------------------------ *
  * The explicit selection request — IDENTITY ONLY (§4)
  * ------------------------------------------------------------------ */
@@ -79,12 +96,26 @@ export type KnowledgeAssetKind = (typeof KNOWLEDGE_ASSET_KINDS)[number];
 export interface KnowledgeSelectionRequest {
   readonly proof?: readonly { readonly claimId: string }[] | undefined;
   readonly reasoning?: readonly { readonly cellId: string; readonly claimId: string }[] | undefined;
+  /**
+   * E5-P §15: the explicit procedure selection. IDENTITY + REVISION ONLY, exactly like the other
+   * two: the selector names which procedure revision it wants and states WHY. Standing, body,
+   * grounding and association are all derived by the owners during revalidation — there is no
+   * field here for any of them, so a caller cannot assert "this is ACTIVE" or smuggle a body in.
+   *
+   * §15: a project-associated ACTIVE procedure may be explicitly selected for a later attempt.
+   * Nothing is injected: `Do NOT inject every project procedure.`
+   */
+  readonly procedure?: readonly { readonly procedureId: string; readonly revision: number; readonly reason: string }[] | undefined;
 }
 
 /** A request that carries no items at all is ABSENT, not an empty selection (§7.4). */
 export function knowledgeRequestIsEmpty(request: KnowledgeSelectionRequest | undefined): boolean {
   if (request === undefined) return true;
-  return (request.proof?.length ?? 0) === 0 && (request.reasoning?.length ?? 0) === 0;
+  return (
+    (request.proof?.length ?? 0) === 0 &&
+    (request.reasoning?.length ?? 0) === 0 &&
+    (request.procedure?.length ?? 0) === 0
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -117,7 +148,41 @@ export interface ReasoningKnowledgeBinding {
   readonly handle: string;
 }
 
-export type KnowledgeBinding = ProofKnowledgeBinding | ReasoningKnowledgeBinding;
+export type KnowledgeBinding = ProofKnowledgeBinding | ReasoningKnowledgeBinding | ProcedureKnowledgeBinding;
+
+/**
+ * E5-P §16: a procedure binding carries ONLY historical binding metadata — the exact revision, its
+ * standing AT COMPILE TIME, its basis at compile time, the pull handle and the selector's reason.
+ *
+ * There is deliberately NO `body` and NO `preview` field: the full procedural body remains
+ * pull-only (§17), so a manifest stays a HISTORICAL BINDING rather than a method cache. That is
+ * what makes §18 work — the binding is immutable, and a pull reports the CURRENT standing
+ * separately.
+ *
+ * §18: `standing_at_compile` is the standing the procedure had when this attempt compiled. After
+ * `P@1 → SUPERSEDED by P@2`, an OLD attempt's manifest still reads `ACTIVE`, because that is what
+ * was true when it was compiled; a NEW attempt binds `P@2`. The old manifest is never rewritten.
+ */
+export interface ProcedureKnowledgeBinding {
+  readonly kind: "procedure";
+  readonly procedure_id: string;
+  readonly procedure_revision: number;
+  /** §18: the standing observed AT COMPILE TIME. Never overwritten by the current view. */
+  readonly standing_at_compile: KnowledgeProcedureStanding;
+  /** The procedure owner's chain basis for this procedure at compile time. */
+  readonly procedure_basis_at_compile: ProcedureBasisAtCompile;
+  readonly inclusion_reason: "explicit_request";
+  /** §16: the selector's stated reason — review metadata, never authority. */
+  readonly reason: string;
+  readonly handle: string;
+}
+
+/** §16: the procedure owner's own chain basis. Mirrors `ProcedureBasis`; never a derived digest. */
+export interface ProcedureBasisAtCompile {
+  readonly procedureId: string;
+  readonly throughSeq: number;
+  readonly chainDigest: string;
+}
 
 /** §9: the closed handle namespaces. There is deliberately NO `@ctx/knowledge/*` umbrella. */
 export function proofKnowledgeHandle(claimId: string): string {
@@ -127,9 +192,21 @@ export function reasoningKnowledgeHandle(cellId: string, claimId: string): strin
   return `@ctx/reasoning/${cellId}/${claimId}`;
 }
 
+/**
+ * §17: the semantically explicit PROCEDURE namespace — `@ctx/procedure/<procedureId>/<revision>`.
+ *
+ * A procedure is deliberately NOT placed under `@ctx/proof/*`, `@ctx/reasoning/*` or
+ * `@ctx/knowledge/*`: those namespaces are other planes' truths, and routing a method through one
+ * of them would suggest a standing it does not have.
+ */
+export function procedureKnowledgeHandle(procedureId: string, revision: number): string {
+  return `@ctx/procedure/${procedureId}/${revision}`;
+}
+
 /** The handle prefix a binding owns. Unknown namespaces fail closed (never a generic parser). */
 export const PROOF_HANDLE_PREFIX = "@ctx/proof/";
 export const REASONING_HANDLE_PREFIX = "@ctx/reasoning/";
+export const PROCEDURE_HANDLE_PREFIX = "@ctx/procedure/";
 
 /* ------------------------------------------------------------------ *
  * The consumer-owned READ PORTS (§10) — no mutation API is visible
@@ -176,6 +253,14 @@ export interface ContextKnowledgePorts {
   /** ProjectWorkspace READ: is this asset explicitly associated with THIS project? */
   readonly projectAssets?: {
     associated(projectId: string, kind: KnowledgeAssetKind, id: string): Promise<boolean>;
+    /**
+     * E5-P §14: is this EXACT procedure REVISION associated with THIS project?
+     *
+     * A separate method rather than an overload: the E1-K two kinds are matched on `assetKind` +
+     * `canonicalRef.id`, while a procedure must additionally match the exact REVISION — an
+     * association of `P@1` must not admit `P@2`. Collapsing the two would lose that distinction.
+     */
+    procedureAssociated?(projectId: string, procedureId: string, revision: number): Promise<boolean>;
   } | undefined;
 
   /** Proof owner READ. Compile: `observeBasis` + `observeClaim`; Pull: `readClaim`. */
@@ -202,7 +287,34 @@ export interface ContextKnowledgePorts {
      */
     readAdmittedClaim(cellId: string, claimId: string): Promise<{ readonly claim: unknown; readonly currentlyActive: boolean; readonly currentFrontierBasis: ReasoningFrontierBasisAtCompile } | undefined>;
   } | undefined;
+
+  /**
+   * E5-P §16/§18: the PROCEDURE owner READ. Compile asks "what is this exact revision's standing
+   * at ONE stable basis?"; pull asks "what body exists now, and what is its standing NOW?".
+   *
+   * §18: `readRevision` MUST still resolve a SUPERSEDED or RETIRED revision — an attempt bound to
+   * `P@1` must be able to pull the method it was given even after `P@2` supersedes it. Returning
+   * `undefined` for a superseded revision would break the historical half of the split.
+   */
+  readonly procedures?: {
+    /** The procedure's own chain basis, for the §12 before/after race rule. */
+    observeBasis(procedureId: string): Promise<ProcedureBasisAtCompile | undefined>;
+    /**
+     * COMPILE read: the exact revision's standing, or a classified absence.
+     *
+     *   NOT_FOUND      nothing was ever published under this id/revision
+     *   observed       the revision exists; `standing` is its CURRENT standing
+     */
+    observeRevision(procedureId: string, revision: number): Promise<ProcedureRevisionObservation>;
+    /** PULL read: the canonical body plus the CURRENT standing. Never mutates a binding field. */
+    readRevision(procedureId: string, revision: number): Promise<{ readonly body: unknown; readonly standing: KnowledgeProcedureStanding } | undefined>;
+  } | undefined;
 }
+
+/** E5-P §16: the procedure owner's answer about one exact revision. */
+export type ProcedureRevisionObservation =
+  | { readonly classified: "observed"; readonly standing: string }
+  | { readonly classified: "NOT_FOUND" };
 
 /* ------------------------------------------------------------------ *
  * The typed refusal (§5/§7.4) — the whole selection is refused, atomically
@@ -217,6 +329,9 @@ export const KNOWLEDGE_REFUSAL_REASONS = [
   "KNOWLEDGE_REASONING_INACTIVE",
   "KNOWLEDGE_OBSERVATION_RACED",
   "KNOWLEDGE_SELECTION_BUDGET_EXCEEDED",
+  // E5-P §15/§18: a procedure that is not ACTIVE is not selectable as current for a new attempt.
+  // §18: `A new Attempt should not silently bind the superseded revision as current.`
+  "KNOWLEDGE_PROCEDURE_NOT_ACTIVE",
 ] as const;
 export type KnowledgeRefusalReason = (typeof KNOWLEDGE_REFUSAL_REASONS)[number];
 
@@ -273,6 +388,7 @@ export async function resolveKnowledgeBindings(input: ResolveKnowledgeInput): Pr
   if (knowledgeRequestIsEmpty(request)) return Object.freeze([]);
   const proofs = request?.proof ?? [];
   const reasonings = request?.reasoning ?? [];
+  const procedures = request?.procedure ?? [];
 
   // §7.4/§10.3: an explicit request with no composed capability is UNAVAILABLE — never silently empty.
   const ports = input.ports;
@@ -285,9 +401,18 @@ export async function resolveKnowledgeBindings(input: ResolveKnowledgeInput): Pr
   if (reasonings.length > 0 && ports.reasoningCells === undefined) {
     refuse("KNOWLEDGE_CAPABILITY_UNAVAILABLE", "an explicit Reasoning selection was requested but the Reasoning read capability is not composed");
   }
+  // E5-P §15: a procedure selection needs BOTH the procedure owner AND the exact-revision
+  // association read — association is what makes "this project uses this procedure" true.
+  if (procedures.length > 0 && ports.procedures === undefined) {
+    refuse("KNOWLEDGE_CAPABILITY_UNAVAILABLE", "an explicit Procedure selection was requested but the Procedure read capability is not composed");
+  }
+  if (procedures.length > 0 && ports.projectAssets.procedureAssociated === undefined) {
+    refuse("KNOWLEDGE_CAPABILITY_UNAVAILABLE", "an explicit Procedure selection was requested but no procedure-association read capability is composed");
+  }
   const projectAssets = ports.projectAssets!;
   const proofAssets = ports.proofAssets;
   const reasoningCells = ports.reasoningCells;
+  const procedureOwner = ports.procedures;
 
   const bindings: KnowledgeBinding[] = [];
 
@@ -381,16 +506,84 @@ export async function resolveKnowledgeBindings(input: ResolveKnowledgeInput): Pr
     }
   }
 
+  /**
+   * E5-P §15/§18: the procedure selection. The order of the checks is the ruling's order:
+   * association first (is this project linked to THIS revision?), then existence, then standing.
+   * The whole selection is refused atomically if any item fails, exactly like the other two kinds.
+   *
+   * §12: ONE stable basis observation wraps the whole block, so a concurrent publication or
+   * supersession is reported as `KNOWLEDGE_OBSERVATION_RACED` rather than binding a torn view.
+   */
+  if (procedures.length > 0 && procedureOwner !== undefined) {
+    const basisBefore = await procedureOwner.observeBasis(procedures[0]!.procedureId);
+    // Group by procedure id so §12's ONE basis read serves every requested revision of it.
+    const byProcedure = new Map<string, { readonly revision: number; readonly reason: string }[]>();
+    for (const item of procedures) {
+      const held = byProcedure.get(item.procedureId);
+      if (held === undefined) byProcedure.set(item.procedureId, [{ revision: item.revision, reason: item.reason }]);
+      else held.push({ revision: item.revision, reason: item.reason });
+    }
+    for (const procedureId of [...byProcedure.keys()].sort()) {
+      const basis = await procedureOwner.observeBasis(procedureId);
+      for (const item of (byProcedure.get(procedureId) ?? []).slice().sort((left, right) => left.revision - right.revision)) {
+        // §14/§15: the project must have associated THIS EXACT revision. `Procedure exists ≠
+        // Project uses Procedure`, and an association of P@1 must not admit P@2.
+        const associated = await projectAssets.procedureAssociated!(input.projectId, procedureId, item.revision);
+        if (!associated) {
+          refuse(
+            "KNOWLEDGE_NOT_PROJECT_ASSOCIATED",
+            `procedure "${procedureId}" revision ${item.revision} is not associated with this project as PROCEDURE`,
+          );
+        }
+        const observation = await procedureOwner.observeRevision(procedureId, item.revision);
+        if (observation.classified === "NOT_FOUND") {
+          refuse("KNOWLEDGE_NOT_FOUND", `no procedure revision "${procedureId}@${item.revision}" is published`);
+        }
+        const standing = procedureStandingAtCompile(observation.standing);
+        // §18: only an ACTIVE procedure may be bound as current for a NEW attempt. A SUPERSEDED
+        // revision stays resolvable for an OLD manifest, but it is never silently selected again.
+        if (standing !== "ACTIVE") {
+          refuse(
+            "KNOWLEDGE_PROCEDURE_NOT_ACTIVE",
+            `procedure "${procedureId}" revision ${item.revision} is ${standing}; a new attempt may not bind a non-ACTIVE procedure as current`,
+          );
+        }
+        bindings.push(
+          Object.freeze({
+            kind: "procedure" as const,
+            procedure_id: procedureId,
+            procedure_revision: item.revision,
+            standing_at_compile: standing,
+            procedure_basis_at_compile: basis ?? { procedureId, throughSeq: 0, chainDigest: "" },
+            inclusion_reason: "explicit_request" as const,
+            reason: item.reason,
+            handle: procedureKnowledgeHandle(procedureId, item.revision),
+          }),
+        );
+      }
+    }
+    // §12: a concurrent publication or supersession inside the window refuses the whole selection.
+    const basisAfter = procedures.length === 0 ? basisBefore : await procedureOwner.observeBasis(procedures[0]!.procedureId);
+    if (!sameProcedureBasis(basisBefore, basisAfter)) {
+      refuse("KNOWLEDGE_OBSERVATION_RACED", "the Procedure plane advanced during knowledge observation, so no single consistent standing could be bound");
+    }
+  }
+
   // §12: deterministic order — proof before reasoning, then by identity, so the same request against
   // the same owner bases yields a byte-identical manifest.
   const ordered = bindings
     .slice()
     .sort((left, right) => {
-      if (left.kind !== right.kind) return left.kind === "proof" ? -1 : 1;
+      const rank = (binding: KnowledgeBinding): number => (binding.kind === "proof" ? 0 : binding.kind === "reasoning" ? 1 : 2);
+      if (rank(left) !== rank(right)) return rank(left) - rank(right);
       if (left.kind === "proof" && right.kind === "proof") return left.proof_claim_id < right.proof_claim_id ? -1 : left.proof_claim_id > right.proof_claim_id ? 1 : 0;
       if (left.kind === "reasoning" && right.kind === "reasoning") {
         if (left.cell_id !== right.cell_id) return left.cell_id < right.cell_id ? -1 : 1;
         return left.claim_id < right.claim_id ? -1 : left.claim_id > right.claim_id ? 1 : 0;
+      }
+      if (left.kind === "procedure" && right.kind === "procedure") {
+        if (left.procedure_id !== right.procedure_id) return left.procedure_id < right.procedure_id ? -1 : 1;
+        return left.procedure_revision - right.procedure_revision;
       }
       return 0;
     });
@@ -411,4 +604,20 @@ export async function resolveKnowledgeBindings(input: ResolveKnowledgeInput): Pr
 function sameBasis(left: ProofBasisAtCompile | undefined, right: ProofBasisAtCompile | undefined): boolean {
   if (left === undefined || right === undefined) return left === right;
   return left.scopeId === right.scopeId && left.throughSeq === right.throughSeq && left.chainDigest === right.chainDigest;
+}
+
+/**
+ * E5-P §18: the standing vocabulary is preserved VERBATIM. An unrecognized standing is reported as
+ * `SUPERSEDED`, which is the CONSERVATIVE reading — an unknown standing is never treated as
+ * ACTIVE, so a procedure the owner cannot classify cannot be bound as current.
+ */
+export function procedureStandingAtCompile(value: string): KnowledgeProcedureStanding {
+  return (KNOWLEDGE_PROCEDURE_STANDINGS as readonly string[]).includes(value)
+    ? (value as KnowledgeProcedureStanding)
+    : "SUPERSEDED";
+}
+
+function sameProcedureBasis(left: ProcedureBasisAtCompile | undefined, right: ProcedureBasisAtCompile | undefined): boolean {
+  if (left === undefined || right === undefined) return left === right;
+  return left.procedureId === right.procedureId && left.throughSeq === right.throughSeq && left.chainDigest === right.chainDigest;
 }
