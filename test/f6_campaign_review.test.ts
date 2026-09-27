@@ -29,6 +29,10 @@ import {
   makeCommitmentService,
   materializePeerRef,
 } from "../src/federation/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
+import { declareNeed } from "./collaboration_fixture.js";
 
 const SRC = (path: string): string => readFileSync(fileURLToPath(new URL(`../src/${path}`, import.meta.url)), "utf-8");
 const strip = (code: string): string => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
@@ -74,7 +78,9 @@ describe("F6-X02: campaign-wide restart replay (§169)", () => {
       localPeer: PA,
       allocateCommitmentId: () => `c-${++c}`,
       allocateHandoffId: () => `h-${c}`,
+      contactNeedScopeGuard: durableContactNeedScopeGuard(coordination),
     });
+    await declareNeed(coordination, "need-1");
     const offer = await commitments.offerCommitment({
       proposedHolder: PB,
       scope: { kind: "contact_need", contactNeedId: "need-1" },
@@ -171,7 +177,9 @@ describe("F6-X04: persistence orthogonality combinations (§181)", () => {
       localPeer: PA,
       allocateCommitmentId: () => `c-${++c}`,
       allocateHandoffId: () => `h-${c}`,
+      contactNeedScopeGuard: durableContactNeedScopeGuard(coordination),
     });
+    await declareNeed(coordination, "need-1");
     const offer = await commitments.offerCommitment({
       proposedHolder: PB,
       scope: { kind: "contact_need", contactNeedId: "need-1" },

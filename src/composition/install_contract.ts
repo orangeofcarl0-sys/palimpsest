@@ -36,7 +36,6 @@ import { evaluate } from "../experiment/index.js";
 import type { RecipeRegistry } from "../recipes/registry.js";
 import { builtinRecipeRegistry } from "../recipes/registry.js";
 import type { RecipeExecutionService, ReasoningBranchExecutionPort } from "../recipes/execution.js";
-import type { EmpiricalArchitectureAdvisor } from "../advisor/advisor.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "../application/surface.js";
 import type { HostDeploymentFactsPort } from "../application/common.js";
 import type { BoundaryArtifactTypeRegistry, BoundaryCollaborationTransportPort, BoundaryHome, BoundaryMemoryService, BoundaryMemoryStore, BoundaryWorkspaceRoutePort, FederatedBoundaryClient } from "../boundary_memory/index.js";
@@ -53,7 +52,8 @@ import type { DelegationService } from "../interaction/delegation.js";
 import type { DelegationInstallOptions, DelegationInstallResult } from "./delegation_contract.js";
 import type { ContinuationInstallOptions, ContinuationInstallResult } from "./continuation_contract.js";
 import type { ProjectIntentInstallOptions, ProjectIntentInstallResult } from "./project_intent_contract.js";
-import type { TaskProfilerPort } from "../advisor/index.js";
+import type { ProjectCollaborationInstallOptions, ProjectCollaborationInstallResult } from "./project_collaboration_contract.js";
+import type { EmpiricalArchitectureAdvisor, TaskProfilerPort } from "../advisor/index.js";
 import { SqliteMonitorDeliveryMarkStore } from "../monitor/index.js";
 import type { CampaignMonitorDriver, CampaignMonitorPolicy, CampaignMonitorScopePort, CampaignWakeActivationPort, MonitorTickSourcePort } from "../monitor/index.js";
 import { SqliteProjectVerificationStore } from "../project_verification/index.js";
@@ -65,7 +65,7 @@ import { SqliteManagementPreferenceStore } from "../project_management/index.js"
  */
 export type { HostDeploymentFactsPort };
 
-export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions, ProjectIntentInstallOptions {
+export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions, ProjectIntentInstallOptions, ProjectCollaborationInstallOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
   databasePath?: string | undefined;
   /** Shared Ordarium ledger; defaults to $DSH_HOME/ordarium/operations.sqlite. */
@@ -433,7 +433,7 @@ export interface InstalledRuntime {
   >;
 }
 
-export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult, ProjectIntentInstallResult {
+export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult, ProjectIntentInstallResult, ProjectCollaborationInstallResult {
   readonly controller: ProjectController;
   readonly tools: readonly DshToolDefinition[];
   /** Present only when runtime wiring options are supplied (§93 backward compatibility). */

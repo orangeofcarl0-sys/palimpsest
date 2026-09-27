@@ -42,6 +42,8 @@ const ALL_EVENT_TYPES: readonly CoordinationEventType[] = [
   "PARTICIPATION_STARTED",
   "PARTICIPATION_ENDED",
   "CONTACT_REQUESTED",
+  // E3-C §11: durable ContactNeed declaration — the need is now part of coordination history.
+  "CONTACT_NEED_DECLARED",
   "MESSAGE_PREPARED",
   "MESSAGE_DELIVERED",
   "MESSAGE_RECEIVED",
@@ -55,6 +57,10 @@ const ALL_EVENT_TYPES: readonly CoordinationEventType[] = [
   "HANDOFF_OFFERED",
   "HANDOFF_ACCEPTED",
   "HANDOFF_REJECTED",
+  // E3-C §26: typed fulfillment — submission, independent decision, terminal transition.
+  "FULFILLMENT_SUBMITTED",
+  "FULFILLMENT_DECIDED",
+  "COMMITMENT_FULFILLED",
 ];
 
 const PEER_A = materializePeerRef({ peerId: "peer-a" });

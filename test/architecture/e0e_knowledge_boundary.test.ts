@@ -285,3 +285,104 @@ describe("E2-I the intent boundary is enforced, not declared", () => {
     }
   });
 });
+
+/**
+ * E3-C — the COLLABORATION boundary, as machine proofs.
+ *
+ * The same standard again: a rule is proven when a synthetic breach FAILS. E3-C §34 adds five rules,
+ * and the most important one is sovereignty — `Project A may request and accept a contribution from
+ * Project B. Project A NEVER obtains authority over Project B's Work ledger.`
+ *
+ *   project_collaboration/**  !→  concrete Proof/Reasoning/Boundary/Workspace owners, and !→ the Work kernel
+ *   project_collaboration/**  !→  the coordination store / event log (there is NO candidate store)
+ *   the Work kernel           !→  project_collaboration (a need is not an assignment)
+ *   federation/**             !→  the Work kernel (no global scheduler, no remote Work ownership)
+ *   project_management        !→  project_collaboration (ManagementMode is not admission authority)
+ */
+describe("E3-C the collaboration boundary is enforced, not declared", () => {
+  const E3C_RULES = [
+    "project-collaboration-not-owner-internals",
+    "project-collaboration-not-event-store",
+    "work-kernel-not-project-collaboration",
+    "federation-not-work-kernel",
+    "management-not-collaboration-authority",
+  ] as const;
+
+  it("the five recorded collaboration firewalls name their boundaries, with reasons", () => {
+    const ids = (baselineOf().dependencyFirewalls ?? []).map((firewall) => firewall.id);
+    for (const rule of E3C_RULES) expect(ids, rule).toContain(rule);
+    for (const firewall of baselineOf().dependencyFirewalls ?? []) {
+      if (!E3C_RULES.includes(firewall.id as (typeof E3C_RULES)[number])) continue;
+      expect(firewall.reason.length, firewall.id).toBeGreaterThan(80);
+      expect(firewall.exclusions, firewall.id).toEqual([]);
+    }
+  });
+
+  it("every collaboration firewall BITES: a synthetic breach of each is reported", () => {
+    const cases: readonly [string, string, string][] = [
+      ["src/project_collaboration/need.ts", "src/proof_asset/index.js", "project-collaboration-not-owner-internals"],
+      ["src/project_collaboration/service.ts", "src/boundary_memory/index.js", "project-collaboration-not-owner-internals"],
+      ["src/project_collaboration/ports.ts", "src/work/read_model.js", "project-collaboration-not-owner-internals"],
+      ["src/project_collaboration/receipt.ts", "src/coordination/store.js", "project-collaboration-not-event-store"],
+      ["src/project_collaboration/service.ts", "src/state/event_store.js", "project-collaboration-not-event-store"],
+      ["src/work/read_model.ts", "src/project_collaboration/index.js", "work-kernel-not-project-collaboration"],
+      ["src/domain/aggregate.ts", "src/project_collaboration/index.js", "work-kernel-not-project-collaboration"],
+      ["src/federation/commitment_service.ts", "src/work/read_model.js", "federation-not-work-kernel"],
+      ["src/federation/federation_service.ts", "src/scheduler/index.js", "federation-not-work-kernel"],
+      ["src/project_management/service.ts", "src/project_collaboration/index.js", "management-not-collaboration-authority"],
+    ];
+    for (const [from, to, rule] of cases) {
+      const graph = clone();
+      const module = graph.modules.find((candidate) => candidate.file === from);
+      expect(module, `${from} must exist`).toBeDefined();
+      module!.imports.push(to);
+      expect(
+        firewallBreaches(graph).some((detail) => detail.includes(rule)),
+        `${from} -> ${to} must breach ${rule}`,
+      ).toBe(true);
+    }
+  });
+
+  it("the live repository reports none of the five collaboration breaches", () => {
+    const live = firewallBreaches(clone());
+    for (const rule of E3C_RULES) {
+      expect(live.some((detail) => detail.includes(rule)), rule).toBe(false);
+    }
+  });
+
+  it("the collaboration owner declares no mutation port and owns no store", () => {
+    // §4/§30: the candidate is a VALUE and there is deliberately no candidate store. A durable write
+    // named in this module would mean the candidate layer had become canonical.
+    const source = stripComments(read("src/project_collaboration/service.ts"));
+    for (const forbidden of [
+      "append(",
+      "appendAtomic(",
+      "Sqlite",
+      "new DatabaseSync",
+      "EventStore",
+      "CoordinationStore",
+      "assignPeerToTask",
+      "remoteTaskOwner",
+      "TeamTask",
+    ]) {
+      expect(source.includes(forbidden), `project_collaboration must not name ${forbidden}`).toBe(false);
+    }
+  });
+
+  it("no Team / Member / Assignment ontology was introduced", () => {
+    // §3: E3-C closes collaboration WITHOUT a Team/TeamMember/WorkAssignment ontology. The durable
+    // identity remains PeerRef, and a need is not an assignment.
+    const architecture = analyseModuleArchitecture(REPO);
+    const paths = architecture.modules.map((module) => module.file);
+    for (const forbidden of ["team", "membership", "assignment", "contribution"]) {
+      expect(
+        paths.some((path) => path.startsWith("src/") && path.split("/")[1] === forbidden),
+        `src/${forbidden}/ must not exist as a canonical owner`,
+      ).toBe(false);
+    }
+    const source = stripComments(read("src/project_collaboration/index.ts"));
+    for (const forbidden of ["UniversalContribution", "UniversalCanonicalRef", "TeamMember", "WorkAssignment"]) {
+      expect(source.includes(forbidden), `project_collaboration must not name ${forbidden}`).toBe(false);
+    }
+  });
+});

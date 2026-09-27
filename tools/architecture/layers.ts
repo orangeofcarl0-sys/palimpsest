@@ -91,6 +91,11 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // Proof/Reasoning/Journal/ProjectWorkspace through its own read ports and proposes a ProjectIR
   // revision — it owns no canonical store, so it sits beside `context`, not inside it.
   project_intent: "L2",
+  // E3-C §30: the project-grounded collaboration-need capability. A thin, STATELESS semantic layer that
+  // reads Project reality and hands an admitted candidate to the EXISTING Federation declaration — it owns
+  // no store, no peer identity, no Work, no commitment history and no authority, so it sits beside
+  // `project_intent`, not inside `federation`.
+  project_collaboration: "L2",
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",

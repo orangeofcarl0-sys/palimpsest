@@ -30,6 +30,10 @@ import {
   materializePeerRef,
 } from "../src/federation/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
+import { declareNeed } from "./collaboration_fixture.js";
 
 const ALL_PARSERS = { ...FEDERATION_EVENT_PARSERS, ...COMMITMENT_EVENT_PARSERS };
 const LOCAL = materializePeerRef({ peerId: "peer-a" });
@@ -70,6 +74,8 @@ function world(path = ":memory:") {
     localPeer: LOCAL,
     allocateCommitmentId: () => `com-${++commitmentCounter}`,
     allocateHandoffId: () => `ho-${++handoffCounter}`,
+    // E3-C §18: a contact_need scope must name a durably declared need.
+    contactNeedScopeGuard: durableContactNeedScopeGuard(store),
   });
   return { store, messaging, commitments, sent, effects, transportPort };
 }
@@ -247,6 +253,8 @@ describe("E6-X05: persistence optionality (§153)", () => {
   it("collaboration works with no continuity store, no point, and no runtime realization", async () => {
     const w = world();
     // Pure collaboration: no point store, no runtime service anywhere.
+    // E3-C §18: the contact_need scope must name a durably declared need.
+    await declareNeed(w.store, "need-1");
     const offer = await w.commitments.offerCommitment({
       proposedHolder: REMOTE,
       scope: { kind: "contact_need", contactNeedId: "need-1" },

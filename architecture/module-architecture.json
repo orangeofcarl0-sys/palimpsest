@@ -1118,6 +1118,70 @@
         ],
         "reason": "E2-I §18: ManagementMode grants ZERO project-intent authority. The management layer may later recommend, prepare or surface a proposal, but it must never become the authority because the mode changed — `DIRECT`/`ASSIST`/`MANAGE`/`DELEGATE` are not a semantic authority. Holding the import out is the strongest form of that rule: the layer cannot reach the decision even by accident, and its existing refusal to change goal/requirements is preserved.",
         "exclusions": []
+      },
+      {
+        "id": "project-collaboration-not-owner-internals",
+        "from": [
+          "src/project_collaboration/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/",
+          "src/boundary_memory/",
+          "src/project_workspace/",
+          "src/work/"
+        ],
+        "reason": "E3-C §30/§34: the collaboration-need owner observes Project reality through its own consumer-owned read ports and declares a need through the EXISTING Federation port. It must not name a concrete Proof/Reasoning/Boundary/Workspace owner (a second reader of their semantics, and a mutation API one import away from the module that proposes a need), and it must not name the Work kernel at all — NeedCandidate ≠ ContactNeed and ContactNeed ≠ Assignment, so the module that authors a need can never reach a task, an attempt or the scheduler.",
+        "exclusions": []
+      },
+      {
+        "id": "project-collaboration-not-event-store",
+        "from": [
+          "src/project_collaboration/"
+        ],
+        "to": [
+          "src/coordination/",
+          "src/state/"
+        ],
+        "reason": "E3-C §4/§30: a CollaborationNeedCandidate is NON-CANONICAL and there is deliberately NO candidate store. The durable ContactNeed is Federation-owned coordination history, reached only through the declaration port, so the candidate module may not touch the coordination store (or the Work event log) directly. Holding the import out is what makes 'no candidate store' machine-checked rather than a promise in a comment.",
+        "exclusions": []
+      },
+      {
+        "id": "work-kernel-not-project-collaboration",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/project_collaboration/"
+        ],
+        "reason": "E3-C §2/§34: ContactNeed ≠ Assignment and Commitment ≠ Work ownership. The Work kernel may not consume a collaboration need as if it were work authority, and a project condition may not silently become a scheduled obligation. The only sanctioned direction is the collaboration owner READING Work facts; the kernel never reaches back into the module that authors needs.",
+        "exclusions": []
+      },
+      {
+        "id": "federation-not-work-kernel",
+        "from": [
+          "src/federation/"
+        ],
+        "to": [
+          "src/work/",
+          "src/scheduler/"
+        ],
+        "reason": "E3-C §2/§34: 'Project A may request and accept a contribution from Project B. Project A NEVER obtains authority over Project B's Work ledger.' Federation owns peers, needs, contact, commitments and fulfillment — never Work. If federation could name the Work kernel it could schedule, mutate or observe a project's tasks, which is exactly the global-scheduler / remote-Work-ownership failure this stage exists to prevent. There is no assignPeerToTask.",
+        "exclusions": []
+      },
+      {
+        "id": "management-not-collaboration-authority",
+        "from": [
+          "src/project_management/"
+        ],
+        "to": [
+          "src/project_collaboration/"
+        ],
+        "reason": "E3-C §8: ManagementMode grants ZERO contact-need admission authority. managementMode == DELEGATE must not imply an admitted need, and no caller boolean (approved: true) may stand in for the independent authority. Holding the import out means the management layer cannot reach the admission decision even by accident.",
+        "exclusions": []
       }
     ],
     "hotspotRatchets": [
