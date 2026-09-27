@@ -575,7 +575,10 @@ describe("G10-AE §3 firewalls are STRUCTURAL, not comments", () => {
     expect(stripComments(importRegion).includes("assetType")).toBe(false);
   });
 
-  it("AE-N07: EXTERNAL_ASSET is the ONLY kind added to ProjectAssetKind", () => {
+  it("AE-N07: EXTERNAL_ASSET is the only PROVIDER-OWNED kind added to ProjectAssetKind", () => {
+    // E5-P §14 (deliberate, ruled): PROCEDURE is added by the procedural-capital stage, because a
+    // project must explicitly associate the exact admitted procedure revision it intends to use.
+    // The pin this test actually guards is unchanged: NO provider ontology leaks into Palimpsest.
     expect([...PROJECT_ASSET_KINDS]).toEqual([
       "DECISION",
       "PRODUCED_ARTIFACT",
@@ -585,6 +588,7 @@ describe("G10-AE §3 firewalls are STRUCTURAL, not comments", () => {
       "CAMPAIGN",
       "REASONING_CELL",
       "EXTERNAL_ASSET",
+      "PROCEDURE",
     ]);
     for (const providerType of ["Paper", "Idea", "Method", "Dataset", "Example", "Zotero", "Note"]) {
       expect((PROJECT_ASSET_KINDS as readonly string[]).includes(providerType)).toBe(false);

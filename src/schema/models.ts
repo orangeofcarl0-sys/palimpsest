@@ -1581,6 +1581,51 @@ function parseKnowledgeBinding(raw: unknown): Record<string, unknown> {
       handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
     };
   }
+  if (kind === "procedure") {
+    // E5-P §16/§18: the THIRD binding kind, additive. It carries only historical binding metadata —
+    // there is deliberately no `body` and no `preview` key, so a manifest can never become a method
+    // cache. The compile-time standing is a verbatim literal, never coerced.
+    requireFields(
+      binding,
+      "kind",
+      "procedure_id",
+      "procedure_revision",
+      "standing_at_compile",
+      "procedure_basis_at_compile",
+      "inclusion_reason",
+      "reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "procedure_id", "procedure_revision", "standing_at_compile", "procedure_basis_at_compile", "inclusion_reason", "reason", "handle"],
+      "manifest knowledge binding (procedure)",
+    );
+    const procedureBasis = expectObject(binding.procedure_basis_at_compile);
+    requireFields(procedureBasis, "procedureId", "throughSeq", "chainDigest");
+    rejectUnknownFields(procedureBasis, ["procedureId", "throughSeq", "chainDigest"], "manifest knowledge procedure basis");
+    const procedureStanding = expectString(binding.standing_at_compile);
+    if (!KNOWLEDGE_PROCEDURE_STANDINGS_SET.has(procedureStanding)) {
+      throw new ContractError(`manifest knowledge procedure standing: invalid literal`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "procedure" as const,
+      procedure_id: field(binding.procedure_id, "procedure_id", (inner) => nonEmpty(expectString(inner))),
+      procedure_revision: field(binding.procedure_revision, "procedure_revision", expectInt),
+      standing_at_compile: procedureStanding,
+      procedure_basis_at_compile: {
+        procedureId: field(procedureBasis.procedureId, "procedureId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(procedureBasis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(procedureBasis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      inclusion_reason: "explicit_request" as const,
+      reason: field(binding.reason, "reason", (inner) => nonEmpty(expectString(inner))),
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
   throw new ContractError(`manifest knowledge binding kind: invalid literal`);
 }
 
@@ -1591,6 +1636,8 @@ function parseKnowledgeBinding(raw: unknown): Record<string, unknown> {
  */
 const KNOWLEDGE_PROOF_STANDINGS_SET = new Set(["SUPPORTED", "PARTIALLY_SUPPORTED", "CONTRADICTED", "INCONCLUSIVE", "STALE"]);
 const KNOWLEDGE_PROOF_FRESHNESS_SET = new Set(["fresh", "stale", "unknown"]);
+/** E5-P §12: MIRRORED from the procedure owner's own `PROCEDURE_STANDINGS`; a test pins the two lists. */
+const KNOWLEDGE_PROCEDURE_STANDINGS_SET = new Set(["ACTIVE", "SUPERSEDED", "RETIRED"]);
 
 /**
  * E2-I §14/§29 — the ACCEPTED INTENT RECONCILIATION RECEIPT carried additively on `PROJECT_REVISED`.

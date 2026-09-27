@@ -60,9 +60,12 @@ import { compilePriorResultContext, type PriorResultContext } from "../context/p
 import {
   PROOF_HANDLE_PREFIX,
   REASONING_HANDLE_PREFIX,
+  PROCEDURE_HANDLE_PREFIX,
   resolveKnowledgeBindings,
   type ContextKnowledgePorts,
+  type KnowledgeProcedureStanding,
   type KnowledgeSelectionRequest,
+  type ProcedureKnowledgeBinding,
   type ProofKnowledgeBinding,
   type ReasoningFrontierBasisAtCompile,
   type ReasoningKnowledgeBinding,
@@ -271,10 +274,30 @@ export interface ReasoningKnowledgePull {
   readonly current: { readonly currentlyActive: boolean; readonly currentFrontierBasis: ReasoningFrontierBasisAtCompile };
 }
 
+/**
+ * E5-P §17/§18: the PULL result for a procedure handle.
+ *
+ *   bindingAtCompile { standingAtCompile, procedureBasisAtCompile }   ← immutable
+ *   body (the full procedural body — pull-only, never in the manifest)
+ *   current { standing }                                              ← where it stands NOW
+ *
+ * §18: after `P@1 → SUPERSEDED`, this pull still returns P@1's body with
+ * `binding.standing_at_compile === "ACTIVE"` and `current.standing === "SUPERSEDED"`. The two are
+ * reported SEPARATELY and the compile-time field is never overwritten.
+ */
+export interface ProcedureKnowledgePull {
+  readonly kind: "procedure";
+  readonly ref: string;
+  readonly binding: ProcedureKnowledgeBinding;
+  readonly body: unknown;
+  readonly current: { readonly standing: KnowledgeProcedureStanding } | null;
+}
+
 export type ContextFetchResult =
   | { readonly kind: "exact" | "source" | "evidence"; readonly ref: string; readonly body: unknown }
   | ProofKnowledgePull
-  | ReasoningKnowledgePull;
+  | ReasoningKnowledgePull
+  | ProcedureKnowledgePull;
 
 export interface ContextService {
   /** Compile (or return the already-compiled) manifest for ONE attempt. */
@@ -558,6 +581,35 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
             currentlyActive: pulled.currentlyActive,
             currentFrontierBasis: pulled.currentFrontierBasis,
           }),
+        });
+      }
+      /**
+       * E5-P §17/§18: a procedure handle PULLS the full body through the narrow read port and
+       * reports the CURRENT standing alongside the manifest's IMMUTABLE compile-time binding.
+       *
+       * §18: a SUPERSEDED revision STILL resolves here — that is the whole point of the historical
+       * half of the split. Only an unknown revision, or an unbound capability, fails closed.
+       */
+      if (entry.kind === "procedure") {
+        const binding = (manifest.knowledge ?? []).find(
+          (candidate): candidate is ProcedureKnowledgeBinding =>
+            candidate.kind === "procedure" && candidate.handle === entry.handle,
+        );
+        if (binding === undefined) return undefined;
+        const current = ports.contextKnowledge?.();
+        if (current?.procedures === undefined) return undefined;
+        const pulled = await current.procedures.readRevision(binding.procedure_id, binding.procedure_revision);
+        if (pulled === undefined) {
+          // The binding is historical, so its COMPILE-TIME snapshot is still returned with a null
+          // current view rather than pretending the revision vanished.
+          return Object.freeze({ kind: "procedure" as const, ref: binding.handle, binding, body: undefined, current: null });
+        }
+        return Object.freeze({
+          kind: "procedure" as const,
+          ref: binding.handle,
+          binding,
+          body: pulled.body,
+          current: Object.freeze({ standing: pulled.standing }),
         });
       }
       const exact = manifest.exact.find((candidate) => candidate.ref === entry.ref);
