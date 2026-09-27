@@ -79,13 +79,14 @@ import {
   compileContextRequirement,
   compilePriorResultContext,
   cosineSimilarity,
+  distributeContext,
   type ContextBrief,
   type ContextManifest,
   type ContextDistribution,
   type CoverageAssessment,
   type PriorResultContext,
+  type ContextKnowledgePorts, type KnowledgeSelectionRequest,
 } from "../context/index.js";
-import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import {
   compileEvidenceInvalidation,
@@ -683,6 +684,7 @@ export interface ProjectControllerOptions {
   worldBasisRead?: WorldBasisReadPort | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
+  contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
   clock?: (() => string) | undefined;
 }
 
@@ -841,6 +843,7 @@ export class ProjectController {
       projectGoal: () => this.work.project().goal,
       requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
       decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
+      ...(options.contextKnowledge === undefined ? {} : { contextKnowledge: options.contextKnowledge }), // E1-K §10.3
       attempt: (attemptId) => {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
@@ -3693,6 +3696,7 @@ export class ProjectController {
     attemptId: string,
     options: {
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+      knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection (never authority)
     } = {},
   ): Promise<WorkWorkerAttemptContext> {
     return this.context.workWorkerContext(attemptId, options);
@@ -4525,6 +4529,7 @@ export class ProjectController {
     attemptId: string,
     options: {
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+      knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection
     } = {},
   ): Promise<{ manifest: ContextManifest; coverage: CoverageAssessment; distribution: ContextDistribution }> {
     return this.context.compile(attemptId, options);
@@ -4545,7 +4550,7 @@ export class ProjectController {
   async fetchContext(
     attemptId: string,
     handle: string,
-  ): Promise<{ kind: "exact" | "source" | "evidence"; ref: string; body: unknown } | undefined> {
+  ): Promise<import("../context/service.js").ContextFetchResult | undefined> {
     return this.context.fetch(attemptId, handle);
   }
 
