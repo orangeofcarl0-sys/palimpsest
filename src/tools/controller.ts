@@ -193,11 +193,10 @@ export interface PlanInput {
 }
 
 /**
- * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the
- * agent-facing `PlanInput` surface: an agent can never name a head. The head
- * advance is derived by the promotion manager's canonical chain and is
- * re-validated here against the same derivation, so `headAdvance` is a
- * redundant proof of a fact the controller already owns - never a free choice.
+ * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the agent-facing `PlanInput`
+ * surface: an agent can never name a head. The head advance is derived by the promotion manager's
+ * canonical chain and re-validated here against the same derivation, so `headAdvance` is a redundant
+ * proof of a fact the controller already owns - never a free choice.
  */
 export interface TrustedPlanOptions {
   readonly headAdvance?:
@@ -208,6 +207,8 @@ export interface TrustedPlanOptions {
         readonly toHead: string;
       }
     | undefined;
+  /** E2-I §15: the accepted intent reconciliation receipt, produced only by the governed E2-I service after an independent authority admitted the exact proposal digest. */
+  readonly acceptedIntentReconciliation?: unknown;
 }
 
 /** G10-X: the outcome of one mechanical head reconciliation. */
@@ -1579,7 +1580,7 @@ export class ProjectController {
         payload_version: 1,
         entity_type: "project",
         entity_id: this.projectId,
-        payload: { project_ir: project, promotion_id: promotionId },
+        payload: { project_ir: project, promotion_id: promotionId, ...(trusted.acceptedIntentReconciliation === undefined ? {} : { intent_reconciliation: trusted.acceptedIntentReconciliation }) },
         causation_id: null,
         correlation_id: `plan:${revision}`,
         idempotency_key: actionKey("plan-revision-v1", {

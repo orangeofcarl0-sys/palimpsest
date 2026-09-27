@@ -87,6 +87,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   runtime_scope: "L2",
   telemetry: "L2",
   context: "L2",
+  // E2-I §30: the governed project-intent reconciliation capability. A semantic module that consumes
+  // Proof/Reasoning/Journal/ProjectWorkspace through its own read ports and proposes a ProjectIR
+  // revision — it owns no canonical store, so it sits beside `context`, not inside it.
+  project_intent: "L2",
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",

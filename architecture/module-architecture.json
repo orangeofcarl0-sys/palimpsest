@@ -1080,6 +1080,44 @@
         ],
         "reason": "E1-K §16: admitted knowledge informs COGNITION and authorizes nothing. No path may carry a Proof or Reasoning standing into Work authority — not promotion eligibility, not Work admission, not verification admission, not effect authority. The strongest place to hold that is at the import: the Work owner, the pure rules, the log and the scheduler appear nowhere in the knowledge planes' consumer set, and this rule keeps it that way.",
         "exclusions": []
+      },
+      {
+        "id": "project-intent-not-knowledge-owner-internals",
+        "from": [
+          "src/project_intent/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/",
+          "src/project_workspace/"
+        ],
+        "reason": "E2-I §9/§30: the intent owner grounds a proposal in admitted knowledge through its own consumer-owned read ports (`ProjectIntentPorts`), and composition adapts Proof, Reasoning and ProjectWorkspace into them. Naming a concrete owner would make intent a SECOND reader of its semantics and — worse — put a mutation API one import away from the module that proposes top-down change. Grounding must be observation, never authorship.",
+        "exclusions": []
+      },
+      {
+        "id": "work-kernel-not-project-intent",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/project_intent/"
+        ],
+        "reason": "E2-I §2/§30: a proposal may PROPOSE top-down change but may never mutate top-down intent, and the Work kernel may not consume a proposal as if it were authority. The only sanctioned path from an accepted proposal into Work truth is `planReconciled`, which lives in the Work owner's façade — so no kernel module, pure rule, log or scheduler may name the intent module at all.",
+        "exclusions": []
+      },
+      {
+        "id": "management-not-intent-authority",
+        "from": [
+          "src/project_management/"
+        ],
+        "to": [
+          "src/project_intent/"
+        ],
+        "reason": "E2-I §18: ManagementMode grants ZERO project-intent authority. The management layer may later recommend, prepare or surface a proposal, but it must never become the authority because the mode changed — `DIRECT`/`ASSIST`/`MANAGE`/`DELEGATE` are not a semantic authority. Holding the import out is the strongest form of that rule: the layer cannot reach the decision even by accident, and its existing refusal to change goal/requirements is preserved.",
+        "exclusions": []
       }
     ],
     "hotspotRatchets": [

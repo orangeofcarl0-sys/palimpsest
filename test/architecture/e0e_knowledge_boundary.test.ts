@@ -241,3 +241,47 @@ describe("E0-E the E1-K implementation keeps the frozen boundary", () => {
     }
   });
 });
+
+/**
+ * E2-I — the INTENT boundary, as machine proofs.
+ *
+ * The same standard as the knowledge boundary above: a rule is proven when a synthetic breach FAILS,
+ * not merely when the live repository passes. E2-I §30 adds three rules:
+ *
+ *   project_intent/**  !→  concrete Proof/Reasoning/ProjectWorkspace owners
+ *   the Work kernel    !→  project_intent
+ *   project_management !→  project_intent (ManagementMode is not semantic authority)
+ */
+describe("E2-I the intent boundary is enforced, not declared", () => {
+  it("the three recorded intent firewalls name their boundaries, with reasons", () => {
+    const ids = (baselineOf().dependencyFirewalls ?? []).map((firewall) => firewall.id);
+    expect(ids).toContain("project-intent-not-knowledge-owner-internals");
+    expect(ids).toContain("work-kernel-not-project-intent");
+    expect(ids).toContain("management-not-intent-authority");
+  });
+
+  it("every intent firewall BITES: a synthetic breach of each is reported", () => {
+    const cases: readonly [string, string, string][] = [
+      ["src/project_intent/service.ts", "src/proof_asset/index.js", "project-intent-not-knowledge-owner-internals"],
+      ["src/project_intent/proposal.ts", "src/reasoning_cell/index.js", "project-intent-not-knowledge-owner-internals"],
+      ["src/project_intent/ports.ts", "src/project_workspace/index.js", "project-intent-not-knowledge-owner-internals"],
+      ["src/work/read_model.ts", "src/project_intent/index.js", "work-kernel-not-project-intent"],
+      ["src/domain/aggregate.ts", "src/project_intent/index.js", "work-kernel-not-project-intent"],
+      ["src/project_management/service.ts", "src/project_intent/index.js", "management-not-intent-authority"],
+    ];
+    for (const [from, to, rule] of cases) {
+      const graph = clone();
+      const module = graph.modules.find((candidate) => candidate.file === from);
+      expect(module, `${from} must exist`).toBeDefined();
+      module!.imports.push(to);
+      expect(firewallBreaches(graph).some((detail) => detail.includes(rule)), `${from} -> ${to} must breach ${rule}`).toBe(true);
+    }
+  });
+
+  it("the live repository reports none of the three intent breaches", () => {
+    const live = firewallBreaches(clone());
+    for (const rule of ["project-intent-not-knowledge-owner-internals", "work-kernel-not-project-intent", "management-not-intent-authority"]) {
+      expect(live.some((detail) => detail.includes(rule)), rule).toBe(false);
+    }
+  });
+});

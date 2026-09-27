@@ -1153,7 +1153,10 @@ function optionalPositiveInt(value: unknown, name: string): number | null {
  */
 const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   PROJECT_CREATED: ["project_ir"],
-  PROJECT_REVISED: ["project_ir", "promotion_id"],
+  // E2-I §14: `intent_reconciliation` is an ADDITIVE OPTIONAL key carrying the accepted intent
+  // reconciliation receipt. An event without it normalizes exactly as before, so every existing
+  // revision's canonical digest is unchanged.
+  PROJECT_REVISED: ["project_ir", "promotion_id", "intent_reconciliation"],
   TASK_CREATED: ["task_envelope", "initial_state", "policy_id", "policy_digest"],
   TASK_BLOCKED: ["previous_state", "new_state", "reason"],
   TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id", "rework_provenance"],
@@ -1589,6 +1592,148 @@ function parseKnowledgeBinding(raw: unknown): Record<string, unknown> {
 const KNOWLEDGE_PROOF_STANDINGS_SET = new Set(["SUPPORTED", "PARTIALLY_SUPPORTED", "CONTRADICTED", "INCONCLUSIVE", "STALE"]);
 const KNOWLEDGE_PROOF_FRESHNESS_SET = new Set(["fresh", "stale", "unknown"]);
 
+/**
+ * E2-I §14/§29 — the ACCEPTED INTENT RECONCILIATION RECEIPT carried additively on `PROJECT_REVISED`.
+ *
+ * Declared INLINE here rather than imported from `src/project_intent/`, for the same reason
+ * `parsePriorResultContext` is: `src/schema/` is L1 and the intent module is L2, so importing it would
+ * be an upward dependency for a shape that carries no behaviour. The two definitions are pinned
+ * together by a targeted test.
+ *
+ * Closed contract: unknown keys are rejected at every level, the ground bindings keep their per-kind
+ * key sets, and the digest is re-derived — a tampered receipt is refused rather than believed.
+ */
+function parseAcceptedIntentReconciliation(raw: unknown): Record<string, unknown> {
+  const receipt = expectObject(raw);
+  rejectUnknownFields(
+    receipt,
+    ["schemaVersion", "proposalId", "proposalDigest", "proposalBasis", "groundBindings", "rationale", "admission", "acceptedAt", "digest"],
+    "accepted intent reconciliation",
+  );
+  requireFields(receipt, "schemaVersion", "proposalId", "proposalDigest", "proposalBasis", "groundBindings", "rationale", "admission", "acceptedAt", "digest");
+  if (receipt.schemaVersion !== 1) {
+    throw new ContractError("accepted intent reconciliation schemaVersion must be 1");
+  }
+  const proposalBasis = expectObject(receipt.proposalBasis);
+  requireFields(proposalBasis, "projectId", "revision", "digest", "headCommit");
+  rejectUnknownFields(proposalBasis, ["projectId", "revision", "digest", "headCommit"], "accepted intent reconciliation proposalBasis");
+  const admission = expectObject(receipt.admission);
+  requireFields(admission, "decision", "policyRef", "provenanceDigest");
+  rejectUnknownFields(admission, ["decision", "policyRef", "provenanceDigest"], "accepted intent reconciliation admission");
+  if (admission.decision !== "ADMIT") {
+    throw new ContractError("an accepted intent reconciliation receipt records only an ADMIT decision");
+  }
+  const policyRef = expectObject(admission.policyRef);
+  requireFields(policyRef, "policyId", "version");
+  rejectUnknownFields(policyRef, ["policyId", "version"], "accepted intent reconciliation policyRef");
+  const groundBindings = expectArray(receipt.groundBindings).map((entry) => parseIntentGroundBinding(entry));
+  return {
+    schemaVersion: 1 as const,
+    proposalId: field(receipt.proposalId, "proposalId", (inner) => nonEmpty(expectString(inner))),
+    proposalDigest: field(receipt.proposalDigest, "proposalDigest", (inner) => validateDigest(expectString(inner))),
+    proposalBasis: {
+      projectId: field(proposalBasis.projectId, "projectId", (inner) => nonEmpty(expectString(inner))),
+      revision: field(proposalBasis.revision, "revision", expectInt),
+      digest: field(proposalBasis.digest, "digest", (inner) => validateDigest(expectString(inner))),
+      headCommit: field(proposalBasis.headCommit, "headCommit", (inner) => nonEmpty(expectString(inner))),
+    },
+    groundBindings,
+    rationale: field(receipt.rationale, "rationale", expectString),
+    admission: {
+      decision: "ADMIT" as const,
+      policyRef: {
+        policyId: field(policyRef.policyId, "policyId", (inner) => nonEmpty(expectString(inner))),
+        version: field(policyRef.version, "version", (inner) => nonEmpty(expectString(inner))),
+      },
+      provenanceDigest: field(admission.provenanceDigest, "provenanceDigest", (inner) => validateDigest(expectString(inner))),
+    },
+    acceptedAt: field(receipt.acceptedAt, "acceptedAt", (inner) => nonEmpty(expectString(inner))),
+    digest: field(receipt.digest, "digest", (inner) => validateDigest(expectString(inner))),
+  };
+}
+
+/** One E2-I ground binding. The three kinds carry DIFFERENT facts and are never flattened. */
+function parseIntentGroundBinding(raw: unknown): Record<string, unknown> {
+  const binding = expectObject(raw);
+  const kind = expectString(binding.kind);
+  if (kind === "proof") {
+    requireFields(binding, "kind", "claimId", "standingAtProposal", "freshnessAtProposal", "proofBasisAtProposal", "projectAssociation");
+    rejectUnknownFields(binding, ["kind", "claimId", "standingAtProposal", "freshnessAtProposal", "proofBasisAtProposal", "projectAssociation"], "intent ground (proof)");
+    const basis = expectObject(binding.proofBasisAtProposal);
+    requireFields(basis, "scopeId", "throughSeq", "chainDigest");
+    rejectUnknownFields(basis, ["scopeId", "throughSeq", "chainDigest"], "intent ground proof basis");
+    if (binding.projectAssociation !== "PROOF_CLAIM") {
+      throw new ContractError("intent proof ground projectAssociation must be PROOF_CLAIM");
+    }
+    return {
+      kind: "proof" as const,
+      claimId: field(binding.claimId, "claimId", (inner) => nonEmpty(expectString(inner))),
+      standingAtProposal: field(binding.standingAtProposal, "standingAtProposal", (inner) => nonEmpty(expectString(inner))),
+      freshnessAtProposal: field(binding.freshnessAtProposal, "freshnessAtProposal", (inner) => nonEmpty(expectString(inner))),
+      proofBasisAtProposal: {
+        scopeId: field(basis.scopeId, "scopeId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(basis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(basis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      projectAssociation: "PROOF_CLAIM" as const,
+    };
+  }
+  if (kind === "reasoning") {
+    requireFields(binding, "kind", "cellId", "claimId", "frontierBasisAtProposal", "activeAtProposal", "projectAssociation");
+    rejectUnknownFields(binding, ["kind", "cellId", "claimId", "frontierBasisAtProposal", "activeAtProposal", "projectAssociation"], "intent ground (reasoning)");
+    const basis = expectObject(binding.frontierBasisAtProposal);
+    requireFields(basis, "cellId", "frontierRevision", "frontierDigest");
+    rejectUnknownFields(basis, ["cellId", "frontierRevision", "frontierDigest"], "intent ground frontier basis");
+    if (binding.activeAtProposal !== true) {
+      throw new ContractError("intent reasoning ground activeAtProposal must be true");
+    }
+    if (binding.projectAssociation !== "REASONING_CELL") {
+      throw new ContractError("intent reasoning ground projectAssociation must be REASONING_CELL");
+    }
+    return {
+      kind: "reasoning" as const,
+      cellId: field(binding.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+      claimId: field(binding.claimId, "claimId", (inner) => nonEmpty(expectString(inner))),
+      frontierBasisAtProposal: {
+        cellId: field(basis.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+        frontierRevision: field(basis.frontierRevision, "frontierRevision", expectInt),
+        frontierDigest: field(basis.frontierDigest, "frontierDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      activeAtProposal: true as const,
+      projectAssociation: "REASONING_CELL" as const,
+    };
+  }
+  if (kind === "negative_result") {
+    requireFields(binding, "kind", "entryId", "entryDigest", "projectId", "journalKind", "resolutionAtProposal");
+    rejectUnknownFields(binding, ["kind", "entryId", "entryDigest", "projectId", "journalKind", "resolutionAtProposal"], "intent ground (negative_result)");
+    // §28: the journal kind is pinned — a negative result is never relabelled as evidence.
+    if (binding.journalKind !== "NEGATIVE_RESULT") {
+      throw new ContractError("intent negative-result ground journalKind must be NEGATIVE_RESULT");
+    }
+    const resolution =
+      binding.resolutionAtProposal === null || binding.resolutionAtProposal === undefined
+        ? null
+        : (() => {
+            const value = expectObject(binding.resolutionAtProposal);
+            rejectUnknownFields(value, ["status", "detail"], "intent ground resolution");
+            requireFields(value, "status");
+            return {
+              status: field(value.status, "status", (inner) => nonEmpty(expectString(inner))),
+              ...(value.detail === undefined ? {} : { detail: expectString(value.detail) }),
+            };
+          })();
+    return {
+      kind: "negative_result" as const,
+      entryId: field(binding.entryId, "entryId", (inner) => nonEmpty(expectString(inner))),
+      entryDigest: field(binding.entryDigest, "entryDigest", (inner) => validateDigest(expectString(inner))),
+      projectId: field(binding.projectId, "projectId", (inner) => nonEmpty(expectString(inner))),
+      journalKind: "NEGATIVE_RESULT" as const,
+      resolutionAtProposal: resolution,
+    };
+  }
+  throw new ContractError("intent ground binding kind: invalid literal");
+}
+
 export function normalizeEventPayload(
   eventType: EventType,
   payload: unknown,
@@ -1607,6 +1752,12 @@ export function normalizeEventPayload(
         result.promotion_id = field(raw.promotion_id, "promotion_id", (inner) =>
           validateIdentifier(expectString(inner)),
         );
+        // E2-I §14: the ADDITIVE OPTIONAL accepted intent reconciliation receipt. Validated by the
+        // SAME closed per-kind discipline the proposal itself uses, so a malformed or tampered receipt
+        // can never reach the ledger.
+        if (raw.intent_reconciliation !== undefined && raw.intent_reconciliation !== null) {
+          result.intent_reconciliation = parseAcceptedIntentReconciliation(raw.intent_reconciliation);
+        }
       }
       return result;
     }
