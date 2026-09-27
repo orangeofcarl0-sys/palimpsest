@@ -1481,6 +1481,114 @@ function parsePriorResultContext(raw: unknown): Record<string, unknown> {
   };
 }
 
+/**
+ * E1-K §7.2/§7.3 — a GOVERNED KNOWLEDGE BINDING on the context manifest (`knowledge`, optional
+ * additive). A domain-specific discriminated union: the two kinds carry DIFFERENT facts because a
+ * proof standing and a reasoning frontier are different owner truths. There is deliberately no
+ * `UniversalCanonicalRef` / `KnowledgeRef {kind,id}` — a `kind:string` envelope would let a writer
+ * attach any standing to any asset, which is exactly the drift §7.2 forbids.
+ *
+ * Closed contract: unknown keys are rejected in the envelope AND in each kind's body. Standing and
+ * freshness vocabularies are validated verbatim; they are never coerced to booleans.
+ */
+function parseKnowledgeBinding(raw: unknown): Record<string, unknown> {
+  const binding = expectObject(raw);
+  const kind = expectString(binding.kind);
+  if (kind === "proof") {
+    requireFields(
+      binding,
+      "kind",
+      "proof_claim_id",
+      "standing_at_compile",
+      "freshness_at_compile",
+      "proof_basis_at_compile",
+      "inclusion_reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "proof_claim_id", "standing_at_compile", "freshness_at_compile", "proof_basis_at_compile", "inclusion_reason", "handle"],
+      "manifest knowledge binding (proof)",
+    );
+    const basis = expectObject(binding.proof_basis_at_compile);
+    requireFields(basis, "scopeId", "throughSeq", "chainDigest");
+    rejectUnknownFields(basis, ["scopeId", "throughSeq", "chainDigest"], "manifest knowledge proof basis");
+    const standing = expectString(binding.standing_at_compile);
+    if (!KNOWLEDGE_PROOF_STANDINGS_SET.has(standing)) {
+      throw new ContractError(`manifest knowledge proof standing: invalid literal`);
+    }
+    const freshness = expectString(binding.freshness_at_compile);
+    if (!KNOWLEDGE_PROOF_FRESHNESS_SET.has(freshness)) {
+      throw new ContractError(`manifest knowledge proof freshness: invalid literal`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "proof" as const,
+      proof_claim_id: field(binding.proof_claim_id, "proof_claim_id", (inner) => nonEmpty(expectString(inner))),
+      standing_at_compile: standing,
+      freshness_at_compile: freshness,
+      proof_basis_at_compile: {
+        scopeId: field(basis.scopeId, "scopeId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(basis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(basis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      inclusion_reason: "explicit_request" as const,
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
+  if (kind === "reasoning") {
+    requireFields(
+      binding,
+      "kind",
+      "cell_id",
+      "claim_id",
+      "frontier_basis_at_compile",
+      "active_at_compile",
+      "inclusion_reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "cell_id", "claim_id", "frontier_basis_at_compile", "active_at_compile", "inclusion_reason", "handle"],
+      "manifest knowledge binding (reasoning)",
+    );
+    const basis = expectObject(binding.frontier_basis_at_compile);
+    requireFields(basis, "cellId", "frontierRevision", "frontierDigest");
+    rejectUnknownFields(basis, ["cellId", "frontierRevision", "frontierDigest"], "manifest knowledge frontier basis");
+    // §7.3: only ACTIVE claims are bound, so the literal is pinned rather than merely typed.
+    if (binding.active_at_compile !== true) {
+      throw new ContractError(`manifest knowledge active_at_compile must be true`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "reasoning" as const,
+      cell_id: field(binding.cell_id, "cell_id", (inner) => nonEmpty(expectString(inner))),
+      claim_id: field(binding.claim_id, "claim_id", (inner) => nonEmpty(expectString(inner))),
+      frontier_basis_at_compile: {
+        cellId: field(basis.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+        frontierRevision: field(basis.frontierRevision, "frontierRevision", expectInt),
+        frontierDigest: field(basis.frontierDigest, "frontierDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      active_at_compile: true as const,
+      inclusion_reason: "explicit_request" as const,
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
+  throw new ContractError(`manifest knowledge binding kind: invalid literal`);
+}
+
+/**
+ * E1-K §11: the standing/freshness vocabularies, MIRRORED from the Context owner's own declaration.
+ * They are literals here so the wire validator can close the contract without `src/schema/` depending
+ * on `src/context/`'s runtime module; a targeted test pins that the two lists agree.
+ */
+const KNOWLEDGE_PROOF_STANDINGS_SET = new Set(["SUPPORTED", "PARTIALLY_SUPPORTED", "CONTRADICTED", "INCONCLUSIVE", "STALE"]);
+const KNOWLEDGE_PROOF_FRESHNESS_SET = new Set(["fresh", "stale", "unknown"]);
+
 export function normalizeEventPayload(
   eventType: EventType,
   payload: unknown,
@@ -1789,6 +1897,7 @@ export function normalizeEventPayload(
           "retrieval",
           "semantic",
           "continuation",
+          "knowledge",
           "created_at",
         ],
         "context manifest",
@@ -1852,6 +1961,10 @@ export function normalizeEventPayload(
           ...(manifest.continuation === undefined
             ? {}
             : { continuation: parsePriorResultContext(manifest.continuation) }),
+          // E1-K §7: the optional GOVERNED KNOWLEDGE BINDINGS.
+          ...(manifest.knowledge === undefined
+            ? {}
+            : { knowledge: expectArray(manifest.knowledge).map((entry) => parseKnowledgeBinding(entry)) }),
         },
       };
     }

@@ -1,7 +1,7 @@
 # E1-K — Governed Knowledge Reuse & Context Capitalization
 
-**Status:** design ruling — **boundaries FROZEN at FB-4B. No implementation authorized.**
-**Baseline:** `main @ 9ec76ff2657706386d4cfd3e64eff60fd716d604`
+**Status:** design ruling — **boundaries FROZEN at FB-4B**; **IMPLEMENTED** (see §23 closure evidence).
+**Baseline:** `main @ 9ec76ff2657706386d4cfd3e64eff60fd716d604`; implemented from `0042a2e`.
 **Targets gap:** G-5 (`admitted knowledge → future ContextManifest`)
 
 ---
@@ -664,3 +664,71 @@ require `architecture:write`:
 ```
 STOP — ARCHITECTURE RATCHET TOOLING REVIEW REQUIRED
 ```
+
+---
+
+## 23. Closure evidence — what was implemented
+
+The design above is frozen; this section records the implementation that satisfies it. It adds no new
+decision.
+
+### 23.1 Source files, as built
+
+```
+NEW   src/context/knowledge.ts              the union, the strict per-kind binding parsers' shape, the
+                                            eligibility revalidation, the typed refusal
+EDIT  src/context/service.ts                ports + stable provider, request input, atomic selection,
+                                            pull dispatch for the two knowledge namespaces
+EDIT  src/context/manifest.ts               ContextManifest.knowledge? + build passthrough
+EDIT  src/context/distribution.ts           kind union + proof/reasoning pull handles + budget accounting
+EDIT  src/context/index.ts                  the new public names
+EDIT  src/schema/models.ts                  manifest key list + closed per-kind knowledge validation
+EDIT  src/tools/controller.ts               contextKnowledge provider passthrough + additive optional
+                                            `knowledge` on compile/workWorkerAttemptContext + fetch typing
+EDIT  src/composition/core.ts               the stable contextKnowledge holder + one-time bind()
+NEW   src/composition/context_knowledge.ts  the three read adapters (projectAssets/proofAssets/reasoningCells)
+EDIT  src/install.ts                        one-time bind after collaboration/organization/cognition clusters
+EDIT  src/interaction/work_delegation.ts    the selection rides the standard worker path
+NEW   test/e1k_knowledge_context.test.ts    K-N01…K-N16 + K-P01…K-P05
+NEW   scripts/gates/e1k-live-gate.mjs       the packaged end-to-end live scenario
+EDIT  package.json                          gate:e1-k-live
+```
+
+`architecture:write` was **not** run; `capturedFrom`/`capturedTree` and every accepted exception are
+untouched. The controller hotspot ratchet was **not** raised — the controller additions were reduced until
+both the LOC and fan-out ceilings held, because raising a ceiling would re-stamp accepted debt.
+
+### 23.2 Two implementation decisions the design left to the code
+
+Both are consequences of the frozen rules, not new ones:
+
+1. **Project-scope refusal fails closed.** `projectScopedAssets` REFUSES a project id that is not the
+   workspace's project. The adapter converts that refusal to `false` rather than propagating it: a
+   refusal is not an answer, and "not associated with the project you asked about" is the only safe
+   reading (§9/§10, `Project association ≠ Proof standing ≠ Reasoning standing`).
+
+2. **`NOT_FOUND` vs `NOT_PUBLISHED` is read from the owner, not guessed.** The Proof owner mints
+   `pcc-` candidate ids and `pc-` claim ids in separate namespaces, so the adapter asks the owner's own
+   `replay` whether a candidate was ever recorded under the requested id. A published-but-unresolvable
+   claim is never silently reported as "never existed" (§5's refusal taxonomy requires the distinction).
+
+### 23.3 Boundary proofs
+
+The two E0 firewalls are asserted to **bite**: `test/architecture/e0e_knowledge_boundary.test.ts` clones
+the live graph, injects the ONE forbidden import into each boundary, and requires exactly that breach to
+be reported — plus the unmodified graph to report neither. The pre-implementation stage guard in the same
+file was replaced by the post-implementation invariants (the modules exist; the ports expose only reads;
+no universal reference), because E0's absence proof is no longer true once E1-K is authorized.
+
+### 23.4 Verdict
+
+```
+E1-K GOVERNED KNOWLEDGE REUSE: CLOSED
+G-5: CLOSED
+```
+
+`gate:e1-k-live` proves, on a real packaged install across a genuine session replacement, that durable
+project knowledge reached a new worker through the standard delegation path as a pull handle, that the
+body resolved only on pull, that the historical binding stayed immutable while the current standing was
+re-derived, that now-ineligible knowledge was refused with its typed reason and zero manifest write, and
+that the selection granted no promotion authority.

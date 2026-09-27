@@ -104,7 +104,19 @@ export interface WorkDelegationServiceDeps {
 }
 
 export interface WorkDelegationService {
-  start(input?: { readonly expectedTaskId?: string | undefined }): Promise<WorkDelegationStartResult>;
+  /**
+   * Start (or resume) the mutating work of one canonical task.
+   *
+   * E1-K §23: `knowledge` is the HOST's optional explicit knowledge selection — identity-only, and
+   * revalidated by the Context owner during compilation. It is NOT a TaskSpec, an assignment, attempt
+   * authority or scheduler state; it is carried to the compile so the STANDARD execution path can
+   * deliver selected knowledge to the new worker. Optional and additive: an omitted selection compiles
+   * exactly as before.
+   */
+  start(input?: {
+    readonly expectedTaskId?: string | undefined;
+    readonly knowledge?: import("../context/knowledge.js").KnowledgeSelectionRequest | undefined;
+  }): Promise<WorkDelegationStartResult>;
   /** READ-ONLY. Never retries, resumes, settles, verifies or promotes — it is not a command channel. */
   followup(input: { readonly jobId: string }): Promise<WorkJobView | { readonly jobId: string; readonly phase: "UNKNOWN"; readonly detail: string }>;
   /** READ-ONLY canonical inspection, addressed by the DURABLE identity rather than the host handle. */
@@ -176,7 +188,10 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
   }
 
   return Object.freeze({
-    async start(input: { readonly expectedTaskId?: string | undefined } = {}): Promise<WorkDelegationStartResult> {
+    async start(input: {
+      readonly expectedTaskId?: string | undefined;
+      readonly knowledge?: import("../context/knowledge.js").KnowledgeSelectionRequest | undefined;
+    } = {}): Promise<WorkDelegationStartResult> {
       // RESOLVE ONCE, before any job exists: this is what freezes the execution request identity. A
       // refusal here (no canonical work, wrong task, occupied lane, prose instead of work) means no job,
       // no attempt, no world and no event.
@@ -218,7 +233,13 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
           // Exposed as soon as it exists: from here the caller has a DURABLE identity, not just this
           // process's ephemeral handle.
           entry.attemptId = prepared.attemptId;
-          const context = await deps.controller.workWorkerAttemptContext(prepared.attemptId);
+          // E1-K §23: the explicit selection rides WITH the compile — no side-channel compile between
+          // preparation and worker delivery, and no second durable owner. An omitted selection is the
+          // pre-E1-K path exactly.
+          const context =
+            input.knowledge === undefined
+              ? await deps.controller.workWorkerAttemptContext(prepared.attemptId)
+              : await deps.controller.workWorkerAttemptContext(prepared.attemptId, { knowledge: input.knowledge });
           const workerOutcome = await deps.workerFor(prepared.worldPath).run({ workDir: prepared.worldPath, context });
           entry.settlement = await deps.controller.settleMutatingWork({
             attemptId: prepared.attemptId,

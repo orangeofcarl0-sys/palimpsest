@@ -23,11 +23,36 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { analyseModuleArchitecture } from "../../tools/architecture/index.js";
+import { analyseModuleArchitecture, checkArchitecture } from "../../tools/architecture/index.js";
+import type { ArchitectureBaseline, ModuleArchitecture } from "../../tools/architecture/index.js";
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const read = (relative: string): string => readFileSync(join(REPO, relative), "utf8");
+
+/**
+ * A deep clone of the LIVE graph, so a probe can commit a deliberate breach without touching the
+ * shared analysis. This mirrors `sr2e_architecture_ratchets.test.ts`: a rule is only proven when a
+ * synthetic violation of it FAILS, not merely when the live repository passes.
+ */
+interface MutableGraph {
+  modules: Array<{ file: string; imports: string[]; layer: string; loc: number; fanOut: number; fanIn: number }>;
+}
+const clone = (): MutableGraph => JSON.parse(JSON.stringify(analyseModuleArchitecture(REPO))) as MutableGraph;
+const asGraph = (graph: MutableGraph): ModuleArchitecture => graph as unknown as ModuleArchitecture;
+const firewallBreaches = (graph: MutableGraph): readonly string[] =>
+  checkArchitecture(asGraph(graph), baselineOf())
+    .violations.filter((violation) => violation.kind === "firewall_breach")
+    .map((violation) => violation.detail);
+
+let cachedBaseline: ArchitectureBaseline | undefined;
+function baselineOf(): ArchitectureBaseline {
+  if (cachedBaseline === undefined) {
+    cachedBaseline = JSON.parse(readFileSync(join(REPO, "architecture", "module-architecture.json"), "utf8"))
+      .baseline as ArchitectureBaseline;
+  }
+  return cachedBaseline;
+}
 
 /** Comments stripped, so a pin reads CODE rather than prose that mentions a forbidden name. */
 function stripComments(source: string): string {
@@ -91,6 +116,25 @@ describe("E0-E the knowledge boundary is enforced, not declared", () => {
     }
   });
 
+  it("both E1-K firewalls BITE: a synthetic breach of each is reported", () => {
+    // §33: the rules must be enforced, not merely present in JSON. Each probe adds the ONE forbidden
+    // import to a clone of the live graph and expects exactly that breach to be reported.
+    const contextBreach = clone();
+    contextBreach.modules.find((module) => module.file === "src/context/knowledge.ts")!.imports.push("src/proof_asset/index.js");
+    const contextFindings = firewallBreaches(contextBreach);
+    expect(contextFindings.some((detail) => detail.includes("context-not-knowledge-owner-internals"))).toBe(true);
+
+    const kernelBreach = clone();
+    kernelBreach.modules.find((module) => module.file === "src/domain/aggregate.ts")!.imports.push("src/reasoning_cell/index.js");
+    const kernelFindings = firewallBreaches(kernelBreach);
+    expect(kernelFindings.some((detail) => detail.includes("kernel-not-knowledge-owners"))).toBe(true);
+
+    // And the unmodified live graph reports neither.
+    const clean = firewallBreaches(clone());
+    expect(clean.some((detail) => detail.includes("context-not-knowledge-owner-internals"))).toBe(false);
+    expect(clean.some((detail) => detail.includes("kernel-not-knowledge-owners"))).toBe(false);
+  });
+
   it("the context owner declares no mutation port onto a knowledge owner", () => {
     // The context owner's ONLY durable write is its own manifest event. A method named like a
     // knowledge mutation (record/append/import/publish/store-write) on a knowledge-shaped port
@@ -140,17 +184,48 @@ describe("E0-E the knowledge boundary is enforced, not declared", () => {
 });
 
 /**
- * The E0/E1 STAGE BOUNDARY. E0 closed the design; E1-K implements it. If implementation files
- * appear before the E1-K stage is authorized, this proof fails rather than letting the two stages
- * blur — the failure is the point.
+ * The E0/E1 STAGE BOUNDARY. E0 closed the design; E1-K implements it. This block now asserts the
+ * IMPLEMENTED boundary rather than the pre-implementation absence: the two modules exist, the
+ * consumer-owned port wall holds, and no knowledge mutation path has appeared.
  */
-describe("E0-E the E1-K implementation has not started", () => {
+describe("E0-E the E1-K implementation keeps the frozen boundary", () => {
   const architecture = analyseModuleArchitecture(REPO);
 
-  it("no E1-K implementation module exists yet", () => {
+  it("the E1-K implementation modules exist", () => {
     const paths = architecture.modules.map((module) => module.file);
-    expect(paths).not.toContain("src/context/knowledge.ts");
-    expect(paths).not.toContain("src/composition/context_knowledge.ts");
+    expect(paths).toContain("src/context/knowledge.ts");
+    expect(paths).toContain("src/composition/context_knowledge.ts");
+  });
+
+  it("the context knowledge module declares only reads, and only the union's own names", () => {
+    // The context owner consumes admitted knowledge through declared READ ports. A method named like a
+    // knowledge MUTATION (record/append/publish/admit/decide/reassess/invalidate) would make context a
+    // second writer of an owner's truth, which is exactly what the E1-K port wall forbids.
+    const source = stripComments(read("src/context/knowledge.ts"));
+    for (const forbidden of [
+      "recordEvidence",
+      "prepareCandidate",
+      "decidePublication",
+      "reassess",
+      "importSource",
+      "submitCandidate",
+      "evaluateCandidate",
+      "requestInvalidation",
+      "append(",
+    ]) {
+      expect(source.includes(forbidden), `context knowledge must not name ${forbidden}`).toBe(false);
+    }
+  });
+
+  it("the knowledge ports expose no universal reference", () => {
+    // §7.2: a `KnowledgeRef {kind,id}` / `UniversalCanonicalRef` envelope would let a writer attach any
+    // standing to any asset. The union must stay domain-specific and discriminated. (The pins are
+    // exact type names, not substrings — `KnowledgeRefusalReason` is a different, legitimate name.)
+    const source = stripComments(read("src/context/knowledge.ts"));
+    expect(source).not.toContain("UniversalCanonicalRef");
+    expect(/\bKnowledgeRef\b/u.test(source)).toBe(false);
+    expect(source).toContain("ProofKnowledgeBinding");
+    expect(source).toContain("ReasoningKnowledgeBinding");
   });
 
   it("the frozen design ruling exists and states the frozen decisions", () => {

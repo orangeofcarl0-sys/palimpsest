@@ -21,6 +21,7 @@ import { makeCollaborationService, makeCrossProjectService } from "./interaction
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
 import { composeDelegationCapability } from "./composition/delegation.js";
 import { composeContinuationCapability } from "./composition/continuation.js";
+import { composeContextKnowledgePorts } from "./composition/context_knowledge.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -295,6 +296,27 @@ export function installPalimpsest(
     worldsRoot: core.worldsRoot,
   });
   const { continuation, workDelegation } = continuationCluster;
+
+  /*
+   * E1-K §10.2/§10.3: the CONTEXT-KNOWLEDGE composition.
+   *
+   * It is composed HERE because this is the first point at which all three knowledge owners exist:
+   * the Proof plane (collaboration cluster), the Reasoning service (organization cluster) and the
+   * ProjectWorkspace (cognition cluster). The ports are adapted by `src/composition/context_knowledge.ts`
+   * — which holds NO policy — and bound ONCE through the core holder, whose read-through provider the
+   * Context owner has held since birth.
+   *
+   * ABSENCE IS HONEST: when no knowledge owner is composed, `composeContextKnowledgePorts` returns
+   * `undefined` and the binder is never called, so an explicit selection honestly refuses with
+   * `KNOWLEDGE_CAPABILITY_UNAVAILABLE` rather than binding an empty capability.
+   */
+  const contextKnowledgePorts = composeContextKnowledgePorts({
+    projectId: options.projectId,
+    proof,
+    reasoning: reasoningCellsInstalled?.service,
+    projectWorkspace,
+  });
+  if (contextKnowledgePorts !== undefined) core.contextKnowledge.bind(contextKnowledgePorts);
 
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
