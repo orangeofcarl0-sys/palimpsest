@@ -72,11 +72,13 @@ import {
 } from "../src/institutional_learning/index.js";
 import { MockHost } from "./helpers.js";
 
-const cleanups: Array<() => void> = [];
-afterAll(() => {
+const cleanups: Array<() => void | Promise<void>> = [];
+afterAll(async () => {
   for (const fn of cleanups) {
     try {
-      fn();
+      // A cleanup may be ASYNC (`dispose()` is). Not awaiting it would leave the rejection to surface
+      // as an unhandled error at an unrelated point in the run — which is exactly what R0 found.
+      await fn();
     } catch {
       // A git worktree materialized under a temp root leaves read-only pack files that Windows refuses to
       // unlink; a cleanup refusal must not turn a green matrix red.
@@ -162,13 +164,14 @@ function rig(input: {
   const orgEvolutionStore = new SqliteOrganizationEvolutionStore(join(root, "org-evo.sqlite"));
   const runtimeEvolutionStore = new SqliteRuntimeEvolutionStore(join(root, "runtime-evo.sqlite"));
   const memoryStore = input.memoryStore ?? new SqliteOrganizationMemoryStore(join(root, "memory.sqlite"));
-  const ownsMemory = input.memoryStore === undefined;
   cleanups.push(() => {
     orgStore.close();
     scopeStore.close();
     orgEvolutionStore.close();
     runtimeEvolutionStore.close();
-    if (ownsMemory) memoryStore.close();
+    // `memoryStore` is handed to `installPalimpsest` (which owns it as
+    // CALLER_SUPPLIED_INSTALL_MANAGED_LEGACY) and NOT closed here: this rig always installs, so the
+    // install's `dispose()` is the single closer. Closing it here as well threw `database is not open`.
   });
 
   const organizations: RuntimeScopeOrganizationPort = {
@@ -222,7 +225,16 @@ function rig(input: {
     runtimeEvolutionAuthority: input.runtimeAuthority ?? authorizeRuntime,
     organizationMemoryStore: memoryStore,
   });
-  cleanups.push(() => installed.dispose());
+  // R0 §17/§27: `dispose()` is ASYNC and the install CLOSES every store it was handed. Two defects
+  // hid here, and both surfaced only in a clean checkout:
+  //   · the cleanup did not await `dispose()`, so a rejection escaped as an unhandled error at an
+  //     unrelated point in the run;
+  //   · `memoryStore` is passed to the install (which closes it) AND closed again by the cleanup
+  //     below, which threw `database is not open`.
+  // The rig now awaits disposal and leaves the caller-supplied store to the install that owns it.
+  cleanups.push(async () => {
+    await installed.dispose();
+  });
 
   return {
     installed,
@@ -437,7 +449,7 @@ describe("E4-L L-P03/L-P04/L-P05: idempotence, crash-window reconciliation, hone
     const { caseRef, proposal } = await activateOrganizationEvolution(first);
     // The crash window: activation is durable, the empirical write never happened.
     expect(await first.memory.interventions()).toHaveLength(0);
-    first.installed.dispose();
+    await first.installed.dispose();
 
     // Session 2: cold restart over the SAME durable stores, with no session memory.
     const second = rig({ root });
@@ -506,7 +518,7 @@ describe("E4-L L-P06…L-P10: the experiment link, evaluation retrieval, and fut
     await first.memory.recordExperiment(linkedExperiment(intervention.interventionRef));
     const before = await first.installed.institutionalLearning!.interventionEvaluations(intervention.interventionRef);
     expect(before.experiments).toHaveLength(1);
-    first.installed.dispose();
+    await first.installed.dispose();
 
     const second = rig({ root });
     const after = await second.installed.institutionalLearning!.interventionEvaluations(intervention.interventionRef);

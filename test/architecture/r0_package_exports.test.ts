@@ -38,6 +38,10 @@ describe("R0 §24 the declared package export surface", () => {
   it("each declared subpath points at both a runtime module and its types", () => {
     for (const subpath of DOCUMENTED_SUBPATHS) {
       const entry = pkg.exports[subpath];
+      // The declared-ness is asserted by the previous case; this one asserts the SHAPE of what is
+      // declared, so a missing entry fails loudly here rather than as a property read of undefined.
+      expect(entry, `package.json declares no "${subpath}" export`).toBeDefined();
+      if (entry === undefined) continue;
       expect(entry.import, `${subpath} has no runtime entry`).toMatch(/^\.\/dist\/src\/.*\.js$/u);
       expect(entry.types, `${subpath} has no types entry`).toMatch(/^\.\/dist\/src\/.*\.d\.ts$/u);
       // The types must sit beside the module they describe, not somewhere unrelated.
