@@ -240,6 +240,9 @@ export function makeRuntimeEvolutionService(deps: RuntimeEvolutionDeps): Runtime
       if (byProposal !== undefined && byProposal.caseRef !== caseRef) return { status: "incomplete", detail: "this proposal is already bound to a different runtime candidate" };
       if (byProposal === undefined) {
         await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: `runtime_scope:${subjectScopeId}` });
+        // E4-L §7: the EXACT proposal is bound durably BEFORE the candidate is compiled, so the runtime
+        // lane is reconstructible from history alone — same discipline as the organization lane.
+        await append(caseRef, [{ eventId: eventIdFor("RUNTIME_EVOLUTION_PROPOSAL_BOUND", caseRef, { proposal }), type: "RUNTIME_EVOLUTION_PROPOSAL_BOUND", payload: { proposal } }]);
         await append(caseRef, [{ eventId: eventIdFor("RUNTIME_EVOLUTION_CANDIDATE_COMPILED", caseRef, { candidate }), type: "RUNTIME_EVOLUTION_CANDIDATE_COMPILED", payload: { candidate } }]);
       }
     }

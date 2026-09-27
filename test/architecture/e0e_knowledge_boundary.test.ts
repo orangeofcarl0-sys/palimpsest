@@ -386,3 +386,105 @@ describe("E3-C the collaboration boundary is enforced, not declared", () => {
     }
   });
 });
+
+/**
+ * E4-L — the INSTITUTIONAL-LEARNING boundary, and the G-13 wrong edge, as machine proofs.
+ *
+ * §28 states the requirement explicitly: pin that OrganizationMemory does NOT directly emit an
+ * `OrganizationDynamicsProposal`, and that the empirical advisor does NOT become an
+ * OrganizationEvolution authority. The firewall holds the edge out at the IMPORT; these tests prove the
+ * edge is also absent from the CODE, so the wrong edge cannot return as a method call either.
+ */
+describe("E4-L the institutional-learning boundary is enforced, not declared", () => {
+  const E4L_RULES = [
+    "institutional-learning-not-mutation-internals",
+    "organization-memory-not-evolution-authority",
+    "advisor-not-structural-authority",
+  ] as const;
+
+  it("the three recorded learning firewalls name their boundaries, with reasons", () => {
+    const ids = (baselineOf().dependencyFirewalls ?? []).map((firewall) => firewall.id);
+    for (const rule of E4L_RULES) expect(ids, rule).toContain(rule);
+    for (const firewall of baselineOf().dependencyFirewalls ?? []) {
+      if (!E4L_RULES.includes(firewall.id as (typeof E4L_RULES)[number])) continue;
+      expect(firewall.reason.length, firewall.id).toBeGreaterThan(80);
+      expect(firewall.exclusions, firewall.id).toEqual([]);
+    }
+  });
+
+  it("every learning firewall BITES: a synthetic breach of each is reported", () => {
+    const cases: readonly [string, string, string][] = [
+      ["src/institutional_learning/service.ts", "src/organization_evolution/service.js", "institutional-learning-not-mutation-internals"],
+      ["src/institutional_learning/projection.ts", "src/runtime_evolution/service.js", "institutional-learning-not-mutation-internals"],
+      ["src/institutional_learning/ports.ts", "src/runtime_scope/service.js", "institutional-learning-not-mutation-internals"],
+      ["src/organization_memory/service.ts", "src/organization_evolution/index.js", "organization-memory-not-evolution-authority"],
+      ["src/organization_memory/artifacts.ts", "src/runtime_evolution/index.js", "organization-memory-not-evolution-authority"],
+      ["src/advisor/advisor.ts", "src/organization_dynamics/index.js", "advisor-not-structural-authority"],
+      ["src/advisor/evidence.ts", "src/organization_evolution/index.js", "advisor-not-structural-authority"],
+      ["src/advisor/transferability.ts", "src/runtime_scope/index.js", "advisor-not-structural-authority"],
+    ];
+    for (const [from, to, rule] of cases) {
+      const graph = clone();
+      const module = graph.modules.find((candidate) => candidate.file === from);
+      expect(module, `${from} must exist`).toBeDefined();
+      module!.imports.push(to);
+      expect(
+        firewallBreaches(graph).some((detail) => detail.includes(rule)),
+        `${from} -> ${to} must breach ${rule}`,
+      ).toBe(true);
+    }
+  });
+
+  it("the live repository reports none of the three learning breaches", () => {
+    const live = firewallBreaches(clone());
+    for (const rule of E4L_RULES) {
+      expect(live.some((detail) => detail.includes(rule)), rule).toBe(false);
+    }
+  });
+
+  it("§28 G-13: OrganizationMemory never emits an OrganizationDynamicsProposal, and the advisor is no authority", () => {
+    // The wrong edge, pinned in CODE as well as at the import. A `materializeOrganizationDynamicsProposal`
+    // call or a proposal-shaped method name inside memory/advisor would be the edge returning indirectly.
+    for (const file of ["src/organization_memory/service.ts", "src/organization_memory/artifacts.ts"]) {
+      const source = stripComments(read(file));
+      for (const forbidden of [
+        "OrganizationDynamicsProposal",
+        "materializeOrganizationDynamicsProposal",
+        "proposalDigestOf",
+        "advanceEvolution",
+        "advanceRuntimeEvolution",
+      ]) {
+        expect(source.includes(forbidden), `${file} must not name ${forbidden}`).toBe(false);
+      }
+    }
+    for (const file of ["src/advisor/advisor.ts", "src/advisor/evidence.ts", "src/advisor/transferability.ts"]) {
+      const source = stripComments(read(file));
+      for (const forbidden of ["OrganizationDynamicsProposal", "DynamicsProposal", "advanceEvolution", "applyStructuralTransition"]) {
+        expect(source.includes(forbidden), `${file} must not name ${forbidden}`).toBe(false);
+      }
+    }
+  });
+
+  it("the learning layer owns no store and declares no structural mutation verb", () => {
+    // §8/§23: the learning module reads history and writes only through OrganizationMemory's own recorder.
+    for (const file of [
+      "src/institutional_learning/service.ts",
+      "src/institutional_learning/projection.ts",
+      "src/institutional_learning/ports.ts",
+    ]) {
+      const source = stripComments(read(file));
+      for (const forbidden of [
+        "new DatabaseSync",
+        "Sqlite",
+        "appendAtomic(",
+        "advanceEvolution",
+        "advanceRuntimeEvolution",
+        "applyStructuralTransition",
+        "registerRevision",
+        "openCase",
+      ]) {
+        expect(source.includes(forbidden), `${file} must not name ${forbidden}`).toBe(false);
+      }
+    }
+  });
+});
