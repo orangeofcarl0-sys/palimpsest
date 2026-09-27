@@ -1,14 +1,15 @@
 /**
- * DAG PLANNER — the MATURE implementation.
+ * DAG PLANNER — the MATURE implementation, as a REFERENCE ORACLE.
  *
- * This is the implementation a generation produces when it HAS the inherited method: normalize and
- * validate first, detect cycles BEFORE ordering, refuse with a normalized witness path, order only
- * the acyclic graph, tie-break lexically AFTER normalization, then verify every edge.
+ * This is the implementation the inherited method describes: normalize and validate first, detect
+ * cycles BEFORE ordering, refuse with a normalized witness path, order only the acyclic graph,
+ * tie-break lexically after normalization, then verify every edge.
  *
- * It is NOT injected as "the answer": the harness writes it only when the worker's inherited
- * procedure body actually contains the cycle-first step, which is what makes its use a consequence
- * of inheritance rather than of the harness. A worker with no inherited method writes the naive
- * implementation instead (see the paired control).
+ * ROLE (R0 §18): this file is NO LONGER what the gate writes. The gate's worker DERIVES its
+ * implementation by interpreting the procedure's structured content (`derive-dag.mjs`), so the code
+ * that actually runs is generated from the method's clauses. This file is kept as a hand-written
+ * oracle: `test/e-live_derivation.test.ts` asserts the derived output is semantically identical to
+ * it, which is what would catch a derivation regression. It is a fixture, never a harness output.
  *
  * The dogfood harness never edits the project's source directly.
  */
