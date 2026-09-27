@@ -104,6 +104,30 @@ export const DEPENDENCY_FIREWALLS: readonly DependencyFirewall[] = Object.freeze
       "the world's consistency and must not reach the Work owner, the log or the host to do its job.",
     exclusions: [],
   },
+  {
+    id: "context-not-knowledge-owner-internals",
+    from: ["src/context/"],
+    to: ["src/proof_asset/", "src/reasoning_cell/"],
+    reason:
+      "E1-K: the context owner consumes admitted knowledge through its own consumer-owned read ports " +
+      "(`ContextKnowledgePorts`), and composition adapts the canonical owners into them. Naming Proof " +
+      "or Reasoning directly would make context a SECOND reader of their semantics — the drift SR-2a " +
+      "removed for the world plane. This rule is what keeps 'composition knows wiring; context knows " +
+      "context semantics' machine-checked rather than aspirational.",
+    exclusions: [],
+  },
+  {
+    id: "kernel-not-knowledge-owners",
+    from: ["src/work/", "src/domain/", "src/state/", "src/scheduler/"],
+    to: ["src/proof_asset/", "src/reasoning_cell/"],
+    reason:
+      "E1-K §16: admitted knowledge informs COGNITION and authorizes nothing. No path may carry a " +
+      "Proof or Reasoning standing into Work authority — not promotion eligibility, not Work " +
+      "admission, not verification admission, not effect authority. The strongest place to hold that " +
+      "is at the import: the Work owner, the pure rules, the log and the scheduler appear nowhere in " +
+      "the knowledge planes' consumer set, and this rule keeps it that way.",
+    exclusions: [],
+  },
 ]);
 
 /**
