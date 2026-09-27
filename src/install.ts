@@ -23,6 +23,7 @@ import { composeDelegationCapability } from "./composition/delegation.js";
 import { composeContinuationCapability } from "./composition/continuation.js";
 import { composeContextKnowledgePorts } from "./composition/context_knowledge.js";
 import { composeProjectIntentCapability } from "./composition/project_intent.js";
+import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -340,6 +341,26 @@ export function installPalimpsest(
     clock: options.clock,
   });
 
+  /*
+   * E3-C §30/§31: the PROJECT-GROUNDED COLLABORATION surface.
+   *
+   * It composes from the Work owner (to observe Project reality) and the EXISTING Federation service (to
+   * declare a durable need). It owns no store, no peer identity, no Work and no authority — the admission
+   * authority is the CALLER's, supplied through `options.projectCollaborationAdmission`, and the authoring
+   * seam through `options.projectCollaborationAuthoring`.
+   *
+   * ABSENCE IS HONEST: without a Federation service there is no declaration owner, so the surface is
+   * simply absent rather than stubbed.
+   */
+  const projectCollaboration = composeProjectCollaborationCapability({
+    projectId: options.projectId,
+    controller,
+    federation,
+    authoring: options.projectCollaborationAuthoring,
+    admission: options.projectCollaborationAdmission,
+    clock: options.clock,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -443,6 +464,7 @@ export function installPalimpsest(
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(intent === undefined ? {} : { intent }),
+    ...(projectCollaboration === undefined ? {} : { projectCollaboration }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),

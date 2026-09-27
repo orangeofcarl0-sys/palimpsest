@@ -22,7 +22,7 @@
 
 import { isStableIdentifier } from "../schema/identifier.js";
 import type { PeerRef } from "./peer.js";
-import { parsePeerRef } from "./peer.js";
+import { parseContactNeedDeclared, parsePeerRef } from "./peer.js";
 import type { CoordinationEventParsers } from "../identity/refs.js";
 import { CoordinationStoreError } from "../identity/errors.js";
 import { requireBoolean, requireLiteral, requireSchemaVersion, requireStableId, requireString, strictObject } from "../identity/strict.js";
@@ -103,6 +103,16 @@ export type ContactRequestedPayload = {
   readonly to: PeerRef;
 };
 
+/**
+ * E3-C §11/§12: a DURABLE ContactNeed declaration.
+ *
+ * Before E3-C a declared need existed only in memory — `declareContactNeed` materialized an artifact and
+ * returned it, so a restart erased the collaboration intent while leaving its consequences (contact
+ * requests, commitments) in history. This event is the fix: the need and its provenance become part of
+ * the EXISTING Coordination append-only history. There is deliberately no `ContactNeedStore`.
+ */
+export type ContactNeedDeclaredPayload = import("./peer.js").ContactNeedDeclaredPayload;
+
 export type MessagePreparedPayload = { readonly message: PeerMessage };
 export type MessageDeliveredPayload = { readonly messageId: string; readonly transportMessageId?: string };
 export type MessageReceivedPayload = {
@@ -136,6 +146,10 @@ export const FEDERATION_EVENT_PARSERS: CoordinationEventParsers = Object.freeze(
       from: parsePeerRef(record.from),
       to: parsePeerRef(record.to),
     }) satisfies ContactRequestedPayload;
+  },
+  /** E3-C §11: the durable need declaration, with its own strict provenance parser. */
+  CONTACT_NEED_DECLARED: (payload) => {
+    return parseContactNeedDeclared(payload) satisfies ContactNeedDeclaredPayload;
   },
   MESSAGE_PREPARED: (payload) => {
     const record = strictObject(payload, { allowed: ["message"], required: ["message"] }, "MESSAGE_PREPARED");
