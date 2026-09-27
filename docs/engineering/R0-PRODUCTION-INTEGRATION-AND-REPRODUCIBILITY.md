@@ -14,7 +14,10 @@ that has already been closed.
 
 ## 1. The revision
 
-**Release candidate:** the tip of `r0-production-integration`.
+**Release candidate (code state):** `6a3c8c1` — the last commit that changes code, harness, packaging
+or tests. It is named explicitly because `release-evidence/r0-release-evidence.json` is an attestation
+*about* it and is committed on top, immediately after; the evidence commit therefore has the RC as its
+parent. The pair (`6a3c8c1` + the evidence commit) is `r0-production-integration`.
 
 The E-stage line is linear on the last accepted pre-E baseline. Every commit below is an ancestor of
 the RC, in this order, with no side merges, no dropped commits and no duplicated patch-ids:
@@ -31,13 +34,16 @@ the RC, in this order, with no side merges, no dropped commits and no duplicated
 | `ec40f6b` | E-LIVE | Long-Horizon Compounding Dogfood |
 | `70c2425` | R0 | production integration & reproducibility closure |
 | `3ef1002` | R0 | the three reproduction defects a clean checkout exposed |
+| `ec51796` | R0 | the reproducibility contract and the release evidence manifest |
+| `b702712` | R0 | the e4l cleanup hook timeout |
+| `6a3c8c1` | **R0 / RC** | the memoized module-graph analysis in the knowledge-boundary probes |
 
 `9ec76ff` is also the current `origin/main`, so the line sits directly on the published mainline and
 no rebase is required.
 
 Cumulative production change from the pre-E baseline: **100 files, +22 537 / −81** for E0–E-LIVE, plus
-R0's own **14 files, +1 283 / −68** (all harness, packaging and test; **no** `src/`, `tools/` or
-`architecture/` file changed in R0).
+R0's own changes (harness, packaging, tests and docs only — **no** `src/`, `tools/` or `architecture/`
+file changed in R0).
 
 ```text
 git rev-parse HEAD                     # the RC commit
@@ -117,6 +123,25 @@ Run sequentially, uncontended. Every command below was executed in the clean clo
 `gate:e-live` and `gate:e5-p-live`; both produced identical verdicts, so no gate depends on leftovers
 from a previous run.
 
+**Measured result of this exact sequence** on a clean clone at `6a3c8c1`: build 0 errors; 2921 tests
+in 248 files with 0 errors; 38 e2e; architecture 0 violations; public API 0/0/0; and
+14/14/21/10/11/24/15/21/10 verdicts across the nine live gates; consumer smoke `PASS`.
+
+**One known flake, recorded rather than hidden.** `gate:d5-live` failed once in eight sequential runs
+of the RC with `the scheduler never offered TASK_STARTED for tb`, and passed on every retry (four
+consecutive). D5 drives two sibling tasks and waits for the scheduler's own `TASK_STARTED` decision to
+point at the task it is driving; under load the decision can be offered for the sibling first and the
+bounded wait gives up. R0 touches neither D5 nor any product source, so this is not an R0 regression —
+but a reader re-running the suite may hit it, and it is listed in the evidence manifest so the failure
+is not mistaken for a reproduction problem.
+
+### Determinism of `gate:e-live`
+
+Two runs of `gate:e-live` produce **byte-identical verdict lists** (24 PASS each). The run *output*
+differs only in allocated identifiers: `CONTACT_NEED_DECLARED` uses `need-${randomUUID()}`, and the
+procedure ids are content-addressed from digests that include those uuids. The counts, verdicts and
+the derived implementation are stable; a diff-based check should compare verdicts, not ids.
+
 ## 5. Environment assumptions
 
 Every external assumption, classified:
@@ -185,23 +210,25 @@ Two packaging notes, recorded rather than fixed:
 | 6 | The E-LIVE gate counted each `node --test` failure twice (summary list + "failing tests:"), reporting three distinct cycle failures as "six". | **live-gate defect** |
 | 7 | The E-LIVE worker consumed the procedure at **Level 1**: it saw a cycle keyword and wrote a pre-written file. It now derives the implementation by interpreting the method's structured clauses, and `C.22` proves the content drives the behaviour. | **harness improvement** (§20 explicitly allows it) |
 | 8 | Generation 1's reasoning `claimId` crossed the cold restart as a JavaScript variable; it is re-read from the durable cell frontier. | **live-gate defect** (§22) |
+| 9 | `e0e_knowledge_boundary`'s collaboration-firewall bite test called `clone()` per synthetic breach, and each call re-ran `analyseModuleArchitecture` over the whole module graph. Ten breaches cost ten full analyses and timed the test out at the 30s default in a cold run, while passing in a warm incremental one. Now the analysis is computed once and cloned per probe. | **test flake**, visible only in a clean checkout |
+| 10 | Having awaited the `e4l` disposals (fix #2), that file's `afterAll` legitimately exceeded vitest's 10s hook default; the timeout is now stated explicitly. | **consequence of fix #2** |
 
 ### Post-R0 followups
 
 | # | issue |
 |---|---|
-| 9 | `engines.node` declares `>=24.15.0` but the whole matrix runs on 24.14.1, and nothing needs a 24.15 feature. The declared floor is untested; the maintainer should either lower it to the tested floor or pin CI to the declared one. |
-| 10 | The tarball ships compiled tests and gate fixtures; a `files` allowlist would make the artifact honest about what it is. |
+| 11 | `engines.node` declares `>=24.15.0` but the whole matrix runs on 24.14.1, and nothing needs a 24.15 feature. The declared floor is untested; the maintainer should either lower it to the tested floor or pin CI to the declared one. |
+| 12 | The tarball ships compiled tests and gate fixtures; a `files` allowlist would make the artifact honest about what it is. |
 
 ### Deferred pressures (unchanged)
 
 | # | pressure | why it is not a blocker |
 |---|---|---|
-| 11 | **G-4** — `PeerRef` ↔ `PersistentPoint` | Assessed during E-LIVE: `PeerRef` reconnected across two cold restarts using existing durable state; no correctness failure was observed. |
-| 12 | **G-15** — Participation | Assessed during E-LIVE: every operator question about the dogfood project was answerable from existing Attempt/Activation/Federation surfaces. |
-| 13 | **Relevance selection** | V1 selection is explicit. Candidate assets are discoverable by owner query; judging their *relevance* is the host's judgement. E-LIVE §16 permits explicit selection as long as the ids come from durable state, which `R1.1`/`R1.1a`/`G2.6` prove. |
-| 14 | **E-LIVE scale / stochastic generalization** | The compounding mechanism is demonstrated in one deterministic scenario with three generations and one peer. Its behaviour under many assets, many participants, or a stochastic worker is not measured. |
-| 15 | **`install_contract.ts` composition pressure** | At **700/700 LOC and 40/40 fan-out**, i.e. exactly at both ceilings, with every hotspot ratchet still biting and no ceiling raised. This is an **ACTIVE ARCHITECTURE SIGNAL**: the next capability that wants a field on the aggregate install contract must decompose structurally rather than compress. R0 needed no install-contract capacity and made no change to it. |
+| 13 | **G-4** — `PeerRef` ↔ `PersistentPoint` | Assessed during E-LIVE: `PeerRef` reconnected across two cold restarts using existing durable state; no correctness failure was observed. |
+| 14 | **G-15** — Participation | Assessed during E-LIVE: every operator question about the dogfood project was answerable from existing Attempt/Activation/Federation surfaces. |
+| 15 | **Relevance selection** | V1 selection is explicit. Candidate assets are discoverable by owner query; judging their *relevance* is the host's judgement. E-LIVE §16 permits explicit selection as long as the ids come from durable state, which `R1.1`/`R1.1a`/`G2.6` prove. |
+| 16 | **E-LIVE scale / stochastic generalization** | The compounding mechanism is demonstrated in one deterministic scenario with three generations and one peer. Its behaviour under many assets, many participants, or a stochastic worker is not measured. |
+| 17 | **`install_contract.ts` composition pressure** | At **700/700 LOC and 40/40 fan-out**, i.e. exactly at both ceilings, with every hotspot ratchet still biting and no ceiling raised. This is an **ACTIVE ARCHITECTURE SIGNAL**: the next capability that wants a field on the aggregate install contract must decompose structurally rather than compress. R0 needed no install-contract capacity and made no change to it. |
 
 ## 8. Release / integration recommendation
 

@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "scripts/release/release-evidence.mjs",
+  "releaseCandidate": {
+    "commit": "6a3c8c1aa32190d4132022714aedf2fb89f3c735",
+    "branch": "r0-production-integration",
+    "tree": "0d03213901b2e48aaa3083f974eeaad872a6c692",
+    "baselinePreE": "9ec76ff2657706386d4cfd3e64eff60fd716d604",
+    "mergeBaseWithOriginMain": "9ec76ff2657706386d4cfd3e64eff60fd716d604"
+  },
+  "stageAncestry": [
+    {
+      "stage": "E0",
+      "subject": "docs(e0): close project production rebase and freeze E1-K",
+      "commit": "0042a2e2dbb9ed9dcaa7b779fb0f59203f1233da",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E1-K",
+      "subject": "feat(e1-k): capitalize governed knowledge into attempt context",
+      "commit": "05d099a19704edd9a2793fe2e19b912a4aad9719",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E2-I",
+      "subject": "feat(e2-i): reconcile project intent from governed evidence",
+      "commit": "1b658e8a0484fa24a6898cd44047e6db3c86631e",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E3-C",
+      "subject": "feat(e3-c): close sovereign project collaboration loop",
+      "commit": "f081d1c8e019258f315ebd8c276cd65bb81d80f7",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E4-L",
+      "subject": "feat(e4-l): close structural intervention learning loop",
+      "commit": "b86c43b64ead1e573e12bd82771f1dd7bccb9971",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E5-P",
+      "subject": "feat(e5-p): capitalize project experience into reusable procedures",
+      "commit": "ad8f3e6ebc0566856764dc66f5fb3fa1fd138ec3",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E-LIVE",
+      "subject": "test(e-live): prove long-horizon project intelligence compounding",
+      "commit": "ec40f6b60a557be7af7bb6f083b9d71c8e9f6cb1",
+      "ancestorOfHead": true
+    }
+  ],
+  "canonicalCommands": [
+    "pnpm build",
+    "pnpm exec vitest run",
+    "pnpm test:e2e",
+    "pnpm architecture:check",
+    "pnpm architecture:check-public-api",
+    "pnpm gate:e1-k-live",
+    "pnpm gate:e2-i-live",
+    "pnpm gate:e3-c-live",
+    "pnpm gate:e4-l-live",
+    "pnpm gate:e5-p-live",
+    "pnpm gate:e-live",
+    "pnpm gate:d2-live",
+    "pnpm gate:d4-live",
+    "pnpm gate:d5-live",
+    "pnpm release:consumer-smoke"
+  ],
+  "expectedCounts": {
+    "unitTestFiles": "248",
+    "unitTests": "2921",
+    "unitErrors": "0",
+    "e2e": "38",
+    "liveGates": {
+      "gate:e1-k-live": "14 PASS / 0 FAIL",
+      "gate:e2-i-live": "14 PASS / 0 FAIL",
+      "gate:e3-c-live": "21 PASS / 0 FAIL",
+      "gate:e4-l-live": "10 PASS / 0 FAIL",
+      "gate:e5-p-live": "11 PASS / 0 FAIL (38 findings)",
+      "gate:e-live": "24 PASS / 0 FAIL",
+      "gate:d2-live": "15 PASS / 0 FAIL",
+      "gate:d4-live": "21 PASS / 0 FAIL",
+      "gate:d5-live": "10 PASS / 0 FAIL"
+    }
+  },
+  "architecture": {
+    "dependencyFirewalls": 22,
+    "hotspotRatchets": 4,
+    "importerAllowlists": 2,
+    "permittedForbiddenEdges": 4,
+    "permittedCycles": 5,
+    "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
+    "capturedTree": "9793e63c9ff6cc1e9f5783ee19a1c6f5d7c8325e"
+  },
+  "publicApi": {
+    "entrypoints": [
+      ".",
+      "./advanced",
+      "./procedures",
+      "./project-intent",
+      "./project-collaboration",
+      "./institutional-learning"
+    ],
+    "result": "PASS missing 0 / changed kind 0 / added 0"
+  },
+  "package": {
+    "name": "palimpsest-dsh",
+    "version": "0.1.2",
+    "private": true,
+    "artifact": "palimpsest-dsh-0.1.2.tgz",
+    "artifactSha256": "not_captured"
+  },
+  "knownFlakes": [
+    {
+      "gate": "gate:d5-live",
+      "observedRate": "1 failure in 8 sequential runs of the R0 release candidate (retry succeeded every time)",
+      "symptom": "the scheduler never offered TASK_STARTED for tb",
+      "detail": "D5 drives two sibling tasks and waits for the scheduler's own TASK_STARTED decision to point at the task it is driving. Under load the decision can be offered for the sibling first, and the gate's bounded wait then gives up. Seven of the eight runs, including four consecutive retries, passed with 10/10 verdicts. Neither D5 nor any product source is touched by R0, so this is not an R0 regression; it is recorded because a reader re-running the suite may hit it.",
+      "classification": "PRE-EXISTING FLAKE — retry succeeds, no product defect observed"
+    }
+  ],
+  "outwardAction": "NOT PERFORMED"
+}
