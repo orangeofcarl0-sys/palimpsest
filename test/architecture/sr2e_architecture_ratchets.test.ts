@@ -62,7 +62,7 @@ describe("SR-2e the constraint tables are IN the baseline, not only in code", ()
   it("v4 records all three tables", () => {
     expect(baseline.version).toBe(4);
     // 5 at SR-2e; 7 since E0-E added the two E1-K knowledge-boundary firewalls (deliberate, visible here).
-    expect(baseline.dependencyFirewalls).toHaveLength(7);
+    expect(baseline.dependencyFirewalls).toHaveLength(10); // 7 at E0-E; 10 since E2-I added the three intent-boundary firewalls (deliberate, visible here).
     expect(baseline.hotspotRatchets).toHaveLength(4);
     expect(baseline.importerAllowlists).toHaveLength(2);
   });
@@ -321,7 +321,7 @@ describe("SR-2e the E-plane firewall is enforced, not declared", () => {
   it("the tables are DATA in one place, so a reviewer reads policy rather than inferring it", () => {
     // No rule is derived from the graph: they live in the code-level table and are COPIED on write.
     // 5 at SR-2e; 7 since E0-E added the two E1-K knowledge-boundary firewalls.
-    expect(DEPENDENCY_FIREWALLS.length).toBe(7);
+    expect(DEPENDENCY_FIREWALLS.length).toBe(10); // 7 at E0-E; 10 since E2-I.
     expect(HOTSPOT_RATCHETS.length).toBe(4);
     expect(IMPORTER_ALLOWLISTS.length).toBe(2);
     const writer = read("scripts/audit/module-architecture.mjs");

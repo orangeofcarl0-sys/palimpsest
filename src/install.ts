@@ -22,6 +22,7 @@ import type { CollaborationService, CrossProjectService } from "./interaction/in
 import { composeDelegationCapability } from "./composition/delegation.js";
 import { composeContinuationCapability } from "./composition/continuation.js";
 import { composeContextKnowledgePorts } from "./composition/context_knowledge.js";
+import { composeProjectIntentCapability } from "./composition/project_intent.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -318,6 +319,27 @@ export function installPalimpsest(
   });
   if (contextKnowledgePorts !== undefined) core.contextKnowledge.bind(contextKnowledgePorts);
 
+  /*
+   * E2-I §24/§30: the GOVERNED PROJECT INTENT surface.
+   *
+   * It composes from the SAME already-composed owners the knowledge bridge uses, plus the Work owner
+   * (through the controller) that the revision is applied to. Absence is honest: with no workspace there
+   * is no journal/association owner to ground a proposal in, so the surface is simply absent rather than
+   * stubbed.
+   *
+   * The authority is the CALLER's, supplied through `options.projectIntentAdmission`. Nothing here
+   * invents one — an absent authority means `apply` answers `authority_unresolved`.
+   */
+  const intent = composeProjectIntentCapability({
+    projectId: options.projectId,
+    controller,
+    proof,
+    reasoning: reasoningCellsInstalled?.service,
+    projectWorkspace,
+    admission: options.projectIntentAdmission,
+    clock: options.clock,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -420,6 +442,7 @@ export function installPalimpsest(
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(intent === undefined ? {} : { intent }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),
