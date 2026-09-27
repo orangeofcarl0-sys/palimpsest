@@ -4,24 +4,65 @@
 
 ## 1. 总体结构
 
+Palimpsest 是一个**以 durable project 为中心的认知生产系统**，不是一棵 manager→worker 调用树。它由
+**正交语义平面**组成：
+
 ```text
-┌─ 接入层 ─────────────────────────────────────────────┐
-│ DSH 工具（9） │ CLI（bin） │ 技能（SKILL）            │  三条入口，同一控制器
-├─ 编排层 ─────────────────────────────────────────────┤
-│ ProjectController（生命周期/调度/执行/证据/晋升/状态） │
-│ Scheduler（decide/commit 纯决策与提交分离）            │
-├─ 治理层 ─────────────────────────────────────────────┤
-│ 声明治理（门禁/角色表/阶段图） │ Gate DSL │ 失效演算   │
-│ 证据图 │ 锦标赛选择 │ 分配器                          │
-├─ 合同层 ─────────────────────────────────────────────┤
-│ schema（canonical digest） │ domain（状态机/校验）     │
-│ state（EventStore/投影/快照）                          │
-├─ 副作用层（Ordarium）────────────────────────────────┤
-│ 五个 Safe Action │ SqliteLedger │ reconcile 恢复      │
-└───────────────────────────────────────────────────────┘
+┌─ Product / Host ────────────────────────────────────────────────────────┐
+│ CLI │ TUI │ serve(HTTP) │ DSH 工具 │ adapters      ← 产品面，不拥有语义   │
+├─ Project / Intent ──────────────────────────────────────────────────────┤
+│ ProjectIR（goal/requirements/decisions/tasks）· revision · project head │
+├─ Organization ──────────────────────────────────────────────────────────┤
+│ organization（成员/角色/指派/规范）· institution（宪章/纪元/续任权）    │
+│ campaign（长期目标/承诺/监视/唤醒）                                     │
+├─ Collaboration ─────────────────────────────────────────────────────────┤
+│ PeerRef · coordination store（invocation/participation/message/commit） │
+│ federation（contact need/discovery/handoff/coalition）· boundary memory │
+├─ Intellectual Assets ───────────────────────────────────────────────────┤
+│ proof_asset（证据/候选/发布/评估）· reasoning_cell（认知准入/frontier） │
+│ project_verification（独立验证运行）· organization_memory（经验记录）   │
+│ project_workspace（资产关联/日志）· external_assets（外部资产桥）       │
+├─ Work / World / Result ─────────────────────────────────────────────────┤
+│ tasks·attempts·evidence·promotions │ world basis/OCC │ result/derived   │
+│ ProjectController（编排门面）· Scheduler（decide/commit 分离）          │
+├─ Runtime / Cognitive Loci ──────────────────────────────────────────────┤
+│ Activation（短暂实现）· PersistentPoint（持久连续性位点）· RuntimeScope │
+│ binding（绑定解析）· runtime_evolution（拓扑演化）                      │
+├─ Effect Safety / Ordarium ──────────────────────────────────────────────┤
+│ 五个 Safe Action │ SqliteLedger │ reconcile 恢复                        │
+└─────────────────────────────────────────────────────────────────────────┘
 ```
 
-依赖方向自上而下单向；`state` 不依赖 `scheduler`；DSH 渲染概念不进入控制器（SDK 纪律）。
+> **这些是正交语义平面，不是 manager→worker 调用层级。**
+
+关键性质：
+
+- `ProjectController` 是 **Work 编排门面**，不是全部语义的拥有者。组织、协作、智能资产、运行时各自由
+  其自身 owner 拥有；控制器只组合 Work 平面并委托给 SR-2 owners（`work/read_model`、`work/head`、
+  `work/attempt_execution`、`context/service`、`continuation/service`）。
+- 每个语义事实只有一个 canonical owner；`events` 表只有一个写入者（`EventStore.#insertEvent`），每个投影表
+  只有一个写入者（`CoreProjector`）。
+- 协作平面**不能**写入 canonical Work；运行时激活不拥有 Attempt 状态；知识资产不携带任何 authority。
+- 依赖方向自上而下单向；`state` 不依赖 `scheduler`；DSH 渲染概念不进入控制器（SDK 纪律）。
+
+完整概念架构、四闭环模型、真值归属与生产缺口见
+[PROJECT-PRODUCTION-CONSTITUTION.md](engineering/PROJECT-PRODUCTION-CONSTITUTION.md)、
+[PROJECT-PRODUCTION-LOOPS.md](engineering/PROJECT-PRODUCTION-LOOPS.md)、
+[E0-TRUTH-OWNERSHIP-MATRIX.md](engineering/E0-TRUTH-OWNERSHIP-MATRIX.md)、
+[E0-PRODUCTION-GAP-REGISTER.md](engineering/E0-PRODUCTION-GAP-REGISTER.md)。
+
+### 1.1 Work 平面内部结构（低层细节保留）
+
+```text
+接入层：DSH 工具（9） │ CLI（bin） │ 技能（SKILL）       三条入口，同一控制器
+编排层：ProjectController（生命周期/调度/执行/证据/晋升/状态）
+        Scheduler（decide/commit 纯决策与提交分离）
+治理层：声明治理（门禁/角色表/阶段图） │ Gate DSL │ 失效演算
+        证据图 │ 锦标赛选择 │ 分配器
+合同层：schema（canonical digest） │ domain（状态机/校验）
+        state（EventStore/投影/快照）
+副作用层：Ordarium（五个 Safe Action / SqliteLedger / reconcile 恢复）
+```
 
 ## 2. 三条核心合同
 
