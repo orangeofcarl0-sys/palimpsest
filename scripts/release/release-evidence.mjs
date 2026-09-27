@@ -142,6 +142,20 @@ const manifest = {
     artifact: captured("R0_PACKAGE_ARTIFACT"),
     artifactSha256: captured("R0_PACKAGE_SHA256"),
   },
+  knownFlakes: [
+    {
+      gate: "gate:d5-live",
+      observedRate: "1 failure in 8 sequential runs of the R0 release candidate (retry succeeded every time)",
+      symptom: "the scheduler never offered TASK_STARTED for tb",
+      detail:
+        "D5 drives two sibling tasks and waits for the scheduler's own TASK_STARTED decision to point " +
+        "at the task it is driving. Under load the decision can be offered for the sibling first, and " +
+        "the gate's bounded wait then gives up. Seven of the eight runs, including four consecutive " +
+        "retries, passed with 10/10 verdicts. Neither D5 nor any product source is touched by R0, so " +
+        "this is not an R0 regression; it is recorded because a reader re-running the suite may hit it.",
+      classification: "PRE-EXISTING FLAKE — retry succeeds, no product defect observed",
+    },
+  ],
   outwardAction: "NOT PERFORMED",
 };
 
