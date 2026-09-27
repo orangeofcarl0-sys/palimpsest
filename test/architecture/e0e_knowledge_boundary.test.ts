@@ -34,11 +34,21 @@ const read = (relative: string): string => readFileSync(join(REPO, relative), "u
  * A deep clone of the LIVE graph, so a probe can commit a deliberate breach without touching the
  * shared analysis. This mirrors `sr2e_architecture_ratchets.test.ts`: a rule is only proven when a
  * synthetic violation of it FAILS, not merely when the live repository passes.
+ *
+ * R0 §17/§27: the analysis is computed ONCE and cloned per probe. Re-analysing the whole module graph
+ * on every call made a loop over ten breaches cost ten full analyses, which timed this test out under
+ * a cold, uncontended run (30s default) while passing comfortably in a warm incremental one — a real
+ * flake, invisible until R0 ran the suite in a clean checkout.
  */
 interface MutableGraph {
   modules: Array<{ file: string; imports: string[]; layer: string; loc: number; fanOut: number; fanIn: number }>;
 }
-const clone = (): MutableGraph => JSON.parse(JSON.stringify(analyseModuleArchitecture(REPO))) as MutableGraph;
+let cachedAnalysis: ModuleArchitecture | undefined;
+function liveAnalysis(): ModuleArchitecture {
+  if (cachedAnalysis === undefined) cachedAnalysis = analyseModuleArchitecture(REPO);
+  return cachedAnalysis;
+}
+const clone = (): MutableGraph => JSON.parse(JSON.stringify(liveAnalysis())) as MutableGraph;
 const asGraph = (graph: MutableGraph): ModuleArchitecture => graph as unknown as ModuleArchitecture;
 const firewallBreaches = (graph: MutableGraph): readonly string[] =>
   checkArchitecture(asGraph(graph), baselineOf())
