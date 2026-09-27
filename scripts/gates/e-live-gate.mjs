@@ -28,11 +28,13 @@
  * PLAIN JAVASCRIPT (`.mjs`): it runs under bare `node` against `dist/src/**`.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { gateRepoRoot, gateRoot } from "./env.mjs";
+import { deriveImplementation } from "./derive-dag.mjs";
 
 const REPO = gateRepoRoot();
 const RUN = gateRoot();
@@ -88,6 +90,11 @@ const assist = (generation, what, value, classification, note) => {
 
 /* ------------------------------------------------------------------ fixture */
 
+/** A file's content digest, so §19 can show two conditions share bytes rather than assert it. */
+function fileDigest(path) {
+  return createHash("sha256").update(readFileSync(path)).digest("hex");
+}
+
 function copyFixture(target) {
   mkdirSync(target, { recursive: true });
   for (const file of ["package.json"]) {
@@ -122,7 +129,10 @@ function runAcceptance(dir) {
   }
   const pass = Number(/(?:^|\s)pass (\d+)/u.exec(output)?.[1] ?? "0");
   const fail = Number(/(?:^|\s)fail (\d+)/u.exec(output)?.[1] ?? "0");
-  return { pass, fail, output };
+  // `node --test` prints every failure TWICE — once in the summary list and again under
+  // "failing tests:" — so counting lines double-reports. The DISTINCT test names are the real set.
+  const failures = [...new Set([...output.matchAll(/^✖ (.+?) \(\d/gmu)].map((match) => match[1].trim()))];
+  return { pass, fail, failures, output };
 }
 
 /* ------------------------------------------------------------------ policies */
@@ -567,13 +577,29 @@ function dagWorker(rig, options) {
       const steps = pulled.procedure?.body?.steps?.map((step) => step.instruction) ?? [];
       const inheritedCycleFirst = steps.some((step) => /cycle/iu.test(step));
       const rediscoveryCheck = inheritedCycleFirst ? "NOT_PERFORMED" : "PERFORMED";
-      // §13/§37: the worker's implementation is a FUNCTION OF THE INHERITED PROCEDURE, never of the
-      // harness. A worker whose pulled method says "detect cycles BEFORE ordering" writes the mature
-      // implementation; a worker with no such method writes the naive one and must discover the
-      // problem itself. That is what makes the textbook effect a CONSEQUENCE rather than an injection.
-      const written = !inheritedCycleFirst ? naiveSource : options.maturePlus === true ? maturePlusSource : matureSource;
+      // §13/§20: the worker's implementation is DERIVED FROM the inherited procedure's structured
+      // content — not selected from a pre-written file. `deriveImplementation` classifies each ordered
+      // step against a closed clause vocabulary and emits the source those clauses describe, in the
+      // order the method states them. A worker with no inherited method writes the naive prototype and
+      // must discover the problem itself, exactly as Generation 0 did.
+      let derivation = null;
+      let written;
+      if (steps.length === 0) {
+        written = naiveSource;
+      } else {
+        derivation = deriveImplementation(pulled.procedure.body, { closeLoop: options.closeLoop === true });
+        written = derivation.source;
+      }
       writeFileSync(join(workDir, "src", "dag.ts"), written);
-      writeFileSync(consumedPath, JSON.stringify({ handles, pulled, steps, rediscoveryCheck, requirements: context.work?.requirements ?? [] }, null, 2), "utf8");
+      writeFileSync(
+        consumedPath,
+        JSON.stringify(
+          { handles, pulled, steps, rediscoveryCheck, derivation: derivation === null ? null : { clauses: derivation.clauses, trace: derivation.trace }, requirements: context.work?.requirements ?? [] },
+          null,
+          2,
+        ),
+        "utf8",
+      );
       execFileSync("git", ["add", "-A"], { cwd: workDir });
       execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", `worker ${options.label}`], { cwd: workDir });
       return { kind: "READY_FOR_SETTLEMENT" };
@@ -623,13 +649,22 @@ async function main() {
   record("G0.3 NO capital was inherited", `${g0Consumed.handles.length} handles`);
   record("G0.4 the worker PERFORMED the cycle discovery itself", g0Consumed.rediscoveryCheck);
 
-  // ---- G0 reality: run the project's own acceptance suite against the committed result.
+  // ---- G0 Work result: close t1 through the ordinary path, BEFORE measuring the project.
+  // R0 §23: the acceptance suite must judge the WORKER'S deliverable, not the pre-work H0 stub. The
+  // worker commits into its own attempt world; promotion is what makes its implementation the project
+  // HEAD. Measuring before `closeTask` reported the stub's 0/8 for every generation, which silently
+  // overstated the discovery cost and made Generations 1/2's 8/8 look like a larger jump than it is.
+  await closeTask(rig, g0Attempt);
+  record("G0.10 t1 closed through the ordinary governed path", controller.attemptWorkRecord(g0Attempt)?.state ?? "unknown");
+
+  // ---- G0 reality: run the project's own acceptance suite against the PROMOTED result.
   const g0Head = git(A_DIR, ["rev-parse", "HEAD"]);
   const g0Acceptance = runAcceptance(A_DIR);
   record("G0.5 acceptance suite result", `${g0Acceptance.pass} pass / ${g0Acceptance.fail} fail`);
-  // The exact failures are the CONTRADICTION: the universal requirement cannot be met.
-  const cycleFailures = (g0Acceptance.output.match(/✖ [^\n]*cycle[^\n]*/giu) ?? []).length;
-  record("G0.6 the contradiction surfaced as REAL test failures", `${cycleFailures} cycle-related failures`);
+  // The exact failures are the CONTRADICTION: the universal requirement cannot be met. Counted as
+  // DISTINCT test names: the naive implementation fails 4 tests, 3 of which are the cycle family.
+  const cycleFailures = g0Acceptance.failures.filter((name) => /cycle/iu.test(name)).length;
+  record("G0.6 the contradiction surfaced as REAL test failures", `${cycleFailures} of ${g0Acceptance.failures.length} failures are cycle-related`);
 
   // ---- G0 durable capital #1: an admitted PROOF claim, grounded in the observed result.
   const proof = rig.installed.proof;
@@ -679,10 +714,6 @@ async function main() {
   if (cycleReasoningClaimId === undefined) throw new Error("the G0 Reasoning claim was not admitted");
   await rig.installed.projectWorkspace.associateAsset({ projectId: projectA, assetKind: "REASONING_CELL", canonicalRef: { kind: "REASONING_CELL", id: "cell-planner" }, associationKind: "MANUAL", provenance: "elive-g0" });
   record("G0.9 admitted Reasoning claim (durable capital #3)", cycleReasoningClaimId);
-
-  // ---- G0 Work result: close t1 through the ordinary path.
-  await closeTask(rig, g0Attempt);
-  record("G0.10 t1 closed through the ordinary governed path", controller.attemptWorkRecord(g0Attempt)?.state ?? "unknown");
 
   /* ================================================================ INTENT LEARNING (E2-I) */
 
@@ -1003,11 +1034,23 @@ async function main() {
   const nextG1 = advanceToReady(controller1) ?? "t3";
   const g1Worker = dagWorker(rig1, { label: "g1", taskId: nextG1 });
   const g1Service = delegation.makeWorkDelegationService({ controller: controller1, workerFor: () => g1Worker });
+  // §21/§22: the REASONING claim id is re-derived from the durable cell's own frontier after the cold
+  // restart, rather than carried across the boundary as a JavaScript variable. The association tells
+  // us WHICH cell; the cell's admitted frontier tells us which claim is current. Nothing opaque from
+  // generation 0's process is reused.
+  const g1Reasoning = await Promise.all(
+    reasoningAssociations.map(async (entry) => ({
+      cellId: entry.canonicalRef.id,
+      claimId: (await rig1.installed.reasoningCells.service.frontier({ cellId: entry.canonicalRef.id })).claims[0]?.ref.claimId,
+    })),
+  );
+  const g1ReasoningResolved = g1Reasoning.filter((entry) => entry.claimId !== undefined);
+  record("R1.1a the reasoning claim was re-derived from the durable frontier", `${g1ReasoningResolved.length}/${g1Reasoning.length} cells answered a current claim`);
   const g1Job = await g1Service.start({
     expectedTaskId: nextG1,
     knowledge: {
       proof: proofAssociations.map((entry) => ({ claimId: entry.canonicalRef.id })),
-      reasoning: reasoningAssociations.map((entry) => ({ cellId: entry.canonicalRef.id, claimId: g0Capital.reasoningClaimId })),
+      reasoning: g1ReasoningResolved.map((entry) => ({ cellId: entry.cellId, claimId: entry.claimId })),
       procedure: currentProcedure === undefined ? [] : [{ procedureId: currentProcedure.ref.procedureId, revision: currentProcedure.ref.revision, reason: "inherited from generation 0" }],
     },
   });
@@ -1042,6 +1085,8 @@ async function main() {
   // already contains the answer". The task, the acceptance contract and the worker logic are identical.
   writeFileSync(join(controlRepo, "src", "dag.ts"), readFileSync(join(FIXTURE, "src", "dag.ts")));
   writeFileSync(join(controlRepo, "test", "acceptance.test.ts"), readFileSync(join(FIXTURE, "test", "acceptance.test.ts")));
+  // Captured BEFORE the control worker runs, so §19 compares starting points rather than results.
+  const controlStartDigest = fileDigest(join(controlRepo, "src", "dag.ts"));
   execFileSync("git", ["init", "-q"], { cwd: controlRepo });
   execFileSync("git", ["add", "-A"], { cwd: controlRepo });
   execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "control H"], { cwd: controlRepo });
@@ -1071,35 +1116,44 @@ async function main() {
     tasks: [{ task_id: "t3", objective: "implement the cycle diagnostic against the adopted contract", depends_on: [], write_paths: ["src/dag.ts"], required_artifacts: [] }],
   });
   const controlConsumedPath = `${OUT}/consumed-control.json`;
+  // §14/§19: condition B is the SAME worker implementation as condition A — literally the same
+  // `dagWorker` factory, not a hand-copied lookalike — driven against an install that inherited
+  // nothing. Because no `knowledge` is passed to `start`, it receives zero handles, reads no steps,
+  // and therefore writes the naive implementation exactly as Generation 0 did. The only difference
+  // between the two conditions is whether the capital was selected.
+  const controlWorker = dagWorker({ installed: controlInstalled }, { label: "control", taskId: "t3" });
   const controlService = delegation.makeWorkDelegationService({
     controller: controlController,
-    workerFor: () => ({
-      adapterId: "elive-worker-control",
-      async run({ workDir, context }) {
-        const handles = (context.compiled?.handles ?? []).map((entry) => ({ kind: entry.kind, handle: entry.handle }));
-        // §14 condition B: the SAME worker logic, with the inherited capital withheld. It therefore has
-        // no method to read and must discover the prerequisite itself.
-        const steps = [];
-        const inheritedCycleFirst = steps.some((step) => /cycle/iu.test(step));
-        writeFileSync(controlConsumedPath, JSON.stringify({ handles, steps, rediscoveryCheck: inheritedCycleFirst ? "NOT_PERFORMED" : "PERFORMED" }, null, 2), "utf8");
-        // The control worker must DISCOVER the prerequisite itself: it writes the naive implementation
-        // and then runs the suite, which is the discovery step.
-        writeFileSync(join(workDir, "src", "dag.ts"), naiveSource);
-        execFileSync("git", ["add", "-A"], { cwd: workDir });
-        execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "control worker"], { cwd: workDir });
-        return { kind: "READY_FOR_SETTLEMENT" };
-      },
-    }),
+    workerFor: () => controlWorker,
   });
   const controlTask = advanceToReady(controlController) ?? "t3";
   const controlJob = await controlService.start({ expectedTaskId: controlTask });
   const controlView = await settleJob(controlService, controlJob.jobId);
   if (controlView.phase !== "FINISHED") throw new Error(`control job did not finish: ${controlView.phase} ${controlView.hostError ?? ""}`);
   const controlConsumed = JSON.parse(readFileSync(controlConsumedPath, "utf8"));
+  // R0 §23: measure the PROMOTED result, exactly as the generations are measured. Comparing a
+  // promoted Generation 1 against an unpromoted control would have compared two different things.
+  await closeTask({ installed: controlInstalled }, controlView.attemptId);
   const controlAcceptance = runAcceptance(controlRepo);
   record("PC.1 control received NO inherited capital", `${controlConsumed.handles.length} handles`);
   record("PC.2 control PERFORMED the rediscovery step", controlConsumed.rediscoveryCheck);
   record("PC.3 control acceptance suite", `${controlAcceptance.pass} pass / ${controlAcceptance.fail} fail`);
+
+  // §19: prove the equivalence with BYTES, not with an assertion. Both conditions were given the same
+  // acceptance contract and the same H0 starting point; the worker implementation is the same function
+  // object; the intent text and the task declaration are the same strings. The ONLY difference is
+  // whether the inherited capital was selected — which is exactly what PC.1/PC.4 measure.
+  const controlEquivalence = {
+    acceptanceSuiteDigest: fileDigest(join(FIXTURE, "test", "acceptance.test.ts")),
+    controlAcceptanceDigest: fileDigest(join(controlRepo, "test", "acceptance.test.ts")),
+    h0StubDigest: fileDigest(join(FIXTURE, "src", "dag.ts")),
+    controlStartDigest,
+    sharedWorkerFactory: "dagWorker",
+  };
+  record(
+    "PC.4 the two conditions share their semantic inputs byte-for-byte",
+    `suite ${controlEquivalence.acceptanceSuiteDigest === controlEquivalence.controlAcceptanceDigest ? "IDENTICAL" : "DIFFERENT"}, H0 ${controlEquivalence.h0StubDigest === controlEquivalence.controlStartDigest ? "IDENTICAL" : "DIFFERENT"}, worker=${controlEquivalence.sharedWorkerFactory}`,
+  );
   await controlInstalled.dispose();
 
   /* ================================================================ GENERATION 2 */
@@ -1160,6 +1214,9 @@ async function main() {
       { instruction: "otherwise topologically order the acyclic graph" },
       { instruction: "apply stable lexical tie-breaking AFTER normalization, never before" },
       { instruction: "verify every edge against the final order" },
+      // Generation 2's EXTENSION, stated as method content rather than as a harness switch: the
+      // derived implementation closes the witness loop because THIS STEP says to.
+      { instruction: "close the witness loop by repeating its first node, so the cycle is fully described" },
     ],
     limitations: ["does not cover incremental graph updates", "assumes the graph is provided in one piece"],
   };
@@ -1210,7 +1267,7 @@ async function main() {
   // The selector DERIVES the current revision from durable project state, exactly as in generation 1.
   const currentRef = currentP2 === undefined ? p2 : currentP2.ref;
   const nextG2 = advanceToReady(controller2) ?? "t4";
-  const g2Worker = dagWorker(rig2, { label: "g2", taskId: nextG2, maturePlus: true });
+  const g2Worker = dagWorker(rig2, { label: "g2", taskId: nextG2 });
   const g2Service = delegation.makeWorkDelegationService({ controller: controller2, workerFor: () => g2Worker });
   const g2Job = await g2Service.start({
     expectedTaskId: nextG2,
@@ -1258,6 +1315,23 @@ async function main() {
   const freshContext = await controller2.workWorkerAttemptContext(freshAttempt.attemptId, { knowledge: { procedure: [{ procedureId: p2.procedureId, revision: p2.revision, reason: "current" }] } });
   record("G2.17 the same fresh attempt binds P@2", freshContext.compiled.handles.find((entry) => entry.kind === "procedure")?.handle ?? "MISSING");
 
+  /* ================================================================ PROCEDURE CONSUMPTION LEVEL */
+
+  process.stdout.write("\n=== §20 PROCEDURE-CONSUMPTION LEVEL ===\n");
+  // The generations' workers DERIVE their implementation by interpreting the procedure's structured
+  // content (`derive-dag.mjs`), rather than selecting a pre-written file by keyword. This is the
+  // evidence that the interpretation is real: mutating the CONTENT changes the observable behaviour
+  // against the UNCHANGED acceptance contract. A Level-1 consumer cannot fail this probe.
+  const sensitivity = JSON.parse(
+    execFileSync("node", ["scripts/gates/derive-sensitivity.mjs"], { cwd: REPO, encoding: "utf8" }).split("\n")[0],
+  );
+  const g1Clauses = g1Consumed.derivation?.clauses;
+  const g2Clauses = g2Consumed.derivation?.clauses;
+  record("C.20 the Generation-1 implementation was DERIVED from the method's clauses", g1Clauses === undefined || g1Clauses === null ? "MISSING" : `normalize=${g1Clauses.normalizes} cycleFirst=${g1Clauses.cycleBeforeOrder} verify=${g1Clauses.verifies} unrecognized=${g1Clauses.unrecognized}`);
+  record("C.21 Generation 2's extension came from a METHOD CLAUSE, not a harness switch", g2Clauses?.closeLoop === true ? "closeLoop=true from the 'close the witness loop' step" : `MISSING (${JSON.stringify(g2Clauses)})`);
+  record("C.22 mutating the CONTENT changes the implementation's behaviour", sensitivity.map((row) => `${row.id}=${row.observed}`).join(", "));
+  record("C.23 a method with no cycle step reproduces the naive failure", `${sensitivity.find((row) => row.id === "B_no_cycle_step")?.pass}/${sensitivity.find((row) => row.id === "B_no_cycle_step")?.fail}`);
+
   /* ================================================================ AUTHORITY INVARIANCE */
 
   process.stdout.write("\n=== AUTHORITY INVARIANCE ===\n");
@@ -1299,6 +1373,10 @@ async function main() {
     ["an inherited asset ALTERED later work behavior", () => g1Consumed.rediscoveryCheck === "NOT_PERFORMED" && g0Consumed.rediscoveryCheck === "PERFORMED"],
     ["one previously-paid cognitive cost was not paid again", () => g1Consumed.rediscoveryCheck === "NOT_PERFORMED"],
     ["the paired control produced observable differences", () => controlConsumed.rediscoveryCheck === "PERFORMED" && controlConsumed.handles.length === 0],
+    // §19: the comparison is only meaningful if the two conditions shared their inputs. Proven with
+    // digests, so a future edit that quietly diverges the contract fails here rather than silently
+    // weakening the experiment.
+    ["the two conditions shared their semantic inputs byte-for-byte", () => controlEquivalence.acceptanceSuiteDigest === controlEquivalence.controlAcceptanceDigest && controlEquivalence.h0StubDigest === controlEquivalence.controlStartDigest],
     ["Generation 2 did not rediscover the baseline method", () => g2Consumed.rediscoveryCheck === "NOT_PERFORMED"],
     ["a fresh attempt is refused the superseded revision and given the current one", () => p1Refused && freshContext.compiled.handles.some((entry) => entry.kind === "procedure" && entry.handle === proceduresModule.procedureHandle(p2))],
     // §34: the claim is proven STRUCTURALLY. Each generation was a fresh `installPalimpsest` over the
@@ -1307,8 +1385,19 @@ async function main() {
     // associations, the compiled manifest). No harness variable holding generation-0's text reaches
     // generation 1; the requirement lines it saw are the ProjectIR's own strings.
     ["no transcript bridge was used", () => freshGenerationInstallCount >= 4 && g1Consumed.requirements.length > 0],
+    // §21/§22: no semantic identity may cross a generation boundary as a JavaScript variable. Every
+    // asset the Generation-1 worker received was resolved by querying a durable owner AFTER the cold
+    // restart: the associations give the ids, and the reasoning claim is re-read from the cell's own
+    // frontier. This is the check that would catch a future edit that reintroduced a remembered id.
+    ["every inherited asset id was re-derived from durable state", () => g1ReasoningResolved.length === reasoningAssociations.length && reasoningAssociations.length > 0 && proofAssociations.length > 0],
     ["G-4 pressure was explicitly assessed", () => true],
     ["G-15 pressure was explicitly assessed", () => true],
+    // §20: the consumption level is proven behaviorally. Deriving from mutated CONTENT must change the
+    // outcome, and every variant must match what its clauses predict. This is what separates a real
+    // interpretation (Level 3) from a handle-driven file lookup (Level 1).
+    ["the procedure content is INTERPRETED, not looked up", () => sensitivity.length === 6 && sensitivity.every((row) => row.expected === row.observed)],
+    ["a method without the cycle clause reproduces the failure", () => (sensitivity.find((row) => row.id === "B_no_cycle_step")?.fail ?? 0) > 0],
+    ["Generation 2's extension came from a method clause", () => g2Consumed.derivation?.clauses?.closeLoop === true],
   ];
   let ok = true;
   process.stdout.write("\n");
@@ -1325,7 +1414,7 @@ async function main() {
     if (!value) ok = false;
   }
 
-  const report = { g0: g0Capital, g0Acceptance, g1Acceptance, g2Acceptance, controlAcceptance, p1, p2, findingClaimId, assistance, findings };
+  const report = { g0: g0Capital, g0Acceptance, g1Acceptance, g2Acceptance, controlAcceptance, controlEquivalence, derivationSensitivity: sensitivity, p1, p2, findingClaimId, assistance, findings };
   writeFileSync(`${OUT}/e-live-report.json`, JSON.stringify(report, null, 2), "utf8");
   writeFileSync(`${OUT}/assistance-ledger.json`, JSON.stringify(assistance, null, 2), "utf8");
 

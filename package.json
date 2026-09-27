@@ -14,6 +14,22 @@
     "./advanced": {
       "types": "./dist/src/advanced.d.ts",
       "import": "./dist/src/advanced.js"
+    },
+    "./procedures": {
+      "types": "./dist/src/procedures/index.d.ts",
+      "import": "./dist/src/procedures/index.js"
+    },
+    "./project-intent": {
+      "types": "./dist/src/project_intent/index.d.ts",
+      "import": "./dist/src/project_intent/index.js"
+    },
+    "./project-collaboration": {
+      "types": "./dist/src/project_collaboration/index.d.ts",
+      "import": "./dist/src/project_collaboration/index.js"
+    },
+    "./institutional-learning": {
+      "types": "./dist/src/institutional_learning/index.d.ts",
+      "import": "./dist/src/institutional_learning/index.js"
     }
   },
   "scripts": {
@@ -31,6 +47,7 @@
     "architecture:write": "pnpm run build && node scripts/audit/module-architecture.mjs --write",
     "architecture:check": "pnpm run build && node scripts/audit/module-architecture.mjs --check",
     "architecture:check-public-api": "pnpm run build && node scripts/audit/module-architecture.mjs --check-public-api",
+    "release:consumer-smoke": "node scripts/release/consumer-smoke.mjs",
     "gate:d2-live": "node scripts/gates/d2-live-gate.mjs",
     "gate:d4-live": "node scripts/gates/d4-live-gate.mjs",
     "gate:d5-live": "node scripts/gates/d5-live-gate.mjs",

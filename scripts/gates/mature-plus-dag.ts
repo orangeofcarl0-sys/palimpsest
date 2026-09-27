@@ -1,11 +1,16 @@
 /**
- * DAG PLANNER — the GENERATION 2 implementation.
+ * DAG PLANNER — the GENERATION 2 implementation, as a REFERENCE ORACLE.
  *
  * Generation 2 inherits the mature method (normalize → detect cycles → order → tie-break after
  * normalization → verify) and EXTENDS it without re-deriving the baseline: the cycle witness now
  * closes the loop back to its first node, so a caller can see the whole cycle rather than an open
  * path. The extension is a genuine improvement to the diagnostic, and it remains conformant with
  * the unchanged acceptance contract.
+ *
+ * ROLE (R0 §18): like `mature-dag.ts`, this is a hand-written oracle, not what the gate writes. The
+ * gate derives its implementation from the P@2 content — whose extra step is "close the witness loop
+ * by repeating its first node" — and `test/e-live_derivation.test.ts` asserts the derived output is
+ * semantically identical to this file.
  */
 
 export interface Edge {

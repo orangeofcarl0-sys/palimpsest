@@ -46,7 +46,22 @@ The initial requirement is deliberately stated universally:
 
 A cyclic graph makes that impossible. The conclusion is **not** written into any worker prompt: it is
 discovered by running the project's own tests. **[MACHINE]** `G0.6` records that the contradiction
-surfaced as six real test failures, not as a harness assertion.
+surfaced as real test failures — 3 of Generation 0's 4 failing tests are the cycle family — not as a
+harness assertion.
+
+Two different baselines are measured in this document, and they are not interchangeable:
+
+- **H0** (`dag-planner/src/dag.ts`, the committed fixture) is a declared contract whose
+  `planExecution` throws `not implemented yet`. It fails **0 pass / 8 fail**. It is the *starting
+  point* of every generation and of the paired control, never a generation's result.
+- **Generation 0's deliverable** (`scripts/gates/naive-dag.ts`, written by the worker) implements the
+  universal requirement literally with a Kahn-style sort and no cycle handling. It fails
+  **4 pass / 4 fail** — the acyclic, determinism, disconnected and tie-breaking tests pass; the four
+  cycle-behaviour tests do not.
+
+Only the second is an *implementation*, and only the second is the "old discovery" that Generation 1
+inherits a way to avoid repeating. `naive-dag.ts` is a standalone prototype kept for exactly this
+reason: it is Generation 0's and the control's committed output, and it is never the fixture.
 
 ## 3. Compounding ledger
 
@@ -60,7 +75,7 @@ surfaced as six real test failures, not as a harness assertion.
 | **Old discovery repeated?** | n/a | **no** | **no** |
 | **Procedure revision** | — | P@1 bound ACTIVE-at-compile | P@2 bound ACTIVE-at-compile |
 | **Human/host assistance** | 0 | 1 (asset-id discovery — see §7) | 1 (same) |
-| **Acceptance suite outcome** | 0 pass / 8 fail | **8 pass / 0 fail** | **8 pass / 0 fail** |
+| **Acceptance suite outcome** (the generation's promoted deliverable) | 4 pass / 4 fail | **8 pass / 0 fail** | **8 pass / 0 fail** |
 
 No single numeric score is produced, deliberately: §31 forbids collapsing this into "an intelligence
 score", and the quantities above are not commensurable.
@@ -73,20 +88,52 @@ This is the stage's central claim, and it is measured behaviourally.
 
 | condition | inherited method present? | `rediscovery_check` | acceptance suite |
 |---|---|---|---|
-| **Generation 0** | no | `PERFORMED` | 0 pass / 8 fail |
+| **Generation 0** | no | `PERFORMED` | 4 pass / 4 fail |
 | **Generation 1** | **yes (P@1)** | **`NOT_PERFORMED`** | **8 pass / 0 fail** |
-| **Paired control** (same task, capital withheld) | no | `PERFORMED` | 0 pass / 8 fail |
+| **Paired control** (same task, capital withheld) | no | `PERFORMED` | 4 pass / 4 fail |
 | **Generation 2** | **yes (P@2)** | **`NOT_PERFORMED`** | **8 pass / 0 fail** |
 
-The mechanism, stated precisely so it can be checked: the worker's implementation is a **function of
-the procedure it pulled**, never of the harness. If the inherited body's ordered steps contain the
-cycle-first instruction, the worker writes the mature implementation; if it does not, the worker
-writes the naive one and must discover the problem itself. The harness never selects the answer — it
-supplies the seam, and the inherited method decides.
+The mechanism, stated precisely so it can be checked: the worker's implementation is **derived by
+interpreting the inherited procedure's structured content**, never selected by the harness. A closed
+clause vocabulary classifies each ordered step (`NORMALIZE_AND_VALIDATE`, `DETECT_CYCLE_FIRST`,
+`REFUSE_WITH_NORMALIZED_WITNESS`, `ORDER_ACYCLIC`, `TIE_BREAK_AFTER_NORMALIZATION`, `VERIFY_EVERY_EDGE`,
+`CLOSE_WITNESS_LOOP`, …) and the emitted source is assembled from the fragments those clauses select,
+**in the order the method states them**. A worker with no inherited method writes the naive prototype
+and must discover the problem itself.
+
+**[MACHINE] `C.22` is the evidence that the content is genuinely INTERPRETED rather than
+keyword-matched.** Six mutated methods were derived and run against the *unchanged* acceptance
+contract; each behaved exactly as its content predicts:
+
+| mutated content | clauses | outcome |
+|---|---|---|
+| baseline (the real P@1) | normalize, cycle-first, verify | **CONFORMANT** (8/0) |
+| no cycle step at all | no cycle handling | **VIOLATES** (5/3) |
+| the same clauses in the WRONG ORDER (order before detect) | `cycleBeforeOrder=false` | **VIOLATES** (5/3) |
+| no normalize/validate step | no validation | **VIOLATES** (5/3) |
+| no explicit tie-break clause | `tieBreak=false` | CONFORMANT (8/0) — `normalize` already orders the node set, so the clause is redundant |
+| no verify step | `verifies=false` | CONFORMANT (8/0) — the order is already correct; the guard is not observable |
+
+A Level-1 consumer (handle exists → write a pre-written file) *cannot* fail this probe: the file would
+be identical for every row. The three VIOLATES rows are consequences of the method's *content*, which
+is what makes this consumption Level 3 rather than Level 1. The two conformant-by-redundancy rows are
+recorded as they are rather than tuned: they are real properties of this method, and the interpreter
+still emits the clause when a method states it.
+
+**[MACHINE]** `C.21`: Generation 2's extension is also content-driven. The revision adds the step
+*"close the witness loop by repeating its first node"*, and the derived implementation closes the loop
+because that clause is present — not because a harness flag asked for it. The same clause vocabulary
+classifies both revisions; there is no harness switch to turn the extension on.
 
 **[OBSERVED]** Generation 0 paid the discovery cost: it wrote the naive implementation, and the
-project's own suite failed it. Generation 1 did not: it inherited P@1, received the handle
+project's own suite failed it (4/4). Generation 1 did not: it inherited P@1, received the handle
 `@ctx/procedure/prc-…/0`, pulled the body, and its very first implementation satisfied the contract.
+
+**[MACHINE]** the comparison is only meaningful if the two conditions shared their inputs, so `PC.4`
+proves it with digests rather than asserting it: the acceptance suite and the H0 starting point are
+byte-identical between Generation 1's repository and the control's, and both conditions run the *same*
+worker factory (`dagWorker`) — not a hand-copied lookalike. The single difference is whether the
+inherited capital was selected, which `PC.1` records as `0 handles` for the control.
 
 **[INTERPRETATION]** This is the textbook effect in the narrow, honest sense the stage allows: one
 previously-paid cognitive cost was not paid again, in this scenario, with the difference observable
@@ -103,7 +150,8 @@ and the joins do not):
 
 ```
 raw experience
-  the project's own acceptance run at generation-0 HEAD: 0 pass / 8 fail
+  the project's own acceptance run at Generation 0's PROMOTED head: 4 pass / 4 fail
+  (H0, the fixture it started from, is 0 pass / 8 fail — that is the starting point, not a result)
     → Proof source "g0-acceptance-run" (imported bytes)
     → evidence record
     → admitted Proof claim  pc-…  "a topological order preserving every edge cannot exist
@@ -237,16 +285,23 @@ bite in a project with many concurrent participants, and nothing here proves it 
 
 **Machine-proven (re-runnable via `pnpm gate:e-live`):**
 
-- The independent acceptance suite fails at H0 and at Generation 0's naive implementation (0/8), and
-  passes at Generations 1 and 2 (8/8) and for the mature implementations.
-- The contradiction surfaced as real test failures.
+- The independent acceptance suite fails at H0 (0/8) and at Generation 0's naive implementation (4/8),
+  and passes at Generations 1 and 2 (8/8) and for the mature implementations. H0 is a starting point,
+  not a deliverable; only the 4/8 result is an implementation a generation actually produced.
+- The contradiction surfaced as real test failures: 3 of Generation 0's 4 failures are cycle-related.
 - Intent reconciliation was grounded, independent, and wrote nothing when rejected or unresolved.
 - The collaboration chain ran with two genuinely separate Work ledgers.
 - The crash window was real, and reconciliation reconstructed exactly one intervention after restart.
 - P@1 → P@2 supersession, with the old attempt retaining its historical binding and a fresh attempt
   being refused the superseded revision.
-- The paired control produced observable differences on an identical task.
+- The paired control produced observable differences on an identical task, and `PC.4` proves the two
+  conditions shared their acceptance suite and starting point byte-for-byte.
 - The `rediscovery_check` difference between inheriting and not inheriting.
+- **The consumption is Level 3 (`C.22`).** The worker's implementation is *derived* by interpreting the
+  procedure's structured steps against a closed clause vocabulary. Mutating the content changes the
+  observable outcome against the unchanged contract: removing the cycle clause, reordering the clauses
+  so ordering precedes detection, or dropping validation each make the derived implementation fail.
+  A Level-1 consumer (handle → pre-written file) cannot fail that probe.
 - Authority invariance across the whole run.
 
 **Observational (true of this scenario, not generalized):**
@@ -266,6 +321,8 @@ bite in a project with many concurrent participants, and nothing here proves it 
 integration/restart/idempotence/live-gate bugs. The stage honoured both:
 
 - **No new canonical owner.** No semantic lifecycle, authority or universal abstraction was added.
+- **No product source changed at all.** `git diff --name-only <baseline>..<E-LIVE commit> -- src/ tools/ architecture/`
+  is empty.
 - **One harness bug fixed:** `rig.close()` did not await the async `dispose()`, so a rejection surfaced
   later as an unhandled crash at an unrelated point in the run. That is a live-gate bug (§25).
 - **Three live-gate authoring bugs fixed:** a plan revision that changed a task's meaning under the same
@@ -273,6 +330,37 @@ integration/restart/idempotence/live-gate bugs. The stage honoured both:
   refused by the Work kernel, so the probe was replaced by a real attempt); and a `prepareMutatingWork`
   call made while the scheduler's own next decision was a pending `TASK_READY`.
 - **No hotspot ceiling was raised, and `architecture:write` was never run.**
+
+## 11a. Harness corrections made in R0
+
+R0 reviewed this stage rather than extending it, and found three *harness* defects — all in
+`scripts/gates/`, none in the product. They are recorded here because two of them had made the
+stage's headline numbers wrong:
+
+1. **The acceptance suite was measured before promotion.** `G0.5` and `PC.3` ran the suite against the
+   repository HEAD *before* `closeTask` promoted the worker's commit, so they reported the H0 stub's
+   0/8 instead of the naive implementation's 4/8. The comparison against Generation 1's 8/8 therefore
+   overstated the jump. Both now measure the promoted deliverable, and Generation 1/2 were already
+   doing so — which had made the two sides of the comparison measure different things.
+2. **The failure count double-reported.** `node --test` prints each failure twice (summary list and
+   "failing tests:"), so a line count gave "six failures" for three distinct tests. Now counted as
+   distinct test names, and reported as "3 of 4 failures are cycle-related".
+3. **Consumption was Level 1, not Level 3.** The worker saw a cycle keyword in the pulled body and
+   wrote a pre-written file — a handle-driven lookup. It now *derives* the implementation by
+   interpreting the method's structured steps (`scripts/gates/derive-dag.mjs`), and `C.22` proves the
+   interpretation is real by mutating the content and observing the outcome change. The paired control
+   also now runs literally the same worker factory rather than a hand-copied lookalike, and `PC.4`
+   proves the two conditions share their inputs by digest.
+4. **One generation-crossing identity was still a JavaScript variable.** Generation 1's reasoning
+   `claimId` was carried across the cold restart from generation 0's process. The cell id already came
+   from a durable association query, so the claim is now re-read from that cell's own admitted frontier
+   (`R1.1a`). §22 asks for a subprocess boundary *or* a proof that every crossing value is re-read from
+   durable stores; this closes the last gap in the latter, and the new verdict
+   *"every inherited asset id was re-derived from durable state"* fails if one is reintroduced.
+
+The verdict is unchanged in direction and stronger in evidence: the textbook effect was real, and it
+is now demonstrated at the consumption level the stage's §13/§20 intended, across a boundary where no
+semantic identity crosses in memory.
 
 ## 12. Unresolved friction
 
