@@ -1182,6 +1182,46 @@
         ],
         "reason": "E3-C §8: ManagementMode grants ZERO contact-need admission authority. managementMode == DELEGATE must not imply an admitted need, and no caller boolean (approved: true) may stand in for the independent authority. Holding the import out means the management layer cannot reach the admission decision even by accident.",
         "exclusions": []
+      },
+      {
+        "id": "institutional-learning-not-mutation-internals",
+        "from": [
+          "src/institutional_learning/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/runtime_scope/",
+          "src/organization/"
+        ],
+        "reason": "E4-L §23/§30: the learning layer OBSERVES structural change and never makes it. Memory ≠ Structure mutation and Evaluation ≠ Governance: if this module could name an evolution service, a runtime scope or an Organization, an empirical result would be one import away from mutating the structure it merely studied — which is exactly the automatic self-modification loop the ruling forbids. It reads evolution history through its own consumer-owned port instead, and the composition adapter is the only place that sees both sides.",
+        "exclusions": []
+      },
+      {
+        "id": "organization-memory-not-evolution-authority",
+        "from": [
+          "src/organization_memory/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/"
+        ],
+        "reason": "E4-L §28/§30: this is the G-13 WRONG EDGE held out at the import. OrganizationMemory is empirical history — it is not, and must never become, a structural authority. If memory could name an evolution plane it could execute a transformation, and ArchitectureRecommendation → OrganizationDynamicsProposal would return indirectly through the back door. The direction is one-way by construction: evolution writes its own truth, learning reads it.",
+        "exclusions": []
+      },
+      {
+        "id": "advisor-not-structural-authority",
+        "from": [
+          "src/advisor/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/organization_dynamics/",
+          "src/runtime_scope/"
+        ],
+        "reason": "E4-L §21/§28: the empirical architecture advisor RECOMMENDS and nothing more. Architecture recommendation ≠ OrganizationDynamicsProposal and Historical winner ≠ Future authority — a recommendation must not be convertible into a proposal or a mutation, not even by reaching the owner that would accept one. The advisor consumes OrganizationMemory and returns text; the governed structural path still begins with an independently authored DynamicsProposal.",
+        "exclusions": []
       }
     ],
     "hotspotRatchets": [

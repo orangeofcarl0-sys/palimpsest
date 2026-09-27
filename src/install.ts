@@ -24,6 +24,7 @@ import { composeContinuationCapability } from "./composition/continuation.js";
 import { composeContextKnowledgePorts } from "./composition/context_knowledge.js";
 import { composeProjectIntentCapability } from "./composition/project_intent.js";
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
+import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -361,6 +362,25 @@ export function installPalimpsest(
     clock: options.clock,
   });
 
+  /*
+   * E4-L §24/§30: the GOVERNED INSTITUTIONAL LEARNING surface.
+   *
+   * It connects the EXISTING evolution histories to the EXISTING empirical memory: reconciliation projects
+   * every ACTIVATED structural change into exactly one `InterventionRecord`, and the evaluation read joins
+   * an intervention to the ordinary experiments that studied it.
+   *
+   * It owns NO store, NO Organization, NO RuntimeScope, NO DynamicsProposal and NO authority — it reads
+   * evolution history and writes only through OrganizationMemory's own `recordIntervention`. ABSENCE IS
+   * HONEST: without an evolution history or the memory owner there is nothing to connect, so the face is
+   * simply absent rather than stubbed.
+   */
+  const institutionalLearning = composeInstitutionalLearningCapability({
+    organizationEvolutionStore: options.organizationEvolutionStore,
+    runtimeEvolutionStore: options.runtimeEvolutionStore,
+    organizationMemory,
+    clock: options.clock,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -465,6 +485,7 @@ export function installPalimpsest(
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
     ...(intent === undefined ? {} : { intent }),
     ...(projectCollaboration === undefined ? {} : { projectCollaboration }),
+    ...(institutionalLearning === undefined ? {} : { institutionalLearning }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),

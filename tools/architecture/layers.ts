@@ -96,6 +96,10 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // no store, no peer identity, no Work, no commitment history and no authority, so it sits beside
   // `project_intent`, not inside `federation`.
   project_collaboration: "L2",
+  // E4-L §8/§30: the governed institutional-learning capability. A thin, STATELESS projection over the
+  // EXISTING evolution histories and empirical memory — it owns no store, no Organization, no
+  // RuntimeScope, no DynamicsProposal and no authority, so it sits beside the owners it connects.
+  institutional_learning: "L2",
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",

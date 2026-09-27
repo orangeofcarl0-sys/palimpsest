@@ -33,9 +33,8 @@ import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralE
 import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "../reasoning_cell/index.js";
 import type { OrganizationMemoryService, OrganizationMemoryStore } from "../organization_memory/index.js";
 import { evaluate } from "../experiment/index.js";
-import type { RecipeRegistry } from "../recipes/registry.js";
-import { builtinRecipeRegistry } from "../recipes/registry.js";
-import type { RecipeExecutionService, ReasoningBranchExecutionPort } from "../recipes/execution.js";
+// The recipes BARREL re-exports registry + execution: one specifier keeps this contract's fan-out at its ceiling.
+import { builtinRecipeRegistry, type RecipeExecutionService, type RecipeRegistry, type ReasoningBranchExecutionPort } from "../recipes/index.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "../application/surface.js";
 import type { HostDeploymentFactsPort } from "../application/common.js";
 import type { BoundaryArtifactTypeRegistry, BoundaryCollaborationTransportPort, BoundaryHome, BoundaryMemoryService, BoundaryMemoryStore, BoundaryWorkspaceRoutePort, FederatedBoundaryClient } from "../boundary_memory/index.js";
@@ -53,6 +52,7 @@ import type { DelegationInstallOptions, DelegationInstallResult } from "./delega
 import type { ContinuationInstallOptions, ContinuationInstallResult } from "./continuation_contract.js";
 import type { ProjectIntentInstallOptions, ProjectIntentInstallResult } from "./project_intent_contract.js";
 import type { ProjectCollaborationInstallOptions, ProjectCollaborationInstallResult } from "./project_collaboration_contract.js";
+import type { InstitutionalLearningInstallResult } from "./institutional_learning_contract.js";
 import type { EmpiricalArchitectureAdvisor, TaskProfilerPort } from "../advisor/index.js";
 import { SqliteMonitorDeliveryMarkStore } from "../monitor/index.js";
 import type { CampaignMonitorDriver, CampaignMonitorPolicy, CampaignMonitorScopePort, CampaignWakeActivationPort, MonitorTickSourcePort } from "../monitor/index.js";
@@ -433,7 +433,7 @@ export interface InstalledRuntime {
   >;
 }
 
-export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult, ProjectIntentInstallResult, ProjectCollaborationInstallResult {
+export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult, ProjectIntentInstallResult, ProjectCollaborationInstallResult, InstitutionalLearningInstallResult {
   readonly controller: ProjectController;
   readonly tools: readonly DshToolDefinition[];
   /** Present only when runtime wiring options are supplied (§93 backward compatibility). */
