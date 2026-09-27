@@ -73,6 +73,8 @@ import {
 import { MockHost } from "./helpers.js";
 
 const cleanups: Array<() => void | Promise<void>> = [];
+// R0 §17/§27: the disposals are now AWAITED, and this file accumulates one rig per test, so the hook
+// legitimately runs past vitest's 10s default. The timeout is stated rather than the await removed.
 afterAll(async () => {
   for (const fn of cleanups) {
     try {
@@ -84,7 +86,7 @@ afterAll(async () => {
       // unlink; a cleanup refusal must not turn a green matrix red.
     }
   }
-});
+}, 120_000);
 
 const PEER = { schemaVersion: 1 as const, peerId: "p1" };
 const MEMBER = { kind: "peer" as const, peer: PEER };
