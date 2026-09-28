@@ -5,7 +5,7 @@
     "subjectCommit": "83feb0f391b5141fb9aa05f92e98bb4dda818af3",
     "subjectIs": "the code-state release candidate (the last commit that changed code, harness, packaging or tests)",
     "subjectDerivation": "git log --format=@@%H --name-only, first commit touching a file outside release-evidence/, docs/, and this generator",
-    "generatedAtCommit": "6362b02d84a6127840196b792ff8c843462b07e2",
+    "generatedAtCommit": "79db974457323070402004b73f8acbf25dfa7d92",
     "generatedAtCommitIsNotTheProductRc": true,
     "generatedFromCleanTree": true,
     "dirtyPathsAtGeneration": [],
@@ -191,7 +191,7 @@
       "main": "unchanged (9ec76ff)",
       "package": "unpublished"
     },
-    "outwardStateAtEvidenceCapture": "branch pushed (origin/r0-production-integration @ 03ea369); PR #214 open (base e-live-intellectual-compounding); PR #215 open (base main); main unchanged (9ec76ff); package unpublished; nothing merged",
+    "outwardStateAtEvidenceCapture": "branch pushed (origin/r0-production-integration); PR #214 open (base e-live-intellectual-compounding); PR #215 open (base main); main unchanged (9ec76ff); package unpublished; nothing merged",
     "note": "The code-state RC is the last commit that changed code, harness, packaging or tests. R0's own RC was a local commit captured before any push, so `atCodeStateCapture` records that; the currently attested subject was committed after the branch was pushed and after PR #214 opened, so `atAttestedSubjectCapture` records that instead. Neither is retroactively edited, and the evidence commit that carries this file is not the product RC."
   }
 }
