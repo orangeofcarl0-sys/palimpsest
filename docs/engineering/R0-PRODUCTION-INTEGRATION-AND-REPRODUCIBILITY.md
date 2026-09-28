@@ -14,13 +14,30 @@ that has already been closed.
 
 ## 1. The revision
 
-**Release candidate (code state):** `6a3c8c1` — the last commit that changes code, harness, packaging
-or tests. It is named explicitly because `release-evidence/r0-release-evidence.json` is an attestation
-*about* it and is committed on top, immediately after; the evidence commit therefore has the RC as its
-parent. The pair (`6a3c8c1` + the evidence commit) is `r0-production-integration`.
+Three identities have to be kept apart, because they are not the same commit and collapsing them
+would misstate what the evidence evaluates:
+
+| identity | commit | what it is |
+|---|---|---|
+| **R0 code-state RC** | `6a3c8c1` | the code state R0 itself closed on; a local commit, made before anything was pushed |
+| **R0-R final code-state RC** | `7ca1004` | the last code/harness/packaging/test commit of the R0-R stage |
+| **R0-M code-state RC** | `83feb0f` | the last code/harness commit of the R0-M stage — **the commit the evidence artifact currently attests** |
+| **artifact on top** | *the tip* | the evidence commit carrying manifest and this document; an attestation *about* `83feb0f`, not product code |
+
+The branch tip is by construction the evidence commit on top of the code-state RC, so pinning its SHA
+inside a document that the tip itself contains would be self-defeating. The exact value is recorded
+where it can stay correct: `attests.generatedAtCommit` in
+`release-evidence/r0-release-evidence.json`, alongside `attests.subjectCommit` (the commit evaluated)
+and `attests.generatedFromCleanTree` (whether the tree the counts came from was clean — counts
+captured from a dirty tree are evidence about no commit). The generator derives `subjectCommit` from
+history and refuses to run if `R0_ATTESTED_COMMIT` disagrees with it, so a regenerated artifact cannot
+silently misname the code state it evaluates.
 
 The E-stage line is linear on the last accepted pre-E baseline. Every commit below is an ancestor of
-the RC, in this order, with no side merges, no dropped commits and no duplicated patch-ids:
+the branch tip, in this order, with no side merges, no dropped commits and no duplicated patch-ids.
+The R0-M commits are described by subject rather than by SHA, because the document is *inside* the tip
+and therefore cannot name commits that do not exist until it is committed; the machine-checkable
+record is in the evidence artifact (see above).
 
 | commit | stage | subject |
 |---|---|---|
@@ -36,7 +53,17 @@ the RC, in this order, with no side merges, no dropped commits and no duplicated
 | `3ef1002` | R0 | the three reproduction defects a clean checkout exposed |
 | `ec51796` | R0 | the reproducibility contract and the release evidence manifest |
 | `b702712` | R0 | the e4l cleanup hook timeout |
-| `6a3c8c1` | **R0 / RC** | the memoized module-graph analysis in the knowledge-boundary probes |
+| `6a3c8c1` | **R0 / code-state RC** | the memoized module-graph analysis in the knowledge-boundary probes |
+| `5ff47d0` | R0 | attest the release candidate with the measured evidence |
+| `4da3210` | R0-R | tighten the review surface and put the gates in CI |
+| `c6801d3` | R0-R | regenerate the release evidence under the §3.4 attestation schema |
+| `237ab75` | R0-R | quote the skip message so the r0-gates workflow parses |
+| `7ca1004` | **R0-R / code-state RC** | resolve npm/pnpm portably in the consumer smoke |
+| `03ea369` | R0-R | record the remote-CI results and classify the node floor |
+| `83feb0f` | **R0-M / code-state RC** | derive the attested commit, assert a clean generation tree, tighten D5 |
+| *R0-M* | R0-M | state the three revision identities and the corrected D5 classification |
+| *R0-M / evidence* | R0-M / evidence | attest the code-state RC with a clean-tree generation |
+| *(tip)* | R0-M / evidence | attest the code-state RC with a clean-tree generation |
 
 `9ec76ff` is also the current `origin/main`, so the line sits directly on the published mainline and
 no rebase is required.
@@ -99,11 +126,13 @@ ls -a | grep -E 'node_modules|dist|\.tgz'   # no output
 ## 4. Canonical validation commands
 
 Run sequentially, uncontended. Every command below was executed in the clean clone described in §3.
+The expected counts are those of the **current branch tip** (R0-R); the R0-era measurement at
+`6a3c8c1` is stated separately below it, because two of these numbers legitimately changed after R0.
 
 | # | command | expected |
 |---|---|---|
 | 1 | `pnpm build` | exit 0, 0 errors |
-| 2 | `pnpm exec vitest run` | 2921 passed / 248 files, **0 errors** |
+| 2 | `pnpm exec vitest run` | 2923 passed / 248 files, **0 errors** |
 | 3 | `pnpm test:e2e` | 38 passed |
 | 4 | `pnpm architecture:check` | `PASS`, 0 violations, 9 baseline exceptions observed |
 | 5 | `pnpm architecture:check-public-api` | `PASS`, missing 0 / changed kind 0 / added 0 |
@@ -112,7 +141,7 @@ Run sequentially, uncontended. Every command below was executed in the clean clo
 | 8 | `pnpm gate:e3-c-live` | 21 PASS / 0 FAIL |
 | 9 | `pnpm gate:e4-l-live` | 10 PASS / 0 FAIL |
 | 10 | `pnpm gate:e5-p-live` | 11 PASS / 0 FAIL, 38 findings |
-| 11 | `pnpm gate:e-live` | 24 PASS / 0 FAIL |
+| 11 | `pnpm gate:e-live` | 28 PASS / 0 FAIL |
 | 12 | `pnpm gate:d2-live` | 15 PASS / 0 FAIL |
 | 13 | `pnpm gate:d4-live` | 21 PASS / 0 FAIL |
 | 14 | `pnpm gate:d5-live` | 10 PASS / 0 FAIL |
@@ -123,24 +152,30 @@ Run sequentially, uncontended. Every command below was executed in the clean clo
 `gate:e-live` and `gate:e5-p-live`; both produced identical verdicts, so no gate depends on leftovers
 from a previous run.
 
-**Measured result of this exact sequence** on a clean clone at `6a3c8c1`: build 0 errors; 2921 tests
-in 248 files with 0 errors; 38 e2e; architecture 0 violations; public API 0/0/0; and
-14/14/21/10/11/24/15/21/10 verdicts across the nine live gates; consumer smoke `PASS`.
+**Measured result of this exact sequence** on a clean clone at `6a3c8c1` (R0's own code-state RC):
+build 0 errors; **2921** tests in 248 files with 0 errors; 38 e2e; architecture 0 violations; public
+API 0/0/0; and 14/14/21/10/11/**24**/15/21/10 verdicts across the nine live gates; consumer smoke
+`PASS`. R0-R later added the `e-live_derivation` test file and extended `gate:e-live` from 24 to 28
+verdicts, which is why the table above reads 2923 and 28 — the numbers differ because the *harness*
+grew, not because a measurement was revised.
 
 **One known flake, recorded rather than hidden.** `gate:d5-live` failed once in eight sequential runs
 of the RC with `the scheduler never offered TASK_STARTED for tb`, and passed on every retry (four
-consecutive). D5 drives two sibling tasks and waits for the scheduler's own `TASK_STARTED` decision to
-point at the task it is driving; under load the decision can be offered for the sibling first and the
-bounded wait gives up. R0 touches neither D5 nor any product source, so this is not an R0 regression —
-but a reader re-running the suite may hit it, and it is listed in the evidence manifest so the failure
-is not mistaken for a reproduction problem.
+consecutive). D5 drives two sibling tasks *concurrently* and waits for the scheduler's own
+`TASK_STARTED` decision to point at one exact sibling (`driveTask(taskId)`); under load the decision
+can be offered for the other sibling first and the gate's bounded wait gives up. This is an ordering
+assumption **in the gate**, not a demonstrated kernel race: the scheduler behaved consistently with
+its contract, and nothing in D5 or any product source was weakened. R0 touches neither, so this is
+not an R0 regression — but a reader re-running the suite may hit it, and it is listed in the evidence
+manifest so the failure is not mistaken for a reproduction problem.
 
 ### Determinism of `gate:e-live`
 
-Two runs of `gate:e-live` produce **byte-identical verdict lists** (24 PASS each). The run *output*
-differs only in allocated identifiers: `CONTACT_NEED_DECLARED` uses `need-${randomUUID()}`, and the
-procedure ids are content-addressed from digests that include those uuids. The counts, verdicts and
-the derived implementation are stable; a diff-based check should compare verdicts, not ids.
+Two runs of `gate:e-live` produce **byte-identical verdict lists** (28 PASS each at the current tip).
+The run *output* differs only in allocated identifiers: `CONTACT_NEED_DECLARED` uses
+`need-${randomUUID()}`, and the procedure ids are content-addressed from digests that include those
+uuids. The counts, verdicts and the derived implementation are stable; a diff-based check should
+compare verdicts, not ids.
 
 ## 5. Environment assumptions
 
@@ -250,11 +285,20 @@ what it did and did not run.
 
 ### D5 reliability pressure (§6)
 
-`gate:d5-live` was run **20 times sequentially** and passed **20/20**, with every outcome recorded.
-Combined with the single failure observed in eight earlier local runs, this classifies the event as:
+`gate:d5-live` was run **20 times sequentially** and passed **20/20**, with every outcome recorded
+rather than only the final status. Combined with the single failure observed in eight earlier local
+runs, this classifies the event as:
 
-> **KNOWN FLAKE, NONBLOCKING WITH EVIDENCE** — isolated and non-reproducible. No repeatable failure was
+> **KNOWN GATE-LEVEL SCHEDULER-ORDERING FLAKE, NONBLOCKING** — isolated and non-reproducible. The
+> flake is in the *gate's* wait, not in the kernel: `driveTask(taskId)` requires the scheduler's
+> `TASK_STARTED` decision to point at one exact sibling under concurrent drive, and under load it may
+> point at the other first. No kernel race was observed or demonstrated. No repeatable failure was
 > observed, so this is not a reliability blocker, and the D5 gate was not weakened.
+
+The CI reliability job applies the same three-way threshold rather than a binary one: **0 failures**
+is PASS, **1** is a known isolated flake reported as a warning, and **≥2** is a reliability blocker
+that fails the job. A single re-run of a flaky gate is not accepted as evidence anywhere in this
+matrix.
 
 ### Deferred pressures (unchanged)
 
@@ -283,10 +327,20 @@ argues for it.
 on, so there is no rebase to perform and no semantic conflict to resolve. If `main` advances before
 integration, re-run §4 in full on the rebased result rather than assuming the gates still hold.
 
-**Outward action.** R0 itself pushed nothing. R0-R then pushed `r0-production-integration` and opened
-PR #214 (base `e-live-intellectual-compounding`); `main` is still `9ec76ff` and the package is
-unpublished. `release-evidence/r0-release-evidence.json` records both the state at code-state capture
-and the current state rather than editing the historical claim.
+**Outward action.** R0 itself pushed nothing. R0-R then pushed `r0-production-integration`, opened
+PR #214 (base `e-live-intellectual-compounding`), and opened the umbrella PR #215
+(`r0-production-integration` → `main`, 18 commits, 113 files). `main` is still `9ec76ff` and the
+package is unpublished. Neither PR was merged or squashed; merging is an outward, state-changing
+action that R0-M does not perform without explicit authorization.
+
+`release-evidence/r0-release-evidence.json` keeps the outward state at each capture distinct rather
+than editing one historical claim. `atCodeStateCapture` is preserved verbatim as historical truth —
+R0's own RC `6a3c8c1` was genuinely unpushed — but it now also names the `subjectCommit` it describes,
+so it cannot be mistaken for a claim about a later code state. The currently attested subject was
+committed *after* the push and after PR #214 opened, so it gets its own `atAttestedSubjectCapture`
+instead of inheriting a claim that would have been false of it. The field describing the mutable
+present is deliberately called `outwardStateAtEvidenceCapture` rather than `current`, so a later stage
+cannot mistake a snapshot for a standing claim.
 
 ## 9. What this document does NOT claim
 
