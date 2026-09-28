@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1",
+  "branch": "r1-stochastic-compounding",
+  "baseMainSha": "044330b2e55198542d545edc42ed9c36e7ce896b",
+  "protocol": {
+    "digest": "2d1dfecaf7feecc55601a00f0760cec7e95b667f2972ad34bb831740b006feca",
+    "conditions": [
+      "C0",
+      "C1",
+      "C2"
+    ],
+    "scenarios": [
+      "A_DAG_PLANNER",
+      "B_CONFIG_MIGRATION"
+    ],
+    "trialsPerConditionPerScenario": 5,
+    "exploratoryFloor": 3,
+    "protocolSeed": 20260928,
+    "populations": [
+      5,
+      25,
+      100
+    ],
+    "relevantCount": 3,
+    "primaryMatrixStatus": "BLOCKED_R1_SEMANTIC_BLOCKER"
+  },
+  "trialPlan": {
+    "blocks": 5,
+    "perScenario": 15,
+    "total": 30
+  },
+  "blockOrder": [
+    {
+      "block": 0,
+      "order": [
+        "C2",
+        "C0",
+        "C1"
+      ]
+    },
+    {
+      "block": 1,
+      "order": [
+        "C0",
+        "C1",
+        "C2"
+      ]
+    },
+    {
+      "block": 2,
+      "order": [
+        "C1",
+        "C0",
+        "C2"
+      ]
+    },
+    {
+      "block": 3,
+      "order": [
+        "C0",
+        "C1",
+        "C2"
+      ]
+    },
+    {
+      "block": 4,
+      "order": [
+        "C2",
+        "C0",
+        "C1"
+      ]
+    }
+  ],
+  "primaryMatrix": {
+    "status": "BLOCKED_R1_SEMANTIC_BLOCKER",
+    "trialsRun": 0,
+    "trialsPlanned": 30,
+    "reason": "The three conditions are not distinguishable to the worker: the host renders neither compiled.boot nor compiled.handles into the model-visible prompt, and all palimpsest_* tools are denied to a worker, so selected capital cannot be pulled. See probe evidence.",
+    "evidence": [
+      "research-evidence/r1/rendered-prompt-C0.json",
+      "research-evidence/r1/rendered-prompt-C1.json",
+      "research-evidence/r1/rendered-prompt-C2.json",
+      "research-evidence/r1/worker-transcript-C0.txt",
+      "research-evidence/r1/worker-transcript-C1.txt",
+      "research-evidence/r1/worker-transcript-C2.txt"
+    ]
+  },
+  "secondaryExperiment": {
+    "status": "RUN",
+    "result": "research-evidence/r1/selection-pressure.json"
+  }
+}

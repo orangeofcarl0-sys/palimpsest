@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "experiment": "R1 §26–§29 relevance pressure",
+  "relevantCount": 3,
+  "populations": [
+    5,
+    25,
+    100
+  ],
+  "rows": [
+    {
+      "n": 5,
+      "associatedAssetsEnumerated": 5,
+      "candidateRefsInspected": 5,
+      "assetBodiesFetched": 5,
+      "operationsRequired": 9,
+      "wallMs": 4,
+      "mistakenInclusion": 2,
+      "relevantFound": {
+        "proof": true,
+        "reasoning": true,
+        "procedure": true
+      },
+      "relevantMissed": [],
+      "decoys": 2
+    },
+    {
+      "n": 25,
+      "associatedAssetsEnumerated": 25,
+      "candidateRefsInspected": 25,
+      "assetBodiesFetched": 25,
+      "operationsRequired": 29,
+      "wallMs": 12,
+      "mistakenInclusion": 22,
+      "relevantFound": {
+        "proof": true,
+        "reasoning": true,
+        "procedure": true
+      },
+      "relevantMissed": [],
+      "decoys": 22
+    },
+    {
+      "n": 100,
+      "associatedAssetsEnumerated": 100,
+      "candidateRefsInspected": 100,
+      "assetBodiesFetched": 100,
+      "operationsRequired": 104,
+      "wallMs": 39,
+      "mistakenInclusion": 97,
+      "relevantFound": {
+        "proof": true,
+        "reasoning": true,
+        "procedure": true
+      },
+      "relevantMissed": [],
+      "decoys": 97
+    }
+  ],
+  "classification": {
+    "verdict": "SCALING_FRICTION",
+    "reason": "selection cost grows materially with the asset population (inspected refs ×20.0, operations ×11.6) while correctness remains achievable at every N"
+  }
+}

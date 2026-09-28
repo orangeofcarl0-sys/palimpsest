@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "experiment": "R1 precondition probe \u2014 capital delivery to a REAL stochastic worker",
+  "whyItExists": "R1's primary matrix compares C0/C1/C2. That comparison is only meaningful if the three conditions differ in what the WORKER can see. This probe measures exactly that, with the shipped dshSubprocessWorkWorkerPort on a real DSH/deepseek-flash worker.",
+  "noteOnDigests": "The literal prompt digest includes the per-run H0 base commit, which is a fixture value rather than a condition variable, so the BASE-MASKED digest is the one to compare across conditions. All three are identical.",
+  "rows": [
+    {
+      "condition": "C0",
+      "handlesInPayload": 0,
+      "handlesRenderedIntoPrompt": false,
+      "bootRenderedIntoPrompt": false,
+      "capitalBodyBytesInPrompt": 0,
+      "modelVisiblePromptDigest": "8f6d53e2667dd94d071b64f188e13a57e391def97ff6105640fac661e6016d63",
+      "modelVisiblePromptDigestBaseMasked": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "acceptanceOracle": "8 pass / 0 fail"
+    },
+    {
+      "condition": "C1",
+      "handlesInPayload": 2,
+      "handlesRenderedIntoPrompt": false,
+      "bootRenderedIntoPrompt": false,
+      "capitalBodyBytesInPrompt": 0,
+      "modelVisiblePromptDigest": "8f6d53e2667dd94d071b64f188e13a57e391def97ff6105640fac661e6016d63",
+      "modelVisiblePromptDigestBaseMasked": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "acceptanceOracle": "8 pass / 0 fail"
+    },
+    {
+      "condition": "C2",
+      "handlesInPayload": 3,
+      "handlesRenderedIntoPrompt": false,
+      "bootRenderedIntoPrompt": false,
+      "capitalBodyBytesInPrompt": 0,
+      "modelVisiblePromptDigest": "8f6d53e2667dd94d071b64f188e13a57e391def97ff6105640fac661e6016d63",
+      "modelVisiblePromptDigestBaseMasked": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "acceptanceOracle": "8 pass / 0 fail"
+    }
+  ],
+  "finding": "All three conditions produced a BYTE-IDENTICAL model-visible prompt (identical base-masked digest). The knowledge handles appear in the delivery payload but are rendered into neither the prompt nor any tool the worker may call.",
+  "offeredToolsEveryCondition": [
+    "run_code"
+  ],
+  "distinctModelVisiblePrompts": 1
+}
