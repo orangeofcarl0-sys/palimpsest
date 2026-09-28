@@ -171,8 +171,13 @@ jobs:
           done
           echo "d5 reliability: $pass pass / $fail fail out of 20" | tee -a d5-results.txt
           cat d5-results.txt
-          # §6: an isolated non-reproducible failure is a KNOWN FLAKE; a repeatable one is a BLOCKER.
-          if [ "$fail" -gt 2 ]; then
+          # R0-M §4: a three-way threshold, so that a single isolated flake is classified as a
+          # GATE-LEVEL SCHEDULER-ORDERING FLAKE rather than silently passing or being read as a
+          # reliability blocker. 0 = PASS; 1 = known isolated flake, reported as a warning; >=2 =
+          # reliability blocker. D5 itself is NOT weakened and no retry is counted as evidence.
+          if [ "$fail" -eq 1 ]; then
+            echo "::warning::1/20 failures — known gate-level scheduler-ordering flake (driveTask waits for TASK_STARTED to point at one exact sibling under concurrent drive). Nonblocking; not a kernel race."
+          elif [ "$fail" -gt 1 ]; then
             echo "::error::$fail/20 failures is a reliability blocker, not a flake"
             exit 1
           fi

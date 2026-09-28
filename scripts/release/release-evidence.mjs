@@ -61,6 +61,55 @@ function isAncestor(commit) {
 /** A count that only a real run can produce. Absent ⇒ recorded honestly, never invented. */
 const captured = (name) => process.env[name]?.trim() || "not_captured";
 
+/**
+ * R0-M §3.3 — THE CODE-STATE RELEASE CANDIDATE IS DERIVED, NOT DECLARED.
+ *
+ * The artifact must name the commit it evaluates, and that commit must be the last one that changes
+ * something *under evaluation*. The evidence directory, the prose report and this generator are the
+ * record ABOUT a code state rather than the code state itself, so they are excluded; without that
+ * exclusion the artifact would name the commit that merely carries it, which §3.3 forbids as
+ * "pretending the evidence commit is the product RC".
+ *
+ * Deriving it here rather than reading an environment variable means a regenerated artifact cannot
+ * silently misname its subject. `R0_ATTESTED_COMMIT` is still honoured, but only as an assertion:
+ * supplying a value that disagrees is an error, not an override.
+ */
+const EVIDENCE_ONLY = [/^release-evidence\//u, /^docs\//u, /^scripts\/release\/release-evidence\.mjs$/u];
+
+function codeStateReleaseCandidate() {
+  const blocks = git("log", "--format=@@%H", "--name-only").split("@@").slice(1);
+  for (const block of blocks) {
+    const lines = block.split("\n").map((line) => line.trim()).filter((line) => line !== "");
+    const [hash, ...files] = lines;
+    if (files.some((file) => !EVIDENCE_ONLY.some((pattern) => pattern.test(file)))) return hash;
+  }
+  return "UNKNOWN";
+}
+
+const subjectCommit = codeStateReleaseCandidate();
+const declaredSubject = process.env.R0_ATTESTED_COMMIT?.trim();
+if (declaredSubject !== undefined && declaredSubject !== "" && declaredSubject !== subjectCommit) {
+  throw new Error(
+    `R0_ATTESTED_COMMIT=${declaredSubject} disagrees with the derived code-state RC ${subjectCommit}; ` +
+      "the artifact must name the commit it actually evaluates.",
+  );
+}
+
+/**
+ * The tip this artifact was generated at, and whether the tree it was generated FROM was clean.
+ *
+ * Both matter: the free-text counts below are captured from a run, and a run against a dirty tree is
+ * not evidence about any commit. This artifact is normally committed directly on top of
+ * `generatedAtCommit`, so the artifact's own commit is one step above the code state it describes —
+ * which is exactly the distinction §3.3 asks for.
+ */
+const generatedAtCommit = git("rev-parse", "HEAD");
+const ARTIFACT_PATH = "release-evidence/r0-release-evidence.json";
+const dirtyPaths = git("status", "--porcelain", "--", ".", `:!${ARTIFACT_PATH}`)
+  .split("\n")
+  .map((line) => line.trim())
+  .filter((line) => line !== "");
+
 const architectureBaseline = JSON.parse(
   execFileSync(process.execPath, ["-e", `process.stdout.write(require('fs').readFileSync(${JSON.stringify(join(REPO, "architecture", "module-architecture.json"))},'utf8'))`], { encoding: "utf8" }),
 );
@@ -78,19 +127,24 @@ const manifest = {
    * evidence commit would look like part of the product change it describes.
    */
   attests: {
-    subjectCommit: captured("R0_ATTESTED_COMMIT"),
+    subjectCommit,
     subjectIs: "the code-state release candidate (the last commit that changed code, harness, packaging or tests)",
+    subjectDerivation: "git log --format=@@%H --name-only, first commit touching a file outside release-evidence/, docs/, and this generator",
+    generatedAtCommit,
+    generatedAtCommitIsNotTheProductRc: true,
+    generatedFromCleanTree: dirtyPaths.length === 0,
+    dirtyPathsAtGeneration: dirtyPaths,
     thisArtifactIs: "an attestation ABOUT that commit, not a product-code change",
     evidenceCommitsAreNotProductCode: true,
   },
   releaseCandidate: {
-    commit: git("rev-parse", "HEAD"),
+    commit: subjectCommit,
     branch: git("rev-parse", "--abbrev-ref", "HEAD"),
-    tree: git("rev-parse", "HEAD^{tree}"),
+    tree: git("rev-parse", `${subjectCommit}^{tree}`),
     baselinePreE: "9ec76ff2657706386d4cfd3e64eff60fd716d604",
     mergeBaseWithOriginMain: (() => {
       try {
-        return git("merge-base", "HEAD", "origin/main");
+        return git("merge-base", subjectCommit, "origin/main");
       } catch {
         return "origin/main not fetched";
       }
@@ -177,12 +231,15 @@ const manifest = {
         "1 failure in 8 earlier local runs, then 20/20 PASS in a dedicated sequential reliability run",
       symptom: "the scheduler never offered TASK_STARTED for tb",
       detail:
-        "D5 drives two sibling tasks and waits for the scheduler's own TASK_STARTED decision to point " +
-        "at the task it is driving. Under load the decision can be offered for the sibling first, and " +
-        "the gate's bounded wait then gives up. The single observed failure did not reproduce in 20 " +
-        "consecutive runs, so it is isolated and non-reproducible. Neither D5 nor any product source " +
-        "is touched by R0, so this is not an R0 regression; the D5 gate was NOT weakened.",
-      classification: "KNOWN FLAKE, NONBLOCKING WITH EVIDENCE — no repeatable failure observed",
+        "D5 drives two sibling tasks concurrently and waits for the scheduler's own TASK_STARTED " +
+        "decision to point at ONE exact sibling (`driveTask(taskId)`). That is an ordering assumption " +
+        "in the GATE, not a defect in the kernel: under load the scheduler may offer the other sibling " +
+        "first, the gate's bounded wait then gives up, and it reports the absence as a failure. The " +
+        "scheduler behaved consistently with its contract throughout; no kernel race was observed or " +
+        "demonstrated. The single failure did not reproduce in 20 consecutive sequential runs, so it " +
+        "is isolated and non-reproducible. Neither D5 nor any product source is touched by R0/R0-R, so " +
+        "this is not a regression; the D5 gate was NOT weakened.",
+      classification: "KNOWN GATE-LEVEL SCHEDULER-ORDERING FLAKE, NONBLOCKING",
     },
   ],
   nodeFloor: {
@@ -194,21 +251,47 @@ const manifest = {
     classification: "DECLARED FLOOR SATISFIED BY A TESTED INTERPRETER, NECESSITY UNVERIFIED",
     action: "not lowered in this stage; a lower bound is a compatibility promise, not a reproducibility fix",
   },
-  // R0-R §3.4: distinguish what was true WHEN the code-state RC was captured from what is true NOW.
-  // The historical statement must not be rewritten as the tree moves; instead both are stated.
+  // R0-R §3.4 / R0-M §3.3: outward state is MUTABLE and must never be recorded as an unqualified
+  // `current`. Each capture is tied to the commit it describes, and the historical statement is
+  // preserved rather than rewritten as the tree moves.
+  //
+  // The distinction is not cosmetic here. R0's own code-state RC (`6a3c8c1`) was a local commit made
+  // before anything was pushed, so "not pushed / no pull request" was literally true of it. R0-R then
+  // pushed the branch, opened PR #214, and moved the code-state RC forward twice — so a single
+  // `atCodeStateCapture` field carried forward from the R0 era would have been FALSE of the commit it
+  // now names. Both captures are therefore stated against their own subject.
   outwardAction: {
+    // Preserved verbatim as historical truth: at this capture nothing had been pushed, and that stays
+    // true of this commit forever. `subjectCommit` is stated so the claim is never mistaken for a
+    // description of a LATER code-state RC.
     atCodeStateCapture: {
-      meaning: "the state of the OUTWARD world at the moment the code-state RC commit was made",
+      subjectCommit: "6a3c8c1aa32190d4132022714aedf2fb89f3c735",
+      meaning: "the outward world when R0's own code-state RC was committed (historical; unchanged)",
       remoteBranch: "not pushed",
       pullRequest: "none",
       main: "unchanged (9ec76ff)",
       package: "unpublished",
     },
-    current: captured("R0_OUTWARD_ACTION_CURRENT"),
+    // The currently attested subject cannot inherit the claim above: it was committed AFTER the branch
+    // was pushed and after PR #214 opened, so carrying `atCodeStateCapture` forward would have been
+    // false of it. It gets its own capture.
+    atAttestedSubjectCapture: {
+      subjectCommit,
+      meaning: "the outward world at the moment the commit THIS artifact attests was committed",
+      remoteBranch: "pushed (origin/r0-production-integration)",
+      pullRequest: "#214 open (base e-live-intellectual-compounding)",
+      main: "unchanged (9ec76ff)",
+      package: "unpublished",
+    },
+    // The one field describing the mutable present. It is named for the instant it describes rather
+    // than called `current`, so a later stage cannot mistake a snapshot for a standing claim.
+    outwardStateAtEvidenceCapture: captured("R0_OUTWARD_ACTION_CURRENT"),
     note:
-      "The code-state RC is a LOCAL COMMIT; nothing about it was pushed when it was captured. A later " +
-      "stage may push the branch or open a PR, and this field records that separately rather than " +
-      "retroactively editing the historical claim.",
+      "The code-state RC is the last commit that changed code, harness, packaging or tests. R0's own " +
+      "RC was a local commit captured before any push, so `atCodeStateCapture` records that; the " +
+      "currently attested subject was committed after the branch was pushed and after PR #214 opened, " +
+      "so `atAttestedSubjectCapture` records that instead. Neither is retroactively edited, and the " +
+      "evidence commit that carries this file is not the product RC.",
   },
 };
 
