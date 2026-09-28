@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "scripts/release/release-evidence.mjs",
+  "attests": {
+    "subjectCommit": "83feb0f391b5141fb9aa05f92e98bb4dda818af3",
+    "subjectIs": "the code-state release candidate (the last commit that changed code, harness, packaging or tests)",
+    "subjectDerivation": "git log --format=@@%H --name-only, first commit touching a file outside release-evidence/, docs/, and this generator",
+    "generatedAtCommit": "34bbe09b2c14439b5518365a8b35204e49c63e35",
+    "generatedAtCommitIsNotTheProductRc": true,
+    "generatedFromCleanTree": true,
+    "dirtyPathsAtGeneration": [],
+    "thisArtifactIs": "an attestation ABOUT that commit, not a product-code change",
+    "evidenceCommitsAreNotProductCode": true
+  },
+  "releaseCandidate": {
+    "commit": "83feb0f391b5141fb9aa05f92e98bb4dda818af3",
+    "branch": "r0-production-integration",
+    "tree": "0c47d234a664249a7efcc2dbdce7737e5b23c27c",
+    "baselinePreE": "9ec76ff2657706386d4cfd3e64eff60fd716d604",
+    "mergeBaseWithOriginMain": "9ec76ff2657706386d4cfd3e64eff60fd716d604"
+  },
+  "stageAncestry": [
+    {
+      "stage": "E0",
+      "subject": "docs(e0): close project production rebase and freeze E1-K",
+      "commit": "0042a2e2dbb9ed9dcaa7b779fb0f59203f1233da",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E1-K",
+      "subject": "feat(e1-k): capitalize governed knowledge into attempt context",
+      "commit": "05d099a19704edd9a2793fe2e19b912a4aad9719",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E2-I",
+      "subject": "feat(e2-i): reconcile project intent from governed evidence",
+      "commit": "1b658e8a0484fa24a6898cd44047e6db3c86631e",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E3-C",
+      "subject": "feat(e3-c): close sovereign project collaboration loop",
+      "commit": "f081d1c8e019258f315ebd8c276cd65bb81d80f7",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E4-L",
+      "subject": "feat(e4-l): close structural intervention learning loop",
+      "commit": "b86c43b64ead1e573e12bd82771f1dd7bccb9971",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E5-P",
+      "subject": "feat(e5-p): capitalize project experience into reusable procedures",
+      "commit": "ad8f3e6ebc0566856764dc66f5fb3fa1fd138ec3",
+      "ancestorOfHead": true
+    },
+    {
+      "stage": "E-LIVE",
+      "subject": "test(e-live): prove long-horizon project intelligence compounding",
+      "commit": "ec40f6b60a557be7af7bb6f083b9d71c8e9f6cb1",
+      "ancestorOfHead": true
+    }
+  ],
+  "canonicalCommands": [
+    "pnpm build",
+    "pnpm exec vitest run",
+    "pnpm test:e2e",
+    "pnpm architecture:check",
+    "pnpm architecture:check-public-api",
+    "pnpm gate:e1-k-live",
+    "pnpm gate:e2-i-live",
+    "pnpm gate:e3-c-live",
+    "pnpm gate:e4-l-live",
+    "pnpm gate:e5-p-live",
+    "pnpm gate:e-live",
+    "pnpm gate:d2-live",
+    "pnpm gate:d4-live",
+    "pnpm gate:d5-live",
+    "pnpm release:consumer-smoke"
+  ],
+  "expectedCounts": {
+    "unitTestFiles": "248",
+    "unitTests": "2923",
+    "unitErrors": "0",
+    "e2e": "38",
+    "liveGates": {
+      "gate:e1-k-live": "14 PASS / 0 FAIL",
+      "gate:e2-i-live": "14 PASS / 0 FAIL",
+      "gate:e3-c-live": "21 PASS / 0 FAIL",
+      "gate:e4-l-live": "10 PASS / 0 FAIL",
+      "gate:e5-p-live": "11 PASS / 0 FAIL (38 findings)",
+      "gate:e-live": "28 PASS / 0 FAIL",
+      "gate:d2-live": "15 PASS / 0 FAIL (Windows)",
+      "gate:d4-live": "21 PASS / 0 FAIL (Windows)",
+      "gate:d5-live": "10 PASS / 0 FAIL per run; 20/20 PASS in the reliability run (Windows)"
+    }
+  },
+  "remoteCi": {
+    "platform": "ubuntu-latest",
+    "node": "v24.21.0",
+    "pnpm": "11.28.0",
+    "unitTests": "2923 passed / 248 files",
+    "e2e": "38 passed",
+    "gatesRunOnCi": [
+      "gate:e1-k-live",
+      "gate:e2-i-live",
+      "gate:e3-c-live",
+      "gate:e4-l-live",
+      "gate:e5-p-live",
+      "gate:e-live"
+    ],
+    "packageSmoke": "PASS — all six declared subpaths resolve",
+    "gatesSkippedWithoutDsh": [
+      "gate:d2-live",
+      "gate:d4-live",
+      "gate:d5-live"
+    ],
+    "pullRequest": "https://github.com/orangeofcarl0-sys/palimpsest/pull/214 (narrow R0 review surface); https://github.com/orangeofcarl0-sys/palimpsest/pull/215 (umbrella landing review)"
+  },
+  "architecture": {
+    "dependencyFirewalls": 22,
+    "hotspotRatchets": 4,
+    "importerAllowlists": 2,
+    "permittedForbiddenEdges": 4,
+    "permittedCycles": 5,
+    "capturedFrom": "e6994503006297073cddba3895fe84ed5b3445c3",
+    "capturedTree": "9793e63c9ff6cc1e9f5783ee19a1c6f5d7c8325e"
+  },
+  "publicApi": {
+    "entrypoints": [
+      ".",
+      "./advanced",
+      "./procedures",
+      "./project-intent",
+      "./project-collaboration",
+      "./institutional-learning"
+    ],
+    "result": "PASS missing 0 / changed kind 0 / added 0"
+  },
+  "package": {
+    "name": "palimpsest-dsh",
+    "version": "0.1.2",
+    "private": true,
+    "artifact": "palimpsest-dsh-0.1.2.tgz",
+    "artifactSha256": "not_captured"
+  },
+  "knownFlakes": [
+    {
+      "gate": "gate:d5-live",
+      "observedRate": "1 failure in 8 earlier local runs, then 20/20 PASS in a dedicated sequential reliability run",
+      "symptom": "the scheduler never offered TASK_STARTED for tb",
+      "detail": "D5 drives two sibling tasks concurrently and waits for the scheduler's own TASK_STARTED decision to point at ONE exact sibling (`driveTask(taskId)`). That is an ordering assumption in the GATE, not a defect in the kernel: under load the scheduler may offer the other sibling first, the gate's bounded wait then gives up, and it reports the absence as a failure. The scheduler behaved consistently with its contract throughout; no kernel race was observed or demonstrated. The single failure did not reproduce in 20 consecutive sequential runs, so it is isolated and non-reproducible. Neither D5 nor any product source is touched by R0/R0-R, so this is not a regression; the D5 gate was NOT weakened.",
+      "classification": "KNOWN GATE-LEVEL SCHEDULER-ORDERING FLAKE, NONBLOCKING"
+    }
+  ],
+  "nodeFloor": {
+    "declared": ">=24.15.0",
+    "observedInterpreters": [
+      {
+        "version": "v24.14.1",
+        "platform": "Windows (local)",
+        "satisfiesDeclaredFloor": false,
+        "fullMatrix": "passes"
+      },
+      {
+        "version": "v24.21.0",
+        "platform": "ubuntu-latest (CI)",
+        "satisfiesDeclaredFloor": true,
+        "fullMatrix": "passes"
+      }
+    ],
+    "classification": "DECLARED FLOOR SATISFIED BY A TESTED INTERPRETER, NECESSITY UNVERIFIED",
+    "action": "not lowered in this stage; a lower bound is a compatibility promise, not a reproducibility fix"
+  },
+  "outwardAction": {
+    "atCodeStateCapture": {
+      "subjectCommit": "6a3c8c1aa32190d4132022714aedf2fb89f3c735",
+      "meaning": "the outward world when R0's own code-state RC was committed (historical; unchanged)",
+      "remoteBranch": "not pushed",
+      "pullRequest": "none",
+      "main": "unchanged (9ec76ff)",
+      "package": "unpublished"
+    },
+    "atAttestedSubjectCapture": {
+      "subjectCommit": "83feb0f391b5141fb9aa05f92e98bb4dda818af3",
+      "meaning": "the outward world at the moment the commit THIS artifact attests was committed",
+      "remoteBranch": "pushed (origin/r0-production-integration)",
+      "pullRequest": "#214 open (base e-live-intellectual-compounding)",
+      "main": "unchanged (9ec76ff)",
+      "package": "unpublished"
+    },
+    "outwardStateAtEvidenceCapture": "branch pushed (origin/r0-production-integration); PR #214 open (base e-live-intellectual-compounding); PR #215 open (base main); main unchanged (9ec76ff); package unpublished; nothing merged",
+    "note": "The code-state RC is the last commit that changed code, harness, packaging or tests. R0's own RC was a local commit captured before any push, so `atCodeStateCapture` records that; the currently attested subject was committed after the branch was pushed and after PR #214 opened, so `atAttestedSubjectCapture` records that instead. Neither is retroactively edited, and the evidence commit that carries this file is not the product RC."
+  }
+}

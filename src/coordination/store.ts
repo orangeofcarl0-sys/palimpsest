@@ -63,6 +63,7 @@ export type CoordinationEventType =
   | "PARTICIPATION_STARTED"
   | "PARTICIPATION_ENDED"
   | "CONTACT_REQUESTED"
+  | "CONTACT_NEED_DECLARED"
   | "MESSAGE_PREPARED"
   | "MESSAGE_DELIVERED"
   | "MESSAGE_RECEIVED"
@@ -75,7 +76,10 @@ export type CoordinationEventType =
   | "COMMITMENT_SUPERSEDED"
   | "HANDOFF_OFFERED"
   | "HANDOFF_ACCEPTED"
-  | "HANDOFF_REJECTED";
+  | "HANDOFF_REJECTED"
+  | "FULFILLMENT_SUBMITTED"
+  | "FULFILLMENT_DECIDED"
+  | "COMMITMENT_FULFILLED";
 
 export interface InvocationRecordedPayload {
   readonly invocation: Invocation;

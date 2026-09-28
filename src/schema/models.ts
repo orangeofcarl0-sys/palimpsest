@@ -1153,7 +1153,10 @@ function optionalPositiveInt(value: unknown, name: string): number | null {
  */
 const EVENT_PAYLOAD_FIELDS: Record<EventType, readonly string[]> = {
   PROJECT_CREATED: ["project_ir"],
-  PROJECT_REVISED: ["project_ir", "promotion_id"],
+  // E2-I §14: `intent_reconciliation` is an ADDITIVE OPTIONAL key carrying the accepted intent
+  // reconciliation receipt. An event without it normalizes exactly as before, so every existing
+  // revision's canonical digest is unchanged.
+  PROJECT_REVISED: ["project_ir", "promotion_id", "intent_reconciliation"],
   TASK_CREATED: ["task_envelope", "initial_state", "policy_id", "policy_digest"],
   TASK_BLOCKED: ["previous_state", "new_state", "reason"],
   TASK_READY: ["previous_state", "new_state", "reason", "batch_activation_event_id", "rework_provenance"],
@@ -1481,6 +1484,303 @@ function parsePriorResultContext(raw: unknown): Record<string, unknown> {
   };
 }
 
+/**
+ * E1-K §7.2/§7.3 — a GOVERNED KNOWLEDGE BINDING on the context manifest (`knowledge`, optional
+ * additive). A domain-specific discriminated union: the two kinds carry DIFFERENT facts because a
+ * proof standing and a reasoning frontier are different owner truths. There is deliberately no
+ * `UniversalCanonicalRef` / `KnowledgeRef {kind,id}` — a `kind:string` envelope would let a writer
+ * attach any standing to any asset, which is exactly the drift §7.2 forbids.
+ *
+ * Closed contract: unknown keys are rejected in the envelope AND in each kind's body. Standing and
+ * freshness vocabularies are validated verbatim; they are never coerced to booleans.
+ */
+function parseKnowledgeBinding(raw: unknown): Record<string, unknown> {
+  const binding = expectObject(raw);
+  const kind = expectString(binding.kind);
+  if (kind === "proof") {
+    requireFields(
+      binding,
+      "kind",
+      "proof_claim_id",
+      "standing_at_compile",
+      "freshness_at_compile",
+      "proof_basis_at_compile",
+      "inclusion_reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "proof_claim_id", "standing_at_compile", "freshness_at_compile", "proof_basis_at_compile", "inclusion_reason", "handle"],
+      "manifest knowledge binding (proof)",
+    );
+    const basis = expectObject(binding.proof_basis_at_compile);
+    requireFields(basis, "scopeId", "throughSeq", "chainDigest");
+    rejectUnknownFields(basis, ["scopeId", "throughSeq", "chainDigest"], "manifest knowledge proof basis");
+    const standing = expectString(binding.standing_at_compile);
+    if (!KNOWLEDGE_PROOF_STANDINGS_SET.has(standing)) {
+      throw new ContractError(`manifest knowledge proof standing: invalid literal`);
+    }
+    const freshness = expectString(binding.freshness_at_compile);
+    if (!KNOWLEDGE_PROOF_FRESHNESS_SET.has(freshness)) {
+      throw new ContractError(`manifest knowledge proof freshness: invalid literal`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "proof" as const,
+      proof_claim_id: field(binding.proof_claim_id, "proof_claim_id", (inner) => nonEmpty(expectString(inner))),
+      standing_at_compile: standing,
+      freshness_at_compile: freshness,
+      proof_basis_at_compile: {
+        scopeId: field(basis.scopeId, "scopeId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(basis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(basis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      inclusion_reason: "explicit_request" as const,
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
+  if (kind === "reasoning") {
+    requireFields(
+      binding,
+      "kind",
+      "cell_id",
+      "claim_id",
+      "frontier_basis_at_compile",
+      "active_at_compile",
+      "inclusion_reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "cell_id", "claim_id", "frontier_basis_at_compile", "active_at_compile", "inclusion_reason", "handle"],
+      "manifest knowledge binding (reasoning)",
+    );
+    const basis = expectObject(binding.frontier_basis_at_compile);
+    requireFields(basis, "cellId", "frontierRevision", "frontierDigest");
+    rejectUnknownFields(basis, ["cellId", "frontierRevision", "frontierDigest"], "manifest knowledge frontier basis");
+    // §7.3: only ACTIVE claims are bound, so the literal is pinned rather than merely typed.
+    if (binding.active_at_compile !== true) {
+      throw new ContractError(`manifest knowledge active_at_compile must be true`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "reasoning" as const,
+      cell_id: field(binding.cell_id, "cell_id", (inner) => nonEmpty(expectString(inner))),
+      claim_id: field(binding.claim_id, "claim_id", (inner) => nonEmpty(expectString(inner))),
+      frontier_basis_at_compile: {
+        cellId: field(basis.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+        frontierRevision: field(basis.frontierRevision, "frontierRevision", expectInt),
+        frontierDigest: field(basis.frontierDigest, "frontierDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      active_at_compile: true as const,
+      inclusion_reason: "explicit_request" as const,
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
+  if (kind === "procedure") {
+    // E5-P §16/§18: the THIRD binding kind, additive. It carries only historical binding metadata —
+    // there is deliberately no `body` and no `preview` key, so a manifest can never become a method
+    // cache. The compile-time standing is a verbatim literal, never coerced.
+    requireFields(
+      binding,
+      "kind",
+      "procedure_id",
+      "procedure_revision",
+      "standing_at_compile",
+      "procedure_basis_at_compile",
+      "inclusion_reason",
+      "reason",
+      "handle",
+    );
+    rejectUnknownFields(
+      binding,
+      ["kind", "procedure_id", "procedure_revision", "standing_at_compile", "procedure_basis_at_compile", "inclusion_reason", "reason", "handle"],
+      "manifest knowledge binding (procedure)",
+    );
+    const procedureBasis = expectObject(binding.procedure_basis_at_compile);
+    requireFields(procedureBasis, "procedureId", "throughSeq", "chainDigest");
+    rejectUnknownFields(procedureBasis, ["procedureId", "throughSeq", "chainDigest"], "manifest knowledge procedure basis");
+    const procedureStanding = expectString(binding.standing_at_compile);
+    if (!KNOWLEDGE_PROCEDURE_STANDINGS_SET.has(procedureStanding)) {
+      throw new ContractError(`manifest knowledge procedure standing: invalid literal`);
+    }
+    if (expectString(binding.inclusion_reason) !== "explicit_request") {
+      throw new ContractError(`manifest knowledge inclusion_reason: invalid literal`);
+    }
+    return {
+      kind: "procedure" as const,
+      procedure_id: field(binding.procedure_id, "procedure_id", (inner) => nonEmpty(expectString(inner))),
+      procedure_revision: field(binding.procedure_revision, "procedure_revision", expectInt),
+      standing_at_compile: procedureStanding,
+      procedure_basis_at_compile: {
+        procedureId: field(procedureBasis.procedureId, "procedureId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(procedureBasis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(procedureBasis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      inclusion_reason: "explicit_request" as const,
+      reason: field(binding.reason, "reason", (inner) => nonEmpty(expectString(inner))),
+      handle: field(binding.handle, "handle", (inner) => nonEmpty(expectString(inner))),
+    };
+  }
+  throw new ContractError(`manifest knowledge binding kind: invalid literal`);
+}
+
+/**
+ * E1-K §11: the standing/freshness vocabularies, MIRRORED from the Context owner's own declaration.
+ * They are literals here so the wire validator can close the contract without `src/schema/` depending
+ * on `src/context/`'s runtime module; a targeted test pins that the two lists agree.
+ */
+const KNOWLEDGE_PROOF_STANDINGS_SET = new Set(["SUPPORTED", "PARTIALLY_SUPPORTED", "CONTRADICTED", "INCONCLUSIVE", "STALE"]);
+const KNOWLEDGE_PROOF_FRESHNESS_SET = new Set(["fresh", "stale", "unknown"]);
+/** E5-P §12: MIRRORED from the procedure owner's own `PROCEDURE_STANDINGS`; a test pins the two lists. */
+const KNOWLEDGE_PROCEDURE_STANDINGS_SET = new Set(["ACTIVE", "SUPERSEDED", "RETIRED"]);
+
+/**
+ * E2-I §14/§29 — the ACCEPTED INTENT RECONCILIATION RECEIPT carried additively on `PROJECT_REVISED`.
+ *
+ * Declared INLINE here rather than imported from `src/project_intent/`, for the same reason
+ * `parsePriorResultContext` is: `src/schema/` is L1 and the intent module is L2, so importing it would
+ * be an upward dependency for a shape that carries no behaviour. The two definitions are pinned
+ * together by a targeted test.
+ *
+ * Closed contract: unknown keys are rejected at every level, the ground bindings keep their per-kind
+ * key sets, and the digest is re-derived — a tampered receipt is refused rather than believed.
+ */
+function parseAcceptedIntentReconciliation(raw: unknown): Record<string, unknown> {
+  const receipt = expectObject(raw);
+  rejectUnknownFields(
+    receipt,
+    ["schemaVersion", "proposalId", "proposalDigest", "proposalBasis", "groundBindings", "rationale", "admission", "acceptedAt", "digest"],
+    "accepted intent reconciliation",
+  );
+  requireFields(receipt, "schemaVersion", "proposalId", "proposalDigest", "proposalBasis", "groundBindings", "rationale", "admission", "acceptedAt", "digest");
+  if (receipt.schemaVersion !== 1) {
+    throw new ContractError("accepted intent reconciliation schemaVersion must be 1");
+  }
+  const proposalBasis = expectObject(receipt.proposalBasis);
+  requireFields(proposalBasis, "projectId", "revision", "digest", "headCommit");
+  rejectUnknownFields(proposalBasis, ["projectId", "revision", "digest", "headCommit"], "accepted intent reconciliation proposalBasis");
+  const admission = expectObject(receipt.admission);
+  requireFields(admission, "decision", "policyRef", "provenanceDigest");
+  rejectUnknownFields(admission, ["decision", "policyRef", "provenanceDigest"], "accepted intent reconciliation admission");
+  if (admission.decision !== "ADMIT") {
+    throw new ContractError("an accepted intent reconciliation receipt records only an ADMIT decision");
+  }
+  const policyRef = expectObject(admission.policyRef);
+  requireFields(policyRef, "policyId", "version");
+  rejectUnknownFields(policyRef, ["policyId", "version"], "accepted intent reconciliation policyRef");
+  const groundBindings = expectArray(receipt.groundBindings).map((entry) => parseIntentGroundBinding(entry));
+  return {
+    schemaVersion: 1 as const,
+    proposalId: field(receipt.proposalId, "proposalId", (inner) => nonEmpty(expectString(inner))),
+    proposalDigest: field(receipt.proposalDigest, "proposalDigest", (inner) => validateDigest(expectString(inner))),
+    proposalBasis: {
+      projectId: field(proposalBasis.projectId, "projectId", (inner) => nonEmpty(expectString(inner))),
+      revision: field(proposalBasis.revision, "revision", expectInt),
+      digest: field(proposalBasis.digest, "digest", (inner) => validateDigest(expectString(inner))),
+      headCommit: field(proposalBasis.headCommit, "headCommit", (inner) => nonEmpty(expectString(inner))),
+    },
+    groundBindings,
+    rationale: field(receipt.rationale, "rationale", expectString),
+    admission: {
+      decision: "ADMIT" as const,
+      policyRef: {
+        policyId: field(policyRef.policyId, "policyId", (inner) => nonEmpty(expectString(inner))),
+        version: field(policyRef.version, "version", (inner) => nonEmpty(expectString(inner))),
+      },
+      provenanceDigest: field(admission.provenanceDigest, "provenanceDigest", (inner) => validateDigest(expectString(inner))),
+    },
+    acceptedAt: field(receipt.acceptedAt, "acceptedAt", (inner) => nonEmpty(expectString(inner))),
+    digest: field(receipt.digest, "digest", (inner) => validateDigest(expectString(inner))),
+  };
+}
+
+/** One E2-I ground binding. The three kinds carry DIFFERENT facts and are never flattened. */
+function parseIntentGroundBinding(raw: unknown): Record<string, unknown> {
+  const binding = expectObject(raw);
+  const kind = expectString(binding.kind);
+  if (kind === "proof") {
+    requireFields(binding, "kind", "claimId", "standingAtProposal", "freshnessAtProposal", "proofBasisAtProposal", "projectAssociation");
+    rejectUnknownFields(binding, ["kind", "claimId", "standingAtProposal", "freshnessAtProposal", "proofBasisAtProposal", "projectAssociation"], "intent ground (proof)");
+    const basis = expectObject(binding.proofBasisAtProposal);
+    requireFields(basis, "scopeId", "throughSeq", "chainDigest");
+    rejectUnknownFields(basis, ["scopeId", "throughSeq", "chainDigest"], "intent ground proof basis");
+    if (binding.projectAssociation !== "PROOF_CLAIM") {
+      throw new ContractError("intent proof ground projectAssociation must be PROOF_CLAIM");
+    }
+    return {
+      kind: "proof" as const,
+      claimId: field(binding.claimId, "claimId", (inner) => nonEmpty(expectString(inner))),
+      standingAtProposal: field(binding.standingAtProposal, "standingAtProposal", (inner) => nonEmpty(expectString(inner))),
+      freshnessAtProposal: field(binding.freshnessAtProposal, "freshnessAtProposal", (inner) => nonEmpty(expectString(inner))),
+      proofBasisAtProposal: {
+        scopeId: field(basis.scopeId, "scopeId", (inner) => nonEmpty(expectString(inner))),
+        throughSeq: field(basis.throughSeq, "throughSeq", expectInt),
+        chainDigest: field(basis.chainDigest, "chainDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      projectAssociation: "PROOF_CLAIM" as const,
+    };
+  }
+  if (kind === "reasoning") {
+    requireFields(binding, "kind", "cellId", "claimId", "frontierBasisAtProposal", "activeAtProposal", "projectAssociation");
+    rejectUnknownFields(binding, ["kind", "cellId", "claimId", "frontierBasisAtProposal", "activeAtProposal", "projectAssociation"], "intent ground (reasoning)");
+    const basis = expectObject(binding.frontierBasisAtProposal);
+    requireFields(basis, "cellId", "frontierRevision", "frontierDigest");
+    rejectUnknownFields(basis, ["cellId", "frontierRevision", "frontierDigest"], "intent ground frontier basis");
+    if (binding.activeAtProposal !== true) {
+      throw new ContractError("intent reasoning ground activeAtProposal must be true");
+    }
+    if (binding.projectAssociation !== "REASONING_CELL") {
+      throw new ContractError("intent reasoning ground projectAssociation must be REASONING_CELL");
+    }
+    return {
+      kind: "reasoning" as const,
+      cellId: field(binding.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+      claimId: field(binding.claimId, "claimId", (inner) => nonEmpty(expectString(inner))),
+      frontierBasisAtProposal: {
+        cellId: field(basis.cellId, "cellId", (inner) => nonEmpty(expectString(inner))),
+        frontierRevision: field(basis.frontierRevision, "frontierRevision", expectInt),
+        frontierDigest: field(basis.frontierDigest, "frontierDigest", (inner) => nonEmpty(expectString(inner))),
+      },
+      activeAtProposal: true as const,
+      projectAssociation: "REASONING_CELL" as const,
+    };
+  }
+  if (kind === "negative_result") {
+    requireFields(binding, "kind", "entryId", "entryDigest", "projectId", "journalKind", "resolutionAtProposal");
+    rejectUnknownFields(binding, ["kind", "entryId", "entryDigest", "projectId", "journalKind", "resolutionAtProposal"], "intent ground (negative_result)");
+    // §28: the journal kind is pinned — a negative result is never relabelled as evidence.
+    if (binding.journalKind !== "NEGATIVE_RESULT") {
+      throw new ContractError("intent negative-result ground journalKind must be NEGATIVE_RESULT");
+    }
+    const resolution =
+      binding.resolutionAtProposal === null || binding.resolutionAtProposal === undefined
+        ? null
+        : (() => {
+            const value = expectObject(binding.resolutionAtProposal);
+            rejectUnknownFields(value, ["status", "detail"], "intent ground resolution");
+            requireFields(value, "status");
+            return {
+              status: field(value.status, "status", (inner) => nonEmpty(expectString(inner))),
+              ...(value.detail === undefined ? {} : { detail: expectString(value.detail) }),
+            };
+          })();
+    return {
+      kind: "negative_result" as const,
+      entryId: field(binding.entryId, "entryId", (inner) => nonEmpty(expectString(inner))),
+      entryDigest: field(binding.entryDigest, "entryDigest", (inner) => validateDigest(expectString(inner))),
+      projectId: field(binding.projectId, "projectId", (inner) => nonEmpty(expectString(inner))),
+      journalKind: "NEGATIVE_RESULT" as const,
+      resolutionAtProposal: resolution,
+    };
+  }
+  throw new ContractError("intent ground binding kind: invalid literal");
+}
+
 export function normalizeEventPayload(
   eventType: EventType,
   payload: unknown,
@@ -1499,6 +1799,12 @@ export function normalizeEventPayload(
         result.promotion_id = field(raw.promotion_id, "promotion_id", (inner) =>
           validateIdentifier(expectString(inner)),
         );
+        // E2-I §14: the ADDITIVE OPTIONAL accepted intent reconciliation receipt. Validated by the
+        // SAME closed per-kind discipline the proposal itself uses, so a malformed or tampered receipt
+        // can never reach the ledger.
+        if (raw.intent_reconciliation !== undefined && raw.intent_reconciliation !== null) {
+          result.intent_reconciliation = parseAcceptedIntentReconciliation(raw.intent_reconciliation);
+        }
       }
       return result;
     }
@@ -1789,6 +2095,7 @@ export function normalizeEventPayload(
           "retrieval",
           "semantic",
           "continuation",
+          "knowledge",
           "created_at",
         ],
         "context manifest",
@@ -1852,6 +2159,10 @@ export function normalizeEventPayload(
           ...(manifest.continuation === undefined
             ? {}
             : { continuation: parsePriorResultContext(manifest.continuation) }),
+          // E1-K §7: the optional GOVERNED KNOWLEDGE BINDINGS.
+          ...(manifest.knowledge === undefined
+            ? {}
+            : { knowledge: expectArray(manifest.knowledge).map((entry) => parseKnowledgeBinding(entry)) }),
         },
       };
     }

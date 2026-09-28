@@ -23,6 +23,10 @@ import {
   materializePeerRef,
   materializeThreadRef,
 } from "../src/federation/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
+import { declareNeed } from "./collaboration_fixture.js";
 import type { PeerRef } from "../src/federation/index.js";
 import {
   makeFederationInboundPump,
@@ -115,7 +119,10 @@ describe("G10-P adversarial behaviors", () => {
       localPeer: P,
       allocateCommitmentId: () => "com-1",
       allocateHandoffId: () => "ho-1",
+      // E3-C §18: a contact_need scope must name a durably declared need.
+      contactNeedScopeGuard: durableContactNeedScopeGuard(store),
     });
+    await declareNeed(store, "need-1");
     const offer = await commitments.offerCommitment({
       proposedHolder: REMOTE,
       scope: { kind: "contact_need", contactNeedId: "need-1" },

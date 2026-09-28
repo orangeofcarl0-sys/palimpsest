@@ -1053,6 +1053,237 @@
         ],
         "reason": "Result ≠ World, and SR-2c made that a module boundary. The result plane judges nothing about the world's consistency and must not reach the Work owner, the log or the host to do its job.",
         "exclusions": []
+      },
+      {
+        "id": "context-not-knowledge-owner-internals",
+        "from": [
+          "src/context/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/"
+        ],
+        "reason": "E1-K: the context owner consumes admitted knowledge through its own consumer-owned read ports (`ContextKnowledgePorts`), and composition adapts the canonical owners into them. Naming Proof or Reasoning directly would make context a SECOND reader of their semantics — the drift SR-2a removed for the world plane. This rule is what keeps 'composition knows wiring; context knows context semantics' machine-checked rather than aspirational.",
+        "exclusions": []
+      },
+      {
+        "id": "kernel-not-knowledge-owners",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/"
+        ],
+        "reason": "E1-K §16: admitted knowledge informs COGNITION and authorizes nothing. No path may carry a Proof or Reasoning standing into Work authority — not promotion eligibility, not Work admission, not verification admission, not effect authority. The strongest place to hold that is at the import: the Work owner, the pure rules, the log and the scheduler appear nowhere in the knowledge planes' consumer set, and this rule keeps it that way.",
+        "exclusions": []
+      },
+      {
+        "id": "project-intent-not-knowledge-owner-internals",
+        "from": [
+          "src/project_intent/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/",
+          "src/project_workspace/"
+        ],
+        "reason": "E2-I §9/§30: the intent owner grounds a proposal in admitted knowledge through its own consumer-owned read ports (`ProjectIntentPorts`), and composition adapts Proof, Reasoning and ProjectWorkspace into them. Naming a concrete owner would make intent a SECOND reader of its semantics and — worse — put a mutation API one import away from the module that proposes top-down change. Grounding must be observation, never authorship.",
+        "exclusions": []
+      },
+      {
+        "id": "work-kernel-not-project-intent",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/project_intent/"
+        ],
+        "reason": "E2-I §2/§30: a proposal may PROPOSE top-down change but may never mutate top-down intent, and the Work kernel may not consume a proposal as if it were authority. The only sanctioned path from an accepted proposal into Work truth is `planReconciled`, which lives in the Work owner's façade — so no kernel module, pure rule, log or scheduler may name the intent module at all.",
+        "exclusions": []
+      },
+      {
+        "id": "management-not-intent-authority",
+        "from": [
+          "src/project_management/"
+        ],
+        "to": [
+          "src/project_intent/"
+        ],
+        "reason": "E2-I §18: ManagementMode grants ZERO project-intent authority. The management layer may later recommend, prepare or surface a proposal, but it must never become the authority because the mode changed — `DIRECT`/`ASSIST`/`MANAGE`/`DELEGATE` are not a semantic authority. Holding the import out is the strongest form of that rule: the layer cannot reach the decision even by accident, and its existing refusal to change goal/requirements is preserved.",
+        "exclusions": []
+      },
+      {
+        "id": "project-collaboration-not-owner-internals",
+        "from": [
+          "src/project_collaboration/"
+        ],
+        "to": [
+          "src/proof_asset/",
+          "src/reasoning_cell/",
+          "src/boundary_memory/",
+          "src/project_workspace/",
+          "src/work/"
+        ],
+        "reason": "E3-C §30/§34: the collaboration-need owner observes Project reality through its own consumer-owned read ports and declares a need through the EXISTING Federation port. It must not name a concrete Proof/Reasoning/Boundary/Workspace owner (a second reader of their semantics, and a mutation API one import away from the module that proposes a need), and it must not name the Work kernel at all — NeedCandidate ≠ ContactNeed and ContactNeed ≠ Assignment, so the module that authors a need can never reach a task, an attempt or the scheduler.",
+        "exclusions": []
+      },
+      {
+        "id": "project-collaboration-not-event-store",
+        "from": [
+          "src/project_collaboration/"
+        ],
+        "to": [
+          "src/coordination/",
+          "src/state/"
+        ],
+        "reason": "E3-C §4/§30: a CollaborationNeedCandidate is NON-CANONICAL and there is deliberately NO candidate store. The durable ContactNeed is Federation-owned coordination history, reached only through the declaration port, so the candidate module may not touch the coordination store (or the Work event log) directly. Holding the import out is what makes 'no candidate store' machine-checked rather than a promise in a comment.",
+        "exclusions": []
+      },
+      {
+        "id": "work-kernel-not-project-collaboration",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/project_collaboration/"
+        ],
+        "reason": "E3-C §2/§34: ContactNeed ≠ Assignment and Commitment ≠ Work ownership. The Work kernel may not consume a collaboration need as if it were work authority, and a project condition may not silently become a scheduled obligation. The only sanctioned direction is the collaboration owner READING Work facts; the kernel never reaches back into the module that authors needs.",
+        "exclusions": []
+      },
+      {
+        "id": "federation-not-work-kernel",
+        "from": [
+          "src/federation/"
+        ],
+        "to": [
+          "src/work/",
+          "src/scheduler/"
+        ],
+        "reason": "E3-C §2/§34: 'Project A may request and accept a contribution from Project B. Project A NEVER obtains authority over Project B's Work ledger.' Federation owns peers, needs, contact, commitments and fulfillment — never Work. If federation could name the Work kernel it could schedule, mutate or observe a project's tasks, which is exactly the global-scheduler / remote-Work-ownership failure this stage exists to prevent. There is no assignPeerToTask.",
+        "exclusions": []
+      },
+      {
+        "id": "management-not-collaboration-authority",
+        "from": [
+          "src/project_management/"
+        ],
+        "to": [
+          "src/project_collaboration/"
+        ],
+        "reason": "E3-C §8: ManagementMode grants ZERO contact-need admission authority. managementMode == DELEGATE must not imply an admitted need, and no caller boolean (approved: true) may stand in for the independent authority. Holding the import out means the management layer cannot reach the admission decision even by accident.",
+        "exclusions": []
+      },
+      {
+        "id": "institutional-learning-not-mutation-internals",
+        "from": [
+          "src/institutional_learning/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/runtime_scope/",
+          "src/organization/"
+        ],
+        "reason": "E4-L §23/§30: the learning layer OBSERVES structural change and never makes it. Memory ≠ Structure mutation and Evaluation ≠ Governance: if this module could name an evolution service, a runtime scope or an Organization, an empirical result would be one import away from mutating the structure it merely studied — which is exactly the automatic self-modification loop the ruling forbids. It reads evolution history through its own consumer-owned port instead, and the composition adapter is the only place that sees both sides.",
+        "exclusions": []
+      },
+      {
+        "id": "organization-memory-not-evolution-authority",
+        "from": [
+          "src/organization_memory/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/"
+        ],
+        "reason": "E4-L §28/§30: this is the G-13 WRONG EDGE held out at the import. OrganizationMemory is empirical history — it is not, and must never become, a structural authority. If memory could name an evolution plane it could execute a transformation, and ArchitectureRecommendation → OrganizationDynamicsProposal would return indirectly through the back door. The direction is one-way by construction: evolution writes its own truth, learning reads it.",
+        "exclusions": []
+      },
+      {
+        "id": "advisor-not-structural-authority",
+        "from": [
+          "src/advisor/"
+        ],
+        "to": [
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/organization_dynamics/",
+          "src/runtime_scope/"
+        ],
+        "reason": "E4-L §21/§28: the empirical architecture advisor RECOMMENDS and nothing more. Architecture recommendation ≠ OrganizationDynamicsProposal and Historical winner ≠ Future authority — a recommendation must not be convertible into a proposal or a mutation, not even by reaching the owner that would accept one. The advisor consumes OrganizationMemory and returns text; the governed structural path still begins with an independently authored DynamicsProposal.",
+        "exclusions": []
+      },
+      {
+        "id": "procedures-not-authority-planes",
+        "from": [
+          "src/procedures/"
+        ],
+        "to": [
+          "src/work/",
+          "src/scheduler/",
+          "src/effects/",
+          "src/proof_asset/",
+          "src/evidence/",
+          "src/reasoning_cell/",
+          "src/project_verification/",
+          "src/federation/",
+          "src/project_intent/",
+          "src/organization_evolution/",
+          "src/runtime_evolution/",
+          "src/organization/",
+          "src/runtime_scope/"
+        ],
+        "reason": "E5-P §19/§34: a procedure is COGNITIVE INFRASTRUCTURE, never authority infrastructure. `Procedure ≠ Work authorization / Effect authority / Proof / Evidence / Commitment authority / Intent authority / Organization evolution authority`. Holding these imports out is what makes the §19 machine proofs structural rather than aspirational: the owner that authors a method cannot reach a single plane that could act on it, so `Procedure inclusion ≠ automatic execution` is enforced by the import graph rather than by convention. A procedure that recommends a capability still cannot assert the capability exists or install it (§21).",
+        "exclusions": []
+      },
+      {
+        "id": "procedures-not-recipe-or-context-owner",
+        "from": [
+          "src/procedures/"
+        ],
+        "to": [
+          "src/recipes/",
+          "src/context/",
+          "src/project_workspace/",
+          "src/external_assets/"
+        ],
+        "reason": "E5-P §20/§22/§34: `Procedure ≠ Recipe` and `Procedure ≠ Journal note`, and the Context owner remains the INHERITANCE BOUNDARY. A procedure may carry descriptive `recommendedRecipeRefs` — `recommended recipe ≠ compiled recipe ≠ executed recipe` — so it must not reach the recipe compiler or executor. It must not write a project association itself (ProjectWorkspace owns that link, reached through a consumer-owned port) and must not become a second external-asset plane. Inheritance stays where E1-K put it: the context owner selects, the procedure owner only answers reads.",
+        "exclusions": []
+      },
+      {
+        "id": "work-kernel-not-procedures",
+        "from": [
+          "src/work/",
+          "src/domain/",
+          "src/state/",
+          "src/scheduler/"
+        ],
+        "to": [
+          "src/procedures/"
+        ],
+        "reason": "E5-P §4/§34: `Procedure ≠ Work authorization` and `Procedure inclusion ≠ automatic execution`. The Work kernel may not consume a procedure as if it were a work instruction with authority: a procedure tells a worker HOW prior experience suggests proceeding, and it authorizes nothing the current Work envelope and effects policy do not already allow. The only sanctioned direction is the procedure owner READING empirical history; the kernel never reaches into the module that stores learned methods.",
+        "exclusions": []
+      },
+      {
+        "id": "organization-memory-not-procedure-standing",
+        "from": [
+          "src/organization_memory/"
+        ],
+        "to": [
+          "src/procedures/"
+        ],
+        "reason": "E5-P §23/§34: `Observation ≠ Procedure`. OrganizationMemory answers 'what did we observe?'; the procedure owner answers 'what method has the project admitted for reuse?'. Memory GROUNDS procedure authoring — the procedure owner reads it through its own narrow port — but it must not become procedure authority, and it must not be able to mutate a procedure standing. Holding the import out means an evaluation cannot promote, supersede or retire a method.",
+        "exclusions": []
       }
     ],
     "hotspotRatchets": [

@@ -15,6 +15,7 @@ import { canonicalDigest } from "../schema/index.js";
 
 import type { ContextRequirement } from "./requirement.js";
 import type { PriorResultContext } from "./prior_result.js";
+import type { KnowledgeBinding } from "./knowledge.js";
 
 export const CONTEXT_RETRIEVAL_METHOD = "lexical";
 
@@ -41,6 +42,13 @@ export interface ContextManifestInput {
    * never a member of the Work identity.
    */
   readonly continuation?: PriorResultContext | undefined;
+  /**
+   * E1-K §7: the GOVERNED KNOWLEDGE BINDINGS of an explicitly-selected knowledge request. A HISTORICAL
+   * binding — the record of what this attempt was given — never authority, never a second knowledge
+   * store, and never a copy of a claim body. Absent means "this manifest carries no E1-K knowledge
+   * binding", which is what every pre-E1-K manifest says.
+   */
+  readonly knowledge?: readonly KnowledgeBinding[] | undefined;
   readonly createdAt: string;
 }
 
@@ -59,6 +67,8 @@ export interface ContextManifest {
   }>;
   readonly semantic?: ReadonlyArray<{ readonly path: string; readonly score_permille: number }> | undefined;
   readonly continuation?: PriorResultContext | undefined;
+  /** E1-K §7: the optional GOVERNED KNOWLEDGE BINDINGS. Old manifests simply omit it. */
+  readonly knowledge?: readonly KnowledgeBinding[] | undefined;
   readonly evidence: readonly string[];
   readonly excluded_stale: readonly string[];
   readonly retrieval: readonly string[];
@@ -78,6 +88,9 @@ export function buildContextManifest(input: ContextManifestInput): ContextManife
     source: [...input.source],
     ...(input.semantic === undefined ? {} : { semantic: [...input.semantic] }),
     ...(input.continuation === undefined ? {} : { continuation: input.continuation }),
+    ...(input.knowledge === undefined || input.knowledge.length === 0
+      ? {}
+      : { knowledge: Object.freeze(input.knowledge.map((binding) => Object.freeze({ ...binding }))) }),
     evidence: [...input.requirement.evidenceSubjects],
     excluded_stale: [...input.requirement.forbiddenStale],
     retrieval:

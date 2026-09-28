@@ -455,11 +455,29 @@ export interface ExperimentDefinition {
   readonly variantRefs: readonly { readonly variantId: string; readonly digest: string }[];
   readonly measurementPlan: ExperimentMeasurementPlan;
   readonly runPolicy: ExperimentRunPolicy;
+  /**
+   * E4-L §15 (additive): the ONE structural intervention this experiment studies.
+   *
+   * V1 is deliberately 0-or-1: a many-to-many intervention↔experiment relation would need its own
+   * semantics, and a longitudinal evaluation of ONE structural change is what the loop needs. When
+   * present, `recordExperiment` proves the referenced `InterventionRecord` exists and fails closed on
+   * an unknown ref — so an experiment can never cite an intervention that was never recorded.
+   *
+   * ABSENT is byte-compatible: the digest omits the key entirely when it is not supplied, so every
+   * experiment recorded before E4-L keeps its exact digest.
+   */
+  readonly interventionRef?: string | undefined;
   readonly digest: string;
 }
 
 export function experimentDigestOf(input: Omit<ExperimentDefinition, "digest">): string {
-  return canonicalDigest({ domain: OM_EXPERIMENT_DOMAIN, experiment: input });
+  const { interventionRef, ...rest } = input;
+  return canonicalDigest({
+    domain: OM_EXPERIMENT_DOMAIN,
+    // §15: an experiment WITHOUT the link digests exactly as it did before E4-L — the optional key is
+    // absent from the canonical form rather than null, so no historical digest moves.
+    experiment: interventionRef === undefined ? rest : { ...rest, interventionRef },
+  });
 }
 
 export function materializeRunPolicy(input: ExperimentRunPolicy): ExperimentRunPolicy {
@@ -482,6 +500,8 @@ export function materializeExperiment(input: {
   readonly variantRefs: readonly { readonly variantId: string; readonly digest: string }[];
   readonly measurementPlan: ExperimentMeasurementPlan;
   readonly runPolicy: ExperimentRunPolicy;
+  /** E4-L §15: the ONE intervention this experiment studies (0 or 1 in V1). */
+  readonly interventionRef?: string | undefined;
 }): ExperimentDefinition {
   if (input.scenarioRefs.length === 0) fail("invalid_value", "an experiment needs at least one scenario");
   if (input.variantRefs.length === 0) fail("invalid_value", "an experiment needs at least one variant");
@@ -503,13 +523,14 @@ export function materializeExperiment(input: {
       objectiveNote: input.measurementPlan.objectiveNote,
     }),
     runPolicy: materializeRunPolicy(input.runPolicy),
+    ...(input.interventionRef === undefined ? {} : { interventionRef: omString(input.interventionRef, "interventionRef") }),
   };
   return Object.freeze({ ...base, digest: experimentDigestOf(base) });
 }
 
 export function parseExperiment(raw: unknown, what = "ExperimentDefinition"): ExperimentDefinition {
   const object = omObject(raw, what);
-  omKeys(object, ["schemaVersion", "experimentId", "revision", "objective", "scenarioRefs", "variantRefs", "measurementPlan", "runPolicy", "digest"], ["schemaVersion", "experimentId", "revision", "objective", "scenarioRefs", "variantRefs", "measurementPlan", "runPolicy", "digest"], what);
+  omKeys(object, ["schemaVersion", "experimentId", "revision", "objective", "scenarioRefs", "variantRefs", "measurementPlan", "runPolicy", "interventionRef", "digest"], ["schemaVersion", "experimentId", "revision", "objective", "scenarioRefs", "variantRefs", "measurementPlan", "runPolicy", "digest"], what);
   if (object.schemaVersion !== 1) fail("unknown_schema_version", `${what}.schemaVersion must be 1`);
   if (!Array.isArray(object.scenarioRefs) || !Array.isArray(object.variantRefs)) fail("malformed_artifact", `${what}: refs must be arrays`);
   const planObject = omObject(object.measurementPlan, `${what}.measurementPlan`);
@@ -541,6 +562,9 @@ export function parseExperiment(raw: unknown, what = "ExperimentDefinition"): Ex
       objectives: Object.freeze((omStringArray(planObject.objectives, `${what}.measurementPlan.objectives`) as readonly string[]).map((objective) => omEnum(objective, OBJECTIVE_NAMES, "objectives[]"))),
       objectiveNote: "decision_aid_not_truth" as const,
     }),
+    // §15: the optional intervention link. Absent stays absent, so a legacy experiment's digest is
+    // re-derived byte-identically by the strict parser.
+    ...(object.interventionRef === undefined ? {} : { interventionRef: omString(object.interventionRef, `${what}.interventionRef`) }),
     runPolicy: materializeRunPolicy({
       minRunsPerVariantPerScenario: omNonNegInt(policyObject.minRunsPerVariantPerScenario, "minRunsPerVariantPerScenario"),
       maxRuns: omNonNegInt(policyObject.maxRuns, "maxRuns"),

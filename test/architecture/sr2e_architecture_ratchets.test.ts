@@ -61,7 +61,8 @@ const violationsOf = (graph: MutableGraph, kind: string): readonly string[] =>
 describe("SR-2e the constraint tables are IN the baseline, not only in code", () => {
   it("v4 records all three tables", () => {
     expect(baseline.version).toBe(4);
-    expect(baseline.dependencyFirewalls).toHaveLength(5);
+    // 5 at SR-2e; 7 since E0-E added the two E1-K knowledge-boundary firewalls (deliberate, visible here).
+    expect(baseline.dependencyFirewalls).toHaveLength(22); // 15 at E3-C; 18 at E4-L; 22 since E5-P added the four procedural-capital firewalls (deliberate, visible here).
     expect(baseline.hotspotRatchets).toHaveLength(4);
     expect(baseline.importerAllowlists).toHaveLength(2);
   });
@@ -319,7 +320,8 @@ describe("SR-2e the E-plane firewall is enforced, not declared", () => {
 
   it("the tables are DATA in one place, so a reviewer reads policy rather than inferring it", () => {
     // No rule is derived from the graph: they live in the code-level table and are COPIED on write.
-    expect(DEPENDENCY_FIREWALLS.length).toBe(5);
+    // 5 at SR-2e; 7 since E0-E added the two E1-K knowledge-boundary firewalls.
+    expect(DEPENDENCY_FIREWALLS.length).toBe(22); // 15 at E3-C; 18 at E4-L; 22 since E5-P.
     expect(HOTSPOT_RATCHETS.length).toBe(4);
     expect(IMPORTER_ALLOWLISTS.length).toBe(2);
     const writer = read("scripts/audit/module-architecture.mjs");

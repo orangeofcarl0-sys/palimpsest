@@ -34,7 +34,47 @@ export {
   DEFAULT_BOOT_BUDGET_BYTES,
   distributeContext,
   contextHandle,
+  knowledgeIndexRefOf,
 } from "./distribution.js";
 export type { ContextDistribution, ContextDistributionEntry } from "./distribution.js";
 export { compilePriorResultContext } from "./prior_result.js";
 export type { PriorResultContext, PriorResultContextInput } from "./prior_result.js";
+export {
+  ContextKnowledgeRefusal,
+  KNOWLEDGE_ASSET_KINDS,
+  KNOWLEDGE_PROCEDURE_ASSET_KIND,
+  KNOWLEDGE_PROCEDURE_STANDINGS,
+  KNOWLEDGE_PROOF_FRESHNESS,
+  KNOWLEDGE_PROOF_STANDINGS,
+  KNOWLEDGE_REFUSAL_REASONS,
+  PROCEDURE_HANDLE_PREFIX,
+  PROOF_HANDLE_PREFIX,
+  REASONING_HANDLE_PREFIX,
+  knowledgeHandleBytes,
+  knowledgeRequestIsEmpty,
+  procedureKnowledgeHandle,
+  procedureStandingAtCompile,
+  proofFreshnessAtCompile,
+  proofKnowledgeHandle,
+  proofStandingAtCompile,
+  reasoningKnowledgeHandle,
+  resolveKnowledgeBindings,
+} from "./knowledge.js";
+export type {
+  ContextKnowledgePorts,
+  KnowledgeAssetKind,
+  KnowledgeBinding,
+  KnowledgeProcedureStanding,
+  KnowledgeProofFreshness,
+  KnowledgeProofStanding,
+  KnowledgeRefusalReason,
+  KnowledgeSelectionRequest,
+  ProcedureBasisAtCompile,
+  ProcedureKnowledgeBinding,
+  ProcedureRevisionObservation,
+  ProofBasisAtCompile,
+  ProofClaimObservation,
+  ProofKnowledgeBinding,
+  ReasoningFrontierBasisAtCompile,
+  ReasoningKnowledgeBinding,
+} from "./knowledge.js";

@@ -87,6 +87,25 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   runtime_scope: "L2",
   telemetry: "L2",
   context: "L2",
+  // E2-I §30: the governed project-intent reconciliation capability. A semantic module that consumes
+  // Proof/Reasoning/Journal/ProjectWorkspace through its own read ports and proposes a ProjectIR
+  // revision — it owns no canonical store, so it sits beside `context`, not inside it.
+  project_intent: "L2",
+  // E3-C §30: the project-grounded collaboration-need capability. A thin, STATELESS semantic layer that
+  // reads Project reality and hands an admitted candidate to the EXISTING Federation declaration — it owns
+  // no store, no peer identity, no Work, no commitment history and no authority, so it sits beside
+  // `project_intent`, not inside `federation`.
+  project_collaboration: "L2",
+  // E4-L §8/§30: the governed institutional-learning capability. A thin, STATELESS projection over the
+  // EXISTING evolution histories and empirical memory — it owns no store, no Organization, no
+  // RuntimeScope, no DynamicsProposal and no authority, so it sits beside the owners it connects.
+  institutional_learning: "L2",
+  // E5-P §3/§30: the governed PROCEDURAL CAPITAL owner. The §2 gap test proved NEW_OWNER_JUSTIFIED —
+  // learned procedure is durable semantic truth belonging to none of the existing owners (Recipe is
+  // executable product config, Journal is a note, OrganizationMemory is observation, ExternalAsset is
+  // externally owned, host Skill is installed capability). It owns its own admission/standing/version
+  // lifecycle and survives crash/session, so it is a semantic capability, not kernel substrate.
+  procedures: "L2",
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",

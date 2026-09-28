@@ -39,9 +39,13 @@ import {
   materializeCoalitionSnapshot,
   materializePeerRef,
 } from "../src/federation/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
 import { installPalimpsest } from "../src/install.js";
 import { FakeGitPort } from "../src/effects/index.js";
 import { MockHost } from "./helpers.js";
+import { declareNeed } from "./collaboration_fixture.js";
 
 const strip = (code: string): string => code.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 
@@ -98,7 +102,10 @@ describe("F5-E2E: collaboration → coalition → organization → institution �
       localPeer: PA,
       allocateCommitmentId: () => `c-${++c}`,
       allocateHandoffId: () => `h-${c}`,
+      // E3-C §18: a contact_need scope must name a durably declared need.
+      contactNeedScopeGuard: durableContactNeedScopeGuard(coordination),
     });
+    await declareNeed(coordination, "need-1");
     const offer = await commitments.offerCommitment({
       proposedHolder: PB,
       scope: { kind: "contact_need", contactNeedId: "need-1" },
