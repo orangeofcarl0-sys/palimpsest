@@ -14,6 +14,7 @@ import type { OrganizationDefinition, OrganizationDefinitionRef, OrganizationMem
 import { parseOrganizationDefinition, parseOrganizationRef } from "../organization/index.js";
 import type { OrganizationTransformationProposal, SplitPlacement, SplitRolePlacement, SplitNormPlacement, MergeRoleDecision } from "../organization/index.js";
 import type { OrganizationDynamicsProposal, ProposalImpactReport } from "../organization_dynamics/index.js";
+import { parseOrganizationDynamicsProposal } from "../organization_dynamics/index.js";
 import { parseCompleteFormalizationCandidate } from "./formalization.js";
 import { parseOrganizationRetirementCandidate } from "./retirement.js";
 
@@ -240,6 +241,19 @@ export function evolutionCaseRefOf(input: { readonly proposalDigest: string; rea
 
 export type EvolutionEventType =
   | "EVOLUTION_CASE_OPENED"
+  /**
+   * E4-L §6: the EXACT `OrganizationDynamicsProposal` an opened case acts on.
+   *
+   * `EVOLUTION_CASE_OPENED` carries only `proposalDigest + subjectKey`, and the compiled candidate
+   * carries `proposalDigest + proposalBasisDigest` — so before E4-L the proposal's `snapshotDigest`,
+   * `intent` and `basisDigest` were NOT recoverable from evolution history. Crash-safe institutional
+   * learning requires reconstructing them without the original session, so this additive event binds
+   * the parsed proposal at case-open time.
+   *
+   * Provenance only: it grants NO authority, and a case whose events lack it (legacy history) stays
+   * valid — the learning layer reports it as incomplete rather than fabricating a body.
+   */
+  | "EVOLUTION_PROPOSAL_BOUND"
   | "EVOLUTION_CANDIDATE_COMPILED"
   | "EVOLUTION_FORMALIZATION_COMPILED"
   | "EVOLUTION_RETIREMENT_CANDIDATE"
@@ -275,6 +289,17 @@ export const EVOLUTION_EVENT_PARSERS: EvolutionEventParsers = Object.freeze({
     const o = evObject(payload, "EVOLUTION_CASE_OPENED");
     evExactKeys(o, ["proposalDigest", "subjectKey"], "EVOLUTION_CASE_OPENED");
     return Object.freeze({ proposalDigest: nonEmpty(o.proposalDigest, "proposalDigest"), subjectKey: nonEmpty(o.subjectKey, "subjectKey") });
+  },
+  /**
+   * E4-L §6: the exact parsed proposal, bound when the case is first opened.
+   *
+   * Strict: the proposal is re-parsed with the dynamics owner's own parser (so an event can never carry
+   * a loosely-shaped body), and the payload's declared digest must be the proposal's own digest.
+   */
+  EVOLUTION_PROPOSAL_BOUND: (payload: unknown) => {
+    const o = evObject(payload, "EVOLUTION_PROPOSAL_BOUND");
+    evExactKeys(o, ["proposal"], "EVOLUTION_PROPOSAL_BOUND");
+    return Object.freeze({ proposal: parseOrganizationDynamicsProposal(o.proposal) });
   },
   EVOLUTION_CANDIDATE_COMPILED: (payload: unknown) => {
     const o = evObject(payload, "EVOLUTION_CANDIDATE_COMPILED");

@@ -23,6 +23,9 @@ import { makeRuntimeRealizationService, observeAndCompileGroundedPlan, observeBi
 import { makeParticipationService } from "../coordination/index.js";
 import type { CommitmentScope, FederationService } from "../federation/index.js";
 import { makeCommitmentService, makeFederationMessagingService, makeFederationService } from "../federation/index.js";
+// E3-C §18: the declared-need scope guard is reached by SUB-PATH, because the federation barrel is
+// star-exported into the sealed public API and a new name there would be an unrecorded public addition.
+import { durableContactNeedScopeGuard } from "../federation/federation_service.js";
 import type { CampaignEvidencePort } from "../campaign/index.js";
 import { committedReconciliationOf, inFlightWake, makeCampaignProductionService, makeCampaignService, makeCompilerService, makeInterventionService, makeLifecycleService, makeNextActionAdmissionService, makeProspectiveService } from "../campaign/index.js";
 import type { BoundaryHome } from "../boundary_memory/index.js";
@@ -237,6 +240,10 @@ export function composeCollaborationCapabilities(input: CollaborationComposition
       localPeer: options.localPeer,
       allocateCommitmentId: () => `com-${randomUUID()}`,
       allocateHandoffId: () => `ho-${randomUUID()}`,
+      // E3-C §18: a `contact_need` scope must name a DURABLY DECLARED need, so a caller-supplied
+      // contactNeedId cannot manufacture a valid commitment scope. The guard is a read over the SAME
+      // coordination history the declaration writes, so no new store is introduced.
+      contactNeedScopeGuard: durableContactNeedScopeGuard(options.coordinationStore),
       // G10-K §27: only boundary memory can verify an exact accepted revision.
       ...(boundaryMemory === undefined
         ? {}
@@ -244,6 +251,12 @@ export function composeCollaborationCapabilities(input: CollaborationComposition
             scopeGuard: {
               admitScope: async (scope: CommitmentScope) => {
                 if (scope.kind === "boundary_revision") await boundaryMemory!.service.admitBoundaryRevisionScope(scope.revision);
+              },
+            },
+            // E3-C §24: the SAME narrow read-only port validates V1 fulfillment outputs.
+            fulfillmentOutputs: {
+              admitAcceptedRevision: async (revision) => {
+                await boundaryMemory!.service.admitBoundaryRevisionScope(revision);
               },
             },
           }),

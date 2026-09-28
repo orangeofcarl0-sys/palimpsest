@@ -21,6 +21,11 @@ import { makeCollaborationService, makeCrossProjectService } from "./interaction
 import type { CollaborationService, CrossProjectService } from "./interaction/index.js";
 import { composeDelegationCapability } from "./composition/delegation.js";
 import { composeContinuationCapability } from "./composition/continuation.js";
+import { composeContextKnowledgePorts } from "./composition/context_knowledge.js";
+import { composeProjectIntentCapability } from "./composition/project_intent.js";
+import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
+import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
+import { composeProcedureCapability } from "./composition/procedures.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -296,6 +301,118 @@ export function installPalimpsest(
   });
   const { continuation, workDelegation } = continuationCluster;
 
+  /*
+   * E5-P §26/§27: the GOVERNED PROCEDURAL CAPITALIZATION surface.
+   *
+   * It turns durable empirical experience into a grounded candidate, requires an INDEPENDENT
+   * authority to admit it, and keeps the admitted revision in its own append-only chain. It owns
+   * procedural capital and NOTHING else: the authoring seam is the caller's
+   * (`options.procedureAuthoring`), the authority is the caller's (`options.procedureAdmission`),
+   * and it reaches no Work, effect, promotion, commitment, intent or organization authority.
+   *
+   * It is composed BEFORE the context-knowledge binding because the procedure owner is one of the
+   * read capabilities that boundary adapts (E5-P §15).
+   *
+   * ABSENCE IS HONEST: without a durable store a procedure could not survive a restart and could
+   * therefore never be inherited, so the face is simply absent rather than stubbed.
+   */
+  const procedureStore = options.procedureStore;
+  const procedures = procedureStore === undefined
+    ? undefined
+    : composeProcedureCapability({
+        projectId: options.projectId,
+        store: procedureStore,
+        organizationMemory,
+        projectWorkspace,
+        authoring: options.procedureAuthoring,
+        admission: options.procedureAdmission,
+        clock: options.clock,
+      });
+
+  /*
+   * E1-K §10.2/§10.3: the CONTEXT-KNOWLEDGE composition.
+   *
+   * It is composed HERE because this is the first point at which all three knowledge owners exist:
+   * the Proof plane (collaboration cluster), the Reasoning service (organization cluster) and the
+   * ProjectWorkspace (cognition cluster). The ports are adapted by `src/composition/context_knowledge.ts`
+   * — which holds NO policy — and bound ONCE through the core holder, whose read-through provider the
+   * Context owner has held since birth.
+   *
+   * ABSENCE IS HONEST: when no knowledge owner is composed, `composeContextKnowledgePorts` returns
+   * `undefined` and the binder is never called, so an explicit selection honestly refuses with
+   * `KNOWLEDGE_CAPABILITY_UNAVAILABLE` rather than binding an empty capability.
+   */
+  const contextKnowledgePorts = composeContextKnowledgePorts({
+    projectId: options.projectId,
+    proof,
+    reasoning: reasoningCellsInstalled?.service,
+    projectWorkspace,
+    // E5-P §15: the procedure owner is an ADDITIVE read capability of the SAME knowledge boundary.
+    // Absent ⇒ a procedure selection honestly refuses rather than binding an empty capability.
+    ...(procedures === undefined ? {} : { procedures }),
+  });
+  if (contextKnowledgePorts !== undefined) core.contextKnowledge.bind(contextKnowledgePorts);
+
+  /*
+   * E2-I §24/§30: the GOVERNED PROJECT INTENT surface.
+   *
+   * It composes from the SAME already-composed owners the knowledge bridge uses, plus the Work owner
+   * (through the controller) that the revision is applied to. Absence is honest: with no workspace there
+   * is no journal/association owner to ground a proposal in, so the surface is simply absent rather than
+   * stubbed.
+   *
+   * The authority is the CALLER's, supplied through `options.projectIntentAdmission`. Nothing here
+   * invents one — an absent authority means `apply` answers `authority_unresolved`.
+   */
+  const intent = composeProjectIntentCapability({
+    projectId: options.projectId,
+    controller,
+    proof,
+    reasoning: reasoningCellsInstalled?.service,
+    projectWorkspace,
+    admission: options.projectIntentAdmission,
+    clock: options.clock,
+  });
+
+  /*
+   * E3-C §30/§31: the PROJECT-GROUNDED COLLABORATION surface.
+   *
+   * It composes from the Work owner (to observe Project reality) and the EXISTING Federation service (to
+   * declare a durable need). It owns no store, no peer identity, no Work and no authority — the admission
+   * authority is the CALLER's, supplied through `options.projectCollaborationAdmission`, and the authoring
+   * seam through `options.projectCollaborationAuthoring`.
+   *
+   * ABSENCE IS HONEST: without a Federation service there is no declaration owner, so the surface is
+   * simply absent rather than stubbed.
+   */
+  const projectCollaboration = composeProjectCollaborationCapability({
+    projectId: options.projectId,
+    controller,
+    federation,
+    authoring: options.projectCollaborationAuthoring,
+    admission: options.projectCollaborationAdmission,
+    clock: options.clock,
+  });
+
+  /*
+   * E4-L §24/§30: the GOVERNED INSTITUTIONAL LEARNING surface.
+   *
+   * It connects the EXISTING evolution histories to the EXISTING empirical memory: reconciliation projects
+   * every ACTIVATED structural change into exactly one `InterventionRecord`, and the evaluation read joins
+   * an intervention to the ordinary experiments that studied it.
+   *
+   * It owns NO store, NO Organization, NO RuntimeScope, NO DynamicsProposal and NO authority — it reads
+   * evolution history and writes only through OrganizationMemory's own `recordIntervention`. ABSENCE IS
+   * HONEST: without an evolution history or the memory owner there is nothing to connect, so the face is
+   * simply absent rather than stubbed.
+   */
+  const institutionalLearning = composeInstitutionalLearningCapability({
+    organizationEvolutionStore: options.organizationEvolutionStore,
+    runtimeEvolutionStore: options.runtimeEvolutionStore,
+    organizationMemory,
+    clock: options.clock,
+  });
+
   // §20: the aggregate surface and the tool set are assembled from the composed groups; this
   // file no longer knows which capability faces exist.
   const assembly = composeApplicationAssembly({
@@ -398,6 +515,10 @@ export function installPalimpsest(
     ...(proofExtraction === undefined ? {} : { proofExtraction }),
     ...(disclosure === undefined ? {} : { disclosure }),
     ...(projectWorkspace === undefined ? {} : { projectWorkspace }),
+    ...(intent === undefined ? {} : { intent }),
+    ...(projectCollaboration === undefined ? {} : { projectCollaboration }),
+    ...(institutionalLearning === undefined ? {} : { institutionalLearning }),
+    ...(procedures === undefined ? {} : { procedures }),
     ...(projectManagement === undefined ? {} : { projectManagement }),
     ...(operatingStores === undefined ? {} : { projectOperating: operatingStores }),
     ...(verification === undefined ? {} : { verification }),

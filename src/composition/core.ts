@@ -85,6 +85,17 @@ export interface CoreComposition {
   readonly worldBasisRuntime: import("../project_world/runtime.js").ProjectWorldBasisRuntime | undefined;
   /** The ONE spelling of the execution-world root (`.palimpsest/worlds`), consumed by the effect ports. */
   readonly worldsRoot: string;
+  /**
+   * E1-K §10.3: the STABLE knowledge read holder. The Context owner exists before the collaboration
+   * (Proof) and organization (Reasoning) clusters do, so it holds a read-through PROVIDER while this
+   * holder is bound ONCE, later, by the cluster that composes the owners. Read-through means the
+   * controller already holds the provider and sees the binding when it happens.
+   *
+   * The binder FAILS CLOSED on a second bind: one capability, one owner. No global registry.
+   */
+  readonly contextKnowledge: {
+    bind(ports: import("../context/knowledge.js").ContextKnowledgePorts): void;
+  };
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
   };
@@ -188,6 +199,18 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
         });
 
   /**
+   * E1-K §10.3: the knowledge read holder, resolved with the SAME late-bind idiom as `worldOwner`
+   * above. The holder exists from birth, the Context owner receives a read-through PROVIDER built from
+   * it, and the cluster that composes the knowledge owners binds it ONCE — long after the controller
+   * was constructed. `bound` makes the second bind fail closed rather than silently re-pointing a
+   * capability that a live service is already reading through.
+   */
+  const contextKnowledgeHolder: {
+    current: import("../context/knowledge.js").ContextKnowledgePorts | undefined;
+    bound: boolean;
+  } = { current: undefined, bound: false };
+
+  /**
    * §D2-LIVE: the capability statement is LATE-BOUND, exactly like `verificationAdmission` below.
    *
    * The controller gates `begin`/`prepareMutatingWork` on `attemptResultVerificationAvailable`, so
@@ -266,6 +289,13 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
           worldBasis: worldBasisRuntime,
           worldBasisRead: worldBasisRuntime,
         }),
+    /**
+     * E1-K §10.3: the STABLE read-through provider. The Context owner holds this for its whole life;
+     * whether a knowledge capability exists is decided later by `contextKnowledge.bind`. Unbound reads
+     * as `undefined`, which the compile turns into `KNOWLEDGE_CAPABILITY_UNAVAILABLE` — the honest
+     * answer for a deployment that composed no knowledge owners.
+     */
+    contextKnowledge: () => contextKnowledgeHolder.current,
     clock: options.clock,
   });
   // §D3-a: bind the Work owner the observation port reads through, ONCE, now that it exists.
@@ -288,6 +318,22 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
         // An explicit assertion is not overwritten by a derivation.
         if (options.capabilities !== undefined) return;
         verificationCapabilities.bound = next;
+      },
+    },
+    /**
+     * E1-K §10.3: the ONE-TIME knowledge binding. A second bind is REFUSED rather than silently
+     * re-pointing a capability that a live context owner already reads through — one capability, one
+     * owner, and the refusal is visible instead of becoming a "last writer wins" surprise.
+     */
+    contextKnowledge: {
+      bind(next) {
+        if (contextKnowledgeHolder.bound) {
+          throw new Error(
+            "the context knowledge capability was already bound — a second binding would re-point reads a live context owner already depends on",
+          );
+        }
+        contextKnowledgeHolder.current = next;
+        contextKnowledgeHolder.bound = true;
       },
     },
     worldBasisStore,

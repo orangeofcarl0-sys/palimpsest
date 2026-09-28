@@ -39,6 +39,7 @@ import {
 import { DomainValidationError } from "../domain/errors.js";
 import {
   attemptReportDigestOf,
+  canonicalDigest,
   parseAttemptReport,
   type TaskEnvelope,
 } from "../schema/index.js";
@@ -48,12 +49,27 @@ import {
   assessCoverage,
   buildContextManifest,
   distributeContext,
+  DEFAULT_BOOT_BUDGET_BYTES,
+  contextHandle,
   type ContextDistribution,
   type ContextManifest,
   type CoverageAssessment,
 } from "../context/index.js";
 import { compileContextRequirement } from "../context/requirement.js";
 import { compilePriorResultContext, type PriorResultContext } from "../context/prior_result.js";
+import {
+  PROOF_HANDLE_PREFIX,
+  REASONING_HANDLE_PREFIX,
+  PROCEDURE_HANDLE_PREFIX,
+  resolveKnowledgeBindings,
+  type ContextKnowledgePorts,
+  type KnowledgeProcedureStanding,
+  type KnowledgeSelectionRequest,
+  type ProcedureKnowledgeBinding,
+  type ProofKnowledgeBinding,
+  type ReasoningFrontierBasisAtCompile,
+  type ReasoningKnowledgeBinding,
+} from "../context/knowledge.js";
 
 /**
  * The task-level static half a worker receives.
@@ -196,6 +212,20 @@ export interface ContextServicePorts {
   requirementStatements(): readonly string[];
   /** The project's decision statements. */
   decisionStatements(): readonly string[];
+  /**
+   * E1-K §10.3: the STABLE read-through provider for the knowledge READ ports. The composition binds
+   * the concrete owners ONCE, long after this service exists, so the service holds a provider rather
+   * than a value — and `undefined` means exactly "this deployment composes no knowledge capability".
+   *
+   * This is a captured READ PROVIDER, not a service locator: it exposes only the three narrow read
+   * capabilities of `ContextKnowledgePorts`, and nothing here may grow a lookup by name.
+   */
+  contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined;
+  /**
+   * E1-K §7.8: the boot budget the knowledge INDEX shares with the existing boot distribution. Absent ⇒
+   * the same default the distribution uses, so the two numbers cannot drift.
+   */
+  bootBudgetBytes?: number | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -205,18 +235,86 @@ export interface ContextCompilation {
   readonly distribution: ContextDistribution;
 }
 
+/**
+ * E1-K §3/§4: the EXPLICIT knowledge selection for one compile. The selection REQUEST is a compile
+ * input; the durable record of what was bound is the manifest itself (§13). The request is NOT a
+ * `TaskSpec`, an assignment, an attempt authority or scheduler state — it is host/context input.
+ */
+export interface ContextCompileOptions {
+  readonly verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] } | undefined;
+  /** E1-K: identity-only explicit selection, revalidated by the canonical owners. */
+  readonly knowledge?: KnowledgeSelectionRequest | undefined;
+}
+
+/**
+ * E1-K §7.7: the PULL result for a knowledge handle.
+ *
+ *     bindingAtCompile { standingAtCompile, freshnessAtCompile, proofBasisAtCompile }   ← immutable
+ *     body
+ *     current { effectiveStanding, freshness }                                          ← where available
+ *
+ * Compile-time fields are NEVER overwritten by the current view; the current view is reported
+ * separately and must be labelled CURRENT by whoever presents it.
+ */
+export interface ProofKnowledgePull {
+  readonly kind: "proof";
+  readonly ref: string;
+  readonly binding: ProofKnowledgeBinding;
+  readonly body: unknown;
+  readonly current:
+    | { readonly effectiveStanding: string; readonly freshness: string }
+    | null;
+}
+
+export interface ReasoningKnowledgePull {
+  readonly kind: "reasoning";
+  readonly ref: string;
+  readonly binding: ReasoningKnowledgeBinding;
+  readonly body: unknown;
+  readonly current: { readonly currentlyActive: boolean; readonly currentFrontierBasis: ReasoningFrontierBasisAtCompile };
+}
+
+/**
+ * E5-P §17/§18: the PULL result for a procedure handle.
+ *
+ *   bindingAtCompile { standingAtCompile, procedureBasisAtCompile }   ← immutable
+ *   body (the full procedural body — pull-only, never in the manifest)
+ *   current { standing }                                              ← where it stands NOW
+ *
+ * §18: after `P@1 → SUPERSEDED`, this pull still returns P@1's body with
+ * `binding.standing_at_compile === "ACTIVE"` and `current.standing === "SUPERSEDED"`. The two are
+ * reported SEPARATELY and the compile-time field is never overwritten.
+ */
+export interface ProcedureKnowledgePull {
+  readonly kind: "procedure";
+  readonly ref: string;
+  readonly binding: ProcedureKnowledgeBinding;
+  readonly body: unknown;
+  readonly current: { readonly standing: KnowledgeProcedureStanding } | null;
+}
+
+export type ContextFetchResult =
+  | { readonly kind: "exact" | "source" | "evidence"; readonly ref: string; readonly body: unknown }
+  | ProofKnowledgePull
+  | ReasoningKnowledgePull
+  | ProcedureKnowledgePull;
+
 export interface ContextService {
   /** Compile (or return the already-compiled) manifest for ONE attempt. */
-  compile(attemptId: string, options?: { readonly verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] } }): Promise<ContextCompilation>;
+  compile(attemptId: string, options?: ContextCompileOptions): Promise<ContextCompilation>;
   /**
    * Resolve a `@ctx/…` handle against THIS ATTEMPT's own manifest.
    *
    * Never the task's latest: one task can carry generations of attempts (A0 → M0, A1 → M1), and
    * resolving by task-latest was context time travel.
+   *
+   * E1-K §9/§10.1: `@ctx/proof/…` and `@ctx/reasoning/…` handles materialize the canonical BODY through
+   * the narrow read ports and report the CURRENT owner view alongside the IMMUTABLE compile-time
+   * binding. Unknown namespaces (including any generic `@ctx/knowledge/*`) fail closed to `undefined`.
    */
-  fetch(attemptId: string, handle: string): Promise<{ readonly kind: "exact" | "source" | "evidence"; readonly ref: string; readonly body: unknown } | undefined>;
+  fetch(attemptId: string, handle: string): Promise<ContextFetchResult | undefined>;
   /** The composed worker context: the task half + this attempt's compiled half. */
-  workWorkerContext(attemptId: string, options?: { readonly verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] } }): Promise<WorkWorkerAttemptContext>;
+  workWorkerContext(attemptId: string, options?: ContextCompileOptions): Promise<WorkWorkerAttemptContext>;
   /** The task-level static half a worker receives. */
   taskContext(taskId: string): WorkWorkerTaskContext;
 }
@@ -255,7 +353,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
 
   const compile = async (
     attemptId: string,
-    options: { readonly verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] } } = {},
+    options: ContextCompileOptions = {},
   ): Promise<ContextCompilation> => {
     const attemptRow = ports.attempt(attemptId);
     if (attemptRow === null) throw new DomainValidationError("attempt does not exist");
@@ -267,6 +365,11 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
     const manifestId = contextManifestIdOf(ports.projectId, attemptId);
     // IDEMPOTENT: an attempt keeps the manifest it was compiled with. Re-compiling would rewrite
     // provenance, and the world having moved is not a reason to rewrite what an attempt was given.
+    //
+    // E1-K §28: this holds even when the SECOND compile carries a knowledge request the first did not
+    // (or a different one). The existing manifest is returned byte-for-byte, zero append, zero
+    // refresh — a later knowledge selection needs a NEW attempt, and the compiler does not pretend
+    // the later request took effect.
     const existing = ports.existingManifest?.(manifestId) ?? null;
     if (existing !== null) {
       return {
@@ -365,6 +468,26 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       });
     }
 
+    // E1-K §5/§7.4: the EXPLICIT knowledge selection, revalidated against the canonical owners. This
+    // runs BEFORE the append: an explicit request that cannot be satisfied in full refuses the WHOLE
+    // compilation, so zero `CONTEXT_MANIFEST_ADDED` is written and no worker runs. The request is
+    // identity-only; standing/freshness/basis/activity are all derived by the owners inside
+    // `resolveKnowledgeBindings`.
+    //
+    // §7.8: the knowledge INDEX shares the existing boot budget. Exact references boot first and keep
+    // their privileged semantics, so the knowledge index is bounded by what remains after them.
+    const bootBudget = ports.bootBudgetBytes ?? DEFAULT_BOOT_BUDGET_BYTES;
+    const exactBootBytes = requirement.exact.reduce(
+      (sum, ref) => sum + Buffer.byteLength(`${ref}${canonicalDigest(ref)}`, "utf8"),
+      0,
+    );
+    const knowledge = await resolveKnowledgeBindings({
+      projectId: ports.projectId,
+      request: options.knowledge,
+      ports: ports.contextKnowledge?.(),
+      knowledgeBudgetBytes: Math.max(0, bootBudget - exactBootBytes),
+    });
+
     const manifest = buildContextManifest({
       manifestId,
       taskId,
@@ -373,6 +496,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       source: [...source],
       semantic,
       continuation,
+      ...(knowledge.length === 0 ? {} : { knowledge }),
       createdAt: now(),
     });
     ports.appendManifest({ attemptId, manifest, expectedProjectRevision: project.revision });
@@ -407,13 +531,94 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
         const source = manifest.source.find((candidate) => candidate.path === entry.ref);
         return source === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: source };
       }
+      /**
+       * E1-K §9/§10.1/§7.7: a knowledge handle PULLS the canonical body through the narrow read port
+       * and reports the CURRENT owner view alongside the manifest's IMMUTABLE compile-time binding.
+       * The body is never in the manifest, and the pull never rewrites a compile-time field.
+       *
+       * A handle whose binding exists in this manifest but whose owner capability is now unbound (or
+       * whose claim no longer resolves) fails closed to `undefined` — an unknown namespace is never
+       * routed to a generic knowledge parser.
+       */
+      if (entry.kind === "proof") {
+        const binding = (manifest.knowledge ?? []).find(
+          (candidate): candidate is ProofKnowledgeBinding =>
+            candidate.kind === "proof" && candidate.handle === entry.handle,
+        );
+        if (binding === undefined) return undefined;
+        const current = ports.contextKnowledge?.();
+        if (current?.proofAssets === undefined) return undefined;
+        const pulled = await current.proofAssets.readClaim(binding.proof_claim_id);
+        if (pulled === undefined) {
+          // The binding is historical, so its COMPILE-TIME snapshot is still returned with a null
+          // current view rather than pretending the claim vanished.
+          return Object.freeze({ kind: "proof" as const, ref: binding.proof_claim_id, binding, body: undefined, current: null });
+        }
+        return Object.freeze({
+          kind: "proof" as const,
+          ref: binding.proof_claim_id,
+          binding,
+          body: pulled.body,
+          current: Object.freeze({ effectiveStanding: pulled.effectiveStanding, freshness: pulled.freshness }),
+        });
+      }
+      if (entry.kind === "reasoning") {
+        const binding = (manifest.knowledge ?? []).find(
+          (candidate): candidate is ReasoningKnowledgeBinding =>
+            candidate.kind === "reasoning" && candidate.handle === entry.handle,
+        );
+        if (binding === undefined) return undefined;
+        const current = ports.contextKnowledge?.();
+        if (current?.reasoningCells === undefined) return undefined;
+        const pulled = await current.reasoningCells.readAdmittedClaim(binding.cell_id, binding.claim_id);
+        if (pulled === undefined) return undefined;
+        return Object.freeze({
+          kind: "reasoning" as const,
+          ref: binding.handle,
+          binding,
+          body: pulled.claim,
+          current: Object.freeze({
+            currentlyActive: pulled.currentlyActive,
+            currentFrontierBasis: pulled.currentFrontierBasis,
+          }),
+        });
+      }
+      /**
+       * E5-P §17/§18: a procedure handle PULLS the full body through the narrow read port and
+       * reports the CURRENT standing alongside the manifest's IMMUTABLE compile-time binding.
+       *
+       * §18: a SUPERSEDED revision STILL resolves here — that is the whole point of the historical
+       * half of the split. Only an unknown revision, or an unbound capability, fails closed.
+       */
+      if (entry.kind === "procedure") {
+        const binding = (manifest.knowledge ?? []).find(
+          (candidate): candidate is ProcedureKnowledgeBinding =>
+            candidate.kind === "procedure" && candidate.handle === entry.handle,
+        );
+        if (binding === undefined) return undefined;
+        const current = ports.contextKnowledge?.();
+        if (current?.procedures === undefined) return undefined;
+        const pulled = await current.procedures.readRevision(binding.procedure_id, binding.procedure_revision);
+        if (pulled === undefined) {
+          // The binding is historical, so its COMPILE-TIME snapshot is still returned with a null
+          // current view rather than pretending the revision vanished.
+          return Object.freeze({ kind: "procedure" as const, ref: binding.handle, binding, body: undefined, current: null });
+        }
+        return Object.freeze({
+          kind: "procedure" as const,
+          ref: binding.handle,
+          binding,
+          body: pulled.body,
+          current: Object.freeze({ standing: pulled.standing }),
+        });
+      }
       const exact = manifest.exact.find((candidate) => candidate.ref === entry.ref);
       return exact === undefined ? undefined : { kind: entry.kind, ref: entry.ref, body: exact };
     },
 
     async workWorkerContext(
       attemptId: string,
-      options: { readonly verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] } } = {},
+      options: ContextCompileOptions = {},
     ) {
       const attemptRow = ports.attempt(attemptId);
       if (attemptRow === null) {

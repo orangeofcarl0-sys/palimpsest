@@ -8,9 +8,30 @@
 |---|---|---|
 | `palimpsest-dsh` | schema、domain、state、scheduler | 合同核心：仅依赖 `node:sqlite` |
 | `palimpsest-dsh/advanced` | effects、evidence、select、allocate、telemetry、tools、`installPalimpsest` | 完整嵌入面 |
+| `palimpsest-dsh/procedures` | E5-P 程序化资产：`ProcedureStore`、`SqliteProcedureStore`、内容/候选/admission 契约 | 需要为 `procedureStore` 提供存储的宿主 |
+| `palimpsest-dsh/project-intent` | E2-I 意图对账：`ProjectIntentService`、admission 端口、proposal/receipt 类型 | 需要意图对账面或独立 admission 权威的宿主 |
+| `palimpsest-dsh/project-collaboration` | E3-C 协作需求：`ProjectCollaborationService`、authoring/admission 端口 | 需要协作需求面的宿主 |
+| `palimpsest-dsh/institutional-learning` | E4-L 制度学习：`InstitutionalLearningService`、干预投影类型 | 需要结构干预投影的宿主 |
 | `bin.palimpsest` | CLI | 与工具面同源的命令入口 |
 
 `ProjectController` 是 SDK 的核心对象；`installPalimpsest` 是 DSH 宿主的唯一必需入口。
+
+E 平面的四个能力**不在** `/advanced` 星号导出面上：`/advanced` 的 fan-out 已到架构棘轮上限，而把
+它们放上去会把全部内部类型变成公开 API。它们各自通过上面的子路径导入 —— 这与 `installPalimpsest`
+的选项字段一一对应：
+
+```ts
+import { installPalimpsest } from "palimpsest-dsh/advanced";
+import { SqliteProcedureStore } from "palimpsest-dsh/procedures";
+
+const installed = installPalimpsest(hostCtx, {
+  projectId: "my-project",
+  procedureStore: new SqliteProcedureStore("procedures.sqlite"),
+});
+installed.procedures;  // 存在，因为提供了 store
+```
+
+缺失某个 owner 时对应的面**诚实地缺席**（`installed.procedures === undefined`），而不是被 stub 出来。
 
 ## 2. 嵌入
 

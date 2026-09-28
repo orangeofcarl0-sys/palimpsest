@@ -163,6 +163,9 @@ describe("G10-J standalone golden path", () => {
     expect(inspection.state).toBe("POST_OBSERVED");
     expect(inspection.events.map((e) => e.type)).toEqual([
       "EVOLUTION_CASE_OPENED",
+      // E4-L §6/§7: the exact proposal is bound BEFORE the candidate is compiled, so the case is
+      // reconstructible from durable history alone (additive; legacy cases simply lack this event).
+      "EVOLUTION_PROPOSAL_BOUND",
       "EVOLUTION_CANDIDATE_COMPILED",
       "EVOLUTION_ASSESSED",
       "EVOLUTION_AUTHORIZED",

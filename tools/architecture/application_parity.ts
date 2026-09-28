@@ -383,6 +383,34 @@ export const REVIEWED_CAPABILITY_ADDITIONS: readonly { readonly name: string; re
       "reports READY_FOR_DELEGATION, never a stub). Additive: no existing face, surface, tool or " +
       "route changes, and the face owns no store of its own.",
   },
+  {
+    name: "intent",
+    reason:
+      "E2-I §24. The ProjectIR revision path, the Proof/Reasoning/Journal owners and the derived " +
+      "currentness reads all existed, but nothing could turn observed reality into a PROPOSED intent " +
+      "change while keeping evidence non-authoritative — a caller wanting to revise a requirement " +
+      "from evidence had to call `plan()` directly, which makes the evidence de facto authoritative " +
+      "and leaves no durable record of WHY the intent moved. The packaged ProjectIntentService is the " +
+      "one governed path (prepare ≺ assess ≺ authority ≺ revalidate ≺ existing revision), it owns no " +
+      "store, and it admits nothing without an independent authority: absent one it answers " +
+      "authority_unresolved with zero writes. Additive: no existing face, surface, tool or route " +
+      "changes, and the face is absent where no workspace composes.",
+  },
+  {
+    name: "projectCollaboration",
+    reason:
+      "E3-C §31. Federation already owned discovery, contact, messaging, commitment and fulfillment, " +
+      "and BoundaryMemory already owned the shared accepted artifact — but NOTHING could turn a real " +
+      "project condition (a blocked task, a failed attempt) into a DURABLE collaboration need without " +
+      "an operator hand-writing it, and a declared need lived only in memory, so a restart erased the " +
+      "collaboration intent while leaving its consequences in history. The packaged " +
+      "ProjectCollaborationService is the one project-grounded entry into that loop " +
+      "(prepare ≺ assess ≺ independent authority ≺ EXISTING Federation declaration), it owns no store, " +
+      "no peer identity, no Work and no authority, and it admits nothing without an independent " +
+      "authority: absent one it answers admission_unresolved with zero declarations. Additive: no " +
+      "existing face, surface, tool or route changes, and the face is absent where no federation " +
+      "service composes.",
+  },
 ]);
 
 /**

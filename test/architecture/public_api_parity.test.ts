@@ -71,7 +71,20 @@ describe("SR1-A14 public API parity", () => {
     expect(pkg.main).toBe("./dist/src/index.js");
     expect(pkg.types).toBe("./dist/src/index.d.ts");
     expect(pkg.bin.palimpsest).toBe("./dist/src/cli.js");
-    expect(Object.keys(pkg.exports).sort()).toEqual([".", "./advanced"]);
+    // R0 §24: the declared surface is pinned EXACTLY, so an entrypoint cannot drift in or out
+    // unnoticed. The four E-plane subpaths are deliberate additions, not drift: they exist because
+    // those capabilities are kept off the `/advanced` star-export (its fan-out is at the ratchet
+    // ceiling), and a declared `exports` map blocks every subpath it does not name — so without them
+    // no external embedder could supply a `procedureStore` at all. Their shape is asserted in
+    // `r0_package_exports.test.ts`.
+    expect(Object.keys(pkg.exports).sort()).toEqual([
+      ".",
+      "./advanced",
+      "./institutional-learning",
+      "./procedures",
+      "./project-collaboration",
+      "./project-intent",
+    ]);
   });
 
   it("the collector distinguishes values from types", () => {

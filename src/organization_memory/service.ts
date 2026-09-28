@@ -75,6 +75,13 @@ export interface OrganizationMemoryService {
   evaluations(experimentId: string): Promise<readonly OrganizationEvaluation[]>;
   corrections(experimentId: string): Promise<readonly MeasurementCorrection[]>;
   interventions(): Promise<readonly InterventionRecord[]>;
+  /**
+   * E4-L §17 (additive): the experiments that name this intervention, derived by scanning the ordinary
+   * experiment history. No new store and no index truth — the link lives on `ExperimentDefinition`.
+   */
+  experimentsForIntervention(interventionRef: string): Promise<readonly ExperimentDefinition[]>;
+  /** E4-L §17: one intervention by ref, derived from the interventions scope. */
+  intervention(interventionRef: string): Promise<InterventionRecord | undefined>;
   similarRuns(query: SimilarRunsQuery): Promise<readonly RunResult[]>;
   structuralHistory(subjectRef: string): Promise<readonly InterventionRecord[]>;
 }
@@ -115,6 +122,15 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
 
   async function recordExperiment(experiment: ExperimentDefinition): Promise<ExperimentDefinition> {
     const scopeId = experiment.experimentId;
+    // E4-L §15: an experiment may name the ONE structural intervention it studies, but the reference
+    // must RESOLVE. An unknown intervention fails closed rather than becoming a dangling link that a
+    // later reader would have to interpret.
+    if (experiment.interventionRef !== undefined) {
+      const known = await interventions();
+      if (!known.some((record) => record.interventionRef === experiment.interventionRef)) {
+        fail("invalid_registration", `experiment "${experiment.experimentId}" references intervention "${experiment.interventionRef}", which does not exist`);
+      }
+    }
     const payload = { experiment };
     await append(scopeId, true, { eventId: organizationMemoryEventIdOf("EXPERIMENT_RECORDED", scopeId, payload), type: "EXPERIMENT_RECORDED", payload });
     return experiment;
@@ -287,6 +303,15 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
     return Object.freeze(matches.slice(0, limit));
   }
 
+  async function intervention(interventionRef: string): Promise<InterventionRecord | undefined> {
+    return (await interventions()).find((record) => record.interventionRef === interventionRef);
+  }
+
+  async function experimentsForIntervention(interventionRef: string): Promise<readonly ExperimentDefinition[]> {
+    const all = await experiments();
+    return Object.freeze(all.filter((definition) => definition.interventionRef === interventionRef));
+  }
+
   async function structuralHistory(subjectRef: string): Promise<readonly InterventionRecord[]> {
     const records = await interventions();
     return Object.freeze(records.filter((record) => record.subjectRefs.includes(subjectRef)));
@@ -311,6 +336,8 @@ export function makeOrganizationMemoryService(deps: OrganizationMemoryServiceDep
     evaluations,
     corrections,
     interventions,
+    experimentsForIntervention,
+    intervention,
     similarRuns,
     structuralHistory,
   };

@@ -20,6 +20,7 @@ import {
 import type { RuntimeScopeRef } from "../runtime_scope/index.js";
 import { parseRuntimeScopeRef } from "../runtime_scope/index.js";
 import type { OrganizationDynamicsProposal, ProposalImpactReport } from "../organization_dynamics/index.js";
+import { parseOrganizationDynamicsProposal } from "../organization_dynamics/index.js";
 import type { RuntimeScopeState } from "../runtime_scope/index.js";
 
 export const RUNTIME_EVOLUTION_CANDIDATE_DOMAIN = "palimpsest.runtime-evolution-candidate.v1";
@@ -234,6 +235,15 @@ export function runtimeEvolutionCaseRefOf(input: { readonly proposalDigest: stri
 
 export type RuntimeEvolutionEventType =
   | "RUNTIME_EVOLUTION_CASE_OPENED"
+  /**
+   * E4-L §6: the EXACT `OrganizationDynamicsProposal` an opened runtime case acts on.
+   *
+   * Same gap and same remedy as the organization lane: the case record keeps only
+   * `proposalDigest + subjectKey`, so the proposal's `snapshotDigest`, `intent` and `basisDigest` were
+   * not recoverable from runtime evolution history. This additive event binds the parsed proposal at
+   * case-open time — provenance only, never authority, and legacy cases remain valid without it.
+   */
+  | "RUNTIME_EVOLUTION_PROPOSAL_BOUND"
   | "RUNTIME_EVOLUTION_CANDIDATE_COMPILED"
   | "RUNTIME_EVOLUTION_ASSESSED"
   | "RUNTIME_EVOLUTION_BLOCKED"
@@ -263,6 +273,12 @@ export const RUNTIME_EVOLUTION_EVENT_PARSERS: RuntimeEvolutionEventParsers = Obj
     const o = reObject(payload, "RUNTIME_EVOLUTION_CASE_OPENED");
     reExactKeys(o, ["proposalDigest", "subjectKey"], "RUNTIME_EVOLUTION_CASE_OPENED");
     return Object.freeze({ proposalDigest: nonEmpty(o.proposalDigest, "proposalDigest"), subjectKey: nonEmpty(o.subjectKey, "subjectKey") });
+  },
+  /** E4-L §6: the exact parsed proposal, bound when the runtime case is first opened. */
+  RUNTIME_EVOLUTION_PROPOSAL_BOUND: (payload: unknown) => {
+    const o = reObject(payload, "RUNTIME_EVOLUTION_PROPOSAL_BOUND");
+    reExactKeys(o, ["proposal"], "RUNTIME_EVOLUTION_PROPOSAL_BOUND");
+    return Object.freeze({ proposal: parseOrganizationDynamicsProposal(o.proposal) });
   },
   RUNTIME_EVOLUTION_CANDIDATE_COMPILED: (payload: unknown) => {
     const o = reObject(payload, "RUNTIME_EVOLUTION_CANDIDATE_COMPILED");

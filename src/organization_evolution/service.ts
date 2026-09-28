@@ -267,6 +267,9 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       }
       if (byProposal === undefined) {
         await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: `organization:${target.organizationDefinitionId}` });
+        // E4-L §7: the EXACT proposal is bound durably BEFORE the candidate is compiled, so a later
+        // reader can reconstruct snapshotDigest/intent/basisDigest without the original session.
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_PROPOSAL_BOUND", caseRef, { proposal }), type: "EVOLUTION_PROPOSAL_BOUND", payload: { proposal } }]);
         await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_FORMALIZATION_COMPILED", caseRef, { candidate }), type: "EVOLUTION_FORMALIZATION_COMPILED", payload: { candidate } }]);
       }
     }
@@ -365,6 +368,8 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       if (byProposal !== undefined && byProposal.caseRef !== caseRef) return { status: "incomplete", detail: "this proposal is already bound to a different candidate" };
       if (byProposal === undefined) {
         await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: subjectKey(proposal.subject) });
+        // E4-L §7: bind the exact proposal before the candidate, as in the formalization path.
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_PROPOSAL_BOUND", caseRef, { proposal }), type: "EVOLUTION_PROPOSAL_BOUND", payload: { proposal } }]);
         await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_RETIREMENT_CANDIDATE", caseRef, { candidate }), type: "EVOLUTION_RETIREMENT_CANDIDATE", payload: { candidate } }]);
       }
     }
@@ -458,6 +463,8 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       const existing = await deps.store.case(caseRef);
       if (existing === undefined) {
         await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: `terminal:${kind}`, subjectKey: subjectKey(proposal.subject) });
+        // E4-L §7: every NEW case binds its exact proposal, so the invariant has no exception to remember.
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_PROPOSAL_BOUND", caseRef, { proposal }), type: "EVOLUTION_PROPOSAL_BOUND", payload: { proposal } }]);
         await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_TERMINAL_RESOLVED", caseRef, { kind }), type: "EVOLUTION_TERMINAL_RESOLVED", payload: { kind } }]);
       }
       return { status: "terminal_resolved", kind, caseRef };
@@ -509,6 +516,8 @@ export function makeOrganizationEvolutionService(deps: OrganizationEvolutionDeps
       if (byProposal !== undefined && byProposal.caseRef !== caseRef) return { status: "incomplete", detail: "this proposal is already bound to a different candidate" };
       if (byProposal === undefined) {
         await deps.store.openCase({ caseRef, proposalDigest: proposal.digest, candidateDigest: candidate.digest, subjectKey: `organization:${subjectRef.organizationDefinitionId}` });
+        // E4-L §7: bind the exact proposal BEFORE the candidate is compiled.
+        await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_PROPOSAL_BOUND", caseRef, { proposal }), type: "EVOLUTION_PROPOSAL_BOUND", payload: { proposal } }]);
         await append(caseRef, [{ eventId: eventIdFor("EVOLUTION_CANDIDATE_COMPILED", caseRef, { candidate }), type: "EVOLUTION_CANDIDATE_COMPILED", payload: { candidate } }]);
       }
     }

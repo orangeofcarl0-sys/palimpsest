@@ -22,6 +22,10 @@ import {
   materializePeerRef,
   materializeThreadRef,
 } from "../src/federation/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
+import { declareNeed } from "./collaboration_fixture.js";
 import type { PeerRef } from "../src/federation/index.js";
 import {
   SqliteAttentionMarkStore,
@@ -60,6 +64,8 @@ function harness(policy: AttentionPolicy = defaultAttentionPolicy()) {
     localPeer: LOCAL,
     allocateCommitmentId: () => `com-${++commitmentCounter}`,
     allocateHandoffId: () => "ho-1",
+    // E3-C §18: a contact_need scope must name a durably declared need.
+    contactNeedScopeGuard: durableContactNeedScopeGuard(store),
   });
   const marks = new SqliteAttentionMarkStore(":memory:");
   const service = makeAttentionService({
@@ -108,7 +114,9 @@ describe("G10-P attention derivation", () => {
   });
 
   it("raises a commitment-decision signal only for an OFFERED commitment held locally", async () => {
-    const { commitments, service } = harness();
+    const { commitments, service, store } = harness();
+    // E3-C §18: the contact_need scope must name a durably declared need.
+    await declareNeed(store, "need-1");
     const offer = await commitments.offerCommitment({
       proposedHolder: LOCAL,
       scope: { kind: "contact_need", contactNeedId: "need-1" },

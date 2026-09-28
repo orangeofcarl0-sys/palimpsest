@@ -79,13 +79,14 @@ import {
   compileContextRequirement,
   compilePriorResultContext,
   cosineSimilarity,
+  distributeContext,
   type ContextBrief,
   type ContextManifest,
   type ContextDistribution,
   type CoverageAssessment,
   type PriorResultContext,
+  type ContextKnowledgePorts, type KnowledgeSelectionRequest,
 } from "../context/index.js";
-import { distributeContext } from "../context/distribution.js";
 import { RoleSlotPolicy, BudgetLedger } from "./parallel.js";
 import {
   compileEvidenceInvalidation,
@@ -192,11 +193,10 @@ export interface PlanInput {
 }
 
 /**
- * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the
- * agent-facing `PlanInput` surface: an agent can never name a head. The head
- * advance is derived by the promotion manager's canonical chain and is
- * re-validated here against the same derivation, so `headAdvance` is a
- * redundant proof of a fact the controller already owns - never a free choice.
+ * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the agent-facing `PlanInput`
+ * surface: an agent can never name a head. The head advance is derived by the promotion manager's
+ * canonical chain and re-validated here against the same derivation, so `headAdvance` is a redundant
+ * proof of a fact the controller already owns - never a free choice.
  */
 export interface TrustedPlanOptions {
   readonly headAdvance?:
@@ -207,6 +207,8 @@ export interface TrustedPlanOptions {
         readonly toHead: string;
       }
     | undefined;
+  /** E2-I §15: the accepted intent reconciliation receipt, produced only by the governed E2-I service after an independent authority admitted the exact proposal digest. */
+  readonly acceptedIntentReconciliation?: unknown;
 }
 
 /** G10-X: the outcome of one mechanical head reconciliation. */
@@ -683,6 +685,7 @@ export interface ProjectControllerOptions {
   worldBasisRead?: WorldBasisReadPort | undefined;
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
+  contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
   clock?: (() => string) | undefined;
 }
 
@@ -841,6 +844,7 @@ export class ProjectController {
       projectGoal: () => this.work.project().goal,
       requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
       decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
+      ...(options.contextKnowledge === undefined ? {} : { contextKnowledge: options.contextKnowledge }), // E1-K §10.3
       attempt: (attemptId) => {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
@@ -1576,7 +1580,7 @@ export class ProjectController {
         payload_version: 1,
         entity_type: "project",
         entity_id: this.projectId,
-        payload: { project_ir: project, promotion_id: promotionId },
+        payload: { project_ir: project, promotion_id: promotionId, ...(trusted.acceptedIntentReconciliation === undefined ? {} : { intent_reconciliation: trusted.acceptedIntentReconciliation }) },
         causation_id: null,
         correlation_id: `plan:${revision}`,
         idempotency_key: actionKey("plan-revision-v1", {
@@ -3693,6 +3697,7 @@ export class ProjectController {
     attemptId: string,
     options: {
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+      knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection (never authority)
     } = {},
   ): Promise<WorkWorkerAttemptContext> {
     return this.context.workWorkerContext(attemptId, options);
@@ -4525,6 +4530,7 @@ export class ProjectController {
     attemptId: string,
     options: {
       verificationHistory?: { list(projectId: string): readonly ProjectVerificationRun[] };
+      knowledge?: KnowledgeSelectionRequest | undefined; // E1-K §23: optional explicit selection
     } = {},
   ): Promise<{ manifest: ContextManifest; coverage: CoverageAssessment; distribution: ContextDistribution }> {
     return this.context.compile(attemptId, options);
@@ -4545,7 +4551,7 @@ export class ProjectController {
   async fetchContext(
     attemptId: string,
     handle: string,
-  ): Promise<{ kind: "exact" | "source" | "evidence"; ref: string; body: unknown } | undefined> {
+  ): Promise<import("../context/service.js").ContextFetchResult | undefined> {
     return this.context.fetch(attemptId, handle);
   }
 

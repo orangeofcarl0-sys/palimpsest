@@ -13,11 +13,12 @@
  * TYPES ONLY: this module composes nothing, creates nothing and decides nothing.
  */
 import type { RuntimeHooks } from "@ordarium/core";
-import { GitCliPort } from "../effects/index.js";
-import type { GitPort } from "../effects/index.js";
+import { GitCliPort, type GitPort } from "../effects/index.js";
 import { TaskPolicy } from "../domain/index.js";
-import { ProjectController } from "../tools/controller.js";
-import type { DshPluginContext, DshToolDefinition } from "../tools/dsh_types.js";
+import { ProjectController, type DshPluginContext, type DshToolDefinition } from "../tools/index.js";
+
+/** §D4-a: work location. Structural (the tools barrel already reaches the controller) so it costs no fan-out edge. */
+export type ExecutionMode = "worktree" | "in-place";
 import type { LiveCompileOutcome, LiveCompileRequest, ObservationOutcome, RuntimeCarrierPort, RuntimeObservationPort, RuntimeRealizationOutcome, RuntimeRealizationRequest, RuntimeReleaseHandle } from "../runtime/index.js";
 import type { PersistentPointStore } from "../continuity/index.js";
 import type { AttemptCatalogPort, CoordinationStore } from "../coordination/index.js";
@@ -33,17 +34,13 @@ import type { RuntimeEvolutionService, RuntimeEvolutionStore, RuntimeStructuralE
 import type { ReasoningEpistemicAdmissionPolicyPort, ReasoningCellService, ReasoningCellStore, ReasoningClaimTypeRegistry, ReasoningVerificationPolicyPort } from "../reasoning_cell/index.js";
 import type { OrganizationMemoryService, OrganizationMemoryStore } from "../organization_memory/index.js";
 import { evaluate } from "../experiment/index.js";
-import type { RecipeRegistry } from "../recipes/registry.js";
-import { builtinRecipeRegistry } from "../recipes/registry.js";
-import type { RecipeExecutionService, ReasoningBranchExecutionPort } from "../recipes/execution.js";
-import type { EmpiricalArchitectureAdvisor } from "../advisor/advisor.js";
+// The recipes BARREL re-exports registry + execution: one specifier keeps this contract's fan-out at its ceiling.
+import { builtinRecipeRegistry, type RecipeExecutionService, type RecipeRegistry, type ReasoningBranchExecutionPort } from "../recipes/index.js";
 import type { PalimpsestApplicationSurface, RemoteSubmissionPort } from "../application/surface.js";
 import type { HostDeploymentFactsPort } from "../application/common.js";
 import type { BoundaryArtifactTypeRegistry, BoundaryCollaborationTransportPort, BoundaryHome, BoundaryMemoryService, BoundaryMemoryStore, BoundaryWorkspaceRoutePort, FederatedBoundaryClient } from "../boundary_memory/index.js";
-import type { DisclosureAdmissionPort, DisclosureService, EvidenceExtractionService, LocalProofBlobStore, ProofEvidenceService, ProofEvidenceStore, ProofPublicationAdmissionPort, ProofVerificationPolicyPort } from "../proof_asset/index.js";
-import type { ProofSourceContentPort } from "../proof_asset/source_content_port.js";
-import type { ProjectWorkspaceService } from "../project_workspace/index.js";
-import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore } from "../project_workspace/index.js";
+import type { DisclosureAdmissionPort, DisclosureService, EvidenceExtractionService, LocalProofBlobStore, ProofEvidenceService, ProofEvidenceStore, ProofPublicationAdmissionPort, ProofSourceContentPort, ProofVerificationPolicyPort } from "../proof_asset/index.js";
+import { SqliteProjectAssetAssociationStore, SqliteProjectJournalStore, type ProjectWorkspaceService } from "../project_workspace/index.js";
 import type { ExternalAssetBridgeService, ExternalAssetLibraryRegistry, ExternalAssetPublicationAdmissionPort } from "../external_assets/index.js";
 import { SqliteExternalAssetBridgeStore } from "../external_assets/index.js";
 import type { ProjectManagementService } from "../project_management/index.js";
@@ -53,9 +50,12 @@ import type { CollaborationService, CrossProjectService, ProjectPeerDirectoryPor
 import type { DelegationService } from "../interaction/delegation.js";
 import type { DelegationInstallOptions, DelegationInstallResult } from "./delegation_contract.js";
 import type { ContinuationInstallOptions, ContinuationInstallResult } from "./continuation_contract.js";
-import type { TaskProfilerPort } from "../advisor/index.js";
-import { SqliteMonitorDeliveryMarkStore } from "../monitor/index.js";
-import type { CampaignMonitorDriver, CampaignMonitorPolicy, CampaignMonitorScopePort, CampaignWakeActivationPort, MonitorTickSourcePort } from "../monitor/index.js";
+import type { ProjectIntentInstallOptions, ProjectIntentInstallResult } from "./project_intent_contract.js";
+import type { ProjectCollaborationInstallOptions, ProjectCollaborationInstallResult } from "./project_collaboration_contract.js";
+import type { InstitutionalLearningInstallResult } from "./institutional_learning_contract.js";
+import type { ProcedureInstallOptions, ProcedureInstallResult } from "./procedure_contract.js";
+import type { EmpiricalArchitectureAdvisor, TaskProfilerPort } from "../advisor/index.js";
+import { SqliteMonitorDeliveryMarkStore, type CampaignMonitorDriver, type CampaignMonitorPolicy, type CampaignMonitorScopePort, type CampaignWakeActivationPort, type MonitorTickSourcePort } from "../monitor/index.js";
 import { SqliteProjectVerificationStore } from "../project_verification/index.js";
 import type { ProjectVerificationOutcome, ProjectVerificationRun, ProjectVerificationService, ProjectVerificationStatus, ProjectVerifierPort, ProjectVerifierRegistry } from "../project_verification/index.js";
 import { SqliteManagementPreferenceStore } from "../project_management/index.js";
@@ -65,7 +65,7 @@ import { SqliteManagementPreferenceStore } from "../project_management/index.js"
  */
 export type { HostDeploymentFactsPort };
 
-export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions {
+export interface InstallPalimpsestOptions extends DelegationInstallOptions, ContinuationInstallOptions, ProjectIntentInstallOptions, ProjectCollaborationInstallOptions, ProcedureInstallOptions {
   /** Orchestration ledger; defaults to $DSH_HOME/palimpsest/palimpsest.sqlite. */
   databasePath?: string | undefined;
   /** Shared Ordarium ledger; defaults to $DSH_HOME/ordarium/operations.sqlite. */
@@ -77,7 +77,7 @@ export interface InstallPalimpsestOptions extends DelegationInstallOptions, Cont
   projectId: string;
   policy?: TaskPolicy | undefined;
   /** Where an attempt's work happens: "worktree" (default, isolated) or "in-place" (observed, not claimed). */
-  execution?: import("../tools/controller.js").ExecutionMode | undefined;
+  execution?: ExecutionMode | undefined;
   /**
    * §D4-a: how many canonical Work tasks may run at once. `SpeculativeMutationAuthority ≠
    * CanonicalMutationAuthority`, so two PLACED attempts are not two writers on one tree; the OPERATOR
@@ -433,7 +433,7 @@ export interface InstalledRuntime {
   >;
 }
 
-export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult {
+export interface InstalledPalimpsest extends DelegationInstallResult, ContinuationInstallResult, ProjectIntentInstallResult, ProjectCollaborationInstallResult, InstitutionalLearningInstallResult, ProcedureInstallResult {
   readonly controller: ProjectController;
   readonly tools: readonly DshToolDefinition[];
   /** Present only when runtime wiring options are supplied (§93 backward compatibility). */

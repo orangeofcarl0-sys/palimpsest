@@ -39,6 +39,9 @@ import {
   materializePeerAdvertisement,
   materializePeerRef,
 } from "../src/federation/index.js";
+// E3-C §18: the declared-need scope guard lives beside the Federation service it verifies; the
+// federation BARREL is star-exported into the sealed public API, so it is reached by sub-path.
+import { durableContactNeedScopeGuard } from "../src/federation/federation_service.js";
 import { makeParticipationService } from "../src/coordination/index.js";
 import { createPalimpsestEffects, FakeGitPort } from "../src/effects/index.js";
 import { materializeActivation } from "../src/runtime/index.js";
@@ -103,6 +106,8 @@ function makeWorld() {
     localPeer: LOCAL,
     allocateCommitmentId: () => `com-${++counters.commitment}`,
     allocateHandoffId: () => `ho-${++counters.handoff}`,
+    // E3-C §18: a contact_need scope must name a durably declared need.
+    contactNeedScopeGuard: durableContactNeedScopeGuard(store),
   });
   const participation = makeParticipationService({
     store,
@@ -146,11 +151,14 @@ describe("E5-M01/M02/M06: contact discovery is explicit and non-assigning", () =
       competenceTags: ["typescript"],
       reason: "need a typescript reviewer",
     });
+    // E3-C §11: the declaration is now DURABLE — exactly one CONTACT_NEED_DECLARED, and nothing else.
+    const afterDeclaration = await world.store.replay();
+    expect(afterDeclaration.map((event) => event.type)).toEqual(["CONTACT_NEED_DECLARED"]);
     const discovery = await world.federation.findCandidates(need);
     if (discovery.status !== "discovered") throw new Error("expected discovered");
     expect(discovery.candidates.map((candidate) => candidate.peer.peerId)).toEqual(["peer-b"]);
-    // Nothing was assigned or recorded by discovery.
-    expect(await world.store.replay()).toEqual([]);
+    // Discovery itself records nothing: the history is unchanged by looking.
+    expect(await world.store.replay()).toEqual(afterDeclaration);
     // E5-M06: no PersistentPoint is involved anywhere in the flow.
     const serialized = JSON.stringify(discovery);
     expect(serialized).not.toContain("persistentPoint");
@@ -274,6 +282,12 @@ describe("§128 end-to-end: need → candidate → offer → authenticated accep
 describe("E5-M07/M08/M09/M11: derived views", () => {
   it("manpower point view is anchored by PeerRef and derived from events", async () => {
     const world = makeWorld();
+    // E3-C §18: the contact_need scope must name a durably declared need.
+    await world.federation.declareContactNeed({
+      origin: { kind: "attempt", attempt: world.attempt },
+      competenceTags: ["typescript"],
+      reason: "self-commit grounding",
+    });
     const offer = await world.federation.offerCommitment({
       proposedHolder: LOCAL,
       scope: { kind: "contact_need", contactNeedId: "need-1" },
