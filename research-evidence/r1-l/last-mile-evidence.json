@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-L",
+  "branch": "r1-l-worker-context-pull",
+  "baseBlockerCommit": "38ead3f58195f82729cd5fb0da82ce2997b2b490",
+  "whatThisCloses": "R1 measured that selected capital reached the worker PROCESS and was then dropped: the host rendered neither compiled.boot nor compiled.handles, and every palimpsest_* tool is denied to a worker, so no model-visible pull path existed. R1-L closes the last mile.",
+  "gateR1LLive": {
+    "name": "gate:r1-l-live",
+    "verdict": "PASS",
+    "assertions": 17,
+    "method": "unguessable per-run nonces live ONLY in the capital bodies; the worker can report them only by pulling",
+    "conditions": {
+      "C0": {
+        "handlesInPayload": [],
+        "pullToolDelivered": "palimpsest_worker_context_pull",
+        "resultToolDelivered": "palimpsest_worker_result",
+        "indexHasBodies": false,
+        "allowedPullHandles": []
+      },
+      "C1": {
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+          "reasoning:@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a"
+        ],
+        "pullToolDelivered": "palimpsest_worker_context_pull",
+        "resultToolDelivered": "palimpsest_worker_result",
+        "indexHasBodies": false,
+        "allowedPullHandles": [
+          "@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+          "@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a"
+        ]
+      },
+      "C2": {
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+          "reasoning:@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a",
+          "procedure:@ctx/procedure/prc-5eb10012e9427333b3ce4f4639254c90/0"
+        ],
+        "pullToolDelivered": "palimpsest_worker_context_pull",
+        "resultToolDelivered": "palimpsest_worker_result",
+        "indexHasBodies": false,
+        "allowedPullHandles": [
+          "@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+          "@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a",
+          "@ctx/procedure/prc-5eb10012e9427333b3ce4f4639254c90/0"
+        ]
+      }
+    }
+  },
+  "gateR1LC": {
+    "name": "R1 precondition probe, re-run",
+    "whatChanged": "The ORDINARY task portion is still byte-identical across conditions (the experimental control holds); the CONTEXT-INDEX section now differs as intended.",
+    "conditions": {
+      "C0": {
+        "ordinaryTaskDigest": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+        "indexSectionHasHandles": false,
+        "indexSectionLines": 0
+      },
+      "C1": {
+        "ordinaryTaskDigest": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+        "indexSectionHasHandles": true,
+        "indexSectionLines": 2
+      },
+      "C2": {
+        "ordinaryTaskDigest": "d868e4c19e2529e31ec4c7a5fe76b71b463f40aea35af0c91c4931f9d22a8dc8",
+        "indexSectionHasHandles": true,
+        "indexSectionLines": 3
+      }
+    },
+    "ordinaryDigestsAllEqual": true,
+    "indexLinesByCondition": [
+      0,
+      2,
+      3
+    ]
+  },
+  "r1PreconditionBlocker": "CLOSED"
+}

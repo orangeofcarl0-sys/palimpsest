@@ -113,7 +113,7 @@ function printWorkResult(result) {
  * where it may work (this world), that it must commit what it wants delivered, and that its outcome is
  * a report rather than a completion.
  */
-function workTask(context) {
+function workTask(context, indexText) {
   const list = (values) => (Array.isArray(values) && values.length > 0 ? values.map((value) => `  - ${value}`).join('\n') : '  (none)');
   /**
    * §D5-c3: the delivered context is ATTEMPT-CENTRIC — `{work, compiled}` — where `work` is the
@@ -155,12 +155,23 @@ function workTask(context) {
       `  - prior observed changes: ${Array.isArray(prior.observed_changed_files) && prior.observed_changed_files.length > 0 ? prior.observed_changed_files.join(', ') : '(none recorded)'}`,
     );
   }
+  /**
+   * R1-L §6: THE MODEL-VISIBLE PULL INDEX.
+   *
+   * R1 measured that this was missing: `compiled.handles` arrived in the payload and was dropped here,
+   * so all three R1 conditions produced byte-identical prompts and the primary experiment could not be
+   * formed. The TEXT is the product's (`contextIndexText`, rendered by `renderWorkerContextIndex` from
+   * the attempt's OWN compiled handles); this host only decides where it goes. It carries `kind` and
+   * `handle` only — never a body — so the index stays visible and the body stays pull-only (§4).
+   */
+  if (typeof indexText === 'string' && indexText.length > 0) lines.push(indexText);
   lines.push(
     '',
     'How to work:',
     '  - your working directory IS your world: read, search, edit, run tests and commands, experiment freely inside it;',
     '  - commit the changes you want delivered, inside this worktree, before you report — an uncommitted tree cannot be settled;',
     '  - when you are done, call `palimpsest_worker_result` ONCE with kind READY_FOR_SETTLEMENT and a short summary of what you did;',
+    '  - if the attempt lists project context above and a body would help, call `palimpsest_worker_context_pull` with exactly one listed handle; it is read-only background and never authority;',
     '  - if the task as defined cannot be finished inside your authority (scope too narrow, task wrong, a person must decide, an irreversible external action is needed), report kind NEEDS_ESCALATION with a reason instead — proposing is not authorizing;',
     '  - do not claim files, commits, passing tests, evidence or verification results in your report: the product observes all of that for itself.',
   );
@@ -227,6 +238,9 @@ async function runWorker(ctx, deps) {
   let offeredTools = [];
   let denied = [];
   let presentation = null;
+  // §17: the handles the worker actually pulled. Hoisted for the same reason `offeredTools` is: the
+  // telemetry is emitted after the try/catch, where `environment` is no longer in scope.
+  let pulledHandles = [];
 
   try {
     const environment = host.work;
@@ -240,20 +254,31 @@ async function runWorker(ctx, deps) {
       if (resultToolName === undefined) {
         failure = 'the worker result tool name is unavailable; refusing to run a worker without a structural outcome boundary';
       } else {
+        /**
+         * R1-L §7/§13: the SECOND worker-private tool. Both are registered for EVERY worker — the pull
+         * tool even when this attempt selected no capital — so the R1 conditions differ only in the
+         * visible index and the resolvable handles, never in the tool catalogue.
+         */
+        const pullToolName =
+          typeof environment.contextPullTool?.name === 'string' && environment.contextPullTool.name.length > 0
+            ? environment.contextPullTool.name
+            : undefined;
         const workerSetup = (agentCtx) => {
           setup(agentCtx);
           // Enumerate what this scope INHERITS, then close the authority surface. The prefix comes from
           // the composed environment (one place knows what Palimpsest's tools are called).
           const prefix = typeof environment.deniedAuthorityPrefix === 'string' ? environment.deniedAuthorityPrefix : 'palimpsest_';
+          const keep = [resultToolName, pullToolName].filter((name) => typeof name === 'string');
           const visible = typeof agentCtx.tools.schemas === 'function' ? agentCtx.tools.schemas() : [];
           denied = visible
             .map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined))
-            .filter((name) => typeof name === 'string' && name.startsWith(prefix) && name !== resultToolName);
+            .filter((name) => typeof name === 'string' && name.startsWith(prefix) && !keep.includes(name));
           if (denied.length > 0) agentCtx.tools.restrict({ deny: denied });
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it
-          // registers, so the outcome tool survives the deny above. The definition arrives already
-          // converted by the plugin layer, which owns that conversion.
+          // registers, so the two worker-private tools survive the deny above. The definitions arrive
+          // already converted by the plugin layer, which owns that conversion.
           agentCtx.tools.register(environment.tool);
+          if (pullToolName !== undefined) agentCtx.tools.register(environment.contextPullTool);
           if (typeof agentCtx.tools.presentAs === 'function') {
             agentCtx.tools.presentAs('ptc');
             presentation = 'ptc';
@@ -267,7 +292,7 @@ async function runWorker(ctx, deps) {
         });
         const agent = handle.agent;
         await agent.whenIdle();
-        agent.followup(userMessage(workTask(environment.context)));
+        agent.followup(userMessage(workTask(environment.context, environment.contextIndexText)));
         await agent.whenIdle();
         offeredTools = offeredToolNames(agent.session);
         if (typeof sessions?.flush === 'function') {
@@ -277,6 +302,7 @@ async function runWorker(ctx, deps) {
             process.stderr.write(`palimpsest-runner: worker session flush failed: ${error?.message ?? String(error)}\n`);
           }
         }
+        pulledHandles = Array.isArray(environment.pulledHandles) ? environment.pulledHandles : [];
         const recorder = environment.recorder;
         if (recorder.status === 'reported') {
           reported = recorder.outcome;
@@ -293,6 +319,17 @@ async function runWorker(ctx, deps) {
   // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
   process.stdout.write(
     `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools })}
+`,
+  );
+  /**
+   * R1-L §17: WHICH HANDLES the worker actually pulled — and never a body.
+   *
+   * This is what gives the resumed R1 experiment a mechanical answer to "did the stochastic worker use
+   * the capital?" without persisting any model reasoning. It is noncanonical host telemetry, exactly
+   * like `PALIMPSEST_WORKER_ENV`.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_PULL ${JSON.stringify({ pulled: pulledHandles })}
 `,
   );
 

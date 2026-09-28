@@ -196,6 +196,74 @@ async function applyWork(ctx, palimpsest, workFile) {
     },
   };
 
+  /**
+   * R1-L §11/§13: THE CHILD-SIDE PULL TOOL.
+   *
+   * Its implementation does exactly one thing: send the strict IPC request and return the parent's
+   * response. It reads no file, opens no port and holds no reference to any owner — the parent owns the
+   * canonical read and binds it to the attempt. The child therefore cannot widen the request: the
+   * envelope it sends is built HERE from the one argument the schema admits.
+   *
+   * `requestId` is a per-call counter, not a model-supplied value, so a model cannot forge or replay
+   * another call's identity.
+   */
+  let pullSeq = 0;
+  const pulledHandles = [];
+  const pullDefinition = raw.contextPullTool;
+  const pullTool =
+    pullDefinition !== undefined && typeof pullDefinition?.name === 'string' && pullDefinition.name.length > 0
+      ? {
+          name: pullDefinition.name,
+          description: typeof pullDefinition.description === 'string' ? pullDefinition.description : '',
+          parameters: pullDefinition.parameters,
+          output: { schema: { type: 'object' }, render: (_args, value) => [{ type: 'text', text: JSON.stringify(value, null, 2) }] },
+          mode: 'read-only',
+          async execute(args) {
+            // §8: exactly `{ handle }`. A caller that passes anything else is refused here as well as in
+            // the parent, so the child never even forms a request the parent would have to reject.
+            const keys = args !== null && typeof args === 'object' ? Object.keys(args) : [];
+            if (keys.length !== 1 || keys[0] !== 'handle' || typeof args.handle !== 'string' || args.handle.length === 0) {
+              return { status: 'error', detail: 'the pull tool accepts exactly { handle }' };
+            }
+            // §9: refuse locally what this attempt did not bind, without a round trip.
+            const allowed = Array.isArray(raw.allowedPullHandles) ? raw.allowedPullHandles : [];
+            if (!allowed.includes(args.handle)) {
+              return { status: 'refused', detail: "that handle is not part of this attempt's compiled context" };
+            }
+            if (typeof process.send !== 'function') {
+              return { status: 'error', detail: 'this worker has no context channel' };
+            }
+            const requestId = `pull-${++pullSeq}`;
+            const response = await new Promise((resolve) => {
+              let settled = false;
+              const onMessage = (message) => {
+                if (message === null || typeof message !== 'object') return;
+                if (message.requestId !== requestId || message.kind !== 'pull-result') return;
+                settled = true;
+                process.off('message', onMessage);
+                resolve(message);
+              };
+              process.on('message', onMessage);
+              // Bounded wait: a parent that never answers must not hang the worker forever.
+              setTimeout(() => {
+                if (settled) return;
+                process.off('message', onMessage);
+                resolve({ status: 'error', detail: 'the context pull timed out' });
+              }, 20000).unref?.();
+              process.send({
+                channel: typeof raw.contextPullChannel === 'string' ? raw.contextPullChannel : 'palimpsest-worker-context-v1',
+                kind: 'pull',
+                requestId,
+                handle: args.handle,
+              });
+            });
+            // §17: record the handle (never the body) for the noncanonical telemetry line.
+            if (response.status === 'resolved') pulledHandles.push(args.handle);
+            return response.status === 'resolved' ? { status: 'resolved', value: response.value } : { status: response.status, detail: response.detail };
+          },
+        }
+      : undefined;
+
   ctx.provide('palimpsestHost', {
     palimpsest,
     work: {
@@ -205,6 +273,9 @@ async function applyWork(ctx, palimpsest, workFile) {
       // AGENT's scope (not the plugin scope), which is what keeps it out of reach of the restriction
       // that closes the inherited authority surface.
       tool: toRealTool(tool),
+      ...(pullTool === undefined ? {} : { contextPullTool: toRealTool(pullTool) }),
+      // §17: the handles this worker actually pulled, for the runner's telemetry line.
+      pulledHandles,
       deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',
       principalTools: [],
     },

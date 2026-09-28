@@ -36,6 +36,7 @@ import { createPalimpsestEffects, GitCliPort } from "../src/effects/index.js";
 import { TaskPolicy, actionKey, type StageGraphDefinition } from "../src/domain/index.js";
 import { ReworkAdmissionPermit } from "../src/domain/rework_admission.js";
 import { executeMutatingWorkBlocking, makeWorkDelegationService } from "../src/interaction/work_delegation.js";
+import type { WorkWorkerAttemptContext } from "../src/context/service.js";
 import { normalizeEventPayload, parseNewEvent, parseProjectIr, parseTaskEnvelope } from "../src/schema/index.js";
 
 import { installPalimpsest, trustedDefaultPolicy } from "../src/install.js";
@@ -337,7 +338,7 @@ describe("§D5-c3 the delivery is attempt-centric, ordered, and authority-closed
   it("the worker receives M1 + C(R0): compiled after identity/world exist, before it runs", async () => {
     const r = await chain();
     try {
-      let captured: Record<string, unknown> | undefined;
+      let captured: WorkWorkerAttemptContext | undefined;
       let capturedWorkDir = "";
       const outcome = await executeMutatingWorkBlocking(
         {
@@ -345,7 +346,7 @@ describe("§D5-c3 the delivery is attempt-centric, ordered, and authority-closed
           workerFor: (worldPath) => ({
             adapterId: "d5c3-fake",
             run: async (input) => {
-              captured = input.context as Record<string, unknown>;
+              captured = input.context;
               capturedWorkDir = worldPath;
               return { kind: "READY_FOR_SETTLEMENT" as const };
             },
@@ -389,14 +390,14 @@ describe("§D5-c3 the delivery is attempt-centric, ordered, and authority-closed
   it("AUTHORITY-CLOSED: the delivered object's shape is exactly work+compiled — no capability rides", async () => {
     const r = await chain();
     try {
-      let captured: Record<string, unknown> | undefined;
+      let captured: WorkWorkerAttemptContext | undefined;
       await executeMutatingWorkBlocking(
         {
           controller: r.controller,
           workerFor: () => ({
             adapterId: "d5c3-fake",
             run: async (input) => {
-              captured = input.context as Record<string, unknown>;
+              captured = input.context;
               return { kind: "READY_FOR_SETTLEMENT" as const };
             },
           }),
@@ -410,7 +411,7 @@ describe("§D5-c3 the delivery is attempt-centric, ordered, and authority-closed
         "handles",
         "manifestId",
       ]);
-      expect(Object.keys(captured!.work as Record<string, unknown>).sort()).toEqual([
+      expect(Object.keys(captured!.work).sort()).toEqual([
         "baseCommit",
         "completionChecks",
         "decisions",
@@ -433,14 +434,14 @@ describe("§D5-c3 the delivery is attempt-centric, ordered, and authority-closed
   it("CURRENT BASIS: the re-execution runs at H1 — work.baseCommit is E1's, never E0's", async () => {
     const r = await chain();
     try {
-      let captured: Record<string, unknown> | undefined;
+      let captured: WorkWorkerAttemptContext | undefined;
       await executeMutatingWorkBlocking(
         {
           controller: r.controller,
           workerFor: () => ({
             adapterId: "d5c3-fake",
             run: async (input) => {
-              captured = input.context as Record<string, unknown>;
+              captured = input.context;
               return { kind: "READY_FOR_SETTLEMENT" as const };
             },
           }),

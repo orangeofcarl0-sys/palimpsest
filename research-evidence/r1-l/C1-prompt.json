@@ -1,0 +1,15 @@
+{
+  "condition": "C1",
+  "handlesInPayload": [
+    "proof:@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+    "reasoning:@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a"
+  ],
+  "contextIndexText": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d\n  [reasoning] @ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+  "contextIndexHasBodies": false,
+  "pullToolInPayload": "palimpsest_worker_context_pull",
+  "resultToolInPayload": "palimpsest_worker_result",
+  "allowedPullHandles": [
+    "@ctx/proof/pc-4306dfe7165ac3f79782c61ee836999d",
+    "@ctx/reasoning/cell-marker/cl-bf3bcdc78570a0ac6383985a"
+  ]
+}
