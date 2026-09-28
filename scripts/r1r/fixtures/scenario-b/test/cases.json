@@ -1,0 +1,124 @@
+[
+  {
+    "id": "v01",
+    "input": {
+      "name": "alpha",
+      "endpoint": "https://alpha",
+      "retry": 2,
+      "timeout": 1000
+    },
+    "expect": "accept",
+    "digest": "63ec8c1beaebb3ab9a7bf2d81c0dc38e8cf8b5d63c0e792d8f309d8d6c5b46cd",
+    "expected": {
+      "schemaVersion": 2,
+      "service": {
+        "name": "alpha",
+        "endpoint": "https://alpha"
+      },
+      "policy": {
+        "retries": 2,
+        "timeoutMs": 1000
+      }
+    }
+  },
+  {
+    "id": "v02",
+    "input": {
+      "service_name": "beta",
+      "url": "https://beta"
+    },
+    "expect": "accept",
+    "digest": "c920aee442ac1439c3de24e7fcd914194a797a68b2b3ad8dcaf665cf451037e7",
+    "expected": {
+      "schemaVersion": 2,
+      "service": {
+        "name": "beta",
+        "endpoint": "https://beta"
+      },
+      "policy": {
+        "retries": 3,
+        "timeoutMs": 30000
+      }
+    }
+  },
+  {
+    "id": "v03",
+    "input": {
+      "name": "gamma",
+      "endpoint": "https://gamma",
+      "retry": 0
+    },
+    "expect": "accept",
+    "digest": "e2f28fed1a10f9fc51d8a7a783f10164dc09ac1de7d6a895184a0b99e8966c32",
+    "expected": {
+      "schemaVersion": 2,
+      "service": {
+        "name": "gamma",
+        "endpoint": "https://gamma"
+      },
+      "policy": {
+        "retries": 0,
+        "timeoutMs": 30000
+      }
+    }
+  },
+  {
+    "id": "v04",
+    "input": {
+      "endpoint": "https://eta"
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v05",
+    "input": {
+      "name": "ups",
+      "endpoint": ""
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v06",
+    "input": {
+      "name": "",
+      "endpoint": "https://psi"
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v07",
+    "input": {
+      "name": "delta",
+      "endpoint": "https://delta",
+      "retry": -1
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v08",
+    "input": {
+      "name": "lam",
+      "endpoint": "https://lam",
+      "retry": 3.5
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v09",
+    "input": {
+      "name": "zeta",
+      "endpoint": "https://zeta",
+      "bogus": 1
+    },
+    "expect": "reject"
+  },
+  {
+    "id": "v10",
+    "input": {
+      "name": "kappa",
+      "endpoint": "https://kappa",
+      "timeout": 0
+    },
+    "expect": "reject"
+  }
+]
