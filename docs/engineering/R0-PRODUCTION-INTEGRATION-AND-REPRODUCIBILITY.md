@@ -217,8 +217,44 @@ Two packaging notes, recorded rather than fixed:
 
 | # | issue |
 |---|---|
-| 11 | `engines.node` declares `>=24.15.0` but the whole matrix runs on 24.14.1, and nothing needs a 24.15 feature. The declared floor is untested; the maintainer should either lower it to the tested floor or pin CI to the declared one. |
+| 11 | `engines.node` declares `>=24.15.0`; see §10 for the classification after the R0-R Linux run. |
 | 12 | The tarball ships compiled tests and gate fixtures; a `files` allowlist would make the artifact honest about what it is. |
+
+## 7a. R0-R — remote CI, and the two defects only Linux could find
+
+R0-R put the stack in front of remote CI for the first time (PR #214, base
+`e-live-intellectual-compounding`). It found two more real defects, both in tooling rather than in
+product semantics, and both invisible to every local run:
+
+| # | issue | class |
+|---|---|---|
+| 18 | The new `r0-gates` workflow did not parse at all: an unquoted `echo "skipped: no DSH host…"` made YAML read the colon as a mapping separator, so GitHub rejected the file and every run died in **0 s with zero jobs**. | **CI defect**, now validated with a real YAML parse before push |
+| 19 | `consumer-smoke.mjs` resolved `npm-cli.js` at the **Windows** nodejs.org layout only, so the Linux run died with `Cannot find module …/bin/node_modules/npm/bin/npm-cli.js`. Both the npm and pnpm resolvers now check the layouts that actually occur, verify the file exists, and fall back to PATH. | **portability defect** — the script had never run anywhere but Windows |
+
+The second one is the important one: R0 added the smoke *because* the packaging boundary was untested,
+and the smoke itself turned out to be platform-locked. Remote CI is what caught it.
+
+### Measured on Linux (ubuntu-latest, Node v24.21.0, pnpm 11.28.0)
+
+```
+unit        2923 passed / 248 files
+e2e         38 passed
+architecture / public API         PASS (0 violations / 0 0 0)
+gate:e1-k 14 · e2-i 14 · e3-c 21 · e4-l 10 · e5-p 11 · e-live 28   ALL PASS
+package-smoke  PASS — all six declared subpaths resolve from the installed tarball
+```
+
+`D2/D4/D5` require the private `@deepseek-ai/dsh` host, which a stock runner does not have; those jobs
+emit an explicit `::notice::` and **skip** rather than reading as red, so the CI signal is honest about
+what it did and did not run.
+
+### D5 reliability pressure (§6)
+
+`gate:d5-live` was run **20 times sequentially** and passed **20/20**, with every outcome recorded.
+Combined with the single failure observed in eight earlier local runs, this classifies the event as:
+
+> **KNOWN FLAKE, NONBLOCKING WITH EVIDENCE** — isolated and non-reproducible. No repeatable failure was
+> observed, so this is not a reliability blocker, and the D5 gate was not weakened.
 
 ### Deferred pressures (unchanged)
 
@@ -247,8 +283,10 @@ argues for it.
 on, so there is no rebase to perform and no semantic conflict to resolve. If `main` advances before
 integration, re-run §4 in full on the rebased result rather than assuming the gates still hold.
 
-**Outward action: not performed.** R0 was not authorized to push, open a PR, merge or publish. The
-branch and its commits are local.
+**Outward action.** R0 itself pushed nothing. R0-R then pushed `r0-production-integration` and opened
+PR #214 (base `e-live-intellectual-compounding`); `main` is still `9ec76ff` and the package is
+unpublished. `release-evidence/r0-release-evidence.json` records both the state at code-state capture
+and the current state rather than editing the historical claim.
 
 ## 9. What this document does NOT claim
 
@@ -258,4 +296,22 @@ branch and its commits are local.
   that none failed in a way R0 could observe.
 - It does not claim every platform is supported. §5 states what is genuinely required and what is a
   measured Windows assumption.
-- It does not claim the toolchain is exactly what `engines` declares — §2 documents the discrepancy.
+- It does not claim `D2/D4/D5` ran on CI. They need the private `@deepseek-ai/dsh` host and **skipped**;
+  their Linux behaviour is therefore still unverified, and only their Windows evidence stands.
+
+## 10. `engines.node`: the declared floor, classified
+
+`package.json` declares `>=24.15.0`. Two data points now bear on it:
+
+| interpreter | satisfies `>=24.15.0`? | full matrix |
+|---|---|---|
+| `v24.14.1` (local, Windows) | **no** | passes entirely |
+| `v24.21.0` (CI, ubuntu-latest) | yes | passes entirely |
+
+**Classification: the declared floor is satisfied by a tested interpreter, but its necessity is
+unverified.** The machine that produced most of this repository's evidence runs an interpreter the
+declaration excludes, and nothing observes the difference — so the floor is neither justified as a
+requirement nor shown to be wrong. R0-R deliberately did **not** lower it: a lower bound is a
+compatibility promise, and R0-R's job is to report, not to widen support on the strength of two
+interpreters that happen to agree. The action, when someone chooses to take it, is either to lower the
+floor to a tested value or to pin CI to the declared one; either way the claim should match evidence.

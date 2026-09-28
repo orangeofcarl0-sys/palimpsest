@@ -131,6 +131,23 @@ const manifest = {
       "gate:d5-live": captured("R0_GATE_D5"),
     },
   },
+  /**
+   * R0-R §5: what remote CI actually ran. The E gates and the package smoke run on a stock Linux
+   * runner; D2/D4/D5 need the private `@deepseek-ai/dsh` host and SKIP there, so their Linux behaviour
+   * stays unverified and only their Windows evidence stands. Recording the distinction here keeps a
+   * green CI badge from being read as broader coverage than it is.
+   */
+  remoteCi: {
+    platform: captured("R0_CI_PLATFORM"),
+    node: captured("R0_CI_NODE"),
+    pnpm: captured("R0_CI_PNPM"),
+    unitTests: captured("R0_CI_UNIT_TESTS"),
+    e2e: captured("R0_CI_E2E"),
+    gatesRunOnCi: ["gate:e1-k-live", "gate:e2-i-live", "gate:e3-c-live", "gate:e4-l-live", "gate:e5-p-live", "gate:e-live"],
+    packageSmoke: captured("R0_CI_PACKAGE_SMOKE"),
+    gatesSkippedWithoutDsh: ["gate:d2-live", "gate:d4-live", "gate:d5-live"],
+    pullRequest: captured("R0_PR"),
+  },
   architecture: {
     dependencyFirewalls: architectureBaseline.baseline.dependencyFirewalls.length,
     hotspotRatchets: architectureBaseline.baseline.hotspotRatchets.length,
@@ -156,17 +173,27 @@ const manifest = {
   knownFlakes: [
     {
       gate: "gate:d5-live",
-      observedRate: "1 failure in 8 sequential runs of the R0 release candidate (retry succeeded every time)",
+      observedRate:
+        "1 failure in 8 earlier local runs, then 20/20 PASS in a dedicated sequential reliability run",
       symptom: "the scheduler never offered TASK_STARTED for tb",
       detail:
         "D5 drives two sibling tasks and waits for the scheduler's own TASK_STARTED decision to point " +
         "at the task it is driving. Under load the decision can be offered for the sibling first, and " +
-        "the gate's bounded wait then gives up. Seven of the eight runs, including four consecutive " +
-        "retries, passed with 10/10 verdicts. Neither D5 nor any product source is touched by R0, so " +
-        "this is not an R0 regression; it is recorded because a reader re-running the suite may hit it.",
-      classification: "PRE-EXISTING FLAKE — retry succeeds, no product defect observed",
+        "the gate's bounded wait then gives up. The single observed failure did not reproduce in 20 " +
+        "consecutive runs, so it is isolated and non-reproducible. Neither D5 nor any product source " +
+        "is touched by R0, so this is not an R0 regression; the D5 gate was NOT weakened.",
+      classification: "KNOWN FLAKE, NONBLOCKING WITH EVIDENCE — no repeatable failure observed",
     },
   ],
+  nodeFloor: {
+    declared: ">=24.15.0",
+    observedInterpreters: [
+      { version: "v24.14.1", platform: "Windows (local)", satisfiesDeclaredFloor: false, fullMatrix: "passes" },
+      { version: "v24.21.0", platform: "ubuntu-latest (CI)", satisfiesDeclaredFloor: true, fullMatrix: "passes" },
+    ],
+    classification: "DECLARED FLOOR SATISFIED BY A TESTED INTERPRETER, NECESSITY UNVERIFIED",
+    action: "not lowered in this stage; a lower bound is a compatibility promise, not a reproducibility fix",
+  },
   // R0-R §3.4: distinguish what was true WHEN the code-state RC was captured from what is true NOW.
   // The historical statement must not be rewritten as the tree moves; instead both are stated.
   outwardAction: {
