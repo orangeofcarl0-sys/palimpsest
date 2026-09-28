@@ -1,0 +1,123 @@
+{
+  "trialId": "C-C1-b2r2",
+  "scenario": "C_REPLAY_SAFE_REDUCER",
+  "condition": "C1",
+  "block": 2,
+  "repetition": 2,
+  "pairedState": {
+    "scenarioId": "C_REPLAY_SAFE_REDUCER",
+    "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+    "repositoryHead": "3b07eeb120ebdf13e92e431b61f5371b09079328",
+    "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+    "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+    "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+    "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+    "visibleFileCount": 5
+  },
+  "capital": {
+    "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+    "reasoningCellId": "cell-c",
+    "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+    "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+    "procedureDigest": "3bf72185eeb8d8218b8dac13cee4f57a5311bfad6ffb4fd1c9c8c80b86f8477f"
+  },
+  "prompt": {
+    "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+    "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+    "indexHandleCount": 2,
+    "handlesInPayload": [
+      "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+      "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+    ],
+    "pullToolName": "palimpsest_worker_context_pull",
+    "resultToolName": "palimpsest_worker_result",
+    "allowedPullHandles": [
+      "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+      "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+    ],
+    "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+    "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 3b07eeb120ebdf13e92e431b61f5371b09079328\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+  },
+  "worker": {
+    "offeredTools": [
+      "run_code"
+    ],
+    "presentation": "ptc",
+    "deniedPrincipalToolCount": 0,
+    "pulledHandles": [],
+    "pullOrder": [],
+    "pullTelemetryLines": 1,
+    "outcomeKind": "READY_FOR_SETTLEMENT",
+    "outcomeSummary": "Finished applyEventStream in src/reducer.ts (the only file changed, committed in this worktree). It now (1) validates the whole delivered history first — every event a record with a non-empty string id, a non-negative integer seq, an op of SET or DELETE (kind accepted as the alternative spelling), and a value for SET under v/value/payload/data — and rejects histories where one log position is claimed by two different events, while still accepting re-delivered identical events; (2) folds the accepted history in ascending seq order on a private draft, so the log's own sequence order decides the ",
+    "escalationReason": "",
+    "transcriptBytes": 1469
+  },
+  "finalAcceptance": {
+    "passed": 12,
+    "total": 15,
+    "failures": [
+      "h05:ACCEPTED_INVALID_HISTORY",
+      "h06:ACCEPTED_INVALID_HISTORY",
+      "h13:ACCEPTED_INVALID_HISTORY"
+    ]
+  },
+  "firstCandidateAcceptance": {
+    "passed": 12,
+    "total": 15,
+    "failures": [
+      "h05:ACCEPTED_INVALID_HISTORY",
+      "h06:ACCEPTED_INVALID_HISTORY",
+      "h13:ACCEPTED_INVALID_HISTORY"
+    ]
+  },
+  "knownFailureFinal": {
+    "detector": "reducedBeforeWholeHistoryValidation",
+    "recurred": true,
+    "violations": [
+      {
+        "probe": "p02",
+        "why": "a log whose sequence is not continuous must be refused",
+        "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+      },
+      {
+        "probe": "p05",
+        "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+        "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+      }
+    ],
+    "probesRun": 5
+  },
+  "knownFailureFirst": {
+    "detector": "reducedBeforeWholeHistoryValidation",
+    "recurred": true,
+    "violations": [
+      {
+        "probe": "p02",
+        "why": "a log whose sequence is not continuous must be refused",
+        "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+      },
+      {
+        "probe": "p05",
+        "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+        "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+      }
+    ],
+    "probesRun": 5
+  },
+  "visibleOracleInvocations": 4,
+  "hiddenOracleInvocations": 1,
+  "implementationRevisions": 0,
+  "submittedCandidate": true,
+  "workerCommitCount": 1,
+  "oracleFileUnmodified": false,
+  "elapsedMs": 271798,
+  "hostFailure": null,
+  "timedOut": false,
+  "manualInterventions": 0,
+  "jobPhase": "FINISHED",
+  "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+  "tokens": {
+    "exposed": false,
+    "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+  }
+}

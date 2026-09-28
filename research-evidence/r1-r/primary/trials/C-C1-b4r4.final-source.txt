@@ -1,0 +1,156 @@
+/**
+ * R1-R §6/§8 — SCENARIO C, THE REPAIRED IMPLEMENTATION (H0 -> H1).
+ *
+ * H0 read the goal literally and folded the delivered array as it arrived, which is wrong in two
+ * separate ways: it reduces BEFORE replay validity is established (so a history that turns out to be
+ * invalid part-way through leaves the caller's own object partially applied), and it reduces in the
+ * DELIVERED order rather than the log's own sequence order (so an entity written at one position and
+ * deleted at a later one depends on which of the two the transport happened to deliver last).
+ *
+ * The log is the source of truth; the array is only what the transport delivered. So this
+ * implementation does three things, in this order:
+ *
+ *   1. ESTABLISH REPLAY/SEQUENCE VALIDITY FIRST, over the whole delivered array, without touching the
+ *      caller's state. Every entry must be a well-formed event: an object carrying a non-empty string
+ *      id, a non-negative integer seq (the position the log assigned it) and an op of SET, PUT or
+ *      DELETE — with a SET's value under one of v / value / payload / data. The log assigns each
+ *      position exactly once, so two DIFFERENT events claiming the same seq describe a history no log
+ *      could hold: "last one wins" would depend on delivery order, which is precisely how two
+ *      replicas holding the same log drift apart. That is a conflict, and the history is rejected.
+ *      An event repeated at a position with the same meaning is not a conflict: delivery is
+ *      at-least-once, so it is the same durable event arriving again.
+ *
+ *   2. REPLAY IN THE LOG'S OWN ORDER: the deduplicated events are sorted by seq and applied in that
+ *      order, never in the order they were delivered.
+ *
+ *   3. COMMIT ONLY AFTERWARDS: because the whole history is accepted before the first write, a
+ *      rejected history leaves the caller's state exactly as it was. The caller still owns that
+ *      object, and it is the object returned and mutated in place.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Op = "SET" | "DELETE";
+
+interface PlannedEvent {
+  readonly seq: number;
+  readonly id: string;
+  readonly op: Op;
+  readonly value: unknown;
+}
+
+/** The operations the log knows, including the kind alias the transport also uses. */
+const OPERATIONS: Readonly<Record<string, Op | undefined>> = {
+  SET: "SET",
+  PUT: "SET",
+  DELETE: "DELETE",
+};
+
+const opOf = (event: Event): Op => {
+  const declared = event.op ?? event.kind ?? "SET";
+  const op = typeof declared === "string" ? OPERATIONS[declared] : undefined;
+  if (op === undefined) throw new StreamError("INVALID_OP", "unknown operation " + JSON.stringify(declared));
+  return op;
+};
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/** A stable, key-order independent rendering of a value, for comparing events at one position. */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const keys = Object.keys(record).sort();
+    return "{" + keys.map((key) => JSON.stringify(key) + ":" + canonical(record[key])).join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+};
+
+const sameEvent = (left: PlannedEvent, right: PlannedEvent): boolean =>
+  left.id === right.id &&
+  left.op === right.op &&
+  (left.op === "DELETE" || canonical(left.value) === canonical(right.value));
+
+/** Validate one delivered entry and reduce it to the operation it stands for. */
+function plan(event: unknown, position: number): PlannedEvent {
+  if (event === null || typeof event !== "object" || Array.isArray(event)) {
+    throw new StreamError("INVALID_EVENT", "event " + position + " must be an object");
+  }
+  const candidate = event as Event;
+  if (typeof candidate.id !== "string" || candidate.id.length === 0) {
+    throw new StreamError("INVALID_IDENTITY", "event " + position + " must carry a non-empty string id");
+  }
+  const seq = candidate.seq;
+  if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+    throw new StreamError("INVALID_SEQUENCE", "event " + position + " must carry a non-negative integer seq");
+  }
+  const op = opOf(candidate);
+  return { seq, id: candidate.id, op, value: op === "DELETE" ? undefined : valueOf(candidate) };
+}
+
+/**
+ * Apply an event stream to the current state.
+ *
+ * The history is validated and deduplicated first, replayed in log order second, and only then
+ * committed to the state, which is mutated in place and returned. A history that is not one the log
+ * could hold is rejected with a StreamError and leaves the caller's state untouched.
+ */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the event stream must be an array of events");
+  }
+
+  // 1. VALIDATE THE WHOLE DELIVERED HISTORY — no write to the state may happen before this completes.
+  const ordered: PlannedEvent[] = [];
+  const atPosition = new Map<number, PlannedEvent>();
+  for (let position = 0; position < events.length; position += 1) {
+    const event = plan(events[position], position);
+    const seen = atPosition.get(event.seq);
+    if (seen !== undefined) {
+      if (!sameEvent(seen, event)) {
+        throw new StreamError("SEQUENCE_CONFLICT", "two different events claim log position " + event.seq);
+      }
+      continue;
+    }
+    atPosition.set(event.seq, event);
+    ordered.push(event);
+  }
+
+  // 2. REPLAY IN THE LOG'S OWN ORDER.
+  ordered.sort((left, right) => left.seq - right.seq);
+
+  // 3. COMMIT — reached only for a history that is valid as a whole.
+  for (const event of ordered) {
+    if (event.op === "DELETE") delete state[event.id];
+    else state[event.id] = event.value;
+  }
+
+  return state;
+}

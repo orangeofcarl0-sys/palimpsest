@@ -1,0 +1,156 @@
+/**
+ * R1-R §6/§8 — SCENARIO C, THE FINISHED REDUCER.
+ *
+ * `applyEventStream` reduces a durable append-only event log into a store's current state. The log is
+ * the source of truth; the array handed to this function is only what the transport happened to
+ * deliver. So the delivered array is treated as an unordered, possibly duplicated, possibly partial
+ * bag of log entries, and the state is derived from the positions the log itself assigned.
+ *
+ * The pre-paid mistake this scenario measures — `mutate/reduce before replay/sequence validity is
+ * established` — is avoided by splitting the work into two strictly ordered phases:
+ *
+ *   1. PLAN: read every delivered event and build the canonical replay plan. This phase never looks at
+ *      `state`, so a history that turns out to be invalid leaves the caller's object untouched.
+ *   2. APPLY: fold the plan into `state` in log-sequence order. This phase cannot fail.
+ *
+ * Consequences that make replicas agree:
+ *   - replay order is the log's own `seq` order, never the delivery order, so a shuffled array and a
+ *     sorted array produce the same state;
+ *   - the same event delivered more than once collapses to a single application, so replay is
+ *     idempotent;
+ *   - a position (`seq`) that carries two *different* events is not a history any log could hold and
+ *     is rejected as a whole, before anything is written.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** A single, fully-resolved log entry: what to do at one position. */
+interface PlannedEvent {
+  readonly seq: number;
+  readonly id: string;
+  readonly op: "SET" | "DELETE";
+  readonly value: unknown;
+}
+
+const opOf = (event: Event): string => event.op ?? event.kind ?? "SET";
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/**
+ * Structural, key-order-independent rendering of a value, used only to decide whether two events at
+ * the same position are the *same* event (an idempotent re-delivery) or a genuine conflict.
+ */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+};
+
+/**
+ * Phase 1 — establish replay/sequence validity. Never touches the caller's state, so throwing here is
+ * guaranteed to leave that object exactly as it was handed over.
+ */
+function planReplay(events: readonly Event[]): PlannedEvent[] {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the event stream must be an array");
+  }
+
+  const atPosition = new Map<number, { readonly shape: string; readonly planned: PlannedEvent }>();
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object" || Array.isArray(event)) {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_POSITION", "every event must carry a non-negative integer seq");
+    }
+
+    const op: "SET" | "DELETE" = opOf(event) === "DELETE" ? "DELETE" : "SET";
+    const planned: PlannedEvent = {
+      seq,
+      id: event.id,
+      op,
+      value: op === "DELETE" ? null : valueOf(event),
+    };
+    const shape = canonical([planned.id, planned.op, planned.value]);
+
+    const seen = atPosition.get(seq);
+    if (seen === undefined) {
+      atPosition.set(seq, { shape, planned });
+    } else if (seen.shape !== shape) {
+      throw new StreamError(
+        "CONFLICTING_POSITION",
+        `position ${seq} carries two different events`,
+      );
+    }
+    // Otherwise this is the same log entry delivered again: keep a single application.
+  }
+
+  return [...atPosition.values()]
+    .map((entry) => entry.planned)
+    .sort((left, right) => left.seq - right.seq);
+}
+
+/**
+ * Write one entity into the store. A plain assignment is enough for every ordinary key; "__proto__" is
+ * special-cased because assigning through it would hit the prototype setter instead of recording an
+ * entity of that name.
+ */
+function writeEntity(state: State, id: string, value: unknown): void {
+  if (id === "__proto__") {
+    Object.defineProperty(state, id, { value, writable: true, enumerable: true, configurable: true });
+  } else {
+    state[id] = value;
+  }
+}
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  // Validity first: on a rejected history the caller's object is never touched.
+  const plan = planReplay(events);
+
+  // Only now, in the log's own sequence order, fold the plan into the caller's state.
+  for (const entry of plan) {
+    if (entry.op === "DELETE") delete state[entry.id];
+    else writeEntity(state, entry.id, entry.value);
+  }
+
+  return state;
+}

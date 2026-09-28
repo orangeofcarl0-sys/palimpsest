@@ -1,0 +1,167 @@
+/**
+ * Migrate a legacy service configuration document to the v2 shape.
+ *
+ * The method this file implements — the thing the naive "copy the fields across and default the
+ * rest" reading gets wrong:
+ *
+ *   1. RECOGNIZE the document. Every key must be a spelling the legacy format uses. A key we do
+ *      not know means the migration cannot know what the operator meant -> reject.
+ *
+ *   2. NORMALIZE SPELLINGS BEFORE COMPARING VALUES. The same setting is written several ways
+ *      (name / service_name / title, url / base_url / host, retry / retries / retryCount / attempts,
+ *      timeout / timeout_ms / timeoutMs). Resolve each setting by collecting the values from every
+ *      spelling present, then comparing them. Spellings that agree give one meaning; spellings that
+ *      disagree make the document AMBIGUOUS and unfaithful to migrate -> reject. Never let `??`
+ *      silently pick a winner and drop the conflict.
+ *
+ *   3. VALIDATE WHAT IS PRESENT BEFORE DEFAULTING. A setting that is present but invalid is an
+ *      error, not a missing setting. Defaults are for settings the document does not mention at all.
+ *
+ *   4. DEFAULTS: absent retries -> 3, absent timeoutMs -> 30000. name and endpoint are
+ *      required: absent (or empty) -> reject.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** The canonical settings a v2 document has. */
+type Field = "name" | "endpoint" | "retries" | "timeoutMs";
+
+/**
+ * Every legacy spelling we recognize, mapped to the setting it names. This is the vocabulary:
+ * anything outside it is an unknown key.
+ */
+const SPELLINGS: Readonly<Record<string, Field>> = {
+  name: "name",
+  service_name: "name",
+  title: "name",
+
+  endpoint: "endpoint",
+  url: "endpoint",
+  base_url: "endpoint",
+  host: "endpoint",
+
+  retry: "retries",
+  retries: "retries",
+  retryCount: "retries",
+  attempts: "retries",
+
+  timeout: "timeoutMs",
+  timeout_ms: "timeoutMs",
+  timeoutMs: "timeoutMs",
+};
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/** The values the document supplies for one canonical setting, in vocabulary order. */
+function suppliedValues(input: Record<string, unknown>, field: Field): unknown[] {
+  const values: unknown[] = [];
+  for (const key of Object.keys(SPELLINGS)) {
+    if (SPELLINGS[key] !== field) continue;
+    if (Object.prototype.hasOwnProperty.call(input, key) && input[key] !== undefined) {
+      values.push(input[key]);
+    }
+  }
+  return values;
+}
+
+type Validator = (value: unknown) => void;
+
+function requireNonEmptyString(code: string, what: string): Validator {
+  return (value) => {
+    if (typeof value !== "string" || value.trim() === "") {
+      throw new ConfigError(code, `the ${what} must be a non-empty string`);
+    }
+  };
+}
+
+const validateName = requireNonEmptyString("INVALID_NAME", "service name");
+const validateEndpoint = requireNonEmptyString("INVALID_ENDPOINT", "endpoint");
+
+const validateRetries: Validator = (value) => {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ConfigError("INVALID_RETRIES", "retries must be a non-negative integer");
+  }
+};
+
+const validateTimeoutMs: Validator = (value) => {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new ConfigError("INVALID_TIMEOUT", "timeoutMs must be a positive integer");
+  }
+};
+
+/**
+ * Resolve one canonical setting:
+ *   - no spelling present  -> the default (or reject when the setting is required)
+ *   - one spelling present -> validate it
+ *   - several spellings    -> validate each, then compare; disagreement is ambiguity
+ */
+function resolveField(
+  input: Record<string, unknown>,
+  field: Field,
+  validate: Validator,
+  required: boolean,
+  fallback: string | number,
+): string | number {
+  const values = suppliedValues(input, field);
+  if (values.length === 0) {
+    if (required) {
+      throw new ConfigError(`MISSING_${field.toUpperCase()}`, `the ${field} is required`);
+    }
+    return fallback;
+  }
+  for (const value of values) validate(value);
+  const first = values[0];
+  for (const value of values.slice(1)) {
+    if (value !== first) {
+      throw new ConfigError(
+        `AMBIGUOUS_${field.toUpperCase()}`,
+        `the document gives conflicting values for ${field}`,
+      );
+    }
+  }
+  return first as string | number;
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (!isPlainObject(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1. Recognize the document before reading anything out of it.
+  for (const key of Object.keys(input)) {
+    if (!Object.prototype.hasOwnProperty.call(SPELLINGS, key)) {
+      throw new ConfigError("UNKNOWN_KEY", `unknown configuration key: ${key}`);
+    }
+  }
+
+  // 2 + 3. Resolve each setting from all of its spellings, validating before defaulting.
+  const name = resolveField(input, "name", validateName, true, "") as string;
+  const endpoint = resolveField(input, "endpoint", validateEndpoint, true, "") as string;
+  const retries = resolveField(input, "retries", validateRetries, false, DEFAULT_RETRIES) as number;
+  const timeoutMs = resolveField(input, "timeoutMs", validateTimeoutMs, false, DEFAULT_TIMEOUT_MS) as number;
+
+  return {
+    schemaVersion: 2,
+    service: { name, endpoint },
+    policy: { retries, timeoutMs },
+  };
+}

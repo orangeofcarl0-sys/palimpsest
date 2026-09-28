@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-R",
+  "phase": "CALIBRATION",
+  "runsPerScenario": 3,
+  "meaningfulProgressFraction": 0.5,
+  "scenarios": {
+    "B": {
+      "trials": [
+        {
+          "trialId": "B-C0-b900r0",
+          "finalAcceptance": {
+            "passed": 21,
+            "total": 21,
+            "failures": []
+          },
+          "firstCandidateAcceptance": {
+            "passed": 21,
+            "total": 21,
+            "failures": []
+          },
+          "knownFailureFirstRecurred": false,
+          "knownFailureFinalRecurred": false,
+          "visibleOracleInvocations": 0,
+          "implementationRevisions": 0,
+          "elapsedMs": 149741,
+          "hostFailure": null
+        },
+        {
+          "trialId": "B-C0-b901r0",
+          "finalAcceptance": {
+            "passed": 21,
+            "total": 21,
+            "failures": []
+          },
+          "firstCandidateAcceptance": {
+            "passed": 21,
+            "total": 21,
+            "failures": []
+          },
+          "knownFailureFirstRecurred": false,
+          "knownFailureFinalRecurred": false,
+          "visibleOracleInvocations": 0,
+          "implementationRevisions": 0,
+          "elapsedMs": 249639,
+          "hostFailure": null
+        },
+        {
+          "trialId": "B-C0-b902r0",
+          "finalAcceptance": {
+            "passed": 18,
+            "total": 21,
+            "failures": [
+              "h16:REJECTED_BUT_SHOULD_ACCEPT",
+              "h21:REJECTED_BUT_SHOULD_ACCEPT",
+              "h22:REJECTED_BUT_SHOULD_ACCEPT"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 18,
+            "total": 21,
+            "failures": [
+              "h16:REJECTED_BUT_SHOULD_ACCEPT",
+              "h21:REJECTED_BUT_SHOULD_ACCEPT",
+              "h22:REJECTED_BUT_SHOULD_ACCEPT"
+            ]
+          },
+          "knownFailureFirstRecurred": false,
+          "knownFailureFinalRecurred": false,
+          "visibleOracleInvocations": 3,
+          "implementationRevisions": 0,
+          "elapsedMs": 179431,
+          "hostFailure": null
+        }
+      ],
+      "firstCandidateSolves": 2,
+      "meaningfulProgress": 3,
+      "ceiling": false,
+      "floor": false,
+      "verdict": "PRIMARY_ELIGIBLE"
+    },
+    "C": {
+      "trials": [
+        {
+          "trialId": "C-C0-b900r0",
+          "finalAcceptance": {
+            "passed": 12,
+            "total": 15,
+            "failures": [
+              "h05:ACCEPTED_INVALID_HISTORY",
+              "h06:ACCEPTED_INVALID_HISTORY",
+              "h13:ACCEPTED_INVALID_HISTORY"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 12,
+            "total": 15,
+            "failures": [
+              "h05:ACCEPTED_INVALID_HISTORY",
+              "h06:ACCEPTED_INVALID_HISTORY",
+              "h13:ACCEPTED_INVALID_HISTORY"
+            ]
+          },
+          "knownFailureFirstRecurred": true,
+          "knownFailureFinalRecurred": true,
+          "visibleOracleInvocations": 0,
+          "implementationRevisions": 0,
+          "elapsedMs": 147324,
+          "hostFailure": null
+        },
+        {
+          "trialId": "C-C0-b901r0",
+          "finalAcceptance": {
+            "passed": 12,
+            "total": 15,
+            "failures": [
+              "h05:ACCEPTED_INVALID_HISTORY",
+              "h06:ACCEPTED_INVALID_HISTORY",
+              "h13:ACCEPTED_INVALID_HISTORY"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 12,
+            "total": 15,
+            "failures": [
+              "h05:ACCEPTED_INVALID_HISTORY",
+              "h06:ACCEPTED_INVALID_HISTORY",
+              "h13:ACCEPTED_INVALID_HISTORY"
+            ]
+          },
+          "knownFailureFirstRecurred": true,
+          "knownFailureFinalRecurred": true,
+          "visibleOracleInvocations": 0,
+          "implementationRevisions": 0,
+          "elapsedMs": 166510,
+          "hostFailure": null
+        },
+        {
+          "trialId": "C-C0-b902r0",
+          "finalAcceptance": {
+            "passed": 15,
+            "total": 15,
+            "failures": []
+          },
+          "firstCandidateAcceptance": {
+            "passed": 15,
+            "total": 15,
+            "failures": []
+          },
+          "knownFailureFirstRecurred": false,
+          "knownFailureFinalRecurred": false,
+          "visibleOracleInvocations": 3,
+          "implementationRevisions": 0,
+          "elapsedMs": 254775,
+          "hostFailure": null
+        }
+      ],
+      "firstCandidateSolves": 1,
+      "meaningfulProgress": 3,
+      "ceiling": false,
+      "floor": false,
+      "verdict": "PRIMARY_ELIGIBLE"
+    }
+  },
+  "allEligible": true
+}

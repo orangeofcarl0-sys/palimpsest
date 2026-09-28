@@ -1,0 +1,6 @@
+(node:16736) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:16736) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Rewrote applyEventStream in src/reducer.ts as a two-phase replay. Phase 1 validates the whole delivered history without touching the caller's object (event shape, non-empty string id, the log's non-negative integer seq, op must be SET/DELETE, and agreement between repeated deliveries of the same seq via an order-independent canonical fingerprint) and builds the fold order from the log's own seq rather than the delivered array order, applying a repeated durable event once and rejecting two different events that claim one position. Phase 2 folds the validated steps into the caller's own state object in ascending seq order and returns it. The exported API (StreamError, Event, State, applyEventStream) is unchanged, and the change is confined to the declared write scope."}

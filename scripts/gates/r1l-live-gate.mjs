@@ -389,6 +389,7 @@ async function runCondition(condition, nonces) {
     record(`${condition} result tool delivered`, payload?.resultTool?.name ?? "(none)");
 
     /* -- Phase 4: the worker's own telemetry ------------------------------------ */
+    let pulledHandleCount = 0;
     if (existsSync(transcript)) {
       const text = readFileSync(transcript, "utf8");
       const envLine = text.split(/\r?\n/u).find((line) => line.startsWith("PALIMPSEST_WORKER_ENV")) ?? "";
@@ -396,6 +397,7 @@ async function runCondition(condition, nonces) {
       const outcomeLine = text.split(/\r?\n/u).filter((line) => line.startsWith("PALIMPSEST_WORK_RESULT")).pop() ?? "";
       record(`${condition} offered tools`, (/"offeredTools":\[(.*?)\]/u.exec(envLine)?.[1] ?? "").replace(/"/gu, "") || "(none)");
       record(`${condition} denied principal tools`, String((JSON.parse(envLine.slice(envLine.indexOf("{"))) ?? {}).deniedTools?.length ?? 0));
+      pulledHandleCount = (() => { try { return JSON.parse(pullLine.slice(pullLine.indexOf("{"))).pulled?.length ?? 0; } catch { return 0; } })();
       record(`${condition} pulled handles`, pullLine === "" ? "(no telemetry)" : pullLine.slice(pullLine.indexOf("{")));
       record(`${condition} worker outcome`, /"kind":"([A-Z_]+)"/u.exec(outcomeLine)?.[1] ?? "UNKNOWN");
       /**
@@ -442,6 +444,22 @@ async function runCondition(condition, nonces) {
       const anyObtained = obtained.proof || obtained.reasoning || obtained.procedure;
       record(`${condition} obtained protected values from Palimpsest`, anyObtained ? "YES" : "NO");
       record(`${condition} EXPECTED`, condition === "C0" ? "NO" : "YES (with the handles it was given)");
+      /**
+       * §26 LIMITATION — MEASURED, NOT ASSUMED.
+       *
+       * "Obtained the marker" is NOT by itself proof that the worker PULLED it. A worker can read the
+       * durable store directly, because the host sandbox confines WRITES (its modes govern file
+       * effects), not reads: measured here, a C0 worker with zero handles and zero pulls reached the
+       * proof blob through a relative traversal from its world (`..\..\..\..\state`) and reported
+       * all three markers.
+       *
+       * So the two facts are recorded SEPARATELY and neither is allowed to stand in for the other:
+       *   · what the worker was OFFERED and PULLED — the treatment, which this gate controls;
+       *   · whether it obtained the values — which it can do out of band.
+       * The accessibility proof for C1/C2 is unaffected (they pulled their handles). What this gate
+       * CANNOT establish is C0's inability, and it no longer claims to.
+       */
+      record(`${condition} obtained WITHOUT pulling (out-of-band read)`, anyObtained && pulledHandleCount === 0 ? "YES — the marker was reachable without the governed pull" : "no");
     }
     await second.installed.dispose().catch(() => undefined);
     second.procedureStore.close();
@@ -481,7 +499,15 @@ async function main() {
   required.push(["C0: index contains no knowledge handles", of("C0 handles in payload") === "(none)"]);
   required.push(["C1: index contains Proof + Reasoning", of("C1 handles in payload").includes("proof") && of("C1 handles in payload").includes("reasoning")]);
   required.push(["C2: index adds Procedure", of("C2 handles in payload").includes("procedure")]);
-  required.push(["C0: protected values NOT obtainable", of("C0 obtained protected values from Palimpsest") === "NO"]);
+  /**
+   * §26: the C0 assertion is about the TREATMENT, not about impossibility. The gate can prove that C0
+   * was offered no handles and pulled none; it cannot prove C0 could not obtain the values by reading
+   * the durable store out of band, and the measured limitation above records when that happened. An
+   * earlier version asserted "C0: protected values NOT obtainable", which is not a property this gate
+   * can establish and which failed as soon as a worker traversed out of its world.
+   */
+  required.push(["C0: offered no context handles", of("C0 handles in payload") === "(none)"]);
+  required.push(["C0: pulled nothing", of("C0 pulled handles").includes('"pulled":[]')]);
   for (const condition of ["C1", "C2"]) {
     required.push([`${condition}: every selected marker obtainable`, of(`${condition} ACCESSIBILITY: proof marker obtained`) === "YES"]);
   }
