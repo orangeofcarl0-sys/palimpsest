@@ -52,7 +52,18 @@ export interface WorkWorkerRunPort {
   readonly adapterId: string;
   run(input: {
     readonly workDir: string;
-    readonly context: unknown;
+    /**
+     * R1-L §18: the ATTEMPT context (`{work, compiled}`), not `unknown`.
+     *
+     * The `unknown` here was the hiding place: the runtime already delivered the nested shape while
+     * this port claimed nothing about it, so the flat/nested mismatch could not be seen by the compiler.
+     */
+    readonly context: import("../context/service.js").WorkWorkerAttemptContext;
+    /**
+     * R1-L §10: the canonical read for ONE handle, bound by the caller to the attempt it prepared.
+     * Absent ⇒ a worker's pull is answered with an honest refusal.
+     */
+    readonly contextPull?: ((handle: string) => Promise<unknown>) | undefined;
     readonly signal?: AbortSignal | undefined;
   }): Promise<{ readonly kind: "READY_FOR_SETTLEMENT" | "NEEDS_ESCALATION" | "HOST_FAILURE"; readonly detail?: string | undefined }>;
 }
@@ -95,7 +106,10 @@ export interface WorkDelegationTerminal {
 export interface WorkDelegationServiceDeps {
   readonly controller: Pick<
     ProjectController,
-    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerAttemptContext" | "settleMutatingWork" | "attemptWorkRecord"
+    // R1-L §10: `fetchContext` is the narrow READ the host uses to answer a worker's context pull. It
+    // is the SAME method the E1-K/E5-P gates already resolve handles with; the host binds it to the
+    // attempt it prepared, and the model never receives that attempt id.
+    "mutatingWorkTarget" | "prepareMutatingWork" | "workWorkerAttemptContext" | "settleMutatingWork" | "attemptWorkRecord" | "fetchContext"
   >;
   /** A port PER job, bound to the world the job's prepare materializes. */
   readonly workerFor: (worldPath: string) => WorkWorkerRunPort;
@@ -160,6 +174,9 @@ export async function executeMutatingWorkBlocking(
   const workerOutcome = await worker.run({
     workDir: prepared.worldPath,
     context,
+    // §10: the canonical read, closed over THIS attempt. The worker asks by handle; only the parent
+    // knows which attempt the handle belongs to.
+    contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
     ...(input.signal === undefined ? {} : { signal: input.signal }),
   });
   const settlement = await deps.controller.settleMutatingWork({
@@ -240,7 +257,11 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
             input.knowledge === undefined
               ? await deps.controller.workWorkerAttemptContext(prepared.attemptId)
               : await deps.controller.workWorkerAttemptContext(prepared.attemptId, { knowledge: input.knowledge });
-          const workerOutcome = await deps.workerFor(prepared.worldPath).run({ workDir: prepared.worldPath, context });
+          const workerOutcome = await deps.workerFor(prepared.worldPath).run({
+            workDir: prepared.worldPath,
+            context,
+            contextPull: async (handle: string) => await deps.controller.fetchContext(prepared.attemptId, handle),
+          });
           entry.settlement = await deps.controller.settleMutatingWork({
             attemptId: prepared.attemptId,
             workerOutcome,

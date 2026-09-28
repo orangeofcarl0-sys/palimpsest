@@ -45,10 +45,26 @@ if (typeof barrier === "string" && barrier !== "") {
   }
 }
 
+/**
+ * R1-L §11: RELAY THE CONTEXT-PULL CHANNEL.
+ *
+ * This wrapper is spawned by the port WITH an IPC channel (`stdio[3]`), and it spawns the real DSH bin
+ * itself. The pull capability therefore has to be passed through, or a gate driving the tee would
+ * silently lose it while the product's own path kept it — a difference between what the gate tests and
+ * what ships, which is exactly the class of gap R1 measured.
+ *
+ * The wrapper does not interpret the protocol: it relays messages in both directions and keeps its
+ * observational role (tee the output, hold the barrier). A message the parent sends is forwarded to the
+ * real child, and a message the child sends is forwarded to the parent.
+ *
+ * Node gives a child process exactly one `process.send`/`process.on('message')` pair, and the real DSH
+ * host uses none of it (verified), so the capability does not collide with the host's own transports.
+ */
 const child = spawn(process.execPath, [real, ...process.argv.slice(2)], {
   cwd: process.cwd(),
   env: process.env,
-  stdio: ["ignore", "pipe", "pipe"],
+  // `ipc` on the REAL child too: that is where `palimpsest_worker_context_pull` lives.
+  stdio: ["ignore", "pipe", "pipe", "ipc"],
 });
 const relay = (chunk, out) => {
   out.write(chunk);
@@ -56,4 +72,29 @@ const relay = (chunk, out) => {
 };
 child.stdout.on("data", (chunk) => relay(chunk, process.stdout));
 child.stderr.on("data", (chunk) => relay(chunk, process.stderr));
+
+// parent → child (the pull REQUEST, and any other message the port sends).
+process.on("message", (message) => {
+  try {
+    child.send(message);
+  } catch {
+    /* the real child may have exited */
+  }
+});
+// child → parent (the pull RESPONSE).
+child.on("message", (message) => {
+  try {
+    process.send?.(message);
+  } catch {
+    /* the parent may have exited */
+  }
+});
+// Both channels close with the process that owns them: no orphaned capability survives a worker.
 child.on("close", (code) => process.exit(code === null ? 1 : code));
+process.on("disconnect", () => {
+  try {
+    child.disconnect();
+  } catch {
+    /* already gone */
+  }
+});

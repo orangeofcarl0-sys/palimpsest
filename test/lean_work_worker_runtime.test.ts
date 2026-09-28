@@ -38,17 +38,25 @@ afterAll(() => {
   for (const fn of cleanups) fn();
 });
 
-const CONTEXT: WorkWorkerTaskContext = {
-  projectGoal: "make the project tidy",
-  requirements: ["no behaviour change"],
-  decisions: ["keep the public API"],
-  objective: "rewrite dedupe with a Set",
-  writeScope: ["src/dedupe.ts"],
-  requiredArtifacts: ["src/dedupe.ts"],
-  baseCommit: "a".repeat(40),
-  completionChecks: ["run `node -e process.exit(0)` and it must succeed (tests_pass)"],
-  independentVerificationRequired: false,
-};
+/**
+ * R1-L §18: the delivered context is the ATTEMPT context — the task half plus this attempt's compiled
+ * half. This fixture used to be the flat task shape, which is what the port CLAIMED to receive while
+ * the runtime actually sent the nested one; the type repair is what surfaced the difference.
+ */
+const CONTEXT = {
+  work: {
+    projectGoal: "make the project tidy",
+    requirements: ["no behaviour change"],
+    decisions: ["keep the public API"],
+    objective: "rewrite dedupe with a Set",
+    writeScope: ["src/dedupe.ts"],
+    requiredArtifacts: ["src/dedupe.ts"],
+    baseCommit: "a".repeat(40),
+    completionChecks: ["run `node -e process.exit(0)` and it must succeed (tests_pass)"],
+    independentVerificationRequired: false,
+  },
+  compiled: { manifestId: "m-d2c", boot: [], handles: [] },
+} as const;
 
 function tempDir(): string {
   const dir = mkdtempSync(join(tmpdir(), "palimpsest-d2c-"));
@@ -132,9 +140,19 @@ describe("§D2-c 2/3. the context is sufficient, and the environment has no prin
     }
   });
 
-  it("the payload carries the context, the ONE tool and nothing else", () => {
+  it("the payload carries the context and the TWO worker-private tools, and nothing else", () => {
     const payload = workWorkerEnvironmentPayload(CONTEXT);
-    expect(Object.keys(payload).sort()).toEqual(["context", "deniedAuthorityPrefix", "resultTool"]);
+    // R1-L §7: both worker-private tools are always present, so an attempt that selected no capital
+    // still gets the same tool catalogue. That is what keeps the R1 conditions comparable.
+    expect(Object.keys(payload).sort()).toEqual([
+      "allowedPullHandles",
+      "context",
+      "contextIndexText",
+      "contextPullChannel",
+      "contextPullTool",
+      "deniedAuthorityPrefix",
+      "resultTool",
+    ]);
     // The authority surface is closed by PREFIX, enumerated by the host at run time — not by a
     // hard-coded list, which `restrict()` would reject the moment a deployment composed a different
     // Palimpsest surface, and which would silently stop covering tools added later.
@@ -146,7 +164,12 @@ describe("§D2-c 2/3. the context is sufficient, and the environment has no prin
     const payload = workWorkerEnvironmentPayload(CONTEXT);
     // Keys, not prose: the tool's own description legitimately NAMES the things a worker must not
     // claim, so the assertion has to be about the shape of what it is handed.
-    expect(Object.keys(payload.context).sort()).toEqual(
+    //
+    // R1-L §18: the delivered context is `{work, compiled}`. The TASK half still carries exactly the
+    // nine canonical fields, and the compiled half carries only the attempt's own manifest identity
+    // and its pull index — never a deployment, a store or an authority surface.
+    expect(Object.keys(payload.context).sort()).toEqual(["compiled", "work"]);
+    expect(Object.keys(payload.context.work).sort()).toEqual(
       [
         "baseCommit",
         "completionChecks",
@@ -159,6 +182,7 @@ describe("§D2-c 2/3. the context is sufficient, and the environment has no prin
         "writeScope",
       ].sort(),
     );
+    expect(Object.keys(payload.context.compiled).sort()).toEqual(["boot", "handles", "manifestId"]);
     for (const capability of ["deployment", "installed", "federation", "transport", "attention", "proof", "monitor", "principalTools"]) {
       expect(Object.keys(payload)).not.toContain(capability);
     }

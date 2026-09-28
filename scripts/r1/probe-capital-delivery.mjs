@@ -528,6 +528,22 @@ async function main() {
     ].join("\n");
     const promptDigest = createHash("sha256").update(promptText).digest("hex");
     /**
+     * R1-L §27: the ORDINARY TASK PORTION vs the CONTEXT-INDEX SECTION.
+     *
+     * R1 measured these as one thing and found them byte-identical across conditions. The closure
+     * separates them: the ordinary task text must STILL be identical (that is the experimental control),
+     * while the context-index section must now differ as the conditions intend.
+     */
+    const indexHeading = "Project context available to this attempt";
+    const cutAt = promptText.indexOf(indexHeading);
+    const ordinaryTaskText = cutAt === -1 ? promptText : promptText.slice(0, cutAt);
+    // The base commit is the hash of the fixture commit this run just created — a per-run value, not a
+    // condition variable — so it is masked here for the same reason the literal prompt digest masks it.
+    const ordinaryDigest = createHash("sha256")
+      .update(ordinaryTaskText.replace(/^Base commit: .*$/mu, "Base commit: <masked>"))
+      .digest("hex");
+    const indexSection = typeof payload.contextIndexText === "string" ? payload.contextIndexText : "";
+    /**
      * A SECOND digest with the base commit masked. `baseCommit` is a per-run fixture value (the hash of
      * the H0 commit the probe just created), not a condition variable, so the literal digest can differ
      * between two runs of the SAME condition purely because the fixture was rebuilt a second later.
@@ -539,13 +555,17 @@ async function main() {
       promptText,
       promptDigest,
       promptDigestMasked,
+      ordinaryTaskDigest: ordinaryDigest,
+      indexSection,
       handlesInPayload: (payload.context.compiled?.handles ?? []).map((e) => `${e.kind}:${e.handle}`),
       handlesRenderedIntoPrompt: false,
       bootRenderedIntoPrompt: false,
       capitalBodyBytesInPrompt: METHOD_MARKERS.filter((m) => promptText.includes(m)).length,
     }, null, 2), "utf8");
     out(`  MODEL-VISIBLE PROMPT digest: ${promptDigest.slice(0, 32)} (base-masked ${promptDigestMasked.slice(0, 32)})`);
-    out(`  handles in payload: ${(payload.context.compiled?.handles ?? []).length} | rendered into prompt: 0`);
+    out(`  ORDINARY task portion digest: ${ordinaryDigest.slice(0, 32)} (must match across conditions)`);
+    out(`  context-index section: ${indexSection.trim() === "" ? "(ABSENT — the blocker is back)" : `${indexSection.split(String.fromCharCode(10)).filter((l) => l.includes("@ctx/")).length} handle line(s)`}`);
+    out(`  handles in payload: ${(payload.context.compiled?.handles ?? []).length}`);
   } else {
     out("  payload unavailable");
   }
