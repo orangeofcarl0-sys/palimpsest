@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-R",
+  "frozenBefore": "any R1-R primary trial",
+  "amendmentId": "A1",
+  "amendmentDocument": "docs/engineering/R1-PROTOCOL-AMENDMENT-A1.md",
+  "amendmentDigest": "037fb577096d5763a86026a604673908f456e25611dddcf7423869acad88d186",
+  "parentProtocolDocument": "docs/engineering/R1-STOCHASTIC-COMPOUNDING-PROTOCOL.md",
+  "parentProtocolDigest": "2d1dfecaf7feecc55601a00f0760cec7e95b667f2972ad34bb831740b006feca",
+  "parentProtocolUnmodified": true,
+  "reason": "The R1 semantic blocker was closed by R1-L.",
+  "newMeasurementFact": "Scenario A C0 already reaches 8/8, so Scenario A cannot discriminate conditions.",
+  "consequence": "Scenario A is demoted from primary correctness discriminator to a secondary probe.",
+  "primaryScenarios": [
+    "B_CONFIG_MIGRATION",
+    "C_REPLAY_SAFE_REDUCER"
+  ],
+  "secondaryScenario": "A_DAG_PLANNER",
+  "trialCount": {
+    "conditions": 3,
+    "scenarios": 2,
+    "perConditionPerScenario": 5,
+    "total": 30
+  },
+  "stochasticInvocationsBeforeThisAmendment": {
+    "r1DeliveryProbe": 3,
+    "r1LNonceGate": 3,
+    "r1RCalibration": 0,
+    "primaryTrials": 0,
+    "note": "none is a primary trial, so no outcome exists for this amendment to be fitted to"
+  },
+  "disclosure": "The amendment was written from infrastructure facts measured by R1-L, not from any experimental result.",
+  "revisionDisclosure": "Revised ONCE during calibration, before any primary trial, because calibration rejected Scenario C as a ceiling. See amendment section 9. No primary trial had run at either freeze."
+}
