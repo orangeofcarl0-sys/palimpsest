@@ -61,9 +61,13 @@ record is in the evidence artifact (see above).
 | `7ca1004` | **R0-R / code-state RC** | resolve npm/pnpm portably in the consumer smoke |
 | `03ea369` | R0-R | record the remote-CI results and classify the node floor |
 | `83feb0f` | **R0-M / code-state RC** | derive the attested commit, assert a clean generation tree, tighten D5 |
-| *R0-M* | R0-M | state the three revision identities and the corrected D5 classification |
-| *R0-M / evidence* | R0-M / evidence | attest the code-state RC with a clean-tree generation |
-| *(tip)* | R0-M / evidence | attest the code-state RC with a clean-tree generation |
+| *(R0-M)* | R0-M | the review-metadata corrections and the evidence re-attestation, whose last commit contains this document |
+| *(tip)* | R0-M / evidence | the evidence commit on top of the code-state RC |
+
+The R0-M rows are named by subject rather than SHA for the reason given above: they are the commits
+that this document is inside, so a fixed list of them cannot be written down once and remain true.
+The stable, checkable identity of the code-state RC is `83feb0f`, recorded as `attests.subjectCommit`
+in the artifact; everything after it changes only documentation, evidence and CI-threshold wording.
 
 `9ec76ff` is also the current `origin/main`, so the line sits directly on the published mainline and
 no rebase is required.
