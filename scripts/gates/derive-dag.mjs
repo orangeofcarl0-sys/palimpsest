@@ -22,6 +22,23 @@
  * is the evidence that the structured content is being interpreted rather than pattern-matched for a
  * keyword.
  *
+ * WHAT THIS IS NOT (R0-R §9). This is a DOMAIN-SPECIFIC structured interpreter for ONE project's
+ * method vocabulary — it knows about dependency graphs, cycle witnesses and topological order because
+ * `DAG Planner` is the dogfood's project, not because procedures are generally executable. It is
+ * deliberately:
+ *
+ *   · NOT a generic Procedure execution engine. `ProcedureContent` is declarative by construction
+ *     (E5-P forbids a procedure from carrying shell commands, arbitrary code or implicit authority),
+ *     and this module does not change that: it emits a TypeScript SOURCE FILE from a closed clause
+ *     vocabulary, inside a harness, for one product domain.
+ *   · NOT a universal procedural compiler, and not a step toward one. A different domain would need a
+ *     different vocabulary and different fragments; nothing here generalizes by configuration.
+ *   · NOT product surface. It lives under `scripts/gates/`, nothing in `src/` imports it, and the
+ *     `Procedure` owner neither knows nor cares that this interpreter exists.
+ *
+ * The point it demonstrates is narrower and is exactly what E-LIVE §13/§20 needed: a procedure's
+ * STRUCTURED CONTENT can drive a worker's behaviour, rather than merely naming it.
+ *
  * PLAIN JAVASCRIPT (`.mjs`): the gate runs under bare `node`, and this is harness code — it is not a
  * product component and nothing in `src/` depends on it.
  */

@@ -11,18 +11,28 @@
  *   · any `dist/...` path reached by relative navigation
  *   · any test helper or private subpath
  *
- * It consumes only the two documented entrypoints from `docs/sdk-guide.md`:
- *   `palimpsest-dsh`            — schema, domain, state, scheduler
- *   `palimpsest-dsh/advanced`   — the full embed surface, including `installPalimpsest`
+ * It consumes only the entrypoints DECLARED in `package.json#exports` (all of them — six at present —
+ * reading the list from the manifest rather than a hand-maintained copy), and it uses them exactly as
+ * `docs/sdk-guide.md` documents:
+ *   `palimpsest-dsh`                    — schema, domain, state, scheduler
+ *   `palimpsest-dsh/advanced`           — the full embed surface, including `installPalimpsest`
+ *   `palimpsest-dsh/procedures`         — E5-P stores and content contracts
+ *   `palimpsest-dsh/project-intent`     — E2-I service and admission port
+ *   `palimpsest-dsh/project-collaboration` — E3-C service and authoring/admission ports
+ *   `palimpsest-dsh/institutional-learning` — E4-L service and projection types
+ *
+ * Every declared subpath must RESOLVE from the installed tarball. Whether a capability then composes
+ * depends on the owners the host wires, which is measured separately and not required.
  *
  * Usage:
  *   node scripts/release/consumer-smoke.mjs            # pack + install + run
  *   PALIMPSEST_SMOKE_DIR=<dir> node ...                # reuse a scratch dir
  *
- * Exit code 0 means a downstream project installed the tarball and ran a real governed session.
+ * Exit code 0 means a downstream project installed the tarball, resolved every declared subpath, and
+ * ran a real governed session.
  */
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -80,6 +90,12 @@ process.stdout.write("=== 1. build the distributable ===\n");
 npm(["run", "build"], { cwd: REPO, stdio: ["ignore", "pipe", "pipe"] });
 record("build", "tsc -b succeeded");
 
+// The DECLARED export surface is read from the package manifest, so the smoke validates what the
+// package claims rather than a hand-maintained list that could drift from it.
+const packageManifest = JSON.parse(readFileSync(join(REPO, "package.json"), "utf8"));
+const pkgExports = packageManifest.exports ?? {};
+record("declared subpaths", Object.keys(pkgExports).join(", "));
+
 rmSync(SCRATCH, { recursive: true, force: true });
 mkdirSync(PROJECT, { recursive: true });
 
@@ -106,7 +122,7 @@ record("package size", `${(packJson.size / 1024 / 1024).toFixed(1)} MB packed, $
 for (const required of ["package/package.json", "package/dist/src/index.js", "package/dist/src/index.d.ts", "package/dist/src/advanced.js", "package/dist/src/advanced.d.ts"]) {
   if (!listing.includes(required)) throw new Error(`the package is missing a documented entrypoint: ${required}`);
 }
-record("documented entrypoints present", "index.js/.d.ts + advanced.js/.d.ts");
+record("root + advanced entrypoints present", "index.js/.d.ts + advanced.js/.d.ts");
 if (listing.some((entry) => entry.startsWith("package/node_modules/"))) throw new Error("the tarball embeds node_modules — it is not a source artifact");
 // Gate fixtures and compiled tests are DOGFOOD evidence, not product. Shipping them is inert rather
 // than incorrect, but it is a packaging decision worth surfacing in the R0 report.
@@ -257,13 +273,49 @@ if (result.absentCapabilities.length > 0) {
 record("dispose", "clean");
 record("supporting exports reachable", `effects=${result.effectsAvailable} store=${result.storeAvailable} gitPort=${result.gitPortAvailable}`);
 
+/* ------------------------------------------------------------------ 5. every declared subpath resolves */
+
+process.stdout.write("\n=== 5. resolve every declared package subpath from the INSTALLED tarball ===\n");
+// R0-R §3.3/§7: module RESOLUTION is the claim. A subpath that does not resolve makes the capability
+// unreachable for an embedder, which is the exact defect R0 found. Whether a capability then COMPOSES
+// depends on the owners the host wires, so that is measured separately and not required here.
+const declaredSubpaths = Object.keys(pkgExports);
+const resolver = join(PROJECT, "resolve-subpaths.mjs");
+writeFileSync(
+  resolver,
+  `const subpaths = ${JSON.stringify(declaredSubpaths)};
+const out = [];
+for (const subpath of subpaths) {
+  const specifier = subpath === "." ? "palimpsest-dsh" : \`palimpsest-dsh/\${subpath.slice(2)}\`;
+  try {
+    const mod = await import(specifier);
+    out.push({ subpath, specifier, resolved: true, exports: Object.keys(mod).length });
+  } catch (error) {
+    out.push({ subpath, specifier, resolved: false, error: String(error?.code ?? error?.message ?? error) });
+  }
+}
+process.stdout.write(JSON.stringify(out) + "\\n");
+`,
+);
+const resolution = JSON.parse(run("node", [resolver], { cwd: PROJECT, stdio: ["ignore", "pipe", "pipe"] }).trim().split("\n").pop());
+for (const entry of resolution) {
+  record(`resolves ${entry.specifier}`, entry.resolved ? `${entry.exports} exports` : `FAILED: ${entry.error}`);
+}
+// The four E-plane subpaths specifically — the ones R0 added because they were unreachable.
+const eplane = ["./procedures", "./project-intent", "./project-collaboration", "./institutional-learning"];
+const eplaneResolution = eplane.map((subpath) => resolution.find((entry) => entry.subpath === subpath));
+const allEplaneResolve = eplaneResolution.every((entry) => entry?.resolved === true);
+
 /* ------------------------------------------------------------------ verdict */
 
-// The smoke's job is to prove the PACKAGED artifact stands on its own: it installs, its documented
-// entrypoints resolve, an embedder can start a real governed project, the E-plane faces compose when
-// their owners are supplied, and it disposes cleanly. It deliberately does NOT assert that every
-// optional capability is present — that is a wiring decision, not a packaging property.
+// The smoke's job is to prove the PACKAGED artifact stands on its own: it installs, EVERY declared
+// entrypoint resolves (including all four E-plane subpaths), an embedder can start a real governed
+// project, the E-plane faces compose when their owners are supplied, and it disposes cleanly. It
+// deliberately does NOT assert that every optional capability is present — that is a wiring decision,
+// not a packaging property.
 const ok =
+  resolution.every((entry) => entry.resolved) &&
+  allEplaneResolve &&
   result.tasks.length === 1 &&
   result.tasks[0].state === "READY" &&
   result.capabilities.includes("intent") &&

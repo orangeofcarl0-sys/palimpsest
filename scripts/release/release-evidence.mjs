@@ -72,6 +72,17 @@ const pkg = JSON.parse(
 const manifest = {
   schemaVersion: 1,
   generatedBy: "scripts/release/release-evidence.mjs",
+  /**
+   * §10: this artifact states what it ATTEST. It is evidence ABOUT a code state, and that code state
+   * is named explicitly rather than left implicit in "HEAD at generation time" — otherwise the
+   * evidence commit would look like part of the product change it describes.
+   */
+  attests: {
+    subjectCommit: captured("R0_ATTESTED_COMMIT"),
+    subjectIs: "the code-state release candidate (the last commit that changed code, harness, packaging or tests)",
+    thisArtifactIs: "an attestation ABOUT that commit, not a product-code change",
+    evidenceCommitsAreNotProductCode: true,
+  },
   releaseCandidate: {
     commit: git("rev-parse", "HEAD"),
     branch: git("rev-parse", "--abbrev-ref", "HEAD"),
@@ -156,7 +167,22 @@ const manifest = {
       classification: "PRE-EXISTING FLAKE — retry succeeds, no product defect observed",
     },
   ],
-  outwardAction: "NOT PERFORMED",
+  // R0-R §3.4: distinguish what was true WHEN the code-state RC was captured from what is true NOW.
+  // The historical statement must not be rewritten as the tree moves; instead both are stated.
+  outwardAction: {
+    atCodeStateCapture: {
+      meaning: "the state of the OUTWARD world at the moment the code-state RC commit was made",
+      remoteBranch: "not pushed",
+      pullRequest: "none",
+      main: "unchanged (9ec76ff)",
+      package: "unpublished",
+    },
+    current: captured("R0_OUTWARD_ACTION_CURRENT"),
+    note:
+      "The code-state RC is a LOCAL COMMIT; nothing about it was pushed when it was captured. A later " +
+      "stage may push the branch or open a PR, and this field records that separately rather than " +
+      "retroactively editing the historical claim.",
+  },
 };
 
 const text = `${JSON.stringify(manifest, null, 2)}\n`;

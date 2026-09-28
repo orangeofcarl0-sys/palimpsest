@@ -1,0 +1,203 @@
+# R0-R §5/§6/§7 — the FULL validation matrix on Linux.
+#
+# The original `ci.yml` ran the kernel regression, the architecture rules and the browser suite. It did
+# NOT run the nine live gates or the package consumer smoke, so the gates were only ever exercised on
+# the author's Windows machine. R0 found a real embedder-blocking packaging defect that CI would have
+# caught, which is why this workflow exists: the gates, the repeated D5 reliability probe, and the
+# tarball consumer smoke now all run on a clean Linux runner.
+#
+# Frozen rules carried over from ci.yml: retries = 0 (flakiness is fixed, never retried away) and every
+# job rebuilds from source, because a green run against a stale build is not evidence.
+name: r0-gates
+
+on:
+  push:
+    branches: [main, r0-production-integration]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # §5 — the deterministic gates that need NOTHING beyond this repository. The six E-stage gates drive
+  # a real Work kernel and a packaged install, and they compose their own host fixtures, so they run on
+  # a stock Linux runner. This is the part of the matrix CI was previously missing entirely.
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      # Report every gate's outcome rather than stopping at the first failure: a reader needs to know
+      # WHICH gate broke.
+      fail-fast: false
+      matrix:
+        gate:
+          - gate:e1-k-live
+          - gate:e2-i-live
+          - gate:e3-c-live
+          - gate:e4-l-live
+          - gate:e5-p-live
+          - gate:e-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # The gates drive real Work kernels, so the fixture repository needs an identity to commit with.
+      - run: |
+          git config --global user.email "ci@palimpsest.test"
+          git config --global user.name "palimpsest ci"
+      - run: pnpm ${{ matrix.gate }}
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-log-${{ strategy.job-index }}
+          path: |
+            ${{ env.PALIMPSEST_GATE_ROOT }}/**
+          retention-days: 7
+
+  # §5 — D2/D4/D5 drive the REAL `@deepseek-ai/dsh` host, which is not a public dependency, so they
+  # need a DSH install supplied. Expressed with the same loop shape; they SKIP rather than fail when the
+  # host is absent, so an unconfigured fork does not read as a red gate.
+  gates-host-dependent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        gate:
+          - gate:d2-live
+          - gate:d4-live
+          - gate:d5-live
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - id: dsh
+        name: Is a DSH host available for this job?
+        run: |
+          if [ -n "${PALIMPSEST_DSH_BIN:-}" ] && [ -d "${DSH_HOME:-}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::D2/D4/D5 need the real @deepseek-ai/dsh host; PALIMPSEST_DSH_BIN/DSH_HOME are not configured, so ${{ matrix.gate }} is skipped."
+          fi
+        env:
+          PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
+          DSH_HOME: ${{ secrets.DSH_HOME }}
+      - if: steps.dsh.outputs.available != 'true'
+        run: echo "skipped: no DSH host in this environment"
+      - if: steps.dsh.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.dsh.outputs.available == 'true'
+        run: pnpm build
+      - if: steps.dsh.outputs.available == 'true'
+        run: |
+          git config --global user.email "ci@palimpsest.test"
+          git config --global user.name "palimpsest ci"
+      - if: steps.dsh.outputs.available == 'true'
+        run: pnpm ${{ matrix.gate }}
+        env:
+          PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
+          DSH_HOME: ${{ secrets.DSH_HOME }}
+
+  # §6 — D5 reliability pressure: the gate that flaked once locally is run repeatedly, and EVERY
+  # outcome is recorded rather than only the final status.
+  #
+  # D5 (like D2/D4) drives the REAL `@deepseek-ai/dsh` host, which is not a public dependency, so this
+  # job cannot run on a stock runner. It is expressed anyway — the loop, the recording and the blocker
+  # threshold are the evidence shape the ruling asks for — and it is enabled by providing a DSH install
+  # (`PALIMPSEST_DSH_BIN` + `DSH_HOME`) as secrets/artifacts. Without them the job SKIPS rather than
+  # failing, so an unconfigured fork does not read as a red gate.
+  d5-reliability:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - id: dsh
+        name: Is a DSH host available for this job?
+        run: |
+          if [ -n "${PALIMPSEST_DSH_BIN:-}" ] && [ -d "${DSH_HOME:-}" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::D5 needs the real @deepseek-ai/dsh host; PALIMPSEST_DSH_BIN/DSH_HOME are not configured, so the reliability probe is skipped."
+          fi
+        env:
+          PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
+          DSH_HOME: ${{ secrets.DSH_HOME }}
+      - if: steps.dsh.outputs.available != 'true'
+        run: echo "skipped: no DSH host in this environment"
+      - if: steps.dsh.outputs.available == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.dsh.outputs.available == 'true'
+        run: pnpm build
+      - if: steps.dsh.outputs.available == 'true'
+        run: |
+          git config --global user.email "ci@palimpsest.test"
+          git config --global user.name "palimpsest ci"
+      - if: steps.dsh.outputs.available == 'true'
+        name: Run gate:d5-live 20 times and record every outcome
+        env:
+          PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
+          DSH_HOME: ${{ secrets.DSH_HOME }}
+        run: |
+          pass=0
+          fail=0
+          : > d5-results.txt
+          for i in $(seq 1 20); do
+            if pnpm gate:d5-live > "d5-$i.log" 2>&1; then
+              pass=$((pass + 1))
+              echo "run $i: PASS" >> d5-results.txt
+            else
+              fail=$((fail + 1))
+              echo "run $i: FAIL — $(grep -oE 'd5-live gate failed: .*' "d5-$i.log" | head -1)" >> d5-results.txt
+            fi
+          done
+          echo "d5 reliability: $pass pass / $fail fail out of 20" | tee -a d5-results.txt
+          cat d5-results.txt
+          # §6: an isolated non-reproducible failure is a KNOWN FLAKE; a repeatable one is a BLOCKER.
+          if [ "$fail" -gt 2 ]; then
+            echo "::error::$fail/20 failures is a reliability blocker, not a flake"
+            exit 1
+          fi
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: d5-reliability
+          path: |
+            d5-results.txt
+            d5-*.log
+          retention-days: 14
+
+  # §7 — the package boundary. The smoke packs the tarball, installs it into a project OUTSIDE the
+  # repository, and resolves every declared subpath from the installed copy.
+  package-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm release:consumer-smoke

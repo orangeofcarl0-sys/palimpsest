@@ -139,6 +139,34 @@ describe("R0 §20 the procedure's structured content is INTERPRETED", () => {
   it("the P@2 derivation is semantically identical to its oracle", () => {
     expect(strip(deriveImplementation({ steps: P2_STEPS }).source)).toBe(strip(read("scripts/gates/mature-plus-dag.ts")));
   });
+
+  // R0-R §3.2: the rediscovery metric must be a STRUCTURED clause read, never a keyword test. This
+  // pins the distinction: the same clauses in the wrong ORDER contain the word "cycle" exactly as
+  // often as the correct order does, so a keyword metric cannot tell them apart — and the clause
+  // metric must.
+  it("the rediscovery metric distinguishes clause ORDER, which a keyword test cannot", () => {
+    const correct = deriveImplementation({ steps: P1_STEPS }).clauses.cycleBeforeOrder;
+    const reordered = deriveImplementation({ steps: [P1_STEPS[0]!, P1_STEPS[3]!, P1_STEPS[1]!, P1_STEPS[2]!, P1_STEPS[4]!, P1_STEPS[5]!] }).clauses.cycleBeforeOrder;
+    const absent = deriveImplementation({ steps: [] }).clauses.cycleBeforeOrder;
+    expect(correct).toBe(true);
+    expect(reordered).toBe(false);
+    expect(absent).toBe(false);
+    // The keyword criterion a Level-1 metric would have used grants both the SAME credit:
+    const keyword = (steps: readonly { instruction: string }[]) => steps.some((step) => /cycle/iu.test(step.instruction));
+    expect(keyword(P1_STEPS)).toBe(keyword([P1_STEPS[0]!, P1_STEPS[3]!, P1_STEPS[1]!, P1_STEPS[2]!, P1_STEPS[4]!, P1_STEPS[5]!]));
+  });
+
+  // R0-R §9: the P@2 close-witness clause changes the GENERATED SOURCE even though the acceptance
+  // contract cannot see the difference (a witness of length >= 2 satisfies it either way).
+  it("the P@2 close-witness clause changes the generated source", () => {
+    const p1 = deriveImplementation({ steps: P1_STEPS });
+    const p2 = deriveImplementation({ steps: P2_STEPS });
+    expect(p1.clauses.closeLoop).toBe(false);
+    expect(p2.clauses.closeLoop).toBe(true);
+    expect(p1.source).not.toBe(p2.source);
+    expect(p1.source).not.toContain("rotated[0]");
+    expect(p2.source).toContain("rotated[0]");
+  });
 });
 
 describe("R0 §20 mutating the CONTENT changes the observable behaviour", () => {

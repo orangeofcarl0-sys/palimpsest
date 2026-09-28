@@ -120,6 +120,17 @@ is what makes this consumption Level 3 rather than Level 1. The two conformant-b
 recorded as they are rather than tuned: they are real properties of this method, and the interpreter
 still emits the clause when a method states it.
 
+**What this interpreter is — and is not.** It is a **domain-specific structured interpreter** for this
+one project's method vocabulary: it knows about dependency graphs, cycle witnesses and topological
+order because `DAG Planner` is the dogfood's project. It is deliberately **not** a generic Procedure
+execution engine and **not** a universal procedural compiler. `ProcedureContent` remains declarative
+by construction (E5-P forbids a procedure from carrying shell commands, arbitrary code or implicit
+authority) and this module does not change that — it emits a TypeScript source file from a closed
+clause vocabulary, inside a harness, for one domain. A different domain would need a different
+vocabulary and different fragments; nothing here generalizes by configuration. It lives under
+`scripts/gates/`, nothing in `src/` imports it, and the `Procedure` owner neither knows nor cares that
+it exists.
+
 **[MACHINE]** `C.21`: Generation 2's extension is also content-driven. The revision adds the step
 *"close the witness loop by repeating its first node"*, and the derived implementation closes the loop
 because that clause is present — not because a harness flag asked for it. The same clause vocabulary
@@ -129,11 +140,22 @@ classifies both revisions; there is no harness switch to turn the extension on.
 project's own suite failed it (4/4). Generation 1 did not: it inherited P@1, received the handle
 `@ctx/procedure/prc-…/0`, pulled the body, and its very first implementation satisfied the contract.
 
-**[MACHINE]** the comparison is only meaningful if the two conditions shared their inputs, so `PC.4`
-proves it with digests rather than asserting it: the acceptance suite and the H0 starting point are
-byte-identical between Generation 1's repository and the control's, and both conditions run the *same*
-worker factory (`dagWorker`) — not a hand-copied lookalike. The single difference is whether the
-inherited capital was selected, which `PC.1` records as `0 handles` for the control.
+**[MACHINE]** the comparison is only meaningful if the two conditions began from the same input, so
+`PC.4` proves it with digests rather than asserting it. Three independent witnesses of Generation 1's
+**pre-task** `src/dag.ts` must agree: the digest the harness read from the canonical repository before
+the attempt world existed, the digest the **Generation-1 worker itself recorded** from inside its
+attempt world, and the digest the control repository was seeded with. They do — identical bytes — and
+the acceptance contract is likewise identical between the fixture and the generation's copy. Both
+conditions run the *same* worker factory (`dagWorker`), not a hand-copied lookalike. The single
+difference is whether the inherited capital was selected, which `PC.1` records as `0 handles`.
+
+**R0-R §3.1 sharpened this further, and the result is stronger than the earlier framing.** The control
+is now seeded from Generation 1's *exact* pre-task bytes rather than from the H0 fixture, so the two
+conditions differ in nothing but the inherited capital. Given identical input and no inherited method,
+the control's worker **derives nothing at all**: the naive implementation it emits is byte-identical to
+what is already in the repository, so it cannot even produce a candidate change (`PC.3a`: `UNCHANGED`).
+The comparison is therefore not "the control did worse" but "without the inherited method there is no
+change to make" — the sharpest available form of the paired measurement.
 
 **[INTERPRETATION]** This is the textbook effect in the narrow, honest sense the stage allows: one
 previously-paid cognitive cost was not paid again, in this scenario, with the difference observable
