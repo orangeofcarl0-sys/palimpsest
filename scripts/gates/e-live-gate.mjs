@@ -95,6 +95,21 @@ function fileDigest(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex");
 }
 
+/**
+ * Compare generated code with a hand-written oracle while ignoring comments, formatting and the local
+ * identifier the witness variable happens to use. What must match is the BEHAVIOUR the source encodes.
+ */
+function stripCode(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//gu, "")
+    .replace(/\/\/.*$/gmu, "")
+    .replace(/\brotated\b/gu, "WITNESS")
+    .replace(/\bpath\b/gu, "WITNESS")
+    .replace(/WITNESS: WITNESS/gu, "WITNESS")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
 function copyFixture(target) {
   mkdirSync(target, { recursive: true });
   for (const file of ["package.json"]) {
@@ -572,37 +587,51 @@ function dagWorker(rig, options) {
           if (entry.kind === "reasoning") pulled.reasoning.push({ handle: entry.handle, body: result.body, standingAtCompile: result.binding.standing_at_compile });
         }
       }
-      // §13: the OBSERVABLE rediscovery event. A worker that has to establish "cycles must be handled
-      // before ordering" itself performs this step; a worker that inherited it does not.
+      // R0-R §3.1: the worker records the digest of the file it is ABOUT TO REPLACE, before it writes.
+      // This is an independent witness of the pre-task repository bytes, recorded inside the attempt by
+      // the worker itself rather than by the harness, so the paired control can be proven to have
+      // started from the same input the generation did.
+      const startDagDigest = existsSync(join(workDir, "src", "dag.ts")) ? fileDigest(join(workDir, "src", "dag.ts")) : "ABSENT";
+      // §13: the OBSERVABLE rediscovery event.
+      // R0-R §3.2: it is decided by the DERIVATION's structured clause, never by a keyword match on the
+      // method text. The question is "did this worker have to establish 'cycles must be handled before
+      // ordering' itself?", and that is exactly `clauses.cycleBeforeOrder`: a method that mentions
+      // cycles but states the ordering step FIRST has not relieved the worker of the discovery, and a
+      // keyword test would wrongly credit it.
       const steps = pulled.procedure?.body?.steps?.map((step) => step.instruction) ?? [];
-      const inheritedCycleFirst = steps.some((step) => /cycle/iu.test(step));
+      const derivation = steps.length === 0 ? null : deriveImplementation(pulled.procedure.body);
+      const inheritedCycleFirst = derivation !== null && derivation.clauses.cycleBeforeOrder;
       const rediscoveryCheck = inheritedCycleFirst ? "NOT_PERFORMED" : "PERFORMED";
       // §13/§20: the worker's implementation is DERIVED FROM the inherited procedure's structured
       // content — not selected from a pre-written file. `deriveImplementation` classifies each ordered
       // step against a closed clause vocabulary and emits the source those clauses describe, in the
       // order the method states them. A worker with no inherited method writes the naive prototype and
       // must discover the problem itself, exactly as Generation 0 did.
-      let derivation = null;
-      let written;
-      if (steps.length === 0) {
-        written = naiveSource;
-      } else {
-        derivation = deriveImplementation(pulled.procedure.body, { closeLoop: options.closeLoop === true });
-        written = derivation.source;
-      }
+      const written = derivation === null ? naiveSource : derivation.source;
       writeFileSync(join(workDir, "src", "dag.ts"), written);
       writeFileSync(
         consumedPath,
         JSON.stringify(
-          { handles, pulled, steps, rediscoveryCheck, derivation: derivation === null ? null : { clauses: derivation.clauses, trace: derivation.trace }, requirements: context.work?.requirements ?? [] },
+          { handles, pulled, steps, rediscoveryCheck, startDagDigest, derivation: derivation === null ? null : { clauses: derivation.clauses, trace: derivation.trace }, requirements: context.work?.requirements ?? [] },
           null,
           2,
         ),
         "utf8",
       );
       execFileSync("git", ["add", "-A"], { cwd: workDir });
-      execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", `worker ${options.label}`], { cwd: workDir });
-      return { kind: "READY_FOR_SETTLEMENT" };
+      // R0-R §3.1 consequence: with the control seeded from G1's EXACT pre-task bytes, a method-less
+      // worker derives the naive implementation — byte-identical to what is already there, because G1's
+      // pre-task state IS Generation 0's naive deliverable. There is nothing to commit, and that is the
+      // FINDING rather than a harness bug: identical input plus no inherited method yields NO change at
+      // all, so the control cannot even produce a candidate improvement. An explicit empty commit
+      // records the attempt without inventing a change, and `noChange` carries the fact forward.
+      const dirty = git(workDir, ["status", "--porcelain"]).trim().length > 0;
+      execFileSync(
+        "git",
+        ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "--allow-empty", "-qm", `worker ${options.label}${dirty ? "" : " (no change: nothing derivable without an inherited method)"}`],
+        { cwd: workDir },
+      );
+      return { kind: "READY_FOR_SETTLEMENT", ...(dirty ? {} : { noChange: true }) };
     },
     consumedPath,
   };
@@ -947,6 +976,8 @@ async function main() {
     capabilityHints: ["a verification runtime"],
     recommendedRecipeRefs: [],
   };
+  /** P@1's content, kept by name so §3.2 can probe the clause metric against it. */
+  const p1Content = scripts.procedureAuthoring.content;
   const procedureService = rig.installed.procedures;
   if (procedureService === undefined) throw new Error("the packaged install composed no procedures face");
   const preparedProcedure = await procedureService.prepare({
@@ -1032,6 +1063,12 @@ async function main() {
   // what runs next. The gate asks for the task it declared only when the scheduler agrees; otherwise it
   // lets the scheduler choose and records which task actually ran. Either way the Work is ordinary.
   const nextG1 = advanceToReady(controller1) ?? "t3";
+  // R0-R §3.1: G1's PRE-TASK bytes, read from the canonical project before its world is materialized.
+  // The paired control is later seeded from these EXACT bytes, and the worker's own recorded
+  // `startDagDigest` independently witnesses the same value — so the two conditions are proven to
+  // begin from identical input rather than merely asserted to.
+  const g1StartDagBytes = readFileSync(join(A_DIR, "src", "dag.ts"));
+  const g1StartDagDigestExpected = fileDigest(join(A_DIR, "src", "dag.ts"));
   const g1Worker = dagWorker(rig1, { label: "g1", taskId: nextG1 });
   const g1Service = delegation.makeWorkDelegationService({ controller: controller1, workerFor: () => g1Worker });
   // §21/§22: the REASONING claim id is re-derived from the durable cell's own frontier after the cold
@@ -1080,10 +1117,11 @@ async function main() {
   for (const file of ["package.json"]) writeFileSync(join(controlRepo, file), readFileSync(join(FIXTURE, file)));
   mkdirSync(join(controlRepo, "src"), { recursive: true });
   mkdirSync(join(controlRepo, "test"), { recursive: true });
-  // §14: the control starts from the SAME starting point the task began from — the H0 contract with no
-  // implementation — so condition B measures "a generation that inherits nothing", not "a repo that
-  // already contains the answer". The task, the acceptance contract and the worker logic are identical.
-  writeFileSync(join(controlRepo, "src", "dag.ts"), readFileSync(join(FIXTURE, "src", "dag.ts")));
+  // R0-R §3.1: the control is seeded from G1's EXACT pre-task bytes (captured above), not from the H0
+  // fixture. The two conditions therefore start from byte-identical input, which is what makes the
+  // comparison a paired one. The acceptance contract is likewise written from the fixture, and its
+  // digest is checked against the generation's own copy below.
+  writeFileSync(join(controlRepo, "src", "dag.ts"), g1StartDagBytes);
   writeFileSync(join(controlRepo, "test", "acceptance.test.ts"), readFileSync(join(FIXTURE, "test", "acceptance.test.ts")));
   // Captured BEFORE the control worker runs, so §19 compares starting points rather than results.
   const controlStartDigest = fileDigest(join(controlRepo, "src", "dag.ts"));
@@ -1135,24 +1173,44 @@ async function main() {
   // promoted Generation 1 against an unpromoted control would have compared two different things.
   await closeTask({ installed: controlInstalled }, controlView.attemptId);
   const controlAcceptance = runAcceptance(controlRepo);
+  // R0-R §3.1: whether the control's worker found ANYTHING to change. Seeded from G1's exact pre-task
+  // bytes with no inherited method, it has nothing to derive that is not already there — which is the
+  // sharpest form of the comparison: the control does not merely do worse, it produces NO change.
+  const controlStartDigestAfter = fileDigest(join(controlRepo, "src", "dag.ts"));
   record("PC.1 control received NO inherited capital", `${controlConsumed.handles.length} handles`);
   record("PC.2 control PERFORMED the rediscovery step", controlConsumed.rediscoveryCheck);
   record("PC.3 control acceptance suite", `${controlAcceptance.pass} pass / ${controlAcceptance.fail} fail`);
+  record(
+    "PC.3a the control's deliverable vs its own starting point",
+    controlStartDigestAfter === controlStartDigest
+      ? "UNCHANGED — with identical input and no inherited method the worker derived nothing new"
+      : "CHANGED — the worker produced a different implementation",
+  );
 
-  // §19: prove the equivalence with BYTES, not with an assertion. Both conditions were given the same
-  // acceptance contract and the same H0 starting point; the worker implementation is the same function
-  // object; the intent text and the task declaration are the same strings. The ONLY difference is
-  // whether the inherited capital was selected — which is exactly what PC.1/PC.4 measure.
+  // §19 / R0-R §3.1: prove the equivalence with DIGESTS, not with an assertion. The key claim is that
+  // Generation 1 and the control began from the SAME PRE-TASK BYTES. Three independent witnesses are
+  // compared:
+  //   · the digest the harness read from G1's canonical repository before its world existed,
+  //   · the digest the G1 WORKER itself recorded from inside its attempt world, and
+  //   · the digest the control repository was seeded with.
+  // All three must agree. The acceptance contract is likewise compared between the fixture and the
+  // generation's own copy, and the worker implementation is the same function object in both conditions.
   const controlEquivalence = {
     acceptanceSuiteDigest: fileDigest(join(FIXTURE, "test", "acceptance.test.ts")),
     controlAcceptanceDigest: fileDigest(join(controlRepo, "test", "acceptance.test.ts")),
-    h0StubDigest: fileDigest(join(FIXTURE, "src", "dag.ts")),
+    g1StartDagDigestExpected,
+    g1StartDagDigestObserved: g1Consumed.startDagDigest,
     controlStartDigest,
     sharedWorkerFactory: "dagWorker",
+    sharedWorkerFactoryAdapters: ["elive-worker-g0", "elive-worker-g1", "elive-worker-g2", "elive-worker-control"],
   };
+  const suiteIdentical = controlEquivalence.acceptanceSuiteDigest === controlEquivalence.controlAcceptanceDigest;
+  const startBytesIdentical =
+    controlEquivalence.g1StartDagDigestExpected === controlEquivalence.g1StartDagDigestObserved &&
+    controlEquivalence.g1StartDagDigestExpected === controlEquivalence.controlStartDigest;
   record(
-    "PC.4 the two conditions share their semantic inputs byte-for-byte",
-    `suite ${controlEquivalence.acceptanceSuiteDigest === controlEquivalence.controlAcceptanceDigest ? "IDENTICAL" : "DIFFERENT"}, H0 ${controlEquivalence.h0StubDigest === controlEquivalence.controlStartDigest ? "IDENTICAL" : "DIFFERENT"}, worker=${controlEquivalence.sharedWorkerFactory}`,
+    "PC.4 the two conditions began from byte-identical input",
+    `suite ${suiteIdentical ? "IDENTICAL" : "DIFFERENT"}, G1 pre-task dag.ts ${startBytesIdentical ? "IDENTICAL" : "DIFFERENT"} (harness ${controlEquivalence.g1StartDagDigestExpected.slice(0, 12)}…, G1 worker ${String(controlEquivalence.g1StartDagDigestObserved).slice(0, 12)}…, control ${controlEquivalence.controlStartDigest.slice(0, 12)}…), worker=${controlEquivalence.sharedWorkerFactory}`,
   );
   await controlInstalled.dispose();
 
@@ -1221,6 +1279,8 @@ async function main() {
     limitations: ["does not cover incremental graph updates", "assumes the graph is provided in one piece"],
   };
   scripts.procedureAuthoring.content = revisedContent;
+  /** P@2's content, kept by name so §3.2 can probe the clause metric against it. */
+  const g2Content = revisedContent;
   const preparedP2 = await rig1.installed.procedures.prepare({
     grounds: [{ kind: "ORGANIZATION_EVALUATION", ref: evaluation2.evaluationRef }, { kind: "RUN_RESULT", ref: run2.runRef }],
     projectContext: { projectId: projectA, projectRevision: controller1.work.project().revision, projectDigest: controller1.work.project().digest, objective: "plan dependency graphs" },
@@ -1322,15 +1382,38 @@ async function main() {
   // content (`derive-dag.mjs`), rather than selecting a pre-written file by keyword. This is the
   // evidence that the interpretation is real: mutating the CONTENT changes the observable behaviour
   // against the UNCHANGED acceptance contract. A Level-1 consumer cannot fail this probe.
-  const sensitivity = JSON.parse(
+  const sensitivityPayload = JSON.parse(
     execFileSync("node", ["scripts/gates/derive-sensitivity.mjs"], { cwd: REPO, encoding: "utf8" }).split("\n")[0],
   );
+  const sensitivity = sensitivityPayload.rows;
+  const sensitivityOutput = sensitivityPayload.output;
   const g1Clauses = g1Consumed.derivation?.clauses;
   const g2Clauses = g2Consumed.derivation?.clauses;
   record("C.20 the Generation-1 implementation was DERIVED from the method's clauses", g1Clauses === undefined || g1Clauses === null ? "MISSING" : `normalize=${g1Clauses.normalizes} cycleFirst=${g1Clauses.cycleBeforeOrder} verify=${g1Clauses.verifies} unrecognized=${g1Clauses.unrecognized}`);
   record("C.21 Generation 2's extension came from a METHOD CLAUSE, not a harness switch", g2Clauses?.closeLoop === true ? "closeLoop=true from the 'close the witness loop' step" : `MISSING (${JSON.stringify(g2Clauses)})`);
   record("C.22 mutating the CONTENT changes the implementation's behaviour", sensitivity.map((row) => `${row.id}=${row.observed}`).join(", "));
   record("C.23 a method with no cycle step reproduces the naive failure", `${sensitivity.find((row) => row.id === "B_no_cycle_step")?.pass}/${sensitivity.find((row) => row.id === "B_no_cycle_step")?.fail}`);
+  // R0-R §3.2: the rediscovery metric is a STRUCTURED clause read, not a keyword test. These two bytes
+  // differ only in the ORDER of the same clauses, so a keyword metric would grant both the same credit;
+  // the clause metric must distinguish them, and it must agree with what the derived source actually
+  // does. `deriveImplementation` is the single source of this judgement in both the gate and the worker.
+  const clauseProbe = (steps) => deriveImplementation({ steps }).clauses.cycleBeforeOrder;
+  const cycleBeforeOrderMetric = {
+    p1: clauseProbe(p1Content.steps),
+    p1Reordered: clauseProbe([p1Content.steps[0], p1Content.steps[3], p1Content.steps[1], p1Content.steps[2], p1Content.steps[4], p1Content.steps[5]]),
+    naiveAbsent: clauseProbe([]),
+  };
+  record(
+    "C.24 the rediscovery metric reads the STRUCTURED clause, not a keyword",
+    `P@1 cycleBeforeOrder=${cycleBeforeOrderMetric.p1}, same clauses reordered=${cycleBeforeOrderMetric.p1Reordered}, no clause=${cycleBeforeOrderMetric.naiveAbsent}`,
+  );
+  // The derived source must be SEMANTICALLY IDENTICAL to the hand-written oracle for the same clauses —
+  // if the interpreter drifted, the gate would be measuring an implementation nobody documented.
+  const oracleMatch = {
+    p1: stripCode(deriveImplementation({ steps: p1Content.steps }).source) === stripCode(matureSource),
+    p2: stripCode(deriveImplementation({ steps: g2Content.steps }).source) === stripCode(maturePlusSource),
+  };
+  record("C.25 the derived source matches the hand-written oracle", `P@1=${oracleMatch.p1 ? "IDENTICAL" : "DIFFERENT"}, P@2=${oracleMatch.p2 ? "IDENTICAL" : "DIFFERENT"}`);
 
   /* ================================================================ AUTHORITY INVARIANCE */
 
@@ -1373,10 +1456,12 @@ async function main() {
     ["an inherited asset ALTERED later work behavior", () => g1Consumed.rediscoveryCheck === "NOT_PERFORMED" && g0Consumed.rediscoveryCheck === "PERFORMED"],
     ["one previously-paid cognitive cost was not paid again", () => g1Consumed.rediscoveryCheck === "NOT_PERFORMED"],
     ["the paired control produced observable differences", () => controlConsumed.rediscoveryCheck === "PERFORMED" && controlConsumed.handles.length === 0],
+    // R0-R §3.1: the control, given G1's EXACT input and no inherited method, derived nothing new.
+    ["the control derived NO change from the generation's own starting point", () => controlStartDigestAfter === controlStartDigest],
     // §19: the comparison is only meaningful if the two conditions shared their inputs. Proven with
     // digests, so a future edit that quietly diverges the contract fails here rather than silently
     // weakening the experiment.
-    ["the two conditions shared their semantic inputs byte-for-byte", () => controlEquivalence.acceptanceSuiteDigest === controlEquivalence.controlAcceptanceDigest && controlEquivalence.h0StubDigest === controlEquivalence.controlStartDigest],
+    ["the two conditions began from byte-identical input", () => suiteIdentical && startBytesIdentical],
     ["Generation 2 did not rediscover the baseline method", () => g2Consumed.rediscoveryCheck === "NOT_PERFORMED"],
     ["a fresh attempt is refused the superseded revision and given the current one", () => p1Refused && freshContext.compiled.handles.some((entry) => entry.kind === "procedure" && entry.handle === proceduresModule.procedureHandle(p2))],
     // §34: the claim is proven STRUCTURALLY. Each generation was a fresh `installPalimpsest` over the
@@ -1398,6 +1483,20 @@ async function main() {
     ["the procedure content is INTERPRETED, not looked up", () => sensitivity.length === 6 && sensitivity.every((row) => row.expected === row.observed)],
     ["a method without the cycle clause reproduces the failure", () => (sensitivity.find((row) => row.id === "B_no_cycle_step")?.fail ?? 0) > 0],
     ["Generation 2's extension came from a method clause", () => g2Consumed.derivation?.clauses?.closeLoop === true],
+    // R0-R §3.2: the rediscovery metric is a STRUCTURED clause read. It must distinguish a method that
+    // states the cycle clause in the wrong ORDER from one that states it correctly — something a keyword
+    // test cannot do — and it must agree with the derived source's own behaviour.
+    ["the rediscovery metric is the structured clause, not a keyword", () => cycleBeforeOrderMetric.p1 === true && cycleBeforeOrderMetric.p1Reordered === false && cycleBeforeOrderMetric.naiveAbsent === false],
+    ["the derived source matches the hand-written oracle", () => oracleMatch.p1 && oracleMatch.p2],
+    // R0-R §9: every Level-3 mutation case the gate claims must be one the sensitivity driver actually
+    // ran, so the pinned set cannot drift from the evidence.
+    ["the pinned Level-3 mutation cases are the measured ones", () => {
+      const ids = sensitivity.map((row) => row.id);
+      return ["B_no_cycle_step", "C_cycle_after_order", "F_no_normalize"].every((id) => ids.includes(id)) &&
+        sensitivity.find((row) => row.id === "C_cycle_after_order")?.observed === "VIOLATES" &&
+        sensitivityOutput?.sourceChanged === true &&
+        sensitivityOutput?.p2RepeatsFirstNode === true;
+    }],
   ];
   let ok = true;
   process.stdout.write("\n");

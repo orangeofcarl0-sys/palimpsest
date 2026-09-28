@@ -51,6 +51,33 @@ const VARIANTS = [
   { id: "F_no_normalize", expect: "VIOLATES", steps: BASE.filter((s) => !/normaliz/iu.test(s.instruction)), why: "without validation the unknown-endpoint case is not refused" },
 ];
 
+/** P@2: the same clauses plus Generation 2's extension. */
+const P2_STEPS = [
+  ...BASE,
+  step("close the witness loop by repeating its first node, so the cycle is fully described"),
+];
+
+/**
+ * §9 — the P@2 extension changes the GENERATED OUTPUT.
+ *
+ * The extension is not visible to the acceptance contract (a witness of length >= 2 satisfies it
+ * either way), so the observable difference is in the derived SOURCE. That is the §9 requirement: the
+ * close-witness clause must change what the interpreter emits. Reported as a separate row because its
+ * "observed" value is about the source, not about a test outcome.
+ */
+function outputComparison() {
+  const p1 = deriveImplementation({ steps: BASE });
+  const p2 = deriveImplementation({ steps: P2_STEPS });
+  return {
+    id: "G_p2_close_witness",
+    p1ClosesLoop: p1.clauses.closeLoop,
+    p2ClosesLoop: p2.clauses.closeLoop,
+    sourceChanged: p1.source !== p2.source,
+    p2RepeatsFirstNode: /rotated\[0\]/u.test(p2.source),
+    p1RepeatsFirstNode: /rotated\[0\]/u.test(p1.source),
+  };
+}
+
 function scaffold() {
   rmSync(WORK, { recursive: true, force: true });
   mkdirSync(join(WORK, "src"), { recursive: true });
@@ -83,12 +110,28 @@ for (const variant of VARIANTS) {
   rows.push({ id: variant.id, expected: variant.expect, observed, pass: outcome.pass, fail: outcome.fail, clauses: derived.clauses });
 }
 const mismatched = rows.filter((row) => row.expected !== row.observed);
+// §9: the P@2 close-witness clause must change what the interpreter EMITS, even though the acceptance
+// contract cannot see the difference. This is its own row because it is a source-level observation.
+const output = outputComparison();
+const outputOk =
+  output.p1ClosesLoop === false &&
+  output.p2ClosesLoop === true &&
+  output.sourceChanged === true &&
+  output.p2RepeatsFirstNode === true &&
+  output.p1RepeatsFirstNode === false;
+
 // A single machine-readable line, so the gate can consume this as evidence without parsing prose.
-process.stdout.write(`${JSON.stringify(rows)}\n`);
+const payload = { rows, output };
+process.stdout.write(`${JSON.stringify(payload)}\n`);
 process.stdout.write(
   mismatched.length === 0
     ? `all ${rows.length} variants behaved as the CONTENT predicts: ${rows.map((row) => `${row.id}=${row.observed}`).join(", ")}\n` +
       `(B/C/F are observable CONSEQUENCES of the method's content; A/D/E are conformant)\n`
     : `MISMATCHED: ${mismatched.map((row) => row.id).join(", ")}\n`,
 );
-process.exit(mismatched.length === 0 ? 0 : 1);
+process.stdout.write(
+  outputOk
+    ? `G_p2_close_witness: the clause changed the generated source (P@1 closesLoop=${output.p1ClosesLoop}, P@2 closesLoop=${output.p2ClosesLoop}, sourceChanged=${output.sourceChanged})\n`
+    : `G_p2_close_witness MISMATCHED: ${JSON.stringify(output)}\n`,
+);
+process.exit(mismatched.length === 0 && outputOk ? 0 : 1);
