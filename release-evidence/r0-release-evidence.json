@@ -1,10 +1,16 @@
 {
   "schemaVersion": 1,
   "generatedBy": "scripts/release/release-evidence.mjs",
+  "attests": {
+    "subjectCommit": "4da32106451caf1aa01ecb062eac7b7be1701cae",
+    "subjectIs": "the code-state release candidate (the last commit that changed code, harness, packaging or tests)",
+    "thisArtifactIs": "an attestation ABOUT that commit, not a product-code change",
+    "evidenceCommitsAreNotProductCode": true
+  },
   "releaseCandidate": {
-    "commit": "6a3c8c1aa32190d4132022714aedf2fb89f3c735",
+    "commit": "4da32106451caf1aa01ecb062eac7b7be1701cae",
     "branch": "r0-production-integration",
-    "tree": "0d03213901b2e48aaa3083f974eeaad872a6c692",
+    "tree": "1d73c29505fb5d6f56e66bb620d9b9e99dfbfdad",
     "baselinePreE": "9ec76ff2657706386d4cfd3e64eff60fd716d604",
     "mergeBaseWithOriginMain": "9ec76ff2657706386d4cfd3e64eff60fd716d604"
   },
@@ -71,7 +77,7 @@
   ],
   "expectedCounts": {
     "unitTestFiles": "248",
-    "unitTests": "2921",
+    "unitTests": "2923",
     "unitErrors": "0",
     "e2e": "38",
     "liveGates": {
@@ -80,7 +86,7 @@
       "gate:e3-c-live": "21 PASS / 0 FAIL",
       "gate:e4-l-live": "10 PASS / 0 FAIL",
       "gate:e5-p-live": "11 PASS / 0 FAIL (38 findings)",
-      "gate:e-live": "24 PASS / 0 FAIL",
+      "gate:e-live": "28 PASS / 0 FAIL",
       "gate:d2-live": "15 PASS / 0 FAIL",
       "gate:d4-live": "21 PASS / 0 FAIL",
       "gate:d5-live": "10 PASS / 0 FAIL"
@@ -122,5 +128,15 @@
       "classification": "PRE-EXISTING FLAKE — retry succeeds, no product defect observed"
     }
   ],
-  "outwardAction": "NOT PERFORMED"
+  "outwardAction": {
+    "atCodeStateCapture": {
+      "meaning": "the state of the OUTWARD world at the moment the code-state RC commit was made",
+      "remoteBranch": "not pushed",
+      "pullRequest": "none",
+      "main": "unchanged (9ec76ff)",
+      "package": "unpublished"
+    },
+    "current": "remote branch pushed (origin/r0-production-integration); no pull request opened; main unchanged; package unpublished",
+    "note": "The code-state RC is a LOCAL COMMIT; nothing about it was pushed when it was captured. A later stage may push the branch or open a PR, and this field records that separately rather than retroactively editing the historical claim."
+  }
 }
