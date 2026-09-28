@@ -1,0 +1,163 @@
+/**
+ * R1-R §6/§8 — SCENARIO C.
+ *
+ * `applyEventStream` applies a delivery of the append-only event log to the state a replica already
+ * holds. The contract, in the order the work has to happen:
+ *
+ *  1. ESTABLISH REPLAY VALIDITY BEFORE TOUCHING ANYTHING (the point of the scenario). Every event in
+ *     the delivery must be a well-formed log record — a non-null object, a non-empty string `id`, a
+ *     non-negative integer `seq` (the position the log assigned it) and an operation of SET / PUT or
+ *     DELETE — and no position may be claimed by two different events. The caller owns the `state`
+ *     object it hands over and keeps using it afterwards, so NOTHING is written to it until the whole
+ *     delivery has been accepted. A rejected history therefore leaves the caller's object exactly as
+ *     it was; partial application is unrepresentable here.
+ *
+ *  2. REPLAY IN THE LOG'S OWN ORDER, NOT THE DELIVERY'S ORDER. The array a replica receives is
+ *     whatever the transport delivered: reordered, truncated, or with the same event delivered more
+ *     than once. The steps are therefore replayed in ascending `seq` order, so an entity written at
+ *     one position and deleted at a later one ends up deleted no matter which of the two arrived
+ *     first. Two replicas holding the same log always reach the same state.
+ *
+ *  3. ONE POSITION HOLDS ONE EVENT. The log assigns each position once. Redelivery of the same event
+ *     at the same position is idempotent and accepted; two DIFFERENT events claiming the same
+ *     position cannot both have come from the log, so such a delivery is an invalid history and is
+ *     rejected.
+ *
+ * The state object is updated in place and returned to the caller.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** The documented places a SET may carry its value, in order of precedence. */
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/** A well-formed event read as the single step it performs. */
+interface Step {
+  readonly seq: number;
+  readonly id: string;
+  readonly op: "SET" | "DELETE";
+  readonly value: unknown;
+}
+
+const opOf = (event: Event): "SET" | "DELETE" => {
+  const raw = event.op ?? event.kind ?? "SET";
+  if (typeof raw !== "string") {
+    throw new StreamError("INVALID_OP", "an event's operation must be a string");
+  }
+  switch (raw.toUpperCase()) {
+    case "SET":
+    case "PUT":
+      return "SET";
+    case "DELETE":
+      return "DELETE";
+    default:
+      throw new StreamError("INVALID_OP", `unsupported operation ${JSON.stringify(raw)}`);
+  }
+};
+
+/** Order-independent rendering of a value, used only to compare two deliveries of one position. */
+const canonical = (value: unknown): string => {
+  if (value === undefined) return "undefined";
+  if (value === null) return "null";
+  if (typeof value === "string") return JSON.stringify(value);
+  if (typeof value === "number" || typeof value === "boolean" || typeof value === "bigint") return String(value);
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(",")}}`;
+  }
+  return String(value);
+};
+
+const fingerprintOf = (id: string, op: string, value: unknown): string => canonical({ id, op, value });
+
+/**
+ * Validate the whole delivery and return the steps in log order.
+ * Throws (without having touched any state) on a history the log could not have produced.
+ */
+function replayPlan(events: readonly Event[]): Step[] {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the delivered event stream must be an array");
+  }
+
+  // position -> fingerprint of the event the log put there
+  const claimed = new Map<number, string>();
+  const steps: Step[] = [];
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object") {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_SEQUENCE", "every event must carry a non-negative integer seq");
+    }
+
+    const op = opOf(event);
+    const value = op === "DELETE" ? null : valueOf(event);
+    const fingerprint = fingerprintOf(event.id, op, value);
+    const previous = claimed.get(seq);
+
+    if (previous === undefined) {
+      claimed.set(seq, fingerprint);
+    } else if (previous === fingerprint) {
+      // The same event delivered again: idempotent, apply it once.
+      continue;
+    } else {
+      throw new StreamError("CONFLICTING_SEQUENCE", `position ${seq} is claimed by two different events`);
+    }
+
+    steps.push({ seq, id: event.id, op, value });
+  }
+
+  // The log's order is the order the positions were assigned in; the delivery order is irrelevant.
+  steps.sort((left, right) => (left.seq !== right.seq ? left.seq - right.seq : left.id < right.id ? -1 : left.id > right.id ? 1 : 0));
+  return steps;
+}
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (state === null || typeof state !== "object") {
+    throw new StreamError("INVALID_STATE", "the state handed over must be an object");
+  }
+
+  // Validity first: no step below runs, and no caller-visible byte changes, for a rejected history.
+  const steps = replayPlan(events);
+
+  for (const step of steps) {
+    if (step.op === "DELETE") delete state[step.id];
+    else state[step.id] = step.value;
+  }
+
+  return state;
+}

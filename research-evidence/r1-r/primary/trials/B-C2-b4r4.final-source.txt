@@ -1,0 +1,139 @@
+/**
+ * R1-R §5/§8 — SCENARIO B, the DISCOVERED method.
+ *
+ * A legacy document is HAND-WRITTEN: one setting may be spelled in several ways (`name` /
+ * `service_name` / `title`, `retry` / `retries` / `retryCount` / `attempts`, ...), and the
+ * conventions are only partly documented. A faithful migration therefore has to:
+ *
+ *   1. NORMALIZE the spellings first — map every legacy spelling onto the canonical v2 setting it
+ *      denotes — and only then COMPARE them. Without that normalization there is no way to see that
+ *      `retry` and `attempts` are competing statements about the same setting, which is what the
+ *      starting point did: it read the spellings through a `??` precedence chain and silently let
+ *      one of them win;
+ *   2. judge whether the document is AMBIGUOUS, and refuse it when it is: a setting written under
+ *      two spellings has no faithful reading, because the precedence the legacy deployment gave to
+ *      the competing spellings is not documented. Picking one is a guess about the operator's
+ *      meaning, so the document is refused instead — that is the "legacy ambiguity validation" the
+ *      starting point performs AFTER it has already transformed and defaulted. Unknown settings are
+ *      refused for the same reason: migrating while dropping them changes what the document says;
+ *   3. VALIDATE every value that is actually present BEFORE applying any default, so an explicit
+ *      value is never silently replaced by a plausible-looking default (a wrong type or an
+ *      out-of-range value is a broken document, not a missing setting);
+ *   4. apply the defaults only to settings the document does not mention at all.
+ *
+ * Order of the pipeline matters and is the point of the scenario: normalize -> reject ambiguous ->
+ * validate -> default -> assemble.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** A canonical v2 setting together with every legacy spelling that denotes it. */
+interface Setting {
+  readonly name: string;
+  readonly spellings: readonly string[];
+}
+
+/**
+ * The legacy key set is CLOSED: a key outside these spellings is an unknown setting, and a document
+ * carrying one cannot be migrated without dropping part of what the operator wrote.
+ */
+const SETTINGS: readonly Setting[] = [
+  { name: "service.name", spellings: ["name", "service_name", "title"] },
+  { name: "service.endpoint", spellings: ["endpoint", "url", "base_url", "host"] },
+  { name: "policy.retries", spellings: ["retry", "retries", "retryCount", "attempts"] },
+  { name: "policy.timeoutMs", spellings: ["timeout", "timeout_ms", "timeoutMs"] },
+];
+
+const KNOWN_SPELLINGS: ReadonlySet<string> = new Set(SETTINGS.flatMap((setting) => setting.spellings));
+
+/** A setting counts as written when the document carries the key with a value (undefined === absent). */
+function isWritten(input: Record<string, unknown>, spelling: string): boolean {
+  return Object.prototype.hasOwnProperty.call(input, spelling) && input[spelling] !== undefined;
+}
+
+/**
+ * Normalize one setting: collect every spelling the document uses for it and compare them. Two
+ * spellings for one setting is an ambiguous document, whatever their values: the legacy document
+ * never says which of them the deployment honored.
+ */
+function resolveSetting(input: Record<string, unknown>, setting: Setting): { written: boolean; value: unknown } {
+  const used = setting.spellings.filter((spelling) => isWritten(input, spelling));
+  if (used.length === 0) return { written: false, value: undefined };
+  if (used.length > 1) {
+    throw new ConfigError(
+      "AMBIGUOUS_SETTING",
+      `the ${setting.name} is written under several spellings (${used.map((s) => `"${s}"`).join(", ")})`,
+    );
+  }
+  return { written: true, value: input[used[0]] };
+}
+
+function readText(value: unknown, code: string, setting: string): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new ConfigError(code, `the ${setting} must be a non-empty string`);
+  }
+  return value;
+}
+
+function readIntegerAtLeast(value: unknown, minimum: number, code: string, setting: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < minimum) {
+    throw new ConfigError(code, `the ${setting} must be an integer >= ${minimum}`);
+  }
+  return value;
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1. Normalize and validate the spellings before anything is transformed: the key set is closed,
+  //    and every setting must be named exactly once.
+  for (const key of Object.keys(input)) {
+    if (!KNOWN_SPELLINGS.has(key)) {
+      throw new ConfigError("UNKNOWN_SETTING", `unknown legacy setting "${key}"`);
+    }
+  }
+  const name = resolveSetting(input, SETTINGS[0]);
+  const endpoint = resolveSetting(input, SETTINGS[1]);
+  const retries = resolveSetting(input, SETTINGS[2]);
+  const timeoutMs = resolveSetting(input, SETTINGS[3]);
+
+  if (!name.written) throw new ConfigError("MISSING_NAME", "the service name is required");
+  if (!endpoint.written) throw new ConfigError("MISSING_ENDPOINT", "the endpoint is required");
+
+  // 2. Validate the values that ARE present before defaulting the settings that are absent.
+  const serviceName = readText(name.value, "INVALID_NAME", "service name");
+  const serviceEndpoint = readText(endpoint.value, "INVALID_ENDPOINT", "endpoint");
+  const retryCount = retries.written
+    ? readIntegerAtLeast(retries.value, 0, "INVALID_RETRIES", "retry count")
+    : DEFAULT_RETRIES;
+  const timeout = timeoutMs.written
+    ? readIntegerAtLeast(timeoutMs.value, 1, "INVALID_TIMEOUT", "timeout")
+    : DEFAULT_TIMEOUT_MS;
+
+  // 3. Assemble the v2 document. Every value here is either the operator's own or a default for a
+  //    setting the document never mentioned.
+  return {
+    schemaVersion: 2,
+    service: { name: serviceName, endpoint: serviceEndpoint },
+    policy: { retries: retryCount, timeoutMs: timeout },
+  };
+}

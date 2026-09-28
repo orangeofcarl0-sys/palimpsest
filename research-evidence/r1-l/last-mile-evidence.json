@@ -74,5 +74,12 @@
       3
     ]
   },
-  "r1PreconditionBlocker": "CLOSED"
+  "r1PreconditionBlocker": "CLOSED",
+  "r1rAddendum": {
+    "addedBy": "R1-R (\u00a732 regression re-run of gate:r1-l-live)",
+    "finding": "The host sandbox confines WRITES, not READS. A C0 worker with zero handles and zero pulls obtained all three protected markers by traversing out of its execution world to the durable store (..\\..\\..\\..\\state) and reading the proof blob directly.",
+    "effectOnThisGatesClaim": "The previous assertion \"C0: protected values NOT obtainable\" was not a property this gate could establish. It is replaced by the two facts the gate does control (C0 offered no handles; C0 pulled nothing) plus an explicit out-of-band-read observation. The C1/C2 accessibility proof is unaffected: those conditions pulled their handles.",
+    "effectOnR1R": "None. A scan of all 30 R1-R trials (final sources, first sources, transcripts, reports) for the capital text returns 0 hits, and the hidden acceptance lives in the repository rather than the store, so an out-of-band read could not have helped a worker pass it.",
+    "classification": "HOST SANDBOX LIMITATION (reads unconfined), NOT a product defect. R1-L made no claim about confining worker reads."
+  }
 }

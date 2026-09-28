@@ -1,0 +1,160 @@
+/**
+ * R1-R §6/§8 — SCENARIO C.
+ *
+ * Apply a durable event log to the store's current state.
+ *
+ * A replica receives the log as an array THE TRANSPORT DELIVERED, which is not necessarily the log
+ * itself: positions may arrive out of order, and the log is durable, so the same event may be
+ * handed to the same replica more than once. The array order is therefore NOT authority — the
+ * `seq` the log assigned each event is. Two replicas that hold the same log must agree, so the
+ * stream is reduced in the log's own sequence order, and a re-delivered event is a no-op rather
+ * than a second write.
+ *
+ * The caller owns the `state` object and keeps using that same object after the call. That fixes
+ * the shape of this function: it is two phases, never one.
+ *
+ *   1. Establish replay validity for the WHOLE delivered history, touching nothing. A history is
+ *      replayable only when every delivered event is well formed (a non-empty string id, a log
+ *      position `seq` that is a non-negative integer, an operation the log defines, and a value
+ *      for a write) and no log position is claimed by two different events — the last one is what
+ *      would otherwise make the outcome depend on the delivered array order, so a replica that
+ *      guessed at it would disagree with its peers instead of rejecting the history.
+ *
+ *   2. Only then commit, in sequence order. Because phase 1 already accepted the whole history,
+ *      phase 2 cannot fail part-way: a rejected history never touches the caller's object, and an
+ *      accepted one is applied in full.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** The operations the log defines. `PUT` is the legacy spelling of a write. */
+const WRITE_OPS: readonly string[] = ["SET", "PUT"];
+const DELETE_OPS: readonly string[] = ["DELETE"];
+
+/** The spellings a write's value may arrive under. */
+const WRITE_VALUE_KEYS: readonly string[] = ["v", "value", "payload", "data"];
+
+const opOf = (event: Event): string => event.op ?? event.kind ?? "SET";
+
+const hasWriteValue = (event: Event): boolean => WRITE_VALUE_KEYS.some((key) => key in event);
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/** A stable, key-order independent rendering, used only to tell two events at one position apart. */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const body = Object.keys(record)
+      .sort()
+      .map((key) => JSON.stringify(key) + ":" + canonical(record[key]))
+      .join(",");
+    return "{" + body + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+};
+
+interface PlannedWrite {
+  readonly op: "SET" | "DELETE";
+  readonly id: string;
+  readonly value: unknown;
+}
+
+/**
+ * Phase 1: read the delivered array and return the writes the log implies, in the log's own
+ * sequence order — or throw a `StreamError` without having touched anything. Pure.
+ */
+function planReplay(events: readonly Event[]): PlannedWrite[] {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the delivered log must be an array of events");
+  }
+
+  // Keyed by the position the log assigned, so the plan follows the LOG and not the array, and a
+  // position the transport delivered twice collapses into the single write it stands for.
+  const bySeq = new Map<number, { readonly signature: string; readonly write: PlannedWrite }>();
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object" || Array.isArray(event)) {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+      throw new StreamError(
+        "INVALID_SEQUENCE",
+        "every event must carry the log position it was assigned as a non-negative integer seq"
+      );
+    }
+
+    const declared = opOf(event);
+    const op: "SET" | "DELETE" | null = DELETE_OPS.includes(declared)
+      ? "DELETE"
+      : WRITE_OPS.includes(declared)
+        ? "SET"
+        : null;
+    if (op === null) {
+      throw new StreamError("INVALID_OPERATION", "unsupported operation " + JSON.stringify(declared));
+    }
+    if (op === "SET" && !hasWriteValue(event)) {
+      throw new StreamError("INVALID_VALUE", "a write must carry its value under one of v/value/payload/data");
+    }
+
+    const write: PlannedWrite = { op, id: event.id, value: op === "SET" ? valueOf(event) : undefined };
+    const signature = op + " " + JSON.stringify(event.id) + " " + canonical(write.value);
+
+    const delivered = bySeq.get(seq);
+    if (delivered === undefined) bySeq.set(seq, { signature, write });
+    else if (delivered.signature !== signature) {
+      throw new StreamError("CONFLICTING_SEQUENCE", "log position " + seq + " is claimed by two different events");
+    }
+  }
+
+  return Array.from(bySeq.entries())
+    .sort((left, right) => left[0] - right[0])
+    .map((entry) => entry[1].write);
+}
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  // Phase 1 — establish replay validity. Nothing here may touch the caller's state.
+  const writes = planReplay(events);
+
+  // Phase 2 — commit. Sequenced writes, in log order; this cannot fail, so the caller's object is
+  // never observable in a half-applied state.
+  for (const write of writes) {
+    if (write.op === "DELETE") delete state[write.id];
+    else state[write.id] = write.value;
+  }
+
+  return state;
+}

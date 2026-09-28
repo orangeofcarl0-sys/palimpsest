@@ -1,0 +1,6 @@
+(node:46868) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:46868) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Finished applyEventStream in src/reducer.ts as a two-phase reducer: it first validates every delivered event and builds the application plan (checking each event is an object with a non-empty string id and a non-negative integer seq, rejecting two different events that claim the same log position while collapsing genuine re-deliveries), and only then writes to the caller's state object, so a rejected batch leaves that object untouched. Writes are applied in ascending seq order rather than transport order, so replicas holding the same log converge on the same state. The change is scoped to src/reducer.ts and is committed in the worktree."}

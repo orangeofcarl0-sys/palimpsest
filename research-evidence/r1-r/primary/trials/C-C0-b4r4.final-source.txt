@@ -1,0 +1,135 @@
+/**
+ * R1-R §6/§8 — SCENARIO C.
+ *
+ * Apply a durable event log to the store's current state.
+ *
+ * The contract the replicas depend on:
+ *
+ *   1. VALIDATE FIRST, THEN APPLY. The caller still owns the `state` object it handed in (and goes on
+ *      reading it afterwards), so a history that turns out to be invalid must leave that object
+ *      byte-for-byte untouched. Replay validity is therefore established in full — and the log is
+ *      normalised into effects — before a single write touches the caller's object.
+ *   2. FOLD THE LOG'S OWN ORDER, NOT THE DELIVERY ORDER. `seq` is the position the log assigned the
+ *      event when it accepted it. The array a replica receives is whatever the transport delivered, so
+ *      it may be shuffled or duplicated. Applying the delivered array in place would let two replicas
+ *      holding the same log disagree (a write at one position and a delete at a later one resolve
+ *      differently depending on which arrived last). Effects are therefore applied in `seq` order.
+ *   3. DUPLICATE DELIVERY IS IDEMPOTENT. The log is durable, so the same event may arrive more than
+ *      once; repeats of the very same position are collapsed, not applied twice.
+ *   4. A POSITION IS CLAIMED ONCE. Two *different* events claiming the same `seq` are not a log any
+ *      replica could agree on, so that history is rejected as invalid rather than resolved by chance.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Op = "SET" | "DELETE";
+
+/** An event reduced to the only thing it can do to the store. */
+interface Effect {
+  readonly seq: number;
+  readonly id: string;
+  readonly op: Op;
+  readonly value: unknown;
+}
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/** Stable rendering of a value, used only to tell two same-position events apart. */
+function canonical(value: unknown): string {
+  if (value === undefined) return "undefined";
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(",")}}`;
+  }
+  return typeof value === "string" ? JSON.stringify(value) : String(value);
+}
+
+const sameEffect = (left: Effect, right: Effect): boolean =>
+  left.id === right.id && left.op === right.op && canonical(left.value) === canonical(right.value);
+
+/** Shape-check one event and reduce it to its effect. Never touches the caller's state. */
+function effectOf(event: Event): Effect {
+  if (event === null || typeof event !== "object") {
+    throw new StreamError("INVALID_EVENT", "every event must be an object");
+  }
+  if (typeof event.id !== "string" || event.id.length === 0) {
+    throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+  }
+  const { seq } = event;
+  if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 0) {
+    throw new StreamError("INVALID_SEQ", "every event must carry a non-negative integer seq");
+  }
+  const op = event.op ?? event.kind ?? "SET";
+  if (op === "DELETE") return { seq, id: event.id, op: "DELETE", value: undefined };
+  if (op === "SET" || op === "PUT") return { seq, id: event.id, op: "SET", value: valueOf(event) };
+  throw new StreamError("INVALID_OP", `unsupported operation ${JSON.stringify(op)}`);
+}
+
+/** Assign a state key without tripping an inherited `__proto__` setter. */
+function setKey(state: State, id: string, value: unknown): void {
+  if (id === "__proto__") {
+    Object.defineProperty(state, id, { value, writable: true, enumerable: true, configurable: true });
+    return;
+  }
+  state[id] = value;
+}
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (state === null || typeof state !== "object") {
+    throw new StreamError("INVALID_STATE", "the store state must be an object keyed by entity id");
+  }
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the event stream must be an array");
+  }
+
+  // Phase 1 — establish replay validity. Nothing below writes to `state`, so a rejected history
+  // leaves the caller's object exactly as it was handed over.
+  const positions = new Map<number, Effect>();
+  for (const event of events) {
+    const effect = effectOf(event);
+    const alreadyClaimed = positions.get(effect.seq);
+    if (alreadyClaimed === undefined) positions.set(effect.seq, effect);
+    else if (!sameEffect(alreadyClaimed, effect)) {
+      throw new StreamError("CONFLICTING_SEQ", `seq ${effect.seq} is claimed by two different events`);
+    }
+    // A repeat of an identical effect is the same durable event delivered twice: collapse it.
+  }
+
+  // Phase 2 — fold the log's own sequence order over the state the caller already holds.
+  const ordered = [...positions.values()].sort((left, right) => left.seq - right.seq);
+  for (const effect of ordered) {
+    if (effect.op === "DELETE") delete state[effect.id];
+    else setKey(state, effect.id, effect.value);
+  }
+
+  return state;
+}

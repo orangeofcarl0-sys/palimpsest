@@ -1,0 +1,151 @@
+/**
+ * Migrate a legacy service configuration document to the v2 shape.
+ *
+ * The legacy conventions are hand-written, so a single setting may be spelled
+ * several different ways. Two ingredients matter for a faithful reading:
+ *
+ *  1. SPELLING NORMALIZATION + AMBIGUITY CHECK, done BEFORE anything is
+ *     transformed or defaulted. Every documented spelling is mapped to the one
+ *     logical setting it names; if a document names the same setting more than
+ *     once with disagreeing values it is ambiguous, and no faithful migration
+ *     exists, so it is rejected. Two spellings that agree are redundant, not
+ *     ambiguous, and migrate to the value they agree on.
+ *
+ *  2. VALIDATION BEFORE DEFAULTS. A default may only stand in for a setting the
+ *     document did not mention. A setting that IS present but malformed is an
+ *     error, never silently replaced by a default.
+ *
+ * Doing either in the other order loses part of the operator's intent.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+type Setting = "name" | "endpoint" | "retries" | "timeoutMs";
+
+/** Every documented spelling of every logical setting. */
+const SPELLINGS: Readonly<Record<Setting, readonly string[]>> = {
+  name: ["name", "service_name", "title"],
+  endpoint: ["endpoint", "url", "base_url", "host"],
+  retries: ["retry", "retries", "retryCount", "attempts"],
+  timeoutMs: ["timeout", "timeout_ms", "timeoutMs"],
+};
+
+const SETTINGS = Object.keys(SPELLINGS) as Setting[];
+
+const SETTING_OF_KEY = new Map<string, Setting>();
+for (const setting of SETTINGS) {
+  for (const spelling of SPELLINGS[setting]) {
+    SETTING_OF_KEY.set(spelling, setting);
+  }
+}
+
+const hasOwn = (value: object, key: string): boolean =>
+  Object.prototype.hasOwnProperty.call(value, key);
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+/** Values are primitives by the time they are compared; strict equality is enough. */
+function sameValue(left: unknown, right: unknown): boolean {
+  return left === right || (typeof left === "number" && typeof right === "number" && Number.isNaN(left) && Number.isNaN(right));
+}
+
+/** A setting must be a string with actual content; the original text is preserved. */
+function requireText(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new ConfigError("INVALID_TEXT", `\`${label}\` must be a non-empty string`);
+  }
+  return value;
+}
+
+function requireInteger(value: unknown, label: string, minimum: number): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < minimum) {
+    throw new ConfigError("INVALID_NUMBER", `\`${label}\` must be an integer >= ${minimum}`);
+  }
+  return value;
+}
+
+/**
+ * Resolve each logical setting to a single raw value, rejecting documents that
+ * name one setting twice with disagreeing values.
+ */
+function resolveSettings(input: Record<string, unknown>): Map<Setting, unknown> {
+  const resolved = new Map<Setting, unknown>();
+
+  for (const setting of SETTINGS) {
+    const present = SPELLINGS[setting].filter((spelling) => hasOwn(input, spelling));
+    if (present.length === 0) continue;
+
+    const values = present.map((spelling) => input[spelling]);
+    for (let i = 1; i < values.length; i += 1) {
+      if (!sameValue(values[0], values[i])) {
+        throw new ConfigError(
+          "AMBIGUOUS_SETTING",
+          `setting "${setting}" is spelled more than once with different values: ${present.join(", ")}`,
+        );
+      }
+    }
+    resolved.set(setting, values[0]);
+  }
+
+  return resolved;
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (!isPlainObject(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1. Every key must name a setting the legacy convention actually defines.
+  for (const key of Object.keys(input)) {
+    if (!SETTING_OF_KEY.has(key)) {
+      throw new ConfigError("UNKNOWN_SETTING", `unknown setting "${key}"`);
+    }
+  }
+
+  // 2. Normalize spellings and settle ambiguity before interpreting any value.
+  const resolved = resolveSettings(input);
+
+  // 3. Validate the values the document actually provides.
+  const name = resolved.has("name")
+    ? requireText(resolved.get("name"), "name")
+    : (() => {
+        throw new ConfigError("MISSING_NAME", "the service name must be provided");
+      })();
+  const endpoint = resolved.has("endpoint")
+    ? requireText(resolved.get("endpoint"), "endpoint")
+    : (() => {
+        throw new ConfigError("MISSING_ENDPOINT", "the endpoint must be provided");
+      })();
+  const retries = resolved.has("retries")
+    ? requireInteger(resolved.get("retries"), "retries", 0)
+    : DEFAULT_RETRIES;
+  const timeoutMs = resolved.has("timeoutMs")
+    ? requireInteger(resolved.get("timeoutMs"), "timeoutMs", 1)
+    : DEFAULT_TIMEOUT_MS;
+
+  // 4. Only now, with everything validated, produce the v2 document.
+  return {
+    schemaVersion: 2,
+    service: { name, endpoint },
+    policy: { retries, timeoutMs },
+  };
+}

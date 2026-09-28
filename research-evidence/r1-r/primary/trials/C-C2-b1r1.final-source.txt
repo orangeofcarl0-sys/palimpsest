@@ -1,0 +1,136 @@
+/**
+ * R1-R §6/§8 — SCENARIO C.
+ *
+ * Replay a durable event log into the store's current state.
+ *
+ * The contract implemented here:
+ *
+ *  1. ESTABLISH REPLAY VALIDITY BEFORE WRITING ANYTHING. The whole delivered stream is checked
+ *     first; the caller's state is only touched once the history is known to be replayable. A
+ *     rejected history therefore leaves the caller's object exactly as it was handed over — the
+ *     caller owns that object and may still be holding it.
+ *  2. REPLAY IN LOG ORDER, NOT ARRIVAL ORDER. The transport may hand the array over in any order;
+ *     the position "seq" the log assigned is the only ordering that counts. Events are replayed in
+ *     ascending seq, so two replicas holding the same events end up in the same state no matter
+ *     what order the transport used.
+ *  3. DUPLICATE DELIVERY IS IDEMPOTENT. The log is durable, so the same event may arrive more than
+ *     once: a repeated seq with the same effect is applied once. A seq reused for a DIFFERENT
+ *     effect is a conflicting history and is rejected, since two different events cannot occupy
+ *     the same log position.
+ *  4. THE CALLER'S OBJECT IS UPDATED IN PLACE and returned, so the caller keeps reading the same
+ *     reference it already holds.
+ *  5. DELIVERY NEED NOT BE COMPLETE. A replica may be handed a subset of the log (any order, with
+ *     re-deliveries); the same subset replays to the same state on every replica. Nothing here
+ *     assumes the delivered positions are contiguous.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Operation = "SET" | "DELETE";
+
+/** The normalized effect an event has on the state, independent of how it was spelled. */
+interface Effect {
+  readonly id: string;
+  readonly op: Operation;
+  readonly value: unknown;
+}
+
+const isRecord = (candidate: unknown): candidate is Record<string, unknown> =>
+  candidate !== null && typeof candidate === "object" && !Array.isArray(candidate);
+
+const opOf = (event: Event): string => {
+  const declared = event.op ?? event.kind ?? "SET";
+  // "kind" is an alias for "op", and "PUT" is the log's name for a write.
+  return declared === "PUT" ? "SET" : declared;
+};
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/** Order-insensitive serialization, used only to tell a re-delivery from a conflict. */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return "{" + Object.keys(record).sort().map((key) => JSON.stringify(key) + ":" + canonical(record[key])).join(",") + "}";
+  }
+  return JSON.stringify(value) ?? "null";
+};
+
+const sameEffect = (left: Effect, right: Effect): boolean =>
+  left.id === right.id && left.op === right.op && canonical(left.value) === canonical(right.value);
+
+/**
+ * Apply an event stream to the current state.
+ *
+ * The stream is validated and replayed into a private working copy; only a history that passes
+ * every check is committed to the caller's object.
+ */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (!isRecord(state)) throw new StreamError("INVALID_STATE", "the state to reduce into must be an object");
+  if (!Array.isArray(events)) throw new StreamError("INVALID_STREAM", "the event stream must be an array");
+
+  // Phase 1 — establish replay validity. Nothing below touches the caller's state.
+  const log = new Map<number, Effect>();
+  for (const event of events) {
+    if (!isRecord(event)) throw new StreamError("INVALID_EVENT", "every event must be an object");
+    if (typeof event.id !== "string" || event.id.length === 0) throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    if (typeof event.seq !== "number" || !Number.isSafeInteger(event.seq) || event.seq < 0) {
+      throw new StreamError("INVALID_POSITION", "every event must carry the non-negative integer position the log assigned it");
+    }
+
+    const op = opOf(event as unknown as Event);
+    if (op !== "SET" && op !== "DELETE") throw new StreamError("INVALID_OPERATION", "unsupported operation " + JSON.stringify(op));
+
+    const effect: Effect = { id: event.id, op, value: op === "DELETE" ? null : valueOf(event as unknown as Event) };
+    const seen = log.get(event.seq);
+    if (seen === undefined) log.set(event.seq, effect);
+    else if (!sameEffect(seen, effect)) {
+      throw new StreamError("CONFLICTING_POSITION", "the log position " + event.seq + " is claimed by two different events");
+    }
+    // Otherwise this is the durable log re-delivering an event we already hold: apply it once.
+  }
+
+  // Phase 2 — replay the log in the order the log itself assigned.
+  const ordered = [...log.entries()].sort((left, right) => left[0] - right[0]);
+  const result = new Map<string, unknown>();
+  for (const key of Object.keys(state)) result.set(key, state[key]);
+  for (const [, effect] of ordered) {
+    if (effect.op === "DELETE") result.delete(effect.id);
+    else result.set(effect.id, effect.value);
+  }
+
+  // Phase 3 — commit to the caller's object, which the caller still owns and goes on reading.
+  for (const key of Object.keys(state)) if (!result.has(key)) delete state[key];
+  // A defined property rather than a plain assignment, so that an entity id like "__proto__"
+  // becomes an ordinary key instead of rewriting the object's prototype.
+  for (const [key, value] of result) Object.defineProperty(state, key, { value, writable: true, enumerable: true, configurable: true });
+
+  return state;
+}

@@ -116,7 +116,16 @@ export function listFiles(root) {
  * The fixture's `acceptance.mjs` is deliberately NOT among the copied files: it lives one level ABOVE
  * the fixture's world-copyable set. See `WORLD_EXCLUDES`.
  */
-const WORLD_EXCLUDES = Object.freeze(["acceptance.mjs"]);
+/**
+ * Files that must NOT be copied into a worker's world.
+ *
+ * `acceptance.mjs` is the hidden acceptance itself. `acceptance.d.mts` is its TYPE DECLARATION — harness
+ * scaffolding added so the TypeScript tests can import the `.mjs` under `noImplicitAny`. It names
+ * `migrateConfigReference` and `applyEventStreamReference`, so copying it would leak the reference
+ * implementation's identity into the world; the accessibility check caught exactly that, which is why
+ * the exclusion is a list of names rather than a single literal.
+ */
+const WORLD_EXCLUDES = Object.freeze(["acceptance.mjs", "acceptance.d.mts"]);
 
 export function buildWorld(scenario, dir) {
   rmSync(dir, { recursive: true, force: true });

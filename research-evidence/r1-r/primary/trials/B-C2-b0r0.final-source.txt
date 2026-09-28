@@ -1,0 +1,185 @@
+/**
+ * Migrate a legacy configuration document to the v2 shape.
+ *
+ * The legacy format is hand-written and admits several spellings for the same setting
+ * ("name"/"service_name"/"title", "endpoint"/"url"/"base_url"/"host",
+ * "retry"/"retries"/"retryCount"/"attempts", "timeout"/"timeout_ms"/"timeoutMs").
+ * A faithful migration has to end up MEANING what the legacy document meant, so the order
+ * in which the legacy document is read is part of the contract:
+ *
+ *   1. reject spellings the legacy format does not define            (unknown fields)
+ *   2. normalize the spellings actually used and reject a setting    (ambiguity)
+ *      that is specified more than once with values that disagree
+ *   3. read and validate every value the document carries
+ *   4. only then fill the v2 defaults in for settings that were absent
+ *
+ * Defaulting (step 4) before validating (steps 1-3) silently replaces an operator's
+ * malformed or self-contradictory value with a default, changing the meaning of the
+ * document without saying so. The nullish-coalescing chains that a literal reading of the
+ * goal invites are exactly that mistake: they pick the first spelling they recognise and
+ * let the rest of the document disagree in silence.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/**
+ * Every spelling the legacy format is documented to use, grouped by the v2 setting it
+ * carries. Spellings are compared after normalization, so "timeout_ms", "timeoutMs" and
+ * "TIMEOUT_MS" all name the same setting, and a document that uses two of them at once is
+ * ambiguous rather than "first one wins".
+ */
+const SETTINGS = {
+  name: ["name", "service_name", "title"],
+  endpoint: ["endpoint", "url", "base_url", "host"],
+  retries: ["retry", "retries", "retryCount", "attempts"],
+  timeoutMs: ["timeout", "timeout_ms", "timeoutMs"],
+};
+
+type Setting = keyof typeof SETTINGS;
+
+const SETTING_NAMES = Object.keys(SETTINGS) as Setting[];
+
+/** Lower-case a spelling and drop its separators, so its variants collapse onto one key. */
+function normalizeSpelling(spelling: string): string {
+  return spelling.toLowerCase().replace(/[_-]/g, "");
+}
+
+/** The setting a document key names, or undefined when the legacy format has no such field. */
+function settingFor(key: string): Setting | undefined {
+  const normalized = normalizeSpelling(key);
+  for (const setting of SETTING_NAMES) {
+    if (SETTINGS[setting].some((spelling) => normalizeSpelling(spelling) === normalized)) {
+      return setting;
+    }
+  }
+  return undefined;
+}
+
+/** A stable rendering of a legacy value, used to decide whether two spellings agree. */
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return (
+      "{" +
+      Object.keys(record)
+        .sort()
+        .map((key) => JSON.stringify(key) + ":" + canonical(record[key]))
+        .join(",") +
+      "}"
+    );
+  }
+  return JSON.stringify(value) ?? "null";
+}
+
+interface LegacyValue {
+  readonly present: boolean;
+  readonly value: unknown;
+}
+
+const ABSENT: LegacyValue = { present: false, value: undefined };
+
+/** Group the spellings the document actually uses by the setting they name. */
+function collectSettings(input: Record<string, unknown>): Map<Setting, { spelling: string; value: unknown }[]> {
+  const bySetting = new Map<Setting, { spelling: string; value: unknown }[]>();
+  for (const key of Object.keys(input)) {
+    const setting = settingFor(key);
+    if (setting === undefined) {
+      throw new ConfigError(
+        "UNKNOWN_FIELD",
+        "the legacy format does not define the field " + JSON.stringify(key),
+      );
+    }
+    const value = input[key];
+    // An explicit undefined is a JavaScript artefact, not something a legacy document can
+    // say; read it the way a missing key reads.
+    if (value === undefined) continue;
+    const entries = bySetting.get(setting);
+    if (entries === undefined) bySetting.set(setting, [{ spelling: key, value }]);
+    else entries.push({ spelling: key, value });
+  }
+  return bySetting;
+}
+
+/**
+ * Read one setting, first checking that the document does not specify it twice with values
+ * that disagree. Agreeing spellings are redundant, not ambiguous: either one yields the same
+ * migrated document, so the meaning the operator wrote survives.
+ */
+function readSetting(
+  bySetting: Map<Setting, { spelling: string; value: unknown }[]>,
+  setting: Setting,
+): LegacyValue {
+  const entries = bySetting.get(setting);
+  if (entries === undefined || entries.length === 0) return ABSENT;
+  const first = entries[0];
+  for (const other of entries.slice(1)) {
+    if (canonical(first.value) !== canonical(other.value)) {
+      const spellings = entries.map((entry) => JSON.stringify(entry.spelling)).join(", ");
+      throw new ConfigError(
+        "AMBIGUOUS_FIELD",
+        setting + " is specified more than once (" + spellings + ") with values that disagree",
+      );
+    }
+  }
+  return { present: true, value: first.value };
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // Validate the legacy document first: its fields, its internal consistency, its values.
+  const bySetting = collectSettings(input);
+  const name = readSetting(bySetting, "name");
+  const endpoint = readSetting(bySetting, "endpoint");
+  const retries = readSetting(bySetting, "retries");
+  const timeoutMs = readSetting(bySetting, "timeoutMs");
+
+  if (!name.present || typeof name.value !== "string" || name.value.length === 0) {
+    throw new ConfigError("INVALID_NAME", "the service name must be a non-empty string");
+  }
+  if (!endpoint.present || typeof endpoint.value !== "string" || endpoint.value.length === 0) {
+    throw new ConfigError("INVALID_ENDPOINT", "the endpoint must be a non-empty string");
+  }
+  if (retries.present && (typeof retries.value !== "number" || !Number.isInteger(retries.value) || retries.value < 0)) {
+    throw new ConfigError(
+      "INVALID_RETRIES",
+      "the retry count must be a non-negative integer, got " + canonical(retries.value),
+    );
+  }
+  if (timeoutMs.present && (typeof timeoutMs.value !== "number" || !Number.isInteger(timeoutMs.value) || timeoutMs.value <= 0)) {
+    throw new ConfigError(
+      "INVALID_TIMEOUT",
+      "the timeout must be a positive integer number of milliseconds, got " + canonical(timeoutMs.value),
+    );
+  }
+
+  // Only now, with the legacy document fully validated, produce the v2 document.
+  return {
+    schemaVersion: 2,
+    service: { name: name.value as string, endpoint: endpoint.value as string },
+    policy: {
+      retries: retries.present ? (retries.value as number) : DEFAULT_RETRIES,
+      timeoutMs: timeoutMs.present ? (timeoutMs.value as number) : DEFAULT_TIMEOUT_MS,
+    },
+  };
+}

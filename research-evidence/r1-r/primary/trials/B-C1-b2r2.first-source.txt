@@ -1,0 +1,169 @@
+/**
+ * Migrate a legacy configuration document to the v2 shape.
+ *
+ * Acceptance contract (as revealed by test/cases.json and the documented legacy conventions):
+ *
+ *   1. The document is a plain object whose keys are hand-written.  Legacy deployments use several
+ *      SPELLINGS for the same setting, so keys are matched by a normalized form (case folded and
+ *      separators removed) against the documented aliases:
+ *
+ *          name      <- name, service_name, title
+ *          endpoint  <- endpoint, url, base_url, host
+ *          retries   <- retry, retries, retryCount, attempts
+ *          timeoutMs <- timeout, timeout_ms, timeoutMs
+ *
+ *   2. Every setting MUST be read before any default is applied.  A value that is present but not a
+ *      valid value for its setting is a REJECTION, never silently replaced by a default.
+ *
+ *   3. Two spellings of the same setting that DISAGREE make the document ambiguous and it is
+ *      rejected; two spellings that agree simply denote the same setting.
+ *
+ *   4. Unknown keys are rejected: the migrated document must be a faithful reading of the original.
+ *
+ *   5. Bounds: retries is a non-negative integer, timeoutMs a positive number, name and endpoint
+ *      non-empty strings.  Defaults (retries 3, timeoutMs 30000) apply only when a setting is absent.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+type Setting = "name" | "endpoint" | "retries" | "timeoutMs";
+
+/**
+ * Fold a hand-written key to a stable token: lowercase and drop every non-alphanumeric character.
+ * That makes the documented alternatives equivalent regardless of case and separator style, e.g.
+ * `timeout_ms`, `timeoutMs`, `TimeoutMS` and `timeout-ms` all fold to `timeoutms`, and
+ * `service_name` / `serviceName` / `Service Name` all fold to `servicename`.
+ */
+function foldKey(key: string): string {
+  return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const SETTING_BY_FOLDED_KEY: ReadonlyMap<string, Setting> = (() => {
+  const map = new Map<string, Setting>();
+  const register = (setting: Setting, spellings: readonly string[]): void => {
+    for (const spelling of spellings) map.set(foldKey(spelling), setting);
+  };
+  register("name", ["name", "service_name", "title"]);
+  register("endpoint", ["endpoint", "url", "base_url", "host"]);
+  register("retries", ["retry", "retries", "retryCount", "attempts"]);
+  register("timeoutMs", ["timeout", "timeout_ms", "timeoutMs"]);
+  return map;
+})();
+
+/** Structural (order-insensitive) equality for the JSON values a legacy document can hold. */
+function sameValue(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+  if (typeof left !== "object" || typeof right !== "object" || left === null || right === null) return false;
+  const leftIsArray = Array.isArray(left);
+  if (leftIsArray !== Array.isArray(right)) return false;
+  if (leftIsArray) {
+    const a = left as unknown[];
+    const b = right as unknown[];
+    return a.length === b.length && a.every((item, index) => sameValue(item, b[index]));
+  }
+  const a = left as Record<string, unknown>;
+  const b = right as Record<string, unknown>;
+  const keys = Object.keys(a);
+  if (keys.length !== Object.keys(b).length) return false;
+  return keys.every((key) => Object.prototype.hasOwnProperty.call(b, key) && sameValue(a[key], b[key]));
+}
+
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // Phase 1 — read every key by its folded spelling and refuse anything the legacy format does not
+  // define.  Settings are collected (not defaulted) so ambiguity can be judged first.
+  const valuesBySetting = new Map<Setting, unknown[]>();
+  for (const key of Object.keys(input)) {
+    const setting = SETTING_BY_FOLDED_KEY.get(foldKey(key));
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_KEY", `unknown configuration key: ${JSON.stringify(key)}`);
+    }
+    const seen = valuesBySetting.get(setting);
+    const value = (input as Record<string, unknown>)[key];
+    if (seen === undefined) valuesBySetting.set(setting, [value]);
+    else seen.push(value);
+  }
+
+  // Phase 2 — a setting written more than once must read the same way every time.
+  for (const [setting, values] of valuesBySetting) {
+    const first = values[0];
+    for (const value of values) {
+      if (!sameValue(value, first)) {
+        throw new ConfigError(
+          "AMBIGUOUS_SETTING",
+          `the ${setting} setting is written more than once with different values`,
+        );
+      }
+    }
+  }
+
+  // Phase 3 — validate the explicit values, defaulting only when a setting is absent.
+  const explicit = (setting: Setting): unknown | undefined => {
+    const values = valuesBySetting.get(setting);
+    return values === undefined ? undefined : values[0];
+  };
+
+  const nameValue = explicit("name");
+  if (nameValue === undefined) {
+    throw new ConfigError("INVALID_NAME", "the service name must be a non-empty string");
+  }
+  if (typeof nameValue !== "string" || nameValue.trim() === "") {
+    throw new ConfigError("INVALID_NAME", "the service name must be a non-empty string");
+  }
+
+  const endpointValue = explicit("endpoint");
+  if (endpointValue === undefined) {
+    throw new ConfigError("INVALID_ENDPOINT", "the endpoint must be a non-empty string");
+  }
+  if (typeof endpointValue !== "string" || endpointValue.trim() === "") {
+    throw new ConfigError("INVALID_ENDPOINT", "the endpoint must be a non-empty string");
+  }
+
+  const retriesValue = explicit("retries");
+  let retries: number;
+  if (retriesValue === undefined) {
+    retries = DEFAULT_RETRIES;
+  } else {
+    if (typeof retriesValue !== "number" || !Number.isInteger(retriesValue) || retriesValue < 0) {
+      throw new ConfigError("INVALID_RETRIES", "retries must be a non-negative integer");
+    }
+    retries = retriesValue;
+  }
+
+  const timeoutValue = explicit("timeoutMs");
+  let timeoutMs: number;
+  if (timeoutValue === undefined) {
+    timeoutMs = DEFAULT_TIMEOUT_MS;
+  } else {
+    if (typeof timeoutValue !== "number" || !Number.isFinite(timeoutValue) || timeoutValue <= 0) {
+      throw new ConfigError("INVALID_TIMEOUT", "timeoutMs must be a positive number");
+    }
+    timeoutMs = timeoutValue;
+  }
+
+  return {
+    schemaVersion: 2,
+    service: { name: nameValue, endpoint: endpointValue },
+    policy: { retries, timeoutMs },
+  };
+}

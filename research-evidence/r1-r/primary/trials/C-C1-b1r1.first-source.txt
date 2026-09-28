@@ -1,0 +1,174 @@
+/**
+ * Applying a durable event log to the store's current state.
+ *
+ * The log - not the array the transport happened to deliver - is the source of truth, so a
+ * replay only produces the same state on every replica when three things hold:
+ *
+ *   1. VALIDATE BEFORE REDUCING. Every event is checked (identity, log position, operation,
+ *      and the uniqueness of that position) BEFORE the caller's object is touched. A history
+ *      that is invalid anywhere is rejected whole, and a rejected call leaves the caller's
+ *      state exactly as it was handed over. Reducing as it validates would leave the caller
+ *      holding a half-applied object that no replica's log implies.
+ *
+ *   2. APPLY IN THE LOG'S OWN ORDER. Events are applied in ascending seq, never in delivery
+ *      order. The array a replica receives is whatever the transport delivered, so the same
+ *      two events can arrive in either order; only one of those orders is the log's, and an
+ *      entity written at one position and deleted at a later one depends on it.
+ *
+ *   3. APPLY EACH LOG POSITION ONCE. The log is durable, so the same event may be delivered
+ *      more than once; a repeated delivery is recognised and folded in exactly once. The same
+ *      position carrying DIFFERENT content is not one log entry but a corrupt history: no
+ *      order can be derived from it, so replicas would disagree. It is rejected rather than
+ *      silently resolved.
+ *
+ * Everything is validated and staged first; the caller's object is mutated only once the whole
+ * stream has been accepted, and it is mutated in place because the caller keeps reading the
+ * object it handed over.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** Every operation the log defines. PUT is the log's alias for a write. */
+const OPERATIONS = new Set<string>(["SET", "PUT", "DELETE"]);
+
+/** Marker staged for an entity the log deletes. */
+const REMOVE = Symbol("remove");
+
+const rawOpOf = (event: Event): unknown => event.op ?? event.kind ?? "SET";
+
+const valueOf = (event: Event): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/**
+ * Key-order-insensitive encoding of a delivered event, used to tell a re-delivery of one log
+ * entry (identical content) from two different entries claiming the same position.
+ */
+const fingerprintOf = (value: unknown, path: Set<unknown> = new Set<unknown>()): string => {
+  if (value === null) return "null";
+  switch (typeof value) {
+    case "string":
+      return JSON.stringify(value);
+    case "number":
+    case "boolean":
+      return String(value);
+    case "undefined":
+      return "undefined";
+    case "bigint":
+      return String(value) + "n";
+    case "symbol":
+      return String(value);
+    case "function":
+      return "function";
+    default:
+      break;
+  }
+  if (path.has(value)) return "[circular]";
+  path.add(value);
+  let encoded: string;
+  if (Array.isArray(value)) {
+    encoded = "[" + value.map((item) => fingerprintOf(item, path)).join(",") + "]";
+  } else {
+    const record = value as Record<string, unknown>;
+    const parts: string[] = [];
+    for (const key of Object.keys(record).sort()) {
+      parts.push(JSON.stringify(key) + ":" + fingerprintOf(record[key], path));
+    }
+    encoded = "{" + parts.join(",") + "}";
+  }
+  path.delete(value);
+  return encoded;
+};
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (state === null || typeof state !== "object") {
+    throw new StreamError("INVALID_STATE", "the state to reduce must be an object");
+  }
+  if (events === null || typeof events !== "object") {
+    throw new StreamError("INVALID_STREAM", "the event stream must be an array of events");
+  }
+
+  // --- 1. Establish replay validity first. Nothing here touches the caller's object. -----
+  const accepted = new Map<number, string>();
+  const log: Event[] = [];
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object" || Array.isArray(event)) {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    if (typeof event.seq !== "number" || !Number.isInteger(event.seq) || event.seq < 0) {
+      throw new StreamError(
+        "INVALID_SEQUENCE",
+        "every event must carry the non-negative integer position the log assigned it",
+      );
+    }
+    const op = rawOpOf(event);
+    if (typeof op !== "string" || !OPERATIONS.has(op)) {
+      throw new StreamError("INVALID_OPERATION", "unsupported operation " + JSON.stringify(op));
+    }
+
+    const fingerprint = fingerprintOf(event);
+    const alreadySeen = accepted.get(event.seq);
+    if (alreadySeen === undefined) {
+      accepted.set(event.seq, fingerprint);
+      log.push(event);
+    } else if (alreadySeen !== fingerprint) {
+      throw new StreamError(
+        "CONFLICTING_SEQUENCE",
+        "position " + event.seq + " was delivered as two different events",
+      );
+    }
+    // Otherwise this is the same durable entry delivered again: it is applied exactly once.
+  }
+
+  // --- 2. Stage the replay in the log's own order. --------------------------------------
+  log.sort((left, right) => left.seq - right.seq);
+
+  const staged = new Map<string, unknown>();
+  for (const event of log) {
+    staged.set(event.id, rawOpOf(event) === "DELETE" ? REMOVE : valueOf(event));
+  }
+
+  // --- 3. Commit. Only an accepted history reaches the caller's object, and it is committed
+  //        in place because the caller goes on reading the object it handed over. ---------
+  for (const [id, value] of staged) {
+    if (value === REMOVE) {
+      delete state[id];
+    } else if (id === "__proto__") {
+      Object.defineProperty(state, id, { value, writable: true, enumerable: true, configurable: true });
+    } else {
+      state[id] = value;
+    }
+  }
+
+  return state;
+}

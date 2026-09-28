@@ -1,0 +1,146 @@
+/**
+ * R1-R §5/§8 — SCENARIO B, THE DISCOVERED METHOD.
+ *
+ * `migrateConfig` reads a hand-written LEGACY document and produces the v2 shape. The legacy
+ * conventions are only partly documented, so the migration applies three rules, strictly in order:
+ *
+ *   1. CANONICALIZE EVERY SPELLING FIRST. Operators hand-write the same setting as `service_name`,
+ *      `serviceName`, `Service Name`, `SERVICE-NAME`, ... Every key is folded to its bare
+ *      alphanumeric form and looked up in the alias table below. A key that folds to no known setting
+ *      is refused: an unreadable setting cannot be migrated faithfully, so it must not be guessed at
+ *      or silently dropped.
+ *
+ *   2. REFUSE AMBIGUITY. If one setting is spelled more than once, the spellings must agree about its
+ *      value. Spellings that disagree describe two different documents, and picking either one would
+ *      change what the operator meant; agreeing spellings are merely redundant, not ambiguous.
+ *
+ *   3. VALIDATE, THEN DEFAULT. Every value that is actually present is checked (name/endpoint
+ *      non-empty strings, retries a non-negative integer, timeoutMs a positive integer) BEFORE any
+ *      default is filled in, and defaults are only ever filled in for settings that are absent.
+ *      Defaults never paper over a value the operator really wrote.
+ *
+ * Values are copied through untouched, so the returned document is a faithful reading of the input;
+ * the defaults are the only values the migration invents.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** Every setting a legacy document may carry, with each documented spelling of it. */
+const ALIASES = {
+  name: ["name", "service_name", "title"],
+  endpoint: ["endpoint", "url", "base_url", "host"],
+  retries: ["retry", "retries", "retryCount", "attempts"],
+  timeoutMs: ["timeout", "timeout_ms", "timeoutMs"],
+} as const;
+
+type Setting = keyof typeof ALIASES;
+
+/** `service_name`, `serviceName`, `Service-Name` and `SERVICE NAME` all fold to `servicename`. */
+function foldSpelling(key: string): string {
+  return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+const SETTING_BY_SPELLING: ReadonlyMap<string, Setting> = (() => {
+  const table = new Map<string, Setting>();
+  for (const setting of Object.keys(ALIASES) as Setting[]) {
+    for (const spelling of ALIASES[setting]) table.set(foldSpelling(spelling), setting);
+  }
+  return table;
+})();
+
+interface Spelling {
+  readonly key: string;
+  readonly value: unknown;
+}
+
+/** Two spellings agree only when they name the very same value. */
+function sameValue(left: unknown, right: unknown): boolean {
+  if (Object.is(left, right)) return true;
+  if (left !== null && right !== null && typeof left === "object" && typeof right === "object") {
+    try {
+      return JSON.stringify(left) === JSON.stringify(right);
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
+function requireText(value: unknown, setting: Setting): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new ConfigError(`INVALID_${setting.toUpperCase()}`, `the service ${setting} must be a non-empty string`);
+  }
+  return value;
+}
+
+function requireRetries(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ConfigError("INVALID_RETRIES", "retries must be a non-negative integer");
+  }
+  return value;
+}
+
+function requireTimeout(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new ConfigError("INVALID_TIMEOUT", "timeoutMs must be a positive integer");
+  }
+  return value;
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1. Canonicalize every spelling; refuse anything the legacy conventions do not define.
+  const spellingsBySetting = new Map<Setting, Spelling[]>();
+  for (const key of Object.keys(input)) {
+    const setting = SETTING_BY_SPELLING.get(foldSpelling(key));
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_SETTING", `unsupported configuration setting ${JSON.stringify(key)}`);
+    }
+    const spellings = spellingsBySetting.get(setting);
+    if (spellings === undefined) spellingsBySetting.set(setting, [{ key, value: input[key] }]);
+    else spellings.push({ key, value: input[key] });
+  }
+
+  // 2. Redundant spellings must agree; disagreeing ones make the document ambiguous.
+  const settings = new Map<Setting, unknown>();
+  for (const [setting, spellings] of spellingsBySetting) {
+    const chosen = spellings[0]!.value;
+    for (const spelling of spellings) {
+      if (!sameValue(chosen, spelling.value)) {
+        throw new ConfigError(
+          "AMBIGUOUS_SETTING",
+          `the ${setting} setting is spelled ${spellings.map((entry) => JSON.stringify(entry.key)).join(" and ")} with different values`,
+        );
+      }
+    }
+    settings.set(setting, chosen);
+  }
+
+  // 3. Validate what is present, then default only what is absent.
+  const name = requireText(settings.get("name"), "name");
+  const endpoint = requireText(settings.get("endpoint"), "endpoint");
+  const retries = settings.has("retries") ? requireRetries(settings.get("retries")) : DEFAULT_RETRIES;
+  const timeoutMs = settings.has("timeoutMs") ? requireTimeout(settings.get("timeoutMs")) : DEFAULT_TIMEOUT_MS;
+
+  return { schemaVersion: 2, service: { name, endpoint }, policy: { retries, timeoutMs } };
+}

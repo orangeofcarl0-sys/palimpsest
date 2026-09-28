@@ -1,0 +1,3813 @@
+{
+  "schemaVersion": 1,
+  "expected": 30,
+  "completed": 30,
+  "trials": [
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C2-b0r0",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C2",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "129267cd6a0dbdc58bfedb8afc4d3f30dcf8cc43",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "49a81d16de6416c9dad41fca92bd512121a97e2db8193a59be237f32d159ca16"
+      },
+      "jobId": "wdj-1a99b279-4ee1-41c2-bb97-0dbf2395e9ab",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-4e0b02da6da7c134e1303ec5e186a494",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 129267cd6a0dbdc58bfedb8afc4d3f30dcf8cc43\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts to read the legacy document before transforming it: it rejects spellings the legacy format does not define, normalizes key spellings (case/separator variants) and refuses a setting specified more than once with disagreeing values, then validates every value the document carries (required non-empty name/endpoint; non-negative integer retries; positive integer timeoutMs) before filling the v2 defaults, raising typed ConfigError codes throughout. Only src/config.ts is touched.",
+        "escalationReason": "",
+        "transcriptBytes": 1128
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7516,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 175937,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C0-b0r0",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C0",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "a143b17fc303c90b4e675c42cb65fa131a741205",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "fd2f9c6814999b64f061c4d336790fc1f06e0297777012b808778cf696650401"
+      },
+      "jobId": "wdj-e6c8856e-8bf2-4865-b2d2-5ddb33416afb",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-58634bf6300555555861d66f13557b92",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: a143b17fc303c90b4e675c42cb65fa131a741205\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote src/config.ts so migrateConfig normalizes legacy key spellings and their case/separator variants into settings, rejects documents that read a setting two different ways (ambiguous) or declare unknown settings, validates every declared value in its own domain (non-empty strings for name/endpoint, whole retries >= 0, positive whole timeoutMs) before any defaulting, and only then applies the v2 policy defaults. The only change is to src/config.ts, committed as bff341d in the worktree.",
+        "escalationReason": "",
+        "transcriptBytes": 1105
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7879,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 175713,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C1-b0r0",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C1",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "b0d813b7ee4fa5ab22e03706195af062f4aeadb8",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "0a8521ff53d1cbf94aed3fff66b70f601759ee6cea8781a393e1b015791b99e7"
+      },
+      "jobId": "wdj-4d52a2cd-2a35-4c43-965c-bf2604b156dd",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-ae17211c7b087332076806c6a797fac2",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: b0d813b7ee4fa5ab22e03706195af062f4aeadb8\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts (only file changed, committed in the worktree). It now (1) requires a plain-object input and rejects unknown keys, (2) resolves every documented spelling synonym to its one logical setting and rejects documents that name a setting more than once with disagreeing values while accepting agreeing duplicates, (3) validates values the document actually provides (non-empty name/endpoint, integer retries >= 0, integer timeoutMs >= 1) before (4) applying defaults only for settings the document omits.",
+        "escalationReason": "",
+        "transcriptBytes": 1147
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5604,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 19,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 19,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 149966,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C0-b1r1",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C0",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "67dae482afa378ed9713672dffce11fb1c7f2305",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "e517bac116d87f00e5bda11e05cf5e1bac09c1e76f4a9ceee855f0c9750fb90b"
+      },
+      "jobId": "wdj-c3942e11-bbb5-4cfd-9218-82b1a3822743",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-5dde386751ef289d892d7b410ebdd871",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 67dae482afa378ed9713672dffce11fb1c7f2305\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished migrateConfig in src/config.ts: legacy key spellings are normalized (case/separator-insensitive) and mapped to canonical settings, every provided value is validated before any default is applied, documents that spell one setting several times with disagreeing values are refused as ambiguous, and keys outside the closed legacy schema are refused instead of silently dropped. Changes are committed in this worktree.",
+        "escalationReason": "",
+        "transcriptBytes": 1035
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7347,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 162230,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C1-b1r1",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C1",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "eed96475dc10c6ed6c07d13477818d50614fa7f2",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "29db2f57a0bec0cbddacb40b373f05915c23d527d5b6d4905a35068f640238a7"
+      },
+      "jobId": "wdj-c12bd93e-9d61-44a4-845e-c82b785968f7",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-a1774de0fdd99de9753c540e59bb61a3",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: eed96475dc10c6ed6c07d13477818d50614fa7f2\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reworked migrateConfig so it reads a legacy document as a faithful reading: it first normalizes every key's spelling (case/separators plus the documented synonyms), rejects unrecognized keys and documents that name the same setting with more than one spelling (ambiguous), and validates each present value (non-empty name/endpoint, non-negative integer retries, positive timeout) — applying the v2 defaults only afterwards, for settings the document never mentioned.",
+        "escalationReason": "",
+        "transcriptBytes": 1079
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5995,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 184386,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C2-b1r1",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C2",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "7a228e6ac72334fe8ef55b71bb8c52331eb9e494",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "5ac98ae357f0e13784d6793cd212aa7096930a1059e2c1ff96a06c60187f2335"
+      },
+      "jobId": "wdj-4cf4d105-92b8-4f48-9158-f457b28d50a7",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-59de7b182878a3d460432cf2d3e05974",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 7a228e6ac72334fe8ef55b71bb8c52331eb9e494\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts so the legacy document is read on its own terms before anything is renamed or defaulted: every key must be a recognized legacy spelling (normalized for case/separators), no setting may be supplied twice under two spellings, and each value the document actually carries is validated (non-empty string name/endpoint; integer retries >= 0; integer timeout > 0) instead of being silently replaced by a v2 default. Defaults now apply only to omitted optional settings, and the change is committed in the worktree.",
+        "escalationReason": "",
+        "transcriptBytes": 1158
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6159,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 138527,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C1-b2r2",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C1",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "1ef5c36aeba2172386a41044e7cd720ea69b0e44",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "746ee4ae19f5adf172c48e7d03ae85166bf4a9c297847af46493408710c99167"
+      },
+      "jobId": "wdj-108feaf0-9e3f-4bcb-a630-797c674951f5",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-f90d2cfef44c9dbb2a852d2bf46d6a3b",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 1ef5c36aeba2172386a41044e7cd720ea69b0e44\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reimplemented migrateConfig in src/config.ts (committed) to validate the legacy document before transforming/defaulting it: keys are matched to the documented settings (name, endpoint, retries, timeoutMs) by a folded spelling (case- and separator-insensitive, so timeout/timeout_ms/timeoutMs, service_name/serviceName, base_url/baseUrl, retryCount/retry_count all coincide); unknown keys are rejected; multiple spellings of one setting are rejected as ambiguous only when their values disagree, while agreeing duplicates are accepted; explicit values are strictly validated (non-empty string name/end",
+        "escalationReason": "",
+        "transcriptBytes": 1502
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6921,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 172483,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C0-b2r2",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C0",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "a8993ead745604d391a3692d3863729797ccf0c8",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "4b46cc0da05499e76895b624d307d9ad6f4263ac6e7461b1970b26173ac16bda"
+      },
+      "jobId": "wdj-c164a30d-9f99-4332-b08f-729206e5f7b5",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-6e4f8811c3e1c65733b0d43e02cebe52",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: a8993ead745604d391a3692d3863729797ccf0c8\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts so the migration reads a legacy document faithfully: hand-written key spellings are folded to a canonical form (case, spaces, '_' and '-' carry no meaning) and any key naming no legacy setting is rejected; a document that names the same setting twice with disagreeing values is rejected as ambiguous instead of silently picking one spelling; the values the document actually supplies are validated (non-empty text for name/endpoint, non-negative integer retries, positive integer timeout) and only then are the v2 defaults applied, so a default can never hide a",
+        "escalationReason": "",
+        "transcriptBytes": 1460
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5034,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 114781,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C2-b2r2",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C2",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "189a0708bdeb52bb97e125e3d90782d2a673f98d",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "504fe35b65eec887b43dc41584a9d653b03922bde5b7aacfc10953a4996756ef"
+      },
+      "jobId": "wdj-96bdbcdc-28e9-480a-91f2-81c3865c9953",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-da0b9efaad3ae2f9fc89b4cde4e84a49",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 189a0708bdeb52bb97e125e3d90782d2a673f98d\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts around validate-before-transform: keys are matched case- and separator-insensitively against the legacy spellings (name/service_name/title, endpoint/url/base_url/host, retry/retries/retryCount/attempts, timeout/timeout_ms/timeoutMs), a setting named by more than one key is rejected as ambiguous instead of first-key-wins, unknown keys are rejected, name/endpoint must be present non-blank strings, retries must be a non-negative integer and timeoutMs a positive integer, and the v2 defaults (3 / 30000) apply only to genuinely absent policy settings rather tha",
+        "escalationReason": "",
+        "transcriptBytes": 1310
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6509,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 207157,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C0-b3r3",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C0",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "2252a5e632a3571b854f221a505bbb6f1ac036f2",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "a6a21bc59f2f37e25def70bedecac3f119a8731fd36b362308847440756cb087"
+      },
+      "jobId": "wdj-0a3c778b-31af-4e85-87ce-4e4e97a82299",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-eef275082e36bb1c6039e9eacead6f03",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 2252a5e632a3571b854f221a505bbb6f1ac036f2\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts to read legacy documents by meaning rather than by literal key: keys are normalized (case/underscore/dash/space insensitive) and matched to the documented alias words for name, endpoint, retries and timeout; keys the legacy format does not define are refused; a setting named under more than one spelling is refused when the spellings disagree (ambiguous) while agreeing spellings are read as one statement; each stated value is validated (non-empty name/endpoint, whole retries >= 0, positive timeout in ms) before any default is applied, and defaults (3 / 300",
+        "escalationReason": "",
+        "transcriptBytes": 1354
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7133,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 273896,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C1-b3r3",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C1",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "a66c44d0dd6b9f82537ca28501f00b68431e35ed",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "11c10c65a02746f594ed3582508512ccc8d8424a921b8601e6f0f4e02789bff8"
+      },
+      "jobId": "wdj-08ef18c1-9165-49e8-b85a-7f4def689d92",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-0aef7e2a6ef1146a8878dd1ce5858c27",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: a66c44d0dd6b9f82537ca28501f00b68431e35ed\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts so it reads the legacy document before transforming it: it normalizes hand-written key spellings, rejects unknown settings, rejects any setting named twice as ambiguous, validates the values the document actually provides (non-blank name/endpoint, non-negative integer retries, positive integer timeout), and only then applies the v2 defaults for absent settings.",
+        "escalationReason": "",
+        "transcriptBytes": 1013
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5874,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 185940,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C2-b3r3",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C2",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "6cc56cf0d5a5fdeb2c02f396a9e7e34b67a628cf",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "7c34c4391d5c36611cc25f762594dcf35c54bb05051ce2d63cfa250a382f6302"
+      },
+      "jobId": "wdj-9a7a907e-1cef-47fb-8a57-9d4cc8c924c5",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-8753a0a22abb3c17d8a799d8700f0fa3",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 6cc56cf0d5a5fdeb2c02f396a9e7e34b67a628cf\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished migrateConfig in src/config.ts: it now recognizes only known legacy key spellings, resolves each v2 setting by normalizing all of that setting's spellings and rejecting documents whose spellings disagree (ambiguity), validates values that are present before applying defaults, and still requires a non-empty name and endpoint while defaulting only omitted retries/timeoutMs.",
+        "escalationReason": "",
+        "transcriptBytes": 994
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5940,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 19,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 19,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 122342,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C2-b4r4",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C2",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "440a6fc827fd261528a292e9eebedfb9a3c8c8ea",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "05ef8905d0e15714fed05377c91e9098bf6995a7e5509c56298a675a3267d833"
+      },
+      "jobId": "wdj-485d4566-1a93-4a34-ade0-37ae79621772",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-eb2996a0b3fc985a2f4a44635b2c96be",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 440a6fc827fd261528a292e9eebedfb9a3c8c8ea\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts around the discovered pipeline — normalize every legacy spelling onto its canonical v2 setting, refuse documents that name one setting under several spellings or carry unknown keys, validate each present value (non-empty strings; integer retries >= 0; integer timeout >= 1) before applying the defaults (retries 3, timeoutMs 30000) only to settings the document never mentions — instead of the starting point's copy-and-default-first behaviour.",
+        "escalationReason": "",
+        "transcriptBytes": 1098
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6606,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 17,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 17,
+        "total": 21,
+        "failures": [
+          "h15:REJECTED_BUT_SHOULD_ACCEPT",
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 202075,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C0-b4r4",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C0",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "f0b91c774bedb81a32cc15d13828ef21eb2846d8",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "80d9d59aa5a130e100ec24bcd042b383493b27aa34dc785b7d15385a552b00e9"
+      },
+      "jobId": "wdj-905e95ec-2f4e-4fe8-b8bd-c427d65fac79",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-ae818509a386abc36aad84649ee57b7e",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: f0b91c774bedb81a32cc15d13828ef21eb2846d8\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts: every legacy key is resolved to the setting it names after normalizing the spelling (case, '_', '-', '.', spaces insignificant), unknown keys and documents that name one setting more than once are refused as ambiguous, every value the document actually carries is validated (non-blank strings; non-negative integer retries; positive integer timeout) before any default is applied, and only then are the absent settings filled with the v2 defaults (3 / 30000) and the v2 document shaped.",
+        "escalationReason": "",
+        "transcriptBytes": 1135
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5880,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 18,
+        "total": 21,
+        "failures": [
+          "h16:REJECTED_BUT_SHOULD_ACCEPT",
+          "h21:REJECTED_BUT_SHOULD_ACCEPT",
+          "h22:REJECTED_BUT_SHOULD_ACCEPT"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 156001,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "B-C1-b4r4",
+      "scenario": "B_CONFIG_MIGRATION",
+      "condition": "C1",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "transform/default before legacy ambiguity validation",
+      "pairedState": {
+        "scenarioId": "B_CONFIG_MIGRATION",
+        "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+        "repositoryHead": "013ca73ea1c4825ff4b719cd0f5b65da5ba43415",
+        "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+        "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+        "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+        "reasoningCellId": "cell-b",
+        "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+        "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+        "procedureDigest": "e31192107cc9eb52b24a7c3d65b20babb6e7fedfeaef87df6dcf43add4c1abbb"
+      },
+      "jobId": "wdj-b3c798bc-41e3-4cf0-ad90-d4273da3185b",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-e6fd3a7a2aef0ed7f431656ae0360c60",
+      "prompt": {
+        "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+          "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 013ca73ea1c4825ff4b719cd0f5b65da5ba43415\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote migrateConfig in src/config.ts to fold every legacy key to its bare alphanumeric spelling (service_name/serviceName/SERVICE-NAME -> one setting), refuse unknown settings, refuse documents whose spellings of one setting disagree, and validate name/endpoint/retries/timeoutMs before applying defaults only to absent settings; committed as 63b973f.",
+        "escalationReason": "",
+        "transcriptBytes": 964
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6067,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "fe3bec5b8e8584ac186e28e2b3d48a1fccf20182c26776c63e75e07712e6926a",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 21,
+        "total": 21,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "knownFailureFirst": {
+        "detector": "defaultsAppliedBeforeLegacyValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 3
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 151250,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C2-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C2",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "6bbb47d43b7634b82d575361df031881cb07bde9",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "735309fbbbcfe6a7f09da2b066dd9159d55a28b6f16a78492efa03c38ad3113a"
+      },
+      "jobId": "wdj-9184527a-4a19-4055-8f40-ac2276a9b50e",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-f171d2f58c3c68e3f2f03575b9bb8261",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 6bbb47d43b7634b82d575361df031881cb07bde9\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts as a two-phase replay: the whole delivered history is normalized and validated first (event shape, non-empty string id, non-negative integer seq, recognized operation, one consistent event per log position, positions forming the log's continuous sequence 0..n-1) without touching the caller's state, then the deduplicated events are committed to the caller's own object in the log's seq order. Delivery order, reordering and redelivery no longer affect the result, and an invalid history leaves the caller's object untouched.",
+        "escalationReason": "",
+        "transcriptBytes": 1177
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 9094,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 2,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 376665,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C0-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C0",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "339910bd4a9a2dc91c241f2e02a140e28b4d838b",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "1eb4651a7c3310ec0f840b7a2d67e353ec63295010e90f0c37041d9184450dfe"
+      },
+      "jobId": "wdj-901471f2-3759-4748-8315-404cc532c342",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-869557c7b55c60e732f258014d346f4d",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 339910bd4a9a2dc91c241f2e02a140e28b4d838b\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts (committed in this worktree). It now validates the entire delivered delivery before touching anything — every event must be a non-null object with a non-empty string id, a non-negative integer seq and an op of SET/PUT/DELETE, and no position may be claimed by two different events — then replays the steps in ascending seq order rather than delivery order, so reordered, truncated or re-delivered arrays still yield the log's state, while a rejected history leaves the caller's state object untouched and in-place updates are returned to the caller.",
+        "escalationReason": "",
+        "transcriptBytes": 1208
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6519,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 202617,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C1-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C1",
+      "block": 0,
+      "repetition": 0,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "0432c87cc483d5a517bcc71d4c5807071d22d6f3",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "64fa44e1c870c6ee47a77f362d1b317cb86db204a4450d4f0bdc7ba23540f526"
+      },
+      "jobId": "wdj-904266cf-bd00-438b-a4ce-b68f85887955",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-96f3a370e70b34d5e7254decd80a369b",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 0432c87cc483d5a517bcc71d4c5807071d22d6f3\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts as two phases: planReplay() establishes replay validity for the whole delivered history without touching the caller's state (event object, non-empty string id, non-negative integer seq, a defined operation with PUT as the legacy write spelling, a value for a write, and no log position claimed by two different events), then the commit applies those writes in the log's own seq order, so re-delivered events collapse to one write and a rejected history never leaves the caller's object partially applied. Change committed in the worktree (d92aed3); the only",
+        "escalationReason": "",
+        "transcriptBytes": 1307
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6504,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 2,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 238672,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C0-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C0",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "cd461c09b4f09992610891a5d82f471fbb723a31",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "72d6bf123250dfad8e011cad0af5a6ec7acbff4920c1f473e40d1f414f8e299c"
+      },
+      "jobId": "wdj-de46657d-9593-4656-a04e-fde22ea75495",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-365e6563de8dd78e7df7c085215b27ff",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: cd461c09b4f09992610891a5d82f471fbb723a31\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts so a delivery is validated as a whole before the caller's state is touched, then replayed in the log's own seq order: malformed records (non-object events, missing/empty ids, non-integer or negative seq, unknown ops) and self-contradictory deliveries (two different events at one position) are rejected with the caller's object left untouched, identical redeliveries collapse, and the caller's own state object is updated in place and returned.",
+        "escalationReason": "",
+        "transcriptBytes": 1098
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7135,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 277071,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C1-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C1",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "95286f7c1fd561615256aeb60c7d4198da883dc9",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "f5126a0c5fff0edbfaad6b950af1c5bbf85a2c0add88a4fcf5194a9f6cb75722"
+      },
+      "jobId": "wdj-c162ac75-5971-4d9f-b806-5956006df474",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-a4707ea64cacc95e3658b2bf41b57fc2",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 95286f7c1fd561615256aeb60c7d4198da883dc9\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts (committed in the worktree) so a replay is validated before it is applied: the whole delivered stream is checked for object shape, non-empty string id, non-negative integer seq, and a known op; identical re-deliveries of one log position (durable log) are folded in once, while a position delivered with conflicting content is rejected as a corrupt history; accepted events are then staged in ascending seq order, not delivery order, and only then committed in place to the caller's object, so a rejected history leaves the caller's state untouched.",
+        "escalationReason": "",
+        "transcriptBytes": 1203
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6678,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 144284,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C2-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C2",
+      "block": 1,
+      "repetition": 1,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "4eddaf672544dfc36119ee7e3bd95f2268eda4b2",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "804294e4421189baee6423c74751aacc27daf5cb3c8bbd7afbaedacfd7107a98"
+      },
+      "jobId": "wdj-72180d4e-cab9-4fea-8e6c-85f2cd74a138",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-743c3ce02a25022f2b3e1d3d39e9fe68",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 4eddaf672544dfc36119ee7e3bd95f2268eda4b2\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reworked applyEventStream in src/reducer.ts so it first validates the entire delivered history (event shape, non-empty string id, non-negative integer seq, supported op) and only then replays it: events are applied in ascending seq rather than arrival order, a repeated seq with the same effect is treated as idempotent re-delivery and collapsed, a seq reused for a different effect is rejected as a conflicting history, and the caller's state object is updated in place (and returned) so a rejected history leaves it untouched.",
+        "escalationReason": "",
+        "transcriptBytes": 1139
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6337,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 143029,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C1-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C1",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "3b07eeb120ebdf13e92e431b61f5371b09079328",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "3bf72185eeb8d8218b8dac13cee4f57a5311bfad6ffb4fd1c9c8c80b86f8477f"
+      },
+      "jobId": "wdj-ac6f128c-cf07-4e16-a83a-73447f9427da",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-0953058ad2faa872510e9ba221e32188",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 3b07eeb120ebdf13e92e431b61f5371b09079328\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts (the only file changed, committed in this worktree). It now (1) validates the whole delivered history first — every event a record with a non-empty string id, a non-negative integer seq, an op of SET or DELETE (kind accepted as the alternative spelling), and a value for SET under v/value/payload/data — and rejects histories where one log position is claimed by two different events, while still accepting re-delivered identical events; (2) folds the accepted history in ascending seq order on a private draft, so the log's own sequence order decides the ",
+        "escalationReason": "",
+        "transcriptBytes": 1469
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7418,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 271798,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C0-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C0",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "b1a175c99aece5e9487c82802b51caf95f445aa3",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "82321be0a0591b9361ee4716ca3259bfedd2692ab8543fe2a39eb2886acdfc1e"
+      },
+      "jobId": "wdj-314b705d-157b-4e94-8c6c-760a25374953",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-82c271f88e4cb96df467b26067131ac2",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: b1a175c99aece5e9487c82802b51caf95f445aa3\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts: it now establishes replay validity over the whole delivered array before touching the caller's state (so a rejected history leaves that object untouched), reads each event into a validated log entry (non-empty string id, non-negative integer seq, op SET/PUT/DELETE), collapses re-deliveries of the same log position, rejects a delivery in which two different events claim one position, and then replays the plan once per entry in seq order onto the caller's object, which it returns.",
+        "escalationReason": "",
+        "transcriptBytes": 1139
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6545,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 3,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 168791,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C2-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C2",
+      "block": 2,
+      "repetition": 2,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "96ca65a7b97a118a4aa07f337920447b7dc1d195",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "73c852d3e55cc41390e7d956589e6040bdf1bc7aa37526ff6ad14af851eb7c97"
+      },
+      "jobId": "wdj-fe29ea57-90c7-4caf-8516-601bed39f143",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-0bb4da40f240dd8b73bb9fe333b89a02",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 96ca65a7b97a118a4aa07f337920447b7dc1d195\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Rewrote applyEventStream in src/reducer.ts as a two-phase replay. Phase 1 validates the whole delivered history without touching the caller's object (event shape, non-empty string id, the log's non-negative integer seq, op must be SET/DELETE, and agreement between repeated deliveries of the same seq via an order-independent canonical fingerprint) and builds the fold order from the log's own seq rather than the delivered array order, applying a repeated durable event once and rejecting two different events that claim one position. Phase 2 folds the validated steps into the caller's own state ob",
+        "escalationReason": "",
+        "transcriptBytes": 1387
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6821,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 223301,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C0-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C0",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "77119c9ad602ab324399356be212c35cdbf7eaf9",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "c1badc91f1fd1fc4fa0578c796d5c85967ee6cadcaa22eb816944da801d0d11c"
+      },
+      "jobId": "wdj-aa67e403-e77d-46f0-9d77-270b2dad535c",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-c6ae5fdbcec46bf13922578cd1a005c0",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 77119c9ad602ab324399356be212c35cdbf7eaf9\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts: it now builds a validated replay plan (per-event well-formedness, unique/conflict-free and gap-free seq positions, redelivery collapsed by position+content) before touching the caller's state, then folds the events in the log's own seq order so reordered or duplicated deliveries yield the log's state. The caller's object is never partially applied on a rejected history. The change is committed inside the worktree on src/reducer.ts only.",
+        "escalationReason": "",
+        "transcriptBytes": 1096
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6070,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 15,
+        "failures": [
+          "h06:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 15,
+        "failures": [
+          "h06:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": false,
+        "violations": [],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 193723,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C1-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C1",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "e3bb7da5b1ecadeab8812e98cca9eb3b55a2d45f",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "5dfade5d35ebb4550f2cb915b601221309ea971dc7e438e578280e1fbff550b0"
+      },
+      "jobId": "wdj-94027aec-7293-4443-98f8-fdf730160db3",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-2d0ca26f4b1e91fc99b0988a90fdcf37",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: e3bb7da5b1ecadeab8812e98cca9eb3b55a2d45f\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reworked applyEventStream in src/reducer.ts into two ordered phases: first a side-effect-free pass that validates the whole delivered array (object shape, non-empty string id, non-negative integer seq) and builds a deduplicated replay plan keyed by log position, rejecting a position that carries two different events; then a fold of that plan into the caller's state in the log's own seq order. This makes replay independent of delivery order, idempotent under repeated delivery, tolerant of partial arrays, and leaves the caller's object untouched when the history is rejected.",
+        "escalationReason": "",
+        "transcriptBytes": 1190
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5915,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 147314,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C2-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C2",
+      "block": 3,
+      "repetition": 3,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "9c3d8c98903d9a719b1b1ea1ced19f8e18aac415",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "ebfd52341f08db707415b89047555a47ebd569e574b7d87df96b68c926dc4409"
+      },
+      "jobId": "wdj-8bd358c7-2741-4064-9f13-78090ac2b93b",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-ab655390b398ac5b52ea98480cc746ff",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: 9c3d8c98903d9a719b1b1ea1ced19f8e18aac415\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Reworked applyEventStream in src/reducer.ts into a two-phase replay: it first validates the entire delivered history without touching the caller's state (event shape, non-empty string id, non-negative safe-integer seq, known operation, and no position carrying two different events), then reduces the accepted positions in the log's own seq order, applying each position once so repeated deliveries are idempotent and delivery order cannot change the result.",
+        "escalationReason": "",
+        "transcriptBytes": 1069
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7591,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 4,
+      "visibleOracleLogObserved": true,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 156406,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C2-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C2",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "fe65569d4c1b09d52ce7b371b10fe11f0449cb99",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "852b9f26ca354e986a75871d3f015be4abb73827d447de68a16c558951c17123"
+      },
+      "jobId": "wdj-d34e1762-e409-4b91-9f36-0e8fb8067468",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-c1501cfb8f577f8f49904bad87faec3f",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n  [procedure] @ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 3,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "procedure:@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "@ctx/procedure/prc-58aea0fc9c2acac92659ad7b63b2f1b3/0"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: fe65569d4c1b09d52ce7b371b10fe11f0449cb99\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts as a two-phase reducer: it first validates every delivered event and builds the application plan (checking each event is an object with a non-empty string id and a non-negative integer seq, rejecting two different events that claim the same log position while collapsing genuine re-deliveries), and only then writes to the caller's state object, so a rejected batch leaves that object untouched. Writes are applied in ascending seq order rather than transport order, so replicas holding the same log converge on the same state. The change is scoped to src/",
+        "escalationReason": "",
+        "transcriptBytes": 1255
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 7377,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 183553,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C0-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C0",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "e93208cde05a2bdb4e5d2ea35f673bb058b6cbf6",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "f1df2e1bdc9591557d77d42def2bce918e00eb1094ddde713cb7bcacc1d663f3"
+      },
+      "jobId": "wdj-af16d0b0-79fa-4c8b-bf31-1db3a8910f50",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-a69f80efba3751c37fe64d8e1b8733a7",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  (no project context was selected for this attempt)\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 0,
+        "handlesInPayload": [],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: e93208cde05a2bdb4e5d2ea35f673bb058b6cbf6\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts: it now validates the whole delivered stream and normalises it into effects before touching anything, then folds the log's own seq order (not the delivery order) over the caller's state object, collapsing duplicate deliveries of the same position, rejecting histories with malformed events (non-object, missing/empty/non-string id, missing/non-integer/negative seq, unknown op) or with two different events claiming the same seq, and mutating the caller's object only on an accepted history. Work committed in this worktree; only src/reducer.ts changed.",
+        "escalationReason": "",
+        "transcriptBytes": 1206
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 5848,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 97620,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "trialId": "C-C1-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "C1",
+      "block": 4,
+      "repetition": 4,
+      "knownFailureName": "mutate/reduce before replay/sequence validity is established",
+      "pairedState": {
+        "scenarioId": "C_REPLAY_SAFE_REDUCER",
+        "taskSemanticDigest": "2041664fdaf2e7c1a07b3346c4fd88569bf7556a43c573e78c8edb980252d34d",
+        "repositoryHead": "b85280770b0cab41fc8de39cc27893d54ff814db",
+        "startingTreeDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "targetSourceDigest": "cb57b0ac487563f9f697590dfe88826151f6aab1ce835166d587561377dcb55b",
+        "visibleTestDigest": "28a79abcb3156d4a0ece54021d0ead8f19cae6911f839204a7206e76b986b191",
+        "hiddenOracleDigest": "d8ca4de31c8b221d99cc9ec5ac2ca154d2166ae6f1be026ccd1db1acdfe579a3",
+        "visibleFileCount": 5
+      },
+      "oracleInaccessible": {
+        "checkedFiles": 5,
+        "needles": [
+          "THE HIDDEN ACCEPTANCE",
+          "reduceEventStreamReference",
+          "migrateConfigReference"
+        ]
+      },
+      "capital": {
+        "proofClaimId": "pc-06983706dbe7d8cc1817d099528db00d",
+        "reasoningCellId": "cell-c",
+        "reasoningClaimId": "cl-675a3ce013f9eb9c84306b37",
+        "procedureRef": "prc-58aea0fc9c2acac92659ad7b63b2f1b3@0",
+        "procedureDigest": "cba71d1c26fc9f91d4b5fe384c09ad56381e34f06471c69a1581a986af37fa70"
+      },
+      "jobId": "wdj-8a54f0fa-0acf-4515-b0d9-22651915e645",
+      "jobPhase": "FINISHED",
+      "hostError": null,
+      "attemptId": "attempt-1a93dc60d5d89a80e2622ba5547efd35",
+      "prompt": {
+        "ordinaryTaskDigest": "81f7ec78fd337cd5b820796aef5ab62e7655a52b5d65c57732c4c3cb82f0406d",
+        "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-06983706dbe7d8cc1817d099528db00d\n  [reasoning] @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+        "indexHandleCount": 2,
+        "handlesInPayload": [
+          "proof:@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "pullToolName": "palimpsest_worker_context_pull",
+        "resultToolName": "palimpsest_worker_result",
+        "allowedPullHandles": [
+          "@ctx/proof/pc-06983706dbe7d8cc1817d099528db00d",
+          "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37"
+        ],
+        "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+        "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: make replay produce the same state on every replica\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish applyEventStream so it applies an event log to the store's current state\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/reducer.ts\nRequired artifacts:\n  (none)\nBase commit: b85280770b0cab41fc8de39cc27893d54ff814db\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+      },
+      "worker": {
+        "offeredTools": [
+          "run_code"
+        ],
+        "presentation": "ptc",
+        "deniedPrincipalToolCount": 0,
+        "pulledHandles": [],
+        "pullOrder": [],
+        "pullTelemetryLines": 1,
+        "outcomeKind": "READY_FOR_SETTLEMENT",
+        "outcomeSummary": "Finished applyEventStream in src/reducer.ts. It now (1) validates the whole delivered history before any write — every entry must be an object with a non-empty string id, a non-negative integer seq, and an op/kind of SET, PUT or DELETE, and two different events claiming the same log position are rejected as a history no log could hold, while an identical redelivery at the same position is deduplicated; (2) replays the accepted events sorted by seq (the log's own order, not the delivered array order, and without mutating the input array or the event objects); and (3) commits to the caller's sta",
+        "escalationReason": "",
+        "transcriptBytes": 1354
+      },
+      "worldObserved": true,
+      "workDir": "<home>\<rig-path>",
+      "implementationRevisions": 0,
+      "workerAttempts": 1,
+      "workerCommitCount": 1,
+      "commits": "3",
+      "submittedCandidate": true,
+      "sourceBytes": 6586,
+      "firstSourceEqualsFinal": true,
+      "oracleFileDigest": "bce99fc159d898155b16d35254af52e488fd19d52265ca3a992dc03679b1b6e2",
+      "oracleFileUnmodified": false,
+      "finalAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 12,
+        "total": 15,
+        "failures": [
+          "h05:ACCEPTED_INVALID_HISTORY",
+          "h06:ACCEPTED_INVALID_HISTORY",
+          "h13:ACCEPTED_INVALID_HISTORY"
+        ]
+      },
+      "knownFailureFinal": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "knownFailureFirst": {
+        "detector": "reducedBeforeWholeHistoryValidation",
+        "recurred": true,
+        "violations": [
+          {
+            "probe": "p02",
+            "why": "a log whose sequence is not continuous must be refused",
+            "returned": "{\"keep\":1,\"a\":1,\"b\":2}"
+          },
+          {
+            "probe": "p05",
+            "why": "a log that turns invalid part-way through must leave the caller's state untouched",
+            "returned": "{\"untouched\":\"sentinel\",\"ok\":1,\"bad\":2}"
+          }
+        ],
+        "probesRun": 5
+      },
+      "visibleOracleInvocations": 0,
+      "visibleOracleLogObserved": false,
+      "hiddenOracleInvocations": 1,
+      "hostFailure": null,
+      "timedOut": false,
+      "manualInterventions": 0,
+      "elapsedMs": 236898,
+      "tokens": {
+        "exposed": false,
+        "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+      }
+    }
+  ]
+}

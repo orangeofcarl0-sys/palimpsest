@@ -1,0 +1,6 @@
+(node:24860) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:24860) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Rewrote migrateConfig in src/config.ts so the migration reads a legacy document faithfully: hand-written key spellings are folded to a canonical form (case, spaces, '_' and '-' carry no meaning) and any key naming no legacy setting is rejected; a document that names the same setting twice with disagreeing values is rejected as ambiguous instead of silently picking one spelling; the values the document actually supplies are validated (non-empty text for name/endpoint, non-negative integer retries, positive integer timeout) and only then are the v2 defaults applied, so a default can never hide an invalid or contradictory legacy value. Verified with the project oracle plus an out-of-repo harness of 47 additional invariant probes (spelling variants, ambiguous/agreeing duplicates, unknown keys, missing/blank fields, wrong types, range edges)."}

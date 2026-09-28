@@ -1,0 +1,101 @@
+{
+  "trialId": "B-C2-b3r3",
+  "scenario": "B_CONFIG_MIGRATION",
+  "condition": "C2",
+  "block": 3,
+  "repetition": 3,
+  "pairedState": {
+    "scenarioId": "B_CONFIG_MIGRATION",
+    "taskSemanticDigest": "9f13d9f6a81705af9191ea4f014cceee329c33cbe3a78fa688893298cfdf0ffb",
+    "repositoryHead": "6cc56cf0d5a5fdeb2c02f396a9e7e34b67a628cf",
+    "startingTreeDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+    "targetSourceDigest": "c9d7d2407f3e0677140e4d33541fa461bf3634f9f45b3d713b53bdaf7b582c9b",
+    "visibleTestDigest": "b4e7175a598626cf3532d7d71ce00bf3ddbdd749f8fffd5f008f4d8c75e118fa",
+    "hiddenOracleDigest": "97a02033e9da9888662063761663722cc96b2341fa2e8f2c36d9f5d44cc25244",
+    "visibleFileCount": 5
+  },
+  "capital": {
+    "proofClaimId": "pc-c97b716aa26007db37d8dcdeab6ecead",
+    "reasoningCellId": "cell-b",
+    "reasoningClaimId": "cl-65d6af18524d8ca4adf80191",
+    "procedureRef": "prc-185bcf8de32a0de76109a0f2996cb5e7@0",
+    "procedureDigest": "7c34c4391d5c36611cc25f762594dcf35c54bb05051ce2d63cfa250a382f6302"
+  },
+  "prompt": {
+    "ordinaryTaskDigest": "03b4b7ec5502e9610f13428b8126371816fa6a0a182ba4c9155909249cf6cf95",
+    "indexSection": "\nProject context available to this attempt (READ-ONLY; never authority):\n  [proof] @ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead\n  [reasoning] @ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191\n  [procedure] @ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0\n\nUse `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.\nDo not invent handles: a handle that is not listed above will be refused.",
+    "indexHandleCount": 3,
+    "handlesInPayload": [
+      "proof:@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+      "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "procedure:@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+    ],
+    "pullToolName": "palimpsest_worker_context_pull",
+    "resultToolName": "palimpsest_worker_result",
+    "allowedPullHandles": [
+      "@ctx/proof/pc-c97b716aa26007db37d8dcdeab6ecead",
+      "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "@ctx/procedure/prc-185bcf8de32a0de76109a0f2996cb5e7/0"
+    ],
+    "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+    "ordinaryTaskText": "You are a Palimpsest WORK WORKER: a capable engineering agent running inside ONE isolated execution world prepared for one canonical Work task.\nYou are NOT the principal: you cannot settle, verify, promote or plan anything, and no canonical fact changes because you say so.\n\nProject goal: move downstream services onto the v2 configuration format\nRequirements:\n  (none)\nDecisions in force:\n  (none)\n\nYour task: finish migrateConfig so it migrates a legacy configuration document to the v2 shape\nWrite scope (changes outside it are refused when the product observes the tree):\n  - src/config.ts\nRequired artifacts:\n  (none)\nBase commit: 6cc56cf0d5a5fdeb2c02f396a9e7e34b67a628cf\nWhat completion will require:\n  - run `node test/check.js` and it must succeed (tests_pass)\n  - changes must stay inside the declared write scope\nIndependent verification required: no"
+  },
+  "worker": {
+    "offeredTools": [
+      "run_code"
+    ],
+    "presentation": "ptc",
+    "deniedPrincipalToolCount": 0,
+    "pulledHandles": [],
+    "pullOrder": [],
+    "pullTelemetryLines": 1,
+    "outcomeKind": "READY_FOR_SETTLEMENT",
+    "outcomeSummary": "Finished migrateConfig in src/config.ts: it now recognizes only known legacy key spellings, resolves each v2 setting by normalizing all of that setting's spellings and rejecting documents whose spellings disagree (ambiguity), validates values that are present before applying defaults, and still requires a non-empty name and endpoint while defaulting only omitted retries/timeoutMs.",
+    "escalationReason": "",
+    "transcriptBytes": 994
+  },
+  "finalAcceptance": {
+    "passed": 19,
+    "total": 21,
+    "failures": [
+      "h15:REJECTED_BUT_SHOULD_ACCEPT",
+      "h16:REJECTED_BUT_SHOULD_ACCEPT"
+    ]
+  },
+  "firstCandidateAcceptance": {
+    "passed": 19,
+    "total": 21,
+    "failures": [
+      "h15:REJECTED_BUT_SHOULD_ACCEPT",
+      "h16:REJECTED_BUT_SHOULD_ACCEPT"
+    ]
+  },
+  "knownFailureFinal": {
+    "detector": "defaultsAppliedBeforeLegacyValidation",
+    "recurred": false,
+    "violations": [],
+    "probesRun": 3
+  },
+  "knownFailureFirst": {
+    "detector": "defaultsAppliedBeforeLegacyValidation",
+    "recurred": false,
+    "violations": [],
+    "probesRun": 3
+  },
+  "visibleOracleInvocations": 0,
+  "hiddenOracleInvocations": 1,
+  "implementationRevisions": 0,
+  "submittedCandidate": true,
+  "workerCommitCount": 1,
+  "oracleFileUnmodified": false,
+  "elapsedMs": 122342,
+  "hostFailure": null,
+  "timedOut": false,
+  "manualInterventions": 0,
+  "jobPhase": "FINISHED",
+  "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+  "tokens": {
+    "exposed": false,
+    "note": "the DSH host does not expose token counts to this seam; recorded as UNKNOWN rather than inferred (parent §5)"
+  }
+}

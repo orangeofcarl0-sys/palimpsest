@@ -1,0 +1,186 @@
+/**
+ * Legacy → v2 configuration migration.
+ *
+ * METHOD (the order matters; the starting point got it wrong by transforming and defaulting first):
+ *
+ *   1. GROUP every declared setting under the setting it denotes, normalizing the spelling of the
+ *      key first, so that `retry` / `retries` / `retryCount` / `attempts` (and `timeout_ms` /
+ *      `timeoutMs`, `service_name` / `serviceName`, ...) are all understood to talk about the same
+ *      setting before anything is compared.
+ *   2. VALIDATE the legacy document as it was written: every declared value must be legal in its
+ *      own domain, and every distinct spelling of one setting must AGREE — a document that says two
+ *      different things about one setting is AMBIGUOUS and has no faithful v2 reading, so it is
+ *      refused rather than silently resolved by picking whichever spelling happened to be read first.
+ *   3. Only once the legacy document has been understood is it TRANSFORMED, and only
+ *      settings the document never mentions receive a v2 default. A value that is present but
+ *      invalid is never replaced by a default.
+ *
+ * An operator's document must mean the same thing after the migration as it did before it.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** The settings the v2 document is made of, in the vocabulary of the v2 document. */
+type Setting = "name" | "endpoint" | "retries" | "timeoutMs";
+
+/**
+ * Every spelling the legacy format is known to use for each setting. The spellings are normalized
+ * before they are compared, so the table also covers their case and separator variants
+ * (`SERVICE_NAME`, `serviceName`, `service-name`, `retry_count`, ...).
+ */
+const LEGACY_SPELLINGS: Readonly<Record<Setting, readonly string[]>> = {
+  name: ["name", "service_name", "title"],
+  endpoint: ["endpoint", "url", "base_url", "host"],
+  retries: ["retry", "retries", "retryCount", "attempts"],
+  timeoutMs: ["timeout", "timeout_ms", "timeoutMs"],
+};
+
+/** Normalize a spelling so that two spellings of one setting compare equal: case and separators go. */
+const normalizeSpelling = (spelling: string): string => spelling.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
+const SETTING_OF_SPELLING = new Map<string, Setting>();
+for (const setting of Object.keys(LEGACY_SPELLINGS) as Setting[]) {
+  for (const spelling of LEGACY_SPELLINGS[setting]) SETTING_OF_SPELLING.set(normalizeSpelling(spelling), setting);
+}
+
+/** One setting as the legacy document declares it: the spelling used and the value written. */
+interface Declaration {
+  readonly spelling: string;
+  readonly value: unknown;
+}
+
+/**
+ * Step 1 — read the legacy document without interpreting it: every key must denote a setting the
+ * legacy format knows about (an unrecognized key means the document is not one we can read), and
+ * all declarations of that setting are collected together.
+ */
+function declarationsBySetting(input: Record<string, unknown>): Map<Setting, Declaration[]> {
+  const declared = new Map<Setting, Declaration[]>();
+
+  for (const key of Object.keys(input)) {
+    const setting = SETTING_OF_SPELLING.get(normalizeSpelling(key));
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_SETTING", `the legacy document declares an unrecognized setting: ${JSON.stringify(key)}`);
+    }
+    const declarations = declared.get(setting);
+    if (declarations === undefined) declared.set(setting, [{ spelling: key, value: input[key] }]);
+    else declarations.push({ spelling: key, value: input[key] });
+  }
+
+  return declared;
+}
+
+/**
+ * Step 2a — the declarations of one setting must all read the same. Disagreement is ambiguity, not
+ * a precedence puzzle: there is no faithful reading of a document that says two things at once.
+ */
+function requireAgreement(setting: Setting, declarations: readonly Declaration[], readings: readonly (string | number)[]): void {
+  const first = readings[0];
+  for (let index = 1; index < readings.length; index += 1) {
+    if (readings[index] !== first) {
+      const spellings = declarations.map((declaration) => declaration.spelling).join(", ");
+      throw new ConfigError(
+        "AMBIGUOUS_SETTING",
+        `the legacy document spells ${setting} more than once with different values (${spellings})`,
+      );
+    }
+  }
+}
+
+/** Read a textual setting, or `undefined` when the legacy document never mentions it. */
+function readText(setting: "name" | "endpoint", declarations: Declaration[] | undefined): string | undefined {
+  if (declarations === undefined) return undefined;
+
+  const readings = declarations.map((declaration) => {
+    const value = declaration.value;
+    if (typeof value !== "string" || value.trim() === "") {
+      throw new ConfigError(
+        setting === "name" ? "INVALID_NAME" : "INVALID_ENDPOINT",
+        `${declaration.spelling} must be a non-empty string`,
+      );
+    }
+    return value.trim();
+  });
+
+  requireAgreement(setting, declarations, readings);
+  return readings[0];
+}
+
+/** Read `retries`: a whole number of retries, zero or more. */
+function readRetries(declarations: Declaration[] | undefined): number | undefined {
+  if (declarations === undefined) return undefined;
+
+  const readings = declarations.map((declaration) => {
+    const value = declaration.value;
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+      throw new ConfigError("INVALID_RETRIES", `${declaration.spelling} must be a non-negative whole number`);
+    }
+    return value;
+  });
+
+  requireAgreement("retries", declarations, readings);
+  return readings[0];
+}
+
+/** Read `timeoutMs`: a positive whole number of milliseconds. */
+function readTimeoutMs(declarations: Declaration[] | undefined): number | undefined {
+  if (declarations === undefined) return undefined;
+
+  const readings = declarations.map((declaration) => {
+    const value = declaration.value;
+    if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+      throw new ConfigError("INVALID_TIMEOUT", `${declaration.spelling} must be a positive whole number of milliseconds`);
+    }
+    return value;
+  });
+
+  requireAgreement("timeoutMs", declarations, readings);
+  return readings[0];
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1. Understand the spellings before comparing anything.
+  const declared = declarationsBySetting(input);
+
+  // 2. Validate what the legacy document actually says; nothing is defaulted yet.
+  const name = readText("name", declared.get("name"));
+  const endpoint = readText("endpoint", declared.get("endpoint"));
+  const retries = readRetries(declared.get("retries"));
+  const timeoutMs = readTimeoutMs(declared.get("timeoutMs"));
+
+  // 3. The settings v2 has no default for must have been declared.
+  if (name === undefined) throw new ConfigError("MISSING_NAME", "the service name must be declared");
+  if (endpoint === undefined) throw new ConfigError("MISSING_ENDPOINT", "the endpoint must be declared");
+
+  // 4. Transform, defaulting only the policy settings the legacy document left unset.
+  return {
+    schemaVersion: 2,
+    service: { name, endpoint },
+    policy: {
+      retries: retries ?? DEFAULT_RETRIES,
+      timeoutMs: timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    },
+  };
+}

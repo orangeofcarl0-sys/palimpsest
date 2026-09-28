@@ -1,0 +1,6 @@
+(node:9864) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:9864) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Rewrote applyEventStream in src/reducer.ts as two phases: planReplay() establishes replay validity for the whole delivered history without touching the caller's state (event object, non-empty string id, non-negative integer seq, a defined operation with PUT as the legacy write spelling, a value for a write, and no log position claimed by two different events), then the commit applies those writes in the log's own seq order, so re-delivered events collapse to one write and a rejected history never leaves the caller's object partially applied. Change committed in the worktree (d92aed3); the only other tree entry is test/.oracle-runs.log, the oracle's own telemetry from running test/check.js."}

@@ -1,0 +1,162 @@
+/**
+ * R1-R §6/§8 — SCENARIO C — REPLAY: a delivery is validated as a whole, then folded in log order.
+ *
+ * The delivered array is an *image* of the durable log, not the log itself: the transport may reorder
+ * it, and the same event may be delivered more than once. So this never folds the array as it arrives.
+ *
+ *   1. VALIDATE the whole delivery first — every entry must be a well-formed log record (an object
+ *      carrying a non-empty string `id`, the non-negative integer position `seq` the log assigned it
+ *      and a known op), and the delivery must not contradict itself: two *different* events may not
+ *      claim the same log position. Nothing in this phase reads or writes the caller's `state`.
+ *   2. APPLY the validated operations in the log's own order (`seq`), once per log position, so
+ *      identical redeliveries collapse and the result never depends on the order the transport used.
+ *
+ * What the contract asks for, and where it is honoured:
+ *   · a history that turns out to be invalid leaves the caller's state exactly as it was — a call
+ *     that reports failure must not have half-applied itself to the caller's own object (phase 1);
+ *   · two replicas that hold the same log reach the same state, whatever order it was delivered in
+ *     (phase 2 replays by `seq`, not by array index);
+ *   · the caller's `state` object is the object that is updated and returned, so a caller that
+ *     handed its state in can keep using it afterwards;
+ *   · a delivery that is merely a fragment of the log, or that repeats records, is not an error: it
+ *     is applied as the (deterministic) replay of the positions it actually carries.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/** The effect a log record has on the state. `PUT` is an accepted spelling of a write. */
+type Effect = "SET" | "DELETE";
+
+const EFFECTS: Readonly<Record<string, Effect>> = { SET: "SET", PUT: "SET", DELETE: "DELETE" };
+
+/** The keys a `SET` may carry its value under, in the order the contract lists them. */
+const VALUE_KEYS: readonly string[] = ["v", "value", "payload", "data"];
+
+function effectOf(event: Event): Effect {
+  const raw: unknown = event.op ?? event.kind ?? "SET";
+  if (typeof raw !== "string" || !Object.prototype.hasOwnProperty.call(EFFECTS, raw)) {
+    throw new StreamError("INVALID_EFFECT", `unknown event op ${JSON.stringify(raw)}: expected "SET" or "DELETE"`);
+  }
+  return EFFECTS[raw];
+}
+
+function valueOf(event: Event): unknown {
+  const record = event as unknown as Record<string, unknown>;
+  for (const key of VALUE_KEYS) {
+    if (Object.prototype.hasOwnProperty.call(record, key)) return record[key];
+  }
+  return null;
+}
+
+/**
+ * A stable, structure-aware serialisation used only to tell two events at the same log position
+ * apart. Two deliveries of the *same* event may spell their keys in a different order, or carry the
+ * value under `v` in one delivery and `value` in the other; what has to agree is the effect.
+ */
+function canonical(value: unknown, seen: Set<object> = new Set()): string {
+  if (value === null) return "null";
+  const kind = typeof value;
+  if (kind === "undefined") return "undefined";
+  if (kind === "number") return `number:${String(value)}`;
+  if (kind === "string") return `string:${JSON.stringify(value)}`;
+  if (kind === "boolean") return `boolean:${String(value)}`;
+  if (kind === "bigint") return `bigint:${String(value)}`;
+  if (kind === "symbol") return `symbol:${String(value)}`;
+  if (kind === "function") return "function";
+
+  const object = value as object;
+  if (seen.has(object)) return "[circular]";
+  seen.add(object);
+  let text: string;
+  if (Array.isArray(object)) {
+    text = `[${object.map((item) => canonical(item, seen)).join(",")}]`;
+  } else {
+    const record = object as Record<string, unknown>;
+    text = `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key], seen)}`).join(",")}}`;
+  }
+  seen.delete(object);
+  return text;
+}
+
+/** One validated log record, reduced to what replaying it does. */
+interface Operation {
+  readonly seq: number;
+  readonly id: string;
+  readonly effect: Effect;
+  readonly value: unknown;
+  readonly fingerprint: string;
+}
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (state === null || typeof state !== "object") {
+    throw new StreamError("INVALID_STATE", "the state to replay into must be an object");
+  }
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the delivered event stream must be an array");
+  }
+
+  // ── Phase 1: validate the whole delivery. The caller's object is not touched here, so a rejected
+  //    history cannot leave it partially applied.
+  const at = new Map<number, Operation>();
+  const operations: Operation[] = [];
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object" || Array.isArray(event)) {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    const id = event.id;
+    if (typeof id !== "string" || id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_SEQ", "every event must carry the non-negative integer position the log assigned it");
+    }
+
+    const effect = effectOf(event);
+    const value = effect === "DELETE" ? null : valueOf(event);
+    const operation: Operation = { seq, id, effect, value, fingerprint: `${id}\u0000${effect}\u0000${canonical(value)}` };
+
+    const already = at.get(seq);
+    if (already === undefined) {
+      at.set(seq, operation);
+      operations.push(operation);
+    } else if (already.fingerprint !== operation.fingerprint) {
+      // A log assigns one position to one event; a delivery that puts two different events at the
+      // same position is contradictory and cannot be replayed deterministically.
+      throw new StreamError("CONFLICTING_POSITION", `the delivery carries two different events at log position ${seq}`);
+    }
+    // Otherwise it is the durable log redelivering an event we already hold: replay it once.
+  }
+
+  // ── Phase 2: replay in the log's own order, once per log position.
+  operations.sort((left, right) => left.seq - right.seq);
+  for (const operation of operations) {
+    if (operation.effect === "DELETE") delete state[operation.id];
+    else state[operation.id] = operation.value;
+  }
+
+  return state;
+}

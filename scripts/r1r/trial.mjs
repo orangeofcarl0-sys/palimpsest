@@ -510,13 +510,17 @@ try {
     record.sourceBytes = Buffer.byteLength(finalSource, "utf8");
     record.firstSourceEqualsFinal = firstSource !== null && firstSource === finalSource;
     // The oracle file the worker was given must be unmodified for the invocation count to be
-    // meaningful; an edited oracle is recorded rather than silently tolerated (§20). The comparison is
-    // line-ending-insensitive: Git checks the fixture out with CRLF on Windows, and a digest that
-    // changed on checkout would report every trial as having edited the oracle.
+    // meaningful; an edited oracle is recorded rather than silently tolerated (§20).
+    //
+    // The comparison must not use the `git()` helper: that helper TRIMS its output, so `git show` would
+    // lose the file's trailing newline and every trial would be reported as having edited the oracle.
+    // Raw output is compared, and the comparison is line-ending-insensitive because Git checks the
+    // fixture out with CRLF on Windows.
     const normalize = (text) => text.replace(/\r\n/gu, "\n");
-    const committedOracle = git(workDir, ["show", `${worldHead}:test/check.js`]);
-    record.oracleFileDigest = sha256(readFileSync(join(workDir, "test", "check.js")));
-    record.oracleFileUnmodified = normalize(readFileSync(join(workDir, "test", "check.js"), "utf8")) === normalize(committedOracle);
+    const committedOracle = execFileSync("git", ["show", `${worldHead}:test/check.js`], { cwd: workDir, encoding: "utf8" });
+    const worldOracle = readFileSync(join(workDir, "test", "check.js"), "utf8");
+    record.oracleFileDigest = sha256(Buffer.from(worldOracle, "utf8"));
+    record.oracleFileUnmodified = normalize(worldOracle) === normalize(committedOracle);
 
     const finalJudgement = await judgeHidden(SCENARIO, finalSource, join(SCRATCH, "final"));
     record.finalAcceptance = { passed: finalJudgement.passed, total: finalJudgement.total, failures: finalJudgement.results.filter((r) => !r.pass).map((r) => `${r.id}:${r.failureClass}`) };

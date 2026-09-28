@@ -1,0 +1,162 @@
+/**
+ * R1-R §6/§8 — SCENARIO C, THE CORRECT IMPLEMENTATION (§8 step 2).
+ *
+ * `applyEventStream` is called by a replica that already holds some state and has just been handed a
+ * batch of events by the transport. Three facts about that situation drive the whole implementation.
+ *
+ *   1. THE TRANSPORT IS NOT THE LOG. `events` is merely what arrived: it may be reordered, it may
+ *      carry the same event more than once (the log is durable, so delivery is at-least-once), and it
+ *      may cover only part of the log. The resulting state must therefore be the fold of the events
+ *      in the LOG's order — ascending `seq` — and never the fold of the delivered array order. An
+ *      entity written at one position and deleted at a later one has to end up deleted no matter
+ *      which of the two events happened to arrive last; otherwise two replicas that hold the same log
+ *      end up in different states.
+ *
+ *   2. ONE POSITION CANNOT HOLD TWO DIFFERENT EVENTS. A `seq` is the log's identity for an event, so
+ *      a repeated `seq` is either the very same event delivered twice — harmless, it is applied once
+ *      — or two different events claiming the same position. The second case is a history no replica
+ *      can replay deterministically: resolving it by "last one wins" would make the result depend on
+ *      arrival order, which is exactly what replicas must not do. It is rejected instead of guessed
+ *      at. Two deliveries count as the same event when they would have the same effect (same id, same
+ *      operation, same value), so envelope fields the transport may add do not turn a re-delivery
+ *      into a conflict.
+ *
+ *   3. VALIDATE THE WHOLE STREAM BEFORE TOUCHING THE CALLER'S OBJECT. The caller keeps using the
+ *      `state` object it passed in, so a rejected batch must leave that object exactly as it was.
+ *      Every event is therefore checked, and the complete application plan is computed, before a
+ *      single write happens; a batch whose last event is invalid leaves no partial application
+ *      behind.
+ *
+ * The function mutates `state` in place and returns that same object, as the caller expects.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Op = "SET" | "DELETE";
+
+/** A validated event, reduced to the fields that decide the resulting state. */
+interface PlannedEvent {
+  readonly seq: number;
+  readonly id: string;
+  readonly op: Op;
+  readonly value: unknown;
+}
+
+/** The keys a `SET` may carry its value under, in the order the wire format prefers them. */
+const VALUE_KEYS = ["v", "value", "payload", "data"] as const;
+
+const fields = (event: Event): Record<string, unknown> => event as unknown as Record<string, unknown>;
+
+/** The value a `SET` assigns; a `SET` with no value key stores `null`, as the format allows. */
+const valueOf = (event: Event): unknown => {
+  const record = fields(event);
+  for (const key of VALUE_KEYS) {
+    if (key in record) return record[key];
+  }
+  return null;
+};
+
+/** The operation an event describes. `kind` is the older spelling; `PUT` is a set. */
+const opOf = (event: Event): Op => {
+  const declared = event.op ?? event.kind ?? "SET";
+  if (declared === "DELETE") return "DELETE";
+  if (declared === "SET" || declared === "PUT") return "SET";
+  throw new StreamError("INVALID_OP", `unsupported op ${JSON.stringify(declared) ?? String(declared)}`);
+};
+
+/** A deterministic, key-order independent rendering used to compare two deliveries of one position. */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${canonical(record[key])}`).join(",")}}`;
+  }
+  return `${typeof value}:${String(value)}`;
+};
+
+/** Whether two deliveries of the same log position would have the same effect on the state. */
+const sameEffect = (left: PlannedEvent, right: PlannedEvent): boolean => {
+  if (left.id !== right.id || left.op !== right.op) return false;
+  return left.op === "DELETE" || canonical(left.value) === canonical(right.value);
+};
+
+/**
+ * Validate the whole delivered batch and turn it into the ordered plan of writes it implies.
+ * Nothing is written while this runs, so a throw leaves the caller's state untouched.
+ */
+function planStream(events: readonly Event[]): PlannedEvent[] {
+  if (!Array.isArray(events)) throw new StreamError("INVALID_STREAM", "the event stream must be an array");
+
+  // Keyed by log position: the first delivery of a position wins, and any other delivery must agree.
+  const bySeq = new Map<number, PlannedEvent>();
+
+  for (const event of events) {
+    if (event === null || typeof event !== "object") throw new StreamError("INVALID_EVENT", "every event must be an object");
+
+    const id = event.id;
+    if (typeof id !== "string" || id.length === 0) throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+
+    const seq = event.seq;
+    if (typeof seq !== "number" || !Number.isInteger(seq) || seq < 0) {
+      throw new StreamError("INVALID_SEQ", "every event must carry a non-negative integer seq");
+    }
+
+    const op = opOf(event);
+    const planned: PlannedEvent = { seq, id, op, value: op === "DELETE" ? null : valueOf(event) };
+
+    const seen = bySeq.get(seq);
+    if (seen === undefined) {
+      bySeq.set(seq, planned);
+    } else if (!sameEffect(seen, planned)) {
+      throw new StreamError("CONFLICTING_SEQ", `position ${seq} is claimed by two different events`);
+    }
+    // Otherwise this is the same event delivered again: it is already in the plan, so it is applied once.
+  }
+
+  // The state is the fold in the LOG's order, whatever order the transport used.
+  return [...bySeq.values()].sort((left, right) => left.seq - right.seq);
+}
+
+/**
+ * Write one entity. An entity id is a key of the caller's map, so an id such as `__proto__` must become
+ * an own property of that map rather than being routed to the prototype by a plain assignment.
+ */
+const writeEntry = (state: State, id: string, value: unknown): void => {
+  if (Object.prototype.hasOwnProperty.call(state, id)) state[id] = value;
+  else Object.defineProperty(state, id, { value, writable: true, enumerable: true, configurable: true });
+};
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  // 1. Establish the validity and the sequence order of the whole batch first...
+  const plan = planStream(events);
+
+  // 2. ...and only then touch the caller's object. This loop cannot reject.
+  for (const { id, op, value } of plan) {
+    if (op === "DELETE") delete state[id];
+    else writeEntry(state, id, value);
+  }
+
+  return state;
+}

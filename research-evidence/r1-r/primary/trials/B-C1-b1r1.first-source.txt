@@ -1,0 +1,163 @@
+/**
+ * Migrate a legacy configuration document to the v2 shape.
+ *
+ * The legacy format is hand-written and spells the same setting several ways, so the migration is a
+ * FAITHFUL READING of the operator's document, not a "fill in whatever is missing" transform:
+ *
+ *  1. Every key must be a recognized legacy spelling (after normalizing case and separators).
+ *  2. A setting may be spelled at most ONCE. If two keys normalize to the same setting the document
+ *     is ambiguous and is rejected — the migrator must never silently pick a winner.
+ *  3. Values are validated before any default is applied: a key that is present but malformed is an
+ *     error, not something to paper over with the v2 default.
+ *  4. Defaults are applied last, only for settings the document did not mention.
+ *
+ * The ordering matters: validating ambiguity AFTER defaulting/transforming is the defect this
+ * module exists to avoid.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+/** The v2 settings a legacy key can supply. */
+type Setting = "service.name" | "service.endpoint" | "policy.retries" | "policy.timeoutMs";
+
+/**
+ * Normalize a legacy spelling: fold case and drop separators so that `service_name`,
+ * `serviceName`, `Service-Name` and `SERVICE.NAME` are recognized as the same spelling.
+ */
+function normalizeSpelling(key: string): string {
+  return key.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+/**
+ * The legacy spellings this format recognizes, keyed by their normalized form. Synonyms that do not
+ * share a separator/case relationship (e.g. `retry` and `attempts`) are listed explicitly.
+ */
+const SPELLINGS: Readonly<Record<string, Setting>> = {
+  // service name
+  name: "service.name",
+  servicename: "service.name",
+  title: "service.name",
+  // service endpoint
+  endpoint: "service.endpoint",
+  url: "service.endpoint",
+  baseurl: "service.endpoint",
+  host: "service.endpoint",
+  // policy.retries
+  retry: "policy.retries",
+  retries: "policy.retries",
+  retrycount: "policy.retries",
+  attempts: "policy.retries",
+  // policy.timeoutMs
+  timeout: "policy.timeoutMs",
+  timeoutms: "policy.timeoutMs",
+};
+
+/** A legacy setting that was actually present, with the value the operator wrote. */
+interface Reading {
+  readonly setting: Setting;
+  readonly key: string;
+  readonly value: unknown;
+}
+
+/**
+ * Read and validate the legacy keys — BEFORE any defaulting. Returns the settings the document
+ * actually mentions. Throws on an unrecognized key, on an ambiguous setting, or on a malformed value.
+ */
+function readLegacy(input: Record<string, unknown>): Map<Setting, Reading> {
+  const readings = new Map<Setting, Reading>();
+
+  for (const key of Object.keys(input)) {
+    const setting = SPELLINGS[normalizeSpelling(key)];
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_KEY", `unrecognized legacy setting \`${key}\``);
+    }
+    const seen = readings.get(setting);
+    if (seen !== undefined) {
+      throw new ConfigError(
+        "AMBIGUOUS_SETTING",
+        `the setting \`${setting}\` is spelled more than once (\`${seen.key}\` and \`${key}\`)`,
+      );
+    }
+    readings.set(setting, { setting, key, value: input[key] });
+  }
+
+  for (const reading of readings.values()) validate(reading);
+  return readings;
+}
+
+/** Validate a present legacy value against the v2 invariants for its setting. */
+function validate(reading: Reading): void {
+  const { setting, key, value } = reading;
+  switch (setting) {
+    case "service.name":
+      if (typeof value !== "string" || value.trim() === "") {
+        throw new ConfigError("INVALID_NAME", `\`${key}\` must be a non-empty string`);
+      }
+      return;
+    case "service.endpoint":
+      if (typeof value !== "string" || value.trim() === "") {
+        throw new ConfigError("INVALID_ENDPOINT", `\`${key}\` must be a non-empty string`);
+      }
+      return;
+    case "policy.retries":
+      if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+        throw new ConfigError("INVALID_RETRIES", `\`${key}\` must be a non-negative integer`);
+      }
+      return;
+    case "policy.timeoutMs":
+      if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+        throw new ConfigError("INVALID_TIMEOUT", `\`${key}\` must be a positive number of milliseconds`);
+      }
+      return;
+  }
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 1–3. Read, normalize spellings, reject ambiguity and malformed values. No defaults yet.
+  const readings = readLegacy(input);
+
+  if (!readings.has("service.name")) {
+    throw new ConfigError("MISSING_NAME", "the service name is required");
+  }
+  if (!readings.has("service.endpoint")) {
+    throw new ConfigError("MISSING_ENDPOINT", "the service endpoint is required");
+  }
+
+  // 4. Only now, when nothing was mentioned, fall back to the v2 defaults.
+  return {
+    schemaVersion: 2,
+    service: {
+      name: readings.get("service.name")!.value as string,
+      endpoint: readings.get("service.endpoint")!.value as string,
+    },
+    policy: {
+      retries: readings.has("policy.retries")
+        ? (readings.get("policy.retries")!.value as number)
+        : DEFAULT_RETRIES,
+      timeoutMs: readings.has("policy.timeoutMs")
+        ? (readings.get("policy.timeoutMs")!.value as number)
+        : DEFAULT_TIMEOUT_MS,
+    },
+  };
+}

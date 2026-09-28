@@ -9,6 +9,9 @@
  * directions — the correct implementation passes, the naive one fails — so a fixture that stopped
  * discriminating cannot pass by being uniformly permissive or uniformly strict.
  */
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { amendmentDigest, PARENT_PROTOCOL_DIGEST, parentProtocolDigest, parseAmendment } from "../scripts/r1r/amendment.mjs";
@@ -198,8 +201,10 @@ describe("R1-R §8/§9 — the capital is traceable, and is METHOD not source", 
   it("the exploration's final generation stops failing, so the derived method is complete", () => {
     const explored = exploreAll();
     for (const key of ["B", "C"] as const) {
-      const last = explored[key].observations[explored[key].observations.length - 1];
-      expect(last.failedCaseIds).toEqual([]);
+      const observations = explored[key].observations;
+      const last = observations[observations.length - 1];
+      expect(last).toBeDefined();
+      expect(last?.failedCaseIds).toEqual([]);
     }
   });
 
@@ -240,6 +245,27 @@ describe("R1-R §5 — the hidden acceptance is unreachable from the worker's wo
       expect(result.checkedFiles).toBeGreaterThan(0);
       // The visible oracle IS present — the worker is meant to run it.
       expect(result.needles.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("the world does not carry the acceptance's TYPE DECLARATION either", () => {
+    /**
+     * REGRESSION TEST for a real leak the accessibility check caught during the §32 regression run.
+     *
+     * The acceptance module needs a `.d.mts` declaration so the TypeScript tests can import it under
+     * `noImplicitAny`. That declaration names `migrateConfigReference` / `applyEventStreamReference`, so
+     * copying it into a world would leak the reference implementation's identity — precisely the class
+     * of leak §5 forbids. The check is by CONTENT, so it caught this without being told about the new
+     * file; this test pins the exclusion so it cannot regress.
+     */
+    for (const scenario of [SCENARIOS.B, SCENARIOS.C]) {
+      const dir = tmpRoot(`world-decl-${scenario.id}`);
+      buildWorld(scenario, dir);
+      expect(() => assertOracleInaccessible(scenario, dir)).not.toThrow();
+      // The declaration exists in the fixture but must not have been copied.
+      const declaration = join(scenario.fixtureDir, "acceptance.d.mts");
+      expect(existsSync(declaration)).toBe(true);
+      expect(existsSync(join(dir, "acceptance.d.mts"))).toBe(false);
     }
   });
 
@@ -319,21 +345,21 @@ describe("R1-R §14 — the paired-state check", () => {
     const trials = [trial({ condition: "C0" }), trial({ condition: "C1", prompt: { handlesInPayload: [], indexHandleCount: 2, capabilitySetDigest: "cap", ordinaryTaskDigest: "ord" } }), trial({ condition: "C2", prompt: { handlesInPayload: [], indexHandleCount: 3, capabilitySetDigest: "cap", ordinaryTaskDigest: "ord" } })].map(normalizeTrial);
     const blocks = pairedStateCheck(trials);
     expect(blocks).toHaveLength(1);
-    expect(blocks[0].confounded).toBe(false);
+    expect(blocks[0]?.confounded).toBe(false);
   });
 
   it("flags a block whose ordinary task text differs across conditions", () => {
     const trials = [trial({ condition: "C0" }), trial({ condition: "C1", prompt: { handlesInPayload: [], indexHandleCount: 2, capabilitySetDigest: "cap", ordinaryTaskDigest: "DIFFERENT" } }), trial({ condition: "C2", prompt: { handlesInPayload: [], indexHandleCount: 3, capabilitySetDigest: "cap", ordinaryTaskDigest: "ord" } })].map(normalizeTrial);
     const blocks = pairedStateCheck(trials);
-    expect(blocks[0].confounded).toBe(true);
-    expect(blocks[0].differences.join(" ")).toMatch(/ordinary task text/u);
+    expect(blocks[0]?.confounded).toBe(true);
+    expect(blocks[0]?.differences.join(" ")).toMatch(/ordinary task text/u);
   });
 
   it("flags a block whose context index is identical across conditions (the treatment was not applied)", () => {
     const trials = [trial({ condition: "C0" }), trial({ condition: "C1" }), trial({ condition: "C2" })].map(normalizeTrial);
     const blocks = pairedStateCheck(trials);
-    expect(blocks[0].confounded).toBe(true);
-    expect(blocks[0].differences.join(" ")).toMatch(/index is identical/u);
+    expect(blocks[0]?.confounded).toBe(true);
+    expect(blocks[0]?.differences.join(" ")).toMatch(/index is identical/u);
   });
 });
 

@@ -1,0 +1,178 @@
+/**
+ * R1-R §6/§8 — SCENARIO C, THE FINISHED REDUCER.
+ *
+ * `applyEventStream` replays a durable event log onto the state a replica already holds, so that two
+ * replicas holding the same log end up in the same state.
+ *
+ * Two properties the caller depends on, and how they are obtained here:
+ *
+ * 1. REPLAY VALIDITY IS ESTABLISHED BEFORE ANYTHING IS APPLIED.
+ *    The caller hands in the object it is currently using and goes on reading that same object, so a
+ *    history that turns out to be invalid must leave it exactly as it was. Nothing is written to the
+ *    caller's object until every delivered event has been validated and the whole history has been
+ *    folded on a private draft; the draft is published onto `state` only once the history is accepted.
+ *
+ * 2. THE LOG'S OWN SEQUENCE ORDER DECIDES THE RESULT.
+ *    The array is whatever the transport delivered: it may be shuffled and it may repeat events (the
+ *    log is durable, so re-delivery is expected and replay is idempotent). The reducer therefore folds
+ *    the events in ascending `seq` order — the order the log assigned them — never in delivery order.
+ *    Two *different* events claiming the same position cannot both have come from one log, so such a
+ *    history is rejected rather than silently resolved by whichever copy arrived last.
+ *
+ * A well-formed event carries a non-empty string `id`, the non-negative integer position `seq` the log
+ * assigned it, an `op` of `SET` or `DELETE` (`kind` is accepted as the transport's alternative
+ * spelling), and for a `SET` its value under one of `v` / `value` / `payload` / `data`. Anything else
+ * is not a history this reducer can replay: it is rejected with a `StreamError` before the caller's
+ * object is touched, because guessing an operation, a position or a value would let two replicas
+ * diverge.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+type Operation = "SET" | "DELETE";
+
+/** One validated event, reduced to the fields replay actually needs. */
+interface Step {
+  readonly id: string;
+  readonly seq: number;
+  readonly op: Operation;
+  readonly value: unknown;
+}
+
+const VALUE_KEYS = ["v", "value", "payload", "data"];
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === "object" && !Array.isArray(value);
+
+/** A SET carries its value under one of the transport's aliases. */
+const carriesValue = (event: Record<string, unknown>): boolean => VALUE_KEYS.some((key) => key in event);
+
+/** The value of a SET, read in the transport's own alias order. */
+const valueOf = (event: Record<string, unknown>): unknown => {
+  if ("v" in event) return event.v;
+  if ("value" in event) return event.value;
+  if ("payload" in event) return event.payload;
+  if ("data" in event) return event.data;
+  return null;
+};
+
+/**
+ * Validate one delivered event and reduce it to a step. Throws a StreamError for anything the log
+ * could not have produced — this runs before the caller's state is touched at all.
+ */
+function stepOf(event: unknown, position: number): Step {
+  if (!isRecord(event)) {
+    throw new StreamError("INVALID_EVENT", `event #${position} must be a record`);
+  }
+
+  const id = event.id;
+  if (typeof id !== "string" || id.length === 0) {
+    throw new StreamError("INVALID_IDENTITY", `event #${position} must carry a non-empty string id`);
+  }
+
+  const seq = event.seq;
+  if (typeof seq !== "number" || !Number.isSafeInteger(seq) || seq < 0) {
+    throw new StreamError("INVALID_SEQ", `event #${position} must carry a non-negative integer seq`);
+  }
+
+  const stated = event.op ?? event.kind;
+  if (stated !== "SET" && stated !== "DELETE") {
+    throw new StreamError("INVALID_OPERATION", `event #${position} must state an op of SET or DELETE`);
+  }
+  const op: Operation = stated === "SET" ? "SET" : "DELETE";
+
+  if (op === "SET" && !carriesValue(event)) {
+    throw new StreamError("INVALID_VALUE", `SET event #${position} must carry a value under v, value, payload or data`);
+  }
+
+  return { id, seq, op, value: op === "SET" ? valueOf(event) : null };
+}
+
+/** Structural equality for the values carried by two events that claim the same log position. */
+function sameValue(left: unknown, right: unknown): boolean {
+  if (left === right) return true;
+
+  if (Array.isArray(left) && Array.isArray(right)) {
+    return left.length === right.length && left.every((entry, index) => sameValue(entry, right[index]));
+  }
+
+  if (isRecord(left) && isRecord(right)) {
+    const leftKeys = Object.keys(left);
+    const rightKeys = Object.keys(right);
+    return (
+      leftKeys.length === rightKeys.length &&
+      leftKeys.every((key) => Object.prototype.hasOwnProperty.call(right, key) && sameValue(left[key], right[key]))
+    );
+  }
+
+  return false;
+}
+
+/** True when two delivered events are the same log entry, delivered twice. */
+const sameStep = (left: Step, right: Step): boolean =>
+  left.id === right.id && left.seq === right.seq && left.op === right.op && sameValue(left.value, right.value);
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  if (!isRecord(state)) {
+    throw new StreamError("INVALID_STATE", "state must be a record of entity id to value");
+  }
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "events must be an array");
+  }
+
+  // 1. Establish replay validity: every event well formed, every position claimed by at most one
+  //    distinct event. Nothing the caller owns has been touched yet.
+  const steps = new Map<number, Step>();
+  for (let index = 0; index < events.length; index += 1) {
+    const step = stepOf(events[index], index);
+    const alreadyAtPosition = steps.get(step.seq);
+    if (alreadyAtPosition === undefined) {
+      steps.set(step.seq, step);
+    } else if (!sameStep(alreadyAtPosition, step)) {
+      throw new StreamError("SEQUENCE_CONFLICT", `position ${step.seq} is claimed by two different events`);
+    }
+  }
+
+  // 2. Fold the accepted history in the log's own sequence order, on a private draft.
+  const draft = new Map<string, unknown>();
+  for (const key of Object.keys(state)) draft.set(key, state[key]);
+  for (const step of [...steps.values()].sort((left, right) => left.seq - right.seq)) {
+    if (step.op === "DELETE") draft.delete(step.id);
+    else draft.set(step.id, step.value);
+  }
+
+  // 3. Only now that the whole history has been accepted, publish the draft onto the caller's object,
+  //    which it still owns and keeps reading.
+  for (const key of Object.keys(state)) {
+    if (!draft.has(key)) delete state[key];
+  }
+  for (const [key, value] of draft) {
+    if (!Object.prototype.hasOwnProperty.call(state, key) || !Object.is(state[key], value)) {
+      Object.defineProperty(state, key, { value, writable: true, enumerable: true, configurable: true });
+    }
+  }
+
+  return state;
+}

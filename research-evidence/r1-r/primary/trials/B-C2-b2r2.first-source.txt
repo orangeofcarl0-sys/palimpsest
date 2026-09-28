@@ -1,0 +1,145 @@
+/**
+ * Migrate a legacy configuration document to the v2 shape.
+ *
+ * THE METHOD (R1-R §5 scenario B — the ordering H0 got wrong).
+ *
+ * A legacy document is hand-written: the same setting appears under several spellings, no
+ * spelling is authoritative on its own, and nothing in the document says which convention it
+ * was written against. So the migration must not transform or default anything until it has
+ * read the document AS WRITTEN. The order below is the whole method:
+ *
+ *   1. structural validation   — the input must be a plain object
+ *   2. vocabulary validation   — every key must be a spelling the legacy format is known to use
+ *   3. ambiguity validation    — a setting named by more than one key (after spellings are
+ *                                normalized, so `service_name`, `serviceName` and
+ *                                `service-name` are one spelling) is ambiguous: the document
+ *                                cannot be read faithfully, so it is rejected rather than
+ *                                silently resolved by "first key wins"
+ *   4. presence validation     — the settings v2 has no default for must be there at all
+ *   5. value validation        — present values must have the right type and range; a value that
+ *                                is present but malformed is an ERROR, never a reason to fall
+ *                                back to the default
+ *   6. defaults + emit         — only settings that are genuinely absent get the v2 defaults; the
+ *                                remaining values are carried across unchanged
+ *
+ * The pre-paid cognitive mistake this replaces was: transform/default before legacy ambiguity
+ * validation. Copying fields with `??` chains hides both defects it creates — an ambiguous
+ * document is silently resolved to one of its readings, and a malformed value is silently
+ * replaced by the default instead of being reported.
+ */
+
+export class ConfigError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "ConfigError";
+    this.code = code;
+  }
+}
+
+export interface V2Config {
+  readonly schemaVersion: 2;
+  readonly service: { readonly name: string; readonly endpoint: string };
+  readonly policy: { readonly retries: number; readonly timeoutMs: number };
+}
+
+/** The settings the legacy format can express, as v2 names them. */
+type Setting = "name" | "endpoint" | "retries" | "timeout";
+
+/**
+ * Every spelling the legacy format is documented to use for each setting. Hand-written documents
+ * also vary the case and the separators (see `normalizeSpelling`), so these are matched against
+ * normalized keys rather than raw ones.
+ */
+const SPELLINGS: ReadonlyArray<readonly [Setting, readonly string[]]> = [
+  ["name", ["name", "service_name", "title"]],
+  ["endpoint", ["endpoint", "url", "base_url", "host"]],
+  ["retries", ["retry", "retries", "retryCount", "attempts"]],
+  ["timeout", ["timeout", "timeout_ms", "timeoutMs"]],
+];
+
+/**
+ * Normalize a key's spelling: case-insensitive and separator-insensitive. This is what lets the
+ * migration see that `service_name`, `serviceName`, `Service-Name` and `SERVICE NAME` are one
+ * spelling of one setting — and therefore that a document using two of them is ambiguous.
+ */
+function normalizeSpelling(key: string): string {
+  return key.toLowerCase().replace(/[\s._-]+/g, "");
+}
+
+const SETTING_BY_SPELLING: ReadonlyMap<string, Setting> = new Map(
+  SPELLINGS.flatMap(([setting, spellings]) => spellings.map((spelling) => [normalizeSpelling(spelling), setting] as const)),
+);
+
+const DEFAULT_RETRIES = 3;
+const DEFAULT_TIMEOUT_MS = 30_000;
+
+function requireName(value: unknown): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new ConfigError("INVALID_NAME", "the service name must be a non-empty string");
+  }
+  return value;
+}
+
+function requireEndpoint(value: unknown): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    throw new ConfigError("INVALID_ENDPOINT", "the endpoint must be a non-empty string");
+  }
+  return value;
+}
+
+function requireRetries(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    throw new ConfigError("INVALID_RETRIES", "the retry count must be a non-negative integer");
+  }
+  return value;
+}
+
+function requireTimeout(value: unknown): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value <= 0) {
+    throw new ConfigError("INVALID_TIMEOUT", "the timeout must be a positive integer number of milliseconds");
+  }
+  return value;
+}
+
+/** Migrate a legacy configuration document to the v2 shape. */
+export function migrateConfig(input: Record<string, unknown>): V2Config {
+  // 1. Structural validation.
+  if (input === null || typeof input !== "object" || Array.isArray(input)) {
+    throw new ConfigError("INVALID_INPUT", "the configuration must be a plain object");
+  }
+
+  // 2 & 3. Vocabulary and ambiguity validation, before anything is transformed or defaulted.
+  const specified = new Map<Setting, unknown>();
+  for (const key of Object.keys(input)) {
+    const setting = SETTING_BY_SPELLING.get(normalizeSpelling(key));
+    if (setting === undefined) {
+      throw new ConfigError("UNKNOWN_KEY", `the configuration uses an unrecognized setting: ${JSON.stringify(key)}`);
+    }
+    if (specified.has(setting)) {
+      throw new ConfigError(
+        "AMBIGUOUS_CONFIG",
+        `the configuration names the "${setting}" setting more than once, so it cannot be read unambiguously`,
+      );
+    }
+    specified.set(setting, input[key]);
+  }
+
+  // 4. The settings v2 has no default for must actually be there.
+  if (!specified.has("name")) throw new ConfigError("INVALID_NAME", "the service name must be provided");
+  if (!specified.has("endpoint")) throw new ConfigError("INVALID_ENDPOINT", "the endpoint must be provided");
+
+  // 5. Value validation — a malformed present value is an error, never a default.
+  const name = requireName(specified.get("name"));
+  const endpoint = requireEndpoint(specified.get("endpoint"));
+
+  // 6. Defaults, only for settings that were genuinely absent, then emit.
+  return {
+    schemaVersion: 2,
+    service: { name, endpoint },
+    policy: {
+      retries: specified.has("retries") ? requireRetries(specified.get("retries")) : DEFAULT_RETRIES,
+      timeoutMs: specified.has("timeout") ? requireTimeout(specified.get("timeout")) : DEFAULT_TIMEOUT_MS,
+    },
+  };
+}

@@ -1,0 +1,151 @@
+/**
+ * R1-R §6/§8 — SCENARIO C, RESOLVED.
+ *
+ * `applyEventStream` replays a durable event log onto the state a replica already holds.
+ *
+ * The completed implementation establishes REPLAY VALIDITY BEFORE IT WRITES ANYTHING. The caller owns
+ * `state` and is still holding it when it calls in, so a history that cannot be faithfully replayed
+ * must leave that object exactly as it was — never partially applied. Every delivered event is
+ * inspected, and the delivered array is ordered by the log's own `seq`, deduplicated and checked for
+ * contradictions and holes, before a single key of `state` is touched.
+ *
+ * The result is the LOG'S state, not the transport's:
+ *
+ *   - events are folded in `seq` order, so "written at 0, deleted at 1" resolves the same way on every
+ *     replica no matter how the array was shuffled in transit;
+ *   - the durable log means the same event may be delivered more than once: redelivery of a position
+ *     collapses to one application;
+ *   - two DIFFERENT events claiming the same position, a missing position inside the delivered run, or
+ *     an event that is not well formed make the delivered array an invalid history, and it is rejected
+ *     without touching the caller's object.
+ */
+
+export class StreamError extends Error {
+  readonly code: string;
+  constructor(code: string, message: string) {
+    super(message);
+    this.name = "StreamError";
+    this.code = code;
+  }
+}
+
+export interface Event {
+  readonly id: string;
+  /** The position the log assigned this event when it accepted it. */
+  readonly seq: number;
+  readonly op?: "SET" | "DELETE";
+  readonly kind?: "SET" | "DELETE" | "PUT";
+  readonly v?: unknown;
+  readonly value?: unknown;
+  readonly payload?: unknown;
+  readonly data?: unknown;
+}
+
+export type State = Record<string, unknown>;
+
+/**
+ * Canonical text for a value, with object keys sorted, so that comparison is stable no matter what
+ * order a JSON transport happened to serialise an object's keys in.
+ */
+const canonical = (value: unknown): string => {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const source = value as Record<string, unknown>;
+    const entries = Object.keys(source)
+      .sort()
+      .map((key) => `${JSON.stringify(key)}:${canonical(source[key])}`);
+    return `{${entries.join(",")}}`;
+  }
+  return JSON.stringify(value) ?? "null";
+};
+
+/** One validated instruction the fold will execute, in the log's own order. */
+interface Step {
+  readonly id: string;
+  readonly op: "SET" | "DELETE";
+  readonly value: unknown;
+}
+
+const VALUE_KEYS = ["v", "value", "payload", "data"];
+
+const readOp = (event: Event): "SET" | "DELETE" => {
+  const raw = event.op ?? event.kind ?? "SET";
+  if (raw === "SET" || raw === "PUT") return "SET";
+  if (raw === "DELETE") return "DELETE";
+  throw new StreamError("INVALID_OP", `unknown operation ${JSON.stringify(raw)}`);
+};
+
+const readValue = (event: Event): unknown => {
+  const source = event as Record<string, unknown>;
+  for (const key of VALUE_KEYS) {
+    if (key in source) return source[key];
+  }
+  throw new StreamError("INVALID_VALUE", "a SET event must carry its value under v, value, payload or data");
+};
+
+/**
+ * Inspect the delivered array and return the steps to apply, in log order.
+ *
+ * THROWS — and therefore leaves `state` untouched — when the array is not a valid replay of the log.
+ * Called before anything is written, which is what makes rejection non-destructive.
+ */
+const planReplay = (events: readonly Event[]): Step[] => {
+  if (!Array.isArray(events)) {
+    throw new StreamError("INVALID_STREAM", "the event stream must be an array");
+  }
+
+  // Position -> the single event the log can have assigned there, plus its identity for redelivery.
+  const bySeq = new Map<number, { step: Step; fingerprint: string }>();
+
+  for (const raw of events) {
+    if (raw === null || typeof raw !== "object") {
+      throw new StreamError("INVALID_EVENT", "every event must be an object");
+    }
+    const event = raw as Event;
+    if (typeof event.id !== "string" || event.id.length === 0) {
+      throw new StreamError("INVALID_IDENTITY", "every event must carry a non-empty string id");
+    }
+    if (!Number.isInteger(event.seq) || event.seq < 0) {
+      throw new StreamError("INVALID_SEQUENCE", "every event must carry a non-negative integer seq");
+    }
+
+    const op = readOp(event);
+    const value = op === "SET" ? readValue(event) : undefined;
+    const step: Step = { id: event.id, op, value };
+    // Redelivery is decided by what the event says, not by the order it arrived in.
+    const fingerprint = op === "SET"
+      ? `SET\u0000${event.id}\u0000${canonical(value)}`
+      : `DELETE\u0000${event.id}`;
+
+    const seen = bySeq.get(event.seq);
+    if (seen === undefined) {
+      bySeq.set(event.seq, { step, fingerprint });
+    } else if (seen.fingerprint !== fingerprint) {
+      throw new StreamError("CONFLICTING_SEQUENCE", `position ${event.seq} is claimed by two different events`);
+    }
+    // Otherwise it is the same event delivered again: collapse it to a single application.
+  }
+
+  const positions = [...bySeq.keys()].sort((left, right) => left - right);
+  for (let index = 1; index < positions.length; index += 1) {
+    if (positions[index] !== positions[index - 1] + 1) {
+      throw new StreamError("INCOMPLETE_SEQUENCE", `position ${positions[index - 1] + 1} is missing from the delivered history`);
+    }
+  }
+
+  return positions.map((seq) => (bySeq.get(seq) as { step: Step }).step);
+};
+
+/** Apply an event stream to the current state. */
+export function applyEventStream(state: State, events: readonly Event[]): State {
+  // Establish replay validity first. If this throws, the caller's object has not been touched.
+  const steps = planReplay(events);
+
+  // Only a history that survived the check above is folded, in the log's own sequence order.
+  for (const step of steps) {
+    if (step.op === "DELETE") delete state[step.id];
+    else state[step.id] = step.value;
+  }
+
+  return state;
+}

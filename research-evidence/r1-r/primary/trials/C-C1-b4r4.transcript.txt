@@ -1,0 +1,6 @@
+(node:39932) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:39932) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\<rig-path>","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"]}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Finished applyEventStream in src/reducer.ts. It now (1) validates the whole delivered history before any write — every entry must be an object with a non-empty string id, a non-negative integer seq, and an op/kind of SET, PUT or DELETE, and two different events claiming the same log position are rejected as a history no log could hold, while an identical redelivery at the same position is deduplicated; (2) replays the accepted events sorted by seq (the log's own order, not the delivered array order, and without mutating the input array or the event objects); and (3) commits to the caller's state object only after the entire history is accepted, so a rejected history leaves the caller's state untouched, and returns that same object."}
