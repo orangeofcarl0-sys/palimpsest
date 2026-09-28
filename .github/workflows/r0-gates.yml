@@ -94,7 +94,7 @@ jobs:
           PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
           DSH_HOME: ${{ secrets.DSH_HOME }}
       - if: steps.dsh.outputs.available != 'true'
-        run: echo "skipped: no DSH host in this environment"
+        run: 'echo "skipped - no DSH host in this environment"'
       - if: steps.dsh.outputs.available == 'true'
         run: pnpm install --frozen-lockfile
       - if: steps.dsh.outputs.available == 'true'
@@ -142,7 +142,7 @@ jobs:
           PALIMPSEST_DSH_BIN: ${{ secrets.PALIMPSEST_DSH_BIN }}
           DSH_HOME: ${{ secrets.DSH_HOME }}
       - if: steps.dsh.outputs.available != 'true'
-        run: echo "skipped: no DSH host in this environment"
+        run: 'echo "skipped - no DSH host in this environment"'
       - if: steps.dsh.outputs.available == 'true'
         run: pnpm install --frozen-lockfile
       - if: steps.dsh.outputs.available == 'true'
