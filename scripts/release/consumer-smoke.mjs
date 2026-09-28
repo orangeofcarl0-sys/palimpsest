@@ -52,28 +52,55 @@ function run(command, args, options = {}) {
 }
 
 /**
- * `npm` is a shell script on Windows and is not always resolvable from a bare `spawn`, so it is
- * invoked through the Node entrypoint that ships beside the running interpreter. This is packaging
- * plumbing, not a repository-relative import.
+ * `npm` is a shell script / `.cmd` shim, which a bare `execFileSync` cannot always resolve, so it is
+ * invoked through the Node entrypoint (`npm-cli.js`) that ships with the interpreter. That file's
+ * location is NOT the same on every platform or every Node distribution:
+ *
+ *   Windows (nodejs.org):  <node dir>/node_modules/npm/bin/npm-cli.js
+ *   Linux/macOS (nvm, GH Actions):  <node dir>/../lib/node_modules/npm/bin/npm-cli.js
+ *
+ * Getting this wrong is how the FIRST Linux CI run of this script failed with
+ * `Cannot find module '/opt/hostedtoolcache/node/24.21.0/x64/bin/node_modules/npm/bin/npm-cli.js'` —
+ * it had only ever been exercised on Windows. Each candidate is checked before use, and `npm` from
+ * PATH is the final fallback.
  */
-const NPM_CLI = join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js");
+function resolveNpmEntry() {
+  const explicit = process.env.PALIMPSEST_NPM_ENTRY?.trim();
+  if (explicit !== undefined && explicit !== "") return explicit;
+  const candidates = [
+    join(dirname(process.execPath), "node_modules", "npm", "bin", "npm-cli.js"),
+    join(dirname(process.execPath), "..", "lib", "node_modules", "npm", "bin", "npm-cli.js"),
+    join(process.env.APPDATA ?? "", "npm", "node_modules", "npm", "bin", "npm-cli.js"),
+    "/usr/lib/node_modules/npm/bin/npm-cli.js",
+    "/usr/local/lib/node_modules/npm/bin/npm-cli.js",
+  ];
+  return candidates.find((candidate) => candidate !== "" && existsSync(candidate));
+}
 function npm(args, options = {}) {
-  return run(process.execPath, [NPM_CLI, ...args], options);
+  const entry = resolveNpmEntry();
+  return entry === undefined ? run("npm", args, options) : run(process.execPath, [entry, ...args], options);
 }
 
 /**
  * The dependency specifiers are pinned GitHub release tarballs and the repository's override policy
  * lives in `pnpm-workspace.yaml`, which is the channel the repository's own consumer scripts
  * (`docker/minimal/*.sh`) use. Like `npm`, `pnpm` is a shell wrapper that a bare `spawn` cannot always
- * resolve, so it is invoked through its Node entrypoint when one can be located.
+ * resolve, so it is invoked through its Node entrypoint when one can be located. The candidate list
+ * covers both the global-prefix layouts in use (`npm -g` on Windows, `/usr/local` on Linux, and
+ * `pnpm/action-setup`'s standalone install), and falls back to `pnpm` on PATH.
  */
 function resolvePnpmEntry() {
   const explicit = process.env.PALIMPSEST_PNPM_ENTRY?.trim();
   if (explicit !== undefined && explicit !== "") return explicit;
+  const home = process.env.HOME ?? process.env.USERPROFILE ?? "";
   const candidates = [
     join(dirname(process.execPath), "node_modules", "pnpm", "bin", "pnpm.cjs"),
+    join(dirname(process.execPath), "..", "lib", "node_modules", "pnpm", "bin", "pnpm.cjs"),
+    join(home, ".local", "share", "pnpm", "pnpm.cjs"),
+    "/usr/local/lib/node_modules/pnpm/bin/pnpm.cjs",
+    "/usr/lib/node_modules/pnpm/bin/pnpm.cjs",
     join(process.env.APPDATA ?? "", "npm", "node_modules", "pnpm", "bin", "pnpm.cjs"),
-    join(process.env.HOME ?? process.env.USERPROFILE ?? "", "AppData", "Roaming", "npm", "node_modules", "pnpm", "bin", "pnpm.cjs"),
+    join(home, "AppData", "Roaming", "npm", "node_modules", "pnpm", "bin", "pnpm.cjs"),
   ];
   return candidates.find((candidate) => candidate !== "" && existsSync(candidate));
 }
