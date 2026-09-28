@@ -69,11 +69,13 @@ record is in the evidence artifact (see above).
 no rebase is required.
 
 Cumulative production change from the pre-E baseline: **100 files, +22 537 / −81** for E0–E-LIVE, plus
-R0's own changes (harness, packaging, tests and docs only — **no** `src/`, `tools/` or `architecture/`
-file changed in R0).
+R0/R0-R/R0-M's own changes (harness, packaging, tests, CI and docs only — **no** `src/`, `tools/` or
+`architecture/` file changed in any of the three review stages). The whole stack measured against
+`origin/main` touches **113 files**; the exact insertion count is not restated here because editing
+this document changes it.
 
 ```text
-git rev-parse HEAD                     # the RC commit
+git rev-parse HEAD                     # the branch tip (the evidence commit)
 git merge-base HEAD origin/main        # 9ec76ff…  (no divergence)
 git merge-base --is-ancestor 9ec76ff HEAD   # exit 0
 ```
@@ -329,9 +331,11 @@ integration, re-run §4 in full on the rebased result rather than assuming the g
 
 **Outward action.** R0 itself pushed nothing. R0-R then pushed `r0-production-integration`, opened
 PR #214 (base `e-live-intellectual-compounding`), and opened the umbrella PR #215
-(`r0-production-integration` → `main`, 18 commits, 113 files). `main` is still `9ec76ff` and the
-package is unpublished. Neither PR was merged or squashed; merging is an outward, state-changing
-action that R0-M does not perform without explicit authorization.
+(`r0-production-integration` → `main`). `main` is still `9ec76ff` and the package is unpublished.
+Neither PR was merged or squashed; merging is an outward, state-changing action that R0-M does not
+perform without explicit authorization. The PR descriptions carry their own commit and file counts,
+which move as commits land; this document deliberately does not restate them, because a count written
+here is stale the moment the commit containing it exists.
 
 `release-evidence/r0-release-evidence.json` keeps the outward state at each capture distinct rather
 than editing one historical claim. `atCodeStateCapture` is preserved verbatim as historical truth —
