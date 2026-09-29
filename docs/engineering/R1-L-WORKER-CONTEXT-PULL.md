@@ -196,3 +196,43 @@ reachable, and that is what this stage did.
 - It does not claim the index renders identically in another host. The product owns the text; an embedder
   owns placement.
 - It does not redesign CTX-4 boot budgeting. `compiled.boot` was audited and left alone.
+
+---
+
+## 7. CORRECTION (appended by R1-S; the text above is NOT rewritten)
+
+**R1-S measured the confidentiality boundary this document did not test, and the honest reading is
+narrower than §1–§6 above could establish.**
+
+```
+R1-L CLOSED the governed pull FUNCTIONAL path.
+
+R1-R later discovered that direct filesystem reads
+could bypass that path.
+
+Therefore:
+  functional pull        = CLOSED
+  exclusive-access /
+  confidentiality        = REOPENED
+```
+
+**What this document did establish, and still does.** A selected knowledge handle reaches the worker
+model's visible index, the worker can pull its body through `palimpsest_worker_context_pull`, and the
+nonce gate shows the body's content is obtained only by pulling. That is the FUNCTIONAL closure, and it
+holds.
+
+**What it did not establish.** The claim that C0 "cannot obtain the nonce" rested on the worker having no
+handle and no pull tool access. R1-S measured that a worker with **zero handles and zero pulls** can read
+the capital body directly from the durable store, because the host sandbox confines writes rather than
+reads. So the *exclusive-access* reading — that the governed pull is the only path to a body — was never
+true, and §5's `C0: protected values NOT obtainable` assertion was overclaiming.
+
+**What was changed in this repository as a result.** The `gate:r1-l-live` assertion now states only what
+the gate controls — C0 was offered no handles and pulled nothing — and records the out-of-band read
+separately (`obtained WITHOUT pulling`). The strong nonce proof is NOT restored here: restoring it
+requires an enforceable read boundary, and R1-S's audit concluded that the current DSH worker process
+model cannot provide one (`R1-S: BLOCKED AT HOST CAPABILITY`). See
+[`R1-S-WORKER-CONFIDENTIALITY-AUDIT.md`](./R1-S-WORKER-CONFIDENTIALITY-AUDIT.md).
+
+The measured facts of §1–§6 — the payload shape, the rendered index, the pull telemetry `[]` / 2 / 3, and
+the nonce accessibility for C1/C2 — are unchanged and were not re-measured.

@@ -1,0 +1,711 @@
+{
+  "schemaVersion": 1,
+  "stage": "R1-S",
+  "baseCommit": "8ef010a8edce45f121a985a79d6c0c6477a40636",
+  "verdict": "BLOCKED AT HOST CAPABILITY",
+  "statement": "The current DSH worker process model cannot provide the required read-confinement contract.",
+  "capabilityAudit": {
+    "schemaVersion": 1,
+    "stage": "R1-S",
+    "rig": "<rig>\\audit",
+    "platform": "win32",
+    "dshRoot": "<dsh-install>",
+    "runnerChains": {
+      "linux": [
+        "bwrap",
+        "landlock"
+      ],
+      "darwin": [
+        "seatbelt"
+      ],
+      "win32": [
+        "windows-acl"
+      ]
+    },
+    "enforcementByRunner": {
+      "bwrap": "full",
+      "landlock": "full",
+      "seatbelt": "full",
+      "windows-acl": "partial"
+    },
+    "policyHasReadField": "NO",
+    "readConfinementAvailable": false,
+    "unconfinedProbe": {
+      "WORLD_CANARY": {
+        "read": true,
+        "content": "canary=world_4ecd80a0c95ba2722a081688"
+      },
+      "PALIMPSEST_STATE_CANARY": {
+        "read": true,
+        "content": "canary=state_c200155f5726f87cdaecf7ba"
+      },
+      "SIBLING_WORLD_CANARY": {
+        "read": true,
+        "content": "canary=sibling_892a81107ec131b8ff8c40e7"
+      },
+      "OTHER_PROJECT_CANARY": {
+        "read": true,
+        "content": "canary=other_75dc2f7d98136ea7d2f500b4"
+      },
+      "HOST_SESSION_CANARY": {
+        "read": true,
+        "content": "canary=session_cfb463ccf27571a1dd0f6e26"
+      },
+      "TRAVERSAL_STATE": {
+        "read": true,
+        "content": "canary=state_c200155f5726f87cdaecf7ba"
+      },
+      "TRAVERSAL_SIBLING": {
+        "read": true,
+        "content": "canary=sibling_892a81107ec131b8ff8c40e7"
+      },
+      "ENUMERATE_PARENT": {
+        "listed": true,
+        "entries": [
+          "repo",
+          "state"
+        ]
+      },
+      "ENUMERATE_STATE_DIR": {
+        "listed": true,
+        "entries": [
+          "proof-blob.txt"
+        ]
+      },
+      "ENV_CANARY": {
+        "read": true,
+        "present": true
+      }
+    },
+    "leaked": [
+      "PALIMPSEST_STATE_CANARY",
+      "SIBLING_WORLD_CANARY",
+      "OTHER_PROJECT_CANARY",
+      "HOST_SESSION_CANARY"
+    ],
+    "envCanaryVisible": true,
+    "findings": [
+      [
+        "runner chain (this platform)",
+        "[windows-acl]"
+      ],
+      [
+        "runner chain (linux)",
+        "[bwrap, landlock]"
+      ],
+      [
+        "runner chain (darwin)",
+        "[seatbelt]"
+      ],
+      [
+        "runner chain (win32)",
+        "[windows-acl]"
+      ],
+      [
+        "reported enforcement per runner",
+        "{\"bwrap\":\"full\",\"landlock\":\"full\",\"seatbelt\":\"full\",\"windows-acl\":\"partial\"}"
+      ],
+      [
+        "why windows-acl reports partial",
+        ""
+      ],
+      [
+        "SandboxPolicy fields",
+        "[\"mode\"]"
+      ],
+      [
+        "SandboxExecutionPolicy fields",
+        "[\"mode\",\"workspaceRoot\",\"sessionId\"]"
+      ],
+      [
+        "READ-side fields declared in the policy",
+        "NONE \u2014 the policy vocabulary is file-effect (write) only"
+      ],
+      [
+        "windows-acl runner exports",
+        "probe failed (status 127) windows-acl-run: missing --workspace"
+      ],
+      [
+        "windows-acl restricts to",
+        "WRITE_RESTRICTED (write accesses only)"
+      ],
+      [
+        "WORLD_CANARY",
+        "<audit>\\project\\repo\\.palimpsest\\worlds\\attempt-audit\\in-world.txt = world_4ecd80\u2026"
+      ],
+      [
+        "PALIMPSEST_STATE_CANARY",
+        "<audit>\\project\\state\\proof-blob.txt = state_c20015\u2026"
+      ],
+      [
+        "SIBLING_WORLD_CANARY",
+        "<audit>\\project\\repo\\.palimpsest\\worlds\\attempt-sibling\\values.js = sibling_892a\u2026"
+      ],
+      [
+        "OTHER_PROJECT_CANARY",
+        "<audit>\\other-project\\state\\proof-blob.txt = other_75dc2f\u2026"
+      ],
+      [
+        "HOST_SESSION_CANARY",
+        "<audit>\\host-session\\session.jsonl = session_cfb4\u2026"
+      ],
+      [
+        "HOST_ENV_CANARY",
+        "PALIMPSEST_R1S_SECRET_CANARY = env_f1c8a7ac\u2026"
+      ],
+      [
+        "WORLD_CANARY readable from the world",
+        "YES \u2014 value matches"
+      ],
+      [
+        "PALIMPSEST_STATE_CANARY readable from the world",
+        "YES \u2014 value matches"
+      ],
+      [
+        "SIBLING_WORLD_CANARY readable from the world",
+        "YES \u2014 value matches"
+      ],
+      [
+        "OTHER_PROJECT_CANARY readable from the world",
+        "YES \u2014 value matches"
+      ],
+      [
+        "HOST_SESSION_CANARY readable from the world",
+        "YES \u2014 value matches"
+      ],
+      [
+        "TRAVERSAL_STATE (../../../../state)",
+        "YES"
+      ],
+      [
+        "TRAVERSAL_SIBLING (../attempt-sibling)",
+        "YES"
+      ],
+      [
+        "ENUMERATE_PARENT",
+        "YES (repo, state)"
+      ],
+      [
+        "ENUMERATE_STATE_DIR",
+        "YES (proof-blob.txt)"
+      ],
+      [
+        "HOST_ENV_CANARY visible to the child",
+        "YES \u2014 the child inherits the host environment"
+      ],
+      [
+        "PROTECTED CANARIES LEAKED (unconfined)",
+        "4: PALIMPSEST_STATE_CANARY, SIBLING_WORLD_CANARY, OTHER_PROJECT_CANARY, HOST_SESSION_CANARY"
+      ],
+      [
+        "under AclSandbox confinement",
+        "spawned under a restricted token (workspace-write), child exit 0"
+      ],
+      [
+        "WORLD_CANARY readable under confinement",
+        "YES (ordinary world reads still work)"
+      ],
+      [
+        "PALIMPSEST_STATE_CANARY readable under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "SIBLING_WORLD_CANARY readable under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "OTHER_PROJECT_CANARY readable under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "HOST_SESSION_CANARY readable under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "TRAVERSAL_STATE under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "TRAVERSAL_SIBLING under confinement",
+        "YES \u2014 STILL READABLE"
+      ],
+      [
+        "ENUMERATE_PARENT under confinement",
+        "YES \u2014 STILL LISTABLE (repo, state)"
+      ],
+      [
+        "HOST_ENV_CANARY under confinement",
+        "YES \u2014 inherited"
+      ],
+      [
+        "PROTECTED CANARIES LEAKED (confined)",
+        "4: PALIMPSEST_STATE_CANARY, SIBLING_WORLD_CANARY, OTHER_PROJECT_CANARY, HOST_SESSION_CANARY"
+      ],
+      [
+        "read confinement primitive available on THIS host",
+        "NO \u2014 the win32 chain is [windows-acl] with enforcement \"partial\""
+      ],
+      [
+        "protected canaries readable unconfined",
+        "4 of 4"
+      ]
+    ]
+  },
+  "denyAceExperiment": {
+    "findings": [
+      [
+        "baseline: confined child exit",
+        "0"
+      ],
+      [
+        "workspace capability SID",
+        "S-1-4-38960142-27793176"
+      ],
+      [
+        "BASELINE world read",
+        "readable"
+      ],
+      [
+        "BASELINE protected read (no deny ACE)",
+        "READABLE \u2014 the leak"
+      ],
+      [
+        "current principal",
+        "66494"
+      ],
+      [
+        "icacls deny read for the current principal",
+        "applied"
+      ],
+      [
+        "icacls deny read on the file",
+        "applied"
+      ],
+      [
+        "AFTER DENY world read",
+        "readable"
+      ],
+      [
+        "AFTER DENY protected read",
+        "blocked (EPERM)"
+      ],
+      [
+        "the daemon itself is affected by the deny",
+        "YES \u2014 this process is now blocked too (EPERM), which is why a same-principal deny is unusable"
+      ]
+    ],
+    "baseline": {
+      "WORLD": {
+        "read": true,
+        "content": "canary=world_1946335af89ce866a3f767b4"
+      },
+      "PROTECTED": {
+        "read": true,
+        "content": "canary=deny_60e3bd91209f53f69094f41a"
+      }
+    },
+    "after": {
+      "WORLD": {
+        "read": true,
+        "content": "canary=world_1946335af89ce866a3f767b4"
+      },
+      "PROTECTED": {
+        "read": false,
+        "code": "EPERM"
+      }
+    }
+  },
+  "integrityLabelExperiment": {
+    "findings": [
+      [
+        "--- baseline, no label ---",
+        ""
+      ],
+      [
+        "BASELINE own world",
+        "readable"
+      ],
+      [
+        "BASELINE sibling world",
+        "READABLE (the leak)"
+      ],
+      [
+        "BASELINE durable state",
+        "READABLE (the leak)"
+      ],
+      [
+        "--- applying NO_READ_UP labels ---",
+        ""
+      ],
+      [
+        "label on <rig>\\integrity-label2\\project\\repo\\.palimpsest\\worlds\\attempt-sibling",
+        "applied (OI)(CI)MR (Medium + no-read-up)"
+      ],
+      [
+        "label on <rig>\\integrity-label2\\project\\state",
+        "applied (OI)(CI)MR (Medium + no-read-up)"
+      ],
+      [
+        "--- after the label ---",
+        ""
+      ],
+      [
+        "own world still readable (ordinary work intact)",
+        "YES"
+      ],
+      [
+        "sibling world readable",
+        "STILL READABLE"
+      ],
+      [
+        "durable state readable",
+        "STILL READABLE"
+      ],
+      [
+        "hard-link bypass",
+        "blocked (link-failed:EPERM)"
+      ],
+      [
+        "sibling world still enumerable",
+        "YES (attempt-mine, attempt-sibling)"
+      ],
+      [
+        "--- effect on the daemon (this process) ---",
+        ""
+      ],
+      [
+        "daemon can still read sibling",
+        "yes \u2014 the label binds to the token, not the principal"
+      ],
+      [
+        "daemon can still read state",
+        "yes \u2014 the label binds to the token, not the principal"
+      ]
+    ],
+    "baseline": {
+      "OWN_WORLD": {
+        "read": true,
+        "content": "canary=world_4a578aeb1b0a15c27d6ca5f1"
+      },
+      "SIBLING_WORLD": {
+        "read": true,
+        "content": "canary=sibling_de5f4aba9af9a9c740b789a8"
+      },
+      "STATE": {
+        "read": true,
+        "content": "canary=state_11a1b4fe70ba4eb2e68d75cc"
+      },
+      "HARDLINK_BYPASS": {
+        "read": false,
+        "code": "link-failed:EPERM"
+      },
+      "ENUMERATE_WORLDS": {
+        "listed": [
+          "attempt-mine",
+          "attempt-sibling"
+        ]
+      }
+    },
+    "afterLabel": {
+      "OWN_WORLD": {
+        "read": true,
+        "content": "canary=world_4a578aeb1b0a15c27d6ca5f1"
+      },
+      "SIBLING_WORLD": {
+        "read": true,
+        "content": "canary=sibling_de5f4aba9af9a9c740b789a8"
+      },
+      "STATE": {
+        "read": true,
+        "content": "canary=state_11a1b4fe70ba4eb2e68d75cc"
+      },
+      "HARDLINK_BYPASS": {
+        "read": false,
+        "code": "link-failed:EPERM"
+      },
+      "ENUMERATE_WORLDS": {
+        "listed": [
+          "attempt-mine",
+          "attempt-sibling"
+        ]
+      }
+    }
+  },
+  "environmentAudit": {
+    "findings": [
+      [
+        "child inherits the host environment",
+        "YES"
+      ],
+      [
+        "environment variables visible to the child",
+        "85"
+      ],
+      [
+        "credential-shaped environment NAMES visible",
+        "1"
+      ],
+      [
+        "DSH_HOME visible in the child environment",
+        "no"
+      ],
+      [
+        "real DSH home",
+        "<home>\\.dsh"
+      ],
+      [
+        "real .credentials.yaml exists",
+        "YES"
+      ],
+      [
+        "real .credentials.yaml readable by this process",
+        "YES (459 bytes; content NOT read into the report)"
+      ],
+      [
+        "the DSH home is under the user profile",
+        "YES \u2014 reachable by absolute path from any worker world"
+      ]
+    ],
+    "report": {
+      "canaryPresent": true,
+      "envVarCount": 85,
+      "credentialShapedNames": 1,
+      "dshHomePresent": false,
+      "credentialsPathShape": "<home>aml",
+      "credentialsExists": false,
+      "credentialsReadable": false
+    },
+    "realDshHome": "<home>\\.dsh"
+  },
+  "credentialReach": {
+    "findings": [
+      [
+        "real credentials file exists",
+        "YES"
+      ],
+      [
+        "confined child exit",
+        "0"
+      ],
+      [
+        "CONFINED worker: credentials file exists at that path",
+        "YES"
+      ],
+      [
+        "CONFINED worker: credentials file readable",
+        "YES \u2014 a Low-integrity restricted-token worker can open the real credential file"
+      ],
+      [
+        "CONFINED worker: credentials byte length observed",
+        "459"
+      ],
+      [
+        "CONFINED worker: readable by absolute path",
+        "YES"
+      ],
+      [
+        "NO SECRET CONTENT WAS READ",
+        "the probe opened one byte and never reported its value; no key name or value appears in this report"
+      ]
+    ],
+    "report": {
+      "targetShape": "the real DSH credentials path",
+      "exists": true,
+      "bytes": 459,
+      "readable": true,
+      "absoluteReadable": true
+    },
+    "dshHome": "<home>\\.dsh"
+  },
+  "capabilitySidDeny": {
+    "findings": [
+      [
+        "--- baseline ---",
+        ""
+      ],
+      [
+        "workspace capability SID",
+        "S-1-4-1052222004-575019812"
+      ],
+      [
+        "BASELINE own world",
+        "readable"
+      ],
+      [
+        "BASELINE sibling world",
+        "READABLE (the leak)"
+      ],
+      [
+        "BASELINE durable state",
+        "READABLE (the leak)"
+      ],
+      [
+        "--- applying DENY (RD) for the capability SID ---",
+        ""
+      ],
+      [
+        "deny applied via Set-Acl",
+        "denied-verified:<rig>\\capsid5\\project\\repo\\.palimpsest\\worlds\\attempt-sibling\r | denied-verified:<rig>\\capsid5\\project\\state"
+      ],
+      [
+        "--- after the capability-SID deny ---",
+        ""
+      ],
+      [
+        "own world still readable (ordinary work intact)",
+        "YES"
+      ],
+      [
+        "sibling world readable by the worker",
+        "STILL READABLE"
+      ],
+      [
+        "durable state readable by the worker",
+        "STILL READABLE"
+      ],
+      [
+        "daemon can still read the protected dirs",
+        "YES \u2014 the daemon is unaffected, which is the property the principal-wide deny lacked"
+      ],
+      [
+        "sibling worlds still enumerable by the worker",
+        "YES (attempt-mine, attempt-sibling)"
+      ],
+      [
+        "--- the limit ---",
+        ""
+      ],
+      [
+        "a different workspace's capability SID",
+        "S-1-4-941672582-200345246"
+      ],
+      [
+        "the deny protects against another workspace's worker",
+        "NO \u2014 the SIDs differ, so a second project's worker would not be denied"
+      ]
+    ],
+    "workspaceSid": "S-1-4-1052222004-575019812",
+    "baseline": {
+      "OWN_WORLD": {
+        "read": true,
+        "content": "canary=world_cd6ed7c8e0d9d26822843acf"
+      },
+      "SIBLING_WORLD": {
+        "read": true,
+        "content": "canary=sibling_acefb38bf5da37475a3ba111"
+      },
+      "STATE": {
+        "read": true,
+        "content": "canary=state_6ccdafa61d0627e268c95fe1"
+      },
+      "ENUMERATE_WORLDS": {
+        "listed": [
+          "attempt-mine",
+          "attempt-sibling"
+        ]
+      }
+    }
+  },
+  "conformance": {
+    "confinementMode": "AclSandbox workspace-write (child exit 0)",
+    "results": [
+      {
+        "id": "S-N01",
+        "statement": "worker can read a file inside its execution world",
+        "pass": true,
+        "detail": "world read succeeded"
+      },
+      {
+        "id": "S-N02",
+        "statement": "worker CANNOT read the Palimpsest state canary",
+        "pass": false,
+        "detail": "READABLE \u2014 contract violated"
+      },
+      {
+        "id": "S-N03",
+        "statement": "worker CANNOT read the sibling-world canary",
+        "pass": false,
+        "detail": "READABLE \u2014 contract violated"
+      },
+      {
+        "id": "S-N04",
+        "statement": "worker CANNOT read another-project canary",
+        "pass": false,
+        "detail": "READABLE \u2014 contract violated"
+      },
+      {
+        "id": "S-N05",
+        "statement": "worker CANNOT traverse using ../",
+        "pass": false,
+        "detail": "traversal READ the state canary \u2014 contract violated"
+      },
+      {
+        "id": "S-N06",
+        "statement": "worker CANNOT read a protected absolute path",
+        "pass": false,
+        "detail": "READABLE \u2014 contract violated"
+      },
+      {
+        "id": "S-N07",
+        "statement": "worker SUBPROCESS cannot bypass the same restriction",
+        "pass": false,
+        "detail": "INCONCLUSIVE \u2014 the nested child cannot spawn a usable process under this harness (self-test-failed:EPERM), because the host's subprocess route needs an fd-7 control channel this suite does not wire. NOT a pass. The violation is established by S-N02 and S-N14 instead"
+      },
+      {
+        "id": "S-N08",
+        "statement": "context-pull still resolves an allowed bound handle",
+        "pass": true,
+        "detail": "asserted by gate:r1-l-live (a live bound handle is required; a filesystem probe would measure the wrong thing)"
+      },
+      {
+        "id": "S-N09",
+        "statement": "direct backing-store read is blocked while pull succeeds",
+        "pass": false,
+        "detail": "the backing store is directly readable, so 'blocked while pull succeeds' cannot hold \u2014 contract violated"
+      },
+      {
+        "id": "S-N10",
+        "statement": "worker CANNOT enumerate protected parent directories",
+        "pass": false,
+        "detail": "LISTED siblings: attempt-mine, attempt-sibling"
+      },
+      {
+        "id": "S-N11",
+        "statement": "write confinement still holds",
+        "pass": true,
+        "detail": "in-world write allowed, outside write refused"
+      },
+      {
+        "id": "S-N12",
+        "statement": "ordinary runtime/toolchain reads still work",
+        "pass": false,
+        "detail": "the nested subprocess route is UNAVAILABLE under this token, so 'ordinary engineering work' cannot be demonstrated here \u2014 recorded as a failure rather than assumed"
+      },
+      {
+        "id": "S-N13",
+        "statement": "worker cannot see the host environment canary",
+        "pass": false,
+        "detail": "environment canary inherited \u2014 contract violated"
+      },
+      {
+        "id": "S-N14",
+        "statement": "the SHIPPED runner path also refuses the protected read",
+        "pass": false,
+        "detail": "world read allowed, protected read READABLE \u2014 contract violated through the shipped runner"
+      }
+    ],
+    "failed": [
+      "S-N02",
+      "S-N03",
+      "S-N04",
+      "S-N05",
+      "S-N06",
+      "S-N07",
+      "S-N09",
+      "S-N10",
+      "S-N12",
+      "S-N13",
+      "S-N14"
+    ]
+  }
+}
