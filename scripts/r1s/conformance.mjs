@@ -189,20 +189,17 @@ assert_("S-N06", "worker CANNOT read a protected absolute path", !matched("SESSI
 /**
  * S-N07 — SUBPROCESS BYPASS.
  *
- * MEASURED LIMITATION, stated rather than hidden: under `workspace-write` this harness's nested child
- * cannot spawn a usable process at all (`EPERM`), because DSH's subprocess route needs a control channel
- * on fd 7 (`DSH_SUBPROCESS_CONTROL=pipe`) that this suite does not wire. That is a HARNESS limitation,
- * not confinement: in the real deployment worker subprocesses DO run (R1-R's trials executed
- * `node test/check.js` and `git commit` inside their worlds).
+ * MEASURED LIMITATION of THIS SUITE, stated rather than hidden: under `workspace-write` the harness's
+ * nested child cannot spawn a usable process at all (`EPERM`), because DSH's subprocess route needs a
+ * control channel on fd 7 (`DSH_SUBPROCESS_CONTROL=pipe`) that this suite does not wire. So the assertion
+ * is reported INCONCLUSIVE here and must not be counted as a pass — a security gate that passes because
+ * its probe could not run is worse than one that fails.
  *
- * So this assertion is reported INCONCLUSIVE here, on purpose. It must not be counted as a pass — a
- * security gate that passes because its probe could not run is worse than one that fails.
- *
- * The contract violation is nevertheless ESTABLISHED, by routes that do not depend on this assertion:
- *   · S-N02/S-N09 — the worker process reads the protected store directly;
- *   · S-N14 — the SHIPPED runner path reads it too, and the runner is what a deployment executes;
- *   · a subprocess cannot be MORE restricted than its parent for read purposes here, because no
- *     read-confinement primitive exists to apply at all (§6).
+ * THE QUESTION IS NOT LEFT OPEN, THOUGH. `gate:r1-s-live` answers it on a REAL worker: asked to try a
+ * subprocess read, that worker reported obtaining the protected canary "via the read tool, absolute and
+ * relative paths, pwsh Get-Content, and a node subprocess". So the subprocess route DOES work in the real
+ * deployment and DOES leak. The contract violation is therefore established by S-N02, S-N09, S-N14 and
+ * the live gate; this entry records only that THIS probe could not measure it.
  */
 const selfTestOk = report.SUBPROCESS_SELF_TEST?.read === true;
 const subBlocked = !matched("SUBPROCESS_STATE", c.STATE);
@@ -212,7 +209,7 @@ assert_(
   selfTestOk && subBlocked,
   selfTestOk
     ? (report.SUBPROCESS_STATE?.read === true ? "a child process READ the state canary — contract violated" : `blocked (${report.SUBPROCESS_STATE?.code})`)
-    : `INCONCLUSIVE — the nested child cannot spawn a usable process under this harness (${report.SUBPROCESS_SELF_TEST?.code ?? "?"}), because the host's subprocess route needs an fd-7 control channel this suite does not wire. NOT a pass. The violation is established by S-N02 and S-N14 instead`,
+    : `INCONCLUSIVE here — the nested child cannot spawn under this harness (${report.SUBPROCESS_SELF_TEST?.code ?? "?"}) because the host's subprocess route needs an fd-7 control channel this suite does not wire. NOT a pass. gate:r1-s-live measured the real route and it LEAKS`,
 );
 assert_("S-N08", "context-pull still resolves an allowed bound handle", true, "asserted by gate:r1-l-live (a live bound handle is required; a filesystem probe would measure the wrong thing)");
 assert_("S-N09", "direct backing-store read is blocked while pull succeeds", !matched("STATE", c.STATE), report.STATE?.read === true ? "the backing store is directly readable, so 'blocked while pull succeeds' cannot hold — contract violated" : "backing store blocked; the pull half is asserted by gate:r1-l-live");
