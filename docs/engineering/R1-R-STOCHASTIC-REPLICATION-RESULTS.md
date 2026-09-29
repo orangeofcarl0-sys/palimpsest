@@ -169,3 +169,52 @@ parallel execution, not a regression. It is recorded rather than quietly re-run.
 `gate:r1-l-live` initially FAILED, and the failure was informative rather than incidental: its C0
 assertion claimed an impossibility the gate cannot establish. That is finding three above; the gate was
 corrected and re-run to PASS.
+
+---
+
+## 8. CORRECTION (appended by R1-S; the text above is NOT rewritten)
+
+**§5's counter-evidence said R1-R's C0 exclusion "is not contaminated". R1-S measured that this was
+right about the OUTCOME and wrong about the MECHANISM, and the difference matters.**
+
+The correct statement is:
+
+```
+0 primary trials showed OBSERVED out-of-band capital access,
+but C0 exclusion was NOT mechanically enforced.
+```
+
+Use:
+
+```
+0 OBSERVED CONTAMINATION
+```
+
+not:
+
+```
+structurally impossible contamination
+```
+
+**What was measured, and why the original sentence overstated.** The scan reported in §5 is still valid —
+0 hits across all 30 trials' sources, transcripts and reports. But "not contaminated because no worker
+used it" is a statement about observed behaviour, whereas §5's phrasing invited the reading that a worker
+*could not* have used it. R1-S measured that it could: a worker with no handles and no pulls can read the
+capital body straight out of the durable store, because the host sandbox confines writes and not reads.
+
+**What this does and does not change for R1-R's result.**
+
+- The **verdict is unaffected**: NO_REPLICATION stands, because the mechanism is `KNOWLEDGE_NOT_USED` —
+  no worker pulled any capital, and 0/30 trials show the capital's text anywhere in their output.
+- The **confidence interval around "C0 was clean" is wider than §5 implied**: C0 was clean in fact
+  (observed), not clean by construction (enforced). A single C0 trial that had chosen to read the store
+  would have been contaminated without any harness signal distinguishing it, because the read is a normal
+  `readFileSync` from the worker's point of view.
+
+**What would be needed to make the original wording true.** An enforceable read boundary for worker
+execution. R1-S audited the installed host for one and found none usable:
+[`R1-S-WORKER-CONFIDENTIALITY-AUDIT.md`](./R1-S-WORKER-CONFIDENTIALITY-AUDIT.md) records
+`R1-S: BLOCKED AT HOST CAPABILITY`, with the probes behind that conclusion.
+
+No measurement in §1–§4 and §6–§7 above is withdrawn: the counts, the pull telemetry, and the
+`KNOWLEDGE_NOT_USED` mechanism all stand as recorded.
