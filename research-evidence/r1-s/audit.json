@@ -707,5 +707,47 @@
       "S-N13",
       "S-N14"
     ]
+  },
+  "verdictRecord": {
+    "verdict": "R1-S: BLOCKED AT HOST CAPABILITY",
+    "statement": "CURRENT DSH WORKER MODEL CANNOT PROVIDE THE REQUIRED READ-CONFINEMENT CONTRACT",
+    "gateReached": "R1-S GATE A (capability audit)",
+    "productionChange": "NONE \u2014 no src/ or host/ file modified",
+    "r1lCorrection": {
+      "functionalPull": "CLOSED",
+      "exclusiveAccessConfidentiality": "REOPENED"
+    },
+    "r1rInterpretation": "0 OBSERVED CONTAMINATION (not: structurally impossible contamination)",
+    "r1lStrongNonceProofRestored": false,
+    "r1lStrongNonceProofReason": "restoring it requires the read boundary this stage could not obtain; asserting it now would re-introduce the corrected overclaim",
+    "enforcementMechanismChosen": "NONE \u2014 \u00a79 forbids choosing a backend before GATE A proves necessity",
+    "allowedExecutionReads": [
+      "its own execution world",
+      "the runtime/toolchain installation",
+      "read-only system resources required to execute tools",
+      "the worker-context transport (the governed pull channel)"
+    ],
+    "protectedHostReads": [
+      "Palimpsest durable owner stores",
+      "ProjectWorkspace stores",
+      "Proof/Reasoning/Procedure backing state",
+      "other projects state",
+      "sibling execution worlds",
+      "host session artifacts not explicitly supplied",
+      "synthetic secret/environment canaries"
+    ],
+    "newCanonicalOwners": 0,
+    "newEventTypes": 0,
+    "newTables": 0,
+    "newAssetKinds": 0,
+    "persistenceChanges": 0,
+    "authorityChanges": 0,
+    "unresolvedHostLimitations": [
+      "no read-confinement primitive in the shipped policy vocabulary or in any of the four platform runners",
+      "the confined token lowers integrity for the WRITE side only (no-read-up is not expressible via icacls, and DSH builds no-write-up)",
+      "the DSH home sits under the user profile, so credentials are reachable by absolute path from any worker world",
+      "even a WSL/bwrap worker can read the Windows home via /mnt/c unless the Windows mounts are narrowed"
+    ],
+    "nextStage": "Choose and measure an execution backend that satisfies the contract: (1) separate worker principal with an explicit ACL boundary, (2) WSL/bwrap with narrowed Windows mounts, (3) container/microVM. Acceptance = gate:r1-s-conformance exits 0."
   }
 }
