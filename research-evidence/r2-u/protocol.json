@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-U",
+  "title": "Capital Uptake & Affordance",
+  "startingHead": "c023a633f2caf747aee539b029fba37a3a7fca48",
+  "branch": "r2-u-capital-uptake",
+  "design": {
+    "kind": "2x2 factorial, randomized blocks",
+    "factors": {
+      "K": {
+        "K0": "no selected inherited capital",
+        "K1": "full relevant capital selected (Proof + Reasoning + Procedure)"
+      },
+      "A": {
+        "A0": "PASSIVE — current production presentation",
+        "A1": "EXPLICIT REVIEW — the frozen uptake clause is appended"
+      }
+    },
+    "cells": [
+      "K0A0",
+      "K1A0",
+      "K0A1",
+      "K1A1"
+    ],
+    "repetitions": 5,
+    "scenarios": [
+      "C",
+      "D"
+    ],
+    "expectedTrials": 40,
+    "seed": "0x52325501",
+    "blockOrder": [
+      {
+        "scenario": "C",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "K1A1",
+              "K1A0",
+              "K0A1",
+              "K0A0"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "K1A1",
+              "K1A0",
+              "K0A0",
+              "K0A1"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "K0A1",
+              "K1A0",
+              "K0A0",
+              "K1A1"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "K1A0",
+              "K0A1",
+              "K0A0",
+              "K1A1"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "K0A1",
+              "K1A0",
+              "K1A1",
+              "K0A0"
+            ]
+          }
+        ]
+      },
+      {
+        "scenario": "D",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "K1A0",
+              "K0A1",
+              "K1A1",
+              "K0A0"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "K0A1",
+              "K0A0",
+              "K1A0",
+              "K1A1"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "K1A0",
+              "K0A1",
+              "K0A0",
+              "K1A1"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "K1A1",
+              "K0A1",
+              "K0A0",
+              "K1A0"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "K1A1",
+              "K0A1",
+              "K1A0",
+              "K0A0"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "affordance": {
+    "mode": "explicit-review",
+    "envVar": "PALIMPSEST_R2U_AFFORDANCE",
+    "clauseDigest": "2067689aeb9d91abcb4639a45fe70efa06f8687be4858a220f3b2a61443fdfff"
+  },
+  "primaryMetric": "P(capital handles pulled) per cell",
+  "secondaryMetrics": [
+    "P(Procedure pull)",
+    "median relevant handles pulled",
+    "time-to-first-pull",
+    "tool actions before first pull",
+    "capital shown but never used"
+  ],
+  "preDeclaredVerdicts": [
+    "R2-U CAPITAL UPTAKE: REPLICATED",
+    "R2-U CAPITAL UPTAKE: PARTIAL",
+    "R2-U CAPITAL UPTAKE: NOT_IMPROVED"
+  ],
+  "verdictCriteria": {
+    "REPLICATED": "both scenarios: K1A1 pull rate > K1A0 pull rate, with governed body pulls, and no comparable placebo shift in K0",
+    "PARTIAL": "exactly one scenario shows a clear increase, or both show a weak/noisy directional increase",
+    "NOT_IMPROVED": "the explicit affordance does not increase capital use in either scenario"
+  },
+  "efficacyNote": "efficacy is SECONDARY and is only analysed where a governed body pull actually occurred",
+  "frozenPriorEvidence": {
+    "source": "R1-R",
+    "trials": 30,
+    "capitalVisible": true,
+    "capitalPullable": true,
+    "governedPulls": "0/30",
+    "role": "the passive-affordance baseline; NOT rerun and NOT reinterpreted as the R2-U affordance"
+  }
+}

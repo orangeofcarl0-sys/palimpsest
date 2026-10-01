@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+  "projectId": "r2u-incremental-cache",
+  "taskObjective": "finish invalidateCache so it updates the cache after a set of source nodes changed",
+  "projectGoal": "keep an incremental build cache correct as its inputs change",
+  "requirements": [
+    "invalidateCache must update the cache for the nodes whose source changed",
+    "the cache must be correct for every change set the build admits"
+  ],
+  "sourceFile": "src/cache.ts",
+  "exportName": "invalidateCache",
+  "oracleCommand": [
+    "node",
+    "test/check.js"
+  ],
+  "knownFailure": "invalidate the changed nodes before the affected closure is computed",
+  "knownFailureDetector": "invalidateBeforeClosureFrozen",
+  "hiddenCaseCount": 14,
+  "visibleCaseCount": 5,
+  "generatorLadder": [
+    {
+      "id": "D0",
+      "note": "the starting point: delete the entries whose source changed"
+    },
+    {
+      "id": "D1",
+      "note": "add shape validation, but after the deletions"
+    },
+    {
+      "id": "D2",
+      "note": "compute a closure, but in both directions"
+    },
+    {
+      "id": "D3",
+      "note": "walk descendants only, but ignore unresolvable dependencies"
+    },
+    {
+      "id": "D4",
+      "note": "freeze the affected set, then delete"
+    }
+  ]
+}

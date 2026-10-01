@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-U",
+  "phase": "CALIBRATION",
+  "runsPerScenario": 3,
+  "meaningfulProgressFraction": 0.5,
+  "scenarios": {
+    "D": {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "trials": [
+        {
+          "trialId": "D-K0A0-b900r0",
+          "finalAcceptance": {
+            "passed": 11,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 11,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "knownFailureFirstRecurred": true,
+          "knownFailureFinalRecurred": true,
+          "visibleOracleInvocations": 3,
+          "implementationRevisions": 0,
+          "elapsedMs": 133762,
+          "hostFailure": null
+        },
+        {
+          "trialId": "D-K0A0-b901r0",
+          "finalAcceptance": {
+            "passed": 10,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h10:ACCEPTED_INVALID_INPUT",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 10,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h10:ACCEPTED_INVALID_INPUT",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "knownFailureFirstRecurred": true,
+          "knownFailureFinalRecurred": true,
+          "visibleOracleInvocations": 3,
+          "implementationRevisions": 0,
+          "elapsedMs": 105966,
+          "hostFailure": null
+        },
+        {
+          "trialId": "D-K0A0-b902r0",
+          "finalAcceptance": {
+            "passed": 10,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h10:ACCEPTED_INVALID_INPUT",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "firstCandidateAcceptance": {
+            "passed": 10,
+            "total": 14,
+            "failures": [
+              "h04:WRONG_CACHE",
+              "h05:WRONG_CACHE",
+              "h10:ACCEPTED_INVALID_INPUT",
+              "h14:ACCEPTED_INVALID_INPUT"
+            ]
+          },
+          "knownFailureFirstRecurred": true,
+          "knownFailureFinalRecurred": true,
+          "visibleOracleInvocations": 2,
+          "implementationRevisions": 0,
+          "elapsedMs": 92669,
+          "hostFailure": null
+        }
+      ],
+      "firstCandidateSolves": 0,
+      "meaningfulProgress": 3,
+      "ceiling": false,
+      "floor": false,
+      "verdict": "PRIMARY_ELIGIBLE"
+    }
+  },
+  "allEligible": true
+}
