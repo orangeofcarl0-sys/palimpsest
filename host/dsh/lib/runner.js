@@ -32,6 +32,27 @@ import { brandString } from '@deepseek-ai/dsh-brand';
 import { installModelSelection } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 
+/**
+ * R1-H: the host-execution read boundary.
+ *
+ * Loaded DYNAMICALLY and CACHED, for two reasons. It is a sibling package (`palimpsest-host-deployment`),
+ * so this bundle does not statically depend on it and a deployment that composes no worker still loads. And
+ * a boundary that could not be loaded must be REPORTABLE rather than fatal: the runner records
+ * `installed: false` with the reason in its telemetry, and `gate:r1-h-live` asserts the boundary IS
+ * installed — so a packaging accident fails the gate instead of silently running a worker unprotected.
+ */
+let boundaryModule;
+let boundaryModuleError;
+async function loadBoundary() {
+  if (boundaryModule !== undefined || boundaryModuleError !== undefined) return { module: boundaryModule, error: boundaryModuleError };
+  try {
+    boundaryModule = await import('palimpsest-host-deployment/runtime/worker_fence.js');
+  } catch (error) {
+    boundaryModuleError = error?.message ?? String(error);
+  }
+  return { module: boundaryModule, error: boundaryModuleError };
+}
+
 export const name = 'palimpsest-runner';
 export const inject = ['agents', 'sessions', 'agentDefaultModel', 'palimpsestStartup', 'palimpsestHost'];
 
@@ -238,15 +259,57 @@ async function runWorker(ctx, deps) {
   let offeredTools = [];
   let denied = [];
   let presentation = null;
-  // §17: the handles the worker actually pulled. Hoisted for the same reason `offeredTools` is: the
+  // R1-S §17: the handles the worker actually pulled. Hoisted for the same reason `offeredTools` is: the
   // telemetry is emitted after the try/catch, where `environment` is no longer in scope.
   let pulledHandles = [];
+  // R1-H: what the read boundary achieved, for the telemetry line. `undefined` until the boundary runs, so a
+  // worker that failed before installing it reports "not installed" rather than a false success.
+  let boundary = null;
+  /**
+   * The telemetry line's payload, computed from whatever `boundary` holds. Three states are distinguishable
+   * on purpose, because "not installed" and "installed but unsupported" are different facts and the live
+   * gate asserts on the difference: a boundary that silently failed to load must not read as a pass.
+   */
+  const readBoundaryTelemetry = () => {
+    if (boundary === null) return JSON.stringify({ installed: false });
+    if (typeof boundary.unavailable === 'string') return JSON.stringify({ installed: false, unavailable: boundary.unavailable });
+    const outcomes = boundary.kernel?.outcomes ?? [];
+    return JSON.stringify({
+      installed: true,
+      kernel: {
+        supported: boundary.kernel?.supported === true,
+        ...(boundary.kernel?.unavailable === undefined ? {} : { unavailable: boundary.kernel.unavailable }),
+        labelled: outcomes.filter((entry) => entry.verified).length,
+        attempted: outcomes.length,
+        unverified: outcomes.filter((entry) => !entry.verified).map((entry) => entry.path),
+        skipped: (boundary.kernel?.skipped ?? []).length,
+      },
+      guard: { installed: boundary.guardInstalled === true, tools: boundary.fencedTools ?? [] },
+      residuals: (boundary.config?.residuals ?? []).length,
+    });
+  };
 
   try {
     const environment = host.work;
     if (environment === undefined || environment.recorder === undefined) {
       failure = environment?.error ?? 'the worker environment was not composed';
     } else {
+      /**
+       * R1-H: INSTALL THE READ BOUNDARY before the agent exists.
+       *
+       * The worker's cwd IS its execution world (the port spawns with `cwd: workDir`), so the fence derives
+       * its own layout from the process position rather than being told: the world is cwd, the repository is
+       * the ancestor holding `.palimpsest`, and the host home is `DSH_HOME`. The KERNEL layer (a MEDIUM +
+       * NO_READ_UP label) is applied here, in the Medium-integrity host, which is exactly why it can fence
+       * the Low-integrity worker without fencing itself. The GUARD layer is installed inside the agent's own
+       * scope below, where a scope exists.
+       */
+      const boundaryLoad = await loadBoundary();
+      if (boundaryLoad.module === undefined) {
+        boundary = { unavailable: boundaryLoad.error };
+      } else {
+        boundary = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd() });
+      }
       // The name comes from the environment's OWN definition — the data Palimpsest sent — never from a
       // literal here, so the two sides cannot disagree about what the worker answers through.
       const resultToolName =
@@ -279,6 +342,21 @@ async function runWorker(ctx, deps) {
           // already converted by the plugin layer, which owns that conversion.
           agentCtx.tools.register(environment.tool);
           if (pullToolName !== undefined) agentCtx.tools.register(environment.contextPullTool);
+          /**
+           * R1-H layer 2: THE TRUSTED-CODE READ GUARD, registered on the WORKER's scope.
+           *
+           * It must live here rather than at the plugin scope: a guard registered through an agent's own
+           * context applies to THAT agent, and this is the agent whose tool calls carry model-controlled
+           * paths. A `guard` may only deny (the shipped contract gives it no allow result), so registering
+           * one can never widen what the worker may do.
+           *
+           * It exists because the kernel label cannot cover these calls: the PTC bindings execute in the
+           * trusted host process (measured, GATE A A-25), where a mandatory integrity label does not bind.
+           */
+          if (boundary !== null && boundaryLoad.module !== undefined && typeof agentCtx.tools.guard === 'function') {
+            const guarded = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd(), scope: agentCtx });
+            boundary = { ...boundary, guardInstalled: guarded.guardInstalled };
+          }
           if (typeof agentCtx.tools.presentAs === 'function') {
             agentCtx.tools.presentAs('ptc');
             presentation = 'ptc';
@@ -330,6 +408,14 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_PULL ${JSON.stringify({ pulled: pulledHandles })}
+`,
+  );
+  /**
+   * R1-H: WHAT THE READ BOUNDARY ACHIEVED — the noncanonical fact a reviewer and the live gate read instead
+   * of a prompt line. It reports counts and states only: no path, no body, no credential (§13/§16).
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_READ_BOUNDARY ${readBoundaryTelemetry()}
 `,
   );
 
