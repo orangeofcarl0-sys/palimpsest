@@ -69,7 +69,14 @@
     "gate:r1-hr-conformance": "node scripts/r1hr/conformance.mjs",
     "gate:r1-hr-clean-env": "node scripts/r1hr/clean-env.mjs",
     "gate:r1-hc-conformance": "node scripts/r1hc/conformance.mjs",
-    "gate:r1-hc-live": "node scripts/gates/r1hc-live-gate.mjs"
+    "gate:r1-hc-live": "node scripts/gates/r1hc-live-gate.mjs",
+    "r2u:slot-preflight": "node scripts/r2u/slot-preflight.mjs",
+    "r2u:isolation": "node scripts/r2u/isolation.mjs",
+    "r2u:gate-a": "node scripts/r2u/gate-a.mjs",
+    "r2u:calibrate": "node scripts/r2u/calibrate.mjs",
+    "r2u:matrix": "node scripts/r2u/matrix.mjs",
+    "r2u:analyse": "node scripts/r2u/analyse.mjs",
+    "r2u:evidence": "node scripts/r2u/evidence.mjs"
   },
   "dependencies": {
     "@ordarium/core": "https://github.com/orangeofcarl0-sys/ordarium/releases/download/ordarium-v1.3.1/ordarium-core-1.3.1.tgz",
