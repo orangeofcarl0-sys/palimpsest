@@ -404,3 +404,67 @@ capital visible · capital pullable · 0/30 capital consumed
 
 with the confidentiality claim stated precisely enough to be falsifiable, and with the residual stated
 precisely enough that no later stage can mistake it for a guarantee.
+
+---
+
+## 19. CLARIFICATION — appended by R1-HC (this document is otherwise unchanged)
+
+R1-HC closed two content-confidentiality gaps this document left open, and one of them was a **hole in the
+guard described in §6.2** rather than a documented residual. The findings below are appended; nothing above is
+rewritten, and every measurement R1-HR recorded remains true for the scope it stated.
+
+**What stands.** The standing-label model, the preservation rule, the readback verification, the descendant
+propagation, the alias refusal, the capability classification and the credential and metadata measurements are
+all unchanged and still asserted by `gate:r1-hr-conformance` (44 PASS / 3 LIMIT / 0 FAIL).
+
+### 19.1 The guard had a deterministic bypass, not merely a TOCTOU
+
+§9 of this document said the trusted-host guard "is a policy check over model-controlled paths, not a kernel
+boundary", and §6.2 recorded the ancestor-search fix. What neither recorded is that the guard resolved the
+model's path **lexically**: a junction placed inside the execution world made `resolve()` report world content
+while the kernel followed the link to a protected file.
+
+Measured, that is not a race — it is a **static, deterministic read of protected bytes** through a route the
+guard called safe:
+
+```
+guard(read via world/escape/secret.txt) -> ALLOWED   (lexical resolve says "inside the world")
+actual bytes                            -> "SECRET_CANARY"
+realpathSync                            -> <protected>/secret.txt
+```
+
+R1-HC closes it structurally, in `read_guard.js`:
+
+1. **No reparse indirection below the world.** Every component from the world to the target is examined with
+   `lstatSync`, and a junction or symlink anywhere below the world refuses the call — **wherever it points**.
+   Refusing on the existence of the indirection rather than on its target is what also closes the race: a
+   target swapped between a safe file and a protected one is refused either way, so the decision no longer
+   depends on when it was checked.
+2. **The decision uses the real object.** The path is canonicalized with `realpathSync` before containment is
+   tested, so the check runs against the object the kernel will open.
+
+Measured: 600 samples with a **live** indirection, 600 denied, **0 protected observations**.
+
+### 19.2 R1-HR did not close simultaneous ACTIVE sibling-world confidentiality
+
+§11 recorded at-rest isolation and disclosed the concurrent case as a residual. R1-HC confirms it and states
+the consequence plainly: **two ACTIVE worlds cannot both be read-fenced on this backend**, because a running
+worker's own workspace write grant is the last writer of its world's label.
+
+The answer is a capacity contract rather than a stronger label: the `windows-confidential-single-active`
+profile runs **at most one ACTIVE Work worker**. It is host execution capacity — not Work authority, not
+StageGraph concurrency, not a canonical lock — and a second request is refused with an honest host-capacity
+fact that fails no attempt, grants no authority and rewrites no task.
+
+With that in force, the sibling-world claim holds for every world a running worker can reach: an ACTIVE worker
+cannot read an at-rest sibling world's content, and it cannot read the durable state or the credential.
+
+### 19.3 Status of the two §17 limits
+
+- **Limit 2** ("isolation between concurrently active worlds is not guaranteed") is now **bounded by
+  construction** rather than left to the caller: the profile serializes them, so the state it described cannot
+  arise under the supported profile. The underlying backend limitation is unchanged and is recorded as
+  `HC-27`.
+- **Limit 7** ("TOCTOU narrowed and accepted") is **superseded**. The guard no longer narrows a race; it
+  refuses the mechanism the race depends on. The limit is replaced by the honest narrowing that a legitimate
+  junction inside a worker's own world is unreadable — a real cost, stated rather than hidden.

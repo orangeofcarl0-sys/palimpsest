@@ -1,0 +1,176 @@
+{
+  "results": [
+    {
+      "id": "HC-01",
+      "statement": "the alias scan runs BEFORE the fence is applied in the shipped install path",
+      "pass": true,
+      "detail": "alias scan at char 7479, label apply at char 7903 — correct order"
+    },
+    {
+      "id": "HC-02",
+      "statement": "a malicious pre-existing alias refuses the worker",
+      "pass": true,
+      "detail": "refused with 2 alias(es) named"
+    },
+    {
+      "id": "HC-03",
+      "statement": "the protected target's mandatory label is UNCHANGED by the refusal",
+      "pass": true,
+      "detail": "before mask=0x2 rid=8192; after mask=0x2 rid=8192"
+    },
+    {
+      "id": "HC-04",
+      "statement": "no alias at admission, alias created after, refused on the next start",
+      "pass": true,
+      "detail": "first=admitted, after alias=refused (1 alias)"
+    },
+    {
+      "id": "HC-05",
+      "statement": "a CONFINED worker cannot create any alias kind",
+      "pass": true,
+      "detail": "symlink=EPERM, hardlink=EPERM, junction=failed"
+    },
+    {
+      "id": "HC-06",
+      "statement": "a junction INSIDE the world is refused (the deterministic bypass R1-HR left open)",
+      "pass": true,
+      "detail": "junction=true, via-junction=denied, direct=denied"
+    },
+    {
+      "id": "HC-07",
+      "statement": "ordinary reads inside the world are still allowed",
+      "pass": true,
+      "detail": "in-world read permitted"
+    },
+    {
+      "id": "HC-08",
+      "statement": "the refusal is on the MECHANISM: an indirection is refused wherever it points",
+      "pass": true,
+      "detail": "a junction to a harmless directory is also refused (detected at toctou-world\\to-harmless) — so a racing re-point cannot win"
+    },
+    {
+      "id": "HC-09",
+      "statement": "the adversarial race yields ZERO protected observations with a LIVE indirection",
+      "pass": true,
+      "detail": "600 live-indirection samples, 600 denied, 0 protected observations"
+    },
+    {
+      "id": "HC-10",
+      "statement": "a search rooted AT a junction inside the world is refused",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "HC-11",
+      "statement": "a search rooted in ordinary world content is allowed",
+      "pass": true,
+      "detail": "permitted"
+    },
+    {
+      "id": "HC-12",
+      "statement": "a search rooted ABOVE a protected root is still refused (mutual overlap retained)",
+      "pass": true,
+      "detail": "ancestor=denied, at-root=denied"
+    },
+    {
+      "id": "HC-13",
+      "statement": "an in-world search is still permitted",
+      "pass": true,
+      "detail": "permitted"
+    },
+    {
+      "id": "HC-14",
+      "statement": "the search tools are classified GUARDED_HOST_READ and derived into the guard",
+      "pass": true,
+      "detail": "guard tools: read, read_image, grep, glob, ls, str_replace_editor"
+    },
+    {
+      "id": "HC-15",
+      "statement": "the profile states its capacity as data",
+      "pass": true,
+      "detail": "windows-confidential-single-active: max=1, canonical concurrency unaffected"
+    },
+    {
+      "id": "HC-16",
+      "statement": "two concurrent requests are serialized: the peak ACTIVE count never exceeds 1",
+      "pass": true,
+      "detail": "peak ACTIVE = 1; order = start:A -> end:A -> start:B -> end:B"
+    },
+    {
+      "id": "HC-17",
+      "statement": "the queued worker still RUNS rather than being dropped",
+      "pass": true,
+      "detail": "both runs completed (waited=1)"
+    },
+    {
+      "id": "HC-18",
+      "statement": "a second worker under `refuse` gets an honest HOST CAPACITY refusal, not a Work outcome",
+      "pass": true,
+      "detail": "second refused as HOST_FAILURE; first=READY_FOR_SETTLEMENT; capacityRefusals=1"
+    },
+    {
+      "id": "HC-19",
+      "statement": "the refusal names the profile and states that no attempt was failed",
+      "pass": true,
+      "detail": "the windows-confidential-single-active profile runs at most 1 ACTIVE work worker(s); 1 is already running. This is a HOST CAPACITY fact, not a Work outcome: no attempt wa"
+    },
+    {
+      "id": "HC-20",
+      "statement": "the admission question is answerable without running anything",
+      "pass": true,
+      "detail": "active=0 admitted=true, active=1 admitted=false"
+    },
+    {
+      "id": "HC-21",
+      "statement": "an ACTIVE worker cannot read an at-rest sibling world's content",
+      "pass": true,
+      "detail": "own=ok, sibling=blocked (EPERM)"
+    },
+    {
+      "id": "HC-22",
+      "statement": "the ACTIVE worker still cannot read the durable state or the credential",
+      "pass": true,
+      "detail": "state=blocked (EPERM), credential=blocked (EPERM)"
+    },
+    {
+      "id": "HC-23",
+      "statement": "the three capabilities the live gate once caught are classified",
+      "pass": true,
+      "detail": "3 worker-visible capabilities, all classified"
+    },
+    {
+      "id": "HC-24",
+      "statement": "an UNKNOWN capability still refuses the worker start",
+      "pass": true,
+      "detail": "UNCLASSIFIED worker-visible capability(ies): brand_new_capability — an unknown capability is not assumed safe, so the worker must not start"
+    },
+    {
+      "id": "HC-25",
+      "statement": "a per-agent guard is still refused when a delegation capability is reachable",
+      "pass": true,
+      "detail": "this worker can reach subagent, which delegate to scopes that can read files; the read guard is registered worker-scope, which does not cover those sc"
+    },
+    {
+      "id": "HC-26",
+      "statement": "preservation, descendant verification and idempotence are unchanged",
+      "pass": true,
+      "detail": "first verified=true/true, second alreadyProtected=true, label=[NO_READ_UP]"
+    },
+    {
+      "id": "HC-27",
+      "statement": "parallel ACTIVE confidential workers on the current Windows backend",
+      "pass": true,
+      "limit": true,
+      "detail": "UNSUPPORTED CAPABILITY, by design: a running worker's own workspace write grant is the last writer of its world label, so two ACTIVE worlds cannot both be read-fenced. The profile serializes them (HC-15…HC-17) rather than pretending to separate them. Future options, none implemented here: a per-world principal, an AppContainer, a narrow namespace/container, or a microVM."
+    }
+  ],
+  "failed": [],
+  "limits": [
+    "HC-27"
+  ],
+  "race": {
+    "liveSamples": 600,
+    "deniedSamples": 600,
+    "protectedObservations": 0
+  }
+}
