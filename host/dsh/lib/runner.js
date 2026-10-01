@@ -39,6 +39,12 @@ import { createUserMessage } from '@deepseek-ai/dsh-llm';
  * prompt this runner composes is byte-identical to production.
  */
 import { AFFORDANCE_ENV, applyAffordance, resolveAffordanceMode } from './affordance.js';
+/**
+ * R2-E §8/§10: the EXPERIMENTAL efficacy seam. Loaded statically for the same reason as the affordance:
+ * it has no imports beyond `node:crypto` and must never be why a worker fails to compose. In the default
+ * mode it is inert.
+ */
+import { EFFICACY_ENV, EFFICACY_MODES, PREWORK_MECHANISM, applyEfficacyReview, bodyDigest, renderEfficacyReview, resolveEfficacyMode } from './efficacy.js';
 
 /**
  * R1-H: the host-execution read boundary.
@@ -310,6 +316,9 @@ async function runWorker(ctx, deps) {
   // R2-U §7: which presentation arm this worker was composed under. Read once so the telemetry line and
   // the prompt cannot disagree, and defaulted to the production arm so a failed read is never an A1.
   const affordanceMode = resolveAffordanceMode(process.env[AFFORDANCE_ENV]);
+  // R2-E §6/§8: which efficacy arm this worker was composed under, and what the prework phase achieved.
+  const efficacyMode = resolveEfficacyMode(process.env[EFFICACY_ENV]);
+  let prework = null;
   /** @type {undefined | (() => void)} */
   let releaseCapacity;
   /**
@@ -476,7 +485,75 @@ async function runWorker(ctx, deps) {
          * this is the identity function, so a production deployment's prompt is unchanged; in
          * `explicit-review` it appends the one frozen clause.
          */
-        agent.followup(userMessage(applyAffordance(workTask(environment.context, environment.contextIndexText), affordanceMode)));
+        /**
+         * R2-E §8/§9/§10: THE PREWORK REVIEW PHASE, before the first engineering turn.
+         *
+         * THE HOST DOES THE PULLING, through the worker's OWN pull tool — the same `execute` the model
+         * would have called, so it takes the same argument shape, the same local allowlist check, the same
+         * IPC envelope and the same parent-side resolver. There is no second fetch path: a handle this
+         * attempt did not bind is refused here exactly as it would be for a model-initiated pull, and the
+         * bodies come from the governed read, never from a backing store.
+         *
+         * It runs BEFORE the first turn exists, so "consumed before the first implementation mutation" is
+         * structural rather than a race the harness has to police.
+         */
+        let efficacyReview = { mode: efficacyMode, resolved: [], failures: [] };
+        if (efficacyMode === EFFICACY_MODES.E1) {
+          const pullTool = environment.contextPullTool;
+          const selected = (environment.context?.compiled?.handles ?? []).map((entry) => ({ handle: entry.handle, kind: entry.kind }));
+          const resolved = [];
+          const failures = [];
+          const startedAt = Date.now();
+          for (const entry of selected) {
+            if (pullTool === undefined || typeof pullTool.execute !== 'function') {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: 'this host composed no pull tool' });
+              continue;
+            }
+            try {
+              const answer = await pullTool.execute({ handle: entry.handle });
+              if (answer?.status === 'resolved') {
+                resolved.push({ handle: entry.handle, kind: entry.kind, body: answer.value, digest: bodyDigest(answer.value) });
+              } else {
+                failures.push({ handle: entry.handle, kind: entry.kind, detail: `${String(answer?.status ?? 'unknown')}${answer?.detail === undefined ? '' : `: ${String(answer.detail)}`}` });
+              }
+            } catch (error) {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: error?.message ?? String(error) });
+            }
+          }
+          /**
+           * §16: the CONSUMPTION PROOF. Handle identities and body digests only — never the body text. The
+           * bodies go into the prompt, which the model sees; the telemetry records that they were delivered
+           * and which object each was, so the record can prove consumption without persisting content.
+           */
+          prework = Object.freeze({
+            mechanism: PREWORK_MECHANISM,
+            selectedCount: selected.length,
+            resolvedCount: resolved.length,
+            failureCount: failures.length,
+            handles: resolved.map((entry) => entry.handle),
+            kinds: resolved.map((entry) => entry.kind),
+            digests: resolved.map((entry) => `${entry.kind}:${entry.handle}:${entry.digest}`),
+            failures: failures.map((entry) => ({ handle: entry.handle, detail: entry.detail })),
+            elapsedMs: Date.now() - startedAt,
+            /** §9: an E1 trial whose selected handles did not ALL materialize is not a clean observation. */
+            allConsumed: selected.length > 0 && failures.length === 0 && resolved.length === selected.length,
+          });
+          efficacyReview = { mode: efficacyMode, resolved, failures };
+        } else if (efficacyMode === EFFICACY_MODES.E0) {
+          /**
+           * §12: the CONTROL arm. The same section boundary and equivalent ordinary wording, and NO capital
+           * of any kind — no sham capital, because the treatment is relevant inherited capital rather than
+           * extra tokens. A model-mediated prework phase is deliberately NOT run here: the control's whole
+           * point is that nothing was inherited.
+           */
+          prework = Object.freeze({ mechanism: PREWORK_MECHANISM, selectedCount: 0, resolvedCount: 0, failureCount: 0, handles: [], kinds: [], digests: [], failures: [], elapsedMs: 0, allConsumed: true });
+          efficacyReview = { mode: efficacyMode, resolved: [], failures: [] };
+        }
+        agent.followup(
+          userMessage(
+            applyEfficacyReview(applyAffordance(workTask(environment.context, environment.contextIndexText), affordanceMode), efficacyReview),
+          ),
+        );
         await agent.whenIdle();
         offeredTools = offeredToolNames(agent.session);
         /**
@@ -529,6 +606,15 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_ACTIONS ${JSON.stringify({ order: actionLog.order, firstUse: actionLog.firstUse })}
+`,
+  );
+  /**
+   * R2-E §16: THE CAPITAL-CONSUMPTION PROOF. Handle identities and body DIGESTS only — never a body. A
+   * reviewer and the harness read from here whether every selected handle was materialized through the
+   * governed channel before the first engineering turn.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_EFFICACY ${JSON.stringify({ mode: efficacyMode, prework })}
 `,
   );
   /**
