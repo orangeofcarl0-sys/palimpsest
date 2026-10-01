@@ -1,0 +1,65 @@
+{
+  "findings": [
+    [
+      "acl package dir exists",
+      "true"
+    ],
+    [
+      "bundled chunk exists",
+      "true"
+    ],
+    [
+      "win32-process package exists",
+      "true"
+    ],
+    [
+      "probe",
+      "chunk exports: a,c,i,n,o,r,s,t"
+    ],
+    [
+      "probe",
+      "win32-process exports: ERROR_INSUFFICIENT_BUFFER,Win32Error,allocPtrSlot,allocUint32,closeHandleChecked,decodePtr,decodeUint32,drainPipe,extendWin32ProcessBindings,isJobEmpty,isNullPtr,loadWin32ProcessBindings,pollProcessExit,probeCurrentTokenJobSupport,spawnCurrentTokenJobProcess,spawnInheritedJobProcess,spawnPipedProcess,terminateJob,throwLastError,throwWin32,waitForProcessExit"
+    ],
+    [
+      "probe",
+      "binding table resolved; sample keys: addMandatoryAce,assignProcessToJobObject,closeHandle,convertStringSidToSidW,copySid,createFileW,createJobObjectW,createPipe,createProcessAsUserW,createProcessW,createRestrictedToken,createWellKnownSid,formatMessageW,getExitCodeProcess,getFileType,getLastError,getLengthSid,getNamedSecurityInfoW,getStdHandle,getTempPathW,getTokenInformation,initializeAcl,isValidSid,localAlloc,localFree,lockFileEx,openProcess,openProcessToken,peekNamedPipe,queryInformationJobObject,readFile,resumeThread,setConsoleCtrlHandler,setEntriesInAclW,setEnvironmentVariableW,setHandleInformation,setInformationJobObject,setNamedSecurityInfoW,setTokenInformation,terminateJobObject"
+    ],
+    [
+      "hasAddMandatoryAce",
+      "true"
+    ],
+    [
+      "hasSetNamedSecurityInfoW",
+      "true"
+    ],
+    [
+      "hasGetNamedSecurityInfoW",
+      "true"
+    ],
+    [
+      "hasInitializeAcl",
+      "true"
+    ],
+    [
+      "hasLocalAlloc",
+      "true"
+    ],
+    [
+      "hasConvertStringSidToSidW",
+      "true"
+    ],
+    [
+      "hasCreateWellKnownSid",
+      "true"
+    ],
+    [
+      "hasGetLengthSid",
+      "true"
+    ],
+    [
+      "hasSetEntriesInAclW",
+      "true"
+    ]
+  ],
+  "protectedCanary": "protected_087bd01a68c20410a0898223"
+}

@@ -26,7 +26,7 @@
  * NOT a product component: acceptance evidence, kept in Git so the gate can be re-run.
  * PLAIN JAVASCRIPT (`.mjs`): it runs under bare `node` against `dist/src/**`.
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -321,9 +321,17 @@ async function runCondition(condition, nonces) {
   const payloadSink = join(OUT, `${condition}-payload.json`);
   const renderedSink = join(OUT, `${condition}-prompt.json`);
   const previousHome = process.env.DSH_HOME;
+  const previousRoots = process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS;
   process.env.DSH_HOME = COND_HOME;
   process.env.PALIMPSEST_REAL_DSH_BIN = DSH_BIN;
   process.env.PALIMPSEST_LIVE_GATE_TRANSCRIPT = transcript;
+  /**
+   * R1-H §18: the durable stores for THIS condition are named to the worker host, so the read boundary
+   * covers them. This is the step that lets the STRONG nonce proof be restored: with the store fenced, a
+   * C0 worker with no handles has no route to the markers at all, and the gate can assert that rather than
+   * only observing it.
+   */
+  process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS = [STATE, COND_HOME].join(";");
 
   try {
     const second = install(nonces.procedure);
@@ -445,27 +453,155 @@ async function runCondition(condition, nonces) {
       record(`${condition} obtained protected values from Palimpsest`, anyObtained ? "YES" : "NO");
       record(`${condition} EXPECTED`, condition === "C0" ? "NO" : "YES (with the handles it was given)");
       /**
-       * §26 LIMITATION — MEASURED, NOT ASSUMED.
+       * THE OUT-OF-BAND OBSERVATION, KEPT — and it is what makes the strong assertion above honest.
        *
-       * "Obtained the marker" is NOT by itself proof that the worker PULLED it. A worker can read the
-       * durable store directly, because the host sandbox confines WRITES (its modes govern file
-       * effects), not reads: measured here, a C0 worker with zero handles and zero pulls reached the
-       * proof blob through a relative traversal from its world (`..\..\..\..\state`) and reported
-       * all three markers.
-       *
-       * So the two facts are recorded SEPARATELY and neither is allowed to stand in for the other:
+       * "Obtained the marker" is NOT by itself proof that the worker PULLED it, because a worker could in
+       * principle read the durable store directly. R1-S measured exactly that happening: a C0 worker with
+       * zero handles reached the proof blob by traversing out of its world. That is why the two facts stay
+       * SEPARATE and neither is allowed to stand in for the other:
        *   · what the worker was OFFERED and PULLED — the treatment, which this gate controls;
-       *   · whether it obtained the values — which it can do out of band.
-       * The accessibility proof for C1/C2 is unaffected (they pulled their handles). What this gate
-       * CANNOT establish is C0's inability, and it no longer claims to.
+       *   · whether it obtained the values — which, before R1-H, it could do out of band.
+       *
+       * R1-H fenced the store, so this line is now expected to read "no" in every condition, and the
+       * verdict requires it. The observation is kept rather than deleted precisely so a regression — the
+       * fence failing to install — shows up HERE as a recorded fact instead of passing silently.
        */
       record(`${condition} obtained WITHOUT pulling (out-of-band read)`, anyObtained && pulledHandleCount === 0 ? "YES — the marker was reachable without the governed pull" : "no");
+
+      /**
+       * §18 second half: THE DIRECT BACKING-STORE ROUTE, measured AS THE WORKER, not as this process.
+       *
+       * The reading token matters and getting it wrong would invert the result. THIS process runs at Medium
+       * integrity and MUST be able to read its own store — that is how it answers a governed pull — so a
+       * probe here would report "readable" and mean nothing about the worker. The question §18 asks is
+       * whether the route is blocked FOR THE WORKER, so the probe runs under the SHIPPED windows-acl runner,
+       * whose token is the same Low one the worker's own code gets.
+       *
+       * It also checks the ENFORCEMENT rather than only the outcome: the label must be present and verified
+       * on the store root, because "the read failed" could otherwise be a permissions accident.
+       */
+      const storeRead = (() => {
+        const probe = join(DIR, "direct-store-read.mjs");
+        // The report must land INSIDE the writable root: write confinement is real, so a report written
+        // to the rig is refused with EPERM and the run would fail for an unrelated reason.
+        const reportPath = join(PROJECT, "direct-store-read.json");
+        rmSync(reportPath, { force: true });
+        writeFileSync(probe, [
+          'import { readFileSync, writeFileSync, readdirSync } from "node:fs";',
+          'const out = {};',
+          `try { readFileSync(${JSON.stringify(paths.proof)}); out.direct = "readable"; } catch (e) { out.direct = "refused"; out.code = e?.code ?? String(e); }`,
+          `try { readdirSync(${JSON.stringify(STATE)}); out.list = "readable"; } catch (e) { out.list = "refused"; }`,
+          `writeFileSync(${JSON.stringify(reportPath)}, JSON.stringify(out));`,
+        ].join(String.fromCharCode(10)), "utf8");
+        const driver = join(DIR, "direct-store-driver.mjs");
+        writeFileSync(driver, [
+          'import { mkdtempSync, rmSync } from "node:fs";',
+          'import { tmpdir } from "node:os";',
+          'import { join } from "node:path";',
+          'import { spawnSync } from "node:child_process";',
+          'const out = {};',
+          `const mod = await import(${JSON.stringify(pathToFileURL(join(dshBin(), "..", "..", "node_modules", "@deepseek-ai", "dsh-sandbox-windows-acl", "lib", "index.js")).href)});`,
+          `const ws = ${JSON.stringify(PROJECT)};`,
+          "const temp = mkdtempSync(join(tmpdir(), 'r1l-store-'));",
+          "try {",
+          "  const wsSid = mod.workspaceWriteSid(ws);",
+          "  const tmpSid = mod.tempWriteSid(temp);",
+          "  const g = mod.AclWriteGrant.create(wsSid); g.add(ws, true);",
+          "  const gt = mod.AclWriteGrant.create(tmpSid); gt.add(temp, false);",
+          `  const r = spawnSync(process.execPath, [${JSON.stringify(join(dshBin(), "..", "..", "node_modules", "@deepseek-ai", "dsh-sandbox-windows-acl", "lib", "runner.js"))}, '--workspace', ws, '--temp', temp, '--mode', 'workspace-write', '--write-sid', wsSid, '--temp-write-sid', tmpSid, '--', process.execPath, ${JSON.stringify(probe)}], { encoding: 'utf8', timeout: 180_000 });`,
+          "  out.status = r.status; out.stderr = (r.stderr ?? '').slice(0, 200);",
+          "  try { g.dispose(); gt.dispose(); } catch {}",
+          "} catch (e) { out.error = e?.message ?? String(e); }",
+          "finally { try { rmSync(temp, { recursive: true, force: true }); } catch {} }",
+          "process.stderr.write('STORE_DRIVER ' + JSON.stringify(out) + String.fromCharCode(10));",
+        ].join(String.fromCharCode(10)), "utf8");
+        const r = spawnSync(process.execPath, [driver], { encoding: "utf8", timeout: 240_000 });
+        const line = (r.stderr ?? "").split(String.fromCharCode(10)).map((e) => e.trim()).find((e) => e.startsWith("STORE_DRIVER")) ?? "";
+        const driverInfo = line === "" ? null : JSON.parse(line.slice("STORE_DRIVER ".length));
+        const report = existsSync(reportPath) ? JSON.parse(readFileSync(reportPath, "utf8")) : null;
+        return { report, driverInfo };
+      })();
+      record("direct backing-store read (as the worker)", storeRead?.report?.direct === "refused" ? "refused" : `${String(storeRead?.report?.direct ?? "unmeasured")} (code ${String(storeRead?.report?.code ?? "?")})`);
+      record("direct backing-store enumeration (as the worker)", storeRead?.report?.list === "refused" ? "refused" : String(storeRead?.report?.list ?? "unmeasured"));
+
+      /**
+       * THE MECHANICAL ACCESSIBILITY PROOF (§26: "accessibility, NOT model performance").
+       *
+       * The gate's own header says the headline proof is accessibility. Requiring the STOCHASTIC worker to
+       * have pulled would measure whether a model CHOSE to use its capital — which R1-R measured as 0/30
+       * across every condition — and would report that as an accessibility failure. Those are different
+       * facts, and collapsing them would be exactly the "unrun experiment reported as NO_REPLICATION"
+       * error in reverse.
+       *
+       * So accessibility is measured directly, through the SHIPPED governed read the host uses to answer a
+       * pull (`controller.fetchContext`, bound to this attempt). Two halves, both mechanical:
+       *   · every handle this attempt COMPILED resolves, and its body carries the marker;
+       *   · a handle the attempt did NOT compile is REFUSED, so the allowlist is attempt-bound.
+       */
+      const compiled = payload?.context?.compiled?.handles ?? [];
+      const accessibility = { resolved: [], refused: [], unmeasured: false };
+      if (view.attemptId !== undefined && view.attemptId !== null) {
+        for (const handle of compiled.map((entry) => entry.handle)) {
+          try {
+            // `fetchContext` answers with a structured pull (`{ kind, ref, body }`), not a string, so the
+            // marker is looked for in the SERIALIZED result — checking for a string here would report a
+            // working governed read as a failure.
+            const result = await controller.fetchContext(view.attemptId, handle);
+            const text = result === undefined ? "" : JSON.stringify(result);
+            accessibility.resolved.push({ handle, present: [nonces.proof, nonces.reasoning, nonces.procedure].some((nonce) => text.includes(nonce)) });
+          } catch (error) {
+            accessibility.resolved.push({ handle, present: false, error: error?.message ?? String(error) });
+          }
+        }
+        /**
+         * An unbound handle must be refused — but by the RIGHT layer.
+         *
+         * `fetchContext` is the raw canonical read the host binds to an attempt; the attempt-bound ALLOWLIST
+         * lives one level up, in the shipped pull resolver (`resolveWorkerPullRequest`), which is what a
+         * worker's `palimpsest_worker_context_pull` actually goes through. Testing the allowlist against
+         * `fetchContext` would have asserted a property that method never claimed, so the probe drives the
+         * SHIPPED resolver with a real envelope instead — the same code path the worker's tool uses.
+         */
+        const unbound = "@ctx/proof/not-compiled-for-this-attempt";
+        // The envelope shape is STRICT (exactly four keys, `kind: "pull"`); a malformed one is answered
+        // `error`, not `refused`, so getting this wrong would report the allowlist as absent.
+        const envelope = { channel: "palimpsest-worker-context-v1", kind: "pull", requestId: "gate-probe", handle: unbound };
+        const allowed = compiled.some((entry) => entry.handle === unbound);
+        const response = await workWorker.resolveWorkerPullRequest(
+          { allowedHandles: compiled.map((entry) => entry.handle), fetch: async (handle) => await controller.fetchContext(view.attemptId, handle) },
+          envelope,
+        );
+        accessibility.refused.push({ handle: unbound, refused: response?.status === "refused", status: response?.status ?? "none", allowed });
+        // The same resolver, with a COMPILED handle, must resolve — otherwise "refused" above would be
+        // indistinguishable from a resolver that refuses everything.
+        const bound = compiled[0]?.handle;
+        if (bound !== undefined) {
+          const ok = await workWorker.resolveWorkerPullRequest(
+            { allowedHandles: compiled.map((entry) => entry.handle), fetch: async (handle) => await controller.fetchContext(view.attemptId, handle) },
+            { channel: "palimpsest-worker-context-v1", kind: "pull", requestId: "gate-probe-2", handle: bound },
+          );
+          accessibility.refused.push({ handle: bound, resolvedAsControl: ok?.status === "resolved" });
+        }
+      } else {
+        accessibility.unmeasured = true;
+      }
+      const resolvedAll = !accessibility.unmeasured && accessibility.resolved.length === compiled.length && accessibility.resolved.every((entry) => entry.present);
+      record(`${condition} ACCESSIBILITY (mechanical): every compiled handle resolves with its marker`, accessibility.unmeasured ? "UNMEASURED" : resolvedAll ? `YES (${String(accessibility.resolved.length)}/${String(compiled.length)})` : `no (${JSON.stringify(accessibility.resolved).slice(0, 220)})`);
+      const refusedOk = accessibility.refused.filter((entry) => entry.refused !== undefined).every((entry) => entry.refused === true);
+      const controlOk = accessibility.refused.filter((entry) => entry.resolvedAsControl !== undefined).every((entry) => entry.resolvedAsControl === true);
+      record(`${condition} ACCESSIBILITY (mechanical): an uncompiled handle is refused by the shipped pull resolver`, accessibility.unmeasured ? "UNMEASURED" : refusedOk ? `YES (control: a compiled handle still resolves = ${String(controlOk)})` : "NO — the allowlist is not attempt-bound");
+      if (accessibility.resolved.length === 0 && compiled.length === 0) {
+        // C0 compiles no handles: the honest statement is that there is nothing to resolve, not a failure.
+        record(`${condition} ACCESSIBILITY (mechanical)`, "no compiled handles to resolve (this is the C0 treatment)");
+      }
     }
     await second.installed.dispose().catch(() => undefined);
     second.procedureStore.close();
   } finally {
     if (previousHome === undefined) delete process.env.DSH_HOME;
     else process.env.DSH_HOME = previousHome;
+    if (previousRoots === undefined) delete process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS;
+    else process.env.PALIMPSEST_WORKER_PROTECTED_ROOTS = previousRoots;
   }
 }
 
@@ -500,17 +636,38 @@ async function main() {
   required.push(["C1: index contains Proof + Reasoning", of("C1 handles in payload").includes("proof") && of("C1 handles in payload").includes("reasoning")]);
   required.push(["C2: index adds Procedure", of("C2 handles in payload").includes("procedure")]);
   /**
-   * §26: the C0 assertion is about the TREATMENT, not about impossibility. The gate can prove that C0
-   * was offered no handles and pulled none; it cannot prove C0 could not obtain the values by reading
-   * the durable store out of band, and the measured limitation above records when that happened. An
-   * earlier version asserted "C0: protected values NOT obtainable", which is not a property this gate
-   * can establish and which failed as soon as a worker traversed out of its world.
+   * §18 (R1-H): THE STRONG NONCE PROOF, RESTORED.
+   *
+   * R1-S had to weaken this assertion, and the reason was recorded rather than hidden: the host confined
+   * WRITES only, so a C0 worker with zero handles could still read the durable store out of band and the
+   * gate could not assert C0's inability. R1-H closed that boundary (a MEDIUM + NO_READ_UP label on the
+   * store, plus the trusted-code guard), so the strong form is asserted again — and it is asserted as a
+   * MEASUREMENT, not as a claim: the `out-of-band read` observation below records what actually happened,
+   * and this line requires it to be "no".
+   *
+   * §15 of the R1-S ruling said explicitly: do not merely remove the negative assertion. It is back.
    */
   required.push(["C0: offered no context handles", of("C0 handles in payload") === "(none)"]);
   required.push(["C0: pulled nothing", of("C0 pulled handles").includes('"pulled":[]')]);
+  required.push(["C0: the protected nonces are NOT obtainable (strong proof)", of("C0 ACCESSIBILITY: proof marker obtained") === "no" && of("C0 ACCESSIBILITY: reasoning marker obtained") === "no" && of("C0 ACCESSIBILITY: procedure marker obtained") === "no"]);
+  required.push(["C0: no out-of-band route reached the durable store", of("C0 obtained WITHOUT pulling (out-of-band read)") === "no"]);
+  /**
+   * The DIRECT backing-store route, measured from the host side: the store the nonces live in must refuse a
+   * read that does not go through the governed pull. This is the second half of the §18 proof.
+   */
+  required.push(["§18: the direct backing-store route is blocked (as the worker)", of("direct backing-store read (as the worker)") === "refused"]);
+  /**
+   * §26: ACCESSIBILITY is now asserted MECHANICALLY, through the shipped governed read, and it no longer
+   * depends on a stochastic worker choosing to pull. R1-R measured that choice as 0/30 in every condition;
+   * requiring it here would have reported KNOWLEDGE_NOT_USED as an accessibility failure, which is a
+   * different fact. What the gate now proves is what it always claimed to prove: the capital IS reachable
+   * through the governed path, and nothing else can reach it.
+   */
   for (const condition of ["C1", "C2"]) {
-    required.push([`${condition}: every selected marker obtainable`, of(`${condition} ACCESSIBILITY: proof marker obtained`) === "YES"]);
+    required.push([`${condition}: every compiled handle resolves through the governed pull`, of(`${condition} ACCESSIBILITY (mechanical): every compiled handle resolves with its marker`).startsWith("YES")]);
+    required.push([`${condition}: an uncompiled handle is refused by the shipped pull resolver`, of(`${condition} ACCESSIBILITY (mechanical): an uncompiled handle is refused by the shipped pull resolver`).startsWith("YES")]);
   }
+  required.push(["C0: no compiled handles exist to resolve (the C0 treatment)", of("C0 ACCESSIBILITY (mechanical)").startsWith("no compiled handles")]);
 
   process.stdout.write("\n--- verdict ---\n");
   let ok = true;

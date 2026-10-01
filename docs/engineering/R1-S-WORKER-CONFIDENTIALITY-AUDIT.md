@@ -431,3 +431,47 @@ collateral damage rather than a fix.
 they are the executable statement of the boundary that does not exist. They are registered as
 `pnpm gate:r1-s-conformance` / `pnpm gate:r1-s-live` precisely so a future backend stage can run them and
 expect the opposite.
+
+---
+
+## 15. CORRECTION — appended by R1-H (this document is otherwise unchanged)
+
+R1-H closed the boundary this audit declared unsatisfiable. The audit is preserved verbatim as the record of
+the pre-fix state, and one of its findings needs a precise correction.
+
+**What stands.** Every measurement in this document is reproducible: the shipped policy vocabulary has no
+read-side field; all four platform runners confine writes only; the host's own confinement leaves the
+protected canaries readable; the deny-ACE primitive works but blocks the daemon; a confined worker can open
+the real credential file. The verdict was correct **for the shipped sandbox**.
+
+**What was wrong — the mechanism note, not the conclusion.** §4 of this document reports that
+`icacls /setintegritylevel` cannot express no-read-up, and concludes that the primitive is unavailable. The
+first half is true; the second does not follow. Measured by R1-H:
+
+- `icacls` normalizes **every** spelling it accepts — `M`, `MR`, `MNR`, `MRNW`, `MNW` — to `(NW)`, i.e.
+  no-**write**-up. So the label this audit describes as "Medium + no-read-up" was a Medium **no-write-up**
+  label, which by design does nothing to reads. The negative result was measured against a primitive that
+  never had the property under test.
+- The mandatory policy is an **argument** of `AddMandatoryAce`, not a constant of the stack, and the shipped
+  host's own FFI binding table exposes it. Policy `2` is `NO_READ_UP`, and applying it at MEDIUM refuses the
+  Low-integrity worker token (which the backend already creates for the write side) while leaving the Medium
+  control plane untouched.
+
+So the correct statement is: **the capability was never absent; the CLI could not express it, and this audit
+did not reach the raw binding table with a different policy value.** §4's observation that a raw-FFI deny was
+"not successfully installed" is accurate — a DENY ACE was attempted, and a mandatory label with
+`NO_READ_UP` was not.
+
+**Consequences.**
+
+- The contract defined in §5a is now satisfied by the shipped host, not by a future backend.
+- The `AllowedExecutionReads` / `ProtectedHostReads` split stands unchanged and is what R1-H implements.
+- §7's backend alternatives are recorded as measured by R1-H (`scripts/r1h/routes.mjs`): Route A (in-place
+  fence) is selected; the second-principal route is not constructible in an unelevated session; the
+  WSL/bwrap route remains viable but confines a different execution world and leaves the `/mnt/c` reach that
+  §7 measured.
+- §12's status "NOT RESTORED" is superseded: `gate:r1-l-live` asserts the strong nonce proof again and passes.
+
+The negative baseline is unchanged and still fails: `gate:r1-s-conformance` exits 1 with the same 11 unmet
+assertions, and `gate:r1-s-live` still reports the contract violation because it declares no protected roots.
+That is deliberate — a gate whose old FAIL is redefined into a PASS stops being evidence.
