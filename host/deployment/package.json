@@ -1,0 +1,17 @@
+{
+  "name": "palimpsest-host-deployment",
+  "version": "0.1.0",
+  "private": true,
+  "description": "First-party host-execution boundary for Palimpsest work workers: the kernel read fence (a MEDIUM + NO_READ_UP mandatory label on protected roots) and the trusted-code read guard registered on a worker's tool surface. Host capability only — it owns no canonical semantics.",
+  "type": "module",
+  "exports": {
+    "./runtime/read_fence.js": "./runtime/read_fence.js",
+    "./runtime/read_guard.js": "./runtime/read_guard.js",
+    "./runtime/worker_fence.js": "./runtime/worker_fence.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "runtime"
+  ],
+  "license": "MIT"
+}

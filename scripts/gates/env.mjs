@@ -117,12 +117,24 @@ export function dshVersion() {
 }
 
 /**
- * Copy the CURRENT host bundle where the DSH profile loader resolves it.
+ * Copy the CURRENT host bundles where the DSH profile loader resolves them.
  *
  * A gate run against a stale bundle would be measuring a build nobody shipped, so this always refreshes it.
+ *
+ * TWO packages, because the worker's read boundary lives in its own sibling package (`host/deployment`,
+ * published as `palimpsest-host-deployment`) rather than inside the DSH plugin bundle. That separation is
+ * deliberate: the boundary is host EXECUTION capability, and keeping it out of the plugin bundle means the
+ * plugin's own dependency surface is unchanged. Both must be installed together or the runner's dynamic
+ * import fails and the boundary reports `installed: false`.
  */
 export function installHostBundle(input) {
-  const target = join(input.realDshHome, "profiles", "node_modules", "palimpsest-dsh-host");
-  rmSync(target, { recursive: true, force: true });
-  cpSync(join(input.repo, "host", "dsh"), target, { recursive: true });
+  const nodeModules = join(input.realDshHome, "profiles", "node_modules");
+  for (const [source, name] of [
+    [join(input.repo, "host", "dsh"), "palimpsest-dsh-host"],
+    [join(input.repo, "host", "deployment"), "palimpsest-host-deployment"],
+  ]) {
+    const target = join(nodeModules, name);
+    rmSync(target, { recursive: true, force: true });
+    cpSync(source, target, { recursive: true });
+  }
 }
