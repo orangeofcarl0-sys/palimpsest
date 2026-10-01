@@ -1,0 +1,144 @@
+{
+  "derivedRoots": 5,
+  "residuals": [
+    {
+      "path": "<rig>\\conformance\\project\\repo\\.palimpsest\\worlds",
+      "why": "holds the worlds, so it is an ancestor of the worker's own world; sibling world NAMES stay visible while their contents are labelled"
+    }
+  ],
+  "kernel": {
+    "supported": true,
+    "outcomes": [
+      {
+        "path": "<rig>\\conformance\\project\\state",
+        "applied": true,
+        "verified": true,
+        "detail": "labelled (MEDIUM + NO_READ_UP) and verified by readback"
+      },
+      {
+        "path": "<rig>\\conformance\\project\\repo\\.palimpsest\\worlds\\attempt-sibling",
+        "applied": true,
+        "verified": true,
+        "detail": "labelled (MEDIUM + NO_READ_UP) and verified by readback"
+      },
+      {
+        "path": "<rig>\\conformance\\other-project\\state",
+        "applied": true,
+        "verified": true,
+        "detail": "labelled (MEDIUM + NO_READ_UP) and verified by readback"
+      },
+      {
+        "path": "<rig>\\conformance\\home",
+        "applied": true,
+        "verified": true,
+        "detail": "labelled (MEDIUM + NO_READ_UP) and verified by readback"
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "H-N01",
+      "statement": "the guard ALLOWS a read inside the worker's world",
+      "pass": true,
+      "detail": "in-world read permitted — ordinary work intact"
+    },
+    {
+      "id": "H-N02",
+      "statement": "the guard DENIES a read of the durable state",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N03",
+      "statement": "the guard DENIES a read of a sibling world",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N04",
+      "statement": "the guard DENIES a read of another project",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N05",
+      "statement": "the guard DENIES a read of the credential file",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N06",
+      "statement": "the guard DENIES ../ traversal to a protected root",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N07",
+      "statement": "the guard DENIES grep over a protected root",
+      "pass": true,
+      "detail": "denied — the path ripgrep spawns with, which bypasses ctx.fs entirely"
+    },
+    {
+      "id": "H-N08",
+      "statement": "the guard DENIES glob over a protected root",
+      "pass": true,
+      "detail": "denied"
+    },
+    {
+      "id": "H-N09",
+      "statement": "the guard DENIES read_image on a protected file",
+      "pass": true,
+      "detail": "denied — bytes cannot be pulled through the image tool"
+    },
+    {
+      "id": "H-N10",
+      "statement": "the guard DENIES a non-string path rather than falling through",
+      "pass": true,
+      "detail": "denied — a call whose path cannot be interpreted must not reach the tool body"
+    },
+    {
+      "id": "H-N11",
+      "statement": "the guard ALLOWS a grep with no path (defaults to the world)",
+      "pass": true,
+      "detail": "permitted — the tool defaults to the session cwd, which IS the world"
+    },
+    {
+      "id": "H-N12",
+      "statement": "the guard leaves a non-reading tool alone",
+      "pass": true,
+      "detail": "not a content reader; `bash` is the kernel layer's job, not the guard's"
+    },
+    {
+      "id": "H-N13",
+      "statement": "the kernel fence installed and VERIFIED every root",
+      "pass": true,
+      "detail": "4/4 verified by readback"
+    },
+    {
+      "id": "H-N14",
+      "statement": "the confined subject can read and write inside its world",
+      "pass": true,
+      "detail": "world read ok, world write ok"
+    },
+    {
+      "id": "H-N15",
+      "statement": "the confined subject CANNOT read any protected root",
+      "pass": true,
+      "detail": "state=blocked, sibling=blocked, other=blocked, credential=blocked"
+    },
+    {
+      "id": "H-N16",
+      "statement": "write confinement still holds",
+      "pass": true,
+      "detail": "in-world write allowed, outside write refused"
+    },
+    {
+      "id": "H-N17",
+      "statement": "the confined subject cannot enumerate a protected root",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    }
+  ],
+  "failed": [],
+  "limits": []
+}
