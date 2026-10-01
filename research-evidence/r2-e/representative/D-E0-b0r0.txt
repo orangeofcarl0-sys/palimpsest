@@ -1,0 +1,11 @@
+(node:15532) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:15532) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+PALIMPSEST_WORKER_ENV {"cwd":"<home>\\.palimpsest-r2e\\matrix\\runs-2026-10-01T21-41-46-345Z\\D-E0-b0r0\\repo\\.palimpsest\\worlds\\attempt-003077ddd2204570d7be96d401a0d337","presentation":"ptc","deniedTools":[],"offeredTools":["run_code"],"affordance":"off"}
+PALIMPSEST_WORKER_PULL {"pulled":[]}
+PALIMPSEST_WORKER_ACTIONS {"order":["run_code","glob","read","pwsh","write","palimpsest_worker_result"],"firstUse":{"run_code":0,"glob":1,"read":2,"pwsh":3,"write":4,"palimpsest_worker_result":5}}
+PALIMPSEST_WORKER_EFFICACY {"mode":"e0","prework":{"mechanism":"HOST_MEDIATED_PREWORK","selectedCount":0,"resolvedCount":0,"failureCount":0,"handles":[],"kinds":[],"digests":[],"failures":[],"elapsedMs":0,"allConsumed":true}}
+PALIMPSEST_WORKER_READ_BOUNDARY {"installed":true,"kernel":{"supported":true,"labelled":1,"attempted":1,"unverified":[],"skipped":1},"guard":{"installed":true,"scope":"global","tools":["read","read_image","grep","glob","ls","str_replace_editor"]},"aliases":{"clean":true,"found":0},"residuals":1,"contract":{"package":"@deepseek-ai/dsh-win32-process","resolvedVersion":"0.2.0-rc.2","qualifiedVersion":"0.2.0-rc.2","drifted":false}}
+PALIMPSEST_WORKER_CAPACITY {"granted":true,"detail":"1/1 confidential workers active; admission granted"}
+PALIMPSEST_WORKER_CAPABILITIES {"classified":true,"allowed":true,"counts":{"WORKER_PRIVATE":2,"CONFINED_CHILD":1,"GUARDED_HOST_READ":4,"DELEGATED_SURFACE":4,"NO_HOST_FILE_READ":15},"unclassified":[],"requiresGlobalGuard":true}
+PALIMPSEST_WORK_RESULT {"kind":"READY_FOR_SETTLEMENT","summary":"Finished invalidateCache in src/cache.ts: it now validates the whole changed set up front, builds the reverse dependency graph from the untouched cache, freezes the complete stale set (the changed nodes plus every node transitively depending on them) before the first deletion, and only then removes those entries in place and returns the caller's own object. Cycles, diamonds, dependents of nodes absent from the cache, and duplicate ids are handled via a visited set; unrelated entries are preserved."}

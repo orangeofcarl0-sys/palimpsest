@@ -1,0 +1,208 @@
+{
+  "scenario": "D",
+  "generations": [
+    "D0",
+    "D1",
+    "D2",
+    "D3",
+    "D4"
+  ],
+  "observations": [
+    {
+      "generation": "D0",
+      "note": "the starting point: delete the entries whose source changed",
+      "passed": 2,
+      "total": 14,
+      "failedCaseIds": [
+        "h01",
+        "h02",
+        "h04",
+        "h05",
+        "h06",
+        "h07",
+        "h08",
+        "h10",
+        "h11",
+        "h12",
+        "h13",
+        "h14"
+      ],
+      "failureClasses": [
+        "ACCEPTED_INVALID_INPUT",
+        "WRONG_CACHE"
+      ],
+      "failedInvariants": [
+        "cycle-terminates",
+        "deep-chain-closure",
+        "dependent-closure-invalidated",
+        "rejection-leaves-cache-untouched",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "details": [
+        "h01 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h02 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h04 unresolvable-dependency-is-unusable WRONG_CACHE first difference at b",
+        "h05 unresolvable-dependency-is-unusable WRONG_CACHE first difference at a",
+        "h06 cycle-terminates WRONG_CACHE first difference at b",
+        "h07 dependent-closure-invalidated WRONG_CACHE first difference at other",
+        "h08 dependent-closure-invalidated WRONG_CACHE first difference at mid",
+        "h10 rejection-leaves-cache-untouched ACCEPTED_INVALID_INPUT {\"bad\":{\"deps\":\"a\",\"value\":2}}",
+        "h11 cycle-terminates WRONG_CACHE first difference at x",
+        "h12 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h13 deep-chain-closure WRONG_CACHE first difference at n1",
+        "h14 rejection-leaves-cache-untouched ACCEPTED_INVALID_INPUT {\"b\":{\"deps\":[\"a\"],\"value\":2},\"broken\":{\"deps\":[]}}"
+      ]
+    },
+    {
+      "generation": "D1",
+      "note": "add shape validation, but after the deletions",
+      "passed": 2,
+      "total": 14,
+      "failedCaseIds": [
+        "h01",
+        "h02",
+        "h04",
+        "h05",
+        "h06",
+        "h07",
+        "h08",
+        "h10",
+        "h11",
+        "h12",
+        "h13",
+        "h14"
+      ],
+      "failureClasses": [
+        "MUTATED_CACHE_BEFORE_REJECTING",
+        "WRONG_CACHE"
+      ],
+      "failedInvariants": [
+        "cycle-terminates",
+        "deep-chain-closure",
+        "dependent-closure-invalidated",
+        "rejection-leaves-cache-untouched",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "details": [
+        "h01 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h02 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h04 unresolvable-dependency-is-unusable WRONG_CACHE first difference at b",
+        "h05 unresolvable-dependency-is-unusable WRONG_CACHE first difference at a",
+        "h06 cycle-terminates WRONG_CACHE first difference at b",
+        "h07 dependent-closure-invalidated WRONG_CACHE first difference at other",
+        "h08 dependent-closure-invalidated WRONG_CACHE first difference at mid",
+        "h10 rejection-leaves-cache-untouched MUTATED_CACHE_BEFORE_REJECTING the caller's cache changed from {\"a\":{\"deps\":[],\"value\":1},\"bad\":{\"deps\":\"a\",\"value\":2}} to {\"bad\":{\"deps\":\"a\",\"value\":2}}",
+        "h11 cycle-terminates WRONG_CACHE first difference at x",
+        "h12 dependent-closure-invalidated WRONG_CACHE first difference at b",
+        "h13 deep-chain-closure WRONG_CACHE first difference at n1",
+        "h14 rejection-leaves-cache-untouched MUTATED_CACHE_BEFORE_REJECTING the caller's cache changed from {\"a\":{\"deps\":[],\"value\":1},\"b\":{\"deps\":[\"a\"],\"value\":2},\"broken\":{\"deps\":[]}} to {\"b\":{\"deps\":[\"a\"],\"value\":2},\"broken\":{\"deps\":[]}}"
+      ]
+    },
+    {
+      "generation": "D2",
+      "note": "compute a closure, but in both directions",
+      "passed": 10,
+      "total": 14,
+      "failedCaseIds": [
+        "h03",
+        "h04",
+        "h05",
+        "h07"
+      ],
+      "failureClasses": [
+        "WRONG_CACHE"
+      ],
+      "failedInvariants": [
+        "ancestors-preserved",
+        "dependent-closure-invalidated",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "details": [
+        "h03 ancestors-preserved WRONG_CACHE first difference at b",
+        "h04 unresolvable-dependency-is-unusable WRONG_CACHE first difference at b",
+        "h05 unresolvable-dependency-is-unusable WRONG_CACHE first difference at a",
+        "h07 dependent-closure-invalidated WRONG_CACHE first difference at leaf"
+      ]
+    },
+    {
+      "generation": "D3",
+      "note": "walk descendants only, but ignore unresolvable dependencies",
+      "passed": 12,
+      "total": 14,
+      "failedCaseIds": [
+        "h04",
+        "h05"
+      ],
+      "failureClasses": [
+        "WRONG_CACHE"
+      ],
+      "failedInvariants": [
+        "unresolvable-dependency-is-unusable"
+      ],
+      "details": [
+        "h04 unresolvable-dependency-is-unusable WRONG_CACHE first difference at b",
+        "h05 unresolvable-dependency-is-unusable WRONG_CACHE first difference at a"
+      ]
+    },
+    {
+      "generation": "D4",
+      "note": "freeze the affected set, then delete",
+      "passed": 14,
+      "total": 14,
+      "failedCaseIds": [],
+      "failureClasses": [],
+      "failedInvariants": [],
+      "details": []
+    }
+  ],
+  "discoveries": [
+    {
+      "generation": "D0",
+      "discovery": "the dependency graph is not guaranteed to be a tree, so the closure walk must terminate on a cycle; and the closure must be followed to its end, however far from the changed node it reaches; and the affected set is a CLOSURE: an entry computed from a stale node is itself stale, transitively; and the whole input must be validated before the first deletion, so a refused call leaves the caller's cache exactly as it was; and an entry naming a dependency the cache does not hold cannot be shown to be unaffected, so it must not survive",
+      "forcedBy": [
+        "cycle-terminates",
+        "deep-chain-closure",
+        "dependent-closure-invalidated",
+        "rejection-leaves-cache-untouched",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "detail": "h01:dependent-closure-invalidated:WRONG_CACHE, h02:dependent-closure-invalidated:WRONG_CACHE, h04:unresolvable-dependency-is-unusable:WRONG_CACHE, h05:unresolvable-dependency-is-unusable:WRONG_CACHE, h06:cycle-terminates:WRONG_CACHE, h07:dependent-closure-invalidated:WRONG_CACHE, h08:dependent-closure-invalidated:WRONG_CACHE, h10:rejection-leaves-cache-untouched:ACCEPTED_INVALID_INPUT, h11:cycle-terminates:WRONG_CACHE, h12:dependent-closure-invalidated:WRONG_CACHE, h13:deep-chain-closure:WRONG_CACHE, h14:rejection-leaves-cache-untouched:ACCEPTED_INVALID_INPUT"
+    },
+    {
+      "generation": "D1",
+      "discovery": "the dependency graph is not guaranteed to be a tree, so the closure walk must terminate on a cycle; and the closure must be followed to its end, however far from the changed node it reaches; and the affected set is a CLOSURE: an entry computed from a stale node is itself stale, transitively; and the whole input must be validated before the first deletion, so a refused call leaves the caller's cache exactly as it was; and an entry naming a dependency the cache does not hold cannot be shown to be unaffected, so it must not survive",
+      "forcedBy": [
+        "cycle-terminates",
+        "deep-chain-closure",
+        "dependent-closure-invalidated",
+        "rejection-leaves-cache-untouched",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "detail": "h01:dependent-closure-invalidated:WRONG_CACHE, h02:dependent-closure-invalidated:WRONG_CACHE, h04:unresolvable-dependency-is-unusable:WRONG_CACHE, h05:unresolvable-dependency-is-unusable:WRONG_CACHE, h06:cycle-terminates:WRONG_CACHE, h07:dependent-closure-invalidated:WRONG_CACHE, h08:dependent-closure-invalidated:WRONG_CACHE, h10:rejection-leaves-cache-untouched:MUTATED_CACHE_BEFORE_REJECTING, h11:cycle-terminates:WRONG_CACHE, h12:dependent-closure-invalidated:WRONG_CACHE, h13:deep-chain-closure:WRONG_CACHE, h14:rejection-leaves-cache-untouched:MUTATED_CACHE_BEFORE_REJECTING"
+    },
+    {
+      "generation": "D2",
+      "discovery": "invalidation runs DESCENDANTS-ward: a node's dependents are stale, its dependencies are not; and the affected set is a CLOSURE: an entry computed from a stale node is itself stale, transitively; and an entry naming a dependency the cache does not hold cannot be shown to be unaffected, so it must not survive",
+      "forcedBy": [
+        "ancestors-preserved",
+        "dependent-closure-invalidated",
+        "unresolvable-dependency-is-unusable"
+      ],
+      "detail": "h03:ancestors-preserved:WRONG_CACHE, h04:unresolvable-dependency-is-unusable:WRONG_CACHE, h05:unresolvable-dependency-is-unusable:WRONG_CACHE, h07:dependent-closure-invalidated:WRONG_CACHE"
+    },
+    {
+      "generation": "D3",
+      "discovery": "an entry naming a dependency the cache does not hold cannot be shown to be unaffected, so it must not survive",
+      "forcedBy": [
+        "unresolvable-dependency-is-unusable"
+      ],
+      "detail": "h04:unresolvable-dependency-is-unusable:WRONG_CACHE, h05:unresolvable-dependency-is-unusable:WRONG_CACHE"
+    },
+    {
+      "generation": "D4",
+      "discovery": "the oracle accepts this candidate",
+      "forcedBy": [],
+      "detail": "no failures remained at this generation, so it became the method the capital records"
+    }
+  ]
+}
