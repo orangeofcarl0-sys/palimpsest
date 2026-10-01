@@ -1,0 +1,101 @@
+{
+  "findings": [
+    [
+      "isolated npm global prefix",
+      "<rig>\\empty-global-prefix"
+    ],
+    [
+      "its contents",
+      "empty directory created"
+    ],
+    [
+      "DSH installation under test",
+      "<dsh-install>"
+    ],
+    [
+      "child environment",
+      "npm_config_prefix=<rig>/empty-global-prefix, NODE_PATH=''"
+    ]
+  ],
+  "isolated": {
+    "compat": {
+      "package": "@deepseek-ai/dsh-win32-process",
+      "qualifiedVersion": "0.2.0-rc.2",
+      "resolvedVersion": "0.2.0-rc.2",
+      "seam": "extendWin32ProcessBindings",
+      "ffi": {
+        "package": "koffi",
+        "qualifiedVersion": "3.1.1",
+        "resolvedVersion": "3.1.1"
+      },
+      "usable": true,
+      "drifted": false,
+      "versionMatches": true,
+      "ffiMatches": true
+    },
+    "repoResolvesKoffi": false
+  },
+  "results": [
+    {
+      "id": "CE-01",
+      "statement": "no protected root carries a label from an earlier run",
+      "pass": true,
+      "detail": "all 2 roots start unlabelled — the descriptors are fresh"
+    },
+    {
+      "id": "CE-02",
+      "statement": "the FFI runtime resolves with an EMPTY global package set",
+      "pass": true,
+      "detail": "koffi@3.1.1 via @deepseek-ai/dsh-win32-process"
+    },
+    {
+      "id": "CE-03",
+      "statement": "the runtime does NOT come from the repository or the global prefix",
+      "pass": true,
+      "detail": "resolve(\"koffi\") from the fence module = false (false is expected: it is reached through the seam package's declared dependency)"
+    },
+    {
+      "id": "CE-04",
+      "statement": "the pinned contract matches under isolation",
+      "pass": true,
+      "detail": "resolved 0.2.0-rc.2 == qualified 0.2.0-rc.2, ffi 3.1.1 == 3.1.1"
+    },
+    {
+      "id": "CE-05",
+      "statement": "the fence installs and VERIFIES from a clean environment",
+      "pass": true,
+      "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2; verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+    },
+    {
+      "id": "CE-06",
+      "statement": "the confined subject reads its own world (ordinary work intact)",
+      "pass": true,
+      "detail": "world read ok"
+    },
+    {
+      "id": "CE-07",
+      "statement": "the confined subject cannot read the durable state",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "CE-08",
+      "statement": "the confined subject cannot read the credential",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "CE-09",
+      "statement": "gate:r1-hr-conformance passes with an EMPTY global package set and a fresh rig",
+      "pass": true,
+      "detail": "exit=0; disclosed limits: HR-17, HR-39b, HR-33 | written: <rig>"
+    },
+    {
+      "id": "CE-10",
+      "statement": "gate:r1-h-conformance passes with an EMPTY global package set and a fresh rig",
+      "pass": true,
+      "detail": "exit=0; R1-H CONFINEMENT CONFORMANCE: PASS — the read boundary holds on this host. | written: <rig>"
+    }
+  ],
+  "failed": []
+}

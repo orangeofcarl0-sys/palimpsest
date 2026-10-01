@@ -1,0 +1,315 @@
+{
+  "contract": {
+    "package": "@deepseek-ai/dsh-win32-process",
+    "qualifiedVersion": "0.2.0-rc.2",
+    "resolvedVersion": "0.2.0-rc.2",
+    "seam": "extendWin32ProcessBindings",
+    "ffi": {
+      "package": "koffi",
+      "qualifiedVersion": "3.1.1",
+      "resolvedVersion": "3.1.1"
+    },
+    "usable": true,
+    "drifted": false,
+    "versionMatches": true,
+    "ffiMatches": true
+  },
+  "linkNotes": {
+    "junction": "created",
+    "hardlink": "created",
+    "symlink": "not creatable (node:fs:1868\r\n  binding.symlink(\r\n          ^\r\n\r\nError: EPERM: operati)"
+  },
+  "results": [
+    {
+      "id": "HR-01",
+      "statement": "the planned policy is existing|NO_READ_UP and the integrity level is never lowered",
+      "pass": true,
+      "detail": "no existing label->rid=8192 mask=0x2; existing NO_WRITE_UP at Medium->rid=8192 mask=0x3; existing NO_EXECUTE_UP at High->rid=12288 mask=0x6; existing all policies at High->rid=12288 mask=0x7; existing LOW level->rid=8192 mask=0x3"
+    },
+    {
+      "id": "HR-02",
+      "statement": "an existing NO_WRITE_UP is PRESERVED, not replaced",
+      "pass": true,
+      "detail": "mask=0x3 policies=[NO_WRITE_UP]"
+    },
+    {
+      "id": "HR-03",
+      "statement": "an existing NO_EXECUTE_UP is PRESERVED",
+      "pass": true,
+      "detail": "mask=0x6"
+    },
+    {
+      "id": "HR-04",
+      "statement": "the effective ACE is verified by readback after the write",
+      "pass": true,
+      "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+    },
+    {
+      "id": "HR-05",
+      "statement": "the verified policy is exactly NO_READ_UP at Medium",
+      "pass": true,
+      "detail": "mask=0x2 integrity=Medium"
+    },
+    {
+      "id": "HR-06",
+      "statement": "the label carries BOTH inheritance flags so children inherit it",
+      "pass": true,
+      "detail": "aceFlags=3 (OBJECT_INHERIT|CONTAINER_INHERIT)"
+    },
+    {
+      "id": "HR-07",
+      "statement": "writing the fence over an existing NO_WRITE_UP label yields BOTH policies",
+      "pass": true,
+      "detail": "before=[NO_WRITE_UP] after=[NO_WRITE_UP|NO_READ_UP]"
+    },
+    {
+      "id": "HR-08",
+      "statement": "icacls still normalizes MNR to (NW) — the finding the R1-S correction rests on",
+      "pass": true,
+      "detail": "exit=0, readback shows (NW) and no (NR)"
+    },
+    {
+      "id": "HR-09",
+      "statement": "the root is labelled and VERIFIED",
+      "pass": true,
+      "detail": "verified by readback: integrity=Medium policies=[NO_READ_UP] flags=3 mask=0x2"
+    },
+    {
+      "id": "HR-10",
+      "statement": "the tree walk finds no unlabelled descendant",
+      "pass": true,
+      "detail": "3 entries, 0 unlabelled"
+    },
+    {
+      "id": "HR-11",
+      "statement": "a directory created AFTER the fence inherits the label",
+      "pass": true,
+      "detail": "5 entries examined, 0 unlabelled"
+    },
+    {
+      "id": "HR-12",
+      "statement": "an inheritance-blocked descendant makes the tree UNVERIFIED (fail closed)",
+      "pass": true,
+      "detail": "2 unlabelled — the caller must refuse to run, not warn"
+    },
+    {
+      "id": "HR-13",
+      "statement": "the subject still reads its own world (ordinary work intact)",
+      "pass": true,
+      "detail": "world read ok"
+    },
+    {
+      "id": "HR-14",
+      "statement": "absolute path and ../ traversal cannot reach protected bytes",
+      "pass": true,
+      "detail": "absolute=blocked, traversal=blocked"
+    },
+    {
+      "id": "HR-18",
+      "statement": "enumeration of the protected root is refused",
+      "pass": true,
+      "detail": "blocked (EPERM)"
+    },
+    {
+      "id": "HR-19",
+      "statement": "a nested subprocess's OWN code cannot read the protected file",
+      "pass": true,
+      "detail": "INCONCLUSIVE here — the nested route needs the fd-7 control channel this harness does not wire (EPERM); the live gate answers it (NOT counted as a pass)"
+    },
+    {
+      "id": "HR-15",
+      "statement": "a hard link from the world to a protected file is DETECTED and refuses the worker",
+      "pass": true,
+      "detail": "refused: the execution world can reach protected content by alias, so it cannot be fenced: hard-link at <rig>"
+    },
+    {
+      "id": "HR-16",
+      "statement": "a junction from the world into a protected root is DETECTED and refuses the worker",
+      "pass": true,
+      "detail": "2 alias(es) found, 1 reparse point(s)"
+    },
+    {
+      "id": "HR-17",
+      "statement": "a PRE-EXISTING symlink to a protected file",
+      "pass": true,
+      "limit": true,
+      "detail": "SKIPPED_WITH_REASON — the fixture cannot be built on this host: not creatable (node:fs:1868\r. Creating a symlink needs a privilege refused even unconfined, so \"blocked\" would prove nothing. The JUNCTION fixture exercises the same reparse-point mechanism and DID run (HR-16)."
+    },
+    {
+      "id": "HR-20",
+      "statement": "MEASURED: the sandbox write grant re-labels a hard-linked protected file, destroying NO_READ_UP",
+      "pass": true,
+      "detail": "the protected file is now integrity=Low policies=[NO_WRITE_UP] — NO_READ_UP is GONE, which is exactly why an aliased world is refused rather than fenced"
+    },
+    {
+      "id": "HR-17b",
+      "statement": "a world with no outbound alias is ADMITTED (the check is not a blanket refusal)",
+      "pass": true,
+      "detail": "admitted, 2 entries examined"
+    },
+    {
+      "id": "HR-21",
+      "statement": "a first ensure labels the root",
+      "pass": true,
+      "detail": "NO_READ_UP"
+    },
+    {
+      "id": "HR-22",
+      "statement": "a fresh process verifies the STANDING label without rewriting it",
+      "pass": true,
+      "detail": "applied=[false] alreadyProtected=[true]"
+    },
+    {
+      "id": "HR-23",
+      "statement": "idempotence leaves the effective label byte-identical",
+      "pass": true,
+      "detail": "before rid=8192 mask=0x2; after rid=8192 mask=0x2"
+    },
+    {
+      "id": "HR-24",
+      "statement": "the label is STANDING: it survives the process that wrote it",
+      "pass": true,
+      "detail": "integrity=Medium policies=[NO_READ_UP]"
+    },
+    {
+      "id": "HR-25",
+      "statement": "uninstall restores the captured pre-fence policy exactly",
+      "pass": true,
+      "detail": "restored mask=0x0, captured mask=0x0"
+    },
+    {
+      "id": "HR-25",
+      "statement": "the ACL calls bind through the DOCUMENTED DSH seam",
+      "pass": true,
+      "detail": "@deepseek-ai/dsh-win32-process@0.2.0-rc.2 via extendWin32ProcessBindings"
+    },
+    {
+      "id": "HR-26",
+      "statement": "the FFI runtime resolves through the DECLARED dependency graph",
+      "pass": true,
+      "detail": "koffi@3.1.1 (declared by @deepseek-ai/dsh-win32-process)"
+    },
+    {
+      "id": "HR-27",
+      "statement": "the pinned contract reports drift rather than continuing silently",
+      "pass": true,
+      "detail": "resolved 0.2.0-rc.2 == qualified 0.2.0-rc.2"
+    },
+    {
+      "id": "HR-28",
+      "statement": "every name on the real worker surface classifies",
+      "pass": true,
+      "detail": "31 worker-visible capabilities, all classified (reaches delegation scopes, so a GLOBAL guard is required)"
+    },
+    {
+      "id": "HR-29",
+      "statement": "an UNCLASSIFIED capability REFUSES the worker start",
+      "pass": true,
+      "detail": "UNCLASSIFIED worker-visible capability(ies): some_future_tool — an unknown capability is not assumed safe, so the worker must not start"
+    },
+    {
+      "id": "HR-30",
+      "statement": "a per-agent guard is REFUSED when a delegation capability is reachable",
+      "pass": true,
+      "detail": "this worker can reach job_output, subagent, subagent_claude_code, subagent_codex, subagent_fork, workflow, which delegate to scopes that can read files; the read guard is"
+    },
+    {
+      "id": "HR-31b",
+      "statement": "a SEARCH rooted above a protected root is DENIED (the leak a live worker found)",
+      "pass": true,
+      "detail": "grep-rooted-at-parent=denied, glob=denied, world-default-search=allowed, unrelated-file-read=allowed"
+    },
+    {
+      "id": "HR-31",
+      "statement": "the guard's tool set is DERIVED from the classification (no second list)",
+      "pass": true,
+      "detail": "derived: glob,grep,ls,read,read_image,str_replace_editor"
+    },
+    {
+      "id": "HR-34",
+      "statement": "a credential-shaped environment variable does NOT reach the confined child",
+      "pass": true,
+      "detail": "canary present=false, 12 vars in the scrubbed environment"
+    },
+    {
+      "id": "HR-35",
+      "statement": "the model's own code cannot read the credential-bearing protected path",
+      "pass": true,
+      "detail": "refused:EPERM"
+    },
+    {
+      "id": "HR-36",
+      "statement": "the credential file is protected by the fence (the mechanism, not just the outcome)",
+      "pass": true,
+      "detail": "integrity=Medium policies=[NO_READ_UP]"
+    },
+    {
+      "id": "HR-37",
+      "statement": "the Medium control plane can still read the credential it uses",
+      "pass": true,
+      "detail": "the host reads its own credential; the fence binds the token, not the principal"
+    },
+    {
+      "id": "HR-38",
+      "statement": "both protected roots are labelled and verified simultaneously",
+      "pass": true,
+      "detail": "A=1/1 roots, B=1/1 roots — the labels did not race"
+    },
+    {
+      "id": "HR-39",
+      "statement": "a worker cannot read ANOTHER world that is at rest (the deployable isolation claim)",
+      "pass": true,
+      "detail": "own world ok, other world at rest blocked (EPERM)"
+    },
+    {
+      "id": "HR-39b",
+      "statement": "isolation between CONCURRENTLY ACTIVE worlds",
+      "pass": true,
+      "limit": true,
+      "detail": "NOT GUARANTEED, measured: after their own drivers ran, world A reads integrity=Low policies=[NO_WRITE_UP] and world B reads integrity=Low policies=[NO_WRITE_UP]. Each worker's own workspace write grant is the LAST writer of its world's label, so NO_READ_UP is replaced by NO_WRITE_UP while that worker runs. A third worker can therefore read both worlds by running raw code. The model-visible route stays closed — the guard denies read/grep/glob on those paths regardless of any label — so what is lost is isolation from ARBITRARY RAW CODE between concurrently active worlds, not the confidentiality of data at rest or the tool surface."
+    },
+    {
+      "id": "HR-40",
+      "statement": "each concurrent worker cannot read its OWN protected root",
+      "pass": true,
+      "detail": "A own=blocked (EPERM), B own=blocked (EPERM)"
+    },
+    {
+      "id": "HR-41",
+      "statement": "each concurrent worker cannot read the OTHER protected root",
+      "pass": true,
+      "detail": "A other=blocked (EPERM), B other=blocked (EPERM)"
+    },
+    {
+      "id": "HR-42",
+      "statement": "both concurrent workers still read their own world",
+      "pass": true,
+      "detail": "A world=ok, B world=ok"
+    },
+    {
+      "id": "HR-43",
+      "statement": "neither worker can read a SIBLING world under the shared worlds root",
+      "pass": true,
+      "detail": "A=blocked (EPERM), B=blocked (EPERM)"
+    },
+    {
+      "id": "HR-32",
+      "statement": "content confidentiality holds across the whole protected tree",
+      "pass": true,
+      "detail": "2 entries examined, 0 unlabelled"
+    },
+    {
+      "id": "HR-33",
+      "statement": "metadata confidentiality",
+      "pass": true,
+      "limit": true,
+      "detail": "NOT GUARANTEED, and measured rather than hidden: the shared worlds parent is an ancestor of the worker's own world, so labelling it would kill the runtime. A worker may enumerate sibling world NAMES. Contents are labelled individually. Disclosed residual(s) for this layout: 1."
+    }
+  ],
+  "failed": [],
+  "limits": [
+    "HR-17",
+    "HR-39b",
+    "HR-33"
+  ]
+}
