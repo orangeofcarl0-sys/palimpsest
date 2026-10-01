@@ -27,7 +27,9 @@
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 
-import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor } from './read_fence.js';
+import { admitWorldForFencing } from './alias_guard.js';
+import { GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
+import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
 
 /** The marker directory that identifies a repository root from anywhere inside it. */
@@ -136,26 +138,74 @@ export function deriveWorkerFence(input = {}) {
  */
 export function installWorkerReadBoundary(input = {}) {
   const config = deriveWorkerFence(input);
+  /**
+   * PRE-ADMISSION: can this world be fenced AT ALL?
+   *
+   * A world that shares a file record with protected content, or that holds a reparse point into a protected
+   * root, cannot be: the sandbox's own write grant re-labels the world tree, and through such an alias that
+   * grant lands on the protected object and replaces NO_READ_UP with NO_WRITE_UP. Measured end to end (see
+   * `alias_guard.js`). Labelling harder does not help — two writers, one descriptor, last writer wins — so
+   * the alias is refused instead.
+   */
+  const aliases = admitWorldForFencing({ world: config.world, protectedRoots: config.roots });
   // Layer 1 — the kernel label. Applied by this process, which runs at Medium integrity precisely so it can
-  // still read what it fences.
+  // still read what it fences. It is STANDING host security state (§3): the labels outlive this process, so a
+  // worker crash cannot leave the deployment unprotected, and the next host verifies what is already there.
   const kernel = applyReadFence({ roots: config.roots, world: config.world });
-  // Layer 2 — the tool guard. A guard can only deny, so its presence is fail-closed by construction.
-  let guardInstalled = false;
+  /**
+   * Layer 2 — the tool guard, registered GLOBALLY.
+   *
+   * The scope is not a detail. A guard registered through `agent.ctx` applies only to that agent, and the
+   * shipped `subagent`/`workflow`/`job_output` capabilities reach OTHER scopes whose children inherit `read`.
+   * A per-agent guard would therefore leave exactly the hole this stage exists to close, so the guard is
+   * registered on the process context and the capability classification treats a per-agent registration as a
+   * REFUSAL (§10).
+   *
+   * A guard can only deny — the shipped contract gives it no allow result — so registering one can never
+   * widen what a worker may do.
+   */
+  const context = input.context;
+  /**
+   * The tools service is fetched with `ctx.get("tools")` rather than read as `ctx.tools`: in Cordis a service
+   * is only reachable as a property on a context that DECLARED it in `inject`, and the host plugin's own
+   * context does not. `get` asks the registry directly, which is the same access the plugin already uses for
+   * `agents`, and it returns `undefined` when the service is absent — the case this code must treat as "no
+   * guard installed" rather than as a crash.
+   */
+  const tools = context === undefined || typeof context?.get !== 'function' ? undefined : context.get('tools');
+  let guardScope = GUARD_SCOPES.WORKER_SCOPE;
   /** @type {undefined | (() => void)} */
   let guardDisposer;
-  const scope = input.scope;
-  if (scope !== undefined && typeof scope?.tools?.guard === 'function') {
-    const guard = createReadGuard({ roots: config.roots, world: config.world });
-    guardDisposer = scope.tools.guard(guard);
-    guardInstalled = true;
+  if (tools !== undefined && typeof tools.guard === 'function') {
+    guardDisposer = tools.guard(createReadGuard({ roots: config.roots, world: config.world }));
+    guardScope = GUARD_SCOPES.GLOBAL;
   }
   return {
     config,
     kernel,
-    guardInstalled,
+    aliasScan: aliases.scan,
+    aliasesClean: aliases.allowed,
+    ...(aliases.allowed ? {} : { aliasRefusal: aliases.reason }),
+    guardInstalled: guardDisposer !== undefined,
+    guardScope,
     ...(guardDisposer === undefined ? {} : { guardDisposer }),
     fencedTools: FENCED_READ_TOOLS,
   };
+}
+
+/**
+ * Decide whether a worker may start, from its ACTUAL visible capability surface.
+ *
+ * This is the fail-closed gate (§10/§11). It is a separate function from the installation because the two
+ * answer different questions — "is the boundary in force" and "may this worker run at all" — and a caller
+ * that conflated them would start a worker whose surface it never checked.
+ *
+ * @param {{ visibleNames: readonly string[], guardScope?: string }} input
+ * @returns {{ allowed: boolean, reason?: string, classification: ReturnType<typeof admitWorkerStart>['classification'], counts: ReturnType<typeof classCounts> }}
+ */
+export function admitWorker(input) {
+  const verdict = admitWorkerStart(input.visibleNames, { ...(input.guardScope === undefined ? {} : { guardScope: input.guardScope }) });
+  return { ...verdict, counts: classCounts(verdict.classification.classified) };
 }
 
 /**
@@ -169,6 +219,7 @@ export function installWorkerReadBoundary(input = {}) {
  */
 export function boundaryTelemetry(installed) {
   const outcomes = installed.kernel.outcomes ?? [];
+  const contract = installed.kernel.contract ?? {};
   return JSON.stringify({
     kernel: {
       supported: installed.kernel.supported,
@@ -176,10 +227,14 @@ export function boundaryTelemetry(installed) {
       labelled: outcomes.filter((entry) => entry.verified).length,
       attempted: outcomes.length,
       unverified: outcomes.filter((entry) => !entry.verified).map((entry) => entry.path),
+      alreadyProtected: outcomes.filter((entry) => entry.alreadyProtected === true).length,
       skipped: (installed.kernel.skipped ?? []).length,
     },
-    guard: { installed: installed.guardInstalled, tools: installed.fencedTools },
+    guard: { installed: installed.guardInstalled, scope: installed.guardScope, tools: installed.fencedTools },
+    aliases: { clean: installed.aliasesClean === true, found: (installed.aliasScan?.aliases ?? []).length },
     residuals: installed.config.residuals.length,
+    // The pinned DSH contract this run depended on, so evidence names the host it ran against (§9).
+    contract: { package: contract.package, resolvedVersion: contract.resolvedVersion, qualifiedVersion: contract.qualifiedVersion, drifted: contract.drifted === true },
   });
 }
 
