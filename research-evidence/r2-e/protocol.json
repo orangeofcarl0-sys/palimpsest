@@ -1,0 +1,153 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-E",
+  "title": "Controlled Capital Efficacy",
+  "startingHead": "8edf9f12f624828b43502642152f653c924e1bb8",
+  "branch": "r2-e-controlled-capital-efficacy",
+  "design": {
+    "kind": "2-condition randomized blocks, host-mediated capital delivery",
+    "conditions": [
+      "E0",
+      "E1"
+    ],
+    "arms": {
+      "E0": "no inherited capital — the control presentation, same section boundary, no capital of any kind",
+      "E1": "governed capital consumed — Proof + Reasoning + Procedure materialized through the attempt-bound pull channel before the first engineering turn"
+    },
+    "repetitions": 5,
+    "scenarios": [
+      "C",
+      "D"
+    ],
+    "expectedTrials": 20,
+    "seed": "0x52450201",
+    "blockOrder": [
+      {
+        "scenario": "C",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "E1",
+              "E0"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "E1",
+              "E0"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          }
+        ]
+      },
+      {
+        "scenario": "D",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "E0",
+              "E1"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "E1",
+              "E0"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "E1",
+              "E0"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "efficacyMechanism": {
+    "mechanism": "HOST_MEDIATED_PREWORK",
+    "envVar": "PALIMPSEST_R2E_EFFICACY",
+    "whyHostMediated": "R2-U measured voluntary uptake at 1/40 overall and 0/10 in the explicit-review capital-present arm, so a prework mechanism depending on the model choosing to pull would fail its own precondition on most runs",
+    "channel": "the worker-local pull tool and the SAME parent resolver (AllowedPullHandles + attempt-bound fetchContext); no second fetch path, no direct backing-store read, no global asset lookup",
+    "timing": "before the first engineering turn exists, so consumption-before-first-edit is structural"
+  },
+  "primaryMetric": "pre-paid mistake recurrence, then mechanical outcome (full solve) per arm",
+  "secondaryMetrics": [
+    "first-candidate hidden acceptance",
+    "visible oracle iterations",
+    "implementation revisions",
+    "elapsed time",
+    "host/model failure"
+  ],
+  "preDeclaredVerdicts": [
+    "R2-E CAPITAL EFFICACY: REPLICATED",
+    "R2-E CAPITAL EFFICACY: PARTIAL",
+    "R2-E CAPITAL EFFICACY: NOT_OBSERVED"
+  ],
+  "verdictCriteria": {
+    "REPLICATED": "both scenarios: E1 repeats the pre-paid mistake less often than E0 AND E1 mechanical outcome is not worse, with every analysed E1 trial having consumed all selected capital",
+    "PARTIAL": "exactly one scenario shows clear benefit, or both show weak/noisy directional benefit",
+    "NOT_OBSERVED": "neither scenario shows meaningful benefit despite guaranteed capital consumption"
+  },
+  "notAnUptakeStage": "R2-E removes voluntary uptake as a variable. R2-U remains the uptake result and this stage must not be converted into one.",
+  "frozenPriorEvidence": {
+    "r1r": {
+      "trials": 30,
+      "capitalAvailable": true,
+      "governedPulls": "0/30"
+    },
+    "r2u": {
+      "trials": 40,
+      "explicitReviewDidNotImproveUptake": true,
+      "governedPulls": "1/40",
+      "capitalPresentPulls": "1/20",
+      "explicitReviewCapitalPresentPulls": "0/10"
+    },
+    "onePuller": "solved its Scenario-C task, but n=1 and self-selected, so that is association only"
+  },
+  "indexHypothesisCarriedForward": {
+    "id": "H-index",
+    "statement": "kind + opaque identity + handle does not provide enough expected-value information for a worker to decide that pull is worth its cost",
+    "status": "RECORDED, NOT IMPLEMENTED — actionable only if R2-E establishes capital efficacy"
+  }
+}
