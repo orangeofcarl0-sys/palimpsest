@@ -265,6 +265,8 @@ async function runWorker(ctx, deps) {
   // R1-H: what the read boundary achieved, for the telemetry line. `undefined` until the boundary runs, so a
   // worker that failed before installing it reports "not installed" rather than a false success.
   let boundary = null;
+  // R1-HR §10: the fail-closed capability verdict, computed from the surface the worker ACTUALLY has.
+  let capability = null;
   /**
    * The telemetry line's payload, computed from whatever `boundary` holds. Three states are distinguishable
    * on purpose, because "not installed" and "installed but unsupported" are different facts and the live
@@ -284,8 +286,12 @@ async function runWorker(ctx, deps) {
         unverified: outcomes.filter((entry) => !entry.verified).map((entry) => entry.path),
         skipped: (boundary.kernel?.skipped ?? []).length,
       },
-      guard: { installed: boundary.guardInstalled === true, tools: boundary.fencedTools ?? [] },
+      guard: { installed: boundary.guardInstalled === true, scope: boundary.guardScope, tools: boundary.fencedTools ?? [] },
+      aliases: { clean: boundary.aliasesClean === true, found: (boundary.aliasScan?.aliases ?? []).length },
       residuals: (boundary.config?.residuals ?? []).length,
+      contract: boundary.kernel?.contract === undefined
+        ? undefined
+        : { package: boundary.kernel.contract.package, resolvedVersion: boundary.kernel.contract.resolvedVersion, qualifiedVersion: boundary.kernel.contract.qualifiedVersion, drifted: boundary.kernel.contract.drifted === true },
     });
   };
 
@@ -301,14 +307,29 @@ async function runWorker(ctx, deps) {
        * its own layout from the process position rather than being told: the world is cwd, the repository is
        * the ancestor holding `.palimpsest`, and the host home is `DSH_HOME`. The KERNEL layer (a MEDIUM +
        * NO_READ_UP label) is applied here, in the Medium-integrity host, which is exactly why it can fence
-       * the Low-integrity worker without fencing itself. The GUARD layer is installed inside the agent's own
-       * scope below, where a scope exists.
+       * the Low-integrity worker without fencing itself.
+       *
+       * The GUARD layer is registered GLOBALLY on `ctx` (R1-HR §10): the shipped `subagent`/`workflow`/
+       * `job_output` capabilities reach OTHER scopes whose children inherit `read`, so a guard registered on
+       * the worker's own agent scope would leave exactly the hole this stage exists to close.
        */
       const boundaryLoad = await loadBoundary();
       if (boundaryLoad.module === undefined) {
         boundary = { unavailable: boundaryLoad.error };
       } else {
-        boundary = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd() });
+        boundary = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd(), context: ctx });
+        /**
+         * R1-HR: AN ALIAS THAT REACHES PROTECTED CONTENT REFUSES THE WORKER.
+         *
+         * A world sharing a file record with a protected file, or holding a reparse point into a protected
+         * root, cannot be fenced at all: the sandbox's own write grant re-labels the world tree, and through
+         * such an alias that grant overwrites the protected object's NO_READ_UP. The measurement is recorded
+         * in `alias_guard.js`. Refusing here is the fail-closed answer — running anyway would produce a
+         * worker that looks protected and is not.
+         */
+        if (boundary.aliasesClean === false) {
+          failure = `refusing to run this worker: ${boundary.aliasRefusal ?? 'the execution world can reach protected content by alias'}`;
+        }
       }
       // The name comes from the environment's OWN definition — the data Palimpsest sent — never from a
       // literal here, so the two sides cannot disagree about what the worker answers through.
@@ -326,6 +347,8 @@ async function runWorker(ctx, deps) {
           typeof environment.contextPullTool?.name === 'string' && environment.contextPullTool.name.length > 0
             ? environment.contextPullTool.name
             : undefined;
+        /** Set inside `workerSetup` when the capability gate refuses; checked immediately after creation. */
+        let capabilityRefusal = null;
         const workerSetup = (agentCtx) => {
           setup(agentCtx);
           // Enumerate what this scope INHERITS, then close the authority surface. The prefix comes from
@@ -337,26 +360,28 @@ async function runWorker(ctx, deps) {
             .map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined))
             .filter((name) => typeof name === 'string' && name.startsWith(prefix) && !keep.includes(name));
           if (denied.length > 0) agentCtx.tools.restrict({ deny: denied });
+          /**
+           * R1-HR §10/§11: THE FAIL-CLOSED CAPABILITY GATE.
+           *
+           * The surface is enumerated from the scope's OWN view — what this worker can actually reach, not
+           * what a declaration says it should — and every name must classify. An unclassified capability
+           * REFUSES THE WORKER START: unknown is not assumed safe.
+           *
+           * The second condition matters as much as the first. Several shipped capabilities reach OTHER
+           * scopes (`subagent` joins the parent preset for its child; `workflow` spawns those children;
+           * `job_output` returns a job's captured output). Those are only safe while the read guard is
+           * registered globally, so a per-agent registration is refused rather than silently leaving a hole.
+           */
+          if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.admitWorker === 'function') {
+            const surface = [...visible.map((entry) => (typeof entry?.name === 'string' ? entry.name : undefined)), resultToolName, pullToolName].filter((name) => typeof name === 'string');
+            capability = boundaryLoad.module.admitWorker({ visibleNames: surface, guardScope: boundary?.guardScope });
+            if (capability.allowed !== true) capabilityRefusal = capability.reason ?? 'the capability classification refused this worker';
+          }
           // The worker's OWN layer: a restriction filters what a scope inherits and never what it
           // registers, so the two worker-private tools survive the deny above. The definitions arrive
           // already converted by the plugin layer, which owns that conversion.
           agentCtx.tools.register(environment.tool);
           if (pullToolName !== undefined) agentCtx.tools.register(environment.contextPullTool);
-          /**
-           * R1-H layer 2: THE TRUSTED-CODE READ GUARD, registered on the WORKER's scope.
-           *
-           * It must live here rather than at the plugin scope: a guard registered through an agent's own
-           * context applies to THAT agent, and this is the agent whose tool calls carry model-controlled
-           * paths. A `guard` may only deny (the shipped contract gives it no allow result), so registering
-           * one can never widen what the worker may do.
-           *
-           * It exists because the kernel label cannot cover these calls: the PTC bindings execute in the
-           * trusted host process (measured, GATE A A-25), where a mandatory integrity label does not bind.
-           */
-          if (boundary !== null && boundaryLoad.module !== undefined && typeof agentCtx.tools.guard === 'function') {
-            const guarded = boundaryLoad.module.installWorkerReadBoundary({ world: process.cwd(), scope: agentCtx });
-            boundary = { ...boundary, guardInstalled: guarded.guardInstalled };
-          }
           if (typeof agentCtx.tools.presentAs === 'function') {
             agentCtx.tools.presentAs('ptc');
             presentation = 'ptc';
@@ -368,6 +393,20 @@ async function runWorker(ctx, deps) {
           agentOptions,
           setup: workerSetup,
         });
+        /**
+         * The gate fired: the worker's surface contained a capability the host cannot vouch for. The agent is
+         * disposed immediately and the attempt is reported as a HOST failure — never as a Work outcome,
+         * because no work happened. The setup closure runs during `agents.create`, so this is the first
+         * moment the verdict exists.
+         */
+        if (capabilityRefusal !== null) {
+          try {
+            await handle.dispose?.();
+          } catch {
+            /* the agent may not have finished composing */
+          }
+          throw new Error(`refusing to run this worker: ${capabilityRefusal}`);
+        }
         const agent = handle.agent;
         await agent.whenIdle();
         agent.followup(userMessage(workTask(environment.context, environment.contextIndexText)));
@@ -416,6 +455,18 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_READ_BOUNDARY ${readBoundaryTelemetry()}
+`,
+  );
+  /**
+   * R1-HR §10: WHAT THE CAPABILITY CLASSIFICATION DECIDED — counts per class and the verdict, never a path
+   * and never a tool body. A reviewer and the live gate read the fail-closed decision from here.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_CAPABILITIES ${JSON.stringify(
+      capability === null
+        ? { classified: false }
+        : { classified: true, allowed: capability.allowed === true, counts: capability.counts, unclassified: capability.classification?.unclassified ?? [], requiresGlobalGuard: capability.classification?.requiresGlobalGuard === true },
+    )}
 `,
   );
 

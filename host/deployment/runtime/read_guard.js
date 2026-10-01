@@ -29,31 +29,37 @@
 
 import { isAbsolute, relative, resolve, sep } from 'node:path';
 
+import { guardedReadTools } from './capability_classes.js';
+
 /**
  * The tool calls that can return file CONTENT, with the argument that names the path.
  *
- * Named explicitly rather than matched by pattern, because a name-based heuristic is exactly the inference
- * this project forbids elsewhere. `grep`/`glob` are here for the measured reason above: they spawn ripgrep
- * and never touch the filesystem service, so a fence placed only on `ctx.fs` would leave them open.
+ * DERIVED FROM THE CLASSIFICATION TABLE, not declared here (R1-HR §12). A second list would be a second
+ * thing to forget: a tool could be classified GUARDED_HOST_READ and be absent from the guard, or renamed in
+ * one place and not the other. One table, one derivation.
  *
- * `path` on grep/glob is optional; when it is absent the tool defaults to the session cwd, which is the
- * worker's own world and therefore allowed.
+ * The entries are those the classification marks GUARDED_HOST_READ, each with the argument carrying the
+ * model-controlled path. The reasons they are in that class — including that `grep`/`glob` spawn ripgrep
+ * without touching `ctx.fs`, and that `read_image` returns bytes — are recorded on the table itself.
  */
-const CONTENT_READERS = Object.freeze([
-  Object.freeze({ name: 'read', arg: 'file_path' }),
-  // `read_image` returns a file's BYTES as an image, so it is a content reader like `read` and takes the
-  // same argument. Omitting it would leave a way to pull protected bytes through a different tool name.
-  Object.freeze({ name: 'read_image', arg: 'file_path' }),
-  Object.freeze({ name: 'grep', arg: 'path' }),
-  Object.freeze({ name: 'glob', arg: 'path' }),
-  Object.freeze({ name: 'ls', arg: 'path' }),
-  Object.freeze({ name: 'str_replace_editor', arg: 'path' }),
-]);
+const CONTENT_READERS = Object.freeze(guardedReadTools().map((entry) => Object.freeze(entry)));
 
 /**
  * @typedef {{ readonly name: string, readonly arg: string }} ContentReader
  * @typedef {{ readonly roots: readonly string[], readonly world: string }} FenceConfig
  */
+
+/**
+ * The tools whose path argument names a directory a SEARCH WALKS, rather than a single file to open.
+ *
+ * The distinction is load-bearing and was found by a live worker rather than by reasoning: a search rooted
+ * at an ANCESTOR of a protected root descends INTO it, so `grep { path: "<parent of everything>" }` returns
+ * protected file contents even though the named path is not itself under a protected root. R1-H's guard
+ * tested only containment of the named path, so a real worker walked out through the parent directory and
+ * obtained every protected canary. The check for these tools must therefore be MUTUAL overlap, not one-way
+ * containment: a walk is refused when its root is inside a protected root OR contains one.
+ */
+const SEARCH_ROOTS = Object.freeze(new Set(['grep', 'glob', 'ls']));
 
 /**
  * Decide whether a model-supplied path is inside the worker's allowed read set.
@@ -64,23 +70,36 @@ const CONTENT_READERS = Object.freeze([
  * finer-grained thing: allow the world FIRST, then deny the protected roots — which means a protected root
  * that happens to contain the world is still denied for every path outside the world.
  *
+ * TWO CHECKS, because two shapes of call exist:
+ *   · for a SEARCH tool (`grep`/`glob`/`ls`), overlap in EITHER direction is a leak — a walk rooted inside a
+ *     protected root reads it, and a walk rooted above one descends into it;
+ *   · for a content reader (`read`/`read_image`/`str_replace_editor`), only the named path is opened, so
+ *     one-way containment is the correct and complete test.
+ *
  * ALLOWED: the execution world, and anything under no protected root at all — the runtime, the toolchain and
  * the package dependencies. A worker needs those to do ordinary work, and `AllowedExecutionReads` exists
  * precisely so this stays honest rather than claiming "only the world", which no runtime permits.
  *
- * @param {{ path: string, roots: readonly string[], world: string, cwd: string }} input
+ * @param {{ path: string, roots: readonly string[], world: string, cwd: string, tool?: string }} input
  * @returns {{ allowed: true } | { allowed: false, reason: string }}
  */
 export function decideRead(input) {
   const target = resolve(input.cwd, input.path);
   if (isUnder(input.world, target)) return { allowed: true };
+  const isSearch = typeof input.tool === 'string' && SEARCH_ROOTS.has(input.tool);
   for (const root of input.roots) {
-    if (!isUnder(root, target)) continue;
+    const insideProtected = isUnder(root, target);
+    // A search rooted ABOVE a protected root walks down into it; only a search tool needs this direction,
+    // and only a search tool can be refused for it without blocking an ordinary file read elsewhere.
+    const containsProtected = isSearch && isUnder(target, root);
+    if (!insideProtected && !containsProtected) continue;
     const resolvedRoot = resolve(root);
     const shown = relative(resolvedRoot, target);
     return {
       allowed: false,
-      reason: `"${shown === '' ? resolvedRoot : shown}" is under a protected root (${resolvedRoot}); a work worker may read its own execution world and the runtime, not durable state, sibling worlds, other projects or host session material`,
+      reason: containsProtected && !insideProtected
+        ? `"${target}" contains a protected root (${resolvedRoot}); a ${String(input.tool)} search rooted here would descend into it, so the walk is refused`
+        : `"${shown === '' ? resolvedRoot : shown}" is under a protected root (${resolvedRoot}); a work worker may read its own execution world and the runtime, not durable state, sibling worlds, other projects or host session material`,
     };
   }
   return { allowed: true };
@@ -132,7 +151,9 @@ export function createReadGuard(config) {
     if (raw === undefined) return undefined;
     if (typeof raw !== 'string') return `${name}: "${reader.arg}" must be a string; the read fence cannot evaluate a non-string path`;
     if (raw.trim() === '') return undefined;
-    const verdict = decideRead({ path: raw, roots: config.roots, world: config.world, cwd });
+    // The TOOL NAME is passed through: a search tool's path names a directory to WALK, so its check is
+    // mutual overlap rather than one-way containment (see `decideRead`).
+    const verdict = decideRead({ path: raw, roots: config.roots, world: config.world, cwd, tool: name });
     if (verdict.allowed) return undefined;
     return `${name} refused: ${verdict.reason}`;
   };
@@ -150,4 +171,8 @@ export function installReadGuard(scope, config) {
 }
 
 /** Exposed for the conformance suite, so the tool set under test cannot drift from the tool set in force. */
+/**
+ * Exposed for the conformance suite, so the tool set under test cannot drift from the tool set in force.
+ * It is a DERIVED view of the classification table, which is the one place a tool's read behaviour is decided.
+ */
 export const FENCED_READ_TOOLS = CONTENT_READERS.map((entry) => entry.name);

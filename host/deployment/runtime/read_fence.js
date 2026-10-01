@@ -1,162 +1,77 @@
-// palimpsest-dsh-host/deployment/runtime — READ CONFINEMENT FOR A WORKER'S EXECUTION WORLD.
+// palimpsest-host-deployment/runtime — THE READ FENCE: STANDING, VERIFIED, FAIL-CLOSED.
 //
-// THE GAP THIS CLOSES. R1-S measured that the DSH sandbox is a WRITE boundary only: every platform runner
-// grants read of the whole filesystem and restricts only mutation, and the policy vocabulary has no read
-// side at all. So a worker could read the durable state, a sibling world, another project and the host's
-// credential file directly — bypassing the governed context pull entirely. That is a CONFIDENTIALITY gap,
-// not a functional one: the pull works, it is simply not exclusive.
+// R1-H proved the mechanism: a MEDIUM + NO_READ_UP mandatory label on a protected root refuses the
+// Low-integrity token the DSH backend already creates for a worker, while leaving the Medium control plane
+// untouched. This module turns that proof into a host contract. What changed, and why each change is
+// load-bearing rather than cosmetic:
 //
-// THE MECHANISM, AND WHY IT IS THIS ONE. The backend ALREADY lowers the worker token to Low integrity for
-// the write side (`restrictTokenIntegrity`, S-1-16-4096). Windows mandatory integrity control lets a
-// lower-integrity subject read a higher-integrity object — read-up is allowed by default — so the missing
-// half is a label on the OBJECTS, not a change to the SUBJECT:
+//   · It no longer builds its own Win32 table. All descriptor work goes through `win32_label.js`, which binds
+//     the ACL calls through the DOCUMENTED DSH seam and pins the contract it depends on.
 //
-//     MEDIUM + NO_READ_UP on a protected root   =>   the Low worker is refused, the Medium host is not
+//   · It READS the existing label before writing. A fence that overwrote a label would silently drop an
+//     existing NO_WRITE_UP or NO_EXECUTE_UP, which is a security REGRESSION dressed as a fix. The effective
+//     policy is always `existing | NO_READ_UP`, and the integrity level is never lowered.
 //
-// This needs no second OS account, no container, no WSL, and no change to the control plane. It is the
-// smallest mechanism that produces a real kernel read boundary on this host.
+//   · It VERIFIES by re-reading and parsing the object's mandatory ACE after every mutation. A return code
+//     is not evidence on this host: two write paths were measured to report success while changing nothing.
 //
-// WHY NOT `icacls`. Measured: `icacls /setintegritylevel` normalizes EVERY spelling it accepts — M, MR,
-// MNR, MRNW, MNW — to `(NW)`, which is no-WRITE-up. That policy does nothing to reads, which is why R1-S's
-// label experiment changed nothing and why its "no no-read-up path exists" conclusion was reached. The
-// capability was never absent; the CLI could not express it. The mandatory policy is an ARGUMENT of
-// `AddMandatoryAce`, and 2 is NO_READ_UP.
+//   · It verifies the WHOLE TREE, not just the root. A label is inherited by existing and future children,
+//     but a child can carry inheritance-blocking flags, and "the root is protected" is not the claim that
+//     matters — "the CONTENT is protected" is.
 //
-// WHY NOT SDDL. Measured too: `SetSecurityDescriptorSddlForm("S:(ML;;NR;;;ME)")` reports success and writes
-// nothing (the readback descriptor carries no `S:` component). A write whose return value is trusted is not
-// evidence, so every write here is verified by RE-READING the label through the same API.
+//   · It is STANDING (§3). Labels are host security state that survives worker and session exit, so a
+//     worker's own crash cannot leave the deployment unprotected, and a new host can verify what is already
+//     there and repair only what drifted.
 //
-// WHAT IT DELIBERATELY DOES NOT DO. It does not touch the DACL: this changes what a LOWER INTEGRITY LEVEL
-// may read, never who is allowed. It does not protect a root that is an ANCESTOR of the worker's world —
-// every process traverses its cwd's ancestors, and traverse into a no-read-up directory is refused, so
-// labelling one kills the worker before its first statement. That is a measured constraint, not a
-// preference, and it is why `isAncestorOf` exists and why the shared worlds parent is a disclosed residual.
+// This is HOST EXECUTION capability. It owns no canonical semantics: no owner, no event type, no table, no
+// asset kind, no authority (§3/§9 of the R1-H ruling, §1 of R1-HR).
 //
-// This module is HOST EXECUTION capability, not Project truth: it creates no canonical owner, no event
-// type, no table and no asset kind, and it carries no authority (R1-H ruling §3/§9).
-//
-// PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript, so no annotations here.
+// PLAIN JAVASCRIPT. `host/**` is scanned by the architecture checker as JavaScript.
 
+import { readdirSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
-import { createRequire } from 'node:module';
+
+import {
+  MANDATORY_POLICIES,
+  dshCompatibilityReport,
+  readMandatoryLabel,
+  restoreLabel,
+  win32LabelApi,
+  writeAndVerifyLabel,
+} from './win32_label.js';
 
 /**
  * @typedef {{ readonly path: string, readonly why: string }} ReadFenceSkip
- * @typedef {{ readonly path: string, readonly applied: boolean, readonly verified: boolean, readonly detail: string }} ReadFenceOutcome
- * @typedef {{
- *   readonly supported: boolean,
- *   readonly platform: string,
- *   readonly outcomes: readonly ReadFenceOutcome[],
- *   readonly skipped: readonly ReadFenceSkip[],
- *   readonly unavailable?: string,
- * }} ReadFenceResult
+ * @typedef {{ readonly path: string, readonly applied: boolean, readonly verified: boolean,
+ *   readonly detail: string, readonly alreadyProtected?: boolean }} ReadFenceOutcome
+ * @typedef {{ readonly supported: boolean, readonly platform: string, readonly outcomes: readonly ReadFenceOutcome[],
+ *   readonly skipped: readonly ReadFenceSkip[], readonly unavailable?: string, readonly drifted?: boolean,
+ *   readonly contract?: unknown }} ReadFenceResult
  * @typedef {{ readonly protectedRoots: readonly string[], readonly skipped: readonly ReadFenceSkip[] }} ReadFencePlan
+ * @typedef {{ readonly path: string, readonly present: boolean, readonly verified: boolean, readonly detail: string }} DescendantOutcome
+ * @typedef {{ readonly root: string, readonly checked: number, readonly unlabelled: readonly string[],
+ *   readonly unreadable: readonly string[], readonly verified: boolean }} TreeOutcome
  */
 
-/**
- * The well-known SID types and constants this module needs, named so the numbers are readable.
- *
- * `WinMediumLabelSid` (67) is the control plane's own level: a label at Low would do nothing, because
- * no-read-up only denies reading a STRICTLY HIGHER level (measured — the first attempt in this project used
- * a Low label and changed nothing).
- */
-const SE_FILE_OBJECT = 1;
-const LABEL_SECURITY_INFORMATION = 16;
-const NO_READ_UP = 2;
-const ACL_REVISION = 2;
-const OBJECT_INHERIT_ACE = 1;
-const CONTAINER_INHERIT_ACE = 2;
-const ACE_FLAGS = OBJECT_INHERIT_ACE | CONTAINER_INHERIT_ACE;
-const WIN_MEDIUM_LABEL_SID = 67;
-const SID_BUFFER_BYTES = 68;
-const POINTER_SLOT_BYTES = 8;
-
-/**
- * Where the FFI runtime is resolved from.
- *
- * koffi is a dependency of the DSH installation, not of this repository, and this module always runs inside
- * a DSH process — so it is resolved from, in order: an explicit `PALIMPSEST_DSH_ROOT`, the DSH entry point
- * this process was actually launched with (`process.argv[1]`), the host bundle's own location, and finally
- * the ordinary chain. Each candidate is a FILE inside the DSH tree whose `node_modules` chain reaches
- * koffi; a candidate that does not resolve is skipped.
- *
- * A module that could not load its runtime must SAY so rather than silently skipping the fence, so the
- * failure is returned as `unavailable` and the caller can refuse to run rather than run unprotected.
- *
- * @returns {{ koffi?: unknown, error?: string }}
- */
-function loadKoffi() {
-  /** @type {string[]} */
-  const candidates = [import.meta.url];
-  const asUrl = (/** @type {string} */ p) => `file:///${p.replace(/\\/gu, '/')}`;
-  const dshRoot = process.env.PALIMPSEST_DSH_ROOT?.trim();
-  if (dshRoot !== undefined && dshRoot !== '') {
-    candidates.unshift(asUrl(`${dshRoot}/node_modules/@deepseek-ai/dsh-sandbox-windows-acl/lib/index.js`));
-  }
-  // The DSH entry point this process was launched with is the most reliable anchor: it always sits inside
-  // the installation that owns koffi.
-  const entry = process.argv[1];
-  if (typeof entry === 'string' && entry.length > 0) candidates.unshift(asUrl(entry));
-  /**
-   * The global npm root, as a LAST resort, so an acceptance gate can be run standalone by a reviewer
-   * without exporting anything. It is last because it is the only candidate that could resolve a
-   * DIFFERENT installation than the one this process is actually running under.
-   */
-  const globalRoot = process.env.npm_config_prefix?.trim();
-  if (globalRoot !== undefined && globalRoot !== '') {
-    candidates.push(asUrl(`${globalRoot}/node_modules/@deepseek-ai/dsh-sandbox-windows-acl/lib/index.js`));
-  }
-  for (const base of candidates) {
-    try {
-      return { koffi: createRequire(base)('koffi') };
-    } catch {
-      /* try the next resolution base */
-    }
-  }
-  return { error: 'koffi could not be resolved from the host bundle, the DSH entry point, or the DSH installation' };
-}
-
-/**
- * Build the Win32 binding table.
- *
- * Declared here rather than imported from DSH's internals: the ACL helpers live in a bundled chunk the
- * package does not export (`lib/types-Cl_DXjhk.js`, whose `win32` resolver is aliased to a single letter and
- * is absent from the `exports` map). Reaching into that chunk would make this module depend on an
- * unpublished internal, so the five calls it needs are declared directly.
- *
- * @param {any} koffi - the loaded FFI runtime.
- * @returns {any} the binding table.
- */
-function bindNative(koffi) {
-  const advapi = koffi.load('advapi32.dll');
-  /** @param {string} signature */
-  const func = (signature) => advapi.func(signature);
-  return {
-    // `str16` is load-bearing: the wide entry points take UTF-16, and koffi's plain `str` is ANSI, which
-    // makes every call fail with ERROR_FILE_NOT_FOUND (2) on a path that demonstrably exists.
-    createWellKnownSid: func('int __stdcall CreateWellKnownSid(int, void*, void*, void*)'),
-    getLengthSid: func('uint32 __stdcall GetLengthSid(void*)'),
-    initializeAcl: func('int __stdcall InitializeAcl(void*, uint32, uint32)'),
-    addMandatoryAce: func('int __stdcall AddMandatoryAce(void*, uint32, uint32, uint32, void*)'),
-    setNamedSecurityInfoW: func('uint32 __stdcall SetNamedSecurityInfoW(str16, int, uint32, void*, void*, void*, void*)'),
-    getNamedSecurityInfoW: func('uint32 __stdcall GetNamedSecurityInfoW(str16, int, uint32, void*, void*, void*, void*, void*)'),
-    alloc: (/** @type {string} */ type, /** @type {number} */ count) => koffi.alloc(type, count),
-    encode: (/** @type {unknown} */ slot, /** @type {string} */ type, /** @type {number} */ value) => koffi.encode(slot, type, value),
-    decode: (/** @type {unknown} */ slot, /** @type {unknown} */ type) => koffi.decode(slot, type),
-    pointer: (/** @type {string} */ type) => koffi.pointer(type),
-  };
-}
+/** How deep a tree walk goes. A world is shallow; an unbounded walk over a huge tree is a hang, not a fence. */
+const MAX_TREE_DEPTH = 12;
+/** A cap on entries examined per root, so a pathological tree cannot turn `ensure` into a hang. */
+const MAX_TREE_ENTRIES = 20_000;
 
 /**
  * True when `candidate` is `root` or sits underneath it, compared on resolved absolute paths.
+ *
+ * Case is folded on win32: this is a confidentiality check, and a fence that a capitalization change could
+ * walk around would be worse than no fence, because it would be trusted.
  *
  * @param {string} root
  * @param {string} candidate
  * @returns {boolean}
  */
 export function isAncestorOf(root, candidate) {
-  const a = resolve(root).replace(/[\\/]+$/u, '');
-  const b = resolve(candidate).replace(/[\\/]+$/u, '');
+  const fold = (/** @type {string} */ value) => (process.platform === 'win32' ? value.toLowerCase() : value);
+  const a = fold(resolve(root).replace(/[\\/]+$/u, ''));
+  const b = fold(resolve(candidate).replace(/[\\/]+$/u, ''));
   if (a === b) return true;
   return b.startsWith(a.endsWith(sep) ? a : `${a}${sep}`);
 }
@@ -164,10 +79,11 @@ export function isAncestorOf(root, candidate) {
 /**
  * Decide which roots may carry the label for a given execution world.
  *
- * A root that CONTAINS the world is skipped, and the reason is measured: every process traverses its cwd's
- * ancestor directories during startup (Node's module walk lstats each one), and traverse into a no-read-up
- * directory is refused — so labelling such a root kills the worker before it runs a single statement. A
- * fence that breaks the runtime is an outage, not a boundary.
+ * A root that CONTAINS the world is skipped, and the reason is measured rather than chosen: every process
+ * traverses its cwd's ancestors during startup (Node's module walk `lstat`s each one), and traverse into a
+ * no-read-up directory is refused — so labelling such a root kills the worker before it runs a statement. A
+ * fence that breaks the runtime is an outage, not a boundary. The trusted-code guard in `read_guard.js` can
+ * still deny paths inside such a root, because it works on names rather than on the kernel.
  *
  * @param {{ roots: readonly string[], world: string }} input
  * @returns {ReadFencePlan}
@@ -191,17 +107,14 @@ export function planReadFence(input) {
 }
 
 /**
- * Apply a MEDIUM + NO_READ_UP mandatory label to each root, VERIFYING every write by re-reading the label.
- *
- * The verification is not ceremony. Two write paths on this host were measured to report success while
- * changing nothing — a PowerShell ACL write that dropped its ACE, and an SDDL label that vanished — so a
- * caller that trusted a return code would report a boundary that does not exist.
+ * Label every planned root, preserving what is already there and verifying the result.
  *
  * @param {{ roots: readonly string[], world: string }} input
  * @returns {ReadFenceResult}
  */
 export function applyReadFence(input) {
   const plan = planReadFence(input);
+  const compatibility = dshCompatibilityReport();
   if (process.platform !== 'win32') {
     return {
       supported: false,
@@ -209,92 +122,193 @@ export function applyReadFence(input) {
       outcomes: [],
       skipped: plan.skipped,
       unavailable: 'the read fence is a Windows mandatory-integrity mechanism',
+      contract: compatibility,
     };
   }
-  const loaded = loadKoffi();
-  if (loaded.koffi === undefined) {
-    return { supported: false, platform: process.platform, outcomes: [], skipped: plan.skipped, unavailable: loaded.error };
-  }
-  /** @type {any} */
-  let api;
-  try {
-    api = bindNative(loaded.koffi);
-  } catch (error) {
+  const resolved = win32LabelApi();
+  if (resolved.error !== undefined || resolved.api === undefined) {
     return {
       supported: false,
       platform: process.platform,
       outcomes: [],
       skipped: plan.skipped,
-      unavailable: `the Win32 binding table could not be built: ${error instanceof Error ? error.message : String(error)}`,
+      unavailable: resolved.error ?? 'the Win32 label binding table is unavailable',
+      contract: compatibility,
     };
   }
-
-  const mediumSid = api.alloc('uint8', SID_BUFFER_BYTES);
-  const sizeSlot = api.alloc('uint32', 1);
-  api.encode(sizeSlot, 'uint32', SID_BUFFER_BYTES);
-  if (api.createWellKnownSid(WIN_MEDIUM_LABEL_SID, null, mediumSid, sizeSlot) === 0) {
-    return { supported: false, platform: process.platform, outcomes: [], skipped: plan.skipped, unavailable: 'CreateWellKnownSid(Medium) failed' };
-  }
-  const sidLength = api.getLengthSid(mediumSid);
-  if (sidLength === 0) {
-    return { supported: false, platform: process.platform, outcomes: [], skipped: plan.skipped, unavailable: 'GetLengthSid(Medium) returned 0' };
-  }
-
+  const api = resolved.api;
   /** @type {ReadFenceOutcome[]} */
   const outcomes = [];
-  for (const root of plan.protectedRoots) outcomes.push(applyOne(api, root, mediumSid, sidLength));
-  return { supported: true, platform: process.platform, outcomes, skipped: plan.skipped };
+  for (const root of plan.protectedRoots) outcomes.push(ensureRoot(api, root));
+  return { supported: true, platform: process.platform, outcomes, skipped: plan.skipped, drifted: compatibility.drifted, contract: compatibility };
 }
 
 /**
- * Label one root and verify it.
+ * Ensure ONE root carries the label, without disturbing anything already there.
+ *
+ * The idempotence rule (§17) lives here: when the root already carries a label whose policy ALREADY includes
+ * NO_READ_UP and whose integrity level is at least Medium, nothing is written at all. Re-writing an identical
+ * ACE would re-propagate the descriptor across the whole tree on every worker start, which is both slow and
+ * a needless mutation of host security state.
  *
  * @param {any} api
  * @param {string} root
- * @param {unknown} mediumSid
- * @param {number} sidLength
  * @returns {ReadFenceOutcome}
  */
-function applyOne(api, root, mediumSid, sidLength) {
-  const aclLength = 16 + sidLength;
-  const acl = api.alloc('uint8', aclLength);
-  if (api.initializeAcl(acl, aclLength, ACL_REVISION) === 0) {
-    return { path: root, applied: false, verified: false, detail: 'InitializeAcl failed' };
+function ensureRoot(api, root) {
+  const existing = readMandatoryLabel(api, root);
+  if (!existing.ok) {
+    return { path: root, applied: false, verified: false, detail: `the existing label could not be read, so the fence refuses to write over it: ${existing.detail}` };
   }
-  if (api.addMandatoryAce(acl, ACL_REVISION, ACE_FLAGS, NO_READ_UP, mediumSid) === 0) {
-    return { path: root, applied: false, verified: false, detail: `AddMandatoryAce(policy=${String(NO_READ_UP)}) failed` };
+  const label = existing.label;
+  const alreadyProtected =
+    label?.present === true &&
+    ((label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) !== 0 &&
+    typeof label.integrityRid === 'number' &&
+    label.integrityRid >= 8192;
+  if (alreadyProtected) {
+    return { path: root, applied: false, verified: true, alreadyProtected: true, detail: `already protected, unchanged: ${describe(label)}` };
   }
-  const written = api.setNamedSecurityInfoW(root, SE_FILE_OBJECT, LABEL_SECURITY_INFORMATION, null, null, null, acl);
-  if (written !== 0) {
-    return { path: root, applied: false, verified: false, detail: `SetNamedSecurityInfoW returned ${String(written)}` };
+  const written = writeAndVerifyLabel(api, root, label);
+  return { path: root, applied: written.applied, verified: written.verified, detail: written.detail };
+}
+
+/** One-line description of a label, for evidence. */
+function describe(/** @type {any} */ label) {
+  return `integrity=${String(label?.integrityName)} policies=[${(label?.policies ?? []).join('|')}]`;
+}
+
+/**
+ * Walk a protected root and verify that the label actually reaches its CONTENT.
+ *
+ * This is the difference between "the root is labelled" and "the bytes are protected". Windows propagates an
+ * inheritable label to existing children at write time and to new children at creation, but a child can
+ * carry flags that block inheritance, and a fence that trusted the root alone would report a boundary it does
+ * not have.
+ *
+ * FAIL CLOSED: a descendant that is present but unlabelled makes the whole tree UNVERIFIED, and the caller
+ * is expected to treat that as a refusal to run — not as a warning.
+ *
+ * @param {{ root: string, maxDepth?: number, maxEntries?: number }} input
+ * @returns {TreeOutcome}
+ */
+export function verifyTree(input) {
+  const resolved = win32LabelApi();
+  if (resolved.error !== undefined || resolved.api === undefined) {
+    return { root: input.root, checked: 0, unlabelled: [], unreadable: [input.root], verified: false };
   }
-  // VERIFY: a return code is not evidence on this host (see the module note).
-  const owner = api.alloc('uint8', POINTER_SLOT_BYTES);
-  const group = api.alloc('uint8', POINTER_SLOT_BYTES);
-  const dacl = api.alloc('uint8', POINTER_SLOT_BYTES);
-  const sacl = api.alloc('uint8', POINTER_SLOT_BYTES);
-  const descriptor = api.alloc('uint8', POINTER_SLOT_BYTES);
-  const read = api.getNamedSecurityInfoW(root, SE_FILE_OBJECT, LABEL_SECURITY_INFORMATION, owner, group, dacl, sacl, descriptor);
-  if (read !== 0) {
-    return { path: root, applied: true, verified: false, detail: `written, but the verifying read failed with ${String(read)}` };
-  }
-  const labelPointer = api.decode(sacl, api.pointer('void'));
-  const present = !(labelPointer === null || labelPointer === undefined || labelPointer === 0n);
-  return {
-    path: root,
-    applied: true,
-    verified: present,
-    detail: present ? 'labelled (MEDIUM + NO_READ_UP) and verified by readback' : 'the write returned success but the label was NOT persisted',
+  const api = resolved.api;
+  const maxDepth = input.maxDepth ?? MAX_TREE_DEPTH;
+  const maxEntries = input.maxEntries ?? MAX_TREE_ENTRIES;
+  /** @type {string[]} */
+  const unlabelled = [];
+  /** @type {string[]} */
+  const unreadable = [];
+  let checked = 0;
+
+  /** @param {string} path @param {number} depth */
+  const visit = (path, depth) => {
+    if (checked >= maxEntries || depth > maxDepth) return;
+    checked += 1;
+    const read = readMandatoryLabel(api, path);
+    if (!read.ok) {
+      unreadable.push(path);
+    } else if (read.label?.present !== true || ((read.label.policyMask ?? 0) & MANDATORY_POLICIES.NO_READ_UP) === 0) {
+      unlabelled.push(path);
+    }
+    let entries;
+    try {
+      if (!statSync(path).isDirectory()) return;
+      entries = readdirSync(path);
+    } catch {
+      return;
+    }
+    for (const entry of entries) visit(resolve(path, entry), depth + 1);
   };
+
+  visit(resolve(input.root), 0);
+  return { root: input.root, checked, unlabelled, unreadable, verified: unlabelled.length === 0 && unreadable.length === 0 };
+}
+
+/**
+ * Ensure the fence is in force AND reaches the content, then report both facts separately.
+ *
+ * The two are not the same claim, and collapsing them is how a security report lies: `rootsVerified` is about
+ * the roots, `treesVerified` is about every descendant examined. A caller that requires a boundary must
+ * require BOTH.
+ *
+ * @param {{ roots: readonly string[], world: string, verifyTrees?: boolean }} input
+ * @returns {{ result: ReadFenceResult, trees: readonly TreeOutcome[], rootsVerified: boolean, treesVerified: boolean }}
+ */
+export function ensureReadFence(input) {
+  const result = applyReadFence({ roots: input.roots, world: input.world });
+  const outcomes = result.outcomes ?? [];
+  const rootsVerified = result.supported && outcomes.length > 0 && outcomes.every((entry) => entry.verified);
+  const trees = input.verifyTrees === false ? [] : outcomes.filter((entry) => entry.verified).map((entry) => verifyTree({ root: entry.path }));
+  const treesVerified = trees.length > 0 && trees.every((entry) => entry.verified);
+  return { result, trees, rootsVerified, treesVerified };
+}
+
+/**
+ * Remove ONLY the read fence, restoring each root's policy mask to what it was before.
+ *
+ * `originals` is the pre-fence state a caller captured with {@link snapshotLabels}. It is required rather
+ * than inferred: a repair path that guessed the original would either widen access on an object somebody else
+ * labelled, or leave a fence nobody asked for.
+ *
+ * @param {{ roots: readonly string[], originals: readonly { path: string, integrityRid: number, policyMask: number }[] }} input
+ * @returns {{ restored: readonly { path: string, restored: boolean, detail: string }[] }}
+ */
+export function uninstallReadFence(input) {
+  const resolved = win32LabelApi();
+  if (resolved.error !== undefined || resolved.api === undefined) {
+    return { restored: input.originals.map((entry) => ({ path: entry.path, restored: false, detail: resolved.error ?? 'the Win32 label binding table is unavailable' })) };
+  }
+  const api = resolved.api;
+  return {
+    restored: input.originals.map((entry) => ({ path: entry.path, ...restoreLabel(api, entry.path, { integrityRid: entry.integrityRid, policyMask: entry.policyMask }) })),
+  };
+}
+
+/**
+ * Capture the pre-fence label of every root, so a later repair can restore exactly that state.
+ *
+ * @param {{ roots: readonly string[] }} input
+ * @returns {{ originals: readonly { path: string, integrityRid: number, policyMask: number }[], unreadable: readonly string[] }}
+ */
+export function snapshotLabels(input) {
+  const resolved = win32LabelApi();
+  if (resolved.error !== undefined || resolved.api === undefined) return { originals: [], unreadable: input.roots.slice() };
+  const api = resolved.api;
+  /** @type {{ path: string, integrityRid: number, policyMask: number }[]} */
+  const originals = [];
+  /** @type {string[]} */
+  const unreadable = [];
+  for (const root of input.roots) {
+    const read = readMandatoryLabel(api, root);
+    // An ABSENT label is snapshotted as the Windows baseline for a user-created object (Medium, no policy),
+    // which is what a restore should write: deleting the SACL entry entirely could widen access on an object
+    // whose baseline was never "no label".
+    if (!read.ok) {
+      unreadable.push(root);
+      continue;
+    }
+    originals.push({
+      path: root,
+      integrityRid: read.label?.present === true && typeof read.label.integrityRid === 'number' ? read.label.integrityRid : 8192,
+      policyMask: read.label?.present === true && typeof read.label.policyMask === 'number' ? read.label.policyMask : 0,
+    });
+  }
+  return { originals, unreadable };
 }
 
 /**
  * The roots a worker deployment must protect, derived from what the deployment already knows.
  *
- * Deliberately minimal (R1-H §7): the durable owner stores, the workspace stores, sibling execution worlds,
- * other projects' state, and host session material. It does NOT list the runtime, the package dependencies
- * or the worker's own world, because a worker needs those to do ordinary work — the contract says so
- * explicitly rather than overpromising "the worker reads only its world".
+ * Deliberately minimal (R1-H §7): the durable owner stores, sibling execution worlds, other projects' state,
+ * and host session material. It does NOT list the runtime, the package dependencies or the worker's own
+ * world, because a worker needs those to do ordinary work — the contract says so explicitly rather than
+ * overpromising "the worker reads only its world", which no runtime permits.
  *
  * @param {{ repository: string, otherProjects?: readonly string[], hostHome?: string }} input
  * @returns {readonly string[]}
@@ -307,10 +321,12 @@ export function protectedRootsFor(input) {
 }
 
 /**
- * The sibling worlds directory is a DISCLOSED residual, and it is excluded here rather than quietly
- * attempted: it holds the worlds, so labelling it labels an ancestor of the world and kills the worker. A
- * worker can therefore learn the NAMES of sibling attempt directories. It cannot read their contents —
- * each world is labelled individually — and it cannot reach durable state at all.
+ * The sibling worlds directory is a DISCLOSED residual (§18), excluded rather than quietly attempted: it
+ * holds the worlds, so labelling it labels an ancestor of the worker's own world and kills the worker.
+ *
+ * The consequence is stated precisely: a worker may still ENUMERATE the names of sibling attempt
+ * directories. It cannot read their contents — each world is labelled individually — and it cannot reach
+ * durable state at all. Metadata confidentiality is NOT claimed; content confidentiality is.
  *
  * @param {{ repository: string, world: string }} input
  * @returns {readonly ReadFenceSkip[]}
