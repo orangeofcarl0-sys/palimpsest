@@ -1,0 +1,96 @@
+# R1-HR §22 — DETERMINISTIC WINDOWS CI FOR THE HOST READ BOUNDARY.
+#
+# WHY A SEPARATE WINDOWS WORKFLOW. The read fence is a WINDOWS mechanism: it applies a mandatory integrity
+# label, and the whole qualification rests on measurements that only exist on this platform (the workspace
+# write grant's re-labelling, the `icacls` normalization, the restricted-token token). `ci.yml` and
+# `r0-gates.yml` both run on Linux, where every one of those assertions is unmeasurable — so the boundary
+# would have had no CI at all.
+#
+# WHAT RUNS HERE, and it is deliberately the DETERMINISTIC half:
+#   · `gate:r1-h-conformance`  — the kernel fence plus the guard decision function, no model involved.
+#   · `gate:r1-hr-conformance` — the hardening contract: label preservation, inheritance, idempotence,
+#                                crash/restart, alias detection, capability classification, credential and
+#                                multi-worker isolation, and the metadata residual.
+#   · `gate:r1-hr-clean-env`   — the dependency closure, under an empty global package set.
+#
+# WHAT DELIBERATELY DOES NOT RUN HERE, and the distinction is stated rather than implied:
+#   · `gate:r1-h-live`, `gate:r1-l-live`, `gate:d*-live`, `gate:e*-live` drive a REAL stochastic model
+#     worker. They need provider credentials and a network path to a model, which must never be required of
+#     public CI. Those gates remain LOCAL / PRIVATE-HOST evidence, and their results are recorded in
+#     `research-evidence/`. A CI run that silently substituted a stub for the model would be worse than no
+#     CI run at all, because it would look like the boundary had been re-measured.
+#
+# Frozen rule carried over from the other workflows: retries = 0 — flakiness is fixed, never retried away.
+name: r1-hr-windows-host-boundary
+
+on:
+  push:
+    branches: [main, r1-hr-confidential-host-hardening]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  host-boundary:
+    # The ONLY runner on which these assertions mean anything.
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # The fence resolves its Win32 binding seam from the installed DSH, and the gates locate that
+      # installation the same way a deployment does. It is installed here rather than assumed, so a runner
+      # without it fails loudly instead of skipping the boundary.
+      - name: Install the DSH host the fence binds against
+        run: npm install --global @deepseek-ai/dsh
+        continue-on-error: true
+
+      - name: Locate the DSH installation
+        shell: pwsh
+        run: |
+          $root = (npm root -g) -replace '\\', '/'
+          if (Test-Path "$root/@deepseek-ai/dsh") {
+            "PALIMPSEST_DSH_ROOT=$root/@deepseek-ai/dsh" >> $env:GITHUB_ENV
+            "found DSH at $root/@deepseek-ai/dsh"
+          } else {
+            "::error::the DSH installation is absent, so the Windows read boundary cannot be measured"
+            exit 1
+          }
+
+      - name: Build
+        run: pnpm build
+
+      # The kernel fence and the guard decision function. Deterministic: no model, no network.
+      - name: gate:r1-h-conformance (kernel fence + guard)
+        run: pnpm gate:r1-h-conformance
+
+      # The hardening contract: preservation, inheritance, idempotence, restart, aliases, classification,
+      # credential and multi-worker isolation, metadata residual.
+      - name: gate:r1-hr-conformance (host-hardening contract)
+        run: pnpm gate:r1-hr-conformance
+
+      # The dependency closure: the seam and the FFI runtime must resolve with an EMPTY global package set.
+      - name: gate:r1-hr-clean-env (dependency closure under isolation)
+        run: pnpm gate:r1-hr-clean-env
+
+      # The architectural fences the host code must not breach.
+      - name: architecture and public API
+        run: |
+          pnpm architecture:check
+          pnpm architecture:check-public-api
+
+      - name: Upload the conformance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r1-hr-conformance-evidence
+          path: |
+            ${{ github.workspace }}/research-evidence/r1-hr/
+          if-no-files-found: warn
