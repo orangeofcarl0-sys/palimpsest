@@ -33,6 +33,14 @@ import { installModelSelection } from '@deepseek-ai/dsh-agent';
 import { createUserMessage } from '@deepseek-ai/dsh-llm';
 
 /**
+ * R2-U §7: the EXPERIMENTAL presentation seam. Loaded statically because it has no imports of its own and
+ * must never be the reason a worker fails to compose; the module carries the frozen clause and the
+ * fail-safe mode resolution. In the default mode `applyAffordance` returns its input unchanged, so the
+ * prompt this runner composes is byte-identical to production.
+ */
+import { AFFORDANCE_ENV, applyAffordance, resolveAffordanceMode } from './affordance.js';
+
+/**
  * R1-H: the host-execution read boundary.
  *
  * Loaded DYNAMICALLY and CACHED, for two reasons. It is a sibling package (`palimpsest-host-deployment`),
@@ -218,6 +226,34 @@ function offeredToolNames(session) {
 }
 
 /**
+ * R2-U §16: THE ORDERED ACTION LOG — tool NAMES only, in the order the model first used them.
+ *
+ * §16 asks whether a worker pulled BEFORE it started editing, before it ran the visible oracle, and before
+ * it committed. Those are ORDERING facts, so the telemetry has to preserve order rather than count.
+ *
+ * NAMES ONLY. No arguments, no results, no reasoning: a tool name is a host fact about which capability was
+ * used, while an argument would carry the worker's own text and a result would carry file content. The
+ * pull's own handle is already reported by the pull telemetry line, so nothing here needs to carry it.
+ *
+ * A tool call emits MORE THAN ONE session event (a start and an end), so consecutive repeats of one name
+ * are collapsed: the log records the ordinal of a tool's FIRST use, which is the fact §16 asks about.
+ */
+function toolActionLog(session) {
+  const firstUse = new Map();
+  let ordinal = 0;
+  for (let seq = 0; seq < session.seq; seq += 1) {
+    const event = session.eventAt(seq);
+    if (event === undefined || typeof event.type !== 'string' || !event.type.startsWith('tool/')) continue;
+    const name = event.data?.name ?? event.data?.call?.name ?? null;
+    if (typeof name !== 'string' || name.length === 0) continue;
+    if (firstUse.has(name)) continue;
+    firstUse.set(name, ordinal);
+    ordinal += 1;
+  }
+  return { order: [...firstUse.keys()], firstUse: Object.fromEntries(firstUse) };
+}
+
+/**
  * Run ONE ephemeral branch: create a fresh agent over a transient session,
  * deliver the branch task, read the ONE result the strict tool recorded, and exit.
  *
@@ -259,6 +295,8 @@ async function runWorker(ctx, deps) {
   let offeredTools = [];
   let denied = [];
   let presentation = null;
+  /** R2-U §16: the ordered first-use log of the worker's tool actions. */
+  let actionLog = { order: [], firstUse: {} };
   // R1-S §17: the handles the worker actually pulled. Hoisted for the same reason `offeredTools` is: the
   // telemetry is emitted after the try/catch, where `environment` is no longer in scope.
   let pulledHandles = [];
@@ -269,6 +307,9 @@ async function runWorker(ctx, deps) {
   let capability = null;
   // R1-HC §4/§5: the confidential-profile admission slot, and its verdict for the telemetry line.
   let capacity = null;
+  // R2-U §7: which presentation arm this worker was composed under. Read once so the telemetry line and
+  // the prompt cannot disagree, and defaulted to the production arm so a failed read is never an A1.
+  const affordanceMode = resolveAffordanceMode(process.env[AFFORDANCE_ENV]);
   /** @type {undefined | (() => void)} */
   let releaseCapacity;
   /**
@@ -430,9 +471,20 @@ async function runWorker(ctx, deps) {
         }
         const agent = handle.agent;
         await agent.whenIdle();
-        agent.followup(userMessage(workTask(environment.context, environment.contextIndexText)));
+        /**
+         * R2-U §7: the affordance is applied to the COMPOSED PROMPT and nowhere else. In the default mode
+         * this is the identity function, so a production deployment's prompt is unchanged; in
+         * `explicit-review` it appends the one frozen clause.
+         */
+        agent.followup(userMessage(applyAffordance(workTask(environment.context, environment.contextIndexText), affordanceMode)));
         await agent.whenIdle();
         offeredTools = offeredToolNames(agent.session);
+        /**
+         * R2-U §16: the ORDERED action log, read from the same session artifact as `offeredTools`. Read here
+         * — after the turn finished and before the session is flushed — so the ordering facts the trial
+         * record needs are captured from durable evidence rather than from a prompt line.
+         */
+        actionLog = toolActionLog(agent.session);
         if (typeof sessions?.flush === 'function') {
           try {
             await sessions.flush(agent.session);
@@ -456,7 +508,7 @@ async function runWorker(ctx, deps) {
   // Noncanonical telemetry, exactly like PALIMPSEST_TURN: the worker's OWN recorded capability facts.
   // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
   process.stdout.write(
-    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools })}
+    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools, affordance: affordanceMode })}
 `,
   );
   /**
@@ -468,6 +520,15 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_PULL ${JSON.stringify({ pulled: pulledHandles })}
+`,
+  );
+  /**
+   * R2-U §16: THE ORDERED ACTION LOG. Tool NAMES and their first-use ordinals only — no argument, no
+   * result, no reasoning. This is what lets a trial record answer "did the worker pull BEFORE it started
+   * editing / before it ran the oracle / before it committed" mechanically, rather than from a transcript.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_ACTIONS ${JSON.stringify({ order: actionLog.order, firstUse: actionLog.firstUse })}
 `,
   );
   /**
