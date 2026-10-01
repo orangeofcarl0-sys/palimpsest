@@ -29,6 +29,7 @@ import { dirname, join, resolve } from 'node:path';
 
 import { admitWorldForFencing } from './alias_guard.js';
 import { GUARD_SCOPES, admitWorkerStart, classCounts } from './capability_classes.js';
+import { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot } from './confidential_profile.js';
 import { applyReadFence, disclosedResiduals, isAncestorOf, protectedRootsFor, verifyTree } from './read_fence.js';
 import { createReadGuard, FENCED_READ_TOOLS } from './read_guard.js';
 
@@ -240,3 +241,12 @@ export function boundaryTelemetry(installed) {
 
 /** True when a path is inside the world the worker was given — used by tests and the conformance suite. */
 export { isAncestorOf };
+
+/**
+ * Re-exported so the host runner reaches the capacity machinery through the ONE module it loads.
+ *
+ * The runner imports this module dynamically and nothing else, so a function that lives in a sibling file but
+ * is not surfaced here would be invisible to it — which is exactly how the first live run reported "the
+ * confidential profile slot was not consulted" while the protection assertions passed.
+ */
+export { CONFIDENTIAL_PROFILE, admitConfidentialWorker, openConfidentialSlot };

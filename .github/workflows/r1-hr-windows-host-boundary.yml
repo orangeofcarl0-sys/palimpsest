@@ -76,6 +76,11 @@ jobs:
       - name: gate:r1-hr-conformance (host-hardening contract)
         run: pnpm gate:r1-hr-conformance
 
+      # The residual closure: the TOCTOU is refused on the mechanism, aliases are refused before any grant,
+      # and the confidential profile serializes ACTIVE workers.
+      - name: gate:r1-hc-conformance (residual closure)
+        run: pnpm gate:r1-hc-conformance
+
       # The dependency closure: the seam and the FFI runtime must resolve with an EMPTY global package set.
       - name: gate:r1-hr-clean-env (dependency closure under isolation)
         run: pnpm gate:r1-hr-clean-env

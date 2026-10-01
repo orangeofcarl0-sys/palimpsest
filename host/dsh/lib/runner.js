@@ -267,6 +267,10 @@ async function runWorker(ctx, deps) {
   let boundary = null;
   // R1-HR §10: the fail-closed capability verdict, computed from the surface the worker ACTUALLY has.
   let capability = null;
+  // R1-HC §4/§5: the confidential-profile admission slot, and its verdict for the telemetry line.
+  let capacity = null;
+  /** @type {undefined | (() => void)} */
+  let releaseCapacity;
   /**
    * The telemetry line's payload, computed from whatever `boundary` holds. Three states are distinguishable
    * on purpose, because "not installed" and "installed but unsupported" are different facts and the live
@@ -314,6 +318,23 @@ async function runWorker(ctx, deps) {
        * the worker's own agent scope would leave exactly the hole this stage exists to close.
        */
       const boundaryLoad = await loadBoundary();
+      /**
+       * R1-HC §4/§5: THE CONFIDENTIAL PROFILE'S CAPACITY ADMISSION.
+       *
+       * This backend cannot read-fence two ACTIVE worlds at once — a running worker's own workspace write
+       * grant is the last writer of its world's label — so the host runs at most ONE confidential worker and
+       * refuses (or the caller queues) beyond that. The slot is host-local and carries no semantics; the
+       * refusal below is a HOST CAPACITY fact, never a Work outcome.
+       *
+       * It is taken BEFORE the agent exists, so a refused worker never composes anything.
+       */
+      if (boundaryLoad.module !== undefined && typeof boundaryLoad.module.openConfidentialSlot === 'function') {
+        const slot = boundaryLoad.module.openConfidentialSlot({ home: process.env.DSH_HOME ?? process.cwd() });
+        const acquired = slot.acquire();
+        capacity = { granted: acquired.granted, detail: acquired.detail };
+        if (acquired.granted) releaseCapacity = () => slot.release();
+        else failure = acquired.detail;
+      }
       if (boundaryLoad.module === undefined) {
         boundary = { unavailable: boundaryLoad.error };
       } else {
@@ -462,6 +483,10 @@ async function runWorker(ctx, deps) {
    * and never a tool body. A reviewer and the live gate read the fail-closed decision from here.
    */
   process.stdout.write(
+    `PALIMPSEST_WORKER_CAPACITY ${JSON.stringify(capacity ?? { granted: false, detail: 'the confidential profile slot was not consulted' })}
+`,
+  );
+  process.stdout.write(
     `PALIMPSEST_WORKER_CAPABILITIES ${JSON.stringify(
       capability === null
         ? { classified: false }
@@ -470,6 +495,10 @@ async function runWorker(ctx, deps) {
 `,
   );
 
+  if (releaseCapacity !== undefined) {
+    releaseCapacity();
+    releaseCapacity = undefined;
+  }
   if (reported !== null && reported !== undefined) {
     printWorkResult({
       kind: reported.kind,
