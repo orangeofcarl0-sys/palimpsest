@@ -45,6 +45,23 @@ import { AFFORDANCE_ENV, applyAffordance, resolveAffordanceMode } from './afford
  * mode it is inert.
  */
 import { EFFICACY_ENV, EFFICACY_MODES, PREWORK_MECHANISM, applyEfficacyReview, bodyDigest, renderEfficacyReview, resolveEfficacyMode } from './efficacy.js';
+/**
+ * R2-M §4/§5: the EXPERIMENTAL decision-relevance seam. Loaded statically like the other two experimental
+ * modules — it imports only `node:crypto`, so it can never be why a worker fails to compose, and in the
+ * default mode it is inert. It changes the BYTES OF THE INDEX and nothing else: not what is selected, not
+ * what a body is, not how a pull resolves, not what a handle authorizes.
+ */
+import {
+  INDEX_METADATA_ENV,
+  INDEX_METADATA_MODES,
+  PREVIEW_MECHANISM,
+  PROCEDURE_RULING,
+  deriveIndexEntry,
+  indexSectionDigest,
+  manifestEntry,
+  renderIndexMetadata,
+  resolveIndexMetadataMode,
+} from './index-metadata.js';
 
 /**
  * R1-H: the host-execution read boundary.
@@ -319,6 +336,10 @@ async function runWorker(ctx, deps) {
   // R2-E §6/§8: which efficacy arm this worker was composed under, and what the prework phase achieved.
   const efficacyMode = resolveEfficacyMode(process.env[EFFICACY_ENV]);
   let prework = null;
+  // R2-M §4/§6: which index-presentation arm this worker was composed under, and what the derivation
+  // produced. `off` and `m0` both leave the production index bytes untouched; only `m1` rewrites entries.
+  const indexMode = resolveIndexMetadataMode(process.env[INDEX_METADATA_ENV]);
+  let indexMetadata = null;
   /** @type {undefined | (() => void)} */
   let releaseCapacity;
   /**
@@ -549,9 +570,94 @@ async function runWorker(ctx, deps) {
           prework = Object.freeze({ mechanism: PREWORK_MECHANISM, selectedCount: 0, resolvedCount: 0, failureCount: 0, handles: [], kinds: [], digests: [], failures: [], elapsedMs: 0, allConsumed: true });
           efficacyReview = { mode: efficacyMode, resolved: [], failures: [] };
         }
+        /**
+         * R2-M §5/§6: THE M1 INDEX DERIVATION, before the first turn.
+         *
+         * §5 requires every body-derived M1 field to come through the SAME governed attempt-bound path
+         * R2-E proved: the worker's own pull tool, the parent's own resolver, and the attempt's own
+         * allowlist. So this calls the SAME `execute` a model call would, and a handle this attempt did not
+         * bind is refused here exactly as it would be for a model-initiated pull. No backing store is read,
+         * no global asset lookup exists, and the FULL BODY IS NEVER RENDERED — only the bounded projection
+         * `deriveIndexEntry` returns, plus owner metadata the manifest already froze.
+         *
+         * THE ACCOUNTING TRAP THIS AVOIDS. The child-side pull tool appends every RESOLVED handle to the
+         * array the worker's `PALIMPSEST_WORKER_PULL` telemetry reports. R2-E did not care, because R2-E
+         * removed voluntary uptake as a variable. R2-M is the opposite: voluntary pull IS the primary
+         * outcome, so a derivation pull that counted as a worker pull would manufacture the result. The
+         * derivation runs entirely BEFORE the first turn exists, so recording its offset and reporting only
+         * the handles pulled AFTER it separates the two mechanically rather than by inspection.
+         */
+        let indexTextForPrompt = environment.contextIndexText;
+        if (indexMode === INDEX_METADATA_MODES.M1) {
+          const pullTool = environment.contextPullTool;
+          const selected = (environment.context?.compiled?.handles ?? []).map((entry) => ({ handle: entry.handle, kind: entry.kind }));
+          const entries = [];
+          const failures = [];
+          const manifest = [];
+          const startedAt = Date.now();
+          for (const entry of selected) {
+            if (pullTool === undefined || typeof pullTool.execute !== 'function') {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: 'this host composed no pull tool' });
+              continue;
+            }
+            try {
+              const answer = await pullTool.execute({ handle: entry.handle });
+              if (answer?.status !== 'resolved') {
+                failures.push({ handle: entry.handle, kind: entry.kind, detail: `${String(answer?.status ?? 'unknown')}${answer?.detail === undefined ? '' : `: ${String(answer.detail)}`}` });
+                continue;
+              }
+              const derived = deriveIndexEntry(entry, answer.value);
+              entries.push(derived);
+              manifest.push(...manifestEntry(derived));
+            } catch (error) {
+              failures.push({ handle: entry.handle, kind: entry.kind, detail: error?.message ?? String(error) });
+            }
+          }
+          /**
+           * The array length AFTER the derivation loop. Every entry before this index is a handle the HOST
+           * materialized to build the index; everything from here on is the model's own voluntary choice.
+           * Recording the boundary rather than a count keeps the separation exact even when some handles
+           * fail to resolve (a failure pushes nothing).
+           */
+          const derivationPullOffset = Array.isArray(environment.pulledHandles) ? environment.pulledHandles.length : 0;
+          indexMetadata = Object.freeze({
+            mode: indexMode,
+            mechanism: PREVIEW_MECHANISM,
+            procedureRuling: PROCEDURE_RULING,
+            selectedCount: selected.length,
+            derivedCount: entries.length,
+            failureCount: failures.length,
+            /** Handles the HOST materialized to build the index — distinct from handles the WORKER pulled. */
+            derivationHandles: entries.map((entry) => entry.handle),
+            derivationPullOffset,
+            failures,
+            manifest,
+            elapsedMs: Date.now() - startedAt,
+            allDerived: selected.length > 0 && failures.length === 0 && entries.length === selected.length,
+          });
+          /**
+           * The index the worker sees. If every selected handle derived, the entries replace the
+           * production entry lines and everything else is byte-identical. If any handle failed, the
+           * production section is left ALONE rather than rendering a partial index — a half-derived index
+           * would be a different treatment from the one the protocol froze.
+           */
+          indexTextForPrompt = indexMetadata.allDerived
+            ? renderIndexMetadata(environment.contextIndexText, entries)
+            : environment.contextIndexText;
+        } else if (indexMode === INDEX_METADATA_MODES.M0) {
+          indexMetadata = Object.freeze({ mode: indexMode, mechanism: PREVIEW_MECHANISM, procedureRuling: PROCEDURE_RULING, selectedCount: (environment.context?.compiled?.handles ?? []).length, derivedCount: 0, failureCount: 0, derivationHandles: [], derivationPullOffset: 0, failures: [], manifest: [], elapsedMs: 0, allDerived: false });
+        }
+        /**
+         * §14/§19: THE EXACT PRESENTATION BYTES. The rendered index section the worker receives is recorded
+         * so the harness can freeze its digest before any trial and so the leakage gate can inspect what the
+         * worker actually saw. This is the INDEX, which is model-visible by design — not a capital body. The
+         * bodies stay pull-only: only the bounded projection appears here, and the projection is itself the
+         * treatment under test.
+         */
+        indexMetadata = Object.freeze({ ...indexMetadata, renderedSection: indexTextForPrompt, renderedSectionDigest: indexSectionDigest(indexTextForPrompt) });
         agent.followup(
           userMessage(
-            applyEfficacyReview(applyAffordance(workTask(environment.context, environment.contextIndexText), affordanceMode), efficacyReview),
+            applyEfficacyReview(applyAffordance(workTask(environment.context, indexTextForPrompt), affordanceMode), efficacyReview),
           ),
         );
         await agent.whenIdle();
@@ -569,7 +675,18 @@ async function runWorker(ctx, deps) {
             process.stderr.write(`palimpsest-runner: worker session flush failed: ${error?.message ?? String(error)}\n`);
           }
         }
-        pulledHandles = Array.isArray(environment.pulledHandles) ? environment.pulledHandles : [];
+        /**
+         * R2-M §22: THE WORKER'S OWN PULLS, with the host's index-derivation pulls removed.
+         *
+         * The child-side pull tool records every resolved handle, and the M1 derivation above used that
+         * same tool. R2-M's PRIMARY OUTCOME is voluntary pull, so counting a derivation pull as a worker
+         * pull would manufacture the treatment effect. The derivation ran entirely before the first turn
+         * existed, so its handles are exactly the first `derivationPullOffset` entries; everything after is
+         * the model's own choice. In `off`/`m0` the offset is 0 and this is the identity.
+         */
+        const allPulled = Array.isArray(environment.pulledHandles) ? environment.pulledHandles : [];
+        const derivationPullOffset = indexMetadata === null ? 0 : (indexMetadata.derivationPullOffset ?? 0);
+        pulledHandles = derivationPullOffset === 0 ? allPulled : allPulled.slice(derivationPullOffset);
         const recorder = environment.recorder;
         if (recorder.status === 'reported') {
           reported = recorder.outcome;
@@ -585,7 +702,7 @@ async function runWorker(ctx, deps) {
   // Noncanonical telemetry, exactly like PALIMPSEST_TURN: the worker's OWN recorded capability facts.
   // A reviewer (and the live gate) reads the firewall from here rather than from a prompt line.
   process.stdout.write(
-    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools, affordance: affordanceMode })}
+    `PALIMPSEST_WORKER_ENV ${JSON.stringify({ cwd: process.cwd(), presentation, deniedTools: denied, offeredTools, affordance: affordanceMode, index: indexMode })}
 `,
   );
   /**
@@ -615,6 +732,17 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_EFFICACY ${JSON.stringify({ mode: efficacyMode, prework })}
+`,
+  );
+  /**
+   * R2-M §14/§19: THE INDEX-PRESENTATION PROOF. Which arm the worker was composed under, what the host
+   * derived to build the index, and the per-field preview manifest (handle, kind, both provenances, source
+   * digest, rendered digest, rendered length, truncation). Handle identities, field digests and lengths
+   * only — NEVER a body and never the full preview text. The `derivationPullOffset` is what lets the
+   * harness prove the worker's own pull count was not inflated by the host's derivation.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_INDEX ${JSON.stringify({ mode: indexMode, metadata: indexMetadata })}
 `,
   );
   /**
