@@ -243,15 +243,20 @@ if (existsSync(runsDir) && manifest.length > 0) {
   }
 }
 
-const pilotDir = join(PILOT_RIG, 'runs');
-if (existsSync(pilotDir)) {
-  const pilotRecords = [];
-  for (const entry of readdirSync(pilotDir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
-    const recordPath = join(pilotDir, entry.name, 'out', 'trial.json');
-    if (existsSync(recordPath)) pilotRecords.push(JSON.parse(readFileSync(recordPath, 'utf8')));
-  }
-  writeJson(join(EVIDENCE, 'pilot', 'pilot.json'), { schemaVersion: 1, stage: 'R2-M', note: 'GATE A pilot pairs; these do NOT count among the 20 primary trials', trials: pilotRecords });
+/**
+ * §17 (R2-LR): THE BLOCKED ATTEMPT'S PILOTS ARE DISCARDED, NOT PUBLISHED.
+ *
+ * The blocked attempt left four C/D pilot records in the pilot rig. §17 discards them from all outcome
+ * analysis: they violated the no-C/D-pilot discipline and, decisively, received no M1 treatment at all
+ * (the index never reached the worker). Publishing them here as "GATE A pilots" would present
+ * treatment-free runs as if they were readiness evidence.
+ *
+ * So the pilot directory is NOT copied. The readiness evidence for the restarted matrix is the
+ * dummy-fixture session proof, which the gate record already carries, and the rig's `readiness.json`.
+ */
+const readinessPath = join(PILOT_RIG, 'readiness.json');
+if (existsSync(readinessPath)) {
+  writeJson(join(EVIDENCE, 'readiness.json'), { schemaVersion: 1, stage: 'R2-M', source: 'the GATE A readiness record', note: '§18: NO stochastic C/D pilot was run before the restarted matrix; the four pilots from the BLOCKED attempt (3a4a3c6) are discarded per §17 and are deliberately NOT copied here', readiness: JSON.parse(readFileSync(readinessPath, 'utf8')) });
 }
 
 /* ---------------------------------------------------------------- normalized + analysis (if present) */

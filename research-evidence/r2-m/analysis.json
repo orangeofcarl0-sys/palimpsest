@@ -1,0 +1,1294 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-M",
+  "expectedTrials": 20,
+  "completedTrials": 20,
+  "seed": "0x524d0301",
+  "confoundedBlocks": [],
+  "isolationBlocks": [
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 0,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 1,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 2,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 3,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        3
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 4,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        3
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 0,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 1,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        3
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 2,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        3
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 3,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 4,
+      "conditions": [
+        "M0",
+        "M1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        3,
+        6
+      ],
+      "indexMovedWithArm": true
+    }
+  ],
+  "decisionRelevance": {
+    "verdict": "R2-M DECISION RELEVANCE: NOT_IMPROVED",
+    "scenarios": {
+      "C": {
+        "m0": {
+          "analysed": 5,
+          "pulledTrials": 5,
+          "pullRate": 1,
+          "pulled": "5/5",
+          "proofPullRate": 1,
+          "reasoningPullRate": 1,
+          "procedurePullRate": 1,
+          "proofPulled": "5/5",
+          "reasoningPulled": "5/5",
+          "procedurePulled": "5/5",
+          "treatmentNotApplied": 0
+        },
+        "m1": {
+          "analysed": 5,
+          "pulledTrials": 5,
+          "pullRate": 1,
+          "pulled": "5/5",
+          "proofPullRate": 1,
+          "reasoningPullRate": 1,
+          "procedurePullRate": 1,
+          "proofPulled": "5/5",
+          "reasoningPulled": "5/5",
+          "procedurePulled": "5/5",
+          "treatmentNotApplied": 0
+        },
+        "m1Higher": false,
+        "m1PulledSomething": true,
+        "improved": false,
+        "m1HigherByCount": false,
+        "treatmentApplied": true
+      },
+      "D": {
+        "m0": {
+          "analysed": 5,
+          "pulledTrials": 5,
+          "pullRate": 1,
+          "pulled": "5/5",
+          "proofPullRate": 1,
+          "reasoningPullRate": 1,
+          "procedurePullRate": 1,
+          "proofPulled": "5/5",
+          "reasoningPulled": "5/5",
+          "procedurePulled": "5/5",
+          "treatmentNotApplied": 0
+        },
+        "m1": {
+          "analysed": 5,
+          "pulledTrials": 5,
+          "pullRate": 1,
+          "pulled": "5/5",
+          "proofPullRate": 1,
+          "reasoningPullRate": 1,
+          "procedurePullRate": 1,
+          "proofPulled": "5/5",
+          "reasoningPulled": "5/5",
+          "procedurePulled": "5/5",
+          "treatmentNotApplied": 0
+        },
+        "m1Higher": false,
+        "m1PulledSomething": true,
+        "improved": false,
+        "m1HigherByCount": false,
+        "treatmentApplied": true
+      }
+    },
+    "improvedScenarios": [],
+    "directionalScenarios": []
+  },
+  "arms": {
+    "C": {
+      "M0": {
+        "n": 5,
+        "pulled": "5/5",
+        "pulledTrials": [
+          {
+            "trialId": "C-M0-b0r0",
+            "handles": [
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M0-b1r1",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M0-b2r2",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M0-b3r3",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M0-b4r4",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          }
+        ],
+        "proofPulled": "5/5",
+        "reasoningPulled": "5/5",
+        "procedurePulled": "5/5",
+        "medianActionsBeforeFirstPull": 3,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "5/5",
+        "firstCandidateSolved": "5/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 3,
+        "medianElapsedMs": 127267,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15"
+        ]
+      },
+      "M1": {
+        "n": 5,
+        "pulled": "5/5",
+        "pulledTrials": [
+          {
+            "trialId": "C-M1-b0r0",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M1-b1r1",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M1-b2r2",
+            "handles": [
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M1-b3r3",
+            "handles": [
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "C-M1-b4r4",
+            "handles": [
+              "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+              "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+              "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          }
+        ],
+        "proofPulled": "5/5",
+        "reasoningPulled": "5/5",
+        "procedurePulled": "5/5",
+        "medianActionsBeforeFirstPull": 3,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "5/5",
+        "firstCandidateSolved": "5/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 2,
+        "medianElapsedMs": 140824,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15"
+        ]
+      }
+    },
+    "D": {
+      "M0": {
+        "n": 5,
+        "pulled": "5/5",
+        "pulledTrials": [
+          {
+            "trialId": "D-M0-b0r0",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M0-b1r1",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M0-b2r2",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M0-b3r3",
+            "handles": [
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M0-b4r4",
+            "handles": [
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          }
+        ],
+        "proofPulled": "5/5",
+        "reasoningPulled": "5/5",
+        "procedurePulled": "5/5",
+        "medianActionsBeforeFirstPull": 4,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "2/5",
+        "firstCandidateSolved": "2/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 2,
+        "medianElapsedMs": 122383,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "14/14",
+          "13/14",
+          "13/14",
+          "13/14",
+          "14/14"
+        ]
+      },
+      "M1": {
+        "n": 5,
+        "pulled": "5/5",
+        "pulledTrials": [
+          {
+            "trialId": "D-M1-b0r0",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M1-b1r1",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M1-b2r2",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M1-b3r3",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          },
+          {
+            "trialId": "D-M1-b4r4",
+            "handles": [
+              "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+              "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+              "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0"
+            ],
+            "kinds": [
+              "procedure",
+              "proof",
+              "reasoning"
+            ]
+          }
+        ],
+        "proofPulled": "5/5",
+        "reasoningPulled": "5/5",
+        "procedurePulled": "5/5",
+        "medianActionsBeforeFirstPull": 3,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "3/5",
+        "firstCandidateSolved": "3/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 2,
+        "medianElapsedMs": 128375,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "14/14",
+          "14/14",
+          "14/14",
+          "13/14",
+          "13/14"
+        ]
+      }
+    }
+  },
+  "perKind": {
+    "C": {
+      "proof": {
+        "M0": "5/5",
+        "M1": "5/5"
+      },
+      "reasoning": {
+        "M0": "5/5",
+        "M1": "5/5"
+      },
+      "procedure": {
+        "M0": "5/5",
+        "M1": "5/5"
+      }
+    },
+    "D": {
+      "proof": {
+        "M0": "5/5",
+        "M1": "5/5"
+      },
+      "reasoning": {
+        "M0": "5/5",
+        "M1": "5/5"
+      },
+      "procedure": {
+        "M0": "5/5",
+        "M1": "5/5"
+      }
+    }
+  },
+  "association": {
+    "note": "pullers are SELF-SELECTED and not randomized, so this is an association, never a treatment effect",
+    "pullers": {
+      "n": 20,
+      "fullSolved": "15/20",
+      "mistakeRecurred": "0/20"
+    },
+    "nonPullers": {
+      "n": 0,
+      "fullSolved": "0/0",
+      "mistakeRecurred": "0/0"
+    }
+  },
+  "previewManifest": [
+    {
+      "trialId": "C-M1-b0r0",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b0r0",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b0r0",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedPreviewDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedCodePoints": 51,
+      "contentCodePoints": 51,
+      "truncated": false
+    },
+    {
+      "trialId": "C-M1-b0r0",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedPreviewDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedCodePoints": 51,
+      "contentCodePoints": 51,
+      "truncated": false
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedPreviewDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedCodePoints": 51,
+      "contentCodePoints": 51,
+      "truncated": false
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedPreviewDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedCodePoints": 51,
+      "contentCodePoints": 51,
+      "truncated": false
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedPreviewDigest": "07787f345af3c80644d1a86f9a0734e5fed6b6a1b1a605c866fc5fea68014a5e",
+      "renderedCodePoints": 51,
+      "contentCodePoints": 51,
+      "truncated": false
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "handle": "@ctx/procedure/prc-835fc2b8783d033efbb96fec88332150/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedPreviewDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedCodePoints": 60,
+      "contentCodePoints": 60,
+      "truncated": false
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedPreviewDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedCodePoints": 60,
+      "contentCodePoints": 60,
+      "truncated": false
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedPreviewDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedCodePoints": 60,
+      "contentCodePoints": 60,
+      "truncated": false
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedPreviewDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedCodePoints": 60,
+      "contentCodePoints": 60,
+      "truncated": false
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedPreviewDigest": "dc779e2734bfe28a7cad718149b66956d3752425aabf7bf501233df1b619a686",
+      "renderedCodePoints": 60,
+      "contentCodePoints": 60,
+      "truncated": false
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "handle": "@ctx/procedure/prc-29674c5161d82bc0bbb5e708f6fb92c6/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    }
+  ],
+  "leakage": {
+    "leaked": false,
+    "problems": []
+  },
+  "transcriptDigests": [
+    {
+      "trialId": "C-M0-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M1-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M0-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M1-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M0-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M1-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M1-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M0-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M1-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-M0-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M0-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M1-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M1-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M0-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M1-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M0-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M0-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M1-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M0-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-M1-b4r4",
+      "transcript": "ABSENT"
+    }
+  ]
+}

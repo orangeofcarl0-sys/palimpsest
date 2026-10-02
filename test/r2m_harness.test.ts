@@ -345,8 +345,14 @@ describe("R2-M §19 — the isolation check protects the treatment", () => {
     worker: { pulledHandles: [], pulledKinds: [] },
     prompt: promptFor(condition),
     pairedState: {},
-    pullAccounting: { derivationPullOffset: 0, consistent: true },
-    treatmentApplied: condition === "M1",
+    pullAccounting: { derivationPullOffset: condition === "M1" ? 3 : 0, derivedCount: condition === "M1" ? 3 : 0, consistent: true },
+    /**
+     * §21: the session-boundary evidence the isolation check now requires. A pair without it is confounded
+     * by design — "delivery cannot be proven" is a real defect, not a missing fixture — so the clean fixture
+     * must carry it, and the tests below add the failure cases on top.
+     */
+    session: { found: true, indexSectionFound: true, handlesInPrompt: ["@ctx/proof/x"], artifactDigest: "a".repeat(64), promptDigest: "b".repeat(64) },
+    treatmentApplied: true,
     ...overrides,
   });
 
@@ -384,10 +390,22 @@ describe("R2-M §19 — the isolation check protects the treatment", () => {
     expect(blocks[0]!.differences.join(" ")).toMatch(/pull accounting/u);
   });
 
-  it("flags an M1 trial whose treatment was not applied", () => {
+  it("flags an M1 trial whose treatment was not proven at the session boundary", () => {
     const blocks = isolationCheck([base("M0"), base("M1", { treatmentApplied: false })]);
     expect(blocks[0]!.confounded).toBe(true);
-    expect(blocks[0]!.differences.join(" ")).toMatch(/did not derive every selected handle/u);
+    expect(blocks[0]!.differences.join(" ")).toMatch(/not proven at the model-visible session boundary/u);
+  });
+
+  it("§21 flags a pair where NO session artifact was found (delivery unprovable)", () => {
+    const blocks = isolationCheck([base("M0"), base("M1", { session: { found: false, indexSectionFound: false, handlesInPrompt: [] } })]);
+    expect(blocks[0]!.confounded).toBe(true);
+    expect(blocks[0]!.differences.join(" ")).toMatch(/no durable session artifact/u);
+  });
+
+  it("§21 flags a pair whose prompt is missing a selected handle", () => {
+    const blocks = isolationCheck([base("M0"), base("M1", { session: { found: true, indexSectionFound: true, handlesInPrompt: [], artifactDigest: "a".repeat(64), promptDigest: "b".repeat(64) } })]);
+    expect(blocks[0]!.confounded).toBe(true);
+    expect(blocks[0]!.differences.join(" ")).toMatch(/appear in the model-visible prompt/u);
   });
 });
 
