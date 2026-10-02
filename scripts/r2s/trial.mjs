@@ -586,17 +586,28 @@ try {
     /**
      * §14: THE PRIMARY OUTCOME. Each pulled handle is classified by the role THIS HARNESS MINTED, never by
      * anything the model could read from the handle's name.
+     *
+     * §14 defines `target_pulls ∈ [0,3]` and `Target Recall = target_pulls / 3`, so the primary counts are
+     * DISTINCT handles RETRIEVED, not pull events: a worker that pulls one handle twice has still recalled
+     * one item, and counting the event twice would report a recall above 1.0 that no denominator can
+     * support. The RAW event sequence is kept separately for §16's ordering facts, and the repeats are
+     * recorded as their own number rather than discarded silently.
      */
     const pulledRoles = pulledHandles.map((handle) => roleOf(handle));
     record.worker.pulledRoles = pulledRoles;
     record.worker.pulledKinds = [...new Set(pulledHandles.map((handle) => String(handle).replace(/^@ctx\/([a-z]+)\/.*$/u, '$1')))].sort();
+    const distinctHandles = [...new Set(pulledHandles)];
+    const distinctRoles = distinctHandles.map((handle) => roleOf(handle));
     record.outcome = Object.freeze({
-      targetPulls: pulledRoles.filter((role) => role === 'TARGET').length,
-      distractorPulls: pulledRoles.filter((role) => role === 'DISTRACTOR').length,
-      totalPulls: pulledHandles.length,
-      unknownRolePulls: pulledRoles.filter((role) => role === 'UNKNOWN').length,
-      /** §16: the pull ORDER facts, from the ordered pull list. */
+      targetPulls: distinctRoles.filter((role) => role === 'TARGET').length,
+      distractorPulls: distinctRoles.filter((role) => role === 'DISTRACTOR').length,
+      totalPulls: distinctHandles.length,
+      unknownRolePulls: distinctRoles.filter((role) => role === 'UNKNOWN').length,
+      /** §16: the pull ORDER facts, from the RAW event sequence, so repeats remain visible. */
+      pullEventCount: pulledHandles.length,
+      repeatPulls: pulledHandles.length - distinctHandles.length,
       pullOrderRoles: pulledRoles,
+      distinctPullOrderRoles: distinctRoles,
       firstTargetPullOrdinal: pulledRoles.indexOf('TARGET') === -1 ? null : pulledRoles.indexOf('TARGET') + 1,
       firstDistractorPullOrdinal: pulledRoles.indexOf('DISTRACTOR') === -1 ? null : pulledRoles.indexOf('DISTRACTOR') + 1,
     });

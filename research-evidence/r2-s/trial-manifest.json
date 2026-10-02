@@ -2,7 +2,1934 @@
   "schemaVersion": 1,
   "stage": "R2-S",
   "expected": 20,
-  "recorded": 0,
+  "recorded": 20,
   "note": "the repo carries the manifest and digests; complete session transcripts stay external",
-  "trials": []
+  "trials": [
+    {
+      "trialId": "C-S0-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S0",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "B",
+          "D",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 171075,
+      "indexPresentationDigest": "3d61cce66eb933bf2d579d7b3b71c94e50f5fdb2c6617c7b0be00767e270fdb4",
+      "productionIndexDigest": "3d61cce66eb933bf2d579d7b3b71c94e50f5fdb2c6617c7b0be00767e270fdb4",
+      "digests": {
+        "trialRecord": "f43bb9d03e78f1bb8a89fb254ffd18d4c739b783ba34640d2ff65d143983e87e",
+        "transcript": "5af6cc900d58ad5616362970c8a22b17b2c511f63f11a286333cd778add39ba8",
+        "finalSource": "443e05660f2c7d1541c5c0eea3255b7846879fc21c8a400f94be5ed6206b20d1"
+      }
+    },
+    {
+      "trialId": "C-S0-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S0",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 2,
+        "firstDistractorPullOrdinal": 1
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "D",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-62b00f4dd88a2fde550158b38bdc5a22/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 212977,
+      "indexPresentationDigest": "b0e640ceae03b6a2559067dbbdefd5dcd0cd9e9d7fc49aa86502ccfa7ec00881",
+      "productionIndexDigest": "b0e640ceae03b6a2559067dbbdefd5dcd0cd9e9d7fc49aa86502ccfa7ec00881",
+      "digests": {
+        "trialRecord": "d012aa4a7538d0061e90b9a69ee1c89e077ee8e02309f2be1c3ade1c2ac635c9",
+        "transcript": "4c09a72c481419a333385d52f9a586e50fdbe5920a8fb99c8f3ff49600d56a2c",
+        "finalSource": "911ac2723219a2f1a1e181a955b3052feba5e8c348f6363543fc2407ade84dd9"
+      }
+    },
+    {
+      "trialId": "C-S0-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S0",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "distinctPullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "firstTargetPullOrdinal": 2,
+        "firstDistractorPullOrdinal": 1
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "B",
+          "B",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 153518,
+      "indexPresentationDigest": "d8523ca1a82555ad6743274da63eb171cf85d13843e4d6f04a1461f02435e1c0",
+      "productionIndexDigest": "d8523ca1a82555ad6743274da63eb171cf85d13843e4d6f04a1461f02435e1c0",
+      "digests": {
+        "trialRecord": "c76d404c339910774443dfe90b2e9357d3d51570734e280f963d8ea0a224f469",
+        "transcript": "91c3c1e1f94bbd71d2f6ac6d236f5657a030b482c4671d82be2c2380c06cd867",
+        "finalSource": "4a42d2e6002895d5f5bb82392a71c61840383158419382772dbe8586445f99da"
+      }
+    },
+    {
+      "trialId": "C-S0-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S0",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 2,
+        "firstDistractorPullOrdinal": 1
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "D",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 105910,
+      "indexPresentationDigest": "023d59c5ac08b19c355a9894321fda07391b8cadcb228f3e8e08a6e944df9ba2",
+      "productionIndexDigest": "023d59c5ac08b19c355a9894321fda07391b8cadcb228f3e8e08a6e944df9ba2",
+      "digests": {
+        "trialRecord": "045298251fea4108d8185a6fd7710e29d291cc25fec987969258a2542b8bacb7",
+        "transcript": "a02ca6d9fb5903d87ee055ae599be734336f2a52b96c48eb8118d268670a59a2",
+        "finalSource": "f32c81bc3b9ec0d73001c96a97990798805b5c1dbb858a21aab1a1240138f131"
+      }
+    },
+    {
+      "trialId": "C-S0-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S0",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 2,
+        "firstDistractorPullOrdinal": 1
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "B",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 163767,
+      "indexPresentationDigest": "9e1704d7f17d8a4b3200a8871ec621d81a3d0a8b38c2fedb99562eea2990d886",
+      "productionIndexDigest": "9e1704d7f17d8a4b3200a8871ec621d81a3d0a8b38c2fedb99562eea2990d886",
+      "digests": {
+        "trialRecord": "5caeea31deed079f95a4b38482ea1dfbd04600dd9a5a5ff4dabb1b6cf891b7ea",
+        "transcript": "6714061687ea918c7da68a54c25fc9e2b3ebe3f3f7a5b78b801b2b9cb0711edc",
+        "finalSource": "db20fb7b81aa7f6a29f4f8e12441678878380da712b39b85d50d39e0ba3c86d6"
+      }
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S1",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "B",
+          "D",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 133284,
+      "indexPresentationDigest": "ff9bcac3da1e6816b98ceae4be2dd2a889c5bcb7cd58a346ff20221191f016a5",
+      "productionIndexDigest": "3d61cce66eb933bf2d579d7b3b71c94e50f5fdb2c6617c7b0be00767e270fdb4",
+      "digests": {
+        "trialRecord": "a08759490149975206c7e6d3cfe58499da509144c3bc6c7ae89a37cf846f0fa9",
+        "transcript": "2d33a8bdd17d990ca4288301b372160b86837a6b96bf91098d1a07e4a2e00bdb",
+        "finalSource": "a63fe4287087e90522df4b1e6b44a2011d4fc9790335144c84e062530247e968"
+      }
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S1",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "D",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-62b00f4dd88a2fde550158b38bdc5a22/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 126082,
+      "indexPresentationDigest": "1de2c6c8aa07036b005903ea2d0da3023ce8aad64b09045147e994e3f35be930",
+      "productionIndexDigest": "b0e640ceae03b6a2559067dbbdefd5dcd0cd9e9d7fc49aa86502ccfa7ec00881",
+      "digests": {
+        "trialRecord": "54505da3b4a57281f4ab3666920579c0bcc94e64e56dd81a5966b0aa75d52cb9",
+        "transcript": "dc0b4d86decd4382daf97d8c7e57e5ec6300100d248077332a89e2c6ffd8e006",
+        "finalSource": "8cb7c2f0f18f33ee48919b50d7c7f5fbbd92ca7849e03bbd31cf18157ce9091c"
+      }
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S1",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "B",
+          "B",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 121572,
+      "indexPresentationDigest": "b014a56b006ea0bd58b776948b3d1010a9c66f0cdaa22c9a56eeda0c1cbf5688",
+      "productionIndexDigest": "d8523ca1a82555ad6743274da63eb171cf85d13843e4d6f04a1461f02435e1c0",
+      "digests": {
+        "trialRecord": "d3e4620d592a7906452916e6636bbd8849d51164c2a58b60a4f2765aeb57b5ab",
+        "transcript": "d9148d20605f9a05423ec32fc2046b563773b52107f4b23d133147a9091c5ceb",
+        "finalSource": "28a69222231b8bc49e70a978162b07b03239fb187a5b97cb4a7c0450ac8d0b36"
+      }
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S1",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "D",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 107350,
+      "indexPresentationDigest": "de6354fc594d75115e57ba0c2d28ebd5c5593322f2e0ac5c23677f52611b6dac",
+      "productionIndexDigest": "023d59c5ac08b19c355a9894321fda07391b8cadcb228f3e8e08a6e944df9ba2",
+      "digests": {
+        "trialRecord": "109e6f22e5552f892758befe1ae173b2b9773c3811c04ac6b9c512ec743c419f",
+        "transcript": "acfb9cb53ddb262f654d0a2e7f5713e3a10e1fa1c5b7750a8321aedd5e073d6f",
+        "finalSource": "0abb075ddc95d7b849960fbd83a12f7f970ac565018e395a979cff6ffc545b97"
+      }
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "condition": "S1",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "C",
+        "distractorBundles": [
+          "D",
+          "B",
+          "D"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "TARGET"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 15,
+        "total": 15,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 97433,
+      "indexPresentationDigest": "c6173a9139d79c3d4f4a79cbfc33d750b18c4a962c02d8add7f3565c6fa29f04",
+      "productionIndexDigest": "9e1704d7f17d8a4b3200a8871ec621d81a3d0a8b38c2fedb99562eea2990d886",
+      "digests": {
+        "trialRecord": "9c7ccfd84541d82f717ed7b11c5ee8229578d409d8740b7c4f144f244e2372c1",
+        "transcript": "ce3dd7c21e0d619787f36abcec29e3fecdb3001fd639c0c79b93d4cf171152f7",
+        "finalSource": "9f8bb43895f027c3c1f0d374d4de0c1a2249c7ca7754de572afbd5efec22fd2c"
+      }
+    },
+    {
+      "trialId": "D-S0-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S0",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "C",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 166216,
+      "indexPresentationDigest": "9900663939a4ddbb6527519d979ac4489c9389b25f6e7ddcc0afde16b1af9f7e",
+      "productionIndexDigest": "9900663939a4ddbb6527519d979ac4489c9389b25f6e7ddcc0afde16b1af9f7e",
+      "digests": {
+        "trialRecord": "8faeafecbe72ad65517bed728a551570b4bda8be6dd5b18f3faa6fcff7d01c21",
+        "transcript": "f024475cfb6eb8d4e6ea78765cb672537e93425c40299d20284e3ba50e77d3d9",
+        "finalSource": "061ec0e6124c323d45f5b3eaffac66351b3279c22fce2ba65a927652fa464af3"
+      }
+    },
+    {
+      "trialId": "D-S0-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S0",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "distinctPullOrderRoles": [
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "firstTargetPullOrdinal": 2,
+        "firstDistractorPullOrdinal": 1
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "B",
+          "C"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+          "role": "DISTRACTOR"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 115252,
+      "indexPresentationDigest": "9fec89887eddbc7ca1f915f11b6faffa994942d4eb7ad4dc5a8029537141db0a",
+      "productionIndexDigest": "9fec89887eddbc7ca1f915f11b6faffa994942d4eb7ad4dc5a8029537141db0a",
+      "digests": {
+        "trialRecord": "a39f149e873440c846afa4a465ef39af809c93ef8a5f17e09e51c0e81b57799f",
+        "transcript": "c760385ffe9de7a7ec05fcc2ab0311f3487ef276efc53062fb8183960879a135",
+        "finalSource": "ca1874a0810153774a18513fc8c25ee709722917fb6e69fe1a4a39d79518c7a9"
+      }
+    },
+    {
+      "trialId": "D-S0-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S0",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "C",
+          "B",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 218939,
+      "indexPresentationDigest": "13e3ed337c018f088706c92768fc61fdcd99e525e8f6f065f956ece21e14779d",
+      "productionIndexDigest": "13e3ed337c018f088706c92768fc61fdcd99e525e8f6f065f956ece21e14779d",
+      "digests": {
+        "trialRecord": "8bbd939931b7d097473bea2f4deca57d81f0c461f00d8beb36a30d66fdc3ddd0",
+        "transcript": "da5377abe3701f2a48e32f3de5321001e0f3a62ddb1c22812300c5b8ba69b360",
+        "finalSource": "ad006f4e8d04405de0f585a72feacc37ca2dda2f90f2dc85390ccc00b037ce08"
+      }
+    },
+    {
+      "trialId": "D-S0-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S0",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "C",
+          "C"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+          "role": "DISTRACTOR"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 100522,
+      "indexPresentationDigest": "e15f7db55641661ba031371e64f03811c8cd628edbe6b247002ba7210eda75bc",
+      "productionIndexDigest": "e15f7db55641661ba031371e64f03811c8cd628edbe6b247002ba7210eda75bc",
+      "digests": {
+        "trialRecord": "97ebaf85094c397c159c4cf004d983c86830ef574788d6a3f774d786a575b83d",
+        "transcript": "596461073bba5cfd012c05ae8e99f6f7c926ad4d1037583091c3ff5e1594b1ff",
+        "finalSource": "96cdaff9cd1f1d0c111ec5d98e8b8f26ab5444bbfdb109932273ac2bfea16cc5"
+      }
+    },
+    {
+      "trialId": "D-S0-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S0",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "S0",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 3,
+        "totalPulls": 6,
+        "unknownRolePulls": 0,
+        "pullEventCount": 6,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "CONTROL_OPAQUE_INDEX",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "B",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 133997,
+      "indexPresentationDigest": "4823424433c692bbeb8c7ba2a5ac77f1e0a26b52fb2d22464059b48cc4ec09c6",
+      "productionIndexDigest": "4823424433c692bbeb8c7ba2a5ac77f1e0a26b52fb2d22464059b48cc4ec09c6",
+      "digests": {
+        "trialRecord": "d562b71705466106521ebf3936bebae6512e5ca205d322a66cc512708b5b4c65",
+        "transcript": "c8e1fbab4b6596493d4ad16f28971d9370c19c781ad9e0b27f50c869f0a6b864",
+        "finalSource": "dac34dbfb54c7fc4f0c76248d5f7a49c704aae0dc4704cb45f6c6b2642b4182a"
+      }
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S1",
+      "block": 0,
+      "repetition": 0,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 2,
+        "totalPulls": 5,
+        "unknownRolePulls": 0,
+        "pullEventCount": 5,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 3
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "C",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 112588,
+      "indexPresentationDigest": "62b2b6e4a35c12e771155b0ce483dd8558f9bbc04e14921d2b28735c6e315ba5",
+      "productionIndexDigest": "9900663939a4ddbb6527519d979ac4489c9389b25f6e7ddcc0afde16b1af9f7e",
+      "digests": {
+        "trialRecord": "e6074e39f4b2206a71f159aa7f4eac88359d520c2286259179665cc8fd9c744b",
+        "transcript": "2025af7b9b9be3f685c73be13d70ccd9f4b69a3f221047479f9701aeb48f1649",
+        "finalSource": "59cc9b20d2a160f023d14096293b8b61824d10d53db3ebd56cbe805a9a54041e"
+      }
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S1",
+      "block": 1,
+      "repetition": 1,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "B",
+          "C"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+          "role": "DISTRACTOR"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 10,
+        "total": 14,
+        "failures": [
+          "h04:WRONG_CACHE",
+          "h05:WRONG_CACHE",
+          "h10:ACCEPTED_INVALID_INPUT",
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 10,
+        "total": 14,
+        "failures": [
+          "h04:WRONG_CACHE",
+          "h05:WRONG_CACHE",
+          "h10:ACCEPTED_INVALID_INPUT",
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": true,
+      "hostFailure": null,
+      "elapsedMs": 208605,
+      "indexPresentationDigest": "e74c3c3d8ea9ef8f6ad96b5a1b0d4ec114c1f17da3eb0ca5126b9d583adcb819",
+      "productionIndexDigest": "9fec89887eddbc7ca1f915f11b6faffa994942d4eb7ad4dc5a8029537141db0a",
+      "digests": {
+        "trialRecord": "23f59ba49f8dfb669946a28ac3a8252651c3ad8ad14ea9aa6c31f70bd9d8d173",
+        "transcript": "45e12cdae55b139b90f84e2306e29803f370aab4c26f98390fcd1b2bab30010d",
+        "finalSource": "68cbc45cc015031da45d3f479f1870636634bd73ec2e72d0be29350e66207814"
+      }
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S1",
+      "block": 2,
+      "repetition": 2,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 2,
+        "totalPulls": 5,
+        "unknownRolePulls": 0,
+        "pullEventCount": 5,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET",
+          "DISTRACTOR",
+          "DISTRACTOR"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 4
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "C",
+          "B",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 272440,
+      "indexPresentationDigest": "67dd0176297dd5f6ce94f7dd8af03267a8dcf960295a23bb8b106964855d1922",
+      "productionIndexDigest": "13e3ed337c018f088706c92768fc61fdcd99e525e8f6f065f956ece21e14779d",
+      "digests": {
+        "trialRecord": "b305fbc1748c2175fb7eeed4b246d7b7091a557a894ed452368b085d3a7d93a5",
+        "transcript": "5125c9882a9bb991fbbb170d6bcd84d2eb0eb9e330d4f24504956912172af743",
+        "finalSource": "5925d6fee37795a8391e27b9cee8057af57b20bceb7f50fa1dd369f2b48e94aa"
+      }
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S1",
+      "block": 3,
+      "repetition": 3,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 2,
+        "totalPulls": 5,
+        "unknownRolePulls": 0,
+        "pullEventCount": 5,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET",
+          "DISTRACTOR",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": 2
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "C",
+          "C"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+          "role": "DISTRACTOR"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 110809,
+      "indexPresentationDigest": "03ae823977966c7074ebc1abb956d32b5fc4d50bbb5b862849096939260beb0b",
+      "productionIndexDigest": "e15f7db55641661ba031371e64f03811c8cd628edbe6b247002ba7210eda75bc",
+      "digests": {
+        "trialRecord": "1993f5e20c6998a7ea2e2289111ee4bf7a551f28f5442c4fb619dafd19c4d291",
+        "transcript": "503e73cf68ae4f6fa27bb6220faacda6640a7db02461c5dbded06b0529a1cfa1",
+        "finalSource": "d8da3dd2775c697b2ae05a1e751fd456e1ac4d4111cf84166508f73d797e02e9"
+      }
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "S1",
+      "block": 4,
+      "repetition": 4,
+      "indexArm": "S1",
+      "outcome": {
+        "targetPulls": 3,
+        "distractorPulls": 0,
+        "totalPulls": 3,
+        "unknownRolePulls": 0,
+        "pullEventCount": 3,
+        "repeatPulls": 0,
+        "pullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "distinctPullOrderRoles": [
+          "TARGET",
+          "TARGET",
+          "TARGET"
+        ],
+        "firstTargetPullOrdinal": 1,
+        "firstDistractorPullOrdinal": null
+      },
+      "treatmentApplied": true,
+      "indexPrecondition": "MET",
+      "handleOccurrenceExact": true,
+      "candidateSet": {
+        "targetBundleId": "D",
+        "distractorBundles": [
+          "B",
+          "B",
+          "B"
+        ]
+      },
+      "realizedOrder": [
+        {
+          "position": 1,
+          "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+          "role": "TARGET"
+        },
+        {
+          "position": 2,
+          "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 3,
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 4,
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "role": "TARGET"
+        },
+        {
+          "position": 5,
+          "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+          "role": "DISTRACTOR"
+        },
+        {
+          "position": 6,
+          "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+          "role": "TARGET"
+        }
+      ],
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "hostFailure": null,
+      "elapsedMs": 103228,
+      "indexPresentationDigest": "bb8b3110007b3ac0bad069719e7bba5ba10d5ccb59668d6e9ce4eedf38b64ba6",
+      "productionIndexDigest": "4823424433c692bbeb8c7ba2a5ac77f1e0a26b52fb2d22464059b48cc4ec09c6",
+      "digests": {
+        "trialRecord": "e3dc7562a00b3f820fd15a67b30541554eb5545c7427b1b01218ad696b6b3ade",
+        "transcript": "04e7d6e72123e091b9237db7abb0aca8bf4b54a3683854cd91edc2974b58fd63",
+        "finalSource": "a53da54c1bd544425f44bda22727f68e6ada8888fc09d8f14b2e9697281a5b24"
+      }
+    }
+  ]
 }

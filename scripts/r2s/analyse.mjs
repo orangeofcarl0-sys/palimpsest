@@ -71,7 +71,7 @@ export function normalizeTrial(record) {
     block: record.block,
     repetition: record.repetition,
 
-    /** §14: THE PRIMARY OUTCOMES. */
+    /** §14: THE PRIMARY OUTCOMES — DISTINCT handles retrieved, so recall can never exceed 1. */
     targetPulls,
     distractorPulls,
     totalPulls,
@@ -82,6 +82,9 @@ export function normalizeTrial(record) {
     /** §17: pull-all is a valid, recorded result. */
     pulledAll: totalPulls >= CANDIDATE_SET_SIZE,
     unknownRolePulls: Number(outcome.unknownRolePulls ?? 0),
+    /** §16: the raw event count, so a repeated pull stays visible rather than being silently merged. */
+    pullEventCount: Number(outcome.pullEventCount ?? totalPulls),
+    repeatPulls: Number(outcome.repeatPulls ?? 0),
 
     pulledHandles,
     pullOrderRoles: outcome.pullOrderRoles ?? [],

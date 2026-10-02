@@ -239,6 +239,24 @@ describe("R2-S §14/§15 — the per-arm outcomes and the frozen verdict", () =>
     expect(summary.distractorPullRate).toBe(1);
   });
 
+  it("§14 a recall can never exceed 1 — the primary counts DISTINCT handles, not pull events", () => {
+    /** A trial that pulled one handle twice and one more: two distinct items, so recall is 2/3, not 3/3. */
+    const repeated = normalizeTrial({
+      trialId: "C-S0-b0r0",
+      scenario: "C_REPLAY_SAFE_REDUCER",
+      condition: "S0",
+      block: 0,
+      repetition: 0,
+      outcome: { targetPulls: 2, distractorPulls: 0, totalPulls: 2, unknownRolePulls: 0, pullEventCount: 3, repeatPulls: 1 },
+      worker: { pulledHandles: [] },
+      prompt: {},
+      pairedState: {},
+    });
+    const summary = armSelectivity([repeated]);
+    expect(summary.targetRecall).toBeLessThanOrEqual(1);
+    expect(summary.targetRecall).toBeCloseTo(2 / 3, 6);
+  });
+
   const arm = (targetPulls: number, distractorPulls: number, n = 5) => ({
     analysed: n,
     targetPulls,
