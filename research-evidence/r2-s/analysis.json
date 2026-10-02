@@ -1,0 +1,2359 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "expectedTrials": 20,
+  "completedTrials": 20,
+  "seed": "0x52530201",
+  "confoundedBlocks": [],
+  "isolationBlocks": [
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 0,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 1,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 2,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 3,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "C_REPLAY_SAFE_REDUCER",
+      "block": 4,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 0,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 1,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 2,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 3,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 4,
+      "conditions": [
+        "S0",
+        "S1"
+      ],
+      "confounded": false,
+      "differences": [],
+      "indexHandleCounts": [
+        6,
+        6
+      ],
+      "indexMovedWithArm": true
+    }
+  ],
+  "selectivity": {
+    "verdict": "R2-S SELECTIVITY: REPLICATED",
+    "scenarios": {
+      "C": {
+        "s0": {
+          "analysed": 5,
+          "targetPulls": 15,
+          "distractorPulls": 15,
+          "totalPulls": 30,
+          "targetPullsPerTrial": 3,
+          "distractorPullsPerTrial": 3,
+          "targetRecall": 1,
+          "distractorPullRate": 1,
+          "precision": 0.5,
+          "pullAllTrials": 5,
+          "pullAll": "5/5",
+          "targetRecallByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "distractorPullsByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "treatmentNotApplied": 0
+        },
+        "s1": {
+          "analysed": 5,
+          "targetPulls": 15,
+          "distractorPulls": 0,
+          "totalPulls": 15,
+          "targetPullsPerTrial": 3,
+          "distractorPullsPerTrial": 0,
+          "targetRecall": 1,
+          "distractorPullRate": 0,
+          "precision": 1,
+          "pullAllTrials": 0,
+          "pullAll": "0/5",
+          "targetRecallByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "distractorPullsByTrial": [
+            "0/3",
+            "0/3",
+            "0/3",
+            "0/3",
+            "0/3"
+          ],
+          "treatmentNotApplied": 0
+        },
+        "distractorLower": true,
+        "recallKept": true,
+        "targetRetrieved": true,
+        "improved": true,
+        "directional": true,
+        "treatmentApplied": true
+      },
+      "D": {
+        "s0": {
+          "analysed": 5,
+          "targetPulls": 15,
+          "distractorPulls": 15,
+          "totalPulls": 30,
+          "targetPullsPerTrial": 3,
+          "distractorPullsPerTrial": 3,
+          "targetRecall": 1,
+          "distractorPullRate": 1,
+          "precision": 0.5,
+          "pullAllTrials": 5,
+          "pullAll": "5/5",
+          "targetRecallByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "distractorPullsByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "treatmentNotApplied": 0
+        },
+        "s1": {
+          "analysed": 5,
+          "targetPulls": 15,
+          "distractorPulls": 6,
+          "totalPulls": 21,
+          "targetPullsPerTrial": 3,
+          "distractorPullsPerTrial": 1.2,
+          "targetRecall": 1,
+          "distractorPullRate": 0.4,
+          "precision": 0.7142857142857143,
+          "pullAllTrials": 0,
+          "pullAll": "0/5",
+          "targetRecallByTrial": [
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3",
+            "3/3"
+          ],
+          "distractorPullsByTrial": [
+            "2/3",
+            "0/3",
+            "2/3",
+            "2/3",
+            "0/3"
+          ],
+          "treatmentNotApplied": 0
+        },
+        "distractorLower": true,
+        "recallKept": true,
+        "targetRetrieved": true,
+        "improved": true,
+        "directional": true,
+        "treatmentApplied": true
+      }
+    },
+    "improvedScenarios": [
+      "C",
+      "D"
+    ],
+    "directionalScenarios": [
+      "C",
+      "D"
+    ]
+  },
+  "arms": {
+    "C": {
+      "S0": {
+        "n": 5,
+        "targetPulls": "15/15",
+        "distractorPulls": "15/15",
+        "totalPulls": 30,
+        "targetRecall": "15/15",
+        "distractorRate": "15/15",
+        "perTrial": [
+          {
+            "trialId": "C-S0-b0r0",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S0-b1r1",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "DISTRACTOR",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S0-b2r2",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR"
+            ]
+          },
+          {
+            "trialId": "C-S0-b3r3",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "DISTRACTOR",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S0-b4r4",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          }
+        ],
+        "precision": "15/30",
+        "pulledAll": "5/5",
+        "pulledAny": "5/5",
+        "targetRetrieved": "5/5",
+        "firstTargetPullOrdinalMedian": 2,
+        "firstDistractorPullOrdinalMedian": 1,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "5/5",
+        "firstCandidateSolved": "5/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 3,
+        "medianElapsedMs": 163767,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15"
+        ]
+      },
+      "S1": {
+        "n": 5,
+        "targetPulls": "15/15",
+        "distractorPulls": "0/15",
+        "totalPulls": 15,
+        "targetRecall": "15/15",
+        "distractorRate": "0/15",
+        "perTrial": [
+          {
+            "trialId": "C-S1-b0r0",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S1-b1r1",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S1-b2r2",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S1-b3r3",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "C-S1-b4r4",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          }
+        ],
+        "precision": "15/15",
+        "pulledAll": "0/5",
+        "pulledAny": "5/5",
+        "targetRetrieved": "5/5",
+        "firstTargetPullOrdinalMedian": 1,
+        "firstDistractorPullOrdinalMedian": "UNKNOWN",
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "5/5",
+        "firstCandidateSolved": "5/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 1,
+        "medianElapsedMs": 121572,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15",
+          "15/15"
+        ]
+      }
+    },
+    "D": {
+      "S0": {
+        "n": 5,
+        "targetPulls": "15/15",
+        "distractorPulls": "15/15",
+        "totalPulls": 30,
+        "targetRecall": "15/15",
+        "distractorRate": "15/15",
+        "perTrial": [
+          {
+            "trialId": "D-S0-b0r0",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "D-S0-b1r1",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "DISTRACTOR",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR"
+            ]
+          },
+          {
+            "trialId": "D-S0-b2r2",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "D-S0-b3r3",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR"
+            ]
+          },
+          {
+            "trialId": "D-S0-b4r4",
+            "target": 3,
+            "distractor": 3,
+            "total": 6,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          }
+        ],
+        "precision": "15/30",
+        "pulledAll": "5/5",
+        "pulledAny": "5/5",
+        "targetRetrieved": "5/5",
+        "firstTargetPullOrdinalMedian": 1,
+        "firstDistractorPullOrdinalMedian": 2,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "3/5",
+        "firstCandidateSolved": "3/5",
+        "mistakeRecurred": "0/5",
+        "medianVisibleOracleInvocations": 3,
+        "medianElapsedMs": 133997,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "14/14",
+          "14/14",
+          "14/14",
+          "13/14",
+          "13/14"
+        ]
+      },
+      "S1": {
+        "n": 5,
+        "targetPulls": "15/15",
+        "distractorPulls": "6/15",
+        "totalPulls": 21,
+        "targetRecall": "15/15",
+        "distractorRate": "6/15",
+        "perTrial": [
+          {
+            "trialId": "D-S1-b0r0",
+            "target": 3,
+            "distractor": 2,
+            "total": 5,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR"
+            ]
+          },
+          {
+            "trialId": "D-S1-b1r1",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "D-S1-b2r2",
+            "target": 3,
+            "distractor": 2,
+            "total": 5,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET",
+              "DISTRACTOR",
+              "DISTRACTOR"
+            ]
+          },
+          {
+            "trialId": "D-S1-b3r3",
+            "target": 3,
+            "distractor": 2,
+            "total": 5,
+            "order": [
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET",
+              "DISTRACTOR",
+              "TARGET"
+            ]
+          },
+          {
+            "trialId": "D-S1-b4r4",
+            "target": 3,
+            "distractor": 0,
+            "total": 3,
+            "order": [
+              "TARGET",
+              "TARGET",
+              "TARGET"
+            ]
+          }
+        ],
+        "precision": "15/21",
+        "pulledAll": "0/5",
+        "pulledAny": "5/5",
+        "targetRetrieved": "5/5",
+        "firstTargetPullOrdinalMedian": 1,
+        "firstDistractorPullOrdinalMedian": 3,
+        "pulledBeforeFirstEdit": "5/5",
+        "pulledBeforeFirstVisibleTest": "0/5",
+        "fullSolved": "0/5",
+        "firstCandidateSolved": "0/5",
+        "mistakeRecurred": "1/5",
+        "medianVisibleOracleInvocations": 0,
+        "medianElapsedMs": 112588,
+        "hostFailures": 0,
+        "timeouts": 0,
+        "finalScores": [
+          "13/14",
+          "10/14",
+          "13/14",
+          "13/14",
+          "13/14"
+        ]
+      }
+    }
+  },
+  "orderBalance": {
+    "note": "the production compiler orders the index by content-addressed identity, which the harness may not change (§25). The only lawful order lever is WHICH distractors are selected, so the order varies across BLOCKS and is identical across the S0/S1 pair within a block.",
+    "rows": [
+      {
+        "trialId": "C-S0-b0r0",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S0-b1r1",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S0-b2r2",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S0-b3r3",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S0-b4r4",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S1-b0r0",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S1-b1r1",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S1-b2r2",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S1-b3r3",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:TARGET",
+          "4:DISTRACTOR",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          3,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          4,
+          5
+        ]
+      },
+      {
+        "trialId": "C-S1-b4r4",
+        "order": [
+          "1:DISTRACTOR",
+          "2:TARGET",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          2,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          1,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S0-b0r0",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S0-b1r1",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:TARGET",
+          "6:DISTRACTOR"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          5
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          6
+        ]
+      },
+      {
+        "trialId": "D-S0-b2r2",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S0-b3r3",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:TARGET",
+          "6:DISTRACTOR"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          5
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          6
+        ]
+      },
+      {
+        "trialId": "D-S0-b4r4",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S1-b0r0",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S1-b1r1",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:TARGET",
+          "6:DISTRACTOR"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          5
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          6
+        ]
+      },
+      {
+        "trialId": "D-S1-b2r2",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      },
+      {
+        "trialId": "D-S1-b3r3",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:TARGET",
+          "6:DISTRACTOR"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          5
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          6
+        ]
+      },
+      {
+        "trialId": "D-S1-b4r4",
+        "order": [
+          "1:TARGET",
+          "2:DISTRACTOR",
+          "3:DISTRACTOR",
+          "4:TARGET",
+          "5:DISTRACTOR",
+          "6:TARGET"
+        ],
+        "targetPositions": [
+          1,
+          4,
+          6
+        ],
+        "distractorPositions": [
+          2,
+          3,
+          5
+        ]
+      }
+    ],
+    "firstPositionTargetShare": "14/20",
+    "targetPositionsObserved": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "distractorPositionsObserved": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ]
+  },
+  "pullAllReading": {
+    "pullAllTrials": "10/20",
+    "interpretation": "pull-all occurred in some but not all trials"
+  },
+  "association": {
+    "note": "recorded for completeness ONLY. The verdict reads routing/selectivity, never task success (§21).",
+    "pullers": {
+      "n": 20,
+      "fullSolved": "13/20",
+      "mistakeRecurred": "1/20"
+    },
+    "nonPullers": {
+      "n": 0,
+      "fullSolved": "0/0",
+      "mistakeRecurred": "0/0"
+    }
+  },
+  "previewManifest": [
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b0r0",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/procedure/prc-62b00f4dd88a2fde550158b38bdc5a22/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedPreviewDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedCodePoints": 68,
+      "contentCodePoints": 68,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/procedure/prc-62b00f4dd88a2fde550158b38bdc5a22/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "renderedPreviewDigest": "3753d1dff7356f7b43b1b04c55dcdc3fc6f7b5d1a3f8d3a8acbb6891acb8f319",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 349,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "renderedPreviewDigest": "3753d1dff7356f7b43b1b04c55dcdc3fc6f7b5d1a3f8d3a8acbb6891acb8f319",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 349,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/procedure/prc-508bfd50d53bedf3f970e345f481a94c/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "handle": "@ctx/procedure/prc-97037874bb9901b4174340614ad80f96/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedPreviewDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedCodePoints": 68,
+      "contentCodePoints": 68,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "renderedPreviewDigest": "3753d1dff7356f7b43b1b04c55dcdc3fc6f7b5d1a3f8d3a8acbb6891acb8f319",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 349,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/proof/pc-37ce8a1cd24f7c601ea98b0dc22cf2b5",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "6dcae73f3e4363ebc58d2dd3dbf2aaa4a1c82e756002e8bf549d460450ec85db",
+      "renderedPreviewDigest": "0ea29655b3110cf1d2f682f8288f6bb848edfbe87dac738326709222989dd5ba",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 426,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "renderedPreviewDigest": "3753d1dff7356f7b43b1b04c55dcdc3fc6f7b5d1a3f8d3a8acbb6891acb8f319",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 349,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedPreviewDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedCodePoints": 68,
+      "contentCodePoints": 68,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "701f809109c8c9bc5c604f2f58d68fd815cbf2f9e5be34c96af25d59e0c46cee",
+      "renderedPreviewDigest": "bcf884fe29a3e051f4b1ed31e209e48c50609bb6fb2885873096680d530e41fe",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 367,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedPreviewDigest": "f93721381b1b0d24a6830a42df5ce1918e5786e074f1c01aa200285efdec5964",
+      "renderedCodePoints": 73,
+      "contentCodePoints": 73,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "handle": "@ctx/procedure/prc-bbabd8af7d65243c026740ab4a559833/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/proof/pc-1d1ab58f42a9185224bdb86c42613692",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "da180efeeb11c0348e2bb6cecf6ecc021a0097229f54af028251e0111fef2401",
+      "renderedPreviewDigest": "1bef7f6294d812ba7db9fcddaab3a1b41fc388353d13e62b16ab430780352693",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 506,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/proof/pc-8b61cbf2b4db6349406753b23eb33fc8",
+      "kind": "proof",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "d17b29fcf25973912394e88b8ffa0accbcb23b720f0abb221aefcfdd16b41ebb",
+      "renderedPreviewDigest": "cf7a0234d9c1e0112549cbacb16fe6a1226921e70aff84fdc27ec587a497e29a",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 321,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "9b8ca99d6bca5e741dc201c057b16bfa5fb9cada823602fbeeeb6a12d8f9c53b",
+      "renderedPreviewDigest": "3753d1dff7356f7b43b1b04c55dcdc3fc6f7b5d1a3f8d3a8acbb6891acb8f319",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 349,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+      "kind": "reasoning",
+      "field": "Preview",
+      "semanticProvenance": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "statement",
+      "sourceDigest": "1fd02baaae6e4e58f64925028269d5aa6a78cc3f151e6ae59f6c3a0569678c26",
+      "renderedPreviewDigest": "f3543dde86ccc12146f809147447da5a52ac52ab62f8300a99ea5a4aa6b73747",
+      "renderedCodePoints": 161,
+      "contentCodePoints": 491,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedPreviewDigest": "9b736a55cc26fd1a7bd9c259866b25bf10c3bcda52e7f0d355d3c4da0b69d68b",
+      "renderedCodePoints": 68,
+      "contentCodePoints": 68,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/procedure/prc-04a9fd218eda18c381cae65e5efc9ea9/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Applicability",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "applicability",
+      "sourceDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedPreviewDigest": "f5cc9b39a8f55b84317c3a0b1fe646303ed369afe88e2e4876ba201e8a04cf43",
+      "renderedCodePoints": 82,
+      "contentCodePoints": 82,
+      "truncated": false
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "handle": "@ctx/procedure/prc-6469b0c156f521b19261b2f2c578e830/0",
+      "kind": "procedure",
+      "field": "Limitations",
+      "semanticProvenance": "OWNER_DECLARED",
+      "materializationProvenance": "GOVERNED_BODY_FETCH",
+      "sourceField": "limitations",
+      "sourceDigest": "f28068af46224d5ff5e319e462ba00fb215ec4d6742cedd9ff230e5db5ee3344",
+      "renderedPreviewDigest": "dcc8fb74e0caf47999f3f0c24017ffbb1bce86bfbe7a184b4a99ea08b98cc918",
+      "renderedCodePoints": 121,
+      "contentCodePoints": 144,
+      "truncated": true
+    }
+  ],
+  "leakage": {
+    "leaked": false,
+    "problems": [],
+    "statementsChecked": 6
+  },
+  "transcriptDigests": [
+    {
+      "trialId": "C-S1-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S0-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S1-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S0-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S1-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S0-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S0-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S1-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S0-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "C-S1-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S1-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S0-b0r0",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S0-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S1-b1r1",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S0-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S1-b2r2",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S1-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S0-b3r3",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S1-b4r4",
+      "transcript": "ABSENT"
+    },
+    {
+      "trialId": "D-S0-b4r4",
+      "transcript": "ABSENT"
+    }
+  ]
+}
