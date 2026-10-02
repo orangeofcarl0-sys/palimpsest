@@ -39,6 +39,13 @@ export interface NormalizedTrial {
   readonly treatmentApplied: boolean;
   readonly indexPrecondition: string;
   readonly indexModeReported: string;
+  readonly sessionFound: boolean;
+  readonly sessionArtifactDigest: string;
+  readonly sessionPromptDigest: string;
+  readonly sessionIndexSectionFound: boolean;
+  readonly sessionHandleCount: number;
+  readonly selectedHandleCount: number;
+  readonly treatmentEvidence: Record<string, unknown> | null;
   readonly derivationPullOffset: number;
   readonly pullAccountingConsistent: boolean | string;
   readonly derivedCount: number;

@@ -106,10 +106,19 @@ export function normalizeTrial(record) {
     workerOutcomeKind: worker.outcomeKind ?? 'UNKNOWN',
     jobPhase: record.jobPhase ?? 'UNKNOWN',
 
-    /** §14: the treatment-applied precondition. */
+    /** §14: the treatment-applied precondition, proven at the session boundary. */
     treatmentApplied: record.treatmentApplied === true,
     indexPrecondition: record.indexPrecondition ?? 'UNKNOWN',
     indexModeReported: worker.reportedIndexMode ?? 'UNKNOWN',
+
+    /** §21: the durable session artifact — the only evidence of what the model actually received. */
+    sessionFound: record.session?.found === true,
+    sessionArtifactDigest: record.session?.artifactDigest ?? 'ABSENT',
+    sessionPromptDigest: record.session?.promptDigest ?? 'ABSENT',
+    sessionIndexSectionFound: record.session?.indexSectionFound === true,
+    sessionHandleCount: (record.session?.handlesInPrompt ?? []).length,
+    selectedHandleCount: (record.prompt?.handlesInPayload ?? []).length,
+    treatmentEvidence: record.treatmentEvidence ?? null,
 
     /** §22: the derivation/worker pull separation, so contamination would be visible. */
     derivationPullOffset: record.pullAccounting?.derivationPullOffset ?? 0,
@@ -175,14 +184,32 @@ export function isolationCheck(trials) {
     if (m0 !== undefined && m0.indexPresentationDigest !== m0.productionIndexDigest) {
       differences.push('the M0 index is not byte-identical to the production index');
     }
-    /** §14: an analysed M1 trial must have derived every entry. */
-    const m1 = members.find((trial) => trial.condition === 'M1');
-    if (m1 !== undefined && !m1.treatmentApplied) {
-      differences.push(`the M1 arm did not derive every selected handle (${String(m1.derivedCount)} entries)`);
+    /**
+     * §21/§26: THE TREATMENT PRECONDITION, now proven at the SESSION boundary for BOTH arms.
+     *
+     * `treatmentApplied` is computed by the trial from the durable session artifact, so this checks
+     * DELIVERY rather than host intent. M1 must have been delivered the derived surface; M0 must have been
+     * delivered the production index (a control whose index was absent would not be the control the
+     * protocol describes).
+     */
+    for (const member of members) {
+      if (member.treatmentApplied !== true) {
+        differences.push(`${member.condition}: the treatment was not proven at the model-visible session boundary (${member.indexPrecondition})`);
+      }
     }
     /** §22: the pull accounting must be consistent, so a derivation pull cannot read as a worker pull. */
     for (const member of members) {
       if (member.pullAccountingConsistent !== true) differences.push(`${member.condition}: the pull accounting is inconsistent (${String(member.pullAccountingConsistent)})`);
+    }
+    /** §21: the session artifact must exist — without it there is no evidence of what the model received. */
+    for (const member of members) {
+      if (member.sessionFound !== true) differences.push(`${member.condition}: no durable session artifact was found, so delivery cannot be proven`);
+    }
+    /** §21: every selected handle must be present in the real prompt. */
+    for (const member of members) {
+      if (member.selectedHandleCount > 0 && member.sessionHandleCount < member.selectedHandleCount) {
+        differences.push(`${member.condition}: only ${String(member.sessionHandleCount)}/${String(member.selectedHandleCount)} selected handles appear in the model-visible prompt`);
+      }
     }
     blocks.push(Object.freeze({
       scenario,
