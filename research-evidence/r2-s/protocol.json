@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "title": "Capital Selectivity under Choice Pressure",
+  "startingHead": "42b0025b47ec2daba108370fb1a4300997caa7c2",
+  "branch": "r2-s-capital-selectivity",
+  "priorStage": {
+    "stage": "R2-M",
+    "verdict": "NOT_IMPROVED",
+    "inferentialStatus": "NON_DISCRIMINATING_DUE_TO_CONTROL_CEILING",
+    "frozenEmpiricalFact": "a visible opaque 3-handle selected index produced 20/20 voluntary pull within the tested scope (M0 20/20, M1 20/20)"
+  },
+  "design": {
+    "kind": "2-condition randomized blocks; a BROAD preselected candidate set of 6 items (3 TARGET + 3 DISTRACTOR) is identical in both arms; only the index presentation differs",
+    "conditions": [
+      "S0",
+      "S1"
+    ],
+    "arms": {
+      "S0": "the opaque broad index: six `[kind] handle` entries, the current production presentation",
+      "S1": "the same six handles, the same order, the same bodies, plus the frozen R2-M decision metadata"
+    },
+    "modeOf": {
+      "S0": "m0",
+      "S1": "m1"
+    },
+    "repetitions": 5,
+    "scenarios": [
+      "C",
+      "D"
+    ],
+    "expectedTrials": 20,
+    "seed": "0x52530201",
+    "blockOrder": [
+      {
+        "scenario": "C",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "S0",
+              "S1"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "S0",
+              "S1"
+            ]
+          }
+        ]
+      },
+      {
+        "scenario": "D",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "S0",
+              "S1"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "S0",
+              "S1"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "S1",
+              "S0"
+            ]
+          }
+        ]
+      }
+    ],
+    "candidateSetSize": 6,
+    "targetCount": 3,
+    "distractorCount": 3,
+    "targetBundle": {
+      "C": "C",
+      "D": "D"
+    },
+    "distractorPool": {
+      "C": [
+        "B",
+        "D"
+      ],
+      "D": [
+        "B",
+        "C"
+      ]
+    },
+    "distractorSchedule": [
+      {
+        "scenario": "C",
+        "blocks": [
+          {
+            "block": 0,
+            "set": {
+              "proof": "B",
+              "reasoning": "D",
+              "procedure": "D"
+            },
+            "key": "B|D|D"
+          },
+          {
+            "block": 1,
+            "set": {
+              "proof": "D",
+              "reasoning": "D",
+              "procedure": "B"
+            },
+            "key": "D|D|B"
+          },
+          {
+            "block": 2,
+            "set": {
+              "proof": "B",
+              "reasoning": "B",
+              "procedure": "D"
+            },
+            "key": "B|B|D"
+          },
+          {
+            "block": 3,
+            "set": {
+              "proof": "D",
+              "reasoning": "D",
+              "procedure": "D"
+            },
+            "key": "D|D|D"
+          },
+          {
+            "block": 4,
+            "set": {
+              "proof": "D",
+              "reasoning": "B",
+              "procedure": "D"
+            },
+            "key": "D|B|D"
+          }
+        ]
+      },
+      {
+        "scenario": "D",
+        "blocks": [
+          {
+            "block": 0,
+            "set": {
+              "proof": "B",
+              "reasoning": "C",
+              "procedure": "B"
+            },
+            "key": "B|C|B"
+          },
+          {
+            "block": 1,
+            "set": {
+              "proof": "B",
+              "reasoning": "B",
+              "procedure": "C"
+            },
+            "key": "B|B|C"
+          },
+          {
+            "block": 2,
+            "set": {
+              "proof": "C",
+              "reasoning": "B",
+              "procedure": "B"
+            },
+            "key": "C|B|B"
+          },
+          {
+            "block": 3,
+            "set": {
+              "proof": "B",
+              "reasoning": "C",
+              "procedure": "C"
+            },
+            "key": "B|C|C"
+          },
+          {
+            "block": 4,
+            "set": {
+              "proof": "B",
+              "reasoning": "B",
+              "procedure": "B"
+            },
+            "key": "B|B|B"
+          }
+        ]
+      }
+    ],
+    "noPullBudget": "§18: NO hard pull budget. No `max pulls = 3` or any artificial cap is imposed; that would change the capability policy and force selection mechanically. R2-S measures natural model selectivity."
+  },
+  "indexMechanism": {
+    "mechanism": "EXPERIMENTAL_HOST_DERIVED_PREVIEW",
+    "envVar": "PALIMPSEST_R2M_INDEX",
+    "note": "S0 and S1 map onto the already-frozen R2-M presentation modes (m0/m1). The experimental renderer is the ONLY host change; the production default stays off.",
+    "timing": "the S1 derivation runs before the first engineering turn exists; its pulls are subtracted from the worker pull telemetry so a derivation pull can never count as a voluntary pull"
+  },
+  "duplicateHandleFix": {
+    "problem": "the R2-M M1 renderer emitted a trailing `Handle: <handle>` line, so an M1 entry named its handle twice while an M0 entry named it once (M0 occurrences = 3, M1 = 6). That is a confound for any experiment whose outcome is WHICH handles are retrieved.",
+    "correction": "the trailing line is removed; every selected handle now appears exactly once in BOTH arms",
+    "scope": "experimental renderer only — no canonical Context change, no production semantic change"
+  },
+  "projectionAlgorithm": {
+    "steps": [
+      "take the existing canonical human-readable content field",
+      "normalize CRLF to LF",
+      "trim outer whitespace only",
+      "retain the first N Unicode code points",
+      "if truncated, append one fixed marker"
+    ],
+    "marker": "…",
+    "budget": {
+      "proof": 160,
+      "reasoning": 160,
+      "procedureApplicability": 120,
+      "procedureLimitations": 120
+    },
+    "procedureRuling": "P-A",
+    "noNewTuning": "§12: the projection is UNCHANGED from R2-M. No preview algorithm was changed based on R2-M results. The only renderer correction is the removal of the duplicate handle occurrence."
+  },
+  "provenance": {
+    "semanticProvenance": {
+      "PROOF": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "REASONING": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "PROCEDURE": "OWNER_DECLARED"
+    },
+    "materializationProvenance": "GOVERNED_BODY_FETCH",
+    "note": "Procedure applicability/limitations are OWNER-DECLARED fields that still require governed body materialization. Proof/Reasoning previews are HOST-PROJECTED from owner content. The two remain distinguishable."
+  },
+  "primaryMetric": "S1 distractor pull rate < S0 distractor pull rate, WITH S1 target recall >= S0 target recall",
+  "primaryOutcomes": [
+    "Target Recall = target_pulls / 3",
+    "Distractor Pull Rate = distractor_pulls / 3"
+  ],
+  "descriptiveOutcomes": [
+    "Pull Precision = target_pulls / total_pulls (UNKNOWN when nothing was pulled)"
+  ],
+  "secondaryMetrics": [
+    "pull order",
+    "first target pull ordinal",
+    "first distractor pull ordinal",
+    "targets/distractors pulled before first edit",
+    "elapsed time",
+    "first-candidate hidden acceptance",
+    "final hidden acceptance",
+    "known-failure recurrence"
+  ],
+  "taskSuccessIsSecondary": "§21: the verdict is about routing/selectivity. A task outcome difference is recorded and NEVER consulted by the verdict.",
+  "preDeclaredVerdicts": [
+    "R2-S SELECTIVITY: REPLICATED",
+    "R2-S SELECTIVITY: PARTIAL",
+    "R2-S SELECTIVITY: NOT_IMPROVED"
+  ],
+  "verdictCriteria": {
+    "REPLICATED": "BOTH scenarios: S1's distractor pull rate is strictly lower than S0's, S1's target recall is >= S0's, and actual target retrieval remains non-zero in S1",
+    "PARTIAL": "exactly one scenario clearly satisfies the criterion, or both show weak/noisy directional selectivity improvement",
+    "NOT_IMPROVED": "neither scenario improves selective retrieval"
+  },
+  "scopeLimits": [
+    "the six items form a deliberately BROAD PRESELECTED candidate set. This does NOT model perfect principal selection: it models upstream selection having narrowed the universe without perfectly identifying which capital will matter to this particular implementation.",
+    "the two \"ordering-first\" bundles (C and D) are structurally related, so \"distractor\" means \"independent, different-domain, not this task's method\" rather than \"provably useless\". The B bundle is a genuinely different domain.",
+    "the production compiler orders the index by content-addressed identity, which the harness may not change. The only lawful order lever is WHICH distractors are selected, so the order varies across blocks and is identical across the S0/S1 pair within a block.",
+    "single model profile (deepseek-flash). No cross-model replication in this stage."
+  ],
+  "frozenPriorEvidence": {
+    "r1r": {
+      "trials": 30,
+      "governedPulls": "0/30",
+      "corrected": "NOT EVALUABLE — model-visible index not delivered"
+    },
+    "r2u": {
+      "trials": 40,
+      "verdict": "NOT_IMPROVED",
+      "corrected": "NOT EVALUABLE — model-visible index not delivered"
+    },
+    "r2e": {
+      "trials": 20,
+      "verdict": "REPLICATED",
+      "mechanism": "HOST_MEDIATED_PREWORK"
+    },
+    "r2m": {
+      "trials": 20,
+      "verdict": "NOT_IMPROVED",
+      "ceiling": "M0 20/20 and M1 20/20 — no headroom"
+    }
+  }
+}

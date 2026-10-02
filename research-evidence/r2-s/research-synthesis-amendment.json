@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "kind": "append-only research-synthesis amendment (second correction)",
+  "baseline": "42b0025b47ec2daba108370fb1a4300997caa7c2",
+  "priorCorrection": "research-evidence/r2-lr/research-synthesis-erratum.json — local controlled-treatment claims were invalidated by the worker-index delivery defect",
+  "correction": "The repaired local experiment no longer supports \"opaque visible index → low uptake.\"",
+  "evidence": {
+    "stage": "R2-M (repaired)",
+    "arms": { "M0": "20/20 voluntary pull", "M1": "20/20 voluntary pull" },
+    "fact": "once the index was actually model-visible, the opaque 3-handle control produced 20/20 pull"
+  },
+  "supportedConclusion": "visibility / interface delivery was the dominant missing variable",
+  "unknownConclusion": "the marginal value of semantic metadata remains UNKNOWN",
+  "externalLiteratureUntouched": true,
+  "r2mCeilingInterpretation": {
+    "verdict": "NOT_IMPROVED",
+    "inferentialStatus": "NON_DISCRIMINATING DUE TO CONTROL CEILING",
+    "mustNotState": "metadata has no effect",
+    "frozenEmpiricalFact": "visible opaque 3-handle selected index: 20/20 voluntary pull, within tested scope"
+  }
+}

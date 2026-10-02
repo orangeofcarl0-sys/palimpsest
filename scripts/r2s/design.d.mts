@@ -1,0 +1,22 @@
+/** R2-S design module type declarations (harness-only; consumed by the TypeScript tests). */
+export declare const PROTOCOL_SEED: number;
+export declare const CONDITIONS: readonly string[];
+export declare const MODE_OF: Readonly<Record<string, string>>;
+export declare const ARMS: Readonly<Record<string, string>>;
+export declare const REPETITIONS: number;
+export declare const SCENARIO_IDS: readonly string[];
+export declare const EXPECTED_TRIALS: number;
+export declare const KINDS: readonly string[];
+export declare const ITEMS_PER_KIND: number;
+export declare const TARGET_COUNT: number;
+export declare const DISTRACTOR_COUNT: number;
+export declare const CANDIDATE_SET_SIZE: number;
+export declare const TARGET_BUNDLE: Readonly<Record<string, string>>;
+export declare const DISTRACTOR_POOL: Readonly<Record<string, readonly string[]>>;
+export declare const SELECTIVITY_VERDICTS: Readonly<{ REPLICATED: string; PARTIAL: string; NOT_IMPROVED: string }>;
+export declare function blockOrder(blocks: number, scenarioId?: string): readonly { readonly block: number; readonly order: readonly string[] }[];
+export declare function distractorSchedule(scenarioId: string, blocks?: number): readonly { readonly block: number; readonly set: Readonly<Record<string, string>>; readonly key: string }[];
+export declare function trialPlan(repetitions?: number, scenarioIds?: readonly string[]): readonly any[];
+export declare function armSelectivity(trials: readonly any[]): any;
+export declare function analyseSelectivity(byScenario: Record<string, { s0: any; s1: any }>): any;
+export declare function previewLeakage(input: { previewText: string; sourceField: string; forbidden: readonly string[] }): { readonly leaked: boolean; readonly problems: readonly string[] };

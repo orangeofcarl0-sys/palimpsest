@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "gate": "compile-readiness",
+  "deterministicOnly": true,
+  "results": [
+    {
+      "id": "SC-01C",
+      "statement": "§6 the C compile resolves EXACTLY 6 handles",
+      "pass": true,
+      "detail": "6 handle(s): @ctx/proof/pc-2505e9cbc38e13c081faece8f2ff384a, @ctx/proof/pc-aff4b5fe0586987715ab24516cc6bb2a, @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37, @ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de, @ctx/procedure/prc-3ced19ffd89eb09184b04c875265f3d6/0, @ctx/procedure/prc-b56e3b7539b9159278e09a79f7e839e2/0"
+    },
+    {
+      "id": "SC-02C",
+      "statement": "§6 the role map covers EVERY C compiled handle",
+      "pass": true,
+      "detail": "1:TARGET 2:DISTRACTOR 3:TARGET 4:DISTRACTOR 5:TARGET 6:DISTRACTOR"
+    },
+    {
+      "id": "SC-03C",
+      "statement": "§6 the C candidate set is 3 TARGET + 3 DISTRACTOR in the compiled order",
+      "pass": true,
+      "detail": "target at 1,3,5; distractor at 2,4,6"
+    },
+    {
+      "id": "SC-04C",
+      "statement": "§11 no C handle name encodes relevance",
+      "pass": true,
+      "detail": "every handle is an opaque canonical identity"
+    },
+    {
+      "id": "SC-05C",
+      "statement": "§6 every C distractor body differs from every target body",
+      "pass": true,
+      "detail": "6 distractor statements vs 2 target statements"
+    },
+    {
+      "id": "SC-06C",
+      "statement": "§11 the C compiled order is DETERMINISTIC for the same candidate set",
+      "pass": true,
+      "detail": "identical across two independent installs"
+    },
+    {
+      "id": "SC-01D",
+      "statement": "§6 the D compile resolves EXACTLY 6 handles",
+      "pass": true,
+      "detail": "6 handle(s): @ctx/proof/pc-aa29545478d854699a3c25e4eda9ac59, @ctx/proof/pc-aff4b5fe0586987715ab24516cc6bb2a, @ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37, @ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de, @ctx/procedure/prc-5106647ee39acb94f1a8e73661342eda/0, @ctx/procedure/prc-f4c8bfb690972f7883dedc48707f2929/0"
+    },
+    {
+      "id": "SC-02D",
+      "statement": "§6 the role map covers EVERY D compiled handle",
+      "pass": true,
+      "detail": "1:TARGET 2:DISTRACTOR 3:DISTRACTOR 4:TARGET 5:TARGET 6:DISTRACTOR"
+    },
+    {
+      "id": "SC-03D",
+      "statement": "§6 the D candidate set is 3 TARGET + 3 DISTRACTOR in the compiled order",
+      "pass": true,
+      "detail": "target at 1,4,5; distractor at 2,3,6"
+    },
+    {
+      "id": "SC-04D",
+      "statement": "§11 no D handle name encodes relevance",
+      "pass": true,
+      "detail": "every handle is an opaque canonical identity"
+    },
+    {
+      "id": "SC-05D",
+      "statement": "§6 every D distractor body differs from every target body",
+      "pass": true,
+      "detail": "6 distractor statements vs 2 target statements"
+    },
+    {
+      "id": "SC-06D",
+      "statement": "§11 the D compiled order is DETERMINISTIC for the same candidate set",
+      "pass": true,
+      "detail": "identical across two independent installs"
+    }
+  ]
+}

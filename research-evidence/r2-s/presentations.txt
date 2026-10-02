@@ -1,0 +1,43 @@
+R2-S — THE TWO BROAD-INDEX PRESENTATIONS (six entries)
+
+S0 is the CURRENT PRODUCTION INDEX, byte-identical, over six selected handles:
+
+  Project context available to this attempt (READ-ONLY; never authority):
+    [proof] @ctx/proof/<claimId>
+    [proof] @ctx/proof/<claimId>
+    [reasoning] @ctx/reasoning/<cellId>/<claimId>
+    [reasoning] @ctx/reasoning/<cellId>/<claimId>
+    [procedure] @ctx/procedure/<procedureId>/<revision>
+    [procedure] @ctx/procedure/<procedureId>/<revision>
+
+  Use `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.
+  Do not invent handles: a handle that is not listed above will be refused.
+
+S1 keeps the SAME heading, the SAME order and the SAME two trailing instruction lines, and replaces
+ONLY the entry lines with the derived block below. Each entry names its handle EXACTLY ONCE:
+
+  [proof] @ctx/proof/<claimId>
+    Standing at compile: <owner value>
+    Freshness: <owner value>
+    Selected for this attempt: true
+    Preview: <bounded deterministic projection of the claim statement>
+
+  [reasoning] @ctx/reasoning/<cellId>/<claimId>
+    Active at compile: <owner value>
+    Selected for this attempt: true
+    Preview: <bounded deterministic projection of the admitted claim statement>
+
+  [procedure] @ctx/procedure/<procedureId>/<revision>
+    Standing at compile: <owner value>
+    Revision: <owner value>
+    Selected for this attempt: true
+    Applicability: <owner-declared applicability, bounded>
+    Limitations: <owner-declared limitations, bounded>
+
+The Procedure ruling is P-A: applicability + limitations only, with NO method-body preview.
+
+THE §5 CORRECTION: the R2-M M1 block ended with a redundant `    Handle: <handle>` line. It is REMOVED,
+so each selected handle appears exactly once in BOTH arms and the only difference between S0 and S1 is
+the metadata bytes.
+
+S1 carries NO new review clause and NO rewritten context-pull tool description (§9/§12).
