@@ -487,6 +487,14 @@ try {
   record.attemptId = view.attemptId ?? null;
 
   /* -- phase 4: what the worker was handed and what it did -------------------- */
+  /**
+   * §13: THE DURABLE SESSION ARTIFACT, READ ONCE. Both the delivery record and the §5 occurrence counts
+   * must describe the SAME artifact — reading it twice could select two different sessions and make the
+   * occurrence check answer a different question from the one `treatmentApplied` answers.
+   */
+  const session = readModelVisiblePrompt({ home: HOME, workerSessionHint: 'worker-' });
+  const sessionSection = session.found ? indexSectionOf(session.promptText) : null;
+
   if (existsSync(payloadSink)) {
     const payload = JSON.parse(readFileSync(payloadSink, 'utf8'));
     const handles = payload?.context?.compiled?.handles ?? [];
@@ -510,8 +518,6 @@ try {
     ].join(String.fromCharCode(10));
     const cutAt = promptText.indexOf(INDEX_HEADING);
     const ordinary = cutAt === -1 ? promptText : promptText.slice(0, cutAt);
-    const session = readModelVisiblePrompt({ home: HOME, workerSessionHint: 'worker-' });
-    const sessionSection = session.found ? indexSectionOf(session.promptText) : null;
     const receivedIndexText = sessionSection === null ? '' : sessionSection.replace(/^\n+/u, '');
     const receivedProductionText = productionIndexText.replace(/^\n+/u, '');
     record.session = {
@@ -631,7 +637,7 @@ try {
     const sessionIndexPresent = record.session?.indexSectionFound === true;
     const sessionHandles = record.session?.handlesInPrompt ?? [];
     const compiledOrder = record.prompt?.compiledHandleOrder ?? [];
-    const sessionPromptText = record.session?.found === true ? readModelVisiblePrompt({ home: HOME, workerSessionHint: 'worker-' }).promptText : '';
+    const sessionPromptText = session.found ? session.promptText : '';
     const occurrenceCounts = compiledOrder.map((handle) => ({ handle, role: roleOf(handle), count: sessionPromptText.split(handle).length - 1 }));
     record.handleOccurrences = occurrenceCounts;
     record.handleOccurrenceExact = occurrenceCounts.length === CANDIDATE_SET_SIZE && occurrenceCounts.every((entry) => entry.count === 1);
