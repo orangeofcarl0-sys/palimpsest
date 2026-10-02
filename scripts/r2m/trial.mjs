@@ -40,6 +40,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -48,6 +49,7 @@ import { INDEX_METADATA_ENV, INDEX_METADATA_MODES } from '../../host/dsh/lib/ind
 import { deriveCapital } from '../r2u/capital.mjs';
 import { detectKnownFailure } from '../r2u/known-failure.mjs';
 import { assertOracleInaccessible, buildWorld, judgeHidden, pairedStateDigest, SCENARIOS, sha256 } from '../r2u/scenarios.mjs';
+import { handlesInPrompt, indexSectionOf, readModelVisiblePrompt } from '../r2lr/session-probe.mjs';
 
 const REPO_ROOT = new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/u, '$1');
 
@@ -78,8 +80,7 @@ const DIR = join(RIG, TRIAL_ID);
 const PROJECT = join(DIR, 'repo');
 const STATE = join(DIR, 'state');
 const HOME = join(DIR, 'home');
-const OUT = join(DIR, 'out');
-const SCRATCH = join(DIR, 'judge');
+const OUT = join(DIR, 'out');const SCRATCH = join(DIR, 'judge');
 const PROFILE = `r2m${SCENARIO.id.toLowerCase()}${CONDITION.toLowerCase()}${String(BLOCK)}`;
 const REAL_DSH = dshHome();
 const DSH_BIN = dshBin();
@@ -367,7 +368,22 @@ writeFileSync(
 );
 
 const transcript = join(OUT, 'worker-transcript.txt');
-const payloadSink = join(OUT, 'payload.json');
+/**
+ * §10 (R2-LR): THE CONTROL PAYLOAD IS WRITTEN OUTSIDE THE WORKER-READABLE TREE.
+ *
+ * R2-U's one puller did not read its prompt: it listed the rig directory, found `<trial>/out/payload.json`
+ * — a path outside its world but inside a directory it could enumerate — and read the handle IDs from the
+ * host control payload. That is an out-of-band route to the very thing the index is supposed to deliver,
+ * and for R2-M it would be fatal: an M1 worker could satisfy the treatment without ever being influenced by
+ * the M1 index.
+ *
+ * The world lives at `<rig>/<trialId>/repo/.palimpsest/worlds/<attempt>`, so EVERY path under the rig is
+ * reachable by walking up. A sibling of the run directory would still be enumerable. The payload therefore
+ * moves to the SYSTEM TEMP directory — a different tree, not an ancestor of the world — under a per-trial
+ * name. It is still written on every trial, because it is the experiment's own control record; it is simply
+ * no longer on any path a worker can walk to.
+ */
+const payloadSink = join(tmpdir(), `palimpsest-r2m-control-${TRIAL_ID}.json`);
 const promptSink = join(OUT, 'rendered-prompt.json');
 const previousHome = process.env.DSH_HOME;
 const previousIndex = process.env[INDEX_METADATA_ENV];
@@ -453,15 +469,11 @@ try {
 
   /* -- phase 4: what the worker was handed and what it did -------------------- */
   /**
-   * §14: THE INDEX THE WORKER ACTUALLY RECEIVED, read from the worker's OWN telemetry rather than
-   * re-derived here. Re-deriving would be a second presentation path and could disagree with what the
-   * worker saw; the telemetry carries the exact rendered section the runner composed.
+   * §21: THE INDEX THE WORKER ACTUALLY RECEIVED comes from the DURABLE SESSION ARTIFACT, read below — not
+   * from the host's telemetry, and not re-derived here. The telemetry is still read for the DERIVATION
+   * facts (which handles the host materialized, how many entries it produced, the preview manifest), but
+   * the PRESENTATION claim is made against the session, because that is where the model receives it.
    */
-  const indexTelemetry = (() => {
-    if (!existsSync(transcript)) return null;
-    const line = readFileSync(transcript, 'utf8').split(/\r?\n/u).filter((entry) => entry.startsWith('PALIMPSEST_WORKER_INDEX')).pop() ?? '';
-    return line === '' ? null : JSON.parse(line.slice(line.indexOf('{')));
-  })();
   if (existsSync(payloadSink)) {
     const payload = JSON.parse(readFileSync(payloadSink, 'utf8'));
     const handles = payload?.context?.compiled?.handles ?? [];
@@ -486,23 +498,45 @@ try {
     const cutAt = promptText.indexOf(INDEX_HEADING);
     const ordinary = cutAt === -1 ? promptText : promptText.slice(0, cutAt);
     /**
-     * §19: THE INDEX THE WORKER RECEIVED. In M1 this is the derived section the runner rendered; in M0 it
-     * is the production section verbatim. The DIGEST of this is the index-presentation digest — the ONE
-     * component the pairing check requires to differ between the arms.
+     * §21: THE ACTUAL MODEL-VISIBLE INDEX, from the DURABLE SESSION ARTIFACT.
+     *
+     * This is the change the whole R2-LR stage exists to make. The blocked attempt derived this value from
+     * the host's INTENDED bytes, which is exactly how a total delivery failure produced a confident "the
+     * treatment was applied" — the host believed it had rendered an index and the harness believed the host.
+     * The session artifact is the boundary where the model receives the message, so the treatment digest is
+     * computed from THERE.
+     *
+     * `indexSection` is null when the section is absent from the real prompt, and the treatment precondition
+     * is what fails — rather than a fabricated section standing in for one that never arrived.
      */
-    const receivedIndexText = typeof indexTelemetry?.metadata?.renderedSection === 'string' ? indexTelemetry.metadata.renderedSection : productionIndexText;
+    const session = readModelVisiblePrompt({ home: HOME, workerSessionHint: 'worker-' });
+    const sessionSection = session.found ? indexSectionOf(session.promptText) : null;
+    const receivedIndexText = sessionSection === null ? '' : sessionSection.replace(/^\n+/u, '');
+    const receivedProductionText = productionIndexText.replace(/^\n+/u, '');
+    record.session = {
+      found: session.found,
+      artifactDigest: session.artifactDigest,
+      promptDigest: session.promptDigest,
+      messageCount: session.messages.length,
+      indexSectionFound: sessionSection !== null,
+      handlesInPrompt: session.found ? handlesInPrompt(session.promptText) : [],
+      note: session.note,
+    };
     record.prompt = {
       /**
        * §19: THE COMPONENTS ARE RECORDED SEPARATELY. One digest over the whole prompt would mask the
        * treatment — a changed index changes a whole-prompt digest in exactly the way a changed task text
        * would — so the ordinary task text and the index presentation each get their own digest, and the
        * pairing check compares the FIRST across the arms while requiring the SECOND to differ.
+       *
+       * §21: `indexPresentationDigest` is now the digest of the section found in the SESSION, so it is a
+       * measurement of delivery rather than a restatement of intent.
        */
       ordinaryTaskDigest: sha256(ordinary.replace(/^Base commit: .*$/mu, 'Base commit: <masked>')),
       indexPresentationDigest: sha256(receivedIndexText),
-      productionIndexDigest: sha256(productionIndexText),
+      productionIndexDigest: sha256(receivedProductionText),
       indexSection: receivedIndexText,
-      productionIndexSection: productionIndexText,
+      productionIndexSection: receivedProductionText,
       indexHandleCount: receivedIndexText.split(String.fromCharCode(10)).filter((line) => line.includes('@ctx/')).length,
       handlesInPayload: handles.map((entry) => `${entry.kind}:${entry.handle}`),
       pullToolName: payload?.contextPullTool?.name ?? null,
@@ -614,12 +648,42 @@ try {
       consistent: derivationPullOffset === derivedCount,
     });
     /**
-     * §14: THE TREATMENT-APPLIED PRECONDITION. An M1 trial whose derivation did not produce EVERY entry is
-     * not a clean treatment observation, and is classified rather than counted — counting it would compare
-     * a partially-presented index against the opaque one. M0 is the control: it derives nothing by design.
+     * §21/§26: THE TREATMENT-APPLIED PRECONDITION, PROVEN AT THE SESSION BOUNDARY.
+     *
+     * An earlier version asked only whether the host's derivation produced every entry — which the blocked
+     * attempt answered "yes" while the worker received nothing at all. §26 now permits a verdict only when
+     * the ACTUAL session shows the treatment, so this checks three separate facts:
+     *
+     *   M1  the derivation produced every entry AND the session's index section exists AND it differs from
+     *       the production index AND every selected handle is present in the real prompt
+     *   M0  the session's index section exists AND it IS the production index byte-for-byte (the control
+     *       must be the real control, not a fallback that happened to look like it)
+     *
+     * `treatmentApplied` is therefore a statement about the model's prompt, not about host intent.
      */
-    record.treatmentApplied = CONDITION === 'M0' ? 'NOT_APPLICABLE_CONTROL' : record.indexPresentation?.allDerived === true;
-    record.indexPrecondition = CONDITION === 'M0' ? 'CONTROL_OPAQUE_INDEX' : record.treatmentApplied === true ? 'MET' : 'TREATMENT_PRECONDITION_NOT_MET';
+    const sessionIndexPresent = record.session?.indexSectionFound === true;
+    const sessionHandles = record.session?.handlesInPrompt ?? [];
+    const selectedHandles = (record.prompt?.handlesInPayload ?? []).map((entry) => String(entry).split(':').slice(1).join(':'));
+    const allSelectedInSession = selectedHandles.length > 0 && selectedHandles.every((handle) => sessionHandles.includes(handle));
+    const sessionIsProduction = record.prompt?.indexPresentationDigest === record.prompt?.productionIndexDigest;
+    const derivationComplete = record.indexPresentation?.allDerived === true;
+    record.treatmentEvidence = Object.freeze({
+      sessionIndexPresent,
+      sessionIsProduction,
+      derivationComplete,
+      allSelectedInSession,
+      selectedHandleCount: selectedHandles.length,
+      sessionHandleCount: sessionHandles.length,
+    });
+    if (CONDITION === 'M1') {
+      record.treatmentApplied = sessionIndexPresent && !sessionIsProduction && derivationComplete && allSelectedInSession;
+    } else {
+      /** §6: the control's own precondition is that the model-visible index IS the production index. */
+      record.treatmentApplied = sessionIndexPresent && sessionIsProduction;
+    }
+    record.indexPrecondition = record.treatmentApplied === true
+      ? (CONDITION === 'M1' ? 'MET' : 'CONTROL_OPAQUE_INDEX')
+      : (CONDITION === 'M1' ? 'TREATMENT_PRECONDITION_NOT_MET' : 'CONTROL_PRECONDITION_NOT_MET');
     /** §23: the confidentiality facts, read from the worker's own telemetry — never assumed. */
     record.confidentiality = {
       capacity: capacityLine === '' ? null : JSON.parse(capacityLine.slice(capacityLine.indexOf('{'))),
