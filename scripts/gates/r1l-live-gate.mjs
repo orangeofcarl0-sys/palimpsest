@@ -32,6 +32,15 @@ import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { dshBin, dshHome, dshVersion, gateRepoRoot, gateRoot, installHostBundle } from "./env.mjs";
+/**
+ * R2-LR §7: THE MODEL-VISIBLE BOUNDARY.
+ *
+ * This gate previously asserted on the host's INTENDED bytes and on its own telemetry, and reported the
+ * index as delivered — while the host adapter was dropping `contextIndexText` entirely, so no worker ever
+ * saw it. An assertion that cannot observe the model-visible message cannot prove delivery. This probe
+ * reads the durable DSH session artifact, which IS the model-visible boundary.
+ */
+import { handlesInPrompt, indexSectionOf, readModelVisiblePrompt } from "../r2lr/session-probe.mjs";
 
 const REPO = gateRepoRoot();
 const RUN = gateRoot();
@@ -430,6 +439,27 @@ async function runCondition(condition, nonces) {
       record(`${condition} NONCES quoted in the worker's OWN report`, reportedByWorker.length === 0 ? "none" : `${reportedByWorker.length} (this is the accessibility proof)`);
     }
 
+    /**
+     * R2-LR §7: THE MODEL-VISIBLE SESSION BOUNDARY.
+     *
+     * Everything above reads either the payload (what the host intended to send) or the worker's telemetry
+     * (what the worker chose to report). Neither can prove the MODEL received the index, and that gap is
+     * exactly how this gate reported a delivery that never happened. So the delivery claim is now made
+     * against the durable DSH session artifact — the user message the model was actually given.
+     */
+    const session = readModelVisiblePrompt({ home: COND_HOME, workerSessionHint: "worker-" });
+    const sessionPrompt = session.promptText;
+    const sessionSection = indexSectionOf(sessionPrompt);
+    const sessionHandles = handlesInPrompt(sessionPrompt);
+    const expectedHandles = handles.map((entry) => entry.handle);
+    record(`${condition} session artifact found`, session.found ? `${session.note}` : `NO SESSION: ${session.note}`);
+    record(`${condition} index heading at the model-visible boundary`, sessionSection === null ? "ABSENT" : "present");
+    record(`${condition} handles at the model-visible boundary`, sessionHandles.length === 0 ? "(none)" : sessionHandles.join(", "));
+    record(`${condition} unselected handles at the model-visible boundary`, expectedHandles.length === 0 ? "(none expected)" : String(sessionHandles.filter((handle) => !expectedHandles.includes(handle)).length));
+    /** §6/§7: the model-visible section must BE the product's bytes, not a resemblance of them. */
+    record(`${condition} model-visible index equals the payload index`, sessionSection !== null && sessionSection.replace(/^\n+/u, "") === indexText.replace(/^\n+/u, "") ? "yes" : expectedHandles.length === 0 ? "n/a (no capital selected)" : "NO");
+    record(`${condition} capital body leaked into the model-visible prompt`, sessionPrompt.includes(nonces.proof) || sessionPrompt.includes(nonces.reasoning) || sessionPrompt.includes(nonces.procedure) ? "*** LEAK ***" : "none");
+
     /* -- Phase 5: did the worker obtain the protected values? -------------------- */
     const world = view.attemptId === undefined ? null : (() => { try { return controller.observeAttemptResult(view.attemptId); } catch { return null; } })();
     if (world !== null && world !== undefined) {
@@ -620,7 +650,26 @@ async function main() {
   const of = (key) => findings.find(([k]) => k === key)?.[1] ?? "";
   for (const condition of CONDITIONS) {
     // §25: the pull tool exists in EVERY condition, so the R1 comparison is about capital, not tools.
-    required.push([`${condition}: pull tool present`, of(`${condition} index in prompt text`) !== "" || true]);
+    /**
+     * R2-LR §7: THE VACUOUS ASSERTION IS REPLACED.
+     *
+     * The previous form was `of(...) !== "" || true`, which is unconditionally true and therefore asserted
+     * nothing — it is the assertion that let a total delivery failure pass as PASS for the whole R1 line.
+     * It is replaced by claims about the MODEL-VISIBLE session artifact, which is the only boundary where
+     * delivery can be observed.
+     */
+    const expectedHere = condition === "C0" ? [] : condition === "C1" ? 2 : 3;
+    required.push([`${condition}: a durable session artifact carrying the user message was found`, of(`${condition} session artifact found`).startsWith("3 user message") || /^\d+ user message/u.test(of(`${condition} session artifact found`))]);
+    if (condition === "C0") {
+      /** §25: with no capital selected, the section must still be present but EMPTY — that is the treatment. */
+      required.push([`${condition}: the model-visible prompt carries the index section, empty`, of(`${condition} index heading at the model-visible boundary`) === "present" && of(`${condition} handles at the model-visible boundary`) === "(none)"]);
+    } else {
+      required.push([`${condition}: §7 the MODEL-VISIBLE prompt contains the index heading`, of(`${condition} index heading at the model-visible boundary`) === "present"]);
+      required.push([`${condition}: §7 every selected handle is in the MODEL-VISIBLE prompt`, of(`${condition} handles at the model-visible boundary`).split(", ").filter((handle) => handle.startsWith("@ctx/")).length === expectedHere]);
+      required.push([`${condition}: §7 the model-visible index IS the product's bytes`, of(`${condition} model-visible index equals the payload index`) === "yes"]);
+    }
+    required.push([`${condition}: §7 no unselected handle is in the model-visible prompt`, of(`${condition} unselected handles at the model-visible boundary`) === "0"]);
+    required.push([`${condition}: §7 no capital body is in the model-visible prompt`, of(`${condition} capital body leaked into the model-visible prompt`) === "none"]);
     required.push([`${condition}: no nonce leaked into the index`, of(`${condition} NONCE LEAK into index`) === "none"]);
     required.push([`${condition}: no nonce in the initial task text`, of(`${condition} NONCES in the initial task text`).startsWith("none")]);
   }

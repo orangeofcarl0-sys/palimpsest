@@ -648,13 +648,19 @@ async function runWorker(ctx, deps) {
           indexMetadata = Object.freeze({ mode: indexMode, mechanism: PREVIEW_MECHANISM, procedureRuling: PROCEDURE_RULING, selectedCount: (environment.context?.compiled?.handles ?? []).length, derivedCount: 0, failureCount: 0, derivationHandles: [], derivationPullOffset: 0, failures: [], manifest: [], elapsedMs: 0, allDerived: false });
         }
         /**
-         * §14/§19: THE EXACT PRESENTATION BYTES. The rendered index section the worker receives is recorded
-         * so the harness can freeze its digest before any trial and so the leakage gate can inspect what the
-         * worker actually saw. This is the INDEX, which is model-visible by design — not a capital body. The
-         * bodies stay pull-only: only the bounded projection appears here, and the projection is itself the
-         * treatment under test.
+         * §14/§19/§22: THE INDEX-PRESENTATION DIGEST.
+         *
+         * The telemetry carries the arm, the derived entries' manifest (handle, kind, both provenances,
+         * source and preview digests, lengths, truncation) and a digest of the section — but NOT the section
+         * TEXT. §22 resolves a real contradiction here: an earlier version stored `renderedSection` whole
+         * while its own comment claimed the line carried no preview text. The full bytes belong to the
+         * DURABLE SESSION ARTIFACT, which is the model-visible boundary and therefore the authoritative
+         * record; duplicating them into machine telemetry would be both redundant and misleading.
+         *
+         * The digest stays, so a reader can check that the session's section hashes to what the host says it
+         * rendered — and if the two ever disagree, the session is right.
          */
-        indexMetadata = Object.freeze({ ...indexMetadata, renderedSection: indexTextForPrompt, renderedSectionDigest: indexSectionDigest(indexTextForPrompt) });
+        indexMetadata = Object.freeze({ ...indexMetadata, renderedSectionDigest: indexSectionDigest(indexTextForPrompt) });
         agent.followup(
           userMessage(
             applyEfficacyReview(applyAffordance(workTask(environment.context, indexTextForPrompt), affordanceMode), efficacyReview),
