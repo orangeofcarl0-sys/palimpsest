@@ -25,7 +25,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 
 import { blockOrder, CONDITIONS, EXPECTED_TRIALS, PROTOCOL_SEED, trialPlan } from './design.mjs';
-import { isolationCheck, normalizeTrial } from './analyse.mjs';
+import { deriveCapital } from '../r2u/capital.mjs';
 import { SCENARIOS } from '../r2u/scenarios.mjs';
 
 const REPO_ROOT = new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/u, '$1');
@@ -137,74 +137,74 @@ check('MA-21', '§11 the Procedure presentation ruling is recorded (P-A, not P-B
 check('MA-22', '§8 the two provenances are distinct and both are recorded', metadata.SEMANTIC_PROVENANCE.PROCEDURE === 'OWNER_DECLARED' && metadata.SEMANTIC_PROVENANCE.PROOF === 'HOST_PROJECTED_FROM_OWNER_CONTENT' && metadata.MATERIALIZATION_PROVENANCE === 'GOVERNED_BODY_FETCH', 'owner-declared vs host-projected, both materialized by governed body fetch');
 check('MA-23', '§7/§12 the seam exports no relevance, priority or salience scoring surface', Object.keys(metadata).every((name) => !/(relevance|priority|salience|score)/iu.test(name)), `exports: ${Object.keys(metadata).join(', ')}`);
 
-/* ---------------------------------------------------------------- §32 the pilot pair */
+/* ---------------------------------------------------------------- §18 readiness proof (NO C/D pilot) */
 
-process.stdout.write(`${NL}--- §32 the pilot M0/M1 pair per scenario ---${NL}`);
-const pilotDir = join(PILOT_RIG, 'runs');
-mkdirSync(pilotDir, { recursive: true });
-const pilots = [];
-for (const scenarioId of ['C', 'D']) {
-  for (const condition of ['M0', 'M1']) {
-    const block = 500 + (scenarioId === 'D' ? 10 : 0);
-    const trialId = `${scenarioId}-${condition}-b${String(block)}r0`;
-    const recordPath = join(pilotDir, trialId, 'out', 'trial.json');
-    if (!existsSync(recordPath)) {
-      process.stdout.write(`  running pilot ${trialId}…${NL}`);
-      try {
-        execFileSync(process.execPath, [join(REPO_ROOT, 'scripts', 'r2m', 'trial.mjs'), `--scenario=${scenarioId}`, `--condition=${condition}`, `--block=${String(block)}`, '--repetition=0', `--rig=${pilotDir}`], {
-          cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024,
-        });
-      } catch (error) {
-        process.stdout.write(`  pilot ${trialId} raised: ${String(error?.message ?? error).slice(0, 200)}${NL}`);
-      }
-    }
-    if (existsSync(recordPath)) pilots.push(JSON.parse(readFileSync(recordPath, 'utf8')));
-  }
-}
-check('MA-24', 'all four pilot trials produced a record', pilots.length === 4, `${String(pilots.length)}/4 records`);
+process.stdout.write(`${NL}--- §18 readiness proof: dummy-fixture real-DSH session, NO C/D pilot ---${NL}`);
+/**
+ * §18 (R2-LR): NO STOCHASTIC SCENARIO C OR D PILOT BEFORE THE RESTARTED MATRIX.
+ *
+ * The blocked attempt ran four C/D pilots, which both violated the no-pilot discipline and — decisively —
+ * received no M1 treatment at all. §18 permits a readiness proof built from deterministic tests, the
+ * dummy-fixture real-DSH session proof, security gates and exact byte inspection. So the readiness evidence
+ * here is the ALREADY-RUN last-mile proof, whose fixture is a dedicated dummy project, never C or D.
+ */
+const lastMileRecord = join(REPO_ROOT, 'research-evidence', 'r2-lr', 'last-mile-proof.json');
+const lastMile = existsSync(lastMileRecord) ? JSON.parse(readFileSync(lastMileRecord, 'utf8')) : null;
+check('MA-24', '§18 the dummy-fixture real-DSH session proof exists and PASSED', lastMile !== null && lastMile.results.every((entry) => entry.pass), lastMile === null ? 'no last-mile record — run scripts/r2lr/last-mile-proof.mjs' : `${String(lastMile.results.length)}/${String(lastMile.results.length)} assertions`);
+check('MA-25', '§18 the proof fixture is a DUMMY project, not Scenario C or D', lastMile !== null && Array.isArray(lastMile.handlesInPayload) && lastMile.handlesInPayload.every((handle) => handle.startsWith('@ctx/')), lastMile === null ? 'no record' : 'the proof used the r2-lr dummy fixture with per-run nonces');
 
-const pilotNormalized = pilots.map(normalizeTrial);
-const m1Pilots = pilotNormalized.filter((trial) => trial.condition === 'M1');
-const m0Pilots = pilotNormalized.filter((trial) => trial.condition === 'M0');
-check('MA-25', '§5/§8: every pilot M1 trial DERIVED every selected entry through the governed path', m1Pilots.length === 2 && m1Pilots.every((trial) => trial.treatmentApplied && trial.derivedCount > 0), m1Pilots.map((trial) => `${trial.trialId} ${String(trial.derivedCount)} entries`).join(' | '));
-check('MA-26', '§6/§19: every pilot M0 trial is byte-identical to the production index', m0Pilots.length === 2 && m0Pilots.every((trial) => trial.indexPresentationDigest === trial.productionIndexDigest), m0Pilots.map((trial) => `${trial.trialId} ${trial.indexPresentationDigest === trial.productionIndexDigest ? 'identical' : 'DIFFERS'}`).join(' | '));
-check('MA-27', '§22: the host derivation is NOT counted as a worker pull in any pilot', pilotNormalized.every((trial) => trial.pullAccountingConsistent === true), pilotNormalized.map((trial) => `${trial.trialId} offset=${String(trial.derivationPullOffset)} worker=${String(trial.pulledCount)}`).join(' | '));
-check('MA-28', '§19: the pilot pairs are not confounded (invariants equal, index differs)', (() => {
-  const blocks = isolationCheck(pilotNormalized);
-  return blocks.length === 2 && blocks.every((block) => !block.confounded);
-})(), isolationCheck(pilotNormalized).map((block) => `${block.scenario} ${block.confounded ? `CONFOUNDED: ${block.differences.join('; ')}` : 'clean'}`).join(' | '));
+/**
+ * §19/§21: THE TREATMENT SEAM, checked deterministically rather than by a pilot. The M0 identity property
+ * and the M1 rendering property are the two facts a pilot would have demonstrated, and both are already
+ * pinned by the deterministic suite — so the pilot adds cost without adding evidence.
+ */
+const sampleProductionIndex = ['', 'Project context available to this attempt (READ-ONLY; never authority):', '  [proof] @ctx/proof/abc', '', 'Use `palimpsest_worker_context_pull` with exactly one listed handle when the body would help.', 'Do not invent handles: a handle that is not listed above will be refused.'].join(NL);
+check('MA-26', '§6/§19 M0 is the identity: an empty entry list leaves the index byte-identical', metadata.renderIndexMetadata(sampleProductionIndex, []) === sampleProductionIndex, 'verified deterministically; the session-boundary version is proven by the last-mile gate');
+const sampleEntries = [metadata.deriveIndexEntry({ handle: '@ctx/proof/pc-1', kind: 'proof' }, { body: { statement: 'x'.repeat(400) }, binding: { standing_at_compile: 'SUPPORTED', freshness_at_compile: 'fresh' } })];
+const renderedM1 = metadata.renderIndexMetadata(sampleProductionIndex, sampleEntries);
+check('MA-27', '§5/§8 M1 replaces the entry lines and preserves the heading and instructions', renderedM1.includes('Standing at compile:') && renderedM1.includes('Selected for this attempt: true') && renderedM1.includes('Do not invent handles'), 'derived block present; boundary lines unchanged');
+check('MA-28', '§22 the runner subtracts the host derivation offset before reporting worker pulls', readFileSync(join(REPO_ROOT, 'host', 'dsh', 'lib', 'runner.js'), 'utf8').includes('derivationPullOffset === 0 ? allPulled : allPulled.slice(derivationPullOffset)'), 'the worker pull telemetry excludes the host derivation');
 
 /* ---------------------------------------------------------------- §14 the preview leakage gate */
 
 process.stdout.write(`${NL}--- §14 the preview leakage gate (mechanical inspection of the rendered M1 material) ---${NL}`);
 const leakage = (() => {
   const problems = [];
-  const rendered = m1Pilots.map((trial) => ({ trialId: trial.trialId, section: trial.indexSection }));
-  for (const entry of rendered) {
-    if (entry.section.includes('@ctx/') === false) problems.push(`${entry.trialId}: the M1 section carries no handle`);
-    /** §14: no full capital body, no hidden acceptance, no oracle may appear in the rendered index. */
-    for (const scenarioId of ['C', 'D']) {
-      const scenario = SCENARIOS[scenarioId];
-      if (entry.section.includes(scenario.knownFailure ?? '\u0000')) problems.push(`${entry.trialId}: the rendered index contains the scenario's known-failure description`);
+  /** §14: the rendered M1 material is checked against the REAL capital statements of both scenarios. */
+  const capital = deriveCapital();
+  for (const scenarioId of ['C', 'D']) {
+    const entry = capital[scenarioId];
+    if (entry === undefined) continue;
+    const entries = [
+      metadata.deriveIndexEntry({ handle: '@ctx/proof/pc-x', kind: 'proof' }, { body: { statement: entry.proof.statement }, binding: {} }),
+      metadata.deriveIndexEntry({ handle: '@ctx/reasoning/cell-x/cl-x', kind: 'reasoning' }, { body: { statement: entry.reasoning.statement }, binding: {} }),
+    ];
+    const section = metadata.renderIndexMetadata(sampleProductionIndex, entries);
+    if (section.includes(entry.proof.statement)) problems.push(`${scenarioId}: the rendered index contains the complete proof statement`);
+    if (section.includes(entry.reasoning.statement)) problems.push(`${scenarioId}: the rendered index contains the complete reasoning statement`);
+    /** §14: the projection must actually TRUNCATE these real statements, not pass them through. */
+    for (const manifestEntry of entries.flatMap((entry2) => metadata.manifestEntry(entry2))) {
+      if (manifestEntry.truncated !== true) problems.push(`${scenarioId}: ${manifestEntry.field} was not truncated although the source exceeds the budget`);
     }
   }
-  return { problems, rendered };
+  return { problems, rendered: 2 };
 })();
-check('MA-29', '§14: the rendered M1 index leaks no hidden acceptance, oracle or full body', leakage.problems.length === 0, leakage.problems.length === 0 ? `${String(leakage.rendered.length)} M1 section(s) inspected, clean` : leakage.problems.join('; '));
+check('MA-29', '§14: the rendered M1 index leaks no hidden acceptance, oracle or full body', leakage.problems.length === 0, leakage.problems.length === 0 ? `${String(leakage.rendered)} scenario(s) inspected, clean, and every real statement truncated` : leakage.problems.join('; '));
 
 /* ---------------------------------------------------------------- §32 the harness digest */
 
-process.stdout.write(`${NL}--- §32 the harness digest the pilot ran under ---${NL}`);
+process.stdout.write(`${NL}--- §32 the harness digest the readiness proof ran under ---${NL}`);
 const harnessDigests = {
   'host/dsh/lib/index-metadata.js': digestOf(metadataPath),
   'host/dsh/lib/runner.js': digestOf(join(REPO_ROOT, 'host', 'dsh', 'lib', 'runner.js')),
   'scripts/r2m/design.mjs': digestOf(join(REPO_ROOT, 'scripts', 'r2m', 'design.mjs')),
   'scripts/r2m/trial.mjs': digestOf(join(REPO_ROOT, 'scripts', 'r2m', 'trial.mjs')),
+  'scripts/r2lr/session-probe.mjs': digestOf(join(REPO_ROOT, 'scripts', 'r2lr', 'session-probe.mjs')),
 };
 mkdirSync(PILOT_RIG, { recursive: true });
 writeFileSync(join(PILOT_RIG, 'harness-digests.json'), `${JSON.stringify(harnessDigests, null, 2)}\n`, 'utf8');
-writeFileSync(join(PILOT_RIG, 'pilot.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R2-M', trials: pilotNormalized, leakage: leakage.problems }, null, 2)}\n`, 'utf8');
-check('MA-30', 'the harness digests the pilot ran under are recorded', Object.values(harnessDigests).every((digest) => /^[0-9a-f]{64}$/u.test(digest)), `${String(Object.keys(harnessDigests).length)} files digested (a pilot does not count if the harness changes afterwards)`);
+writeFileSync(join(PILOT_RIG, 'readiness.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R2-M', note: '§18 readiness: NO stochastic C/D pilot was run before the restarted matrix', lastMile: lastMile === null ? null : { assertions: lastMile.results.length, failed: lastMile.results.filter((entry) => !entry.pass).length }, leakage: leakage.problems }, null, 2)}\n`, 'utf8');
+check('MA-30', 'the harness digests the readiness proof ran under are recorded', Object.values(harnessDigests).every((digest) => /^[0-9a-f]{64}$/u.test(digest)), `${String(Object.keys(harnessDigests).length)} files digested`);
 
 /* ---------------------------------------------------------------- report */
 
