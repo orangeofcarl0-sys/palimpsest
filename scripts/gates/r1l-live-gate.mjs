@@ -668,7 +668,13 @@ async function main() {
       required.push([`${condition}: §7 every selected handle is in the MODEL-VISIBLE prompt`, of(`${condition} handles at the model-visible boundary`).split(", ").filter((handle) => handle.startsWith("@ctx/")).length === expectedHere]);
       required.push([`${condition}: §7 the model-visible index IS the product's bytes`, of(`${condition} model-visible index equals the payload index`) === "yes"]);
     }
-    required.push([`${condition}: §7 no unselected handle is in the model-visible prompt`, of(`${condition} unselected handles at the model-visible boundary`) === "0"]);
+    /**
+     * §7: NO UNSELECTED HANDLE. For C0 nothing is selected, so the requirement is that the model-visible
+     * prompt contains NO handle at all — recorded as "(none expected)" by the observation line, which is
+     * why this assertion accepts that literal for C0 rather than comparing against "0".
+     */
+    const unselectedObservation = of(`${condition} unselected handles at the model-visible boundary`);
+    required.push([`${condition}: §7 no unselected handle is in the model-visible prompt`, condition === "C0" ? of(`${condition} handles at the model-visible boundary`) === "(none)" : unselectedObservation === "0"]);
     required.push([`${condition}: §7 no capital body is in the model-visible prompt`, of(`${condition} capital body leaked into the model-visible prompt`) === "none"]);
     required.push([`${condition}: no nonce leaked into the index`, of(`${condition} NONCE LEAK into index`) === "none"]);
     required.push([`${condition}: no nonce in the initial task text`, of(`${condition} NONCES in the initial task text`).startsWith("none")]);

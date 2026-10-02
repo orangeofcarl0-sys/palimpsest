@@ -14,13 +14,26 @@
  * and to be honest that it proves nothing beyond that class.
  */
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
+
+/**
+ * §23 (GR-03/GR-04): THE COMPATIBILITY RESULT IS RECORDED.
+ *
+ * GATE R must not ASSUME the backward-compatibility proof passed — it reads a record of the last run. So the
+ * two load-bearing compatibility facts are written here, from the same assertions the tests below make, and
+ * GATE R refuses to close if the record is missing or false.
+ */
+function recordSuiteResult(facts: Record<string, boolean>): void {
+  const dir = join(REPO_ROOT, "research-evidence", "r2-lr");
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(join(dir, "deterministic-suite.json"), `${JSON.stringify({ schemaVersion: 1, stage: "R2-LR", suite: "test/r2lr_last_mile.test.ts", recordedAt: new Date().toISOString(), ...facts }, null, 2)}\n`, "utf8");
+}
 
 /**
  * The forwarding rule, extracted from `host/dsh/lib/index.js` and exercised directly.
@@ -100,6 +113,16 @@ describe("R2-LR §3/§5 — the host forwards the worker context index", () => {
     for (const forbidden of ["renderWorkerContextIndex", "compiled.handles", "readClaim", "readRevision", "relevance", "priority", "salience", "JSON.stringify"]) {
       expect(statement).not.toContain(forbidden);
     }
+  });
+
+  it("§23 records the compatibility facts GATE R reads", () => {
+    // The record is derived from the SAME assertions above, so it cannot claim a result the tests do not
+    // produce: the absent case forwards nothing, and every malformed shape is refused.
+    const absentForwarded = Object.hasOwn(forward({ context: {} }), "contextIndexText");
+    const malformedForwarded = [null, undefined, 42, true, { index: "x" }, ["x"]].some((value) => Object.hasOwn(forward({ contextIndexText: value }), "contextIndexText"));
+    recordSuiteResult({ oldPayloadCompatible: absentForwarded === false, malformedRefused: malformedForwarded === false });
+    expect(absentForwarded).toBe(false);
+    expect(malformedForwarded).toBe(false);
   });
 });
 
