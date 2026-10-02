@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-M",
+  "title": "Decision-Relevant Capital Index",
+  "startingHead": "adf16152bd9c1183db18b89bd80e4b1ceb94dab0",
+  "branch": "r2-m-decision-relevant-index",
+  "design": {
+    "kind": "2-condition randomized blocks, capital-present in BOTH arms; the index presentation is the only variable",
+    "conditions": [
+      "M0",
+      "M1"
+    ],
+    "arms": {
+      "M0": "the current production presentation: [kind] handle, no extra metadata, no extra reminder",
+      "M1": "the same selected capital and handles, plus owner-grounded decision metadata and a bounded deterministic preview"
+    },
+    "repetitions": 5,
+    "scenarios": [
+      "C",
+      "D"
+    ],
+    "expectedTrials": 20,
+    "seed": "0x524d0301",
+    "blockOrder": [
+      {
+        "scenario": "C",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "M1",
+              "M0"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "M1",
+              "M0"
+            ]
+          }
+        ]
+      },
+      {
+        "scenario": "D",
+        "blocks": [
+          {
+            "block": 0,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          },
+          {
+            "block": 1,
+            "order": [
+              "M1",
+              "M0"
+            ]
+          },
+          {
+            "block": 2,
+            "order": [
+              "M1",
+              "M0"
+            ]
+          },
+          {
+            "block": 3,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          },
+          {
+            "block": 4,
+            "order": [
+              "M0",
+              "M1"
+            ]
+          }
+        ]
+      }
+    ],
+    "everyTrialCapitalPresent": true
+  },
+  "indexMechanism": {
+    "mechanism": "EXPERIMENTAL_HOST_DERIVED_PREVIEW",
+    "envVar": "PALIMPSEST_R2M_INDEX",
+    "channel": "the worker-local pull tool and the SAME parent resolver (AllowedPullHandles + attempt-bound fetchContext) R2-E proved; no second fetch path, no direct backing-store read, no global asset lookup",
+    "timing": "the M1 derivation runs before the first engineering turn exists; its pulls are subtracted from the worker pull telemetry so a derivation pull can never count as voluntary uptake"
+  },
+  "projectionAlgorithm": {
+    "steps": [
+      "take the existing canonical human-readable content field",
+      "normalize CRLF to LF",
+      "trim outer whitespace only",
+      "retain the first N Unicode code points",
+      "if truncated, append one fixed marker"
+    ],
+    "marker": "…",
+    "budget": {
+      "proof": 160,
+      "reasoning": 160,
+      "procedureApplicability": 120,
+      "procedureLimitations": 120
+    },
+    "forbidden": [
+      "summarize",
+      "extract important sentences",
+      "rank clauses",
+      "select keywords",
+      "ask an LLM",
+      "scenario-specific regex",
+      "reorder"
+    ],
+    "procedureRuling": "P-A"
+  },
+  "provenance": {
+    "semanticProvenance": {
+      "PROOF": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "REASONING": "HOST_PROJECTED_FROM_OWNER_CONTENT",
+      "PROCEDURE": "OWNER_DECLARED"
+    },
+    "materializationProvenance": "GOVERNED_BODY_FETCH",
+    "note": "Procedure applicability/limitations are OWNER-DECLARED fields, but they live inside revision.content, so they still require governed body materialization. Proof/Reasoning previews are HOST-PROJECTED from owner content. The two must remain distinguishable in analysis."
+  },
+  "primaryMetric": "P(any governed pull | selected capital) per arm, per scenario",
+  "secondaryMetrics": [
+    "time to first pull",
+    "observable actions before first pull",
+    "pull before first edit",
+    "pull before first visible test",
+    "kind(s) pulled",
+    "task efficacy association"
+  ],
+  "preDeclaredVerdicts": [
+    "R2-M DECISION RELEVANCE: REPLICATED",
+    "R2-M DECISION RELEVANCE: PARTIAL",
+    "R2-M DECISION RELEVANCE: NOT_IMPROVED"
+  ],
+  "verdictCriteria": {
+    "REPLICATED": "both scenarios: M1's governed-pull rate is strictly greater than M0's, with at least one actual M1 pull in each scenario",
+    "PARTIAL": "exactly one scenario clearly increases, or both show weak/noisy directional improvement",
+    "NOT_IMPROVED": "neither scenario shows increased voluntary governed uptake"
+  },
+  "notAnEfficacyStage": "R2-M does not test whether capital helps when consumed; R2-E established that within its scope. R2-M tests whether decision-relevant presentation increases VOLUNTARY governed uptake.",
+  "frozenPriorEvidence": {
+    "r1r": {
+      "trials": 30,
+      "capitalAvailable": true,
+      "governedPulls": "0/30"
+    },
+    "r2u": {
+      "trials": 40,
+      "verdict": "NOT_IMPROVED",
+      "governedPulls": "1/40",
+      "capitalPresentPulls": "1/20",
+      "explicitReviewCapitalPresentPulls": "0/10"
+    },
+    "r2e": {
+      "trials": 20,
+      "verdict": "REPLICATED",
+      "mechanism": "HOST_MEDIATED_PREWORK",
+      "note": "guaranteed consumption, not voluntary; the bundle (Proof+Reasoning+Procedure) was compared against no capital, so this is not a Procedure marginal-efficacy result"
+    }
+  },
+  "indexHypothesis": {
+    "id": "H-index",
+    "statement": "kind + opaque identity + handle does not provide enough expected-value information for a worker to decide that pull is worth its cost",
+    "status": "UNDER TEST IN THIS STAGE — M0 is the opaque index, M1 adds owner-grounded decision metadata"
+  },
+  "noEfficacyCausalClaim": "pullers are self-selected and not randomized, so any pulled-vs-not-pulled task difference is an association only"
+}

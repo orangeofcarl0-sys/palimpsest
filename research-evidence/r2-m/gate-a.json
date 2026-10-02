@@ -7,7 +7,7 @@
       "id": "MA-01",
       "statement": "the baseline commit is an ancestor of HEAD",
       "pass": true,
-      "detail": "baseline adf16152 → HEAD adf16152"
+      "detail": "baseline adf16152 → HEAD 4860a292"
     },
     {
       "id": "MA-02",
@@ -143,51 +143,52 @@
     },
     {
       "id": "MA-24",
-      "statement": "all four pilot trials produced a record",
+      "statement": "§18 the dummy-fixture real-DSH session proof exists and PASSED",
       "pass": true,
-      "detail": "4/4 records"
+      "detail": "12/12 assertions"
     },
     {
       "id": "MA-25",
-      "statement": "§5/§8: every pilot M1 trial DERIVED every selected entry through the governed path",
+      "statement": "§18 the proof fixture is a DUMMY project, not Scenario C or D",
       "pass": true,
-      "detail": "C-M1-b500r0 3 entries | D-M1-b510r0 3 entries"
+      "detail": "the proof used the r2-lr dummy fixture with per-run nonces"
     },
     {
       "id": "MA-26",
-      "statement": "§6/§19: every pilot M0 trial is byte-identical to the production index",
+      "statement": "§6/§19 M0 is the identity: an empty entry list leaves the index byte-identical",
       "pass": true,
-      "detail": "C-M0-b500r0 identical | D-M0-b510r0 identical"
+      "detail": "verified deterministically; the session-boundary version is proven by the last-mile gate"
     },
     {
       "id": "MA-27",
-      "statement": "§22: the host derivation is NOT counted as a worker pull in any pilot",
+      "statement": "§5/§8 M1 replaces the entry lines and preserves the heading and instructions",
       "pass": true,
-      "detail": "C-M0-b500r0 offset=0 worker=0 | C-M1-b500r0 offset=3 worker=0 | D-M0-b510r0 offset=0 worker=0 | D-M1-b510r0 offset=3 worker=0"
+      "detail": "derived block present; boundary lines unchanged"
     },
     {
       "id": "MA-28",
-      "statement": "§19: the pilot pairs are not confounded (invariants equal, index differs)",
-      "pass": false,
-      "detail": "C_REPLAY_SAFE_REDUCER CONFOUNDED: the index presentation is identical across conditions — the treatment was not applied | D_INCREMENTAL_CACHE_INVALIDATION CONFOUNDED: the index presentation is identical across conditions — the treatment was not applied"
+      "statement": "§22 the runner subtracts the host derivation offset before reporting worker pulls",
+      "pass": true,
+      "detail": "the worker pull telemetry excludes the host derivation"
     },
     {
       "id": "MA-29",
       "statement": "§14: the rendered M1 index leaks no hidden acceptance, oracle or full body",
       "pass": true,
-      "detail": "2 M1 section(s) inspected, clean"
+      "detail": "2 scenario(s) inspected, clean, and every real statement truncated"
     },
     {
       "id": "MA-30",
-      "statement": "the harness digests the pilot ran under are recorded",
+      "statement": "the harness digests the readiness proof ran under are recorded",
       "pass": true,
-      "detail": "4 files digested (a pilot does not count if the harness changes afterwards)"
+      "detail": "5 files digested"
     }
   ],
   "harnessDigests": {
     "host/dsh/lib/index-metadata.js": "80846a0b464ea3f5a5764e082eb47add03240a63a656c23f8670731c62154d35",
-    "host/dsh/lib/runner.js": "8b6d6a6c6981a1d17b762959535602eaebc39528dacdf7349b945bbebd8287a1",
+    "host/dsh/lib/runner.js": "4841d6e89ef31fa6ee1b3a2e4cb304d615cd99f69e72dd43d680edd078a4a3a1",
     "scripts/r2m/design.mjs": "93f98253483bb02969de4c1d543647bc6fd194f98949f2a37ac7111939c46221",
-    "scripts/r2m/trial.mjs": "87de545acdd803268d6452c3325858b969ac74cfdf56ef8b1610bb9bdfcd9bb2"
+    "scripts/r2m/trial.mjs": "04d470860792fe9aed21b607efc37cf216f61ec65facc440977bdcafa5802e74",
+    "scripts/r2lr/session-probe.mjs": "4bf37c02a043a6f1ca7a19ff1cccc6bfcfd4cbc3e9eb15e82325c3850f868b2b"
   }
 }
