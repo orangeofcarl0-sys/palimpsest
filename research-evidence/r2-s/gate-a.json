@@ -1,0 +1,256 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-S",
+  "gate": "A",
+  "deterministicOnly": true,
+  "note": "§19: NO stochastic C/D pilot was run; readiness is proven deterministically and the model-visible proof belongs to each trial’s own session artifact",
+  "harnessDigests": {
+    "host/dsh/lib/index-metadata.js": "40d337645621313df76d0b1d93c9af0ed569bb15529b4213c491681be6f452cc",
+    "host/dsh/lib/runner.js": "4841d6e89ef31fa6ee1b3a2e4cb304d615cd99f69e72dd43d680edd078a4a3a1",
+    "scripts/r2s/design.mjs": "ff0e9226b62bf349f206628f3b49672c022ce52e9f012692bb7fa54d027a3c8c",
+    "scripts/r2s/candidates.mjs": "88c0eff5030a006bc09d64421e8be63d89ccef845feae830629a8681a3743475",
+    "scripts/r2s/trial.mjs": "2f6ed961c6d1890511f36e6c7948278f857707e23497ee8b6dce6377c279357e"
+  },
+  "results": [
+    {
+      "id": "SA-01",
+      "statement": "the schedule is exactly 2 × 2 × 5 = 20 primary trials",
+      "pass": true,
+      "detail": "20 trials planned"
+    },
+    {
+      "id": "SA-02",
+      "statement": "the seed is the frozen literal",
+      "pass": true,
+      "detail": "0x52530201"
+    },
+    {
+      "id": "SA-03C",
+      "statement": "§19 every C block contains exactly S0 and S1",
+      "pass": true,
+      "detail": "b0[S1,S0] b1[S1,S0] b2[S1,S0] b3[S0,S1] b4[S0,S1]"
+    },
+    {
+      "id": "SA-04C",
+      "statement": "§19 the C arms are INTERLEAVED, not grouped",
+      "pass": true,
+      "detail": "2 distinct permutations"
+    },
+    {
+      "id": "SA-03D",
+      "statement": "§19 every D block contains exactly S0 and S1",
+      "pass": true,
+      "detail": "b0[S1,S0] b1[S0,S1] b2[S0,S1] b3[S1,S0] b4[S1,S0]"
+    },
+    {
+      "id": "SA-04D",
+      "statement": "§19 the D arms are INTERLEAVED, not grouped",
+      "pass": true,
+      "detail": "2 distinct permutations"
+    },
+    {
+      "id": "SA-05C",
+      "statement": "§11 the five C distractor sets are PAIRWISE DISTINCT",
+      "pass": true,
+      "detail": "B|D|D | D|D|B | B|B|D | D|D|D | D|B|D"
+    },
+    {
+      "id": "SA-06C",
+      "statement": "§6 every C candidate set is 3 TARGET + 3 DISTRACTOR, one per kind",
+      "pass": true,
+      "detail": "5 sets, each 6 items"
+    },
+    {
+      "id": "SA-07C",
+      "statement": "§6/§7 every C distractor is an INDEPENDENT bundle, not the target and not the target's domain",
+      "pass": true,
+      "detail": "all distractors independent"
+    },
+    {
+      "id": "SA-08C",
+      "statement": "§7 the C target is the scenario's OWN bundle",
+      "pass": true,
+      "detail": "C → C"
+    },
+    {
+      "id": "SA-05D",
+      "statement": "§11 the five D distractor sets are PAIRWISE DISTINCT",
+      "pass": true,
+      "detail": "B|C|B | B|B|C | C|B|B | B|C|C | B|B|B"
+    },
+    {
+      "id": "SA-06D",
+      "statement": "§6 every D candidate set is 3 TARGET + 3 DISTRACTOR, one per kind",
+      "pass": true,
+      "detail": "5 sets, each 6 items"
+    },
+    {
+      "id": "SA-07D",
+      "statement": "§6/§7 every D distractor is an INDEPENDENT bundle, not the target and not the target's domain",
+      "pass": true,
+      "detail": "all distractors independent"
+    },
+    {
+      "id": "SA-08D",
+      "statement": "§7 the D target is the scenario's OWN bundle",
+      "pass": true,
+      "detail": "D → D"
+    },
+    {
+      "id": "SA-09",
+      "statement": "§6 every distractor pool member is REAL mature capital (a recorded exploration, not a string)",
+      "pass": true,
+      "detail": "B:8 clauses | C:6 clauses | D:6 clauses"
+    },
+    {
+      "id": "SA-10",
+      "statement": "§6 no distractor bundle shares a domain with a DIFFERENT bundle",
+      "pass": true,
+      "detail": "B:legacy configuration migration | C:event-log replay reduction | D:incremental build-cache invalidation"
+    },
+    {
+      "id": "SA-11",
+      "statement": "the DEFAULT mode resolves to off and only the two frozen tokens enable an arm",
+      "pass": true,
+      "detail": "absent ⇒ off; m0/m1 select the arms"
+    },
+    {
+      "id": "SA-12:undefined",
+      "statement": "no unrecognized value enables an arm (undefined)",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:",
+      "statement": "no unrecognized value enables an arm (\"\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:M1 ",
+      "statement": "no unrecognized value enables an arm (\"M1 \")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:m1x",
+      "statement": "no unrecognized value enables an arm (\"m1x\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:M0x",
+      "statement": "no unrecognized value enables an arm (\"M0x\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:on",
+      "statement": "no unrecognized value enables an arm (\"on\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:true",
+      "statement": "no unrecognized value enables an arm (\"true\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:1",
+      "statement": "no unrecognized value enables an arm (\"1\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-12:explicit-review",
+      "statement": "no unrecognized value enables an arm (\"explicit-review\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "SA-13",
+      "statement": "the seam names no relevance, priority or salience scoring surface",
+      "pass": true,
+      "detail": "exports: INDEX_METADATA_ENV, INDEX_METADATA_MODES, MATERIALIZATION_PROVENANCE, PREVIEW_BUDGET, PREVIEW_FIELD, PREVIEW_MECHANISM, PROCEDURE_RULING, SEMANTIC_PROVENANCE, TRUNCATION_MARKER, boundedText, deriveIndexEntry, indexSectionDigest, manifestEntry, renderIndexEntry, renderIndexMetadata, resolveIndexMetadataMode, textDigest"
+    },
+    {
+      "id": "SA-14",
+      "statement": "§9/§25 S0 is the IDENTITY: an empty entry list leaves the index byte-identical",
+      "pass": true,
+      "detail": "the S0 arm is the production section passed through, never a re-rendering"
+    },
+    {
+      "id": "SA-15",
+      "statement": "§9 S1 replaces the entry lines and preserves the heading and the trailing instructions",
+      "pass": true,
+      "detail": "derived block present; boundary lines unchanged"
+    },
+    {
+      "id": "SA-16",
+      "statement": "§5 every handle appears EXACTLY ONCE in the rendered S1 section",
+      "pass": true,
+      "detail": "@ctx/proof/handle-0…×1 | @ctx/reasoning/handle-1…×1 | @ctx/procedure/handle-2…×1 | @ctx/proof/handle-3…×1 | @ctx/reasoning/handle-4…×1 | @ctx/procedure/handle-5…×1"
+    },
+    {
+      "id": "SA-17",
+      "statement": "§5 the S0 and S1 handle OCCURRENCE COUNTS are EQUAL (the duplicate-handle confound is removed)",
+      "pass": true,
+      "detail": "S0 all×1 and S1 all×1 across 6 handles"
+    },
+    {
+      "id": "SA-18",
+      "statement": "§5 the renderer emits NO trailing duplicate `Handle:` line",
+      "pass": true,
+      "detail": "the trailing per-entry handle line is gone"
+    },
+    {
+      "id": "SA-19",
+      "statement": "§12 the projection is deterministic — the same input yields the same bytes",
+      "pass": true,
+      "detail": "byte-stable"
+    },
+    {
+      "id": "SA-20",
+      "statement": "§12 the projection is bounded and marks a truncation with exactly ONE fixed marker",
+      "pass": true,
+      "detail": "161 code points, marker appended"
+    },
+    {
+      "id": "SA-21",
+      "statement": "§12 the per-field budget is the frozen one",
+      "pass": true,
+      "detail": "{\"proof\":160,\"reasoning\":160,\"procedureApplicability\":120,\"procedureLimitations\":120}"
+    },
+    {
+      "id": "SA-22",
+      "statement": "§11 the Procedure ruling is P-A: applicability + limitations only, no method-body preview",
+      "pass": true,
+      "detail": "P-A holds; the method body is not rendered"
+    },
+    {
+      "id": "SA-23",
+      "statement": "§13 the mechanism label marks the seam EXPERIMENTAL, not product semantics",
+      "pass": true,
+      "detail": "EXPERIMENTAL_HOST_DERIVED_PREVIEW"
+    },
+    {
+      "id": "SA-24",
+      "statement": "§13 the rendered S1 material leaks no hidden acceptance, no oracle text and no complete body",
+      "pass": true,
+      "detail": "3 bundles inspected; every body truncated; clean"
+    },
+    {
+      "id": "SA-25",
+      "statement": "the harness digests this readiness record describes are recorded",
+      "pass": true,
+      "detail": "5 files digested (a trial does not count if the harness changes afterwards)"
+    },
+    {
+      "id": "SA-26",
+      "statement": "§25 the experimental seam is OFF unless the environment explicitly selects an arm",
+      "pass": true,
+      "detail": "the default path is byte-identical to production"
+    }
+  ]
+}

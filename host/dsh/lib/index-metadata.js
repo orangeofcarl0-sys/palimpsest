@@ -231,13 +231,21 @@ function statusLines(entry) {
   return lines;
 }
 
-/** Render ONE entry as its M1 block. Deterministic: no sorting, no filtering, no per-kind variation. */
+/**
+ * Render ONE entry as its M1 block. Deterministic: no sorting, no filtering, no per-kind variation.
+ *
+ * §5 (R2-S) — THE DUPLICATE-HANDLE CORRECTION. An earlier version ended the block with a redundant
+ * `Handle: <handle>` line, so the handle string appeared TWICE per M1 entry while the M0 entry names it
+ * once. That made the two arms differ in handle OCCURRENCE COUNT as well as in metadata bytes, which is a
+ * confound for any experiment whose outcome is WHICH handles the worker retrieves: a worker could react to
+ * the repetition rather than to the metadata. The trailing line is removed, so every selected handle
+ * appears exactly once in both arms and the only difference between S0 and S1 is the metadata bytes.
+ */
 export function renderIndexEntry(entry) {
   const lines = [`  [${entry.kind}] ${entry.handle}`];
   lines.push(...statusLines(entry));
   lines.push('    Selected for this attempt: true');
   for (const field of entry.fields) lines.push(`    ${field.name}: ${field.text}`);
-  lines.push(`    Handle: ${entry.handle}`);
   return lines;
 }
 
