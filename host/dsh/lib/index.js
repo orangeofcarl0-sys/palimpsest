@@ -274,6 +274,26 @@ async function applyWork(ctx, palimpsest, workFile) {
       // that closes the inherited authority surface.
       tool: toRealTool(tool),
       ...(pullTool === undefined ? {} : { contextPullTool: toRealTool(pullTool) }),
+      /**
+       * R2-LR §3: THE MODEL-VISIBLE PULL INDEX.
+       *
+       * The product already renders this string — `renderWorkerContextIndex` composes it from the
+       * attempt's OWN compiled handles and `workWorkerEnvironmentPayload` ships it in the work payload.
+       * This adapter previously DROPPED it, so the runner's `environment.contextIndexText` was always
+       * `undefined` and the index section was silently omitted from every worker's task message: the
+       * selected handles reached the worker PROCESS but never the worker's PROMPT, and no model-visible
+       * pull path existed in practice.
+       *
+       * This forwards the product-generated presentation value VERBATIM and does nothing else. It does
+       * not compose an index, read a canonical owner, consult a relevance policy, or widen any authority
+       * — the bytes are the product's, and this host only carries them.
+       *
+       * STRICT SHAPE HANDLING (§5): only an actual string is forwarded. A non-string is NOT stringified
+       * or coerced, because a malformed value must degrade to "the worker sees no index" rather than to
+       * "the worker sees a rendering of whatever object arrived". An ABSENT value is likewise not
+       * forwarded, so a payload predating this field produces a byte-identical prompt to before.
+       */
+      ...(typeof raw.contextIndexText === 'string' ? { contextIndexText: raw.contextIndexText } : {}),
       // §17: the handles this worker actually pulled, for the runner's telemetry line.
       pulledHandles,
       deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',
