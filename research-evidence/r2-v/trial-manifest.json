@@ -2,7 +2,1152 @@
   "schemaVersion": 1,
   "stage": "R2-V",
   "expected": 20,
-  "recorded": 0,
+  "recorded": 20,
   "note": "the repo carries the manifest and digests; complete session transcripts stay external",
-  "trials": []
+  "trials": [
+    {
+      "trialId": "D-V0-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c93efc9bea5adc1170a7c810776bdc8bc790cd0e5a258b236c40fcb55890d37a",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:bc293d0dbe0246d64bd79dcaa0b63939abfb47fd2aa816685ee251bedcefbea4"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 182464,
+      "digests": {
+        "trialRecord": "01a8311e91ff150eec5cc426d03e54a883366a03eadd063112162fe5eed09d19",
+        "transcript": "07db1d0d6977ae18c30aaa7ea8049cc3e34666e0f682332c864ed3d36b967413",
+        "finalSource": "1e1044539299cc034a229b5adb3ccd235944400040c7997c8166feb5b86020cf"
+      }
+    },
+    {
+      "trialId": "D-V0-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:3ec798c710aba4f2181f1a0ed93bec95656a71fa76dddded6ca1b42084c21f45",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3b071e2246ef36ba110c1021c37903c8cc92d6057c9525e62b74a1c1382316c5"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 92699,
+      "digests": {
+        "trialRecord": "6ff0564449a163fdd880ece549548a84093bbc5e334fccfb097ca273be8c5770",
+        "transcript": "047964ac6ff2bf7fc1682b6c40cb4bca2b0262035be0a1fb84d1b204e93eb72f",
+        "finalSource": "f769bf41ccd8d481a7f47d9817e9b5ba678257d4da31eb092cc3d2177b27ff6f"
+      }
+    },
+    {
+      "trialId": "D-V0-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f647155b4685015735a57001b87ef781188e087d65b879c020f6c59bf7730984",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:61c66c38473295e76e7061750384d1a5de8c0dbb9db3d68cc24fd59055796c8f"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 156227,
+      "digests": {
+        "trialRecord": "02b392d2544c64ea37302953ad4b176b47510674ce1880a93996f41e7f8f9ed8",
+        "transcript": "82910f19bbdbccce32a26045eb2049451cd9993fcbf32badee0bb8fac10eb4bb",
+        "finalSource": "86f7b79af3899f026311703ebf6fd60e14d6a9f0a157647b199b3d556d730584"
+      }
+    },
+    {
+      "trialId": "D-V0-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:553fdbdb698ff046735a746a187b17fdaca3fb61e367c8c4488893975740672d",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c57aa5167fdafa7263a1d37962719dd82bf251ac425a46f7b6e4eb5094de027"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 105727,
+      "digests": {
+        "trialRecord": "e168bb88ab4af5755cdbc189ae6572e435dd1a8ce37a1e2bbc86c7a7d90dc302",
+        "transcript": "e716531ad73b98d53bf13fb9409d6fbfb1b4a58ccd30a27e3e2fc51bf0db44f3",
+        "finalSource": "609cd0e03ad19ce220155281c13ec0cd4ba12b1a03294b51e57f327a54578f09"
+      }
+    },
+    {
+      "trialId": "D-V0-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5502fffa6dfa54e0a52179c33a73080a119fa1e865147f9f95199b81b821adc3",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:f4f5bc341a4ce9d19988eaa098c898e7cb5123a147c51a9575fb6ce575a6fc86"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 156476,
+      "digests": {
+        "trialRecord": "79348efdb08bfd7d63e357eda6c0a4bdf3962e80124b961569e42d7f70d07cec",
+        "transcript": "769c8451ed528a23e36a24e0fa04468fbcda69b9a8801560edb12de55cda884c",
+        "finalSource": "60e87e77e291a9a606fa390e57154dfe1d6d0bbac63ecf2b216e60b7f3512aed"
+      }
+    },
+    {
+      "trialId": "D-V1-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:640c22963a1010e19c8da13f6d54171e3110ecf81bf6e215b1b9f0ce2986bebf",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f52c61271adec0c1a78e61696f177a79c36a2bafe4ec011f4e9fada200872da1",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:650de253bda05c6268465487342fc0f03f560cf537a827ad04bfdf357d510020",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:97017b343fa86d71b89b3c7c4a7e3c6adf61c23ffd667fb68f2c54783facfa04"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 4,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 241475,
+      "digests": {
+        "trialRecord": "87bc0039248d250f39a70913c33a4b7b5b0dae3e0a323331862553f96dc0cdec",
+        "transcript": "5439d819dff0ae545042fcd5dba179c274507dc90fe52fe4d3ae4adbacfea1bb",
+        "finalSource": "369ed78e7d253d53bc4355d4705065202ab7363cafd5d65051884b22e7a69bef"
+      }
+    },
+    {
+      "trialId": "D-V1-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ce0ad6cfc23a3b62bff860639d6359fdd893bb126054a4b6efeef1904270b5f8",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5297daef7d2228bf02c864a2f443299ff141970c4b5096af5f64a89faecc83c7",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c594d4a6d1a792e99a565dab10fd6535d02b6d955191b6071e9d04d9e0bbf94",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0e9d7316558c8519158d18b5eb8b0450c5c49bee1835ffb2e390a3b94aeedf71"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 154325,
+      "digests": {
+        "trialRecord": "bf308df064240d6d3d716045acaa429ec95385594e5e43843454effda0603002",
+        "transcript": "8146de517b15797775cb2bee61d4e2eeaaea7a211b0706b199a5b15997d55239",
+        "finalSource": "2547090596ceea8a98b1baaff64d719db20cfda97640eabbb567b6c7049d3429"
+      }
+    },
+    {
+      "trialId": "D-V1-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:4e1d95ccb69160960851cac2ec3862a1e22ad2cd9ba6168bb3802a8a4bc461a4",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c4c9dadd441aa9a703416e65023aeddb59cb908efa346bec3214c043926d3ab3",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc53b6c6fcfb2bf0386e16a472cd1a6e8f25ffe6984d8147e57903add5f4fe1b",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:9ae07b46fa47c79b6c4c6234f9dd1a5db11351dfd57da76f74bcdde8cc9dd466"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 4,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 129550,
+      "digests": {
+        "trialRecord": "3276e324649b962e262ce29e7cc1973fce180e64382ca8e054e23c2731f4682a",
+        "transcript": "1281f8a7c195712c6a17b4bd69edfeed3adeb63a123740dc08d8d1b3e3890f5d",
+        "finalSource": "b4f05239db7b6cbf4d61742e7959506f4d31a8798d5f07dd2e6846e7a814faa8"
+      }
+    },
+    {
+      "trialId": "D-V1-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:c2ee553a2704e4e31f9dedb7a689ec993fa5ae246a970002cfe476164dbeae1f",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:90226e4890047abe8793b5d97ea18f0bb4d57def4a49bc5d53db59f2b2131b90",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c290df5a4db195379125962cd40210192b609e45413a69a966ee5b47d6ee8569",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:539a285fe53fa6f251120fec01e4daaae2fc8315c3002e95b9a5aa4ba48d1b0b"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 88668,
+      "digests": {
+        "trialRecord": "b20d70c7d29a3cdc242511a5585dfa7c0de938b4f813437564f369b6ff60e7a3",
+        "transcript": "c88af51af750d2912623164937b17007aa771f82472fbfa681b0eb2cbf175199",
+        "finalSource": "b1ec74df2c6cc1e3fbe54bfa5cc3290ffcd1720b228a53142e0ce6d4b041c412"
+      }
+    },
+    {
+      "trialId": "D-V1-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9c1111d5ceced8d3a4b5edbc4f5ccf0f02a62883f1a66828ed0e00900e2d1297",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:b5ec05ed7ff617e1688a3a9ddf0515e468d78f2eeea9a566908b0e3aa94e3b25",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:1ec462a6d7e942e028ea5571906d38ffd18b49b8549d0255e5818c5b80888f25",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:109f9400cd69810c5d4e73fc8ed6e5d72d3e0e5579e83f7c3b9377abec6f5e0d"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 150708,
+      "digests": {
+        "trialRecord": "8600548abce79dc1d36ef2f4c37dca34d33ecd86e80ac2e7db1863bb21de8cdc",
+        "transcript": "a124cb1c9de86bdcda026531eb72a7c62aa2f2f321efa10311c9fc4a276a7d14",
+        "finalSource": "07287756eda41df467d3c07bd567dfb598d75646522dbbdb3aafd3f846a08e23"
+      }
+    },
+    {
+      "trialId": "D-V2-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a7aa99d5d4e312e6a4bda66bdacc4876b1d3192062c509e4447fea9471482f7",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:cffa2808a51e5f03dfb3c348da4ee3b7bcfe5df53a04259f8a6c6f7c0a113d4e",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc9508bcdccc436c6c23a868e1f956847acf32a43232c030520a69d15e59d334",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:72506fbc52b85befe2716fb6cf0ff34465a0e8d52d779a086f5692fdcb41b104"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 129837,
+      "digests": {
+        "trialRecord": "5f9efbd671ed0c05cf723f9e7b3a932b90f16e7ced175fcac95103b195ff973f",
+        "transcript": "b35b47ebebbecbe642f1a034be66e14a3385854f279b25ff91013a0af0dca877",
+        "finalSource": "0ccd2b05561b8e72be8dc2326f23c63d2b90a0027f911ceafb03960112cba6dc"
+      }
+    },
+    {
+      "trialId": "D-V2-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a39a00853ea1688399034c421e3836bd1b379f2e7ab4f3988b789c51bbcc241",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f1269e62f99ff20e88ce5b4f480c7d5621ca25c61b777e59e241ef49cda54dd9",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c7a02a8968092cc3216b3e26fd0bd944935a5d949dff953f4d31b37175f99874",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:d2a7099d658f58493898f669809084af9c9c22d7f1973a4ce31d33cd9a7bfab0"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 1,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 214506,
+      "digests": {
+        "trialRecord": "7ea966ae9e33b680c90e3f165267497376c8d32c7a70ef7a09ba01620947b432",
+        "transcript": "c81a7c9dd8d57918e35b3378e1a2008b6ba101cdca7a3c16001fa102723bb7f6",
+        "finalSource": "0a53da49e7058cb4e5e52583610d45bc7697c2c7d485a40adfd90a7234bfba35"
+      }
+    },
+    {
+      "trialId": "D-V2-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2f002dda112eed1d35202214a89df4883d13ff7a4610977f0fc8d26d94cd5750",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:523e4d84c42a946b5f89e1451c2d076795810512586570ff09840266da52e8c2",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:24fa76ef22696f4487ca1807bd07c001932981583c37ef43975afab2b6f711f2",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:99fb932a0b566211232464e763bc3f5cae83a2840b21caba853e79432d8d97c0"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 152822,
+      "digests": {
+        "trialRecord": "00dcf4ccc36e1a7d7ff15219f8e64b9e04d5f4a60751ed922104777b72be7e94",
+        "transcript": "5313657d375396d855a9a3e98722cbce6282ff5ab229d8e6ca248642a5e24bf2",
+        "finalSource": "50a52c0acd5ad38911abe764f3cb4202a77f94b90cee640a1b217fe33670c57f"
+      }
+    },
+    {
+      "trialId": "D-V2-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:de44d050fcb9d2b3bcfea7b78ab86dd38ed0e9fc3aa444c8c8aab30d55f7c1bf",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:319411dd18b5ee80bbcdf86acfaf83001f0a301f03c7c85db0c906d971305c43",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:5e9ca4c72f4344eeec208305d8dec5f520bd1859f2554daae2269856c0576530",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:b657022e7fde74eaaf620830bfee6b36109e42a33c82f64ab8508ce347c77422"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 231546,
+      "digests": {
+        "trialRecord": "006579ba46f1d58044a0ccf7206b32bb6ab2d80c164583dd9891afbad8c595ef",
+        "transcript": "d3982adb389b8719575c009c049251fea5338f3c02ebf37931f281dbb1cb46ec",
+        "finalSource": "75c56bf5c038c6d801e36ba48927bf73d3978c96f999a1886720092724a60067"
+      }
+    },
+    {
+      "trialId": "D-V2-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:5be9f368bdd0f0a3fa5db5f3daccbe746a1dd9c67c2a4e21886add76547f4c8d",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:6948a7775bee979cb922a92bfef3bd1974802e733dcf8dd425038213c9222574",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:db14cf115fd4b18f0b51b106673ccaa5860d6c46463947de4236939d19fae85f",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:1c0b5ab6d5b4990a0b776c8fdaec3a0950646b6dd90565bed0b8f4a19ce71e46"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 142700,
+      "digests": {
+        "trialRecord": "289734e85e6974f91b3623de914558d20d9a353ad06e70d21226eb7e58ac997f",
+        "transcript": "c9d3e56aa94e9639d23f474b8e98cc3f56de60541c59504411d894398912c0df",
+        "finalSource": "31c73ba1a2d26175f347994ccb3e005b4c0a61ceabbc0df7bddd301c4066d832"
+      }
+    },
+    {
+      "trialId": "D-V3-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:6b2d7dc2a5aa05b50e40a2c9e8ee997806732121d66acc9bff6f311a47b1a474",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ec2a7c9579b02e7650007dae16a72da3959962a573664359923a783f4809fe80",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:fdee42c72c369c9bc89fd9f344f7e0a822ea5cd0c62fbd022145c67899941c84",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:874000094950bd002ad718f41baee20293b194c1889edee5f7c08b6b500b7b93",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:98006b9d203228e8d494d53e383d8fcb12ea8c4e36514f1505fab47ec8268dce",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:43f2795b10bdafa8b1196003583b2bbe12db06a103e2413e80d000922ce3a870"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 96629,
+      "digests": {
+        "trialRecord": "4d366035a73cdf7fcbd3ecde829806705b2fa1fb7be4793b83dce74e3ad099bb",
+        "transcript": "a0a7f43019dabc62b05b0ab65facf9ad9430acc050097b41d9a88a4ae3c2f8dd",
+        "finalSource": "9f3ad32ec313059a2db52ab3daa7d3633859d614001cf818a6064b1d0c7a628a"
+      }
+    },
+    {
+      "trialId": "D-V3-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:09707ab2e064035bd2fa2fe5618bee241fc6004514d25d4582cf31262cd77303",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:632b36fe5532eb43dda29435c1852c58a88b63f76cdf12b68d5974a6fe8f29ab",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:dedb68eaa02456f5bed04e400886c53e883d15156a7fa1535b0e458c8f7ad8a6",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:02cd8568428b78430d479ce25881afb867fb91d45964db9257f2db25453f8c1e",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:1fe654411a482a3444746cdd1d650affb2f76df3050934550f51023c13b25b22",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:4dd3c5dd8a7b56854f3b1bddc24a09bdbea6d707d60a929db2d0dbb0e1a8fc8f"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "firstCandidateAcceptance": {
+        "passed": 13,
+        "total": 14,
+        "failures": [
+          "h14:ACCEPTED_INVALID_INPUT"
+        ]
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 175322,
+      "digests": {
+        "trialRecord": "2e3b1c2fe7361a9bcb80b228bfe787f07702526f6dc434da6b91f9ef291058cd",
+        "transcript": "ac6db43f395178e704a0d322325f3a3c33fc75475ecb884ce57393cd93cc9899",
+        "finalSource": "3ef6c383e7e3f7e969689b91382d36fbd23bae8a1fbc0d91253717b5bd417cfb"
+      }
+    },
+    {
+      "trialId": "D-V3-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:94ada2ac09e91f80423655c5dd7d3f0f492d6b81f1377217127b947ffa59f2b4",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9925f344559773bab49efa75361b0b7f222f4aabe91c45611aa3c3cfd6ed56f2",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f94c0998b84fb3cd606f4a172264aab5f7c29211672f2db706722dfc60072ccc",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:718f0ce497ca0be63912fda3d70cf3ee066ac73008c75d381e1390d338f09fb2",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0dad71f942cf4ab5885ae5c6741758bb1f6f01eb229897b58ce8b1b402a8afa1",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:e465aee05b0c9624f05601256781606c07415e65be6fcb85e241f2f0d8a370aa"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 200613,
+      "digests": {
+        "trialRecord": "e1b897daed4124c802869cf7e81b6d9e048061d314d7ad47573adb631bedc894",
+        "transcript": "d457ea3ba08dfef4930b9d3c186bac41a2a3b17a512b7abec7f28b897d145521",
+        "finalSource": "3cbb7b0c8d7f09213e4e2090e190a6271f6c044ae1d9118a48180c9f30d58940"
+      }
+    },
+    {
+      "trialId": "D-V3-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:54058930b52995a46183b7eaefb5d2636be92c17e3ff9ff0a55571ff4370b905",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:e52ee0968cd582e5e4f1960045fba6d2d627db518e5e354a9d1999b2bdc38334",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:1f9ebfd73865a15bae32a0d3ecb365153f788df093b951204524c3efe669cf10",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:63bfa47746c1ea1a6e1394d0a6c501ad719cbfdaa12e304835304aa2e12cc4ad",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:b98c3b169d380f8e4039a81b8c8de0b8e8e213c8309e1e23e044b6121a441336",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:fb6387070e3c8b2d4e069b1e57e7ae62e8155bdfe950b056f9d8d761adbc438c"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 114696,
+      "digests": {
+        "trialRecord": "bb2d2cb159877c3f09470f5f5827a6b5e5202b9e57d6b68db1af0e5cddb6f5c4",
+        "transcript": "2e44fd82dd9608999fca61ab1d778f1ee28a22423e091ddbe838f8a2d3204182",
+        "finalSource": "47b701e7c2c2ec1ebe8fbc077592ad67f91f9a7ac399176c6481a9892058e4e5"
+      }
+    },
+    {
+      "trialId": "D-V3-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "consumptionProven": true,
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:e8163fc057b40f9b498a93c3ba92e171c5691395de159a515edb8ece6487a599",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:8d334b5b3d7ee94e9166026bbb5a60d18245a54b400dddad67e67d351bf58443",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:d6ced1ce03a5cb3c29c6d03d9cecab4ff1568dc7a81339319524898f9043e32b",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:41e3b99787ac1fc49abde9f9b5a285fdb6b9645cbe4dd815babeb52c7a721347",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:fe6d57c666f068f3ca60fc0db68ed0bebcd617821365a1ebba912b6e08f03c41",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:eb19322d3dca6c434f1cf2edfee03d54ea7812468cb31c5c031f10e032daca7b"
+        ]
+      },
+      "finalAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "firstCandidateAcceptance": {
+        "passed": 14,
+        "total": 14,
+        "failures": []
+      },
+      "knownFailureRecurred": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "hostFailure": null,
+      "elapsedMs": 151553,
+      "digests": {
+        "trialRecord": "db776b8d032f534d8683f784132824883248c38848f0911c823c41127bcb408f",
+        "transcript": "a94549a98c360e3a6c345de029759a66bfcf245c8dbcf41e3a1996ea51e6b596",
+        "finalSource": "5624a34fd8f57707948c1b4ab64dddfc6f0939a130cf271bb8b567f057a7ccc7"
+      }
+    }
+  ]
 }

@@ -1,0 +1,2425 @@
+{
+  "schemaVersion": 1,
+  "trials": [
+    {
+      "trialId": "D-V1-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 4,
+      "implementationRevisions": 0,
+      "elapsedMs": 241475,
+      "firstEditOrdinal": 5,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:640c22963a1010e19c8da13f6d54171e3110ecf81bf6e215b1b9f0ce2986bebf",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f52c61271adec0c1a78e61696f177a79c36a2bafe4ec011f4e9fada200872da1",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:650de253bda05c6268465487342fc0f03f560cf537a827ad04bfdf357d510020",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:97017b343fa86d71b89b3c7c4a7e3c6adf61c23ffd667fb68f2c54783facfa04"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:640c22963a1010e19c8da13f6d54171e3110ecf81bf6e215b1b9f0ce2986bebf",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f52c61271adec0c1a78e61696f177a79c36a2bafe4ec011f4e9fada200872da1",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:650de253bda05c6268465487342fc0f03f560cf537a827ad04bfdf357d510020",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:97017b343fa86d71b89b3c7c4a7e3c6adf61c23ffd667fb68f2c54783facfa04"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "6a7e3ed3b8431e5533b3d75b0ef8314bc1b8cf60",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V3-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "elapsedMs": 96629,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:6b2d7dc2a5aa05b50e40a2c9e8ee997806732121d66acc9bff6f311a47b1a474",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ec2a7c9579b02e7650007dae16a72da3959962a573664359923a783f4809fe80",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:fdee42c72c369c9bc89fd9f344f7e0a822ea5cd0c62fbd022145c67899941c84",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:874000094950bd002ad718f41baee20293b194c1889edee5f7c08b6b500b7b93",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:98006b9d203228e8d494d53e383d8fcb12ea8c4e36514f1505fab47ec8268dce",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:43f2795b10bdafa8b1196003583b2bbe12db06a103e2413e80d000922ce3a870"
+        ]
+      },
+      "consumedHandleCount": 9,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:6b2d7dc2a5aa05b50e40a2c9e8ee997806732121d66acc9bff6f311a47b1a474",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ec2a7c9579b02e7650007dae16a72da3959962a573664359923a783f4809fe80",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:fdee42c72c369c9bc89fd9f344f7e0a822ea5cd0c62fbd022145c67899941c84",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:874000094950bd002ad718f41baee20293b194c1889edee5f7c08b6b500b7b93",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:98006b9d203228e8d494d53e383d8fcb12ea8c4e36514f1505fab47ec8268dce",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:43f2795b10bdafa8b1196003583b2bbe12db06a103e2413e80d000922ce3a870"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "ca0a96961fa70a22333b58be0da9281c55848323",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V0-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 182464,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c93efc9bea5adc1170a7c810776bdc8bc790cd0e5a258b236c40fcb55890d37a",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:bc293d0dbe0246d64bd79dcaa0b63939abfb47fd2aa816685ee251bedcefbea4"
+        ]
+      },
+      "consumedHandleCount": 3,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c93efc9bea5adc1170a7c810776bdc8bc790cd0e5a258b236c40fcb55890d37a",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:bc293d0dbe0246d64bd79dcaa0b63939abfb47fd2aa816685ee251bedcefbea4"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "ba923b294793db80cb5f8bfd692867e302a762c4",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V2-b0r0",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 0,
+      "repetition": 0,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "elapsedMs": 129837,
+      "firstEditOrdinal": 3,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a7aa99d5d4e312e6a4bda66bdacc4876b1d3192062c509e4447fea9471482f7",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:cffa2808a51e5f03dfb3c348da4ee3b7bcfe5df53a04259f8a6c6f7c0a113d4e",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc9508bcdccc436c6c23a868e1f956847acf32a43232c030520a69d15e59d334",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:72506fbc52b85befe2716fb6cf0ff34465a0e8d52d779a086f5692fdcb41b104"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a7aa99d5d4e312e6a4bda66bdacc4876b1d3192062c509e4447fea9471482f7",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:cffa2808a51e5f03dfb3c348da4ee3b7bcfe5df53a04259f8a6c6f7c0a113d4e",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc9508bcdccc436c6c23a868e1f956847acf32a43232c030520a69d15e59d334",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:72506fbc52b85befe2716fb6cf0ff34465a0e8d52d779a086f5692fdcb41b104"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "cb6e9f2c017e71095ec89867cb4ec711ff82c7c7",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V1-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "elapsedMs": 154325,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ce0ad6cfc23a3b62bff860639d6359fdd893bb126054a4b6efeef1904270b5f8",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5297daef7d2228bf02c864a2f443299ff141970c4b5096af5f64a89faecc83c7",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c594d4a6d1a792e99a565dab10fd6535d02b6d955191b6071e9d04d9e0bbf94",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0e9d7316558c8519158d18b5eb8b0450c5c49bee1835ffb2e390a3b94aeedf71"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:ce0ad6cfc23a3b62bff860639d6359fdd893bb126054a4b6efeef1904270b5f8",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5297daef7d2228bf02c864a2f443299ff141970c4b5096af5f64a89faecc83c7",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c594d4a6d1a792e99a565dab10fd6535d02b6d955191b6071e9d04d9e0bbf94",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0e9d7316558c8519158d18b5eb8b0450c5c49bee1835ffb2e390a3b94aeedf71"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "c0c2b74d31fce31eb04178390352672aecfc59e5",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V3-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "elapsedMs": 175322,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:09707ab2e064035bd2fa2fe5618bee241fc6004514d25d4582cf31262cd77303",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:632b36fe5532eb43dda29435c1852c58a88b63f76cdf12b68d5974a6fe8f29ab",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:dedb68eaa02456f5bed04e400886c53e883d15156a7fa1535b0e458c8f7ad8a6",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:02cd8568428b78430d479ce25881afb867fb91d45964db9257f2db25453f8c1e",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:1fe654411a482a3444746cdd1d650affb2f76df3050934550f51023c13b25b22",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:4dd3c5dd8a7b56854f3b1bddc24a09bdbea6d707d60a929db2d0dbb0e1a8fc8f"
+        ]
+      },
+      "consumedHandleCount": 9,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:09707ab2e064035bd2fa2fe5618bee241fc6004514d25d4582cf31262cd77303",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:632b36fe5532eb43dda29435c1852c58a88b63f76cdf12b68d5974a6fe8f29ab",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:dedb68eaa02456f5bed04e400886c53e883d15156a7fa1535b0e458c8f7ad8a6",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:02cd8568428b78430d479ce25881afb867fb91d45964db9257f2db25453f8c1e",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:1fe654411a482a3444746cdd1d650affb2f76df3050934550f51023c13b25b22",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:4dd3c5dd8a7b56854f3b1bddc24a09bdbea6d707d60a929db2d0dbb0e1a8fc8f"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "f5e6ecbe4cf7a8f09dcd68781a4064e3650fba09",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V0-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "elapsedMs": 92699,
+      "firstEditOrdinal": 3,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:3ec798c710aba4f2181f1a0ed93bec95656a71fa76dddded6ca1b42084c21f45",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3b071e2246ef36ba110c1021c37903c8cc92d6057c9525e62b74a1c1382316c5"
+        ]
+      },
+      "consumedHandleCount": 3,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:3ec798c710aba4f2181f1a0ed93bec95656a71fa76dddded6ca1b42084c21f45",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3b071e2246ef36ba110c1021c37903c8cc92d6057c9525e62b74a1c1382316c5"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "5b20155740c9fad9ce935095b0098a8cb8f35e3f",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V2-b1r1",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 1,
+      "repetition": 1,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 1,
+      "implementationRevisions": 0,
+      "elapsedMs": 214506,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a39a00853ea1688399034c421e3836bd1b379f2e7ab4f3988b789c51bbcc241",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f1269e62f99ff20e88ce5b4f480c7d5621ca25c61b777e59e241ef49cda54dd9",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c7a02a8968092cc3216b3e26fd0bd944935a5d949dff953f4d31b37175f99874",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:d2a7099d658f58493898f669809084af9c9c22d7f1973a4ce31d33cd9a7bfab0"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2a39a00853ea1688399034c421e3836bd1b379f2e7ab4f3988b789c51bbcc241",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f1269e62f99ff20e88ce5b4f480c7d5621ca25c61b777e59e241ef49cda54dd9",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c7a02a8968092cc3216b3e26fd0bd944935a5d949dff953f4d31b37175f99874",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:d2a7099d658f58493898f669809084af9c9c22d7f1973a4ce31d33cd9a7bfab0"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "426d0d8d31d1026ff2ee04afdbb84be5856a3b05",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V2-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "elapsedMs": 152822,
+      "firstEditOrdinal": 3,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2f002dda112eed1d35202214a89df4883d13ff7a4610977f0fc8d26d94cd5750",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:523e4d84c42a946b5f89e1451c2d076795810512586570ff09840266da52e8c2",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:24fa76ef22696f4487ca1807bd07c001932981583c37ef43975afab2b6f711f2",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:99fb932a0b566211232464e763bc3f5cae83a2840b21caba853e79432d8d97c0"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:2f002dda112eed1d35202214a89df4883d13ff7a4610977f0fc8d26d94cd5750",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:523e4d84c42a946b5f89e1451c2d076795810512586570ff09840266da52e8c2",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:24fa76ef22696f4487ca1807bd07c001932981583c37ef43975afab2b6f711f2",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:99fb932a0b566211232464e763bc3f5cae83a2840b21caba853e79432d8d97c0"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "2ca975fc5e141e1776a1f92a09dbc8df2beb1a87",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V0-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "elapsedMs": 156227,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f647155b4685015735a57001b87ef781188e087d65b879c020f6c59bf7730984",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:61c66c38473295e76e7061750384d1a5de8c0dbb9db3d68cc24fd59055796c8f"
+        ]
+      },
+      "consumedHandleCount": 3,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f647155b4685015735a57001b87ef781188e087d65b879c020f6c59bf7730984",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:61c66c38473295e76e7061750384d1a5de8c0dbb9db3d68cc24fd59055796c8f"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "e69f1004956ac5d60acc32fb230f99d7b916aaec",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V3-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 200613,
+      "firstEditOrdinal": 5,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:94ada2ac09e91f80423655c5dd7d3f0f492d6b81f1377217127b947ffa59f2b4",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9925f344559773bab49efa75361b0b7f222f4aabe91c45611aa3c3cfd6ed56f2",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f94c0998b84fb3cd606f4a172264aab5f7c29211672f2db706722dfc60072ccc",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:718f0ce497ca0be63912fda3d70cf3ee066ac73008c75d381e1390d338f09fb2",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0dad71f942cf4ab5885ae5c6741758bb1f6f01eb229897b58ce8b1b402a8afa1",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:e465aee05b0c9624f05601256781606c07415e65be6fcb85e241f2f0d8a370aa"
+        ]
+      },
+      "consumedHandleCount": 9,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:94ada2ac09e91f80423655c5dd7d3f0f492d6b81f1377217127b947ffa59f2b4",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9925f344559773bab49efa75361b0b7f222f4aabe91c45611aa3c3cfd6ed56f2",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:f94c0998b84fb3cd606f4a172264aab5f7c29211672f2db706722dfc60072ccc",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:718f0ce497ca0be63912fda3d70cf3ee066ac73008c75d381e1390d338f09fb2",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:0dad71f942cf4ab5885ae5c6741758bb1f6f01eb229897b58ce8b1b402a8afa1",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:e465aee05b0c9624f05601256781606c07415e65be6fcb85e241f2f0d8a370aa"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "2f2c9a0eddd79ef92b945ab2565737956c741407",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V1-b2r2",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 2,
+      "repetition": 2,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 4,
+      "implementationRevisions": 0,
+      "elapsedMs": 129550,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:4e1d95ccb69160960851cac2ec3862a1e22ad2cd9ba6168bb3802a8a4bc461a4",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c4c9dadd441aa9a703416e65023aeddb59cb908efa346bec3214c043926d3ab3",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc53b6c6fcfb2bf0386e16a472cd1a6e8f25ffe6984d8147e57903add5f4fe1b",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:9ae07b46fa47c79b6c4c6234f9dd1a5db11351dfd57da76f74bcdde8cc9dd466"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:4e1d95ccb69160960851cac2ec3862a1e22ad2cd9ba6168bb3802a8a4bc461a4",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:c4c9dadd441aa9a703416e65023aeddb59cb908efa346bec3214c043926d3ab3",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:cc53b6c6fcfb2bf0386e16a472cd1a6e8f25ffe6984d8147e57903add5f4fe1b",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:9ae07b46fa47c79b6c4c6234f9dd1a5db11351dfd57da76f74bcdde8cc9dd466"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "964e430c693375ac85552d0dec37be102a8e7ab3",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V2-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "elapsedMs": 231546,
+      "firstEditOrdinal": 5,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:de44d050fcb9d2b3bcfea7b78ab86dd38ed0e9fc3aa444c8c8aab30d55f7c1bf",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:319411dd18b5ee80bbcdf86acfaf83001f0a301f03c7c85db0c906d971305c43",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:5e9ca4c72f4344eeec208305d8dec5f520bd1859f2554daae2269856c0576530",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:b657022e7fde74eaaf620830bfee6b36109e42a33c82f64ab8508ce347c77422"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:de44d050fcb9d2b3bcfea7b78ab86dd38ed0e9fc3aa444c8c8aab30d55f7c1bf",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:319411dd18b5ee80bbcdf86acfaf83001f0a301f03c7c85db0c906d971305c43",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:5e9ca4c72f4344eeec208305d8dec5f520bd1859f2554daae2269856c0576530",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:b657022e7fde74eaaf620830bfee6b36109e42a33c82f64ab8508ce347c77422"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "d1d5abdad58123818cd8adeeeb479a7061d5cde6",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V0-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 2,
+      "implementationRevisions": 0,
+      "elapsedMs": 105727,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:553fdbdb698ff046735a746a187b17fdaca3fb61e367c8c4488893975740672d",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c57aa5167fdafa7263a1d37962719dd82bf251ac425a46f7b6e4eb5094de027"
+        ]
+      },
+      "consumedHandleCount": 3,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:553fdbdb698ff046735a746a187b17fdaca3fb61e367c8c4488893975740672d",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:3c57aa5167fdafa7263a1d37962719dd82bf251ac425a46f7b6e4eb5094de027"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "be4567cb96729010dd463dd0d28d9e6835fb114e",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V3-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 114696,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:54058930b52995a46183b7eaefb5d2636be92c17e3ff9ff0a55571ff4370b905",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:e52ee0968cd582e5e4f1960045fba6d2d627db518e5e354a9d1999b2bdc38334",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:1f9ebfd73865a15bae32a0d3ecb365153f788df093b951204524c3efe669cf10",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:63bfa47746c1ea1a6e1394d0a6c501ad719cbfdaa12e304835304aa2e12cc4ad",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:b98c3b169d380f8e4039a81b8c8de0b8e8e213c8309e1e23e044b6121a441336",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:fb6387070e3c8b2d4e069b1e57e7ae62e8155bdfe950b056f9d8d761adbc438c"
+        ]
+      },
+      "consumedHandleCount": 9,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:54058930b52995a46183b7eaefb5d2636be92c17e3ff9ff0a55571ff4370b905",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:e52ee0968cd582e5e4f1960045fba6d2d627db518e5e354a9d1999b2bdc38334",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:1f9ebfd73865a15bae32a0d3ecb365153f788df093b951204524c3efe669cf10",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:63bfa47746c1ea1a6e1394d0a6c501ad719cbfdaa12e304835304aa2e12cc4ad",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:b98c3b169d380f8e4039a81b8c8de0b8e8e213c8309e1e23e044b6121a441336",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:fb6387070e3c8b2d4e069b1e57e7ae62e8155bdfe950b056f9d8d761adbc438c"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "75f9c344e92748e6f3cf20381b437acdd1ab7d01",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V1-b3r3",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 3,
+      "repetition": 3,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 88668,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:c2ee553a2704e4e31f9dedb7a689ec993fa5ae246a970002cfe476164dbeae1f",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:90226e4890047abe8793b5d97ea18f0bb4d57def4a49bc5d53db59f2b2131b90",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c290df5a4db195379125962cd40210192b609e45413a69a966ee5b47d6ee8569",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:539a285fe53fa6f251120fec01e4daaae2fc8315c3002e95b9a5aa4ba48d1b0b"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:c2ee553a2704e4e31f9dedb7a689ec993fa5ae246a970002cfe476164dbeae1f",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:90226e4890047abe8793b5d97ea18f0bb4d57def4a49bc5d53db59f2b2131b90",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:c290df5a4db195379125962cd40210192b609e45413a69a966ee5b47d6ee8569",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:539a285fe53fa6f251120fec01e4daaae2fc8315c3002e95b9a5aa4ba48d1b0b"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "935e7cfe4e72987152a1d521581a20fc7efe69a5",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V3-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V3",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 3,
+      "implementationRevisions": 0,
+      "elapsedMs": 151553,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 9,
+        "resolvedHandleCount": 9,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:e8163fc057b40f9b498a93c3ba92e171c5691395de159a515edb8ece6487a599",
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:8d334b5b3d7ee94e9166026bbb5a60d18245a54b400dddad67e67d351bf58443",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:d6ced1ce03a5cb3c29c6d03d9cecab4ff1568dc7a81339319524898f9043e32b",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:41e3b99787ac1fc49abde9f9b5a285fdb6b9645cbe4dd815babeb52c7a721347",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:fe6d57c666f068f3ca60fc0db68ed0bebcd617821365a1ebba912b6e08f03c41",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:eb19322d3dca6c434f1cf2edfee03d54ea7812468cb31c5c031f10e032daca7b"
+        ]
+      },
+      "consumedHandleCount": 9,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:e8163fc057b40f9b498a93c3ba92e171c5691395de159a515edb8ece6487a599",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:8d334b5b3d7ee94e9166026bbb5a60d18245a54b400dddad67e67d351bf58443",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:d6ced1ce03a5cb3c29c6d03d9cecab4ff1568dc7a81339319524898f9043e32b",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:41e3b99787ac1fc49abde9f9b5a285fdb6b9645cbe4dd815babeb52c7a721347",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:fe6d57c666f068f3ca60fc0db68ed0bebcd617821365a1ebba912b6e08f03c41",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:eb19322d3dca6c434f1cf2edfee03d54ea7812468cb31c5c031f10e032daca7b"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "8147bca0df3097892b81442920026750869aef6d",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V0-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V0",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 156476,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 3,
+        "resolvedHandleCount": 3,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "D"
+        ],
+        "intendedBundles": [
+          "D"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5502fffa6dfa54e0a52179c33a73080a119fa1e865147f9f95199b81b821adc3",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:f4f5bc341a4ce9d19988eaa098c898e7cb5123a147c51a9575fb6ce575a6fc86"
+        ]
+      },
+      "consumedHandleCount": 3,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:5502fffa6dfa54e0a52179c33a73080a119fa1e865147f9f95199b81b821adc3",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:f4f5bc341a4ce9d19988eaa098c898e7cb5123a147c51a9575fb6ce575a6fc86"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "835d8b21f9d7934241c83538f00b457c790caaeb",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V1-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V1",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "B"
+      ],
+      "firstCandidatePassed": 14,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": true,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 150708,
+      "firstEditOrdinal": 5,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "B",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "B"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9c1111d5ceced8d3a4b5edbc4f5ccf0f02a62883f1a66828ed0e00900e2d1297",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:b5ec05ed7ff617e1688a3a9ddf0515e468d78f2eeea9a566908b0e3aa94e3b25",
+          "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:1ec462a6d7e942e028ea5571906d38ffd18b49b8549d0255e5818c5b80888f25",
+          "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:109f9400cd69810c5d4e73fc8ed6e5d72d3e0e5579e83f7c3b9377abec6f5e0d"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60:9c1111d5ceced8d3a4b5edbc4f5ccf0f02a62883f1a66828ed0e00900e2d1297",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:b5ec05ed7ff617e1688a3a9ddf0515e468d78f2eeea9a566908b0e3aa94e3b25",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191:0611a82bf3771e5477ef38a188056e3c0bff81adeab0cb1fb68d4cf0ed10b344",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:1ec462a6d7e942e028ea5571906d38ffd18b49b8549d0255e5818c5b80888f25",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0:109f9400cd69810c5d4e73fc8ed6e5d72d3e0e5579e83f7c3b9377abec6f5e0d"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-a3c50ecd907abe6dba3638b006766c60",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-b/cl-65d6af18524d8ca4adf80191",
+          "bundleId": "B"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-1ac3d62bd483eaa1837ba14962c3f633/0",
+          "bundleId": "B"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "ce5b5af243340f75a370fffa9cdaae5aeccd8ead",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    },
+    {
+      "trialId": "D-V2-b4r4",
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "condition": "V2",
+      "block": 4,
+      "repetition": 4,
+      "consumedBundles": [
+        "D",
+        "C"
+      ],
+      "firstCandidatePassed": 13,
+      "firstCandidateTotal": 14,
+      "firstCandidateSolved": false,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 14,
+      "finalAcceptanceSolved": false,
+      "knownFailureRecurred": false,
+      "knownFailureRecurredFirst": false,
+      "visibleOracleInvocations": 0,
+      "implementationRevisions": 0,
+      "elapsedMs": 142700,
+      "firstEditOrdinal": 4,
+      "hostFailure": false,
+      "timedOut": false,
+      "workerOutcomeKind": "READY_FOR_SETTLEMENT",
+      "consumptionProven": true,
+      "consumptionPrecondition": "MET",
+      "consumptionEvidence": {
+        "intendedHandleCount": 6,
+        "resolvedHandleCount": 6,
+        "allResolved": true,
+        "sectionDelivered": true,
+        "consumedBundles": [
+          "C",
+          "D"
+        ],
+        "intendedBundles": [
+          "D",
+          "C"
+        ],
+        "allBundlesConsumed": true,
+        "noUnintended": true,
+        "bodyDigests": [
+          "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:5be9f368bdd0f0a3fa5db5f3daccbe746a1dd9c67c2a4e21886add76547f4c8d",
+          "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:6948a7775bee979cb922a92bfef3bd1974802e733dcf8dd425038213c9222574",
+          "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+          "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+          "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:db14cf115fd4b18f0b51b106673ccaa5860d6c46463947de4236939d19fae85f",
+          "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:1c0b5ab6d5b4990a0b776c8fdaec3a0950646b6dd90565bed0b8f4a19ce71e46"
+        ]
+      },
+      "consumedHandleCount": 6,
+      "bodyDigests": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802:5be9f368bdd0f0a3fa5db5f3daccbe746a1dd9c67c2a4e21886add76547f4c8d",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4:6948a7775bee979cb922a92bfef3bd1974802e733dcf8dd425038213c9222574",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37:11ffa7bb1a682d88e027d150bf32e13168edf1342fd1808ad03ac7b70df0f031",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de:4ce316ae3ad70fd9038d7627bde2657291efd7149213dd4f371589c16f9c49a1",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0:db14cf115fd4b18f0b51b106673ccaa5860d6c46463947de4236939d19fae85f",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0:1c0b5ab6d5b4990a0b776c8fdaec3a0950646b6dd90565bed0b8f4a19ce71e46"
+      ],
+      "ordinaryTaskDigest": "08d494d2f6e57263bee642f47380b27f5b12277550d70fd15802247c2b8fb619",
+      "toolCatalogDigest": "5fc8e39f2af165022862bb3e559aa280023447afaa046f75a2884b8efc4ada53",
+      "capabilitySetDigest": "fdf78e0fa3823a2ca6fe4a160115e6720eb44593f07ffb9d1a741e8521b9db4f",
+      "handlesInPayload": [
+        "proof:@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "proof:@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "reasoning:@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "reasoning:@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "procedure:@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "procedure:@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "compiledHandleOrder": [
+        "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+        "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+        "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+        "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+        "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+        "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0"
+      ],
+      "consumedHandles": [
+        {
+          "handle": "@ctx/proof/pc-23258f24b8273f02f3d34192deb25802",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/proof/pc-c914085eab32007853ef5796179214c4",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-c/cl-675a3ce013f9eb9c84306b37",
+          "bundleId": "C"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-d/cl-347f9b12051d87b3048e01de",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-0f3b68dad10e4a8ea039a33ec3446cb9/0",
+          "bundleId": "D"
+        },
+        {
+          "handle": "@ctx/procedure/prc-e43c856edbc5df95f97d2a4d2c0c7608/0",
+          "bundleId": "C"
+        }
+      ],
+      "pairedState": {
+        "scenarioId": "D_INCREMENTAL_CACHE_INVALIDATION",
+        "taskSemanticDigest": "26a02c8c0d9c62775ed9d8614eab54daf6da0c64e639b41131906aed12f8a2a1",
+        "repositoryHead": "4fa1d2cf2f98b78461dca0e06fa262e4cd9fb355",
+        "startingTreeDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "targetSourceDigest": "8c945c1c8cc6e3e255516bedec3a35d1a006569fe1374d5f7edbf4ae646349d3",
+        "visibleTestDigest": "32f8b416c3f4c7c4f108157c33007df53989ba2b483dba0779676525ff2356ff",
+        "hiddenOracleDigest": "1ad7ab8aa3a4cf1af8afe00099ff51737144714fbfbae62b9cc489261668420e",
+        "visibleFileCount": 5
+      },
+      "sessionFound": true,
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      }
+    }
+  ]
+}
