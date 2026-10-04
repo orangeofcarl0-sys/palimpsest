@@ -178,7 +178,7 @@ export function calibrateAgainstR2S(byBundle, r2sAnalysis) {
     skipped.push({ bundleId, utility, skippedByR2S: true });
   }
   void retrieved;
-  const r2sD = r2sAnalysis?.arms?.D ?? null;
+  const r2sD = r2sAnalysis?.D ?? null;
   return Object.freeze({
     note: 'R2-S labels were PROVENANCE labels; R2-V adds empirical utility as a new axis and does not rewrite them (§17).',
     scopeRestriction: 'R2-S ran on C and D; R2-V ran on D only, so this calibration uses the D evidence.',

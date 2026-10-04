@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "expectedTrials": 20,
+  "completedTrials": 20,
+  "seed": "0x52560301",
+  "scenario": "D",
+  "arms": {
+    "V0": {
+      "bundles": [
+        "D"
+      ],
+      "added": []
+    },
+    "V1": {
+      "bundles": [
+        "D",
+        "B"
+      ],
+      "added": [
+        "B"
+      ]
+    },
+    "V2": {
+      "bundles": [
+        "D",
+        "C"
+      ],
+      "added": [
+        "C"
+      ]
+    },
+    "V3": {
+      "bundles": [
+        "D",
+        "B",
+        "C"
+      ],
+      "added": [
+        "B",
+        "C"
+      ]
+    }
+  },
+  "confoundedBlocks": [],
+  "isolationBlocks": [
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 0,
+      "conditions": [
+        "V0",
+        "V1",
+        "V2",
+        "V3"
+      ],
+      "confounded": false,
+      "differences": [],
+      "consumedBundles": [
+        "V1=D+B",
+        "V3=D+B+C",
+        "V0=D",
+        "V2=D+C"
+      ],
+      "bundleSetsDiffer": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 1,
+      "conditions": [
+        "V0",
+        "V1",
+        "V2",
+        "V3"
+      ],
+      "confounded": false,
+      "differences": [],
+      "consumedBundles": [
+        "V1=D+B",
+        "V3=D+B+C",
+        "V0=D",
+        "V2=D+C"
+      ],
+      "bundleSetsDiffer": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 2,
+      "conditions": [
+        "V0",
+        "V1",
+        "V2",
+        "V3"
+      ],
+      "confounded": false,
+      "differences": [],
+      "consumedBundles": [
+        "V2=D+C",
+        "V0=D",
+        "V3=D+B+C",
+        "V1=D+B"
+      ],
+      "bundleSetsDiffer": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 3,
+      "conditions": [
+        "V0",
+        "V1",
+        "V2",
+        "V3"
+      ],
+      "confounded": false,
+      "differences": [],
+      "consumedBundles": [
+        "V2=D+C",
+        "V0=D",
+        "V3=D+B+C",
+        "V1=D+B"
+      ],
+      "bundleSetsDiffer": true
+    },
+    {
+      "scenario": "D_INCREMENTAL_CACHE_INVALIDATION",
+      "block": 4,
+      "conditions": [
+        "V0",
+        "V1",
+        "V2",
+        "V3"
+      ],
+      "confounded": false,
+      "differences": [],
+      "consumedBundles": [
+        "V3=D+B+C",
+        "V0=D",
+        "V1=D+B",
+        "V2=D+C"
+      ],
+      "bundleSetsDiffer": true
+    }
+  ],
+  "utility": {
+    "comparisons": [
+      {
+        "comparison": "V1 vs V0",
+        "addedBundles": [
+          "B"
+        ],
+        "recurrenceDelta": 0,
+        "solveDelta": 1,
+        "recurrenceDirection": "EQUAL",
+        "solveDirection": "MORE_SOLVED",
+        "classification": "POSITIVE_SIGNAL",
+        "testedScope": "5 V0 trials vs 5 V1 trials, Scenario D, deepseek-flash",
+        "preconditionMet": true,
+        "note": "n = 5 per arm. This is a descriptive signal about the tested scope, not a universal classification and not a significance test."
+      },
+      {
+        "comparison": "V2 vs V0",
+        "addedBundles": [
+          "C"
+        ],
+        "recurrenceDelta": 0,
+        "solveDelta": 1,
+        "recurrenceDirection": "EQUAL",
+        "solveDirection": "MORE_SOLVED",
+        "classification": "POSITIVE_SIGNAL",
+        "testedScope": "5 V0 trials vs 5 V2 trials, Scenario D, deepseek-flash",
+        "preconditionMet": true,
+        "note": "n = 5 per arm. This is a descriptive signal about the tested scope, not a universal classification and not a significance test."
+      },
+      {
+        "comparison": "V3 vs V0",
+        "addedBundles": [
+          "B",
+          "C"
+        ],
+        "recurrenceDelta": 0,
+        "solveDelta": 0,
+        "recurrenceDirection": "EQUAL",
+        "solveDirection": "EQUAL",
+        "classification": "NO_CLEAR_SIGNAL",
+        "testedScope": "5 V0 trials vs 5 V3 trials, Scenario D, deepseek-flash",
+        "preconditionMet": true,
+        "note": "n = 5 per arm. This is a descriptive signal about the tested scope, not a universal classification and not a significance test."
+      }
+    ],
+    "byBundle": {
+      "B": {
+        "bundleId": "B",
+        "comparisons": [
+          "V1 vs V0:POSITIVE_SIGNAL",
+          "V3 vs V0:NO_CLEAR_SIGNAL"
+        ],
+        "classifications": [
+          "POSITIVE_SIGNAL",
+          "NO_CLEAR_SIGNAL"
+        ],
+        "consensus": "NO_CLEAR_SIGNAL"
+      },
+      "C": {
+        "bundleId": "C",
+        "comparisons": [
+          "V2 vs V0:POSITIVE_SIGNAL",
+          "V3 vs V0:NO_CLEAR_SIGNAL"
+        ],
+        "classifications": [
+          "POSITIVE_SIGNAL",
+          "NO_CLEAR_SIGNAL"
+        ],
+        "consensus": "NO_CLEAR_SIGNAL"
+      }
+    }
+  },
+  "calibration": {
+    "note": "R2-S labels were PROVENANCE labels; R2-V adds empirical utility as a new axis and does not rewrite them (§17).",
+    "scopeRestriction": "R2-S ran on C and D; R2-V ran on D only, so this calibration uses the D evidence.",
+    "r2sDRetrieval": {
+      "S0": {
+        "target": "15/15",
+        "distractor": "15/15"
+      },
+      "S1": {
+        "target": "15/15",
+        "distractor": "6/15"
+      }
+    },
+    "skippedByR2S": [
+      {
+        "bundleId": "B",
+        "utility": "NO_CLEAR_SIGNAL",
+        "skippedByR2S": true
+      },
+      {
+        "bundleId": "C",
+        "utility": "NO_CLEAR_SIGNAL",
+        "skippedByR2S": true
+      }
+    ],
+    "answers": {
+      "didS1SkipBundlesWithPositiveUtilitySignal": [],
+      "didItRetrieveBundlesWithNoClearSignal": [
+        "B",
+        "C"
+      ],
+      "correlation": "CONSISTENT — the skipped bundles showed no positive utility signal in this tested scope"
+    }
+  },
+  "groundTruth": "the hidden acceptance module and the behavioural known-failure detector; never a model self-report"
+}
