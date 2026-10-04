@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "kind": "append-only R2-S interpretation record",
+  "amendedCommit": null,
+  "note": "R2-S (bcfae7e) is NOT amended; this record is appended instead",
+  "baseline": "bcfae7efcb217b300623706216a637a124b97a64",
+  "r2s": {
+    "protocolVerdict": "REPLICATED",
+    "provenClaim": "metadata improves retrieval selectivity against the predeclared provenance-based labels",
+    "notProven": "that every skipped DISTRACTOR has zero or negative task utility",
+    "labelsWere": "PROVENANCE labels: TARGET = same task lineage, DISTRACTOR = an independent bundle from a different domain",
+    "routingNotValue": "a lower retrieval rate for an item is a statement about ROUTING, not about VALUE"
+  },
+  "randomizedArmWordingCorrection": {
+    "priorFraming": "D S0 3/5 vs S1 0/5 described as a self-selected association between pullers and non-pullers",
+    "correctedFraming": "D S0 3/5 vs S1 0/5 is a RANDOMIZED-ARM secondary difference, not a self-selected association",
+    "why": "R2-S assigned each trial to an arm by the frozen randomized block order, and in the D arm every analysed trial retrieved its targets, so there was no self-selected split to associate over",
+    "harmClaimUnsupported": [
+      "n = 5 per arm, so 3/5 vs 0/5 is 3 trials",
+      "task success was declared SECONDARY before the run and was never consulted by the verdict",
+      "the primary outcomes were Target Recall and Distractor Pull Rate, and BOTH favoured S1",
+      "no mechanism was identified that would make consuming a distractor bundle harmful"
+    ]
+  },
+  "abortedPrePrimaryRun": {
+    "when": "before the final 20-run R2-S matrix, during the first two scheduled executions",
+    "defect": "pull EVENTS rather than DISTINCT handles were counted, allowing Target Recall > 1",
+    "observed": "target=4/3, which contradicts the frozen definition target_pulls in [0,3]",
+    "resolution": "the run was discarded; the implementation was corrected to count distinct handles; the entire primary matrix was restarted from scratch",
+    "unchanged": ["treatment wording", "preview", "candidate set", "verdict criteria", "task definition"],
+    "discardedRunUsage": "never analysed, never published, never used to tune anything; the restarted matrix ran in a fresh run directory so no stale record could be read back",
+    "recordedFor": "evidence completeness"
+  },
+  "r2sCommitUnamended": "bcfae7e"
+}

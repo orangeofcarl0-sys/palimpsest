@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "note": "§6: the Scenario-D identity is byte-frozen and NOT tuned. The task, repo, visible tests, hidden oracle, known-failure detector and target D capital are unchanged from R2-S.",
+  "scenario": {
+    "id": "D",
+    "name": "D_INCREMENTAL_CACHE_INVALIDATION",
+    "projectId": "r2u-incremental-cache",
+    "sourceFile": "src/cache.ts",
+    "exportName": "invalidateCache",
+    "taskObjective": "finish invalidateCache so it updates the cache after a set of source nodes changed",
+    "projectGoal": "keep an incremental build cache correct as its inputs change",
+    "knownFailure": "invalidate the changed nodes before the affected closure is computed",
+    "knownFailureDetector": "invalidateBeforeClosureFrozen",
+    "oracleCommand": [
+      "node",
+      "test/check.js"
+    ]
+  },
+  "targetBundle": "D",
+  "unchangedFrom": "bcfae7efcb217b300623706216a637a124b97a64"
+}
