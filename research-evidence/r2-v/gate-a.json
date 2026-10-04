@@ -1,0 +1,291 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-V",
+  "gate": "A",
+  "deterministicOnly": true,
+  "note": "§10: NO behavioural pilot on D; readiness is proven deterministically and the model-visible consumption proof belongs to each trial's own session artifact",
+  "harnessDigests": {
+    "host/dsh/lib/efficacy.js": "ea2a86bd86b5e32810be563dcd1d44f45ec8edb187a28048aefdc65c32b95996",
+    "scripts/r2v/design.mjs": "d27751f52d72ec3d0cd972106930e08df97cb2de0a9da47de9d2444949a509cd",
+    "scripts/r2v/trial.mjs": "a8c8744b90789f7dd82e768ba95681a49bb8cba5a7adbefb2ff00234cba5627b",
+    "scripts/r2v/analyse.mjs": "9bc82509043aabe11a8809f5243e1fc4395a754742816878d6a3e0ec98de266e"
+  },
+  "results": [
+    {
+      "id": "VA-01",
+      "statement": "the schedule is exactly 4 arms × 5 repetitions = 20 Scenario-D trials",
+      "pass": true,
+      "detail": "20 trials planned"
+    },
+    {
+      "id": "VA-02",
+      "statement": "the seed is the frozen literal",
+      "pass": true,
+      "detail": "0x52560301"
+    },
+    {
+      "id": "VA-03",
+      "statement": "the stage runs on Scenario D only (§6)",
+      "pass": true,
+      "detail": "D"
+    },
+    {
+      "id": "VA-04:b0",
+      "statement": "§10 block 0 contains ALL FOUR arms exactly once",
+      "pass": true,
+      "detail": "V1 V3 V0 V2"
+    },
+    {
+      "id": "VA-04:b1",
+      "statement": "§10 block 1 contains ALL FOUR arms exactly once",
+      "pass": true,
+      "detail": "V1 V3 V0 V2"
+    },
+    {
+      "id": "VA-04:b2",
+      "statement": "§10 block 2 contains ALL FOUR arms exactly once",
+      "pass": true,
+      "detail": "V2 V0 V3 V1"
+    },
+    {
+      "id": "VA-04:b3",
+      "statement": "§10 block 3 contains ALL FOUR arms exactly once",
+      "pass": true,
+      "detail": "V2 V0 V3 V1"
+    },
+    {
+      "id": "VA-04:b4",
+      "statement": "§10 block 4 contains ALL FOUR arms exactly once",
+      "pass": true,
+      "detail": "V3 V0 V1 V2"
+    },
+    {
+      "id": "VA-05",
+      "statement": "the arm ordering is not the same permutation in every block",
+      "pass": true,
+      "detail": "3 distinct permutations"
+    },
+    {
+      "id": "VA-06",
+      "statement": "V0 consumes the D bundle only",
+      "pass": true,
+      "detail": "D"
+    },
+    {
+      "id": "VA-07",
+      "statement": "V1 consumes D + B",
+      "pass": true,
+      "detail": "D+B"
+    },
+    {
+      "id": "VA-08",
+      "statement": "V2 consumes D + C",
+      "pass": true,
+      "detail": "D+C"
+    },
+    {
+      "id": "VA-09",
+      "statement": "V3 consumes D + B + C",
+      "pass": true,
+      "detail": "D+B+C"
+    },
+    {
+      "id": "VA-10",
+      "statement": "§11 the four consumed bundle sets are ALL DISTINCT",
+      "pass": true,
+      "detail": "D | B+D | C+D | B+C+D"
+    },
+    {
+      "id": "VA-11",
+      "statement": "§8 every arm includes the task's OWN bundle (D), so the comparison isolates what is ADDED",
+      "pass": true,
+      "detail": "V0:D V1:D+B V2:D+C V3:D+B+C"
+    },
+    {
+      "id": "VA-12",
+      "statement": "§9 the arms add WHOLE bundles, never individual kinds",
+      "pass": true,
+      "detail": "V1+B V2+C V3+B+C"
+    },
+    {
+      "id": "VA-13",
+      "statement": "§7 every bundle is a REAL recorded exploration, not a hand-authored string",
+      "pass": true,
+      "detail": "B:8 clauses | C:6 clauses | D:6 clauses"
+    },
+    {
+      "id": "VA-14",
+      "statement": "§7 no two bundles share a domain",
+      "pass": true,
+      "detail": "B:legacy configuration migration | C:event-log replay reduction | D:incremental build-cache invalidation"
+    },
+    {
+      "id": "VA-15",
+      "statement": "§7 the B and C bundles really differ from D's target content",
+      "pass": true,
+      "detail": "B/C proof and reasoning statements differ from D's"
+    },
+    {
+      "id": "VA-16",
+      "statement": "§8 the mechanism is the R2-E HOST_MEDIATED_PREWORK seam, recorded as data",
+      "pass": true,
+      "detail": "HOST_MEDIATED_PREWORK (host seam: HOST_MEDIATED_PREWORK)"
+    },
+    {
+      "id": "VA-17",
+      "statement": "§4 the efficacy seam is OFF by default and only the two frozen tokens enable an arm",
+      "pass": true,
+      "detail": "absent ⇒ off"
+    },
+    {
+      "id": "VA-18:undefined",
+      "statement": "no unrecognized efficacy value enables an arm (undefined)",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:",
+      "statement": "no unrecognized efficacy value enables an arm (\"\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:E1 ",
+      "statement": "no unrecognized efficacy value enables an arm (\"E1 \")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:e1x",
+      "statement": "no unrecognized efficacy value enables an arm (\"e1x\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:on",
+      "statement": "no unrecognized efficacy value enables an arm (\"on\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:true",
+      "statement": "no unrecognized efficacy value enables an arm (\"true\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-18:1",
+      "statement": "no unrecognized efficacy value enables an arm (\"1\")",
+      "pass": true,
+      "detail": "resolves to off"
+    },
+    {
+      "id": "VA-19",
+      "statement": "a bundle that FEWER mistakes with no solve loss is POSITIVE_SIGNAL",
+      "pass": true,
+      "detail": "recurrence 3→0, solves 3→3"
+    },
+    {
+      "id": "VA-20",
+      "statement": "a bundle that ADDS solves with no recurrence loss is POSITIVE_SIGNAL",
+      "pass": true,
+      "detail": "solves 3→5, recurrence 3→3"
+    },
+    {
+      "id": "VA-21",
+      "statement": "a bundle that adds mistakes is ADVERSE_SIGNAL",
+      "pass": true,
+      "detail": "recurrence 1→4, solves 3→3"
+    },
+    {
+      "id": "VA-22",
+      "statement": "a bundle that loses solves is ADVERSE_SIGNAL",
+      "pass": true,
+      "detail": "solves 4→1, recurrence 1→1"
+    },
+    {
+      "id": "VA-23",
+      "statement": "IDENTICAL on both outcomes is NO_CLEAR_SIGNAL, never POSITIVE",
+      "pass": true,
+      "detail": "no movement is reported as no clear signal"
+    },
+    {
+      "id": "VA-24",
+      "statement": "§15 the classification is never a binary useful/useless",
+      "pass": true,
+      "detail": "three descriptive classes only"
+    },
+    {
+      "id": "VA-25",
+      "statement": "§16 the calibration names B and C as the bundles R2-S skipped on D",
+      "pass": true,
+      "detail": "[\"B:NO_CLEAR_SIGNAL\",\"C:NO_CLEAR_SIGNAL\"]"
+    },
+    {
+      "id": "VA-26",
+      "statement": "§16 skipped bundles with no positive utility signal are reported CONSISTENT",
+      "pass": true,
+      "detail": "CONSISTENT — the skipped bundles showed no positive utility signal in this tested scope"
+    },
+    {
+      "id": "VA-26b",
+      "statement": "§16 a skipped bundle WITH a positive signal (and one without) is reported MIXED",
+      "pass": true,
+      "detail": "MIXED — some skipped bundles showed a positive signal and some did not"
+    },
+    {
+      "id": "VA-26c",
+      "statement": "§16 when EVERY skipped bundle shows a positive signal the calibration is MISCALIBRATED",
+      "pass": true,
+      "detail": "MISCALIBRATED — S1 skipped bundles that showed a positive utility signal"
+    },
+    {
+      "id": "VA-27",
+      "statement": "§16 the calibration states its scope restriction (R2-S ran on C and D; R2-V on D)",
+      "pass": true,
+      "detail": "R2-S ran on C and D; R2-V ran on D only, so this calibration uses the D evidence."
+    },
+    {
+      "id": "VA-28",
+      "statement": "§6 Scenario D is the scenario this stage runs, with its task and oracle byte-frozen",
+      "pass": true,
+      "detail": "D_INCREMENTAL_CACHE_INVALIDATION / src/cache.ts / invalidateCache"
+    },
+    {
+      "id": "VA-29",
+      "statement": "§6 the D target bundle is the D bundle, unchanged from R2-S",
+      "pass": true,
+      "detail": "D"
+    },
+    {
+      "id": "VA-30",
+      "statement": "the harness digests this readiness record describes are recorded",
+      "pass": true,
+      "detail": "4 files digested (a trial does not count if the harness changes afterwards)"
+    },
+    {
+      "id": "VA-31",
+      "statement": "§4 the efficacy seam is inert unless the environment explicitly selects an arm",
+      "pass": true,
+      "detail": "the default path is byte-identical to production"
+    },
+    {
+      "id": "VA-32",
+      "statement": "§14 the analysis produces exactly V1-vs-V0, V2-vs-V0 and V3-vs-V0",
+      "pass": true,
+      "detail": "V1 vs V0,V2 vs V0,V3 vs V0"
+    },
+    {
+      "id": "VA-33",
+      "statement": "§14 each comparison carries RAW deltas and DIRECTION, never a p-value",
+      "pass": true,
+      "detail": "raw counts and direction only"
+    },
+    {
+      "id": "VA-34",
+      "statement": "§15 each comparison states its tested scope with a real trial count",
+      "pass": true,
+      "detail": "1 V0 trials vs 1 V1 trials, Scenario D, deepseek-flash"
+    }
+  ]
+}

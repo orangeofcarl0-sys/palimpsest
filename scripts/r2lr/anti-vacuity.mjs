@@ -43,6 +43,7 @@ const SCOPE = Object.freeze([
   'scripts/r2s',
   'scripts/r2u',
   'scripts/r2e',
+  'scripts/r2v',
 ]);
 
 /**
