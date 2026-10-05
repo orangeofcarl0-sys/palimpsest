@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-SPEC",
+  "kind": "regression evidence",
+  "mode": "DESIGN / EVIDENCE-HARDENING — no stochastic treatment matrix, no stochastic run of any kind",
+  "note": "Prior-stage evidence directories (r2-v, r2-vr, r2-s, r2-m, r2-lr, r2-u, r2-e, r1-r) are byte-unchanged. R2-V (845d2a2) and R2-VR (9f7eb18) are not amended.",
+  "build": "PASS (tsc -b, clean)",
+  "unit": "3281/3281 passed (261 files; 24 new R3-SPEC contract tests)",
+  "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+  "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+  "deterministicGates": {
+    "r3specEvidenceClosure": "20/20 sources re-judged; recordedTotal == rejudgedTotal for all 20; ALL TOTALS MATCH: YES",
+    "r3specContractTests": "24/24 passed (including the §18 factorial-rule protection and a live closure re-run)",
+    "r2lrAntiVacuity": "PASS — 0 unconditional forms (scripts/r3spec now included in the scan scope)"
+  },
+  "noStochasticRun": "no worker was launched; no primary treatment matrix was run; the 20 R2-V trials were not reopened",
+  "canonicalSurfaces": {
+    "srcDiff": "ZERO",
+    "hostDiff": "ZERO",
+    "architectureDiff": "ZERO",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "productCodeChanged": false,
+    "metadataProductized": false
+  },
+  "allowedChangesMade": [
+    "scripts/r3spec/evidence-closure.mjs + .d.mts — the §1 closure harness",
+    "test/r3spec_contract.test.ts — 24 deterministic contract tests",
+    "docs/engineering/R3-GENERALIZATION-BENCHMARK-SPEC.md",
+    "docs/engineering/BENCHMARK-QUALIFICATION-CONTRACT.md",
+    "docs/engineering/R3-FACTOR-MATRIX.md",
+    "docs/engineering/R3-CLAIM-LADDER.md",
+    "docs/engineering/R3-EXECUTION-READINESS.md",
+    "research-evidence/r3-spec/**",
+    "scripts/r2lr/anti-vacuity.mjs — scan scope only"
+  ]
+}
