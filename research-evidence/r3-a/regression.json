@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A0",
+  "kind": "regression evidence",
+  "mode": "baseline qualification only — NO primary capital-treatment matrix was run",
+  "note": "Prior-stage evidence is byte-unchanged except for two regenerated R2-LR artifacts, which were restored. No R2 or R3-SPEC commit was amended.",
+  "preQualification": {
+    "build": "PASS (tsc -b, clean)",
+    "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+    "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+    "r1hcConfidentiality": "PASS — run live inside GATE C (GC-31)",
+    "r2lrRealSessionDelivery": "PASS — last mile 12/12"
+  },
+  "gateC": {
+    "result": "GREEN 33/33",
+    "deterministicOnly": true,
+    "note": "GATE C was GREEN before any baseline worker run, which is what authorized the automatic continuation"
+  },
+  "postQualification": {
+    "build": "PASS",
+    "unit": "3281/3281 passed (261 files)",
+    "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+    "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+    "deterministicContractTests": "33/33 passed (test/r3a_qualification.test.ts)",
+    "r2lrAntiVacuity": "PASS — 0 unconditional forms (scripts/r3a included in the scan scope)"
+  },
+  "canonicalSurfaces": {
+    "srcDiff": "ZERO",
+    "hostDiff": "ZERO",
+    "architectureDiff": "ZERO",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "productCodeChanged": false,
+    "metadataProductized": false
+  },
+  "allowedChangesMade": [
+    "fixtures/r3a/** — the two frozen fixture revisions",
+    "scripts/r3a/** — the construction, contract, model-route, trial, matrix and analysis harness",
+    "test/r3a_qualification.test.ts — 33 deterministic contract tests",
+    "docs/engineering/R3-A-*.md — the contract amendment, fixture families and result documents",
+    "research-evidence/r3-a/**",
+    "scripts/r2lr/anti-vacuity.mjs — scan scope only"
+  ],
+  "noStochasticTreatmentMatrix": "no capital mechanism was delivered in any run; every qualification run recorded capitalDelivered=false and compiledHandleCount=0"
+}

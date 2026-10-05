@@ -1,0 +1,213 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A0",
+  "gate": "C",
+  "deterministicOnly": true,
+  "harnessDigests": {
+    "scripts/r3a/fixture-content.mjs": "d7458688d6fabbae8598d590da7d41d3ee777c62ec59e3e5a31efc7c050ef5e2",
+    "scripts/r3a/qualification.mjs": "d869f86067255c2906981fb035c6de95fe1d9ebc8a2cfcbba5537e7758b4c69d",
+    "scripts/r3a/models.mjs": "1b7651d15c627b1f2532b548791a13159a1acb3b823ea1a4c1fa55addad9bb27",
+    "scripts/r3a/trial.mjs": "00c92e3befa35ca0b9ed7e2f17defd4413fc762dc0da586042e65af6738dbea4",
+    "scripts/r3a/qualify.mjs": "8d374dfaad2311ddf0bfd2e2b74fc6bbd431f2af4eee9f47657ca9a2a7ed6528"
+  },
+  "results": [
+    {
+      "id": "GC-01",
+      "statement": "the aggregate bounds are frozen with room required in BOTH directions",
+      "pass": true,
+      "detail": "(0.2, 0.85) on classCoverage"
+    },
+    {
+      "id": "GC-02",
+      "statement": "§2.2 the floor/ceiling semantics are recorded correctly, not inverted",
+      "pass": true,
+      "detail": "no room to detect harm / no room to detect help"
+    },
+    {
+      "id": "GC-03",
+      "statement": "§2.2 Nq is frozen at 5 and the class-headroom minimum is frozen at 2",
+      "pass": true,
+      "detail": "Nq=5, min varying DIRECT classes=2"
+    },
+    {
+      "id": "GC-04",
+      "statement": "§16 the allowed pair verdicts are exactly the three, with no \"almost qualified\"",
+      "pass": true,
+      "detail": "QUALIFIED, UNQUALIFIED, INFRASTRUCTURE_INVALID"
+    },
+    {
+      "id": "GC-05",
+      "statement": "§6 at least TWO COMPLIANT frozen fixture families exist",
+      "pass": true,
+      "detail": "2 families: F-A transactional / atomic state update | F-B versioned schema / API compatibility"
+    },
+    {
+      "id": "GC-06",
+      "statement": "§4 the families are structurally distinct (different mechanism families, not renames)",
+      "pass": true,
+      "detail": "F-A transactional / atomic state update | F-B versioned schema / API compatibility"
+    },
+    {
+      "id": "GC-07",
+      "statement": "§5 every fixture revision carries a content digest",
+      "pass": true,
+      "detail": "r3a-f-a-atomic-transaction:468cfcea8a8e… r3a-f-b-versioned-migration:8e290a4be4ba…"
+    },
+    {
+      "id": "GC-08",
+      "statement": "§6 every declared failure class is exercised by at least one case",
+      "pass": true,
+      "detail": "all classes exercised"
+    },
+    {
+      "id": "GC-09",
+      "statement": "§6 every case names a DECLARED failure class",
+      "pass": true,
+      "detail": "all cases declared"
+    },
+    {
+      "id": "GC-10",
+      "statement": "§4 each fixture H0 FAILS at least one class, so the fixture has headroom rather than a floor",
+      "pass": true,
+      "detail": "r3a-f-a-atomic-transaction: H0 2/8, headroom on 5 classes | r3a-f-b-versioned-migration: H0 3/8, headroom on 4 classes"
+    },
+    {
+      "id": "GC-11",
+      "statement": "§4 each fixture H0 is NOT at the floor on every class (a fixture H0 solves nothing on is unmeasurable too)",
+      "pass": true,
+      "detail": "r3a-f-a-atomic-transaction: H0 2/8 | r3a-f-b-versioned-migration: H0 3/8"
+    },
+    {
+      "id": "GC-12",
+      "statement": "§14 the mechanical oracles are DETERMINISTIC (identical judgement across two constructions)",
+      "pass": true,
+      "detail": "r3a-f-a-atomic-transaction:stable r3a-f-b-versioned-migration:stable"
+    },
+    {
+      "id": "GC-13",
+      "statement": "§2.4 every failure class carries a capital relationship entry",
+      "pass": true,
+      "detail": "all classes mapped"
+    },
+    {
+      "id": "GC-14",
+      "statement": "§7 each fixture has a candidate capital item with a frozen DIRECT map",
+      "pass": true,
+      "detail": "r3a-f-a-atomic-transaction: 6 DIRECT class(es) | r3a-f-b-versioned-migration: 7 DIRECT class(es)"
+    },
+    {
+      "id": "GC-15",
+      "statement": "§7 the capital provenance is recorded as mechanism derivation, not as an empirical claim",
+      "pass": true,
+      "detail": "cap-fa-atomic-commit:MECHANISM_DERIVATION cap-fb-compat-migration:MECHANISM_DERIVATION"
+    },
+    {
+      "id": "GC-16",
+      "statement": "§2.4 TRANSFER_HYPOTHESIS entries exist and are recorded SEPARATELY from DIRECT",
+      "pass": true,
+      "detail": "2 fixture(s) carry transfer hypotheses"
+    },
+    {
+      "id": "GC-17",
+      "statement": "§8 at least TWO materially distinct model families are AVAILABLE (verified end-to-end)",
+      "pass": true,
+      "detail": "2 verified route(s) across families: deepseek, glm"
+    },
+    {
+      "id": "GC-18",
+      "statement": "§8 no two verified routes are two sizes of ONE family",
+      "pass": true,
+      "detail": "DeepSeek/deepseek, Zhipu / Z.ai/glm"
+    },
+    {
+      "id": "GC-19",
+      "statement": "§8 every verified route records WHY it is materially distinct",
+      "pass": true,
+      "detail": "deepseek, glm"
+    },
+    {
+      "id": "GC-20",
+      "statement": "§8 unverified routes are recorded honestly rather than dropped",
+      "pass": true,
+      "detail": "deepseek-flash:verified glm-5.3-flash:verified kimi-k3:gateway-only"
+    },
+    {
+      "id": "GC-21",
+      "statement": "§9 the common renderer is frozen and family-independent",
+      "pass": true,
+      "detail": "dsh-common-worker v1"
+    },
+    {
+      "id": "GC-22",
+      "statement": "§12 a pair with ≥2 varying DIRECT classes inside the bounds is QUALIFIED",
+      "pass": true,
+      "detail": "QUALIFIED (coverage 0.633, varying DIRECT FA1,FA2,FA3,FA4)"
+    },
+    {
+      "id": "GC-22b",
+      "statement": "§2.3 redundant dimensions are collapsed by the OBSERVED-vector test, not by name",
+      "pass": true,
+      "detail": "groups: classCoverage+FA1+FA2+FA3+FA4+FA5+FA6 | fullSolve"
+    },
+    {
+      "id": "GC-22c",
+      "statement": "§2.3 two dimensions with identical observed series form ONE redundant group",
+      "pass": true,
+      "detail": "classCoverage=FA1=FA2=FA3=FA4=FA5=FA6"
+    },
+    {
+      "id": "GC-23",
+      "statement": "§12 the R2-V shape (near-ceiling coverage, one unrelated varying class) is UNQUALIFIED",
+      "pass": true,
+      "detail": "QC-1 failed: aggregate class coverage 0.867 is outside (0.2, | QC-4 failed: 1 non-redundant DIRECT-treatment-relevant class"
+    },
+    {
+      "id": "GC-24",
+      "statement": "§16 a pair with too many infrastructure-invalid runs is INFRASTRUCTURE_INVALID, not UNQUALIFIED",
+      "pass": true,
+      "detail": "2 of 5 scheduled runs were infrastructure-invalid; 5 valid runs are required"
+    },
+    {
+      "id": "GC-25",
+      "statement": "§2.1 the minimum L-shaped bridge is GREEN on a model-on-2-tasks plus task-on-2-models graph",
+      "pass": true,
+      "detail": "clauses {\"twoTaskFamilies\":true,\"twoModelFamilies\":true,\"modelOnTwoTaskFamilies\":true,\"taskFamilyOnTwoModelFamilies\":true}"
+    },
+    {
+      "id": "GC-26",
+      "statement": "§2.1 a graph with NO L-shaped bridge is RED even with 2 families and 2 models",
+      "pass": true,
+      "detail": "clauses {\"twoTaskFamilies\":true,\"twoModelFamilies\":true,\"modelOnTwoTaskFamilies\":false,\"taskFamilyOnTwoModelFamilies\":false}"
+    },
+    {
+      "id": "GC-27",
+      "statement": "§2.6 a NON_COMPLIANT qualified pair does NOT count toward the gate",
+      "pass": true,
+      "detail": "excluded 2, clauses {\"twoTaskFamilies\":false,\"twoModelFamilies\":false,\"modelOnTwoTaskFamilies\":false,\"taskFamilyOnTwoModelFamilies\":false}"
+    },
+    {
+      "id": "GC-28",
+      "statement": "§13 the harness digests the plan was frozen against are recorded",
+      "pass": true,
+      "detail": "5 files digested"
+    },
+    {
+      "id": "GC-29",
+      "statement": "§10 the baseline harness selects NO capital (no knowledge, no index, no prework)",
+      "pass": true,
+      "detail": "the job starts with no knowledge selection"
+    },
+    {
+      "id": "GC-30",
+      "statement": "§10 the baseline harness never enables the efficacy prework seam",
+      "pass": true,
+      "detail": "no efficacy env is set"
+    },
+    {
+      "id": "GC-31",
+      "statement": "§19 the R1-HC confidentiality conformance gate is GREEN",
+      "pass": true,
+      "detail": "written: C:\\Users\\66494\\.palimpsest-r1hc\\conformance\\conformance.json"
+    }
+  ]
+}
