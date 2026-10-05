@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-VR",
+  "kind": "append-only R2-V erratum",
+  "amendedCommit": null,
+  "note": "845d2a2 is NOT amended; this erratum is appended instead",
+  "baseline": "845d2a2816abacb0d0ce354057b374bf255cbbef",
+  "erratum": {
+    "executionValid": true,
+    "randomizedTreatmentsValid": true,
+    "perArmRawResultsValid": true,
+    "originalClassification": "the predeclared POSITIVE_SIGNAL / NO_CLEAR_SIGNAL classification remains historical protocol output",
+    "estimandError": "the per-bundle \"consensus\" was not a valid factorial marginal-effect estimator because V3-vs-V0 is a combined treatment, not the marginal effect of B or C",
+    "reAdjudication": "utility calibration is re-adjudicated using the factorial contrasts"
+  },
+  "rawEvidencePreserved": {
+    "trialManifest": "research-evidence/r2-v/trial-manifest.json — unmodified",
+    "normalizedResults": "research-evidence/r2-v/normalized-results.json — unmodified",
+    "originalAnalysis": "research-evidence/r2-v/analysis.json — unmodified",
+    "note": "the corrected analysis is written beside the original in research-evidence/r2-vr/"
+  },
+  "estimandCorrection": {
+    "layout": { "V0": "B absent, C absent", "V1": "B present, C absent", "V2": "B absent, C present", "V3": "B present, C present" },
+    "conditionalContrasts": { "B|C absent": "V1 - V0", "B|C present": "V3 - V2", "C|B absent": "V2 - V0", "C|B present": "V3 - V1" },
+    "mainEffects": { "B": "mean[(V1-V0), (V3-V2)]", "C": "mean[(V2-V0), (V3-V1)]" },
+    "interaction": "V3 - V2 - V1 + V0",
+    "noStatistics": "n = 5 per cell; raw counts and rates only; no p-values"
+  },
+  "retiredInference": "R2-S calibration: CONSISTENT — skipped bundles showed no positive utility signal",
+  "correctedStatus": "UTILITY_CALIBRATION_INCONCLUSIVE",
+  "schemaNamingCorrection": {
+    "from": "didItRetrieveBundlesWithNoClearSignal",
+    "to": "skippedBundlesWithNoClearSignal",
+    "why": "the value was drawn from the SKIPPED bundles, so the old name described the opposite of what the code does",
+    "valueChanged": false,
+    "committedAnalysisJsonRewritten": false
+  },
+  "outcomeAuditRuling": "UTILITY_ASSAY_OUTCOME_MISMATCH"
+}

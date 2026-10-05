@@ -184,16 +184,29 @@ export function calibrateAgainstR2S(byBundle, r2sAnalysis) {
     scopeRestriction: 'R2-S ran on C and D; R2-V ran on D only, so this calibration uses the D evidence.',
     r2sDRetrieval: r2sD === null ? 'ABSENT' : { S0: { target: r2sD.S0?.targetRecall, distractor: r2sD.S0?.distractorRate }, S1: { target: r2sD.S1?.targetRecall, distractor: r2sD.S1?.distractorRate } },
     skippedByR2S: skipped,
-    /** §16: the three calibration questions, answered from the two axes. */
+    /** §16: the calibration questions, answered from the two axes. */
     answers: Object.freeze({
       didS1SkipBundlesWithPositiveUtilitySignal: skipped.filter((entry) => entry.utility === 'POSITIVE_SIGNAL').map((entry) => entry.bundleId),
-      didItRetrieveBundlesWithNoClearSignal: skipped.filter((entry) => entry.utility === 'NO_CLEAR_SIGNAL').map((entry) => entry.bundleId),
+      /**
+       * §8 (R2-VR): RENAMED. This list is drawn from the SKIPPED bundles — the implementation has only ever
+       * examined `skipped` — so the previous name `didItRetrieveBundlesWithNoClearSignal` described the
+       * opposite of what the code does. The value is unchanged; only the name is corrected.
+       */
+      skippedBundlesWithNoClearSignal: skipped.filter((entry) => entry.utility === 'NO_CLEAR_SIGNAL').map((entry) => entry.bundleId),
       correlation: skipped.every((entry) => entry.utility === 'POSITIVE_SIGNAL')
         ? 'MISCALIBRATED — S1 skipped bundles that showed a positive utility signal'
         : skipped.every((entry) => entry.utility !== 'POSITIVE_SIGNAL')
           ? 'CONSISTENT — the skipped bundles showed no positive utility signal in this tested scope'
           : 'MIXED — some skipped bundles showed a positive signal and some did not',
     }),
+    /**
+     * §9/§1 (R2-VR): SUPERSEDED ESTIMATOR. The `consensus` this function reads from `byBundle` treated
+     * `V3 vs V0` as the marginal effect of B and of C. `V3 vs V0` is the COMBINED treatment effect, so the
+     * consensus is not a valid factorial marginal-effect estimator. The corrected contrasts live in
+     * `scripts/r2vr/` and `research-evidence/r2-vr/factorial-analysis.json`; this function is left as the
+     * historical protocol output it was, with the field name corrected and this note attached.
+     */
+    estimatorStatus: 'SUPERSEDED_BY_R2VR_FACTORIAL_CONTRASTS',
   });
 }
 

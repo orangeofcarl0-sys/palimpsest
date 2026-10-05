@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-VR",
+  "kind": "regression evidence",
+  "mode": "NO STOCHASTIC RUN — no worker was launched and no R2-V raw trial was altered",
+  "note": "Prior-stage evidence directories (r2-v, r2-s, r2-m, r2-lr, r2-u, r2-e, r1-r) are byte-unchanged. The committed R2-V analysis.json is deliberately NOT rewritten; the corrected analysis lives in research-evidence/r2-vr/.",
+  "build": "PASS (tsc -b, clean)",
+  "unit": "3257/3257 passed (260 files; 28 new R2-VR tests)",
+  "architecture": { "violations": 0, "baselineExceptionsObserved": 9 },
+  "publicApi": { "missing": 0, "changedKind": 0, "added": 0 },
+  "analysisTests": {
+    "r2vrFactorial": "28/28 passed",
+    "r2vUtility": "36/36 passed (unchanged after the §8 field rename)",
+    "r2sSelectivity": "38/38 passed"
+  },
+  "deterministicGates": {
+    "r2lrAntiVacuity": "PASS — 0 unconditional forms (scripts/r2vr now included in the scan scope)"
+  },
+  "noLiveWorkerRun": "§13: no live-worker run was performed, because no runtime semantics changed",
+  "noStochasticTrials": "the 20 R2-V stochastic trials were NOT rerun",
+  "canonicalSurfaces": {
+    "srcDiff": "ZERO",
+    "hostDiff": "ZERO",
+    "architectureDiff": "ZERO",
+    "newOwner": "NONE",
+    "architectureWriteRun": false,
+    "productCodeChanged": false
+  },
+  "allowedChangesMade": [
+    "scripts/r2v/analyse.mjs — §8 field rename and the superseded-estimator note",
+    "scripts/r2vr/** — the new reanalysis harness",
+    "test/r2vr_factorial.test.ts — new deterministic tests",
+    "docs/engineering/R2-VR-FACTORIAL-REANALYSIS.md",
+    "research-evidence/r2-vr/**",
+    "scripts/r2lr/anti-vacuity.mjs — scan scope only"
+  ]
+}

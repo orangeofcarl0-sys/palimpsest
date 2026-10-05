@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-VR",
+  "kind": "utility-benchmark qualification law",
+  "note": "§10: requirements for any FUTURE capital-utility benchmark. No benchmark is created in this stage.",
+  "requirements": [
+    {
+      "id": "UQ-1",
+      "name": "baseline neither floor nor ceiling",
+      "statement": "the control arm must sit strictly between the worst and best attainable outcomes, with room to move in BOTH directions"
+    },
+    {
+      "id": "UQ-2",
+      "name": "multiple outcome dimensions have stochastic headroom",
+      "statement": "at least two outcome dimensions must vary under repetition of the control, so one saturated dimension cannot carry the whole assay"
+    },
+    {
+      "id": "UQ-3",
+      "name": "at least one treatment-relevant failure class varies",
+      "statement": "a failure class the candidate capital is ABOUT must vary across runs; variation in an unrelated class cannot measure the capital's utility"
+    },
+    {
+      "id": "UQ-4",
+      "name": "the candidate capital addresses an outcome that can vary",
+      "statement": "the bundle's own recorded method must mechanically cover a case that varies; coverage of an INVARIANT case contributes nothing to a marginal estimate"
+    },
+    {
+      "id": "UQ-5",
+      "name": "success cannot hinge entirely on one unrelated residual case",
+      "statement": "if all arm-level variation traces to a single case that no added capital addresses, the assay is not measuring the capital"
+    }
+  ],
+  "appliedToScenarioD": {
+    "qualified": false,
+    "violations": ["UQ-1", "UQ-3", "UQ-4", "UQ-5"],
+    "evidence": [
+      "every trial scored 13/14 or 14/14 — the baseline is at the ceiling (UQ-1)",
+      "13 of 14 hidden cases are invariant across all 20 candidates (UQ-2, UQ-3)",
+      "the one varying case (h14) is addressed directly only by D, which is in every arm, and only GENERICALLY by B and C (UQ-4)",
+      "all arm-level variation traces to that single unrelated residual case (UQ-5)"
+    ],
+    "ruling": "UTILITY_ASSAY_OUTCOME_MISMATCH"
+  },
+  "notCreated": "no next benchmark was created in this stage"
+}

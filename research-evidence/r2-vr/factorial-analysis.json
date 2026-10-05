@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 1,
+  "stage": "R2-VR",
+  "kind": "corrected factorial reanalysis (append-only; the original R2-V analysis is preserved)",
+  "estimandCorrection": "V3 vs V0 is the COMBINED treatment effect, not the marginal effect of B or C. Marginal effects are the mean of the two conditional contrasts.",
+  "sourceTrials": 20,
+  "cells": {
+    "V0": "B absent, C absent",
+    "V1": "B present, C absent",
+    "V2": "B absent, C present",
+    "V3": "B present, C present"
+  },
+  "contrasts": {
+    "firstCandidateSolved": {
+      "dimension": "firstCandidateSolved",
+      "cells": {
+        "V0": {
+          "dimension": "firstCandidateSolved",
+          "n": 5,
+          "hits": 3,
+          "misses": 2,
+          "rate": 0.6,
+          "raw": "3/5"
+        },
+        "V1": {
+          "dimension": "firstCandidateSolved",
+          "n": 5,
+          "hits": 4,
+          "misses": 1,
+          "rate": 0.8,
+          "raw": "4/5"
+        },
+        "V2": {
+          "dimension": "firstCandidateSolved",
+          "n": 5,
+          "hits": 4,
+          "misses": 1,
+          "rate": 0.8,
+          "raw": "4/5"
+        },
+        "V3": {
+          "dimension": "firstCandidateSolved",
+          "n": 5,
+          "hits": 3,
+          "misses": 2,
+          "rate": 0.6,
+          "raw": "3/5"
+        }
+      },
+      "conditional": {
+        "bGivenCAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "bGivenCPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        },
+        "cGivenBAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "cGivenBPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        }
+      },
+      "bMainEffect": 0,
+      "cMainEffect": 0,
+      "interaction": -0.4,
+      "interactionLabel": "DESCRIPTIVE_INTERACTION_PATTERN",
+      "bSignAgreement": false,
+      "cSignAgreement": false
+    },
+    "finalAcceptanceSolved": {
+      "dimension": "finalAcceptanceSolved",
+      "cells": {
+        "V0": {
+          "dimension": "finalAcceptanceSolved",
+          "n": 5,
+          "hits": 3,
+          "misses": 2,
+          "rate": 0.6,
+          "raw": "3/5"
+        },
+        "V1": {
+          "dimension": "finalAcceptanceSolved",
+          "n": 5,
+          "hits": 4,
+          "misses": 1,
+          "rate": 0.8,
+          "raw": "4/5"
+        },
+        "V2": {
+          "dimension": "finalAcceptanceSolved",
+          "n": 5,
+          "hits": 4,
+          "misses": 1,
+          "rate": 0.8,
+          "raw": "4/5"
+        },
+        "V3": {
+          "dimension": "finalAcceptanceSolved",
+          "n": 5,
+          "hits": 3,
+          "misses": 2,
+          "rate": 0.6,
+          "raw": "3/5"
+        }
+      },
+      "conditional": {
+        "bGivenCAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "bGivenCPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        },
+        "cGivenBAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "cGivenBPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        }
+      },
+      "bMainEffect": 0,
+      "cMainEffect": 0,
+      "interaction": -0.4,
+      "interactionLabel": "DESCRIPTIVE_INTERACTION_PATTERN",
+      "bSignAgreement": false,
+      "cSignAgreement": false
+    },
+    "knownFailureRecurred": {
+      "dimension": "knownFailureRecurred",
+      "cells": {
+        "V0": {
+          "dimension": "knownFailureRecurred",
+          "n": 5,
+          "hits": 0,
+          "misses": 5,
+          "rate": 0,
+          "raw": "0/5"
+        },
+        "V1": {
+          "dimension": "knownFailureRecurred",
+          "n": 5,
+          "hits": 0,
+          "misses": 5,
+          "rate": 0,
+          "raw": "0/5"
+        },
+        "V2": {
+          "dimension": "knownFailureRecurred",
+          "n": 5,
+          "hits": 0,
+          "misses": 5,
+          "rate": 0,
+          "raw": "0/5"
+        },
+        "V3": {
+          "dimension": "knownFailureRecurred",
+          "n": 5,
+          "hits": 0,
+          "misses": 5,
+          "rate": 0,
+          "raw": "0/5"
+        }
+      },
+      "conditional": {
+        "bGivenCAbsent": {
+          "value": 0,
+          "raw": "0/5 - 0/5"
+        },
+        "bGivenCPresent": {
+          "value": 0,
+          "raw": "0/5 - 0/5"
+        },
+        "cGivenBAbsent": {
+          "value": 0,
+          "raw": "0/5 - 0/5"
+        },
+        "cGivenBPresent": {
+          "value": 0,
+          "raw": "0/5 - 0/5"
+        }
+      },
+      "bMainEffect": 0,
+      "cMainEffect": 0,
+      "interaction": 0,
+      "interactionLabel": null,
+      "bSignAgreement": false,
+      "cSignAgreement": false
+    }
+  },
+  "factors": {
+    "B": {
+      "factor": "B",
+      "conditionedOn": "C",
+      "contrasts": {
+        "B|CAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "B|CPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        }
+      },
+      "mainEffect": 0,
+      "shape": "OPPOSITE_SIGNS_ACROSS_CONTEXTS",
+      "stableMarginalSignal": false,
+      "signAgreement": false,
+      "rawCountsOnly": true,
+      "note": "n = 5 per cell. Differences of one trial are one trial. No significance is claimed and none is computable here."
+    },
+    "C": {
+      "factor": "C",
+      "conditionedOn": "B",
+      "contrasts": {
+        "C|BAbsent": {
+          "value": 0.20000000000000007,
+          "raw": "4/5 - 3/5"
+        },
+        "C|BPresent": {
+          "value": -0.20000000000000007,
+          "raw": "3/5 - 4/5"
+        }
+      },
+      "mainEffect": 0,
+      "shape": "OPPOSITE_SIGNS_ACROSS_CONTEXTS",
+      "stableMarginalSignal": false,
+      "signAgreement": false,
+      "rawCountsOnly": true,
+      "note": "n = 5 per cell. Differences of one trial are one trial. No significance is claimed and none is computable here."
+    }
+  },
+  "interactions": [
+    {
+      "dimension": "firstCandidateSolved",
+      "value": -0.4,
+      "label": "DESCRIPTIVE_INTERACTION_PATTERN"
+    },
+    {
+      "dimension": "finalAcceptanceSolved",
+      "value": -0.4,
+      "label": "DESCRIPTIVE_INTERACTION_PATTERN"
+    }
+  ],
+  "saturatedDimensions": [
+    "knownFailureRecurred"
+  ],
+  "noStatistics": "n = 5 per cell. Raw counts and rates only; no p-values and no significance claims.",
+  "calibration": {
+    "status": "UTILITY_CALIBRATION_INCONCLUSIVE",
+    "retiredInference": "R2-S calibration: CONSISTENT — skipped bundles showed no positive utility signal",
+    "reasons": [
+      "UTILITY_ASSAY_OUTCOME_MISMATCH: the only varying hidden case is addressed by the D bundle, which is present in every arm, so the assay's outcome variation cannot be attributed to the added capital",
+      "saturated outcome dimension(s): knownFailureRecurred",
+      "non-zero descriptive interaction(s) on: firstCandidateSolved, finalAcceptanceSolved — labelled DESCRIPTIVE_INTERACTION_PATTERN only (§5)",
+      "no factor shows a stable marginal signal in both contexts"
+    ],
+    "allowedStatuses": [
+      "UTILITY_CALIBRATION_SUPPORTED",
+      "UTILITY_CALIBRATION_MIXED",
+      "UTILITY_CALIBRATION_INCONCLUSIVE"
+    ],
+    "note": "§7: INCONCLUSIVE is a fully valid result, and is the honest one when the outcome measure cannot carry the question."
+  },
+  "outcomeAuditRuling": "UTILITY_ASSAY_OUTCOME_MISMATCH"
+}
