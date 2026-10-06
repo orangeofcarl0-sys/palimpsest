@@ -26,6 +26,7 @@ import { CAPITAL_ITEMS, CAPITAL_RELATIONSHIPS, TRANSFER_HYPOTHESES, directClasse
 import { FIXTURE_SPECS } from "../scripts/r3a/fixture-content.mjs";
 import { COMMON_RENDERER, MODEL_ROUTES, distinctFamilies, verifiedRoutes } from "../scripts/r3a/models.mjs";
 import { MIN_CLASS_HEADROOM, PAIR_VERDICTS, QUALIFICATION_BOUNDS, aToBGate, nonRedundantDimensions, qualifyPair } from "../scripts/r3a/qualification.mjs";
+import { ANTI_OVERFIT_PROCESSES } from "../scripts/r3a/fixture-manifest.mjs";
 import { classIdsOf } from "../scripts/r3a/analyse.mjs";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -63,7 +64,8 @@ describe("R3-A0 §2 — the qualification contract v0.1", () => {
 
 describe("R3-A0 §12/§16 — the pair verdict logic", () => {
   const ids = ["FA1", "FA2", "FA3", "FA4", "FA5", "FA6"];
-  const pair = (trials: any[], overrides: Record<string, unknown> = {}) => qualifyPair({ fixtureId: "f", modelId: "m", nq: 5, classIds: ids, directClasses: ids, redundantWith: {}, trials, ...overrides });
+  const PRECONDITION_OK = { mechanicalOracleProven: true, allHiddenCasesDeclareFailureClass: true, allDeclaredClassesAreExercised: true, oracleUsesNoModelSelfReport: true };
+  const pair = (trials: any[], overrides: Record<string, unknown> = {}) => qualifyPair({ fixtureId: "f", modelId: "m", nq: 5, classIds: ids, directClasses: ids, relationshipOf: () => "DIRECT", fixtureAuditPrecondition: PRECONDITION_OK, trials, ...overrides });
 
   it("§12 rejects the R2-V shape: near-ceiling coverage with ONE unrelated varying class", () => {
     const trials = Array.from({ length: 5 }, (_, index) => ({ classPass: { FA1: true, FA2: true, FA3: true, FA4: true, FA5: true, FA6: index === 0 }, fullSolve: index !== 0 }));
@@ -276,7 +278,7 @@ describe("R3-A0 §10/§20 — the baseline harness is treatment-independent", ()
 /* ================================================================ §2.1/§17 the A→B gate */
 
 describe("R3-A0 §2.1/§17 — the A→B gate", () => {
-  const p = (taskFamily: string, modelFamily: string, verdict = PAIR_VERDICTS.QUALIFIED, compliant = true) => ({ fixtureId: `f-${taskFamily}`, taskFamily, modelId: `m-${modelFamily}`, modelFamily, verdict, compliant });
+  const p = (taskFamily: string, modelFamily: string, verdict = PAIR_VERDICTS.QUALIFIED, antiOverfitProcess = ANTI_OVERFIT_PROCESSES.COMPLIANT) => ({ fixtureId: `f-${taskFamily}`, taskFamily, modelId: `m-${modelFamily}`, modelFamily, verdict, antiOverfitProcess });
 
   it("§2.1 green on a graph with the minimum L-shaped bridge", () => {
     const gate = aToBGate([p("A", "x"), p("B", "x"), p("A", "y")]);
@@ -290,7 +292,7 @@ describe("R3-A0 §2.1/§17 — the A→B gate", () => {
   });
 
   it("§2.6 a NON_COMPLIANT pair does NOT count toward the gate", () => {
-    const gate = aToBGate([p("A", "x"), p("B", "x", PAIR_VERDICTS.QUALIFIED, false), p("A", "y", PAIR_VERDICTS.QUALIFIED, false)]);
+    const gate = aToBGate([p("A", "x"), p("B", "x", PAIR_VERDICTS.QUALIFIED, ANTI_OVERFIT_PROCESSES.NON_COMPLIANT), p("A", "y", PAIR_VERDICTS.QUALIFIED, ANTI_OVERFIT_PROCESSES.NON_COMPLIANT)]);
     expect(gate.excludedNonCompliant).toBe(2);
     expect(gate.green).toBe(false);
   });

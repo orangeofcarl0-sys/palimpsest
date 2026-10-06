@@ -29,6 +29,8 @@ import { join } from 'node:path';
 import { FIXTURE_SPECS } from './fixture-content.mjs';
 import { auditFixture } from './construct-fixtures.mjs';
 import { CAPITAL_ITEMS, CAPITAL_RELATIONSHIPS, TRANSFER_HYPOTHESES, directClasses } from './capital.mjs';
+import { ANTI_OVERFIT_PROCESSES, CONTAMINATION, FIXTURE_MANIFESTS, manifestFor } from './fixture-manifest.mjs';
+import { allPreconditions } from './fixture-audit.mjs';
 import { COMMON_RENDERER, MODEL_ROUTES, distinctFamilies, verifiedRoutes } from './models.mjs';
 import { MIN_CLASS_HEADROOM, PAIR_VERDICTS, QUALIFICATION_BOUNDS, aToBGate, qualifyPair } from './qualification.mjs';
 
@@ -102,11 +104,13 @@ check('GC-21', '§9 the common renderer is frozen and family-independent', COMMO
 
 process.stdout.write(`${NL}--- §12/§17 the qualification logic (deterministic fixtures) ---${NL}`);
 const classIdsA = ['FA1', 'FA2', 'FA3', 'FA4', 'FA5', 'FA6'];
+/** §8: the deterministic precondition every synthetic pair must carry, exactly as the real pairs do. */
+const PRECONDITION_OK = Object.freeze({ mechanicalOracleProven: true, allHiddenCasesDeclareFailureClass: true, allDeclaredClassesAreExercised: true, oracleUsesNoModelSelfReport: true });
+const directAll = (classId) => (classIdsA.includes(classId) ? 'DIRECT' : 'NONE');
 /**
- * A synthetic pair with REAL headroom: several DIRECT classes vary, the per-run coverage varies (0.5, 0.667,
- * 0.667, 0.5, 0.833 — inside the frozen bounds), and `fullSolve` varies too, so two non-redundant dimensions
- * carry variance. A fixture where every run scores identically has NO aggregate variance and correctly fails
- * QC-2, which is what an earlier version of this fixture did.
+ * A synthetic pair with REAL headroom: several DIRECT classes vary with DIFFERENT observed series, and the
+ * per-run coverage varies inside the frozen bounds. A fixture where every run scores identically has no
+ * aggregate variance and correctly fails QC-2.
  */
 const goodTrials = [
   { classPass: { FA1: false, FA2: false, FA3: false, FA4: true, FA5: true, FA6: true }, fullSolve: false },
@@ -115,56 +119,67 @@ const goodTrials = [
   { classPass: { FA1: false, FA2: false, FA3: true, FA4: false, FA5: true, FA6: true }, fullSolve: false },
   { classPass: { FA1: true, FA2: true, FA3: true, FA4: false, FA5: true, FA6: true }, fullSolve: true },
 ];
-const good = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, redundantWith: {}, trials: goodTrials });
-check('GC-22', '§12 a pair with ≥2 varying DIRECT classes inside the bounds is QUALIFIED', good.verdict === PAIR_VERDICTS.QUALIFIED, `${good.verdict} (coverage ${good.classCoverage.toFixed(3)}, varying DIRECT ${good.varyingDirectClasses.join(',')})`);
-
-/** §2.3: a pair whose ONLY variation is one dimension duplicated must not count as two dimensions. */
-const oneDimension = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, redundantWith: {}, trials: goodTrials.map((trial, index) => ({ ...trial, fullSolve: index === 4 })) });
-check('GC-22b', '§2.3 redundant dimensions are collapsed by the OBSERVED-vector test, not by name', (() => {
-  /**
-   * `firstCandidateSolved` and `finalSolved` are deterministically identical in R2-V, so they must collapse
-   * to ONE dimension. The fixture below makes them identical and asserts the collapse.
-   */
-  const collapsed = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, redundantWith: {}, trials: goodTrials.map((trial) => ({ ...trial, firstCandidateSolved: trial.fullSolve })) });
-  const groups = collapsed.nonRedundant.map((group) => group.dimensions.join('+'));
-  return groups.length >= 2 && groups.some((group) => group.includes('FA1') || group.includes('FA2') || group.includes('FA3'));
-})(), `groups: ${oneDimension.nonRedundant.map((group) => group.dimensions.join('+')).join(' | ')}`);
+const good = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, fixtureAuditPrecondition: PRECONDITION_OK, trials: goodTrials });
+check('GC-22', '§5/§6 a pair with ≥2 variable non-redundant DIRECT groups inside the bounds is QUALIFIED', good.verdict === PAIR_VERDICTS.QUALIFIED, `${good.verdict} (coverage ${good.classCoverage.toFixed(3)}, variable DIRECT groups: ${good.variableDirectGroups.join(', ')})`);
 
 /**
- * §2.3: the explicit collapse. Two dimensions carrying IDENTICAL series must share ONE group, and that is
- * exactly the R2-V `firstCandidateSolved` = `finalSolved` case.
+ * §5: THE BUG THIS STAGE FIXED. A pair whose classes carry DIFFERENT series must produce DIFFERENT groups;
+ * the pre-correction engine read `trial[classId]` and merged every class into one undefined series.
  */
-const identical = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, redundantWith: {}, trials: goodTrials.map((trial) => ({ ...trial, firstCandidateSolved: trial.fullSolve })) });
-const collapsedGroups = identical.nonRedundant.filter((group) => group.redundant);
-check('GC-22c', '§2.3 two dimensions with identical observed series form ONE redundant group', collapsedGroups.length >= 1 && collapsedGroups.every((group) => group.dimensions.length >= 2), collapsedGroups.map((group) => group.dimensions.join('=')).join(' | ') || 'NO COLLAPSE OBSERVED');
+const twoSeries = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, fixtureAuditPrecondition: PRECONDITION_OK, trials: goodTrials });
+check('GC-22b', '§5 classes with DIFFERENT observed series form SEPARATE groups (the corrected nesting)', twoSeries.classGroups.length > 1 && twoSeries.variableGroups.length >= 2, `groups: ${twoSeries.classGroups.map((group) => `${group.members.join('+')}=${group.raw}`).join(' | ')}`);
+
+/** §5: identical series collapse into ONE group, and `classCoverage`/`fullSolve` are never counted. */
+const identicalSeries = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: ['FA1', 'FA2'], directClasses: ['FA1', 'FA2'], relationshipOf: () => 'DIRECT', fixtureAuditPrecondition: PRECONDITION_OK, trials: goodTrials.map((trial) => ({ classPass: { FA1: trial.classPass.FA1, FA2: trial.classPass.FA1 }, fullSolve: trial.fullSolve })) });
+check('GC-22c', '§5 classes with IDENTICAL observed series collapse into ONE group', identicalSeries.classGroups.length === 1 && identicalSeries.classGroups[0].members.length === 2, `groups: ${identicalSeries.classGroups.map((group) => group.members.join('+')).join(' | ')}`);
+check('GC-22d', '§5 the aggregate classCoverage/fullSolve are DIAGNOSTICS and cannot satisfy QC-2', (() => {
+  /** Every class moves together, so coverage varies but there is only ONE group: QC-2 must still fail. */
+  const oneGroup = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, fixtureAuditPrecondition: PRECONDITION_OK, trials: [
+    { classPass: { FA1: true, FA2: true, FA3: true, FA4: true, FA5: true, FA6: true }, fullSolve: true },
+    { classPass: { FA1: false, FA2: false, FA3: false, FA4: false, FA5: false, FA6: false }, fullSolve: false },
+    { classPass: { FA1: true, FA2: true, FA3: true, FA4: true, FA5: true, FA6: true }, fullSolve: true },
+    { classPass: { FA1: false, FA2: false, FA3: false, FA4: false, FA5: false, FA6: false }, fullSolve: false },
+    { classPass: { FA1: true, FA2: true, FA3: true, FA4: true, FA5: true, FA6: true }, fullSolve: true },
+  ] });
+  return oneGroup.classGroups.length === 1 && oneGroup.reasons.join(' ').includes('QC-2 failed');
+})(), 'one group, coverage varies → QC-2 still fails');
+check('GC-22e', '§6 QC-4 counts GROUPS, so one group with two DIRECT members counts ONCE', (() => {
+  const oneDirectGroup = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: ['FA1', 'FA2'], directClasses: ['FA1', 'FA2'], relationshipOf: () => 'DIRECT', fixtureAuditPrecondition: PRECONDITION_OK, trials: goodTrials.map((trial) => ({ classPass: { FA1: trial.classPass.FA1, FA2: trial.classPass.FA1 }, fullSolve: trial.fullSolve })) });
+  return oneDirectGroup.variableDirectGroups.length === 1 && oneDirectGroup.reasons.join(' ').includes('QC-4 failed');
+})(), 'FA1+FA2 is one DIRECT group, so QC-4 sees one');
+
+/** §8: QC-6 is a real precondition — an absent or false one must reject the pair. */
+check('GC-22f', '§8 QC-6 rejects a pair with NO fixture-audit precondition', qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, trials: goodTrials }).reasons.join(' ').includes('QC-6 failed'), 'absent precondition → QC-6 fails');
+check('GC-22g', '§8 QC-6 rejects a pair whose oracle consults a model self-report', qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, fixtureAuditPrecondition: { ...PRECONDITION_OK, oracleUsesNoModelSelfReport: false }, trials: goodTrials }).reasons.join(' ').includes('QC-6 failed'), 'model-consulting oracle → QC-6 fails');
+check('GC-22h', '§8 the real fixtures carry a SATISFIED deterministic precondition', Object.values(await allPreconditions()).every((precondition) => precondition.mechanicalOracleProven && precondition.allHiddenCasesDeclareFailureClass && precondition.allDeclaredClassesAreExercised && precondition.oracleUsesNoModelSelfReport), Object.values(await allPreconditions()).map((precondition) => precondition.fixtureId).join(', '));
 
 /** The R2-V shape: coverage near the ceiling and all variance in ONE class. */
 const ceilingTrials = Array.from({ length: 5 }, (_, index) => ({ classPass: { FA1: true, FA2: true, FA3: true, FA4: true, FA5: true, FA6: index === 0 }, fullSolve: index !== 0 }));
-const ceiling = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: ['FA6'], redundantWith: {}, trials: ceilingTrials });
+const ceiling = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: ['FA6'], relationshipOf: directAll, fixtureAuditPrecondition: PRECONDITION_OK, trials: ceilingTrials });
 check('GC-23', '§12 the R2-V shape (near-ceiling coverage, one unrelated varying class) is UNQUALIFIED', ceiling.verdict === PAIR_VERDICTS.UNQUALIFIED, ceiling.reasons.map((entry) => entry.slice(0, 60)).join(' | '));
 
 /** §16: too many infrastructure-invalid runs cannot be judged. */
-const invalid = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, redundantWith: {}, trials: [...goodTrials.slice(0, 3), { classPass: {}, infrastructureInvalid: true }, { classPass: {}, infrastructureInvalid: true }] });
+const invalid = qualifyPair({ fixtureId: 'f-a', modelId: 'm', nq: 5, classIds: classIdsA, directClasses: classIdsA, relationshipOf: directAll, fixtureAuditPrecondition: PRECONDITION_OK, trials: [...goodTrials.slice(0, 3), { classPass: {}, infrastructureInvalid: true }, { classPass: {}, infrastructureInvalid: true }] });
 check('GC-24', '§16 a pair with too many infrastructure-invalid runs is INFRASTRUCTURE_INVALID, not UNQUALIFIED', invalid.verdict === PAIR_VERDICTS.INFRASTRUCTURE_INVALID, invalid.reasons[0] ?? 'ABSENT');
 
 /* ---------------------------------------------------------------- §2.1/§17 the A→B gate */
 
 process.stdout.write(`${NL}--- §2.1/§17 the A→B gate clauses ---${NL}`);
 const lShape = aToBGate([
-  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
-  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
-  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
+  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
+  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
+  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
 ]);
 check('GC-25', '§2.1 the minimum L-shaped bridge is GREEN on a model-on-2-tasks plus task-on-2-models graph', lShape.green === true, `clauses ${JSON.stringify(lShape.clauses)}`);
 const noBridge = aToBGate([
-  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
-  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
+  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
+  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
 ]);
 check('GC-26', '§2.1 a graph with NO L-shaped bridge is RED even with 2 families and 2 models', noBridge.green === false, `clauses ${JSON.stringify(noBridge.clauses)}`);
 const nonCompliant = aToBGate([
-  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, compliant: true },
-  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, compliant: false },
-  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, compliant: false },
+  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.COMPLIANT },
+  { fixtureId: 'fb', taskFamily: 'FB', modelId: 'm1', modelFamily: 'deepseek', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.NON_COMPLIANT },
+  { fixtureId: 'fa', taskFamily: 'FA', modelId: 'm2', modelFamily: 'glm', verdict: PAIR_VERDICTS.QUALIFIED, antiOverfitProcess: ANTI_OVERFIT_PROCESSES.NON_COMPLIANT },
 ]);
 check('GC-27', '§2.6 a NON_COMPLIANT qualified pair does NOT count toward the gate', nonCompliant.excludedNonCompliant === 2 && nonCompliant.green === false, `excluded ${String(nonCompliant.excludedNonCompliant)}, clauses ${JSON.stringify(nonCompliant.clauses)}`);
 
