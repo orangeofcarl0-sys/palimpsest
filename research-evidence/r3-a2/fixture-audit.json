@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "fixtures": [
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "sourceFile": "src/policy.mjs",
+      "exportName": "resolvePolicies",
+      "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+      "h0": {
+        "passed": 3,
+        "total": 14,
+        "raw": "3/14"
+      },
+      "perClass": [
+        {
+          "classId": "FC1",
+          "invariant": "cycle-rejected",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FC2",
+          "invariant": "unknown-reference-rejected",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FC3",
+          "invariant": "declared-precedence-honored",
+          "cases": 3,
+          "passed": 1,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FC4",
+          "invariant": "duplicate-edge-idempotent",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FC5",
+          "invariant": "deterministic-topological-order",
+          "cases": 3,
+          "passed": 1,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FC6",
+          "invariant": "component-isolation",
+          "cases": 2,
+          "passed": 1,
+          "failed": 1,
+          "h0Headroom": true
+        }
+      ],
+      "classesWithHeadroom": [
+        "FC1",
+        "FC2",
+        "FC3",
+        "FC4",
+        "FC5",
+        "FC6"
+      ],
+      "classesWithoutHeadroom": [],
+      "declaredClassCount": 6,
+      "caseCount": 14,
+      "undeclaredCases": [],
+      "unexercisedClasses": [],
+      "classStructure": {
+        "independent": [
+          "FC1",
+          "FC2",
+          "FC5",
+          "FC6"
+        ],
+        "partiallyCoupled": [
+          {
+            "classes": [
+              "FC3",
+              "FC4"
+            ],
+            "why": "both read the ORDERED inherits list; FC3 fixes which entry wins, FC4 fixes what a repeated entry means"
+          }
+        ],
+        "derived": []
+      },
+      "note": "structural class relations are declared here; observed series equality is computed separately by the qualification engine and does NOT prove semantic redundancy"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "sourceFile": "src/rules.mjs",
+      "exportName": "resolveRule",
+      "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+      "h0": {
+        "passed": 3,
+        "total": 13,
+        "raw": "3/13"
+      },
+      "perClass": [
+        {
+          "classId": "FD1",
+          "invariant": "normalization-before-ranking",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FD2",
+          "invariant": "host-specificity-precedence",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FD3",
+          "invariant": "path-specificity-ranking",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FD4",
+          "invariant": "ambiguity-rejected",
+          "cases": 2,
+          "passed": 0,
+          "failed": 2,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FD5",
+          "invariant": "duplicate-rule-handling",
+          "cases": 2,
+          "passed": 1,
+          "failed": 1,
+          "h0Headroom": true
+        },
+        {
+          "classId": "FD6",
+          "invariant": "segment-boundary-semantics",
+          "cases": 3,
+          "passed": 2,
+          "failed": 1,
+          "h0Headroom": true
+        }
+      ],
+      "classesWithHeadroom": [
+        "FD1",
+        "FD2",
+        "FD3",
+        "FD4",
+        "FD5",
+        "FD6"
+      ],
+      "classesWithoutHeadroom": [],
+      "declaredClassCount": 6,
+      "caseCount": 13,
+      "undeclaredCases": [],
+      "unexercisedClasses": [],
+      "classStructure": {
+        "independent": [
+          "FD1",
+          "FD2",
+          "FD4",
+          "FD5"
+        ],
+        "partiallyCoupled": [
+          {
+            "classes": [
+              "FD3",
+              "FD6"
+            ],
+            "why": "both concern path segments; FD3 ranks a match by its literal segments, FD6 fixes what a wildcard segment may consume"
+          }
+        ],
+        "derived": []
+      },
+      "note": "structural class relations are declared here; observed series equality is computed separately by the qualification engine and does NOT prove semantic redundancy"
+    }
+  ]
+}

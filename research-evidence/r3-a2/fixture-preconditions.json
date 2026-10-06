@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "preconditions": {
+    "r3a-f-c-policy-resolution": {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "evidence": {
+        "deterministic": true,
+        "judgesEveryCase": true,
+        "casesRun": 14,
+        "declaredClasses": [
+          "FC1",
+          "FC2",
+          "FC3",
+          "FC4",
+          "FC5",
+          "FC6"
+        ],
+        "undeclaredCases": [],
+        "unexercisedClasses": [],
+        "modelConsultationPatternsMatched": [],
+        "oracleSourceDigest": "28a0afdb685aaff81714d33a700ef3c0c649f3880b6bff773ab97f66ec10df2e",
+        "sourceDigest": "84b9e59f803cfd0c869615c1c822e7d618d94b04487a5eef32f96dc31c05c9f6"
+      }
+    },
+    "r3a-f-d-rule-resolution": {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "evidence": {
+        "deterministic": true,
+        "judgesEveryCase": true,
+        "casesRun": 13,
+        "declaredClasses": [
+          "FD1",
+          "FD2",
+          "FD3",
+          "FD4",
+          "FD5",
+          "FD6"
+        ],
+        "undeclaredCases": [],
+        "unexercisedClasses": [],
+        "modelConsultationPatternsMatched": [],
+        "oracleSourceDigest": "1b0cb7750100ea35d8bb058f610c72200595001086c9050543e23fa34512842b",
+        "sourceDigest": "6309d7950ef1439c9b549575eb982d8d68ba5d0d15f0a95e608ea4e8e6d22f33"
+      }
+    }
+  }
+}
