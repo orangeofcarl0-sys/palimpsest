@@ -214,10 +214,14 @@ check('GC-31', '§19 the R1-HC confidentiality conformance gate is GREEN', confi
 
 const failed = results.filter((entry) => !entry.pass);
 mkdirSync(RIG, { recursive: true });
-const record = { schemaVersion: 1, stage: 'R3-A0', gate: 'C', deterministicOnly: true, harnessDigests, results };
+/**
+ * R3-AE: the gate now writes to `r3-ae/`. The R3-A0 record at `r3-a/gate-c.json` is a HISTORICAL artifact and
+ * is deliberately NOT overwritten — re-running an extended gate must not rewrite an earlier stage's evidence.
+ */
+const record = { schemaVersion: 1, stage: 'R3-AE', gate: 'C', deterministicOnly: true, supersedes: 'research-evidence/r3-a/gate-c.json (R3-A0, 33 checks, preserved as committed)', harnessDigests, results };
 writeFileSync(join(RIG, 'gate-c.json'), `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
-mkdirSync(join(REPO_ROOT, 'research-evidence', 'r3-a'), { recursive: true });
-writeFileSync(join(REPO_ROOT, 'research-evidence', 'r3-a', 'gate-c.json'), `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
+mkdirSync(join(REPO_ROOT, 'research-evidence', 'r3-ae'), { recursive: true });
+writeFileSync(join(REPO_ROOT, 'research-evidence', 'r3-ae', 'gate-c.json'), `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
 
-process.stdout.write(`${NL}§R3-A0 GATE C (deterministic construction readiness): ${failed.length === 0 ? 'GREEN' : 'RED'} — ${String(results.length - failed.length)}/${String(results.length)}${NL}`);
+process.stdout.write(`${NL}§R3-AE GATE C (deterministic construction readiness): ${failed.length === 0 ? 'GREEN' : 'RED'} — ${String(results.length - failed.length)}/${String(results.length)}${NL}`);
 process.exit(failed.length === 0 ? 0 : 1);

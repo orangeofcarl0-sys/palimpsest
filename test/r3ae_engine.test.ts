@@ -221,6 +221,22 @@ describe("R3-AE §9/§10/§11 — the fixture manifest", () => {
     }
   });
 
+  it("§9 the manifest digest is the REAL computed fixture digest, not a transcription", async () => {
+    const { createHash } = await import("node:crypto");
+    const { FIXTURE_SPECS } = await import("../scripts/r3a/fixture-content.mjs");
+    const { allPreconditions } = await import("../scripts/r3a/fixture-audit.mjs");
+    const preconditions = await allPreconditions();
+    for (const spec of FIXTURE_SPECS) {
+      const real = createHash("sha256")
+        .update(Object.entries(spec.files).map(([path, content]) => `${path}:${createHash("sha256").update(content as string, "utf8").digest("hex")}`).join("\n"), "utf8")
+        .digest("hex");
+      const manifest = manifestFor(spec.fixtureId)!;
+      expect(manifest.contentDigest).toBe(real);
+      /** §8: the audit's digest and the manifest's digest must describe the same bytes. */
+      expect(preconditions[spec.fixtureId].contentDigest).toBe(real);
+    }
+  });
+
   it("§9 the construction model identity is UNKNOWN, not invented", () => {
     for (const manifest of FIXTURE_MANIFESTS) {
       expect(manifest.constructionModelId).toBe("UNKNOWN");

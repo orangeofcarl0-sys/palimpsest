@@ -1,0 +1,935 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "kind": "CORRECTED qualification reanalysis (append-only; the R3-A0 analysis is preserved)",
+  "correction": "QC-2/QC-4 now group failure classes by their OBSERVED series read from trial.classPass; QC-6 is a real deterministic fixture-audit precondition; compliance is read from the frozen fixture manifest",
+  "treatment": "NONE — treatment-independent baseline",
+  "bounds": {
+    "dimension": "classCoverage",
+    "lower": 0.2,
+    "upper": 0.85,
+    "floorMeaning": "no room to detect harm",
+    "ceilingMeaning": "no room to detect help",
+    "roomRequiredInBothDirections": true,
+    "frozenBefore": "any baseline model run"
+  },
+  "nq": 5,
+  "renderer": {
+    "rendererId": "dsh-common-worker",
+    "rendererVersion": 1,
+    "familySpecific": false
+  },
+  "scheduledRuns": 20,
+  "completedRuns": 20,
+  "modelsVerifiedEndToEnd": [
+    "deepseek-flash",
+    "glm-5.3-flash",
+    "kimi-k3"
+  ],
+  "distinctVerifiedFamilies": [
+    "deepseek",
+    "glm",
+    "kimi"
+  ],
+  "allRoutes": [
+    {
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "verifiedEndToEnd": true
+    },
+    {
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "verifiedEndToEnd": true
+    },
+    {
+      "modelId": "kimi-k3",
+      "modelFamily": "kimi",
+      "verifiedEndToEnd": true
+    }
+  ],
+  "fixtureManifests": [
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureRevision": 1,
+      "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+      "antiOverfitProcess": "COMPLIANT",
+      "antiOverfitBasis": "the failure classes were authored from the atomicity obligation BEFORE any qualification run, and were NOT revised after the qualification outcomes were seen; the fixture is byte-identical to its pre-qualification digest",
+      "constructionActor": "LOCAL_CODING_AGENT",
+      "constructionModelId": "UNKNOWN",
+      "constructionModelFamily": "UNKNOWN",
+      "evaluationModelFamiliesKnownAtConstruction": false,
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "heldOutReason": "the construction model identity is UNKNOWN, so independence from the evaluation families cannot be demonstrated (§11)"
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureRevision": 1,
+      "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+      "antiOverfitProcess": "COMPLIANT",
+      "antiOverfitBasis": "the failure classes were authored from the forward-compatibility obligation BEFORE any qualification run, and were NOT revised after the qualification outcomes were seen — the ceiling result was recorded rather than repaired, which is the strongest available evidence that the fixture was not tuned",
+      "constructionActor": "LOCAL_CODING_AGENT",
+      "constructionModelId": "UNKNOWN",
+      "constructionModelFamily": "UNKNOWN",
+      "evaluationModelFamiliesKnownAtConstruction": false,
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "heldOutReason": "the construction model identity is UNKNOWN, so independence from the evaluation families cannot be demonstrated (§11)"
+    }
+  ],
+  "fixturePreconditions": {
+    "r3a-f-a-atomic-transaction": {
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a"
+    },
+    "r3a-f-b-versioned-migration": {
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611"
+    }
+  },
+  "pairs": [
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "modelId": "deepseek-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-2 failed: 1 variable non-redundant failure-class group(s) vary, 2 required — groups: FA1+FA2=0/5, FA3+FA5+FA6=5/5, FA4=4/5",
+        "QC-4 failed: 1 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: FA4"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FA1",
+          "passes": 0,
+          "of": 5,
+          "raw": "0/5",
+          "state": "FLOOR",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA2",
+          "passes": 0,
+          "of": 5,
+          "raw": "0/5",
+          "state": "FLOOR",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA4",
+          "passes": 4,
+          "of": 5,
+          "raw": "4/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FA1",
+            "FA2"
+          ],
+          "raw": "0/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FA1",
+            "FA2"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FA3",
+            "FA5",
+            "FA6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FA3",
+            "FA5",
+            "FA6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FA4"
+          ],
+          "raw": "4/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FA4"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [
+        "FA4"
+      ],
+      "variableDirectGroups": [
+        "FA4"
+      ],
+      "classCoverage": 0.6333333333333332,
+      "coveragePerRun": [
+        0.5,
+        0.6667,
+        0.6667,
+        0.6667,
+        0.6667
+      ],
+      "varyingClasses": [
+        "FA4"
+      ],
+      "diagnostics": {
+        "classCoverage": 0.6333333333333332,
+        "fullSolve": [
+          false,
+          false,
+          false,
+          false,
+          false
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "fixtureRevision": 1,
+        "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 8,
+          "declaredClasses": [
+            "FA1",
+            "FA2",
+            "FA3",
+            "FA4",
+            "FA5",
+            "FA6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "6f75b42666bd123e2e20d27a9fd30fed83d29c244fad567a22ef7b247f94c8b0",
+          "sourceDigest": "a6d54fd0d2666a1e6c239f7100f8fd25b6cce482557478c39af4ca04f5f41abb"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_A_ATOMIC_TRANSACTION",
+      "taskFamily": "F-A transactional / atomic state update",
+      "modelFamily": "deepseek",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "claimCeiling": "G1",
+      "originalVerdict": "UNQUALIFIED",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0
+    },
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "modelId": "glm-5.3-flash",
+      "verdict": "QUALIFIED",
+      "reasons": [],
+      "classHeadroom": [
+        {
+          "classId": "FA1",
+          "passes": 1,
+          "of": 5,
+          "raw": "1/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA2",
+          "passes": 1,
+          "of": 5,
+          "raw": "1/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA4",
+          "passes": 4,
+          "of": 5,
+          "raw": "4/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FA6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FA1",
+            "FA2"
+          ],
+          "raw": "1/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FA1",
+            "FA2"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FA3",
+            "FA5",
+            "FA6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FA3",
+            "FA5",
+            "FA6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FA4"
+          ],
+          "raw": "4/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FA4"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [
+        "FA1+FA2",
+        "FA4"
+      ],
+      "variableDirectGroups": [
+        "FA1+FA2",
+        "FA4"
+      ],
+      "classCoverage": 0.7,
+      "coveragePerRun": [
+        0.6667,
+        0.6667,
+        0.5,
+        0.6667,
+        1
+      ],
+      "varyingClasses": [
+        "FA1",
+        "FA2",
+        "FA4"
+      ],
+      "diagnostics": {
+        "classCoverage": 0.7,
+        "fullSolve": [
+          false,
+          false,
+          false,
+          false,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "fixtureRevision": 1,
+        "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 8,
+          "declaredClasses": [
+            "FA1",
+            "FA2",
+            "FA3",
+            "FA4",
+            "FA5",
+            "FA6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "6f75b42666bd123e2e20d27a9fd30fed83d29c244fad567a22ef7b247f94c8b0",
+          "sourceDigest": "a6d54fd0d2666a1e6c239f7100f8fd25b6cce482557478c39af4ca04f5f41abb"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_A_ATOMIC_TRANSACTION",
+      "taskFamily": "F-A transactional / atomic state update",
+      "modelFamily": "glm",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "claimCeiling": "G1",
+      "originalVerdict": "QUALIFIED",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "modelId": "deepseek-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 0.857 is outside (0.2, 0.85) — CEILING (no room to detect help)"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FB1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB6",
+          "passes": 1,
+          "of": 5,
+          "raw": "1/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB7",
+          "passes": 4,
+          "of": 5,
+          "raw": "4/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FB6"
+          ],
+          "raw": "1/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FB6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FB7"
+          ],
+          "raw": "4/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FB7"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [
+        "FB6",
+        "FB7"
+      ],
+      "variableDirectGroups": [
+        "FB6",
+        "FB7"
+      ],
+      "classCoverage": 0.8571428571428571,
+      "coveragePerRun": [
+        0.8571,
+        1,
+        0.7143,
+        0.8571,
+        0.8571
+      ],
+      "varyingClasses": [
+        "FB6",
+        "FB7"
+      ],
+      "diagnostics": {
+        "classCoverage": 0.8571428571428571,
+        "fullSolve": [
+          false,
+          true,
+          false,
+          false,
+          false
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-b-versioned-migration",
+        "fixtureRevision": 1,
+        "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 8,
+          "declaredClasses": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5",
+            "FB6",
+            "FB7"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "8e033d19c3ed8a6844d9de0075ad01537353d8df9c5222a2e39644db55ceb05c",
+          "sourceDigest": "292afd45fd695d5becb0ff81200f16190a324e52bb598ed76cb547d60a4e097e"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_B_VERSIONED_MIGRATION",
+      "taskFamily": "F-B versioned schema / API compatibility",
+      "modelFamily": "deepseek",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "claimCeiling": "G1",
+      "originalVerdict": "UNQUALIFIED",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "modelId": "glm-5.3-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 0.914 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+        "QC-2 failed: 1 variable non-redundant failure-class group(s) vary, 2 required — groups: FB1+FB2+FB3+FB4+FB5+FB7=5/5, FB6=2/5",
+        "QC-4 failed: 1 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: FB6"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FB1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB6",
+          "passes": 2,
+          "of": 5,
+          "raw": "2/5",
+          "state": "VARIABLE",
+          "varies": true,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FB7",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5",
+            "FB7"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5",
+            "FB7"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        },
+        {
+          "members": [
+            "FB6"
+          ],
+          "raw": "2/5",
+          "variable": true,
+          "invariant": false,
+          "directMembers": [
+            "FB6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [
+        "FB6"
+      ],
+      "variableDirectGroups": [
+        "FB6"
+      ],
+      "classCoverage": 0.9142857142857143,
+      "coveragePerRun": [
+        0.8571,
+        0.8571,
+        1,
+        0.8571,
+        1
+      ],
+      "varyingClasses": [
+        "FB6"
+      ],
+      "diagnostics": {
+        "classCoverage": 0.9142857142857143,
+        "fullSolve": [
+          false,
+          false,
+          true,
+          false,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-b-versioned-migration",
+        "fixtureRevision": 1,
+        "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 8,
+          "declaredClasses": [
+            "FB1",
+            "FB2",
+            "FB3",
+            "FB4",
+            "FB5",
+            "FB6",
+            "FB7"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "8e033d19c3ed8a6844d9de0075ad01537353d8df9c5222a2e39644db55ceb05c",
+          "sourceDigest": "292afd45fd695d5becb0ff81200f16190a324e52bb598ed76cb547d60a4e097e"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_B_VERSIONED_MIGRATION",
+      "taskFamily": "F-B versioned schema / API compatibility",
+      "modelFamily": "glm",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "claimCeiling": "G1",
+      "originalVerdict": "UNQUALIFIED",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0
+    }
+  ],
+  "gate": {
+    "green": false,
+    "clauses": {
+      "twoTaskFamilies": false,
+      "twoModelFamilies": false,
+      "modelOnTwoTaskFamilies": false,
+      "taskFamilyOnTwoModelFamilies": false
+    },
+    "qualifiedPairs": 1,
+    "excludedNonCompliant": 0,
+    "taskFamilies": [
+      "F-A transactional / atomic state update"
+    ],
+    "modelFamilies": [
+      "glm"
+    ],
+    "modelsOnTwoTaskFamilies": [],
+    "taskFamiliesOnTwoModelFamilies": [],
+    "fullTwoByTwoCross": false,
+    "note": "§2.6: only COMPLIANT fixtures count toward this gate."
+  }
+}

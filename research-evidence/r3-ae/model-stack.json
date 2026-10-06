@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "kind": "model-stack record",
+  "baseline": "e0cb13a55f2c039580bc0f76451dc8c97fb99cb8",
+  "frozenInterpretation": "cross-model-family replication with different provider routes is ALSO cross-model-stack replication. A claim of pure model-ARCHITECTURE isolation requires a controlled route, which this stage does not have.",
+  "commonRenderer": { "rendererId": "dsh-common-worker", "rendererVersion": 1, "familySpecific": false, "note": "§9: every family ran the SAME renderer; no family-specific prompt tuning exists" },
+  "routes": [
+    {
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "providerId": "deepseek-route",
+      "providerRoute": "https://api.deepseek.com (direct vendor API)",
+      "apiSurface": "openai-completions",
+      "rendererId": "dsh-common-worker",
+      "rendererVersion": 1,
+      "toolSurfaceDigest": "recorded per trial in the trial record's prompt.toolCatalogDigest",
+      "qualificationRuns": 10,
+      "stackNote": "direct vendor route; the DeepSeek stack end to end"
+    },
+    {
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "providerId": "omnigate",
+      "providerRoute": "http://127.0.0.1:7866/v1 (local omnigate gateway)",
+      "apiSurface": "openai-completions",
+      "rendererId": "dsh-common-worker",
+      "rendererVersion": 1,
+      "toolSurfaceDigest": "recorded per trial in the trial record's prompt.toolCatalogDigest",
+      "qualificationRuns": 10,
+      "stackNote": "gateway-mediated route; differs from the DeepSeek stack in BOTH the model family AND the provider path"
+    },
+    {
+      "modelId": "kimi-k3",
+      "modelFamily": "kimi",
+      "providerId": "omnigate",
+      "providerRoute": "http://127.0.0.1:7866/v1 (local omnigate gateway)",
+      "apiSurface": "openai-completions",
+      "rendererId": "dsh-common-worker",
+      "rendererVersion": 1,
+      "toolSurfaceDigest": "not yet recorded — no qualification trial has run on this route",
+      "qualificationRuns": 0,
+      "stackNote": "E2E-ready for PLUMBING only (§17); no F-A or F-B qualification runs"
+    }
+  ],
+  "confoundDisclosure": {
+    "statement": "the two qualified-or-tested families differ in model family AND provider route simultaneously",
+    "consequence": "any cross-family difference cannot be attributed to model architecture alone; it is a model-stack difference",
+    "notClaimed": "pure model-architecture isolation",
+    "runtimeChangeRequired": false
+  }
+}
