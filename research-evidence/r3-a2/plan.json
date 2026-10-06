@@ -1,0 +1,671 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "kind": "frozen sentinel portfolio qualification plan",
+  "frozenBefore": "the first R3-A2 baseline worker run",
+  "laws": {
+    "portfolioQualificationNotBridgeHunting": "Portfolio Qualification != Bridge Hunting — a RED graph is a valid result and the graph is not to be forced GREEN",
+    "noFixtureAuthoredAfterFirstRun": "no additional fixture may be authored in this stage after the first new baseline worker run",
+    "historicalVerdictsUnchanged": "the historical R3-A/R3-AE verdicts remain unchanged and are carried forward, not rerun",
+    "fusionOutOfScope": "Fusion is a future host/runtime policy over Attempts, not a canonical owner or authority mechanism"
+  },
+  "sentinelModelIds": [
+    "deepseek-flash",
+    "glm-5.3-flash"
+  ],
+  "excludedModelIds": [
+    "kimi-k3"
+  ],
+  "sentinelFamilies": [
+    "deepseek",
+    "glm"
+  ],
+  "models": [
+    {
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "providerId": "deepseek-route",
+      "vendor": "DeepSeek",
+      "api": "openai-completions",
+      "baseURL": "https://api.deepseek.com",
+      "apiKeyEnv": "DEEPSEEK_API_KEY",
+      "contextWindow": 131072,
+      "maxTokens": 8192,
+      "materialDistinctness": {
+        "vendor": "DeepSeek",
+        "family": "deepseek",
+        "reasoningArchitecture": "native reasoning-content channel (deepseek thinking format)",
+        "toolUsePostTraining": "harness-native tool loop",
+        "capabilityTier": "fast/cheap tier"
+      },
+      "isolationCaveat": "the two routes differ in vendor, tool-use post-training lineage and reasoning formatting, and GLM reaches the harness through a local gateway, so this is NOT pure model-architecture isolation"
+    },
+    {
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "providerId": "omnigate",
+      "vendor": "Zhipu / Z.ai",
+      "api": "openai-completions",
+      "baseURL": "http://127.0.0.1:7866/v1",
+      "apiKeyEnv": "CA2A_API_KEY",
+      "contextWindow": 131072,
+      "maxTokens": 8192,
+      "materialDistinctness": {
+        "vendor": "Zhipu / Z.ai",
+        "family": "glm",
+        "reasoningArchitecture": "non-DeepSeek reasoning formatting through an OpenAI-compatible surface",
+        "toolUsePostTraining": "third-party tool loop, distinct post-training lineage",
+        "capabilityTier": "flash tier"
+      },
+      "isolationCaveat": "the two routes differ in vendor, tool-use post-training lineage and reasoning formatting, and GLM reaches the harness through a local gateway, so this is NOT pure model-architecture isolation"
+    }
+  ],
+  "renderer": {
+    "rendererId": "dsh-common-worker",
+    "rendererVersion": 1,
+    "familySpecific": false,
+    "note": "the same renderer R3-A0/R3-AE froze; no model-specific prompt tuning exists"
+  },
+  "bounds": {
+    "dimension": "classCoverage",
+    "lower": 0.2,
+    "upper": 0.85,
+    "floorMeaning": "no room to detect harm",
+    "ceilingMeaning": "no room to detect help",
+    "roomRequiredInBothDirections": true,
+    "frozenBefore": "any baseline model run"
+  },
+  "nq": 5,
+  "pairVerdicts": {
+    "QUALIFIED": "QUALIFIED",
+    "UNQUALIFIED": "UNQUALIFIED",
+    "INFRASTRUCTURE_INVALID": "INFRASTRUCTURE_INVALID"
+  },
+  "readinessStates": {
+    "TASK_READY": "TASK_READY",
+    "MODEL_READY": "MODEL_READY",
+    "LOCAL_PAIR_READY": "LOCAL_PAIR_READY",
+    "BRIDGE_READY": "BRIDGE_READY"
+  },
+  "readinessDefinitions": {
+    "TASK_READY": "at least one model stack is qualified on at least two structurally distinct task families",
+    "MODEL_READY": "at least one frozen fixture family is qualified on both sentinel model families",
+    "LOCAL_PAIR_READY": "both sentinel model families have at least one qualified fixture AND at least two task families are represented overall; supports pair-local mechanism replication only",
+    "BRIDGE_READY": "within one connected qualified component, at least one model spans >=2 task families AND at least one task family spans >=2 model families"
+  },
+  "fixtures": [
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-A transactional / atomic state update",
+      "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+      "files": [
+        "README.md",
+        "acceptance.mjs",
+        "package.json",
+        "src/ledger.mjs",
+        "test/check.js"
+      ],
+      "role": "CARRIED_FORWARD"
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-B versioned schema / API compatibility",
+      "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+      "files": [
+        "README.md",
+        "acceptance.mjs",
+        "package.json",
+        "src/config.mjs",
+        "test/check.js"
+      ],
+      "role": "CARRIED_FORWARD"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+      "files": [
+        "README.md",
+        "acceptance.mjs",
+        "package.json",
+        "src/policy.mjs",
+        "test/check.js"
+      ],
+      "role": "R3-A2_NEW"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+      "files": [
+        "README.md",
+        "acceptance.mjs",
+        "package.json",
+        "src/rules.mjs",
+        "test/check.js"
+      ],
+      "role": "R3-A2_NEW"
+    }
+  ],
+  "engineDigests": {
+    "scripts/r3a/qualification.mjs": "bc83930e01d90eb5412d28f910b8e591b93e22c72e64a349cf24a38529aff2ba",
+    "scripts/r3a/fixture-manifest.mjs": "ee55382554cc1d37aaf4379a8c10a13ba9e3f4eba24f809aea696936311ac05f",
+    "scripts/r3a2/fixtures.mjs": "6d909103e0ab68ac00716eb4d07056a7a49596fbc300b3dcd39a4dccf3f4fe96",
+    "scripts/r3a2/models.mjs": "e06b910891ebbe8dd869ed95dabadbf6a051d9aac0447d43578606362975a76f",
+    "scripts/r3a2/readiness.mjs": "e811b8211aa110fe363447cd15b700fa30b351d0301155ff8e24660b2ebdc9f9",
+    "scripts/r3a2/telemetry.mjs": "0f79ef87c65606ec6cdaee3455a7e2d327eff7ccd7534f147fe8baa98b4557cc",
+    "scripts/r3a2/trial.mjs": "e3ca5a55b99d90edb44b18e5d31a8bc7d0f01118427930049bff40f347530c06",
+    "scripts/r3a2/qualify.mjs": "f47b64b6659321bd347bb4ad27d637ea82cbd4d859b24bfc0717eae175eeaba0",
+    "scripts/r3a2/analyse.mjs": "68cbdb9837ad349aadc3d219591f18b9fe92464dd84767fc29c453c1e4d47342",
+    "scripts/r3a/fixture-content-r3a2.mjs": "1e6d52ef888ac3964d492c85cc35d41bd8f0756fc8814b8f82e9d98d2a046fea",
+    "scripts/gates/d2-live-tee-worker.mjs": "0c8c55b30d2679f7e79a8829f2389a4bba750b8022af6c018b19dbe7a1cc8500"
+  },
+  "capitalItems": [
+    {
+      "capitalId": "cap-fc-graph-closure",
+      "appliesToFixture": "r3a-f-c-policy-resolution",
+      "kind": "procedure",
+      "title": "Refuse the graph before you resolve it, then let the nearer declaration win",
+      "purpose": "resolve the effective policies of every node in an inheritance graph whose edges carry a declared precedence",
+      "provenance": "MECHANISM_DERIVATION",
+      "provenanceNote": "derived from the closure, precedence and well-formedness obligations the F-C contract states; not tuned against any model outcome",
+      "sourceAnalogueId": "src-role-permission-inheritance",
+      "clauses": [
+        "validate the whole graph first — every node, and every inherits entry — and refuse an entry that names a node the graph does not define, at any depth",
+        "detect a cycle in the inheritance edges, including a node that inherits itself, and refuse the graph rather than resolving it",
+        "compute each node's inherited closure before writing any effective policy, so a refusal leaves no partial result",
+        "let a node's OWN declaration win over anything it inherits; between two inherited declarations of one name, let the one reached through the EARLIER inherits entry win",
+        "treat a repeated inherits entry as the same edge, so it changes neither the effective policies nor the order",
+        "emit the nodes so that every parent precedes its children, breaking a tie between ready nodes by the lexicographically smaller id",
+        "a node's effective policies contain only policies from its own inherited closure, so two components that share no edge share no policy"
+      ],
+      "applicability": [
+        "a declared inheritance graph whose edges carry a precedence order and whose closure must be canonical"
+      ],
+      "limitations": [
+        "does not authorize any command, path or effect beyond the task envelope",
+        "advisory guidance only; it cannot widen write scope or allowed commands"
+      ]
+    },
+    {
+      "capitalId": "cap-fd-rule-specificity",
+      "appliesToFixture": "r3a-f-d-rule-resolution",
+      "kind": "procedure",
+      "title": "Normalize first, then let the most specific match win — and refuse a tie",
+      "purpose": "select the single rule that applies to a request, under a declared specificity order",
+      "provenance": "MECHANISM_DERIVATION",
+      "provenanceNote": "derived from the normalization, specificity and ambiguity obligations the F-D contract states; not tuned against any model outcome",
+      "sourceAnalogueId": "src-media-type-negotiation",
+      "clauses": [
+        "normalize the rule and the request BEFORE matching: trim the surrounding whitespace and compare letters case-insensitively",
+        "rank a match by its specificity, not by the order the rules were written in: a rule that names a host outranks one that matches any host, and a literal segment outranks a wildcard one",
+        "a wildcard segment matches EXACTLY one non-empty segment — never zero, never more than one, and never across a separator",
+        "two rules whose match is identical after normalization are the SAME rule, and are not a tie",
+        "refuse a rule set that binds one id to two different matches, rather than choosing between them",
+        "when two DIFFERENT rules tie at the highest specificity, refuse the request as ambiguous rather than resolving it by order"
+      ],
+      "applicability": [
+        "a rule set whose entries carry a declared specificity and whose selection must be canonical"
+      ],
+      "limitations": [
+        "does not authorize any command, path or effect beyond the task envelope",
+        "advisory guidance only; it cannot widen write scope or allowed commands"
+      ]
+    }
+  ],
+  "capitalRelationships": {
+    "r3a-f-c-policy-resolution": {
+      "FC1": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "NONE",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FC2": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "NONE",
+        "cap-fa-atomic-commit": "TRANSFER_HYPOTHESIS",
+        "cap-fb-compat-migration": "TRANSFER_HYPOTHESIS"
+      },
+      "FC3": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "TRANSFER_HYPOTHESIS",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FC4": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "NONE",
+        "cap-fa-atomic-commit": "TRANSFER_HYPOTHESIS",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FC5": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "TRANSFER_HYPOTHESIS",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FC6": {
+        "cap-fc-graph-closure": "DIRECT",
+        "cap-fd-rule-specificity": "NONE",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      }
+    },
+    "r3a-f-d-rule-resolution": {
+      "FD1": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "NONE",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FD2": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "TRANSFER_HYPOTHESIS",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FD3": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "TRANSFER_HYPOTHESIS",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FD4": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "NONE",
+        "cap-fa-atomic-commit": "TRANSFER_HYPOTHESIS",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FD5": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "NONE",
+        "cap-fa-atomic-commit": "TRANSFER_HYPOTHESIS",
+        "cap-fb-compat-migration": "NONE"
+      },
+      "FD6": {
+        "cap-fd-rule-specificity": "DIRECT",
+        "cap-fc-graph-closure": "NONE",
+        "cap-fa-atomic-commit": "NONE",
+        "cap-fb-compat-migration": "NONE"
+      }
+    }
+  },
+  "sourceAnalogues": [
+    {
+      "sourceAnalogueId": "src-role-permission-inheritance",
+      "forTargetFixture": "r3a-f-c-policy-resolution",
+      "surfaceDomain": "identity / authorization",
+      "name": "role and permission inheritance resolution",
+      "mechanism": "validate graph -> detect invalid references/cycles -> compute closure -> apply declared precedence -> canonicalize",
+      "targetSurfaceDomain": "feature / policy inheritance",
+      "mechanismCorrespondence": [
+        {
+          "sourceStep": "a role that grants a role that grants it back",
+          "targetStep": "a node whose inheritance edges form a cycle",
+          "sharedMechanism": "cycle detection over the inheritance edges"
+        },
+        {
+          "sourceStep": "a role naming a permission that does not exist",
+          "targetStep": "an inherits entry naming a node the graph does not define",
+          "sharedMechanism": "invalid-reference rejection"
+        },
+        {
+          "sourceStep": "a permission granted by a nearer role",
+          "targetStep": "a policy declared nearer in the inherits list",
+          "sharedMechanism": "declared precedence over the closure"
+        },
+        {
+          "sourceStep": "the effective permission set of a role",
+          "targetStep": "the effective policy set of a node",
+          "sharedMechanism": "closure computation with canonical output"
+        }
+      ],
+      "frozenBefore": "any R3-A2 baseline worker run"
+    },
+    {
+      "sourceAnalogueId": "src-media-type-negotiation",
+      "forTargetFixture": "r3a-f-d-rule-resolution",
+      "surfaceDomain": "content negotiation / protocol",
+      "name": "media-type and Accept-header negotiation",
+      "mechanism": "normalize -> validate -> rank specificity -> resolve ambiguity -> canonicalize",
+      "targetSurfaceDomain": "request routing / rule resolution",
+      "mechanismCorrespondence": [
+        {
+          "sourceStep": "a media type written in another case or with parameters",
+          "targetStep": "a rule or request written in another case",
+          "sharedMechanism": "normalization before matching"
+        },
+        {
+          "sourceStep": "a specific media type outranking a wildcard range",
+          "targetStep": "a more specific rule outranking a wider one",
+          "sharedMechanism": "specificity ranking"
+        },
+        {
+          "sourceStep": "two ranges that match equally well",
+          "targetStep": "two rules tying at the top specificity",
+          "sharedMechanism": "ambiguity rejection rather than first-match"
+        },
+        {
+          "sourceStep": "a wildcard range that must not span a boundary",
+          "targetStep": "a `*` segment that matches exactly one segment",
+          "sharedMechanism": "segment boundary semantics"
+        }
+      ],
+      "frozenBefore": "any R3-A2 baseline worker run"
+    }
+  ],
+  "fixtureManifests": [
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+      "antiOverfitProcess": "COMPLIANT",
+      "antiOverfitBasis": "the six failure classes and the hidden oracle were authored from the F-C contract (closure, declared precedence, well-formedness) BEFORE any R3-A2 baseline run, and were derived from that mechanism rather than from any DeepSeek or GLM failure trace; the fixture is byte-identical to its pre-execution digest",
+      "constructionActor": "LOCAL_CODING_AGENT",
+      "constructionModelId": "UNKNOWN",
+      "constructionModelFamily": "UNKNOWN",
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "evaluationModelFamilies": [
+        "deepseek",
+        "glm"
+      ],
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "heldOutReason": "the evaluation model families were KNOWN during construction, so the fixture is not held out from them; the construction model identity is also UNKNOWN, so independence cannot be demonstrated"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+      "antiOverfitProcess": "COMPLIANT",
+      "antiOverfitBasis": "the six failure classes and the hidden oracle were authored from the F-D contract (normalization, specificity ranking, ambiguity, segment boundaries) BEFORE any R3-A2 baseline run, and were derived from that mechanism rather than from any DeepSeek or GLM failure trace; the fixture is byte-identical to its pre-execution digest",
+      "constructionActor": "LOCAL_CODING_AGENT",
+      "constructionModelId": "UNKNOWN",
+      "constructionModelFamily": "UNKNOWN",
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "evaluationModelFamilies": [
+        "deepseek",
+        "glm"
+      ],
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "heldOutReason": "the evaluation model families were KNOWN during construction, so the fixture is not held out from them; the construction model identity is also UNKNOWN, so independence cannot be demonstrated"
+    }
+  ],
+  "smokePolicy": "no F-C or F-D run on either model before this schedule; plumbing tests use dummy fixtures only; an accidental new-fixture worker run is a protocol deviation and does NOT count toward Nq",
+  "retryPolicy": {
+    "rule": "a valid bad model outcome is NEVER retried; an infrastructure-invalid attempt remains visible and is retried only to reach Nq valid runs for that pair",
+    "infrastructureInvalidDefinition": "hostFailure or timeout; it is not a model outcome and not a verdict",
+    "validOutcomeIsFinal": true
+  },
+  "runBudget": {
+    "intendedValidPrimaryRuns": 20,
+    "hardMaximumValidPrimaryRuns": 20,
+    "note": "infrastructure-invalid attempts are visible and do not consume the valid-run budget, but the valid runs may never exceed 20"
+  },
+  "treatment": "NONE — treatment-independent baseline",
+  "baselineCondition": {
+    "selectedInheritedCapital": false,
+    "projectCapitalIndex": false,
+    "m1Preview": false,
+    "hostMediatedCapitalPrework": false,
+    "startCall": "service.start({ expectedTaskId: 't1' })"
+  },
+  "trialSchema": {
+    "required": [
+      "trialId",
+      "fixtureId",
+      "fixtureRevision",
+      "modelId",
+      "modelFamily",
+      "providerId",
+      "routeId",
+      "repetition",
+      "renderer",
+      "capitalDelivered",
+      "classPass",
+      "classCoverage",
+      "fullSolve",
+      "unclassifiedFailures",
+      "finalAcceptance",
+      "worldHead",
+      "oracleInaccessible",
+      "elapsedMs",
+      "infrastructureInvalid"
+    ],
+    "commonInterface": [
+      "modelId",
+      "modelFamily",
+      "providerId",
+      "routeId",
+      "renderer.rendererId",
+      "renderer.rendererVersion",
+      "prompt.assembledPromptDigest",
+      "prompt.toolSurfaceDigest"
+    ],
+    "evidence": [
+      "actions",
+      "revisions",
+      "usage",
+      "cost",
+      "treatmentIndependence"
+    ]
+  },
+  "analysisSchema": {
+    "perPair": [
+      "fixtureId",
+      "modelId",
+      "verdict",
+      "reasons",
+      "classHeadroom",
+      "classGroups",
+      "variableGroups",
+      "variableDirectGroups",
+      "classCoverage",
+      "diagnostics",
+      "fixtureAuditPrecondition",
+      "antiOverfitProcess",
+      "claimCeiling"
+    ],
+    "stage": [
+      "pairs",
+      "historicalPairs",
+      "extendedGraph",
+      "readiness",
+      "continuation",
+      "costAccounting",
+      "deviations"
+    ]
+  },
+  "expectedRuns": 20,
+  "runs": [
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 0,
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q0"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 1,
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q1"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 2,
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q2"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 3,
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q3"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 4,
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q4"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 0,
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q0"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 1,
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q1"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 2,
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q2"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 3,
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q3"
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 4,
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q4"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 0,
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q0"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 1,
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q1"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 2,
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q2"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 3,
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q3"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 4,
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q4"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 0,
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q0"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 1,
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q1"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 2,
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q2"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 3,
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q3"
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 4,
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q4"
+    }
+  ],
+  "runsDir": "C:\\Users\\66494\\.palimpsest-r3a2\\qualification\\runs-2026-10-06T23-01-06-292Z"
+}
