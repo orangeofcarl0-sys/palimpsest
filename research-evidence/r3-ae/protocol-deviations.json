@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "kind": "append-only protocol-deviation record",
+  "baseline": "e0cb13a55f2c039580bc0f76451dc8c97fb99cb8",
+  "amendedCommits": null,
+  "note": "e0cb13a is NOT amended. The 20 qualification trials remain raw historical evidence; every correction below is an addition.",
+  "preregistration": {
+    "status": "PREREGISTRATION_CHECKPOINT_MISSING",
+    "requirement": "the R3-A0 instruction required a Git commit containing fixture digests, model list, renderer, bounds, Nq, schedule and record schema BEFORE the first primary baseline run",
+    "whatActuallyHappened": "R3-A0 has ONE commit after the entire stage; the frozen plan was written to disk before the run but never committed as its own checkpoint",
+    "executionLogOrderingSupports": "the plan file (plan.json) was written before the first trial and its contents are consistent with pre-run preparation",
+    "durableGitCheckpoint": "ABSENT",
+    "retroactiveClaim": "none — this stage does NOT claim Git preregistration for R3-A0",
+    "futureRule": "an R3-A1 plan MUST be committed as its own commit before any primary fixture/model trial, and the results commit MUST descend from that plan commit"
+  },
+  "smokeTrial": {
+    "status": "OUT_OF_PROTOCOL_PREQUALIFICATION_SMOKE",
+    "recovered": true,
+    "recoverySource": "the local qualification rig, which still holds the artifact",
+    "trialId": "F_A_ATOMIC_TRANSACTION-deepseek-direct-q0",
+    "fixtureId": "r3a-f-a-atomic-transaction",
+    "fixtureRevision": 1,
+    "modelId": "deepseek-flash",
+    "modelFamily": "deepseek",
+    "routeId": "deepseek-direct",
+    "classPass": { "FA1": false, "FA2": false, "FA3": true, "FA4": true, "FA5": true, "FA6": true },
+    "classCoverage": 0.6666666666666666,
+    "finalAcceptance": { "passed": 6, "total": 8, "failures": ["fa1b:ACCEPTED_INVALID_TRANSACTION", "fa2a:ACCEPTED_INVALID_TRANSACTION"] },
+    "finalSourceSha256": "47a823151475ba939d1bbe326cd88d80cd751c6628a906996a61a6a921e89ec1",
+    "capitalDelivered": false,
+    "compiledHandleCount": 0,
+    "infrastructureInvalid": false,
+    "renderer": { "rendererId": "dsh-common-worker", "rendererVersion": 1, "familySpecific": false },
+    "elapsedMs": 170418,
+    "orderEvidence": "the artifact predates the 20-run matrix and the run directory is separate from the qualification runs directory; the smoke trial used the same fixture revision and model as the later q0 runs",
+    "notPartOfNq": true,
+    "notPartOfThe20PrimaryRecords": true,
+    "deleted": false,
+    "priorClaimCorrected": {
+      "claimed": "\"No behavioural pilot on primary fixtures\"",
+      "correction": "FALSE as written — one real-worker smoke trial ran on a primary fixture (F-A) before the 20-run matrix. The claim should have been: no behavioural pilot was run on F-B, and the one F-A smoke trial is recorded as an out-of-protocol pre-qualification smoke."
+    },
+    "limitation": null
+  },
+  "postOutcomeCorrection": {
+    "status": "POST_OUTCOME_IMPLEMENTATION_CORRECTION",
+    "what": "the QC-2 implementation was changed AFTER the 20-run matrix had completed (the dimension set was widened from {classCoverage, fullSolve} to include the declared failure classes)",
+    "mitigatingFacts": [
+      "the governing TEXTUAL QC-2 requirement already existed and said to prefer declared failure-class dimensions",
+      "the change attempted to align the executable code with that already-frozen text rather than to change the requirement",
+      "the pair verdicts did not change as a result of that change"
+    ],
+    "honestStatement": "the executable analysis was NOT fully frozen before trial 1; this record does not pretend otherwise",
+    "supersededBy": "the R3-AE engine correction, which replaces the whole class-series path"
+  }
+}

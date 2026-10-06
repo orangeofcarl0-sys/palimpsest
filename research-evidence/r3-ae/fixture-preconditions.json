@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-AE",
+  "preconditions": {
+    "r3a-f-a-atomic-transaction": {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureRevision": 1,
+      "contentDigest": "468cfcea8a8e36127ebba9022f21cad1c751f2b18cca7f53867775c6163fc37a",
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "evidence": {
+        "deterministic": true,
+        "judgesEveryCase": true,
+        "casesRun": 8,
+        "declaredClasses": [
+          "FA1",
+          "FA2",
+          "FA3",
+          "FA4",
+          "FA5",
+          "FA6"
+        ],
+        "undeclaredCases": [],
+        "unexercisedClasses": [],
+        "modelConsultationPatternsMatched": [],
+        "oracleSourceDigest": "6f75b42666bd123e2e20d27a9fd30fed83d29c244fad567a22ef7b247f94c8b0",
+        "sourceDigest": "a6d54fd0d2666a1e6c239f7100f8fd25b6cce482557478c39af4ca04f5f41abb"
+      }
+    },
+    "r3a-f-b-versioned-migration": {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureRevision": 1,
+      "contentDigest": "8e290a4be4ba7f2713b621806113a99fc8e15e009b4a75630be9d593757b7611",
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "evidence": {
+        "deterministic": true,
+        "judgesEveryCase": true,
+        "casesRun": 8,
+        "declaredClasses": [
+          "FB1",
+          "FB2",
+          "FB3",
+          "FB4",
+          "FB5",
+          "FB6",
+          "FB7"
+        ],
+        "undeclaredCases": [],
+        "unexercisedClasses": [],
+        "modelConsultationPatternsMatched": [],
+        "oracleSourceDigest": "8e033d19c3ed8a6844d9de0075ad01537353d8df9c5222a2e39644db55ceb05c",
+        "sourceDigest": "292afd45fd695d5becb0ff81200f16190a324e52bb598ed76cb547d60a4e097e"
+      }
+    }
+  }
+}
