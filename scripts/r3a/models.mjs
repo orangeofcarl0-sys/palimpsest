@@ -89,9 +89,14 @@ export const MODEL_ROUTES = Object.freeze([
       toolUsePostTraining: 'third-party tool loop, distinct post-training lineage',
       capabilityTier: 'frontier tier',
     }),
-    /** §8: verified at the GATEWAY, not yet end-to-end inside a DSH worker. Recorded honestly. */
-    verifiedEndToEnd: false,
-    verificationNote: 'answered a gateway completion; not yet driven end-to-end through a DSH worker profile in this stage',
+    /**
+     * R3-AE §17: now verified END-TO-END on a DUMMY plumbing/tool fixture — it read a file and wrote the
+     * requested token through the DSH tool surface. This is a PLUMBING result only: Kimi has NOT been run on
+     * F-A or F-B, and this is not R3-A qualification. The prior gateway-only note is preserved below.
+     */
+    verifiedEndToEnd: true,
+    verificationNote: 'R3-AE §17 dummy-fixture plumbing proof: read a file and wrote a token through the DSH tool surface. NOT run on F-A/F-B; not R3-A qualification.',
+    priorVerificationNote: 'at R3-A0: answered a gateway completion only; not driven end-to-end through a DSH worker profile in that stage',
   }),
 ]);
 

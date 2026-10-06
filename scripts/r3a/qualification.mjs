@@ -16,6 +16,8 @@
  * PLAIN JAVASCRIPT (`.mjs`).
  */
 
+import { ANTI_OVERFIT_PROCESSES } from './fixture-manifest.mjs';
+
 /* ---------------------------------------------------------------- §2.2 the frozen bounds */
 
 /**
@@ -64,14 +66,55 @@ export const PAIR_VERDICTS = Object.freeze({
   INFRASTRUCTURE_INVALID: 'INFRASTRUCTURE_INVALID',
 });
 
-/* ---------------------------------------------------------------- §2.3/§6 redundancy */
+/* ---------------------------------------------------------------- §2.3/§5/§6 class-series grouping */
 
 /**
- * §2.3: NON-REDUNDANT DIMENSIONS.
+ * §5 (R3-AE): THE PER-CLASS OBSERVED SERIES.
  *
- * `firstCandidateSolved` and `finalSolved` are NOT counted as two dimensions when they are deterministically
- * identical — R2-V showed exactly that (every trial's first candidate WAS its final candidate). So the
- * dimension count is computed from the OBSERVED vectors: two dimensions that never differ are one dimension.
+ * The real values live at `trial.classPass[classId]`. An earlier implementation read `trial[classId]`, which
+ * is `undefined` for every class, so every class produced the SAME all-undefined series and collapsed into
+ * one group. That defect is why this is now an explicit function with its own tests.
+ *
+ * @param {readonly { classPass?: Record<string, boolean> }[]} trials
+ * @param {readonly string[]} classIds
+ * @returns {Readonly<Record<string, readonly boolean[]>>}
+ */
+export function classSeries(trials, classIds) {
+  return Object.freeze(Object.fromEntries(classIds.map((classId) => [classId, Object.freeze(trials.map((trial) => trial?.classPass?.[classId] === true))])));
+}
+
+/**
+ * §5/§6 (R3-AE): GROUP FAILURE CLASSES BY THEIR IDENTICAL OBSERVED SERIES.
+ *
+ * A group is one NON-REDUNDANT measurement. Two classes that pass and fail together are one dimension, not
+ * two — counting them separately is how a fixture with one underlying behaviour would fake two dimensions.
+ *
+ * @param {Readonly<Record<string, readonly boolean[]>>} seriesByClass
+ */
+export function groupClassesBySeries(seriesByClass) {
+  const groups = [];
+  for (const [classId, series] of Object.entries(seriesByClass)) {
+    const key = series.map((value) => (value ? 1 : 0)).join('');
+    const match = groups.find((group) => group.key === key);
+    if (match === undefined) groups.push({ key, members: [classId], series });
+    else match.members.push(classId);
+  }
+  return Object.freeze(groups.map((group) => Object.freeze({
+    members: Object.freeze(group.members.slice().sort()),
+    passes: group.series.filter(Boolean).length,
+    of: group.series.length,
+    raw: `${String(group.series.filter(Boolean).length)}/${String(group.series.length)}`,
+    /** §5: a group VARIES when its members are neither always passed nor always failed. */
+    variable: group.series.some(Boolean) && !group.series.every(Boolean),
+    invariant: group.series.every(Boolean) || !group.series.some(Boolean),
+  })));
+}
+
+/**
+ * §2.3: NON-REDUNDANT DIMENSIONS (DIAGNOSTIC ONLY).
+ *
+ * Kept as a general helper, but §5 is explicit that `classCoverage` and `fullSolve` must NOT be counted
+ * toward QC-2. They are reported as diagnostics and nothing more.
  */
 export function nonRedundantDimensions(vectors, dimensions) {
   const groups = [];
@@ -115,16 +158,47 @@ export function qualifyPair(input) {
       verdict: PAIR_VERDICTS.INFRASTRUCTURE_INVALID,
       reasons: Object.freeze([`${String(invalid)} of ${String(input.trials.length)} scheduled runs were infrastructure-invalid; ${String(input.nq)} valid runs are required`]),
       classHeadroom: Object.freeze([]),
+      classGroups: Object.freeze([]),
+      variableGroups: Object.freeze([]),
+      variableDirectGroups: Object.freeze([]),
       classCoverage: null,
-      varyingDirectClasses: Object.freeze([]),
-      nonRedundant: Object.freeze([]),
+      diagnostics: null,
+      fixtureAuditPrecondition: input.fixtureAuditPrecondition ?? null,
     });
   }
 
-  /** §12: the per-class headroom, computed from the pass counts. */
+  /* -- §5/§6: THE CORRECTED CLASS-SERIES GROUPING ----------------------------- */
+  /**
+   * The per-class observed series, read from `trial.classPass[classId]` through the explicit helper. Groups
+   * are formed by IDENTICAL series, so two classes that always agree count once.
+   */
+  const series = classSeries(runs, input.classIds);
+  const groups = groupClassesBySeries(series);
+
+  /** §6: the per-group DIRECT/TRANSFER membership, read from the FROZEN relationship manifest. */
+  const relationshipOf = input.relationshipOf ?? (() => 'NONE');
+  const classGroups = groups.map((group) => {
+    const directMembers = group.members.filter((classId) => relationshipOf(classId) === 'DIRECT');
+    const transferMembers = group.members.filter((classId) => relationshipOf(classId) === 'TRANSFER_HYPOTHESIS');
+    return Object.freeze({
+      members: group.members,
+      raw: group.raw,
+      variable: group.variable,
+      invariant: group.invariant,
+      directMembers: Object.freeze(directMembers),
+      transferMembers: Object.freeze(transferMembers),
+      /** §6: a group is DIRECT-treatment-relevant when at least one of its members is frozen DIRECT. */
+      directTreatmentRelevant: directMembers.length > 0,
+    });
+  });
+
+  /** §5: QC-2 counts VARIABLE NON-REDUNDANT FAILURE-CLASS GROUPS, and nothing else. */
+  const variableGroups = classGroups.filter((group) => group.variable);
+  const variableDirectGroups = variableGroups.filter((group) => group.directTreatmentRelevant);
+
+  /** §12: the per-class headroom, kept as diagnostics alongside the group view. */
   const classHeadroom = input.classIds.map((classId) => {
-    const passes = runs.filter((trial) => trial.classPass[classId] === true).length;
-    const direct = input.directClasses.includes(classId);
+    const passes = runs.filter((trial) => trial.classPass?.[classId] === true).length;
     return Object.freeze({
       classId,
       passes,
@@ -132,18 +206,14 @@ export function qualifyPair(input) {
       raw: `${String(passes)}/${String(runs.length)}`,
       state: passes === runs.length ? 'CEILING' : passes === 0 ? 'FLOOR' : 'VARIABLE',
       varies: passes > 0 && passes < runs.length,
-      directTreatmentRelevant: direct,
-      /** §2.3: a class that is deterministically identical to another counts once. */
-      redundantWith: input.redundantWith[classId] ?? null,
+      directTreatmentRelevant: input.directClasses.includes(classId),
+      relationship: relationshipOf(classId),
     });
   });
 
-  /** §2.2: the aggregate class coverage, averaged over runs. */
-  const coveragePerRun = runs.map((trial) => input.classIds.filter((classId) => trial.classPass[classId] === true).length / input.classIds.length);
+  /** §2.2: the aggregate class coverage, averaged over runs. A DIAGNOSTIC, never a QC-2 dimension. */
+  const coveragePerRun = runs.map((trial) => input.classIds.filter((classId) => trial.classPass?.[classId] === true).length / input.classIds.length);
   const classCoverage = coveragePerRun.reduce((total, value) => total + value, 0) / coveragePerRun.length;
-
-  /** §12: the non-redundant DIRECT-treatment-relevant classes that actually vary. */
-  const varyingDirectClasses = classHeadroom.filter((entry) => entry.varies && entry.directTreatmentRelevant && entry.redundantWith === null).map((entry) => entry.classId);
 
   /* -- QC-1 (§2.2): bidirectional aggregate headroom -- */
   const withinBounds = classCoverage > QUALIFICATION_BOUNDS.lower && classCoverage < QUALIFICATION_BOUNDS.upper;
@@ -152,39 +222,37 @@ export function qualifyPair(input) {
     reasons.push(`QC-1 failed: aggregate class coverage ${classCoverage.toFixed(3)} is outside (${String(QUALIFICATION_BOUNDS.lower)}, ${String(QUALIFICATION_BOUNDS.upper)}) — ${side}`);
   }
 
-  /* -- QC-2 (§2.3): at least two non-redundant dimensions with headroom -- */
+  /* -- QC-2 (§5): ≥2 variable non-redundant failure-class groups -- */
+  if (variableGroups.length < MIN_CLASS_HEADROOM.minVaryingDirectClasses) {
+    reasons.push(`QC-2 failed: ${String(variableGroups.length)} variable non-redundant failure-class group(s) vary, ${String(MIN_CLASS_HEADROOM.minVaryingDirectClasses)} required — groups: ${classGroups.map((group) => `${group.members.join('+')}=${group.raw}`).join(', ')}`);
+  }
+
+  /* -- QC-4 (§6): ≥2 variable groups with ≥1 DIRECT member each -- */
+  if (variableDirectGroups.length < MIN_CLASS_HEADROOM.minVaryingDirectClasses) {
+    reasons.push(`QC-4 failed: ${String(variableDirectGroups.length)} variable non-redundant group(s) carry a DIRECT member, ${String(MIN_CLASS_HEADROOM.minVaryingDirectClasses)} required — DIRECT groups: ${variableDirectGroups.map((group) => group.members.join('+')).join(', ') || '(none)'}`);
+  }
+
+  /* -- QC-5 (§12): success must not hinge on one unrelated residual group -- */
+  if (variableGroups.length === 1 && variableGroups[0].directTreatmentRelevant === false) {
+    reasons.push('QC-5 failed: all class variance traces to ONE group with no DIRECT member (the R2-V outcome-mismatch shape)');
+  }
+
+  /* -- QC-6 (§8): the deterministic fixture-audit precondition -- */
   /**
-   * §2.3 says "prefer declared failure-class dimensions". An earlier implementation used only the aggregate
-   * (`classCoverage`) plus `fullSolve`, which is exactly the aggregate preference the clause rejects — so the
-   * dimension set is the aggregate dimensions PLUS every declared failure class. Redundant dimensions are
-   * then collapsed by the observed-vector test, and the count is taken over what actually varies.
+   * §8 (R3-AE): QC-6 is no longer "classIds is non-empty". The pair cannot QUALIFY unless the fixture's own
+   * deterministic audit proves the oracle is mechanical, that every hidden case declares a class, that every
+   * declared class is exercised, and that the oracle consults no model self-report. The ANALYSIS must not
+   * manufacture this value; it is supplied from the fixture audit and only `true` passes.
    */
-  const dimensionSeries = {
-    classCoverage: coveragePerRun,
-    fullSolve: runs.map((trial) => (trial.fullSolve === true ? 1 : 0)),
-    ...Object.fromEntries(input.classIds.map((classId) => [classId, runs.map((trial) => (trial.classPass[classId] === true ? 1 : 0))])),
-  };
-  const nonRedundant = nonRedundantDimensions(runs, Object.keys(dimensionSeries));
-  const varyingDimensions = nonRedundant.filter((group) => {
-    const series = dimensionSeries[group.dimensions[0]];
-    return new Set(series).size > 1;
-  });
-  if (varyingDimensions.length < 2) reasons.push(`QC-2 failed: only ${String(varyingDimensions.length)} non-redundant outcome/failure dimension(s) vary (${String(nonRedundant.length)} distinct declared)`);
-
-  /* -- QC-3/QC-4 (§2.4/§12): treatment-relevant classes with headroom -- */
-  if (varyingDirectClasses.length < MIN_CLASS_HEADROOM.minVaryingDirectClasses) {
-    reasons.push(`QC-4 failed: ${String(varyingDirectClasses.length)} non-redundant DIRECT-treatment-relevant class(es) vary, ${String(MIN_CLASS_HEADROOM.minVaryingDirectClasses)} required`);
+  const precondition = input.fixtureAuditPrecondition ?? null;
+  if (precondition === null || precondition === undefined) {
+    reasons.push('QC-6 failed: no fixture-audit precondition was supplied, so the mechanical-oracle proof is absent');
+  } else if (precondition.mechanicalOracleProven !== true
+    || precondition.allHiddenCasesDeclareFailureClass !== true
+    || precondition.allDeclaredClassesAreExercised !== true
+    || precondition.oracleUsesNoModelSelfReport !== true) {
+    reasons.push(`QC-6 failed: the fixture-audit precondition is not fully satisfied (${JSON.stringify({ mechanicalOracleProven: precondition.mechanicalOracleProven === true, allHiddenCasesDeclareFailureClass: precondition.allHiddenCasesDeclareFailureClass === true, allDeclaredClassesAreExercised: precondition.allDeclaredClassesAreExercised === true, oracleUsesNoModelSelfReport: precondition.oracleUsesNoModelSelfReport === true })})`);
   }
-
-  /* -- QC-5 (§12): success must not hinge on one unrelated residual case -- */
-  const varyingClasses = classHeadroom.filter((entry) => entry.varies).map((entry) => entry.classId);
-  const varyingDirect = varyingClasses.filter((classId) => input.directClasses.includes(classId));
-  if (varyingClasses.length === 1 && varyingDirect.length === 0) {
-    reasons.push('QC-5 failed: all class variance traces to ONE class that is not DIRECT-treatment-relevant (the R2-V outcome-mismatch shape)');
-  }
-
-  /* -- QC-6 (§6/§12): every class must be exercised -- */
-  if (input.classIds.length === 0) reasons.push('QC-6 failed: the fixture declares no failure classes');
 
   return Object.freeze({
     fixtureId: input.fixtureId,
@@ -192,13 +260,21 @@ export function qualifyPair(input) {
     verdict: reasons.length === 0 ? PAIR_VERDICTS.QUALIFIED : PAIR_VERDICTS.UNQUALIFIED,
     reasons: Object.freeze(reasons),
     classHeadroom: Object.freeze(classHeadroom),
+    /** §5/§6: the corrected grouping, so a report can cite the exact groups. */
+    classGroups: Object.freeze(classGroups),
+    variableGroups: Object.freeze(variableGroups.map((group) => group.members.join('+'))),
+    variableDirectGroups: Object.freeze(variableDirectGroups.map((group) => group.members.join('+'))),
     classCoverage,
     coveragePerRun: Object.freeze(coveragePerRun.map((value) => Number(value.toFixed(4)))),
-    varyingClasses: Object.freeze(varyingClasses),
-    varyingDirectClasses: Object.freeze(varyingDirectClasses),
-    /** §2.3: the non-redundant dimensions that actually vary, named so the report can cite them. */
-    varyingDimensions: Object.freeze(varyingDimensions.map((group) => group.dimensions.join('+'))),
-    nonRedundant: Object.freeze(nonRedundant),
+    varyingClasses: Object.freeze(variableGroups.flatMap((group) => group.members)),
+    /** §5: `classCoverage`/`fullSolve` are DIAGNOSTICS; they are reported and never counted toward QC-2. */
+    diagnostics: Object.freeze({
+      classCoverage,
+      fullSolve: Object.freeze(runs.map((trial) => trial.fullSolve === true)),
+      nonRedundantDimensions: Object.freeze(nonRedundantDimensions(runs, ['classCoverage', 'fullSolve']).map((group) => group.dimensions.join('+'))),
+      note: 'reported for context only; §5 forbids counting these toward QC-2',
+    }),
+    fixtureAuditPrecondition: precondition,
     infrastructureInvalidRuns: invalid,
     bounds: QUALIFICATION_BOUNDS,
     nq: input.nq,
@@ -218,13 +294,16 @@ export function qualifyPair(input) {
  *   · at least one model qualified on ≥2 task families
  *   · at least one task family qualified on ≥2 model families
  *
- * §2.6: ONLY COMPLIANT fixtures count toward the gate.
+ * §2.6/§10 (R3-AE): ONLY fixtures whose FROZEN MANIFEST classifies them `COMPLIANT` count toward the gate.
+ * The compliance value is READ FROM THE MANIFEST — the caller supplies `antiOverfitProcess`, and an earlier
+ * implementation's hard-coded `compliant: true` literal is gone. A caller that omits the field excludes the
+ * pair rather than admitting it, so the gate fails closed.
  *
- * @param {readonly { fixtureId: string, taskFamily: string, modelId: string, modelFamily: string, verdict: string, compliant: boolean }[]} pairs
+ * @param {readonly { fixtureId: string, taskFamily: string, modelId: string, modelFamily: string, verdict: string, antiOverfitProcess?: string }[]} pairs
  */
 export function aToBGate(pairs) {
-  const qualified = pairs.filter((pair) => pair.verdict === PAIR_VERDICTS.QUALIFIED && pair.compliant === true);
-  const excluded = pairs.filter((pair) => pair.verdict === PAIR_VERDICTS.QUALIFIED && pair.compliant !== true);
+  const qualified = pairs.filter((pair) => pair.verdict === PAIR_VERDICTS.QUALIFIED && pair.antiOverfitProcess === ANTI_OVERFIT_PROCESSES.COMPLIANT);
+  const excluded = pairs.filter((pair) => pair.verdict === PAIR_VERDICTS.QUALIFIED && pair.antiOverfitProcess !== ANTI_OVERFIT_PROCESSES.COMPLIANT);
 
   const taskFamilies = [...new Set(qualified.map((pair) => pair.taskFamily))].sort();
   const modelFamilies = [...new Set(qualified.map((pair) => pair.modelFamily))].sort();
