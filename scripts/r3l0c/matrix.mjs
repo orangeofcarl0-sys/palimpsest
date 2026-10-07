@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * R3-L0C §1/§10/§11/§12/§23/§26 — THE MATRIX RUNNER.
  *

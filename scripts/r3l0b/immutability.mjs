@@ -56,10 +56,43 @@ export const EXCLUDED_STAGE_PATHS = Object.freeze([STAGE_EVIDENCE_PATH]);
  *   · the tolerated additions are reported separately as `postBaselineAdditions` so they are visible rather
  *     than absorbed, and the count is in the verdict's basis.
  */
+/**
+ * §2.2 (R3-L0C) — THE POST-BASELINE EXCLUSION IS DERIVED, NOT LISTED.
+ *
+ * This constant used to be a hand-maintained list of later stages' evidence directories, and R3-L0C's own
+ * evidence made this guard FAIL until its namespace was added here. That is precisely the dependency inversion
+ * R3-L0C §2.2 removes: a NEW stage should not have to edit a COMPLETED stage's adjudication script to be allowed
+ * to write its own evidence.
+ *
+ * The replacement rule needs no edit and no knowledge of which stages exist:
+ *
+ *     a directory under the protected root is TOLERATED when every one of its files is ABSENT FROM THE BASELINE
+ *
+ * A directory the baseline never recorded is, by construction, one that a later stage created — the baseline was
+ * frozen during R3-L0, so `research-evidence/r3-l0` and every subsequent stage directory satisfy this. A file the
+ * baseline DID record is still compared exactly, so a change or a removal inside any directory remains fatal, and
+ * the tolerated additions are listed so they stay visible.
+ *
+ * `POST_BASELINE_STAGE_PATHS` is retained as the HISTORICAL RECORD of what the hand-maintained list contained,
+ * because deleting it would erase the evidence of the defect. It is no longer consulted for the verdict.
+ */
 export const POST_BASELINE_STAGE_PATHS = Object.freeze([
   Object.freeze({ path: 'research-evidence/r3-l0', reason: 'R3-L0 wrote its own evidence after freezing the baseline; the baseline excludes this directory by design' }),
   Object.freeze({ path: 'research-evidence/r3-l0a', reason: 'R3-L0A wrote its evidence in a later stage, after the baseline was frozen' }),
+  Object.freeze({ path: 'research-evidence/r3-l0b', reason: 'R3-L0B wrote its evidence in a later stage, after the baseline was frozen' }),
 ]);
+
+/**
+ * §2.2 (R3-L0C): whether a path's DIRECTORY is entirely absent from the baseline.
+ *
+ * This is the derived rule. It is a pure function of the baseline set, so it cannot be extended by editing a
+ * list and it cannot be forgotten by a new stage.
+ */
+export function isPostBaselineDirectory(path, baselinePaths) {
+  const directory = String(path).split('/').slice(0, 2).join('/');
+  if (directory === path) return false;
+  return !baselinePaths.some((entry) => entry.startsWith(`${directory}/`));
+}
 
 /**
  * §14/§15: THE MUTATORS THAT WERE KNOWN TO EXIST BEFORE THIS STAGE.
@@ -130,10 +163,12 @@ export function checkImmutability(input = {}) {
   const removed = Object.keys(baseline.digests).filter((path) => !(path in current.digests));
   const details = changed.map((path) => Object.freeze({ path, baseline: baseline.digests[path], current: current.digests[path] }));
   /**
-   * §15: additions under a POST-BASELINE stage directory are tolerated and reported separately; every other
-   * addition is fatal. A change or removal is fatal everywhere, including inside those directories.
+   * §2.2 (R3-L0C): additions under a POST-BASELINE directory are tolerated and reported separately; every other
+   * addition is fatal. The tolerance is DERIVED from the baseline rather than listed, so a new stage needs no
+   * edit here. A change or removal is fatal everywhere, including inside those directories.
    */
-  const postBaselineAdditions = added.filter((path) => POST_BASELINE_STAGE_PATHS.some((entry) => path.startsWith(`${entry.path}/`)));
+  const baselineList = Object.keys(baseline.digests);
+  const postBaselineAdditions = added.filter((path) => isPostBaselineDirectory(path, baselineList));
   const unexpectedAdditions = added.filter((path) => !postBaselineAdditions.includes(path));
   const immutable = changed.length === 0 && unexpectedAdditions.length === 0 && removed.length === 0;
 

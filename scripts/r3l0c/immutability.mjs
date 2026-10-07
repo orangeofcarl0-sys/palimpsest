@@ -155,7 +155,12 @@ export function checkImmutability(input = {}) {
     }
   }
   const added = workingPaths.filter((path) => !baselineSet.has(path));
-  const tolerated = added.filter((path) => path === stageNamespace || path.startsWith(`${stageNamespace}/`));
+  /**
+   * §2.2: THE TOLERANCE IS DERIVED, exactly as R3-L0B's guard now does. A directory the baseline never recorded
+   * is one a later stage created, so it needs no declaration here — which is the property that keeps a future
+   * stage from having to edit this file.
+   */
+  const tolerated = added.filter((path) => isStageOwned(path, stageNamespace) || isPostBaselineDirectory(path, baselinePaths));
   const unexpected = added.filter((path) => !tolerated.includes(path));
   const immutable = changed.length === 0 && removed.length === 0 && unexpected.length === 0;
 
@@ -199,6 +204,19 @@ export function workingBlobDigest(path) {
 /** §2.2: whether a path is inside the stage's own namespace. */
 export function isStageOwned(path, stageNamespace = STAGE_NAMESPACE) {
   return path === stageNamespace || path.startsWith(`${stageNamespace}/`);
+}
+
+/**
+ * §2.2: whether a path's DIRECTORY is entirely absent from the baseline.
+ *
+ * A directory the baseline never recorded was created after the baseline was frozen, so its files are additions
+ * rather than mutations. A file the baseline DID record is still compared exactly, so a change or removal inside
+ * any directory remains fatal.
+ */
+export function isPostBaselineDirectory(path, baselinePaths) {
+  const directory = String(path).split('/').slice(0, 2).join('/');
+  if (directory === path) return false;
+  return !baselinePaths.some((entry) => entry.startsWith(`${directory}/`));
 }
 
 function main() {
