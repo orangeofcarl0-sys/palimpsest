@@ -270,7 +270,9 @@ async function main() {
   const probeState = join(probeRoot, 'state');
   cpSync(prehistory.paths.state, probeState, { recursive: true });
   const probePaths = Object.freeze({ ...prehistory.paths, state: probeState, orchestration: join(probeState, 'orchestration.sqlite'), ordarium: join(probeState, 'ordarium.sqlite'), association: join(probeState, 'assoc.sqlite'), journal: join(probeState, 'journal.sqlite'), proof: join(probeState, 'proof.sqlite'), proofBlobs: join(probeState, 'proof-blobs'), cells: join(probeState, 'cells.sqlite'), procedures: join(probeState, 'procedures.sqlite') });
-  const probeExpectation = expectations['b0-C-G1'];
+  /** The expectations are keyed by the REPLICATION session id, which carries the fresh run prefix. */
+  const probeSession = plan.sessions.find((entry) => entry.arm === 'C' && entry.generation === 'G1');
+  const probeExpectation = expectations[probeSession.sessionId];
   const probe = await runRealPrehistoryBoundaryProbe({ projectId: 'cutover-entitlements', world: probeWorld, paths: probePaths, refs, generationId: 'G1', generationExposures: GENERATION_EXPOSURES, expectation: probeExpectation });
   const probeMatch = probeMatchesExpectation(probe, probeExpectation);
   out(`  BOUNDARY_PROBE: ${probe.BOUNDARY_PROBE}  matches expectation: ${String(probeMatch.matches)}  handles: ${String(probe.consumerVisibleHandles.length)}  pulls resolved: ${String(probe.pulls.filter((pull) => pull.resolved).length)}/${String(probe.pulls.length)}`);
