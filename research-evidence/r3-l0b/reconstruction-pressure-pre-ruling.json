@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "project-specific reconstruction-pressure pre-ruling",
+  "authoringScope": {
+    "authoring": "FORBIDDEN_IN_THIS_STAGE",
+    "permitted": "freeze the design requirements only"
+  },
+  "designRequirements": [
+    {
+      "id": "PROJECT_SPECIFIC",
+      "requirement": "specific to the Project rather than a generic engineering maxim"
+    },
+    {
+      "id": "RECOVERABLE_FROM_RAW_HISTORY",
+      "requirement": "recoverable from complete raw Project history"
+    },
+    {
+      "id": "NONTRIVIAL_FROM_PRIOR",
+      "requirement": "nontrivial to reconstruct from model prior alone"
+    },
+    {
+      "id": "DISTRIBUTED",
+      "requirement": "distributed enough that history search has real cost"
+    },
+    {
+      "id": "COMPRESSIBLE_INTO_GOVERNED_CAPITAL",
+      "requirement": "compressible into governed Proof, Reasoning or Procedure"
+    },
+    {
+      "id": "RECURRING",
+      "requirement": "exposed repeatedly across future project generations"
+    },
+    {
+      "id": "MEASURABLE_ON_RECONSTRUCTION",
+      "requirement": "measurable on reconstruction reliability and cost, not merely full solve"
+    },
+    {
+      "id": "RAW_HISTORY_ARM_CAN_SUCCEED",
+      "requirement": "the raw-history arm must remain capable of succeeding"
+    },
+    {
+      "id": "CAPITAL_REDUCES_BURDEN_NOT_ORACLE",
+      "requirement": "capital must reduce reconstruction burden, not provide otherwise unavailable oracle information"
+    }
+  ],
+  "integrityConstraints": [
+    {
+      "id": "RAW_HISTORY_ARM_CAN_SUCCEED",
+      "why": "a raw-history arm that cannot succeed measures an oracle, not a reconstruction burden"
+    },
+    {
+      "id": "CAPITAL_REDUCES_BURDEN_NOT_ORACLE",
+      "why": "capital must make reconstruction cheaper, not supply information the raw history does not contain"
+    }
+  ],
+  "prohibition": "no trajectory, fixture, lesson, diagnostic case or acceptance case was authored in this stage",
+  "futurePrimaryOutcomes": [
+    {
+      "id": "HISTORY_ARTIFACTS_READ",
+      "instrument": "count of distinct history artifacts actually returned to the session",
+      "role": "PRIMARY"
+    },
+    {
+      "id": "HISTORY_BYTES_CONSUMED",
+      "instrument": "bytes of history content returned to the session",
+      "role": "PRIMARY"
+    },
+    {
+      "id": "ACTIONS_BEFORE_CORRECT_FIRST_IMPLEMENTATION",
+      "instrument": "tool actions before the first implementation that passes the hidden classes",
+      "role": "PRIMARY"
+    },
+    {
+      "id": "PREPAID_INVARIANT_RECURRENCE",
+      "instrument": "recurrence of a prepaid or project-specific invariant failure",
+      "role": "PRIMARY"
+    },
+    {
+      "id": "RESULT_WITHIN_COGNITIVE_BUDGET",
+      "instrument": "terminal completion before the runtime reports a cognitive-budget termination",
+      "role": "PRIMARY"
+    },
+    {
+      "id": "TERMINAL_FUNCTIONAL_CORRECTNESS",
+      "instrument": "the final artifact passes the hidden classes",
+      "role": "SAFETY_CO_PRIMARY"
+    }
+  ],
+  "futureOutcomeScope": {
+    "thresholds": "NOT_FROZEN_IN_THIS_STAGE",
+    "law": "Do not freeze numerical verdict thresholds in this stage."
+  },
+  "applicableLaws": {
+    "planImmutability": "Any real-model invocation against primary project bytes activates plan immutability.",
+    "smokeEscapeHatchClosed": "A real-model behavioral exposure cannot be reclassified as only a smoke in order to permit plan amendment. Dummy fixtures only for plumbing tests.",
+    "postHocEnrichment": "Primary trial records are immutable after execution. Secondary token, cost and forensic enrichment must be stored in separate append-only evidence artifacts, and a primary normalized record must never be rewritten merely to add telemetry.",
+    "trialOneFreeze": "No treatment content may change after trial 1, and the pre-trial gate is SYSTEM_VALID && EXPERIMENT_VALID."
+  }
+}

@@ -138,12 +138,41 @@ export function namedPathsOf(data) {
   /**
    * Absolute Windows paths, POSIX absolute paths and traversal forms, anywhere in the call text. The `command`
    * field of a shell call is included because that is where the observed breaches named their targets.
+   *
+   * THE ESCAPE HAZARD, and why the haystack is NOT simply folded. A tool call's arguments arrive as JSON text,
+   * so a newline inside a shell script is the two characters backslash-then-`n`. Folding separators first turns
+   * that into `/nimport`, which the POSIX branch then reports as an absolute path — and it did: a first version
+   * of this function produced 205 phantom `OTHER` accesses, dominated by fragments such as `/nimport`,
+   * `/nWrite-Output` and `/ngit`.
+   *
+   * So the fold happens only for a candidate that is actually a path, and a POSIX candidate is rejected when it
+   * is an escape fragment.
    */
-  const haystack = fold(`${text}${NL}${structured?.command ?? ''}`);
-  for (const match of haystack.matchAll(/[A-Za-z]:\/[^\s"',;)|]+/gu)) found.add(match[0]);
-  for (const match of haystack.matchAll(/(?:^|[\s"'(=])(\/[A-Za-z][^\s"',;)|]*)/gu)) found.add(match[1]);
-  for (const match of haystack.matchAll(/(?:^|[\s"'(=])(\.\.[/\\][^\s"',;)|]*)/gu)) found.add(match[1]);
+  const haystack = `${text}${NL}${structured?.command ?? ''}`;
+  /**
+   * The negative lookbehind matters: without it, the drive-letter branch matches the `e:` inside a
+   * `file:///C:/...` URL and yields a candidate like `e:///C:/Users/...`, whose leading scheme then defeats
+   * every later containment test and misclassifies a worker's reference to its OWN repository as an exposure.
+   */
+  for (const match of haystack.matchAll(/(?<![A-Za-z])[A-Za-z]:[/\\][^\s"',;)|]+/gu)) found.add(fold(match[0]));
+  for (const match of haystack.matchAll(/(?:^|[\s"'(=])(\/[A-Za-z][^\s"',;)|]*)/gu)) {
+    if (isEscapeFragment(match[1])) continue;
+    found.add(match[1]);
+  }
+  for (const match of haystack.matchAll(/(?:^|[\s"'(=])(\.\.[/\\][^\s"',;)|]*)/gu)) found.add(fold(match[1]));
   return Object.freeze([...found]);
+}
+
+/**
+ * §5: whether a POSIX-looking candidate is really a JSON escape fragment.
+ *
+ * A newline, tab or carriage return inside a shell script appears in a tool call's arguments as a backslash
+ * followed by a letter. Those are not paths, and treating them as paths inflates the exposure count with
+ * findings that do not exist. A genuine absolute path has a second separator or a file extension.
+ */
+function isEscapeFragment(candidate) {
+  if (!/^\/[ntrbfv0ux]/u.test(candidate)) return false;
+  return !candidate.slice(1).includes('/') && !/\.[A-Za-z0-9]{1,6}$/u.test(candidate);
 }
 
 /**

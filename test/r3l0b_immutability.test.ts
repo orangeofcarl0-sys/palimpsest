@@ -113,9 +113,25 @@ describe("R3-L0B §14 — the r2lr historical-evidence mutator is repaired", () 
     expect(writers, "a test file writes under research-evidence, so a full unit run can mutate protected evidence").toEqual([]);
 
     const before = digestProtectedEvidence();
+    /**
+     * THE CHILD RUN NEEDS ITS OWN CONFIG, and the reason is a real hazard rather than tidiness.
+     *
+     * `test/global_setup.ts` performs ONE temp-directory sweep per run: it removes every `palimpsest-*`
+     * directory that appeared during that run. It documents the assumption it depends on — "this repo runs one
+     * suite at a time" — because two concurrent runs would each sweep the other's directories.
+     *
+     * A nested `vitest run` using the repository config WOULD be exactly that second run: it sweeps while the
+     * outer suite's tests still hold their rigs, deleting live directories out from under them. That was
+     * observed: the full suite failed in a DIFFERENT untouched `lean_*` file on each attempt, each time with a
+     * vanished temp path, and every one of them passed in isolation.
+     *
+     * So the child runs with `globalSetup: []`. It is still a full, real execution of the file under test — the
+     * only thing omitted is a cleanup sweep that must not run concurrently with the parent.
+     */
+    const childConfig = join(REPO_ROOT, "scripts", "r3l0b", "vitest.child.config.mjs");
     let status = 0;
     try {
-      execFileSync(process.execPath, [join(REPO_ROOT, "node_modules", "vitest", "vitest.mjs"), "run", "test/r2lr_last_mile.test.ts", "--reporter=dot"], { cwd: REPO_ROOT, stdio: "ignore", timeout: 600_000 });
+      execFileSync(process.execPath, [join(REPO_ROOT, "node_modules", "vitest", "vitest.mjs"), "run", "--config", childConfig, "--root", REPO_ROOT, "--reporter=dot"], { cwd: REPO_ROOT, stdio: "ignore", timeout: 600_000 });
     } catch (error) {
       status = Number((error as { status?: number }).status ?? 1);
     }

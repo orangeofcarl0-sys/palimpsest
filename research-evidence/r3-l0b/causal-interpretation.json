@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "corrected R3-L0 causal interpretation",
+  "mechanismEvidenceUnchanged": [
+    {
+      "id": "SYSTEM_VALID",
+      "value": "YES",
+      "why": "the four truth layers, the loop matrices, the cross-loop closures and the six mutations are kernel facts, measured without a model"
+    },
+    {
+      "id": "CAPITAL_DELIVERY",
+      "value": "CLOSED",
+      "why": "the consumer-boundary witness is a property of the delivered payload, not of what a worker later read"
+    },
+    {
+      "id": "CAPITAL_UPTAKE",
+      "value": "CLOSED",
+      "why": "uptake is decided by the governed pull resolving, which the containment defect does not alter"
+    },
+    {
+      "id": "HISTORY_ACCESS",
+      "value": "OBSERVED",
+      "why": "history access is an observation about tool traces"
+    },
+    {
+      "id": "CAPITAL_OVERHEAD",
+      "value": "OBSERVED",
+      "why": "the overhead is a measured byte and pull count"
+    }
+  ],
+  "behavioralCausalStatus": {
+    "id": "PERR_CAPITAL_EFFECT",
+    "value": "NOT_IDENTIFIABLE",
+    "reasons": [
+      {
+        "id": "HISTORY_ONLY_FLOOR",
+        "why": "HISTORY_ONLY reached PERR 0.000 in all four blocks, so the primary endpoint had no room to discriminate"
+      },
+      {
+        "id": "OUTCOME_ORACLE_EXPOSURE",
+        "why": "four sessions reached the research diagnostic oracle, which is the outcome instrument itself"
+      },
+      {
+        "id": "CROSS_TRAJECTORY_INTERFERENCE",
+        "why": "two sessions read another unit world or promoted source, which crosses the experiment unit boundary"
+      }
+    ],
+    "measuredBasis": {
+      "HISTORY_ONLY_FLOOR": "HISTORY_ONLY reached PERR 0.000 in all four blocks, so the primary endpoint had no room to discriminate",
+      "OUTCOME_ORACLE_EXPOSURE": "4 session(s) reached the outcome instrument: b0-C-G1, b1-C-G2, b3-H-G1, b3-C-G1",
+      "CROSS_TRAJECTORY_INTERFERENCE": "2 session(s) read a sibling unit across 7 unit pair(s)"
+    }
+  },
+  "preservedPreregisteredVerdict": {
+    "id": "TRAJECTORY_UTILITY",
+    "value": "MIXED",
+    "status": "PROTOCOL_OUTPUT",
+    "causalInterpretation": "SUPERSEDED_BY_CONTAINMENT_ADJUDICATION",
+    "note": "the verdict remains the protocol output it was; only its causal interpretation is superseded"
+  },
+  "statement": "The R3-L0 mechanism result stands; the R3-L0 behavioral capital effect is NOT IDENTIFIABLE, because the primary endpoint had no room to discriminate and two further reasons independently block a causal reading.",
+  "permittedClaims": [
+    "the long-horizon capital mechanism was delivered, governed, and consumed",
+    "the containment defect is measured, located, and repaired for future experiments"
+  ],
+  "forbiddenClaims": [
+    "that capital improved or harmed task reliability, because the effect is not identifiable",
+    "that project history caused the HISTORY_ONLY result, which requires a no-history arm this stage is not permitted to add",
+    "that a clean-subset re-analysis is a primary result"
+  ]
+}
