@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "stage": "R3-S0",
   "kind": "systemic behavior closure conformance run",
-  "elapsedMs": 40196,
+  "elapsedMs": 149070,
   "contractDigest": "4c0ca7137ddead0e5bd187a268e136761825d46826e3d9c43ebae92b122dbed9",
-  "testedSourceDigest": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
+  "testedSourceDigest": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
   "gates": {
     "S1": {
       "green": true,
@@ -77,17 +77,17 @@
         {
           "path": "stale",
           "verdict": "PASS",
-          "detail": "settlement={\"state\":\"BASE_DRIFT\",\"attemptId\":\"attempt-fabaea25e9078b6f1908a7070a143cd0\",\"resultCommit\":\"a7c02fb8e3bf378558ae4ee5f92300d7cf56daa5\",\"worldRetained\":true,\"detail\":\"BASE_DRIFT: this result was computed at b0550b836abf but the project is no"
+          "detail": "settlement={\"state\":\"BASE_DRIFT\",\"attemptId\":\"attempt-186e79ddf9b791319f44f79b0ca146b6\",\"resultCommit\":\"8155d539386955c87b3c8b3fcb7d2617665f448f\",\"worldRetained\":true,\"detail\":\"BASE_DRIFT: this result was computed at 03770fdbb236 but the project is no"
         },
         {
           "path": "crash",
           "verdict": "PASS",
-          "detail": "beforeClose=RUNNING afterRestartTaskState=ACTIVE childPid=8696"
+          "detail": "beforeClose=RUNNING afterRestartTaskState=ACTIVE childPid=24924"
         },
         {
           "path": "coldRestart",
           "verdict": "PASS",
-          "detail": "childPid=3288 parentPid=39676 differentProcess=true goal=\"survive a process boundary\" revision={\"revision\":1,\"digest\":\"be90700d9c429fa79b5bd05264b3a62e07817110e9713f38183314cccf8eaa1c\"} headBeforeRestart=5d18eba8"
+          "detail": "childPid=2484 parentPid=25572 differentProcess=true goal=\"survive a process boundary\" revision={\"revision\":1,\"digest\":\"4c47fbb805ffec18d9a97de09a8512a189ba5071631df8837f24f5d43cb62555\"} headBeforeRestart=f33453f2"
         },
         {
           "path": "nextGeneration",
@@ -121,7 +121,7 @@
         {
           "path": "coldRestart",
           "verdict": "PASS",
-          "detail": "childPid=2460 claimResolved=true associationSurvived=true"
+          "detail": "childPid=33668 claimResolved=true associationSurvived=true"
         },
         {
           "path": "nextGeneration",
@@ -160,12 +160,12 @@
         {
           "path": "coldRestart",
           "verdict": "PASS",
-          "detail": "childPid=37644 parentPid=39676 differentProcess=true needAfterRestart=true commitmentState=ACTIVE"
+          "detail": "childPid=31912 parentPid=25572 differentProcess=true needAfterRestart=true commitmentState=ACTIVE"
         },
         {
           "path": "nextGeneration",
           "verdict": "PASS",
-          "detail": "promoted={\"revision\":1,\"entryId\":\"pje-d30031f0f0a59c3b840f99e8b24205a1\",\"taskId\":\"t-apply\"} localTask=true remoteTaskAbsent=true"
+          "detail": "promoted={\"revision\":1,\"entryId\":\"pje-3489a6e8a1adee800d7bbf516a7aa1c9\",\"taskId\":\"t-apply\"} localTask=true remoteTaskAbsent=true"
         },
         {
           "path": "crash",
@@ -199,7 +199,7 @@
         {
           "path": "coldRestart",
           "verdict": "PASS",
-          "detail": "childPid=38396 revisedIntentSurvived=true receiptSurvived=true requirements=[\"latency <= 20 ms\"]"
+          "detail": "childPid=4496 revisedIntentSurvived=true receiptSurvived=true requirements=[\"latency <= 20 ms\"]"
         },
         {
           "path": "nextGeneration",
@@ -221,7 +221,7 @@
     {
       "path": "WORK->KNOWLEDGE->FUTURE_WORK",
       "verdict": "PASS",
-      "detail": "gen1Phase=FINISHED promoted=true headMoved=true childPid=3288 differentProcess=true capitalSurvived=true gen2Phase=FINISHED handleVisible=true bodyResolved=true"
+      "detail": "gen1Phase=FINISHED promoted=true headMoved=true childPid=38056 differentProcess=true capitalSurvived=true gen2Phase=FINISHED handleVisible=true bodyResolved=true"
     },
     {
       "path": "EVOLUTION->FUTURE_WORK",
@@ -231,7 +231,7 @@
     {
       "path": "COLLABORATION->LOCAL_WORK",
       "verdict": "PASS",
-      "detail": "proven inside the Collaboration loop's nextGeneration path: promoted={\"revision\":1,\"entryId\":\"pje-d30031f0f0a59c3b840f99e8b24205a1\",\"taskId\":\"t-apply\"} localTask=true remoteTaskAbsent=true"
+      "detail": "proven inside the Collaboration loop's nextGeneration path: promoted={\"revision\":1,\"entryId\":\"pje-3489a6e8a1adee800d7bbf516a7aa1c9\",\"taskId\":\"t-apply\"} localTask=true remoteTaskAbsent=true"
     }
   ],
   "runtimeConformance": {
@@ -269,7 +269,7 @@
       {
         "check": "ATTEMPT_BINDING",
         "pass": true,
-        "detail": "attemptId=attempt-d186f8091aafa2615cfe5371b6ad3f67 allowedPullHandles=0"
+        "detail": "attemptId=attempt-ba3ceb100025b3d3b181c0c395328b54 allowedPullHandles=0"
       },
       {
         "check": "OWNER_RESOLVER_BOUND",
@@ -316,7 +316,7 @@
       "controlGreen": true,
       "mutantRed": true,
       "verdict": "MUTATION_DETECTED",
-      "detail": "control eligibility=false (must be false); direct promote moved canonical HEAD=false; refused with: attempt attempt-b7bb5048d75a7c6b996e7f181fa68cdd is not promotion-eligible: task_not_verifying: task state is ACTIVE; a new promotion may only start from VERIFYING Work; required_verification_missing:"
+      "detail": "control eligibility=false (must be false); direct promote moved canonical HEAD=false; refused with: attempt attempt-a10048ea4955bcd8392ffd511ed3019f is not promotion-eligible: task_not_verifying: task state is ACTIVE; a new promotion may only start from VERIFYING Work; required_verification_missing:"
     },
     {
       "id": "M4_ACCEPT_STALE_RESULT",
@@ -324,7 +324,7 @@
       "controlGreen": true,
       "mutantRed": true,
       "verdict": "MUTATION_DETECTED",
-      "detail": "control settlement={\"state\":\"BASE_DRIFT\",\"attemptId\":\"attempt-6efaceb16f75517ae3a9b15f4efb7db7\",\"resultCommit (refused=true); forcing the stale result through promote moved HEAD=false; refused with: attempt attempt-6efaceb16f75517ae3a9b15f4efb7db7 is not promotion-eligible: attempt_not_completed: attempt state is RUNNING; only a COMPLETED attempt can be promoted; task_not_verifying: task state is"
+      "detail": "control settlement={\"state\":\"BASE_DRIFT\",\"attemptId\":\"attempt-425dcaa62e99d18819866fd95030aff0\",\"resultCommit (refused=true); forcing the stale result through promote moved HEAD=false; refused with: attempt attempt-425dcaa62e99d18819866fd95030aff0 is not promotion-eligible: attempt_not_completed: attempt state is RUNNING; only a COMPLETED attempt can be promoted; task_not_verifying: task state is"
     },
     {
       "id": "M5_OMIT_PROJECT_ASSET_ASSOCIATION",
@@ -361,7 +361,7 @@
       {
         "id": "NO_DIRECT_BACKING_STORE_READ",
         "blocked": true,
-        "detail": "probed from the HARNESS process (READ_SUCCEEDED), which is the unconfined host and proves nothing by itself; the WORKER-side claim is read from the R1-HC residual-closure conformance gate: R1-HC PASS (written: C:\\Users\\66494\\.palimpsest-r1hc\\conformance\\conformance.json), R1-H PASS"
+        "detail": "probed from the HARNESS process (READ_SUCCEEDED), which is the unconfined host and proves nothing by itself; the WORKER-side claim is read from the R1-HC residual-closure conformance gate: R1-L PASS (worker-side backing-store route BLOCKED), R1-HC PASS (R1-HC RESIDUAL-CLOSURE CONFORMANCE: PASS — the TOCTOU is closed struct), R1-H PASS, R1-HR PASS"
       },
       {
         "id": "NO_UNLISTED_HANDLE_USE",
@@ -376,7 +376,7 @@
       {
         "id": "NO_CONTROL_PAYLOAD_DISCOVERY",
         "blocked": true,
-        "detail": "probed from the HARNESS process (READ_SUCCEEDED); the worker-side claim is read from the R1-HC gate: R1-HC PASS (written: C:\\Users\\66494\\.palimpsest-r1hc\\conformance\\conformance.json), R1-H PASS"
+        "detail": "probed from the HARNESS process (READ_SUCCEEDED); the worker-side claim is read from the R1-HC gate: R1-L PASS (worker-side backing-store route BLOCKED), R1-HC PASS (R1-HC RESIDUAL-CLOSURE CONFORMANCE: PASS — the TOCTOU is closed struct), R1-H PASS, R1-HR PASS"
       },
       {
         "id": "NO_AUTHORITY_BYPASS",
@@ -416,11 +416,11 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "WORK",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "f1967e7960630961bbbb632ce16f70380b5f23234878bb70aa9018000fb6ad0a",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "7223cbff34fb8aa4e3d6f75ce96109c5253a4702f5134b853943b52ad20d32f3",
         "runtimeSessionBytes": "d7d2d9ac25dd83b4c81147bf48c269514a5f7e02e66c2a13ba06ede9075d6e85",
         "acceptanceModule": "3b0887b88284e00d649f8368b7143e30732be61624c1e187822f04051304137c",
-        "producedTrace": "0a05f6d36a8f1dcccbb6fbe7d7b4fa9c97e9b93e86745ec0fcb3e480624ef7d3"
+        "producedTrace": "fbec2d5756bd119976a02907847b06c30ffbbf8b1e4ef4f7d82964f7ce704ce2"
       },
       "present": [
         "testedSourceBytes",
@@ -437,11 +437,11 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "KNOWLEDGE",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "c980f3c4c81a79f3e68f67ead0aba6eea9b0c23f7948c74a1db7a5b98b012f8d",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "93abcdc583956c98c7e13372991b6cac0c8ae445f73209ce6e1dff098dade519",
         "runtimeSessionBytes": "a98bd7fa149d93f8c87e104d6e45140902dac3a454741575777ba5ffddaf30d7",
         "acceptanceModule": "5b3e643c857c8e0f0e0b7ec03e56f6d942970cbdff0739ee1cec96e3da5a8552",
-        "producedTrace": "14d0ca7e95c0b8ba7d8a3417d29522a3cfe2342dcbf633dd4dc2621fe73b2d82"
+        "producedTrace": "413abe009829d5c6efbfbbf6f68d4f23514b9cba97295306ab7c0b07970e27f1"
       },
       "present": [
         "testedSourceBytes",
@@ -458,11 +458,11 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "COLLABORATION",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "8713aa4906f39deae1182e8500d68b9023992a47e4812e397b708ca644776aea",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "91a6bef62f71f3157823f48baefe501b33fbb810fe15a9bfa50d8b8ba86dcdfa",
         "runtimeSessionBytes": "448bf9f864b1c3d61f153b01719188761b81d1fb81e44b998f51c064c47efb65",
         "acceptanceModule": "026664a8b50eac9879ff66cf1165091b374e4f62f862c0594bc0d01bc30bb136",
-        "producedTrace": "2bbbf442f4339baba401ee0261c8d5feeb4480b45d6a81fd385997a68b896322"
+        "producedTrace": "95dd13241956ea0a1be69efce3bb9a1774c31bfaa1f9c73720d6f4cc77051020"
       },
       "present": [
         "testedSourceBytes",
@@ -479,11 +479,11 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "EVOLUTION",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "6a5d8e3206bf75c1d316b1490b2913769067bd571aa30e89a4c8d76c5206478b",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "25c231de28a9293bb1ba4f928095eef7f97c10e127f50852440161528757b061",
         "runtimeSessionBytes": "f29f8a8d11a553de6e95a0ffe728da556e470392d0f5bd10186a100dd7c603c8",
         "acceptanceModule": "357b4f6e949967613da8883cd0c7389bf6fe594c9c68f4b325be3dee279fd67e",
-        "producedTrace": "864af3d52171ae0f5c4d991951cac2e542519067ba31c1ba7bb86a384aab5dff"
+        "producedTrace": "10866a9e3a40875340404db2dea5264fe0e2aefe34909bcf933cb98d19e1dc23"
       },
       "present": [
         "testedSourceBytes",
@@ -500,11 +500,11 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "WORK_TO_KNOWLEDGE_TO_FUTURE_WORK",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "45c5454bb419b2dc57d96b9ddd147e6f1a90b2335281191adcb77d9c82d7dff7",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "11bc5718f8b33dcddec9de39a7adeb10dc38cf80eff7db289f4fde42934de112",
         "runtimeSessionBytes": "aa048aae1b0fb36a75d7fb9161bf898322127c505fb184596ec491e0cc5c8e2c",
         "acceptanceModule": "ab76f733e41dae13a29ba302b176d250428c6667c731aecabbde12c2a29fdce6",
-        "producedTrace": "6dc4ae775287b2c4c1d32fcca53656548de7f144c2840e1f98ec26865e2c64c0"
+        "producedTrace": "d9eb3907a120f8e14c804a4e68209e7d0e5ec5ee9897402f97bc3d7ae8dedca7"
       },
       "present": [
         "testedSourceBytes",
@@ -521,8 +521,8 @@
       "kind": "EvidenceDigestClosure",
       "scenario": "EVOLUTION_TO_FUTURE_WORK",
       "digests": {
-        "testedSourceBytes": "2bba5a34a0ad0a2a3d592469fb3d8679853dd967ff79bfb117c7877baf1267b2",
-        "canonicalState": "15a2008e7a50bbc2baab54ef8de15f2568aea22f3a761513195adabf8f900864",
+        "testedSourceBytes": "29ce8ee0cd31e580b8c323ce8e9a44543912c89320fa265b421b1bbcfe453880",
+        "canonicalState": "488fe156c9978216673ed1c2bcb0f5b85942c0ec3a5ea2a405c15ae6cb309594",
         "runtimeSessionBytes": "d7a92faa3c0e2b85d5939708f7acc42b96f238a1db78dd8f4b2584cb7e33c263",
         "acceptanceModule": "26ba0090ff115d348a48dc55a6ab5220b0074d9b042a00aa56738f5a8d2be928",
         "producedTrace": "6365f06758d69fdf90303f021151cd0d97881d25d43dcbd76efb5cb8cc377faf"
@@ -615,10 +615,10 @@
       "EVOLUTION:RevisedIntent/Organization/Runtime"
     ],
     "runtimeBindingDigests": [
-      "d306f589f9a5f18eecb061b8c390347120bf301afef72d97f2dc59b9714680ed"
+      "7f6658ece3060500ed0c1d48bc203b01faf1142d3d3888f9454f5a229f0bf0df"
     ],
     "consumerVisibleDigests": [
-      "aa9a451b9093e47015e3c45f8fd35f97f7b6e0417c5bd8b5b7542a731d1a12b3"
+      "64613f713f7e02112c5144edcd8be8a58710763afdfe1a8aae221f4da0871595"
     ],
     "toolSurfaceDigest": "03f0a63e7317d7280642b5edb6fa031dcc8b90101278bc34f817eb629d23da02",
     "toolInvocations": [
@@ -641,13 +641,13 @@
       "FULFILLMENT_DECIDED"
     ],
     "verificationPromotionReceipts": [
-      "9c59819ac26bea64fc112649c30b2c228483eae435c61a3100664dfc9f710a01"
+      "c7e2ceb5ad24f5608c5aad678e4bbfa924c312b1d83b9889ef206b3da605012c"
     ],
     "restartBoundaries": [
-      "childPid=3288 parentPid=39676 differentProcess=true goal=\"survive a process boundary\" revision={\"revision\":1,\"digest\":\"b",
-      "childPid=2460 claimResolved=true associationSurvived=true",
-      "childPid=37644 parentPid=39676 differentProcess=true needAfterRestart=true commitmentState=ACTIVE",
-      "childPid=38396 revisedIntentSurvived=true receiptSurvived=true requirements=[\"latency <= 20 ms\"]"
+      "childPid=2484 parentPid=25572 differentProcess=true goal=\"survive a process boundary\" revision={\"revision\":1,\"digest\":\"4",
+      "childPid=33668 claimResolved=true associationSurvived=true",
+      "childPid=31912 parentPid=25572 differentProcess=true needAfterRestart=true commitmentState=ACTIVE",
+      "childPid=4496 revisedIntentSurvived=true receiptSurvived=true requirements=[\"latency <= 20 ms\"]"
     ],
     "forbiddenBypassChecks": [
       "NO_DIRECT_BACKING_STORE_READ:BLOCKED",
@@ -657,7 +657,7 @@
       "NO_AUTHORITY_BYPASS:BLOCKED",
       "NO_DIRECT_REMOTE_TO_LOCAL_OWNERSHIP_CONVERSION:BLOCKED"
     ],
-    "traceDigest": "c48d8a5763c607314b640cf622608fb09f2712b72e75949661705e91f50bdfcc"
+    "traceDigest": "507c2eef99bc72abd08f0341cfac639f4a7bf8a17c9237e53c557842e14f6803"
   },
   "traceCoverage": {
     "populated": [

@@ -517,13 +517,25 @@ export async function securityGateVerdicts() {
   };
   const hcOutput = run(join('r1hc', 'conformance.mjs'));
   const hOutput = run(join('r1h', 'conformance.mjs'));
+  const hrOutput = run(join('r1hr', 'conformance.mjs'));
+  /**
+   * The R1-L LIVE gate is the one that measures the WORKER side of the backing-store route: its own §18 check
+   * reads the store "as the worker" and reports whether that route is blocked. It drives a deterministic
+   * worker, not a model, so it is safe to run here and its verdict is the right evidence for the bypass check.
+   */
+  const r1lOutput = run(join('gates', 'r1l-live-gate.mjs'));
   const hcGreen = /CONFORMANCE: PASS/u.test(hcOutput);
   const hGreen = /CONFORMANCE: PASS/u.test(hOutput);
+  const hrGreen = /CONFORMANCE: PASS/u.test(hrOutput);
+  const r1lGreen = /R1-L-LIVE: PASS/u.test(r1lOutput);
+  const workerStoreBlocked = /the direct backing-store route is blocked \(as the worker\)/u.test(r1lOutput);
   securityCache = Object.freeze({
-    confidentialityGreen: hcGreen && hGreen,
-    confidentialityDetail: `R1-HC ${hcGreen ? 'PASS' : 'FAIL'} (${(hcOutput.trim().split(String.fromCharCode(10)).pop() ?? '').slice(0, 90)}), R1-H ${hGreen ? 'PASS' : 'FAIL'}`,
+    confidentialityGreen: hcGreen && hGreen && hrGreen && r1lGreen && workerStoreBlocked,
+    confidentialityDetail: `R1-L ${r1lGreen ? 'PASS' : 'FAIL'} (worker-side backing-store route ${workerStoreBlocked ? 'BLOCKED' : 'NOT CONFIRMED'}), R1-HC ${hcGreen ? 'PASS' : 'FAIL'} (${(hcOutput.trim().split(String.fromCharCode(10)).filter((line) => line.includes('CONFORMANCE')).pop() ?? '').slice(0, 70)}), R1-H ${hGreen ? 'PASS' : 'FAIL'}, R1-HR ${hrGreen ? 'PASS' : 'FAIL'}`,
+    r1l: r1lGreen,
     r1hc: hcGreen,
     r1h: hGreen,
+    r1hr: hrGreen,
   });
   return securityCache;
 }
