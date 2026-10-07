@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "kind": "selection realization mutations",
+  "generationId": "G1",
+  "mutations": [
+    {
+      "id": "MALFORMED_SELECTION_HANDLES_FIELD",
+      "reproduces": "the exact escaped defect: a selection sent as { handles: [...] }",
+      "expected": "INVALID_SELECTION_SHAPE with zero launches",
+      "observed": "INVALID_SELECTION_SHAPE",
+      "TREATMENT_REALIZATION_GATE": "FAIL",
+      "REAL_MODEL_LAUNCH_COUNT": 0,
+      "detected": true
+    },
+    {
+      "id": "MALFORMED_SELECTION_ITEM_SHAPE",
+      "reproduces": "a supported kind carrying an incomplete item",
+      "expected": "INVALID_SELECTION_ITEM with zero launches",
+      "observed": "INVALID_SELECTION_ITEM",
+      "TREATMENT_REALIZATION_GATE": "FAIL",
+      "REAL_MODEL_LAUNCH_COUNT": 0,
+      "detected": true
+    },
+    {
+      "id": "MALFORMED_SELECTION_UNKNOWN_KIND",
+      "reproduces": "an unknown kind smuggled alongside a valid one, which the product would ignore",
+      "expected": "INVALID_SELECTION_SHAPE with zero launches",
+      "observed": "INVALID_SELECTION_SHAPE",
+      "TREATMENT_REALIZATION_GATE": "FAIL",
+      "REAL_MODEL_LAUNCH_COUNT": 0,
+      "detected": true
+    }
+  ],
+  "controls": [
+    {
+      "id": "C_OWNER_KIND_POSITIVE_CONTROL",
+      "expectation": "PASS with exactly the expected handles",
+      "gate": "PASS",
+      "items": 2,
+      "expectedItems": 2,
+      "passed": true
+    },
+    {
+      "id": "H_EMPTY_SELECTION_POSITIVE_CONTROL",
+      "expectation": "PASS with zero handles, because H is the ABSENCE of a selection",
+      "gate": "PASS",
+      "items": 0,
+      "requestIsUndefined": true,
+      "passed": true
+    }
+  ],
+  "mutationsDetected": true,
+  "controlsPassed": true,
+  "TREATMENT_REALIZATION_GATE": "PASS",
+  "REAL_MODEL_LAUNCH_COUNT_ON_ANY_MUTATION": 0,
+  "law": "a malformed non-empty selection must be refused before any model launch, and must never be converted into an empty selection",
+  "topologyDigest": "9e13e9fe1d929259e7fb913b3edee7f7237821876af6dfeaa7c80d29e9cf6803",
+  "executionClosureDigest": "5887ebbeacd143f9a774c57bdfa0b82ae77c035f0bc587dbb73429f990e15579"
+}
