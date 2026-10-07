@@ -289,6 +289,22 @@ try {
   report.payload = existsSync(payloadSink) ? JSON.parse(readFileSync(payloadSink, 'utf8')) : null;
   report.transcriptBytes = existsSync(transcript) ? readFileSync(transcript).length : 0;
 
+  /**
+   * §20: the provider-reported token usage, read from THIS generation's durable session artifact. The reader is
+   * the one the R3-A2 stage built for the multi-frame zstd artifact, so the numbers are the provider's and not a
+   * reconstruction.
+   */
+  try {
+    const telemetry = await import(pathToFileURL(join(REPO_ROOT, 'scripts', 'r3a2', 'telemetry.mjs')).href);
+    const read = telemetry.readSessionTelemetry(spec.dshHome, { modelId: spec.modelId ?? 'deepseek-flash' });
+    report.usage = read.usage;
+    report.cost = read.cost;
+    report.usageNote = read.note;
+  } catch (error) {
+    report.usage = null;
+    report.usageNote = `the session telemetry could not be read: ${String(error?.message ?? error).slice(0, 160)}`;
+  }
+
   /** The governed pull: the generation records whether the CAPITALIZED arm's handles resolve. */
   if (attemptId !== null && report.payload !== null) {
     const pulls = [];

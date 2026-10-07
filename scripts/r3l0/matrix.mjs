@@ -80,6 +80,7 @@ function runGeneration(input) {
     objective: generation.objective,
     projectGoal: generation.projectGoal,
     knowledge: knowledge ?? null,
+    modelId: PRIMARY_EXECUTOR.modelId,
     standard: { statement: 'the visible oracle passes', clauses: [{ kind: 'scope_respected' }], derivedFrom: ['r3l0 generation'], confirmed: true, notes: [] },
     supportFiles: { 'plans.mjs': LEDGER_PLANS, 'errors.mjs': LEDGER_ERRORS },
   }, null, 2), 'utf8');
@@ -149,6 +150,8 @@ async function runTrajectory(input) {
       governedPulls: result.report?.governedPulls ?? [],
       elapsedMs: result.elapsedMs,
       transcriptBytes: result.report?.transcriptBytes ?? null,
+      usage: result.report?.usage ?? null,
+      cost: result.report?.cost ?? null,
       requirements: result.report?.requirements ?? [],
       hostError: result.report?.hostError ?? null,
       error: result.report?.error ?? null,
