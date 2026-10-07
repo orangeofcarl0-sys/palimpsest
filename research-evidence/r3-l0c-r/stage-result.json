@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "kind": "treatment realization and repair replication stage result",
+  "status": "BLOCKED",
+  "statusReason": "every pre-exposure repair is complete and the continuation gate is green, but the frozen sentinel route is unavailable, so the replication could not execute",
+  "run1Status": "TREATMENT_NOT_APPLIED",
+  "run1Erratum": {
+    "correctedVerdicts": {
+      "SYSTEM_VALID": "YES",
+      "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+      "TREATMENT_REALIZATION_VALID": "NO",
+      "CAUSAL_EXPERIMENT_VALID": "NO",
+      "CAPITAL_UPTAKE": "NOT_EVALUABLE",
+      "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+      "NET_COGNITIVE_COST": "NOT_EVALUABLE"
+    },
+    "failedDimension": "TREATMENT_REALIZATION_VALID",
+    "historicalReportPreserved": true,
+    "historicalReportRewritten": false
+  },
+  "selectionContract": {
+    "case": "HARNESS_BYPASSED_TYPED_API",
+    "productChangeMade": false,
+    "mutationsDetected": true,
+    "controlsPassed": true,
+    "realModelLaunchesOnAnyMutation": 0
+  },
+  "boundaryProbe": null,
+  "executionClosure": {
+    "frozen": "73be9963ee13b282894e0e2ebf616f62994b79dd42b3ad9f121e6c4ec2b9ba1e",
+    "current": "73be9963ee13b282894e0e2ebf616f62994b79dd42b3ad9f121e6c4ec2b9ba1e",
+    "matches": true
+  },
+  "replication": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-R",
+    "kind": "repair replication ledger",
+    "plannedSessions": 16,
+    "attemptedSessions": 0,
+    "validSessions": 0,
+    "matrixWritten": false,
+    "continuationGateGreen": true,
+    "executed": false,
+    "reason": "the frozen sentinel route is unavailable (402 Insufficient Balance), and this stage forbids the fallback",
+    "trialRecordsWritten": 0,
+    "treatmentVerdictsIssued": false,
+    "run1ContributionToVerdicts": 0
+  },
+  "blocker": {
+    "id": "FROZEN_SENTINEL_ROUTE_UNAVAILABLE_INSUFFICIENT_BALANCE",
+    "kind": "external provider billing state",
+    "loadBearing": true,
+    "route": {
+      "routeId": "deepseek-direct",
+      "providerId": "deepseek-route",
+      "modelId": "deepseek-flash",
+      "baseURL": "https://api.deepseek.com"
+    },
+    "observed": {
+      "httpStatus": 402,
+      "providerCode": "invalid_request_error",
+      "providerMessage": "Insufficient Balance",
+      "verifiedBy": "a direct request to the provider chat-completions endpoint with the frozen route's credential",
+      "fromWorkerTranscript": "the worker turn ended with reason.kind=error and code=QUOTA, status=402, which is the same state observed at the provider"
+    },
+    "transient": false,
+    "clearsOnRetry": false,
+    "priorSuccess": "all 16 R3-L0C Run-1 sessions completed on this same route, so the balance was sufficient then",
+    "fallbackConsidered": [
+      {
+        "option": "GLM via the alternative route",
+        "permittedBy": "R3-L0C §13 (primary sentinel unavailable before trial 1)",
+        "forbiddenBy": "this stage: Do NOT run GLM/Kimi",
+        "taken": false
+      },
+      {
+        "option": "a different provider route to the same model",
+        "permittedBy": "nothing",
+        "forbiddenBy": "this stage §12: preserve the frozen low-cost sentinel stack",
+        "taken": false
+      },
+      {
+        "option": "retrying until the balance clears",
+        "permittedBy": "nothing",
+        "forbiddenBy": "the state is a billing condition, not a transient error, so retrying would burn wall-clock without a model call succeeding",
+        "taken": false
+      }
+    ],
+    "stateAtStop": {
+      "preExposureRepairsComplete": true,
+      "planCommittedAndUnamended": true,
+      "primaryBytesExposedToAModel": false,
+      "executionClosureFrozen": true
+    }
+  },
+  "validity": {
+    "SYSTEM_VALID": "YES",
+    "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+    "TREATMENT_REALIZATION_VALID": "NO",
+    "TREATMENT_REALIZATION_NOTE": "the realization gate is proven green deterministically (boundary probe PASS, mutations detected, zero launches on any malformed shape), but no replication trial executed, so realization is NOT ESTABLISHED for a replication that did not run",
+    "ANALYSIS_PLAN_VALID": "YES",
+    "CAUSAL_EXPERIMENT_VALID": "NO",
+    "CAUSAL_EXPERIMENT_NOTE": "no treatment verdict is issued, because no replication trial exists to analyse"
+  },
+  "verdicts": {
+    "R3_L0C_R": "BLOCKED",
+    "RUN_1": "TREATMENT_NOT_APPLIED",
+    "RECONSTRUCTION_PRESSURE": "PRESENT",
+    "CAPITAL_UPTAKE": "NOT_EVALUABLE",
+    "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+    "NET_COGNITIVE_COST": "NOT_EVALUABLE",
+    "NEXT": "STOP",
+    "NEXT_REASON": "the frozen sentinel route is unavailable, and this stage forbids the fallback; the design and repairs are complete and unspent, so a later attempt resumes from the committed plan without amending it"
+  },
+  "replicationName": "REPAIR_REPLICATION",
+  "replicationExecuted": false
+}
