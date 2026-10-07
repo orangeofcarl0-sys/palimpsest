@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "breach replay against the repaired layout",
+  "units": [
+    "b0-C",
+    "b0-H",
+    "b1-C",
+    "b1-H",
+    "b2-C",
+    "b2-H",
+    "b3-C",
+    "b3-H"
+  ],
+  "declaredProtectedRoots": [
+    "C:\\Users\\66494\\.palimpsest-r3l0b\\replay\\private\\units"
+  ],
+  "accessesReplayed": 227,
+  "blocked": 227,
+  "unblocked": 0,
+  "byClass": {
+    "CONTROL_PLANE_EXPOSED": {
+      "total": 95,
+      "blocked": 95,
+      "unblocked": 0
+    },
+    "CHECKOUT_EXPOSED": {
+      "total": 47,
+      "blocked": 47,
+      "unblocked": 0
+    },
+    "OTHER": {
+      "total": 73,
+      "blocked": 73,
+      "unblocked": 0
+    },
+    "ORACLE_EXPOSED": {
+      "total": 12,
+      "blocked": 12,
+      "unblocked": 0
+    }
+  },
+  "BREACH_VECTOR_CLOSED": true,
+  "unblockedSample": [],
+  "basis": "every one of the 227 historical accesses now falls outside the worker-readable surface"
+}

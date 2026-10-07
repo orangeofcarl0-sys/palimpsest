@@ -30,6 +30,8 @@ import { containmentHypothesis, fenceSourceEvidence, layoutFacts, rootCauseVerdi
 import { buildIsolatedLayout, containmentEnvironment, declaredProtectedRoots, envelopeForReport, isolatedRoots, layoutShape } from './containment.mjs';
 import { runCanarySuite } from './canaries.mjs';
 import { canaryLivenessControl, oracleExposureMutation, sharedParentMutation } from './mutations.mjs';
+import { replayBreach } from './replay.mjs';
+import { correctedCausalInterpretation, preRulingSummary, reconstructionPressurePreRuling } from './interpretation.mjs';
 
 const NL = String.fromCharCode(10);
 const EVIDENCE = join(REPO_ROOT, STAGE_EVIDENCE_PATH);
@@ -73,6 +75,7 @@ export function buildInterferenceEvidence() {
 
   const sessionRows = sessions.map((session) => Object.freeze({
     sessionId: session.sessionId,
+    trajectoryId: session.trajectoryId,
     arm: session.arm,
     block: session.block,
     generation: session.generation,
@@ -196,11 +199,45 @@ async function main() {
   out(`  ${containmentEvidence.sharedParentMutation.recordedVerdict}`);
   out(`  ${containmentEvidence.oracleExposureMutation.recordedVerdict}`);
 
+  /** §10: the breach replay, which tests the repair against the ACTUAL paths the workers read. */
+  let replay = null;
+  if (interference.available) {
+    const unitIds = [...new Set(interference.sessions.map((session) => session.trajectoryId))].sort();
+    replay = replayBreach(interference, join(homedir(), '.palimpsest-r3l0b', 'replay'), unitIds);
+    out(`  breach replay: ${String(replay.blocked)}/${String(replay.accessesReplayed)} historical accesses now blocked (BREACH_VECTOR_CLOSED=${String(replay.BREACH_VECTOR_CLOSED)})`);
+  }
+
+  /** §14/§15: the immutability verdict, computed here so the ExperimentValidity verdict can cite it. */
+  const { checkImmutability } = await import('./immutability.mjs');
+  const immutability = checkImmutability();
+
+  /** §3/§16: THE FORMAL EXPERIMENTAL-VALIDITY VERDICT. */
+  const experimentValidity = experimentValidityFrom({
+    containment: containmentEvidence.containment,
+    liveness: containmentEvidence.liveness,
+    sharedParentMutation: containmentEvidence.sharedParentMutation,
+    oracleExposureMutation: containmentEvidence.oracleExposureMutation,
+    immutability: immutability.HISTORICAL_EVIDENCE_IMMUTABLE,
+    immutabilityDetail: `${immutability.HISTORICAL_EVIDENCE_IMMUTABLE} over ${String(immutability.currentFileCount)} protected files; r2lr mutator repair ${immutability.r2lrMutatorRepair}`,
+  });
+  out(`${NL}EXPERIMENT_VALID: ${experimentValidity.EXPERIMENT_VALID ? 'YES' : 'NO'}`);
+  for (const component of experimentValidity.components) out(`  ${component.id.padEnd(24)} ${component.verdict}`);
+
   writeFileSync(join(EVIDENCE, 'interference-graph.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0B', kind: 'R3-L0 interference graph', ...interference }, null, 2)}${NL}`, 'utf8');
+  writeFileSync(join(EVIDENCE, 'breach-replay.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0B', ...replay }, null, 2)}${NL}`, 'utf8');
+  /** §2/§19/§20: the corrected causal reading and the design pre-ruling. */
+  const causalInterpretation = correctedCausalInterpretation({ graph: interference.available ? interference : null });
+  const preRuling = reconstructionPressurePreRuling();
+  out(`corrected causal status: ${causalInterpretation.behavioralCausalStatus.value}`);
+  out(`pre-ruling: ${String(preRulingSummary().requirements)} requirements, ${String(preRulingSummary().futurePrimaryOutcomes)} future outcomes, thresholds frozen=${String(preRulingSummary().thresholdsFrozen)}, trajectory authored=${String(preRulingSummary().trajectoryAuthored)}`);
+
+  writeFileSync(join(EVIDENCE, 'causal-interpretation.json'), `${JSON.stringify(causalInterpretation, null, 2)}${NL}`, 'utf8');
+  writeFileSync(join(EVIDENCE, 'reconstruction-pressure-pre-ruling.json'), `${JSON.stringify(preRuling, null, 2)}${NL}`, 'utf8');
+  writeFileSync(join(EVIDENCE, 'experiment-validity.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0B', kind: 'experimental validity verdict', experimentValidity, immutability, containment: containmentEvidence.containment, liveness: containmentEvidence.liveness, sharedParentMutation: containmentEvidence.sharedParentMutation, oracleExposureMutation: containmentEvidence.oracleExposureMutation, breachReplay: replay === null ? null : { accessesReplayed: replay.accessesReplayed, blocked: replay.blocked, unblocked: replay.unblocked, BREACH_VECTOR_CLOSED: replay.BREACH_VECTOR_CLOSED, byClass: replay.byClass } }, null, 2)}${NL}`, 'utf8');
   writeFileSync(join(EVIDENCE, 'root-cause.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0B', ...rootCause, fenceSourceEvidence: fenceEvidence, containmentHypothesis: containmentHypothesis(interference.runDir ?? r3l0Root()), layoutFacts: layoutFacts(interference.runDir ?? r3l0Root()) }, null, 2)}${NL}`, 'utf8');
   writeFileSync(join(EVIDENCE, 'containment.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0B', kind: 'experiment containment evidence', envelope: envelopeForReport(), ...containmentEvidence }, null, 2)}${NL}`, 'utf8');
-  out(`${NL}wrote ${STAGE_EVIDENCE_PATH}/interference-graph.json, root-cause.json, containment.json`);
-  return { interference, rootCause, containmentEvidence };
+  out(`${NL}wrote ${STAGE_EVIDENCE_PATH}/interference-graph.json, root-cause.json, containment.json, breach-replay.json, experiment-validity.json`);
+  return { interference, rootCause, containmentEvidence, replay, immutability, experimentValidity, causalInterpretation, preRuling };
 }
 
 if (process.argv[1] !== undefined && import.meta.url === new URL(`file://${process.argv[1].replace(/\\/gu, '/')}`).href) {

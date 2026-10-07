@@ -7,6 +7,7 @@
   "sessions": [
     {
       "sessionId": "b0-C-G1",
+      "trajectoryId": "b0-C",
       "arm": "C",
       "block": 0,
       "generation": "G1",
@@ -15,63 +16,15 @@
       "dispatchCount": 32,
       "turnEndReason": "completed",
       "label": "ORACLE_CONTAMINATED",
-      "namedAccessesOutsideWorld": 76,
+      "namedAccessesOutsideWorld": 30,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 10,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 20,
-        "OTHER": 46
+        "OTHER": 0
       },
       "accesses": [
-        {
-          "seq": 83,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 2042,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 83,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 2042,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 83,
-          "tool": "pwsh",
-          "path": "/nforeach",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 2042,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 83,
-          "tool": "pwsh",
-          "path": "/nGet-ChildItem",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 2042,
-          "siblingTrajectoryId": null
-        },
         {
           "seq": 91,
           "tool": "pwsh",
@@ -167,42 +120,6 @@
           "contentReturned": true,
           "contentBytes": 1808,
           "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 91,
-          "tool": "pwsh",
-          "path": "/n$paths",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 1808,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 91,
-          "tool": "pwsh",
-          "path": "/n$d",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 1808,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 91,
-          "tool": "pwsh",
-          "path": "/nwhile",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 1808,
-          "siblingTrajectoryId": null
         },
         {
           "seq": 99,
@@ -301,42 +218,6 @@
           "siblingTrajectoryId": "b0-C"
         },
         {
-          "seq": 99,
-          "tool": "pwsh",
-          "path": "/nGet-Content",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 11601,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 99,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 11601,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 99,
-          "tool": "pwsh",
-          "path": "/nGet-ChildItem",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 11601,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 107,
           "tool": "pwsh",
           "path": "C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/",
@@ -409,42 +290,6 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 107,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 15870,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 107,
-          "tool": "pwsh",
-          "path": "/nGet-ChildItem",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 15870,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 107,
-          "tool": "pwsh",
-          "path": "/nif",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 15870,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 115,
           "tool": "pwsh",
           "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/",
@@ -462,42 +307,6 @@
           "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1",
           "classification": "CHECKOUT_EXPOSED",
           "artifactOwner": "the palimpsest checkout (the harness host)",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 813,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 115,
-          "tool": "pwsh",
-          "path": "/n$h",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 813,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 115,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 813,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 115,
-          "tool": "pwsh",
-          "path": "/nGet-ChildItem",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
           "operation": "ENUMERATE",
           "contentReturned": true,
@@ -529,42 +338,6 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 123,
-          "tool": "pwsh",
-          "path": "/n$h",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 29211,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 123,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 29211,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 123,
-          "tool": "pwsh",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 29211,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 131,
           "tool": "pwsh",
           "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/",
@@ -582,42 +355,6 @@
           "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1",
           "classification": "CHECKOUT_EXPOSED",
           "artifactOwner": "the palimpsest checkout (the harness host)",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 23263,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "/n$h",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 23263,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 23263,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "/nGet-ChildItem",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
           "operation": "ENUMERATE",
           "contentReturned": true,
@@ -646,294 +383,6 @@
           "operation": "ENUMERATE",
           "contentReturned": true,
           "contentBytes": 10706,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 139,
-          "tool": "pwsh",
-          "path": "/n$h",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 10706,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 139,
-          "tool": "pwsh",
-          "path": "/n$f",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 10706,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 139,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "ENUMERATE",
-          "contentReturned": true,
-          "contentBytes": 10706,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 147,
-          "tool": "pwsh",
-          "path": "/n$p",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 54,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 147,
-          "tool": "pwsh",
-          "path": "/n$bytes",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 54,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 159,
-          "tool": "pwsh",
-          "path": "/n$bytes",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 2341,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 159,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 2341,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 173,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-272903c7dadc9e56e861af2413174a40/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 926,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 173,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-272903c7dadc9e56e861af2413174a40/src/ledger.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 926,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 173,
-          "tool": "pwsh",
-          "path": "/n$code",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 926,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 173,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 926,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 173,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 926,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 181,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 7091,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 181,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 7091,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 181,
-          "tool": "pwsh",
-          "path": "/n$env:CHK",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 7091,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 189,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 121,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 189,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 121,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 189,
-          "tool": "pwsh",
-          "path": "/n$env:CHK",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 121,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 201,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 565,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 201,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 565,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 209,
-          "tool": "pwsh",
-          "path": "/nWrite-Output",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 115,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 209,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 115,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 209,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 115,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 209,
-          "tool": "pwsh",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 115,
           "siblingTrajectoryId": null
         }
       ],
@@ -1147,6 +596,7 @@
     },
     {
       "sessionId": "b0-C-G2",
+      "trajectoryId": "b0-C",
       "arm": "C",
       "block": 0,
       "generation": "G2",
@@ -1155,13 +605,13 @@
       "dispatchCount": 25,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 14,
+      "namedAccessesOutsideWorld": 6,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 6,
-        "OTHER": 8
+        "OTHER": 0
       },
       "accesses": [
         {
@@ -1235,102 +685,6 @@
           "contentReturned": true,
           "contentBytes": 221,
           "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 124,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-6c7874480353be1cb717d52bcf1127a5/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 852,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 124,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-6c7874480353be1cb717d52bcf1127a5/src/ledger.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 852,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 124,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 852,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-6c7874480353be1cb717d52bcf1127a5/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 24,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b0-C/repo/.palimpsest/worlds/attempt-6c7874480353be1cb717d52bcf1127a5/src/ledger.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 24,
-          "siblingTrajectoryId": "b0-C"
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 24,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "pwsh",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 24,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 149,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 277,
-          "siblingTrajectoryId": null
         }
       ],
       "contentExposures": [
@@ -1459,6 +813,7 @@
     },
     {
       "sessionId": "b0-C-G3",
+      "trajectoryId": "b0-C",
       "arm": "C",
       "block": 0,
       "generation": "G3",
@@ -1581,6 +936,7 @@
     },
     {
       "sessionId": "b0-H-G1",
+      "trajectoryId": "b0-H",
       "arm": "H",
       "block": 0,
       "generation": "G1",
@@ -1589,13 +945,13 @@
       "dispatchCount": 34,
       "turnEndReason": "completed",
       "label": "CONTAMINATED_NON_ORACLE",
-      "namedAccessesOutsideWorld": 24,
+      "namedAccessesOutsideWorld": 17,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 1,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 8,
-        "OTHER": 15
+        "OTHER": 8
       },
       "accesses": [
         {
@@ -1671,30 +1027,6 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 143,
-          "tool": "edit",
-          "path": "e:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 153,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 1670,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 153,
           "tool": "pwsh",
           "path": "/src/ledger.mjs/",
@@ -1710,18 +1042,6 @@
           "seq": 153,
           "tool": "pwsh",
           "path": "/src/errors.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 1670,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 153,
-          "tool": "pwsh",
-          "path": "/n",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
@@ -1757,18 +1077,6 @@
         {
           "seq": 161,
           "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 26,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 161,
-          "tool": "pwsh",
           "path": "/src/ledger.mjs/",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
@@ -1782,18 +1090,6 @@
           "seq": 161,
           "tool": "pwsh",
           "path": "/src/errors.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 26,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 161,
-          "tool": "pwsh",
-          "path": "/n",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
@@ -1861,30 +1157,6 @@
           "contentReturned": true,
           "contentBytes": 12938,
           "siblingTrajectoryId": "b0-H"
-        },
-        {
-          "seq": 185,
-          "tool": "pwsh",
-          "path": "/test/check.js",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 12938,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 185,
-          "tool": "pwsh",
-          "path": "/src/ledger.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 12938,
-          "siblingTrajectoryId": null
         }
       ],
       "contentExposures": [
@@ -2062,6 +1334,7 @@
     },
     {
       "sessionId": "b0-H-G2",
+      "trajectoryId": "b0-H",
       "arm": "H",
       "block": 0,
       "generation": "G2",
@@ -2070,76 +1343,15 @@
       "dispatchCount": 26,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 5,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 5
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 80,
-          "tool": "edit",
-          "path": "e:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 87,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 915,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 94,
-          "tool": "pwsh",
-          "path": "/n$env:RVTEST",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 32,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 94,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 32,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 114,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 831,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 31,
@@ -2259,6 +1471,7 @@
     },
     {
       "sessionId": "b0-H-G3",
+      "trajectoryId": "b0-H",
       "arm": "H",
       "block": 0,
       "generation": "G3",
@@ -2267,76 +1480,15 @@
       "dispatchCount": 26,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 5,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 5
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 79,
-          "tool": "edit",
-          "path": "e:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 86,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 27,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 102,
-          "tool": "pwsh",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 45,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 109,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 692,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 109,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 692,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 26,
@@ -2463,6 +1615,7 @@
     },
     {
       "sessionId": "b1-C-G1",
+      "trajectoryId": "b1-C",
       "arm": "C",
       "block": 1,
       "generation": "G1",
@@ -2471,40 +1624,16 @@
       "dispatchCount": 26,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 11,
+      "namedAccessesOutsideWorld": 5,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 11
+        "OTHER": 5
       },
       "accesses": [
         {
-          "seq": 95,
-          "tool": "edit",
-          "path": "n:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 105,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 855,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 121,
           "tool": "write",
           "path": "C:/Users/66494/AppData/Local/Temp/dsh-8gyOVK/ledger-atomic-check.mjs",
@@ -2523,42 +1652,6 @@
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 133,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 121,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b1-C/repo/.palimpsest/worlds/attempt-1d0fcab50256d883c82e96ed8a79e022/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 133,
-          "siblingTrajectoryId": "b1-C"
-        },
-        {
-          "seq": 121,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b1-C/repo/.palimpsest/worlds/attempt-1d0fcab50256d883c82e96ed8a79e022/src/errors.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 133,
-          "siblingTrajectoryId": "b1-C"
-        },
-        {
-          "seq": 121,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 133,
@@ -2592,18 +1685,6 @@
           "seq": 159,
           "tool": "pwsh",
           "path": "/dev/null",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 489,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 159,
-          "tool": "pwsh",
-          "path": "/napplyBatch:",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
@@ -2760,6 +1841,7 @@
     },
     {
       "sessionId": "b1-C-G2",
+      "trajectoryId": "b1-C",
       "arm": "C",
       "block": 1,
       "generation": "G2",
@@ -2768,13 +1850,13 @@
       "dispatchCount": 44,
       "turnEndReason": "completed",
       "label": "CROSS_TRAJECTORY_CONTAMINATED",
-      "namedAccessesOutsideWorld": 28,
+      "namedAccessesOutsideWorld": 27,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 4,
         "ORACLE_EXPOSED": 6,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 17,
-        "OTHER": 1
+        "OTHER": 0
       },
       "accesses": [
         {
@@ -3075,18 +2157,6 @@
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 11550,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 225,
-          "tool": "edit",
-          "path": "d:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
           "siblingTrajectoryId": null
         },
         {
@@ -3422,6 +2492,7 @@
     },
     {
       "sessionId": "b1-C-G3",
+      "trajectoryId": "b1-C",
       "arm": "C",
       "block": 1,
       "generation": "G3",
@@ -3430,40 +2501,15 @@
       "dispatchCount": 28,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 2,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 2
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 89,
-          "tool": "edit",
-          "path": "e:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 89,
-          "tool": "edit",
-          "path": "d:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 26,
@@ -3632,6 +2678,7 @@
     },
     {
       "sessionId": "b1-H-G1",
+      "trajectoryId": "b1-H",
       "arm": "H",
       "block": 1,
       "generation": "G1",
@@ -3640,52 +2687,15 @@
       "dispatchCount": 31,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 3,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 3
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 97,
-          "tool": "edit",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 129,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 852,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 137,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 25,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 29,
@@ -3819,6 +2829,7 @@
     },
     {
       "sessionId": "b1-H-G2",
+      "trajectoryId": "b1-H",
       "arm": "H",
       "block": 1,
       "generation": "G2",
@@ -3827,27 +2838,15 @@
       "dispatchCount": 50,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 4,
+      "namedAccessesOutsideWorld": 1,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 1,
-        "OTHER": 3
+        "OTHER": 0
       },
       "accesses": [
-        {
-          "seq": 78,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 216,
-          "siblingTrajectoryId": null
-        },
         {
           "seq": 143,
           "tool": "pwsh",
@@ -3859,30 +2858,6 @@
           "contentReturned": true,
           "contentBytes": 66,
           "siblingTrajectoryId": "b1-H"
-        },
-        {
-          "seq": 157,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 216,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 188,
-          "tool": "pwsh",
-          "path": "/nrevokeCapability:",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 120,
-          "siblingTrajectoryId": null
         }
       ],
       "contentExposures": [
@@ -4032,6 +3007,7 @@
     },
     {
       "sessionId": "b1-H-G3",
+      "trajectoryId": "b1-H",
       "arm": "H",
       "block": 1,
       "generation": "G3",
@@ -4040,40 +3016,15 @@
       "dispatchCount": 23,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 2,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 2
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 77,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 918,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 91,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 30,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 19,
@@ -4207,6 +3158,7 @@
     },
     {
       "sessionId": "b2-H-G1",
+      "trajectoryId": "b2-H",
       "arm": "H",
       "block": 2,
       "generation": "G1",
@@ -4449,6 +3401,7 @@
     },
     {
       "sessionId": "b2-H-G2",
+      "trajectoryId": "b2-H",
       "arm": "H",
       "block": 2,
       "generation": "G2",
@@ -4457,13 +3410,13 @@
       "dispatchCount": 24,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 7,
+      "namedAccessesOutsideWorld": 2,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 2,
-        "OTHER": 5
+        "OTHER": 0
       },
       "accesses": [
         {
@@ -4489,66 +3442,6 @@
           "contentReturned": true,
           "contentBytes": 700,
           "siblingTrajectoryId": "b2-H"
-        },
-        {
-          "seq": 100,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-H/repo/.palimpsest/worlds/attempt-34b524e494fe8135111623564a8ceef0/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 37,
-          "siblingTrajectoryId": "b2-H"
-        },
-        {
-          "seq": 100,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-H/repo/.palimpsest/worlds/attempt-34b524e494fe8135111623564a8ceef0/src/errors.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 37,
-          "siblingTrajectoryId": "b2-H"
-        },
-        {
-          "seq": 100,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-H/repo/.palimpsest/worlds/attempt-34b524e494fe8135111623564a8ceef0/src/ledger.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 37,
-          "siblingTrajectoryId": "b2-H"
-        },
-        {
-          "seq": 100,
-          "tool": "pwsh",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-H/repo/.palimpsest/worlds/attempt-34b524e494fe8135111623564a8ceef0/src/errors.mjs",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "source module",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 37,
-          "siblingTrajectoryId": "b2-H"
-        },
-        {
-          "seq": 100,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 37,
-          "siblingTrajectoryId": null
         }
       ],
       "contentExposures": [
@@ -4670,6 +3563,7 @@
     },
     {
       "sessionId": "b2-H-G3",
+      "trajectoryId": "b2-H",
       "arm": "H",
       "block": 2,
       "generation": "G3",
@@ -4678,51 +3572,15 @@
       "dispatchCount": 30,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 5,
+      "namedAccessesOutsideWorld": 2,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 2,
-        "OTHER": 3
+        "OTHER": 0
       },
       "accesses": [
-        {
-          "seq": 89,
-          "tool": "edit",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 110,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 226,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 110,
-          "tool": "write",
-          "path": "/nconsole.log(/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 226,
-          "siblingTrajectoryId": null
-        },
         {
           "seq": 110,
           "tool": "write",
@@ -4916,6 +3774,7 @@
     },
     {
       "sessionId": "b2-C-G1",
+      "trajectoryId": "b2-C",
       "arm": "C",
       "block": 2,
       "generation": "G1",
@@ -4924,13 +3783,13 @@
       "dispatchCount": 37,
       "turnEndReason": "completed",
       "label": "CONTAMINATED_NON_ORACLE",
-      "namedAccessesOutsideWorld": 45,
+      "namedAccessesOutsideWorld": 37,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 1,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 7,
-        "OTHER": 37
+        "OTHER": 29
       },
       "accesses": [
         {
@@ -5054,18 +3913,6 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 165,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 126,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 167,
           "tool": "pwsh",
           "path": "C:/Users/66494/AppData/Local/Temp/palimpsest-ledger-check.mjs/",
@@ -5108,42 +3955,6 @@
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 126,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 175,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-C/repo/.palimpsest/worlds/attempt-0a6f48e634aeb3790e8a1875158d8bc0/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 126,
-          "siblingTrajectoryId": "b2-C"
-        },
-        {
-          "seq": 175,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-C/repo/.palimpsest/worlds/attempt-0a6f48e634aeb3790e8a1875158d8bc0/src/errors.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 126,
-          "siblingTrajectoryId": "b2-C"
-        },
-        {
-          "seq": 175,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 126,
@@ -5296,31 +4107,7 @@
         {
           "seq": 187,
           "tool": "write",
-          "path": "e:///C:/Users/66494/AppData/Local/Temp/pal-base/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 117,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 187,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 117,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 187,
-          "tool": "write",
-          "path": "/n/",
+          "path": "C:/Users/66494/AppData/Local/Temp/pal-base/ledger.mjs/",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
@@ -5372,30 +4159,6 @@
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 117,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 197,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 117,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 197,
-          "tool": "write",
-          "path": "/n/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 117,
@@ -5649,6 +4412,7 @@
     },
     {
       "sessionId": "b2-C-G2",
+      "trajectoryId": "b2-C",
       "arm": "C",
       "block": 2,
       "generation": "G2",
@@ -5657,63 +4421,15 @@
       "dispatchCount": 28,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 12,
+      "namedAccessesOutsideWorld": 4,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 12
+        "OTHER": 4
       },
       "accesses": [
-        {
-          "seq": 110,
-          "tool": "pwsh",
-          "path": "e://",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 384,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 110,
-          "tool": "pwsh",
-          "path": "s://",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 384,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 110,
-          "tool": "pwsh",
-          "path": "/nconst",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 384,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 117,
-          "tool": "pwsh",
-          "path": "/n/nconst",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 910,
-          "siblingTrajectoryId": null
-        },
         {
           "seq": 131,
           "tool": "write",
@@ -5721,30 +4437,6 @@
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 119,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 131,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-C/repo/.palimpsest/worlds/attempt-9d69ed5167872c0f87e249ec35645928/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 119,
-          "siblingTrajectoryId": "b2-C"
-        },
-        {
-          "seq": 131,
-          "tool": "write",
-          "path": "/nconst",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 119,
@@ -5769,30 +4461,6 @@
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "source module",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 120,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 147,
-          "tool": "write",
-          "path": "e:///C:/Users/66494/.palimpsest-r3l0/matrix/run-2026-10-07T02-28-39-291Z/b2-C/repo/.palimpsest/worlds/attempt-9d69ed5167872c0f87e249ec35645928/src/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 120,
-          "siblingTrajectoryId": "b2-C"
-        },
-        {
-          "seq": 147,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
           "operation": "READ",
           "contentReturned": true,
           "contentBytes": 120,
@@ -5930,6 +4598,7 @@
     },
     {
       "sessionId": "b2-C-G3",
+      "trajectoryId": "b2-C",
       "arm": "C",
       "block": 2,
       "generation": "G3",
@@ -5938,28 +4607,15 @@
       "dispatchCount": 18,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 1,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 1
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 105,
-          "tool": "pwsh",
-          "path": "/ngit",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 397,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 26,
@@ -6079,6 +4735,7 @@
     },
     {
       "sessionId": "b3-H-G1",
+      "trajectoryId": "b3-H",
       "arm": "H",
       "block": 3,
       "generation": "G1",
@@ -6087,13 +4744,13 @@
       "dispatchCount": 51,
       "turnEndReason": "completed",
       "label": "CROSS_TRAJECTORY_CONTAMINATED",
-      "namedAccessesOutsideWorld": 34,
+      "namedAccessesOutsideWorld": 31,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 14,
         "ORACLE_EXPOSED": 1,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 15,
-        "OTHER": 4
+        "OTHER": 1
       },
       "accesses": [
         {
@@ -6397,18 +5054,6 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 209,
-          "tool": "grep",
-          "path": "/bd1a/b",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "SEARCH",
-          "contentReturned": true,
-          "contentBytes": 166,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 211,
           "tool": "grep",
           "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1",
@@ -6478,30 +5123,6 @@
           "operation": "SEARCH",
           "contentReturned": true,
           "contentBytes": 840,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 289,
-          "tool": "write",
-          "path": "e:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 217,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 329,
-          "tool": "pwsh",
-          "path": "/nfeat(ledger",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 636,
           "siblingTrajectoryId": null
         }
       ],
@@ -6882,6 +5503,7 @@
     },
     {
       "sessionId": "b3-H-G2",
+      "trajectoryId": "b3-H",
       "arm": "H",
       "block": 3,
       "generation": "G2",
@@ -6890,52 +5512,15 @@
       "dispatchCount": 71,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 3,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 3
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 124,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 220,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 146,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 220,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 155,
-          "tool": "write",
-          "path": "/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 220,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 19,
@@ -7139,6 +5724,7 @@
     },
     {
       "sessionId": "b3-H-G3",
+      "trajectoryId": "b3-H",
       "arm": "H",
       "block": 3,
       "generation": "G3",
@@ -7147,28 +5733,15 @@
       "dispatchCount": 40,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 1,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 1
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 175,
-          "tool": "pwsh",
-          "path": "/nharden(ledger",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 342,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 19,
@@ -7295,6 +5868,7 @@
     },
     {
       "sessionId": "b3-C-G1",
+      "trajectoryId": "b3-C",
       "arm": "C",
       "block": 3,
       "generation": "G1",
@@ -7303,13 +5877,13 @@
       "dispatchCount": 55,
       "turnEndReason": "completed",
       "label": "ORACLE_CONTAMINATED",
-      "namedAccessesOutsideWorld": 43,
+      "namedAccessesOutsideWorld": 34,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 17,
         "ORACLE_EXPOSED": 5,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 10,
-        "OTHER": 11
+        "OTHER": 2
       },
       "accesses": [
         {
@@ -7663,7 +6237,7 @@
         {
           "seq": 263,
           "tool": "pwsh",
-          "path": "e:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs",
+          "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs",
           "classification": "ORACLE_EXPOSED",
           "artifactOwner": "the R3-L0 research experiment (outcome instrument or analysis)",
           "artifactType": "source module",
@@ -7673,45 +6247,9 @@
           "siblingTrajectoryId": null
         },
         {
-          "seq": 271,
-          "tool": "pwsh",
-          "path": "/n/nimport",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 16,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 287,
-          "tool": "pwsh",
-          "path": "/napplyBatch:",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 275,
-          "siblingTrajectoryId": null
-        },
-        {
           "seq": 295,
           "tool": "pwsh",
-          "path": "e:////",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "e:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs/",
+          "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs/",
           "classification": "ORACLE_EXPOSED",
           "artifactOwner": "the R3-L0 research experiment (outcome instrument or analysis)",
           "artifactType": "directory or unknown",
@@ -7723,19 +6261,7 @@
         {
           "seq": 295,
           "tool": "pwsh",
-          "path": "e:///",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "e:///F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs",
+          "path": "F:/Codex_Work_Space/Palimpsest/palimpsest-sr1/scripts/r3l0/diagnostic.mjs",
           "classification": "ORACLE_EXPOSED",
           "artifactOwner": "the R3-L0 research experiment (outcome instrument or analysis)",
           "artifactType": "source module",
@@ -7747,67 +6273,7 @@
         {
           "seq": 295,
           "tool": "pwsh",
-          "path": "/n$scratch",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
           "path": "/ledger.mjs/",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "/n$code",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "/nconst",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "/nnode",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "EXECUTE",
-          "contentReturned": true,
-          "contentBytes": 171,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 295,
-          "tool": "pwsh",
-          "path": "/nRemove-Item",
           "classification": "OTHER",
           "artifactOwner": "the R3-L0 run directory",
           "artifactType": "directory or unknown",
@@ -8123,6 +6589,7 @@
     },
     {
       "sessionId": "b3-C-G2",
+      "trajectoryId": "b3-C",
       "arm": "C",
       "block": 3,
       "generation": "G2",
@@ -8131,39 +6598,15 @@
       "dispatchCount": 33,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 26,
+      "namedAccessesOutsideWorld": 24,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 26
+        "OTHER": 24
       },
       "accesses": [
-        {
-          "seq": 87,
-          "tool": "edit",
-          "path": "d:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
-        {
-          "seq": 87,
-          "tool": "edit",
-          "path": "/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        },
         {
           "seq": 106,
           "tool": "write",
@@ -8586,6 +7029,7 @@
     },
     {
       "sessionId": "b3-C-G3",
+      "trajectoryId": "b3-C",
       "arm": "C",
       "block": 3,
       "generation": "G3",
@@ -8594,28 +7038,15 @@
       "dispatchCount": 16,
       "turnEndReason": "completed",
       "label": "CLEAN",
-      "namedAccessesOutsideWorld": 1,
+      "namedAccessesOutsideWorld": 0,
       "namedByClass": {
         "CHECKOUT_EXPOSED": 0,
         "ORACLE_EXPOSED": 0,
         "SIBLING_TRAJECTORY_EXPOSED": 0,
         "CONTROL_PLANE_EXPOSED": 0,
-        "OTHER": 1
+        "OTHER": 0
       },
-      "accesses": [
-        {
-          "seq": 79,
-          "tool": "edit",
-          "path": "d:/n",
-          "classification": "OTHER",
-          "artifactOwner": "the R3-L0 run directory",
-          "artifactType": "directory or unknown",
-          "operation": "READ",
-          "contentReturned": true,
-          "contentBytes": 192,
-          "siblingTrajectoryId": null
-        }
-      ],
+      "accesses": [],
       "contentExposures": [
         {
           "seq": 32,

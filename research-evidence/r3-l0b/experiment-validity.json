@@ -1,0 +1,274 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "experimental validity verdict",
+  "experimentValidity": {
+    "schemaVersion": 1,
+    "kind": "experimental validity",
+    "EXPERIMENT_VALID": true,
+    "components": [
+      {
+        "id": "TREATMENT_INTEGRITY",
+        "verdict": "PASS",
+        "detail": "the H and C treatment delta is SELECTION_ONLY, proven by byte-identical knowledge-plane digests and one shared starting head (R3-L0A §5)"
+      },
+      {
+        "id": "CONTAINMENT",
+        "verdict": "PASS",
+        "detail": "canary containment PASS; liveness control LIVE; shared-parent mutation DETECTED"
+      },
+      {
+        "id": "OUTCOME_BLINDNESS",
+        "verdict": "PASS",
+        "detail": "oracle canaries PASS; oracle-exposure mutation DETECTED"
+      },
+      {
+        "id": "UNIT_INDEPENDENCE",
+        "verdict": "PASS",
+        "detail": "the isolated layout places sibling units under private/units, disjoint from every world, and the sibling canaries are unreachable"
+      },
+      {
+        "id": "EVIDENCE_IMMUTABILITY",
+        "verdict": "PASS",
+        "detail": "PASS over 323 protected files; r2lr mutator repair CLEAN"
+      }
+    ],
+    "notPass": [],
+    "futureExperimentAdmissionLaw": "SYSTEM_VALID && EXPERIMENT_VALID is mandatory before trial 1"
+  },
+  "immutability": {
+    "schemaVersion": 1,
+    "stage": "R3-L0B",
+    "kind": "strengthened historical evidence immutability guard",
+    "excludedStagePaths": [
+      "research-evidence/r3-l0b"
+    ],
+    "baselineTreeDigest": "6d850d7d5c39a4f8d088747e8e68dc8a74ed1a141695e4dbcacd9e3755b320d7",
+    "currentTreeDigest": "96836c13a7fc4b7e1d95155696e57a7ba1acf19b287b5617c669e767a0a26c72",
+    "baselineFileCount": 309,
+    "currentFileCount": 323,
+    "HISTORICAL_EVIDENCE_IMMUTABLE": "PASS",
+    "changed": [],
+    "added": [
+      "research-evidence/r3-l0/analysis.json",
+      "research-evidence/r3-l0/design.json",
+      "research-evidence/r3-l0/drift-adjudication.json",
+      "research-evidence/r3-l0/dummy-plumbing.json",
+      "research-evidence/r3-l0/historical-evidence-baseline.json",
+      "research-evidence/r3-l0/matrix.json",
+      "research-evidence/r3-l0/plan.json",
+      "research-evidence/r3-l0/regression.json",
+      "research-evidence/r3-l0/system-validity-envelope.json",
+      "research-evidence/r3-l0a/containment-finding.json",
+      "research-evidence/r3-l0a/immutability.json",
+      "research-evidence/r3-l0a/mediation-adjudication.json",
+      "research-evidence/r3-l0a/novelty-and-effects.json",
+      "research-evidence/r3-l0a/protocol-erratum.json"
+    ],
+    "removed": [],
+    "details": [],
+    "postBaselineAdditions": [
+      "research-evidence/r3-l0/analysis.json",
+      "research-evidence/r3-l0/design.json",
+      "research-evidence/r3-l0/drift-adjudication.json",
+      "research-evidence/r3-l0/dummy-plumbing.json",
+      "research-evidence/r3-l0/historical-evidence-baseline.json",
+      "research-evidence/r3-l0/matrix.json",
+      "research-evidence/r3-l0/plan.json",
+      "research-evidence/r3-l0/regression.json",
+      "research-evidence/r3-l0/system-validity-envelope.json",
+      "research-evidence/r3-l0a/containment-finding.json",
+      "research-evidence/r3-l0a/immutability.json",
+      "research-evidence/r3-l0a/mediation-adjudication.json",
+      "research-evidence/r3-l0a/novelty-and-effects.json",
+      "research-evidence/r3-l0a/protocol-erratum.json"
+    ],
+    "postBaselineStagePaths": [
+      {
+        "path": "research-evidence/r3-l0",
+        "reason": "R3-L0 wrote its own evidence after freezing the baseline; the baseline excludes this directory by design"
+      },
+      {
+        "path": "research-evidence/r3-l0a",
+        "reason": "R3-L0A wrote its evidence in a later stage, after the baseline was frozen"
+      }
+    ],
+    "unexpectedAdditions": [],
+    "basis": "0 changes, 0 removals and 0 unexpected additions across 323 protected files; 14 additions under post-baseline stage directories are tolerated and listed",
+    "r2lrMutatorRepair": "CLEAN",
+    "knownPreExistingMutators": [
+      {
+        "path": "research-evidence/r2-lr/deterministic-suite.json",
+        "cause": "test/r2lr_last_mile.test.ts rewrote its own evidence record with a fresh recordedAt on every unit run",
+        "introducedBy": "R2-LR (pre-existing, not this stage)",
+        "fieldChanged": "recordedAt",
+        "repairedBy": "R3-L0B §14 — the suite now writes to a test-owned scratch path under the system temp directory"
+      }
+    ],
+    "stillLiveKnownMutators": [],
+    "action": "none required",
+    "verdictCount": 1,
+    "forbidsDetectRestoreContinue": true
+  },
+  "containment": {
+    "schemaVersion": 1,
+    "kind": "experiment containment",
+    "probes": 32,
+    "reachable": [],
+    "notApplicable": [],
+    "EXPERIMENT_CONTAINMENT": "PASS",
+    "law": "all declared host-private canaries must be unavailable; a not-applicable attempt is a gap, not a pass"
+  },
+  "liveness": {
+    "kind": "canary liveness control",
+    "fenceApplied": false,
+    "probeRan": true,
+    "probeError": null,
+    "reachable": 13,
+    "reachableCells": [
+      "DIAGNOSTIC_ORACLE/PARENT_TRAVERSAL",
+      "DIAGNOSTIC_ORACLE/ABSOLUTE_PATH_READ",
+      "DIAGNOSTIC_ORACLE/ORACLE_IMPORT_EXECUTE",
+      "CONTROL_PLANE/PARENT_TRAVERSAL",
+      "CONTROL_PLANE/ABSOLUTE_PATH_READ",
+      "REFERENCE_SOLUTION/PARENT_TRAVERSAL",
+      "REFERENCE_SOLUTION/ABSOLUTE_PATH_READ",
+      "REFERENCE_SOLUTION/ORACLE_IMPORT_EXECUTE",
+      "SIBLING_TRAJECTORY/PARENT_TRAVERSAL",
+      "SIBLING_TRAJECTORY/ABSOLUTE_PATH_READ",
+      "SIBLING_TRAJECTORY/ORACLE_IMPORT_EXECUTE",
+      "PRIMARY_EVIDENCE/PARENT_TRAVERSAL",
+      "PRIMARY_EVIDENCE/ABSOLUTE_PATH_READ"
+    ],
+    "directReadsReachable": 10,
+    "directReads": 10,
+    "LIVE": true,
+    "basis": "with no fence, the direct reads returned the canary nonce, so an UNREACHABLE result under the fence is a measurement rather than an empty probe"
+  },
+  "sharedParentMutation": {
+    "id": "SHARED_PARENT_MUTATION",
+    "gate": "CONTAINMENT",
+    "mutatedVerdict": "FAIL",
+    "positiveVerdict": "PASS",
+    "mutationDetected": true,
+    "recordedVerdict": "SHARED_PARENT_MUTATION_DETECTED",
+    "basis": "the gate failed with the defect restored and passed with the corrected layout",
+    "restores": "the R3-L0-style shared-parent layout, where every trajectory and its control files share one readable parent",
+    "mutatedLayoutSharesParent": true,
+    "mutatedGate": {
+      "schemaVersion": 1,
+      "kind": "experiment containment gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut",
+      "worlds": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-H\\repo",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-C\\repo"
+      ],
+      "privateRoots": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-H",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-C",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut"
+      ],
+      "hostPrivateIsAncestorOfAnyWorld": true,
+      "discoveredAncestorViolation": true,
+      "probes": 8,
+      "reachable": [
+        "CONTROL_PLANE/PARENT_TRAVERSAL",
+        "CONTROL_PLANE/ABSOLUTE_PATH_READ",
+        "CONTROL_PLANE/SIBLING_WORLD_LOOKUP"
+      ],
+      "CONTAINMENT": "FAIL",
+      "basis": "containment failed: a host-private root contains a world and 3 canary probe(s) returned content"
+    },
+    "positiveGate": {
+      "schemaVersion": 1,
+      "kind": "experiment containment gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos",
+      "worlds": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\units\\u0-H\\world",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\units\\u0-C\\world"
+      ],
+      "privateRoots": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\control",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\evidence",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\oracle",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\reference",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\units"
+      ],
+      "hostPrivateIsAncestorOfAnyWorld": false,
+      "discoveredAncestorViolation": false,
+      "probes": 8,
+      "reachable": [],
+      "CONTAINMENT": "PASS",
+      "basis": "no host-private root is an ancestor of or identical to any world, and no canary probe returned content"
+    },
+    "mutatedProbeRan": true,
+    "positiveProbeRan": true
+  },
+  "oracleExposureMutation": {
+    "id": "ORACLE_EXPOSURE_MUTATION",
+    "gate": "OUTCOME_BLINDNESS",
+    "mutatedVerdict": "FAIL",
+    "positiveVerdict": "PASS",
+    "mutationDetected": true,
+    "recordedVerdict": "ORACLE_EXPOSURE_MUTATION_DETECTED",
+    "basis": "the gate failed with the defect restored and passed with the corrected layout",
+    "restores": "a diagnostic oracle placed beneath the worker-readable root",
+    "mutatedOracleInsideWorld": true,
+    "mutatedGate": {
+      "schemaVersion": 1,
+      "kind": "outcome blindness gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-mut",
+      "oracleRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-mut\\units\\u0-H\\world\\diagnostic",
+      "oracleInsideAWorld": true,
+      "probes": 8,
+      "reachable": [
+        "DIAGNOSTIC_ORACLE/PARENT_TRAVERSAL",
+        "DIAGNOSTIC_ORACLE/ABSOLUTE_PATH_READ",
+        "DIAGNOSTIC_ORACLE/ORACLE_IMPORT_EXECUTE"
+      ],
+      "OUTCOME_BLINDNESS": "FAIL",
+      "basis": "outcome blindness failed: the oracle root is inside a worker world and 3 oracle probe(s) returned content"
+    },
+    "positiveGate": {
+      "schemaVersion": 1,
+      "kind": "outcome blindness gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-pos",
+      "oracleRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-pos\\private\\oracle",
+      "oracleInsideAWorld": false,
+      "probes": 8,
+      "reachable": [],
+      "OUTCOME_BLINDNESS": "PASS",
+      "basis": "the outcome instrument is outside every worker-readable ancestor and no oracle probe returned content"
+    },
+    "mutatedProbeRan": true,
+    "positiveProbeRan": true
+  },
+  "breachReplay": {
+    "accessesReplayed": 227,
+    "blocked": 227,
+    "unblocked": 0,
+    "BREACH_VECTOR_CLOSED": true,
+    "byClass": {
+      "CONTROL_PLANE_EXPOSED": {
+        "total": 95,
+        "blocked": 95,
+        "unblocked": 0
+      },
+      "CHECKOUT_EXPOSED": {
+        "total": 47,
+        "blocked": 47,
+        "unblocked": 0
+      },
+      "OTHER": {
+        "total": 73,
+        "blocked": 73,
+        "unblocked": 0
+      },
+      "ORACLE_EXPOSED": {
+        "total": 12,
+        "blocked": 12,
+        "unblocked": 0
+      }
+    }
+  }
+}

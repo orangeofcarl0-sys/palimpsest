@@ -172,11 +172,11 @@
     "available": true
   },
   "canaryNonces": {
-    "DIAGNOSTIC_ORACLE": "CANARY-ORACLE-F6GW200QRH",
-    "CONTROL_PLANE": "CANARY-CONTROL-SL6MDEHG7L",
-    "REFERENCE_SOLUTION": "CANARY-REFERENCE-IOX5NME34I",
-    "SIBLING_TRAJECTORY": "CANARY-SIBLING-UVU2IM0PF3",
-    "PRIMARY_EVIDENCE": "CANARY-EVIDENCE-011DE3V7JI"
+    "DIAGNOSTIC_ORACLE": "CANARY-ORACLE-JTF8BN7KTD",
+    "CONTROL_PLANE": "CANARY-CONTROL-UFKC75OUTM",
+    "REFERENCE_SOLUTION": "CANARY-REFERENCE-CKGCRXV15I",
+    "SIBLING_TRAJECTORY": "CANARY-SIBLING-8GI41QY74B",
+    "PRIMARY_EVIDENCE": "CANARY-EVIDENCE-5LXQMNOXFR"
   },
   "probes": [
     {
@@ -570,17 +570,16 @@
       "kind": "experiment containment gate",
       "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut",
       "worlds": [
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\units\\u0-H\\world",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\units\\u0-C\\world"
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-H\\repo",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-C\\repo"
       ],
       "privateRoots": [
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\oracle",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\reference",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\control",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\evidence",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\units"
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-H",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\u0-C",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut"
       ],
-      "hostPrivateIsAncestorOfAnyWorld": false,
+      "hostPrivateIsAncestorOfAnyWorld": true,
+      "discoveredAncestorViolation": true,
       "probes": 8,
       "reachable": [
         "CONTROL_PLANE/PARENT_TRAVERSAL",
@@ -588,7 +587,7 @@
         "CONTROL_PLANE/SIBLING_WORLD_LOOKUP"
       ],
       "CONTAINMENT": "FAIL",
-      "basis": "containment failed: 3 canary probe(s) returned content"
+      "basis": "containment failed: a host-private root contains a world and 3 canary probe(s) returned content"
     },
     "positiveGate": {
       "schemaVersion": 1,
@@ -599,13 +598,14 @@
         "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\units\\u0-C\\world"
       ],
       "privateRoots": [
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\oracle",
-        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\reference",
         "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\control",
         "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\evidence",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\oracle",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\reference",
         "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\units"
       ],
       "hostPrivateIsAncestorOfAnyWorld": false,
+      "discoveredAncestorViolation": false,
       "probes": 8,
       "reachable": [],
       "CONTAINMENT": "PASS",

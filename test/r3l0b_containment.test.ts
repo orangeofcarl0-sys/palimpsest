@@ -64,6 +64,8 @@ import {
   runOutcomeBlindnessGate,
 } from "../scripts/r3l0b/containment.mjs";
 import { containmentHypothesis, layoutFacts, rootCauseVerdict } from "../scripts/r3l0b/root-cause.mjs";
+import { isWorkerReadable, replayAccess, replayBreach } from "../scripts/r3l0b/replay.mjs";
+import { correctedCausalInterpretation, preRulingSummary, reconstructionPressurePreRuling } from "../scripts/r3l0b/interpretation.mjs";
 import { KNOWN_PRE_EXISTING_MUTATORS, checkImmutability, protectedEvidenceUnchanged } from "../scripts/r3l0b/immutability.mjs";
 import { tmpdir } from "node:os";
 
@@ -462,6 +464,179 @@ describe("R3-L0B §14/§15 — historical evidence immutability", () => {
     expect(protectedEvidenceUnchanged(before, { fileCount: 1, treeDigest: "a", digests: { "x": "1" } }).unchanged).toBe(true);
     expect(protectedEvidenceUnchanged(before, { fileCount: 1, treeDigest: "b", digests: { "x": "2" } }).unchanged).toBe(false);
     expect(protectedEvidenceUnchanged(before, { fileCount: 0, treeDigest: "c", digests: {} }).unchanged).toBe(false);
+  });
+});
+
+
+/* ================================================================ §10 the breach replay */
+
+describe("R3-L0B §10 — the breach replay against the repaired layout", () => {
+  const replay = existsSync(EVIDENCE) ? read("breach-replay.json") : null;
+
+  it("§10 every access the R3-L0 workers actually made is now blocked", () => {
+    expect(replay).not.toBeNull();
+    /**
+     * The replay count is tied to the GRAPH rather than to a literal, so the assertion cannot drift away from
+     * the evidence it describes — an earlier version pinned 300 while the extractor still over-counted, and the
+     * number survived the correction as a stale constant.
+     */
+    const graph = read("interference-graph.json");
+    const graphAccesses = (graph.sessions as readonly { accesses: readonly unknown[] }[]).reduce((total, session) => total + session.accesses.length, 0);
+    expect(replay.accessesReplayed).toBe(graphAccesses);
+    expect(replay.accessesReplayed).toBeGreaterThan(100);
+    expect(replay.unblocked).toBe(0);
+    expect(replay.BREACH_VECTOR_CLOSED).toBe(true);
+  });
+
+  it("§10 the replay covers every exposure class the graph recorded", () => {
+    for (const classification of Object.values(EXPOSURE_CLASSES)) {
+      const entry = (replay.byClass as Record<string, { total: number; blocked: number; unblocked: number } | undefined>)[classification];
+      if (entry === undefined) continue;
+      expect(entry.unblocked, `${classification} has unblocked accesses`).toBe(0);
+      expect(entry.blocked).toBe(entry.total);
+    }
+  });
+
+  it("§10 the replay is a LAYOUT test, not a re-run, and it declares its units", () => {
+    expect(replay.kind).toContain("replay");
+    expect(replay.units.length).toBeGreaterThan(0);
+    expect(replay.declaredProtectedRoots.length).toBeGreaterThan(0);
+  });
+
+  it("§10 a path inside the world is readable and a path outside it is not", () => {
+    const root = join(tmpdir(), "r3l0b-replay-unit");
+    const world = join(root, "units", "u0-H", "world");
+    expect(isWorkerReadable(join(world, "src", "ledger.mjs"), world)).toBe(true);
+    expect(isWorkerReadable(join(root, "private", "oracle", "diagnostic.mjs"), world)).toBe(false);
+    expect(isWorkerReadable(join(root, "units", "u0-C", "world", "src", "ledger.mjs"), world)).toBe(false);
+  });
+
+  it("§10 an oracle access is reported blocked and a world access would not be", () => {
+    const root = join(tmpdir(), "r3l0b-replay-one");
+    const world = join(root, "units", "u0-H", "world");
+    const oracle = replayAccess({ classification: EXPOSURE_CLASSES.ORACLE_EXPOSED, path: "x", artifactOwner: "o" }, { root, world, unitIds: ["u0-H", "u0-C"] });
+    expect(oracle.blocked).toBe(true);
+    const sibling = replayAccess({ classification: EXPOSURE_CLASSES.SIBLING_TRAJECTORY_EXPOSED, path: "x", artifactOwner: "o" }, { root, world, unitIds: ["u0-H", "u0-C"] });
+    expect(sibling.blocked).toBe(true);
+    const control = replayAccess({ classification: EXPOSURE_CLASSES.CONTROL_PLANE_EXPOSED, path: "x", artifactOwner: "o" }, { root, world, unitIds: ["u0-H", "u0-C"] });
+    expect(control.blocked).toBe(true);
+  });
+
+  it("§10 the replay reports UNBLOCKED when a world is the artifact location, so it is not vacuous", () => {
+    /**
+     * THE FALSIFIER. A replay that reported everything blocked regardless of layout would be worthless, so the
+     * test constructs the R3-L0 condition directly: a world whose OWN directory holds the control artifacts.
+     *
+     * `replayAccess` re-points by class, so the way to make a class land inside the world is to evaluate it
+     * against a world that IS that class's location. Passing the control root as the world is exactly the
+     * shared-parent shape, and the control-plane class must then come back UNBLOCKED.
+     */
+    const root = join(tmpdir(), "r3l0b-replay-falsify");
+    const controlRoot = ISOLATED_LAYOUT.controlRoot(root);
+    const worldIsControlRoot = controlRoot;
+    const unblocked = replayAccess({ classification: EXPOSURE_CLASSES.CONTROL_PLANE_EXPOSED, path: "x", artifactOwner: "o" }, { root, world: worldIsControlRoot, unitIds: ["u0-H", "u0-C"] });
+    expect(unblocked.blocked, "the replay cannot see a control artifact sitting inside the world").toBe(false);
+
+    /** And against the CORRECTED world the same class is blocked, which is what makes the pair meaningful. */
+    const correctedWorld = ISOLATED_LAYOUT.unitWorld(root, "u0-H");
+    const blocked = replayAccess({ classification: EXPOSURE_CLASSES.CONTROL_PLANE_EXPOSED, path: "x", artifactOwner: "o" }, { root, world: correctedWorld, unitIds: ["u0-H", "u0-C"] });
+    expect(blocked.blocked).toBe(true);
+    rmSync(root, { recursive: true, force: true });
+  });
+});
+
+/* ================================================================ §3/§16 the final verdict */
+
+describe("R3-L0B §3/§16 — the assembled experimental-validity verdict", () => {
+  const verdict = existsSync(EVIDENCE) ? read("experiment-validity.json") : null;
+
+  it("§16 EXPERIMENT_VALID is YES and every component is PASS", () => {
+    expect(verdict).not.toBeNull();
+    expect(verdict.experimentValidity.EXPERIMENT_VALID).toBe(true);
+    expect(verdict.experimentValidity.notPass).toEqual([]);
+    for (const component of verdict.experimentValidity.components as readonly { id: string; verdict: string }[]) {
+      expect(component.verdict, `${component.id} is ${component.verdict}`).toBe("PASS");
+    }
+  });
+
+  it("§11/§12/§13 the verdict cites the measured containment evidence, not an assertion", () => {
+    expect(verdict.containment.EXPERIMENT_CONTAINMENT).toBe("PASS");
+    expect(verdict.liveness.LIVE).toBe(true);
+    expect(verdict.sharedParentMutation.mutationDetected).toBe(true);
+    expect(verdict.oracleExposureMutation.mutationDetected).toBe(true);
+    expect(verdict.breachReplay.BREACH_VECTOR_CLOSED).toBe(true);
+  });
+
+  it("§15 the verdict cites the strengthened immutability guard", () => {
+    expect(verdict.immutability.HISTORICAL_EVIDENCE_IMMUTABLE).toBe("PASS");
+    expect(verdict.immutability.verdictCount).toBe(1);
+    expect(verdict.immutability.r2lrMutatorRepair).toBe("CLEAN");
+  });
+
+  it("§16 the future-experiment admission law is recorded with the verdict", () => {
+    expect(verdict.experimentValidity.futureExperimentAdmissionLaw).toContain("SYSTEM_VALID && EXPERIMENT_VALID");
+  });
+});
+
+
+/* ================================================================ §2/§19/§20 the conclusions */
+
+describe("R3-L0B §2/§19/§20 — the corrected reading and the pre-ruling", () => {
+  const causal = existsSync(EVIDENCE) ? read("causal-interpretation.json") : null;
+  const preRuling = existsSync(EVIDENCE) ? read("reconstruction-pressure-pre-ruling.json") : null;
+
+  it("§2 the correction keeps the mechanism facts and makes the causal effect not identifiable", () => {
+    expect(causal).not.toBeNull();
+    expect(causal.mechanismEvidenceUnchanged.length).toBe(5);
+    expect(causal.behavioralCausalStatus.value).toBe("NOT_IDENTIFIABLE");
+    expect(causal.behavioralCausalStatus.reasons.length).toBe(3);
+  });
+
+  it("§2 every reason carries a MEASURED basis, not a restatement", () => {
+    const basis = causal.behavioralCausalStatus.measuredBasis as Record<string, string>;
+    expect(basis.HISTORY_ONLY_FLOOR).toContain("0.000");
+    expect(basis.OUTCOME_ORACLE_EXPOSURE).toContain("b3-H-G1");
+    expect(basis.CROSS_TRAJECTORY_INTERFERENCE).toContain("sibling");
+  });
+
+  it("§2 the preregistered verdict survives and only its causal reading is superseded", () => {
+    expect(causal.preservedPreregisteredVerdict.value).toBe("MIXED");
+    expect(causal.preservedPreregisteredVerdict.status).toBe("PROTOCOL_OUTPUT");
+    expect(causal.preservedPreregisteredVerdict.causalInterpretation).toBe("SUPERSEDED_BY_CONTAINMENT_ADJUDICATION");
+  });
+
+  it("§2 the forbidden claims are named, so a later stage cannot drift into them", () => {
+    const forbidden = (causal.forbiddenClaims as readonly string[]).join(" ");
+    expect(forbidden).toContain("not identifiable");
+    expect(forbidden).toContain("no-history arm");
+    expect(forbidden).toContain("clean-subset");
+  });
+
+  it("§19 the pre-ruling contains requirements and a prohibition, never a trajectory", () => {
+    expect(preRuling).not.toBeNull();
+    expect(preRuling.authoringScope.authoring).toBe("FORBIDDEN_IN_THIS_STAGE");
+    expect(preRuling.designRequirements.length).toBe(9);
+    expect(preRuling.prohibition).toContain("no trajectory");
+  });
+
+  it("§19 the two integrity constraints are separated from the requirements", () => {
+    expect(preRuling.integrityConstraints.map((entry: { id: string }) => entry.id)).toEqual(["RAW_HISTORY_ARM_CAN_SUCCEED", "CAPITAL_REDUCES_BURDEN_NOT_ORACLE"]);
+    for (const constraint of preRuling.integrityConstraints as readonly { why: string }[]) expect(constraint.why.length).toBeGreaterThan(20);
+  });
+
+  it("§20 the outcomes are recommended and NO threshold is frozen", () => {
+    expect(preRuling.futurePrimaryOutcomes.length).toBe(6);
+    expect(preRuling.futureOutcomeScope.thresholds).toBe("NOT_FROZEN_IN_THIS_STAGE");
+    const summary = preRulingSummary();
+    expect(summary.thresholdsFrozen).toBe(false);
+    expect(summary.trajectoryAuthored).toBe(false);
+  });
+
+  it("§2/§19 the builders are pure, so the artifacts cannot diverge from the contract", () => {
+    const rebuilt = reconstructionPressurePreRuling();
+    expect(rebuilt.designRequirements.map((entry: { id: string }) => entry.id)).toEqual(preRuling.designRequirements.map((entry: { id: string }) => entry.id));
+    const graph = read("interference-graph.json");
+    expect(correctedCausalInterpretation({ graph }).behavioralCausalStatus.value).toBe("NOT_IDENTIFIABLE");
   });
 });
 
