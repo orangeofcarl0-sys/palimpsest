@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0",
+  "build": "PASS",
+  "unit": {
+    "files": 265,
+    "tests": 3453,
+    "passed": true
+  },
+  "architecture": {
+    "violations": 0
+  },
+  "publicApi": {
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0
+  },
+  "antiVacuity": "PASS",
+  "postMatrixSystemGates": {
+    "kind": "LoadBearingSystemGates",
+    "S1_graph_integrity": {
+      "green": true,
+      "detail": "10/10 invariants PASS"
+    },
+    "S1_event_audit": {
+      "green": true,
+      "detail": "5/5 checks PASS"
+    },
+    "anti_vacuity": {
+      "green": true,
+      "detail": "R2-LR ANTI-VACUITY: PASS — 0 unconditional form(s)"
+    },
+    "R1_L_consumer_boundary": {
+      "green": true,
+      "detail": "§R1-L-LIVE: PASS"
+    },
+    "R1_H_confinement": {
+      "green": true,
+      "detail": "R1-H CONFINEMENT CONFORMANCE: PASS — the read boundary holds on this host."
+    },
+    "R1_HR_host_hardening": {
+      "green": true,
+      "detail": "R1-HR HOST-HARDENING CONFORMANCE: PASS — the read boundary is a verified, standing, fail-closed host contract."
+    },
+    "R1_HC_residual_closure": {
+      "green": true,
+      "detail": "R1-HC RESIDUAL-CLOSURE CONFORMANCE: PASS — the TOCTOU is closed structurally, aliases are refused before any grant, and "
+    }
+  },
+  "postMatrixSystemValid": {
+    "SYSTEM_VALID": true,
+    "categories": [
+      {
+        "id": "S1_graph_integrity",
+        "green": true
+      },
+      {
+        "id": "S1_event_audit",
+        "green": true
+      },
+      {
+        "id": "anti_vacuity",
+        "green": true
+      },
+      {
+        "id": "R1_L_consumer_boundary",
+        "green": true
+      },
+      {
+        "id": "R1_H_confinement",
+        "green": true
+      },
+      {
+        "id": "R1_HR_host_hardening",
+        "green": true
+      },
+      {
+        "id": "R1_HC_residual_closure",
+        "green": true
+      }
+    ],
+    "notGreen": [],
+    "onFailure": "STOP — no behavioural result may repair a system-validity failure"
+  },
+  "historicalEvidenceImmutability": {
+    "result": "PASS",
+    "treeDigest": "6d850d7d5c39a4f8d088747e8e68dc8a74ed1a141695e4dbcacd9e3755b320d7",
+    "fileCount": 309,
+    "changed": [],
+    "added": [],
+    "removed": []
+  },
+  "canonicalSurfaces": {
+    "srcDiff": "ZERO",
+    "hostDiff": "ZERO",
+    "architectureDiff": "ZERO",
+    "newOwner": false,
+    "architectureWriteRun": false
+  },
+  "verdicts": {
+    "CAPITAL_UPTAKE": "CLOSED",
+    "TRAJECTORY_UTILITY": "MIXED",
+    "SYSTEM_VALID": true,
+    "mechanismClaimValid": true
+  }
+}

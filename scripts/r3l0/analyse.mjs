@@ -75,21 +75,36 @@ function terminalQuality(trajectory) {
   });
 }
 
-/** §20: the cost accounting, kept conceptually separate and never invented. */
+/**
+ * §20: the cost accounting, kept conceptually separate and never invented.
+ *
+ * §20 asks for input/output/cached tokens "where available". They ARE available: each generation leaves a
+ * durable session artifact under its own DSH home, and `readSessionTelemetry` reads the provider-reported usage
+ * out of it. A session whose artifact cannot be read contributes `null` rather than a zero, so an unreadable
+ * session is visible as unreadable.
+ */
 function trajectoryCost(trajectory) {
   const generations = trajectory.generations;
   const pullCalls = generations.reduce((total, entry) => total + (entry.governedPulls ?? []).length, 0);
   const bodyBytes = generations.reduce((total, entry) => total + (entry.governedPulls ?? []).reduce((sum, pull) => sum + (pull.bodyBytes ?? 0), 0), 0);
   const elapsedMs = generations.reduce((total, entry) => total + (entry.elapsedMs ?? 0), 0);
+  const usage = generations.map((entry) => entry.usage ?? null);
+  const read = usage.filter((entry) => entry !== null);
+  const sum = (pick) => read.reduce((total, entry) => total + pick(entry), 0);
   return Object.freeze({
     sessions: generations.length,
+    sessionsWithUsage: read.length,
+    sessionsWithoutUsage: usage.length - read.length,
+    inputTokens: read.length === 0 ? null : sum((entry) => entry.inputTokens ?? 0),
+    outputTokens: read.length === 0 ? null : sum((entry) => entry.outputTokens ?? 0),
+    cachedTokens: read.length === 0 ? null : sum((entry) => entry.cacheReadTokens ?? 0),
     contextPullCalls: pullCalls,
     bodyBytesDelivered: bodyBytes,
     elapsedMs,
     transcriptBytes: generations.reduce((total, entry) => total + (entry.transcriptBytes ?? 0), 0),
-    /** §20: no monetary cost is recorded, because the route reports tokens and no price. */
+    /** §20: no monetary cost is recorded, because the route declares no price. */
     providerReportedUsd: null,
-    costNote: 'token counts are read from the durable session artifact by the generation harness; no monetary cost is recorded because the route declares no price',
+    costNote: 'tokens are provider-reported and read from each durable session artifact; no monetary cost is recorded because the route declares no price',
   });
 }
 

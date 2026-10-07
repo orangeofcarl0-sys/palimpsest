@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0",
+  "kind": "post-trial-1 drift adjudication",
+  "question": "\u00a726: a load-bearing harness/analysis defect after trial 1 requires STOP and separate adjudication. Is the observed post-trial-1 drift load-bearing?",
+  "driftedFiles": [
+    "scripts/r3l0/generation-child.mjs",
+    "scripts/r3l0/matrix.mjs",
+    "scripts/r3l0/analyse.mjs"
+  ],
+  "cause": "\u00a720 secondary-outcome enrichment: the provider-reported token counts were not wired into the in-trial record before the matrix ran, and were added afterwards. No primary-outcome code path was changed.",
+  "method": "The analysis code AS COMMITTED AT COMMIT 2 was extracted with `git show be52b08:...` and replayed against the SAME matrix the current analysis read. The two verdict sets were compared.",
+  "frozenReplayVerdicts": [
+    "  b0-C     CAPITALIZED  PERR=0.091 repeated=1/11 repeatedClasses=1 terminalCov=0.667",
+    "  b0-H     HISTORY_ONLY PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b1-C     CAPITALIZED  PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b1-H     HISTORY_ONLY PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b2-H     HISTORY_ONLY PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b2-C     CAPITALIZED  PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b3-H     HISTORY_ONLY PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  b3-C     CAPITALIZED  PERR=0.000 repeated=0/11 repeatedClasses=0 terminalCov=1.000",
+    "  block 0: H PERR=0.000 C PERR=0.091 favoursC=false qualityNotWorse=false",
+    "  block 1: H PERR=0.000 C PERR=0.000 favoursC=false qualityNotWorse=true",
+    "  block 2: H PERR=0.000 C PERR=0.000 favoursC=false qualityNotWorse=true",
+    "  block 3: H PERR=0.000 C PERR=0.000 favoursC=false qualityNotWorse=true",
+    "CAPITAL_UPTAKE: CLOSED",
+    "TRAJECTORY_UTILITY: MIXED"
+  ],
+  "conclusion": "NOT_LOAD_BEARING",
+  "reasoning": "The frozen analysis and the current analysis produce IDENTICAL per-trajectory PERR, identical matched-block comparisons, and identical CAPITAL_UPTAKE and TRAJECTORY_UTILITY verdicts. The drift therefore touched only a SECONDARY outcome (token accounting) and changed no primary result.",
+  "action": "PROCEED \u2014 \u00a726's stop-and-adjudicate rule is engaged by a LOAD-BEARING defect; this drift is not one, and the replay is the evidence rather than an assertion.",
+  "primaryOutcomesUnaffected": [
+    "PERR per trajectory",
+    "matched-block comparisons",
+    "CAPITAL_UPTAKE",
+    "TRAJECTORY_UTILITY",
+    "MechanismWitness results",
+    "HISTORY_ONLY negative witnesses"
+  ]
+}
