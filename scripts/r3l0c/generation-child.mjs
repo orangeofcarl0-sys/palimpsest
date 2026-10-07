@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * R3-L0C §10/§11/§13-§18 — THE GENERATION CHILD PROGRAM.
  *

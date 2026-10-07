@@ -66,7 +66,7 @@ import {
 import { containmentHypothesis, layoutFacts, rootCauseVerdict } from "../scripts/r3l0b/root-cause.mjs";
 import { isWorkerReadable, replayAccess, replayBreach } from "../scripts/r3l0b/replay.mjs";
 import { correctedCausalInterpretation, preRulingSummary, reconstructionPressurePreRuling } from "../scripts/r3l0b/interpretation.mjs";
-import { KNOWN_PRE_EXISTING_MUTATORS, checkImmutability, protectedEvidenceUnchanged } from "../scripts/r3l0b/immutability.mjs";
+import { KNOWN_PRE_EXISTING_MUTATORS, checkImmutability, isPostBaselineDirectory, protectedEvidenceUnchanged } from "../scripts/r3l0b/immutability.mjs";
 import { tmpdir } from "node:os";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -450,6 +450,29 @@ describe("R3-L0B §14/§15 — historical evidence immutability", () => {
   it("§15 only the current stage's own evidence is excluded", () => {
     const guard = checkImmutability();
     expect(guard.excludedStagePaths).toEqual([STAGE_EVIDENCE_PATH]);
+  });
+
+  it("§2.2 a later stage's evidence directory is tolerated WITHOUT editing this guard", () => {
+    /**
+     * R3-L0C §2.2 removes the dependency inversion where a new stage had to add its namespace to this file. The
+     * tolerance is now DERIVED from the baseline: a directory the baseline never recorded is one a later stage
+     * created. This test proves the derivation works for a directory that does not exist yet, which is what makes
+     * a future stage need no edit here.
+     */
+    const baseline = ["research-evidence/r1-h/conformance.json", "research-evidence/r2-lr/deterministic-suite.json"];
+    expect(isPostBaselineDirectory("research-evidence/r9-future/plan.json", baseline)).toBe(true);
+    /** A file the baseline DID record is never tolerated, so a change inside it stays fatal. */
+    expect(isPostBaselineDirectory("research-evidence/r2-lr/deterministic-suite.json", baseline)).toBe(false);
+    /** A top-level file is not a directory and is never tolerated. */
+    expect(isPostBaselineDirectory("research-evidence/loose.json", baseline)).toBe(false);
+  });
+
+  it("§2.2 this guard consults no hand-maintained list for its verdict", () => {
+    const source = readFileSync(join(REPO_ROOT, "scripts", "r3l0b", "immutability.mjs"), "utf8");
+    /** The derivation must be what decides, so the constant must not appear in the tolerance filter. */
+    const filter = source.slice(source.indexOf("const postBaselineAdditions"), source.indexOf("const unexpectedAdditions"));
+    expect(filter).toContain("isPostBaselineDirectory");
+    expect(filter).not.toContain("POST_BASELINE_STAGE_PATHS");
   });
 
   it("§14 the known-mutator record preserves what was repaired", () => {

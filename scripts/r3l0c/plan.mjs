@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /**
  * R3-L0C §12/§19-§22/§23 — THE FROZEN RECONSTRUCTION EXPERIMENT PLAN.
  *
@@ -97,6 +96,28 @@ export function armOrderPerBlock() {
   const order = [];
   for (let block = 0; block < BLOCK_COUNT; block += 1) order.push(random() < 0.5 ? ['H', 'C'] : ['C', 'H']);
   return Object.freeze(order.map((entry) => Object.freeze(entry)));
+}
+
+/**
+ * §12: THE BALANCE PROPERTY the frozen seed must satisfy.
+ *
+ * A randomization that put the same arm first in every block would confound arm order with block order, which is
+ * the one thing the randomization exists to prevent. The requirement is stated rather than assumed, and the plan
+ * refuses to freeze a degenerate order.
+ */
+export function armOrderIsBalanced() {
+  const order = armOrderPerBlock();
+  const firstArms = order.map((entry) => entry[0]);
+  const hFirst = firstArms.filter((arm) => arm === 'H').length;
+  const cFirst = firstArms.length - hFirst;
+  return Object.freeze({
+    order,
+    hFirst,
+    cFirst,
+    /** Both orders occur, so neither arm is systematically first. */
+    balanced: hFirst > 0 && cFirst > 0,
+    law: 'the frozen randomization must place each arm first in at least one block, or arm order is confounded with block order',
+  });
 }
 
 /**
@@ -224,6 +245,7 @@ export function buildPlan() {
 
     /** §12: the schedule and its randomization. */
     armOrderPerBlock: armOrderPerBlock(),
+    armOrderBalance: armOrderIsBalanced(),
     randomizationSeed: RANDOMIZATION_SEED,
     blockCount: BLOCK_COUNT,
     generationsPerTrajectory: GENERATIONS_PER_TRAJECTORY,
@@ -275,11 +297,13 @@ export function buildPlan() {
 
 async function main() {
   const plan = buildPlan();
+  /** §12: a degenerate randomization is a plan defect, so the plan refuses to freeze one. */
+  if (plan.armOrderBalance.balanced !== true) throw new Error(`the frozen randomization is degenerate: ${JSON.stringify(plan.armOrderBalance)}`);
   mkdirSync(join(REPO_ROOT, STAGE_EVIDENCE_PATH), { recursive: true });
   writeFileSync(join(REPO_ROOT, STAGE_EVIDENCE_PATH, 'plan.json'), `${JSON.stringify(plan, null, 2)}${NL}`, 'utf8');
   process.stdout.write(`R3-L0C PLAN — ${String(plan.sessions.length)} sessions across ${String(BLOCK_COUNT)} blocks${NL}`);
   process.stdout.write(`  executor: ${plan.primaryExecutor.modelId} (${plan.primaryExecutor.modelFamily})${NL}`);
-  process.stdout.write(`  arm order: ${plan.armOrderPerBlock.map((entry) => entry.join('/')).join('  ')}${NL}`);
+  process.stdout.write(`  arm order: ${plan.armOrderPerBlock.map((entry) => entry.join('/')).join('  ')} (balanced=${String(plan.armOrderBalance.balanced)})${NL}`);
   process.stdout.write(`  invariants: ${plan.invariants.map((entry) => entry.id).join(', ')}${NL}`);
   process.stdout.write(`  corpus: ${String(plan.corpus.documents)} documents, ${String(plan.corpus.totalBytes)} bytes, complete=${String(plan.corpus.complete)}${NL}`);
   process.stdout.write(`  capital bundle digest: ${plan.capitalBundleDigest.slice(0, 16)}${NL}`);

@@ -205,8 +205,8 @@ export async function runValidityGates(input) {
   const events = runNode(join('r3s0', 'event-audit.mjs'));
 
   const gates = Object.freeze({
-    R3_S0_systemic_suite: verdict(r3s0, /Tests\s+\d+ passed/u, 'the R3-S0 systemic suite'),
-    R3_L0B_containment_suite: verdict(r3l0b, /Tests\s+\d+ passed/u, 'the R3-L0B containment and canary suites'),
+    R3_S0_systemic_suite: verdict(r3s0, /Tests\s+\d+ passed \(\d+\)/u, 'the R3-S0 systemic suite'),
+    R3_L0B_containment_suite: verdict(r3l0b, /Tests\s+\d+ passed \(\d+\)/u, 'the R3-L0B containment and canary suites'),
     S1_graph_integrity: verdict(graph, /invariant\(s\) PASS/u, 'the R3-S0 graph audit'),
     S1_event_audit: verdict(events, /audit check\(s\) PASS/u, 'the R3-S0 event audit'),
     anti_vacuity: verdict(antiVacuity, /ANTI-VACUITY: PASS/u, 'the anti-vacuity scan'),
@@ -236,10 +236,25 @@ export async function runValidityGates(input) {
   return record;
 }
 
+/**
+ * §1/§26: READ A GATE'S VERDICT FROM ITS OUTPUT.
+ *
+ * The output is ANSI-coloured, so a raw regex over it can miss the verdict line entirely — which is what
+ * happened on the first run: both vitest suites were GREEN but read as RED because the escape sequences sat
+ * between `Tests` and `passed`. The colour codes are stripped first, and the pattern then matches plain text.
+ *
+ * A gate with no recognisable verdict is RED rather than green: an unparsed result is not a pass.
+ */
 function verdict(run, pattern, label) {
-  const matched = pattern.test(run.output);
-  const line = run.output.trim().split(NL).filter((entry) => pattern.test(entry)).pop() ?? '';
-  return Object.freeze({ green: run.ok && matched, detail: matched ? line.slice(0, 100) : `${label}: no pass line (exit ok=${String(run.ok)})` });
+  const plain = stripAnsi(run.output);
+  const matched = pattern.test(plain);
+  const line = plain.trim().split(NL).filter((entry) => pattern.test(entry)).pop() ?? '';
+  return Object.freeze({ green: run.ok && matched, detail: matched ? line.trim().slice(0, 100) : `${label}: no pass line (exit ok=${String(run.ok)})` });
+}
+
+/** Strip ANSI SGR sequences, so a verdict can be read from coloured output. */
+function stripAnsi(text) {
+  return String(text).replace(/\[[0-9;]*m/gu, '');
 }
 
 /* ================================================================ §10 the containment gate */

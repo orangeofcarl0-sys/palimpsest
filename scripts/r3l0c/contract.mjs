@@ -242,8 +242,16 @@ export const GENERATIONS_PER_TRAJECTORY = 2;
 export const SESSIONS_PER_BLOCK = 2 * GENERATIONS_PER_TRAJECTORY;
 export const TOTAL_SESSIONS = BLOCK_COUNT * SESSIONS_PER_BLOCK;
 
-/** §12: the frozen randomization seed for the H/C order within each block. */
-export const RANDOMIZATION_SEED = 0x52_4c_30_03;
+/**
+ * §12: the frozen randomization seed for the H/C order within each block.
+ *
+ * THE SEED WAS CHOSEN AGAINST A STATED PROPERTY, not picked and accepted. The first candidate
+ * (`0x524c3003`) drew all four values above 0.5 and produced `C/H` in EVERY block, which would have confounded
+ * the arm order with the block order completely: any block-level effect would have been indistinguishable from
+ * an arm-order effect. `armOrderIsBalanced` states the property the seed must satisfy, and the plan asserts it —
+ * so a future reseed cannot silently reintroduce the degeneracy.
+ */
+export const RANDOMIZATION_SEED = 0x52_4c_30_02;
 
 /** §11: the two generations and what each requires. */
 export const GENERATIONS = Object.freeze([
