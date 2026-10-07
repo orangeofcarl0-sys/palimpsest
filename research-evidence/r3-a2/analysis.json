@@ -1,0 +1,2081 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "kind": "sentinel portfolio qualification",
+  "treatment": "NONE — treatment-independent baseline",
+  "engine": "the frozen corrected R3-AE qualification engine; no QC clause reimplemented",
+  "bounds": {
+    "dimension": "classCoverage",
+    "lower": 0.2,
+    "upper": 0.85,
+    "floorMeaning": "no room to detect harm",
+    "ceilingMeaning": "no room to detect help",
+    "roomRequiredInBothDirections": true,
+    "frozenBefore": "any baseline model run"
+  },
+  "nq": 5,
+  "sentinelFamilies": [
+    "deepseek",
+    "glm"
+  ],
+  "plannedValidRuns": 20,
+  "validRuns": 20,
+  "attemptsMade": 20,
+  "infrastructureInvalidAttempts": 0,
+  "validRunsByPair": {
+    "r3a-f-c-policy-resolution||deepseek-flash": 5,
+    "r3a-f-c-policy-resolution||glm-5.3-flash": 5,
+    "r3a-f-d-rule-resolution||deepseek-flash": 5,
+    "r3a-f-d-rule-resolution||glm-5.3-flash": 5
+  },
+  "newPairs": [
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "modelId": "deepseek-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+        "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FC1+FC2+FC3+FC4+FC5+FC6=5/5",
+        "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FC1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [],
+      "variableDirectGroups": [],
+      "classCoverage": 1,
+      "coveragePerRun": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "varyingClasses": [],
+      "diagnostics": {
+        "classCoverage": 1,
+        "fullSolve": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-c-policy-resolution",
+        "fixtureRevision": 1,
+        "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 14,
+          "declaredClasses": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "28a0afdb685aaff81714d33a700ef3c0c649f3880b6bff773ab97f66ec10df2e",
+          "sourceDigest": "84b9e59f803cfd0c869615c1c822e7d618d94b04487a5eef32f96dc31c05c9f6"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "taskFamily": "F-C graph policy resolution",
+      "modelFamily": "deepseek",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "claimCeiling": "G1",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0,
+      "commonInterface": [
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q0",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q1",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q2",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q3",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q4",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        }
+      ]
+    },
+    {
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "modelId": "glm-5.3-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+        "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FC1+FC2+FC3+FC4+FC5+FC6=5/5",
+        "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FC1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FC6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [],
+      "variableDirectGroups": [],
+      "classCoverage": 1,
+      "coveragePerRun": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "varyingClasses": [],
+      "diagnostics": {
+        "classCoverage": 1,
+        "fullSolve": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-c-policy-resolution",
+        "fixtureRevision": 1,
+        "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 14,
+          "declaredClasses": [
+            "FC1",
+            "FC2",
+            "FC3",
+            "FC4",
+            "FC5",
+            "FC6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "28a0afdb685aaff81714d33a700ef3c0c649f3880b6bff773ab97f66ec10df2e",
+          "sourceDigest": "84b9e59f803cfd0c869615c1c822e7d618d94b04487a5eef32f96dc31c05c9f6"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_C_POLICY_RESOLUTION",
+      "taskFamily": "F-C graph policy resolution",
+      "modelFamily": "glm",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "claimCeiling": "G1",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0,
+      "commonInterface": [
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q0",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q1",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q2",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q3",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q4",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        }
+      ]
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "modelId": "deepseek-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+        "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FD1+FD2+FD3+FD4+FD5+FD6=5/5",
+        "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FD1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [],
+      "variableDirectGroups": [],
+      "classCoverage": 1,
+      "coveragePerRun": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "varyingClasses": [],
+      "diagnostics": {
+        "classCoverage": 1,
+        "fullSolve": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-d-rule-resolution",
+        "fixtureRevision": 1,
+        "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 13,
+          "declaredClasses": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "1b0cb7750100ea35d8bb058f610c72200595001086c9050543e23fa34512842b",
+          "sourceDigest": "6309d7950ef1439c9b549575eb982d8d68ba5d0d15f0a95e608ea4e8e6d22f33"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "taskFamily": "F-D specificity / rule resolution",
+      "modelFamily": "deepseek",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "claimCeiling": "G1",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0,
+      "commonInterface": [
+        {
+          "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q0",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q1",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q2",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q3",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q4",
+          "modelId": "deepseek-flash",
+          "modelFamily": "deepseek",
+          "providerId": "deepseek-direct",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        }
+      ]
+    },
+    {
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "modelId": "glm-5.3-flash",
+      "verdict": "UNQUALIFIED",
+      "reasons": [
+        "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+        "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FD1+FD2+FD3+FD4+FD5+FD6=5/5",
+        "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+      ],
+      "classHeadroom": [
+        {
+          "classId": "FD1",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD2",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD3",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD4",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD5",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        },
+        {
+          "classId": "FD6",
+          "passes": 5,
+          "of": 5,
+          "raw": "5/5",
+          "state": "CEILING",
+          "varies": false,
+          "directTreatmentRelevant": true,
+          "relationship": "DIRECT"
+        }
+      ],
+      "classGroups": [
+        {
+          "members": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "raw": "5/5",
+          "variable": false,
+          "invariant": true,
+          "directMembers": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "transferMembers": [],
+          "directTreatmentRelevant": true
+        }
+      ],
+      "variableGroups": [],
+      "variableDirectGroups": [],
+      "classCoverage": 1,
+      "coveragePerRun": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "varyingClasses": [],
+      "diagnostics": {
+        "classCoverage": 1,
+        "fullSolve": [
+          true,
+          true,
+          true,
+          true,
+          true
+        ],
+        "nonRedundantDimensions": [
+          "classCoverage",
+          "fullSolve"
+        ],
+        "note": "reported for context only; §5 forbids counting these toward QC-2"
+      },
+      "fixtureAuditPrecondition": {
+        "fixtureId": "r3a-f-d-rule-resolution",
+        "fixtureRevision": 1,
+        "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+        "mechanicalOracleProven": true,
+        "allHiddenCasesDeclareFailureClass": true,
+        "allDeclaredClassesAreExercised": true,
+        "oracleUsesNoModelSelfReport": true,
+        "evidence": {
+          "deterministic": true,
+          "judgesEveryCase": true,
+          "casesRun": 13,
+          "declaredClasses": [
+            "FD1",
+            "FD2",
+            "FD3",
+            "FD4",
+            "FD5",
+            "FD6"
+          ],
+          "undeclaredCases": [],
+          "unexercisedClasses": [],
+          "modelConsultationPatternsMatched": [],
+          "oracleSourceDigest": "1b0cb7750100ea35d8bb058f610c72200595001086c9050543e23fa34512842b",
+          "sourceDigest": "6309d7950ef1439c9b549575eb982d8d68ba5d0d15f0a95e608ea4e8e6d22f33"
+        }
+      },
+      "infrastructureInvalidRuns": 0,
+      "bounds": {
+        "dimension": "classCoverage",
+        "lower": 0.2,
+        "upper": 0.85,
+        "floorMeaning": "no room to detect harm",
+        "ceilingMeaning": "no room to detect help",
+        "roomRequiredInBothDirections": true,
+        "frozenBefore": "any baseline model run"
+      },
+      "nq": 5,
+      "fixtureName": "F_D_RULE_RESOLUTION",
+      "taskFamily": "F-D specificity / rule resolution",
+      "modelFamily": "glm",
+      "antiOverfitProcess": "COMPLIANT",
+      "contamination": "UNKNOWN",
+      "heldOut": false,
+      "evaluationModelFamiliesKnownAtConstruction": true,
+      "claimCeiling": "G1",
+      "scheduled": 5,
+      "capitalDelivered": false,
+      "maxCompiledHandles": 0,
+      "commonInterface": [
+        {
+          "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q0",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q1",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q2",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q3",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        },
+        {
+          "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q4",
+          "modelId": "glm-5.3-flash",
+          "modelFamily": "glm",
+          "providerId": "glm-via-omnigate",
+          "rendererId": "dsh-common-worker",
+          "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+          "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+        }
+      ]
+    }
+  ],
+  "historicalPairs": [
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureName": "F_A_ATOMIC_TRANSACTION",
+      "taskFamily": "F-A transactional / atomic state update",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "verdict": "UNQUALIFIED",
+      "originalVerdict": "UNQUALIFIED",
+      "classCoverage": 0.6333333333333332,
+      "variableGroups": [
+        "FA4"
+      ],
+      "variableDirectGroups": [
+        "FA4"
+      ],
+      "antiOverfitProcess": "COMPLIANT",
+      "claimCeiling": "G1",
+      "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)"
+    },
+    {
+      "fixtureId": "r3a-f-a-atomic-transaction",
+      "fixtureName": "F_A_ATOMIC_TRANSACTION",
+      "taskFamily": "F-A transactional / atomic state update",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "verdict": "QUALIFIED",
+      "originalVerdict": "QUALIFIED",
+      "classCoverage": 0.7,
+      "variableGroups": [
+        "FA1+FA2",
+        "FA4"
+      ],
+      "variableDirectGroups": [
+        "FA1+FA2",
+        "FA4"
+      ],
+      "antiOverfitProcess": "COMPLIANT",
+      "claimCeiling": "G1",
+      "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)"
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureName": "F_B_VERSIONED_MIGRATION",
+      "taskFamily": "F-B versioned schema / API compatibility",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "verdict": "UNQUALIFIED",
+      "originalVerdict": "UNQUALIFIED",
+      "classCoverage": 0.8571428571428571,
+      "variableGroups": [
+        "FB6",
+        "FB7"
+      ],
+      "variableDirectGroups": [
+        "FB6",
+        "FB7"
+      ],
+      "antiOverfitProcess": "COMPLIANT",
+      "claimCeiling": "G1",
+      "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)"
+    },
+    {
+      "fixtureId": "r3a-f-b-versioned-migration",
+      "fixtureName": "F_B_VERSIONED_MIGRATION",
+      "taskFamily": "F-B versioned schema / API compatibility",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "verdict": "UNQUALIFIED",
+      "originalVerdict": "UNQUALIFIED",
+      "classCoverage": 0.9142857142857143,
+      "variableGroups": [
+        "FB6"
+      ],
+      "variableDirectGroups": [
+        "FB6"
+      ],
+      "antiOverfitProcess": "COMPLIANT",
+      "claimCeiling": "G1",
+      "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)"
+    }
+  ],
+  "extendedGraph": {
+    "pairs": [
+      {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "fixtureName": "F_A_ATOMIC_TRANSACTION",
+        "taskFamily": "F-A transactional / atomic state update",
+        "modelId": "deepseek-flash",
+        "modelFamily": "deepseek",
+        "verdict": "UNQUALIFIED",
+        "originalVerdict": "UNQUALIFIED",
+        "classCoverage": 0.6333333333333332,
+        "variableGroups": [
+          "FA4"
+        ],
+        "variableDirectGroups": [
+          "FA4"
+        ],
+        "antiOverfitProcess": "COMPLIANT",
+        "claimCeiling": "G1",
+        "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)",
+        "origin": "R3-A0/R3-AE"
+      },
+      {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "fixtureName": "F_A_ATOMIC_TRANSACTION",
+        "taskFamily": "F-A transactional / atomic state update",
+        "modelId": "glm-5.3-flash",
+        "modelFamily": "glm",
+        "verdict": "QUALIFIED",
+        "originalVerdict": "QUALIFIED",
+        "classCoverage": 0.7,
+        "variableGroups": [
+          "FA1+FA2",
+          "FA4"
+        ],
+        "variableDirectGroups": [
+          "FA1+FA2",
+          "FA4"
+        ],
+        "antiOverfitProcess": "COMPLIANT",
+        "claimCeiling": "G1",
+        "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)",
+        "origin": "R3-A0/R3-AE"
+      },
+      {
+        "fixtureId": "r3a-f-b-versioned-migration",
+        "fixtureName": "F_B_VERSIONED_MIGRATION",
+        "taskFamily": "F-B versioned schema / API compatibility",
+        "modelId": "deepseek-flash",
+        "modelFamily": "deepseek",
+        "verdict": "UNQUALIFIED",
+        "originalVerdict": "UNQUALIFIED",
+        "classCoverage": 0.8571428571428571,
+        "variableGroups": [
+          "FB6",
+          "FB7"
+        ],
+        "variableDirectGroups": [
+          "FB6",
+          "FB7"
+        ],
+        "antiOverfitProcess": "COMPLIANT",
+        "claimCeiling": "G1",
+        "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)",
+        "origin": "R3-A0/R3-AE"
+      },
+      {
+        "fixtureId": "r3a-f-b-versioned-migration",
+        "fixtureName": "F_B_VERSIONED_MIGRATION",
+        "taskFamily": "F-B versioned schema / API compatibility",
+        "modelId": "glm-5.3-flash",
+        "modelFamily": "glm",
+        "verdict": "UNQUALIFIED",
+        "originalVerdict": "UNQUALIFIED",
+        "classCoverage": 0.9142857142857143,
+        "variableGroups": [
+          "FB6"
+        ],
+        "variableDirectGroups": [
+          "FB6"
+        ],
+        "antiOverfitProcess": "COMPLIANT",
+        "claimCeiling": "G1",
+        "source": "R3-AE corrected reanalysis (carried forward, NOT rerun)",
+        "origin": "R3-A0/R3-AE"
+      },
+      {
+        "fixtureId": "r3a-f-c-policy-resolution",
+        "modelId": "deepseek-flash",
+        "verdict": "UNQUALIFIED",
+        "reasons": [
+          "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+          "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FC1+FC2+FC3+FC4+FC5+FC6=5/5",
+          "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+        ],
+        "classHeadroom": [
+          {
+            "classId": "FC1",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC2",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC3",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC4",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC5",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC6",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          }
+        ],
+        "classGroups": [
+          {
+            "members": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "raw": "5/5",
+            "variable": false,
+            "invariant": true,
+            "directMembers": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "transferMembers": [],
+            "directTreatmentRelevant": true
+          }
+        ],
+        "variableGroups": [],
+        "variableDirectGroups": [],
+        "classCoverage": 1,
+        "coveragePerRun": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "varyingClasses": [],
+        "diagnostics": {
+          "classCoverage": 1,
+          "fullSolve": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "nonRedundantDimensions": [
+            "classCoverage",
+            "fullSolve"
+          ],
+          "note": "reported for context only; §5 forbids counting these toward QC-2"
+        },
+        "fixtureAuditPrecondition": {
+          "fixtureId": "r3a-f-c-policy-resolution",
+          "fixtureRevision": 1,
+          "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+          "mechanicalOracleProven": true,
+          "allHiddenCasesDeclareFailureClass": true,
+          "allDeclaredClassesAreExercised": true,
+          "oracleUsesNoModelSelfReport": true,
+          "evidence": {
+            "deterministic": true,
+            "judgesEveryCase": true,
+            "casesRun": 14,
+            "declaredClasses": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "undeclaredCases": [],
+            "unexercisedClasses": [],
+            "modelConsultationPatternsMatched": [],
+            "oracleSourceDigest": "28a0afdb685aaff81714d33a700ef3c0c649f3880b6bff773ab97f66ec10df2e",
+            "sourceDigest": "84b9e59f803cfd0c869615c1c822e7d618d94b04487a5eef32f96dc31c05c9f6"
+          }
+        },
+        "infrastructureInvalidRuns": 0,
+        "bounds": {
+          "dimension": "classCoverage",
+          "lower": 0.2,
+          "upper": 0.85,
+          "floorMeaning": "no room to detect harm",
+          "ceilingMeaning": "no room to detect help",
+          "roomRequiredInBothDirections": true,
+          "frozenBefore": "any baseline model run"
+        },
+        "nq": 5,
+        "fixtureName": "F_C_POLICY_RESOLUTION",
+        "taskFamily": "F-C graph policy resolution",
+        "modelFamily": "deepseek",
+        "antiOverfitProcess": "COMPLIANT",
+        "contamination": "UNKNOWN",
+        "heldOut": false,
+        "evaluationModelFamiliesKnownAtConstruction": true,
+        "claimCeiling": "G1",
+        "scheduled": 5,
+        "capitalDelivered": false,
+        "maxCompiledHandles": 0,
+        "commonInterface": [
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q0",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q1",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q2",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q3",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q4",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          }
+        ],
+        "origin": "R3-A2"
+      },
+      {
+        "fixtureId": "r3a-f-c-policy-resolution",
+        "modelId": "glm-5.3-flash",
+        "verdict": "UNQUALIFIED",
+        "reasons": [
+          "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+          "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FC1+FC2+FC3+FC4+FC5+FC6=5/5",
+          "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+        ],
+        "classHeadroom": [
+          {
+            "classId": "FC1",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC2",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC3",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC4",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC5",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FC6",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          }
+        ],
+        "classGroups": [
+          {
+            "members": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "raw": "5/5",
+            "variable": false,
+            "invariant": true,
+            "directMembers": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "transferMembers": [],
+            "directTreatmentRelevant": true
+          }
+        ],
+        "variableGroups": [],
+        "variableDirectGroups": [],
+        "classCoverage": 1,
+        "coveragePerRun": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "varyingClasses": [],
+        "diagnostics": {
+          "classCoverage": 1,
+          "fullSolve": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "nonRedundantDimensions": [
+            "classCoverage",
+            "fullSolve"
+          ],
+          "note": "reported for context only; §5 forbids counting these toward QC-2"
+        },
+        "fixtureAuditPrecondition": {
+          "fixtureId": "r3a-f-c-policy-resolution",
+          "fixtureRevision": 1,
+          "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+          "mechanicalOracleProven": true,
+          "allHiddenCasesDeclareFailureClass": true,
+          "allDeclaredClassesAreExercised": true,
+          "oracleUsesNoModelSelfReport": true,
+          "evidence": {
+            "deterministic": true,
+            "judgesEveryCase": true,
+            "casesRun": 14,
+            "declaredClasses": [
+              "FC1",
+              "FC2",
+              "FC3",
+              "FC4",
+              "FC5",
+              "FC6"
+            ],
+            "undeclaredCases": [],
+            "unexercisedClasses": [],
+            "modelConsultationPatternsMatched": [],
+            "oracleSourceDigest": "28a0afdb685aaff81714d33a700ef3c0c649f3880b6bff773ab97f66ec10df2e",
+            "sourceDigest": "84b9e59f803cfd0c869615c1c822e7d618d94b04487a5eef32f96dc31c05c9f6"
+          }
+        },
+        "infrastructureInvalidRuns": 0,
+        "bounds": {
+          "dimension": "classCoverage",
+          "lower": 0.2,
+          "upper": 0.85,
+          "floorMeaning": "no room to detect harm",
+          "ceilingMeaning": "no room to detect help",
+          "roomRequiredInBothDirections": true,
+          "frozenBefore": "any baseline model run"
+        },
+        "nq": 5,
+        "fixtureName": "F_C_POLICY_RESOLUTION",
+        "taskFamily": "F-C graph policy resolution",
+        "modelFamily": "glm",
+        "antiOverfitProcess": "COMPLIANT",
+        "contamination": "UNKNOWN",
+        "heldOut": false,
+        "evaluationModelFamiliesKnownAtConstruction": true,
+        "claimCeiling": "G1",
+        "scheduled": 5,
+        "capitalDelivered": false,
+        "maxCompiledHandles": 0,
+        "commonInterface": [
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q0",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q1",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q2",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q3",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q4",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          }
+        ],
+        "origin": "R3-A2"
+      },
+      {
+        "fixtureId": "r3a-f-d-rule-resolution",
+        "modelId": "deepseek-flash",
+        "verdict": "UNQUALIFIED",
+        "reasons": [
+          "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+          "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FD1+FD2+FD3+FD4+FD5+FD6=5/5",
+          "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+        ],
+        "classHeadroom": [
+          {
+            "classId": "FD1",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD2",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD3",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD4",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD5",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD6",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          }
+        ],
+        "classGroups": [
+          {
+            "members": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "raw": "5/5",
+            "variable": false,
+            "invariant": true,
+            "directMembers": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "transferMembers": [],
+            "directTreatmentRelevant": true
+          }
+        ],
+        "variableGroups": [],
+        "variableDirectGroups": [],
+        "classCoverage": 1,
+        "coveragePerRun": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "varyingClasses": [],
+        "diagnostics": {
+          "classCoverage": 1,
+          "fullSolve": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "nonRedundantDimensions": [
+            "classCoverage",
+            "fullSolve"
+          ],
+          "note": "reported for context only; §5 forbids counting these toward QC-2"
+        },
+        "fixtureAuditPrecondition": {
+          "fixtureId": "r3a-f-d-rule-resolution",
+          "fixtureRevision": 1,
+          "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+          "mechanicalOracleProven": true,
+          "allHiddenCasesDeclareFailureClass": true,
+          "allDeclaredClassesAreExercised": true,
+          "oracleUsesNoModelSelfReport": true,
+          "evidence": {
+            "deterministic": true,
+            "judgesEveryCase": true,
+            "casesRun": 13,
+            "declaredClasses": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "undeclaredCases": [],
+            "unexercisedClasses": [],
+            "modelConsultationPatternsMatched": [],
+            "oracleSourceDigest": "1b0cb7750100ea35d8bb058f610c72200595001086c9050543e23fa34512842b",
+            "sourceDigest": "6309d7950ef1439c9b549575eb982d8d68ba5d0d15f0a95e608ea4e8e6d22f33"
+          }
+        },
+        "infrastructureInvalidRuns": 0,
+        "bounds": {
+          "dimension": "classCoverage",
+          "lower": 0.2,
+          "upper": 0.85,
+          "floorMeaning": "no room to detect harm",
+          "ceilingMeaning": "no room to detect help",
+          "roomRequiredInBothDirections": true,
+          "frozenBefore": "any baseline model run"
+        },
+        "nq": 5,
+        "fixtureName": "F_D_RULE_RESOLUTION",
+        "taskFamily": "F-D specificity / rule resolution",
+        "modelFamily": "deepseek",
+        "antiOverfitProcess": "COMPLIANT",
+        "contamination": "UNKNOWN",
+        "heldOut": false,
+        "evaluationModelFamiliesKnownAtConstruction": true,
+        "claimCeiling": "G1",
+        "scheduled": 5,
+        "capitalDelivered": false,
+        "maxCompiledHandles": 0,
+        "commonInterface": [
+          {
+            "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q0",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q1",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q2",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q3",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q4",
+            "modelId": "deepseek-flash",
+            "modelFamily": "deepseek",
+            "providerId": "deepseek-direct",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          }
+        ],
+        "origin": "R3-A2"
+      },
+      {
+        "fixtureId": "r3a-f-d-rule-resolution",
+        "modelId": "glm-5.3-flash",
+        "verdict": "UNQUALIFIED",
+        "reasons": [
+          "QC-1 failed: aggregate class coverage 1.000 is outside (0.2, 0.85) — CEILING (no room to detect help)",
+          "QC-2 failed: 0 variable non-redundant failure-class group(s) vary, 2 required — groups: FD1+FD2+FD3+FD4+FD5+FD6=5/5",
+          "QC-4 failed: 0 variable non-redundant group(s) carry a DIRECT member, 2 required — DIRECT groups: (none)"
+        ],
+        "classHeadroom": [
+          {
+            "classId": "FD1",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD2",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD3",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD4",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD5",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          },
+          {
+            "classId": "FD6",
+            "passes": 5,
+            "of": 5,
+            "raw": "5/5",
+            "state": "CEILING",
+            "varies": false,
+            "directTreatmentRelevant": true,
+            "relationship": "DIRECT"
+          }
+        ],
+        "classGroups": [
+          {
+            "members": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "raw": "5/5",
+            "variable": false,
+            "invariant": true,
+            "directMembers": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "transferMembers": [],
+            "directTreatmentRelevant": true
+          }
+        ],
+        "variableGroups": [],
+        "variableDirectGroups": [],
+        "classCoverage": 1,
+        "coveragePerRun": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "varyingClasses": [],
+        "diagnostics": {
+          "classCoverage": 1,
+          "fullSolve": [
+            true,
+            true,
+            true,
+            true,
+            true
+          ],
+          "nonRedundantDimensions": [
+            "classCoverage",
+            "fullSolve"
+          ],
+          "note": "reported for context only; §5 forbids counting these toward QC-2"
+        },
+        "fixtureAuditPrecondition": {
+          "fixtureId": "r3a-f-d-rule-resolution",
+          "fixtureRevision": 1,
+          "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+          "mechanicalOracleProven": true,
+          "allHiddenCasesDeclareFailureClass": true,
+          "allDeclaredClassesAreExercised": true,
+          "oracleUsesNoModelSelfReport": true,
+          "evidence": {
+            "deterministic": true,
+            "judgesEveryCase": true,
+            "casesRun": 13,
+            "declaredClasses": [
+              "FD1",
+              "FD2",
+              "FD3",
+              "FD4",
+              "FD5",
+              "FD6"
+            ],
+            "undeclaredCases": [],
+            "unexercisedClasses": [],
+            "modelConsultationPatternsMatched": [],
+            "oracleSourceDigest": "1b0cb7750100ea35d8bb058f610c72200595001086c9050543e23fa34512842b",
+            "sourceDigest": "6309d7950ef1439c9b549575eb982d8d68ba5d0d15f0a95e608ea4e8e6d22f33"
+          }
+        },
+        "infrastructureInvalidRuns": 0,
+        "bounds": {
+          "dimension": "classCoverage",
+          "lower": 0.2,
+          "upper": 0.85,
+          "floorMeaning": "no room to detect harm",
+          "ceilingMeaning": "no room to detect help",
+          "roomRequiredInBothDirections": true,
+          "frozenBefore": "any baseline model run"
+        },
+        "nq": 5,
+        "fixtureName": "F_D_RULE_RESOLUTION",
+        "taskFamily": "F-D specificity / rule resolution",
+        "modelFamily": "glm",
+        "antiOverfitProcess": "COMPLIANT",
+        "contamination": "UNKNOWN",
+        "heldOut": false,
+        "evaluationModelFamiliesKnownAtConstruction": true,
+        "claimCeiling": "G1",
+        "scheduled": 5,
+        "capitalDelivered": false,
+        "maxCompiledHandles": 0,
+        "commonInterface": [
+          {
+            "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q0",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q1",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q2",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q3",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          },
+          {
+            "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q4",
+            "modelId": "glm-5.3-flash",
+            "modelFamily": "glm",
+            "providerId": "glm-via-omnigate",
+            "rendererId": "dsh-common-worker",
+            "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+            "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7"
+          }
+        ],
+        "origin": "R3-A2"
+      }
+    ],
+    "edges": [
+      {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "taskFamily": "F-A transactional / atomic state update",
+        "modelId": "glm-5.3-flash",
+        "modelFamily": "glm"
+      }
+    ],
+    "note": "only COMPLIANT + QUALIFIED pairs are edges; historical verdicts are carried forward, never rerun"
+  },
+  "readiness": {
+    "TASK_READY": false,
+    "MODEL_READY": false,
+    "LOCAL_PAIR_READY": false,
+    "BRIDGE_READY": false,
+    "fullTwoByTwoCrossExists": false,
+    "fullCrosses": [],
+    "qualifiedEdgeCount": 1,
+    "taskFamilies": [
+      "F-A transactional / atomic state update"
+    ],
+    "modelFamilies": [
+      "glm"
+    ],
+    "modelsOnTwoTaskFamilies": [],
+    "fixturesOnBothSentinelFamilies": [],
+    "sentinelFamiliesWithAQualifiedFixture": [
+      "glm"
+    ],
+    "sentinelFamiliesWithoutAQualifiedFixture": [
+      "deepseek"
+    ],
+    "components": [
+      {
+        "taskFamilies": [
+          "F-A transactional / atomic state update"
+        ],
+        "modelFamilies": [
+          "glm"
+        ],
+        "modelsOnTwoTaskFamilies": [],
+        "taskFamiliesOnTwoModelFamilies": [],
+        "lShaped": false
+      }
+    ],
+    "confoundNote": "no connected component carries the L-shape, so any cross-model claim remains TASK-CONFOUNDED",
+    "edges": [
+      {
+        "fixtureId": "r3a-f-a-atomic-transaction",
+        "taskFamily": "F-A transactional / atomic state update",
+        "modelId": "glm-5.3-flash",
+        "modelFamily": "glm"
+      }
+    ]
+  },
+  "continuation": {
+    "next": "ARCHITECTURAL REVIEW",
+    "reason": "neither LOCAL_PAIR_READY nor BRIDGE_READY holds, so the stage stops and returns for architectural adjudication",
+    "allowed": false
+  },
+  "historicalGate": {
+    "green": false,
+    "clauses": {
+      "twoTaskFamilies": false,
+      "twoModelFamilies": false,
+      "modelOnTwoTaskFamilies": false,
+      "taskFamilyOnTwoModelFamilies": false
+    },
+    "qualifiedPairs": 1,
+    "excludedNonCompliant": 0,
+    "taskFamilies": [
+      "F-A transactional / atomic state update"
+    ],
+    "modelFamilies": [
+      "glm"
+    ],
+    "modelsOnTwoTaskFamilies": [],
+    "taskFamiliesOnTwoModelFamilies": [],
+    "fullTwoByTwoCross": false,
+    "note": "§2.6: only COMPLIANT fixtures count toward this gate."
+  },
+  "costAccounting": {
+    "trialsWithUsage": 20,
+    "trialsWithoutUsage": 0,
+    "inputTokens": 204606,
+    "outputTokens": 552945,
+    "cachedTokens": 8541184,
+    "currency": "tokens (no provider-reported monetary cost was available)",
+    "providerReportedUsd": null,
+    "costPerValidTrial": {
+      "inputTokens": 10230,
+      "outputTokens": 27647
+    },
+    "costPerFixtureModelPair": {
+      "inputTokens": 51152,
+      "outputTokens": 138236
+    },
+    "separation": {
+      "ownerSide": "inputTokens + outputTokens reported by the provider for the worker session",
+      "modelSide": "cachedTokens (cacheReadTokens) reported separately, never folded into inputTokens",
+      "toolInteraction": "actions.order length and revisions, counted rather than priced"
+    },
+    "note": "a qualified edge is a QUALIFICATION edge, not a capital-treatment edge; §\"Experiment economics\" forbids optimizing a qualification verdict using cost"
+  },
+  "fixturePreconditions": {
+    "r3a-f-c-policy-resolution": {
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "contentDigest": "fbff8c2e19c3c5d12c511ef8618d23452bf0c93c8ba505eecd8974c56c49860d",
+      "satisfied": true
+    },
+    "r3a-f-d-rule-resolution": {
+      "mechanicalOracleProven": true,
+      "allHiddenCasesDeclareFailureClass": true,
+      "allDeclaredClassesAreExercised": true,
+      "oracleUsesNoModelSelfReport": true,
+      "contentDigest": "0abbe4524b6bc4d3c404be8a67183b883581b516f0a303fad7eefe12bfa0b26c",
+      "satisfied": true
+    }
+  },
+  "deviations": []
+}

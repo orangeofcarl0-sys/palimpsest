@@ -1,0 +1,3578 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "trials": [
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q0",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 0,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "grep",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "grep": 6,
+          "palimpsest_worker_result": 7
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 9826,
+        "outputTokens": 33202,
+        "cacheReadTokens": 566400,
+        "cacheWriteTokens": 0,
+        "totalTokens": 49244,
+        "usageRecords": 17,
+        "billedTokens": 43028,
+        "artifacts": [
+          {
+            "bytes": 191934,
+            "frames": 98,
+            "failedFrames": 0,
+            "usageRecords": 17
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 180683,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q1",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 1,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 17088,
+        "outputTokens": 25274,
+        "cacheReadTokens": 571776,
+        "cacheWriteTokens": 0,
+        "totalTokens": 48147,
+        "usageRecords": 20,
+        "billedTokens": 42362,
+        "artifacts": [
+          {
+            "bytes": 194627,
+            "frames": 120,
+            "failedFrames": 0,
+            "usageRecords": 20
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 236738,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q2",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 2,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 8114,
+        "outputTokens": 23578,
+        "cacheReadTokens": 360448,
+        "cacheWriteTokens": 0,
+        "totalTokens": 37842,
+        "usageRecords": 14,
+        "billedTokens": 31692,
+        "artifacts": [
+          {
+            "bytes": 138825,
+            "frames": 65,
+            "failedFrames": 0,
+            "usageRecords": 14
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 123692,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q3",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 3,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "glob",
+          "read",
+          "write",
+          "grep",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "glob": 2,
+          "read": 3,
+          "write": 4,
+          "grep": 5,
+          "edit": 6,
+          "palimpsest_worker_result": 7
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 9360,
+        "outputTokens": 20707,
+        "cacheReadTokens": 348544,
+        "cacheWriteTokens": 0,
+        "totalTokens": 36383,
+        "usageRecords": 15,
+        "billedTokens": 30067,
+        "artifacts": [
+          {
+            "bytes": 140065,
+            "frames": 77,
+            "failedFrames": 0,
+            "usageRecords": 15
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 115746,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q4",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 4,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 7642,
+        "outputTokens": 28381,
+        "cacheReadTokens": 330368,
+        "cacheWriteTokens": 0,
+        "totalTokens": 42498,
+        "usageRecords": 12,
+        "billedTokens": 36023,
+        "artifacts": [
+          {
+            "bytes": 149165,
+            "frames": 61,
+            "failedFrames": 0,
+            "usageRecords": 12
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 212539,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q0",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 0,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "pwsh",
+          "read",
+          "todo_write",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "pwsh": 2,
+          "read": 3,
+          "todo_write": 4,
+          "write": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 10649,
+        "outputTokens": 25883,
+        "cacheReadTokens": 402944,
+        "cacheWriteTokens": 0,
+        "totalTokens": 42346,
+        "usageRecords": 16,
+        "billedTokens": 36532,
+        "artifacts": [
+          {
+            "bytes": 161922,
+            "frames": 95,
+            "failedFrames": 0,
+            "usageRecords": 16
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 148572,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q1",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 1,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "glob",
+          "read",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "glob": 2,
+          "read": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 8936,
+        "outputTokens": 16750,
+        "cacheReadTokens": 289792,
+        "cacheWriteTokens": 0,
+        "totalTokens": 31792,
+        "usageRecords": 14,
+        "billedTokens": 25686,
+        "artifacts": [
+          {
+            "bytes": 130065,
+            "frames": 77,
+            "failedFrames": 0,
+            "usageRecords": 14
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 95928,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q2",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 2,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 11548,
+        "outputTokens": 31731,
+        "cacheReadTokens": 593792,
+        "cacheWriteTokens": 0,
+        "totalTokens": 48951,
+        "usageRecords": 18,
+        "billedTokens": 43279,
+        "artifacts": [
+          {
+            "bytes": 204157,
+            "frames": 100,
+            "failedFrames": 0,
+            "usageRecords": 18
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 172076,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q3",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 3,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 8347,
+        "outputTokens": 26666,
+        "cacheReadTokens": 420608,
+        "cacheWriteTokens": 0,
+        "totalTokens": 41375,
+        "usageRecords": 15,
+        "billedTokens": 35013,
+        "artifacts": [
+          {
+            "bytes": 158436,
+            "frames": 75,
+            "failedFrames": 0,
+            "usageRecords": 15
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 135258,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_C_POLICY_RESOLUTION-glm-via-omnigate-q4",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-C graph policy resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 4,
+      "classPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 14,
+      "finalAcceptanceTotal": 14,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "glob",
+          "read",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "glob": 2,
+          "read": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 16317,
+        "outputTokens": 35264,
+        "cacheReadTokens": 741760,
+        "cacheWriteTokens": 0,
+        "totalTokens": 57227,
+        "usageRecords": 21,
+        "billedTokens": 51581,
+        "artifacts": [
+          {
+            "bytes": 214673,
+            "frames": 106,
+            "failedFrames": 0,
+            "usageRecords": 21
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 187624,
+      "rawClassPass": {
+        "FC1": true,
+        "FC2": true,
+        "FC3": true,
+        "FC4": true,
+        "FC5": true,
+        "FC6": true
+      },
+      "classDetail": {
+        "FC1": [
+          {
+            "id": "fc1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC2": [
+          {
+            "id": "fc2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC3": [
+          {
+            "id": "fc3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc3c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC4": [
+          {
+            "id": "fc4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC5": [
+          {
+            "id": "fc5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc5c",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FC6": [
+          {
+            "id": "fc6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fc6b",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q0",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 0,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "read",
+          "glob",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "read": 2,
+          "glob": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 7898,
+        "outputTokens": 32666,
+        "cacheReadTokens": 401664,
+        "cacheWriteTokens": 0,
+        "totalTokens": 47015,
+        "usageRecords": 14,
+        "billedTokens": 40564,
+        "artifacts": [
+          {
+            "bytes": 182974,
+            "frames": 74,
+            "failedFrames": 0,
+            "usageRecords": 14
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 161250,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q1",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 1,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "glob",
+          "read",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "glob": 2,
+          "read": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 10546,
+        "outputTokens": 29247,
+        "cacheReadTokens": 438400,
+        "cacheWriteTokens": 0,
+        "totalTokens": 45838,
+        "usageRecords": 16,
+        "billedTokens": 39793,
+        "artifacts": [
+          {
+            "bytes": 170222,
+            "frames": 79,
+            "failedFrames": 0,
+            "usageRecords": 16
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 154079,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q2",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 2,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "read",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "read": 2,
+          "write": 3,
+          "edit": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 10825,
+        "outputTokens": 46624,
+        "cacheReadTokens": 787712,
+        "cacheWriteTokens": 0,
+        "totalTokens": 62863,
+        "usageRecords": 21,
+        "billedTokens": 57449,
+        "artifacts": [
+          {
+            "bytes": 231977,
+            "frames": 102,
+            "failedFrames": 0,
+            "usageRecords": 21
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 216212,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q3",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 3,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 9247,
+        "outputTokens": 38821,
+        "cacheReadTokens": 430848,
+        "cacheWriteTokens": 0,
+        "totalTokens": 54621,
+        "usageRecords": 12,
+        "billedTokens": 48068,
+        "artifacts": [
+          {
+            "bytes": 190232,
+            "frames": 63,
+            "failedFrames": 0,
+            "usageRecords": 12
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 189387,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-deepseek-direct-q4",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "deepseek-flash",
+      "modelFamily": "deepseek",
+      "routeId": "deepseek-direct",
+      "repetition": 4,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 9578,
+        "outputTokens": 20555,
+        "cacheReadTokens": 256000,
+        "cacheWriteTokens": 0,
+        "totalTokens": 36613,
+        "usageRecords": 11,
+        "billedTokens": 30133,
+        "artifacts": [
+          {
+            "bytes": 128184,
+            "frames": 53,
+            "failedFrames": 0,
+            "usageRecords": 11
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 104406,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q0",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 0,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "write",
+          "pwsh",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "write": 3,
+          "pwsh": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 5588,
+        "outputTokens": 17878,
+        "cacheReadTokens": 242816,
+        "cacheWriteTokens": 0,
+        "totalTokens": 29956,
+        "usageRecords": 11,
+        "billedTokens": 23466,
+        "artifacts": [
+          {
+            "bytes": 104623,
+            "frames": 53,
+            "failedFrames": 0,
+            "usageRecords": 11
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 92145,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q1",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 1,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "read",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "read": 2,
+          "write": 3,
+          "palimpsest_worker_result": 4
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 7565,
+        "outputTokens": 17347,
+        "cacheReadTokens": 212352,
+        "cacheWriteTokens": 0,
+        "totalTokens": 31491,
+        "usageRecords": 11,
+        "billedTokens": 24912,
+        "artifacts": [
+          {
+            "bytes": 116692,
+            "frames": 57,
+            "failedFrames": 0,
+            "usageRecords": 11
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 93532,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q2",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 2,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "read",
+          "pwsh",
+          "write",
+          "edit",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "read": 2,
+          "pwsh": 3,
+          "write": 4,
+          "edit": 5,
+          "palimpsest_worker_result": 6
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 8380,
+        "outputTokens": 16953,
+        "cacheReadTokens": 210176,
+        "cacheWriteTokens": 0,
+        "totalTokens": 31972,
+        "usageRecords": 10,
+        "billedTokens": 25333,
+        "artifacts": [
+          {
+            "bytes": 106884,
+            "frames": 53,
+            "failedFrames": 0,
+            "usageRecords": 10
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 88734,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q3",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 3,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "pwsh",
+          "read",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "pwsh": 1,
+          "read": 2,
+          "write": 3,
+          "palimpsest_worker_result": 4
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 15214,
+        "outputTokens": 23502,
+        "cacheReadTokens": 392192,
+        "cacheWriteTokens": 0,
+        "totalTokens": 44548,
+        "usageRecords": 14,
+        "billedTokens": 38716,
+        "artifacts": [
+          {
+            "bytes": 146956,
+            "frames": 78,
+            "failedFrames": 0,
+            "usageRecords": 14
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 130618,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    },
+    {
+      "trialId": "F_D_RULE_RESOLUTION-glm-via-omnigate-q4",
+      "fixtureId": "r3a-f-d-rule-resolution",
+      "fixtureRevision": 1,
+      "mechanismFamily": "F-D specificity / rule resolution",
+      "modelId": "glm-5.3-flash",
+      "modelFamily": "glm",
+      "routeId": "glm-via-omnigate",
+      "repetition": 4,
+      "classPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classCoverage": 1,
+      "fullSolve": true,
+      "finalAcceptancePassed": 13,
+      "finalAcceptanceTotal": 13,
+      "unclassifiedFailures": 0,
+      "infrastructureInvalid": false,
+      "hostFailure": false,
+      "timedOut": false,
+      "capitalDelivered": false,
+      "compiledHandleCount": 0,
+      "indexHandleCount": 0,
+      "assembledPromptDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca",
+      "toolSurfaceDigest": "0824f7d24e1e0edbfa9e8d7c22b01dba407106674fea324ae8b51ba5e1a2abd7",
+      "rendererId": "dsh-common-worker",
+      "capacity": {
+        "granted": true,
+        "detail": "1/1 confidential workers active; admission granted"
+      },
+      "actions": {
+        "order": [
+          "run_code",
+          "glob",
+          "pwsh",
+          "read",
+          "write",
+          "palimpsest_worker_result"
+        ],
+        "firstUse": {
+          "run_code": 0,
+          "glob": 1,
+          "pwsh": 2,
+          "read": 3,
+          "write": 4,
+          "palimpsest_worker_result": 5
+        }
+      },
+      "revisions": "2",
+      "usage": {
+        "inputTokens": 11938,
+        "outputTokens": 41916,
+        "cacheReadTokens": 542592,
+        "cacheWriteTokens": 0,
+        "totalTokens": 60287,
+        "usageRecords": 17,
+        "billedTokens": 53854,
+        "artifacts": [
+          {
+            "bytes": 222011,
+            "frames": 84,
+            "failedFrames": 0,
+            "usageRecords": 17
+          }
+        ]
+      },
+      "cost": null,
+      "treatmentIndependence": {
+        "efficacy": {
+          "mode": "off",
+          "prework": null
+        },
+        "index": {
+          "mode": "off",
+          "metadata": {
+            "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+          }
+        },
+        "affordance": "off",
+        "indexMode": "off"
+      },
+      "elapsedMs": 213578,
+      "rawClassPass": {
+        "FD1": true,
+        "FD2": true,
+        "FD3": true,
+        "FD4": true,
+        "FD5": true,
+        "FD6": true
+      },
+      "classDetail": {
+        "FD1": [
+          {
+            "id": "fd1a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd1b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD2": [
+          {
+            "id": "fd2a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd2b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD3": [
+          {
+            "id": "fd3a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd3b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD4": [
+          {
+            "id": "fd4a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd4b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD5": [
+          {
+            "id": "fd5a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd5b",
+            "pass": true,
+            "detail": null
+          }
+        ],
+        "FD6": [
+          {
+            "id": "fd6a",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6b",
+            "pass": true,
+            "detail": null
+          },
+          {
+            "id": "fd6c",
+            "pass": true,
+            "detail": null
+          }
+        ]
+      }
+    }
+  ]
+}

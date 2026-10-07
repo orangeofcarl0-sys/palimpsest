@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-A2",
+  "kind": "protocol deviations",
+  "deviations": [
+    {
+      "kind": "PRE_EXECUTION_HARNESS_DEFECTS",
+      "when": "before primary trial 1",
+      "what": "the first launch of the matrix aborted 2395 times without ever starting a worker",
+      "defects": [
+        {
+          "id": "TRIAL_IMPORT_NAME",
+          "detail": "scripts/r3a2/trial.mjs imported `MODEL_ROUTES` from ./models.mjs, which exports `MODEL_ROUTES_SENTINEL`; every launch died at module link time",
+          "fix": "the import and both its uses now name MODEL_ROUTES_SENTINEL"
+        },
+        {
+          "id": "UNBOUNDED_RETRY_LOOP",
+          "detail": "the retry loop condition was `validByPair.size === 0 || attemptsHere < MAX_ATTEMPTS_PER_PAIR`, which for the first pair is always true and spun without limit",
+          "fix": "the loop is now bounded by its own per-run counter alone"
+        }
+      ],
+      "nqImpact": "NONE — no worker process and no model session was created by any aborted launch, so no trial record and no Nq contribution came from them",
+      "evidence": "the run directory held no trial.json, no worker transcript and no session artifact after the aborted launch",
+      "immutabilityImpact": "NONE — both fixes were made before primary trial 1, so the engine-immutability clause was never engaged"
+    },
+    {
+      "kind": "OUT_OF_PROTOCOL_PREQUALIFICATION_SMOKE",
+      "when": "before the frozen matrix, after the plan commit",
+      "fixtureId": "r3a-f-c-policy-resolution",
+      "modelId": "deepseek-flash",
+      "routeId": "deepseek-direct",
+      "repetition": 0,
+      "what": "one F-C x deepseek-flash run was executed directly to verify the harness end to end before committing the 20-run budget",
+      "countsTowardNq": false,
+      "countsAsScheduledRun": false,
+      "evidence": {
+        "trialId": "F_C_POLICY_RESOLUTION-deepseek-direct-q0",
+        "jobPhase": "FINISHED",
+        "classPass": {
+          "FC1": true,
+          "FC2": true,
+          "FC3": true,
+          "FC4": true,
+          "FC5": true,
+          "FC6": true
+        },
+        "classCoverage": 1,
+        "fullSolve": true,
+        "finalAcceptance": {
+          "passed": 14,
+          "total": 14,
+          "failures": []
+        },
+        "elapsedMs": 309598,
+        "revisions": "2",
+        "usage": {
+          "inputTokens": 11497,
+          "outputTokens": 36354,
+          "cacheReadTokens": 514048,
+          "cacheWriteTokens": 0,
+          "totalTokens": 54061,
+          "usageRecords": 15,
+          "billedTokens": 47851,
+          "artifacts": [
+            {
+              "bytes": 197850,
+              "frames": 77,
+              "failedFrames": 0,
+              "usageRecords": 15
+            }
+          ]
+        },
+        "cost": null,
+        "treatmentIndependence": {
+          "efficacy": {
+            "mode": "off",
+            "prework": null
+          },
+          "index": {
+            "mode": "off",
+            "metadata": {
+              "renderedSectionDigest": "4886e4d6790dca93618c5c7aca1cda95409dfb1a86fbb1fb79b7d9d8a7744fca"
+            }
+          },
+          "affordance": "off",
+          "indexMode": "off"
+        },
+        "worldHead": "768c7407ccfc3f1f60187a760a9b4ac9237fdf16",
+        "sourceSha256": "562f1690122637c68a489aa21901d41fe1f8d6624eb3e2885283c5c55edfb5c6",
+        "sourceBytes": 5014
+      },
+      "note": "the run scored 6/6 classes, which is the same ceiling the four scheduled F-C/F-D pairs reached; it is recorded as a deviation and not as evidence of anything"
+    },
+    {
+      "kind": "ENGINE_IMMUTABILITY_VERIFICATION",
+      "when": "after primary trial 20",
+      "driftedArtifacts": [],
+      "held": true,
+      "note": "every digested artifact is byte-identical to the plan the runs were executed against"
+    }
+  ],
+  "lawsApplied": {
+    "portfolioQualificationNotBridgeHunting": "the four new pairs were qualified whatever their outcome; no fixture was revised to move a verdict",
+    "noFixtureAuthoredAfterFirstRun": "no fixture was authored or revised after primary trial 1",
+    "historicalVerdictsUnchanged": "the R3-A0/R3-AE verdicts were carried forward from the committed record and not rerun"
+  }
+}
