@@ -1,0 +1,119 @@
+{
+  "envelope": {
+    "kind": "SystemValidityEnvelope",
+    "stage": "R3-L0",
+    "prerequisite": "R3-S0 SYSTEM_VALID",
+    "canonicalRevision": "42f1a77c7b13abaa109538ca5f4c6f378eb153fa",
+    "canonicalTree": "d6e2d1bdcff27c5e2d3b3ded06055472a3f278e8",
+    "branch": "r3-l0-long-horizon-capital-reuse",
+    "confidentialRuntimeProfile": {
+      "source": "host/deployment/runtime/confidential_profile.js",
+      "id": "windows-confidential-single-active",
+      "maxActiveWorkers": 1,
+      "reason": "a worker's own workspace write grant is the last writer of its world label, so two ACTIVE worlds cannot both be read-fenced; the host serializes confidential workers",
+      "limitation": "at most ONE ACTIVE confidential worker exists at a time, so this stage's sessions are strictly sequential and no concurrency effect is measured"
+    },
+    "restartScope": {
+      "scope": "SAME-MACHINE OS PROCESS BOUNDARY",
+      "mechanism": "a fresh child Node process re-attaches to the durable stores BY PATH and re-resolves its own references",
+      "excluded": "no distributed, multi-host or network-boundary restart is measured or claimed"
+    },
+    "commonRuntimeSurface": {
+      "renderer": "dsh-common-worker",
+      "resultTool": "palimpsest_worker_result",
+      "contextPullTool": "palimpsest_worker_context_pull",
+      "contextPullChannel": "palimpsest-worker-context-v1",
+      "modelSpecificPromptTuning": false
+    },
+    "knownBypassScope": {
+      "claim": "KNOWN_BYPASSES_BLOCKED",
+      "forbiddenClaim": "NO_BYPASS_EXISTS",
+      "scope": "the checks enumerate known bypasses and block them; they are not a proof about unknown ones",
+      "checks": [
+        "NO_DIRECT_BACKING_STORE_READ",
+        "NO_UNLISTED_HANDLE_USE",
+        "NO_WRONG_ATTEMPT_REUSE",
+        "NO_CONTROL_PAYLOAD_DISCOVERY",
+        "NO_AUTHORITY_BYPASS",
+        "NO_DIRECT_REMOTE_TO_LOCAL_OWNERSHIP_CONVERSION"
+      ],
+      "attributedTo": "R1-L (worker-side backing-store route), R1-H, R1-HR, R1-HC"
+    },
+    "excludedClaims": [
+      "cross-model portability",
+      "organic self-generated capital compounding",
+      "Procedure marginal efficacy",
+      "universal project intelligence",
+      "monetary cost reduction unless measured",
+      "Fusion value",
+      "distributed or multi-host restart behaviour",
+      "concurrent confidential workers"
+    ]
+  },
+  "gates": {
+    "kind": "LoadBearingSystemGates",
+    "S1_graph_integrity": {
+      "green": true,
+      "detail": "10/10 invariants PASS"
+    },
+    "S1_event_audit": {
+      "green": true,
+      "detail": "5/5 checks PASS"
+    },
+    "anti_vacuity": {
+      "green": true,
+      "detail": "R2-LR ANTI-VACUITY: PASS — 0 unconditional form(s)"
+    },
+    "R1_L_consumer_boundary": {
+      "green": true,
+      "detail": "§R1-L-LIVE: PASS"
+    },
+    "R1_H_confinement": {
+      "green": true,
+      "detail": "R1-H CONFINEMENT CONFORMANCE: PASS — the read boundary holds on this host."
+    },
+    "R1_HR_host_hardening": {
+      "green": true,
+      "detail": "R1-HR HOST-HARDENING CONFORMANCE: PASS — the read boundary is a verified, standing, fail-closed host contract."
+    },
+    "R1_HC_residual_closure": {
+      "green": true,
+      "detail": "R1-HC RESIDUAL-CLOSURE CONFORMANCE: PASS — the TOCTOU is closed structurally, aliases are refused before any grant, and "
+    }
+  },
+  "systemValid": {
+    "SYSTEM_VALID": true,
+    "categories": [
+      {
+        "id": "S1_graph_integrity",
+        "green": true
+      },
+      {
+        "id": "S1_event_audit",
+        "green": true
+      },
+      {
+        "id": "anti_vacuity",
+        "green": true
+      },
+      {
+        "id": "R1_L_consumer_boundary",
+        "green": true
+      },
+      {
+        "id": "R1_H_confinement",
+        "green": true
+      },
+      {
+        "id": "R1_HR_host_hardening",
+        "green": true
+      },
+      {
+        "id": "R1_HC_residual_closure",
+        "green": true
+      }
+    ],
+    "notGreen": [],
+    "onFailure": "STOP — no behavioural result may repair a system-validity failure"
+  }
+}
