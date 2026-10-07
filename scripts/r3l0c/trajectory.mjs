@@ -215,10 +215,32 @@ export function prepareRunLayout(runRoot, trajectoryIds) {
   return Object.freeze({ runRoot, trajectoryIds: Object.freeze([...trajectoryIds]), layout: ISOLATED_LAYOUT });
 }
 
-/** §11: copy the prehistory into a trajectory's world and state, so both arms inherit the SAME paid-for history. */
+/**
+ * §11: copy the prehistory into a trajectory's world and state, so both arms inherit the SAME paid-for history.
+ *
+ * §11 (R3-L0C-R): THE STALE WORKTREE COPIES ARE EXCLUDED.
+ *
+ * The prehistory world carries `<world>/.palimpsest/worlds/<attempt-id>/` directories left by its own build.
+ * They are UNTRACKED, so a copy carries them, and each is a STANDALONE git repository rather than a linked
+ * worktree — its `.git` is a directory with its own object store, and that store is incomplete.
+ *
+ * The consequence was measured: a worker committed inside a copied worktree, the harness then ran
+ * `git diff --name-only <base> HEAD` to observe the attempt, and the base object was not in the copy's store.
+ * The command failed with `fatal: bad object`, the attempt was reported as HOST_ERROR, and a session in which
+ * the worker had actually SOLVED the task was recorded as infrastructure-invalid. Every trajectory inherited the
+ * same stale directories, so the failure was reproducible rather than incidental.
+ *
+ * Excluding them is correct rather than merely expedient: they are build residue, they are not part of the
+ * project world, and the controller creates the worktree a generation actually uses. Copying them only
+ * propagated an unusable object store.
+ */
 export function prepareTrajectory(runRoot, trajectoryId, prehistory) {
   const world = trajectoryWorld(runRoot, trajectoryId);
-  cpSync(prehistory.world, world, { recursive: true });
+  const STALE_WORLDS = /[\\/]\.palimpsest[\\/]worlds([\\/]|$)/u;
+  cpSync(prehistory.world, world, {
+    recursive: true,
+    filter: (source) => !STALE_WORLDS.test(source),
+  });
   const paths = trajectoryPaths(runRoot, trajectoryId);
   cpSync(prehistory.state, paths.state, { recursive: true });
   return Object.freeze({ world, paths });
