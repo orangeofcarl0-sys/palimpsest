@@ -36,6 +36,8 @@ import { MUTATION_IDS, computeExecutionClosure, runSelectionMutations } from "..
 import { HOST_PRIVATE_KINDS, buildTopologyManifest, canaryPlan, topologyDigest } from "../scripts/r3l0cr/topology.mjs";
 import { PRESSURE_GATE, calibrateRun, evaluatePressureGate, median, proveEmptyCapitalSurface } from "../scripts/r3l0cr/baseline.mjs";
 import { FROZEN_VERDICT_SURFACE } from "../scripts/r3l0cr/analyse.mjs";
+import { EXECUTOR_ROUTE_DEVIATION, PRIMARY_EXECUTOR, SUPERSEDED_EXECUTOR, routeForProfile } from "../scripts/r3l0cr/route.mjs";
+import { defaultModelPatch, renderSettingsYaml, settingsDigest } from "../scripts/r3l0cr/settings.mjs";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const EVIDENCE = join(REPO_ROOT, STAGE_EVIDENCE_PATH);
@@ -353,7 +355,9 @@ describe("R3-L0C-R §8 — the topology-derived containment", () => {
 describe("R3-L0C-R §9 — the execution-closure digest", () => {
   it("§9 covers every load-bearing category", () => {
     const closure = computeExecutionClosure();
-    expect(Object.keys(closure.byCategory).sort()).toEqual([...EXECUTION_CLOSURE_INPUTS].sort());
+    /** Every §9 category is covered, plus the authorized executor route, whose replacement is itself an input. */
+    for (const category of EXECUTION_CLOSURE_INPUTS) expect(Object.keys(closure.byCategory), `${category} must be covered`).toContain(category);
+    expect(Object.keys(closure.byCategory)).toContain("executor route");
     expect(closure.executionClosureDigest).toMatch(/^[0-9a-f]{64}$/u);
     expect(closure.coversCodeNotResults).toBe(true);
   });
@@ -472,5 +476,73 @@ describe("R3-L0C-R §17/§18 — the verdict rules are unchanged", () => {
     expect(plan).not.toBeNull();
     expect(plan.replicationName).toBe("REPAIR_REPLICATION");
     expect(plan.namingRule).toContain("do NOT call it pristine held-out replication");
+  });
+});
+
+/* ================================================================ the executor route deviation */
+
+describe("R3-L0C-R — the authorized executor route and its deviation", () => {
+  it("the route names the authorized gateway and model", () => {
+    expect(PRIMARY_EXECUTOR.providerId).toBe("omnigate-route");
+    expect(PRIMARY_EXECUTOR.modelId).toBe("deepseek-v4.1-flash");
+    expect(PRIMARY_EXECUTOR.baseURL).toBe("http://127.0.0.1:7866/v1");
+    expect(PRIMARY_EXECUTOR.api).toBe("openai-completions");
+    /** The credential is a REF, never a literal. */
+    expect(PRIMARY_EXECUTOR.apiKeyEnv).toBe("CA2A_API_KEY");
+    expect(PRIMARY_EXECUTOR.apiKeyEnv).not.toMatch(/^[0-9a-f]{32}$/u);
+  });
+
+  it("the deviation is recorded as an EXPLICIT deviation, not a model-stack change", () => {
+    expect(EXECUTOR_ROUTE_DEVIATION.classification).toBe("EXPLICITLY_RECORDED_DEVIATION");
+    expect(EXECUTOR_ROUTE_DEVIATION.classifiedAsModelStackChange).toBe(false);
+    expect(EXECUTOR_ROUTE_DEVIATION.authorizedBy).toContain("authorization");
+  });
+
+  it("the MODEL FAMILY is preserved, which is what keeps the replication comparable", () => {
+    expect(PRIMARY_EXECUTOR.modelFamily).toBe(SUPERSEDED_EXECUTOR.modelFamily);
+    expect(PRIMARY_EXECUTOR.modelFamily).toBe("deepseek");
+  });
+
+  it("the deviation names every changed field and what is preserved", () => {
+    const changed = (EXECUTOR_ROUTE_DEVIATION.changed as readonly { field: string }[]).map((entry) => entry.field);
+    expect(changed).toEqual(["providerId", "routeId", "baseURL", "modelId", "apiKeyEnv"]);
+    const preserved = (EXECUTOR_ROUTE_DEVIATION.preserved as readonly string[]).join(" ");
+    for (const item of ["corpus", "I1 and I2", "diagnostic oracle", "capital bodies", "selected-handle", "arm order", "seed"]) {
+      expect(preserved, `${item} must be listed as preserved`).toContain(item);
+    }
+  });
+
+  it("the route is declared in BOTH places the runner and the adapter read", () => {
+    /**
+     * The settings document registers the ROUTE for the adapter; the composition patch decides the MODEL the
+     * runner pins. Declaring only one is not enough, and that was measured: the same profile returned the
+     * gateway route for a bare DSH run and the vendor default for the worker port.
+     */
+    const settings = renderSettingsYaml(PRIMARY_EXECUTOR);
+    expect(settings).toContain("llm-pi-ai:");
+    expect(settings).toContain("omnigate-route:");
+    expect(settings).toContain("CA2A_API_KEY");
+    expect(settings).toContain("agent-default-model:");
+    const patch = defaultModelPatch(PRIMARY_EXECUTOR);
+    expect(patch).toContain("- id: agent-default-model");
+    expect(patch).toContain("provider: omnigate-route");
+    expect(patch).toContain("model: deepseek-v4.1-flash");
+  });
+
+  it("the settings never carry a credential literal", () => {
+    const settings = renderSettingsYaml(PRIMARY_EXECUTOR);
+    expect(settings).not.toContain("ea2a060684ae92b4a48c0fddbd7ff598");
+    expect(settingsDigest(PRIMARY_EXECUTOR)).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
+  it("the profile route exposes exactly the fields the DSH profile writer needs", () => {
+    const profileRoute = routeForProfile(PRIMARY_EXECUTOR);
+    expect(Object.keys(profileRoute).sort()).toEqual(["api", "apiKeyEnv", "baseURL", "contextWindow", "displayName", "maxTokens", "modelId", "providerId"]);
+  });
+
+  it("the deviation states that no cross-run channel comparison is claimed", () => {
+    expect(String(EXECUTOR_ROUTE_DEVIATION.interpretationConsequence)).toContain("different channel");
+    expect(EXECUTOR_ROUTE_DEVIATION.requiresNewPlanCommit).toBe(true);
+    expect(EXECUTOR_ROUTE_DEVIATION.planAmended).toBe(false);
   });
 });

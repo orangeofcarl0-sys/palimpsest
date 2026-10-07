@@ -24,7 +24,8 @@ import { DIAGNOSTIC_CLASSES, INVARIANT_EXPOSURES } from '../r3l0c/diagnostic.mjs
 import { bundleDigest, frozenBundle } from '../r3l0c/capital.mjs';
 import { INVARIANTS } from '../r3l0c/contract.mjs';
 import { GENERATIONS as SOURCE_GENERATIONS } from '../r3l0c/contract.mjs';
-import { PRIMARY_EXECUTOR, armOrderPerBlock, armOrderIsBalanced } from '../r3l0c/plan.mjs';
+import { armOrderPerBlock, armOrderIsBalanced } from '../r3l0c/plan.mjs';
+import { EXECUTOR_ROUTE_DEVIATION, PRIMARY_EXECUTOR, SUPERSEDED_EXECUTOR } from './route.mjs';
 import { RANDOMIZATION_SEED } from '../r3l0c/contract.mjs';
 import { buildPlanForReplication } from './matrix.mjs';
 import { worldDigest } from '../r3l0c/build-prehistory.mjs';
@@ -113,6 +114,12 @@ export function buildPlan() {
 
     /** §14: the schedule. */
     primaryExecutor: PRIMARY_EXECUTOR,
+    /**
+     * The executor route was replaced under explicit authorization. The deviation is recorded as data, and the
+     * R3-L0C module that froze the original route is NOT edited, because its plan records that module's digest.
+     */
+    executorRouteDeviation: EXECUTOR_ROUTE_DEVIATION,
+    supersededExecutor: SUPERSEDED_EXECUTOR,
     armOrderPerBlock: armOrderPerBlock(),
     armOrderBalance: armOrderIsBalanced(),
     randomizationSeed: RANDOMIZATION_SEED,

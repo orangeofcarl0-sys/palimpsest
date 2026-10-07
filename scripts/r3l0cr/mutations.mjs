@@ -147,6 +147,8 @@ export const CLOSURE_FILES = Object.freeze({
   'containment topology': Object.freeze(['scripts/r3l0cr/topology.mjs', 'scripts/r3l0b/containment.mjs', 'scripts/r3l0c/trajectory.mjs']),
   'trial schema': Object.freeze(['scripts/r3l0cr/contract.mjs']),
   'verdict logic': Object.freeze(['scripts/r3l0c/analyse.mjs', 'scripts/r3l0cr/analyse.mjs']),
+  /** The authorized executor route is a load-bearing input: replacing it must move the closure digest. */
+  'executor route': Object.freeze(['scripts/r3l0cr/route.mjs']),
 });
 
 /** §9: the digest of one file's bytes, or a marker when it is absent. */
