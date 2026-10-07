@@ -1,5 +1,5 @@
 /**
- * R3-L0C §7/§8 — THE DETERMINISTIC PREHISTORY AND THE CAPITAL ADMISSION.
+ * R3-L0C §8 — THE CAPITAL ADMISSION.
  *
  * §7 requires ONE deterministic prehistory, shared SEMANTICALLY across all arms, establishing the project world,
  * the Work/Attempt/Result history, verified and promoted outcomes, the incident and decision history, the capital
@@ -23,6 +23,7 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { REPO_ROOT, INVARIANTS } from './contract.mjs';
+import { capitalPolicyPorts } from './capital-ports.mjs';
 import { STANDING_BODIES, STANDING_SOURCES, REASONING_FRAMES, bundleDigest, frozenBundle, futureCaseLeakage, sha256 } from './capital.mjs';
 import { corpusFiles } from './corpus.mjs';
 import { H0_SOURCE, PACKAGE_JSON, README, VISIBLE_ORACLE, worldFiles } from './project.mjs';
@@ -34,82 +35,15 @@ const load = async (relative) => await import(pathToFileURL(join(DIST, relative)
 /** A git helper bound to a repository. */
 export const git = (cwd, args) => execFileSync('git', [...args], { cwd, encoding: 'utf8' }).trim();
 
-/* ================================================================ §7 the world */
-
-/**
- * §7: WRITE THE PROJECT WORLD.
- *
- * Both arms receive EXACTLY these bytes, corpus included. The world is committed as one H0 commit, so a
- * generation's starting head is a real revision and path dependence is measurable.
- */
-export function writeProjectWorld(dir, corpus = corpusFiles()) {
-  const files = worldFiles(corpus);
-  for (const [relative, content] of Object.entries(files)) {
-    const target = join(dir, relative);
-    mkdirSync(join(target, '..'), { recursive: true });
-    writeFileSync(target, content, 'utf8');
-  }
-  execFileSync('git', ['init', '-q'], { cwd: dir });
-  execFileSync('git', ['add', '-A'], { cwd: dir });
-  execFileSync('git', ['-c', 'user.email=t@t.t', '-c', 'user.name=t', 'commit', '-qm', 'H0'], { cwd: dir });
-  return git(dir, ['rev-parse', 'HEAD']);
-}
-
-/** §7: the world's own digest, so both arms can be proven to start from identical bytes. */
-export function worldDigest(corpus = corpusFiles()) {
-  const files = worldFiles(corpus);
-  return sha256(Object.entries(files).sort(([left], [right]) => (left < right ? -1 : 1)).map(([path, content]) => `${path}:${sha256(content)}`).join(NL));
-}
-
 /* ================================================================ §8 the policy ports */
 
 /**
- * §8: THE DETERMINISTIC POLICY PORTS the capital owners require.
+ * §8: the deterministic policy ports, shared with the prehistory so both installs compose the SAME seams.
  *
- * These are fixtures, not model judgement. Each is an independent verification/admission seam that echoes the
- * digest it decided on, so the owner can refuse a decision that does not bind to the artifact it was asked
- * about. No model authors or admits the capital.
+ * They live in their own module because a prehistory whose ports differed from the admission's would make the two
+ * halves of the capital plane inconsistent, and each install is separate enough that the difference would be
+ * invisible.
  */
-function capitalPolicyPorts(reasoningModule) {
-  const policyRef = (policyId) => ({ policyId, version: '1' });
-  return Object.freeze({
-    proofVerification: {
-      policyRef: policyRef('r3l0c-proof-verification'),
-      async verify({ candidate }) {
-        const supporting = candidate.supportingEvidence.map((entry) => entry.evidenceId);
-        const contradicting = candidate.contradictingEvidence.map((entry) => entry.evidenceId);
-        return { standing: supporting.length > 0 && contradicting.length === 0 ? 'SUPPORTED' : 'INCONCLUSIVE', supportingEvidenceIds: supporting, contradictingEvidenceIds: contradicting };
-      },
-    },
-    proofAdmission: {
-      policyRef: policyRef('r3l0c-proof-publication'),
-      async decide({ verification }) {
-        return { decision: verification.standing === 'SUPPORTED' || verification.standing === 'PARTIALLY_SUPPORTED' ? 'PUBLISH' : 'UNRESOLVED', provenanceDigest: verification.provenanceDigest };
-      },
-    },
-    reasoningVerification: {
-      async verify({ definition, candidate, frontierBasis }) {
-        const base = { schemaVersion: 1, cell: candidate.cell, candidateDigest: candidate.candidateDigest, frontierBasis, verificationPolicyRef: definition.verificationPolicyRef, standing: 'SUPPORTED', supportingEvidenceIds: ['ev-1'], contradictingEvidenceIds: [], provenanceDigest: 'a'.repeat(64) };
-        return { ...base, digest: reasoningModule.reasoningVerificationDigestOf(base) };
-      },
-      async verifyInvalidation({ definition, request, frontierBasis }) {
-        const base = { schemaVersion: 1, cell: request.cell, targetClaimId: request.targetClaimId, requestDigest: request.requestDigest, frontierBasis, verificationPolicyRef: definition.verificationPolicyRef, standing: 'SUPPORTED', evidenceIds: ['ev-9'], provenanceDigest: 'b'.repeat(64) };
-        return { ...base, digest: reasoningModule.invalidationVerificationDigestOf(base) };
-      },
-    },
-    reasoningAdmission: {
-      async admit({ definition, candidate, verification, frontierBasis }) {
-        const base = { schemaVersion: 1, cell: candidate.cell, candidateDigest: candidate.candidateDigest, verificationResultDigest: verification.digest, frontierBasis, admissionPolicyRef: definition.admissionPolicyRef, decision: 'ADMIT', provenanceDigest: 'c'.repeat(64) };
-        return { ...base, digest: reasoningModule.reasoningAdmissionDigestOf(base) };
-      },
-      async admitInvalidation({ definition, request, verification, frontierBasis }) {
-        const base = { schemaVersion: 1, cell: request.cell, targetClaimId: request.targetClaimId, requestDigest: request.requestDigest, verificationResultDigest: verification.digest, frontierBasis, admissionPolicyRef: definition.admissionPolicyRef, decision: 'ADMIT', provenanceDigest: 'd'.repeat(64) };
-        return { ...base, digest: reasoningModule.invalidationAdmissionDigestOf(base) };
-      },
-    },
-  });
-}
-
 /* ================================================================ §8 admit the capital */
 
 /**

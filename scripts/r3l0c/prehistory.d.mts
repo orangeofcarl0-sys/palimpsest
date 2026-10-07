@@ -1,8 +1,6 @@
 /** R3-L0C prehistory module type declarations (harness-only). */
 export declare const DIST: string;
 export declare const git: (cwd: string, args: readonly string[]) => string;
-export declare function writeProjectWorld(dir: string, corpus?: Readonly<Record<string, string>>): string;
-export declare function worldDigest(corpus?: Readonly<Record<string, string>>): string;
 export declare function admitCapital(root: string, paths: any, projectId: string, repo: string): Promise<any>;
 export declare function selectionRefs(admitted: any): readonly any[];
 export declare function backingRefs(admitted: any): readonly any[];

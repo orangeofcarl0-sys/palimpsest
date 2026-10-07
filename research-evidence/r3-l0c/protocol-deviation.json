@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C",
+  "deviation": {
+    "id": "CAPITAL_SELECTION_SHAPE_REJECTED_SILENTLY",
+    "discoveredAt": "after all 16 scheduled sessions had completed",
+    "loadBearing": true,
+    "mechanism": "the generation selection was sent as `{ handles: [ ... ] }`, but the host contract `KnowledgeSelectionRequest` is `{ proof?, reasoning?, procedure? }`; the unknown field was ignored, so no handle was compiled and no pull was possible",
+    "whySilent": "the delegation accepted the request and the attempt reported `knowledgeSelected: true`, so every host-side signal said the selection had been made; only the CONSUMER-BOUNDARY payload showed zero compiled handles",
+    "workerSurface": "the CAPITALIZED worker received exactly the RAW_HISTORY surface: no compiled handle, no capital index entry, no pullable capital handle",
+    "repair": "the selection is now sent in the owner shape (`proof`/`reasoning`/`procedure`), each entry carrying the owner own reference fields",
+    "repairVerified": "a real generation child driven with the corrected selection compiled 2 handles, delivered both to the consumer boundary, and resolved both through the governed pull (257 and 2136 body bytes)",
+    "planImmutabilityActivated": true,
+    "planAmended": false,
+    "harnessDigestDrift": "scripts/r3l0c/capital.mjs changed after the plan recorded its digest, so the committed plan no longer matches the working tree"
+  },
+  "preservedRun": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C",
+    "kind": "preserved run after a protocol deviation",
+    "runId": "run-2026-10-07T10-02-16-233Z-8aef26c2",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\palimpsest-runs\\run-2026-10-07T10-02-16-233Z-8aef26c2",
+    "preservedBy": "a PRESERVE marker in the run root, which the sweep routine honours as ACTIVE regardless of lease state",
+    "sessionsExecuted": 16,
+    "validSessions": 16,
+    "capitalDelivered": {
+      "cSessions": 8,
+      "cSessionsReportingSelected": 8,
+      "cSessionsWithCompiledHandles": 0,
+      "cGovernedPulls": 0,
+      "hSessions": 8,
+      "hCompiledHandles": 0,
+      "armsIdenticalOnTreatment": true
+    },
+    "notUsableFor": [
+      "the reconstruction-compression verdict, because the treatment was absent",
+      "the net cognitive-cost verdict, for the same reason",
+      "any claim about capital effectiveness or capital overhead"
+    ],
+    "usableFor": [
+      "the harness defect is real and was reachable in the scheduled configuration",
+      "the consumer-boundary witness catches a silent delivery failure that no host-side signal reports",
+      "the preflight, containment and validity gates all passed on the executed run"
+    ],
+    "stageOutcome": "BLOCKED",
+    "stopReason": "a load-bearing harness defect was discovered after behavioral exposure, and §23 forbids a plan amendment afterwards"
+  },
+  "preservedMatrixDigest": "bc1580f33bf5ea7115b22e456767bb85fe5b3e957376204f9730a2fd88a33bcc"
+}
