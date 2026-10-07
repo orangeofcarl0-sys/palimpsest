@@ -43,6 +43,17 @@ const REPO_ROOT = spec.repoRoot;
 const DIST = join(REPO_ROOT, 'dist', 'src');
 const load = async (relative) => await import(pathToFileURL(join(DIST, relative)).href);
 
+/**
+ * The tee wrapper re-execs the REAL DSH bin, so it needs both environment variables BEFORE the port spawns it.
+ */
+process.env.PALIMPSEST_REAL_DSH_BIN = spec.realDshBin;
+process.env.PALIMPSEST_LIVE_GATE_TRANSCRIPT = spec.transcript;
+/**
+ * DSH_HOME must point at THIS generation's home, or the DSH bin resolves the profile against the real user home
+ * and refuses with "profile does not exist". The profile is per-trajectory, so this is per-process state.
+ */
+process.env.DSH_HOME = spec.dshHome;
+
 const report = {
   schemaVersion: 1,
   stage: 'R3-L0',
@@ -62,6 +73,7 @@ try {
   const workspaceModule = await load('project_workspace/index.js');
   const proofModule = await load('proof_asset/index.js');
   const reasoningModule = await load('reasoning_cell/index.js');
+  const proceduresModule = await load('procedures/index.js');
   const workWorker = await load('deployment/work_worker.js');
 
   const options = {
@@ -84,6 +96,60 @@ try {
     proofBlobStore: proofModule.localProofBlobStore(spec.paths.proofBlobs),
     reasoningCellStore: new reasoningModule.SqliteReasoningCellStore(spec.paths.cells),
     reasoningCellStoreOwned: false,
+    /**
+     * The reasoning read capability is composed ONLY when the store AND both policy ports are supplied. Wiring
+     * the store alone leaves the capability ABSENT, and a CAPITALIZED selection then refuses with
+     * KNOWLEDGE_CAPABILITY_UNAVAILABLE — the bundle would silently lose its reasoning third.
+     */
+    reasoningVerificationPolicy: {
+      async verify({ definition, candidate, frontierBasis }) {
+        const base = {
+          schemaVersion: 1, cell: candidate.cell, candidateDigest: candidate.candidateDigest, frontierBasis,
+          verificationPolicyRef: definition.verificationPolicyRef, standing: 'SUPPORTED',
+          supportingEvidenceIds: ['ev-1'], contradictingEvidenceIds: [], provenanceDigest: 'a'.repeat(64),
+        };
+        return { ...base, digest: reasoningModule.reasoningVerificationDigestOf(base) };
+      },
+      async verifyInvalidation({ definition, request, frontierBasis }) {
+        const base = {
+          schemaVersion: 1, cell: request.cell, targetClaimId: request.targetClaimId, requestDigest: request.requestDigest,
+          frontierBasis, verificationPolicyRef: definition.verificationPolicyRef, standing: 'SUPPORTED',
+          evidenceIds: ['ev-9'], provenanceDigest: 'b'.repeat(64),
+        };
+        return { ...base, digest: reasoningModule.invalidationVerificationDigestOf(base) };
+      },
+    },
+    reasoningAdmissionPolicy: {
+      async admit({ definition, candidate, verification, frontierBasis }) {
+        const base = {
+          schemaVersion: 1, cell: candidate.cell, candidateDigest: candidate.candidateDigest,
+          verificationResultDigest: verification.digest, frontierBasis,
+          admissionPolicyRef: definition.admissionPolicyRef, decision: 'ADMIT', provenanceDigest: 'c'.repeat(64),
+        };
+        return { ...base, digest: reasoningModule.reasoningAdmissionDigestOf(base) };
+      },
+      async admitInvalidation({ definition, request, verification, frontierBasis }) {
+        const base = {
+          schemaVersion: 1, cell: request.cell, targetClaimId: request.targetClaimId, requestDigest: request.requestDigest,
+          verificationResultDigest: verification.digest, frontierBasis,
+          admissionPolicyRef: definition.admissionPolicyRef, decision: 'ADMIT', provenanceDigest: 'd'.repeat(64),
+        };
+        return { ...base, digest: reasoningModule.invalidationAdmissionDigestOf(base) };
+      },
+    },
+    /**
+     * The PROCEDURE store must be wired, or a selected procedure handle cannot be resolved by the Context owner
+     * and the CAPITALIZED arm would silently lose one third of its bundle. The authoring and admission seams are
+     * deliberately inert here: a generation SELECTS capital, it never authors or admits any.
+     */
+    procedureStore: new proceduresModule.SqliteProcedureStore(spec.paths.procedures),
+    procedureAuthoring: { origin: 'r3l0-generation', async propose() { return { outcome: 'NO_PROCEDURE' }; } },
+    procedureAdmission: {
+      policyRef: { policyId: 'r3l0-generation', version: '1' },
+      async decide({ candidateDigest }) {
+        return { decision: 'UNRESOLVED', candidateDigest, rationale: 'a generation does not admit procedures', policyRef: { policyId: 'r3l0-generation', version: '1' } };
+      },
+    },
   };
   installed = advanced.installPalimpsest({ tools: { register: () => () => undefined } }, options);
   const controller = installed.controller;
@@ -208,6 +274,7 @@ try {
   const scratch = join(spec.workRoot, 'diagnostic');
   mkdirSync(scratch, { recursive: true });
   writeFileSync(join(scratch, 'ledger.mjs'), report.source, 'utf8');
+  /** The support modules keep their own names, because the promoted source imports them by relative path. */
   for (const [name, content] of Object.entries(spec.supportFiles)) writeFileSync(join(scratch, name), content, 'utf8');
   const candidate = await import(`${pathToFileURL(join(scratch, 'ledger.mjs')).href}?v=${String(Date.now())}`);
   const vector = diagnosticVector(candidate);
