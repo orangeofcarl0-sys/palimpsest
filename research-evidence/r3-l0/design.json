@@ -1,0 +1,322 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0",
+  "kind": "frozen design: project trajectory and prepaid capital",
+  "researchQuestion": "Holding durable Project history and ordinary project continuity constant, does governed cognitive capital derived from already-paid historical experience reduce repeated cognitive errors and/or repeated cognitive effort across multiple fresh worker generations?",
+  "experimentalUnit": "ProjectTrajectory (not an individual task)",
+  "trajectoryShape": {
+    "prehistory": "deterministic, two already-resolved incidents",
+    "generations": [
+      "G1",
+      "G2",
+      "G3"
+    ],
+    "processBoundaries": "a REAL OS process exit between every generation",
+    "freshSessionPerGeneration": [
+      "a fresh OS process",
+      "no previous model transcript",
+      "no session-local object identity",
+      "no in-memory attempt identifiers",
+      "durable project state re-resolution"
+    ]
+  },
+  "lessons": [
+    {
+      "id": "L1",
+      "statement": "validate the complete relevant input/state before destructive mutation",
+      "origin": "the prehistory incident on applyChanges",
+      "obligation": "no effect may be applied until the WHOLE request has been validated, so a refusal leaves the caller's state exactly as it was"
+    },
+    {
+      "id": "L2",
+      "statement": "compute/freeze the complete affected dependency set before mutation/invalidation",
+      "origin": "the prehistory incident on recomputeIndex",
+      "obligation": "the affected closure must be computed while the dependency edges still exist, because the mutation is what destroys the evidence needed to compute it"
+    }
+  ],
+  "generations": [
+    {
+      "id": "G1",
+      "title": "batch application",
+      "requirement": "Add `applyBatch(ledger, batch)` to the ledger: it applies a batch of grant and revoke operations atomically, so that an unusable operation anywhere in the batch leaves the caller's ledger exactly as it was. A batch id the ledger has already applied is a no-op.",
+      "requirementDigest": "c10ec0c1f2fbf5b5a8a9609ce626defa9b6a9a1e3ea55fc377ed79fd134f8840",
+      "exposes": [
+        "D1",
+        "D2"
+      ],
+      "requiredExports": [
+        "applyBatch"
+      ],
+      "objective": "implement applyBatch so a batch of ledger operations applies atomically",
+      "projectGoal": "let callers apply a batch of entitlement changes all-or-nothing"
+    },
+    {
+      "id": "G2",
+      "title": "cascading revocation",
+      "requirement": "Add `revokeCapability(ledger, tenantId, capability)`: it revokes that tenant's grant for that capability AND every grant derived from it, at any depth. A revocation of a grant that does not exist is refused.",
+      "requirementDigest": "26f17d18e0071338a657ac0578e5d1406973397cf32edb64de544cbd5a4d5902",
+      "exposes": [
+        "D1",
+        "D2",
+        "D3",
+        "D4"
+      ],
+      "requiredExports": [
+        "applyBatch",
+        "revokeCapability"
+      ],
+      "objective": "implement revokeCapability so revocation reaches every grant derived from it",
+      "projectGoal": "keep the entitlement ledger consistent when a capability is withdrawn"
+    },
+    {
+      "id": "G3",
+      "title": "plan migration",
+      "requirement": "Add `migratePlan(ledger, tenantId, newPlan)`: it moves the tenant to a new plan, KEEPS every explicit override the tenant already holds, and revokes the grants the new plan does not include (cascading as revocation does). A migration to a plan the catalogue does not define is refused, and a refused migration leaves the ledger exactly as it was.",
+      "requirementDigest": "0e6237e91adf6d161d93ddbf6ca503937ff92a4bc3e5d5bc450ac64ba30e8fe2",
+      "exposes": [
+        "D1",
+        "D2",
+        "D3",
+        "D4",
+        "D6"
+      ],
+      "requiredExports": [
+        "applyBatch",
+        "revokeCapability",
+        "migratePlan"
+      ],
+      "objective": "implement migratePlan so a tenant moves plans without losing its explicit decisions",
+      "projectGoal": "move a tenant onto a new plan without breaking the capabilities it was explicitly given"
+    }
+  ],
+  "diagnosticClasses": [
+    {
+      "id": "D1",
+      "invariant": "atomic-batch",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "an unusable operation anywhere in a batch leaves the caller's ledger byte-identical",
+      "cases": 2
+    },
+    {
+      "id": "D2",
+      "invariant": "validate-before-effect",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "an operation AFTER a valid one is validated before the valid one has any effect",
+      "cases": 1
+    },
+    {
+      "id": "D3",
+      "invariant": "closure-before-mutation",
+      "lesson": "L2",
+      "prepaid": true,
+      "statement": "the affected set is computed while the derived-from edges still exist, so a cascade is complete",
+      "cases": 1
+    },
+    {
+      "id": "D4",
+      "invariant": "transitive-cascade",
+      "lesson": "L2",
+      "prepaid": true,
+      "statement": "a revocation reaches the FULL transitive closure, not only direct children",
+      "cases": 2
+    },
+    {
+      "id": "D5",
+      "invariant": "override-preservation",
+      "lesson": null,
+      "prepaid": false,
+      "statement": "a tenant's explicit overrides survive a plan migration",
+      "cases": 1
+    },
+    {
+      "id": "D6",
+      "invariant": "composed-atomicity",
+      "lesson": "L1",
+      "prepaid": true,
+      "statement": "a migration whose validation fails leaves the ledger byte-identical, even though it may revoke and regrant",
+      "cases": 2
+    }
+  ],
+  "diagnosticCaseCount": 9,
+  "diagnosticSeparation": {
+    "projectVerification": "the VISIBLE oracle in the world; decides whether ordinary Work/Result may proceed",
+    "researchDiagnostic": "this stage's oracle; research-only, invisible to the worker, no canonical authority, changes no promotion",
+    "why": "§10: one missed diagnostic class must not stall the trajectory, or the study would measure a stalled project rather than recurrence"
+  },
+  "prepaidExposures": {
+    "G1": [
+      "D1",
+      "D2"
+    ],
+    "G2": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ],
+    "G3": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D6"
+    ]
+  },
+  "eligiblePerGeneration": {
+    "G1": [
+      "D1",
+      "D2"
+    ],
+    "G2": [
+      "D1",
+      "D2",
+      "D3",
+      "D4"
+    ],
+    "G3": [
+      "D1",
+      "D2",
+      "D3",
+      "D4",
+      "D6"
+    ]
+  },
+  "trajectoryEligibleExposures": 11,
+  "perrDefinition": "repeated prepaid diagnostic failures / eligible prepaid exposures",
+  "perrFrozenBefore": "any primary L0 worker run",
+  "capitalBundle": {
+    "kind": "FrozenCapitalBundle",
+    "stage": "R3-L0",
+    "lessons": {
+      "L1": {
+        "lesson": "L1",
+        "lessonStatement": "validate the complete relevant input/state before destructive mutation",
+        "obligation": "no effect may be applied until the WHOLE request has been validated, so a refusal leaves the caller's state exactly as it was",
+        "origin": "the prehistory incident on applyChanges",
+        "statement": "A mutation entry point must validate the complete request before it applies the first effect, so that a refusal leaves the caller's state exactly as it was.",
+        "explanation": "Validation and effect must not interleave. If the first operation is applied before a later one is examined, a refusal has already changed the caller's state, and the caller keeps using that state. The obligation is therefore about ORDER, not about which validation is performed: the whole request must be known to be usable before any of it is applied.",
+        "method": [
+          "Read the complete request first, without applying anything.",
+          "Validate every operation in it against the current state: every referenced entity must exist, and every requested change must be one the contract admits.",
+          "Only after the whole request validates, apply the operations.",
+          "Record that the request was applied, so a repeat is a no-op.",
+          "If validation fails, throw and apply nothing — the caller's state must be byte-identical to its pre-call form."
+        ],
+        "applicableTo": "any entry point that applies more than one effect to caller-owned state",
+        "limitations": [
+          "advisory method guidance only; it authorizes no command, path or effect",
+          "it does not say which validations a given contract requires, only that they must all precede the first effect"
+        ],
+        "source": {
+          "sourceId": "incident-1-applyChanges",
+          "label": "Incident 1 — applyChanges applied before it validated",
+          "mediaType": "text/plain",
+          "evidenceStatement": "Incident 1: applyChanges applied each change as it arrived, so a refusal left earlier changes already written. The fix was to validate the complete change set before the first write."
+        },
+        "reasoning": {
+          "cellId": "cell-mutation-order",
+          "objective": "establish when a multi-effect mutation entry point owes its caller an unchanged state",
+          "branchQuestion": "must every validation precede the first effect, or may effects be applied as operations are validated?"
+        },
+        "bodyDigests": {
+          "statement": "f4d9053c5162a74e59361e92c309fa45f51fa41e4b805de698f9de610d90d4b5",
+          "explanation": "5c35291b812288574ae2ea0c0ec1ff56836775bfe3eac9595a5e2c324c33584c",
+          "method": "f8ce3758d3c4bc2d1b39669213f16504853edf27723bf8836c32d2063ccf0b93",
+          "limitations": "19cc7cbef81baedf785fcfe6493207dee053240e152806da3ef7a5805dea93f3"
+        }
+      },
+      "L2": {
+        "lesson": "L2",
+        "lessonStatement": "compute/freeze the complete affected dependency set before mutation/invalidation",
+        "obligation": "the affected closure must be computed while the dependency edges still exist, because the mutation is what destroys the evidence needed to compute it",
+        "origin": "the prehistory incident on recomputeIndex",
+        "statement": "A dependency closure must be computed and frozen before the mutation that destroys the dependency edges.",
+        "explanation": "The mutation is what removes the evidence the computation needs. If the affected set is computed after the first removal, the edges that would have identified the remaining affected entities are already gone, and the result is silently INCOMPLETE. The incompleteness is invisible to the caller, because an incomplete closure still looks like a complete one. The obligation is therefore about ORDER too: compute over the intact structure, freeze the set, and only then mutate.",
+        "method": [
+          "Identify the roots of the change from the current structure.",
+          "Traverse the dependency relation while it is still intact, accumulating the complete transitive closure.",
+          "Freeze the closure — it must not be recomputed during or after the mutation.",
+          "Only then apply the mutation to every member of the frozen set.",
+          "Do not traverse again after the first removal: the relation has changed."
+        ],
+        "applicableTo": "any path where a mutation invalidates or removes the structure a closure is computed from",
+        "limitations": [
+          "advisory method guidance only; it authorizes no command, path or effect",
+          "it does not decide what the dependency relation IS for a given domain, only when it must be traversed"
+        ],
+        "source": {
+          "sourceId": "incident-2-recomputeIndex",
+          "label": "Incident 2 — recomputeIndex lost the edges it needed",
+          "mediaType": "text/plain",
+          "evidenceStatement": "Incident 2: recomputeIndex removed the node first and looked for its dependents afterwards, so the edges it needed were already gone and the closure was incomplete. The fix was to compute the complete affected set while the edges still existed."
+        },
+        "reasoning": {
+          "cellId": "cell-closure-order",
+          "objective": "establish when a dependency closure must be computed relative to the mutation that removes the edges",
+          "branchQuestion": "may the affected set be computed while the mutation proceeds, or must it be frozen first?"
+        },
+        "bodyDigests": {
+          "statement": "19b58c55248f1fc794d09b0b005c70a63f1fe4bbc4a0d7b4cbd50dd042c57bbe",
+          "explanation": "b2d95d95b76e99adcba2c2a353d028c7058ca0e183f022aa31c93ea63720c336",
+          "method": "d61a23c5c558d7ec29f942f90881d78a121cefe7a0b49a8cb6a1057193444197",
+          "limitations": "5bdf401ef22964cd5b2fe89df40770ae2926792a6dec080b998995ce7751b284"
+        }
+      }
+    },
+    "leakage": {
+      "leakFree": true,
+      "leaks": [],
+      "note": "no capital body may name a diagnostic case id, quote a case fixture literal, or appear in the case data"
+    },
+    "owners": [
+      "src/proof_asset",
+      "src/reasoning_cell",
+      "src/procedures",
+      "src/project_workspace"
+    ],
+    "newAssetKindCreated": false,
+    "frozenAt": "before the first primary L0 worker run"
+  },
+  "bundleDigest": "99a5c840fb7ef1f5e08c81096b6ecab9aa023317e9aa7cc6639b39420ebc2c47",
+  "arms": {
+    "H": {
+      "id": "H",
+      "name": "HISTORY_ONLY",
+      "receives": "the full durable Project history and the evolving project world",
+      "selectedCapital": [],
+      "forbidden": [
+        "no selected capital handles",
+        "no hidden body injection",
+        "no automatic review"
+      ],
+      "retainsFullPalimpsest": true
+    },
+    "C": {
+      "id": "C",
+      "name": "CAPITALIZED",
+      "receives": "the same durable Project history plus the governed prepaid capital",
+      "requiredPath": [
+        "admission",
+        "ProjectAssetAssociation",
+        "future Context selection",
+        "actual model-visible index",
+        "governed pull",
+        "canonical current body"
+      ],
+      "hostMediatedForcedReview": false,
+      "voluntaryGovernedConsumption": true,
+      "retainsFullPalimpsest": true
+    }
+  },
+  "ownersUsed": [
+    "src/proof_asset",
+    "src/reasoning_cell",
+    "src/procedures",
+    "src/project_workspace",
+    "src/organization_memory"
+  ],
+  "newAssetKindCreated": false,
+  "notScenarioD": "Scenario D invalidates a build cache after a change set. This project has no cache and no change set: the question is which GRANTS survive a revocation, over an explicit derived-from forest the caller declared."
+}
