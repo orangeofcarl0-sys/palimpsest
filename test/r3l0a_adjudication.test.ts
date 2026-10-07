@@ -501,6 +501,11 @@ describe("R3-L0A §18 — historical evidence immutability", () => {
     for (const path of guard.changed) {
       expect(guard.knownPreExistingMutators.map((entry: any) => entry.path)).toContain(path);
     }
+    /**
+     * R3-L0B: a LATER stage's own evidence is an addition, not a mutation. The guard still excludes only
+     * registered stage paths, and this stage's verdict for its own effect must remain PASS.
+     */
+    expect(guard.HISTORICAL_EVIDENCE_IMMUTABLE_EXCLUDING_KNOWN_MUTATORS).toBe("PASS");
   });
 
   it("§18 the known pre-existing mutator is named with its cause and its author stage", () => {
@@ -521,7 +526,16 @@ describe("R3-L0A §18 — historical evidence immutability", () => {
     const guard = checkImmutability();
     expect(guard.currentTreeDigest).toMatch(/^[0-9a-f]{64}$/u);
     expect(guard.baselineTreeDigest).toMatch(/^[0-9a-f]{64}$/u);
-    expect(guard.currentFileCount).toBe(309);
+    /**
+     * R3-L0B: the count is a LOWER BOUND rather than an equality.
+     *
+     * The protected tree only grows, because every later stage adds its own evidence under
+     * `research-evidence/<stage>`. Pinning the exact count made this fail for a reason unrelated to the guard's
+     * semantics — a new stage's evidence is an ADDITION, not a mutation. The baseline's own count is still
+     * asserted exactly, so a SHRINK of the protected tree is still caught.
+     */
+    expect(guard.currentFileCount).toBeGreaterThanOrEqual(guard.baselineFileCount);
+    expect(guard.baselineFileCount).toBe(309);
   });
 
   it("§18 the guard RECORDS a mutation rather than restoring it", () => {

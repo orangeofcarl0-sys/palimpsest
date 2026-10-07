@@ -33,8 +33,19 @@ export const STAGE_EVIDENCE_PATH = 'research-evidence/r3-l0a';
  * §18: this stage may write ONLY its own evidence paths. The R3-L0 guard protects `research-evidence/**`
  * excluding `research-evidence/r3-l0`; this stage's own path must be excluded the same way, or the guard would
  * report this stage's legitimate output as a mutation of historical evidence.
+ *
+ * R3-L0B: THE LIST IS A REGISTRY RATHER THAN A CLOSED PAIR.
+ *
+ * A hardcoded exclusion list is inherently brittle in one direction: EVERY later stage writes its own evidence
+ * under `research-evidence/<stage>`, so each new stage would otherwise appear here as an "added" file and turn
+ * this guard red for a reason that has nothing to do with a historical mutation. R3-L0B's own evidence is
+ * exactly that case, and the repair is to add its path rather than to weaken the guard.
+ *
+ * The guard's SEMANTICS are unchanged: it still protects every earlier stage's evidence, and a CHANGE or
+ * REMOVAL of any file listed in the baseline is still fatal. Only additions under a listed stage's own
+ * directory are tolerated, which is what lets a stage report.
  */
-export const EXCLUDED_STAGE_PATHS = Object.freeze(['research-evidence/r3-l0', 'research-evidence/r3-l0a']);
+export const EXCLUDED_STAGE_PATHS = Object.freeze(['research-evidence/r3-l0', 'research-evidence/r3-l0a', 'research-evidence/r3-l0b']);
 const R3L0_EVIDENCE_PATH = 'research-evidence/r3-l0';
 
 /** §5: the state files whose digests establish the canonical-state equivalence. */

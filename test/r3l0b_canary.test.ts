@@ -56,12 +56,12 @@ describe("R3-L0B §11 — the deterministic containment canaries", () => {
   it("§11 EVERY declared root × attempt cell is measured, with no NOT_APPLICABLE gap", () => {
     expect(suite.probes.length).toBe(CANARY_ROOTS.length * CANARY_ATTEMPTS.length);
     expect(suite.containment.notApplicable).toEqual([]);
-    for (const probe of suite.probes) expect(probe.verdict, `${probe.rootId}/${probe.attemptId} is ${probe.verdict}`).not.toBe(CANARY_VERDICTS.NOT_APPLICABLE);
+    for (const probe of suite.probes as readonly { rootId: string; attemptId: string; verdict: string }[]) expect(probe.verdict, `${probe.rootId}/${probe.attemptId} is ${probe.verdict}`).not.toBe(CANARY_VERDICTS.NOT_APPLICABLE);
   });
 
   it("§11 ALL declared host-private canaries are UNAVAILABLE", () => {
     expect(suite.containment.reachable, `reachable canaries: ${suite.containment.reachable.join(", ")}`).toEqual([]);
-    for (const probe of suite.probes) expect(probe.verdict, `${probe.rootId}/${probe.attemptId} was REACHABLE`).toBe(CANARY_VERDICTS.UNREACHABLE);
+    for (const probe of suite.probes as readonly { rootId: string; attemptId: string; verdict: string }[]) expect(probe.verdict, `${probe.rootId}/${probe.attemptId} was REACHABLE`).toBe(CANARY_VERDICTS.UNREACHABLE);
   });
 
   it("§11 EXPERIMENT_CONTAINMENT is PASS", () => {
@@ -79,7 +79,7 @@ describe("R3-L0B §11 — the deterministic containment canaries", () => {
      * The paired assertion that makes the boundary real: for each direct-read attempt, the fenced run must be
      * UNREACHABLE and the unfenced control must be REACHABLE. One without the other proves nothing.
      */
-    const fenced = new Map(suite.probes.map((probe) => [`${probe.rootId}/${probe.attemptId}`, probe.verdict]));
+    const fenced = new Map<string, string>(suite.probes.map((probe: { rootId: string; attemptId: string; verdict: string }) => [`${probe.rootId}/${probe.attemptId}`, probe.verdict]));
     const unfenced = new Set(liveness.reachableCells);
     let pairs = 0;
     for (const [key, verdict] of fenced) {

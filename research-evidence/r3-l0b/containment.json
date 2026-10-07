@@ -1,0 +1,656 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0B",
+  "kind": "experiment containment evidence",
+  "envelope": {
+    "workerVisible": [
+      "OWN_WORKTREE",
+      "INTENDED_TASK_FILES",
+      "DECLARED_RAW_HISTORY",
+      "INTENDED_CONTEXT_INDEX",
+      "GOVERNED_PULLED_BODIES",
+      "NORMAL_TOOL_SURFACE"
+    ],
+    "hostPrivate": [
+      "DIAGNOSTIC_ORACLE",
+      "HIDDEN_ACCEPTANCE",
+      "REFERENCE_SOLUTION",
+      "HARNESS_IMPLEMENTATION",
+      "SCHEDULE",
+      "PRIMARY_EVIDENCE",
+      "CONTROL_PAYLOAD",
+      "SIBLING_TRAJECTORY_WORLDS",
+      "SIBLING_PROMOTED_SOURCE",
+      "ANALYSIS_CODE"
+    ],
+    "hostPrivateCount": 10,
+    "visibilityClasses": {
+      "WORKER_VISIBLE": "WORKER_VISIBLE",
+      "HOST_PRIVATE": "HOST_PRIVATE"
+    }
+  },
+  "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence",
+  "unitIds": [
+    "u0-H",
+    "u0-C"
+  ],
+  "shape": {
+    "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence",
+    "unitIds": [
+      "u0-H",
+      "u0-C"
+    ],
+    "worlds": [
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world"
+    ],
+    "privateRoots": [
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units"
+    ],
+    "hostPrivateIsAncestorOfAnyWorld": false,
+    "hostPrivateIsSiblingOfAnyWorld": false,
+    "relations": [
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-H\\world",
+        "relation": "DISJOINT"
+      },
+      {
+        "privateRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units",
+        "world": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\units\\u0-C\\world",
+        "relation": "DISJOINT"
+      }
+    ]
+  },
+  "isolatedRoots": [
+    {
+      "id": "DIAGNOSTIC_ORACLE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle"
+    },
+    {
+      "id": "HIDDEN_ACCEPTANCE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle"
+    },
+    {
+      "id": "REFERENCE_SOLUTION",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference"
+    },
+    {
+      "id": "HARNESS_IMPLEMENTATION",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control"
+    },
+    {
+      "id": "SCHEDULE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence"
+    },
+    {
+      "id": "PRIMARY_EVIDENCE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence"
+    },
+    {
+      "id": "CONTROL_PAYLOAD",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control"
+    },
+    {
+      "id": "ANALYSIS_CODE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control"
+    },
+    {
+      "id": "SIBLING_TRAJECTORY_WORLDS",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units"
+    },
+    {
+      "id": "SIBLING_PROMOTED_SOURCE",
+      "path": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units"
+    }
+  ],
+  "declaredProtectedRoots": [
+    "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units"
+  ],
+  "fence": {
+    "applied": true,
+    "rootsVerified": true,
+    "treesVerified": true,
+    "supported": true,
+    "roots": 6,
+    "fencedRoots": [
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units\\u0-C\\world",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\evidence",
+      "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units"
+    ],
+    "detail": null
+  },
+  "sandbox": {
+    "root": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh",
+    "available": true
+  },
+  "canaryNonces": {
+    "DIAGNOSTIC_ORACLE": "CANARY-ORACLE-F6GW200QRH",
+    "CONTROL_PLANE": "CANARY-CONTROL-SL6MDEHG7L",
+    "REFERENCE_SOLUTION": "CANARY-REFERENCE-IOX5NME34I",
+    "SIBLING_TRAJECTORY": "CANARY-SIBLING-UVU2IM0PF3",
+    "PRIMARY_EVIDENCE": "CANARY-EVIDENCE-011DE3V7JI"
+  },
+  "probes": [
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "PARENT_TRAVERSAL",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle\\diagnostic.mjs'"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "ABSOLUTE_PATH_READ",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle\\diagnostic.mjs'"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "DIRECTORY_ENUMERATION",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, scandir 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle'"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "GLOB_SEARCH",
+      "kind": "search",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no canary-named entry found"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "NODE_SUBPROCESS",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "POWERSHELL",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "spawnSync pwsh EPERM"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "SIBLING_WORLD_LOOKUP",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no sibling unit world name is visible from this root parent"
+      }
+    },
+    {
+      "rootId": "DIAGNOSTIC_ORACLE",
+      "attemptId": "ORACLE_IMPORT_EXECUTE",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "ERR_MODULE_NOT_FOUND",
+        "detail": "Cannot find module 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\oracle\\diagnostic.mjs' imported from C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\canary-probe.mjs"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "PARENT_TRAVERSAL",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control\\payload.json'"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "ABSOLUTE_PATH_READ",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control\\payload.json'"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "DIRECTORY_ENUMERATION",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, scandir 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control'"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "GLOB_SEARCH",
+      "kind": "search",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no canary-named entry found"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "NODE_SUBPROCESS",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "POWERSHELL",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "spawnSync pwsh EPERM"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "SIBLING_WORLD_LOOKUP",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no sibling unit world name is visible from this root parent"
+      }
+    },
+    {
+      "rootId": "CONTROL_PLANE",
+      "attemptId": "ORACLE_IMPORT_EXECUTE",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "ERR_MODULE_NOT_FOUND",
+        "detail": "Cannot find module 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\control\\payload.json' imported from C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\canary-probe.mjs"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "PARENT_TRAVERSAL",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units\\u0-C\\world\\ledger.mjs'"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "ABSOLUTE_PATH_READ",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units\\u0-C\\world\\ledger.mjs'"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "DIRECTORY_ENUMERATION",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, scandir 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units\\u0-C\\world'"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "GLOB_SEARCH",
+      "kind": "search",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no canary-named entry found"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "NODE_SUBPROCESS",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "POWERSHELL",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "spawnSync pwsh EPERM"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "SIBLING_WORLD_LOOKUP",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no sibling unit world name is visible from the world parent"
+      }
+    },
+    {
+      "rootId": "SIBLING_TRAJECTORY",
+      "attemptId": "ORACLE_IMPORT_EXECUTE",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "ERR_MODULE_NOT_FOUND",
+        "detail": "Cannot find module 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\units\\u0-C\\world\\ledger.mjs' imported from C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\canary-probe.mjs"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "PARENT_TRAVERSAL",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference\\ledger.mjs'"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "ABSOLUTE_PATH_READ",
+      "kind": "read",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, open 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference\\ledger.mjs'"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "DIRECTORY_ENUMERATION",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "EPERM: operation not permitted, scandir 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference'"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "GLOB_SEARCH",
+      "kind": "search",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no canary-named entry found"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "NODE_SUBPROCESS",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "EPERM",
+        "detail": "spawnSync C:\\Program Files\\nodejs\\node.exe EPERM"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "POWERSHELL",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "spawnSync pwsh EPERM"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "SIBLING_WORLD_LOOKUP",
+      "kind": "enumerate",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "detail": "no sibling unit world name is visible from this root parent"
+      }
+    },
+    {
+      "rootId": "REFERENCE_SOLUTION",
+      "attemptId": "ORACLE_IMPORT_EXECUTE",
+      "kind": "execute",
+      "verdict": "UNREACHABLE",
+      "detail": {
+        "verdict": "UNREACHABLE",
+        "code": "ERR_MODULE_NOT_FOUND",
+        "detail": "Cannot find module 'C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\private\\reference\\ledger.mjs' imported from C:\\Users\\66494\\.palimpsest-r3l0b\\evidence\\canary-probe.mjs"
+      }
+    }
+  ],
+  "containment": {
+    "schemaVersion": 1,
+    "kind": "experiment containment",
+    "probes": 32,
+    "reachable": [],
+    "notApplicable": [],
+    "EXPERIMENT_CONTAINMENT": "PASS",
+    "law": "all declared host-private canaries must be unavailable; a not-applicable attempt is a gap, not a pass"
+  },
+  "liveness": {
+    "kind": "canary liveness control",
+    "fenceApplied": false,
+    "probeRan": true,
+    "probeError": null,
+    "reachable": 13,
+    "reachableCells": [
+      "DIAGNOSTIC_ORACLE/PARENT_TRAVERSAL",
+      "DIAGNOSTIC_ORACLE/ABSOLUTE_PATH_READ",
+      "DIAGNOSTIC_ORACLE/ORACLE_IMPORT_EXECUTE",
+      "CONTROL_PLANE/PARENT_TRAVERSAL",
+      "CONTROL_PLANE/ABSOLUTE_PATH_READ",
+      "REFERENCE_SOLUTION/PARENT_TRAVERSAL",
+      "REFERENCE_SOLUTION/ABSOLUTE_PATH_READ",
+      "REFERENCE_SOLUTION/ORACLE_IMPORT_EXECUTE",
+      "SIBLING_TRAJECTORY/PARENT_TRAVERSAL",
+      "SIBLING_TRAJECTORY/ABSOLUTE_PATH_READ",
+      "SIBLING_TRAJECTORY/ORACLE_IMPORT_EXECUTE",
+      "PRIMARY_EVIDENCE/PARENT_TRAVERSAL",
+      "PRIMARY_EVIDENCE/ABSOLUTE_PATH_READ"
+    ],
+    "directReadsReachable": 10,
+    "directReads": 10,
+    "LIVE": true,
+    "basis": "with no fence, the direct reads returned the canary nonce, so an UNREACHABLE result under the fence is a measurement rather than an empty probe"
+  },
+  "sharedParentMutation": {
+    "id": "SHARED_PARENT_MUTATION",
+    "gate": "CONTAINMENT",
+    "mutatedVerdict": "FAIL",
+    "positiveVerdict": "PASS",
+    "mutationDetected": true,
+    "recordedVerdict": "SHARED_PARENT_MUTATION_DETECTED",
+    "basis": "the gate failed with the defect restored and passed with the corrected layout",
+    "restores": "the R3-L0-style shared-parent layout, where every trajectory and its control files share one readable parent",
+    "mutatedLayoutSharesParent": true,
+    "mutatedGate": {
+      "schemaVersion": 1,
+      "kind": "experiment containment gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut",
+      "worlds": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\units\\u0-H\\world",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\units\\u0-C\\world"
+      ],
+      "privateRoots": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\oracle",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\reference",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\control",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\evidence",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-mut\\private\\units"
+      ],
+      "hostPrivateIsAncestorOfAnyWorld": false,
+      "probes": 8,
+      "reachable": [
+        "CONTROL_PLANE/PARENT_TRAVERSAL",
+        "CONTROL_PLANE/ABSOLUTE_PATH_READ",
+        "CONTROL_PLANE/SIBLING_WORLD_LOOKUP"
+      ],
+      "CONTAINMENT": "FAIL",
+      "basis": "containment failed: 3 canary probe(s) returned content"
+    },
+    "positiveGate": {
+      "schemaVersion": 1,
+      "kind": "experiment containment gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos",
+      "worlds": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\units\\u0-H\\world",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\units\\u0-C\\world"
+      ],
+      "privateRoots": [
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\oracle",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\reference",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\control",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\evidence",
+        "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-sp-pos\\private\\units"
+      ],
+      "hostPrivateIsAncestorOfAnyWorld": false,
+      "probes": 8,
+      "reachable": [],
+      "CONTAINMENT": "PASS",
+      "basis": "no host-private root is an ancestor of or identical to any world, and no canary probe returned content"
+    },
+    "mutatedProbeRan": true,
+    "positiveProbeRan": true
+  },
+  "oracleExposureMutation": {
+    "id": "ORACLE_EXPOSURE_MUTATION",
+    "gate": "OUTCOME_BLINDNESS",
+    "mutatedVerdict": "FAIL",
+    "positiveVerdict": "PASS",
+    "mutationDetected": true,
+    "recordedVerdict": "ORACLE_EXPOSURE_MUTATION_DETECTED",
+    "basis": "the gate failed with the defect restored and passed with the corrected layout",
+    "restores": "a diagnostic oracle placed beneath the worker-readable root",
+    "mutatedOracleInsideWorld": true,
+    "mutatedGate": {
+      "schemaVersion": 1,
+      "kind": "outcome blindness gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-mut",
+      "oracleRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-mut\\units\\u0-H\\world\\diagnostic",
+      "oracleInsideAWorld": true,
+      "probes": 8,
+      "reachable": [
+        "DIAGNOSTIC_ORACLE/PARENT_TRAVERSAL",
+        "DIAGNOSTIC_ORACLE/ABSOLUTE_PATH_READ",
+        "DIAGNOSTIC_ORACLE/ORACLE_IMPORT_EXECUTE"
+      ],
+      "OUTCOME_BLINDNESS": "FAIL",
+      "basis": "outcome blindness failed: the oracle root is inside a worker world and 3 oracle probe(s) returned content"
+    },
+    "positiveGate": {
+      "schemaVersion": 1,
+      "kind": "outcome blindness gate",
+      "root": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-pos",
+      "oracleRoot": "C:\\Users\\66494\\.palimpsest-r3l0b\\evidence-ox-pos\\private\\oracle",
+      "oracleInsideAWorld": false,
+      "probes": 8,
+      "reachable": [],
+      "OUTCOME_BLINDNESS": "PASS",
+      "basis": "the outcome instrument is outside every worker-readable ancestor and no oracle probe returned content"
+    },
+    "mutatedProbeRan": true,
+    "positiveProbeRan": true
+  }
+}

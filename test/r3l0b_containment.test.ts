@@ -8,7 +8,7 @@
  * task outcome is deliberately not an input to that decision. The tests pin that in both directions, because
  * the R3-L0 result failed in one direction and the containment defect in the other.
  */
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -65,7 +65,6 @@ import {
 } from "../scripts/r3l0b/containment.mjs";
 import { containmentHypothesis, layoutFacts, rootCauseVerdict } from "../scripts/r3l0b/root-cause.mjs";
 import { KNOWN_PRE_EXISTING_MUTATORS, checkImmutability, protectedEvidenceUnchanged } from "../scripts/r3l0b/immutability.mjs";
-import { existsSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -334,7 +333,7 @@ describe("R3-L0B §9 — the filesystem root cause", () => {
 
 describe("R3-L0B §10/§12 — the isolated layout and its mutation", () => {
   const root = join(tmpdir(), "r3l0b-layout-test");
-  const unitIds = ["u0-H", "u0-C"];
+  const unitIds: [string, string] = ["u0-H", "u0-C"];
 
   it("§10 the isolated layout puts NO host-private root in an ancestor of or beside a world", () => {
     buildIsolatedLayout(root, unitIds);
