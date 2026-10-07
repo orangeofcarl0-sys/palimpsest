@@ -1,0 +1,413 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "kind": "frozen repair-replication plan",
+  "frozenBefore": "the first primary R3-L0C-R worker session",
+  "replicationName": "REPAIR_REPLICATION",
+  "namingRule": "call it REPAIR_REPLICATION; do NOT call it pristine held-out replication",
+  "run1Status": "TREATMENT_NOT_APPLIED",
+  "validityDimensions": [
+    "SYSTEM_VALID",
+    "EXPERIMENT_ENVIRONMENT_VALID",
+    "TREATMENT_REALIZATION_VALID",
+    "ANALYSIS_PLAN_VALID"
+  ],
+  "validityConjunction": "CAUSAL_EXPERIMENT_VALID",
+  "telemetryFields": [
+    "selectionRequested",
+    "selectionCompiled",
+    "consumerVisible",
+    "pullInvoked",
+    "bodyResolved"
+  ],
+  "selectionContractFinding": {
+    "case": "HARNESS_BYPASSED_TYPED_API",
+    "productChangeMade": false
+  },
+  "frozenDesign": {
+    "corpus": {
+      "documents": 26,
+      "bytes": 23498,
+      "digest": "87ecaa284c1ed91835fd636db8210a3c82be2bdb4ae9381553753475c8df949f",
+      "unchanged": true
+    },
+    "invariants": {
+      "ids": [
+        "I1",
+        "I2"
+      ],
+      "digests": [
+        "0bdb577b8946731325b3fa77802cc0862090862558694d6be267ba9365e8dcf5",
+        "32403b075b7949f4308b1b0b8ef78306cc0f64928831c723c48e18f9332afa05"
+      ],
+      "unchanged": true
+    },
+    "diagnostics": {
+      "classes": [
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6",
+        "P7",
+        "X1"
+      ],
+      "exposures": {
+        "G1": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "X1"
+        ],
+        "G2": [
+          "P1",
+          "P2",
+          "P3",
+          "P4",
+          "P5",
+          "P6",
+          "P7"
+        ]
+      },
+      "unchanged": true
+    },
+    "capital": {
+      "bundleDigest": "8dac2b28fd28f7087556ff8adca8316bd6a4b805618705dc14cc1b7d8cf213bd",
+      "selectedHandleSemantics": "one admitted current ReasoningClaim and one active Procedure revision per invariant; historical Proof grounds the admission and is not selected for the worker",
+      "unchanged": true
+    },
+    "verdictThresholds": {
+      "source": "scripts/r3l0c/contract.mjs COMPRESSION_VERDICT_RULES and NET_COST_VERDICT_RULES",
+      "redefined": false,
+      "unchanged": true
+    },
+    "generations": {
+      "ids": [
+        "G1",
+        "G2"
+      ],
+      "requirementsDigest": "5506a9c5ddd45dfe04c1a234444f9dae5a70806a3efe807db61114cabd7da6df",
+      "unchanged": true
+    },
+    "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+    "armOrder": [
+      [
+        "C",
+        "H"
+      ],
+      [
+        "H",
+        "C"
+      ],
+      [
+        "C",
+        "H"
+      ],
+      [
+        "C",
+        "H"
+      ]
+    ],
+    "randomizationSeed": 1380724738,
+    "seedRechosen": false
+  },
+  "frozenDesignUnchanged": true,
+  "executionClosure": {
+    "schemaVersion": 1,
+    "kind": "ExecutionClosureDigest",
+    "inputs": [
+      "project/corpus",
+      "oracle",
+      "generation child",
+      "matrix runner",
+      "selector/builder",
+      "witness",
+      "analysis",
+      "containment topology",
+      "trial schema",
+      "verdict logic"
+    ],
+    "byCategory": {
+      "project/corpus": "dd16b429580b130a233c4e27fa40190b80f0cf18b0eb3173be0acd3794cc1014",
+      "oracle": "63a937b5b21b630d53c4cc5ed2caa9738cc26291a2f123412491922277a88efa",
+      "generation child": "c745c5f8527e158034aac3acce00feaae1b617816f9091859ebf4c791638b7c3",
+      "matrix runner": "4df94d9430c4e67c1d11f169e628b6f33eeafb08f71ed95f93cb526d63e1d896",
+      "selector/builder": "1c68299df520f852bec7ce2c2a6668ca8326e9a98add87eb8e2945781c4c6350",
+      "witness": "340309a1063b7de603b80f7c62101dae2ba8159160686e6af8fbde971aa9ee50",
+      "analysis": "7b1dd16479a25bba7b6df994005cd264874945d9b71c936e7fd22b79398d2cd7",
+      "containment topology": "ef513573334595caf35430bee7bf48edf8df968ab4af9df05c1b237dd26a2a24",
+      "trial schema": "ee3e977ff165e97321b34dff3a301054b5c038f17daf7281fddf2b9ef7e91085",
+      "verdict logic": "7b1dd16479a25bba7b6df994005cd264874945d9b71c936e7fd22b79398d2cd7"
+    },
+    "executionClosureDigest": "73be9963ee13b282894e0e2ebf616f62994b79dd42b3ad9f121e6c4ec2b9ba1e",
+    "fileCount": 15,
+    "coversCodeNotResults": true
+  },
+  "closureInputs": [
+    "project/corpus",
+    "oracle",
+    "generation child",
+    "matrix runner",
+    "selector/builder",
+    "witness",
+    "analysis",
+    "containment topology",
+    "trial schema",
+    "verdict logic"
+  ],
+  "topologyDerivation": {
+    "hostPrivateKinds": [
+      "DIAGNOSTIC_ORACLE",
+      "CONTROL_PLANE",
+      "PRIMARY_EVIDENCE",
+      "REFERENCE_SOLUTION",
+      "SIBLING_UNIT_ROOT",
+      "RUNNER_ANALYSIS"
+    ],
+    "derivedFromSchedule": true,
+    "manuallyEnumerated": false,
+    "rule": "for every unit Ui: protected = every Uj world (j!=i) + oracle + control + evidence + reference + sibling-unit root + runner/analysis + Ui own state"
+  },
+  "primaryExecutor": {
+    "routeId": "deepseek-direct",
+    "providerId": "deepseek-route",
+    "modelId": "deepseek-flash",
+    "displayName": "DeepSeek Flash",
+    "modelFamily": "deepseek",
+    "api": "openai-completions",
+    "baseURL": "https://api.deepseek.com",
+    "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "contextWindow": 131072,
+    "maxTokens": 8192,
+    "availabilityEvidence": "the R3-L0 dummy-fixture plumbing check and the 24 R3-L0 primary sessions all drove this route end-to-end; it is the frozen low-cost sentinel",
+    "modelSpecificPromptTuning": false,
+    "switchableAfterTrial1": false
+  },
+  "armOrderPerBlock": [
+    [
+      "C",
+      "H"
+    ],
+    [
+      "H",
+      "C"
+    ],
+    [
+      "C",
+      "H"
+    ],
+    [
+      "C",
+      "H"
+    ]
+  ],
+  "armOrderBalance": {
+    "order": [
+      [
+        "C",
+        "H"
+      ],
+      [
+        "H",
+        "C"
+      ],
+      [
+        "C",
+        "H"
+      ],
+      [
+        "C",
+        "H"
+      ]
+    ],
+    "hFirst": 1,
+    "cFirst": 3,
+    "balanced": true,
+    "law": "the frozen randomization must place each arm first in at least one block, or arm order is confounded with block order"
+  },
+  "randomizationSeed": 1380724738,
+  "blockCount": 4,
+  "generationsPerTrajectory": 2,
+  "totalSessions": 16,
+  "sessions": [
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "r-b0-C-G1",
+      "trajectoryId": "r-b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "r-b0-C-G2",
+      "trajectoryId": "r-b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "r-b0-H-G1",
+      "trajectoryId": "r-b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "r-b0-H-G2",
+      "trajectoryId": "r-b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "r-b1-H-G1",
+      "trajectoryId": "r-b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "r-b1-H-G2",
+      "trajectoryId": "r-b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "r-b1-C-G1",
+      "trajectoryId": "r-b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "r-b1-C-G2",
+      "trajectoryId": "r-b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "r-b2-C-G1",
+      "trajectoryId": "r-b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "r-b2-C-G2",
+      "trajectoryId": "r-b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "r-b2-H-G1",
+      "trajectoryId": "r-b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "r-b2-H-G2",
+      "trajectoryId": "r-b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "r-b3-C-G1",
+      "trajectoryId": "r-b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "r-b3-C-G2",
+      "trajectoryId": "r-b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "r-b3-H-G1",
+      "trajectoryId": "r-b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "r-b3-H-G2",
+      "trajectoryId": "r-b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    }
+  ],
+  "freshRunIds": true,
+  "pairsOldWithNew": false,
+  "trialSchema": [
+    "treatmentExpectationDigest",
+    "selectionRequested",
+    "selectionCompiled",
+    "consumerVisibleHandleDigest",
+    "pullBodyDigests",
+    "topologyManifestDigest",
+    "executionClosureDigest"
+  ],
+  "realizationRule": "a trial whose treatment realization mismatches is INVALID and triggers STOP, not a retry as a model outcome",
+  "run1Contribution": "ZERO observations to RECONSTRUCTION_COMPRESSION and NET_COGNITIVE_COST; baseline calibration only",
+  "analysisAdmission": "every analysed trial must satisfy SYSTEM_VALID, EXPERIMENT_ENVIRONMENT_VALID, TREATMENT_REALIZATION_VALID and ANALYSIS_PLAN_VALID before CAUSAL_EXPERIMENT_VALID",
+  "sourceStageEvidence": "research-evidence/r3-l0c",
+  "sourceStageEvidenceImmutable": true,
+  "planImmutability": "no plan amendment after primary exposure"
+}
