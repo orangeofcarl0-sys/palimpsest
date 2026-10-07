@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "blocker": {
+    "id": "FROZEN_SENTINEL_ROUTE_UNAVAILABLE_INSUFFICIENT_BALANCE",
+    "kind": "external provider billing state",
+    "loadBearing": true,
+    "route": {
+      "routeId": "deepseek-direct",
+      "providerId": "deepseek-route",
+      "modelId": "deepseek-flash",
+      "baseURL": "https://api.deepseek.com"
+    },
+    "observed": {
+      "httpStatus": 402,
+      "providerCode": "invalid_request_error",
+      "providerMessage": "Insufficient Balance",
+      "verifiedBy": "a direct request to the provider chat-completions endpoint with the frozen route's credential",
+      "fromWorkerTranscript": "the worker turn ended with reason.kind=error and code=QUOTA, status=402, which is the same state observed at the provider"
+    },
+    "transient": false,
+    "clearsOnRetry": false,
+    "priorSuccess": "all 16 R3-L0C Run-1 sessions completed on this same route, so the balance was sufficient then",
+    "fallbackConsidered": [
+      {
+        "option": "GLM via the alternative route",
+        "permittedBy": "R3-L0C §13 (primary sentinel unavailable before trial 1)",
+        "forbiddenBy": "this stage: Do NOT run GLM/Kimi",
+        "taken": false
+      },
+      {
+        "option": "a different provider route to the same model",
+        "permittedBy": "nothing",
+        "forbiddenBy": "this stage §12: preserve the frozen low-cost sentinel stack",
+        "taken": false
+      },
+      {
+        "option": "retrying until the balance clears",
+        "permittedBy": "nothing",
+        "forbiddenBy": "the state is a billing condition, not a transient error, so retrying would burn wall-clock without a model call succeeding",
+        "taken": false
+      }
+    ],
+    "stateAtStop": {
+      "preExposureRepairsComplete": true,
+      "planCommittedAndUnamended": true,
+      "primaryBytesExposedToAModel": false,
+      "executionClosureFrozen": true
+    }
+  },
+  "ledger": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-R",
+    "kind": "repair replication ledger",
+    "plannedSessions": 16,
+    "attemptedSessions": 0,
+    "validSessions": 0,
+    "matrixWritten": false,
+    "continuationGateGreen": true,
+    "executed": false,
+    "reason": "the frozen sentinel route is unavailable (402 Insufficient Balance), and this stage forbids the fallback",
+    "trialRecordsWritten": 0,
+    "treatmentVerdictsIssued": false,
+    "run1ContributionToVerdicts": 0
+  }
+}
