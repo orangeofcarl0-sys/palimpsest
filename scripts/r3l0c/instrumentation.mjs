@@ -95,7 +95,7 @@ function contentTextOf(data) {
 }
 
 /** Whether a dispatch actually returned content. */
-function contentReturnedOf(data) {
+export function contentReturnedOf(data) {
   if (data?.isError === true) return false;
   const text = contentTextOf(data).trim();
   if (text === '') return false;
@@ -103,7 +103,7 @@ function contentReturnedOf(data) {
 }
 
 /** The paths a dispatch names. */
-function namedPathsOf(data) {
+export function namedPathsOf(data) {
   const text = argsText(data);
   const found = new Set();
   const raw = data?.arguments;
@@ -150,19 +150,30 @@ export function reconstructCost(artifact) {
   const dispatches = [];
   let resultSubmissionSeq = null;
   let turnEndReason = null;
+  /**
+   * §10: THE WALL-CLOCK ORIGIN, so "elapsed before first result" is MEASURED rather than inferred.
+   *
+   * The runtime stamps every record with its own `time`, so the elapsed time to the first Result submission is
+   * the difference between the turn's start and the result dispatch. Inferring it from action counts would make
+   * a slow session with few actions look fast.
+   */
+  let sessionStartMs = null;
 
   for (const record of records) {
+    if (record.type === 'turn/start' && sessionStartMs === null && typeof record.time === 'number') sessionStartMs = record.time;
     if (record.type === 'turn/end') turnEndReason = record.data?.reason?.kind ?? null;
     if (record.type !== 'tool/ptc-dispatch') continue;
     const data = record.data ?? {};
     const name = String(data.name ?? '');
     const seq = record.seq ?? null;
+    const time = typeof record.time === 'number' ? record.time : null;
     const returned = contentReturnedOf(data);
     const content = contentTextOf(data);
     const paths = namedPathsOf(data);
     const isResult = isResultTool(name, data);
     dispatches.push(Object.freeze({
       seq,
+      time,
       name,
       returned,
       bytes: content.length,
@@ -193,6 +204,7 @@ export function reconstructCost(artifact) {
    */
   const corpusBytes = corpusReads.reduce((total, read) => total + read.bytes, 0);
 
+  const firstResultDispatch = dispatches.find((entry) => entry.isResult) ?? null;
   const firstEdit = considered.find((entry) => entry.isEdit);
   const firstCapital = considered.find((entry) => entry.isCapitalPull && entry.returned);
   const firstCorpus = corpusReads[0] ?? null;
@@ -229,6 +241,10 @@ export function reconstructCost(artifact) {
       firstCapitalStep: firstCapital?.seq ?? null,
       resultSubmitted: resultSubmissionSeq !== null,
     }),
+    /** §10: the wall-clock measures, from the runtime's own record times. */
+    sessionStartMs,
+    firstResultTimeMs: firstResultDispatch?.time ?? null,
+    elapsedToFirstResultMs: sessionStartMs !== null && firstResultDispatch !== null && firstResultDispatch.time !== null ? firstResultDispatch.time - sessionStartMs : null,
   });
 }
 
