@@ -1,0 +1,90 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0A",
+  "kind": "protocol erratum",
+  "frozenDistinctions": {
+    "protocolVerdict": "TRAJECTORY_UTILITY: MIXED",
+    "inferentialStatus": "PRIMARY PERR EFFECT NON DISCRIMINATING DUE TO HISTORY_ONLY FLOOR",
+    "relationship": "the inferential status qualifies the interpretation of the verdict; it does not replace it"
+  },
+  "deviations": [
+    {
+      "id": "OUT_OF_PROTOCOL_PRIMARY_FIXTURE_SMOKE",
+      "what": "after the initial plan commit and before the formal 24-session matrix, a real CAPITALIZED generation was run against the primary project bytes",
+      "demonstrated": {
+        "handlesVisible": 6,
+        "governedPullsResolved": 6,
+        "generationPromoted": true,
+        "passedClasses": [
+          "D1",
+          "D2",
+          "D3",
+          "D4"
+        ],
+        "failedClasses": [
+          "D5",
+          "D6"
+        ]
+      },
+      "nqImpact": "NONE — the run is not one of the 24 scheduled sessions and contributes nothing to N",
+      "recordLimitation": "the smoke run's own durable artifacts were removed during R3-L0 rig cleanup, so its numbers are recorded from the execution record rather than re-derived from a surviving artifact"
+    },
+    {
+      "id": "PLAN_COMMIT_REWRITTEN_AFTER_PRIMARY_BEHAVIOR_EXPOSURE",
+      "what": "the plan commit was amended and re-frozen AFTER that primary-fixture smoke had already run",
+      "preAmendShaRecovered": true,
+      "preAmendSha": "dfeacc6",
+      "amendedSha": "be52b08",
+      "note": "the final plan checkpoint is therefore NOT pristine pre-behaviour preregistration",
+      "pristineClaim": false
+    }
+  ],
+  "preregistrationStatus": "WEAKENED",
+  "preregistrationStatusReason": "the plan commit was amended after a real model had already run against the primary project bytes",
+  "preAmendRecovery": {
+    "recovered": true,
+    "sha": "dfeacc6",
+    "amendedSha": "be52b08",
+    "reflogEntry": "dfeacc6 HEAD@{2026-10-07 10:19:56 +0800}: commit: test(r3-l0): freeze longitudinal experiment plan",
+    "note": "the pre-amend plan commit was recovered from the local reflog"
+  },
+  "planAmendmentDiff": {
+    "available": true,
+    "preAmendSha": "dfeacc6",
+    "amendedSha": "be52b08",
+    "files": [
+      {
+        "status": "M",
+        "path": "research-evidence/r3-l0/plan.json"
+      },
+      {
+        "status": "M",
+        "path": "scripts/r3l0/generation-child.mjs"
+      }
+    ],
+    "addedWiringOnly": true,
+    "outcomeFilesTouched": [],
+    "classification": "PLUMBING_REPAIR",
+    "consequence": "only plumbing changed, so the 24-run randomized matrix remains USABLE but pristine preregistration is WEAKENED",
+    "patchBytes": 6446
+  },
+  "immutabilityLaw": {
+    "id": "REAL_MODEL_INVOCATION_ACTIVATES_PLAN_IMMUTABILITY",
+    "statement": "Any real-model invocation against primary project bytes activates plan immutability.",
+    "invocationNamesThatCount": [
+      "smoke",
+      "probe",
+      "verification",
+      "trial"
+    ],
+    "meaning": "the NAME of the invocation is irrelevant; what matters is that a real model saw the primary bytes",
+    "consequence": "after such exposure, a plan commit may NOT be amended; a further change requires a NEW commit and a recorded deviation",
+    "why": "R3-L0 amended its plan commit after a CAPITALIZED generation had already run against the primary project bytes, which is the episode this law exists to prevent",
+    "effectiveFrom": "R3-L0A"
+  },
+  "protectedCommits": {
+    "design": "90f6b1f",
+    "plan": "be52b08",
+    "result": "1be2062"
+  }
+}
