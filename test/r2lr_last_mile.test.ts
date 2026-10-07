@@ -15,6 +15,7 @@
  */
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,11 +29,29 @@ const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
  * GATE R must not ASSUME the backward-compatibility proof passed — it reads a record of the last run. So the
  * two load-bearing compatibility facts are written here, from the same assertions the tests below make, and
  * GATE R refuses to close if the record is missing or false.
+ *
+ * R3-L0B §14: THE RECORD IS WRITTEN TO A TEST-OWNED SCRATCH PATH, NOT INTO COMMITTED EVIDENCE.
+ *
+ * This function used to rewrite `research-evidence/r2-lr/deterministic-suite.json` on EVERY unit run, which
+ * meant an ordinary `vitest run` mutated a committed historical evidence artifact — a fresh `recordedAt` each
+ * time, and a different file every run. That made "historical evidence is immutable" unprovable, because the
+ * suite itself was the mutator.
+ *
+ * The repair keeps GATE R working while removing the mutation: the live result goes to a deterministic
+ * test-owned scratch path under the system temp directory, and the COMMITTED record stays exactly as it was
+ * frozen. `recordPath()` is exported so GATE R and the regression test resolve the same location rather than
+ * each guessing.
  */
+export const R2LR_RECORD_DIR = join(tmpdir(), "palimpsest-r2lr");
+
+/** The scratch path the live compatibility record is written to. Deterministic, and outside the checkout. */
+export function recordPath(): string {
+  return join(R2LR_RECORD_DIR, "deterministic-suite.json");
+}
+
 function recordSuiteResult(facts: Record<string, boolean>): void {
-  const dir = join(REPO_ROOT, "research-evidence", "r2-lr");
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, "deterministic-suite.json"), `${JSON.stringify({ schemaVersion: 1, stage: "R2-LR", suite: "test/r2lr_last_mile.test.ts", recordedAt: new Date().toISOString(), ...facts }, null, 2)}\n`, "utf8");
+  mkdirSync(R2LR_RECORD_DIR, { recursive: true });
+  writeFileSync(recordPath(), `${JSON.stringify({ schemaVersion: 1, stage: "R2-LR", suite: "test/r2lr_last_mile.test.ts", recordedAt: new Date().toISOString(), ...facts }, null, 2)}\n`, "utf8");
 }
 
 /**

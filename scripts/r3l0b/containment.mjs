@@ -32,7 +32,7 @@
  *
  * PLAIN JAVASCRIPT (`.mjs`).
  */
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve, sep } from 'node:path';
 
@@ -234,25 +234,78 @@ export function writeCanaries(root, unitIds) {
 /* ================================================================ §10/§12 the containment gate */
 
 /**
+ * §10/§12: DISCOVER THE LAYOUT ACTUALLY ON DISK.
+ *
+ * The gate must be able to judge ANY layout, including a mutated one, so it MEASURES where the worlds and the
+ * host-private artifacts are rather than assuming the isolated shape. A gate that assumed the corrected shape
+ * would pass on a mutated tree simply because it looked in the wrong place, which is the vacuous-gate failure
+ * §12 exists to prevent.
+ *
+ * Two shapes are recognised, and the recognition is by directory structure rather than by a flag:
+ *
+ *   ISOLATED       a unit world is `units/<unitId>/world`; host-private roots are `private/**`
+ *   SHARED_PARENT  a unit world is `<unitId>/repo`; host-private content is whatever sits BESIDE it
+ */
+export function discoverLayout(root, unitIds) {
+  const worlds = [];
+  const privateRoots = [];
+  for (const unitId of unitIds) {
+    const isolatedWorld = join(root, 'units', unitId, 'world');
+    const sharedWorld = join(root, unitId, 'repo');
+    if (existsSync(isolatedWorld)) worlds.push(isolatedWorld);
+    else if (existsSync(sharedWorld)) worlds.push(sharedWorld);
+    /** In the shared-parent shape the unit directory itself holds the control files, so it is host-private. */
+    const unitDir = join(root, unitId);
+    if (existsSync(sharedWorld) && existsSync(unitDir)) privateRoots.push(unitDir);
+  }
+  const isolatedPrivate = join(root, 'private');
+  if (existsSync(isolatedPrivate)) {
+    for (const entry of readdirSync(isolatedPrivate, { withFileTypes: true })) {
+      if (entry.isDirectory()) privateRoots.push(join(isolatedPrivate, entry.name));
+    }
+  }
+  /** A shared progress record beside the unit directories is host-private and belongs to no unit. */
+  if (existsSync(join(root, 'trials.partial.json'))) privateRoots.push(root);
+  return Object.freeze({ worlds: Object.freeze(worlds), privateRoots: Object.freeze([...new Set(privateRoots)]) });
+}
+
+/**
  * §10/§12: THE CONTAINMENT GATE.
  *
  * It decides containment from the LAYOUT and from the canary probes §11 supplies, never from a prompt or from
  * the harness's intent. A host-private root that is an ancestor of a world, or that a probe reached, fails the
  * gate — which is what makes the §12 mutation detectable rather than merely described.
+ *
+ * The layout is DISCOVERED, so the same gate judges the corrected shape and the mutated one.
  */
 export function runContainmentGate(input) {
   const { root, unitIds, probes } = input;
-  const shape = layoutShape(root, unitIds);
+  const shape = input.shape ?? layoutShape(root, unitIds);
+  const discovered = discoverLayout(root, unitIds);
+  const relationOf = (candidate, world) => {
+    const a = fold(resolve(candidate));
+    const b = fold(resolve(world));
+    if (a === b) return 'SAME';
+    if (b.startsWith(`${a}/`)) return 'ANCESTOR';
+    if (a.startsWith(`${b}/`)) return 'DESCENDANT';
+    return 'DISJOINT';
+  };
+  /** A host-private root that CONTAINS a world is the R3-L0 defect: the world is inside the private tree. */
+  const discoveredAncestorViolation = discovered.privateRoots.some((priv) => discovered.worlds.some((world) => {
+    const relation = relationOf(priv, world);
+    return relation === 'ANCESTOR' || relation === 'SAME';
+  }));
   const reachable = (probes ?? []).filter((probe) => probe.verdict === 'REACHABLE');
-  const ancestorViolation = shape.hostPrivateIsAncestorOfAnyWorld;
+  const ancestorViolation = shape.hostPrivateIsAncestorOfAnyWorld || discoveredAncestorViolation;
   const pass = !ancestorViolation && reachable.length === 0;
   return Object.freeze({
     schemaVersion: 1,
     kind: 'experiment containment gate',
     root,
-    worlds: shape.worlds,
-    privateRoots: shape.privateRoots,
+    worlds: discovered.worlds,
+    privateRoots: discovered.privateRoots,
     hostPrivateIsAncestorOfAnyWorld: ancestorViolation,
+    discoveredAncestorViolation,
     probes: (probes ?? []).length,
     reachable: Object.freeze(reachable.map((probe) => `${probe.rootId}/${probe.attemptId}`)),
     CONTAINMENT: pass ? 'PASS' : 'FAIL',
