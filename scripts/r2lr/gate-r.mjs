@@ -14,6 +14,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const REPO = new URL('../..', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/u, '$1');
@@ -51,10 +52,23 @@ void compat;
  * §23: old-payload and malformed-payload behaviour. These are asserted by the deterministic suite, which is
  * run in full later in this gate; here the record of the last run is checked, so a green suite is a
  * prerequisite rather than an assumption.
+ *
+ * R3-L0B §14: THE LIVE RECORD IS READ FROM THE SUITE'S SCRATCH PATH.
+ *
+ * The suite used to rewrite the committed `research-evidence/r2-lr/deterministic-suite.json` on every run,
+ * which made an ordinary unit run mutate historical evidence. It now writes its live result to a deterministic
+ * test-owned scratch path under the system temp directory, and the committed record stays frozen.
+ *
+ * The gate reads the SCRATCH record when it exists — that is the most recent run — and otherwise falls back to
+ * the COMMITTED record, which is the frozen result from when the artifact was written. Both shapes carry the
+ * same two load-bearing fields, so the check is unchanged; only the location of the live value moved.
  */
-const lastRun = readJson(join(REPO, 'research-evidence', 'r2-lr', 'deterministic-suite.json'));
-check('GR-03', 'old-payload compatibility PASS', lastRun !== null && lastRun.oldPayloadCompatible === true, lastRun === null ? 'no deterministic-suite record yet — run test/r2lr_last_mile.test.ts and record it' : `recorded: ${String(lastRun.oldPayloadCompatible)}`);
-check('GR-04', 'malformed-payload behaviour PASS', lastRun !== null && lastRun.malformedRefused === true, lastRun === null ? 'no record yet' : `recorded: ${String(lastRun.malformedRefused)}`);
+const scratchRecord = join(tmpdir(), 'palimpsest-r2lr', 'deterministic-suite.json');
+const committedRecord = join(REPO, 'research-evidence', 'r2-lr', 'deterministic-suite.json');
+const lastRun = readJson(scratchRecord) ?? readJson(committedRecord);
+const lastRunSource = readJson(scratchRecord) !== null ? 'the suite scratch record' : 'the committed frozen record';
+check('GR-03', 'old-payload compatibility PASS', lastRun !== null && lastRun.oldPayloadCompatible === true, lastRun === null ? 'no deterministic-suite record yet — run test/r2lr_last_mile.test.ts and record it' : `recorded: ${String(lastRun.oldPayloadCompatible)} (${lastRunSource})`);
+check('GR-04', 'malformed-payload behaviour PASS', lastRun !== null && lastRun.malformedRefused === true, lastRun === null ? 'no record yet' : `recorded: ${String(lastRun.malformedRefused)} (${lastRunSource})`);
 
 /* ---------------------------------------------------------------- §23.3 the real last-mile proof */
 
