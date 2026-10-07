@@ -1,0 +1,28 @@
+/** R3-S0 systemic contract type declarations (harness-only; consumed by the TypeScript tests). */
+export declare const CONSTITUTIONAL_LAW: any;
+export declare const TRUTH_LAYERS: Readonly<Record<string, any>>;
+export declare const FORBIDDEN_INFERENCES: readonly any[];
+export declare const CONSUMER_BOUNDARY_LAW: Readonly<{ id: string; statement: string; rules: readonly any[] }>;
+export declare const LINEAGES: Readonly<Record<string, any>>;
+export declare const DURABLE_EVENT_FAMILIES: readonly any[];
+export declare const EVENT_DEFECT_FLAGS: Readonly<Record<string, string>>;
+export declare const SYSTEM_VALID_CATEGORIES: readonly any[];
+export declare const MATRIX_CELLS: Readonly<Record<string, string>>;
+export declare const MATRIX_PATHS: readonly any[];
+export declare const LOOP_MATRIX_PLAN: Readonly<Record<string, any>>;
+export declare const CROSS_LOOP_SCENARIOS: readonly any[];
+export declare const PREREGISTERED_MUTATIONS: readonly any[];
+export declare const MUTATION_VERDICTS: Readonly<{ DETECTED: string; ESCAPED: string }>;
+export declare const HISTORICAL_DEFECTS: readonly any[];
+export declare const BYPASS_CHECKS: readonly any[];
+export declare const BYPASS_CLAIM: Readonly<{ allowed: string; forbidden: string; reason: string }>;
+export declare const MECHANISM_WITNESS_CHAIN: readonly any[];
+export declare const WITNESS_VERDICTS: any;
+export declare const SYSTEMIC_CONTRACT: Readonly<Record<string, any>>;
+export declare function ownedNodes(): readonly any[];
+export declare function authorityBearingNodes(): readonly any[];
+export declare function projectScopedNodes(): readonly any[];
+export declare function lineagePath(lineageId: string): readonly string[];
+export declare function inferenceForbidden(from: string, to: string): boolean;
+export declare function judgeWitness(witness: any, requiredSteps?: readonly string[]): Readonly<{ verdict: string; complete: boolean; missingSteps: readonly string[]; taskSuccessWithoutWitness: boolean; ruling: string | null }>;
+export declare function systemValid(categoryResults: any): Readonly<{ SYSTEM_VALID: boolean; categories: readonly any[]; notGreen: readonly string[]; note: string }>;
