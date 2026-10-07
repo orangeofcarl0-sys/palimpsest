@@ -365,7 +365,9 @@ describe("R3-L0C-R §9 — the execution-closure digest", () => {
   it("§9 the frozen plan records it", () => {
     expect(plan).not.toBeNull();
     expect(plan.executionClosure.executionClosureDigest).toMatch(/^[0-9a-f]{64}$/u);
-    expect(plan.closureInputs.length).toBe(EXECUTION_CLOSURE_INPUTS.length);
+    /** Every §9 category is declared, plus the executor route, whose replacement is itself an input. */
+    for (const category of EXECUTION_CLOSURE_INPUTS) expect(plan.closureInputs, `${category} must be declared`).toContain(category);
+    expect(plan.closureInputs).toContain("executor route");
   });
 
   it("§9 a drift is detected and names the changed category", () => {
