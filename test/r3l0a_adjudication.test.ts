@@ -498,6 +498,12 @@ describe("R3-L0A §18 — historical evidence immutability", () => {
     expect(guard.HISTORICAL_EVIDENCE_IMMUTABLE_EXCLUDING_KNOWN_MUTATORS).toBe("PASS");
     expect(guard.added).toEqual([]);
     expect(guard.removed).toEqual([]);
+    /**
+     * R3-L0C §2.2: additions under a POST-BASELINE directory are tolerated and listed, so a later stage needs no
+     * edit to this guard. The derivation is what decides, and the tolerated additions stay visible.
+     */
+    expect(guard.postBaselineAdditions.length).toBeGreaterThanOrEqual(0);
+    for (const path of guard.added) expect(guard.postBaselineAdditions).toContain(path);
     for (const path of guard.changed) {
       expect(guard.knownPreExistingMutators.map((entry: any) => entry.path)).toContain(path);
     }

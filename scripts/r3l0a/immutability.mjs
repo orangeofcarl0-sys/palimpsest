@@ -21,6 +21,18 @@ const NL = String.fromCharCode(10);
 const PROTECTED_ROOT = 'research-evidence';
 const sha256 = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
+/**
+ * R3-L0C §2.2: whether a path's DIRECTORY is entirely absent from the baseline.
+ *
+ * A directory the baseline never recorded was created after the baseline was frozen. A file the baseline DID
+ * record is still compared exactly, so a change or removal inside any directory remains fatal.
+ */
+function isPostBaselineDirectory(path, baselinePaths) {
+  const directory = String(path).split('/').slice(0, 2).join('/');
+  if (directory === path) return false;
+  return !baselinePaths.some((entry) => entry.startsWith(`${directory}/`));
+}
+
 function walk(root, prefix = '', out = []) {
   const dir = prefix === '' ? root : join(root, prefix);
   if (!existsSync(dir)) return out;
@@ -47,7 +59,20 @@ export function checkImmutability() {
   const baseline = JSON.parse(readFileSync(join(REPO_ROOT, 'research-evidence', 'r3-l0', 'historical-evidence-baseline.json'), 'utf8'));
   const current = digestProtectedEvidence();
   const changed = Object.keys(baseline.digests).filter((path) => path in current.digests && current.digests[path] !== baseline.digests[path]);
-  const added = Object.keys(current.digests).filter((path) => !(path in baseline.digests));
+  const addedAll = Object.keys(current.digests).filter((path) => !(path in baseline.digests));
+  /**
+   * R3-L0C §2.2 — THE POST-BASELINE TOLERANCE IS DERIVED, NOT LISTED.
+   *
+   * This guard used to count EVERY addition as a mutation, so each later stage had to append its own evidence
+   * directory to `EXCLUDED_STAGE_PATHS` in `adjudicate.mjs` to keep this guard green. That is the dependency
+   * inversion R3-L0C §2.2 removes: a new stage must not edit a completed stage's adjudication script.
+   *
+   * The derived rule needs no edit and no knowledge of which stages exist: a file whose DIRECTORY is entirely
+   * absent from the baseline was created after the baseline was frozen, so it is an addition rather than a
+   * mutation. A change or a removal of any baseline-listed file stays fatal, everywhere.
+   */
+  const added = addedAll.filter((path) => !isPostBaselineDirectory(path, Object.keys(baseline.digests)));
+  const postBaselineAdditions = addedAll.filter((path) => !added.includes(path));
   const removed = Object.keys(baseline.digests).filter((path) => !(path in current.digests));
   const immutable = changed.length === 0 && added.length === 0 && removed.length === 0;
   return Object.freeze({
@@ -62,6 +87,8 @@ export function checkImmutability() {
     HISTORICAL_EVIDENCE_IMMUTABLE: immutable ? 'PASS' : 'FAIL',
     changed: Object.freeze(changed.sort()),
     added: Object.freeze(added.sort()),
+    /** R3-L0C §2.2: the additions under post-baseline directories, reported rather than absorbed. */
+    postBaselineAdditions: Object.freeze(postBaselineAdditions.sort()),
     removed: Object.freeze(removed.sort()),
     action: immutable ? 'none required' : 'RECORDED — the mutation is reported and NOT auto-restored',
     /**
