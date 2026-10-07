@@ -28,6 +28,13 @@ const sha256 = (text) => createHash('sha256').update(String(text), 'utf8').diges
 const out = (line) => process.stdout.write(`${line}${NL}`);
 
 export const STAGE_EVIDENCE_PATH = 'research-evidence/r3-l0a';
+
+/**
+ * §18: this stage may write ONLY its own evidence paths. The R3-L0 guard protects `research-evidence/**`
+ * excluding `research-evidence/r3-l0`; this stage's own path must be excluded the same way, or the guard would
+ * report this stage's legitimate output as a mutation of historical evidence.
+ */
+export const EXCLUDED_STAGE_PATHS = Object.freeze(['research-evidence/r3-l0', 'research-evidence/r3-l0a']);
 const R3L0_EVIDENCE_PATH = 'research-evidence/r3-l0';
 
 /** §5: the state files whose digests establish the canonical-state equivalence. */
