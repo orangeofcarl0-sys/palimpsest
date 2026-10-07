@@ -218,29 +218,26 @@ export function prepareRunLayout(runRoot, trajectoryIds) {
 /**
  * §11: copy the prehistory into a trajectory's world and state, so both arms inherit the SAME paid-for history.
  *
- * §11 (R3-L0C-R): THE STALE WORKTREE COPIES ARE EXCLUDED.
+ * THE WORLD IS COPIED WHOLE, INCLUDING ITS `.palimpsest` TREE, and that is deliberate.
  *
- * The prehistory world carries `<world>/.palimpsest/worlds/<attempt-id>/` directories left by its own build.
- * They are UNTRACKED, so a copy carries them, and each is a STANDALONE git repository rather than a linked
- * worktree — its `.git` is a directory with its own object store, and that store is incomplete.
+ * A FIRST ATTEMPT AT THIS EXCLUDED `.palimpsest/worlds`, and it made things WORSE: the copied world then had no
+ * worktree tree, so the controller created each attempt worktree fresh, and the fresh copy's object store lacked
+ * the base commit. Workers could not commit, escalated instead of settling, and the next generation was blocked
+ * by `quiescence_required`. Measured across two trajectories.
  *
- * The consequence was measured: a worker committed inside a copied worktree, the harness then ran
- * `git diff --name-only <base> HEAD` to observe the attempt, and the base object was not in the copy's store.
- * The command failed with `fatal: bad object`, the attempt was reported as HOST_ERROR, and a session in which
- * the worker had actually SOLVED the task was recorded as infrastructure-invalid. Every trajectory inherited the
- * same stale directories, so the failure was reproducible rather than incidental.
+ * What the working runs have instead is a world copied WITH its `.palimpsest` tree, so each attempt worktree
+ * carries the FULL history — 48 objects including the prehistory commits — and a worker can commit normally.
+ * The prehistory's own stale worktree directories are therefore load-bearing rather than residue, and copying
+ * them is what makes the attempt worktrees usable.
  *
- * Excluding them is correct rather than merely expedient: they are build residue, they are not part of the
- * project world, and the controller creates the worktree a generation actually uses. Copying them only
- * propagated an unusable object store.
+ * A separate observation, recorded because it is the same class of failure: a trajectory world can ALSO be
+ * poisoned by copying it while its parent is still writing. That is why the matrix copies each trajectory's
+ * world before that trajectory's generations run, and why a run whose H sessions failed with
+ * `fatal: bad object` was diagnosed to a worktree whose pack was missing its base.
  */
 export function prepareTrajectory(runRoot, trajectoryId, prehistory) {
   const world = trajectoryWorld(runRoot, trajectoryId);
-  const STALE_WORLDS = /[\\/]\.palimpsest[\\/]worlds([\\/]|$)/u;
-  cpSync(prehistory.world, world, {
-    recursive: true,
-    filter: (source) => !STALE_WORLDS.test(source),
-  });
+  cpSync(prehistory.world, world, { recursive: true });
   const paths = trajectoryPaths(runRoot, trajectoryId);
   cpSync(prehistory.state, paths.state, { recursive: true });
   return Object.freeze({ world, paths });
