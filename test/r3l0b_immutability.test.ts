@@ -106,7 +106,8 @@ describe("R3-L0B §14 — the r2lr historical-evidence mutator is repaired", () 
        * root. Reading it is fine and several tests legitimately read evidence.
        */
       for (const match of source.matchAll(/\b(?:writeFileSync|appendFileSync|mkdirSync|rmSync|unlinkSync|renameSync|cpSync|copyFileSync)\s*\(([\s\S]{0,200}?)\)/gu)) {
-        if (match[1].includes("research-evidence")) writers.push(`${entry.name}: ${match[0].slice(0, 120).replace(/\s+/gu, " ")}`);
+        const argument = match[1] ?? "";
+        if (argument.includes("research-evidence")) writers.push(`${entry.name}: ${String(match[0]).slice(0, 120).replace(/\s+/gu, " ")}`);
       }
     }
     expect(writers, "a test file writes under research-evidence, so a full unit run can mutate protected evidence").toEqual([]);
