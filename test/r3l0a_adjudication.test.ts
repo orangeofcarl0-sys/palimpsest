@@ -16,6 +16,8 @@ import { describe, expect, it } from "vitest";
 import { EXPOSURE_CLASSES, EXPOSURE_SIGNATURES, reconstructPath, reconstructTrajectory, sessionArtifacts } from "../scripts/r3l0a/path-audit.mjs";
 import { CHANGE_CLASSES, AMENDED_PLAN_COMMIT, immutabilityLaw, planAmendmentDiff, protocolErratum, recoverPreAmendCommit } from "../scripts/r3l0a/erratum.mjs";
 import { NOVELTY_LABELS, auditLesson, causalStatus, designLaw, effectLayers, genericPriorLimitation, ordinarySurfaces, recommendation } from "../scripts/r3l0a/effects.mjs";
+import { checkImmutability, digestProtectedEvidence } from "../scripts/r3l0a/immutability.mjs";
+import { TRAJECTORY_IDS, probeAll, summarize } from "../scripts/r3l0a/crossread.mjs";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 const EVIDENCE = join(REPO_ROOT, "research-evidence", "r3-l0a");
@@ -481,5 +483,106 @@ describe("R3-L0A §1/§18 — R3-L0 evidence preserved", () => {
     const r3l0 = readFileSync(join(R3L0_EVIDENCE, "analysis.json"), "utf8");
     expect(r3l0).toMatch(/"stage": "R3-L0"/u);
     expect(r3l0).toMatch(/CAPITAL_UPTAKE/u);
+  });
+});
+
+/* ================================================================ §18 the immutability guard */
+
+describe("R3-L0A §18 — historical evidence immutability", () => {
+  it("§18 the guard reports the tree PASS once the known pre-existing mutator is excluded", () => {
+    const guard = checkImmutability();
+    /**
+     * A pre-existing R2-LR test rewrites its own evidence record with a fresh timestamp on every unit run. The
+     * guard reports that mutation rather than hiding it, and separately reports the verdict that excludes it.
+     */
+    expect(guard.HISTORICAL_EVIDENCE_IMMUTABLE_EXCLUDING_KNOWN_MUTATORS).toBe("PASS");
+    expect(guard.added).toEqual([]);
+    expect(guard.removed).toEqual([]);
+    for (const path of guard.changed) {
+      expect(guard.knownPreExistingMutators.map((entry: any) => entry.path)).toContain(path);
+    }
+  });
+
+  it("§18 the known pre-existing mutator is named with its cause and its author stage", () => {
+    const guard = checkImmutability();
+    const mutator = guard.knownPreExistingMutators[0];
+    expect(mutator.path).toBe("research-evidence/r2-lr/deterministic-suite.json");
+    expect(mutator.cause).toMatch(/test\/r2lr_last_mile\.test\.ts/u);
+    expect(mutator.introducedBy).toMatch(/not this stage/u);
+  });
+
+  it("§18 the guard excludes BOTH R3-L0 and this stage's own evidence path", () => {
+    const guard = checkImmutability();
+    expect(guard.excludedStagePaths).toContain("research-evidence/r3-l0");
+    expect(guard.excludedStagePaths).toContain("research-evidence/r3-l0a");
+  });
+
+  it("§18 the guard digests the protected tree and reports the baseline and current digests", () => {
+    const guard = checkImmutability();
+    expect(guard.currentTreeDigest).toMatch(/^[0-9a-f]{64}$/u);
+    expect(guard.baselineTreeDigest).toMatch(/^[0-9a-f]{64}$/u);
+    expect(guard.currentFileCount).toBe(309);
+  });
+
+  it("§18 the guard RECORDS a mutation rather than restoring it", () => {
+    expect(checkImmutability().action).toMatch(/RECORDED|none required/u);
+    const source = readFileSync(join(REPO_ROOT, "scripts", "r3l0a", "immutability.mjs"), "utf8");
+    expect(source).toMatch(/NOT auto-restored/u);
+  });
+
+  it("§18 R3-L0's committed primary evidence is still readable and still R3-L0", () => {
+    const r3l0Matrix = JSON.parse(readFileSync(join(R3L0_EVIDENCE, "matrix.json"), "utf8"));
+    expect(r3l0Matrix.stage).toBe("R3-L0");
+    expect(r3l0Matrix.validSessions).toBe(24);
+  });
+});
+
+/* ================================================================ the containment finding */
+
+describe("R3-L0A — the cross-unit containment finding", () => {
+  const finding = read("containment-finding.json");
+
+  it("the finding is recorded with its measured counts", () => {
+    expect(finding.summary.sessions).toBe(24);
+    expect(finding.summary.referencingTheCheckoutRoot).toBeGreaterThan(0);
+    expect(finding.summary.referencingTheOracle).toBeGreaterThan(0);
+    expect(finding.summary.referencingAnotherTrajectory).toBeGreaterThan(0);
+  });
+
+  it("the decisive case names the session that read the oracle then wrote the ledger", () => {
+    expect(finding.decisiveCase.session).toBe("b3-H-G1");
+    expect(finding.decisiveCase.otherTrajectoriesReferenced.length).toBe(6);
+    expect(finding.decisiveCase.outcome).toMatch(/ONLY G1/u);
+  });
+
+  it("the finding WITHDRAWS the unreachability claim without repairing the breach", () => {
+    expect(finding.consequence.mechanismClaimImpact).toMatch(/WITHDRAWN/u);
+    expect(finding.consequence.notRepaired).toBe(true);
+    expect(finding.consequence.namedSessions.length).toBe(4);
+  });
+
+  it("the finding states that the primary PERR comparison is NOT repaired by it", () => {
+    expect(finding.consequence.primaryPerrImpact).toMatch(/NOT repaired/u);
+    expect(finding.consequence.primaryPerrImpact).toMatch(/20 of 24/u);
+  });
+
+  it("the probe is reproducible from the durable artifacts", () => {
+    const runDir = matrix.runDir;
+    const summary = summarize(probeAll(runDir));
+    expect(summary.sessions).toBe(24);
+    expect(summary.referencingTheOracle).toBe(finding.summary.referencingTheOracle);
+    expect(summary.referencingAnotherTrajectory).toBe(finding.summary.referencingAnotherTrajectory);
+  });
+
+  it("the probe covers all eight trajectories", () => {
+    expect(TRAJECTORY_IDS.length).toBe(8);
+    const probes = probeAll(matrix.runDir);
+    expect(Object.keys(probes).sort()).toEqual([...TRAJECTORY_IDS].sort());
+  });
+
+  it("the probe normalizes separators, so one spelling matches every path", () => {
+    const source = readFileSync(join(REPO_ROOT, "scripts", "r3l0a", "crossread.mjs"), "utf8");
+    expect(source).toMatch(/Fold Windows separators to POSIX/u);
+    expect(source).toMatch(/normalize/u);
   });
 });

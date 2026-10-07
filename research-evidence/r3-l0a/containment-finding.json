@@ -1,0 +1,337 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0A",
+  "kind": "cross-unit containment finding",
+  "what": "the generation child wrote its spec, payload and transcript into the trajectory directory, and each worker world lives under that same directory, so workers could walk out of the world and read host-side artifacts, the checkout, and in two cases ANOTHER trajectory",
+  "measuredBy": "matching normalized path substrings against what each session actually RECEIVED and referenced",
+  "summary": {
+    "sessions": 24,
+    "referencingAnotherTrajectory": 2,
+    "referencingTheOracle": 4,
+    "referencingTheProjectModule": 4,
+    "referencingTheCapitalModule": 4,
+    "referencingADiagnosticScratch": 2,
+    "referencingTheCheckoutRoot": 6
+  },
+  "sessions": {
+    "b0-C": [
+      {
+        "attemptId": "272903c7dadc9e56e861af2413174a40",
+        "ownTrajectoryId": "b0-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 12,
+        "projectModuleReferences": 12,
+        "capitalModuleReferences": 2,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 534,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "2f7f458bae574f054ae996088214e162",
+        "ownTrajectoryId": "b0-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "6c7874480353be1cb717d52bcf1127a5",
+        "ownTrajectoryId": "b0-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b0-H": [
+      {
+        "attemptId": "0574ab9a1336f25f25fc694fb179a57a",
+        "ownTrajectoryId": "b0-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 14,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "16ff7467dc8cb709ff0bdda802f75161",
+        "ownTrajectoryId": "b0-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "854bd7de28a7dcc015d2463477940f7f",
+        "ownTrajectoryId": "b0-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b1-C": [
+      {
+        "attemptId": "1d0fcab50256d883c82e96ed8a79e022",
+        "ownTrajectoryId": "b1-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "749400ec851251e0a92eb965e4130ffa",
+        "ownTrajectoryId": "b1-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "8cc1acab077f09bd09bd35a038772566",
+        "ownTrajectoryId": "b1-C",
+        "otherTrajectoriesReferenced": [
+          "b0-C",
+          "b0-H"
+        ],
+        "oracleReferences": 9,
+        "projectModuleReferences": 7,
+        "capitalModuleReferences": 3,
+        "diagnosticScratchReferences": 17,
+        "checkoutRootReferences": 418,
+        "otherTrajectorySourceReads": 72
+      }
+    ],
+    "b1-H": [
+      {
+        "attemptId": "21536c43b63f35b722c7dba18aa916e3",
+        "ownTrajectoryId": "b1-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "4a576a272052308604bf6e352c7386be",
+        "ownTrajectoryId": "b1-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "f138934e427379acd78939895ecaacc6",
+        "ownTrajectoryId": "b1-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b2-C": [
+      {
+        "attemptId": "0a6f48e634aeb3790e8a1875158d8bc0",
+        "ownTrajectoryId": "b2-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 17,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "0cfcfdab476cfe594c99d32ad84bcbfe",
+        "ownTrajectoryId": "b2-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "9d69ed5167872c0f87e249ec35645928",
+        "ownTrajectoryId": "b2-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b2-H": [
+      {
+        "attemptId": "34b524e494fe8135111623564a8ceef0",
+        "ownTrajectoryId": "b2-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "4f0b05a243c7c8159777d1a97f0b4f69",
+        "ownTrajectoryId": "b2-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "f1789d693444fddecc3163c40b2b109b",
+        "ownTrajectoryId": "b2-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b3-C": [
+      {
+        "attemptId": "393e4064104c1e62b7038a6c41dc5813",
+        "ownTrajectoryId": "b3-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 39,
+        "projectModuleReferences": 59,
+        "capitalModuleReferences": 1,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 266,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "aaf09664c1f30cd3094f522f4afd5eea",
+        "ownTrajectoryId": "b3-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "ccd0eb3726e1e90f0378427ac6cac891",
+        "ownTrajectoryId": "b3-C",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ],
+    "b3-H": [
+      {
+        "attemptId": "30eab29461c450849593025d291f7976",
+        "ownTrajectoryId": "b3-H",
+        "otherTrajectoriesReferenced": [
+          "b0-C",
+          "b0-H",
+          "b1-C",
+          "b1-H",
+          "b2-C",
+          "b2-H"
+        ],
+        "oracleReferences": 57,
+        "projectModuleReferences": 39,
+        "capitalModuleReferences": 1,
+        "diagnosticScratchReferences": 74,
+        "checkoutRootReferences": 373,
+        "otherTrajectorySourceReads": 76
+      },
+      {
+        "attemptId": "672e4a120ee5ae7fba998212c633815b",
+        "ownTrajectoryId": "b3-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      },
+      {
+        "attemptId": "87358f803d84d3bcf7034397a1fa002c",
+        "ownTrajectoryId": "b3-H",
+        "otherTrajectoriesReferenced": [],
+        "oracleReferences": 0,
+        "projectModuleReferences": 0,
+        "capitalModuleReferences": 0,
+        "diagnosticScratchReferences": 0,
+        "checkoutRootReferences": 0,
+        "otherTrajectorySourceReads": 0
+      }
+    ]
+  },
+  "decisiveCase": {
+    "session": "b3-H-G1",
+    "trajectory": "b3-H",
+    "generation": "G1",
+    "arm": "H",
+    "what": "the worker read the checkout, imported scripts/r3l0/diagnostic.mjs, received the oracle case inventory and ran all nine cases against its own candidate AND against another trajectory candidate, then wrote the ledger",
+    "otherTrajectoriesReferenced": [
+      "b0-C",
+      "b0-H",
+      "b1-C",
+      "b1-H",
+      "b2-C",
+      "b2-H"
+    ],
+    "outcome": "the ONLY G1 in the experiment to reach full diagnostic coverage"
+  },
+  "consequence": {
+    "r3l0Section10Claim": "R3-L0 §10 states the diagnostic oracle is invisible to the worker; as executed, that claim is FALSE for 4 of 24 sessions",
+    "primaryPerrImpact": "the primary PERR comparison is NOT repaired: 20 of 24 sessions, including every H generation except b3-H-G1, never received oracle content",
+    "mechanismClaimImpact": "the claim that the oracle was UNREACHABLE is WITHDRAWN for the named sessions",
+    "namedSessions": [
+      "b0-C-G1",
+      "b1-C-G2",
+      "b3-C-G1",
+      "b3-H-G1"
+    ],
+    "notRepaired": true
+  },
+  "notRepairedNote": "this stage RECORDS the breach; repairing the harness is separate work, and the affected generations carry the caveat permanently"
+}

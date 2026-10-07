@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0A",
+  "kind": "historical evidence immutability guard",
+  "excludedStagePaths": [
+    "research-evidence/r3-l0",
+    "research-evidence/r3-l0a"
+  ],
+  "baselineTreeDigest": "6d850d7d5c39a4f8d088747e8e68dc8a74ed1a141695e4dbcacd9e3755b320d7",
+  "currentTreeDigest": "6d850d7d5c39a4f8d088747e8e68dc8a74ed1a141695e4dbcacd9e3755b320d7",
+  "baselineFileCount": 309,
+  "currentFileCount": 309,
+  "HISTORICAL_EVIDENCE_IMMUTABLE": "PASS",
+  "changed": [],
+  "added": [],
+  "removed": [],
+  "action": "none required",
+  "knownPreExistingMutators": [
+    {
+      "path": "research-evidence/r2-lr/deterministic-suite.json",
+      "cause": "test/r2lr_last_mile.test.ts rewrites its own evidence record with a fresh recordedAt on every unit run",
+      "introducedBy": "R2-LR (pre-existing, not this stage)",
+      "fieldChanged": "recordedAt"
+    }
+  ],
+  "HISTORICAL_EVIDENCE_IMMUTABLE_EXCLUDING_KNOWN_MUTATORS": "PASS"
+}
