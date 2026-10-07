@@ -1,0 +1,14 @@
+R3-S0 — DURABLE EVENT PRODUCER/CONSUMER AUDIT
+
+PASS  EA-01  every declared event type exists in the registry its store publishes
+        ORCHESTRATION_LEDGER: 37 types verified against EVENT_TYPES | PROJECT_WORKSPACE: ProjectWorkspaceEventType (a TS union, no runtime registry) (not runtime-verifiable) | PROOF_PLANE: ProofEventType (a TS union, no runtime registry) (not runtime-verifiable) | REASONING_PLANE: ReasoningEventType (a TS u
+PASS  EA-02  every family cites at least one identifier that exists in the compiled tree or a real registry
+        7 families cite resolvable symbols
+PASS  EA-03  the four defect flags are applied mechanically and none applies to a declared family
+        7 families, 0 flagged: no WRITE_ONLY_EVENT, no UNCONSUMED_RECEIPT, no CONSUMER_WITHOUT_OWNER, no ORPHANED_RUNTIME_PROJECTION
+PASS  EA-04  every family claiming restart survival is backed by a durable store, not an in-memory map
+        7 families: all durable
+PASS  EA-05  the audit reports against the four flags the ruling names, and only those
+        WRITE_ONLY_EVENT, UNCONSUMED_RECEIPT, CONSUMER_WITHOUT_OWNER, ORPHANED_RUNTIME_PROJECTION
+
+5/5 audit check(s) PASS
