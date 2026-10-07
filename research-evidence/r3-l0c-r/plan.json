@@ -133,16 +133,17 @@
       "project/corpus": "dd16b429580b130a233c4e27fa40190b80f0cf18b0eb3173be0acd3794cc1014",
       "oracle": "63a937b5b21b630d53c4cc5ed2caa9738cc26291a2f123412491922277a88efa",
       "generation child": "c745c5f8527e158034aac3acce00feaae1b617816f9091859ebf4c791638b7c3",
-      "matrix runner": "4df94d9430c4e67c1d11f169e628b6f33eeafb08f71ed95f93cb526d63e1d896",
+      "matrix runner": "27ccf9252491cf373a20810d5b845b3b71022f4f83dca939d2546f864210e070",
       "selector/builder": "1c68299df520f852bec7ce2c2a6668ca8326e9a98add87eb8e2945781c4c6350",
       "witness": "340309a1063b7de603b80f7c62101dae2ba8159160686e6af8fbde971aa9ee50",
       "analysis": "7b1dd16479a25bba7b6df994005cd264874945d9b71c936e7fd22b79398d2cd7",
-      "containment topology": "ef513573334595caf35430bee7bf48edf8df968ab4af9df05c1b237dd26a2a24",
+      "containment topology": "8a79f84ed8f1bcfbd5b895c6711984e2dc09f4d1d740f5ceea331b59f71ed74d",
       "trial schema": "ee3e977ff165e97321b34dff3a301054b5c038f17daf7281fddf2b9ef7e91085",
-      "verdict logic": "7b1dd16479a25bba7b6df994005cd264874945d9b71c936e7fd22b79398d2cd7"
+      "verdict logic": "7b1dd16479a25bba7b6df994005cd264874945d9b71c936e7fd22b79398d2cd7",
+      "executor route": "0a5dd31a1acf62f4703156eaa671e0441aefb09faf9e9ac57026e04ae577a81f"
     },
-    "executionClosureDigest": "73be9963ee13b282894e0e2ebf616f62994b79dd42b3ad9f121e6c4ec2b9ba1e",
-    "fileCount": 15,
+    "executionClosureDigest": "4b827a464d3e462d0b7b72bf11b382b331afd981f381897ddd281a8d5ab344c0",
+    "fileCount": 16,
     "coversCodeNotResults": true
   },
   "closureInputs": [
@@ -155,7 +156,8 @@
     "analysis",
     "containment topology",
     "trial schema",
-    "verdict logic"
+    "verdict logic",
+    "executor route"
   ],
   "topologyDerivation": {
     "hostPrivateKinds": [
@@ -171,19 +173,79 @@
     "rule": "for every unit Ui: protected = every Uj world (j!=i) + oracle + control + evidence + reference + sibling-unit root + runner/analysis + Ui own state"
   },
   "primaryExecutor": {
+    "routeId": "omnigate2api-deepseek-v41-flash",
+    "providerId": "omnigate-route",
+    "modelId": "deepseek-v4.1-flash",
+    "displayName": "DeepSeek v4.1 Flash (omnigate2api)",
+    "modelFamily": "deepseek",
+    "api": "openai-completions",
+    "baseURL": "http://127.0.0.1:7866/v1",
+    "apiKeyEnv": "CA2A_API_KEY",
+    "contextWindow": 1000000,
+    "maxTokens": 128000,
+    "modelSpecificPromptTuning": false,
+    "switchableAfterTrial1": false,
+    "availabilityEvidence": "a direct completion and a direct streaming completion on this gateway both returned 200 with the model echoing deepseek-v4.1-flash; the model is listed by the gateway and enabled in the ZCode provider config"
+  },
+  "executorRouteDeviation": {
+    "id": "EXECUTOR_ROUTE_REPLACED_UNDER_EXPLICIT_AUTHORIZATION",
+    "authorizedBy": "explicit user authorization",
+    "authorizationText": "authorized replacing the experiment stack with omnigate2api/deepseek-v4.1-flash, recorded as an explicit deviation rather than classified as a model-stack change",
+    "classification": "EXPLICITLY_RECORDED_DEVIATION",
+    "classifiedAsModelStackChange": false,
+    "changed": [
+      {
+        "field": "providerId",
+        "from": "deepseek-route",
+        "to": "omnigate-route"
+      },
+      {
+        "field": "routeId",
+        "from": "deepseek-direct",
+        "to": "omnigate2api-deepseek-v41-flash"
+      },
+      {
+        "field": "baseURL",
+        "from": "https://api.deepseek.com",
+        "to": "http://127.0.0.1:7866/v1"
+      },
+      {
+        "field": "modelId",
+        "from": "deepseek-flash",
+        "to": "deepseek-v4.1-flash"
+      },
+      {
+        "field": "apiKeyEnv",
+        "from": "DEEPSEEK_API_KEY",
+        "to": "CA2A_API_KEY"
+      }
+    ],
+    "preserved": [
+      "modelFamily (deepseek)",
+      "project corpus",
+      "I1 and I2 semantics",
+      "diagnostic oracle",
+      "capital bodies",
+      "selected-handle semantics",
+      "H/C treatment definition",
+      "reconstruction-compression verdict",
+      "net-cost verdict",
+      "original 16-session arm order",
+      "randomization seed"
+    ],
+    "interpretationConsequence": "the replication executes on a different channel than Run 1, so no cross-run channel comparison is possible or claimed; Run 1 contributes zero observations to the treatment verdicts regardless, because its treatment was never applied",
+    "exposureState": "PRE_EXPOSURE — the R3-L0C-R replication never launched a model, so this is a pre-exposure change",
+    "requiresNewPlanCommit": true,
+    "planAmended": false
+  },
+  "supersededExecutor": {
     "routeId": "deepseek-direct",
     "providerId": "deepseek-route",
     "modelId": "deepseek-flash",
-    "displayName": "DeepSeek Flash",
     "modelFamily": "deepseek",
-    "api": "openai-completions",
     "baseURL": "https://api.deepseek.com",
     "apiKeyEnv": "DEEPSEEK_API_KEY",
-    "contextWindow": 131072,
-    "maxTokens": 8192,
-    "availabilityEvidence": "the R3-L0 dummy-fixture plumbing check and the 24 R3-L0 primary sessions all drove this route end-to-end; it is the frozen low-cost sentinel",
-    "modelSpecificPromptTuning": false,
-    "switchableAfterTrial1": false
+    "supersededReason": "HTTP 402 Insufficient Balance, verified by a direct request to the vendor endpoint"
   },
   "armOrderPerBlock": [
     [
