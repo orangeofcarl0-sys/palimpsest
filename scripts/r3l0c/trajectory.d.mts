@@ -6,7 +6,8 @@ export declare function trajectoryPaths(runRoot: string, trajectoryId: string): 
 export declare function trajectoryWorld(runRoot: string, trajectoryId: string): string;
 export declare function trajectoryHome(runRoot: string, trajectoryId: string): string;
 export declare function makeProfile(home: string, route: any, profileId: string, installHostBundle: any, dshHome: any, repoRoot?: string): string;
-export declare function containmentEnvironment(runRoot: string, base?: any): any;
+export declare function runProtectedRoots(runRoot: string, trajectoryIds: readonly string[], currentTrajectoryId?: string | null): readonly string[];
+export declare function containmentEnvironment(runRoot: string, base?: any, trajectoryIds?: readonly string[]): any;
 export declare function prepareRunLayout(runRoot: string, trajectoryIds: readonly string[]): any;
 export declare function prepareTrajectory(runRoot: string, trajectoryId: string, prehistory: any): any;
 export declare const ISOLATED_LAYOUT: any;

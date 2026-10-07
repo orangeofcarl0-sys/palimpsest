@@ -152,10 +152,52 @@ function copyFileSyncSafe(from, to) {
   cpSync(from, to);
 }
 
+/**
+ * §10: THE ROOTS DECLARED TO THE SHIPPED FENCE FOR A RUN.
+ *
+ * R3-L0B's `declaredProtectedRoots` names the sibling-unit root, which is the one it must protect. This stage
+ * additionally declares:
+ *
+ *   · every trajectory's STATE directory, because the isolated layout puts it BESIDE the world rather than
+ *     inside it — so the shipped derivation (which protects `<repository>/.palimpsest`) does not cover it, and a
+ *     worker could otherwise walk up one level and read the durable stores;
+ *   · the host-private experiment roots, so a layout mistake fails closed rather than silently opening them.
+ *
+ * The trajectory's HOME is deliberately NOT listed: the shipped fence already derives it from `DSH_HOME`, and
+ * naming it twice would make it ambiguous which mechanism is doing the work.
+ */
+export function runProtectedRoots(runRoot, trajectoryIds, currentTrajectoryId = null) {
+  const roots = [
+    ...declaredProtectedRoots(runRoot),
+    ...trajectoryIds.map((trajectoryId) => ISOLATED_LAYOUT.unitState(runRoot, trajectoryId)),
+    ISOLATED_LAYOUT.oracleRoot(runRoot),
+    ISOLATED_LAYOUT.referenceRoot(runRoot),
+    ISOLATED_LAYOUT.controlRoot(runRoot),
+    ISOLATED_LAYOUT.evidenceRoot(runRoot),
+  ];
+  /**
+   * EVERY SIBLING WORLD, declared individually.
+   *
+   * This is the one root the shipped derivation cannot supply. The fence derives `<repository>/.palimpsest` from
+   * the worker's own position, and the worker's repository IS its own world — so it labels its OWN state and
+   * knows nothing about the other units. In this layout a sibling world sits at `units/<other>/world`, a SIBLING
+   * of the worker's world, and it is reachable by a single `..`.
+   *
+   * The unit root cannot be declared instead, because `units/` is an ANCESTOR of the worker's own world and
+   * labelling an ancestor kills the worker. So each sibling is named, which is exactly what §10 preference 2 is
+   * for: a root that position cannot hide is DECLARED.
+   */
+  for (const trajectoryId of trajectoryIds) {
+    if (trajectoryId === currentTrajectoryId) continue;
+    roots.push(ISOLATED_LAYOUT.unitWorld(runRoot, trajectoryId));
+  }
+  return Object.freeze([...new Set(roots)]);
+}
+
 /** §10: the containment environment a generation runs under, so the fence protects the declared roots. */
-export function containmentEnvironment(runRoot, base = process.env) {
+export function containmentEnvironment(runRoot, base = process.env, trajectoryIds = []) {
   const separator = process.platform === 'win32' ? ';' : ':';
-  return Object.freeze({ ...base, PALIMPSEST_WORKER_PROTECTED_ROOTS: declaredProtectedRoots(runRoot).join(separator) });
+  return Object.freeze({ ...base, PALIMPSEST_WORKER_PROTECTED_ROOTS: runProtectedRoots(runRoot, trajectoryIds).join(separator) });
 }
 
 /** §10: prepare the isolated layout for a run's trajectories. */

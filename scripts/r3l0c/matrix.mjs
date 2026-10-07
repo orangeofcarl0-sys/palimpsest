@@ -25,7 +25,7 @@ import { join } from 'node:path';
 import { BLOCK_COUNT, GENERATIONS, REPO_ROOT, STAGE_EVIDENCE_PATH } from './contract.mjs';
 import { ARMS, selectionFor } from './capital.mjs';
 import { admitCapital, prepareTrajectory } from './prehistory.mjs';
-import { CHILD_PROGRAM, TEE_PATH, containmentEnvironment, makeProfile, prepareRunLayout, trajectoryHome, trajectoryPaths, trajectoryWorld } from './trajectory.mjs';
+import { CHILD_PROGRAM, TEE_PATH, containmentEnvironment, makeProfile, prepareRunLayout, runProtectedRoots, trajectoryHome, trajectoryPaths, trajectoryWorld } from './trajectory.mjs';
 import { buildPlan, PRIMARY_EXECUTOR } from './plan.mjs';
 import { capitalWitness, historyOnlyWitness } from './witness.mjs';
 import { acquireLease, rigPath, runRoot as runRootPath } from './run-root.mjs';
@@ -82,7 +82,7 @@ function runGeneration(input) {
   try {
     stdout = execFileSync(process.execPath, [CHILD_PROGRAM, specPath], {
       cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024, timeout: 2_400_000,
-      env: containmentEnvironment(runRoot, process.env),
+      env: containmentEnvironment(runRoot, process.env, input.trajectoryIds),
     });
   } catch (error) {
     threw = String(error?.message ?? error).slice(0, 300);
@@ -97,7 +97,7 @@ function runGeneration(input) {
 
 /** §11: run ONE trajectory: its generations strictly in order, each in a fresh child process. */
 async function runTrajectory(input) {
-  const { runRoot, prehistory, home, realDshBin, session, admitted, protectedRoots } = input;
+  const { runRoot, prehistory, home, realDshBin, session, admitted, protectedRoots, trajectoryIds } = input;
   const { world, paths } = prepareTrajectory(runRoot, session.trajectoryId, prehistory);
   const profile = `r3l0c${String(session.trajectoryId).replace(/[^a-z0-9]/gu, '')}`;
   const generations = [];
@@ -111,7 +111,7 @@ async function runTrajectory(input) {
     let result = null;
     while (attempt < 4) {
       attempt += 1;
-      result = runGeneration({ runRoot, world, paths, home, profile, realDshBin, session: { ...session, sessionId }, attempt, generation, knowledge, admitted, protectedRoots });
+      result = runGeneration({ runRoot, world, paths, home, profile, realDshBin, session: { ...session, sessionId }, attempt, generation, knowledge, admitted, protectedRoots, trajectoryIds });
       if (!result.infrastructureInvalid) break;
       out(`      ${sessionId} attempt ${String(attempt)} INFRASTRUCTURE_INVALID (${String(result.threw ?? result.report?.jobPhase ?? 'no report').slice(0, 90)})`);
     }
@@ -217,13 +217,13 @@ async function main() {
   const prehistoryWorld = join(prehistoryRoot, 'world');
   mkdirSync(prehistoryWorld, { recursive: true });
   const head = writeProjectWorld(prehistoryWorld, corpusFiles());
-  const prehistoryState = join(prehistoryRoot, 'state');
-  mkdirSync(prehistoryState, { recursive: true });
-  const prehistoryPaths = trajectoryPaths(runRoot, '__prehistory__');
-  /** The prehistory's own stores live under the run's private area, not inside any world. */
+  /**
+   * The prehistory's own stores live under the run's PRIVATE area, not inside any world and not in a unit
+   * directory — a `units/__prehistory__` entry would add a fake unit to the layout the gate inspects.
+   */
   const prehistoryStateDir = join(runRoot, 'private', 'evidence', 'prehistory-state');
   mkdirSync(prehistoryStateDir, { recursive: true });
-  const prehistoryStatePaths = Object.freeze({ ...prehistoryPaths, state: prehistoryStateDir, orchestration: join(prehistoryStateDir, 'orchestration.sqlite'), ordarium: join(prehistoryStateDir, 'ordarium.sqlite'), association: join(prehistoryStateDir, 'assoc.sqlite'), journal: join(prehistoryStateDir, 'journal.sqlite'), proof: join(prehistoryStateDir, 'proof.sqlite'), proofBlobs: join(prehistoryStateDir, 'proof-blobs'), cells: join(prehistoryStateDir, 'cells.sqlite'), procedures: join(prehistoryStateDir, 'procedures.sqlite') });
+  const prehistoryStatePaths = Object.freeze({ state: prehistoryStateDir, orchestration: join(prehistoryStateDir, 'orchestration.sqlite'), ordarium: join(prehistoryStateDir, 'ordarium.sqlite'), association: join(prehistoryStateDir, 'assoc.sqlite'), journal: join(prehistoryStateDir, 'journal.sqlite'), proof: join(prehistoryStateDir, 'proof.sqlite'), proofBlobs: join(prehistoryStateDir, 'proof-blobs'), cells: join(prehistoryStateDir, 'cells.sqlite'), procedures: join(prehistoryStateDir, 'procedures.sqlite') });
   out(`  head=${head.slice(0, 10)} worldDigest=${plan.worldDigest.slice(0, 12)}`);
 
   out(`${NL}=== §8 admitting the current-standing capital ===`);
@@ -236,7 +236,10 @@ async function main() {
   prepareRunLayout(runRoot, trajectoryIds);
 
   const realDshBin = (await import('../gates/env.mjs')).dshBin();
-  const protectedRoots = containmentEnvironment(runRoot, {}).PALIMPSEST_WORKER_PROTECTED_ROOTS;
+  /** §10: the separator is the platform's path-list separator, matching what the shipped fence parses. */
+  const SEPARATOR = process.platform === 'win32' ? ';' : ':';
+  /** §10: computed per trajectory, because the SIBLING worlds depend on which unit is running. */
+  const protectedRootsFor = (currentTrajectoryId) => runProtectedRoots(runRoot, trajectoryIds, currentTrajectoryId).join(SEPARATOR);
 
   const trajectories = [];
   const sessions = [];
@@ -247,7 +250,7 @@ async function main() {
     const { installHostBundle, dshHome } = await import('../gates/env.mjs');
     makeProfile(home, PRIMARY_EXECUTOR, `r3l0c${session.trajectoryId.replace(/[^a-z0-9]/gu, '')}`, installHostBundle, dshHome);
     out(`[block ${String(session.block)}] trajectory ${session.trajectoryId} (${session.armName})`);
-    const trajectory = await runTrajectory({ runRoot, prehistory, home, realDshBin, session, admitted: { refs: admitted.refs, capital: admitted.admitted, frozenHandlesFor: admitted.frozenHandlesFor, associationsPresent: true }, protectedRoots });
+    const trajectory = await runTrajectory({ runRoot, prehistory, home, realDshBin, session, admitted: { refs: admitted.refs, capital: admitted.admitted, frozenHandlesFor: admitted.frozenHandlesFor, associationsPresent: true }, protectedRoots: protectedRootsFor(session.trajectoryId), trajectoryIds });
     trajectories.push(trajectory);
     sessions.push(...trajectory.generations);
     writeFileSync(join(runRoot, 'private', 'evidence', 'trials.partial.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0C', trajectories, sessions }, null, 2)}${NL}`, 'utf8');
