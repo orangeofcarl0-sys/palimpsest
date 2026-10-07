@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 import { COMPRESSION, DIRECTIONS, NET_COST, compressionVerdict, netCostVerdict, pairBlock, reliabilityReport } from "../scripts/r3l0c/analyse.mjs";
 import { classifyInformationPath, historyOnlyWitness, capitalWitness } from "../scripts/r3l0c/witness.mjs";
 import { isDeclaredCorpusPath } from "../scripts/r3l0c/corpus.mjs";
+import { frozenHandlesFor, selectionFor } from "../scripts/r3l0c/capital.mjs";
 
 /** A synthetic session row, so the analysis can be exercised without a run. */
 function session(overrides: Record<string, unknown>) {
@@ -193,5 +194,55 @@ describe("R3-L0C §17/§18 — the witness and the information path", () => {
     expect(classifyInformationPath({ capitalContentReturned: false, historyReads: 4, firstEditStep: 20, firstCapitalStep: null, resultSubmitted: true })).toBe("HISTORY_RECONSTRUCTION");
     expect(classifyInformationPath({ capitalContentReturned: false, historyReads: 0, firstEditStep: 3, firstCapitalStep: null, resultSubmitted: true })).toBe("DIRECT_EDIT_WITHOUT_HISTORY");
     expect(classifyInformationPath({ capitalContentReturned: false, historyReads: 2, firstEditStep: null, firstCapitalStep: null, resultSubmitted: false })).toBe("NO_RESULT");
+  });
+});
+
+/* ================================================================ §9 the selection SHAPE */
+
+describe("R3-L0C §9 — the selection shape, which failed silently once", () => {
+  const refs = [
+    { invariant: "I1", kind: "REASONING_CLAIM", handle: "@ctx/reasoning/cell-a/cl-1", ref: { cellId: "cell-a", claimId: "cl-1" } },
+    { invariant: "I1", kind: "PROCEDURE", handle: "@ctx/procedure/prc-a/0", ref: { procedureId: "prc-a", revision: 0, reason: "the method" } },
+    { invariant: "I2", kind: "REASONING_CLAIM", handle: "@ctx/reasoning/cell-b/cl-2", ref: { cellId: "cell-b", claimId: "cl-2" } },
+  ];
+
+  it("§9 the selection uses the OWNER shape, never a bare handle list", () => {
+    /**
+     * THE DEFECT THIS PINS. A first version sent `{ handles: [...] }`. The host contract
+     * `KnowledgeSelectionRequest` is `{ proof?, reasoning?, procedure? }`, so the unknown field was IGNORED: the
+     * selection was accepted, the attempt reported `knowledgeSelected: true`, and NO handle was compiled. All 16
+     * sessions of the first run therefore executed with an empty capital surface, and the treatment was never
+     * delivered. The failure was silent to every host-side signal and was caught only by the consumer-boundary
+     * payload.
+     *
+     * The shape is asserted field by field, so a future refactor cannot quietly reintroduce a shape the owner
+     * does not read.
+     */
+    const selection = selectionFor("C", "G1", refs) as { proof: readonly Record<string, unknown>[]; reasoning: readonly Record<string, unknown>[]; procedure: readonly Record<string, unknown>[] };
+    expect(Object.keys(selection).sort()).toEqual(["procedure", "proof", "reasoning"]);
+    expect(selection).not.toHaveProperty("handles");
+    expect(selection.reasoning[0]).toEqual({ cellId: "cell-a", claimId: "cl-1" });
+    expect(selection.procedure[0]).toEqual({ procedureId: "prc-a", revision: 0, reason: "the method" });
+    expect(selection.proof).toEqual([]);
+  });
+
+  it("§9 the selection carries ONLY the invariants the generation exposes", () => {
+    const selection = selectionFor("C", "G1", refs) as { proof: readonly Record<string, unknown>[]; reasoning: readonly Record<string, unknown>[]; procedure: readonly Record<string, unknown>[] };
+    expect(selection.reasoning.length).toBe(1);
+    expect(selection.reasoning[0]!.cellId).toBe("cell-a");
+    const g2 = selectionFor("C", "G2", refs) as { reasoning: readonly Record<string, unknown>[] };
+    expect(g2.reasoning.length).toBe(2);
+  });
+
+  it("§9 the expected handle set matches the selection one-for-one", () => {
+    const handles = frozenHandlesFor("C", "G1", refs);
+    const selection = selectionFor("C", "G1", refs) as { proof: readonly Record<string, unknown>[]; reasoning: readonly Record<string, unknown>[]; procedure: readonly Record<string, unknown>[] };
+    expect(handles.length).toBe(selection.reasoning.length + selection.procedure.length + selection.proof.length);
+    expect(handles).toEqual(["@ctx/reasoning/cell-a/cl-1", "@ctx/procedure/prc-a/0"]);
+  });
+
+  it("§9 H is the ABSENCE of a selection, not an empty one", () => {
+    expect(selectionFor("H", "G1", refs)).toBeUndefined();
+    expect(frozenHandlesFor("H", "G1", refs)).toEqual([]);
   });
 });

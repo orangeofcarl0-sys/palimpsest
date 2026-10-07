@@ -260,18 +260,27 @@ export const ARMS = Object.freeze({
 /**
  * §9: THE SELECTION FOR A GENERATION.
  *
- * H returns `undefined`, so the `knowledge` field is OMITTED entirely rather than sent empty — an empty array
- * and an absent field are different requests, and the H arm must be the absence of a selection.
+ * H returns `undefined`, so the `knowledge` field is OMITTED entirely rather than sent empty — an absent field
+ * and an empty array are different requests, and the H arm must be the absence of a selection.
  *
- * C returns only the handles for the invariants THIS generation exposes. A generation that does not exercise an
- * invariant does not receive its capital, which is what keeps the treatment attributable to the surface the
- * generation actually works on.
+ * C returns the selection in the SHAPE THE CONTEXT OWNER EXPECTS: one list per owner kind, each entry carrying
+ * the owner's own reference fields. THE SHAPE IS LOAD-BEARING and a first version got it wrong: it sent
+ * `{ handles: [...] }`, which the host does not recognize, so the selection was accepted, no handle was
+ * compiled, and every C session ran with an EMPTY capital surface while reporting `selected=true`. The failure
+ * was silent, and only the consumer-boundary witness caught it.
+ *
+ * Only the invariants THIS generation exposes are selected, which keeps the treatment attributable to the
+ * surface the generation actually works on.
  */
 export function selectionFor(arm, generationId, refs) {
   if (arm === 'H') return undefined;
   const exposed = new Set((GENERATION_EXPOSURES[generationId] ?? []));
   const selected = refs.filter((entry) => exposed.has(entry.invariant));
-  return Object.freeze({ handles: Object.freeze(selected.map((entry) => entry.handle)), refs: Object.freeze(selected) });
+  return Object.freeze({
+    proof: Object.freeze(selected.filter((entry) => entry.kind === 'PROOF_CLAIM').map((entry) => Object.freeze({ claimId: entry.ref.claimId }))),
+    reasoning: Object.freeze(selected.filter((entry) => entry.kind === 'REASONING_CLAIM').map((entry) => Object.freeze({ cellId: entry.ref.cellId, claimId: entry.ref.claimId }))),
+    procedure: Object.freeze(selected.filter((entry) => entry.kind === 'PROCEDURE').map((entry) => Object.freeze({ procedureId: entry.ref.procedureId, revision: entry.ref.revision, reason: entry.ref.reason }))),
+  });
 }
 
 /** §11: which invariants each generation exposes. */
@@ -280,10 +289,18 @@ export const GENERATION_EXPOSURES = Object.freeze({
   G2: Object.freeze(['I1', 'I2']),
 });
 
-/** §8: the worker-facing handle set for a generation, so a plan can freeze it. */
+/**
+ * §8: the EXPECTED worker-facing handle set for a generation.
+ *
+ * The handles are the ones the Context owner compiles from the selection, spelled the way the owner spells them
+ * (`@ctx/<kind>/<id>`), so the witness can compare the consumer boundary against what was selected. The set is
+ * derived from the SAME owner refs the selection uses, which is what makes the two provably agree.
+ */
 export function frozenHandlesFor(arm, generationId, refs) {
-  const selection = selectionFor(arm, generationId, refs);
-  return selection === undefined ? Object.freeze([]) : Object.freeze([...selection.handles]);
+  if (arm === 'H') return Object.freeze([]);
+  const exposed = new Set((GENERATION_EXPOSURES[generationId] ?? []));
+  const selected = refs.filter((entry) => exposed.has(entry.invariant));
+  return Object.freeze(selected.map((entry) => entry.handle));
 }
 
 /**

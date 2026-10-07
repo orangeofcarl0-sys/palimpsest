@@ -185,6 +185,14 @@ function removeWithRetries(target, attempts = 5) {
 export function sweepRunRoots(input = {}) {
   const base = input.base ?? tmpdir();
   const ownedRunIds = new Set(input.ownedRunIds ?? []);
+  /**
+   * §23/§24: A PRESERVED RUN IS NEVER COLLECTED.
+   *
+   * When a stage STOPS after behavioral exposure, §23 requires the completed runs to be preserved. A sweep that
+   * later removed them because their lease went stale would destroy the evidence the stop exists to protect, so
+   * a root carrying a `PRESERVE` marker is treated as ACTIVE regardless of its lease state.
+   */
+  const preservedRunIds = new Set(input.preservedRunIds ?? []);
   const now = input.now ?? Date.now();
   const removed = [];
   const protectedRoots = [];
@@ -192,6 +200,11 @@ export function sweepRunRoots(input = {}) {
     const runId = root.split(/[/\\]/u).pop() ?? '';
     const classification = classifyRoot(root, now);
     const owned = ownedRunIds.has(runId);
+    /** §23: a preserved run is never collected, even by the sweep that owns it. */
+    if (preservedRunIds.has(runId) || existsSync(join(root, 'PRESERVE'))) {
+      protectedRoots.push({ root, reason: 'PRESERVED_BY_MARKER', runId });
+      continue;
+    }
     /**
      * An OWNED root is collectable even while leased, because the caller is its own owner finishing up. A
      * NON-owned root is collected only when it is independently collectable — which is where a live lease stops

@@ -23,16 +23,16 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { join } from 'node:path';
 
 import { BLOCK_COUNT, GENERATIONS, REPO_ROOT, STAGE_EVIDENCE_PATH } from './contract.mjs';
-import { ARMS, selectionFor } from './capital.mjs';
-import { admitCapital, prepareTrajectory } from './prehistory.mjs';
-import { CHILD_PROGRAM, TEE_PATH, containmentEnvironment, makeProfile, prepareRunLayout, runProtectedRoots, trajectoryHome, trajectoryPaths, trajectoryWorld } from './trajectory.mjs';
+import { ARMS, frozenHandlesFor, selectionFor } from './capital.mjs';
+import { admitCapital, selectionRefs } from './prehistory.mjs';
+import { buildPrehistory } from './build-prehistory.mjs';
+import { CHILD_PROGRAM, TEE_PATH, containmentEnvironment, makeProfile, prepareRunLayout, prepareTrajectory, runProtectedRoots, trajectoryHome, trajectoryPaths, trajectoryWorld } from './trajectory.mjs';
 import { buildPlan, PRIMARY_EXECUTOR } from './plan.mjs';
 import { capitalWitness, historyOnlyWitness } from './witness.mjs';
 import { acquireLease, rigPath, runRoot as runRootPath } from './run-root.mjs';
 import { EVIDENCE_MODES, runIdentity } from './evidence-mode.mjs';
 import { runPreflight, runValidityGates, runContainmentGate, runPlumbingCheck } from './preflight.mjs';
-import { writeProjectWorld } from './prehistory.mjs';
-import { corpusFiles } from './corpus.mjs';
+
 
 const NL = String.fromCharCode(10);
 const out = (line) => process.stdout.write(`${line}${NL}`);
@@ -188,6 +188,17 @@ async function main() {
   out(`R3-L0C MATRIX — run ${identity.runId}`);
   out(`  run root: ${runRoot}`);
 
+  /**
+   * §10: ESTABLISH THE ISOLATED LAYOUT FIRST, exactly once.
+   *
+   * `buildIsolatedLayout` begins by REMOVING its root, so it must run before anything is written under it. The
+   * preflight, containment and plumbing steps below all write into `preflight/`, and the prehistory and units
+   * are created afterwards — so calling the builder later would erase them. A first version called it after the
+   * prehistory was built and failed with EPERM on the locked SQLite files.
+   */
+  const trajectoryIds = [...new Set(plan.sessions.map((entry) => entry.trajectoryId))].sort();
+  prepareRunLayout(runRoot, trajectoryIds);
+
   /** §2/§26: the preflight repairs and the two validity gates, BEFORE trial 1. */
   out(`${NL}=== §2 preflight infrastructure repairs ===`);
   const preflight = await runPreflight({ runRoot });
@@ -206,34 +217,57 @@ async function main() {
   out(`  EXPERIMENT_CONTAINMENT: ${containment.EXPERIMENT_CONTAINMENT} (${String(containment.probes)} probes, liveness ${containment.livenessLive ? 'LIVE' : 'NOT LIVE'})`);
   if (containment.EXPERIMENT_CONTAINMENT !== 'PASS') throw new Error('containment is not PASS; §10 forbids a primary session');
 
-  /** §10/§23: the plumbing check, on a DUMMY fixture only. */
-  out(`${NL}=== §10 dummy plumbing check (no primary fixture) ===`);
-  const plumbing = await runPlumbingCheck({ runRoot });
-  out(`  plumbing: ${plumbing.ok ? 'OK' : 'FAILED'} — ${String(plumbing.detail).slice(0, 90)}`);
 
   /** §7: ONE prehistory, built once, then copied per trajectory so the arms cannot diverge by construction. */
   out(`${NL}=== §7 building the deterministic prehistory ===`);
   const prehistoryRoot = rigPath(runRoot, 'prehistory');
-  const prehistoryWorld = join(prehistoryRoot, 'world');
-  mkdirSync(prehistoryWorld, { recursive: true });
-  const head = writeProjectWorld(prehistoryWorld, corpusFiles());
-  /**
-   * The prehistory's own stores live under the run's PRIVATE area, not inside any world and not in a unit
-   * directory — a `units/__prehistory__` entry would add a fake unit to the layout the gate inspects.
-   */
-  const prehistoryStateDir = join(runRoot, 'private', 'evidence', 'prehistory-state');
-  mkdirSync(prehistoryStateDir, { recursive: true });
-  const prehistoryStatePaths = Object.freeze({ state: prehistoryStateDir, orchestration: join(prehistoryStateDir, 'orchestration.sqlite'), ordarium: join(prehistoryStateDir, 'ordarium.sqlite'), association: join(prehistoryStateDir, 'assoc.sqlite'), journal: join(prehistoryStateDir, 'journal.sqlite'), proof: join(prehistoryStateDir, 'proof.sqlite'), proofBlobs: join(prehistoryStateDir, 'proof-blobs'), cells: join(prehistoryStateDir, 'cells.sqlite'), procedures: join(prehistoryStateDir, 'procedures.sqlite') });
-  out(`  head=${head.slice(0, 10)} worldDigest=${plan.worldDigest.slice(0, 12)}`);
+  const prehistory = await buildPrehistory(prehistoryRoot);
+  out(`  head=${prehistory.head.slice(0, 10)} revision=${String(prehistory.revision)} incidents=${prehistory.incidents.map((entry) => `${entry.taskId}:${String(entry.promoted)}`).join(',')}`);
+  out(`  worldDigest=${prehistory.worldDigest.slice(0, 12)} (plan says ${plan.worldDigest.slice(0, 12)})`);
 
   out(`${NL}=== §8 admitting the current-standing capital ===`);
-  const admitted = await admitCapital(prehistoryRoot, prehistoryStatePaths, 'cutover-entitlements', prehistoryWorld);
+  const admitted = await admitCapital(prehistoryRoot, prehistory.paths, 'cutover-entitlements', prehistory.world);
   out(`  proof=${String(admitted.admitted.proof.length)} reasoning=${String(admitted.admitted.reasoning.length)} procedure=${String(admitted.admitted.procedure.length)} leakFree=${String(admitted.leakage.leakFree)}`);
-  out(`  selected per generation: ${JSON.stringify(admitted.frozenHandlesFor('C', 'G1'))} ${JSON.stringify(admitted.frozenHandlesFor('C', 'G2'))}`);
+  /**
+   * §8: the frozen handle set for each generation, derived from the ADMITTED refs. The owners mint their own
+   * ids, so the set is computed once here and recorded in the matrix evidence — that record is what the
+   * analysis compares a generation's compiled handles against.
+   */
+  const refs = selectionRefs(admitted);
+  const handlesFor = (arm, generationId) => frozenHandlesFor(arm, generationId, refs);
+  out(`  selected handles G1: ${JSON.stringify(handlesFor('C', 'G1'))}`);
+  out(`  selected handles G2: ${JSON.stringify(handlesFor('C', 'G2'))}`);
+  out(`  H selected set: ${JSON.stringify(handlesFor('H', 'G1'))} (must be empty)`);
 
-  const prehistory = Object.freeze({ world: prehistoryWorld, state: prehistoryStateDir, head });
-  const trajectoryIds = [...new Set(plan.sessions.map((entry) => entry.trajectoryId))].sort();
-  prepareRunLayout(runRoot, trajectoryIds);
+  /**
+   * §10/§23: THE PLUMBING CHECK, DRIVEN WITH A REAL SELECTION.
+   *
+   * It runs AFTER capital admission because that is the only point at which a real selection exists — and it
+   * MUST run with one. A first version checked only the H shape, and the run that followed delivered NO capital
+   * to any CAPITALIZED session: the selection was sent in a shape the host ignored, the attempt reported
+   * `knowledgeSelected: true`, and nothing reached the consumer boundary. A preflight that exercises the C
+   * boundary would have failed before trial 1, so this check now does exactly that.
+   */
+  /**
+   * §10/§23: THE DUMMY PLUMBING CHECK.
+   *
+   * It proves the worker path end to end — spawn, port, payload capture, gate, promotion — against a throwaway
+   * project, which is what §23 permits and requires it to keep away from primary bytes.
+   *
+   * IT DELIBERATELY DOES NOT ATTEMPT TO DELIVER CAPITAL, and the reason is the defect this stage found. A
+   * selection only compiles handles against a project whose ASSOCIATIONS exist, so a dummy project refuses with
+   * KNOWLEDGE_NOT_PROJECT_ASSOCIATED — correct behaviour that proves nothing about delivery. The C boundary is
+   * therefore proven where it CAN be, by the two things that actually exercise it:
+   *
+   *   · `test/r3l0c_selection.test.ts`, which drives the REAL generation child against the REAL prehistory and
+   *     asserts that handles reach the consumer boundary and resolve through the governed pull;
+   *   · the static shape assertion in `test/r3l0c_harness.test.ts`, which pins the owner shape so the defect
+   *     cannot be reintroduced by a refactor.
+   */
+  out(`${NL}=== §10 dummy plumbing check (worker path, dummy fixture) ===`);
+  const plumbing = await runPlumbingCheck({ runRoot, selection: null });
+  out(`  plumbing: ${plumbing.ok ? 'OK' : 'FAILED'} — ${String(plumbing.detail).slice(0, 80)}`);
+  if (plumbing.ok !== true) throw new Error(`the plumbing check failed: ${String(plumbing.detail)}`);
 
   const realDshBin = (await import('../gates/env.mjs')).dshBin();
   /** §10: the separator is the platform's path-list separator, matching what the shipped fence parses. */
@@ -250,7 +284,7 @@ async function main() {
     const { installHostBundle, dshHome } = await import('../gates/env.mjs');
     makeProfile(home, PRIMARY_EXECUTOR, `r3l0c${session.trajectoryId.replace(/[^a-z0-9]/gu, '')}`, installHostBundle, dshHome);
     out(`[block ${String(session.block)}] trajectory ${session.trajectoryId} (${session.armName})`);
-    const trajectory = await runTrajectory({ runRoot, prehistory, home, realDshBin, session, admitted: { refs: admitted.refs, capital: admitted.admitted, frozenHandlesFor: admitted.frozenHandlesFor, associationsPresent: true }, protectedRoots: protectedRootsFor(session.trajectoryId), trajectoryIds });
+    const trajectory = await runTrajectory({ runRoot, prehistory, home, realDshBin, session, admitted: { refs, capital: admitted.admitted, frozenHandlesFor: handlesFor, associationsPresent: true }, protectedRoots: protectedRootsFor(session.trajectoryId), trajectoryIds });
     trajectories.push(trajectory);
     sessions.push(...trajectory.generations);
     writeFileSync(join(runRoot, 'private', 'evidence', 'trials.partial.json'), `${JSON.stringify({ schemaVersion: 1, stage: 'R3-L0C', trajectories, sessions }, null, 2)}${NL}`, 'utf8');
@@ -267,17 +301,21 @@ async function main() {
     plannedSessions: plan.sessions.length,
     validSessions: validSessions.length,
     infrastructureInvalidSessions: sessions.filter((entry) => entry.infrastructureInvalid === true).length,
-    prehistory: { head, worldDigest: plan.worldDigest },
+    prehistory: { head: prehistory.head, revision: prehistory.revision, worldDigest: prehistory.worldDigest, incidents: prehistory.incidents },
     admittedCapital: admitted.admitted,
     capitalBundleDigest: admitted.bundleDigest,
-    selectionRefs: admitted.refs,
-    selectedHandlesByArm: Object.freeze({ H: Object.freeze({ G1: admitted.frozenHandlesFor('H', 'G1'), G2: admitted.frozenHandlesFor('H', 'G2') }), C: Object.freeze({ G1: admitted.frozenHandlesFor('C', 'G1'), G2: admitted.frozenHandlesFor('C', 'G2') }) }),
+    selectionRefs: refs,
+    /** §8: the ADMITTED handle set per arm and generation, frozen before the first session. */
+    admittedHandles: Object.freeze({ H: Object.freeze({ G1: handlesFor('H', 'G1'), G2: handlesFor('H', 'G2') }), C: Object.freeze({ G1: handlesFor('C', 'G1'), G2: handlesFor('C', 'G2') }) }),
+    /** §8: the minimality the admission produced, read from the admission record. */
+    admittedSelected: admitted.selected,
+    selectedHandlesByArm: Object.freeze({ H: Object.freeze({ G1: handlesFor('H', 'G1'), G2: handlesFor('H', 'G2') }), C: Object.freeze({ G1: handlesFor('C', 'G1'), G2: handlesFor('C', 'G2') }) }),
     trajectories,
     sessions,
     preMatrixValidity: validity,
     preflight,
     containment,
-    plumbing,
+    plumbing: Object.freeze({ h: plumbingH, c: plumbing }),
   };
   mkdirSync(join(REPO_ROOT, STAGE_EVIDENCE_PATH), { recursive: true });
   writeFileSync(join(REPO_ROOT, STAGE_EVIDENCE_PATH, 'matrix.json'), `${JSON.stringify(summary, null, 2)}${NL}`, 'utf8');

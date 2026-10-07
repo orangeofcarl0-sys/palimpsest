@@ -43,7 +43,7 @@ import { ARMS as CAPITAL_ARMS, STANDING_BODIES, bundleDigest, frozenBundle, futu
 import { CORPUS_DOCUMENTS, corpusCoverage, corpusFiles, declaredCorpusPaths, isDeclaredCorpusPath } from "../scripts/r3l0c/corpus.mjs";
 import { DIAGNOSTIC_CASES, INVARIANT_EXPOSURES, classSummary, diagnosticVector, eligibleClasses, instrumentedInvariants, uninstrumentedInvariants } from "../scripts/r3l0c/diagnostic.mjs";
 import { H0_SOURCE, worldFiles } from "../scripts/r3l0c/project.mjs";
-import { worldDigest } from "../scripts/r3l0c/prehistory.mjs";
+import { worldDigest } from "../scripts/r3l0c/build-prehistory.mjs";
 import { armOrderIsBalanced, schedule, armOrderPerBlock, frozenHandlePlan } from "../scripts/r3l0c/plan.mjs";
 
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
@@ -257,17 +257,26 @@ describe("R3-L0C §7/§9 — the arms and the treatment", () => {
   });
 
   it("§8/§9 H OMITS the selection entirely rather than sending it empty", () => {
-    const refs = [{ invariant: "I1", handle: "@ctx/reasoning/a/b" }, { invariant: "I2", handle: "@ctx/reasoning/c/d" }];
+    const refs = [
+      { invariant: "I1", kind: "REASONING_CLAIM", handle: "@ctx/reasoning/a/b", ref: { cellId: "a", claimId: "b" } },
+      { invariant: "I2", kind: "REASONING_CLAIM", handle: "@ctx/reasoning/c/d", ref: { cellId: "c", claimId: "d" } },
+    ];
     expect(selectionFor("H", "G1", refs)).toBeUndefined();
-    const c = selectionFor("C", "G1", refs);
+    const c = selectionFor("C", "G1", refs) as { reasoning: readonly { cellId: string }[] };
     expect(c).toBeDefined();
-    expect(c!.handles).toEqual(["@ctx/reasoning/a/b"]);
+    /** §9: the OWNER shape, not a bare handle list — the shape that silently failed once. */
+    expect(c.reasoning.map((entry) => entry.cellId)).toEqual(["a"]);
   });
 
-  it("§9 C receives only the handles for the invariants the generation exposes", () => {
-    const refs = [{ invariant: "I1", handle: "h1" }, { invariant: "I2", handle: "h2" }];
-    expect(selectionFor("C", "G1", refs)!.handles).toEqual(["h1"]);
-    expect(selectionFor("C", "G2", refs)!.handles).toEqual(["h1", "h2"]);
+  it("§9 C receives only the references for the invariants the generation exposes", () => {
+    const refs = [
+      { invariant: "I1", kind: "REASONING_CLAIM", handle: "h1", ref: { cellId: "c1", claimId: "k1" } },
+      { invariant: "I2", kind: "REASONING_CLAIM", handle: "h2", ref: { cellId: "c2", claimId: "k2" } },
+    ];
+    const g1 = selectionFor("C", "G1", refs) as { reasoning: readonly { cellId: string }[] };
+    expect(g1.reasoning.map((entry) => entry.cellId)).toEqual(["c1"]);
+    const g2 = selectionFor("C", "G2", refs) as { reasoning: readonly { cellId: string }[] };
+    expect(g2.reasoning.map((entry) => entry.cellId)).toEqual(["c1", "c2"]);
   });
 
   it("§8 no dynamic relevance ranker and no forced prework", () => {

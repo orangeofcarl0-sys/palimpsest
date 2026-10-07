@@ -39,7 +39,7 @@ import {
 import { bundleDigest, frozenBundle, frozenHandlesFor } from './capital.mjs';
 import { corpusCoverage, corpusDigestMaterial, declaredCorpusPaths } from './corpus.mjs';
 import { DIAGNOSTIC_CLASSES, INVARIANT_EXPOSURES, eligibleClasses, instrumentedInvariants, uninstrumentedInvariants } from './diagnostic.mjs';
-import { worldDigest } from './prehistory.mjs';
+import { worldDigest } from './build-prehistory.mjs';
 
 const NL = String.fromCharCode(10);
 const sha256 = (text) => createHash('sha256').update(String(text), 'utf8').digest('hex');

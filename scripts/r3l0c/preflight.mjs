@@ -303,9 +303,20 @@ export async function runContainmentGate(input) {
  * contributes nothing to N and touches no primary bytes.
  */
 export async function runPlumbingCheck(input) {
-  const record = await runPlumbing({ runRoot: input.runRoot, route: input.route ?? (await import('./plan.mjs')).PRIMARY_EXECUTOR });
+  const record = await runPlumbing({
+    runRoot: input.runRoot,
+    route: input.route ?? (await import('./plan.mjs')).PRIMARY_EXECUTOR,
+    /** §10: forwarded so the check can drive the C boundary, not only the H shape. */
+    selection: input.selection ?? null,
+    projectId: input.projectId,
+    paths: input.paths,
+    repo: input.repo,
+  });
   const dir = join(input.runRoot, 'preflight');
   mkdirSync(dir, { recursive: true });
+  /** The two shapes are recorded separately, so the C boundary has its own artifact. */
+  const name = input.selection === null || input.selection === undefined ? 'plumbing-h.json' : 'plumbing-c.json';
+  writeFileSync(join(dir, name), `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
   writeFileSync(join(dir, 'plumbing.json'), `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
   return record;
 }
