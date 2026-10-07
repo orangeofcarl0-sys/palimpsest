@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-R",
+  "kind": "Run-1 validity erratum (append-only)",
+  "RUN_1_STATUS": "TREATMENT_NOT_APPLIED",
+  "cSessionsAre": "TREATMENT-REALIZATION FAILURES, not failed capital-uptake observations",
+  "cSessionsAreNot": "they are not observations that capital was not consumed",
+  "correctedVerdicts": {
+    "SYSTEM_VALID": "YES",
+    "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+    "TREATMENT_REALIZATION_VALID": "NO",
+    "CAUSAL_EXPERIMENT_VALID": "NO",
+    "CAPITAL_UPTAKE": "NOT_EVALUABLE",
+    "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+    "NET_COGNITIVE_COST": "NOT_EVALUABLE"
+  },
+  "preservedHistoricalReport": {
+    "path": "research-evidence/r3-l0c/stage-result.json",
+    "preserved": true,
+    "rewritten": false,
+    "originalVerdicts": {
+      "R3_L0C": "BLOCKED",
+      "SYSTEM_VALID": "YES",
+      "EXPERIMENT_VALID": "YES",
+      "CAPITAL_UPTAKE": "ABSENT",
+      "RECONSTRUCTION_COMPRESSION": "NOT_REPORTED",
+      "RECONSTRUCTION_COMPRESSION_REASON": "the treatment was absent from both arms, so a paired reconstruction-cost comparison is undefined rather than negative",
+      "NET_COGNITIVE_COST": "NOT_REPORTED",
+      "NET_COGNITIVE_COST_REASON": "same as above: no treatment difference existed to measure",
+      "NEXT": "STOP",
+      "NEXT_REASON": "a load-bearing harness defect was found after behavioral exposure, so the stage stops and preserves the runs rather than enlarging the model set"
+    },
+    "originalDeviation": "CAPITAL_SELECTION_SHAPE_REJECTED_SILENTLY",
+    "supersession": "the original verdicts are SUPERSEDED IN INTERPRETATION, not deleted: CAPITAL_UPTAKE read ABSENT and the two treatment verdicts read NOT_REPORTED, which the corrected semantics rename as NOT_EVALUABLE and the realization failure explains"
+  },
+  "basis": {
+    "emptyCapitalSurfaceProven": true,
+    "sessionsWithCompiledHandles": 0,
+    "cSelectionRequestedButNotCompiled": 8,
+    "reading": "TREATMENT_REALIZATION_FAILURE — a selection was requested and compiled nothing, which is a delivery failure and NOT an uptake observation",
+    "telemetryRule": "selectionRequested = true with zero compiled handles is a DELIVERY/TREATMENT failure, NOT an uptake failure"
+  },
+  "failedDimension": "TREATMENT_REALIZATION_VALID",
+  "validityDimensions": [
+    "SYSTEM_VALID",
+    "EXPERIMENT_ENVIRONMENT_VALID",
+    "TREATMENT_REALIZATION_VALID",
+    "ANALYSIS_PLAN_VALID"
+  ],
+  "rootCause": {
+    "case": "HARNESS_BYPASSED_TYPED_API",
+    "boundary": "in-process (work_delegation passes the object to the controller; no serialization)",
+    "escapedShape": "{ handles: [...] }",
+    "supportedShape": "the owner-kind structure: proof / reasoning / procedure",
+    "mechanism": "the product ignored the unknown key, so a non-empty malformed request was indistinguishable from no selection",
+    "productChangeMade": false
+  },
+  "baselineCalibration": {
+    "kind": "no-treatment baseline calibration",
+    "grouping": "NONE — §10 forbids comparing the H/C labels, because the C label describes an intent that was not realized",
+    "sessions": 16,
+    "metrics": {
+      "rawHistoryArtifactsRead": {
+        "min": 26,
+        "median": 26,
+        "max": 26
+      },
+      "distinctRawHistoryCategories": {
+        "min": 7,
+        "median": 7,
+        "max": 7
+      },
+      "rawHistoryBytesReturned": {
+        "min": 33297,
+        "median": 33297,
+        "max": 86365
+      },
+      "actionsBeforeFirstResult": {
+        "min": 47,
+        "median": 73,
+        "max": 153
+      }
+    },
+    "completionCauses": {
+      "RESULT_SUBMITTED": 9,
+      "MAX_TOKENS": 6,
+      "OTHER_RUNTIME_CAUSE": 1
+    },
+    "sessionsReadingNoHistory": []
+  },
+  "pressureGate": {
+    "kind": "reconstruction pressure gate",
+    "RECONSTRUCTION_PRESSURE_PRESENT": true,
+    "conditions": [
+      {
+        "id": "SESSIONS_ACCESSING_AT_LEAST_ONE",
+        "satisfied": true,
+        "detail": "16/16 sessions accessed >=1 declared raw-history artifact (required 12/16)"
+      },
+      {
+        "id": "MEDIAN_DISTINCT_ARTIFACTS",
+        "satisfied": true,
+        "detail": "median distinct artifacts 26 (required >= 2)"
+      },
+      {
+        "id": "SESSIONS_ACCESSING_AT_LEAST_TWO_CATEGORIES",
+        "satisfied": true,
+        "detail": "16/16 sessions accessed >=2 distinct categories (required 8/16)"
+      }
+    ],
+    "failedConditions": [],
+    "sessions": 16,
+    "accessingOne": 16,
+    "accessingTwoCategories": 16,
+    "medianArtifacts": 26,
+    "totalArtifactsRead": 416,
+    "totalBytesReturned": 723348,
+    "declaredCorpusDocuments": 26,
+    "correctnessIsNotAnInput": true,
+    "onRed": "STOP — do not redesign the project inside this stage; return for adjudication",
+    "onGreen": "continue automatically to the clean repair replication"
+  }
+}
