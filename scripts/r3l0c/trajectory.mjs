@@ -86,7 +86,7 @@ export function trajectoryHome(runRoot, trajectoryId) {
  * The profile lives in the trajectory's own home, so each trajectory has its own session space and the fence
  * derives its host home from `DSH_HOME` rather than from the real user profile.
  */
-export function makeProfile(home, route, profileId, installHostBundle, dshHome, repoRoot = REPO_ROOT) {
+export function makeProfile(home, route, profileId, installHostBundle, dshHome, repoRoot = REPO_ROOT, options = {}) {
   const profileDir = join(home, 'profiles', profileId);
   mkdirSync(profileDir, { recursive: true });
   const REAL_DSH = dshHome();
@@ -118,6 +118,15 @@ export function makeProfile(home, route, profileId, installHostBundle, dshHome, 
     '    serve: false',
     '    openDashboard: false',
     '',
+    /**
+     * An optional extra patch layer, supplied by a stage that needs to override a COMPOSITION entry.
+     *
+     * It is written as part of the SAME document rather than appended afterwards, because a later
+     * `makeProfile` call would overwrite an appended line. The shipped host runner pins the model from
+     * `agent-default-model.currentSelection()`, which reads this composition config, so a stage that changes
+     * the executor route must override that entry here.
+     */
+    ...(typeof options.extraPatch === 'string' && options.extraPatch !== '' ? [options.extraPatch] : []),
   ].join(NL), 'utf8');
   /**
    * The deployment profile. The repository is the trajectory's WORLD, so the durable stores sit beside it in the

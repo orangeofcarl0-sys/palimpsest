@@ -15,7 +15,7 @@
  * PLAIN JAVASCRIPT (`.mjs`).
  */
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -211,7 +211,23 @@ export async function runPlumbing(input) {
   const { installHostBundle, dshHome, dshBin } = await import('../gates/env.mjs');
   const { makeProfile, TEE_PATH } = await import('./trajectory.mjs');
   const profile = 'r3l0cdummy';
-  makeProfile(home, route, profile, installHostBundle, dshHome);
+  makeProfile(home, route, profile, installHostBundle, dshHome, undefined, { extraPatch: input.extraPatch });
+  /**
+   * An optional full settings document, supplied by a stage that declares provider ROUTES.
+   *
+   * The shipped adapter reads provider routes from its `llm-pi-ai` settings namespace, so a route declared only
+   * in the profile patch is never registered and the worker falls back to the base bundle's vendor default. A
+   * caller that needs a custom route passes the whole document here.
+   */
+  if (typeof input.settingsYaml === 'string' && input.settingsYaml !== '') writeFileSync(join(home, 'settings.yaml'), input.settingsYaml, 'utf8');
+  /**
+   * An optional COMPOSITION default-model entry.
+   *
+   * The shipped host runner pins the model from `agent-default-model.currentSelection()`, which reads the
+   * composition config and installs it on the agent — overriding the settings document. So a caller that needs a
+   * custom route must ALSO override this entry, or the worker silently uses the base bundle's vendor default.
+   */
+
 
   const childPath = join(root, 'dummy-child.mjs');
   writeFileSync(childPath, DUMMY_CHILD, 'utf8');

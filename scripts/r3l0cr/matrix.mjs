@@ -35,7 +35,9 @@ import { admitCapital, selectionRefs } from '../r3l0c/prehistory.mjs';
 import { GENERATION_EXPOSURES, ARMS } from '../r3l0c/capital.mjs';
 import { GENERATIONS } from '../r3l0c/contract.mjs';
 import { CHILD_PROGRAM, TEE_PATH, containmentEnvironment, makeProfile, prepareRunLayout, prepareTrajectory, runProtectedRoots, trajectoryHome } from '../r3l0c/trajectory.mjs';
-import { PRIMARY_EXECUTOR, schedule } from '../r3l0c/plan.mjs';
+import { schedule } from '../r3l0c/plan.mjs';
+import { EXECUTOR_ROUTE_DEVIATION, PRIMARY_EXECUTOR, routeForProfile } from './route.mjs';
+import { defaultModelPatch, renderSettingsYaml, settingsDigest, expectedEffectiveRoute } from './settings.mjs';
 import { acquireLease, rigPath } from '../r3l0c/run-root.mjs';
 import { capitalWitness, historyOnlyWitness } from '../r3l0c/witness.mjs';
 import { runRealPrehistoryBoundaryProbe, probeMatchesExpectation } from './boundary-probe.mjs';
@@ -279,7 +281,7 @@ async function main() {
   if (probe.BOUNDARY_PROBE !== 'PASS' || probeMatch.matches !== true) throw new Error(`the real-prehistory boundary probe failed (${probe.BOUNDARY_PROBE}, matches=${String(probeMatch.matches)}); §7 requires it to PASS before primary execution`);
 
   out(`${NL}=== §10 dummy plumbing check (worker path) ===`);
-  const plumbing = await runPlumbingCheck({ runRoot, selection: null });
+  const plumbing = await runPlumbingCheck({ runRoot, selection: null, settingsYaml: renderSettingsYaml(PRIMARY_EXECUTOR), extraPatch: defaultModelPatch(PRIMARY_EXECUTOR) });
   out(`  plumbing: ${plumbing.ok ? 'OK' : 'FAILED'} — ${String(plumbing.detail).slice(0, 70)}`);
   if (plumbing.ok !== true) throw new Error(`the plumbing check failed: ${String(plumbing.detail)}`);
 
@@ -293,7 +295,14 @@ async function main() {
     if (trajectories.some((entry) => entry.trajectoryId === session.trajectoryId)) continue;
     const home = trajectoryHome(runRoot, session.trajectoryId);
     const { installHostBundle, dshHome } = await import('../gates/env.mjs');
-    makeProfile(home, PRIMARY_EXECUTOR, `r3l0cr${session.trajectoryId.replace(/[^a-z0-9]/gu, '')}`, installHostBundle, dshHome);
+    makeProfile(home, routeForProfile(PRIMARY_EXECUTOR), `r3l0cr${session.trajectoryId.replace(/[^a-z0-9]/gu, '')}`, installHostBundle, dshHome, undefined, { extraPatch: defaultModelPatch(PRIMARY_EXECUTOR) });
+    /**
+     * The route must ALSO be declared in the settings document, because the shipped adapter reads provider
+     * routes from its `llm-pi-ai` settings namespace rather than from the plugin composition config. A route
+     * declared only in `cordis.patch.yml` is never registered, and the worker falls back to the base bundle's
+     * hardcoded vendor default.
+     */
+    writeFileSync(join(home, 'settings.yaml'), renderSettingsYaml(PRIMARY_EXECUTOR), 'utf8');
     out(`[block ${String(session.block)}] trajectory ${session.trajectoryId} (${session.armName})`);
     const trajectory = await runTrajectory({
       runRoot, prehistory, home, realDshBin, session,
@@ -327,6 +336,10 @@ async function main() {
     boundaryProbeMatch: probeMatch,
     trajectories,
     sessions,
+    /** The authorized executor route and the deviation it carries, so the run is self-describing. */
+    executorRoute: PRIMARY_EXECUTOR,
+    executorRouteDeviation: EXECUTOR_ROUTE_DEVIATION,
+    executorRouteSettings: Object.freeze({ settingsDigest: settingsDigest(PRIMARY_EXECUTOR), expectedEffectiveRoute: expectedEffectiveRoute(PRIMARY_EXECUTOR) }),
     preMatrixValidity: validity,
     preflight,
     containment,

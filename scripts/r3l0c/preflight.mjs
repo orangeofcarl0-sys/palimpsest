@@ -311,6 +311,9 @@ export async function runPlumbingCheck(input) {
     projectId: input.projectId,
     paths: input.paths,
     repo: input.repo,
+    /** §8: the route must reach the composition config too, or the worker uses the vendor default. */
+    settingsYaml: input.settingsYaml,
+    extraPatch: input.extraPatch,
   });
   const dir = join(input.runRoot, 'preflight');
   mkdirSync(dir, { recursive: true });
