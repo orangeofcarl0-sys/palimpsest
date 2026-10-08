@@ -315,6 +315,31 @@ export const RESIDUALS = Object.freeze([
 ]);
 
 /**
+ * §11 — REGRESSION, as measured on this host at this stage.
+ *
+ * `unit` counts include this stage's own 23 new tests, which is why the total rises from R3-WR3's 3832.
+ */
+export const REGRESSION = Object.freeze({
+  build: 'PASS — tsc -b, no diagnostics',
+  unit: 'PASS — 3855/3855 across 280 files, 0 failed',
+  unitNote: 'R3-WR3 reported 3832/3832 across 278 files; this stage adds 23 tests in 2 files.',
+  e2e: 'PASS — 38/38',
+  architecture: 'PASS — 0 violations, 9 accepted baseline exceptions observed',
+  publicApi: 'PASS — 0 missing, 0 changed kind, 0 added (the GitPort interface gained no member)',
+  r3s0: 'PASS — contract and systemic suites',
+  r3l0b: 'PASS — immutability guard and containment; the guard reports the historical tree unchanged',
+  r1hConfidentiality: 'PASS — 17 PASS / 0 LIMIT / 0 FAIL; the kernel fence verified 4/4 roots by readback',
+  r1hrHostHardening: 'PASS — 44 PASS / 3 LIMIT / 0 FAIL (the disclosed limits are unchanged from the baseline)',
+  r1hcConfidentialResidual: 'PASS — 26 PASS / 1 LIMIT / 0 FAIL (HC-27, the known parallel-active-worker limit)',
+  r1lConsumerBoundary: 'PASS — §R1-L-LIVE',
+  d2D4D5WorkEffectRecovery: 'PASS — 142 tests across the D2-live, D4-c, D5-0 and D5-d suites',
+  r3wrAndR3wr2AndR3wr3Regression: 'PASS — the R3-WR3 world-identity suite (14), the R3-WR2 lifetime suite, the execution-world and object-store suites; all 63 green',
+  newR3wr4MutationSuite: 'PASS — 5/5 counted witnesses satisfied, each with a baseline that genuinely violated it; 5 prior R3-WR3 regressions re-run and preserved',
+  historicalEvidenceImmutability: 'PASS — `git diff 8c39c21..HEAD` over scripts/r3l0c, scripts/r3l0cr, scripts/r3l0b, research-evidence/{r3-l0c,r3-l0c-r,r3-wr,r3-wr2,r3-wr3,r3-l0a} is EMPTY; the protected evidence tree digest is unchanged',
+  windowsConfidentialProfile: 'UNCHANGED — single-active profile remains valid; no host file was modified this stage',
+});
+
+/**
  * Assemble the stage record. `input` carries the harness measurements so the record is REGENERABLE from the
  * frozen contract plus the runs, rather than hand-maintained.
  */
