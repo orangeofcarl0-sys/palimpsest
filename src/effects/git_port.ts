@@ -7,8 +7,8 @@
  */
 
 import { execFile, execFileSync } from "node:child_process";
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { dirname, join, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
@@ -504,22 +504,87 @@ export class GitCliPort implements GitPort {
    * below forbids.
    */
   async createWorld(input: CreateWorktreeInput): Promise<{ worldPath: string }> {
-    const path = this.worldPath(input.worktreeId);
-    if (!this.#worldExists(path)) {
-      await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
+    const path = this.#confineWorldPath(input.worktreeId);
+    /**
+     * THE IDENTITY DECISION COMES FIRST, and it is made by GIT plus a canonicalized path — never by
+     * `existsSync` and never by a bare `rev-parse --git-dir` (see `#worldIdentity`).
+     */
+    const identity = this.#worldIdentity(path);
+    if (identity.kind === 'ADOPTS_PARENT_REPOSITORY') {
+      throw new Error(
+        `WORLD_PATH_NOT_ISOLATED: the directory "${path}" has no Git repository of its own — Git resolves the repository at "${identity.gitDir}", which is NOT inside the world. Creating or reusing a world here would run checkout, remote and config operations against ANOTHER repository, mutating canonical project state. Refusing.`,
+      );
+    }
+    if (identity.kind === 'FOREIGN_WORLD') {
+      throw new Error(
+        `WORLD_IDENTITY_MISMATCH: the directory "${path}" is a Git repository whose administrative directory ("${identity.gitDir}") lies outside the world, which is the shape of a LINKED WORKTREE rather than an execution world. A world must own its mutable Git state; refusing rather than adopting one whose metadata belongs elsewhere.`,
+      );
+    }
+    if (identity.kind === 'NOT_A_REPOSITORY') {
+      /** A partial or unfinished preparation: there is no world to reuse, and the clone must be able to fill it. */
+      if (identity.pathOccupied) {
+        throw new Error(
+          `WORLD_PARTIAL_UNRECOVERABLE: the directory "${path}" exists but holds no Git repository of its own, so it is a partial or unfinished preparation rather than a usable world. Refusing rather than deleting it — it may hold a worker's work — and refusing rather than adopting the parent repository.`,
+        );
+      }
     }
     /**
-     * Re-applied on every call, including a reuse. For a reused world this is the operation that makes
-     * the action converge on the SAME basis; for a fresh clone it is what moves HEAD off the clone's
-     * default branch. It is not a reset: at the same commit it leaves a dirty tree alone.
+     * THE CLONE HAPPENS ONLY WHEN THERE IS NO WORLD, which is the `ABSENT` case. It is stated as its own branch
+     * rather than folded into the identity test so the two facts stay separable: "no world exists" is what
+     * justifies creating one, and "a world exists but is not isolated" is what justifies refusing.
      */
-    await this.#git(["checkout", "--detach", input.baseCommit], path);
-    try {
-      await this.#git(["remote", "remove", "origin"], path);
-    } catch {
-      // A clone always has an origin; a port reused over an existing world may not. Either way the
-      // contract is "no remote pointing at the canonical project", and its absence satisfies it.
+    if (identity.kind === 'ABSENT') {
+      await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
     }
+
+    /**
+     * ## NO UNCONDITIONAL CHECKOUT (R3-WR3)
+     *
+     * R3-WR2 re-ran `checkout --detach baseCommit` on EVERY call, including a reuse. On a fresh clone that is
+     * correct and necessary — it is what moves HEAD off the clone's default branch. On an EXISTING world it is
+     * destructive: a world holding a committed candidate X was rewound to its base B, HEAD moved back, and the
+     * candidate's files left the working tree. Measured, and frozen as the A2 falsifier.
+     *
+     * So the checkout is CONDITIONAL, and the condition is about WORK, not about whether a clone just happened:
+     *
+     *   a fresh clone                     HEAD is the clone's default branch, which need not cover the basis
+     *                                     → checkout runs, which is what makes it a world at its basis
+     *   a world already at or past basis   HEAD covers the basis → NO checkout, so a candidate survives
+     *   a world on an UNRELATED basis      HEAD does not descend from the basis → REFUSE, because moving it
+     *                                     would discard work built on the other basis
+     */
+    if (identity.kind === 'ABSENT') {
+      /** Fresh clone: HEAD must be moved to the basis for this to be a world at all. */
+      await this.#git(["checkout", "--detach", input.baseCommit], path);
+    } else if (!(await this.#headCovers(path, input.baseCommit))) {
+      /**
+       * HEAD does not cover the basis, and the two reasons are DIFFERENT facts that must not be conflated:
+       *
+       *   HEAD is UNRESOLVABLE   the world's own repository cannot name a commit — a broken borrowed store, a
+       *                          corrupt object database. The world's WORK is still there and must be preserved,
+       *                          so this is a readiness failure rather than a basis disagreement.
+       *   HEAD resolves elsewhere the world was cut from a different basis, and moving it would discard work.
+       */
+      const head = await this.#head(path);
+      if (head === '') {
+        throw new Error(
+          `WORLD_HEAD_UNRESOLVABLE: the world at "${path}" exists but its HEAD cannot be resolved to a commit, so it cannot be verified against the requested basis ${input.baseCommit.slice(0, 12)}. This is the shape of a broken borrowed object store. The world and any work in it are LEFT IN PLACE and NOT re-created; refusing rather than destroying them.`,
+        );
+      }
+      throw new Error(
+        `WORLD_BASIS_MISMATCH: the world at "${path}" has HEAD ${head.slice(0, 12)}, which neither IS nor descends from the requested basis ${input.baseCommit.slice(0, 12)}. Moving it would discard the work built on the other basis; refusing without mutation.`,
+      );
+    }
+
+    /**
+     * ## THE REMOTE, CHECKED RATHER THAN ASSUMED (R3-WR3)
+     *
+     * R3-WR2 wrapped `remote remove origin` in a bare `catch`, so a FAILED removal was indistinguishable from
+     * "there was no origin". Those are different facts: the first leaves a path back into the canonical project
+     * on a world a strong worker can reach, which is exactly what the removal exists to prevent. The remote list
+     * is therefore READ afterwards, and a surviving remote pointing at the canonical repository is a refusal.
+     */
+    await this.#removeOriginIfPresent(path);
     await this.#git(["config", "user.name", WORKER_COMMIT_NAME], path);
     await this.#git(["config", "user.email", WORKER_COMMIT_EMAIL], path);
     await this.#assertWorldCommitCapable(path, input.baseCommit);
@@ -527,22 +592,158 @@ export class GitCliPort implements GitPort {
   }
 
   /**
-   * Whether `path` already holds a world.
+   * GATE A3 — PATH CONFINEMENT.
    *
-   * `.git` is NOT assumed to be a directory: in a linked worktree it is a FILE holding a `gitdir:`
-   * pointer, and this port's own history includes a linked-worktree backend. Testing for `.git` with
-   * `existsSync` alone is the weaker form; the strong form is asking GIT, so `rev-parse` is the
-   * authority and the filesystem check is only a fast path. A path that exists but is not a repository
-   * is therefore NOT reused — it falls through to the clone, which reports the collision honestly
-   * rather than this method pretending it is a world.
+   * A world id is an ATTEMPT id in every shipped call site, but the action's parser accepts any string, so the
+   * port must not depend on the caller for confinement. The id is resolved against the world root and the
+   * RESULT is checked to be a direct child of that root, which refuses traversal (`..`), absolute paths, drive
+   * and UNC forms, and separator smuggling in one place. The root itself is canonicalized once so a world root
+   * reached through a junction cannot make the comparison meaningless.
+   *
+   * This is defence in depth, not a claim of a user-controlled exploit: `worldId` is generated by the
+   * scheduler as `stableEntityId("attempt", key)`. The check exists so a future caller cannot widen the
+   * boundary silently.
    */
-  #worldExists(path: string): boolean {
-    try {
-      if (!statSync(path).isDirectory()) return false;
-    } catch {
-      return false;
+  #confineWorldPath(worldId: string): string {
+    if (typeof worldId !== 'string' || worldId.length === 0) {
+      throw new Error('WORLD_ID_INVALID: a world id must be a non-empty string');
     }
-    return this.#gitSync(["rev-parse", "--git-dir"], path) !== undefined;
+    /** A separator, a drive letter, a UNC prefix or a traversal segment can never be part of a world id. */
+    if (/[\\/]/u.test(worldId) || /^[A-Za-z]:/u.test(worldId) || worldId === '.' || worldId === '..' || worldId.includes('\u0000')) {
+      throw new Error(
+        `WORLD_ID_ESCAPES_ROOT: the world id ${JSON.stringify(worldId)} contains a path separator, a drive or UNC prefix, or a traversal segment. A world id names ONE directory directly under the world root and may not express a path.`,
+      );
+    }
+    /**
+     * The DECLARED path is what the port has always returned (`<root>/<worldId>`, forward-slashed), and it is
+     * what callers and their tests already compare against. Confinement VALIDATES a resolved form but returns
+     * the declared one, so a path check cannot silently change the spelling every existing caller sees.
+     */
+    const declared = this.worldPath(worldId);
+    const root = resolve(this.#worktreeRoot);
+    const candidate = resolve(root, worldId);
+    /** The parent of the resolved path must BE the root — a direct child, never the root itself or an ancestor. */
+    if (dirname(candidate) !== root) {
+      throw new Error(
+        `WORLD_ID_ESCAPES_ROOT: the world id ${JSON.stringify(worldId)} resolves to "${candidate}", which is not a direct child of the world root "${root}".`,
+      );
+    }
+    /**
+     * A SYMLINK OR JUNCTION AT THE WORLD PATH ITSELF is the remaining escape: the path is inside the root while
+     * the directory it names is not. `realpathSync` collapses it, so the physical location is checked too — but
+     * only when the path already exists, because a path about to be created has nothing to canonicalize.
+     */
+    if (existsSync(candidate)) {
+      const physical = realpathSync(candidate);
+      const physicalRoot = existsSync(root) ? realpathSync(root) : root;
+      if (dirname(physical) !== physicalRoot) {
+        throw new Error(
+          `WORLD_PATH_ESCAPES_ROOT: the world path "${candidate}" physically resolves to "${physical}", which is outside the world root "${physicalRoot}". A junction or symlink at the world path would otherwise let the world be created somewhere the confinement does not cover.`,
+        );
+      }
+    }
+    return declared;
+  }
+
+  /**
+   * THE WORLD IDENTITY, resolved by GIT and by the canonicalized filesystem — not by existence and not by
+   * `rev-parse --git-dir` alone.
+   *
+   * WHY `rev-parse --git-dir` ALONE IS INSUFFICIENT, measured rather than argued. Git discovers an enclosing
+   * repository: from a directory with no `.git` of its own, `git rev-parse --git-dir` exits 0 and names the
+   * PARENT repository. So a directory that is not a world at all answers "yes, there is a repository here",
+   * and every subsequent git call in `createWorld` — checkout, remote removal, config — runs against that
+   * parent. The A1 falsifier measures the consequence: the CANONICAL repository's HEAD became detached and its
+   * `user.name`/`user.email` were overwritten.
+   *
+   * The discriminator is `--absolute-git-dir`, which names the repository's real administrative directory, and
+   * the question is whether THAT DIRECTORY LIES INSIDE THE WORLD. That single test separates the three shapes:
+   *
+   *     isolated world        <world>/.git                          inside the world    → ISOLATED_REPOSITORY
+   *     parent adoption       <canonical>/.git                      outside the world   → ADOPTS_PARENT_REPOSITORY
+   *     linked worktree       <canonical>/.git/worktrees/<id>       outside the world   → FOREIGN_WORLD
+   *
+   * `--git-common-dir` is read as well and recorded, because a linked worktree is exactly the case where the
+   * common directory is outside while the worktree's own git dir is not — and adopting such a world would hand
+   * the worker mutable metadata that lives in the canonical repository, which §D2-cR exists to prevent.
+   */
+  #worldIdentity(path: string): { kind: 'ABSENT' | 'NOT_A_REPOSITORY' | 'ISOLATED_REPOSITORY' | 'ADOPTS_PARENT_REPOSITORY' | 'FOREIGN_WORLD'; gitDir?: string; commonDir?: string; pathOccupied?: boolean } {
+    const occupied = existsSync(path);
+    if (!occupied) return { kind: 'ABSENT', pathOccupied: false };
+    const gitDir = this.#gitSync(['rev-parse', '--absolute-git-dir'], path);
+    if (gitDir === undefined) {
+      /** Occupied, but Git finds no repository at all here: a partial preparation or an unrelated directory. */
+      return { kind: 'NOT_A_REPOSITORY', pathOccupied: true };
+    }
+    const commonDir = this.#gitSync(['rev-parse', '--git-common-dir'], path) ?? '';
+    const worldReal = realpathSync(path);
+    const gitDirReal = realpathSync(gitDir);
+    /**
+     * INSIDE means strictly inside: `<world>/.git` is inside the world, and the world directory itself is not a
+     * repository root for this purpose. `sep` is appended so a sibling named `<world>-extra` cannot match.
+     */
+    const insideWorld = gitDirReal === join(worldReal, '.git') || gitDirReal.startsWith(`${worldReal}${sep}`);
+    if (insideWorld) return { kind: 'ISOLATED_REPOSITORY', gitDir: gitDirReal, commonDir };
+    /**
+     * The repository's administrative directory is outside the world. Whether it is the canonical repository
+     * itself (parent adoption) or a linked worktree's metadata, the answer is the same: this directory is not an
+     * execution world, and it must not be used as one.
+     */
+    const isParentRepository = gitDirReal === realpathSync(join(this.#repository, '.git'));
+    return { kind: isParentRepository ? 'ADOPTS_PARENT_REPOSITORY' : 'FOREIGN_WORLD', gitDir: gitDirReal, commonDir, pathOccupied: true };
+  }
+
+  /** The world's HEAD, or an empty string when it cannot be resolved. */
+  async #head(path: string): Promise<string> {
+    const head = await this.#gitExit(['rev-parse', '--verify', 'HEAD^{commit}'], path);
+    return head.exit === 0 ? head.text.trim() : '';
+  }
+
+  /** Whether `head` is `basis` or descends from it, i.e. whether moving to the basis would LOSE work. */
+  async #headCovers(path: string, basis: string): Promise<boolean> {
+    const head = await this.#head(path);
+    if (head === '') return false;
+    if (head === basis) return true;
+    return this.#isAncestor(path, basis, head);
+  }
+
+  /** `git merge-base --is-ancestor`: whether `ancestor` is reachable from `descendant`. */
+  async #isAncestor(path: string, ancestor: string, descendant: string): Promise<boolean> {
+    const result = await this.#gitExit(['merge-base', '--is-ancestor', ancestor, descendant], path);
+    return result.exit === 0;
+  }
+
+  /**
+   * Remove the world's `origin` remote IF one exists, and verify afterwards that none pointing at the canonical
+   * repository remains.
+   *
+   * The distinction R3-WR2 lost: "the removal failed" and "there was nothing to remove" are different facts.
+   * A surviving remote is checked by URL rather than by name, because a remote under another name pointing at
+   * the canonical repository is the same hazard.
+   */
+  async #removeOriginIfPresent(path: string): Promise<void> {
+    const remotes = await this.#gitExit(['remote'], path);
+    if (remotes.exit !== 0) {
+      throw new Error(
+        `WORLD_REMOTE_UNVERIFIABLE: the world at "${path}" could not be asked for its remotes, so the contract "no path back into the canonical project" cannot be established. Refusing. Detail: ${remotes.text.slice(0, 200)}`,
+      );
+    }
+    const names = remotes.text.split(/\r?\n/u).map((line) => line.trim()).filter((line) => line !== '');
+    for (const name of names) {
+      const removal = await this.#gitExit(['remote', 'remove', name], path);
+      if (removal.exit !== 0) {
+        throw new Error(
+          `WORLD_REMOTE_NOT_REMOVED: the world at "${path}" still has the remote "${name}" and removing it failed. A remote left on a world a strong worker can reach is a path back into the canonical project. Refusing. Detail: ${removal.text.slice(0, 200)}`,
+        );
+      }
+    }
+    /** The post-condition, measured: no remote may remain whose URL names the canonical repository. */
+    const after = await this.#gitExit(['remote', '-v'], path);
+    if (after.exit === 0 && after.text.includes(this.#repository)) {
+      throw new Error(
+        `WORLD_REMOTE_POINTS_AT_CANONICAL: the world at "${path}" still carries a remote naming the canonical repository after removal. Refusing.`,
+      );
+    }
   }
 
   /**
@@ -585,14 +786,21 @@ export class GitCliPort implements GitPort {
    *     3  `status --porcelain`                 the INDEX is readable (this is what a corrupt index breaks)
    *     4  `commit --dry-run`                   git reports 0 (would commit) or 1 (nothing to commit)
    *
-   * Step 4's exit 1 is honoured ONLY together with an empty tracked status, i.e. as git's own "nothing to
-   * commit". Accepting a bare exit 1 would also accept a pre-commit hook refusing on a world that DOES hold
-   * staged work — a world that cannot commit while claiming to be ready, which is the failure class this gate
-   * exists to catch.
+   * Step 4's exit 1 is honoured as git's own "nothing to commit". The full reasoning, including why a clean
+   * status is deliberately NOT required, is in "THE EXIT-1 RULE" below.
    *
    * `--dry-run` is used rather than a real commit so the check cannot alter the world it is checking. It does
    * NOT run the pre-commit hook (git's own behaviour), so a hook-only refusal is not detected here; that is a
    * stated limit of this check rather than a claim it covers every possible failure.
+   *
+   * ## THE EXIT-1 RULE, STATED ONCE (R3-WR3)
+   *
+   * R3-WR2's comment claimed exit 1 was honoured "ONLY together with an empty tracked status" while the code
+   * accepted it unconditionally. The CODE was right and the COMMENT was wrong, and the reason is a measured
+   * property of git: `commit --dry-run` does NOT run the `pre-commit` hook, so exit 1 has exactly one meaning
+   * here — git reports nothing to commit. That is the legitimate state of a clean world AND of a world whose
+   * worker has made UNSTAGED edits, which is the state a resumed attempt is in. Requiring a clean status would
+   * have refused that state, so the criterion is the exit code and the comment now says so.
    *
    * POINT-IN-TIME, AND SAYING SO. These four facts establish that the world was commit-capable WHEN PREPARED.
    * They are not a promise that a later commit will succeed: the borrowed store can become unreadable after
