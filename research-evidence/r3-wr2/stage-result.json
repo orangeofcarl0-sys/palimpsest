@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-WR2",
+  "kind": "borrowed object lifetime and attempt recovery closure",
+  "baseline": "65fdbb1908348cf58a5e800f61795fc99c0c280b",
+  "branch": "r3-wr2-borrowed-object-lifetime",
+  "commits": [
+    "17115f8",
+    "fd68478",
+    "4d87d7c"
+  ],
+  "scopeDiscipline": {
+    "stochasticModelRuns": 0,
+    "r3l0cMatrixRestarted": false,
+    "historicalCorpusCapitalOracleVerdictsModified": false,
+    "architectureWriteUsed": false,
+    "canonicalSemanticsChanged": false
+  },
+  "failureDistinction": {
+    "OBJECT_STORE_FAILURE_REPRODUCED": true,
+    "ORIGINAL_TRIGGER_IDENTIFIED": false,
+    "statement": "R3-WR reproduced the CLASS (a borrowed object store that cannot deliver an object makes a worker unable to commit) and never identified the ORIGIN of the original trigger; R3-WR2 preserves that distinction rather than collapsing it",
+    "implication": "the readiness gate is justified by the reproduced class; no claim is made about the historical origin"
+  },
+  "validityScopes": {
+    "CREATE_TIME_READINESS": {
+      "question": "was the world commit-capable at the moment it was handed over",
+      "measuredBy": "src/effects/git_port.ts #assertWorldCommitCapable",
+      "evidence": "scripts/r3wr2/production-readiness.mjs",
+      "scope": "POINT IN TIME"
+    },
+    "ATTEMPT_LIFETIME_VALIDITY": {
+      "question": "does the world stay usable for the whole attempt",
+      "measuredBy": "scripts/r3wr2/borrow-lifetime.mjs",
+      "evidence": "the fault matrix below",
+      "scope": "LIFETIME"
+    },
+    "relation": "create-time readiness does NOT imply lifetime validity; the borrowed store can become unreadable after the check returns, which the lifetime matrix measures"
+  },
+  "readinessCriterion": {
+    "shape": "ALLOWLIST of positive exit-code facts, not a denylist of error strings",
+    "why": "a denylist cannot bound the failures it does not know about, so an unseen failure falls through to READY",
+    "facts": [
+      {
+        "command": "rev-parse --verify HEAD^{commit}",
+        "requires": "exit 0",
+        "establishes": "the world names a commit, not merely a ref"
+      },
+      {
+        "command": "cat-file -e <basis>^{commit}",
+        "requires": "exit 0",
+        "establishes": "the borrowed store can deliver the basis"
+      },
+      {
+        "command": "status --porcelain --untracked-files=no",
+        "requires": "exit 0",
+        "establishes": "the index and work tree are readable"
+      },
+      {
+        "command": "commit --dry-run",
+        "requires": "exit 0 or exit 1",
+        "establishes": "git reports it would commit, or nothing to commit"
+      }
+    ],
+    "failuresTheOldDenylistMissed": [
+      {
+        "fault": "corrupt index",
+        "signature": "fatal: .git/index: index file smaller than expected",
+        "exit": 128,
+        "matchedAnyPattern": false
+      },
+      {
+        "fault": "held index.lock",
+        "signature": "fatal: Unable to create '...index.lock': File exists",
+        "exit": 128,
+        "matchedAnyPattern": false
+      }
+    ],
+    "exitOneRule": {
+      "meaning": "git reports nothing to commit",
+      "whySafe": "measured: `commit --dry-run` does NOT run the pre-commit hook, so a hook refusal cannot masquerade as exit 1",
+      "whyNotStatusText": "requiring a clean tracked status would refuse a world whose worker has made UNSTAGED edits, which is exactly the state a resumed attempt is in"
+    },
+    "limit": "a pre-commit hook refusal is not detected, because `--dry-run` does not run the hook; this is a property of git, not a gap in the criterion"
+  },
+  "idempotencyContract": {
+    "action": "palimpsest.world.create",
+    "declaredProfile": "effects.idempotent() (durable window)",
+    "declaredContract": "the same world id reuses the path",
+    "whyLoadBearing": "when an invocation throws after dispatch, Ordarium leaves the operation UNCERTAIN and the idempotent recovery path is redispatch-same-key, which re-runs this action with the same world id — so the contract IS the convergence condition of the recovery engine",
+    "defect": "GitCliPort.createWorld ran `git clone` unconditionally, so a second call failed with \"destination path already exists and is not an empty directory\" and the redispatch could never converge",
+    "observedConsequence": "Gate F FAIL_AFTER_CLONE: the retry was refused, the attempt stayed at CREATED, and the project could not advance",
+    "repair": "the world is REUSED when it already exists — the clone is skipped and the basis checkout and identity are re-applied",
+    "whyReuseAndNotReClone": "a world that exists may hold a worker uncommitted work; `checkout --detach` at the SAME commit preserves it (measured), while deleting and re-cloning would destroy it",
+    "afterRepair": {
+      "SAME_ATTEMPT_RETRIED": true,
+      "NO_DUPLICATE_ATTEMPT": true,
+      "RETRY_SETTLED": true,
+      "workPreserved": true
+    }
+  },
+  "workerTokenFinding": {
+    "HOST_GIT_OBJECT_ACCESS": "borrowed objects readable, HEAD and basis resolvable, commit capable",
+    "WORKER_GIT_OBJECT_ACCESS": "borrowed objects readable under the shipped Low-integrity write-restricted token, HEAD and basis resolvable, commit performed",
+    "HOST_WORKER_ACCESS_PARITY": "PASS",
+    "confinementControl": "a Medium + NO_READ_UP canary OUTSIDE the world was DENIED to the worker (EPERM) while the world content was readable, so the confinement was in effect and the parity was not measured through an unconfined process",
+    "confidentialityPreserved": "no label was removed, no read granted and no profile relaxed to obtain the result",
+    "measuredArtefact": "the write-restricted token cannot create an anonymous pipe, so a piped-stdio git invocation fails with EPERM for reasons unrelated to object access; the shipped runner uses inherited stdio, and this measurement redirects git output to files inside the world"
+  },
+  "borrowLifetimeMatrix": {
+    "topologies": [
+      {
+        "id": "SHIPPED",
+        "hops": [
+          "canonical",
+          "worker world"
+        ],
+        "built": "GitCliPort.createWorld"
+      },
+      {
+        "id": "CHAINED",
+        "hops": [
+          "canonical",
+          "trajectory world (a copy)",
+          "worker world"
+        ],
+        "built": "the R3-L0C rig, by copying a prepared world and cloning from the copy"
+      }
+    ],
+    "survives": [
+      {
+        "fault": "parent world copied",
+        "why": "the pointer still names the original, and the copy is simply unused"
+      },
+      {
+        "fault": "borrowed store repacked (`git repack -a -d`)",
+        "why": "repacking rewrites the store in place, so the pointer stays valid"
+      },
+      {
+        "fault": "borrowed store temporarily unavailable, then restored",
+        "why": "the world is unchanged by the outage and commits again once the store returns"
+      }
+    ],
+    "breaks": [
+      {
+        "fault": "borrowed store removed",
+        "mechanism": "the objects the world needs are gone; commit fails with the worker signature `fatal: could not parse HEAD`"
+      },
+      {
+        "fault": "borrowed store temporarily unavailable at commit time",
+        "mechanism": "the same signature, and the failure is RECOVERABLE once the store returns"
+      },
+      {
+        "fault": "parent world MOVED",
+        "mechanism": "the alternates pointer is ABSOLUTE, so relocating the parent leaves a path that no longer resolves — the borrow is pinned, not relocatable"
+      },
+      {
+        "fault": "failure after edits but before commit",
+        "mechanism": "the edits remain in the worktree and uncommitted; the world is recoverable once the store returns, but nothing was committed"
+      }
+    ],
+    "lifetimeProperty": "the world usable lifetime is bounded by the lifetime of a directory it does not own, and by that directory staying at its recorded ABSOLUTE path",
+    "alternatives": [
+      {
+        "option": "owner lifetime protection",
+        "idea": "keep the borrowed store alive for as long as a world that borrows it exists",
+        "tradeoff": "requires an owner-side registry and a release path; adds lifecycle state to a directory that currently has none"
+      },
+      {
+        "option": "detach borrowed objects (`--dissociate`)",
+        "idea": "copy the borrowed objects into the world so it owns them",
+        "tradeoff": "removes the dependency entirely at the cost of duplicating history per world — the cost `--shared` exists to avoid, and it would be paid on every attempt"
+      },
+      {
+        "option": "relative alternates",
+        "idea": "record the pointer relative to the world so a moved parent follows",
+        "tradeoff": "only helps when the parent moves WITH the world; a parent moved independently still breaks, and the pointer would then be wrong in a new way"
+      }
+    ],
+    "productRedesignMade": false
+  },
+  "continuationFinding": {
+    "supersedes": "R3-WR FAILED_ATTEMPT_RECOVERY: OPEN",
+    "correctedStatement": "a failed or terminated worker DOES have a supported continuation: the SAME attempt is resumed, its retained work is preserved, and it settles",
+    "arms": [
+      {
+        "arm": "RETURNED_FAILURE",
+        "workerOutcome": "HOST_FAILURE with changes retained",
+        "sameAttemptResumed": true,
+        "workPreserved": true,
+        "resultSettled": true,
+        "attemptLeftOpen": false
+      },
+      {
+        "arm": "TERMINATED_WORKER",
+        "workerOutcome": "the worker threw, so no outcome was ever returned",
+        "sameAttemptResumed": true,
+        "workPreserved": true,
+        "resultSettled": true,
+        "attemptLeftOpen": false
+      },
+      {
+        "arm": "STORE_PERMANENTLY_GONE",
+        "workerOutcome": "the borrowed store destroyed for good, so a resumed worker still cannot commit",
+        "sameAttemptResumed": true,
+        "workPreserved": true,
+        "resultSettled": false,
+        "attemptLeftOpen": true
+      }
+    ],
+    "whyLegitimate": "the resume goes through the SAME supported controller path (`start` → admission RESUME → the existing position), the SAME attempt id, and the SAME world; no verification is skipped, no promotion is forced and quiescence is not disabled",
+    "residualGap": "an attempt whose world can NEVER be committed in has no authorized terminal path: the controller exposes no abandon/cancel/terminalize operation, so the attempt stays RUNNING and the project cannot take its next structural revision",
+    "residualIsNot": "a defect in the resume path — it is the absence of a terminal path for a permanently impossible attempt",
+    "canonicalChangeMade": false,
+    "canonicalChangeRequired": "a terminal path for a permanently-uncommittable attempt would require new canonical semantics (an abandon/terminal event with its own authorization), which this stage reports rather than invents"
+  },
+  "preparationFailureFinding": {
+    "arms": [
+      {
+        "mode": "FAIL_BEFORE_CLONE",
+        "worldOnDisk": false,
+        "workerGivenPartialWorld": false,
+        "sameAttemptRetried": true,
+        "duplicateAttempt": false,
+        "retrySettled": true
+      },
+      {
+        "mode": "FAIL_AFTER_CLONE",
+        "worldOnDisk": true,
+        "workerGivenPartialWorld": false,
+        "sameAttemptRetried": true,
+        "duplicateAttempt": false,
+        "retrySettled": true
+      }
+    ],
+    "partialWorldNeverPresented": "measured: in both arms the worker never ran, so no partially created world was handed over as READY",
+    "idempotencyPreserved": "measured: the retry reuses the SAME attempt id and mints no duplicate, which is what the pre-repair FAIL_AFTER_CLONE arm VIOLATED before the idempotency fix",
+    "uncommittedDataPreserved": "the partial world is reused, not deleted, so a world that held work would keep it"
+  },
+  "regression": {
+    "build": "PASS (tsc -b clean)",
+    "unit": "3816/3817 passed across 277 files",
+    "unitKnownFailure": {
+      "test": "test/r3l0c_containment.test.ts > §10 the DECLARED layout blocks the sibling world, by traversal and by absolute path",
+      "PRE_EXISTING": true,
+      "proof": "the same test fails IDENTICALLY at the baseline commit 65fdbb1908348cf58a5e800f61795fc99c0c280b in a clean worktree, before any R3-WR2 change, deterministically across three consecutive runs",
+      "cause": "host-dependent ACL/fence behaviour in the R3-L0C containment suite; it imports neither src/effects/git_port.ts nor any file R3-WR2 changed",
+      "relationToThisStage": "NOT a regression of R3-WR2"
+    },
+    "e2e": "38/38 passed",
+    "architecture": "PASS, 0 violations, 9 accepted baseline exceptions observed",
+    "publicApi": "PASS, missing 0 / changed kind 0 / added 0",
+    "r3wr2NewTests": "22/22",
+    "r3wrExistingTests": "20/20",
+    "r3s0": "PASS",
+    "r3l0b": "PASS",
+    "r1hConfidentiality": "PASS 17 PASS / 0 LIMIT / 0 FAIL",
+    "r1hrHostHardening": "PASS 44 PASS / 3 LIMIT / 0 FAIL",
+    "r1hcConfidentialResidual": "PASS 26 PASS / 1 LIMIT / 0 FAIL",
+    "r1lConsumerBoundary": "PASS",
+    "d2D4D5WorkOccRecovery": "PASS",
+    "hostConformance": "PASS",
+    "historicalEvidenceImmutability": "PASS (325 protected files, 0 changed / 0 added / 0 removed)"
+  },
+  "residuals": [
+    "the ORIGIN of the historical object-store trigger remains unidentified; only the CLASS is reproduced",
+    "an attempt whose world can never be committed in has no authorized terminal path: the controller exposes no abandon/cancel/terminalize operation, so the attempt stays RUNNING and the project cannot take its next structural revision. Closing it needs new canonical semantics, which were NOT invented",
+    "the readiness gate does not detect a pre-commit hook refusal, because git --dry-run does not run the hook — a property of git, stated rather than hidden",
+    "a borrowed world cannot survive its parent being MOVED, because the alternates pointer is absolute"
+  ],
+  "environmentIncident": {
+    "what": "this session ran `pnpm add -D @playwright/test` to restore an e2e toolchain whose package directory was empty in this worktree. The command emptied 164 of 248 package directories in the pnpm virtual store.",
+    "howDiscovered": "the subsequent `npx vitest` / `npx tsc` invocations failed with MODULE_NOT_FOUND, and a directory count showed 164 empty package dirs",
+    "repair": "removed node_modules and reinstalled OFFLINE from the intact pnpm content-addressable store; the store was verified populated first, so the reinstall restored the exact pinned versions rather than fetching anything new",
+    "verifiedAfterRepair": "tsc 7.0.2, vitest 4.1.10 and playwright 1.63.0 all resolve; build clean; the full unit suite and the e2e suite were then run to completion on the repaired tree",
+    "effectOnEvidence": "none — the repair restored the same pinned versions and the affected measurements were re-run afterwards",
+    "effectOnGitState": "none — node_modules is not tracked"
+  },
+  "preExistingEnvironmentGaps": [
+    {
+      "gap": "node_modules/@playwright/test was an empty directory in this worktree, so `playwright test` could not start",
+      "preExisting": true,
+      "resolution": "restored (see ENVIRONMENT_INCIDENT), after which the e2e suite ran 38/38"
+    },
+    {
+      "gap": "the R3-L0C containment test fails on this host",
+      "preExisting": true,
+      "resolution": "recorded, not repaired: it is outside this stage scope and its repair would touch R3-L0C evidence"
+    }
+  ],
+  "verdicts": {
+    "GIT_HISTORY": "CONTINUOUS",
+    "WORKTREE_READINESS": "CLOSED",
+    "BORROWED_OBJECT_LIFETIME": "CLOSED",
+    "WORKER_TOKEN_GIT_ACCESS": "PASS",
+    "FAILED_ATTEMPT_CONTINUATION": "CLOSED",
+    "CANONICAL_SEMANTICS": "UNCHANGED",
+    "NEXT": "R3-L0C RESUME QUALIFICATION"
+  }
+}
