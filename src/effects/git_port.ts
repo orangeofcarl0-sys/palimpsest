@@ -7,7 +7,7 @@
  */
 
 import { execFile, execFileSync } from "node:child_process";
-import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { promisify } from "node:util";
 
@@ -57,6 +57,23 @@ export const WORKER_COMMIT_EMAIL = "worker@palimpsest.invalid";
 /** §D5-c3: the promotion authority's own operational identity for its merge commits. */
 export const PROMOTION_COMMIT_NAME = "Palimpsest Promotion Authority";
 export const PROMOTION_COMMIT_EMAIL = "promotion@palimpsest.invalid";
+
+/**
+ * The world-local record of WHICH ATTEMPT, at WHICH ORIGINAL BASIS, this world was created for.
+ *
+ * It lives inside the world's own `.git` directory, so it is invisible to `git status` and never appears in
+ * an attempt's changed files. It is deliberately NOT authority: a worker with a shell can reach and rewrite
+ * it, and nothing here decides who may do anything. What it is, is EVIDENCE — the only record anywhere of the
+ * basis a world ORIGINATED at, which is otherwise unrecoverable once HEAD moves. The authority stays outside
+ * the world: the caller's attempt identity (the world id, which the path encodes) and the canonical
+ * repository the port was constructed with.
+ *
+ * WHY IT IS NEEDED AT ALL (R3-WR4). Without it, a reuse could only be judged by Git ANCESTRY, and ancestry is
+ * not identity: a world built B0 -> B1 -> X answered "yes" to a request for B1, because B1 is reachable from
+ * X. The world's basis then silently became "any ancestor of HEAD", so a later result could be attributed to
+ * a base the attempt never started from.
+ */
+export const WORLD_BINDING_FILE = "palimpsest-world-binding.json";
 
 interface CreateWorktreeInput {
   readonly worktreeId: string;
@@ -511,13 +528,24 @@ export class GitCliPort implements GitPort {
      */
     const identity = this.#worldIdentity(path);
     if (identity.kind === 'ADOPTS_PARENT_REPOSITORY') {
+      /**
+       * TWO SHAPES REACH THIS KIND, and they are named separately because the remedy differs: a directory with
+       * no repository of its own (Git discovered the enclosing one), and a world whose own COMMON directory
+       * points at the canonical repository. Both mean the same thing — every mutating command would land on the
+       * canonical project — but only the second passed the administrative-directory test, so a reader must be
+       * able to tell which one they are looking at.
+       */
       throw new Error(
-        `WORLD_PATH_NOT_ISOLATED: the directory "${path}" has no Git repository of its own — Git resolves the repository at "${identity.gitDir}", which is NOT inside the world. Creating or reusing a world here would run checkout, remote and config operations against ANOTHER repository, mutating canonical project state. Refusing.`,
+        identity.reason === 'COMMON_DIR_IS_CANONICAL'
+          ? `WORLD_COMMON_DIR_NOT_ISOLATED: the world at "${path}" keeps its own administrative directory inside the world, but its Git COMMON directory resolves to "${identity.commonDir}", which IS the canonical repository. Refs, config and remotes would therefore be read and written in the canonical project — measured, where the frozen port removed the canonical repository's origin remote and overwrote its user.name through exactly this shape. A world must OWN its mutable Git state; refusing before any mutating command.`
+          : `WORLD_PATH_NOT_ISOLATED: the directory "${path}" has no Git repository of its own — Git resolves the repository at "${identity.gitDir}", which is NOT inside the world. Creating or reusing a world here would run checkout, remote and config operations against ANOTHER repository, mutating canonical project state. Refusing.`,
       );
     }
     if (identity.kind === 'FOREIGN_WORLD') {
       throw new Error(
-        `WORLD_IDENTITY_MISMATCH: the directory "${path}" is a Git repository whose administrative directory ("${identity.gitDir}") lies outside the world, which is the shape of a LINKED WORKTREE rather than an execution world. A world must own its mutable Git state; refusing rather than adopting one whose metadata belongs elsewhere.`,
+        identity.reason === 'COMMON_DIR_OUTSIDE'
+          ? `WORLD_COMMON_DIR_OUTSIDE: the world at "${path}" keeps its own administrative directory inside the world, but its Git COMMON directory resolves to "${identity.commonDir}", which lies OUTSIDE the world. Refs, config and remotes would live in a repository the world does not own. The supported borrowed-object shape is unaffected: a \`clone --shared\` world borrows IMMUTABLE objects through \`objects/info/alternates\`, which is not a common directory. Refusing before any mutating command.`
+          : `WORLD_IDENTITY_MISMATCH: the directory "${path}" is a Git repository whose administrative directory ("${identity.gitDir}") lies outside the world, which is the shape of a LINKED WORKTREE rather than an execution world. A world must own its mutable Git state; refusing rather than adopting one whose metadata belongs elsewhere.`,
       );
     }
     if (identity.kind === 'NOT_A_REPOSITORY') {
@@ -529,51 +557,77 @@ export class GitCliPort implements GitPort {
       }
     }
     /**
-     * THE CLONE HAPPENS ONLY WHEN THERE IS NO WORLD, which is the `ABSENT` case. It is stated as its own branch
-     * rather than folded into the identity test so the two facts stay separable: "no world exists" is what
-     * justifies creating one, and "a world exists but is not isolated" is what justifies refusing.
+     * ## THE CLONE HAPPENS ONLY WHEN THERE IS NO WORLD, which is the `ABSENT` case. It is stated as its own
+     * branch rather than folded into the identity test so the two facts stay separable: "no world exists" is
+     * what justifies creating one, and "a world exists but is not isolated" is what justifies refusing.
      */
     if (identity.kind === 'ABSENT') {
       await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
-    }
-
-    /**
-     * ## NO UNCONDITIONAL CHECKOUT (R3-WR3)
-     *
-     * R3-WR2 re-ran `checkout --detach baseCommit` on EVERY call, including a reuse. On a fresh clone that is
-     * correct and necessary — it is what moves HEAD off the clone's default branch. On an EXISTING world it is
-     * destructive: a world holding a committed candidate X was rewound to its base B, HEAD moved back, and the
-     * candidate's files left the working tree. Measured, and frozen as the A2 falsifier.
-     *
-     * So the checkout is CONDITIONAL, and the condition is about WORK, not about whether a clone just happened:
-     *
-     *   a fresh clone                     HEAD is the clone's default branch, which need not cover the basis
-     *                                     → checkout runs, which is what makes it a world at its basis
-     *   a world already at or past basis   HEAD covers the basis → NO checkout, so a candidate survives
-     *   a world on an UNRELATED basis      HEAD does not descend from the basis → REFUSE, because moving it
-     *                                     would discard work built on the other basis
-     */
-    if (identity.kind === 'ABSENT') {
-      /** Fresh clone: HEAD must be moved to the basis for this to be a world at all. */
-      await this.#git(["checkout", "--detach", input.baseCommit], path);
-    } else if (!(await this.#headCovers(path, input.baseCommit))) {
       /**
-       * HEAD does not cover the basis, and the two reasons are DIFFERENT facts that must not be conflated:
+       * ## NO UNCONDITIONAL CHECKOUT (R3-WR3), AND THE BASIS IS RECORDED (R3-WR4)
        *
-       *   HEAD is UNRESOLVABLE   the world's own repository cannot name a commit — a broken borrowed store, a
-       *                          corrupt object database. The world's WORK is still there and must be preserved,
-       *                          so this is a readiness failure rather than a basis disagreement.
-       *   HEAD resolves elsewhere the world was cut from a different basis, and moving it would discard work.
+       * A fresh clone's HEAD is the clone's default branch, which need not cover the basis, so the checkout is
+       * what makes this a world at its basis. That is also the ONE moment the basis is KNOWABLE BY CONSTRUCTION
+       * — nothing has been built on the world yet — so it is the moment the binding is written. Recording it
+       * here rather than inferring it later is what lets a reuse answer "is this world's basis the one being
+       * asked for" instead of "is the requested commit somewhere behind HEAD".
        */
+      await this.#git(["checkout", "--detach", input.baseCommit], path);
+      this.#writeBinding(path, { attemptId: input.worktreeId, basisCommit: input.baseCommit, repository: this.#repository });
+    } else {
+      /**
+       * ## THE BASIS IS IDENTITY, NOT ANCESTRY (R3-WR4)
+       *
+       * R3-WR3 decided a reuse with `#headCovers`, which is `head === basis || merge-base --is-ancestor basis
+       * head`. That accepts any ANCESTOR of HEAD, and the difference is load-bearing. Measured against the
+       * frozen R3-WR3 port: a world created at B0, then committed forward B0 -> B1 -> X, ACCEPTED a request for
+       * B1 — a commit the world never started from, merely because B1 is reachable from the candidate X. A
+       * world whose basis silently widens to "any ancestor of HEAD" has no fixed basis, so a later result can
+       * be attributed to a base the attempt never began at.
+       *
+       * The basis is therefore compared to the RECORDED one. Three facts, deliberately not conflated:
+       *
+       *   a recorded binding that MATCHES the request      the world is at its own basis → reuse
+       *   a recorded binding that DIFFERS                  a different basis was asked for → REFUSE, without
+       *                                                    moving anything, because the work here belongs to
+       *                                                    the other basis
+       *   NO recorded binding                              a world made before this record existed. Its original
+       *                                                    basis cannot be recovered, so it is adopted ONLY when
+       *                                                    HEAD still proves it (HEAD == basis). A moved world is
+       *                                                    refused rather than silently re-based.
+       *
+       * ## THE RECORD ALSO NAMES ITS ATTEMPT (R3-WR4)
+       *
+       * The record's `attemptId` is checked against the world id being requested. A world whose record names a
+       * DIFFERENT attempt is refused, because adopting it would hand this attempt another attempt's work and
+       * attribute this attempt's progress to the wrong owner. This is a check on EVIDENCE, not a claim of
+       * authority: a caller who could write the record could lie about the id, and the honest statement of what
+       * that buys is "the accidental and the careless case is caught", not "a hostile caller is prevented". The
+       * authority that a world belongs to the attempt named by its path stays with the caller's attempt identity,
+       * which this port does not mint.
+       */
+      const binding = this.#readBinding(path);
       const head = await this.#head(path);
-      if (head === '') {
+      if (binding !== null) {
+        if (binding.attemptId !== input.worktreeId) {
+          throw new Error(
+            `WORLD_OWNER_MISMATCH: the world at "${path}" records that it was created for attempt ${JSON.stringify(binding.attemptId)}, and this request is for ${JSON.stringify(input.worktreeId)}. Adopting it would hand this attempt work that belongs to another one and attribute its progress to the wrong owner; refusing without mutation.`,
+          );
+        }
+        if (binding.basisCommit !== input.baseCommit) {
+          throw new Error(
+            `WORLD_BASIS_MISMATCH: the world at "${path}" was created at basis ${binding.basisCommit.slice(0, 12)}, and this request asks for ${input.baseCommit.slice(0, 12)}. The requested commit is not this world's basis${head === '' ? '' : ` (its HEAD is ${head.slice(0, 12)})`}, and moving it would discard the work built on the basis it actually has; refusing without mutation.`,
+          );
+        }
+      } else if (head === '') {
         throw new Error(
           `WORLD_HEAD_UNRESOLVABLE: the world at "${path}" exists but its HEAD cannot be resolved to a commit, so it cannot be verified against the requested basis ${input.baseCommit.slice(0, 12)}. This is the shape of a broken borrowed object store. The world and any work in it are LEFT IN PLACE and NOT re-created; refusing rather than destroying them.`,
         );
+      } else if (head !== input.baseCommit) {
+        throw new Error(
+          `WORLD_BASIS_UNRECORDED: the world at "${path}" carries no recorded basis and its HEAD is ${head.slice(0, 12)}, which is not the requested basis ${input.baseCommit.slice(0, 12)}. A world created before the basis record existed cannot have its ORIGINAL basis recovered, and HEAD having moved means ancestry cannot stand in for it; refusing rather than adopting it under a basis it may never have started from.`,
+        );
       }
-      throw new Error(
-        `WORLD_BASIS_MISMATCH: the world at "${path}" has HEAD ${head.slice(0, 12)}, which neither IS nor descends from the requested basis ${input.baseCommit.slice(0, 12)}. Moving it would discard the work built on the other basis; refusing without mutation.`,
-      );
     }
 
     /**
@@ -663,11 +717,14 @@ export class GitCliPort implements GitPort {
    *     parent adoption       <canonical>/.git                      outside the world   → ADOPTS_PARENT_REPOSITORY
    *     linked worktree       <canonical>/.git/worktrees/<id>       outside the world   → FOREIGN_WORLD
    *
-   * `--git-common-dir` is read as well and recorded, because a linked worktree is exactly the case where the
-   * common directory is outside while the worktree's own git dir is not — and adopting such a world would hand
-   * the worker mutable metadata that lives in the canonical repository, which §D2-cR exists to prevent.
+   * `--git-common-dir` is read as well, and since R3-WR4 it is CHECKED rather than merely recorded. A linked
+   * worktree is the case where the common directory is outside while the worktree's own git dir is not — and a
+   * world whose `.git/commondir` names an external repository is the same hazard reached from the other
+   * direction: its administrative directory is inside, so the test above passes, while refs, config and remotes
+   * are read and written outside. Measured against the frozen R3-WR3 port, the canonical repository's `origin`
+   * remote was removed and its `user.name` overwritten through exactly that shape.
    */
-  #worldIdentity(path: string): { kind: 'ABSENT' | 'NOT_A_REPOSITORY' | 'ISOLATED_REPOSITORY' | 'ADOPTS_PARENT_REPOSITORY' | 'FOREIGN_WORLD'; gitDir?: string; commonDir?: string; pathOccupied?: boolean } {
+  #worldIdentity(path: string): { kind: 'ABSENT' | 'NOT_A_REPOSITORY' | 'ISOLATED_REPOSITORY' | 'ADOPTS_PARENT_REPOSITORY' | 'FOREIGN_WORLD'; gitDir?: string; commonDir?: string; pathOccupied?: boolean; reason?: 'NO_OWN_REPOSITORY' | 'COMMON_DIR_IS_CANONICAL' | 'COMMON_DIR_OUTSIDE' | 'GIT_DIR_OUTSIDE' } {
     const occupied = existsSync(path);
     if (!occupied) return { kind: 'ABSENT', pathOccupied: false };
     const gitDir = this.#gitSync(['rev-parse', '--absolute-git-dir'], path);
@@ -683,14 +740,48 @@ export class GitCliPort implements GitPort {
      * repository root for this purpose. `sep` is appended so a sibling named `<world>-extra` cannot match.
      */
     const insideWorld = gitDirReal === join(worldReal, '.git') || gitDirReal.startsWith(`${worldReal}${sep}`);
-    if (insideWorld) return { kind: 'ISOLATED_REPOSITORY', gitDir: gitDirReal, commonDir };
+    if (insideWorld) {
+      /**
+       * ## THE COMMON DIRECTORY IS CHECKED TOO (R3-WR4)
+       *
+       * `--absolute-git-dir` alone is NOT sufficient, and the gap was measured rather than reasoned about. A
+       * world's `.git/commondir` can name an EXTERNAL directory: the world's own administrative directory stays
+       * inside the world, so the test above still says "isolated", while REFS, CONFIG and REMOTES are then read
+       * and written in that external repository. Pointed at the CANONICAL repository, the frozen R3-WR3 port
+       * returned success and then removed the canonical repository's `origin` remote and overwrote its
+       * `user.name` — canonical mutation through a world that had passed the isolation test.
+       *
+       * The normal supported shape must NOT be rejected: a `git clone --shared` world has `common-dir` equal to
+       * its own `.git`, and it borrows IMMUTABLE objects through `.git/objects/info/alternates`, which is a
+       * different mechanism and is deliberately allowed. So the test is the same inside/outside question, asked
+       * of the common directory as well.
+       */
+      const commonReal = this.#commonDirReal(path, commonDir, worldReal, gitDirReal);
+      if (commonReal !== null && !this.#insideWorld(commonReal, worldReal)) {
+        const isCanonical = this.#samePath(commonReal, join(this.#repository, '.git'));
+        return {
+          kind: isCanonical ? 'ADOPTS_PARENT_REPOSITORY' : 'FOREIGN_WORLD',
+          gitDir: gitDirReal,
+          commonDir: commonReal,
+          pathOccupied: true,
+          reason: isCanonical ? 'COMMON_DIR_IS_CANONICAL' : 'COMMON_DIR_OUTSIDE',
+        };
+      }
+      return { kind: 'ISOLATED_REPOSITORY', gitDir: gitDirReal, commonDir: commonReal ?? commonDir };
+    }
     /**
      * The repository's administrative directory is outside the world. Whether it is the canonical repository
      * itself (parent adoption) or a linked worktree's metadata, the answer is the same: this directory is not an
      * execution world, and it must not be used as one.
      */
-    const isParentRepository = gitDirReal === realpathSync(join(this.#repository, '.git'));
-    return { kind: isParentRepository ? 'ADOPTS_PARENT_REPOSITORY' : 'FOREIGN_WORLD', gitDir: gitDirReal, commonDir, pathOccupied: true };
+    const isParentRepository = this.#samePath(gitDirReal, join(this.#repository, '.git'));
+    return {
+      kind: isParentRepository ? 'ADOPTS_PARENT_REPOSITORY' : 'FOREIGN_WORLD',
+      gitDir: gitDirReal,
+      commonDir,
+      pathOccupied: true,
+      reason: isParentRepository ? 'NO_OWN_REPOSITORY' : 'GIT_DIR_OUTSIDE',
+    };
   }
 
   /** The world's HEAD, or an empty string when it cannot be resolved. */
@@ -699,19 +790,86 @@ export class GitCliPort implements GitPort {
     return head.exit === 0 ? head.text.trim() : '';
   }
 
-  /** Whether `head` is `basis` or descends from it, i.e. whether moving to the basis would LOSE work. */
-  async #headCovers(path: string, basis: string): Promise<boolean> {
-    const head = await this.#head(path);
-    if (head === '') return false;
-    if (head === basis) return true;
-    return this.#isAncestor(path, basis, head);
+  /**
+   * Canonicalize a `--git-common-dir` answer. Git may answer RELATIVE to the world (the normal case is the
+   * literal string `.git`) or absolute (what a `commondir` file containing a path produces), so both are
+   * resolved against the world before the inside/outside question is asked. `null` means the answer could not
+   * be canonicalized, which is treated as "cannot establish ownership" by the caller rather than as "inside".
+   */
+  #commonDirReal(path: string, commonDir: string, worldReal: string, gitDirReal: string): string | null {
+    const answer = commonDir.trim();
+    if (answer === '') return gitDirReal;
+    const absolute = resolve(path, answer);
+    try {
+      return realpathSync(absolute);
+    } catch {
+      /**
+       * A common directory that does not exist cannot be owned by the world, and a bare relative `.git` is
+       * the normal shape — so the world's own git dir is the honest fallback ONLY when the answer was that
+       * relative form. Anything else unresolvable is reported as unresolvable.
+       */
+      return answer === '.git' || resolve(worldReal, answer) === gitDirReal ? gitDirReal : null;
+    }
   }
 
-  /** `git merge-base --is-ancestor`: whether `ancestor` is reachable from `descendant`. */
-  async #isAncestor(path: string, ancestor: string, descendant: string): Promise<boolean> {
-    const result = await this.#gitExit(['merge-base', '--is-ancestor', ancestor, descendant], path);
-    return result.exit === 0;
+  /** Whether a canonicalized path lies strictly inside the world (or IS its `.git`). */
+  #insideWorld(candidate: string, worldReal: string): boolean {
+    return candidate === join(worldReal, '.git') || candidate.startsWith(`${worldReal}${sep}`);
   }
+
+  /** Whether two paths name the same physical location, tolerating case and separators on Windows. */
+  #samePath(left: string, right: string): boolean {
+    const canonical = (value: string): string => {
+      const resolved = resolve(value);
+      try {
+        return realpathSync(resolved);
+      } catch {
+        return resolved;
+      }
+    };
+    const a = canonical(left);
+    const b = canonical(right);
+    return process.platform === 'win32' ? a.toLowerCase() === b.toLowerCase() : a === b;
+  }
+
+  /**
+   * THE WORLD'S RECORDED BINDING: which attempt, at which ORIGINAL BASIS, this world was made for.
+   *
+   * Read from inside the world's own Git directory. It is EVIDENCE, never authority (see `WORLD_BINDING_FILE`).
+   * A missing or unparseable record is reported as `null` rather than guessed at, because "this world predates
+   * the record" and "this world says something different" are different facts.
+   */
+  #readBinding(path: string): { attemptId: string; basisCommit: string; repository: string } | null {
+    const file = join(path, '.git', WORLD_BINDING_FILE);
+    if (!existsSync(file)) return null;
+    try {
+      const parsed = JSON.parse(readFileSync(file, 'utf8')) as { attemptId?: unknown; basisCommit?: unknown; repository?: unknown };
+      if (typeof parsed.attemptId !== 'string' || typeof parsed.basisCommit !== 'string') return null;
+      return {
+        attemptId: parsed.attemptId,
+        basisCommit: parsed.basisCommit,
+        repository: typeof parsed.repository === 'string' ? parsed.repository : '',
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /** Write the world's binding. Called ONLY at creation, when the basis is by construction the requested one. */
+  #writeBinding(path: string, binding: { attemptId: string; basisCommit: string; repository: string }): void {
+    const file = join(path, '.git', WORLD_BINDING_FILE);
+    writeFileSync(file, `${JSON.stringify({ schemaVersion: 1, ...binding })}${String.fromCharCode(10)}`, 'utf8');
+  }
+
+  /**
+   * REMOVED IN R3-WR4: `#headCovers` / `#isAncestor`.
+   *
+   * R3-WR3 decided a reuse with `head === basis || git merge-base --is-ancestor basis head`. That helper is gone
+   * rather than left unused, because leaving it would invite the next reader to reach for ancestry again. The
+   * reason it was wrong is recorded at the reuse branch in `createWorld`: ancestry says one commit descends from
+   * another and never that a world ORIGINATED at one, so a world built B0 -> B1 -> X answered "yes" to a request
+   * for B1. Basis identity is now the recorded binding, not a reachability test.
+   */
 
   /**
    * Remove the world's `origin` remote IF one exists, and verify afterwards that none pointing at the canonical
