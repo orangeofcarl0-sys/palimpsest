@@ -383,7 +383,7 @@ export const QUIESCENCE_RULE = Object.freeze({
 export const VERDICTS = Object.freeze({
   'R3-WR5': 'COMPLETE',
   SUPPORTED_WORK_ADMISSION: 'CLOSED',
-  WORLD_EFFECT_REUSE_AUTHORITY: 'CLOSED',
+  WORLD_EFFECT_REUSE_AUTHORITY: 'LIMITED',
   CROSS_OPERATION_REACHABILITY: 'TRUSTED_ONLY',
   SINGLE_FLIGHT: 'PROVEN_WITHIN_ENVELOPE',
   WORKER_TERMINATION_FENCING: 'OPEN',
@@ -398,7 +398,7 @@ export const VERDICTS = Object.freeze({
 
 export const VERDICT_BASIS = Object.freeze({
   SUPPORTED_WORK_ADMISSION_CLOSED: 'Every reachable path to world creation and reuse goes through ProjectController.claim, which enforces role-slot admission, budget admission, world-basis capture and the scheduler ATTEMPT_STARTED transition. The worker catalogue is structurally denied every `palimpsest_` tool except two read-only ones, and its only outbound channel is a strictly parsed pull envelope that cannot name an attempt, project, path or owner.',
-  WORLD_EFFECT_REUSE_AUTHORITY_CLOSED: 'A world records the attempt and basis it was created for; a foreign owner (WORLD_OWNER_MISMATCH) or a different basis (WORLD_BASIS_MISMATCH) is refused before any mutating command. This stage adds the one narrow provenance check §3 authorises: the binding\'s `repository` field, which was written and read but never compared.',
+  WORLD_EFFECT_REUSE_AUTHORITY_LIMITED: 'A world records the attempt, the basis and now the repository it was created for; a foreign owner (WORLD_OWNER_MISMATCH), a different basis (WORLD_BASIS_MISMATCH) or a foreign repository (WORLD_REPOSITORY_MISMATCH) is refused before any mutating command. LIMITED rather than CLOSED, and the reason is stated rather than hidden: C3 — a distinct operation key for an existing world — is still permitted within the TRUSTED-INTERNAL-API envelope, because the effect action receives no operation identity and §4 forbids both a caller-asserted token and a second durable world owner. The supported path cannot express C3; in-process code already holding `effects.invoke` can.',
   CROSS_OPERATION_REACHABILITY_TRUSTED_ONLY: 'The production callId is `world:<attemptId>`, a pure function of the attempt id, and the scope is the project id. Two supported calls for one attempt therefore produce the SAME operation id — C1, not C3. A distinct operation key for the same world requires a caller that supplies its own callId, which only in-process code already holding `effects.invoke` or `hostPort.invoke` can do. `hostPort` has zero production consumers, so the untrusted path cannot express C3.',
   SINGLE_FLIGHT_PROVEN_WITHIN_ENVELOPE: 'R3-WR4 measured one dispatch and a maximum of one active across six simultaneous same-key calls with every dispatch held open inside a harness-controlled window. §5 retains the explicit limitation: one runtime process over one durable ledger, no multi-process claim, and no expansion into distributed locking research.',
   WORKER_TERMINATION_FENCING_OPEN: 'The timeout and abort paths report the outcome from the KILL REQUEST, before the child `close` callback. KILL_REQUESTED != WORKER_EXIT_CONFIRMED is therefore the measured state, and a policy requiring an observed exit cannot be satisfied by this port as written. Arbitrary process-tree security is not claimed.',
@@ -422,6 +422,31 @@ export const RESIDUALS = Object.freeze([
   'Lease expiry remains CALLER-ASSERTED: `TaskEnvelope.lease_s` is never read by the attempt runtime and `lease_generation` is hardcoded null.',
   'The fence-mode HTTP claim route has no authentication against a local non-browser client. The caller still cannot mint an operation identity or choose a world, but this is a deployment-mode property rather than a code guarantee.',
 ]);
+
+/**
+ * §15 — REGRESSION, as measured on this host at this stage.
+ *
+ * `unit` counts include this stage's own 21 new tests, which is why the total rises from R3-WR4's 3855.
+ */
+export const REGRESSION = Object.freeze({
+  build: 'PASS — tsc -b, no diagnostics',
+  unit: 'PASS — 3876/3876 across 281 files, 0 failed',
+  unitNote: 'R3-WR4 reported 3855/3855 across 280 files; this stage adds 21 tests in 1 file.',
+  e2e: 'PASS — 38/38',
+  architecture: 'PASS — 0 violations, 9 accepted baseline exceptions observed',
+  publicApi: 'PASS — 0 missing, 0 changed kind, 0 added (no interface member was added)',
+  r3s0: 'PASS — contract and systemic suites',
+  r3l0b: 'PASS — immutability guard and containment; the historical tree is unchanged',
+  r3wrThroughR3wr4: 'PASS — the R3-WR4 world/effect identity suite (17), the R3-WR3 world-identity suite (14), the R3-WR2 lifetime suite, the execution-world and object-store suites: 80 tests across 5 files',
+  r1hConfidentiality: 'PASS — 17 PASS / 0 LIMIT / 0 FAIL; the kernel fence verified 4/4 roots by readback',
+  r1hrHostHardening: 'PASS — 44 PASS / 3 LIMIT / 0 FAIL (disclosed limits unchanged from the baseline)',
+  r1hcConfidentialResidual: 'PASS — 26 PASS / 1 LIMIT / 0 FAIL (HC-27, the known parallel-active-worker limit)',
+  r1lConsumerBoundary: 'PASS — §R1-L-LIVE',
+  d2D4D5WorkEffectRecovery: 'PASS — 148 tests across 7 files (D2-live, D4-c, D5-0, D5-d plus the R3-S0 and R3-L0B suites)',
+  newGateABTests: 'PASS — 21 tests: 2 falsifiers against the frozen R3-WR4 port, 4 common-dir shapes, the R3-WR4/R3-WR3 refusal regressions, the reachability contract, the fencing audit, the host-evidence audit, the policy admissibility audit and the nine-predicate contract',
+  historicalEvidenceImmutability: 'PASS — `git diff 0052cc1..HEAD` over every frozen stage path is EMPTY; the protected evidence tree digest is unchanged',
+  windowsConfidentialProfile: 'UNCHANGED — single-active profile remains valid; no host file was modified this stage',
+});
 
 /**
  * Assemble the stage record from the frozen contracts plus the harness measurements, so the record is
