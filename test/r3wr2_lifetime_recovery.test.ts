@@ -153,7 +153,15 @@ describe("R3-WR2 A. the readiness gate is an allowlist and the PRODUCTION port e
     const port = new GitCliPort(basis.repo, join(basis.repo, ".palimpsest", "worlds"));
     await port.createWorld({ worktreeId: "attempt-dead", baseCommit: basis.basisCommit });
     renameSync(join(basis.repo, ".git", "objects"), join(root, "objects-moved"));
-    await expect(port.createWorld({ worktreeId: "attempt-dead", baseCommit: basis.basisCommit })).rejects.toThrow(/WORLD_NOT_COMMIT_CAPABLE|object directory|not a git repository/u);
+    /**
+     * R3-WR3 refined this refusal. The world's HEAD becomes UNRESOLVABLE when its borrowed store is gone, which
+     * is a DIFFERENT fact from a basis disagreement, so the port now reports `WORLD_HEAD_UNRESOLVABLE` instead of
+     * the generic object-store message. It is still a REFUSAL, which is the property this test pins; the error
+     * code is allowed to be more specific than it was.
+     */
+    await expect(port.createWorld({ worktreeId: "attempt-dead", baseCommit: basis.basisCommit })).rejects.toThrow(
+      /WORLD_NOT_COMMIT_CAPABLE|WORLD_HEAD_UNRESOLVABLE|object directory|not a git repository/u,
+    );
   });
 
   it("the criterion is an ALLOWLIST of exit codes, and the contract says so", () => {
