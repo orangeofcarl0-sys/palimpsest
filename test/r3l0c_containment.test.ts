@@ -59,13 +59,26 @@ process.stdout.write("R3L0B_PROBE " + JSON.stringify(out) + String.fromCharCode(
 
 /** Fence the given roots and run the probe inside the shipped runner. */
 function probeWith(roots: readonly string[], world: string, probe: string) {
-  process.env.PALIMPSEST_DSH_ROOT = sandbox.root;
   const report = runConfined({ sandbox, world, probePath: probe, root: RUN_ROOT });
   return report.observations ?? {};
 }
 
 let undeclared: Record<string, { read: boolean; nonce?: boolean; code?: string }> = {};
 let declared: Record<string, { read: boolean; nonce?: boolean; code?: string }> = {};
+/**
+ * What each fence application actually ACHIEVED.
+ *
+ * R3-WR3 §7: the fence module caches its binding-seam resolution — INCLUDING a failure — so the ORDER of the
+ * environment setup against the first `ensureReadFence` call decides whether the fence works at all. This
+ * harness previously set `PALIMPSEST_DSH_ROOT` only inside `probeWith`, i.e. AFTER the first fence call, so the
+ * first call latched a resolution failure into the cache and the DECLARED fence then silently applied NOTHING.
+ * The test failed not because confinement was broken but because the fence was never applied.
+ *
+ * The fix is the environment setup, moved before the first call — and these records are asserted so that a
+ * fence which applies nothing can never again be mistaken for confinement working.
+ */
+let undeclaredFence: { supported: boolean; rootsVerified: boolean; treesVerified: boolean; unavailable?: string } | null = null;
+let declaredFence: { supported: boolean; rootsVerified: boolean; treesVerified: boolean; unavailable?: string } | null = null;
 
 beforeAll(async () => {
   buildIsolatedLayout(RUN_ROOT, UNIT_IDS);
@@ -78,13 +91,22 @@ beforeAll(async () => {
   writeFileSync(join(mine, "README.md"), "# mine\n", "utf8");
   const probe = writeProbe(mine);
 
-  /** The R3-L0B-only declaration: the private sibling root, which does not cover the real unit tree. */
   const { ensureReadFence } = await import(pathToFileURL(join(REPO_ROOT, "host", "deployment", "runtime", "read_fence.js")).href);
-  ensureReadFence({ roots: [join(RUN_ROOT, "private", "units")], world: mine });
+  /**
+   * THE ENVIRONMENT MUST BE SET BEFORE THE FIRST FENCE CALL. The shipped fence resolves its binding seam from
+   * `PALIMPSEST_DSH_ROOT` and caches the result for the process, so setting it later is not merely late — it is
+   * ineffective, because the cached value wins. This is what `scripts/r3l0b/canaries.mjs` already does.
+   */
+  process.env.PALIMPSEST_DSH_ROOT = sandbox.root;
+
+  /** The R3-L0B-only declaration: the private sibling root, which does not cover the real unit tree. */
+  const undeclaredApplied = ensureReadFence({ roots: [join(RUN_ROOT, "private", "units")], world: mine });
+  undeclaredFence = { supported: undeclaredApplied.result?.supported === true, rootsVerified: undeclaredApplied.rootsVerified === true, treesVerified: undeclaredApplied.treesVerified === true, unavailable: undeclaredApplied.result?.unavailable };
   undeclared = probeWith([], mine, probe);
 
   /** The corrected declaration: every sibling world named individually. */
-  ensureReadFence({ roots: runProtectedRoots(RUN_ROOT, UNIT_IDS, "b0-C"), world: mine });
+  const declaredApplied = ensureReadFence({ roots: runProtectedRoots(RUN_ROOT, UNIT_IDS, "b0-C"), world: mine });
+  declaredFence = { supported: declaredApplied.result?.supported === true, rootsVerified: declaredApplied.rootsVerified === true, treesVerified: declaredApplied.treesVerified === true, unavailable: declaredApplied.result?.unavailable };
   declared = probeWith([], mine, probe);
 }, 900_000);
 
@@ -97,6 +119,21 @@ describe("R3-L0C §10 — the real matrix layout containment", () => {
   it("§10 the probe ran and can read its own world, so an EPERM result is meaningful", () => {
     expect(undeclared.OWN_WORLD?.read, "the probe could not read the world it runs in").toBe(true);
     expect(declared.OWN_WORLD?.read).toBe(true);
+  });
+
+  it("§7 the fence actually APPLIED, so a silent no-op cannot pass as confinement", () => {
+    /**
+     * THE GUARD AGAINST THE DEFECT THIS SUITE HAD. The fence module caches its binding-seam resolution,
+     * including a FAILURE, so a fence call made before `PALIMPSEST_DSH_ROOT` is set applies nothing at all and
+     * reports no error. Without this assertion the DECLARED test would "fail" with `read: true` and look like
+     * broken confinement, when in fact no fence had been applied. Asserting the fence's own outcome first is
+     * what makes the containment result below a statement about the boundary rather than about setup order.
+     */
+    expect(undeclaredFence, "the undeclared fence result must be recorded").not.toBeNull();
+    expect(declaredFence, "the declared fence result must be recorded").not.toBeNull();
+    expect(declaredFence!.supported, `the fence is unsupported on this host: ${String(declaredFence!.unavailable)}`).toBe(true);
+    expect(declaredFence!.rootsVerified, "the declared fence did not verify its roots").toBe(true);
+    expect(declaredFence!.treesVerified, "the declared fence did not verify its trees").toBe(true);
   });
 
   it("§10 the DEFECT is real: without the sibling declaration a worker READS a sibling world", () => {
