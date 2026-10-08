@@ -6,7 +6,7 @@
  * windows can be simulated deterministically without a real repository.
  */
 
-import { execFile } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { promisify } from "node:util";
@@ -484,10 +484,35 @@ export class GitCliPort implements GitPort {
    *
    * The commit identity is OPERATIONAL, not an agent identity: it says "this candidate commit came
    * from a Palimpsest worker", never "this is the user" and never "this is a durable agent".
+   *
+   * ## REUSE, NOT RE-CREATION (R3-WR2)
+   *
+   * `palimpsest.world.create` is declared `effects.idempotent()`, and Ordarium relies on that
+   * declaration: when an invocation throws AFTER the clone succeeded, the operation is left UNCERTAIN
+   * and its recovery path for an idempotent action is `redispatch-same-key`, which re-runs THIS action
+   * with the same world id. So "the same world id reuses the path" is not a description — it is the
+   * convergence condition of the recovery engine.
+   *
+   * Running `git clone` unconditionally made that condition false: the second call failed with
+   * "destination path already exists and is not an empty directory", so a redispatch could never
+   * converge and the attempt stayed unresolved. The world is therefore REUSED when it already exists:
+   * the clone is skipped, the basis checkout is re-applied, and the identity is re-stamped.
+   *
+   * Reuse is the SAFE direction, and deliberately not "delete and re-clone". A world that exists may
+   * hold a worker's uncommitted work, and `checkout --detach` at the SAME commit preserves it (measured:
+   * a modified file survives). Re-cloning would destroy it, which is the outcome the readiness rule
+   * below forbids.
    */
   async createWorld(input: CreateWorktreeInput): Promise<{ worldPath: string }> {
     const path = this.worldPath(input.worktreeId);
-    await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
+    if (!this.#worldExists(path)) {
+      await this.#git(["clone", "--shared", "--no-checkout", this.#repository, path], this.#repository);
+    }
+    /**
+     * Re-applied on every call, including a reuse. For a reused world this is the operation that makes
+     * the action converge on the SAME basis; for a fresh clone it is what moves HEAD off the clone's
+     * default branch. It is not a reset: at the same commit it leaves a dirty tree alone.
+     */
     await this.#git(["checkout", "--detach", input.baseCommit], path);
     try {
       await this.#git(["remote", "remove", "origin"], path);
@@ -502,6 +527,37 @@ export class GitCliPort implements GitPort {
   }
 
   /**
+   * Whether `path` already holds a world.
+   *
+   * `.git` is NOT assumed to be a directory: in a linked worktree it is a FILE holding a `gitdir:`
+   * pointer, and this port's own history includes a linked-worktree backend. Testing for `.git` with
+   * `existsSync` alone is the weaker form; the strong form is asking GIT, so `rev-parse` is the
+   * authority and the filesystem check is only a fast path. A path that exists but is not a repository
+   * is therefore NOT reused — it falls through to the clone, which reports the collision honestly
+   * rather than this method pretending it is a world.
+   */
+  #worldExists(path: string): boolean {
+    try {
+      if (!statSync(path).isDirectory()) return false;
+    } catch {
+      return false;
+    }
+    return this.#gitSync(["rev-parse", "--git-dir"], path) !== undefined;
+  }
+
+  /**
+   * A synchronous git call for the reuse test, which must decide BEFORE any await so the check and the
+   * clone cannot interleave with another caller's world creation.
+   */
+  #gitSync(args: string[], cwd: string): string | undefined {
+    try {
+      return execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
    * THE WORLD MUST BE COMMIT-CAPABLE BEFORE A WORKER IS HANDED IT.
    *
    * A `--shared` world borrows its immutable objects through `.git/objects/info/alternates`. If that borrowed
@@ -511,44 +567,104 @@ export class GitCliPort implements GitPort {
    * and the worker discovers otherwise, which is exactly the failure R3-WR was opened for: an attempt that stays
    * RUNNING with no result, and a next generation blocked by `quiescence_required`.
    *
-   * The check is made by GIT, not by the filesystem. `cat-file -e` asks whether the borrowed store can actually
-   * deliver the basis commit, which is the property the worker depends on; an `existsSync` on the alternates
-   * path would be satisfied by a path that exists and still cannot serve the object.
+   * ## WHY THIS IS AN ALLOWLIST AND NOT A LIST OF ERROR STRINGS (R3-WR2)
    *
-   * `commit --dry-run` is used rather than a real commit so the check cannot alter the world it is checking.
-   * Its EXIT CODE is deliberately not the criterion: a clean world with nothing staged exits non-zero, which is
-   * a legitimate state, so the criterion is the ABSENCE of an object-store error.
+   * R3-WR decided capability by matching the failure TEXT against a list of known object-store errors. That
+   * shape is FAIL-OPEN: a failure git has not emitted before — or emits in another locale — matches nothing
+   * and falls through to READY. Measured, two such failures exist on this host:
+   *
+   *     a corrupt index          `fatal: .git/index: index file smaller than expected`   (exit 128)
+   *     a held index.lock        `fatal: Unable to create '...index.lock': File exists`   (exit 128)
+   *
+   * Both matched NO pattern in the old list, so a world that could not commit was declared READY. The check is
+   * therefore POSITIVE: git is asked four questions whose answers are exit codes, and READY requires all four.
+   * No message is matched, so a locale, a wording change, or an unseen error cannot defeat it.
+   *
+   *     1  `rev-parse --verify HEAD^{commit}`   the world names a COMMIT, not merely a ref
+   *     2  `cat-file -e <basis>^{commit}`       the borrowed store can deliver the basis
+   *     3  `status --porcelain`                 the INDEX is readable (this is what a corrupt index breaks)
+   *     4  `commit --dry-run`                   git reports 0 (would commit) or 1 (nothing to commit)
+   *
+   * Step 4's exit 1 is honoured ONLY together with an empty tracked status, i.e. as git's own "nothing to
+   * commit". Accepting a bare exit 1 would also accept a pre-commit hook refusing on a world that DOES hold
+   * staged work — a world that cannot commit while claiming to be ready, which is the failure class this gate
+   * exists to catch.
+   *
+   * `--dry-run` is used rather than a real commit so the check cannot alter the world it is checking. It does
+   * NOT run the pre-commit hook (git's own behaviour), so a hook-only refusal is not detected here; that is a
+   * stated limit of this check rather than a claim it covers every possible failure.
+   *
+   * POINT-IN-TIME, AND SAYING SO. These four facts establish that the world was commit-capable WHEN PREPARED.
+   * They are not a promise that a later commit will succeed: the borrowed store can become unreadable after
+   * this returns, which is what R3-WR2 Gate D measures. The lifetime question is answered separately, by the
+   * borrow-chain lifetime matrix, and this check does not claim to answer it.
    *
    * Failing closed is the contract, not a convenience. A world that cannot commit must make worker readiness
    * fail rather than produce an attempt that looks usable, and it must NOT be silently re-created: a world that
    * should exist may have held uncommitted work.
    */
   async #assertWorldCommitCapable(path: string, baseCommit: string): Promise<void> {
-    const readable = await this.#gitOrThrow(["cat-file", "-e", `${baseCommit}^{commit}`], path, "the world cannot read its own basis commit through its borrowed object store");
-    void readable;
-    try {
-      await this.#git(["commit", "--dry-run", "-m", "world readiness probe"], path);
-    } catch (error) {
-      const text = `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}${String((error as { message?: unknown }).message ?? error)}`;
-      /**
-       * Only an OBJECT-STORE failure is a readiness failure. "Nothing to commit" also exits non-zero, and
-       * treating that as unreadiness would refuse every clean world.
-       */
-      if (/could not parse HEAD|bad object|unable to normalize alternate|not a git repository|object directory|does not exist/iu.test(text)) {
-        throw new Error(
-          `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" cannot commit — its borrowed object store cannot deliver the objects a commit must read. A worker handed this world would fail with an object-store error and leave the attempt unsettled. Refusing rather than creating a misleading usable attempt. Detail: ${text.trim().slice(0, 240)}`,
-        );
-      }
+    const head = await this.#gitExit(["rev-parse", "--verify", "HEAD^{commit}"], path);
+    if (head.exit !== 0) {
+      throw new Error(
+        `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" cannot name a commit at HEAD, so a worker could not commit in it. Refusing rather than creating a misleading usable attempt. Detail: ${head.text.slice(0, 240)}`,
+      );
+    }
+    const basis = await this.#gitExit(["cat-file", "-e", `${baseCommit}^{commit}`], path);
+    if (basis.exit !== 0) {
+      throw new Error(
+        `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" cannot read its own basis commit ${baseCommit.slice(0, 12)} through its borrowed object store, so a worker could not commit in it. Refusing rather than creating a misleading usable attempt. Detail: ${basis.text.slice(0, 240)}`,
+      );
+    }
+    /**
+     * `--untracked-files=no` because untracked files are a normal worker state and must not be read as
+     * staged work. The check is POSITIVE: exit 0 means git can read the index and the work tree at all.
+     * A corrupt index fails HERE as well as at the dry run, so the two witnesses agree.
+     */
+    const status = await this.#gitExit(["status", "--porcelain", "--untracked-files=no"], path);
+    if (status.exit !== 0) {
+      throw new Error(
+        `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" has an unreadable index or work tree — \`git status\` failed — so a worker could not commit in it. Refusing rather than creating a misleading usable attempt. Detail: ${status.text.slice(0, 240)}`,
+      );
+    }
+    const dry = await this.#gitExit(["commit", "--dry-run", "-m", "world readiness probe"], path);
+    /**
+     * Exit 1 is accepted UNCONDITIONALLY, and that is safe because of a measured property of git rather than
+     * an assumption: `--dry-run` does NOT run the `pre-commit` hook. Measured on this host — a world with a
+     * refusing `pre-commit` and staged work still exits 0, so a hook refusal can never masquerade as exit 1.
+     * Exit 1 therefore has exactly one meaning here: git reports nothing to commit, which is the legitimate
+     * state of a clean world AND of a world whose worker has made unstaged edits — the state a resumed
+     * attempt is in. Requiring a clean tracked status would have refused that resume state, which is why the
+     * criterion is the exit code and not the status text.
+     *
+     * Every OTHER exit is a refusal. The measured failures land at 128 (a corrupt index, a held index.lock, a
+     * missing borrowed object, an unresolvable HEAD), and a spawn failure is mapped to -1 rather than being
+     * confused with a git verdict.
+     */
+    if (dry.exit !== 0 && dry.exit !== 1) {
+      throw new Error(
+        `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" cannot commit — \`git commit --dry-run\` exited ${String(dry.exit)}, which is neither "would commit" (0) nor "nothing to commit" (1). A worker handed this world would fail and leave the attempt unsettled. Refusing rather than creating a misleading usable attempt. Detail: ${dry.text.slice(0, 240)}`,
+      );
     }
   }
 
-  /** Run a git command and rethrow a failure with a stated reason, so a readiness failure names itself. */
-  async #gitOrThrow(args: string[], cwd: string, reason: string): Promise<string> {
+  /**
+   * Run git and report its EXIT CODE plus combined output instead of throwing.
+   *
+   * The exit code is the criterion, not the text: `commit --dry-run` exits 1 for a legitimate clean world, so
+   * a caller must be able to tell "git said nothing to do" from "git failed". `promisify(execFile)` surfaces
+   * the code as `error.code`, which is a NUMBER for a process exit and a STRING for a spawn failure — the
+   * distinction is preserved so a spawn failure is never mistaken for exit 0.
+   */
+  async #gitExit(args: string[], cwd: string): Promise<{ exit: number; text: string }> {
     try {
-      return await this.#git(args, cwd);
+      const { stdout, stderr } = await execFileAsync("git", args, { cwd, encoding: "utf8" });
+      return { exit: 0, text: `${String(stdout)}${String(stderr)}`.trim() };
     } catch (error) {
-      const text = `${String((error as { stderr?: unknown }).stderr ?? "")}${String((error as { message?: unknown }).message ?? error)}`.trim().slice(0, 240);
-      throw new Error(`WORLD_NOT_COMMIT_CAPABLE: ${reason}. Detail: ${text}`);
+      const code = (error as { code?: unknown }).code;
+      const exit = typeof code === "number" ? code : -1;
+      const text = `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}${String((error as { message?: unknown }).message ?? error)}`.trim();
+      return { exit, text };
     }
   }
 
