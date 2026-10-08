@@ -543,9 +543,11 @@ export class GitCliPort implements GitPort {
     }
     if (identity.kind === 'FOREIGN_WORLD') {
       throw new Error(
-        identity.reason === 'COMMON_DIR_OUTSIDE'
-          ? `WORLD_COMMON_DIR_OUTSIDE: the world at "${path}" keeps its own administrative directory inside the world, but its Git COMMON directory resolves to "${identity.commonDir}", which lies OUTSIDE the world. Refs, config and remotes would live in a repository the world does not own. The supported borrowed-object shape is unaffected: a \`clone --shared\` world borrows IMMUTABLE objects through \`objects/info/alternates\`, which is not a common directory. Refusing before any mutating command.`
-          : `WORLD_IDENTITY_MISMATCH: the directory "${path}" is a Git repository whose administrative directory ("${identity.gitDir}") lies outside the world, which is the shape of a LINKED WORKTREE rather than an execution world. A world must own its mutable Git state; refusing rather than adopting one whose metadata belongs elsewhere.`,
+        identity.reason === 'COMMON_DIR_UNRESOLVABLE'
+          ? `WORLD_COMMON_DIR_UNRESOLVABLE: the world at "${path}" keeps its own administrative directory inside the world, but its Git COMMON directory ("${identity.commonDir}") cannot be canonicalized, so WHICH repository owns its refs, config and remotes cannot be established. An unestablished ownership is not an isolated one — answering "unknown" as "inside" is the one direction a fail-closed check must not take. Refusing before any mutating command.`
+          : identity.reason === 'COMMON_DIR_OUTSIDE'
+            ? `WORLD_COMMON_DIR_OUTSIDE: the world at "${path}" keeps its own administrative directory inside the world, but its Git COMMON directory resolves to "${identity.commonDir}", which lies OUTSIDE the world. Refs, config and remotes would live in a repository the world does not own. The supported borrowed-object shape is unaffected: a \`clone --shared\` world borrows IMMUTABLE objects through \`objects/info/alternates\`, which is not a common directory. Refusing before any mutating command.`
+            : `WORLD_IDENTITY_MISMATCH: the directory "${path}" is a Git repository whose administrative directory ("${identity.gitDir}") lies outside the world, which is the shape of a LINKED WORKTREE rather than an execution world. A world must own its mutable Git state; refusing rather than adopting one whose metadata belongs elsewhere.`,
       );
     }
     if (identity.kind === 'NOT_A_REPOSITORY') {
@@ -617,6 +619,24 @@ export class GitCliPort implements GitPort {
         if (binding.basisCommit !== input.baseCommit) {
           throw new Error(
             `WORLD_BASIS_MISMATCH: the world at "${path}" was created at basis ${binding.basisCommit.slice(0, 12)}, and this request asks for ${input.baseCommit.slice(0, 12)}. The requested commit is not this world's basis${head === '' ? '' : ` (its HEAD is ${head.slice(0, 12)})`}, and moving it would discard the work built on the basis it actually has; refusing without mutation.`,
+          );
+        }
+        /**
+         * ## THE RECORD'S REPOSITORY IS COMPARED (R3-WR5)
+         *
+         * R3-WR4 wrote this field and read it back into the record, but NOTHING EVER COMPARED IT — measured, and
+         * it was the one gap §3 authorised a repair for. A world whose record names a DIFFERENT repository is a
+         * world that was created against another project's canonical store: reusing it here would make THIS
+         * project adopt work whose provenance belongs elsewhere.
+         *
+         * This is a PHYSICAL-PROVENANCE check, not a new authority. It reads the record the port itself wrote at
+         * creation and asks whether it agrees with the repository this port is bound to. It adds no store, no
+         * token and no caller-asserted ownership, and an ABSENT or empty field is NOT a mismatch: a record
+         * written before this field existed must not be refused for a field it never had.
+         */
+        if (binding.repository !== '' && !this.#samePath(binding.repository, this.#repository)) {
+          throw new Error(
+            `WORLD_REPOSITORY_MISMATCH: the world at "${path}" records that it was created against the repository "${binding.repository}", but this port is bound to "${this.#repository}". The world's provenance belongs to another project, and reusing it here would adopt work whose origin is not this project; refusing without mutation.`,
           );
         }
       } else if (head === '') {
@@ -724,7 +744,7 @@ export class GitCliPort implements GitPort {
    * are read and written outside. Measured against the frozen R3-WR3 port, the canonical repository's `origin`
    * remote was removed and its `user.name` overwritten through exactly that shape.
    */
-  #worldIdentity(path: string): { kind: 'ABSENT' | 'NOT_A_REPOSITORY' | 'ISOLATED_REPOSITORY' | 'ADOPTS_PARENT_REPOSITORY' | 'FOREIGN_WORLD'; gitDir?: string; commonDir?: string; pathOccupied?: boolean; reason?: 'NO_OWN_REPOSITORY' | 'COMMON_DIR_IS_CANONICAL' | 'COMMON_DIR_OUTSIDE' | 'GIT_DIR_OUTSIDE' } {
+  #worldIdentity(path: string): { kind: 'ABSENT' | 'NOT_A_REPOSITORY' | 'ISOLATED_REPOSITORY' | 'ADOPTS_PARENT_REPOSITORY' | 'FOREIGN_WORLD'; gitDir?: string; commonDir?: string; pathOccupied?: boolean; reason?: 'NO_OWN_REPOSITORY' | 'COMMON_DIR_IS_CANONICAL' | 'COMMON_DIR_OUTSIDE' | 'COMMON_DIR_UNRESOLVABLE' | 'GIT_DIR_OUTSIDE' } {
     const occupied = existsSync(path);
     if (!occupied) return { kind: 'ABSENT', pathOccupied: false };
     const gitDir = this.#gitSync(['rev-parse', '--absolute-git-dir'], path);
@@ -757,7 +777,32 @@ export class GitCliPort implements GitPort {
        * of the common directory as well.
        */
       const commonReal = this.#commonDirReal(path, commonDir, worldReal, gitDirReal);
-      if (commonReal !== null && !this.#insideWorld(commonReal, worldReal)) {
+      /**
+       * ## UNKNOWN OWNERSHIP IS NOT ISOLATION (R3-WR5)
+       *
+       * `#commonDirReal` returns `null` when the answer cannot be canonicalized and is not the normal bare
+       * `.git`. The earlier code fell THROUGH to `ISOLATED_REPOSITORY` in that case, which means "I could not
+       * establish who owns the mutable Git metadata" was being answered as "the world owns it" — the one
+       * direction a fail-closed check must never take, and the case §3 names explicitly.
+       *
+       * MEASURED BEFORE CHANGING IT: on this host every uncanonicalizable shape exercised — a missing absolute
+       * path, a missing relative escape, a missing relative path inside the world, and a commondir naming a FILE
+       * — made GIT ITSELF resolve the repository to the ENCLOSING canonical repository, so the
+       * administrative-directory test above fired first with `WORLD_PATH_NOT_ISOLATED` and this branch was never
+       * reached. The branch is therefore DEFENCE IN DEPTH rather than a demonstrated exploit, and it is closed
+       * because "unreachable today" is not the same fact as "cannot be reached", and because a future Git
+       * version that accepted such a commondir would otherwise turn unknown ownership into silent isolation.
+       */
+      if (commonReal === null) {
+        return {
+          kind: 'FOREIGN_WORLD',
+          gitDir: gitDirReal,
+          commonDir,
+          pathOccupied: true,
+          reason: 'COMMON_DIR_UNRESOLVABLE',
+        };
+      }
+      if (!this.#insideWorld(commonReal, worldReal)) {
         const isCanonical = this.#samePath(commonReal, join(this.#repository, '.git'));
         return {
           kind: isCanonical ? 'ADOPTS_PARENT_REPOSITORY' : 'FOREIGN_WORLD',
@@ -767,7 +812,7 @@ export class GitCliPort implements GitPort {
           reason: isCanonical ? 'COMMON_DIR_IS_CANONICAL' : 'COMMON_DIR_OUTSIDE',
         };
       }
-      return { kind: 'ISOLATED_REPOSITORY', gitDir: gitDirReal, commonDir: commonReal ?? commonDir };
+      return { kind: 'ISOLATED_REPOSITORY', gitDir: gitDirReal, commonDir: commonReal };
     }
     /**
      * The repository's administrative directory is outside the world. Whether it is the canonical repository
