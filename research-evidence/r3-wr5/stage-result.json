@@ -1,0 +1,1091 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-WR5",
+  "kind": "authorized world reuse and governed failure disposition",
+  "baseline": "0052cc1e9393c2788f1eef7d0f3fe9f77a03e0ba",
+  "branch": "r3-wr5-authorized-recovery",
+  "commits": [
+    "58326a7",
+    "ceb0a64",
+    "f5271cb",
+    "PENDING"
+  ],
+  "carriedForward": [
+    {
+      "finding": "WORLD_PHYSICAL_IDENTITY",
+      "r3wr4Verdict": "CLOSED",
+      "carriedAs": "proven within envelope",
+      "scope": "The administrative AND common directory must both lie inside the world. Measured on this host, against the frozen R3-WR3 port for the negative controls.",
+      "limit": "Proven for the shapes exercised: parent adoption, linked worktree, canonical common dir, external common dir, junction. Not a claim about every possible Git administrative layout."
+    },
+    {
+      "finding": "WORLD_EFFECT_AUTHORITY",
+      "r3wr4Verdict": "CLOSED (physical binding) / OPEN (operation level)",
+      "carriedAs": "not fully established",
+      "scope": "A world records the (attemptId, basis) it was created for and refuses a foreign owner or a different basis.",
+      "limit": "The record is EVIDENCE inside the world, not authority. Two DISTINCT operation ids were measured reaching `succeeded` against the same world in R3-WR4, because the effect action receives no operation identity. That measurement stands and is not upgraded here."
+    },
+    {
+      "finding": "SINGLE_FLIGHT",
+      "r3wr4Verdict": "PROVEN",
+      "carriedAs": "proven within one runtime process",
+      "scope": "Six simultaneous same-key invocations, every dispatch held open inside a 250 ms window the harness controls: one dispatch, maximum one active, one physical world.",
+      "limit": "One runtime process over one durable ledger. Multi-process coordination was NOT exercised and is not claimed. §5 of this ruling explicitly retains that limitation rather than expanding into distributed locking."
+    },
+    {
+      "finding": "UNOBSERVABLE_WORLD_FAILURE",
+      "r3wr4Verdict": "CLOSED (evidence)",
+      "carriedAs": "reproduced",
+      "scope": "With ONLY the world's borrowed object dependency removed and the canonical repository healthy, the attempt stays RUNNING and `controller.report` THROWS for failed, cancelled and expired, appending no terminal event.",
+      "limit": "A deterministic local injection. It does not claim the canonical repository cannot also fail, and it does not claim the injection is the only way a world becomes unobservable."
+    },
+    {
+      "finding": "AUTHORIZED_TERMINAL",
+      "r3wr4Verdict": "POLICY_REQUIRED",
+      "carriedAs": "policy required",
+      "scope": "No existing pathway can record a permanent unobservable-world failure truthfully.",
+      "limit": "R3-WR4 also recorded an 11/12 §8 claim. §12 of THIS ruling rejects that as too broad and requires the predicates be measured separately, which this stage does."
+    }
+  ],
+  "callPathInventory": {
+    "method": "exhaustive grep over src/, host/, e2e/, test/ and scripts/ for `worldCreate`, `world.create`, `createWorld`, `createPalimpsestEffects`, `.invoke(`, `hostPort`, and every registered tool name",
+    "productionCallersOfWorldCreate": [
+      {
+        "site": "src/tools/controller.ts:2197",
+        "within": "ProjectController.claim(attemptId, attribution)",
+        "intent": {
+          "scope": "this.projectId",
+          "callId": "`world:${attemptId}`",
+          "revision": "promotions.projectRevision()"
+        },
+        "reachableFrom": [
+          "controller.begin (in-place only) → claim",
+          "controller.runAttemptWithCommandExecutor ← pumpCommandAttempts / pumpSettlement / runTurn",
+          "AttemptExecutionPorts.claim shim ← makeMutatingAttemptService ← WorkDelegationService.start / continuation.startOrResume",
+          "control_surface.claim ← serve.ts POST /api/control/claim, and application/surfaces/work.ts (no route wired)"
+        ]
+      }
+    ],
+    "directCreateWorldCallersOutsideTheAction": "none in src/ — the action is the only production entry to GitCliPort.createWorld",
+    "hostPort": {
+      "created": "src/effects/runtime.ts:133",
+      "productionConsumers": 0,
+      "finding": "HostInvocationPort is an ambient-authority seam that lets a caller mint its own {source, scope, callId} and bypass orchestrationAuthorization. It is created and RETURNED but never handed to install, composition, serve, cli, or any adapter. Only test/host_conformance.test.ts references it. Nothing outside the process can reach it: it is an in-memory object reference, not serialized, not routed, not a tool, not an IPC message."
+    },
+    "workerReachability": {
+      "mechanism": "host/dsh/lib/runner.js restricts the worker catalogue to (inherited tools) − (every name with the `palimpsest_` prefix) + exactly two read-only worker-private tools",
+      "workerPrivateTools": [
+        "palimpsest_worker_result (read-only)",
+        "palimpsest_worker_context_pull (read-only)"
+      ],
+      "canReachClaim": false,
+      "canReachReport": false,
+      "canReachWorldCreate": false,
+      "canReachScheduler": false,
+      "outboundChannel": "one stdio[3] Node IPC pair carrying a strictly parsed pull envelope {channel, handle, kind, requestId}; it can never name an attempt, project, path or owner"
+    },
+    "externallyReachable": {
+      "http": [
+        "POST /api/control/claim → control_surface.claim → controller.claim → worldCreate",
+        "POST /api/manage/step and /api/manage/run → projectManagement → controller.runTurn → claim → worldCreate"
+      ],
+      "httpGate": "In the default `fence` mode the only gate is the browser-trust fence, which the code itself documents as NOT an authentication boundary against a local non-browser client. In `token` mode a bearer token or signed cookie is required.",
+      "whatAnHttpCallerCanChoose": "only WHICH existing, scheduler-owned attempt id to claim (or let selectCandidate pick one). It cannot choose the callId, the scope, the worldId or the baseCommit: claim derives callId = `world:<attemptId>`, scope = projectId, worldId = attemptId and baseCommit = project.head_commit.",
+      "mcpOrJsonRpc": "none — exhaustive grep for mcp / jsonrpc / ModelContextProtocol finds nothing outside node_modules"
+    },
+    "conclusion": "UNTRUSTED_REACHABLE is FALSE for world creation and reuse. Every path reaches `worldCreate` through ProjectController.claim, which enforces role-slot admission, budget admission, world-basis capture and the scheduler's ATTEMPT_STARTED transition. The closest residual is the fence-mode HTTP claim route, and even there the caller cannot mint a new operation identity — it can only select an existing attempt, whose callId the controller derives."
+  },
+  "attemptAuthorization": {
+    "module": "src/state/attempt_authorization.ts",
+    "resolutionChain": "ATTEMPT_CREATED (carries task_id + envelope_id) → historical envelope_id → TASK_CREATED / TASK_REAUTHORIZED (carry the full TaskEnvelope) → the original TaskEnvelope",
+    "failsClosedOn": [
+      "ATTEMPT_NOT_RECORDED",
+      "BINDING_NOT_RECORDED",
+      "AUTHORIZATION_NOT_FOUND",
+      "AUTHORIZATION_AMBIGUOUS",
+      "AUTHORIZATION_MISMATCH",
+      "AUTHORIZATION_WRONG_SUBJECT"
+    ],
+    "neverSubstitutes": "the task's CURRENT envelope — `#attemptContext` reads the ATTEMPT's recorded authorization, and the task row is not consulted on that path at all",
+    "baseCommitDivergence": {
+      "claimSource": "project.head_commit (src/tools/controller.ts:2198)",
+      "provenanceSource": "#attemptContext(attemptId)[1].base_commit — the ATTEMPT's historical envelope",
+      "measuredBlocker": "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)",
+      "verdict": "STRUCTURALLY_UNREACHABLE_IN_THE_SUPPORTED_PATH",
+      "limit": "The blocker is the head owner's own predicate. This is a statement about the supported path, not a proof that no future change could remove the barrier — which is why the check below is still worth having as defence in depth."
+    },
+    "worldLocalBinding": {
+      "path": ".git/palimpsest-world-binding.json",
+      "fields": [
+        "schemaVersion",
+        "attemptId",
+        "basisCommit",
+        "repository"
+      ],
+      "checked": {
+        "attemptId": "YES — WORLD_OWNER_MISMATCH",
+        "basisCommit": "YES — WORLD_BASIS_MISMATCH",
+        "repository": "NO — written and read, never compared"
+      },
+      "status": "EVIDENCE, NEVER AUTHORITY — a caller with filesystem access can rewrite it, and the honest statement of what it buys is \"the accidental and careless case is caught\"",
+      "tamperFinding": "A binding rewritten to be SELF-CONSISTENT (correct attemptId and basisCommit for the requester) is ACCEPTED — measured. That is correct behaviour for evidence, and it is why authority stays outside the world."
+    },
+    "commonDirCanonicalization": {
+      "codePath": "GitCliPort.#commonDirReal returns null when realpathSync throws AND the answer is neither the bare `.git` nor the world's own git dir",
+      "measuredFinding": "The NULL branch was NOT reachable in any shape exercised: a missing absolute path, a missing relative escape and a missing relative inside path all made GIT ITSELF resolve the repository to the enclosing canonical repo, which the ADMINISTRATIVE-directory test then refused with WORLD_PATH_NOT_ISOLATED. A commondir naming a FILE behaved the same way.",
+      "verdict": "UNKNOWN_OWNERSHIP_CANNOT_MASQUERADE_AS_ISOLATION — defended upstream by the administrative-directory test rather than by the null branch itself",
+      "limit": "A symlink-based shape could not be constructed on this host (symlink creation returns EPERM without privilege), so that variant is NOT measured and is not claimed."
+    }
+  },
+  "reusePolicy": {
+    "cases": [
+      {
+        "id": "C1",
+        "case": "same-key idempotent redispatch",
+        "expectedAdmission": "ALLOW",
+        "authoritySource": "the Ordarium operation record itself: the same operationId means the engine's own `redispatch-same-key` recovery of ONE operation",
+        "operationIdentity": "identical operationId (same action+version+logicalKeyDigest); identical inputDigest",
+        "worldReused": true,
+        "gitMutation": "the reuse branch only — no clone; checkout is conditional and does not run when the recorded basis matches",
+        "durableSupport": "the operation record and its event history in the SQLite ledger",
+        "reachableFromSupportedPath": true
+      },
+      {
+        "id": "C2",
+        "case": "authorized same-Attempt continuation after restart",
+        "expectedAdmission": "ALLOW",
+        "authoritySource": "the attempt's canonical identity plus its recorded binding: the world names the same attempt and the same basis, so this is a resume",
+        "operationIdentity": "a NEW operation id is expected after a restart, because the runtime is new — but the attemptId, worldId and baseCommit are all identical, so the physical world is the same one",
+        "worldReused": true,
+        "gitMutation": "none beyond the ordinary config re-stamp and remote verification",
+        "durableSupport": "the attempt row, the event log, and the world's own binding record",
+        "reachableFromSupportedPath": true
+      },
+      {
+        "id": "C3",
+        "case": "distinct operation key, same Attempt, no proven recovery lineage",
+        "expectedAdmission": "REFUSE_UNLESS_TRUSTED_INTERNAL",
+        "authoritySource": "NONE at the operation level. The effect action receives `{worldId, baseCommit}` and NO operation identity, so it cannot see the callId and cannot check lineage.",
+        "operationIdentity": "a DIFFERENT operationId for the same physical world — only constructible by a caller that supplies its own callId",
+        "worldReused": "yes, if it is allowed through — which is the measured R3-WR4 finding",
+        "gitMutation": "the reuse branch",
+        "durableSupport": "the two operation records exist and are distinct, but NOTHING binds either to an authorization to reuse the world",
+        "reachableFromSupportedPath": false,
+        "ruling": "PERMITTED WITHIN THE TRUSTED-INTERNAL-API ENVELOPE, AND ONLY THERE. The production callId is a pure function of the attemptId, so the supported path cannot express C3. Reaching it requires a caller that already holds `effects.invoke` or `hostPort.invoke` in-process — i.e. code that is already trusted with the canonical store. §4 forbids adding a caller-asserted token that merely repeats worldId, and forbids a second durable world owner, so the honest disposition is to RECORD the envelope boundary rather than to invent an operation-level authority check."
+      },
+      {
+        "id": "C4",
+        "case": "operation associated with another Attempt",
+        "expectedAdmission": "REFUSE",
+        "authoritySource": "the world's recorded binding, checked against the requested world id",
+        "operationIdentity": "any — the refusal does not depend on the operation key",
+        "worldReused": false,
+        "gitMutation": "none — the refusal precedes checkout, remote removal and config rewriting",
+        "durableSupport": "the binding record; the attempt row",
+        "reachableFromSupportedPath": true,
+        "enforcedBy": "WORLD_OWNER_MISMATCH (R3-WR4)"
+      },
+      {
+        "id": "C5",
+        "case": "operation associated with another Project",
+        "expectedAdmission": "REFUSE",
+        "authoritySource": "the port is CONSTRUCTED with one canonical repository, and the world root is derived from it, so another project's world is a different path",
+        "operationIdentity": "any",
+        "worldReused": false,
+        "gitMutation": "none",
+        "durableSupport": "the construction-time repository binding",
+        "reachableFromSupportedPath": true,
+        "gap": "the binding's `repository` field is not compared — a world whose record names another repository is accepted"
+      }
+    ],
+    "invariants": [
+      "Different callId alone does not prove unauthorized Work.",
+      "Same worldId alone does not grant authority.",
+      "No second durable World owner is added.",
+      "No caller-asserted authorization token that merely repeats worldId is added."
+    ]
+  },
+  "reachabilityWitnesses": {
+    "inventory": {
+      "kind": "R3-WR5 Gate A §2 — production call-path inventory",
+      "worldCreateReferences": [
+        {
+          "file": "controller",
+          "occurrences": 2
+        }
+      ],
+      "invocationSites": [
+        {
+          "file": "src/tools/controller.ts",
+          "within": "ProjectController.claim",
+          "callIdExpression": "callId: `world:${attemptId}`",
+          "scopeExpression": "scope: this.projectId",
+          "worldIdExpression": "worldId: attemptId",
+          "baseCommitExpression": "baseCommit: project.head_commit"
+        }
+      ],
+      "workerRestriction": {
+        "deniesEveryPalimpsestToolExcept": [
+          "palimpsest_worker_result",
+          "palimpsest_worker_context_pull"
+        ],
+        "prefixRead": true,
+        "keepListRead": true,
+        "workerReachablePalimpsestTools": [
+          "palimpsest_worker_result",
+          "palimpsest_worker_context_pull"
+        ],
+        "claimReachableFromWorker": false
+      },
+      "httpRoutesToClaim": [
+        "src/serve.ts POST /api/control/claim",
+        "src/adapters/http/management.ts POST /api/manage/step",
+        "src/adapters/http/management.ts POST /api/manage/run"
+      ],
+      "hostPortConsumers": [],
+      "hostPortIsSerialized": false,
+      "mcpPresent": false
+    },
+    "worker": {
+      "kind": "R3-WR5 Gate A §2 — untrusted worker reachability",
+      "catalogueSize": 20,
+      "deniedCount": 12,
+      "visibleTools": [
+        "palimpsest_worker_result",
+        "palimpsest_worker_context_pull",
+        "bash",
+        "read",
+        "write",
+        "edit",
+        "grep",
+        "glob"
+      ],
+      "visibleWorldReachingTools": [],
+      "WORKER_CANNOT_REACH_WORLD_CREATION": true,
+      "ipcEnvelopeFields": [
+        "channel",
+        "handle",
+        "kind",
+        "requestId"
+      ],
+      "ipcCanNameAttemptOrProjectOrPath": false
+    },
+    "authorization": {
+      "kind": "R3-WR5 Gate A §3 — historical attempt authorization",
+      "attemptId": "fbc368f2",
+      "resolvedEnvelopeId": "envelope-90c7faaa0afee33b531aca32cc76b1fa",
+      "resolvedTaskId": "t1",
+      "resolvedBaseCommit": "afa9d6158608f2b7d26c1b13acfdd64e5885a00b",
+      "createdEventCarriesEnvelopeId": true,
+      "authorizationEventCount": 1,
+      "chainFollowed": "ATTEMPT_CREATED → envelope_id → TASK_CREATED/TASK_REAUTHORIZED → original TaskEnvelope",
+      "productReadMatchesDirectResolver": true,
+      "unknownAttemptRefused": true,
+      "unknownAttemptReason": "ATTEMPT_NOT_RECORDED",
+      "foreignProjectRefused": true,
+      "foreignProjectReason": "ATTEMPT_NOT_RECORDED",
+      "FAILS_CLOSED": true
+    },
+    "divergence": {
+      "kind": "R3-WR5 Gate A §3 — base-commit divergence",
+      "H0": "dbd52705d8fcaab9250b0f3147aceae14776c22d",
+      "t1Settled": true,
+      "promotedHead": "9151cd5bd692b501a906496d067e03a81d4feb3c",
+      "promotionError": null,
+      "reconcileStatus": "blocked",
+      "reconcileBlockers": [
+        "quiescence_required: the project must be quiescent before the head advances: every ACTIVE/VERIFYING task and open attempt must settle (a promoted task must reach SATISFIED first)"
+      ],
+      "headAfter": "dbd52705d8fcaab9250b0f3147aceae14776c22d",
+      "HEAD_MOVED_WHILE_ATTEMPT_OPEN": false,
+      "openAttemptsAtReconcile": 0,
+      "DIVERGENCE_BLOCKED_BY": "quiescence_required (the head owner refuses to advance while an attempt is open)",
+      "verdict": "STRUCTURALLY_UNREACHABLE_IN_THE_SUPPORTED_PATH"
+    }
+  },
+  "provenanceWitnesses": {
+    "kind": "R3-WR5 Gate A §3 — world-local provenance",
+    "FOREIGN_REPOSITORY_IN_BINDING": {
+      "recordedRepository": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectB",
+      "canonicalRepository": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA",
+      "outcome": {
+        "returned": false,
+        "error": "WORLD_REPOSITORY_MISMATCH: the world at \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-prov\" records that it was created against the repos"
+      },
+      "ACCEPTED": false
+    },
+    "SELF_CONSISTENT_TAMPER": {
+      "outcome": {
+        "returned": true,
+        "path": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-prov"
+      },
+      "ACCEPTED": true,
+      "interpretation": "ACCEPTED is the CORRECT behaviour for evidence: the record is not authority, so a caller who can rewrite it is not thereby stopped. The honest statement is that the check catches the accidental and careless case."
+    },
+    "FOREIGN_OWNER_REFUSED": {
+      "outcome": {
+        "returned": false,
+        "error": "WORLD_OWNER_MISMATCH: the world at \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-prov\" records that it was created for attempt \"attempt-s"
+      },
+      "REFUSED": true,
+      "errorNames": true
+    },
+    "FOREIGN_BASIS_REFUSED": {
+      "outcome": {
+        "returned": false,
+        "error": "WORLD_BASIS_MISMATCH: the world at \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-prov\" was created at basis a963d4ec57e7, and this reques"
+      },
+      "REFUSED": true,
+      "errorNames": true
+    },
+    "COMMON_DIR_SHAPES": [
+      {
+        "shape": "MISSING_ABSOLUTE",
+        "commondirWritten": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/no-such-dir",
+        "gitDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "commonDirReported": "../../../.git",
+        "outcome": {
+          "returned": false,
+          "error": "WORLD_PATH_NOT_ISOLATED: the directory \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-common\" has no Git repository of its own — Git resolves the repository a"
+        },
+        "REFUSED": true
+      },
+      {
+        "shape": "MISSING_RELATIVE_ESCAPE",
+        "commondirWritten": "../../../no-such-dir",
+        "gitDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "commonDirReported": "../../../.git",
+        "outcome": {
+          "returned": false,
+          "error": "WORLD_PATH_NOT_ISOLATED: the directory \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-common\" has no Git repository of its own — Git resolves the repository a"
+        },
+        "REFUSED": true
+      },
+      {
+        "shape": "MISSING_RELATIVE_INSIDE",
+        "commondirWritten": "no-such-subdir",
+        "gitDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "commonDirReported": "../../../.git",
+        "outcome": {
+          "returned": false,
+          "error": "WORLD_PATH_NOT_ISOLATED: the directory \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-common\" has no Git repository of its own — Git resolves the repository a"
+        },
+        "REFUSED": true
+      },
+      {
+        "shape": "CANONICAL_REPOSITORY",
+        "commondirWritten": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "gitDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.palimpsest/worlds/attempt-common/.git",
+        "commonDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "outcome": {
+          "returned": false,
+          "error": "WORLD_COMMON_DIR_NOT_ISOLATED: the world at \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-common\" keeps its own administrative directory inside the world, bu"
+        },
+        "REFUSED": true
+      },
+      {
+        "shape": "EXTERNAL_DIRECTORY",
+        "commondirWritten": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/external-common",
+        "gitDirReported": "C:/Users/66494/AppData/Local/Temp/r3wr5-prov-FLAwy9/projectA/.git",
+        "commonDirReported": "../../../.git",
+        "outcome": {
+          "returned": false,
+          "error": "WORLD_PATH_NOT_ISOLATED: the directory \"C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-prov-FLAwy9\\projectA\\.palimpsest\\worlds/attempt-common\" has no Git repository of its own — Git resolves the repository a"
+        },
+        "REFUSED": true
+      }
+    ],
+    "EVERY_UNKNOWN_OWNERSHIP_SHAPE_REFUSED": true,
+    "canonicalUnchanged": true
+  },
+  "effectReplay": {
+    "replay": {
+      "kind": "R3-WR5 Gate A §5 — effect replay",
+      "properties": [
+        {
+          "property": "authorized replay converges and preserves everything",
+          "sameWorldPath": true,
+          "ONE_PHYSICAL_WORLD": true,
+          "CANDIDATE_HEAD_STABLE": true,
+          "CANDIDATE_PRESERVED": true,
+          "DIRTY_EDIT_PRESERVED": true,
+          "UNTRACKED_PRESERVED": true,
+          "BASIS_FROZEN": true,
+          "CANONICAL_UNCHANGED": true,
+          "worldStateChangedByReuse": false,
+          "operationCount": 1,
+          "operationCallIds": [
+            "world:attempt-replay"
+          ],
+          "NO_DUPLICATE_OPERATION": true
+        },
+        {
+          "property": "a different Attempt gets its own world and cannot take another's",
+          "intruderOutcome": {
+            "returned": true
+          },
+          "ownerWorldUnchanged": true,
+          "ownerWorkIntact": true,
+          "separateDirectories": false,
+          "worldNames": [
+            "attempt-intruder",
+            "attempt-owner",
+            "attempt-replay"
+          ]
+        },
+        {
+          "property": "the same world id with a foreign owner record is refused",
+          "outcome": {
+            "refused": true,
+            "error": "The external outcome is uncertain; Ordarium refused a blind retry"
+          },
+          "FOREIGN_OWNER_REFUSED": true,
+          "worldUnchanged": true,
+          "note": "the distinct callId makes this a C3-shaped dispatch, which is the only shape that reaches the port"
+        },
+        {
+          "property": "a same-key replay is answered from the ledger and does NOT re-enter the port",
+          "dispatchesAfterFirstCall": 1,
+          "dispatchesAfterSameKeyReplay": 1,
+          "MEMOIZED_SUCCESS": true
+        }
+      ],
+      "AUTHORIZED_REPLAY_CONVERGES": true,
+      "CANDIDATE_PROGRESS_PRESERVED": true,
+      "BASIS_FROZEN": true,
+      "CANONICAL_GIT_UNCHANGED": true,
+      "NO_DUPLICATE_OPERATION": true,
+      "FOREIGN_OWNER_REFUSED": true
+    },
+    "concurrency": {
+      "kind": "R3-WR5 Gate A §5 — counted concurrency",
+      "unblocked": {
+        "label": "unblocked",
+        "blocked": false,
+        "attempted": 6,
+        "fulfilled": 6,
+        "rejected": 0,
+        "rejectionReasons": [],
+        "distinctWorldPaths": [
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-conc-LtdRNd\\canonical\\.palimpsest\\worlds/attempt-conc-unblocked"
+        ],
+        "worldsForThisId": [
+          "attempt-conc-unblocked"
+        ],
+        "ONE_WORLD_CREATED": true,
+        "ONE_ACTIVE_DISPATCH": true,
+        "maxSimultaneousActiveDispatches": 1,
+        "portInvocations": 1,
+        "portDispatches": 1,
+        "portSucceeded": 1,
+        "portThrew": 0,
+        "distinctOperationIdsInLedger": 1,
+        "ALL_SUCCESSES_AGREE_ON_PATH": true
+      },
+      "blocked": {
+        "label": "blocked",
+        "blocked": true,
+        "attempted": 6,
+        "fulfilled": 6,
+        "rejected": 0,
+        "rejectionReasons": [],
+        "distinctWorldPaths": [
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3wr5-conc-LtdRNd\\canonical\\.palimpsest\\worlds/attempt-conc-blocked"
+        ],
+        "worldsForThisId": [
+          "attempt-conc-blocked"
+        ],
+        "ONE_WORLD_CREATED": true,
+        "ONE_ACTIVE_DISPATCH": true,
+        "maxSimultaneousActiveDispatches": 1,
+        "portInvocations": 1,
+        "portDispatches": 1,
+        "portSucceeded": 1,
+        "portThrew": 0,
+        "distinctOperationIdsInLedger": 2,
+        "ALL_SUCCESSES_AGREE_ON_PATH": true
+      },
+      "CONVERGENCE_MEASURED": true,
+      "SINGLE_FLIGHT_WITHIN_PROCESS": true,
+      "MULTI_PROCESS_CLAIMED": false,
+      "MULTI_PROCESS_NOTE": "One runtime process over one durable ledger. The supported experimental profile serializes active workers (proven by R1-HC), and §5 explicitly retains this limitation rather than expanding the stage into distributed locking research.",
+      "withdrawnCriterion": {
+        "expression": "fulfilled + rejected === attempted",
+        "tautologyForAllSettled": true,
+        "note": "true for ANY outcome; it is NOT used as evidence here"
+      }
+    }
+  },
+  "failureDispositionPolicy": {
+    "proposed": "An explicitly authorized Project operator may cancel an Attempt after the host has established that its Worker has stopped and that ordinary Result observation is unavailable.",
+    "status": "PROPOSED — not authority granted by the ruling document",
+    "audit": {
+      "managementModes": {
+        "modes": [
+          "DIRECT",
+          "ASSIST",
+          "MANAGE",
+          "DELEGATE"
+        ],
+        "areSemanticAuthority": false,
+        "evidence": "src/project_management/service.ts states \"Service ≠ Authority · Recommendation ≠ Mutation · Request ≠ Change\" and \"This service owns NO store and NO authority of its own\"; src/project_intent/receipt.ts and src/project_collaboration/receipt.ts both state that `managementMode === \"DELEGATE\"` is forbidden as semantic authority."
+      },
+      "operatorPath": {
+        "exists": "applyOperatorModeChange (src/project_management/service.ts:210), wired to a CLI/host port and NEVER to an LLM tool",
+        "whatItCanDo": "persist a management involvement PREFERENCE",
+        "whatItCannotDo": "authorize a terminal attempt event — there is no operator capability that admits ATTEMPT_CANCELLED"
+      },
+      "workerToolPermissions": {
+        "workerCanCall": [
+          "palimpsest_worker_result",
+          "palimpsest_worker_context_pull"
+        ],
+        "workerCanAuthorize": false,
+        "finding": "The worker has no tool that reaches claim, report, world.create or the scheduler, so \"an ordinary Worker cannot self-authorize cancellation\" is structural rather than a policy that could be relaxed."
+      }
+    },
+    "verdict": "POLICY_REQUIRED",
+    "whyNotImplemented": "No trusted capability authorizes the transition, so implementing a terminal command now would be an unguarded one — exactly what §6 forbids. The requirement is returned as an exact decision contract instead."
+  },
+  "terminalSemantics": {
+    "preferred": "ATTEMPT_CANCELLED with a null attempt report, subject to an independently authorized cancellation decision",
+    "measuredAdmissibility": "a null report IS admitted for ATTEMPT_CANCELLED and ATTEMPT_EXPIRED from RUNNING, and REFUSED for ATTEMPT_FAILED (\"expected an object\") — measured in R3-WR4 and re-measured here",
+    "forbidden": [
+      "ATTEMPT_FAILED with a fabricated report",
+      "ATTEMPT_EXPIRED without an observed expiry"
+    ],
+    "means": "The current Attempt is no longer authorized to continue.",
+    "doesNotMean": [
+      "The underlying Git object store will never become recoverable.",
+      "A verified Result was produced."
+    ],
+    "doesNotGrant": "promotion authority",
+    "preserves": "the original World and any surviving candidate or uncommitted work",
+    "noAutomaticMachineFailureTerminal": "If the project needs an automatic machine-failure terminal, that is a SEPARATE semantic decision. CANCELLED must not be quietly reinterpreted as FAILED."
+  },
+  "hostFailureEvidence": {
+    "method": "audit of the existing host-side evidence and effect ledgers before proposing any storage",
+    "existingEvidence": [
+      {
+        "source": "WorkWorkerExecutionOutcome {kind:\"HOST_FAILURE\"}",
+        "durability": "NONE — a return value inside one process",
+        "reachable": "src/deployment/work_worker.ts"
+      },
+      {
+        "source": "WorkJobView.hostError / phase HOST_ERROR",
+        "durability": "NONE — an in-memory Map entry in WorkDelegationService, empty after a restart",
+        "reachable": "src/interaction/work_delegation.ts"
+      },
+      {
+        "source": "confidential slot file <home>/confidential-workers/active.json",
+        "durability": "durable but NONCANONICAL and about host capacity, not about one attempt",
+        "reachable": "host/deployment/runtime/confidential_profile.js"
+      }
+    ],
+    "requiredFactsAndAvailability": [
+      {
+        "fact": "project and Attempt identity",
+        "available": "YES, canonical — but only reachable through the report path, which requires a successful observation"
+      },
+      {
+        "fact": "host Job identity",
+        "available": "host-local only, non-durable"
+      },
+      {
+        "fact": "Worker process/session identity",
+        "available": "PARTIAL — the child PID exists while the process is alive; it is not recorded anywhere durable"
+      },
+      {
+        "fact": "observed exit/close or effective fencing",
+        "available": "NO — see the fencing finding below"
+      },
+      {
+        "fact": "relevant failure kind",
+        "available": "YES as a host-local string"
+      },
+      {
+        "fact": "Git World observation status",
+        "available": "YES — but as a THROWN child-process error, not as a named value"
+      },
+      {
+        "fact": "observation timestamp",
+        "available": "NO durable one"
+      },
+      {
+        "fact": "evidence digest and trusted producer",
+        "available": "NO"
+      }
+    ],
+    "verdict": "OPEN",
+    "gap": "No durable host-controlled receipt exists. A new one is required before a terminal decision can be TRACEABLY BOUND to a failure observation, and §8 requires that traceability rather than a fabricated substitute.",
+    "constraintsOnAnyNewRecord": [
+      "must come from a trusted host-controlled source",
+      "must remain NONCANONICAL and must not become a second scheduler or Work authority",
+      "must not store secrets or full model transcripts",
+      "must not treat a worker's own description of failure as a host observation",
+      "must prove durable readback after a fresh process restart",
+      "must be non-rewritable so it cannot invent a different Attempt or a different exit status"
+    ]
+  },
+  "workerFencing": {
+    "auditedPort": "dshSubprocessWorkWorkerPort (src/deployment/work_worker.ts:605)",
+    "measuredFinding": "The timeout path and the abort path each call `spawned.kill()` and then IMMEDIATELY `finish(hostFailure(...))`. The `close` callback is a SEPARATE handler that returns early via `settled`. So the outcome is reported from the KILL REQUEST, not from the confirmed exit.",
+    "frozenDistinction": "KILL_REQUESTED != WORKER_EXIT_CONFIRMED",
+    "consequence": "No cancellation may proceed solely from a timeout flag, an AbortSignal, or an in-memory HOST_ERROR. On this port the reported fact is a kill request, so a policy that required an observed exit could not be satisfied by it as written.",
+    "verdict": "OPEN",
+    "windowsEnvelope": "Under the supported Windows confidential single-active profile, the relevant condition is that ONE active worker is serialized by the profile; that serialization is proven by R1-HC. Arbitrary process-TREE security is NOT claimed and was not tested."
+  },
+  "brokenWorld": {
+    "kind": "R3-WR5 Gate B §10 — broken-world scenario",
+    "attemptId": "663b3fa2",
+    "before": {
+      "attemptState": "RUNNING",
+      "events": [
+        "ATTEMPT_CREATED",
+        "ATTEMPT_STARTED"
+      ],
+      "canonicalHead": "3d5c386e2f325203c408d7e90bb978c4e80e10e7",
+      "candidateHead": "071524c400c0348b548be8bab57d052fcae58f52",
+      "worldStatus": "M src/alpha.js"
+    },
+    "afterInjection": {
+      "worldDiff": "ERR:error: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-broken-If4eNi/gone-for-good does not exist; check .git/objects/info/alternates\nerror: object dir",
+      "worldStatus": "M src/alpha.js",
+      "canonicalHealthy": true,
+      "canonicalHead": "3d5c386e2f325203c408d7e90bb978c4e80e10e7"
+    },
+    "reports": {
+      "failed": {
+        "accepted": false,
+        "error": "Command failed: git diff --name-only 3d5c386e2f325203c408d7e90bb978c4e80e10e7 HEAD\nerror: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-broken-If4eNi/gone-for-good does not exist; check .git/objects/info/alter"
+      },
+      "cancelled": {
+        "accepted": false,
+        "error": "Command failed: git diff --name-only 3d5c386e2f325203c408d7e90bb978c4e80e10e7 HEAD\nerror: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-broken-If4eNi/gone-for-good does not exist; check .git/objects/info/alter"
+      },
+      "expired": {
+        "accepted": false,
+        "error": "Command failed: git diff --name-only 3d5c386e2f325203c408d7e90bb978c4e80e10e7 HEAD\nerror: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-broken-If4eNi/gone-for-good does not exist; check .git/objects/info/alter"
+      },
+      "completed": {
+        "accepted": false,
+        "error": "Command failed: git diff --name-only 3d5c386e2f325203c408d7e90bb978c4e80e10e7 HEAD\nerror: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-broken-If4eNi/gone-for-good does not exist; check .git/objects/info/alter"
+      }
+    },
+    "after": {
+      "attemptState": "RUNNING",
+      "events": [
+        "ATTEMPT_CREATED",
+        "ATTEMPT_STARTED"
+      ]
+    },
+    "ATTEMPT_REMAINS_NONTERMINAL": true,
+    "RESULT_OBSERVATION_UNAVAILABLE": true,
+    "TRUSTED_HOST_FAILURE_OBSERVED": "NOT_AVAILABLE — the host observation is in-process and non-durable (see the §8 audit)",
+    "REPORT_PATH_CANNOT_OBSERVE": true,
+    "reportFailureIsRawChildProcessError": true,
+    "NO_RESULT_OR_PROMOTION": true,
+    "CANONICAL_REPOSITORY_HEALTHY": true,
+    "CHANGED_FILES_NOT_FABRICATED_AS_EMPTY": true,
+    "NO_TERMINAL_EVENT_APPENDED": true,
+    "worldAndWorkRetained": true
+  },
+  "predicates": {
+    "controls": [
+      {
+        "id": "WORKER_CANNOT_SELF_AUTHORIZE",
+        "mechanism": "the worker's whole outcome vocabulary is READY_FOR_SETTLEMENT | NEEDS_ESCALATION, and it denies every `palimpsest_` tool",
+        "satisfied": true
+      },
+      {
+        "id": "MANAGEMENT_MODE_CANNOT_AUTHORIZE",
+        "mechanism": "management involvement is a preference; no management action reaches the terminal callback",
+        "satisfied": true
+      },
+      {
+        "id": "MISSING_ATTEMPT_REFUSES",
+        "refused": true,
+        "error": "attempt does not exist",
+        "satisfied": true
+      },
+      {
+        "id": "UNCORROBORATED_HOST_EVIDENCE_REFUSES",
+        "mechanism": "no shipped surface accepts a host-failure receipt, so an uncorroborated one cannot be presented",
+        "satisfied": true
+      },
+      {
+        "id": "WORKER_STILL_ACTIVE_REFUSES",
+        "mechanism": "the report path throws on the unobservable world, so an active worker cannot be terminalized by it",
+        "attemptState": "RUNNING",
+        "satisfied": true
+      },
+      {
+        "id": "FABRICATED_LEASE_EXPIRY_REFUSES",
+        "refused": true,
+        "error": "Command failed: git diff --name-only 89a2939a65f65fa20b8d8b96b919bb28f5a78c61 HEAD\nerror: object directory C:/Users/66494/AppData/Local/Temp",
+        "satisfied": true,
+        "note": "EXPIRED is caller-asserted in general; what refuses here is the unobservable world, which is why an observed expiry remains a POLICY decision (P5)."
+      },
+      {
+        "id": "DUPLICATE_DECISION_APPENDS_NOTHING",
+        "firstAdmitted": true,
+        "terminalEventsAfterFirst": 1,
+        "terminalEventsAfterDuplicate": 1,
+        "satisfied": true,
+        "note": "This drives the scheduler DIRECTLY to measure idempotency. §11 forbids presenting that as authority, which is why the positive controls below are NOT_REACHED."
+      },
+      {
+        "id": "LATE_RESULT_CANNOT_OVERTURN",
+        "refused": true,
+        "error": "illegal Attempt transition CANCELLED -> STALE",
+        "finalState": "CANCELLED",
+        "satisfied": true
+      },
+      {
+        "id": "STALE_DECISION_AFTER_TERMINAL_REFUSES",
+        "refused": true,
+        "error": "illegal Attempt transition CANCELLED -> EXPIRED",
+        "satisfied": true
+      }
+    ],
+    "controlsSatisfied": 9,
+    "controlsTotal": 9,
+    "measured": {
+      "DURABLE_ATTEMPT_STATE_OBSERVED": {
+        "met": true,
+        "evidence": "the attempt row was read from the durable store: state=CANCELLED, events=ATTEMPT_CREATED,ATTEMPT_STARTED,ATTEMPT_CANCELLED"
+      },
+      "DURABLE_HOST_FAILURE_RECEIPT": {
+        "met": false,
+        "evidence": "no durable host-controlled receipt exists — see the §8 audit"
+      },
+      "WORLD_UNOBSERVABILITY_OBSERVED": {
+        "met": true,
+        "evidence": "Git through the world fails: ERR:error: object directory C:/Users/66494/AppData/Local/Temp/r3wr5-neg-zVUB4C/g"
+      },
+      "AUTHORIZED_TERMINAL_DECISION": {
+        "met": false,
+        "evidence": "POLICY_REQUIRED — no trusted capability admits the transition; the direct scheduler call above is a MEASUREMENT of idempotency, not an authorized decision"
+      },
+      "LANE_RELEASED": {
+        "met": true,
+        "evidence": "open attempts after the measured terminal: []"
+      },
+      "FRESH_ATTEMPT_COMPLETED": {
+        "met": false,
+        "evidence": "NOT_REACHED — no authorized terminal decision exists, so no fresh attempt was started in this scenario"
+      },
+      "INDEPENDENT_VERIFICATION_PASSED": {
+        "met": false,
+        "evidence": "NOT_REACHED — an attempt reaching COMPLETED does not imply verification, and no attempt completed here"
+      },
+      "PROMOTION_ADMITTED": {
+        "met": false,
+        "evidence": "NOT_REACHED — no promotion was attempted, and promotion authority was not exercised"
+      },
+      "PROJECT_QUIESCENCE_PROVEN": {
+        "met": false,
+        "evidence": "the Plan Reconciliation predicate reports head=IN_SYNC, openAttempts=[], tasks=[t1:ACTIVE], candidate.compilable=false — an open CANCELLED attempt is not an open lane, but the task remains ACTIVE, so quiescence is NOT proven",
+        "predicateUsed": "the head owner's quiescence_required blocker over CREATED/LEASED/RUNNING attempts and ACTIVE/VERIFYING tasks",
+        "rejectedWitnesses": [
+          "preview === \"idle\"",
+          "absence of RUNNING alone"
+        ]
+      }
+    },
+    "predicatesMet": [
+      "DURABLE_ATTEMPT_STATE_OBSERVED",
+      "WORLD_UNOBSERVABILITY_OBSERVED",
+      "LANE_RELEASED"
+    ],
+    "predicatesNotMet": [
+      "DURABLE_HOST_FAILURE_RECEIPT",
+      "AUTHORIZED_TERMINAL_DECISION",
+      "FRESH_ATTEMPT_COMPLETED",
+      "INDEPENDENT_VERIFICATION_PASSED",
+      "PROMOTION_ADMITTED",
+      "PROJECT_QUIESCENCE_PROVEN"
+    ],
+    "BROAD_PRIOR_CLAIM_CARRIED_FORWARD": false,
+    "finalAttemptState": "CANCELLED"
+  },
+  "predicateDefinitions": [
+    {
+      "id": "DURABLE_ATTEMPT_STATE_OBSERVED",
+      "question": "is the attempt's nonterminal state read from the durable store rather than from a return value?"
+    },
+    {
+      "id": "DURABLE_HOST_FAILURE_RECEIPT",
+      "question": "does a durable host-controlled receipt of the worker stop exist and read back after a restart?"
+    },
+    {
+      "id": "WORLD_UNOBSERVABILITY_OBSERVED",
+      "question": "is the world's Git unobservability measured as an observed failure?"
+    },
+    {
+      "id": "AUTHORIZED_TERMINAL_DECISION",
+      "question": "does an authorized principal actually decide the terminal, through a supported path?"
+    },
+    {
+      "id": "LANE_RELEASED",
+      "question": "is the terminal attempt absent from the open-attempt set?"
+    },
+    {
+      "id": "FRESH_ATTEMPT_COMPLETED",
+      "question": "does a fresh attempt reach COMPLETED?"
+    },
+    {
+      "id": "INDEPENDENT_VERIFICATION_PASSED",
+      "question": "did an independent verification actually pass — distinct from the attempt completing?"
+    },
+    {
+      "id": "PROMOTION_ADMITTED",
+      "question": "was a promotion admitted — distinct from verification passing?"
+    },
+    {
+      "id": "PROJECT_QUIESCENCE_PROVEN",
+      "question": "does the Plan Reconciliation predicate report quiescent, accounting for CREATED/LEASED/RUNNING attempts AND ACTIVE/VERIFYING tasks?"
+    }
+  ],
+  "quiescenceRule": {
+    "predicate": "the existing Plan Reconciliation predicate (the head owner's `quiescence_required` blocker over current work state)",
+    "inputs": [
+      "CREATED / LEASED / RUNNING Attempts",
+      "ACTIVE / VERIFYING Tasks"
+    ],
+    "rejectedWitnesses": [
+      "preview === \"idle\"",
+      "the mere absence of a RUNNING attempt",
+      "a fresh Attempt left in CREATED"
+    ],
+    "note": "An Attempt reaching COMPLETED does not imply Verification or Promotion, and a test that ends with a fresh Attempt still CREATED has NOT proven quiescence."
+  },
+  "mutationWitnesses": {
+    "fencing": {
+      "kind": "R3-WR5 Gate B §9 — worker termination and fencing",
+      "port": "dshSubprocessWorkWorkerPort (src/deployment/work_worker.ts)",
+      "TIMEOUT_PATH": {
+        "callsKill": true,
+        "reportsHostFailureInTheSameHandler": true,
+        "waitsForClose": false
+      },
+      "ABORT_PATH": {
+        "callsKill": true,
+        "reportsHostFailureInTheSameHandler": true,
+        "waitsForClose": false
+      },
+      "CLOSE_PATH": {
+        "exists": true,
+        "reportsFromTheConfirmedExit": true,
+        "earlyReturnsOnceSettled": true
+      },
+      "KILL_REQUESTED_EQUALS_WORKER_EXIT_CONFIRMED": false,
+      "frozenDistinction": "KILL_REQUESTED != WORKER_EXIT_CONFIRMED",
+      "consequence": "A timeout outcome is reported from the KILL REQUEST, so no terminal decision may rest on it as written. The port never fabricates a work outcome — a timeout is HOST_FAILURE, a statement about a process — but it also never confirms the process is gone.",
+      "windowsEnvelope": "Under the supported Windows confidential single-active profile the relevant condition is that ONE active worker is serialized by the profile, which R1-HC proves. Arbitrary process-TREE security is NOT claimed and was not tested.",
+      "verdict": "OPEN",
+      "failClosed": true
+    },
+    "hostEvidence": {
+      "kind": "R3-WR5 Gate B §8 — durable host failure evidence",
+      "existingSources": [
+        {
+          "source": "WorkWorkerExecutionOutcome {kind:\"HOST_FAILURE\"}",
+          "where": "src/deployment/work_worker.ts",
+          "durability": "NONE — a return value inside one process",
+          "carries": "a detail string only; no attempt id, no job id, no pid, no timestamp, no digest"
+        },
+        {
+          "source": "WorkJobView.hostError / phase HOST_ERROR",
+          "where": "src/interaction/work_delegation.ts",
+          "durability": "NONE — an in-memory Map entry",
+          "restartWitness": {
+            "jobId": "job-does-not-exist",
+            "phase": "UNKNOWN",
+            "detail": "this host has no such job (host-local jobs are not durable, so a restart forgets them) — inspect the attempt by its own id for the canonical truth"
+          },
+          "carries": "jobId, taskId, attemptId (once prepare succeeded), phase, hostError string"
+        },
+        {
+          "source": "confidential slot record <home>/confidential-workers/active.json",
+          "where": "host/deployment/runtime/confidential_profile.js",
+          "durability": "DURABLE but NONCANONICAL",
+          "carries": "{pid, at} — host capacity, not one attempt",
+          "isAboutOneAttempt": false
+        }
+      ],
+      "requiredFacts": [
+        {
+          "fact": "project and Attempt identity",
+          "obtainable": "YES, canonical — but only through the report path, which requires a successful observation"
+        },
+        {
+          "fact": "host Job identity",
+          "obtainable": "host-local only; not durable"
+        },
+        {
+          "fact": "Worker process/session identity",
+          "obtainable": "PARTIAL — a child pid exists while alive; nothing durable records it"
+        },
+        {
+          "fact": "observed exit/close or effective fencing",
+          "obtainable": "NO — see the fencing audit"
+        },
+        {
+          "fact": "relevant failure kind",
+          "obtainable": "YES, as a host-local string"
+        },
+        {
+          "fact": "Git World observation status",
+          "obtainable": "YES, but as a THROWN child-process error rather than a named value"
+        },
+        {
+          "fact": "observation timestamp",
+          "obtainable": "NO durable one"
+        },
+        {
+          "fact": "evidence digest and trusted producer",
+          "obtainable": "NO"
+        }
+      ],
+      "confidentialSlotHasStalenessCheck": false,
+      "DURABLE_HOST_FAILURE_RECEIPT_EXISTS": false,
+      "verdict": "OPEN",
+      "gap": "No durable host-controlled receipt exists, so §8's requirement that the terminal decision be TRACEABLY BOUND to a failure observation cannot be met. Adding one is not authorised by this stage: §8 permits a narrow noncanonical record only if unavoidable, and §6 forbids implementing the terminal before the policy is adopted, so the requirement is reported instead."
+    },
+    "policyAdmissibility": {
+      "kind": "R3-WR5 Gate B §6 — policy admissibility",
+      "proposedPolicy": "An explicitly authorized Project operator may cancel an Attempt after the host has established that its Worker has stopped and that ordinary Result observation is unavailable.",
+      "proposedStatus": "PROPOSED — not authority granted by the ruling document",
+      "audit": {
+        "managementServiceOwnsNoAuthority": true,
+        "managementServiceOwnsNoStore": true,
+        "modeChangeIsRequestOnlyOnTheAgentPath": true,
+        "operatorPathNeverWiredToAnLlmTool": true,
+        "intentReceiptForbidsDelegateAsAuthority": true,
+        "collaborationReceiptForbidsDelegateAsAuthority": true,
+        "workerVocabularyIsOnlyTwoOutcomes": true,
+        "workerDeniesPalimpsestPrefix": true
+      },
+      "operatorCapabilityAdmitsTerminal": false,
+      "managementModesAreSemanticAuthority": false,
+      "verdict": "POLICY_REQUIRED",
+      "whyNotImplemented": "No trusted capability authorizes the transition, so implementing a terminal command now would be an unguarded one — exactly what §6 forbids. The requirement is returned as an exact decision contract instead."
+    }
+  },
+  "policyRequirement": {
+    "verdict": "POLICY_REQUIRED",
+    "gate": "R3-WR5 Gate B §6/§7/§8/§9",
+    "noImplementation": "No new event, no new authority, and no unguarded terminal command was added.",
+    "decisions": [
+      {
+        "id": "P1",
+        "question": "Which trusted principal may initiate a cancellation, and by what capability?",
+        "currentState": "None. The management involvement modes are non-authoritative by their own documentation, and the only operator path (applyOperatorModeChange) persists a PREFERENCE rather than admitting a terminal event.",
+        "needed": "An identified principal with a recorded basis and a capability that admits the transition — and a decision about whether an ordinary worker may ever trigger it (§6 forbids exposing an unconditional force-fail tool to a worker)."
+      },
+      {
+        "id": "P2",
+        "question": "How is the Attempt identity resolved without observing the World?",
+        "currentState": "The historical resolver (src/state/attempt_authorization.ts) already resolves attempt → envelope → TaskEnvelope from the Event Log and fails closed on six distinct corruptions. It does NOT depend on observing the world.",
+        "needed": "Nothing new — this clause is already satisfied and is recorded so the requirement is complete rather than partially invented."
+      },
+      {
+        "id": "P3",
+        "question": "What is the evidence that the Worker has stopped?",
+        "currentState": "KILL_REQUESTED != WORKER_EXIT_CONFIRMED. The port reports a timeout from the kill request, and the host job map is non-durable.",
+        "needed": "An OBSERVED exit or an explicitly accepted effective-fencing condition, plus a decision about whether the confidential profile's single-active serialization is itself sufficient."
+      },
+      {
+        "id": "P4",
+        "question": "What is the durable receipt of the failure, and how is it trusted?",
+        "currentState": "No durable host-controlled receipt exists.",
+        "needed": "A narrow noncanonical receipt from a trusted host source carrying project, attempt, job, worker identity, the observed stop, the failure kind, the world-observation status, a timestamp, and a digest with its producer — non-rewritable, with durable readback proven after a restart, and carrying no secrets or transcripts."
+      },
+      {
+        "id": "P5",
+        "question": "Is lease expiry observed or caller-asserted?",
+        "currentState": "CALLER-ASSERTED. TaskEnvelope.lease_s is never read by the attempt runtime, lease_generation is hardcoded null, and the only route to EXPIRED is a caller passing workerStatus: \"expired\".",
+        "needed": "A decision: either an observed expiry, or an explicit statement that EXPIRED remains an assertion and is therefore not a valid basis for a permanent-failure terminal."
+      },
+      {
+        "id": "P6",
+        "question": "How must an unavailable observation be represented?",
+        "currentState": "attempt_report: null is admitted for CANCELLED and EXPIRED and refused for FAILED. RESULT_OBSERVATION_UNAVAILABLE and TRUSTED_HOST_FAILURE_OBSERVED are different facts and the event log cannot currently carry both.",
+        "needed": "A decision that `attempt_report: null` is the intended representation, or that the report schema needs an explicit unavailable-observation meaning. §10 forbids the silent alternative of changed_files: []."
+      },
+      {
+        "id": "P7",
+        "question": "What happens to a late Worker result and to duplicate decisions?",
+        "currentState": "MEASURED and adequate: the terminal callback is idempotent by its attempt-callback-v1 key, and ATTEMPT_LATE_RESULT transitions only from EXPIRED, so a late result cannot overturn a CANCELLED attempt.",
+        "needed": "Nothing new — recorded so the requirement is complete."
+      },
+      {
+        "id": "P8",
+        "question": "Does the experiment need an automatic machine-failure terminal, or a fail-stop rule?",
+        "currentState": "CANCELLED means \"this Attempt is no longer authorized to continue\" and does NOT mean \"the object store will never recover\". Reinterpreting it as FAILED is forbidden by §7.",
+        "needed": "A separate semantic decision if an automatic machine-failure terminal is required. Until then the honest disposition for a long-horizon experiment is an explicit fail-stop rule rather than a silent reinterpretation."
+      }
+    ],
+    "semanticBlocker": "RESULT_OBSERVATION_UNAVAILABLE (the world cannot be observed) and TRUSTED_HOST_FAILURE_OBSERVED (the host saw the worker stop) are different facts, and the event log cannot carry both into one terminal event without new report-schema meaning."
+  },
+  "regression": {
+    "build": "PASS — tsc -b, no diagnostics",
+    "unit": "PASS — 3876/3876 across 281 files, 0 failed",
+    "unitNote": "R3-WR4 reported 3855/3855 across 280 files; this stage adds 21 tests in 1 file.",
+    "e2e": "PASS — 38/38",
+    "architecture": "PASS — 0 violations, 9 accepted baseline exceptions observed",
+    "publicApi": "PASS — 0 missing, 0 changed kind, 0 added (no interface member was added)",
+    "r3s0": "PASS — contract and systemic suites",
+    "r3l0b": "PASS — immutability guard and containment; the historical tree is unchanged",
+    "r3wrThroughR3wr4": "PASS — the R3-WR4 world/effect identity suite (17), the R3-WR3 world-identity suite (14), the R3-WR2 lifetime suite, the execution-world and object-store suites: 80 tests across 5 files",
+    "r1hConfidentiality": "PASS — 17 PASS / 0 LIMIT / 0 FAIL; the kernel fence verified 4/4 roots by readback",
+    "r1hrHostHardening": "PASS — 44 PASS / 3 LIMIT / 0 FAIL (disclosed limits unchanged from the baseline)",
+    "r1hcConfidentialResidual": "PASS — 26 PASS / 1 LIMIT / 0 FAIL (HC-27, the known parallel-active-worker limit)",
+    "r1lConsumerBoundary": "PASS — §R1-L-LIVE",
+    "d2D4D5WorkEffectRecovery": "PASS — 148 tests across 7 files (D2-live, D4-c, D5-0, D5-d plus the R3-S0 and R3-L0B suites)",
+    "newGateABTests": "PASS — 21 tests: 2 falsifiers against the frozen R3-WR4 port, 4 common-dir shapes, the R3-WR4/R3-WR3 refusal regressions, the reachability contract, the fencing audit, the host-evidence audit, the policy admissibility audit and the nine-predicate contract",
+    "historicalEvidenceImmutability": "PASS — `git diff 0052cc1..HEAD` over every frozen stage path is EMPTY; the protected evidence tree digest is unchanged",
+    "windowsConfidentialProfile": "UNCHANGED — single-active profile remains valid; no host file was modified this stage"
+  },
+  "verdicts": {
+    "R3-WR5": "COMPLETE",
+    "SUPPORTED_WORK_ADMISSION": "CLOSED",
+    "WORLD_EFFECT_REUSE_AUTHORITY": "LIMITED",
+    "CROSS_OPERATION_REACHABILITY": "TRUSTED_ONLY",
+    "SINGLE_FLIGHT": "PROVEN_WITHIN_ENVELOPE",
+    "WORKER_TERMINATION_FENCING": "OPEN",
+    "DURABLE_HOST_FAILURE_EVIDENCE": "OPEN",
+    "FAILURE_DISPOSITION_POLICY": "POLICY_REQUIRED",
+    "UNOBSERVABLE_WORLD_TERMINAL_PATH": "OPEN",
+    "POST_TERMINAL_PROJECT_CONTINUATION": "OPEN",
+    "SYSTEM_VALID": "YES within audited envelope",
+    "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+    "R3-L0C RESUME QUALIFICATION": "REQUIRES_EXPLICIT_FAIL_STOP_RULING"
+  },
+  "verdictBasis": {
+    "SUPPORTED_WORK_ADMISSION_CLOSED": "Every reachable path to world creation and reuse goes through ProjectController.claim, which enforces role-slot admission, budget admission, world-basis capture and the scheduler ATTEMPT_STARTED transition. The worker catalogue is structurally denied every `palimpsest_` tool except two read-only ones, and its only outbound channel is a strictly parsed pull envelope that cannot name an attempt, project, path or owner.",
+    "WORLD_EFFECT_REUSE_AUTHORITY_LIMITED": "A world records the attempt, the basis and now the repository it was created for; a foreign owner (WORLD_OWNER_MISMATCH), a different basis (WORLD_BASIS_MISMATCH) or a foreign repository (WORLD_REPOSITORY_MISMATCH) is refused before any mutating command. LIMITED rather than CLOSED, and the reason is stated rather than hidden: C3 — a distinct operation key for an existing world — is still permitted within the TRUSTED-INTERNAL-API envelope, because the effect action receives no operation identity and §4 forbids both a caller-asserted token and a second durable world owner. The supported path cannot express C3; in-process code already holding `effects.invoke` can.",
+    "CROSS_OPERATION_REACHABILITY_TRUSTED_ONLY": "The production callId is `world:<attemptId>`, a pure function of the attempt id, and the scope is the project id. Two supported calls for one attempt therefore produce the SAME operation id — C1, not C3. A distinct operation key for the same world requires a caller that supplies its own callId, which only in-process code already holding `effects.invoke` or `hostPort.invoke` can do. `hostPort` has zero production consumers, so the untrusted path cannot express C3.",
+    "SINGLE_FLIGHT_PROVEN_WITHIN_ENVELOPE": "R3-WR4 measured one dispatch and a maximum of one active across six simultaneous same-key calls with every dispatch held open inside a harness-controlled window. §5 retains the explicit limitation: one runtime process over one durable ledger, no multi-process claim, and no expansion into distributed locking research.",
+    "WORKER_TERMINATION_FENCING_OPEN": "The timeout and abort paths report the outcome from the KILL REQUEST, before the child `close` callback. KILL_REQUESTED != WORKER_EXIT_CONFIRMED is therefore the measured state, and a policy requiring an observed exit cannot be satisfied by this port as written. Arbitrary process-tree security is not claimed.",
+    "DURABLE_HOST_FAILURE_EVIDENCE_OPEN": "No durable host-controlled receipt exists: HOST_FAILURE is a return value, the host job map is an in-memory Map that is empty after a restart, and the only durable file is the noncanonical confidential-slot record, which is about host capacity rather than one attempt. §8 requires traceability from the terminal decision to a failure observation, so the gap is reported rather than papered over.",
+    "FAILURE_DISPOSITION_POLICY_POLICY_REQUIRED": "The proposed operator-cancellation policy is not admissible by the existing authority contract: the management involvement modes are explicitly non-authoritative, the only operator path persists a PREFERENCE rather than admitting a terminal event, and no trusted capability authorizes the transition. Implementing an unguarded terminal command is exactly what §6 forbids, so the exact decision contract is returned instead.",
+    "UNOBSERVABLE_WORLD_TERMINAL_PATH_OPEN": "The failure is reproducible and the vocabulary can carry a null-report terminal for CANCELLED, but no authorized pathway can produce it, so the path is open by policy rather than by mechanism.",
+    "POST_TERMINAL_PROJECT_CONTINUATION_OPEN": "R3-WR4 measured that the project CAN continue once an admissible terminal event exists, but the event cannot be produced under existing authority. §12 requires the predicates be measured separately rather than inherited, and the separate measurement is in this record.",
+    "SYSTEM_VALID_YES": "Build, full unit suite, e2e, architecture, public API and the R3-S0/R3-L0B/R3-WR family regressions are green; the Windows confidential single-active profile is unchanged.",
+    "EXPERIMENT_ENVIRONMENT_VALID_YES": "No stochastic model was run, R3-L0C's corpus, capital, oracle and verdicts are byte-untouched, and the protected historical evidence tree is unchanged.",
+    "R3L0C_RESUME_REQUIRES_RULING": "Gate B is POLICY_REQUIRED and the worker-termination fencing is OPEN, so an attempt whose world becomes unobservable cannot be terminalized truthfully. A long-horizon experiment that can strand an attempt with no authorized terminal path would accumulate exactly the unresolved positions the experiment must not have. §16 names this specific status rather than a binary, because the blocker is a governance decision about fail-stop behaviour rather than a defect."
+  },
+  "residuals": [
+    "C3 (a distinct operation key for an existing world) is permitted WITHIN THE TRUSTED-INTERNAL-API ENVELOPE and is not refused there, because the effect action receives no operation identity. The supported path cannot express it, but an in-process caller holding `effects.invoke` or `hostPort.invoke` can. §4 forbids a caller-asserted token and a second world owner, so this is recorded as an envelope boundary rather than repaired.",
+    "`hostPort` (HostInvocationPort) is an ambient-authority seam with ZERO production consumers. It lets a caller mint its own {source, scope, callId} and bypass orchestrationAuthorization. It is not reachable from outside the process, and no shipped surface hands it out, but its existence means \"trusted internal code can mint an arbitrary operation identity\" is true by construction.",
+    "KILL_REQUESTED != WORKER_EXIT_CONFIRMED: the worker port reports a timeout from the kill request rather than from the confirmed exit, so no terminal decision may rest on it as written.",
+    "No durable host-failure receipt exists; §8's traceability requirement cannot be met without one.",
+    "The world binding is EVIDENCE, not authority: a self-consistent rewrite is accepted, measured. It catches the accidental and careless case and is stated as such.",
+    "Base divergence between `claim`'s `project.head_commit` and the attempt's historical envelope is STRUCTURALLY unreachable in the supported path because `reconcileProjectHead()` refuses with `quiescence_required` while any attempt is open. This is a statement about the supported path, not a proof about every future change.",
+    "The symlink variant of the common-directory shape could NOT be constructed on this host (EPERM without privilege), so it is unmeasured and unclaimed.",
+    "Lease expiry remains CALLER-ASSERTED: `TaskEnvelope.lease_s` is never read by the attempt runtime and `lease_generation` is hardcoded null.",
+    "The fence-mode HTTP claim route has no authentication against a local non-browser client. The caller still cannot mint an operation identity or choose a world, but this is a deployment-mode property rather than a code guarantee."
+  ]
+}
