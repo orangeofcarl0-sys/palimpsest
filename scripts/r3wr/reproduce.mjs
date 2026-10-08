@@ -28,9 +28,14 @@ const NL = String.fromCharCode(10);
 /** Run git, capturing the verdict rather than throwing. */
 function git(cwd, args, options = {}) {
   try {
-    return Object.freeze({ ok: true, stdout: execFileSync('git', [...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024, ...options }).trim(), stderr: '' });
+    return Object.freeze({ ok: true, exit: 0, stdout: execFileSync('git', [...args], { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024, ...options }).trim(), stderr: '' });
   } catch (error) {
-    return Object.freeze({ ok: false, stdout: String(error?.stdout ?? '').trim(), stderr: String(error?.stderr ?? error?.message ?? error).trim() });
+    /**
+     * The EXIT CODE is carried because git uses it as a verdict: `commit --dry-run` exits 1 for "nothing to
+     * commit", which is a legitimate clean world rather than a failure. Callers that decide capability by
+     * exit code need it, and callers that decide by message text ignore it.
+     */
+    return Object.freeze({ ok: false, exit: typeof error?.status === 'number' ? error.status : -1, stdout: String(error?.stdout ?? '').trim(), stderr: String(error?.stderr ?? error?.message ?? error).trim() });
   }
 }
 
