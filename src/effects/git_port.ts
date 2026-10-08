@@ -497,7 +497,59 @@ export class GitCliPort implements GitPort {
     }
     await this.#git(["config", "user.name", WORKER_COMMIT_NAME], path);
     await this.#git(["config", "user.email", WORKER_COMMIT_EMAIL], path);
+    await this.#assertWorldCommitCapable(path, input.baseCommit);
     return { worldPath: path };
+  }
+
+  /**
+   * THE WORLD MUST BE COMMIT-CAPABLE BEFORE A WORKER IS HANDED IT.
+   *
+   * A `--shared` world borrows its immutable objects through `.git/objects/info/alternates`. If that borrowed
+   * store is unreadable when the worker runs, the worker's `git commit` fails with
+   * `fatal: could not parse HEAD` — and every OTHER readiness signal still looks healthy: HEAD resolves, the
+   * status is clean, and the world opens. So without an explicit check the runtime declares the attempt usable
+   * and the worker discovers otherwise, which is exactly the failure R3-WR was opened for: an attempt that stays
+   * RUNNING with no result, and a next generation blocked by `quiescence_required`.
+   *
+   * The check is made by GIT, not by the filesystem. `cat-file -e` asks whether the borrowed store can actually
+   * deliver the basis commit, which is the property the worker depends on; an `existsSync` on the alternates
+   * path would be satisfied by a path that exists and still cannot serve the object.
+   *
+   * `commit --dry-run` is used rather than a real commit so the check cannot alter the world it is checking.
+   * Its EXIT CODE is deliberately not the criterion: a clean world with nothing staged exits non-zero, which is
+   * a legitimate state, so the criterion is the ABSENCE of an object-store error.
+   *
+   * Failing closed is the contract, not a convenience. A world that cannot commit must make worker readiness
+   * fail rather than produce an attempt that looks usable, and it must NOT be silently re-created: a world that
+   * should exist may have held uncommitted work.
+   */
+  async #assertWorldCommitCapable(path: string, baseCommit: string): Promise<void> {
+    const readable = await this.#gitOrThrow(["cat-file", "-e", `${baseCommit}^{commit}`], path, "the world cannot read its own basis commit through its borrowed object store");
+    void readable;
+    try {
+      await this.#git(["commit", "--dry-run", "-m", "world readiness probe"], path);
+    } catch (error) {
+      const text = `${String((error as { stdout?: unknown }).stdout ?? "")}${String((error as { stderr?: unknown }).stderr ?? "")}${String((error as { message?: unknown }).message ?? error)}`;
+      /**
+       * Only an OBJECT-STORE failure is a readiness failure. "Nothing to commit" also exits non-zero, and
+       * treating that as unreadiness would refuse every clean world.
+       */
+      if (/could not parse HEAD|bad object|unable to normalize alternate|not a git repository|object directory|does not exist/iu.test(text)) {
+        throw new Error(
+          `WORLD_NOT_COMMIT_CAPABLE: the world at "${path}" cannot commit — its borrowed object store cannot deliver the objects a commit must read. A worker handed this world would fail with an object-store error and leave the attempt unsettled. Refusing rather than creating a misleading usable attempt. Detail: ${text.trim().slice(0, 240)}`,
+        );
+      }
+    }
+  }
+
+  /** Run a git command and rethrow a failure with a stated reason, so a readiness failure names itself. */
+  async #gitOrThrow(args: string[], cwd: string, reason: string): Promise<string> {
+    try {
+      return await this.#git(args, cwd);
+    } catch (error) {
+      const text = `${String((error as { stderr?: unknown }).stderr ?? "")}${String((error as { message?: unknown }).message ?? error)}`.trim().slice(0, 240);
+      throw new Error(`WORLD_NOT_COMMIT_CAPABLE: ${reason}. Detail: ${text}`);
+    }
   }
 
   /** The canonical repository directory — the tree an in-place attempt works in and is judged in. */
