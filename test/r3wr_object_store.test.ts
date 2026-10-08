@@ -21,6 +21,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { afterAll, describe, expect, it } from "vitest";
 
@@ -132,7 +133,13 @@ describe("R3-WR — the production repair fails closed", () => {
      * catch it: a second canonical repository is cloned, a world is prepared against it, and then that
      * repository's objects are moved aside before the probe runs.
      */
-    const { GitCliPort } = await import("../dist/src/effects/git_port.js");
+    /**
+     * The compiled port is resolved as a PATH and imported dynamically, matching how the other suites reach
+     * `dist`. A static `import` from `dist` makes TypeScript treat the emitted declaration as an INPUT, and the
+     * build then refuses to overwrite it (TS5055).
+     */
+    const portModulePath = fileURLToPath(new URL("../dist/src/effects/git_port.js", import.meta.url));
+    const { GitCliPort } = await import(portModulePath);
     const root = join(BASE, "port-repair");
     mkdirSync(root, { recursive: true });
     const basis = makeBasisRepository(root);
