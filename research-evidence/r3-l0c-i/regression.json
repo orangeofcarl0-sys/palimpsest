@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "regression record",
+  "suites": [
+    {
+      "id": "TYPESCRIPT_BUILD",
+      "command": "tsc -b",
+      "result": "PASS",
+      "detail": "clean build under strict/exactOptionalPropertyTypes/noUncheckedIndexedAccess"
+    },
+    {
+      "id": "UNIT_SUITE",
+      "command": "vitest run",
+      "result": "PASS",
+      "detail": "3959/3959 across 286 files"
+    },
+    {
+      "id": "E2E",
+      "command": "playwright test",
+      "result": "PASS",
+      "detail": "38/38"
+    },
+    {
+      "id": "ARCHITECTURE",
+      "command": "module-architecture.mjs --check",
+      "result": "PASS",
+      "detail": "0 violations, 9 accepted baseline exceptions"
+    },
+    {
+      "id": "PUBLIC_API",
+      "command": "module-architecture.mjs --check-public-api",
+      "result": "PASS",
+      "detail": "0 missing, 0 changed kind, 0 added"
+    },
+    {
+      "id": "R1_H_CONFINEMENT",
+      "command": "r1h/conformance.mjs",
+      "result": "PASS",
+      "detail": "the read boundary holds on this host"
+    },
+    {
+      "id": "R1_HR_HOST_HARDENING",
+      "command": "r1hr/conformance.mjs",
+      "result": "PASS",
+      "detail": "disclosed limits HR-17, HR-39b, HR-33"
+    },
+    {
+      "id": "R1_HC_RESIDUAL_CLOSURE",
+      "command": "r1hc/conformance.mjs",
+      "result": "PASS",
+      "detail": "disclosed limit HC-27 (the known parallel-active-worker limit)"
+    },
+    {
+      "id": "R1_L_CONSUMER_BOUNDARY",
+      "command": "gates/r1l-live-gate.mjs",
+      "result": "PASS",
+      "detail": "§R1-L-LIVE PASS"
+    },
+    {
+      "id": "R3_S0_GRAPH",
+      "command": "r3s0/graph-audit.mjs",
+      "result": "PASS",
+      "detail": "10/10 invariants"
+    },
+    {
+      "id": "R3_S0_EVENTS",
+      "command": "r3s0/event-audit.mjs",
+      "result": "PASS",
+      "detail": "5/5 audit checks"
+    },
+    {
+      "id": "ANTI_VACUITY",
+      "command": "r2lr/anti-vacuity.mjs",
+      "result": "PASS",
+      "detail": "0 unconditional forms"
+    },
+    {
+      "id": "R3_CONTAINMENT_AND_CONTRACTS",
+      "command": "vitest r3l0b_canary + r3l0b_containment + r3l0c_containment + r3l0c_contract + r3l0c_harness + r3l0c_selection + r3l0cr_boundary + r3l0cr_contract",
+      "result": "PASS",
+      "detail": "included in the 325-test R3 and D-series run"
+    },
+    {
+      "id": "D2_D4_D5_TESTS",
+      "command": "vitest lean_d2_live_composition + lean_d4c_read_evidence + lean_d5_0_effect_authority + lean_d5d_result_continuation_service",
+      "result": "PASS",
+      "detail": "included in the 325-test run"
+    },
+    {
+      "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+      "command": "r3l0c/immutability.mjs",
+      "result": "PASS",
+      "detail": "374 protected files, baseline e51df1f4; no protected mutation"
+    },
+    {
+      "id": "NEW_GATE_TESTS",
+      "command": "vitest r3l0ci_controls + r3l0ci_gates",
+      "result": "PASS",
+      "detail": "32 tests: 15 Gate 1/2 controls and 17 Gate 3/4/5 integration tests"
+    }
+  ],
+  "suiteCount": 16,
+  "failing": [],
+  "limits": [
+    {
+      "id": "D2_D4_D5_LIVE_GATES_FAIL",
+      "status": "PRE_EXISTING",
+      "scripts": [
+        "scripts/gates/d2-live-gate.mjs",
+        "scripts/gates/d4-live-gate.mjs",
+        "scripts/gates/d5-live-gate.mjs"
+      ],
+      "observed": {
+        "D2": "FAIL — the worker finished without reporting an outcome, so the attempt never settled (settlement NOT_READY / HOST_FAILURE)",
+        "D4": "FAIL — fatal: Not a valid object name null^{commit}; the rig then failed on git diff against a null result commit",
+        "D5": "FAIL — delegated attempts returned NOT_READY / HOST_FAILURE, then PlanReconciliationError: plan revision blocked (quiescence_required)"
+      },
+      "anyModelRequestEmitted": false,
+      "modelRequestEvidence": "each gate worker session log contains exactly ONE record (the session header), with no conversation, no tool call and no completion request; the worker transcripts report zero tool actions",
+      "introducedByThisStage": false,
+      "whyNotRepaired": "the gates require a model route and this stage forbids model calls; src/**, host/** and scripts/gates/** are byte-identical to the baseline",
+      "whatWasRunInstead": "the D-series TESTS (part of the 325-test R3 and D-series run), which is what the prior stage recorded as its D2/D4/D5 regression"
+    },
+    {
+      "id": "LIVE_MODEL_MATRIX_NOT_RUN",
+      "status": "BY_DESIGN",
+      "observed": "the 16-session paid matrix was not run",
+      "anyModelRequestEmitted": false,
+      "introducedByThisStage": false,
+      "whyNotRepaired": "the ruling ends with a mandatory stop and requires an explicit authorization ruling before the paid run"
+    }
+  ],
+  "REGRESSION": "PASS",
+  "limitsIntroducedByThisStage": [],
+  "anyModelRequestEmitted": false,
+  "modelCallsMade": 0,
+  "law": "report genuine failures and limits rather than smoothing them"
+}

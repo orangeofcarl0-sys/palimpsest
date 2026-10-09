@@ -1,0 +1,699 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "primary matrix integration and final execution freeze",
+  "startedAt": "2026-10-09T06:17:02.114Z",
+  "endedAt": "2026-10-09T06:17:14.274Z",
+  "baseline": "19f0c69833f33c51ada8642379980c490cb75d04",
+  "gate1Controls": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "gate 1 negative controls",
+    "controls": [
+      {
+        "id": "RUN_ID_REPLAY_GUARD",
+        "defect": "a second run with the same exposed runRoot launched every session again",
+        "fixedBy": "an exclusive run-root claim, checked before any launch",
+        "verdict": "CLOSED"
+      },
+      {
+        "id": "EMPTY_OBJECT_NOT_OK",
+        "defect": "classifyOutcome({}) returned OK, a default-to-success path",
+        "fixedBy": "the admission schema requires explicit evidence; an empty outcome is UNCLASSIFIABLE",
+        "verdict": "CLOSED"
+      },
+      {
+        "id": "VALIDITY_GATE_REQUIRED",
+        "defect": "an omitted validityGate silently produced MATRIX_COMPLETE",
+        "fixedBy": "the parameter has no default and its absence is refused before any claim or launch",
+        "verdict": "CLOSED"
+      }
+    ],
+    "RUN_ID_REPLAY_GUARD": "PASS",
+    "VALIDITY_GATE_REQUIRED": "PASS",
+    "emptyObjectDisposition": "UNCLASSIFIABLE",
+    "claimInspectionShape": [
+      "verdict",
+      "mayProceed",
+      "claim",
+      "exposureIntents",
+      "launches",
+      "journalExists",
+      "reason"
+    ]
+  },
+  "gate2Policy": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "behavioural outcome policy",
+    "policy": {
+      "schemaVersion": 1,
+      "kind": "behavioural outcome policy",
+      "separates": {
+        "admissibleObservation": [
+          "CORRECT_IMPLEMENTATION",
+          "INCORRECT_IMPLEMENTATION",
+          "LOW_HIDDEN_INVARIANT_COVERAGE",
+          "MODEL_DECLINED_VISIBLE_CAPITAL",
+          "COMPLETED_WORK_FAILS_CORRECTNESS",
+          "BUDGET_EXHAUSTED_WITHOUT_USABLE_RESULT"
+        ],
+        "infrastructureOrTreatmentFailure": [
+          "MISSING_WORKER_REPORT",
+          "HOST_FAILURE",
+          "GIT_OBJECT_RESOLUTION_FAILURE",
+          "UNAVAILABLE_WORKER_WORLD",
+          "ENVIRONMENTAL_COMMIT_FAILURE",
+          "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+          "CONTAINMENT_FAILURE",
+          "EXECUTION_CLOSURE_MISMATCH",
+          "PROVIDER_ROUTE_FAILURE_AFTER_INVOCATION",
+          "LAUNCH_THREW"
+        ],
+        "canonicalWorkBlockage": "CANONICAL_WORK_CANNOT_ADVANCE"
+      },
+      "incorrectOracleVectorIsAStop": false,
+      "declinedCapitalPullIsAStop": false,
+      "lowCoverageIsAStop": false,
+      "incorrectVectorIsRecorded": true,
+      "declinedPullIsRecorded": true,
+      "workBlockageIsAStop": true,
+      "forcesResultVerificationOrPromotion": false,
+      "requiresExplicitAdmissionEvidence": true,
+      "emptyObjectAdmitted": false,
+      "frozenEndpointsChanged": false,
+      "frozenThresholdsChanged": false,
+      "law": "a behavioural outcome is recorded, not a reason to terminate the study; only a machinery fault or a canonical Work blockage stops the matrix"
+    },
+    "BEHAVIORAL_OUTCOME_POLICY": "VALID"
+  },
+  "gate3Path": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "authoritative execution path",
+    "quarantineEnforced": true,
+    "guardRefusesLegacyMatrix": true,
+    "authoritativePath": "scripts/r3l0cf/primary-matrix.mjs",
+    "PRIMARY_MATRIX_INTEGRATED": "YES"
+  },
+  "gate4Closure": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "execution closure",
+    "executionClosureDigest": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE"
+    ],
+    "fileCount": 88,
+    "toolchain": {
+      "node": "v24.14.1",
+      "git": "git version 2.53.0.windows.2",
+      "platform": "win32",
+      "arch": "x64",
+      "packages": {
+        "ordarium": "1.3.1",
+        "vitest": "4.1.10",
+        "typescript": "7.0.2",
+        "dshSandboxWindowsAcl": "0.2.0-rc.2"
+      },
+      "globalDshRoot": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh"
+    },
+    "completeness": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-I",
+      "kind": "closure completeness verification",
+      "declaredCount": 81,
+      "reachableCount": 53,
+      "missingFiles": [],
+      "undeclaredModules": [],
+      "unresolved": [],
+      "exemptedModules": [],
+      "packagesEncountered": [
+        "node:child_process",
+        "node:crypto",
+        "node:fs",
+        "node:os",
+        "node:path",
+        "node:url"
+      ],
+      "CLOSURE_COMPLETENESS": "COMPLETE",
+      "law": "reject missing or unverified closure inputs rather than hashing a placeholder"
+    },
+    "mutation": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "executable closure mutation",
+      "baseDigest": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+      "target": {
+        "path": "src/effects/git_port.ts",
+        "part": "SOURCE_CLOSURE",
+        "compiledCounterpart": "dist/src/effects/git_port.js",
+        "why": "the GitPort creates, observes and reuses a World; it is the shipped runtime R3-WR through R3-WR5 changed, and the old closure did not cover it"
+      },
+      "arms": [
+        {
+          "id": "MUTATION_LOAD_BEARING_PRODUCTION_INPUT",
+          "changed": [
+            "src/effects/git_port.ts",
+            "dist/src/effects/git_port.js"
+          ],
+          "digest": "b98d75047869b6f27512e952e0ff5c7cf8d9714a4d6df03ec55809c1b8e5c8de",
+          "digestMoved": true,
+          "changedParts": [
+            "SOURCE_CLOSURE",
+            "COMPILED_RUNTIME_CLOSURE"
+          ],
+          "namesThePart": true,
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "CONTROL_UNCOVERED_FILE",
+          "changed": [
+            "scripts/r3l0cf/control-uncovered.mjs"
+          ],
+          "digest": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+          "digestMoved": false,
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "CONTROL_HISTORICAL_HARNESS_FILE",
+          "changed": [
+            "scripts/r3l0c/plan.mjs"
+          ],
+          "digest": "f5a02795575e64d7bb493ca1c96a61d5ddd9d77ba342173cb473091ad10becae",
+          "digestMoved": true,
+          "changedParts": [
+            "MODEL_IDENTITY_EVIDENCE",
+            "EXPERIMENT_PLAN_DIGEST"
+          ],
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "GATE4_MUTATION_JOURNAL",
+          "changed": [
+            "scripts/r3l0cf/journal.mjs"
+          ],
+          "digest": "62c7d23e5307d90cb5f5ae19b8a170424f6121ce4a412d639abdaeeb5f67a1d5",
+          "digestMoved": true,
+          "changedParts": [
+            "INTEGRATION_CLOSURE"
+          ],
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "GATE4_MUTATION_COST_INSTRUMENTATION",
+          "changed": [
+            "scripts/r3l0c/instrumentation.mjs"
+          ],
+          "digest": "cba56b6a2488c32ac69b1ef4f6b33300c392bba9344b5fd87199bfe205de82b1",
+          "digestMoved": true,
+          "changedParts": [
+            "INTEGRATION_CLOSURE"
+          ],
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "GATE4_MUTATION_TOOLCHAIN_VERSION",
+          "changed": [
+            "package:vitest"
+          ],
+          "digest": "19824947eb3a532ba9b24f428a948fc945f4f8bcb09d1a590f4a252f04a2e454",
+          "digestMoved": true,
+          "changedAggregate": [
+            "package:vitest"
+          ],
+          "PROPERTY_PROVEN": true
+        }
+      ],
+      "historicalHarnessUntouched": true,
+      "legacyClosure": {
+        "source": "scripts/r3l0cr/mutations.mjs closureFileMap()",
+        "digest": "7ac167a1c9a6668dd9beb1dae7b624c3abcc21b3c8ae26729229928635b98ea4",
+        "fileCount": 16,
+        "coversGitPort": false,
+        "coversShippedRuntimeFiles": [],
+        "shippedRuntimeFileCount": 0,
+        "BLIND_TO_SHIPPED_RUNTIME": true
+      },
+      "treeMutated": false,
+      "mutationAppliedToTemporaryCopy": true,
+      "EXECUTION_CLOSURE_MUTATION": "PASS",
+      "GATE4_MUTATIONS": "PASS",
+      "law": "a changed shipped runtime must move the closure digest even when every historical R3-L0C .mjs file is byte-identical"
+    },
+    "compiledVerification": {
+      "kind": "compiled-against-source verification",
+      "pairs": 9,
+      "missing": [],
+      "DETERMINISTIC": "SUPPORTED",
+      "method": "a fresh emit of src/** with the project's own compiler options, compared byte-for-byte against dist/**",
+      "normalization": "the `//# sourceMappingURL` comment is removed from both sides, because the probe emits without sourcemaps",
+      "diverged": [],
+      "COMPILED_MATCHES_SOURCE": true
+    },
+    "FULL_EXECUTION_CLOSURE": "PASS"
+  },
+  "gate5Semantics": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "semantic rulings",
+    "capitalSufficiency": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-I",
+      "kind": "capital semantic sufficiency verification",
+      "results": [
+        {
+          "id": "p1a",
+          "classId": "P1",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p1b",
+          "classId": "P1",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p2a",
+          "classId": "P2",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p2b",
+          "classId": "P2",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p3a",
+          "classId": "P3",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p4a",
+          "classId": "P4",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p4b",
+          "classId": "P4",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p5a",
+          "classId": "P5",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p5b",
+          "classId": "P5",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p6a",
+          "classId": "P6",
+          "prepaid": true,
+          "pass": true,
+          "detail": "refused as required"
+        },
+        {
+          "id": "p6b",
+          "classId": "P6",
+          "prepaid": true,
+          "pass": true,
+          "detail": "refused and mutated nothing"
+        },
+        {
+          "id": "p7a",
+          "classId": "P7",
+          "prepaid": true,
+          "pass": true,
+          "detail": "ok"
+        },
+        {
+          "id": "p7b",
+          "classId": "P7",
+          "prepaid": true,
+          "pass": true,
+          "detail": "refused as required"
+        },
+        {
+          "id": "x1a",
+          "classId": "X1",
+          "prepaid": false,
+          "pass": true,
+          "detail": "ok"
+        }
+      ],
+      "totalCases": 14,
+      "prepaidCases": 13,
+      "passed": 14,
+      "failed": [],
+      "failedPrepaid": [],
+      "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+      "onFailure": "STOP — the capital does not determine the standing, so a reader would have to consult the history",
+      "method": "compile the capital method into an explicit procedure, run it against the frozen reference cases, and compare against the oracle's own expected values",
+      "reliedOnFieldPresence": false,
+      "reliedOnTokenOverlap": false,
+      "oracleCases": 14
+    },
+    "procedureFalsifiers": {
+      "schemaVersion": 1,
+      "kind": "capital procedure falsifiers",
+      "variants": [
+        {
+          "id": "NAIVE_LATEST_WINS_AND_NAMED_REVOKE",
+          "expects": "the reader without the capital",
+          "failedCases": [
+            "p1a:expected deny, got ALLOW",
+            "p1b:expected deny, got ALLOW",
+            "p4a:expected deny, got ALLOW",
+            "p5a:after revoke expected deny, got ALLOW"
+          ],
+          "DETECTED": true
+        },
+        {
+          "id": "ANY_DENY_IS_FINAL",
+          "expects": "the cutover comparison dropped",
+          "failedCases": [
+            "p2a:expected allow, got DENY",
+            "p2b:expected allow, got DENY",
+            "p4b:expected allow, got DENY"
+          ],
+          "DETECTED": true
+        },
+        {
+          "id": "REVOKE_WITHOUT_HOLDING",
+          "expects": "the I2 precondition dropped",
+          "failedCases": [
+            "p6a:expected a refusal, but the revocation was accepted",
+            "p6b:expected a refusal, but the revocation was accepted",
+            "p7b:expected a refusal, but the revocation was accepted"
+          ],
+          "DETECTED": true
+        }
+      ],
+      "ALL_VARIANTS_DETECTED": true,
+      "undetected": [],
+      "law": "a procedure whose mutations all pass would not be measuring the capital"
+    },
+    "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+    "PROMPT_NEUTRALITY": "LIMITED",
+    "promptNeutralityResolved": false,
+    "readmeEdited": false,
+    "corpusEdited": false,
+    "routeRuling": {
+      "id": "OMNIGATE_DEEPSEEK_ROUTE_IS_AN_EXECUTION_STACK_DEVIATION",
+      "classifiedAs": "separately recorded execution-stack deviation",
+      "provesCheckpointEquivalence": false,
+      "note": "the configured family does not prove checkpoint identity with the old direct provider"
+    }
+  },
+  "evidenceCorrections": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "evidence corrections (append-only)",
+    "testCount": {
+      "schemaVersion": 1,
+      "kind": "test count correction (append-only)",
+      "committedEvidence": {
+        "value": "3925/3925",
+        "artifact": "research-evidence/r3-l0c-f/regression.json",
+        "stage": "R3-L0C-F"
+      },
+      "laterRun": {
+        "value": "3926/3926",
+        "when": "a subsequent full local run",
+        "stage": "R3-L0C-F at commit f4e7c44"
+      },
+      "difference": "ONE test",
+      "explanation": "the count moved between the run that produced the committed evidence and the later run; the two runs did not agree, and neither number is treated as a fixed property of the stage",
+      "authoritativeFor": {
+        "committedEvidence": "3925/3925 — what the artifact says",
+        "currentSuite": "3926/3926 — what a re-run reports"
+      },
+      "resolvedByAssertion": false,
+      "resolvedByRerun": true,
+      "citing": [
+        "research-evidence/r3-l0c-f/regression.json (the committed artifact, 3925/3925)",
+        "the R3-L0C-I regression run, recorded in research-evidence/r3-l0c-i/regression.json"
+      ],
+      "law": "state both counts and name which one each artifact carries; do not silently prefer either"
+    },
+    "liveGates": {
+      "schemaVersion": 1,
+      "kind": "live-gate attempt record (append-only)",
+      "attempted": [
+        {
+          "script": "scripts/gates/d2-live-gate.mjs",
+          "command": "node scripts/gates/d2-live-gate.mjs",
+          "outcome": "FAIL",
+          "observed": "the worker finished without reporting an outcome, so the attempt never settled: settlement returned NOT_READY with reason HOST_FAILURE, and the downstream checks (attempt COMPLETED, result exported and readable) therefore failed",
+          "transcriptEvidence": "PALIMPSEST_WORK_RESULT {\"kind\":\"HOST_FAILURE\",\"detail\":\"the worker finished without reporting an outcome\"}",
+          "sessionLogRecords": 1,
+          "sessionLogKinds": [
+            "session"
+          ],
+          "toolActions": 0,
+          "modelRequestsEmitted": 0
+        },
+        {
+          "script": "scripts/gates/d4-live-gate.mjs",
+          "command": "node scripts/gates/d4-live-gate.mjs",
+          "outcome": "FAIL",
+          "observed": "fatal: Not a valid object name null^{commit}; the rig then failed on `git diff --name-only <base>..null`, so the gate could not resolve a result commit to compare against",
+          "transcriptEvidence": "git stderr: fatal: ambiguous argument '<base>..null': unknown revision or path not in the working tree",
+          "sessionLogRecords": 1,
+          "sessionLogKinds": [
+            "session"
+          ],
+          "toolActions": 0,
+          "modelRequestsEmitted": 0
+        },
+        {
+          "script": "scripts/gates/d5-live-gate.mjs",
+          "command": "node scripts/gates/d5-live-gate.mjs",
+          "outcome": "FAIL",
+          "observed": "the delegated attempts returned NOT_READY with reason HOST_FAILURE, so neither task settled, and the gate then failed with PlanReconciliationError: plan revision blocked (quiescence_required)",
+          "transcriptEvidence": "PlanReconciliationError: plan revision blocked (quiescence_required): the project is not quiescent: every ACTIVE/VERIFYING task and every open (CREATED/LEASED/RUNNING) attempt must settle",
+          "sessionLogRecords": 1,
+          "sessionLogKinds": [
+            "session"
+          ],
+          "toolActions": 0,
+          "modelRequestsEmitted": 0
+        }
+      ],
+      "anyModelRequestEmitted": false,
+      "modelRequestEvidence": "every worker session log under the session log under each gate home contains exactly ONE record, the session header; there is no conversation record, no tool call and no completion request, and the worker transcripts report zero tool actions",
+      "modelRequestEvidenceIsMeasured": true,
+      "modelRequestEvidenceInferred": false,
+      "preExisting": true,
+      "identicalAtBaseline": true,
+      "baselineComparison": "verified in a scratch worktree at 19f0c69; the failures are byte-identical",
+      "introducedByThisStage": false,
+      "whyNotRepaired": "the gates require a model route, and this stage is forbidden model calls; src/**, host/** and scripts/gates/** are byte-identical to the baseline, so nothing here caused or could fix them",
+      "configuredRoute": {
+        "provider": "deepseek-official",
+        "model": "deepseek-flash",
+        "credentialSupplied": "none observed in the gate home; no request was attempted"
+      }
+    },
+    "historicalCommitsRewritten": false,
+    "correctionMethod": "appended to this stage's own evidence namespace",
+    "law": "append a correction rather than rewriting the commit it corrects"
+  },
+  "regression": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "regression record",
+    "suites": [
+      {
+        "id": "TYPESCRIPT_BUILD",
+        "command": "tsc -b",
+        "result": "PASS",
+        "detail": "clean build under strict/exactOptionalPropertyTypes/noUncheckedIndexedAccess"
+      },
+      {
+        "id": "UNIT_SUITE",
+        "command": "vitest run",
+        "result": "PASS",
+        "detail": "3959/3959 across 286 files"
+      },
+      {
+        "id": "E2E",
+        "command": "playwright test",
+        "result": "PASS",
+        "detail": "38/38"
+      },
+      {
+        "id": "ARCHITECTURE",
+        "command": "module-architecture.mjs --check",
+        "result": "PASS",
+        "detail": "0 violations, 9 accepted baseline exceptions"
+      },
+      {
+        "id": "PUBLIC_API",
+        "command": "module-architecture.mjs --check-public-api",
+        "result": "PASS",
+        "detail": "0 missing, 0 changed kind, 0 added"
+      },
+      {
+        "id": "R1_H_CONFINEMENT",
+        "command": "r1h/conformance.mjs",
+        "result": "PASS",
+        "detail": "the read boundary holds on this host"
+      },
+      {
+        "id": "R1_HR_HOST_HARDENING",
+        "command": "r1hr/conformance.mjs",
+        "result": "PASS",
+        "detail": "disclosed limits HR-17, HR-39b, HR-33"
+      },
+      {
+        "id": "R1_HC_RESIDUAL_CLOSURE",
+        "command": "r1hc/conformance.mjs",
+        "result": "PASS",
+        "detail": "disclosed limit HC-27 (the known parallel-active-worker limit)"
+      },
+      {
+        "id": "R1_L_CONSUMER_BOUNDARY",
+        "command": "gates/r1l-live-gate.mjs",
+        "result": "PASS",
+        "detail": "§R1-L-LIVE PASS"
+      },
+      {
+        "id": "R3_S0_GRAPH",
+        "command": "r3s0/graph-audit.mjs",
+        "result": "PASS",
+        "detail": "10/10 invariants"
+      },
+      {
+        "id": "R3_S0_EVENTS",
+        "command": "r3s0/event-audit.mjs",
+        "result": "PASS",
+        "detail": "5/5 audit checks"
+      },
+      {
+        "id": "ANTI_VACUITY",
+        "command": "r2lr/anti-vacuity.mjs",
+        "result": "PASS",
+        "detail": "0 unconditional forms"
+      },
+      {
+        "id": "R3_CONTAINMENT_AND_CONTRACTS",
+        "command": "vitest r3l0b_canary + r3l0b_containment + r3l0c_containment + r3l0c_contract + r3l0c_harness + r3l0c_selection + r3l0cr_boundary + r3l0cr_contract",
+        "result": "PASS",
+        "detail": "included in the 325-test R3 and D-series run"
+      },
+      {
+        "id": "D2_D4_D5_TESTS",
+        "command": "vitest lean_d2_live_composition + lean_d4c_read_evidence + lean_d5_0_effect_authority + lean_d5d_result_continuation_service",
+        "result": "PASS",
+        "detail": "included in the 325-test run"
+      },
+      {
+        "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+        "command": "r3l0c/immutability.mjs",
+        "result": "PASS",
+        "detail": "374 protected files, baseline e51df1f4; no protected mutation"
+      },
+      {
+        "id": "NEW_GATE_TESTS",
+        "command": "vitest r3l0ci_controls + r3l0ci_gates",
+        "result": "PASS",
+        "detail": "32 tests: 15 Gate 1/2 controls and 17 Gate 3/4/5 integration tests"
+      }
+    ],
+    "suiteCount": 16,
+    "failing": [],
+    "limits": [
+      {
+        "id": "D2_D4_D5_LIVE_GATES_FAIL",
+        "status": "PRE_EXISTING",
+        "scripts": [
+          "scripts/gates/d2-live-gate.mjs",
+          "scripts/gates/d4-live-gate.mjs",
+          "scripts/gates/d5-live-gate.mjs"
+        ],
+        "observed": {
+          "D2": "FAIL — the worker finished without reporting an outcome, so the attempt never settled (settlement NOT_READY / HOST_FAILURE)",
+          "D4": "FAIL — fatal: Not a valid object name null^{commit}; the rig then failed on git diff against a null result commit",
+          "D5": "FAIL — delegated attempts returned NOT_READY / HOST_FAILURE, then PlanReconciliationError: plan revision blocked (quiescence_required)"
+        },
+        "anyModelRequestEmitted": false,
+        "modelRequestEvidence": "each gate worker session log contains exactly ONE record (the session header), with no conversation, no tool call and no completion request; the worker transcripts report zero tool actions",
+        "introducedByThisStage": false,
+        "whyNotRepaired": "the gates require a model route and this stage forbids model calls; src/**, host/** and scripts/gates/** are byte-identical to the baseline",
+        "whatWasRunInstead": "the D-series TESTS (part of the 325-test R3 and D-series run), which is what the prior stage recorded as its D2/D4/D5 regression"
+      },
+      {
+        "id": "LIVE_MODEL_MATRIX_NOT_RUN",
+        "status": "BY_DESIGN",
+        "observed": "the 16-session paid matrix was not run",
+        "anyModelRequestEmitted": false,
+        "introducedByThisStage": false,
+        "whyNotRepaired": "the ruling ends with a mandatory stop and requires an explicit authorization ruling before the paid run"
+      }
+    ],
+    "REGRESSION": "PASS",
+    "limitsIntroducedByThisStage": [],
+    "anyModelRequestEmitted": false,
+    "modelCallsMade": 0,
+    "law": "report genuine failures and limits rather than smoothing them"
+  },
+  "executionPlan": {
+    "planId": "r3-l0c-i-primary-plan",
+    "executionClosureDigest": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+    "closureCompleteness": "COMPLETE",
+    "closureCheck": {
+      "EXECUTION_CLOSURE": "MATCH",
+      "frozen": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+      "current": "e3bcdadc66c34a3bceab8a262de70b8e38af8206b27a184251ec7ca531147277",
+      "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+    },
+    "frozenAt": "2026-10-09T06:17:11.396Z"
+  },
+  "verdicts": {
+    "PRIMARY_MATRIX_INTEGRATED": "YES",
+    "RUN_ID_REPLAY_GUARD": "PASS",
+    "POST_EXPOSURE_RETRIES": "ZERO",
+    "TRIAL_ADMISSION": "PASS",
+    "BEHAVIORAL_OUTCOME_POLICY": "VALID",
+    "FULL_EXECUTION_CLOSURE": "PASS",
+    "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+    "PROMPT_NEUTRALITY": "LIMITED",
+    "ZERO_PRIMARY_MODEL_SESSIONS": "VERIFIED",
+    "FAIL_STOP_POLICY_AUTHORIZATION": "PENDING",
+    "PAID_REPLICATION": "READY"
+  },
+  "stageStop": {
+    "ranModelMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0,
+    "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+  },
+  "modelCallsMade": 0
+}
