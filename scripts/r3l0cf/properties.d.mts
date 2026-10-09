@@ -7,4 +7,5 @@ export declare function evaluateNoFakeAttemptTerminal(observation: any): any;
 export declare function evaluateNoCausalVerdict(observation: any): any;
 export declare function evaluateFailStopProperties(observation: any): any;
 export declare function legacyViolations(observation: any): any;
+export declare function runPropertyNegativeControls(): any;
 export declare const NL: string;
