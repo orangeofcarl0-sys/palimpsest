@@ -53,9 +53,23 @@ export function admissionFault(outcome) {
     return Object.freeze({ cause: 'MISSING_ATTEMPT_IDENTITY', detail: 'the outcome carries no attempt identity, so the session cannot be bound to a durable attempt' });
   }
 
-  /** 5. An unexpected terminal state when a result was declared. */
-  if (o.reportPresent === true && (o.attemptState === null || o.attemptState === undefined || !EXPECTED_TERMINAL_STATES.includes(String(o.attemptState)))) {
-    return Object.freeze({ cause: 'UNEXPECTED_TERMINAL_STATE', detail: `the attempt reached terminal state "${String(o.attemptState)}" while a result was declared; the expected states are [${EXPECTED_TERMINAL_STATES.join(', ')}]` });
+  /**
+   * 5. An unexpected terminal state when a result was declared.
+   *
+   * THE SCOPE IS DELIBERATE. A state that means the work simply did not settle (`RUNNING`, `LEASED`, `CREATED`) is
+   * the CANONICAL WORK BLOCKAGE case, which the frozen schema classifies as `CENSORED` and preserves — it is a
+   * legitimate project outcome, not a machinery fault, and refusing it here would turn a censored trajectory into
+   * an infrastructure failure. So this control fires only for a state that is NEITHER the expected terminal set
+   * NOR one of the known non-terminal attempt states.
+   */
+  const NON_TERMINAL_ATTEMPT_STATES = ['RUNNING', 'LEASED', 'CREATED'];
+  if (o.reportPresent === true && o.attemptState !== null && o.attemptState !== undefined
+    && !EXPECTED_TERMINAL_STATES.includes(String(o.attemptState))
+    && !NON_TERMINAL_ATTEMPT_STATES.includes(String(o.attemptState))) {
+    return Object.freeze({ cause: 'UNEXPECTED_TERMINAL_STATE', detail: `the attempt reached terminal state "${String(o.attemptState)}" while a result was declared; the expected states are [${EXPECTED_TERMINAL_STATES.join(', ')}] and a non-terminal state is classified as a Work blockage rather than as a machinery fault` });
+  }
+  if (o.reportPresent === true && (o.attemptState === null || o.attemptState === undefined)) {
+    return Object.freeze({ cause: 'UNEXPECTED_TERMINAL_STATE', detail: 'the outcome declared a result but carries no attempt state, so its terminal state cannot be established' });
   }
 
   return null;
@@ -91,23 +105,28 @@ export async function admitThroughGate(outcome, options = {}) {
 /**
  * §4: THE NEGATIVE CONTROLS AS DATA, WITH THE OUTCOME SHAPE EACH NEEDS.
  *
- * The acceptance suite builds each outcome from this, so the control set and the test agree on the six cases and
- * their required causes.
+ * Every control carries the six admission signals the frozen schema requires, EXCEPT the last, which deliberately
+ * omits one — so the fifth control's refusal is produced by this stage's gate and the sixth's by the frozen
+ * schema's own empty-evidence guard. The acceptance suite builds each outcome from this, so the control set and
+ * the test agree on the six cases and their required causes.
  */
+const SIGNALS = Object.freeze({ jobPhase: 'FINISHED', reportPresent: true, attemptState: 'COMPLETED', consumerVisibleHandleCount: 0, governedPullCount: 0, completionCause: 'RESULT_SUBMITTED' });
+
 export const ADMISSION_CONTROL_OUTCOMES = Object.freeze({
-  WORKER_RESULT_LINE_MALFORMED: Object.freeze({ workerResultPresent: true, workerResultAdmissible: false, workerResultParseFailure: 'the result line does not parse', attemptId: 'attempt-x', attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true }),
-  WORKER_RESULT_VOCABULARY_INVALID: Object.freeze({ workerResultPresent: true, workerResultKind: 'WHATEVER', workerResultAdmissible: false, workerResultParseFailure: null, attemptId: 'attempt-x', attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true }),
-  CHILD_REPORT_ERROR_HOST_FINISHED: Object.freeze({ childOk: false, childError: 'the child reported an error', workerResultPresent: true, workerResultAdmissible: true, attemptId: 'attempt-x', attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true }),
-  MISSING_ATTEMPT_IDENTITY: Object.freeze({ attemptId: null, workerResultPresent: true, workerResultAdmissible: true, attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true }),
-  UNEXPECTED_TERMINAL_STATE: Object.freeze({ attemptId: 'attempt-x', attemptState: 'SOMETHING_UNEXPECTED', workerResultPresent: true, workerResultAdmissible: true, jobPhase: 'FINISHED', reportPresent: true }),
-  DECLARED_OUTCOME_MISSING_EVIDENCE: Object.freeze({ attemptId: 'attempt-x', attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true }),
+  WORKER_RESULT_LINE_MALFORMED: Object.freeze({ ...SIGNALS, workerResultPresent: true, workerResultAdmissible: false, workerResultParseFailure: 'the result line does not parse', attemptId: 'attempt-x' }),
+  WORKER_RESULT_VOCABULARY_INVALID: Object.freeze({ ...SIGNALS, workerResultPresent: true, workerResultKind: 'WHATEVER', workerResultAdmissible: false, workerResultParseFailure: null, attemptId: 'attempt-x' }),
+  CHILD_REPORT_ERROR_HOST_FINISHED: Object.freeze({ ...SIGNALS, childOk: false, childError: 'the child reported an error', workerResultPresent: true, workerResultAdmissible: true, attemptId: 'attempt-x' }),
+  MISSING_ATTEMPT_IDENTITY: Object.freeze({ ...SIGNALS, attemptId: null, workerResultPresent: true, workerResultAdmissible: true }),
+  UNEXPECTED_TERMINAL_STATE: Object.freeze({ ...SIGNALS, attemptId: 'attempt-x', attemptState: 'SOMETHING_UNEXPECTED', workerResultPresent: true, workerResultAdmissible: true }),
+  /** §4: the declared outcome omits a MANDATORY admission signal, which the frozen schema refuses. */
+  DECLARED_OUTCOME_MISSING_EVIDENCE: Object.freeze({ jobPhase: 'FINISHED', reportPresent: true, attemptState: 'COMPLETED', consumerVisibleHandleCount: 0, governedPullCount: 0, attemptId: 'attempt-x' }),
 });
 
 /** §4: the positive control, which MUST remain admissible. */
 export const ADMISSION_POSITIVE_OUTCOME = Object.freeze({
+  ...SIGNALS,
   workerResultPresent: true, workerResultKind: 'READY_FOR_SETTLEMENT', workerResultAdmissible: true, workerResultParseFailure: null,
-  childOk: true, attemptId: 'attempt-ok', attemptState: 'COMPLETED', jobPhase: 'FINISHED', reportPresent: true,
-  consumerVisibleHandleCount: 0, governedPullCount: 0, completionCause: 'RESULT_SUBMITTED',
+  childOk: true, attemptId: 'attempt-ok',
 });
 
 export { NL };

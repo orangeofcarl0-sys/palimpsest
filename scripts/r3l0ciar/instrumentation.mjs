@@ -68,19 +68,31 @@ export function attributeArtifact(input) {
   }
 
   /**
-   * §6: A FILENAME MATCH ALONE IS NOT ATTRIBUTION. At least one identity beyond the session id must corroborate:
-   * an attempt id or a host job id carried by the path. Without one, the attribution is refused.
+   * §6: TWO WAYS AN ATTRIBUTION CAN BE CORROBORATED, and at least one is required.
+   *
+   *   (a) the path names the session AND carries a corroborating identity (an attempt or host-job id); or
+   *   (b) the CALLER asserts an expected attempt id or host job id and the path matches it.
+   *
+   * (b) is what the pipeline uses, and it is stronger than a filename substring: the attempt id comes from the
+   * session's own record, so a mismatch is a conflict rather than a guess. The product's artifact path carries
+   * `attempt-<id>` and not the session id, so requiring the session id in the path would refuse every real
+   * artifact — which is why the caller-asserted identity is the primary corroboration.
    */
-  const corroborating = attemptIdInPath !== null || hostJobIdInPath !== null;
+  const assertedIdentityCorroborated = (expected.attemptId !== undefined && expected.attemptId !== null && attemptIdInPath !== null && String(expected.attemptId) === String(attemptIdInPath))
+    || (expected.hostJobId !== undefined && expected.hostJobId !== null && hostJobIdInPath !== null && String(expected.hostJobId) === String(hostJobIdInPath));
+  const pathCorroborated = sessionIdInPath === true && (attemptIdInPath !== null || hostJobIdInPath !== null);
+  const corroborating = assertedIdentityCorroborated || pathCorroborated;
   const corroboratedChecks = checks.filter((entry) => entry.matches === true);
-  if (sessionIdInPath !== true || corroborating !== true) {
+  if (corroborating !== true) {
+    /** §6: no identity anywhere is a different fact from a path that names no session. */
+    const noIdentityAnywhere = attemptIdInPath === null && hostJobIdInPath === null && assertedIdentityCorroborated !== true;
     return Object.freeze({
       attributed: false,
-      reason: sessionIdInPath !== true ? 'SESSION_NOT_IN_PATH' : 'UNCORROBORATED_IDENTITY',
-      detail: sessionIdInPath !== true
-        ? `the artifact's path names no scheduled session, so it cannot be attributed to ${String(session?.sessionId)}`
-        : 'the artifact\'s path names the session but carries no attempt or host-job identity, so the attribution is a filename match alone and is refused',
-      artifactPath, attemptIdInPath, hostJobIdInPath, sessionIdInPath,
+      reason: noIdentityAnywhere ? 'UNCORROBORATED_IDENTITY' : 'SESSION_NOT_IN_PATH',
+      detail: noIdentityAnywhere
+        ? 'neither the path nor the caller supplies an identity that corroborates this artifact against the session, so the attribution is refused rather than resolved by convenience'
+        : `the artifact's path names no scheduled session and the caller asserted no matching identity, so it cannot be attributed to ${String(session?.sessionId)}`,
+      artifactPath, attemptIdInPath, hostJobIdInPath, sessionIdInPath, assertedIdentityCorroborated,
     });
   }
 
@@ -105,6 +117,8 @@ export function attributeArtifact(input) {
     sessionIdInPath,
     trajectoryIdInPath,
     generationInPath,
+    assertedIdentityCorroborated,
+    pathCorroborated,
     corroboratingIdentities: Object.freeze([attemptIdInPath !== null ? 'attemptId' : null, hostJobIdInPath !== null ? 'hostJobId' : null].filter((entry) => entry !== null)),
     checks: Object.freeze(checks),
     corroboratedChecks: Object.freeze(corroboratedChecks),

@@ -58,6 +58,18 @@ export interface GenerationOutcome {
   readonly observationDigest: string | null;
 }
 
+export interface ScheduledSession {
+  readonly sessionId: string;
+  readonly block: number;
+  readonly arm: string;
+  readonly generation: string;
+  readonly trajectoryId: string;
+  readonly orderInBlock: number;
+  readonly generationIndex: number;
+  readonly scheduleIndex: number;
+  readonly requiresResolved: string | null;
+}
+
 export const CHILD_PROGRAM: string;
 export const TEE_PATH: string;
 export const SCRIPTED_WORKER: string;
@@ -70,6 +82,6 @@ export function buildChildSpec(input: Readonly<Record<string, unknown>>): Readon
 export function runPrimaryGeneration(input: Readonly<Record<string, unknown>>): Promise<GenerationOutcome>;
 export function parseWorkerResult(transcriptText: string): WorkerResult;
 export function faultPositionFault(sessionIndex: number, scheduleLength: number): Readonly<Record<string, unknown>>;
-export function frozenPrimarySchedule(): Promise<readonly Readonly<Record<string, unknown>>[]>;
+export function frozenPrimarySchedule(): Promise<readonly ScheduledSession[]>;
 export function shippedPullParser(): Promise<Readonly<Record<string, unknown>>>;
 export function telemetryLineShape(transcriptText: string): Readonly<Record<string, unknown>>;

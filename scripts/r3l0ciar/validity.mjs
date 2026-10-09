@@ -140,8 +140,11 @@ export async function evaluatePreTrialValidity(input) {
     forbiddenShortcutsPresent: Object.freeze([
       boundDigest === null ? 'closureDigest = null' : null,
       plan === null || plan === undefined ? 'an omitted treatment expectation' : null,
-      routeObserved === 'UNKNOWN' ? 'a caller-invented route identity' : null,
-      conditions.find((condition) => condition.id === 'MODEL_ROUTE_CONFIGURATION_MATCH')?.verdict === 'NOT_EVALUATED' ? 'a route identity that was never compared' : null,
+      /**
+       * §3: the G3 shortcut is a route DECLARED but never compared — not a route that could not be read. An
+       * unreadable identity is `UNKNOWN`, which is its own fact and is reported as such by `modelRouteIdentity`.
+       */
+      plannedRoute !== null && plannedRoute !== undefined && compared.length === 0 ? 'a caller-invented route identity, declared but never compared against an effective route' : null,
     ].filter((entry) => entry !== null)),
     onFailure: 'STOP — no session may be launched when a pre-trial condition is unsatisfied',
   });

@@ -32,7 +32,14 @@ export const STAGE_CODE_PATH: string;
 export const STAGE_EVIDENCE_PATH: string;
 export const REPO_ROOT: string;
 export const PRIOR_EVIDENCE_PATHS: readonly string[];
-export const SUPERSEDED_STAGE: Readonly<Record<string, unknown>>;
+export const SUPERSEDED_STAGE: {
+  readonly stage: string;
+  readonly commit: string;
+  readonly planId: string;
+  readonly planPath: string;
+  readonly codePath: string;
+  readonly disposition: string;
+};
 export const CORRECTION_DEFECTS: readonly CorrectionDefect[];
 export const CONDITION_SUCCESS: Readonly<Record<string, { readonly pass: readonly string[]; readonly fail: readonly string[] }>>;
 export const CONDITION_VOCABULARY: readonly string[];

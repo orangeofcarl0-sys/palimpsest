@@ -2,6 +2,13 @@
  * R3-L0C-I-A-R §2 — TYPES FOR THE AUTHORITATIVE PIPELINE.
  */
 
+export interface PipelineStep {
+  readonly step: number;
+  readonly id: string;
+  readonly mutated: boolean;
+  readonly observation: Readonly<Record<string, unknown>>;
+}
+
 export interface PipelineSteps {
   readonly schemaVersion: number;
   readonly stage: string;
@@ -25,7 +32,7 @@ export interface PipelineSteps {
   readonly maxLaunchesPerSession?: number;
   readonly terminalState?: string;
   readonly completedSessions?: readonly string[];
-  readonly steps: readonly Readonly<Record<string, unknown>>[];
+  readonly steps: readonly PipelineStep[];
   readonly budgets?: Readonly<Record<string, unknown>>;
   readonly sessionsAfterFault?: readonly string[];
 }

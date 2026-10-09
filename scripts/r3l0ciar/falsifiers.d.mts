@@ -38,4 +38,11 @@ export function runCorrectionFalsifiers(input: {
   readonly containment: unknown;
   readonly trajectoryIds: readonly string[];
 }): Promise<CorrectionFalsifiers>;
+export function digestRunRootState(runRoot: string, trajectoryIds?: readonly string[]): {
+  readonly digest: string;
+  readonly files: readonly string[];
+  readonly digests: Readonly<Record<string, string>>;
+  readonly fileCount: number;
+  readonly trajectoryIds: readonly string[];
+};
 export const NL: string;

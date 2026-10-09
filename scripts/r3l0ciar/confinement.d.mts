@@ -1,5 +1,5 @@
 /**
- * R3-L0C-I-A §3 — TYPES FOR PER-TRAJECTORY CONFINEMENT.
+ * R3-L0C-I-A-R §2/§3 — TYPES FOR PER-TRAJECTORY CONFINEMENT.
  */
 
 export interface ProtectedRootManifest {
@@ -63,6 +63,7 @@ export interface ConfinementSuite {
   readonly probeDiscriminates: boolean;
   readonly sandboxAvailable: boolean;
   readonly confidentialProfile: string;
+  readonly EXPERIMENT_ENVIRONMENT_VALID: string;
   readonly ACTUAL_CONTAINMENT: string;
   readonly failing: readonly string[];
   readonly onUnsatisfiable: string;
