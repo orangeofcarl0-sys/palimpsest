@@ -28,7 +28,7 @@
  *
  * PLAIN JAVASCRIPT (`.mjs`).
  */
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -90,9 +90,44 @@ export function toolchain() {
       ordarium: installedVersion('@ordarium/core'),
       vitest: installedVersion('vitest'),
       typescript: installedVersion('typescript'),
-      dshSandboxWindowsAcl: installedVersion('@deepseek-ai/dsh-sandbox-windows-acl'),
+      /**
+       * The DSH sandbox runner is NOT a project dependency — it is installed in the GLOBAL DSH root, which is
+       * where the canaries resolve it from. Probing the project's own `node_modules` for it reported
+       * `NOT_INSTALLED` on a host where it is installed and working, which is a false negative in the closure.
+       * It is resolved through the same global root the canary suite uses, and the location is recorded.
+       */
+      dshSandboxWindowsAcl: globalDshPackageVersion('@deepseek-ai/dsh-sandbox-windows-acl'),
     }),
+    /** §9: where the globally-resolved packages were found, so the resolution is auditable. */
+    globalDshRoot: globalDshRoot(),
   });
+}
+
+/** The version of a package in the GLOBAL DSH root, or an explicit reason it could not be resolved. */
+function globalDshPackageVersion(name) {
+  const root = globalDshRoot();
+  if (root === null) return 'DSH_ROOT_UNRESOLVED';
+  const path = join(root, 'node_modules', name, 'package.json');
+  if (!existsSync(path)) return 'NOT_IN_GLOBAL_DSH_ROOT';
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')).version ?? 'UNKNOWN';
+  } catch {
+    return 'UNREADABLE';
+  }
+}
+
+/** The global DSH root, resolved the way the canary suite resolves it. */
+function globalDshRoot() {
+  const explicit = process.env.PALIMPSEST_DSH_ROOT?.trim();
+  if (explicit !== undefined && explicit !== '') return explicit;
+  const bin = process.env.PALIMPSEST_DSH_BIN?.trim();
+  if (bin !== undefined && bin !== '') return join(bin, '..', '..');
+  try {
+    const globalRoot = spawnSync('npm', ['root', '-g'], { encoding: 'utf8', shell: true }).stdout.trim();
+    return globalRoot === '' ? null : join(globalRoot, '@deepseek-ai', 'dsh');
+  } catch {
+    return null;
+  }
 }
 
 /** The version of an installed package, or a marker. */

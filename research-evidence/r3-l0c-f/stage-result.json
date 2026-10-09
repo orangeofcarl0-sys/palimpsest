@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "stage": "R3-L0C-F",
   "kind": "fail-stop resume qualification",
-  "startedAt": "2026-10-09T03:58:03.108Z",
-  "endedAt": "2026-10-09T03:58:44.172Z",
+  "startedAt": "2026-10-09T04:24:19.116Z",
+  "endedAt": "2026-10-09T04:25:02.870Z",
   "baseline": "19f0c69833f33c51ada8642379980c490cb75d04",
   "protocolDeviation": {
     "schemaVersion": 1,
@@ -970,7 +970,7 @@
         "inspection": {
           "schemaVersion": 1,
           "kind": "preserved run inspection",
-          "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C9_RESTART_AGAINST_UNFINISHED_RUN",
+          "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\cases\\C9_RESTART_AGAINST_UNFINISHED_RUN",
           "verdict": "UNCERTAIN",
           "preserveMarker": true,
           "journalIntact": true,
@@ -1150,12 +1150,12 @@
     "schemaVersion": 1,
     "stage": "R3-L0C-F",
     "kind": "preservation proof",
-    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
     "checks": [
       {
         "id": "PRESERVE_MARKER_PRESENT",
         "holds": true,
-        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\PRESERVE"
+        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\PRESERVE"
       },
       {
         "id": "ABORT_MANIFEST_PRESENT",
@@ -1165,7 +1165,7 @@
       {
         "id": "JOURNAL_PRESENT",
         "holds": true,
-        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\generation-journal.jsonl"
+        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\generation-journal.jsonl"
       },
       {
         "id": "EVIDENCE_INDEX_PRESENT",
@@ -1192,7 +1192,7 @@
     "inspection": {
       "schemaVersion": 1,
       "kind": "preserved run inspection",
-      "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+      "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
       "verdict": "ABORTED",
       "preserveMarker": true,
       "journalIntact": true,
@@ -1236,10 +1236,11 @@
       "arch": "x64",
       "packages": {
         "ordarium": "1.3.1",
-        "vitest": "NOT_INSTALLED",
-        "typescript": "NOT_INSTALLED",
-        "dshSandboxWindowsAcl": "NOT_INSTALLED"
-      }
+        "vitest": "4.1.10",
+        "typescript": "7.0.2",
+        "dshSandboxWindowsAcl": "0.2.0-rc.2"
+      },
+      "globalDshRoot": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh"
     },
     "compiledVerification": {
       "kind": "compiled-against-source verification",
@@ -1328,7 +1329,7 @@
         "generationId": "G1",
         "projectId": "cutover-entitlements",
         "phase": "FINISHED",
-        "attemptId": "attempt-047c328552c110cd873ab1ea42b9570b",
+        "attemptId": "attempt-a8da7e56979ef9e14e1921157f86435d",
         "hostError": null,
         "consumerVisibleHandles": [],
         "consumerVisibleKinds": [],
@@ -1366,7 +1367,7 @@
         "generationId": "G2",
         "projectId": "cutover-entitlements",
         "phase": "FINISHED",
-        "attemptId": "attempt-fb68d95ad7914258c9d457cce8120166",
+        "attemptId": "attempt-e5d33ad93bd2ee43b446a84a59577cb1",
         "hostError": null,
         "consumerVisibleHandles": [],
         "consumerVisibleKinds": [],
@@ -1404,7 +1405,7 @@
         "generationId": "G1",
         "projectId": "cutover-entitlements",
         "phase": "FINISHED",
-        "attemptId": "attempt-b10a2c1fc1af13839a9908c41b9041f3",
+        "attemptId": "attempt-f2397ce5c4e3dacb685def8b9390a056",
         "hostError": null,
         "consumerVisibleHandles": [
           "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
@@ -1467,7 +1468,7 @@
         "generationId": "G2",
         "projectId": "cutover-entitlements",
         "phase": "FINISHED",
-        "attemptId": "attempt-34317148c2758b9279741a6db6648a6f",
+        "attemptId": "attempt-a5fe47a41b9cf3aec3e0d37cb2862f26",
         "hostError": null,
         "consumerVisibleHandles": [
           "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
@@ -1573,7 +1574,7 @@
     "schemaVersion": 1,
     "stage": "R3-L0C-F",
     "kind": "topology-derived matrix containment gate",
-    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment",
     "unitIds": [
       "b0-C",
       "b0-H",
@@ -1585,7 +1586,7 @@
       "b3-H"
     ],
     "unitCount": 8,
-    "topologyDigest": "7d53e4fb8aba64870f5238a8131ddc0362a0e361e22f36ea27bbc3c7e5e90cd8",
+    "topologyDigest": "f53b99a70e194b18cd69ea4d915987f20534d6a0f5d79f64a3c61ae921512da0",
     "derivedFromSchedule": true,
     "manuallyEnumerated": false,
     "protectedRootsExist": true,
@@ -1593,7 +1594,7 @@
     "perUnit": [
       {
         "unitId": "b0-C",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b0-C\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b0-C\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1604,7 +1605,7 @@
       },
       {
         "unitId": "b0-H",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b0-H\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b0-H\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1615,7 +1616,7 @@
       },
       {
         "unitId": "b1-C",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b1-C\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b1-C\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1626,7 +1627,7 @@
       },
       {
         "unitId": "b1-H",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b1-H\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b1-H\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1637,7 +1638,7 @@
       },
       {
         "unitId": "b2-C",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b2-C\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b2-C\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1648,7 +1649,7 @@
       },
       {
         "unitId": "b2-H",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b2-H\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b2-H\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1659,7 +1660,7 @@
       },
       {
         "unitId": "b3-C",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b3-C\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b3-C\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1670,7 +1671,7 @@
       },
       {
         "unitId": "b3-H",
-        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b3-H\\world",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\units\\b3-H\\world",
         "ownWorldReachable": true,
         "siblingWorldsInaccessible": true,
         "ownStateProtected": true,
@@ -1692,12 +1693,12 @@
       "supported": true,
       "roots": 6,
       "fencedRoots": [
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\oracle",
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\control",
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\reference",
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\units\\b0-H\\world",
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\evidence",
-        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\units"
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\oracle",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\control",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\reference",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\units\\b0-H\\world",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\evidence",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-tYXALs\\containment-root\\containment\\private\\units"
       ],
       "detail": null
     },
