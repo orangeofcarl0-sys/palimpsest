@@ -32,6 +32,7 @@
  *
  * PLAIN JAVASCRIPT (`.mjs`).
  */
+import { createHash, randomUUID } from 'node:crypto';
 import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -175,6 +176,20 @@ export function classifyOutcome(outcome, options = {}) {
  */
 export const CLAIM_FILE = 'run-claim.json';
 
+/**
+ * R3-L0C-I-A §2: THE CLAIM NONCE.
+ *
+ * §2 adds a requirement the flag could not satisfy: "If the outer entry preclaims the root, ensure the inner
+ * Fail-Stop runner verifies the trusted claim rather than merely accepting an unchecked caller flag such as
+ * `enforceRunClaim=false`."
+ *
+ * A FLAG IS NOT PROOF. `enforceRunClaim: false` asserts that somebody else claimed the root; it carries no
+ * evidence of WHO, and any caller could set it. The nonce is the evidence: the claimant writes a value it alone
+ * generated, and the runner compares the value it was handed against the value on disk. A caller that did not
+ * claim cannot produce the nonce, so the check cannot be satisfied by asserting that it was.
+ */
+export const CLAIM_NONCE_FIELD = 'claimNonce';
+
 /** Gate 1: whether a run root may be claimed, and why not when it may not. */
 export function inspectRunClaim(input) {
   const { runRoot, runId } = input;
@@ -250,7 +265,9 @@ export function claimRunRoot(input) {
   const inspection = inspectRunClaim({ runRoot, runId });
   if (inspection.mayProceed !== true) return Object.freeze({ claimed: false, inspection });
   const claimPath = join(runRoot, CLAIM_FILE);
-  const record = { schemaVersion: 1, runId, claimedAt: new Date().toISOString(), pid: process.pid, exclusive: true };
+  /** R3-L0C-I-A §2: the nonce, so the claim can be VERIFIED later rather than merely asserted. */
+  const claimNonce = typeof input.claimNonce === 'string' && input.claimNonce !== '' ? input.claimNonce : randomUUID();
+  const record = { schemaVersion: 1, runId, claimedAt: new Date().toISOString(), pid: process.pid, exclusive: true, [CLAIM_NONCE_FIELD]: claimNonce };
   try {
     const handle = openSync(claimPath, 'wx');
     try {
@@ -258,7 +275,7 @@ export function claimRunRoot(input) {
     } finally {
       closeSync(handle);
     }
-    return Object.freeze({ claimed: true, claim: Object.freeze(record), inspection });
+    return Object.freeze({ claimed: true, claim: Object.freeze(record), claimNonce, inspection });
   } catch (error) {
     /**
      * The exclusive create failed, which means another process claimed the root between the inspection and the
@@ -271,6 +288,50 @@ export function claimRunRoot(input) {
       raceDetail: String(error?.code ?? error?.message ?? error).slice(0, 120),
     });
   }
+}
+
+/**
+ * R3-L0C-I-A §2: VERIFY A TRUSTED CLAIM AGAINST DISK.
+ *
+ * This is what replaces the caller flag. It reads the claim from the run root and requires the run id AND the
+ * nonce to match, so an outer entry that preclaimed can hand its nonce down and the runner can confirm the
+ * claim is real. There is no parameter that disables the check: a caller with no nonce cannot proceed.
+ *
+ * The three outcomes name what is actually wrong, because "the claim failed" is not a diagnosable state:
+ *
+ *   TRUSTED                  the on-disk claim names this run and the nonce matches
+ *   REFUSED_UNCLAIMED        no claim exists at all
+ *   REFUSED_ALREADY_CLAIMED  the on-disk claim names a DIFFERENT run
+ *   REFUSED_UNTRUSTED_CLAIM  the claim names this run but the caller's nonce does not match
+ *   REFUSED_MALFORMED_CLAIM  the claim does not parse or carries no nonce
+ */
+export function verifyTrustedClaim(input) {
+  const { runRoot, runId, claimNonce } = input;
+  const claimPath = join(runRoot, CLAIM_FILE);
+  if (!existsSync(claimPath)) {
+    return Object.freeze({ trusted: false, verdict: 'REFUSED_UNCLAIMED', reason: 'no claim file exists on disk, so the caller does not hold this run root' });
+  }
+  let claim;
+  try {
+    claim = JSON.parse(readFileSync(claimPath, 'utf8'));
+  } catch {
+    return Object.freeze({ trusted: false, verdict: 'REFUSED_MALFORMED_CLAIM', reason: 'the on-disk claim does not parse' });
+  }
+  if (typeof claim?.[CLAIM_NONCE_FIELD] !== 'string' || claim[CLAIM_NONCE_FIELD] === '') {
+    return Object.freeze({ trusted: false, verdict: 'REFUSED_MALFORMED_CLAIM', reason: 'the on-disk claim carries no claim nonce, so it cannot be verified', claim });
+  }
+  if (claim.runId !== runId) {
+    return Object.freeze({ trusted: false, verdict: 'REFUSED_ALREADY_CLAIMED', reason: `the on-disk claim names run "${String(claim.runId)}", not "${runId}"`, claim });
+  }
+  if (typeof claimNonce !== 'string' || claimNonce === '' || claim[CLAIM_NONCE_FIELD] !== claimNonce) {
+    return Object.freeze({
+      trusted: false,
+      verdict: 'REFUSED_UNTRUSTED_CLAIM',
+      reason: 'the caller-supplied claim nonce does not match the nonce on disk, so the caller cannot prove it holds this run root; a caller flag is not proof of a claim',
+      claim,
+    });
+  }
+  return Object.freeze({ trusted: true, verdict: 'TRUSTED', claim, reason: 'the on-disk claim names this run and the nonce matches' });
 }
 
 /**
@@ -296,8 +357,17 @@ export async function runFailStopMatrix(input) {
     /** §8: an injectable stop, so a falsifier can interrupt the run between two sessions deterministically. */
     beforeSession = null,
     closureDigest = null,
-    /** Gate 1: whether to enforce the run-id claim. A caller that owns a fresh root leaves this on. */
+    /**
+     * Gate 1: whether to enforce the run-id claim. A caller that owns a fresh root leaves this on.
+     *
+     * R3-L0C-I-A §2: `enforceRunClaim: false` IS NO LONGER A BYPASS. An outer entry that preclaimed the root must
+     * pass the trusted claim's nonce instead, and the nonce is verified against disk below. The flag is retained
+     * only so a caller that owns the root can claim it itself; setting it to false without a valid nonce is
+     * REFUSED rather than honoured.
+     */
     enforceRunClaim = true,
+    /** R3-L0C-I-A §2: the nonce of a claim the CALLER already holds, verified against disk rather than trusted. */
+    trustedClaimNonce = null,
   } = input;
 
   /**
@@ -310,11 +380,28 @@ export async function runFailStopMatrix(input) {
   if (typeof validityGate !== 'function') {
     throw new Error('REFUSED: runFailStopMatrix requires an explicit validityGate; a gate that defaults to green is not a gate, and R3-L0C-F let an omitted gate produce MATRIX_COMPLETE');
   }
+  /**
+   * R3-L0C-I-A §2: THE CLAIM IS VERIFIED, NOT ASSUMED.
+   *
+   * R3-L0C-F accepted `enforceRunClaim: false` as a statement that somebody else owned the root. That is a flag,
+   * and a flag carries no evidence of who set it — so any caller could bypass the replay guard by asserting a
+   * claim it did not hold. The repair keeps the flag's convenience for a caller that owns a fresh root and
+   * removes its power: a caller that did not claim must present the NONCE the claimant wrote, and the nonce is
+   * checked against disk here.
+   */
+  let claimRecord = null;
   if (enforceRunClaim === true) {
     const claim = claimRunRoot({ runRoot, runId });
     if (claim.claimed !== true) {
       throw new Error(`REFUSED: ${claim.inspection.verdict} — ${claim.inspection.reason}`);
     }
+    claimRecord = claim.claim;
+  } else {
+    const verification = verifyTrustedClaim({ runRoot, runId, claimNonce: trustedClaimNonce });
+    if (verification.trusted !== true) {
+      throw new Error(`REFUSED: ${verification.verdict} — ${verification.reason}`);
+    }
+    claimRecord = verification.claim;
   }
 
   const machine = new FailStopStateMachine();
@@ -330,7 +417,7 @@ export async function runFailStopMatrix(input) {
 
   const journal = (kind, payload) => appendRecord({ journalPath, kind, payload });
 
-  journal('RUN_STARTED', { runId, runRoot, plannedSessions, closureDigest, maxWorkerLaunches: LAUNCH_LAW.MAX_WORKER_LAUNCHES, postExposureRetries: LAUNCH_LAW.POST_EXPOSURE_RETRIES });
+  journal('RUN_STARTED', { runId, runRoot, plannedSessions, closureDigest, maxWorkerLaunches: LAUNCH_LAW.MAX_WORKER_LAUNCHES, postExposureRetries: LAUNCH_LAW.POST_EXPOSURE_RETRIES, claimNonce: claimRecord?.[CLAIM_NONCE_FIELD] ?? null });
   machine.transition('PREFLIGHT_PASSED', { note: 'the runner begins; the preflight itself is a separate stage step' });
 
   /** §7: the preservation marker is placed BEFORE the first primary worker launch. */
@@ -438,7 +525,23 @@ export async function runFailStopMatrix(input) {
         contentDigests: outcome?.contentDigests ?? {},
       });
       /** Gate 2: the behavioural observations ride ON the record, so the analysis reads them rather than inferring them. */
-      const admittedRecord = Object.freeze({ ...record, observations: classified.observations, admission: 'ADMITTED' });
+      const admittedRecord = Object.freeze({
+        ...record,
+        observations: classified.observations,
+        admission: 'ADMITTED',
+        /**
+         * R3-L0C-I-A §4/§6: THE TREATMENT REALIZATION, carried on the record.
+         *
+         * The post-matrix gate must be able to check that every session's treatment actually reached the consumer
+         * boundary, and the realization is a property of the ADAPTER's measurement rather than of the journal's
+         * declared field list. It is therefore carried here, from the outcome, so a reader of the record can see
+         * the verdict without re-deriving it from the raw handles.
+         */
+        treatmentRealization: outcome?.treatmentRealization ?? null,
+        /** R3-L0C-I-A §4: the worker's own uptake count, separate from the host's audit count. */
+        workerUptakeCount: outcome?.pullLayers?.workerPullObserved?.count ?? null,
+        hostResolveAuditCount: outcome?.hostResolveAuditCount ?? null,
+      });
       journal('TRIAL_RECORDED', { sessionId: session.sessionId, record: admittedRecord });
       records.push(admittedRecord);
       completed.push(session.sessionId);
