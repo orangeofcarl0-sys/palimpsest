@@ -57,11 +57,14 @@ export const REPO_ROOT = new URL('../..', import.meta.url).pathname.replace(/^\/
 
 /* ================================================================ §1-§4 the four gates */
 
+/** §1-§4: the four gate ids, so the contract, the controls and the tests agree on the set. */
+export const CONTROL_GATE_IDS = Object.freeze(['L1_LIVE_ARTIFACT_CONTINUITY', 'L2_POSTFLIGHT_FRESHNESS', 'L3_PRIMARY_INPUT_BINDING', 'L4_RUNTIME_ATTESTATION']);
+/** §1-§4: the four gates, each with the defect it corrects. */
 /**
  * §1-§4: THE FOUR GATES, EACH WITH THE DEFECT IT CORRECTS.
  *
  * Each is recorded with the FILE and LINE where the R3-L0C-I-A-R behaviour lives, so a reader can verify the
- * defect rather than take the falsifier's word for it. The `property` field is what the repair must make true.
+ * defect rather than take the falsifier word for it. The `property` field is what the repair must make true.
  */
 export const CORRECTION_GATES = Object.freeze([
   Object.freeze({

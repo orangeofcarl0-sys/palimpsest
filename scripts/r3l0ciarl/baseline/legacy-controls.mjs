@@ -37,9 +37,15 @@ export function writeRealFormatArtifact(input) {
   const { directory, attemptId, corpusBytes = 800, capitalBytes = 6_000 } = input;
   mkdirSync(join(directory, `attempt-${attemptId}`), { recursive: true });
   const path = join(directory, `attempt-${attemptId}`, 'session.v4.jsonl.zstd');
+  /**
+   * THE CORPUS PATH IS A DECLARED CORPUS DOCUMENT, and that is required rather than tidy: the frozen
+   * instrumentation counts a raw-history read ONLY when the named path is declared, so a fixture using an
+   * arbitrary path would report zero corpus reads and the cost fields would look absent. Measured: an earlier
+   * version of this fixture named `docs/history/incident-cutover.md` and the artifact-count field came back 0.
+   */
   const records = [
     { type: 'turn/start', time: 900, data: {} },
-    { type: 'tool/ptc-dispatch', seq: 1, time: 1_000, data: { name: 'read', arguments: { file_path: 'docs/history/incident-cutover.md' }, content: 'x'.repeat(corpusBytes), isError: false } },
+    { type: 'tool/ptc-dispatch', seq: 1, time: 1_000, data: { name: 'read', arguments: { file_path: 'docs/history/incidents/0007-legacy-deny-overturned.md' }, content: 'x'.repeat(corpusBytes), isError: false } },
     { type: 'tool/ptc-dispatch', seq: 2, time: 1_100, data: { name: 'palimpsest_worker_context_pull', arguments: { handle: '@ctx/procedure/prc-1/0' }, content: 'y'.repeat(capitalBytes), isError: false } },
     { type: 'tool/ptc-dispatch', seq: 3, time: 1_200, data: { name: 'palimpsest_worker_result', arguments: {}, content: 'ok', isError: false } },
   ];
