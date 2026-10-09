@@ -200,18 +200,22 @@ export async function runPrimaryMatrix(input) {
 
     /**
      * §4: THE ADMISSION GATE. The six §4 controls are checked BEFORE the frozen schema, and the outcome is
-     * returned in the shape the Fail-Stop runner's classifier expects. The gate's disposition is carried on the
-     * outcome so the runner's `admitOutcome` sees the same facts.
+     * returned in the shape the Fail-Stop runner's classifier expects.
+     *
+     * THE OVERRIDE IS SCOPED TO THE GATE'S OWN REFUSAL. When the gate FIRES, the refusal is expressed as a
+     * machinery fault the frozen classifier already stops on. When it does NOT fire, the outcome passes through
+     * UNCHANGED, so the frozen schema's own classification — including the CANONICAL WORK BLOCKAGE that preserves
+     * a censored trajectory — is what the runner acts on. Overriding unconditionally would turn every CENSORED
+     * session into a missing-report infrastructure failure.
      */
     const admitted = await admitThroughGate(outcome);
+    const gateRefused = admitted.gateFired === true;
     return Object.freeze({
       ...outcome,
-      /** §4: the gate's own verdict, carried so the runner does not have to re-derive it. */
       gateAdmission: admitted,
-      /** §4: a gate refusal is expressed as a machinery fault the frozen classifier already stops on. */
-      reportMissing: admitted.disposition === 'ADMITTED' ? outcome.reportMissing : true,
-      hostFailure: admitted.disposition === 'ADMITTED' ? outcome.hostFailure : true,
-      admissionRefusalCause: admitted.gateFired === true ? admitted.cause : null,
+      reportMissing: gateRefused ? true : outcome.reportMissing,
+      hostFailure: gateRefused ? true : outcome.hostFailure,
+      admissionRefusalCause: gateRefused ? admitted.cause : null,
     });
   };
 

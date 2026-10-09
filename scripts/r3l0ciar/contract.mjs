@@ -150,7 +150,14 @@ export const CONDITION_SUCCESS = Object.freeze({
   SELECTION_REALIZATION_PREFLIGHT: Object.freeze({ pass: Object.freeze(['PASS']), fail: Object.freeze(['FAIL']) }),
   ANALYSIS_PLAN_VALID: Object.freeze({ pass: Object.freeze(['PASS', 'YES']), fail: Object.freeze(['FAIL', 'NO']) }),
   SCHEDULE_MATCH: Object.freeze({ pass: Object.freeze(['MATCH', 'YES']), fail: Object.freeze(['NO', 'MISMATCH']) }),
-  MODEL_ROUTE_CONFIGURATION_MATCH: Object.freeze({ pass: Object.freeze(['MATCH']), fail: Object.freeze(['DRIFTED', 'UNKNOWN']) }),
+  /**
+   * §3: `UNKNOWN` is deliberately NEITHER a pass NOR a failure.
+   *
+   * A route identity that could not be read is not the same fact as a route that was read and disagreed, so it
+   * maps to NOT_EVALUATED — which is never satisfied, and which `modelRouteIdentity` reports as `UNKNOWN` rather
+   * than as `DRIFTED`.
+   */
+  MODEL_ROUTE_CONFIGURATION_MATCH: Object.freeze({ pass: Object.freeze(['MATCH']), fail: Object.freeze(['DRIFTED']) }),
 });
 
 /** §3: the internal vocabulary. Only `PASS` is satisfied; `NOT_EVALUATED` is never satisfied. */
