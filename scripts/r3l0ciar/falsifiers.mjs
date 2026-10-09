@@ -15,7 +15,8 @@
  *
  * PLAIN JAVASCRIPT (`.mjs`).
  */
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -133,6 +134,40 @@ export async function runCorrectionFalsifiers(input) {
 /** Attach the violation verdict, so every entry has the same shape. */
 function withViolation(entry, violated) {
   return Object.freeze({ ...entry, PROPERTY_VIOLATED_BY_BASELINE: violated === true });
+}
+
+/**
+ * §2: A DIGEST OVER A RUN ROOT'S FILES, so "a refusal changed nothing" is OBSERVED rather than asserted.
+ *
+ * It is over CONTENT rather than mtime, and it includes the file LIST, so a re-copy that adds files is caught even
+ * when every pre-existing file is byte-identical.
+ */
+export function digestRunRootState(runRoot, trajectoryIds = []) {
+  const digests = {};
+  const files = [];
+  const walk = (dir, depth) => {
+    if (depth > 6) return;
+    let entries;
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    for (const entry of entries) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path, depth + 1);
+      else if (entry.isFile()) {
+        const relative = path.slice(runRoot.length + 1).split('\\').join('/');
+        files.push(relative);
+        try { digests[relative] = createHash('sha256').update(readFileSync(path)).digest('hex'); } catch { digests[relative] = 'UNREADABLE'; }
+      }
+    }
+  };
+  walk(runRoot, 0);
+  const material = Object.entries(digests).sort(([left], [right]) => (left < right ? -1 : 1)).map(([path, digest]) => `${path}:${digest}`).join(NL);
+  return Object.freeze({
+    digest: createHash('sha256').update(material, 'utf8').digest('hex'),
+    files: Object.freeze(files.sort()),
+    digests: Object.freeze(digests),
+    fileCount: files.length,
+    trajectoryIds: Object.freeze([...trajectoryIds]),
+  });
 }
 
 export { NL, tmpdir };

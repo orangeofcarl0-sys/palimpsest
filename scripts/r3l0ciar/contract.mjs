@@ -270,6 +270,39 @@ export const RECONSTRUCTION_COST_FIELDS = Object.freeze([
   'elapsedToFirstResultMs', 'completionCause', 'hiddenQualityVector', 'treatmentWitness', 'uptakeWitness',
 ]);
 
+/* ================================================================ §7 the runtime manifest */
+
+/**
+ * §7: THE DYNAMICALLY LOADED RUNTIME MODULES.
+ *
+ * §7 states plainly that these are NOT all discoverable by a static import-regex walker, because the generation
+ * child loads them by COMPUTED path from `dist/src`. A narrow explicit manifest is what binds their actual bytes
+ * into the closure, and it is narrow rather than general: §7 forbids building a bundler or dependency system.
+ */
+export const RUNTIME_MANIFEST_MODULES = Object.freeze([
+  'dist/src/advanced.js',
+  'dist/src/interaction/work_delegation.js',
+  'dist/src/interaction/delegation.js',
+  'dist/src/project_workspace/index.js',
+  'dist/src/proof_asset/index.js',
+  'dist/src/reasoning_cell/index.js',
+  'dist/src/procedures/index.js',
+  'dist/src/deployment/work_worker.js',
+]);
+
+/** §7: the manifest law. */
+export const RUNTIME_MANIFEST_LAW = Object.freeze({
+  reason: 'these modules are loaded by computed path, so a static import-regex walker cannot see them',
+  narrowExplicitManifest: true,
+  buildsGeneralBundlerOrDependencySystem: false,
+  mutationRequired: 'changing one previously uncovered load-bearing compiled module must change the closure digest',
+  deterministicEmitVerification: true,
+  toolchainVersionBinding: true,
+  recordsConfiguredAndObserved: true,
+  checkpointEquivalenceFromFamilyName: false,
+  hashesOrExposesSecretValues: false,
+});
+
 /* ================================================================ §7 the post-matrix conditions */
 
 /**
