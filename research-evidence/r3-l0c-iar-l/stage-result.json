@@ -1,0 +1,287 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L",
+  "kind": "live measurement closure result",
+  "baseline": "36ada589f62bad2cbfc5bdf1dad7b8201876640e",
+  "verdicts": {
+    "LIVE_ARTIFACT_PROPAGATION": "PASS",
+    "DURABLE_COST_ADMISSION": "PASS",
+    "POSTFLIGHT_FRESHNESS": "PASS",
+    "PRIMARY_INPUT_BINDING": "PASS",
+    "EXECUTABLE_RUNTIME_ATTESTATION": "PASS",
+    "FAIL_STOP_VALIDITY": "PASS",
+    "PAID_AUTHORIZATION": "PENDING",
+    "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+  },
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "correctionGates": {
+    "declared": 4,
+    "allViolated": true,
+    "violated": [
+      "L1_LIVE_ARTIFACT_CONTINUITY",
+      "L2_POSTFLIGHT_FRESHNESS",
+      "L3_PRIMARY_INPUT_BINDING",
+      "L3_AUTHORITY_VERIFICATION",
+      "L4_RUNTIME_ATTESTATION"
+    ],
+    "notViolated": [],
+    "controls": [
+      {
+        "id": "L1_LIVE_ARTIFACT_CONTINUITY",
+        "journalFieldCount": 25,
+        "journalCarriesSessionArtifactPath": false,
+        "journalCarriesHiddenInvariantVector": false,
+        "recordCarriesSessionArtifactPath": false,
+        "recordCarriesHiddenInvariantVector": false,
+        "carriedFields": [],
+        "artifactPathOnOutcome": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0ciarl-controls-EvwWNi\\attempt-a1b2c3d4e5\\session.v4.jsonl.zstd",
+        "artifactExists": true,
+        "defectPresent": true,
+        "detail": "the durable TRIAL_RECORDED record carries neither sessionArtifactPath nor hiddenInvariantVector, so the live artifact identity and the hidden quality vector are unrecoverable from the journal",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "L2_POSTFLIGHT_FRESHNESS",
+        "preflightClosureDigest": "b0c93e42f39982796e9de27ca6654cda6f07c86803dd5550b8a35f43a4ee06e6",
+        "postflightClosureDigest": "f25e5dbe8aa3e0a6106d4135c53223d911c9b8f6a5c2cdb404f43b031f3c8f24",
+        "baselineComparedDigest": "b0c93e42f39982796e9de27ca6654cda6f07c86803dd5550b8a35f43a4ee06e6",
+        "baselineUsesAFreshDigest": false,
+        "runtimeChangedAfterPreflight": true,
+        "baselineDetectsTheChange": false,
+        "callerSuppliedReplacements": 0,
+        "callerSuppliedRetries": 0,
+        "journalLaunchCount": 16,
+        "retriesDerivedFromJournal": false,
+        "defectPresent": true,
+        "detail": "the post-matrix gate compares the closure it captured BEFORE the matrix, so a mutation applied after preflight is invisible to it; the retry and replacement counts are caller-supplied numbers rather than journal derivations",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "L3_PRIMARY_INPUT_BINDING",
+        "substitutableInputs": [
+          "plan",
+          "planPath",
+          "closure",
+          "routeConfiguration",
+          "realizationPreflight",
+          "preExposureChecks",
+          "systemValid",
+          "validityGate",
+          "costAttribution",
+          "costProvenance",
+          "replacements",
+          "retries"
+        ],
+        "substitutableCount": 12,
+        "occurrences": [
+          {
+            "name": "plan",
+            "line": 95,
+            "text": "const planRead = input.plan === undefined ? readCommittedPlan(input.planPath) : Object.freeze({ planPath: input.planPath"
+          },
+          {
+            "name": "planPath",
+            "line": 95,
+            "text": "const planRead = input.plan === undefined ? readCommittedPlan(input.planPath) : Object.freeze({ planPath: input.planPath"
+          },
+          {
+            "name": "closure",
+            "line": 103,
+            "text": "const closure = input.closure ?? await (await import('./closure.mjs')).computeExecutionClosure({ verifyCompiled: input.v"
+          },
+          {
+            "name": "routeConfiguration",
+            "line": 171,
+            "text": "const routeConfiguration = input.routeConfiguration ?? await (await import('./preflight.mjs')).effectiveRouteConfigurati"
+          },
+          {
+            "name": "realizationPreflight",
+            "line": 172,
+            "text": "const realizationPreflight = input.realizationPreflight ?? await (await import('./preflight.mjs')).realizationPreflight("
+          },
+          {
+            "name": "preExposureChecks",
+            "line": 174,
+            "text": "const preExposureChecks = input.preExposureChecks === undefined"
+          },
+          {
+            "name": "systemValid",
+            "line": 178,
+            "text": "systemValid: input.systemValid, systemValidDetail: input.systemValidDetail,"
+          },
+          {
+            "name": "preExposureChecks",
+            "line": 180,
+            "text": ": await input.preExposureChecks({ runRoot, runId });"
+          },
+          {
+            "name": "validityGate",
+            "line": 243,
+            "text": "const validityGate = input.validityGate ?? (async ({ completed, records, plannedSessions }) => {"
+          },
+          {
+            "name": "costAttribution",
+            "line": 253,
+            "text": "const costAttribution = input.costAttribution ?? await measureRunCost({ records, provenance: input.costProvenance });"
+          },
+          {
+            "name": "costProvenance",
+            "line": 253,
+            "text": "const costAttribution = input.costAttribution ?? await measureRunCost({ records, provenance: input.costProvenance });"
+          },
+          {
+            "name": "systemValid",
+            "line": 257,
+            "text": "systemValid: normalizeVerdict(input.systemValid),"
+          },
+          {
+            "name": "replacements",
+            "line": 262,
+            "text": "replacements: input.replacements ?? 0,"
+          },
+          {
+            "name": "retries",
+            "line": 263,
+            "text": "retries: input.retries ?? 0,"
+          }
+        ],
+        "guardedOccurrences": [],
+        "modeConditionOnSubstitution": false,
+        "primaryDerivesItsOwnInputs": false,
+        "defectPresent": true,
+        "detail": "the pipeline permits caller substitution for [plan, planPath, closure, routeConfiguration, realizationPreflight, preExposureChecks, systemValid, validityGate, costAttribution, costProvenance, replacements, retries] with NO mode condition on any of the 14 occurrence(s), so a PRIMARY run can supply a caller plan, closure, validity gate, cost attribution, provenance or retry counters instead of deriving them",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "L3_AUTHORITY_VERIFICATION",
+        "arbitraryAuthorityAccepted": true,
+        "bareAuthorityAccepted": false,
+        "approvedPlanRequired": false,
+        "paidRunBudgetRequired": false,
+        "authorityVerifiedAtLaunchBoundary": false,
+        "defectPresent": true,
+        "detail": "an authorization record whose authority is the arbitrary string \"because I said so\", with no approved plan and no paid-run budget, was accepted as a present authorization decision",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "L4_RUNTIME_ATTESTATION",
+        "verifyCompiledRequested": false,
+        "compiledMatchesSourceEvaluated": false,
+        "installedBundleChecked": false,
+        "bundleTargets": [
+          {
+            "installedName": "palimpsest-dsh-host",
+            "installedPath": "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\palimpsest-dsh-host",
+            "installed": true
+          },
+          {
+            "installedName": "palimpsest-host-deployment",
+            "installedPath": "C:\\Users\\66494\\.dsh\\profiles\\node_modules\\palimpsest-host-deployment",
+            "installed": true
+          }
+        ],
+        "competingWriterDetected": false,
+        "installerPresentedAsAtomicReplacement": true,
+        "defectPresent": true,
+        "detail": "every closure computation passes verifyCompiled: false, so COMPILED_MATCHES_SOURCE is never evaluated; and no module compares the installed host bundle against the repository, so a stale or substituted installation is undetectable",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      }
+    ]
+  },
+  "liveMeasurementPipeline": {
+    "terminalState": "MATRIX_COMPLETE",
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "boundariesExact": true,
+    "liveEvidencePropagation": "PASS",
+    "postflightClosureMatchesPlan": true,
+    "allIdentitiesExact": true,
+    "journalRetries": 0,
+    "journalReplacements": 0
+  },
+  "attestation": {
+    "verdict": "PASS",
+    "compiledMatchesSource": true,
+    "installedBundleIdentical": true,
+    "competingWriterDetected": false,
+    "verifiedClosureCompiledMatchesSource": true,
+    "installerIsMitigationNotProof": true
+  },
+  "containment": {
+    "verdict": "PASS",
+    "environmentVerdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true,
+    "aclWeakened": false
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "executionClosure": {
+    "digest": "db39ada8fc336bd28a97eec8e2433e0231549f3ece936e66ceda6fbfba28c443",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE",
+      "REUSED_MODULES_CLOSURE"
+    ],
+    "fileCount": 122,
+    "complete": true,
+    "mutationsProven": true,
+    "reusedModules": 13,
+    "planClosure": "MATCH"
+  },
+  "immutability": {
+    "verdict": "PASS",
+    "protectedNamespaces": 21,
+    "restoreAvailable": false
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-l-primary-plan",
+    "digest": "db39ada8fc336bd28a97eec8e2433e0231549f3ece936e66ceda6fbfba28c443",
+    "supersedes": "r3-l0c-iar-primary-plan",
+    "frozenClosure": "db39ada8fc336bd28a97eec8e2433e0231549f3ece936e66ceda6fbfba28c443"
+  }
+}

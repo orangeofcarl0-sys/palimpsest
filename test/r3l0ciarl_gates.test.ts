@@ -27,7 +27,7 @@ import { assertAuthoritativePath } from "../scripts/r3l0ciarl/modes.mjs";
 import { enforcePrimaryInputBinding, verifyAuthorizationRecord } from "../scripts/r3l0ciarl/primary-binding.mjs";
 import { writeLiveEvidence, verifyLiveEvidenceContinuity, readLiveEvidence, liveEvidenceBinding, bindingOf } from "../scripts/r3l0ciarl/live-evidence.mjs";
 import { deriveCountsFromJournal, compareSessionIdentities, freshPostflight } from "../scripts/r3l0ciarl/postflight.mjs";
-import { attestInstalledBundle, verifyCompiledSource, sampleInstallationDigest } from "../scripts/r3l0ciarl/attestation.mjs";
+import { attestInstalledBundle, verifyCompiledSource } from "../scripts/r3l0ciarl/attestation.mjs";
 import { writeRealFormatArtifact } from "../scripts/r3l0ciarl/baseline/legacy-controls.mjs";
 import { measureSessionCost } from "../scripts/r3l0ciar/instrumentation.mjs";
 import { CONTROL_GATE_IDS, PRIMARY_DERIVED_INPUTS, AUTHORIZATION_RECORD_FIELDS } from "../scripts/r3l0ciarl/contract.mjs";
@@ -280,20 +280,76 @@ describe("R3-L0C-I-A-R-L §4 — executable and environmental attestation", () =
     expect(compiled.requested).toBe(true);
     expect(compiled.evaluated).toBe(true);
     expect(compiled.COMPILED_MATCHES_SOURCE).toBe(true);
-    const bundle = attestInstalledBundle({ dshHomePath: dshHome() });
-    expect(bundle.allIdentical).toBe(true);
-    expect(bundle.comparedFileByFile).toBe(true);
-    /** §4: the installer is a mitigation, not a proof of atomic replacement. */
-    expect(bundle.installerIsMitigationNotProof).toBe(true);
+    /**
+     * §4: THE BUNDLE COMPARISON IS MEASURED ON AN ISOLATED HOME THIS TEST INSTALLS ITSELF.
+     *
+     * The shared DSH home is written by every stage suite that installs the host bundle, and vitest runs those in
+     * parallel processes. Reading the SHARED home would therefore race with a concurrent install and report a
+     * difference that is another process's legitimate work, not a defect — measured: exactly that under a full
+     * parallel run. So this test installs the bundle into its own home and attests THAT, which measures the
+     * comparison's behaviour deterministically; the shared home is attested by the pipeline itself during a run,
+     * where the sample is taken around its own install.
+     */
+    const isolated = mkdtempSync(join(tmpdir(), "r3l0ciarl-attest-home-"));
+    try {
+      const { installHostBundleSafely } = await import("../scripts/r3l0ciar/host-bundle.mjs");
+      installHostBundleSafely({ repo: process.cwd(), realDshHome: isolated });
+      const bundle = attestInstalledBundle({ dshHomePath: isolated });
+      expect(bundle.allIdentical).toBe(true);
+      expect(bundle.comparedFileByFile).toBe(true);
+      expect(bundle.targets.every((target: { sourceFileCount: number }) => target.sourceFileCount > 0)).toBe(true);
+      /** The mutation: a modified installed file is a difference. */
+      const { writeFileSync } = await import("node:fs");
+      const first = bundle.targets[0]!;
+      writeFileSync(join(isolated, "profiles", "node_modules", first.installedName, "package.json"), "{}\n", "utf8");
+      expect(attestInstalledBundle({ dshHomePath: isolated }).allIdentical).toBe(false);
+      /** §4: the installer is a mitigation, not a proof of atomic replacement. */
+      expect(bundle.installerIsMitigationNotProof).toBe(true);
+    } finally {
+      try { rmSync(isolated, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* Windows holds handles briefly */ }
+    }
   }, 900_000);
 
-  it("a competing writer of the shared installation is detected", () => {
-    const before = sampleInstallationDigest({ dshHomePath: dshHome() });
-    expect(typeof before).toBe("string");
-    expect(before.length).toBe(64);
-    /** The installation is stable when nothing writes it. */
-    expect(sampleInstallationDigest({ dshHomePath: dshHome() })).toBe(before);
+  it("a competing writer of the shared installation is detected", async () => {
+    const { sampleInstallationDigest: sample, competingWriterVerdict } = await import("../scripts/r3l0ciarl/attestation.mjs");
+    /**
+     * §4: THE PROPERTY IS DETECTION, NOT GLOBAL STABILITY.
+     *
+     * The shared DSH home is written by every stage suite that installs the host bundle, and vitest runs those in
+     * parallel processes — so asserting that the installation is UNCHANGED between two samples would be asserting
+     * something no single test can control, and it failed exactly that way under a full parallel run. The property
+     * §4 requires is that a change with no install of OURS in between is REPORTED as a competing writer, which is
+     * measured here on an ISOLATED home that only this test writes.
+     */
+    const isolated = mkdtempSync(join(tmpdir(), "r3l0ciarl-home-"));
+    try {
+      const before = sample({ dshHomePath: isolated });
+      expect(typeof before).toBe("string");
+      expect(before.length).toBe(64);
+      /** Nothing wrote it, so it is stable within this test's own home. */
+      expect(sample({ dshHomePath: isolated })).toBe(before);
+      /** A change with no install of ours is a competing writer. */
+      expect(competingWriterVerdict({ beforeDigest: before, afterDigest: "changed", installedDuringRun: false }).competingWriterDetected).toBe(true);
+      /** A change caused by OUR install is not. */
+      expect(competingWriterVerdict({ beforeDigest: before, afterDigest: "changed", installedDuringRun: true }).competingWriterDetected).toBe(false);
+      /** The real home still yields a well-formed sample. */
+      const real = sample({ dshHomePath: dshHome() });
+      expect(real.length).toBe(64);
+    } finally {
+      try { rmSync(isolated, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* Windows holds handles briefly */ }
+    }
   }, 300_000);
+
+  it("the pipeline detects a competing writer by comparing the pre-matrix and post-matrix samples", async () => {
+    const healthy = await runCase("healthy");
+    /** The healthy run sampled the real installation before its own install. */
+    expect(typeof healthy.installationBefore).toBe("string");
+    expect((healthy.installationBefore as string).length).toBe(64);
+    const { competingWriterVerdict } = await import("../scripts/r3l0ciarl/attestation.mjs");
+    /** Its own install is not a competing writer. */
+    const own = competingWriterVerdict({ beforeDigest: healthy.installationBefore as string, afterDigest: "x", installedDuringRun: true });
+    expect(own.competingWriterDetected).toBe(false);
+  }, 1_800_000);
 
   it("the closure covers the reused prior-stage modules and all four mutations move the digest", async () => {
     const computed = await computeExecutionClosure({ verifyCompiled: false });
