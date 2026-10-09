@@ -29,7 +29,8 @@
  */
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
@@ -116,7 +117,19 @@ export async function runScriptedGeneration(input) {
     threw: false,
     resultCorrect: null,
     correctnessOk: null,
-    workCannotProgress: false,
+    /**
+     * Gate 2: `workCannotAdvance` is the Canonical-Work-blockage signal, distinct from a behavioural observation.
+     * The name is deliberate: it says the PROJECT cannot continue, which is a project fact, rather than that the
+     * experiment saw something it did not like.
+     */
+    workCannotAdvance: false,
+    /** Gate 2: the six required admission signals, filled in as the governed path observes them. */
+    reportPresent: false,
+    attemptState: null,
+    consumerVisibleHandleCount: 0,
+    governedPullCount: 0,
+    /** Gate 2: the hidden-oracle vector, so an incorrect result is an OBSERVATION rather than a stop. */
+    hiddenInvariantVector: null,
     visibleHandles: 0,
     pulls: [],
     consumerVisibleHandles: [],
@@ -134,11 +147,11 @@ export async function runScriptedGeneration(input) {
 
   /** C3: the report is missing — the child produced nothing the harness can read. */
   if (fault === FAULT_SEAMS.REPORT_MISSING) {
-    return Object.freeze({ ...outcome, reportMissing: true, jobPhase: null, completionCause: 'OTHER_RUNTIME_CAUSE' });
+    return Object.freeze({ ...outcome, reportMissing: true, reportPresent: false, jobPhase: null, completionCause: 'OTHER_RUNTIME_CAUSE' });
   }
   /** C4: an actual host failure. */
   if (fault === FAULT_SEAMS.HOST_FAILURE) {
-    return Object.freeze({ ...outcome, hostFailure: true, jobPhase: 'HOST_ERROR', completionCause: 'OTHER_RUNTIME_CAUSE' });
+    return Object.freeze({ ...outcome, hostFailure: true, reportPresent: false, jobPhase: 'HOST_ERROR', completionCause: 'OTHER_RUNTIME_CAUSE' });
   }
   /** C8: the host terminates between journal writes; the launch is entered and never resolves. */
   if (fault === FAULT_SEAMS.HOST_TERMINATES) {
@@ -303,7 +316,10 @@ export async function runScriptedGeneration(input) {
       }
       const record = controller.attemptWorkRecord(outcome.attemptId);
       outcome.resultState = record?.state ?? null;
-      outcome.resultCorrect = record?.report !== null && record?.report !== undefined;
+      outcome.attemptState = record?.state ?? null;
+      /** Gate 2: `reportPresent` is the presence of the worker's report, which is an admission signal. */
+      outcome.reportPresent = record?.report !== null && record?.report !== undefined;
+      outcome.resultCorrect = outcome.reportPresent;
       try {
         await controller.gate({ attemptId: outcome.attemptId, predicate: 'tests_pass', command: ['node', '-e', 'process.exit(0)'] });
         outcome.verificationState = 'GATED';
@@ -341,8 +357,15 @@ export async function runScriptedGeneration(input) {
         }
       } else {
         outcome.promotionState = 'NOT_ELIGIBLE';
-        /** A worker that could not commit leaves its attempt RUNNING, which blocks the next generation. */
-        outcome.workCannotProgress = record?.state === 'RUNNING' || outcome.resultCorrect === false;
+        /**
+         * Gate 2: CANONICAL WORK CANNOT ADVANCE — the PROJECT's own state, not a behavioural reading.
+         *
+         * The condition is narrow and specific: the attempt did not SETTLE, so the project is not quiescent and
+         * the next generation cannot legally start. It is NOT "the work was incorrect" — an incorrect-but-settled
+         * attempt is an admissible observation, and conflating the two is the error Gate 2 corrects. The check is
+         * therefore on the attempt's terminal state alone.
+         */
+        outcome.workCannotAdvance = record?.state === 'RUNNING' || record?.state === 'LEASED' || record?.state === 'CREATED';
       }
       try {
         await controller.reconcileProjectHead({ operator: true });
@@ -356,11 +379,83 @@ export async function runScriptedGeneration(input) {
     if (fault === FAULT_SEAMS.INCORRECT_IMPLEMENTATION) outcome.resultCorrect = false;
     outcome.completionCause = outcome.jobPhase === 'FINISHED' ? 'RESULT_SUBMITTED' : 'OTHER_RUNTIME_CAUSE';
     outcome.correctnessOk = fault === FAULT_SEAMS.INCORRECT_IMPLEMENTATION ? false : (outcome.promotionState === 'PROMOTED');
+    /**
+     * Gate 2: THE HIDDEN-ORACLE VECTOR IS EVALUATED OVER THE PROMOTED BYTES.
+     *
+     * This is what makes an INCORRECT vector an OBSERVED fact rather than a synthesized one. The oracle is the
+     * frozen diagnostic, imported here in the harness process and applied to the source the repository holds
+     * afterwards — never copied into the world and never reaching the worker. The evaluation is skipped when the
+     * world has no readable source, because a missing source is already an infrastructure fact.
+     */
+    outcome.hiddenInvariantVector = evaluateHiddenVector(world, outcome, fault);
+    /** Gate 2: the six admission signals, read from what actually happened. */
+    outcome.consumerVisibleHandleCount = outcome.consumerVisibleHandles.length;
+    outcome.governedPullCount = outcome.governedPulls.length;
     return Object.freeze(outcome);
   } catch (error) {
     return Object.freeze({ ...outcome, threw: true, threwDetail: String(error?.stack ?? error).slice(0, 400), completionCause: 'OTHER_RUNTIME_CAUSE' });
   } finally {
     if (installed !== null) await installed.dispose().catch(() => undefined);
+  }
+}
+
+/**
+ * Gate 2: EVALUATE THE FROZEN HIDDEN ORACLE OVER THE PROMOTED SOURCE.
+ *
+ * The oracle is imported in the HARNESS process and applied to the bytes the repository holds afterwards. It is
+ * never copied into the world and never reaches the worker, which is what keeps it hidden.
+ *
+ * A source that cannot be read or imported yields an ALL-FAIL vector rather than throwing, because a source that
+ * does not parse is a real outcome the analysis must see — hiding it would make a broken generation look like a
+ * low-quality one, which is the opposite of what the measurement means.
+ */
+function evaluateHiddenVector(world, outcome, fault) {
+  /** The injected incorrect-implementation fault short-circuits, so the fault is deterministic and cheap. */
+  if (fault === FAULT_SEAMS.INCORRECT_IMPLEMENTATION) {
+    return Object.freeze({ failedPrepaidClasses: Object.freeze(['P1']), prepaidCoverage: 0.5, coverage: 0.5, source: 'INJECTED_FAULT' });
+  }
+  const head = outcome.finalHead;
+  if (head === null || head === undefined) {
+    return Object.freeze({ failedPrepaidClasses: Object.freeze([]), prepaidCoverage: 0, coverage: 0, source: 'NO_HEAD', importError: 'the repository has no readable HEAD' });
+  }
+  let source = null;
+  try {
+    source = git(world, ['show', `${String(head)}:src/entitlements.mjs`]);
+  } catch (error) {
+    return Object.freeze({ failedPrepaidClasses: Object.freeze([]), prepaidCoverage: 0, coverage: 0, source: 'SOURCE_UNREADABLE', importError: String(error?.message ?? error).slice(0, 160) });
+  }
+  return Object.freeze({ ...evaluateSourceVector(source), source: 'PROMOTED_BYTES' });
+}
+
+/** Judge a source text with the frozen diagnostic, synchronously via a scratch module. */
+function evaluateSourceVector(sourceText) {
+  const scratch = mkdtempSync(join(tmpdir(), 'r3l0ci-vector-'));
+  try {
+    writeFileSync(join(scratch, 'entitlements.mjs'), sourceText, 'utf8');
+    writeFileSync(join(scratch, 'package.json'), `${JSON.stringify({ type: 'module' })}${NL}`, 'utf8');
+    /** The diagnostic is imported synchronously through a child process, because the harness flow is sync here. */
+    const probe = [
+      'import { pathToFileURL } from "node:url";',
+      'import { join } from "node:path";',
+      `const diagnostic = await import(pathToFileURL(${JSON.stringify(join(REPO_ROOT, 'scripts', 'r3l0c', 'diagnostic.mjs'))}).href);`,
+      `const candidate = await import(pathToFileURL(join(${JSON.stringify(scratch)}, "entitlements.mjs")).href);`,
+      'process.stdout.write(JSON.stringify(diagnostic.diagnosticVector(candidate)));',
+    ].join(NL);
+    const probePath = join(scratch, 'probe.mjs');
+    writeFileSync(probePath, probe, 'utf8');
+    const output = execFileSync(process.execPath, [probePath], { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 16 * 1024 * 1024 });
+    const vector = JSON.parse(output);
+    return Object.freeze({
+      failedPrepaidClasses: Object.freeze([...(vector.failedPrepaidClasses ?? [])]),
+      prepaidCoverage: vector.prepaidCoverage ?? 0,
+      coverage: vector.coverage ?? 0,
+      classPass: vector.classPass ?? {},
+      invariantsExercised: Object.freeze([...(vector.invariantsExercised ?? [])]),
+    });
+  } catch (error) {
+    return Object.freeze({ failedPrepaidClasses: Object.freeze([]), prepaidCoverage: 0, coverage: 0, importError: String(error?.message ?? error).slice(0, 200) });
+  } finally {
+    try { rmSync(scratch, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch { /* Windows holds handles briefly */ }
   }
 }
 

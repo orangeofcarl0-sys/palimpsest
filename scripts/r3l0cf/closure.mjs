@@ -30,7 +30,7 @@
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { CLOSURE_FILES, CLOSURE_LAW, CLOSURE_PARTS, CLOSURE_SELF_EXCLUSIONS, REPO_ROOT } from './contract.mjs';
@@ -153,6 +153,31 @@ function installedVersion(name) {
  * A failure is REPORTED with the diverging files rather than thrown, because the caller decides whether a stale
  * build is a stop (§9 makes it one) or a diagnosis.
  */
+/**
+ * R3-L0C-I Gate 4: DETERMINISTIC COMPILED-OUTPUT VERIFICATION.
+ *
+ * §"Replace mtime-only source/compiled comparison with deterministic compiled-output verification where
+ * supported."
+ *
+ * WHY THE MTIME COMPARISON WAS NOT ENOUGH. R3-L0C-F compared modification ORDER: a compiled artifact older than
+ * its source was called stale. That is a heuristic with two failure modes it cannot see — a `dist` built from
+ * DIFFERENT source with a NEWER timestamp reads as fresh, and a touched source with an unchanged body reads as
+ * stale. Neither is detectable from timestamps, and both are exactly the stale-build hazard the check exists for.
+ *
+ * THE DETERMINISTIC METHOD, and it is available here. The project compiles with a fixed `tsconfig.json`, and
+ * measured: emitting `src/**` with the project's own compiler options reproduces all nine load-bearing compiled
+ * artifacts BYTE-FOR-BYTE apart from the `//# sourceMappingURL` comment, which the probe options disable. So the
+ * comparison is over real emitted bytes rather than over timestamps.
+ *
+ * THE SOURCEMAP COMMENT IS NORMALIZED AWAY, and that is stated rather than hidden: the probe emits without
+ * sourcemaps, so the only expected textual difference is that one trailing comment. A divergence anywhere else is
+ * reported with the file and the first differing line, so a real stale build is diagnosable rather than merely
+ * flagged.
+ *
+ * WHERE IT IS NOT SUPPORTED IT SAYS SO. If the compiler is unavailable or the probe config cannot be written, the
+ * result is `DETERMINISTIC: UNSUPPORTED` and the check falls back to the modification-order heuristic — reported
+ * as a fallback, never as a pass.
+ */
 export function verifyCompiledAgainstSource() {
   const pairs = [
     ['src/effects/git_port.ts', 'dist/src/effects/git_port.js'],
@@ -165,38 +190,93 @@ export function verifyCompiledAgainstSource() {
     ['src/interaction/work_delegation.ts', 'dist/src/interaction/work_delegation.js'],
     ['src/project_world/basis_store.ts', 'dist/src/project_world/basis_store.js'],
   ];
-  /**
-   * The comparison is against Git, not against the compiler, and that is deliberate: the question is whether the
-   * COMMITTED source has moved since the compiled artifact was produced, which is the stale-build hazard. A
-   * TypeScript emit is not byte-reproducible across compiler versions, so comparing emitted bytes would report a
-   * false divergence on every run.
-   *
-   * Instead, each pair's MODIFICATION ORDER is checked: a compiled artifact older than its source is stale. The
-   * mtime comparison is a heuristic and is LABELLED as one — the authoritative check is the build the harness
-   * performs before freezing, which regenerates `dist` from `src`.
-   */
+  const missing = pairs.filter(([, compiled]) => !existsSync(join(REPO_ROOT, compiled))).map(([, compiled]) => compiled);
+
+  const deterministic = deterministicEmitComparison(pairs);
+  if (deterministic.supported === true) {
+    return Object.freeze({
+      kind: 'compiled-against-source verification',
+      pairs: pairs.length,
+      missing: Object.freeze(missing),
+      DETERMINISTIC: 'SUPPORTED',
+      method: 'a fresh emit of src/** with the project\'s own compiler options, compared byte-for-byte against dist/**',
+      normalization: 'the `//# sourceMappingURL` comment is removed from both sides, because the probe emits without sourcemaps',
+      diverged: deterministic.diverged,
+      COMPILED_MATCHES_SOURCE: missing.length === 0 && deterministic.diverged.length === 0,
+    });
+  }
+
+  /** The fallback, reported as a fallback. */
   const stale = [];
-  const missing = [];
   for (const [source, compiled] of pairs) {
     const sourcePath = join(REPO_ROOT, source);
     const compiledPath = join(REPO_ROOT, compiled);
-    if (!existsSync(compiledPath)) {
-      missing.push(compiled);
-      continue;
-    }
-    if (!existsSync(sourcePath)) continue;
+    if (!existsSync(compiledPath) || !existsSync(sourcePath)) continue;
     const sourceMtime = statMtime(sourcePath);
     const compiledMtime = statMtime(compiledPath);
-    if (sourceMtime !== null && compiledMtime !== null && sourceMtime > compiledMtime) stale.push({ source, compiled, sourceMtime, compiledMtime });
+    if (sourceMtime !== null && compiledMtime !== null && sourceMtime > compiledMtime) stale.push({ source, compiled });
   }
   return Object.freeze({
     kind: 'compiled-against-source verification',
     pairs: pairs.length,
     missing: Object.freeze(missing),
+    DETERMINISTIC: 'UNSUPPORTED',
+    unsupportedReason: deterministic.reason,
     stale: Object.freeze(stale),
-    method: 'modification-order heuristic over the committed pair; the authoritative check is the build performed before freezing',
+    method: 'FALLBACK: modification-order heuristic, because the deterministic emit could not be produced',
     COMPILED_MATCHES_SOURCE: missing.length === 0 && stale.length === 0,
   });
+}
+
+/** Emit `src/**` with the project's compiler options and compare the named pairs byte-for-byte. */
+function deterministicEmitComparison(pairs) {
+  const probeDir = join(REPO_ROOT, '.emit-probe');
+  const probeConfig = join(REPO_ROOT, 'tsconfig.emit-probe.json');
+  try {
+    const base = JSON.parse(readFileSync(join(REPO_ROOT, 'tsconfig.json'), 'utf8'));
+    const compilerOptions = {
+      ...base.compilerOptions,
+      declaration: false,
+      declarationMap: false,
+      sourceMap: false,
+      composite: false,
+      incremental: false,
+      outDir: '.emit-probe',
+    };
+    writeFileSync(probeConfig, `${JSON.stringify({ compilerOptions, include: ['src/**/*.ts'] }, null, 2)}${NL}`, 'utf8');
+    rmSync(probeDir, { recursive: true, force: true });
+    execFileSync(process.execPath, [join(REPO_ROOT, 'node_modules', 'typescript', 'bin', 'tsc'), '-p', probeConfig], { cwd: REPO_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 600_000 });
+  } catch (error) {
+    return Object.freeze({ supported: false, reason: `the deterministic emit could not be produced: ${String(error?.message ?? error).slice(0, 200)}`, diverged: Object.freeze([]) });
+  } finally {
+    rmSync(probeConfig, { force: true });
+  }
+  /**
+   * Normalize away the ONE expected difference: the probe emits without sourcemaps, so `dist` carries a trailing
+   * `//# sourceMappingURL` line the probe does not. That line AND the trailing newline are removed, so the two
+   * sides are compared over their actual code. Anything else differing is a real divergence.
+   */
+  const normalize = (text) => text
+    .split(/\r?\n/u)
+    .filter((line) => !line.startsWith('//# sourceMappingURL'))
+    .join(NL)
+    .replace(/\n+$/u, '');
+  const diverged = [];
+  for (const [source, compiled] of pairs) {
+    const emittedPath = join(probeDir, compiled.replace(/^dist\//u, ''));
+    const distPath = join(REPO_ROOT, compiled);
+    if (!existsSync(emittedPath) || !existsSync(distPath)) continue;
+    const emitted = normalize(readFileSync(emittedPath, 'utf8'));
+    const shipped = normalize(readFileSync(distPath, 'utf8'));
+    if (emitted !== shipped) {
+      const emittedLines = emitted.split(NL);
+      const shippedLines = shipped.split(NL);
+      const firstDifference = emittedLines.findIndex((line, index) => line !== shippedLines[index]);
+      diverged.push(Object.freeze({ source, compiled, firstDifferingLine: firstDifference === -1 ? null : firstDifference + 1 }));
+    }
+  }
+  rmSync(probeDir, { recursive: true, force: true });
+  return Object.freeze({ supported: true, diverged: Object.freeze(diverged) });
 }
 
 /** The mtime of a path in milliseconds, or null. */
@@ -281,13 +361,23 @@ export async function computeExecutionClosure(input = {}) {
     ? Object.freeze({ kind: 'compiled-against-source verification', skipped: true, COMPILED_MATCHES_SOURCE: null })
     : verifyCompiledAgainstSource();
 
-  /** The aggregate covers the parts, the toolchain, the effective route and the model identity. */
+  /** The aggregate covers the parts, the toolchain, the packages, the effective route and the model identity. */
   const schedule = await scheduleDigests();
   const aggregateMaterial = {
     ...Object.fromEntries(Object.entries(parts).map(([id, digest]) => [`part:${id}`, digest])),
     'toolchain:node': toolchainFacts.node,
     'toolchain:git': toolchainFacts.git,
     'toolchain:platform': `${toolchainFacts.platform}/${toolchainFacts.arch}`,
+    /**
+     * Gate 4: THE INSTALLED PACKAGE VERSIONS PARTICIPATE IN THE AGGREGATE.
+     *
+     * §"Ensure the real toolchain/package versions participate in the aggregate digest." R3-L0C-F recorded them but
+     * did NOT fold them into the digest, so a package upgrade changed nothing — the versions were present in the
+     * record and absent from the number. They are folded in here, one named entry per package, so a changed
+     * adapter version moves the digest and names which package moved.
+     */
+    ...Object.fromEntries(Object.entries(toolchainFacts.packages ?? {}).map(([name, version]) => [`package:${name}`, String(version)])),
+    'packages:globalDshRoot': String(toolchainFacts.globalDshRoot ?? 'UNRESOLVED'),
     'executor:route': executor.routeId,
     'executor:model': executor.modelId,
     'executor:settings': executor.settingsDigest,

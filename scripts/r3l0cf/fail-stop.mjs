@@ -32,7 +32,7 @@
  *
  * PLAIN JAVASCRIPT (`.mjs`).
  */
-import { existsSync, readFileSync } from 'node:fs';
+import { closeSync, existsSync, openSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import {
@@ -54,6 +54,7 @@ import {
   writeJsonAtomic,
 } from './journal.mjs';
 import { buildObservation, evaluateFailStopProperties } from './properties.mjs';
+import { BEHAVIORAL_OUTCOME_POLICY, admitOutcome } from './outcome-admission.mjs';
 
 const NL = String.fromCharCode(10);
 
@@ -98,66 +99,178 @@ export class FailStopStateMachine {
 }
 
 /**
- * §5: CLASSIFY A SESSION OUTCOME.
+ * R3-L0C-I Gate 2: THE CLASSIFIER, DELEGATING THE RESPONSE TO THE ADMISSION SCHEMA.
  *
- * The classifier reads the outcome's own evidence and returns a classification plus the cause. The asymmetry is
- * deliberate and stated above: only a POSITIVELY behavioral outcome is classified as behavioral; everything
- * ambiguous is infrastructure, because the infrastructure response (stop, preserve) is the safe one.
+ * R3-L0C-F's classifier decided BOTH the kind of fact AND the response, and it got the response wrong: it
+ * treated an incorrect hidden-oracle vector and a declined capital pull as whole-matrix stops. Those are the
+ * study's dependent variables, so stopping on them would destroy the experiment at its first interesting
+ * observation.
  *
- * The behavioral signals are the §5 examples, and each is a fact on the outcome rather than an inference:
- *   · a completed Result whose work is incorrect            -> `resultCorrect === false`
- *   · low hidden invariant coverage                          -> `invariantCoverage` below the caller's floor
- *   · the model declined to pull capital that was visible    -> `visibleHandles > 0 && pulls.length === 0`
- *   · completed work fails correctness checks                -> `correctnessOk === false`
- *   · the model exhausted its budget without a usable result -> `completionCause` in MAX_TOKENS/TIMEOUT with no result
+ * The fix keeps the classification — infrastructure versus behavioral is still a real and useful distinction —
+ * and moves the RESPONSE to `admitOutcome`, which is now the single source of the policy. `disposition` is the
+ * decision the runner acts on; `classification` is the kind of fact it was made from. Two names because they are
+ * two different questions, and conflating them is exactly the error Gate 2 corrects.
+ *
+ * `classification` is preserved for readers that only want the kind of fact, and it now reports `UNCLASSIFIABLE`
+ * rather than `OK` for an outcome that carries no explicit admission evidence — R3-L0C-F returned `OK` for `{}`,
+ * which was a default-to-success path.
  */
 export function classifyOutcome(outcome, options = {}) {
-  const coverageFloor = options.coverageFloor ?? 0;
-  const causes = [];
-  /** Infrastructure/protocol, checked FIRST, because it dominates: a broken environment is not a behavioral fact. */
-  if (outcome === null || outcome === undefined) causes.push({ kind: 'INFRASTRUCTURE', cause: 'MISSING_OUTCOME' });
-  if (outcome?.reportMissing === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'MISSING_WORKER_REPORT' });
-  if (outcome?.jobPhase === 'HOST_ERROR' || outcome?.hostFailure === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'HOST_FAILURE' });
-  if (outcome?.gitObjectResolutionFailed === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'GIT_OBJECT_RESOLUTION_FAILURE' });
-  if (outcome?.worldUnavailable === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'UNAVAILABLE_WORKER_WORLD' });
-  if (outcome?.commitFailedEnvironmentally === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'ENVIRONMENTAL_COMMIT_FAILURE' });
-  if (outcome?.treatmentMismatch === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'CONSUMER_VISIBLE_TREATMENT_MISMATCH' });
-  if (outcome?.containmentFailed === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'CONTAINMENT_FAILURE' });
-  if (outcome?.closureMismatch === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'EXECUTION_CLOSURE_MISMATCH' });
-  if (outcome?.providerFailedAfterInvocation === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'PROVIDER_ROUTE_FAILURE_AFTER_INVOCATION' });
-  if (outcome?.priorAttemptUnresolved === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'UNRESOLVED_ATTEMPT_BLOCKING_NEXT_GENERATION' });
-  if (outcome?.threw === true) causes.push({ kind: 'INFRASTRUCTURE', cause: 'LAUNCH_THREW' });
+  const admitted = admitOutcome(outcome, options);
 
-  /** Behavioral signals, only when no infrastructure cause was found. */
-  if (causes.length === 0) {
-    if (outcome?.resultCorrect === false) causes.push({ kind: 'BEHAVIORAL', cause: 'INCORRECT_IMPLEMENTATION_DESPITE_RESULT' });
-    if (typeof outcome?.invariantCoverage === 'number' && outcome.invariantCoverage < coverageFloor) causes.push({ kind: 'BEHAVIORAL', cause: 'LOW_HIDDEN_INVARIANT_COVERAGE' });
-    if ((outcome?.visibleHandles ?? 0) > 0 && (outcome?.pulls ?? []).length === 0) causes.push({ kind: 'BEHAVIORAL', cause: 'MODEL_DECLINED_VISIBLE_CAPITAL' });
-    if (outcome?.correctnessOk === false) causes.push({ kind: 'BEHAVIORAL', cause: 'COMPLETED_WORK_FAILS_CORRECTNESS' });
-    if (outcome?.budgetExhaustedWithoutResult === true) causes.push({ kind: 'BEHAVIORAL', cause: 'BUDGET_EXHAUSTED_WITHOUT_USABLE_RESULT' });
-    /**
-     * §5: Work that cannot legally progress is a BEHAVIORAL outcome whose response is a whole-matrix stop and a
-     * CENSORED trajectory — never a repair that forces Result/Verification/Promotion. It is checked last because
-     * it is the most general statement, and it must produce a failure rather than being silently accepted: an
-     * outcome that says the Work cannot progress but is classified OK would let the matrix continue over an
-     * unresolved predecessor, which is legacy defect D4 reintroduced from the other side.
-     */
-    if (outcome?.workCannotProgress === true) causes.push({ kind: 'BEHAVIORAL', cause: 'WORK_CANNOT_PROGRESS_CENSORED_TRAJECTORY' });
-  }
+  /**
+   * The kind of fact, derived from the same evidence the admission schema read. `INFRASTRUCTURE` for a machinery
+   * or treatment fault, `CENSORED` for a Work blockage, `UNCLASSIFIABLE` for absent evidence, and `BEHAVIORAL`
+   * for an admissible observation — which, and this is the correction, is a RECORDED outcome rather than a stop.
+   */
+  let classification;
+  if (admitted.disposition === 'UNCLASSIFIABLE') classification = 'UNCLASSIFIABLE';
+  else if (admitted.disposition === 'TRIAL_INVALID') classification = 'INFRASTRUCTURE';
+  else if (admitted.disposition === 'CENSORED') classification = 'CENSORED';
+  else classification = 'BEHAVIORAL';
 
-  /** §5: Work could not legally progress — a behavioral outcome whose response is also a whole-matrix stop. */
-  const workCannotProgress = outcome?.workCannotProgress === true;
-  const classification = causes.length === 0 ? 'OK' : causes[0].kind;
   return Object.freeze({
+    /** The kind of fact. */
     classification,
-    causes: Object.freeze(causes),
-    /** §5: the response, taken from the frozen contract so it cannot be softened here. */
-    response: classification === 'OK' ? Object.freeze([]) : (FAILURE_CLASSES[classification]?.response ?? Object.freeze([])),
-    workCannotProgress,
-    /** §5: the classification must never be read as license to retry. */
+    /** The response the runner acts on, from the admission schema. */
+    disposition: admitted.disposition,
+    cause: admitted.cause,
+    observations: admitted.observations,
+    missingSignals: admitted.missingSignals,
+    matrixResponse: admitted.matrixResponse,
+    detail: admitted.detail,
+    /** Gate 2: an admissible observation is recorded, never a reason to stop. */
+    isAStop: admitted.disposition !== 'ADMITTED',
+    workCannotProgress: admitted.disposition === 'CENSORED',
+    /** §5 of R3-L0C-F, retained: the classification is never license to retry. */
     retryPermitted: false,
-    classifiedConservatively: causes.some((cause) => cause.kind === 'INFRASTRUCTURE'),
+    classifiedConservatively: admitted.disposition === 'TRIAL_INVALID',
   });
+}
+
+/**
+ * R3-L0C-I Gate 1: THE RUN-ID REPLAY GUARD.
+ *
+ * THE DEFECT THIS CLOSES, measured against R3-L0C-F. Calling `runFailStopMatrix()` twice with the same exposed
+ * `runRoot` re-ran the whole schedule and launched every session AGAIN. The journal from the first run was sitting
+ * on disk, fully readable, and the second run ignored it. That is a replay of possibly-exposed sessions, which is
+ * the one thing the entire fail-stop protocol exists to prevent — and it is reachable by the ordinary act of
+ * running the same command twice.
+ *
+ * WHY THE GUARD IS A CLAIM FILE AND NOT A JOURNAL READ. The journal is the EVIDENCE; the claim is the LOCK. They
+ * are separate because a journal read is not atomic: two runners starting together would both read "no exposure
+ * yet" and both proceed. The claim is created with `wx` (exclusive), so exactly one runner can hold a run root,
+ * and the loser is REFUSED rather than raced.
+ *
+ * THE THREE OUTCOMES, and the middle one is the important one:
+ *
+ *   NEW                    no claim exists, so the run root is unspent. The claim is created and the run proceeds.
+ *   REFUSED_ALREADY_CLAIMED a claim exists and names a DIFFERENT run id. Another run owns this root.
+ *   REFUSED_REPLAY         a claim exists for THIS run id and the journal records exposure. The run has already
+ *                          happened; re-running it would re-launch exposed sessions.
+ *
+ * A claim for this run id with NO exposure recorded is also refused, and that is deliberate rather than strict for
+ * its own sake: the run root already carries a journal and a PRESERVE marker, so continuing into it would mix two
+ * runs' evidence in one directory. A fresh run belongs in a fresh root.
+ */
+export const CLAIM_FILE = 'run-claim.json';
+
+/** Gate 1: whether a run root may be claimed, and why not when it may not. */
+export function inspectRunClaim(input) {
+  const { runRoot, runId } = input;
+  const claimPath = join(runRoot, CLAIM_FILE);
+  const journalPath = join(runRoot, JOURNAL_FILE);
+  const claim = existsSync(claimPath) ? readJsonOrNull(claimPath) : null;
+  const journal = readJournal(journalPath);
+  const exposureIntents = journal.records.filter((record) => record.kind === 'EXPOSURE_INTENT_RECORDED').length;
+  const launches = journal.records.filter((record) => record.kind === 'WORKER_LAUNCH_RECORDED').length;
+
+  if (claim === null) {
+    return Object.freeze({
+      verdict: 'NEW',
+      mayProceed: true,
+      claim: null,
+      exposureIntents,
+      launches,
+      journalExists: journal.exists,
+      reason: 'no claim exists, so this run root is unspent',
+    });
+  }
+  if (claim.runId !== runId) {
+    return Object.freeze({
+      verdict: 'REFUSED_ALREADY_CLAIMED',
+      mayProceed: false,
+      claim,
+      exposureIntents,
+      launches,
+      journalExists: journal.exists,
+      reason: `the run root is claimed by run "${String(claim.runId)}", not "${runId}"; a run root belongs to exactly one run`,
+    });
+  }
+  if (exposureIntents > 0 || launches > 0) {
+    return Object.freeze({
+      verdict: 'REFUSED_REPLAY',
+      mayProceed: false,
+      claim,
+      exposureIntents,
+      launches,
+      journalExists: journal.exists,
+      reason: `run "${runId}" already recorded ${String(exposureIntents)} exposure-intent(s) and ${String(launches)} launch(es) in this run root; re-running it would re-launch possibly-exposed sessions, which is the replay fail-stop exists to prevent`,
+    });
+  }
+  return Object.freeze({
+    verdict: 'REFUSED_REPLAY',
+    mayProceed: false,
+    claim,
+    exposureIntents,
+    launches,
+    journalExists: journal.exists,
+    reason: `run "${runId}" already claimed this run root; a fresh run belongs in a fresh root, because continuing here would mix two runs' evidence`,
+  });
+}
+
+/** Read a JSON file, or null when it is absent or unreadable. */
+function readJsonOrNull(path) {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Gate 1: CLAIM A RUN ROOT, ATOMICALLY.
+ *
+ * The claim is created with the `wx` flag, so the creation IS the mutual exclusion: a second process attempting
+ * the same path gets `EEXIST` rather than a successful write. A process that loses the race is refused; it does
+ * not overwrite, and it does not proceed.
+ */
+export function claimRunRoot(input) {
+  const { runRoot, runId } = input;
+  const inspection = inspectRunClaim({ runRoot, runId });
+  if (inspection.mayProceed !== true) return Object.freeze({ claimed: false, inspection });
+  const claimPath = join(runRoot, CLAIM_FILE);
+  const record = { schemaVersion: 1, runId, claimedAt: new Date().toISOString(), pid: process.pid, exclusive: true };
+  try {
+    const handle = openSync(claimPath, 'wx');
+    try {
+      writeFileSync(handle, `${JSON.stringify(record, null, 2)}${NL}`, 'utf8');
+    } finally {
+      closeSync(handle);
+    }
+    return Object.freeze({ claimed: true, claim: Object.freeze(record), inspection });
+  } catch (error) {
+    /**
+     * The exclusive create failed, which means another process claimed the root between the inspection and the
+     * create. Re-inspect so the refusal names the actual holder rather than reporting a bare filesystem error.
+     */
+    const raced = inspectRunClaim({ runRoot, runId });
+    return Object.freeze({
+      claimed: false,
+      inspection: raced,
+      raceDetail: String(error?.code ?? error?.message ?? error).slice(0, 120),
+    });
+  }
 }
 
 /**
@@ -167,9 +280,9 @@ export function classifyOutcome(outcome, options = {}) {
  * outcome, and it may THROW (a host interruption) or hang (which the caller models with a timeout of its own).
  * The runner never calls it twice for a session.
  *
- * `validityGate` is the post-matrix gate. It receives the completed sessions and returns `{ green, detail }`. §14
- * lists the preconditions; the caller supplies the concrete checks, and the runner refuses to report completion
- * without a green gate over the FULL schedule.
+ * Gate 1: THE VALIDITY GATE IS REQUIRED, NOT DEFAULTED. R3-L0C-F supplied a green default when the caller omitted
+ * it, so forgetting the gate silently produced MATRIX_COMPLETE. A gate that defaults to green is not a gate. The
+ * parameter has no default, and its absence is refused before anything is claimed or launched.
  */
 export async function runFailStopMatrix(input) {
   const {
@@ -177,13 +290,32 @@ export async function runFailStopMatrix(input) {
     runRoot,
     schedule,
     launch,
-    validityGate = async () => ({ green: true, detail: 'no gate supplied' }),
+    validityGate,
     coverageFloor = 0,
     onSessionRecorded = null,
     /** §8: an injectable stop, so a falsifier can interrupt the run between two sessions deterministically. */
     beforeSession = null,
     closureDigest = null,
+    /** Gate 1: whether to enforce the run-id claim. A caller that owns a fresh root leaves this on. */
+    enforceRunClaim = true,
   } = input;
+
+  /**
+   * Gate 1: FAIL CLOSED BEFORE ANY WORKER LAUNCH.
+   *
+   * Both checks happen before the journal, the marker and the claim, so a refused run leaves the root exactly as
+   * it found it. This is the "fail closed before any worker launch" requirement: nothing is written, nothing is
+   * launched, and the refusal names its reason.
+   */
+  if (typeof validityGate !== 'function') {
+    throw new Error('REFUSED: runFailStopMatrix requires an explicit validityGate; a gate that defaults to green is not a gate, and R3-L0C-F let an omitted gate produce MATRIX_COMPLETE');
+  }
+  if (enforceRunClaim === true) {
+    const claim = claimRunRoot({ runRoot, runId });
+    if (claim.claimed !== true) {
+      throw new Error(`REFUSED: ${claim.inspection.verdict} — ${claim.inspection.reason}`);
+    }
+  }
 
   const machine = new FailStopStateMachine();
   const journalPath = join(runRoot, JOURNAL_FILE);
@@ -261,14 +393,22 @@ export async function runFailStopMatrix(input) {
     const classified = classifyOutcome(outcome, { coverageFloor });
 
     /** §4: an entered launch whose outcome is unknown is UNCERTAIN, never assumed to be a non-event. */
-    if (outcome?.outcomeUnknown === true) {
+    if (classified.disposition === 'TRIAL_INVALID' && classified.cause === 'OUTCOME_UNKNOWN_AFTER_LAUNCH') {
       uncertain.push(session.sessionId);
-      journal('SESSION_UNCERTAIN', { sessionId: session.sessionId, reason: outcome.uncertainReason ?? 'OUTCOME_UNKNOWN', detail: 'the launch was entered and its outcome is unknown; do not infer that no model call occurred' });
+      journal('SESSION_UNCERTAIN', { sessionId: session.sessionId, reason: outcome?.uncertainReason ?? 'OUTCOME_UNKNOWN', detail: 'the launch was entered and its outcome is unknown; do not infer that no model call occurred' });
       machine.transition('UNCERTAIN_PRESERVED', { sessionId: session.sessionId });
       break;
     }
 
-    if (classified.classification === 'OK') {
+    /**
+     * Gate 2: AN ADMISSIBLE OBSERVATION IS RECORDED AND THE MATRIX CONTINUES.
+     *
+     * This is the corrected branch. Under R3-L0C-F only an `OK` outcome was recorded; an incorrect oracle vector
+     * or a declined pull stopped the whole study. Under Gate 2 those are ADMITTED: the session produced a real,
+     * interpretable observation, which is precisely what the experiment exists to collect. The observations are
+     * carried on the record so the analysis can read them.
+     */
+    if (classified.disposition === 'ADMITTED') {
       /** §6: the per-generation record is journalled and fsynced BEFORE the next session starts. */
       const record = buildGenerationRecord({
         sessionId: session.sessionId,
@@ -297,25 +437,34 @@ export async function runFailStopMatrix(input) {
         timestamps: { launchedAt: outcome?.launchedAt ?? null, recordedAt: new Date().toISOString() },
         contentDigests: outcome?.contentDigests ?? {},
       });
-      journal('TRIAL_RECORDED', { sessionId: session.sessionId, record });
-      records.push(record);
+      /** Gate 2: the behavioural observations ride ON the record, so the analysis reads them rather than inferring them. */
+      const admittedRecord = Object.freeze({ ...record, observations: classified.observations, admission: 'ADMITTED' });
+      journal('TRIAL_RECORDED', { sessionId: session.sessionId, record: admittedRecord });
+      records.push(admittedRecord);
       completed.push(session.sessionId);
       machine.transition('TRIAL_RECORDED', { sessionId: session.sessionId });
-      onSessionRecorded?.({ session, record, completed: completed.slice() });
+      onSessionRecorded?.({ session, record: admittedRecord, completed: completed.slice() });
       continue;
     }
 
-    /** §5: a load-bearing failure stops the WHOLE matrix, not only the current generation. */
+    /**
+     * Gate 2: A MACHINERY FAULT OR A CANONICAL-WORK BLOCKAGE STOPS THE WHOLE MATRIX.
+     *
+     * Only these two dispositions stop. The `CENSORED` case is distinguished on the failure record so the abort
+     * manifest can name a preserved censored trajectory rather than a harness fault — the distinction an operator
+     * needs, because one is a defect to fix and the other is a legitimate project outcome to report.
+     */
     lastFailure = Object.freeze({
       sessionId: session.sessionId,
-      failureClass: classified.classification === 'BEHAVIORAL' ? 'OBSERVABLE_BEHAVIORAL' : 'INFRASTRUCTURE_OR_PROTOCOL',
-      cause: classified.causes[0]?.cause ?? 'UNCLASSIFIED',
-      detail: classified.causes.map((cause) => cause.cause).join(', '),
-      workCannotProgress: classified.workCannotProgress,
+      failureClass: classified.disposition === 'CENSORED' ? 'CANONICAL_WORK_BLOCKAGE' : 'INFRASTRUCTURE_OR_PROTOCOL',
+      cause: classified.cause ?? 'UNCLASSIFIED',
+      detail: classified.detail,
+      workCannotProgress: classified.disposition === 'CENSORED',
+      disposition: classified.disposition,
     });
-    failed.push(Object.freeze({ sessionId: session.sessionId, failureClass: lastFailure.failureClass, cause: lastFailure.cause }));
-    journal('SESSION_FAILED', { sessionId: session.sessionId, failureClass: lastFailure.failureClass, cause: lastFailure.cause, causes: classified.causes, threw });
-    machine.transition('ABORT_PRESERVED', { sessionId: session.sessionId, cause: lastFailure.cause });
+    failed.push(Object.freeze({ sessionId: session.sessionId, failureClass: lastFailure.failureClass, cause: lastFailure.cause, disposition: classified.disposition }));
+    journal('SESSION_FAILED', { sessionId: session.sessionId, failureClass: lastFailure.failureClass, cause: lastFailure.cause, disposition: classified.disposition, threw });
+    machine.transition(classified.disposition === 'CENSORED' ? 'ABORT_PRESERVED' : 'ABORT_PRESERVED', { sessionId: session.sessionId, cause: lastFailure.cause, disposition: classified.disposition });
     break;
   }
 

@@ -323,6 +323,24 @@ export const CLOSURE_PARTS = Object.freeze([
     covers: 'the frozen schedule, the arm order, the seed, the expectations and the verdict rules',
     why: 'the plan is the experiment; a changed plan is a different experiment',
   }),
+  /**
+   * R3-L0C-I Gate 4: THE INTEGRATION LAYER, AS ITS OWN PART.
+   *
+   * §"Expand CLOSURE_FILES to cover every imported load-bearing module, including at least: fail-stop.mjs;
+   * journal.mjs; properties.mjs; actual primary matrix adapter; generation-child.mjs; instrumentation.mjs;
+   * R3-L0C-R analysis/admission; model route/settings; source and compiled shipped runtime."
+   *
+   * IT IS A SEPARATE PART RATHER THAN ADDITIONS TO THE EXISTING FIVE, and the reason is attribution. The five parts
+   * name layers a reader already reasons about; folding the harness modules into them would make a drift in the
+   * journal look like a drift in the shipped runtime, and the whole point of separating parts is that a moved
+   * digest names WHICH layer moved. A sixth part says "the code that runs the experiment changed", which is a
+   * different claim from "the code under experiment changed" and is exactly the distinction a reader needs.
+   */
+  Object.freeze({
+    id: 'INTEGRATION_CLOSURE',
+    covers: 'the harness modules that execute the primary matrix: the fail-stop runner, its journal, the property evaluator, the outcome-admission schema, the primary adapter, the generation child and the analysis/admission path',
+    why: 'these modules decide what is recorded and what is admitted; a change to the journal or the admission schema changes the experiment as surely as a change to the shipped runtime',
+  }),
 ]);
 
 /**
@@ -383,7 +401,65 @@ export const CLOSURE_FILES = Object.freeze({
     'scripts/r3l0c/generation-child.mjs',
     'scripts/r3l0c/build-prehistory.mjs',
   ]),
+  /**
+   * Gate 4: THE INTEGRATION LAYER'S FILES.
+   *
+   * The list is seeded from the named modules Gate 4 requires and COMPLETED by the import-graph derivation in
+   * `closure-graph.mjs`, which is what keeps it honest: `verifyClosureCompleteness` refuses a closure that omits a
+   * reachable module, so a new import cannot be silently uncovered.
+   */
+  INTEGRATION_CLOSURE: Object.freeze([
+    'scripts/r3l0cf/fail-stop.mjs',
+    'scripts/r3l0cf/journal.mjs',
+    'scripts/r3l0cf/properties.mjs',
+    'scripts/r3l0cf/outcome-admission.mjs',
+    'scripts/r3l0cf/primary-matrix.mjs',
+    'scripts/r3l0cf/primary-matrix-driver.mjs',
+    'scripts/r3l0cf/scripted-primary-worker.mjs',
+    'scripts/r3l0cf/capital-sufficiency.mjs',
+    'scripts/r3l0cf/closure.mjs',
+    'scripts/r3l0cf/closure-mutation.mjs',
+    'scripts/r3l0cf/closure-graph.mjs',
+    'scripts/r3l0cf/containment.mjs',
+    'scripts/r3l0cf/substitutability.mjs',
+    'scripts/r3l0cf/boundary-witness.mjs',
+    'scripts/r3l0cf/scripted-generation.mjs',
+    'scripts/r3l0cf/crash-matrix.mjs',
+    'scripts/r3l0cf/policy.mjs',
+    'scripts/r3l0cf/regression.mjs',
+    'scripts/r3l0cf/qualification.mjs',
+    'scripts/r3l0cf/falsifiers.mjs',
+    'scripts/r3l0cf/baseline/legacy-matrix.mjs',
+    'scripts/r3l0c/generation-child.mjs',
+    'scripts/r3l0c/instrumentation.mjs',
+    'scripts/r3l0c/trajectory.mjs',
+    'scripts/r3l0cr/analyse.mjs',
+    'scripts/r3l0cr/baseline.mjs',
+    'scripts/r3l0cr/attempts.mjs',
+    'scripts/r3l0cr/mutations.mjs',
+    'scripts/r3l0cr/contract.mjs',
+    'scripts/r3l0cr/route.mjs',
+    'scripts/r3l0cr/settings.mjs',
+    'scripts/r3l0cr/boundary-probe.mjs',
+    'scripts/r3l0cr/capital-ports.mjs',
+    'scripts/r3l0cr/matrix.mjs',
+    'scripts/r3l0b/containment.mjs',
+    'scripts/r3l0b/canaries.mjs',
+    'scripts/r3l0b/mutations.mjs',
+    'scripts/r3l0b/contract.mjs',
+    'scripts/r3l0c/capital-ports.mjs',
+    'scripts/r3l0c/evidence-mode.mjs',
+    'scripts/r3l0c/immutability.mjs',
+    'scripts/r3l0c/matrix.mjs',
+    'scripts/r3l0c/run-root.mjs',
+    'scripts/r3l0c/preflight.mjs',
+    'scripts/r3l0c/plumbing.mjs',
+    'scripts/r3l0c/witness.mjs',
+    'scripts/r3s0/actors.mjs',
+    'scripts/gates/env.mjs',
+  ]),
 });
+
 
 /**
  * §9: THE SELF-REFERENCE RULE.
