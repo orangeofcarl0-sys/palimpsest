@@ -1,0 +1,767 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A",
+  "kind": "paid activation boundary qualification",
+  "baseline": "b6c15e69da3541837a822d4751db50b34794a279",
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "prehistory": {
+    "head": "8fa6f103476566a4d310bf2814dfba158accfb86",
+    "revision": 4,
+    "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+    "trajectoryCount": 8,
+    "sessionCount": 16
+  },
+  "escapedDefects": {
+    "declared": 8,
+    "violatedByBaseline": 8,
+    "allViolated": true,
+    "ids": [
+      "F1_REPLAY_BEFORE_CLAIM",
+      "F2_OWN_WORLD_PROTECTED",
+      "F3_TREATMENT_MISMATCH_ESCAPED",
+      "F4_HOST_AUDIT_AS_WORKER_UPTAKE",
+      "F5_NO_GENUINE_PAID_MODE",
+      "F6_DEFAULT_POST_MATRIX_GREEN",
+      "F7_CLOSURE_NOT_ENFORCED_AT_LAUNCH",
+      "F8_CONFLICTING_TIMEOUT_BUDGETS"
+    ],
+    "falsifiers": [
+      {
+        "id": "F1_REPLAY_BEFORE_CLAIM",
+        "property": "a replayed invocation is refused before any protected state changes",
+        "firstRunTerminal": "MATRIX_COMPLETE",
+        "secondRunRefused": false,
+        "secondRunVerdict": "NEW",
+        "secondRunTerminal": "MATRIX_COMPLETE",
+        "secondRunLaunchedSessions": 2,
+        "stateDigestBefore": "1b707a0a711048485cc0ebaa0e73249f8fcca4f9ad79665da5048e35b5cd82d1",
+        "stateDigestAfter": "a4a8cd2282e2ee86f4e36aa0b2645a02633ad9a6ac3727c7167046992fe60088",
+        "stateChangedBeforeRefusal": true,
+        "firstRunEvidence": {
+          "run-claim.json": "c82984129a888ebc",
+          "generation-journal.jsonl": "ce8d3e6b4fcf082e",
+          "abort-manifest.json": "52a5e646ca50d059",
+          "evidence-index.json": "6bb7660958248203",
+          "PRESERVE": "c2b6de6714ce91c3"
+        },
+        "secondRunEvidence": {
+          "run-claim.json": "6039bb63cfea064e",
+          "generation-journal.jsonl": "4242c8d1f94a32b1",
+          "abort-manifest.json": "5478239fd98bfcb2",
+          "evidence-index.json": "b1a86bd5ea1169d0",
+          "PRESERVE": "b01f3c088bed18f4"
+        },
+        "evidenceRewritten": [
+          "run-claim.json",
+          "generation-journal.jsonl",
+          "abort-manifest.json",
+          "evidence-index.json",
+          "PRESERVE"
+        ],
+        "addedFiles": [],
+        "modifiedFiles": [
+          "PRESERVE",
+          "abort-manifest.json",
+          "evidence-index.json",
+          "generation-journal.jsonl",
+          "run-claim.json"
+        ],
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the baseline REWROTE 5 preserved evidence artifact(s) [run-claim.json, generation-journal.jsonl, abort-manifest.json, evidence-index.json, PRESERVE] and did NOT refuse the replay (verdict NEW); the destructive preparation runs before the guard that would have read that evidence"
+      },
+      {
+        "id": "F2_OWN_WORLD_PROTECTED",
+        "property": "a trajectory's own world is never in its own protected roots",
+        "callerArgumentCount": 2,
+        "currentTrajectoryIdArgument": null,
+        "roots": [
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\private\\units",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\units\\b0-C\\state",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\private\\oracle",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\private\\reference",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\private\\control",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\private\\evidence",
+          "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\units\\b0-C\\world"
+        ],
+        "rootCount": 7,
+        "perTrajectory": {
+          "b0-C": {
+            "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cia-qualification-37840\\falsifier-roots\\units\\b0-C\\world",
+            "ownWorldIsProtected": true,
+            "siblingWorldsProtected": 0
+          }
+        },
+        "trajectoriesWithOwnWorldProtected": [
+          "b0-C"
+        ],
+        "ownWorldProtectedCount": 1,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "all 1 of 1 trajectories have their OWN world in their own protected set, because the baseline passes no currentTrajectoryId"
+      },
+      {
+        "id": "F3_TREATMENT_MISMATCH_ESCAPED",
+        "property": "a consumer-visible set that differs from the frozen expectation is NOT_APPLIED and TRIAL_INVALID",
+        "expectedHandles": [
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+          "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+        ],
+        "observedHandles": [
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0"
+        ],
+        "baselineFieldPresentOnTheRealReport": false,
+        "baselineDetectsMismatch": false,
+        "frozenRealization": "NOT_APPLIED",
+        "frozenSaysMismatch": true,
+        "mismatchEscaped": true,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the frozen contract says NOT_APPLIED while the baseline adapter reads a field the generation child never writes, so it reports no mismatch"
+      },
+      {
+        "id": "F4_HOST_AUDIT_AS_WORKER_UPTAKE",
+        "property": "Worker uptake is measured from the worker’s own telemetry, never from a host audit",
+        "visibleHandles": [
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+          "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+        ],
+        "hostResolveAuditCount": 4,
+        "workerPullObservedCount": 0,
+        "workerPullObservedHandles": [],
+        "shippedParserUsed": true,
+        "baselineWouldReportUptake": true,
+        "actualWorkerUptakeIsZero": true,
+        "declinedObservationReachableUnderBaseline": false,
+        "conflationEscaped": true,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the baseline reads 4 host audit resolutions as governed pulls while the worker's own telemetry reports 0 pulls, so a declined pull is indistinguishable from uptake"
+      },
+      {
+        "id": "F5_NO_GENUINE_PAID_MODE",
+        "property": "the primary driver can select an actual model worker under an explicit PRIMARY mode",
+        "baselineWorkerForAnyInput": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r3l0cf\\scripted-primary-worker.mjs",
+        "baselineIsAScriptedWorker": true,
+        "inputCanSelectShippedWorker": false,
+        "primaryWorkerResolved": true,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the baseline driver hardcodes the scripted worker as `realDshBin`, so no input can select a real model worker and nothing in the record names which worker ran"
+      },
+      {
+        "id": "F6_DEFAULT_POST_MATRIX_GREEN",
+        "property": "completion requires an actual post-matrix validity proof, not a session count",
+        "baselineGateSource": "completed.length === schedule.length",
+        "baselineGateGreen": true,
+        "requiredBeyondCount": [
+          "all four matched blocks complete and admissible",
+          "pre- and post-matrix validity gates green",
+          "actual treatment realization matches the frozen expectation",
+          "experiment containment holds",
+          "the execution closure matches"
+        ],
+        "baselineChecksAnyOfThem": false,
+        "defaultPostMatrixGreen": true,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the baseline default gate is `completed.length === schedule.length` and checks nothing else, so sixteen admitted sessions complete the matrix with no validity proof"
+      },
+      {
+        "id": "F7_CLOSURE_NOT_ENFORCED_AT_LAUNCH",
+        "property": "an omitted, null or drifted closure digest refuses execution",
+        "results": [
+          {
+            "label": "OMITTED",
+            "accepted": true,
+            "terminalState": "MATRIX_COMPLETE",
+            "recordedClosureDigest": null,
+            "refused": false
+          },
+          {
+            "label": "NULL",
+            "accepted": true,
+            "terminalState": "MATRIX_COMPLETE",
+            "recordedClosureDigest": null,
+            "refused": false
+          },
+          {
+            "label": "DRIFTED",
+            "accepted": true,
+            "terminalState": "MATRIX_COMPLETE",
+            "recordedClosureDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "refused": false
+          }
+        ],
+        "allAccepted": true,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the baseline accepts an omitted, a null and a drifted closure digest alike, and records whatever it was given without comparing it to anything"
+      },
+      {
+        "id": "F8_CONFLICTING_TIMEOUT_BUDGETS",
+        "property": "the outer child budget exceeds the inner worker budget plus the settlement interval",
+        "outerChildMs": 900000,
+        "innerWorkerMs": 1800000,
+        "outerExpiresFirst": true,
+        "conflictMs": 900000,
+        "requiredOuterMinimum": 2100000,
+        "baselineDistinguishesUnresolvedExposure": false,
+        "PROPERTY_VIOLATED_BY_BASELINE": true,
+        "detail": "the outer budget (900000ms) expires 900000ms BEFORE the inner worker budget (1800000ms), so the harness kills a worker its own port still considers live"
+      }
+    ]
+  },
+  "executionClosure": {
+    "digest": "3f29fdc66470f7e1832463a87803aefebc79c21bd5936499c142d506d409c381",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE"
+    ],
+    "fileCount": 114,
+    "complete": true,
+    "runtimeManifestModules": 8,
+    "runtimeManifestMissing": [],
+    "stageHarnessModules": 18,
+    "mutationsProven": true,
+    "mutationArms": [
+      "RUNTIME_MANIFEST_DYNAMIC_MODULE",
+      "STAGE_HARNESS_MODULE",
+      "TOOLCHAIN_VERSION"
+    ],
+    "walkerBlindSpotCount": 8,
+    "walkerBlindSpot": [
+      "dist/src/advanced.js",
+      "dist/src/interaction/work_delegation.js",
+      "dist/src/interaction/delegation.js",
+      "dist/src/project_workspace/index.js",
+      "dist/src/proof_asset/index.js",
+      "dist/src/reasoning_cell/index.js",
+      "dist/src/procedures/index.js",
+      "dist/src/deployment/work_worker.js"
+    ]
+  },
+  "containment": {
+    "verdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true,
+    "aclWeakened": false,
+    "sandboxAvailable": true,
+    "perUnit": [
+      {
+        "trajectoryId": "b0-C",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b0-H",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b1-C",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b1-H",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b2-C",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b2-H",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b3-C",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      },
+      {
+        "trajectoryId": "b3-H",
+        "verdict": "PASS",
+        "ownWorldExcluded": true,
+        "ownWorldReadable": true,
+        "ownWorldWritable": true,
+        "siblingWorldsProtected": 7,
+        "reachable": [],
+        "escaped": [],
+        "protectedRoots": 20
+      }
+    ]
+  },
+  "primaryMatrix": {
+    "mode": "DETERMINISTIC",
+    "workerExecutable": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r3l0cia\\scripted-worker.mjs",
+    "workerIsStageScripted": true,
+    "terminalState": "MATRIX_COMPLETE",
+    "scheduleLength": 16,
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "failure": null,
+    "propertiesHold": true,
+    "causalVerdictIssued": false,
+    "treatmentByArmGeneration": {
+      "C/G1": [
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "C/G2": [
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "H/G1": [
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "H/G2": [
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ]
+    },
+    "boundaryExpectations": {
+      "H/G1": 0,
+      "H/G2": 0,
+      "C/G1": 2,
+      "C/G2": 4
+    },
+    "boundariesExact": true,
+    "workerUptakeIsMeasured": {
+      "C/G1": [
+        2,
+        2,
+        2,
+        2
+      ],
+      "C/G2": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "H/G1": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "H/G2": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "launches": 1,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": [],
+        "propertiesHold": true
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "launches": 8,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": [],
+        "propertiesHold": true
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "launches": 16,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": [],
+        "propertiesHold": true
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true
+  },
+  "timeouts": {
+    "outerChildMs": 2220000,
+    "innerWorkerMs": 1800000,
+    "settlementMs": 300000,
+    "outerExceedsInnerPlusSettlement": true,
+    "marginMs": 120000,
+    "law": "the outer child budget must exceed the worker execution budget plus the required settlement interval"
+  },
+  "quarantine": {
+    "authorized": true,
+    "caller": "r3l0c-ia-primary-plan",
+    "authoritativePath": "scripts/r3l0cia/primary-adapter.mjs",
+    "legacyMatrixQuarantined": true,
+    "legacyMatrixStillExecutable": true
+  },
+  "acceptance": {
+    "declared": 16,
+    "tests": [
+      "A01_REPLAY_REFUSAL_BEFORE_ANY_MUTATION",
+      "A02_SAME_RUN_ID_CONCURRENT_CLAIM_CONFLICT",
+      "A03_CLAIMED_CORRUPT_PARTIAL_ROOT_REFUSAL",
+      "A04_EIGHT_PER_TRAJECTORY_CONFINEMENT_AND_LIVENESS",
+      "A05_C_WRONG_HANDLE_KIND_SHORT_COUNT_MUTATIONS",
+      "A06_C_VISIBLE_FOUR_PULLED_ZERO_HOST_RESOLVED_FOUR",
+      "A07_WORKER_PULL_TELEMETRY_SCHEMA_PARITY",
+      "A08_MISSING_OR_INVALID_WORKER_RESULT_REFUSAL",
+      "A09_CHILD_REPORT_ERROR_WITH_HOST_FINISHED_REFUSAL",
+      "A10_REAL_VERSUS_SCRIPTED_MODE_SELECTION",
+      "A11_TIMEOUT_UNKNOWN_DESCENDANT_SURVIVAL",
+      "A12_MISSING_OR_STALE_CLOSURE_REFUSAL",
+      "A13_MISSING_OR_FALSE_POST_MATRIX_VALIDITY_GATE_REFUSAL",
+      "A14_RECONSTRUCTION_COST_PARSER_AGAINST_PRESERVED_ARTIFACTS",
+      "A15_HEALTHY_SIXTEEN_SESSION_SCRIPTED_RUN",
+      "A16_FIRST_MIDDLE_LAST_FAILURE_NO_LATER_LAUNCH"
+    ]
+  },
+  "immutability": {
+    "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+    "verdict": "PASS",
+    "detail": "protected namespaces: 21; working files: 370",
+    "protectedNamespaces": [
+      "research-evidence/r1",
+      "research-evidence/r1-h",
+      "research-evidence/r1-hc",
+      "research-evidence/r1-hr",
+      "research-evidence/r1-l",
+      "research-evidence/r1-r",
+      "research-evidence/r1-s",
+      "research-evidence/r2-e",
+      "research-evidence/r2-lr",
+      "research-evidence/r2-m",
+      "research-evidence/r2-s",
+      "research-evidence/r2-u",
+      "research-evidence/r2-v",
+      "research-evidence/r2-vr",
+      "research-evidence/r3-a",
+      "research-evidence/r3-ae",
+      "research-evidence/r3-l0",
+      "research-evidence/r3-l0a",
+      "research-evidence/r3-l0b",
+      "research-evidence/r3-s0",
+      "research-evidence/r3-spec"
+    ],
+    "workingFileCount": 370,
+    "restoreAvailable": false,
+    "baselineRevision": "e51df1f4c2a666ffa7364dbdc108eb9eb7eae2fb"
+  },
+  "evidenceCorrections": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I-A",
+    "kind": "evidence corrections",
+    "testCount": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-I-A",
+      "kind": "test count correction",
+      "correctionId": "R3_L0C_IA_TEST_COUNT_DELTA",
+      "prior": {
+        "stage": "R3-L0C-I",
+        "baseline": "b6c15e69da3541837a822d4751db50b34794a279",
+        "unitTests": 3959,
+        "unitFiles": 286
+      },
+      "current": {
+        "stage": "R3-L0C-I-A",
+        "baseline": "b6c15e69da3541837a822d4751db50b34794a279",
+        "unitTests": 4008,
+        "unitFiles": 289
+      },
+      "delta": {
+        "tests": 49,
+        "files": 3
+      },
+      "addedTestFiles": [
+        "r3l0cia_falsifiers.test.ts",
+        "r3l0cia_gates.test.ts",
+        "r3l0cia_qualification.test.ts"
+      ],
+      "addedTestFileCount": 3,
+      "reason": "this stage adds its own acceptance, falsifier and gate suites; the prior stage’s 3959/286 is unchanged and remains its own measurement",
+      "priorEvidenceEdited": false,
+      "law": "a published count is corrected forward by a new commit that names the cause, never by rewriting the record that made it"
+    },
+    "liveGates": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-I-A",
+      "kind": "live gate disclosure re-measurement",
+      "disclosure": {
+        "gates": [
+          "D2",
+          "D4",
+          "D5"
+        ],
+        "status": "DISCLOSED_NOT_PASSED",
+        "priorStageMeasurement": "each failing live gate emitted ZERO model requests; every worker session log contained exactly one record, the session header",
+        "requiresAModelRoute": true,
+        "belongsAfterPaidAuthorization": true,
+        "outsideThePrimarySixteenSessions": true,
+        "presentedAsPassed": false,
+        "thisStageReMeasuredIt": true
+      },
+      "observations": [],
+      "logsRead": 0,
+      "zeroRequestLogs": 0,
+      "presentedAsPassed": false,
+      "requiresAModelRoute": true,
+      "thisStageEnteredPrimary": false,
+      "note": "the live gates remain disclosed rather than passed; their verdict requires a model route this stage is forbidden to use"
+    },
+    "priorEvidenceEdited": false,
+    "oldCommitsRewritten": false,
+    "forcePush": false,
+    "law": "corrections are forward commits; the prior stage’s evidence remains byte-identical"
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "3f29fdc66470f7e1832463a87803aefebc79c21bd5936499c142d506d409c381",
+    "current": "3f29fdc66470f7e1832463a87803aefebc79c21bd5936499c142d506d409c381",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "plan": {
+    "planId": "r3-l0c-ia-primary-plan",
+    "digest": "3f29fdc66470f7e1832463a87803aefebc79c21bd5936499c142d506d409c381",
+    "supersedes": "r3-l0c-i-primary-plan",
+    "frozenClosure": "3f29fdc66470f7e1832463a87803aefebc79c21bd5936499c142d506d409c381"
+  },
+  "verdicts": {
+    "RUN_ROOT_ACTIVATION": "PASS",
+    "REPLAY_BEFORE_MUTATION": "PASS",
+    "ACTUAL_CONTAINMENT": "PASS",
+    "TREATMENT_REALIZATION": "PASS",
+    "WORKER_UPTAKE_PROVENANCE": "PASS",
+    "PRIMARY_MODE_CONFIGURED": "PASS",
+    "MODEL_EXECUTION_IN_THIS_STAGE": "ZERO",
+    "OUTCOME_ADMISSION": "PASS",
+    "TIMEOUT_UNCERTAINTY": "PASS",
+    "RECONSTRUCTION_INSTRUMENTATION": "PASS",
+    "POST_MATRIX_VALIDITY": "PASS",
+    "EXECUTION_CLOSURE": "MATCH",
+    "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+    "PROMPT_NEUTRALITY": "LIMITED",
+    "FAIL_STOP_POLICY": "PROPOSED",
+    "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+  }
+}
