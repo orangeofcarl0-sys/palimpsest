@@ -30,7 +30,7 @@ import { assertAuthoritativePath } from "../scripts/r3l0ciar/modes.mjs";
 import { admissionFault, ADMISSION_CONTROL_OUTCOMES, ADMISSION_POSITIVE_OUTCOME } from "../scripts/r3l0ciar/admission.mjs";
 import { buildProspectivePlan } from "../scripts/r3l0ciar/prospective-plan.mjs";
 import { effectiveRouteConfiguration, realizationPreflight } from "../scripts/r3l0ciar/preflight.mjs";
-import { digestRoot, controlPreTrialReducer, controlRouteIdentity, controlAdmission, controlUptakeProvenance, controlCostAttribution, controlPostMatrixGate, controlTimeoutAndAuthorization } from "../scripts/r3l0ciar/acceptance.mjs";
+import { controlPreTrialReducer, controlRouteIdentity, controlAdmission, controlUptakeProvenance, controlCostAttribution, controlPostMatrixGate, controlTimeoutAndAuthorization } from "../scripts/r3l0ciar/acceptance.mjs";
 import { digestRunRootState } from "../scripts/r3l0ciar/falsifiers.mjs";
 import { CORRECTION_DEFECTS, POST_MATRIX_CONDITIONS, PRE_TRIAL_REQUIREMENTS, UPTAKE_PROVENANCE } from "../scripts/r3l0ciar/contract.mjs";
 
@@ -126,18 +126,18 @@ describe("R3-L0C-I-A-R §2 — one authoritative pipeline", () => {
   }, 1_800_000);
 
   it("A-replay: a replayed run is refused at the claim with zero bytes changed", async () => {
-    const runRoot = join(BASE, "replay");
-    const first = await runPrimaryMatrix({
-      runId: "r3l0ciar-replay", runRoot,
-      prehistory: { world: prehistory.world, state: prehistory.state }, admittedRefs: refs,
-      installHostBundle, dshHome, authorizedBy: "r3-l0c-iar-primary-plan", caller: "r3-l0c-iar-primary-plan",
-      plan, closure, containment, mode: "DETERMINISTIC", systemValid: true,
-    });
-    expect(first.PIPELINE).toBe("COMPLETED");
+    /**
+     * THE ROOT IS THE HEALTHY RUN'S OWN. A replay is a second invocation of the SAME run id against the SAME root,
+     * so reusing the memoized healthy root measures the property directly AND avoids a second full sixteen-session
+     * matrix — which matters because each session spawns a child, a tee and a worker, and this suite shares the
+     * host's process budget with the other stage suites.
+     */
+    const healthy = await runCase("healthy");
+    const runRoot = healthy.runRoot!;
     const trajectoryIds = [...new Set(schedule.map((session: { trajectoryId: string }) => session.trajectoryId))].sort();
     const before = digestRunRootState(runRoot, trajectoryIds);
     const second = await runPrimaryMatrix({
-      runId: "r3l0ciar-replay", runRoot,
+      runId: "r3l0ciar-healthy", runRoot,
       prehistory: { world: prehistory.world, state: prehistory.state }, admittedRefs: refs,
       installHostBundle, dshHome, authorizedBy: "r3-l0c-iar-primary-plan", caller: "r3-l0c-iar-primary-plan",
       plan, closure, containment, mode: "DETERMINISTIC", systemValid: true,
@@ -149,7 +149,7 @@ describe("R3-L0C-I-A-R §2 — one authoritative pipeline", () => {
     expect(second.run).toBeNull();
     /** §2: the property. The refusal must not have changed a byte. */
     expect(after.digest).toBe(before.digest);
-    expect(digestRoot(runRoot)).toBe(digestRoot(runRoot));
+    expect(after.files).toEqual(before.files);
   }, 1_800_000);
 
   it("§2: the claim is verified against disk and a caller flag cannot bypass it", async () => {
@@ -341,15 +341,25 @@ describe("R3-L0C-I-A-R §7 — the post-matrix causal gate", () => {
 
 describe("R3-L0C-I-A-R §8 — timeout and authorization", () => {
   it("§8: a worker that reports then hangs is UNCERTAIN, not an established exit", async () => {
-    process.env.R3L0CIA_HANG_MS = "20000";
-    const result = await runCase("fault-hang", { faultAt: "FIRST", faultKind: PRIMARY_FAULTS.REPORT_THEN_HANG, timeoutMs: 4_000 });
-    expect(result.terminalState).toBe("UNCERTAIN_PRESERVED");
-    expect((result.run!.uncertainSessions as readonly string[]).length).toBeGreaterThan(0);
-    const { inspectPreservedRun } = await import("../scripts/r3l0cf/fail-stop.mjs");
-    const inspection = inspectPreservedRun(result.runRoot!);
-    expect(inspection.mayResumeAutomatically).toBe(false);
-    expect(inspection.mayReplaceAutomatically).toBe(false);
-    expect(inspection.verdict).toBe("UNCERTAIN");
+    /**
+     * The hang is bounded and interruptible: the worker reports, sleeps, and ends early on host disconnect. The
+     * variable is RESTORED afterwards so it cannot leak into a later test in this worker process.
+     */
+    const previousHang = process.env.R3L0CIA_HANG_MS;
+    process.env.R3L0CIA_HANG_MS = "8000";
+    try {
+      const result = await runCase("fault-hang", { faultAt: "FIRST", faultKind: PRIMARY_FAULTS.REPORT_THEN_HANG, timeoutMs: 4_000 });
+      expect(result.terminalState).toBe("UNCERTAIN_PRESERVED");
+      expect((result.run!.uncertainSessions as readonly string[]).length).toBeGreaterThan(0);
+      const { inspectPreservedRun } = await import("../scripts/r3l0cf/fail-stop.mjs");
+      const inspection = inspectPreservedRun(result.runRoot!);
+      expect(inspection.mayResumeAutomatically).toBe(false);
+      expect(inspection.mayReplaceAutomatically).toBe(false);
+      expect(inspection.verdict).toBe("UNCERTAIN");
+    } finally {
+      if (previousHang === undefined) delete process.env.R3L0CIA_HANG_MS;
+      else process.env.R3L0CIA_HANG_MS = previousHang;
+    }
   }, 1_800_000);
 
   it("§8: a boolean is a signal, not an authorization decision", async () => {
@@ -417,6 +427,16 @@ describe("R3-L0C-I-A-R §2/§3 — confinement and the closure", () => {
     const mutations = await proveClosureMutations();
     expect(mutations.ALL_MUTATIONS_PROVEN).toBe(true);
     expect(mutations.failing).toEqual([]);
+    /**
+     * §7: the mutations are computed by OVERRIDE, so the tree is never written. This is the property that keeps a
+     * parallel test file from hashing a mutated byte — the race that made this file fail 3 tests under a full run.
+     */
+    expect(mutations.treeMutated).toBe(false);
+    expect(mutations.computedByOverride).toBe(true);
+    for (const arm of mutations.arms as readonly { PROPERTY_PROVEN: boolean; computedByOverride?: boolean }[]) {
+      expect(arm.PROPERTY_PROVEN).toBe(true);
+      expect(arm.computedByOverride).toBe(true);
+    }
   }, 900_000);
 
   it("§7: the closure is complete over the stage harness and the runtime manifest", async () => {

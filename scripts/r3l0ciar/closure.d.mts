@@ -29,10 +29,13 @@ export interface ClosureMutations {
   readonly schemaVersion: number;
   readonly stage: string;
   readonly kind: string;
-  readonly arms: readonly Readonly<Record<string, unknown>>[];
+  readonly arms: readonly { readonly id: string; readonly target: string; readonly PROPERTY_PROVEN: boolean; readonly computedByOverride?: boolean; readonly partMoved?: boolean; readonly digestBefore?: string; readonly digestMutated?: string }[];
   readonly blindSpot: Readonly<Record<string, unknown>>;
   readonly ALL_MUTATIONS_PROVEN: boolean;
   readonly failing: readonly string[];
+  readonly computedByOverride: boolean;
+  readonly treeMutated: boolean;
+  readonly law: string;
 }
 
 export const STAGE_HARNESS_MODULES: readonly string[];

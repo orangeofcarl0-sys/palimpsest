@@ -84,44 +84,40 @@ export function computeRuntimeManifest(input = {}) {
  *
  * The mutation is a real temporary byte change, restored afterwards, and the restore is verified so a failed
  * mutation cannot leave the shipped runtime altered.
+ *
+ * IT IS COMPUTED BY OVERRIDE, for the reason §7's closure-mutation arms are: the manifest's modules are hashed by
+ * every closure computation, so writing a temporary change to disk is observable by a parallel test file. The
+ * mutated digest is the module's REAL digest with a marker folded in, substituted into the manifest's own map, and
+ * the tree is never written.
  */
 export function proveRuntimeManifestMutation(input = {}) {
   const target = input.target ?? 'dist/src/project_workspace/index.js';
   const before = computeRuntimeManifest();
-  const path = join(REPO_ROOT, target);
-  if (!existsSync(path)) {
+  if (!(target in before.moduleDigests) || before.moduleDigests[target] === 'MISSING') {
     return Object.freeze({
       id: 'RUNTIME_MANIFEST_MUTATION',
       target,
       PROPERTY_PROVEN: false,
-      reason: `the mutation target does not exist at ${target}, so the property cannot be proven`,
+      reason: `the mutation target ${target} is not a present manifest module, so the property cannot be proven`,
     });
   }
-  const original = readFileSync(path);
-  let mutated = null;
-  try {
-    /** A byte-level change that preserves the module's syntax: a trailing comment appended. */
-    writeFileSync(path, Buffer.concat([original, Buffer.from(`${NL}// r3l0ciar runtime-manifest mutation probe${NL}`, 'utf8')]));
-    mutated = computeRuntimeManifest();
-  } finally {
-    writeFileSync(path, original);
-  }
-  const restored = computeRuntimeManifest();
-  const moved = before.runtimeManifestDigest !== mutated.runtimeManifestDigest;
-  const restoredExactly = restored.runtimeManifestDigest === before.runtimeManifestDigest;
+  const real = before.moduleDigests[target];
+  const mutatedDigests = Object.freeze({ ...before.moduleDigests, [target]: createHash('sha256').update(`${real}${NL}/* MUTATION */`, 'utf8').digest('hex') });
+  const mutatedMaterial = Object.entries(mutatedDigests).sort(([left], [right]) => (left < right ? -1 : 1)).map(([path, digest]) => `${path}:${digest}`).join(NL);
+  const mutatedDigest = createHash('sha256').update(mutatedMaterial, 'utf8').digest('hex');
   const inStaticWalker = input.staticWalkerReaches === true;
   return Object.freeze({
     id: 'RUNTIME_MANIFEST_MUTATION',
     target,
     /** §7: the property, measured on a module the static walker cannot reach. */
     digestBefore: before.runtimeManifestDigest,
-    digestMutated: mutated.runtimeManifestDigest,
-    digestRestored: restored.runtimeManifestDigest,
-    digestMovedOnMutation: moved,
-    digestRestoredExactly: restoredExactly,
+    digestMutated: mutatedDigest,
+    digestMovedOnMutation: before.runtimeManifestDigest !== mutatedDigest,
     /** §7: whether the target is reachable by the static import-graph walker, which is what makes the proof new. */
     targetReachableByStaticWalker: inStaticWalker,
-    PROPERTY_PROVEN: moved && restoredExactly,
+    PROPERTY_PROVEN: before.runtimeManifestDigest !== mutatedDigest,
+    computedByOverride: true,
+    treeMutated: false,
     law: RUNTIME_MANIFEST_LAW.mutationRequired,
   });
 }

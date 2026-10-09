@@ -1,0 +1,1037 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R",
+  "kind": "final activation wiring qualification",
+  "baseline": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "prehistory": {
+    "head": "d543fe7b923d5a9be77f9d1468b08c7761954c42",
+    "revision": 4,
+    "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+    "trajectoryCount": 8,
+    "sessionCount": 16
+  },
+  "correctionDefects": {
+    "declared": 8,
+    "measuredProperties": 9,
+    "allViolated": true,
+    "violated": [
+      "G1_AUTHORITATIVE_ENTRY_PREPARES_BEFORE_CLAIM",
+      "G2_PRETRIAL_REDUCER_YES_ONLY",
+      "G3_MODEL_ROUTE_IDENTITY_UNCHECKED",
+      "G4_CHILD_WORKER_ADMISSION_GAP",
+      "G5_UPTAKE_ZERO_VS_MISSING",
+      "G6_COST_ATTRIBUTION_FILENAME_ONLY",
+      "G7_POST_MATRIX_CAUSAL_ADMISSION_INCOMPLETE",
+      "G8_TIMEOUT_RESULT_LINE_AS_EXIT",
+      "G8_AUTHORIZATION_BOOLEAN_ACCEPTED"
+    ],
+    "notViolated": []
+  },
+  "executionClosure": {
+    "digest": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE"
+    ],
+    "fileCount": 118,
+    "complete": true,
+    "runtimeManifestModules": 8,
+    "runtimeManifestMissing": [],
+    "stageHarnessModules": 22,
+    "mutationsProven": true,
+    "walkerBlindSpotCount": 8
+  },
+  "containment": {
+    "verdict": "PASS",
+    "environmentVerdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true,
+    "aclWeakened": false,
+    "sandboxAvailable": true
+  },
+  "primaryMatrix": {
+    "mode": "DETERMINISTIC",
+    "workerExecutable": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\scripts\\r3l0ciar\\scripted-worker.mjs",
+    "workerIsStageScripted": true,
+    "pipeline": "COMPLETED",
+    "terminalState": "MATRIX_COMPLETE",
+    "scheduleLength": 16,
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "failure": null,
+    "propertiesHold": true,
+    "causalVerdictIssued": false,
+    "treatmentByArmGeneration": {
+      "C/G1": [
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 2,
+          "workerUptake": 2,
+          "hostAudit": 2,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "C/G2": [
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 4,
+          "workerUptake": 4,
+          "hostAudit": 4,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "H/G1": [
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ],
+      "H/G2": [
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        },
+        {
+          "visible": 0,
+          "workerUptake": 0,
+          "hostAudit": 0,
+          "realization": "APPLIED",
+          "observations": [
+            "INCORRECT_IMPLEMENTATION",
+            "COMPLETED_WORK_FAILS_CORRECTNESS"
+          ]
+        }
+      ]
+    },
+    "boundaryExpectations": {
+      "H/G1": 0,
+      "H/G2": 0,
+      "C/G1": 2,
+      "C/G2": 4
+    },
+    "boundariesExact": true,
+    "uptakeTelemetryInterpretable": true,
+    "costProvenance": "ABSENT",
+    "causalAdmission": {
+      "CAUSAL_EXPERIMENT_VALID": "NO",
+      "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+      "NET_COGNITIVE_COST": "NOT_EVALUABLE",
+      "partialObservationsPreservedForAudit": true,
+      "combinesInvalidOldRunWithNewMatrix": false,
+      "note": "the gate is mechanically green but the cost attribution is not a live primary observation, so the causal verdict is NOT_EVALUABLE"
+    }
+  },
+  "replay": {
+    "firstRunTerminal": "MATRIX_COMPLETE",
+    "secondRunPipeline": "REFUSED",
+    "secondRunRefusedAt": "ACQUIRE_EXCLUSIVE_RUN_ROOT",
+    "secondRunReason": "REFUSED_REPLAY",
+    "stateUnchangedByRefusal": true,
+    "bytesChanged": 0
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "controls": {
+    "preTrialReducer": {
+      "id": "PRETRIAL_VALIDITY_REDUCER",
+      "positiveControl": {
+        "allEightHealthy": true,
+        "ALL_SATISFIED": true,
+        "satisfiedCount": 8,
+        "unsatisfied": [],
+        "verdicts": [
+          {
+            "id": "SYSTEM_VALID",
+            "observed": "PASS",
+            "verdict": "PASS"
+          },
+          {
+            "id": "EXPERIMENT_ENVIRONMENT_VALID",
+            "observed": "PASS",
+            "verdict": "PASS"
+          },
+          {
+            "id": "CONTAINMENT",
+            "observed": "PASS",
+            "verdict": "PASS"
+          },
+          {
+            "id": "EXECUTION_CLOSURE",
+            "observed": "MATCH",
+            "verdict": "PASS"
+          },
+          {
+            "id": "SELECTION_REALIZATION_PREFLIGHT",
+            "observed": "PASS",
+            "verdict": "PASS"
+          },
+          {
+            "id": "ANALYSIS_PLAN_VALID",
+            "observed": "PASS",
+            "verdict": "PASS"
+          },
+          {
+            "id": "SCHEDULE_MATCH",
+            "observed": "MATCH",
+            "verdict": "PASS"
+          },
+          {
+            "id": "MODEL_ROUTE_CONFIGURATION_MATCH",
+            "observed": "MATCH",
+            "verdict": "PASS"
+          }
+        ],
+        "modelRouteIdentity": "MATCH",
+        "routeIdentityComparison": [
+          {
+            "field": "providerId",
+            "planned": "omnigate-route",
+            "actual": "omnigate-route",
+            "matches": true
+          },
+          {
+            "field": "modelId",
+            "planned": "deepseek-v4.1-flash",
+            "actual": "deepseek-v4.1-flash",
+            "matches": true
+          },
+          {
+            "field": "routeId",
+            "planned": "omnigate2api-deepseek-v41-flash",
+            "actual": "omnigate2api-deepseek-v41-flash",
+            "matches": true
+          },
+          {
+            "field": "settingsDigest",
+            "planned": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd",
+            "actual": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd",
+            "matches": true
+          }
+        ],
+        "containmentPass": "PASS",
+        "closureMatch": "PASS",
+        "preflightPass": "PASS"
+      },
+      "negatives": [
+        {
+          "id": "SYSTEM_VALID",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "EXPERIMENT_ENVIRONMENT_VALID",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "CONTAINMENT",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "EXECUTION_CLOSURE",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "SELECTION_REALIZATION_PREFLIGHT",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "ANALYSIS_PLAN_VALID",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "SCHEDULE_MATCH",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        },
+        {
+          "id": "MODEL_ROUTE_CONFIGURATION_MATCH",
+          "verdict": "FAIL",
+          "satisfied": false,
+          "allSatisfied": false,
+          "refused": true
+        }
+      ],
+      "allNegativesRefused": true,
+      "mutant": {
+        "id": "G2_PRETRIAL_REDUCER_YES_ONLY",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline reducer left three healthy conditions unsatisfied and the activation never required ALL_SATISFIED"
+      },
+      "PASS": true
+    },
+    "routeIdentity": {
+      "id": "MODEL_ROUTE_IDENTITY",
+      "positiveControl": {
+        "healthyIdentity": "MATCH",
+        "driftedIdentity": "DRIFTED",
+        "unknownIdentity": "UNKNOWN",
+        "driftedComparison": [
+          {
+            "field": "providerId",
+            "planned": "omnigate-route",
+            "actual": "some-other-provider",
+            "matches": false
+          },
+          {
+            "field": "modelId",
+            "planned": "deepseek-v4.1-flash",
+            "actual": "deepseek-v4.1-flash",
+            "matches": true
+          },
+          {
+            "field": "routeId",
+            "planned": "omnigate2api-deepseek-v41-flash",
+            "actual": "omnigate2api-deepseek-v41-flash",
+            "matches": true
+          },
+          {
+            "field": "settingsDigest",
+            "planned": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd",
+            "actual": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd",
+            "matches": true
+          }
+        ]
+      },
+      "mutant": {
+        "id": "G3_MODEL_ROUTE_IDENTITY_UNCHECKED",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline reported a match while comparing no identity at all"
+      },
+      "PASS": true
+    },
+    "admission": {
+      "id": "WORKER_RESULT_ADMISSION",
+      "positiveControl": {
+        "validDisposition": "ADMITTED",
+        "validGateFired": false,
+        "controls": [
+          {
+            "id": "WORKER_RESULT_LINE_MALFORMED",
+            "disposition": "TRIAL_INVALID",
+            "cause": "MALFORMED_WORKER_RESULT",
+            "controlId": "WORKER_RESULT_LINE_MALFORMED",
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": true
+          },
+          {
+            "id": "WORKER_RESULT_VOCABULARY_INVALID",
+            "disposition": "TRIAL_INVALID",
+            "cause": "INVALID_WORKER_RESULT_VOCABULARY",
+            "controlId": "WORKER_RESULT_VOCABULARY_INVALID",
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": true
+          },
+          {
+            "id": "CHILD_REPORT_ERROR_HOST_FINISHED",
+            "disposition": "TRIAL_INVALID",
+            "cause": "CHILD_REPORT_ERROR_UNDER_FINISHED_HOST",
+            "controlId": "CHILD_REPORT_ERROR_HOST_FINISHED",
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": true
+          },
+          {
+            "id": "MISSING_ATTEMPT_IDENTITY",
+            "disposition": "TRIAL_INVALID",
+            "cause": "MISSING_ATTEMPT_IDENTITY",
+            "controlId": "MISSING_ATTEMPT_IDENTITY",
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": true
+          },
+          {
+            "id": "UNEXPECTED_TERMINAL_STATE",
+            "disposition": "TRIAL_INVALID",
+            "cause": "UNEXPECTED_TERMINAL_STATE",
+            "controlId": "UNEXPECTED_TERMINAL_STATE",
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": true
+          },
+          {
+            "id": "DECLARED_OUTCOME_MISSING_EVIDENCE",
+            "disposition": "UNCLASSIFIABLE",
+            "cause": "INSUFFICIENT_ADMISSION_EVIDENCE",
+            "controlId": null,
+            "refused": true,
+            "matrixResponse": "STOP_MATRIX",
+            "gateFired": false
+          }
+        ]
+      },
+      "allSixRefused": true,
+      "allSixStopTheMatrix": true,
+      "fiveRefusedByTheGate": true,
+      "behaviouralStillAdmitted": true,
+      "mutant": {
+        "id": "G4_CHILD_WORKER_ADMISSION_GAP",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline admitted five of the six controls"
+      },
+      "PASS": true
+    },
+    "uptakeProvenance": {
+      "id": "UPTAKE_TELEMETRY_PROVENANCE",
+      "positiveControl": {
+        "measured": {
+          "NO_LINE": {
+            "provenance": "WORKER_PULL_TELEMETRY_MISSING",
+            "observed": false,
+            "count": null,
+            "telemetryLinePresent": false
+          },
+          "EXPLICIT_ZERO": {
+            "provenance": "WORKER_PULL_OBSERVED_ZERO",
+            "observed": true,
+            "count": 0,
+            "telemetryLinePresent": true
+          },
+          "MALFORMED": {
+            "provenance": "WORKER_PULL_TELEMETRY_MALFORMED",
+            "observed": false,
+            "count": null,
+            "telemetryLinePresent": true
+          }
+        },
+        "missingIsNotZero": true,
+        "malformedIsNotZero": true,
+        "observedZeroIsZero": true,
+        "hostAuditMayNotRepair": true,
+        "visibleFour": 4,
+        "workerUptake": "ZERO",
+        "workerUptakeCount": 0,
+        "hostResolveCount": 4,
+        "treatmentRealization": "APPLIED",
+        "declinedObservation": [
+          "MODEL_DECLINED_VISIBLE_CAPITAL"
+        ],
+        "declinedPullStopsTheMatrix": false
+      },
+      "mutant": {
+        "id": "G5_UPTAKE_ZERO_VS_MISSING",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline reported a measured zero for both the missing and the malformed line"
+      },
+      "PASS": true
+    },
+    "costAttribution": {
+      "id": "COST_ARTIFACT_ATTRIBUTION",
+      "positiveControl": {
+        "measured": true,
+        "provenance": "FIXTURE",
+        "fixtureLabelIsExplicit": true,
+        "fieldsPresent": [],
+        "identity": {
+          "runId": "r1",
+          "sessionId": "b0-C-G1",
+          "trajectoryId": "b0-C",
+          "generation": "G1",
+          "attemptId": "a14c0ffee",
+          "hostJobId": null,
+          "artifactDigest": "bad353ee88f23edbfb5d9bb249cd907e742b2478ddbff5b6af91a285f328b436"
+        },
+        "identityFields": [
+          "runId",
+          "sessionId",
+          "trajectoryId",
+          "generation",
+          "attemptId",
+          "hostJobId",
+          "artifactDigest"
+        ],
+        "attemptIdentityMatches": true,
+        "capitalBodyNotCountedAsHistory": true,
+        "conflictingAttemptRefused": true,
+        "absentArtifactRefused": true,
+        "filenameOnlyRefused": true,
+        "unattributableReported": 1,
+        "resolvedByRecency": false
+      },
+      "mutant": {
+        "id": "G6_COST_ATTRIBUTION_FILENAME_ONLY",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline attributed on a path substring with no corroboration"
+      },
+      "PASS": true
+    },
+    "postMatrixGate": {
+      "id": "POST_MATRIX_CAUSAL_ADMISSION",
+      "positiveControl": {
+        "green": true,
+        "checks": {
+          "allSessionsPresent": true,
+          "eightLegitimateTrajectories": true,
+          "allFourBlocksComplete": true,
+          "everyTreatmentApplied": true,
+          "uptakeTelemetryInterpretable": true,
+          "costTelemetryInterpretable": true,
+          "systemEnvironmentValid": true,
+          "closureAndRouteMatch": true,
+          "analysisPlanUnchangedAndNoReplacements": true
+        },
+        "requiredConditions": [
+          "ALL_SIXTEEN_UNIQUE_SESSIONS",
+          "EIGHT_LEGITIMATE_TRAJECTORIES",
+          "FOUR_COMPLETE_MATCHED_BLOCKS",
+          "EVERY_TREATMENT_APPLIED",
+          "UPTAKE_TELEMETRY_INTERPRETABLE",
+          "COST_TELEMETRY_INTERPRETABLE",
+          "SYSTEM_ENVIRONMENT_VALID",
+          "CLOSURE_AND_ROUTE_MATCH",
+          "ANALYSIS_PLAN_UNCHANGED"
+        ],
+        "causalAdmission": {
+          "CAUSAL_EXPERIMENT_VALID": "NO",
+          "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+          "NET_COGNITIVE_COST": "NOT_EVALUABLE",
+          "partialObservationsPreservedForAudit": true,
+          "combinesInvalidOldRunWithNewMatrix": false,
+          "note": "the gate is mechanically green but the cost attribution is not a live primary observation, so the causal verdict is NOT_EVALUABLE"
+        },
+        "checkedOnlyTheSessionCount": false,
+        "fixtureGreenButNotCausal": {
+          "gateGreen": true,
+          "causal": {
+            "CAUSAL_EXPERIMENT_VALID": "NO",
+            "RECONSTRUCTION_COMPRESSION": "NOT_EVALUABLE",
+            "NET_COGNITIVE_COST": "NOT_EVALUABLE",
+            "partialObservationsPreservedForAudit": true,
+            "combinesInvalidOldRunWithNewMatrix": false,
+            "note": "the gate is mechanically green but the cost attribution is not a live primary observation, so the causal verdict is NOT_EVALUABLE"
+          }
+        }
+      },
+      "negatives": [
+        {
+          "id": "ALL_SIXTEEN_UNIQUE_SESSIONS",
+          "green": false,
+          "failing": [
+            "allSessionsPresent"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "EIGHT_LEGITIMATE_TRAJECTORIES",
+          "green": false,
+          "failing": [
+            "eightLegitimateTrajectories",
+            "allFourBlocksComplete"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "FOUR_COMPLETE_MATCHED_BLOCKS",
+          "green": false,
+          "failing": [
+            "eightLegitimateTrajectories",
+            "allFourBlocksComplete"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "EVERY_TREATMENT_APPLIED",
+          "green": false,
+          "failing": [
+            "everyTreatmentApplied"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "UPTAKE_TELEMETRY_INTERPRETABLE",
+          "green": false,
+          "failing": [
+            "uptakeTelemetryInterpretable"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "COST_TELEMETRY_INTERPRETABLE",
+          "green": false,
+          "failing": [
+            "costTelemetryInterpretable"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "SYSTEM_ENVIRONMENT_VALID",
+          "green": false,
+          "failing": [
+            "systemEnvironmentValid"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "CLOSURE_AND_ROUTE_MATCH",
+          "green": false,
+          "failing": [
+            "closureAndRouteMatch"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        },
+        {
+          "id": "ANALYSIS_PLAN_UNCHANGED",
+          "green": false,
+          "failing": [
+            "analysisPlanUnchangedAndNoReplacements"
+          ],
+          "causalExperimentValid": "NO",
+          "reconstructionCompression": "NOT_EVALUABLE",
+          "netCognitiveCost": "NOT_EVALUABLE"
+        }
+      ],
+      "allNegativesFailClosed": true,
+      "mutant": {
+        "id": "G7_POST_MATRIX_CAUSAL_ADMISSION_INCOMPLETE",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline gate was green over sixteen unmeasured realizations"
+      },
+      "PASS": true
+    },
+    "timeoutAndAuthorization": {
+      "id": "FAIL_STOP_UNCERTAINTY_AND_AUTHORIZATION",
+      "positiveControl": {
+        "killIsNotProofOfExit": true,
+        "workerResultLineIsNotProofOfExit": true,
+        "timedOutIsAlwaysUncertain": true,
+        "onUnestablished": "UNCERTAIN_PRESERVED",
+        "deterministicExternalCallPermitted": false,
+        "booleanSignalPresent": true,
+        "booleanDecisionPresent": false,
+        "booleanIsNotADecision": true,
+        "fullDecisionPresent": true,
+        "partialDecisionPresent": false,
+        "thisStageEntersPrimary": false,
+        "slowWorkerObservation": {
+          "terminal": "UNCERTAIN_PRESERVED"
+        }
+      },
+      "mutant": {
+        "id": "G8_TIMEOUT_RESULT_LINE_AS_EXIT",
+        "measuredBy": "scripts/r3l0ciar/falsifiers.mjs",
+        "baselineViolates": true,
+        "note": "the baseline read a result line as an established exit and a boolean as authorization"
+      },
+      "PASS": true
+    }
+  },
+  "timeouts": {
+    "outerChildMs": 2220000,
+    "innerWorkerMs": 1800000,
+    "settlementMs": 300000,
+    "outerExceedsInnerPlusSettlement": true,
+    "marginMs": 120000,
+    "law": "the outer child budget must exceed the worker execution budget plus the required settlement interval"
+  },
+  "quarantine": {
+    "authorized": true,
+    "caller": "r3-l0c-iar-primary-plan",
+    "authoritativePath": "scripts/r3l0ciar/pipeline.mjs",
+    "priorMatricesQuarantined": true,
+    "priorMatricesStillExecutable": true
+  },
+  "immutability": {
+    "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+    "verdict": "PASS",
+    "detail": "protected namespaces: 21; working files: 374",
+    "protectedNamespaces": [
+      "research-evidence/r1",
+      "research-evidence/r1-h",
+      "research-evidence/r1-hc",
+      "research-evidence/r1-hr",
+      "research-evidence/r1-l",
+      "research-evidence/r1-r",
+      "research-evidence/r1-s",
+      "research-evidence/r2-e",
+      "research-evidence/r2-lr",
+      "research-evidence/r2-m",
+      "research-evidence/r2-s",
+      "research-evidence/r2-u",
+      "research-evidence/r2-v",
+      "research-evidence/r2-vr",
+      "research-evidence/r3-a",
+      "research-evidence/r3-ae",
+      "research-evidence/r3-l0",
+      "research-evidence/r3-l0a",
+      "research-evidence/r3-l0b",
+      "research-evidence/r3-s0",
+      "research-evidence/r3-spec"
+    ],
+    "workingFileCount": 374,
+    "changed": [],
+    "removed": [],
+    "unexpectedAdditions": [],
+    "restoreAvailable": false,
+    "baselineRevision": "e51df1f4c2a666ffa7364dbdc108eb9eb7eae2fb"
+  },
+  "evidenceCorrections": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I-A-R",
+    "kind": "evidence corrections",
+    "interpretationCorrection": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-I-A-R",
+      "kind": "published-interpretation correction",
+      "correctionId": "R3_L0C_IAR_INTERPRETATION_CORRECTION",
+      "prior": {
+        "stage": "R3-L0C-I-A",
+        "commit": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+        "path": "research-evidence/r3-l0c-ia/stage-result.json",
+        "PAID_REPLICATION": "READY_FOR_AUTHORIZATION",
+        "RUN_ROOT_ACTIVATION": "PASS",
+        "POST_MATRIX_VALIDITY": "PASS",
+        "RECONSTRUCTION_INSTRUMENTATION": "PASS",
+        "WORKER_UPTAKE_PROVENANCE": "PASS"
+      },
+      "withdrawnConclusion": {
+        "claim": "PAID_REPLICATION = READY_FOR_AUTHORIZATION",
+        "status": "WITHDRAWN_AS_AN_UNCONDITIONAL_CLAIM",
+        "reason": "the readiness depended on a pre-trial gate that was permanently unsatisfied (G2), a post-matrix gate that was green over unmeasured realizations (G7), and a paid launch that did not exist inside the activation entry (G1)",
+        "replacement": "a per-class classification, computed from this stage's own measurements"
+      },
+      "classes": [
+        {
+          "id": "ACTIVATION_COMPONENT_PROVEN",
+          "status": "PROVEN",
+          "priorStatus": "PASS",
+          "detail": "the exclusive run-root claim with a verifiable nonce was proven and is retained",
+          "priorClaimRetained": true
+        },
+        {
+          "id": "ACTUAL_MATRIX_ENTRY_AUTHORIZATION",
+          "status": "NOT_PROVEN_AS_PUBLISHED",
+          "priorStatus": "PASS",
+          "detail": "the paid launch did not exist inside the activation entry, and the entry that did launch prepared the run root before the claim",
+          "priorClaimRetained": false
+        },
+        {
+          "id": "DETERMINISTIC_CONFINEMENT_PROVEN",
+          "status": "PROVEN",
+          "priorStatus": "PASS",
+          "detail": "the per-trajectory confinement with own-world liveness and a discriminating control was proven and is retained",
+          "priorClaimRetained": true
+        },
+        {
+          "id": "TREATMENT_REALIZATION_PROVEN",
+          "status": "PROVEN",
+          "priorStatus": "PASS",
+          "detail": "the consumer-boundary realization verdict was proven and is retained",
+          "priorClaimRetained": true
+        },
+        {
+          "id": "WORKER_UPTAKE_PROVENANCE_WITHIN_VALID_TELEMETRY",
+          "status": "PROVEN_WITH_A_CORRECTION",
+          "priorStatus": "PASS",
+          "detail": "the uptake number was the worker's own, but a missing telemetry line collapsed to a measured zero; the provenance is now explicit",
+          "priorClaimRetained": true
+        },
+        {
+          "id": "PRE_POST_VALIDITY_EXECUTABLE",
+          "status": "NOT_PROVEN_AS_PUBLISHED",
+          "priorStatus": "PASS",
+          "detail": "the pre-trial reducer could never be satisfied and the post-matrix gate skipped unmeasured realizations",
+          "priorClaimRetained": false
+        },
+        {
+          "id": "RECONSTRUCTION_INSTRUMENTATION_WIRED",
+          "status": "NOT_PROVEN_AS_PUBLISHED",
+          "priorStatus": "PASS",
+          "detail": "the cost parser existed but was not connected to trial admission or analysis, and attribution was a filename match",
+          "priorClaimRetained": false
+        },
+        {
+          "id": "PAID_EXECUTION_AUTHORIZED",
+          "status": "NOT_PROVEN_AS_PUBLISHED",
+          "priorStatus": "READY_FOR_AUTHORIZATION",
+          "detail": "no external authorization decision exists for the five required decisions; a boolean was treated as one",
+          "priorClaimRetained": false
+        }
+      ],
+      "priorEvidenceEdited": false,
+      "oldCommitsRewritten": false,
+      "forcePush": false,
+      "law": "a published interpretation is corrected forward by a new commit that classifies each claim separately, never by rewriting the record that made it"
+    },
+    "priorResult": {
+      "path": "F:\\Codex_Work_Space\\Palimpsest\\palimpsest-sr1\\research-evidence\\r3-l0c-ia\\stage-result.json",
+      "present": true,
+      "publishedVerdicts": {
+        "RUN_ROOT_ACTIVATION": "PASS",
+        "REPLAY_BEFORE_MUTATION": "PASS",
+        "ACTUAL_CONTAINMENT": "PASS",
+        "TREATMENT_REALIZATION": "PASS",
+        "WORKER_UPTAKE_PROVENANCE": "PASS",
+        "PRIMARY_MODE_CONFIGURED": "PASS",
+        "MODEL_EXECUTION_IN_THIS_STAGE": "ZERO",
+        "OUTCOME_ADMISSION": "PASS",
+        "TIMEOUT_UNCERTAINTY": "PASS",
+        "RECONSTRUCTION_INSTRUMENTATION": "PASS",
+        "POST_MATRIX_VALIDITY": "PASS",
+        "EXECUTION_CLOSURE": "MATCH",
+        "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+        "PROMPT_NEUTRALITY": "LIMITED",
+        "FAIL_STOP_POLICY": "PROPOSED",
+        "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+      },
+      "modelCallsMade": 0,
+      "enteredPrimaryExecution": false,
+      "modified": false
+    },
+    "priorEvidence": {
+      "paths": [
+        "research-evidence/r3-l0c-ia",
+        "research-evidence/r3-l0c-f",
+        "research-evidence/r3-l0c-i",
+        "research-evidence/r3-l0c-r",
+        "research-evidence/r3-l0c"
+      ],
+      "thisStageWritesOnlyTo": "research-evidence/r3-l0c-iar",
+      "priorEvidenceEdited": false
+    },
+    "priorEvidenceEdited": false,
+    "oldCommitsRewritten": false,
+    "forcePush": false,
+    "newline": "\n"
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "current": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-primary-plan",
+    "digest": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "supersedes": "r3-l0c-ia-primary-plan",
+    "frozenClosure": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910"
+  },
+  "verdicts": {
+    "AUTHORITATIVE_PRIMARY_ENTRY": "PASS",
+    "RUN_CLAIM_BEFORE_MUTATION": "PASS",
+    "PRETRIAL_VALIDITY": "PASS",
+    "MODEL_ROUTE_IDENTITY": "MATCH",
+    "WORKER_RESULT_ADMISSION": "PASS",
+    "UPTAKE_TELEMETRY_PROVENANCE": "PASS",
+    "COST_ARTIFACT_ATTRIBUTION": "PASS",
+    "POST_MATRIX_CAUSAL_ADMISSION": "PASS",
+    "FAIL_STOP_UNCERTAINTY": "PASS",
+    "EXECUTION_CLOSURE": "MATCH",
+    "PAID_AUTHORIZATION": "PENDING",
+    "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+  }
+}

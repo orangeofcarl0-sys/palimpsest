@@ -1,0 +1,645 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R",
+  "kind": "final activation wiring prospective primary execution plan",
+  "planId": "r3-l0c-iar-primary-plan",
+  "baseline": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+  "frozenBefore": "the first primary model exposure",
+  "planSupersession": {
+    "id": "R3_L0C_IAR_SUPERSEDES_R3_L0C_IA_PLAN",
+    "supersedes": {
+      "planId": "r3-l0c-ia-primary-plan",
+      "path": "research-evidence/r3-l0c-ia/execution-plan.json",
+      "stage": "R3-L0C-I-A",
+      "commit": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+      "pipeline": "scripts/r3l0cia/primary-driver.mjs + scripts/r3l0cia/activation.mjs (two entry points)",
+      "disposition": "SUPERSEDED — byte-identical, no longer the authorized entry point"
+    },
+    "newPlan": {
+      "planId": "r3-l0c-iar-primary-plan",
+      "pipeline": "scripts/r3l0ciar/pipeline.mjs",
+      "activation": "scripts/r3l0ciar/activation.mjs",
+      "modes": "scripts/r3l0ciar/modes.mjs",
+      "adapter": "scripts/r3l0ciar/primary-adapter.mjs",
+      "treatment": "scripts/r3l0ciar/treatment.mjs",
+      "admission": "scripts/r3l0ciar/admission.mjs",
+      "validity": "scripts/r3l0ciar/validity.mjs",
+      "instrumentation": "scripts/r3l0ciar/instrumentation.mjs",
+      "confinement": "scripts/r3l0ciar/confinement.mjs",
+      "closure": "scripts/r3l0ciar/closure.mjs"
+    },
+    "amendedPriorPlan": false,
+    "priorPlanEdited": false,
+    "priorEvidenceAppendOnly": true,
+    "quarantine": {
+      "priorMatricesRemainPhysicallyExecutable": true,
+      "quarantineIsAGuardNotAnImpossibility": true,
+      "forbiddenClaim": "do not claim the prior matrices have become physically unexecutable merely because the new pipeline checks a string"
+    }
+  },
+  "executionPathDeviations": [
+    {
+      "defectId": "G1_AUTHORITATIVE_ENTRY_PREPARES_BEFORE_CLAIM",
+      "section": "§2",
+      "gap": "the authoritative matrix driver prepares the run root before the exclusive activation claim, and the paid launch exists outside the activation entry",
+      "property": "one authoritative pipeline claims the run root before any World, state store or profile byte changes, and the paid launch exists only inside that pipeline",
+      "closedIn": "scripts/r3l0ciar/pipeline.mjs"
+    },
+    {
+      "defectId": "G2_PRETRIAL_REDUCER_YES_ONLY",
+      "section": "§3",
+      "gap": "the pre-trial reducer treats only the literal verdict \"YES\" as satisfied, so CONTAINMENT (\"PASS\") and EXECUTION_CLOSURE (\"MATCH\") can never be satisfied and ALL_SATISFIED is permanently false; the activation never requires it",
+      "property": "an explicit condition-specific success mapping makes all eight healthy conditions satisfied, and the activation refuses before exposure unless ALL_SATISFIED === true",
+      "closedIn": "scripts/r3l0ciar/pipeline.mjs"
+    },
+    {
+      "defectId": "G3_MODEL_ROUTE_IDENTITY_UNCHECKED",
+      "section": "§3",
+      "gap": "MODEL_ROUTE_CONFIGURATION_MATCH tests only that a resolved mode exists and the plan declares an authoritative-path string, not the actual effective provider/model/route/settings identity",
+      "property": "the actual effective provider, model, route and settings identities are compared against the plan",
+      "closedIn": "scripts/r3l0ciar/validity.mjs"
+    },
+    {
+      "defectId": "G4_CHILD_WORKER_ADMISSION_GAP",
+      "section": "§4",
+      "gap": "a malformed Worker Result, an invalid result vocabulary, a child report with ok=false under a FINISHED host phase, a missing Attempt identity, an unexpected terminal state and a declared outcome missing mandatory evidence are all admissible",
+      "property": "each of the six named negative controls refuses trial admission end-to-end",
+      "closedIn": "scripts/r3l0ciar/admission.mjs"
+    },
+    {
+      "defectId": "G5_UPTAKE_ZERO_VS_MISSING",
+      "section": "§5",
+      "gap": "an absent or malformed worker telemetry line becomes a measured ZERO uptake, because the shipped parser returns an empty array for both \"no line\" and \"malformed line\" and the adapter coalesces it to 0",
+      "property": "WORKER_PULL_OBSERVED_ZERO and WORKER_PULL_TELEMETRY_MISSING are distinct, and a host audit may not repair missing worker telemetry",
+      "closedIn": "scripts/r3l0ciar/treatment.mjs"
+    },
+    {
+      "defectId": "G6_COST_ATTRIBUTION_FILENAME_ONLY",
+      "section": "§6",
+      "gap": "artifact attribution relies on filename substring and regex matching alone, does not corroborate runId/HostJobId, and nothing requires all sixteen real cost records before the paired analysis may execute",
+      "property": "attribution binds runId -> sessionId -> trajectoryId -> generation -> AttemptId -> HostJobId -> artifact digest, refuses when identity cannot be corroborated, and requires all sixteen records before the causal verdict",
+      "closedIn": "scripts/r3l0ciar/instrumentation.mjs"
+    },
+    {
+      "defectId": "G7_POST_MATRIX_CAUSAL_ADMISSION_INCOMPLETE",
+      "section": "§7",
+      "gap": "the post-matrix gate skips a record whose treatmentRealization is undefined and checks none of trajectory legitimacy, uptake/cost telemetry interpretability, system/environment validity, route match, analysis-plan invariance or zero replacements; the qualification verdicts are hardcoded literals",
+      "property": "nine mechanical conditions are required, every failed input yields CAUSAL_EXPERIMENT_VALID = NO with RECONSTRUCTION_COMPRESSION and NET_COGNITIVE_COST = NOT_EVALUABLE, and the qualification verdict is computed from the gate results rather than hardcoded",
+      "closedIn": "scripts/r3l0ciar/validity.mjs"
+    },
+    {
+      "defectId": "G8_TIMEOUT_RESULT_LINE_AS_EXIT",
+      "section": "§8",
+      "gap": "a Worker Result line is equated with confirmed process exit, so a timed-out execution whose descendant is still alive is classified as an established exit; and a caller-supplied paidAuthorization boolean is treated as an authorization decision",
+      "property": "a timed-out execution whose descendant status cannot be established is UNCERTAIN regardless of an emitted result line, and a paidAuthorization boolean is a configuration signal rather than a verified authorization decision",
+      "closedIn": "scripts/r3l0ciar/primary-adapter.mjs"
+    }
+  ],
+  "pipelineOrder": [
+    "committed plan",
+    "executable closure",
+    "exclusive run claim",
+    "PRESERVE",
+    "world preparation",
+    "pretrial validity",
+    "exposure intent",
+    "single child launch",
+    "trial admission",
+    "per-generation journal",
+    "post-matrix validity",
+    "frozen analysis"
+  ],
+  "budgets": {
+    "outerChildMs": 2220000,
+    "innerWorkerMs": 1800000,
+    "settlementMs": 300000,
+    "outerExceedsInnerPlusSettlement": true
+  },
+  "preTrialConditions": [
+    "SYSTEM_VALID",
+    "EXPERIMENT_ENVIRONMENT_VALID",
+    "CONTAINMENT",
+    "EXECUTION_CLOSURE",
+    "SELECTION_REALIZATION_PREFLIGHT",
+    "ANALYSIS_PLAN_VALID",
+    "SCHEDULE_MATCH",
+    "MODEL_ROUTE_CONFIGURATION_MATCH"
+  ],
+  "postMatrixConditions": [
+    "ALL_SIXTEEN_UNIQUE_SESSIONS",
+    "EIGHT_LEGITIMATE_TRAJECTORIES",
+    "FOUR_COMPLETE_MATCHED_BLOCKS",
+    "EVERY_TREATMENT_APPLIED",
+    "UPTAKE_TELEMETRY_INTERPRETABLE",
+    "COST_TELEMETRY_INTERPRETABLE",
+    "SYSTEM_ENVIRONMENT_VALID",
+    "CLOSURE_AND_ROUTE_MATCH",
+    "ANALYSIS_PLAN_UNCHANGED"
+  ],
+  "interpretationClasses": [
+    "ACTIVATION_COMPONENT_PROVEN",
+    "ACTUAL_MATRIX_ENTRY_AUTHORIZATION",
+    "DETERMINISTIC_CONFINEMENT_PROVEN",
+    "TREATMENT_REALIZATION_PROVEN",
+    "WORKER_UPTAKE_PROVENANCE_WITHIN_VALID_TELEMETRY",
+    "PRE_POST_VALIDITY_EXECUTABLE",
+    "RECONSTRUCTION_INSTRUMENTATION_WIRED",
+    "PAID_EXECUTION_AUTHORIZED"
+  ],
+  "preservedDesign": {
+    "researchQuestion": "when the correct project-specific operating knowledge is recoverable from a substantial raw Project history, does governed current-standing cognitive capital reduce the cost and unreliability of reconstructing that knowledge?",
+    "experimentalUnit": "ProjectTrajectory",
+    "treatment": "SELECTION_ONLY — the only difference between the arms is whether the frozen handles are selected",
+    "armOrder": [
+      [
+        "C",
+        "H"
+      ],
+      [
+        "H",
+        "C"
+      ],
+      [
+        "C",
+        "H"
+      ],
+      [
+        "C",
+        "H"
+      ]
+    ],
+    "randomizationSeed": 1380724738,
+    "seedRechosen": false,
+    "exposures": {
+      "G1": [
+        "I1"
+      ],
+      "G2": [
+        "I1",
+        "I2"
+      ]
+    },
+    "sessionCount": 16,
+    "blockCount": 4,
+    "generationsPerTrajectory": 2,
+    "compressionVerdictSource": "scripts/r3l0c/analyse.mjs (re-exported by scripts/r3l0cr/analyse.mjs, unchanged)",
+    "netCostVerdictSource": "scripts/r3l0c/analyse.mjs (re-exported by scripts/r3l0cr/analyse.mjs, unchanged)",
+    "verdictThresholdsChanged": false,
+    "primaryEndpointsChanged": false,
+    "corpusDigest": "87ecaa284c1ed91835fd636db8210a3c82be2bdb4ae9381553753475c8df949f",
+    "capitalBundleDigest": "8dac2b28fd28f7087556ff8adca8316bd6a4b805618705dc14cc1b7d8cf213bd",
+    "frozenVerdictSurface": {
+      "REEXPORTED_FROM": "scripts/r3l0c/analyse.mjs",
+      "addedRules": false,
+      "compression": {
+        "POSITIVE_SIGNAL": "POSITIVE_SIGNAL",
+        "ADVERSE_SIGNAL": "ADVERSE_SIGNAL",
+        "MIXED": "MIXED",
+        "NO_SIGNAL": "NO_SIGNAL"
+      },
+      "netCost": {
+        "LOWER": "LOWER",
+        "NEUTRAL": "NEUTRAL",
+        "HIGHER": "HIGHER",
+        "MIXED": "MIXED"
+      },
+      "directions": {
+        "C_LOWER": "C_LOWER",
+        "C_HIGHER": "C_HIGHER",
+        "TIE": "TIE"
+      },
+      "informationPaths": {
+        "CAPITAL_THEN_EDIT": "a governed capital pull returned content before the first world edit",
+        "CAPITAL_THEN_HISTORY": "a governed capital pull returned content, and raw history was read after it",
+        "HISTORY_RECONSTRUCTION": "raw history was read and no capital content was returned",
+        "DIRECT_EDIT_WITHOUT_HISTORY": "the worker edited the world without reading any declared raw history",
+        "NO_RESULT": "no result was submitted"
+      }
+    },
+    "schedule": [
+      {
+        "block": 0,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G1",
+        "sessionId": "b0-C-G1",
+        "trajectoryId": "b0-C",
+        "orderInBlock": 0,
+        "generationIndex": 0
+      },
+      {
+        "block": 0,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G2",
+        "sessionId": "b0-C-G2",
+        "trajectoryId": "b0-C",
+        "orderInBlock": 0,
+        "generationIndex": 1
+      },
+      {
+        "block": 0,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G1",
+        "sessionId": "b0-H-G1",
+        "trajectoryId": "b0-H",
+        "orderInBlock": 1,
+        "generationIndex": 0
+      },
+      {
+        "block": 0,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G2",
+        "sessionId": "b0-H-G2",
+        "trajectoryId": "b0-H",
+        "orderInBlock": 1,
+        "generationIndex": 1
+      },
+      {
+        "block": 1,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G1",
+        "sessionId": "b1-H-G1",
+        "trajectoryId": "b1-H",
+        "orderInBlock": 0,
+        "generationIndex": 0
+      },
+      {
+        "block": 1,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G2",
+        "sessionId": "b1-H-G2",
+        "trajectoryId": "b1-H",
+        "orderInBlock": 0,
+        "generationIndex": 1
+      },
+      {
+        "block": 1,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G1",
+        "sessionId": "b1-C-G1",
+        "trajectoryId": "b1-C",
+        "orderInBlock": 1,
+        "generationIndex": 0
+      },
+      {
+        "block": 1,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G2",
+        "sessionId": "b1-C-G2",
+        "trajectoryId": "b1-C",
+        "orderInBlock": 1,
+        "generationIndex": 1
+      },
+      {
+        "block": 2,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G1",
+        "sessionId": "b2-C-G1",
+        "trajectoryId": "b2-C",
+        "orderInBlock": 0,
+        "generationIndex": 0
+      },
+      {
+        "block": 2,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G2",
+        "sessionId": "b2-C-G2",
+        "trajectoryId": "b2-C",
+        "orderInBlock": 0,
+        "generationIndex": 1
+      },
+      {
+        "block": 2,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G1",
+        "sessionId": "b2-H-G1",
+        "trajectoryId": "b2-H",
+        "orderInBlock": 1,
+        "generationIndex": 0
+      },
+      {
+        "block": 2,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G2",
+        "sessionId": "b2-H-G2",
+        "trajectoryId": "b2-H",
+        "orderInBlock": 1,
+        "generationIndex": 1
+      },
+      {
+        "block": 3,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G1",
+        "sessionId": "b3-C-G1",
+        "trajectoryId": "b3-C",
+        "orderInBlock": 0,
+        "generationIndex": 0
+      },
+      {
+        "block": 3,
+        "arm": "C",
+        "armName": "CAPITALIZED",
+        "generation": "G2",
+        "sessionId": "b3-C-G2",
+        "trajectoryId": "b3-C",
+        "orderInBlock": 0,
+        "generationIndex": 1
+      },
+      {
+        "block": 3,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G1",
+        "sessionId": "b3-H-G1",
+        "trajectoryId": "b3-H",
+        "orderInBlock": 1,
+        "generationIndex": 0
+      },
+      {
+        "block": 3,
+        "arm": "H",
+        "armName": "RAW_HISTORY",
+        "generation": "G2",
+        "sessionId": "b3-H-G2",
+        "trajectoryId": "b3-H",
+        "orderInBlock": 1,
+        "generationIndex": 1
+      }
+    ]
+  },
+  "schedule": [
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b0-C-G1",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b0-C-G2",
+      "trajectoryId": "b0-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b0-H-G1",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 0,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b0-H-G2",
+      "trajectoryId": "b0-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b1-H-G1",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b1-H-G2",
+      "trajectoryId": "b1-H",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b1-C-G1",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 1,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b1-C-G2",
+      "trajectoryId": "b1-C",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b2-C-G1",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b2-C-G2",
+      "trajectoryId": "b2-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b2-H-G1",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 2,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b2-H-G2",
+      "trajectoryId": "b2-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G1",
+      "sessionId": "b3-C-G1",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "C",
+      "armName": "CAPITALIZED",
+      "generation": "G2",
+      "sessionId": "b3-C-G2",
+      "trajectoryId": "b3-C",
+      "orderInBlock": 0,
+      "generationIndex": 1
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G1",
+      "sessionId": "b3-H-G1",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 0
+    },
+    {
+      "block": 3,
+      "arm": "H",
+      "armName": "RAW_HISTORY",
+      "generation": "G2",
+      "sessionId": "b3-H-G2",
+      "trajectoryId": "b3-H",
+      "orderInBlock": 1,
+      "generationIndex": 1
+    }
+  ],
+  "executionClosure": {
+    "executionClosureDigest": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE"
+    ],
+    "fileCount": 118,
+    "toolchain": {
+      "node": "v24.14.1",
+      "git": "git version 2.53.0.windows.2",
+      "platform": "win32",
+      "arch": "x64",
+      "packages": {
+        "ordarium": "1.3.1",
+        "vitest": "4.1.10",
+        "typescript": "7.0.2",
+        "dshSandboxWindowsAcl": "0.2.0-rc.2"
+      },
+      "globalDshRoot": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh"
+    },
+    "compiledVerification": {
+      "kind": "compiled-against-source verification",
+      "skipped": true,
+      "COMPILED_MATCHES_SOURCE": null
+    },
+    "runtimeManifest": {
+      "digest": "ce21dd1b13701b322fdf2fa9c64760823d4b2761e67454bdb72170bb0fc94ae1",
+      "moduleCount": 8,
+      "missing": [],
+      "complete": true,
+      "modules": [
+        "dist/src/advanced.js",
+        "dist/src/interaction/work_delegation.js",
+        "dist/src/interaction/delegation.js",
+        "dist/src/project_workspace/index.js",
+        "dist/src/proof_asset/index.js",
+        "dist/src/reasoning_cell/index.js",
+        "dist/src/procedures/index.js",
+        "dist/src/deployment/work_worker.js"
+      ]
+    },
+    "closureComplete": true
+  },
+  "executionRoute": {
+    "pipeline": "scripts/r3l0ciar/pipeline.mjs",
+    "runner": "scripts/r3l0cf/fail-stop.mjs",
+    "adapter": "scripts/r3l0ciar/primary-adapter.mjs",
+    "child": "scripts/r3l0c/generation-child.mjs",
+    "workerReplacementForDeterministicRuns": "scripts/r3l0ciar/scripted-worker.mjs",
+    "realWorkerForThePaidRun": "the shipped DSH worker on the authorized executor route",
+    "authoritativePath": "r3-l0c-iar-primary-plan",
+    "routeId": "omnigate2api-deepseek-v41-flash",
+    "providerId": "omnigate-route",
+    "modelId": "deepseek-v4.1-flash",
+    "settingsDigest": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd",
+    "priorMatricesQuarantined": true,
+    "priorMatricesStillExecutable": true
+  },
+  "authorizationRequired": {
+    "required": true,
+    "decisions": [
+      {
+        "id": "PAID_MODEL_USAGE",
+        "detail": "paid model usage"
+      },
+      {
+        "id": "BOUNDED_FAIL_STOP_PROTOCOL",
+        "detail": "the bounded fail-stop protocol"
+      },
+      {
+        "id": "NO_AUTOMATIC_RETRIES_OR_REPLACEMENTS",
+        "detail": "no automatic retries or replacement sessions"
+      },
+      {
+        "id": "PRESERVE_PARTIALLY_COMPLETED_INVALID_RUNS",
+        "detail": "preservation of partially completed invalid runs"
+      },
+      {
+        "id": "ACCEPTED_PROMPT_NEUTRALITY_LIMITED",
+        "detail": "the accepted PROMPT_NEUTRALITY = LIMITED constraint"
+      }
+    ],
+    "what": "an explicit external authorization decision for all five listed decisions",
+    "thisStageProvidesIt": false,
+    "booleanIsAConfigurationSignalNotADecision": true,
+    "callerSuppliedStringIsNotProof": true
+  },
+  "stageStop": {
+    "ranPaidMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0
+  },
+  "frozenAt": "2026-10-09T16:58:05.881Z",
+  "orderingLaw": "the plan is committed AFTER every integration fix and BEFORE any primary model exposure"
+}

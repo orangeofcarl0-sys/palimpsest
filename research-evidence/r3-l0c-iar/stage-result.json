@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R",
+  "kind": "final activation wiring result",
+  "baseline": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+  "verdicts": {
+    "AUTHORITATIVE_PRIMARY_ENTRY": "PASS",
+    "RUN_CLAIM_BEFORE_MUTATION": "PASS",
+    "PRETRIAL_VALIDITY": "PASS",
+    "MODEL_ROUTE_IDENTITY": "MATCH",
+    "WORKER_RESULT_ADMISSION": "PASS",
+    "UPTAKE_TELEMETRY_PROVENANCE": "PASS",
+    "COST_ARTIFACT_ATTRIBUTION": "PASS",
+    "POST_MATRIX_CAUSAL_ADMISSION": "PASS",
+    "FAIL_STOP_UNCERTAINTY": "PASS",
+    "EXECUTION_CLOSURE": "MATCH",
+    "PAID_AUTHORIZATION": "PENDING",
+    "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+  },
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "correctionDefects": {
+    "declared": 8,
+    "measuredProperties": 9,
+    "allViolated": true,
+    "violated": [
+      "G1_AUTHORITATIVE_ENTRY_PREPARES_BEFORE_CLAIM",
+      "G2_PRETRIAL_REDUCER_YES_ONLY",
+      "G3_MODEL_ROUTE_IDENTITY_UNCHECKED",
+      "G4_CHILD_WORKER_ADMISSION_GAP",
+      "G5_UPTAKE_ZERO_VS_MISSING",
+      "G6_COST_ATTRIBUTION_FILENAME_ONLY",
+      "G7_POST_MATRIX_CAUSAL_ADMISSION_INCOMPLETE",
+      "G8_TIMEOUT_RESULT_LINE_AS_EXIT",
+      "G8_AUTHORIZATION_BOOLEAN_ACCEPTED"
+    ],
+    "notViolated": []
+  },
+  "authoritativePipeline": {
+    "pipeline": "COMPLETED",
+    "mode": "DETERMINISTIC",
+    "workerIsStageScripted": true,
+    "terminalState": "MATRIX_COMPLETE",
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "boundariesExact": true,
+    "costProvenance": "ABSENT"
+  },
+  "replayRefusal": {
+    "firstRunTerminal": "MATRIX_COMPLETE",
+    "secondRunPipeline": "REFUSED",
+    "secondRunRefusedAt": "ACQUIRE_EXCLUSIVE_RUN_ROOT",
+    "secondRunReason": "REFUSED_REPLAY",
+    "stateUnchangedByRefusal": true,
+    "bytesChanged": 0
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "executionClosure": {
+    "digest": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE"
+    ],
+    "fileCount": 118,
+    "complete": true,
+    "mutationsProven": true,
+    "planClosure": "MATCH"
+  },
+  "containment": {
+    "verdict": "PASS",
+    "environmentVerdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true,
+    "aclWeakened": false,
+    "sandboxAvailable": true
+  },
+  "immutability": {
+    "verdict": "PASS",
+    "protectedNamespaces": 21,
+    "restoreAvailable": false
+  },
+  "interpretationCorrection": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I-A-R",
+    "kind": "published-interpretation correction",
+    "correctionId": "R3_L0C_IAR_INTERPRETATION_CORRECTION",
+    "prior": {
+      "stage": "R3-L0C-I-A",
+      "commit": "dbe6beb92c33e78b1f2e75604f5da2babaf50df2",
+      "path": "research-evidence/r3-l0c-ia/stage-result.json",
+      "PAID_REPLICATION": "READY_FOR_AUTHORIZATION",
+      "RUN_ROOT_ACTIVATION": "PASS",
+      "POST_MATRIX_VALIDITY": "PASS",
+      "RECONSTRUCTION_INSTRUMENTATION": "PASS",
+      "WORKER_UPTAKE_PROVENANCE": "PASS"
+    },
+    "withdrawnConclusion": {
+      "claim": "PAID_REPLICATION = READY_FOR_AUTHORIZATION",
+      "status": "WITHDRAWN_AS_AN_UNCONDITIONAL_CLAIM",
+      "reason": "the readiness depended on a pre-trial gate that was permanently unsatisfied (G2), a post-matrix gate that was green over unmeasured realizations (G7), and a paid launch that did not exist inside the activation entry (G1)",
+      "replacement": "a per-class classification, computed from this stage's own measurements"
+    },
+    "classes": [
+      {
+        "id": "ACTIVATION_COMPONENT_PROVEN",
+        "status": "PROVEN",
+        "priorStatus": "PASS",
+        "detail": "the exclusive run-root claim with a verifiable nonce was proven and is retained",
+        "priorClaimRetained": true
+      },
+      {
+        "id": "ACTUAL_MATRIX_ENTRY_AUTHORIZATION",
+        "status": "NOT_PROVEN_AS_PUBLISHED",
+        "priorStatus": "PASS",
+        "detail": "the paid launch did not exist inside the activation entry, and the entry that did launch prepared the run root before the claim",
+        "priorClaimRetained": false
+      },
+      {
+        "id": "DETERMINISTIC_CONFINEMENT_PROVEN",
+        "status": "PROVEN",
+        "priorStatus": "PASS",
+        "detail": "the per-trajectory confinement with own-world liveness and a discriminating control was proven and is retained",
+        "priorClaimRetained": true
+      },
+      {
+        "id": "TREATMENT_REALIZATION_PROVEN",
+        "status": "PROVEN",
+        "priorStatus": "PASS",
+        "detail": "the consumer-boundary realization verdict was proven and is retained",
+        "priorClaimRetained": true
+      },
+      {
+        "id": "WORKER_UPTAKE_PROVENANCE_WITHIN_VALID_TELEMETRY",
+        "status": "PROVEN_WITH_A_CORRECTION",
+        "priorStatus": "PASS",
+        "detail": "the uptake number was the worker's own, but a missing telemetry line collapsed to a measured zero; the provenance is now explicit",
+        "priorClaimRetained": true
+      },
+      {
+        "id": "PRE_POST_VALIDITY_EXECUTABLE",
+        "status": "NOT_PROVEN_AS_PUBLISHED",
+        "priorStatus": "PASS",
+        "detail": "the pre-trial reducer could never be satisfied and the post-matrix gate skipped unmeasured realizations",
+        "priorClaimRetained": false
+      },
+      {
+        "id": "RECONSTRUCTION_INSTRUMENTATION_WIRED",
+        "status": "NOT_PROVEN_AS_PUBLISHED",
+        "priorStatus": "PASS",
+        "detail": "the cost parser existed but was not connected to trial admission or analysis, and attribution was a filename match",
+        "priorClaimRetained": false
+      },
+      {
+        "id": "PAID_EXECUTION_AUTHORIZED",
+        "status": "NOT_PROVEN_AS_PUBLISHED",
+        "priorStatus": "READY_FOR_AUTHORIZATION",
+        "detail": "no external authorization decision exists for the five required decisions; a boolean was treated as one",
+        "priorClaimRetained": false
+      }
+    ],
+    "priorEvidenceEdited": false,
+    "oldCommitsRewritten": false,
+    "forcePush": false,
+    "law": "a published interpretation is corrected forward by a new commit that classifies each claim separately, never by rewriting the record that made it"
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-primary-plan",
+    "digest": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910",
+    "supersedes": "r3-l0c-ia-primary-plan",
+    "frozenClosure": "4195546f7eb4aff61a15fdf66966e01d4a178a985757f5b3c9116012df63d910"
+  }
+}
