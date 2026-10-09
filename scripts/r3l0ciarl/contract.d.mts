@@ -37,6 +37,7 @@ export const SUPERSEDED_STAGE: {
 };
 export const PRIOR_EVIDENCE_PATHS: readonly string[];
 export const CORRECTION_GATES: readonly CorrectionGate[];
+export const CONTROL_GATE_IDS: readonly string[];
 export const LIVE_EVIDENCE: {
   readonly directory: string;
   readonly bindingField: string;
