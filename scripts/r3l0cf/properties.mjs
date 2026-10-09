@@ -217,4 +217,85 @@ export function legacyViolations(observation) {
   });
 }
 
+/**
+ * §8: THE NEGATIVE CONTROLS FOR EVERY PROPERTY.
+ *
+ * WHY THIS EXISTS, and it is the anti-vacuity guarantee the legacy witness cannot supply on its own. The legacy
+ * runner does not synthesize an attempt terminal and does not issue a causal verdict, so
+ * `NO_FAKE_ATTEMPT_TERMINAL` and `NO_CAUSAL_VERDICT` HOLD for it — meaning the legacy comparison cannot show
+ * those two predicates ever returning false. A predicate that has never been observed to fail is a predicate
+ * whose failure mode is untested, and a typo that made it always return `holds: true` would go unnoticed.
+ *
+ * So each property is given a SYNTHETIC observation constructed to violate exactly that property, and the
+ * evaluator must report `holds: false`. The controls are constructed from the same normalized observation shape
+ * the real runners produce, so they exercise the same code path.
+ */
+export function runPropertyNegativeControls() {
+  const base = {
+    plannedSessions: ['s1', 's2'],
+    launches: [{ sessionId: 's1', attempt: 1 }],
+    completedSessions: ['s1'],
+    failedSessions: [],
+    durableRecords: [{ sessionId: 's1', kind: 'TRIAL_RECORDED' }],
+    terminalEventsSynthesized: [],
+    causalVerdictIssued: false,
+    terminalState: 'MATRIX_COMPLETE',
+    matrixCompleted: true,
+    postMatrixValidityGate: true,
+  };
+  const controls = Object.freeze([
+    Object.freeze({
+      id: 'NO_SECOND_LAUNCH',
+      violates: 'a session launched twice',
+      observation: buildObservation({ ...base, launches: [{ sessionId: 's1', attempt: 1 }, { sessionId: 's1', attempt: 1 }] }),
+      evaluate: evaluateNoSecondLaunch,
+    }),
+    Object.freeze({
+      id: 'NEXT_SESSION_NOT_STARTED',
+      violates: 'a later session started after a failure',
+      observation: buildObservation({ ...base, launches: [{ sessionId: 's1', attempt: 1 }, { sessionId: 's2', attempt: 1 }], failedSessions: [{ sessionId: 's1', failureClass: 'INFRASTRUCTURE_OR_PROTOCOL' }], completedSessions: [] }),
+      evaluate: evaluateNextSessionNotStarted,
+    }),
+    Object.freeze({
+      id: 'EVIDENCE_PRESERVED',
+      violates: 'a completed session with no durable record',
+      observation: buildObservation({ ...base, durableRecords: [] }),
+      evaluate: evaluateEvidencePreserved,
+    }),
+    Object.freeze({
+      id: 'NO_FAKE_ATTEMPT_TERMINAL',
+      violates: 'a synthesized attempt terminal event',
+      observation: buildObservation({ ...base, terminalEventsSynthesized: ['ATTEMPT_CANCELLED'] }),
+      evaluate: evaluateNoFakeAttemptTerminal,
+    }),
+    Object.freeze({
+      id: 'NO_CAUSAL_VERDICT',
+      violates: 'a causal verdict issued over a stopped matrix',
+      observation: buildObservation({ ...base, causalVerdictIssued: true }),
+      evaluate: evaluateNoCausalVerdict,
+    }),
+  ]);
+  const results = Object.freeze(controls.map((control) => {
+    const evaluation = control.evaluate(control.observation);
+    return Object.freeze({
+      id: control.id,
+      violates: control.violates,
+      holds: evaluation.holds,
+      /** The control is satisfied only when the evaluator DETECTED the violation. */
+      DETECTED: evaluation.holds === false,
+      detail: evaluation.detail,
+    });
+  }));
+  const undetected = results.filter((result) => result.DETECTED !== true).map((result) => result.id);
+  return Object.freeze({
+    schemaVersion: 1,
+    kind: 'fail-stop property negative controls',
+    controls: results,
+    /** §8: every property must be observable to fail, or its evaluator is untested. */
+    ALL_PROPERTIES_FALSIFIABLE: undetected.length === 0,
+    undetected: Object.freeze(undetected),
+    law: 'a property whose evaluator has never been observed to return false is an untested predicate',
+  });
+}
+
 export { NL };

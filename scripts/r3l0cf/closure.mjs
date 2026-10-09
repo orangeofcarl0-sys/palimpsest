@@ -247,6 +247,7 @@ export async function computeExecutionClosure(input = {}) {
     : verifyCompiledAgainstSource();
 
   /** The aggregate covers the parts, the toolchain, the effective route and the model identity. */
+  const schedule = await scheduleDigests();
   const aggregateMaterial = {
     ...Object.fromEntries(Object.entries(parts).map(([id, digest]) => [`part:${id}`, digest])),
     'toolchain:node': toolchainFacts.node,
@@ -256,7 +257,7 @@ export async function computeExecutionClosure(input = {}) {
     'executor:model': executor.modelId,
     'executor:settings': executor.settingsDigest,
     'model:identity': `${modelIdentity.providerId}/${modelIdentity.modelId}`,
-    'plan:schedule': digestOfMap(await scheduleDigests()),
+    'plan:schedule': digestOfMap(schedule),
   };
   const executionClosureDigest = digestOfMap(aggregateMaterial);
 
@@ -271,6 +272,9 @@ export async function computeExecutionClosure(input = {}) {
     toolchain: toolchainFacts,
     executor,
     modelIdentity,
+    schedule,
+    /** §9: the aggregate's own material, so a mutation can rebuild the digest from ONE changed input. */
+    aggregateMaterial: Object.freeze(aggregateMaterial),
     compiledVerification: verified,
     /** §9: the excluded stage-owned artifacts, so the self-reference rule is visible. */
     selfExclusions: CLOSURE_SELF_EXCLUSIONS,
