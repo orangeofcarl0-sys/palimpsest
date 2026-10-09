@@ -244,15 +244,22 @@ export function buildAbortManifest(input) {
     completedSessions: Object.freeze([...(completedSessions ?? [])]),
     incompleteSessions: Object.freeze([...(incompleteSessions ?? [])]),
     uncertainSessions: Object.freeze([...(uncertainSessions ?? [])]),
-    /** §5: the failure that stopped the matrix, if any, with its class. */
+    /** §5: the failure that stopped the matrix, if any, with its class and its Gate 2 disposition. */
     failure: failure === undefined || failure === null ? null : Object.freeze({
       sessionId: failure.sessionId ?? null,
       failureClass: failure.failureClass ?? null,
       cause: failure.cause ?? null,
       detail: failure.detail ?? null,
+      /** Gate 2: which of the three dispositions stopped the run, so a manifest distinguishes a defect from a project outcome. */
+      disposition: failure.disposition ?? null,
+      workCannotProgress: failure.workCannotProgress === true,
     }),
+    /** Gate 2: whether the stop preserved a CENSORED trajectory rather than a harness fault. */
+    censored: failure !== undefined && failure !== null && failure.disposition === 'CENSORED',
     /** §5/§14: the consequences of a stop, carried so a manifest cannot be read as a partial success. */
     consequences: Object.freeze(['NO_SESSION_RETRY', 'NO_REPLACEMENT_TRAJECTORY', 'NO_CAUSAL_TREATMENT_VERDICT']),
+    /** Gate 2: the repair this forbids, stated on the manifest itself. */
+    forbiddenRepair: 'never force Result, Verification or Promotion to unblock the project',
     /** §15: the manifest describes the RESEARCH run and asserts nothing about canonical Work. */
     describesCanonicalWork: false,
     canonicalAttemptMayRemainRunning: true,

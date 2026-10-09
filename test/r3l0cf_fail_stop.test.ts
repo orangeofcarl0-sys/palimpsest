@@ -31,6 +31,20 @@ import { computeExecutionClosure, checkExecutionClosure } from "../scripts/r3l0c
 import { runClosureMutation } from "../scripts/r3l0cf/closure-mutation.mjs";
 import { LAUNCH_LAW, PROTOCOL_DEVIATION, FAIL_STOP_TRANSITIONS, TERMINAL_PRESERVED_STATES, JOURNAL_FIELDS } from "../scripts/r3l0cf/contract.mjs";
 
+/**
+ * R3-L0C-I Gate 2: a healthy outcome carrying every required admission signal. The F tests below use it because
+ * Gate 2 made the admission schema mandatory — an outcome that omits the signals is UNCLASSIFIABLE and would stop
+ * the matrix, so a test that wants a session to be RECORDED must supply them.
+ */
+const ADMITTED_OK = Object.freeze({
+  jobPhase: "FINISHED",
+  reportPresent: true,
+  attemptState: "COMPLETED",
+  consumerVisibleHandleCount: 0,
+  governedPullCount: 0,
+  completionCause: "RESULT_SUBMITTED",
+});
+
 const ROOTS: string[] = [];
 const freshRoot = (name: string): string => {
   const root = mkdtempSync(join(tmpdir(), `r3l0cf-${name}-`));
@@ -72,30 +86,58 @@ describe("R3-L0C-F §4 — the fail-stop state machine refuses an undeclared edg
   });
 });
 
-describe("R3-L0C-F §5 — the failure classification cannot launder a behavioral failure", () => {
-  it("classifies only a positively behavioral outcome as behavioral", () => {
-    expect(classifyOutcome({ resultCorrect: false }).classification).toBe("BEHAVIORAL");
-    expect(classifyOutcome({ correctnessOk: false }).classification).toBe("BEHAVIORAL");
-    expect(classifyOutcome({ visibleHandles: 2, pulls: [] }).classification).toBe("BEHAVIORAL");
-    expect(classifyOutcome({ budgetExhaustedWithoutResult: true }).classification).toBe("BEHAVIORAL");
-    expect(classifyOutcome({ workCannotProgress: true }).classification).toBe("BEHAVIORAL");
+describe("R3-L0C-F §5 / R3-L0C-I Gate 2 — the classification and its CORRECTED response", () => {
+  /**
+   * SUPERSEDED BY R3-L0C-I GATE 2, and the supersession is deliberate rather than a regression.
+   *
+   * R3-L0C-F classified an incorrect oracle vector and a declined capital pull as BEHAVIORAL failures whose
+   * response was a whole-matrix ABORT. Gate 2 determined those are the study's DEPENDENT VARIABLES, so stopping on
+   * them would destroy the experiment at its first interesting observation. The classification is unchanged — the
+   * kind of fact is still behavioural — and the RESPONSE moved to the admission schema, which admits them.
+   *
+   * These assertions check the fact AND the corrected response together, so a future edit that restored the old
+   * stop would fail here.
+   */
+  it("classifies a behavioural observation as behavioural AND admits it", () => {
+    for (const outcome of [
+      { ...ADMITTED_OK, hiddenInvariantVector: { failedPrepaidClasses: ["P1"], prepaidCoverage: 0.4 } },
+      { ...ADMITTED_OK, correctnessOk: false },
+      { ...ADMITTED_OK, consumerVisibleHandleCount: 2, governedPullCount: 0 },
+      { ...ADMITTED_OK, completionCause: "MAX_TOKENS" },
+    ]) {
+      const classified = classifyOutcome(outcome);
+      expect(classified.classification, JSON.stringify(outcome)).toBe("BEHAVIORAL");
+      /** Gate 2: behavioural is RECORDED, not a stop. */
+      expect(classified.disposition, JSON.stringify(outcome)).toBe("ADMITTED");
+      expect(classified.isAStop, JSON.stringify(outcome)).toBe(false);
+    }
   });
 
-  it("treats an ambiguous outcome as infrastructure, because stopping is the safe direction", () => {
-    expect(classifyOutcome(null).classification).toBe("INFRASTRUCTURE");
-    expect(classifyOutcome({ reportMissing: true }).classification).toBe("INFRASTRUCTURE");
-    expect(classifyOutcome({ jobPhase: "HOST_ERROR" }).classification).toBe("INFRASTRUCTURE");
-    expect(classifyOutcome({ treatmentMismatch: true }).classification).toBe("INFRASTRUCTURE");
-    /** An infrastructure cause dominates a behavioral one when both are present. */
-    const both = classifyOutcome({ resultCorrect: false, hostFailure: true });
+  it("treats a machinery fault as infrastructure, and it IS a stop", () => {
+    expect(classifyOutcome(null).classification).toBe("UNCLASSIFIABLE");
+    expect(classifyOutcome({}).classification).toBe("UNCLASSIFIABLE");
+    expect(classifyOutcome({ ...ADMITTED_OK, reportPresent: false }).classification).toBe("INFRASTRUCTURE");
+    expect(classifyOutcome({ ...ADMITTED_OK, jobPhase: "HOST_ERROR" }).classification).toBe("INFRASTRUCTURE");
+    expect(classifyOutcome({ ...ADMITTED_OK, treatmentMismatch: true }).classification).toBe("INFRASTRUCTURE");
+    expect(classifyOutcome({ ...ADMITTED_OK, jobPhase: "HOST_ERROR" }).isAStop).toBe(true);
+    /** A machinery fault dominates a behavioural observation when both are present. */
+    const both = classifyOutcome({ ...ADMITTED_OK, jobPhase: "HOST_ERROR", hiddenInvariantVector: { failedPrepaidClasses: ["P1"], prepaidCoverage: 0.3 } });
     expect(both.classification).toBe("INFRASTRUCTURE");
+    expect(both.disposition).toBe("TRIAL_INVALID");
   });
 
-  it("never permits a retry, in either class", () => {
-    expect(classifyOutcome({ resultCorrect: false }).retryPermitted).toBe(false);
-    expect(classifyOutcome({ hostFailure: true }).retryPermitted).toBe(false);
-    /** §5: an unresolved predecessor blocks the next generation as infrastructure. */
-    expect(classifyOutcome({ priorAttemptUnresolved: true }).classification).toBe("INFRASTRUCTURE");
+  it("classifies a Canonical Work blockage as CENSORED, distinctly from a machinery fault", () => {
+    const censored = classifyOutcome({ ...ADMITTED_OK, workCannotAdvance: true });
+    expect(censored.classification).toBe("CENSORED");
+    expect(censored.disposition).toBe("CENSORED");
+    expect(censored.workCannotProgress).toBe(true);
+    expect(censored.isAStop).toBe(true);
+  });
+
+  it("never permits a retry, in any disposition", () => {
+    expect(classifyOutcome({ ...ADMITTED_OK, correctnessOk: false }).retryPermitted).toBe(false);
+    expect(classifyOutcome({ ...ADMITTED_OK, jobPhase: "HOST_ERROR" }).retryPermitted).toBe(false);
+    expect(classifyOutcome({ ...ADMITTED_OK, workCannotAdvance: true }).retryPermitted).toBe(false);
   });
 });
 
@@ -163,7 +205,7 @@ describe("R3-L0C-F §7/§8 — the fail-stop matrix run", () => {
       runId: "stop",
       runRoot: root,
       schedule,
-      launch: async ({ session }: { session: { generation: string } }) => (session.generation === "G2" ? { hostFailure: true, jobPhase: "HOST_ERROR" } : { resultCorrect: true }),
+      launch: async ({ session }: { session: { generation: string } }) => (session.generation === "G2" ? { ...ADMITTED_OK, jobPhase: "HOST_ERROR" } : ADMITTED_OK),
       validityGate: async () => ({ green: true }),
     });
     expect(run.terminalState).toBe("ABORT_PRESERVED");
@@ -183,13 +225,18 @@ describe("R3-L0C-F §7/§8 — the fail-stop matrix run", () => {
       runId: "unresolved",
       runRoot: root,
       schedule,
-      launch: async ({ session }: { session: { generation: string } }) => (session.generation === "G1" ? { workCannotProgress: true } : { resultCorrect: true }),
+      launch: async ({ session }: { session: { generation: string } }) => (session.generation === "G1" ? { ...ADMITTED_OK, workCannotAdvance: true } : ADMITTED_OK),
       validityGate: async () => ({ green: true }),
     });
     expect(run.terminalState).toBe("ABORT_PRESERVED");
     expect(run.launches.length).toBe(1);
-    expect(run.failure.failureClass).toBe("OBSERVABLE_BEHAVIORAL");
-    expect(run.failure.cause).toBe("WORK_CANNOT_PROGRESS_CENSORED_TRAJECTORY");
+    /**
+     * R3-L0C-I Gate 2: an unresolved attempt is a CANONICAL WORK BLOCKAGE, not a behavioural failure. The
+     * distinction matters to an operator — one is a project outcome to report, the other a harness fault to fix —
+     * and R3-L0C-F conflated them by classifying this as OBSERVABLE_BEHAVIORAL.
+     */
+    expect(run.failure.failureClass).toBe("CANONICAL_WORK_BLOCKAGE");
+    expect(run.failure.cause).toBe("CANONICAL_WORK_CANNOT_ADVANCE");
   });
 
   it("§4 marks an entered launch whose outcome is unknown as UNCERTAIN, never as a non-event", async () => {
@@ -215,7 +262,7 @@ describe("R3-L0C-F §7/§8 — the fail-stop matrix run", () => {
       runId: "gate-red",
       runRoot: root,
       schedule,
-      launch: async () => ({ resultCorrect: true }),
+      launch: async () => ADMITTED_OK,
       validityGate: async () => ({ green: false, detail: "gate red" }),
     });
     expect(run.terminalState).toBe("ABORT_PRESERVED");
@@ -229,7 +276,7 @@ describe("R3-L0C-F §7/§8 — the fail-stop matrix run", () => {
       runId: "complete",
       runRoot: root,
       schedule,
-      launch: async () => ({ resultCorrect: true }),
+      launch: async () => ADMITTED_OK,
       validityGate: async ({ completed }: { completed: readonly string[] }) => ({ green: completed.length === schedule.length }),
     });
     expect(run.terminalState).toBe("MATRIX_COMPLETE");
@@ -246,7 +293,7 @@ describe("R3-L0C-F §7 — preservation, read from disk rather than from a clean
       runId: "preserve",
       runRoot: root,
       schedule: twoGenerationSchedule(0, "C"),
-      launch: async () => ({ reportMissing: true }),
+      launch: async () => ({ ...ADMITTED_OK, reportPresent: false }),
       validityGate: async () => ({ green: true }),
     });
     expect(run.terminalState).toBe("ABORT_PRESERVED");
@@ -280,9 +327,9 @@ describe("R3-L0C-F §8 — every §8 property is falsifiable", () => {
 });
 
 describe("R3-L0C-F §9 — the executable closure", () => {
-  it("covers the five separated parts and includes the compiled shipped runtime", async () => {
+  it("covers the six separated parts and includes the compiled shipped runtime", async () => {
     const closure = await computeExecutionClosure();
-    expect(closure.partIds).toEqual(["SOURCE_CLOSURE", "COMPILED_RUNTIME_CLOSURE", "EXECUTOR_CONFIGURATION", "MODEL_IDENTITY_EVIDENCE", "EXPERIMENT_PLAN_DIGEST"]);
+    expect(closure.partIds).toEqual(["SOURCE_CLOSURE", "COMPILED_RUNTIME_CLOSURE", "EXECUTOR_CONFIGURATION", "MODEL_IDENTITY_EVIDENCE", "EXPERIMENT_PLAN_DIGEST", "INTEGRATION_CLOSURE"]);
     const compiled = Object.keys(closure.fileDigests.COMPILED_RUNTIME_CLOSURE);
     expect(compiled.some((file: string) => file.includes("git_port"))).toBe(true);
     expect(closure.coversCodeNotResults).toBe(true);

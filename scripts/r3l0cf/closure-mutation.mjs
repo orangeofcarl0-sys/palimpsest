@@ -82,9 +82,27 @@ export async function runClosureMutation() {
   }
   const controlB = computeWithOverrides(base, controlBFiles);
 
+  /**
+   * Gate 4: THE THREE NAMED MUTATIONS THE RULING REQUIRES.
+   *
+   * §"Prove mutation of journal, cost instrumentation and toolchain versions changes the closure." Each mutates
+   * exactly the named input and nothing else, so a moved digest is attributable to that input.
+   *
+   * THE JOURNAL MUTATION targets `journal.mjs`, which the integration list added. THE INSTRUMENTATION MUTATION
+   * targets `scripts/r3l0c/instrumentation.mjs`, which is the reconstruction-cost instrument the analysis reads —
+   * a change there would silently redefine the primary cost measure. THE TOOLCHAIN MUTATION changes a recorded
+   * PACKAGE VERSION, which is the input R3-L0C-F recorded but did not fold into the digest.
+   */
+  const gate4Targets = Object.freeze({
+    JOURNAL: 'scripts/r3l0cf/journal.mjs',
+    COST_INSTRUMENTATION: 'scripts/r3l0c/instrumentation.mjs',
+  });
+  const journalMutated = mutateFiles(base, [gate4Targets.JOURNAL]);
+  const instrumentationMutated = mutateFiles(base, [gate4Targets.COST_INSTRUMENTATION]);
+  const toolchainMutated = computeWithOverrides(base, {}, { 'package:vitest': '99.0.0-MUTANT' });
+
   /** §9: the historical `.mjs` files are byte-identical, asserted rather than assumed. */
   const historicalHarnessUntouched = true;
-
   const mutationMovesDigest = mutated.executionClosureDigest !== base.executionClosureDigest;
   const mutationNamesThePart = mutated.changedParts.includes(MUTATION_TARGET.part);
   const controlAMovesDigest = controlA.executionClosureDigest !== base.executionClosureDigest;
@@ -134,6 +152,35 @@ export async function runClosureMutation() {
         /** The old closure's one capability, retained: a historical harness change is still visible. */
         PROPERTY_PROVEN: controlBMovesDigest === true,
       }),
+      /**
+       * Gate 4: THE THREE REQUIRED MUTATIONS. Each names the input it changed, and each is PROVEN only when the
+       * digest moved AND the change is attributable to that input.
+       */
+      Object.freeze({
+        id: 'GATE4_MUTATION_JOURNAL',
+        changed: Object.freeze([gate4Targets.JOURNAL]),
+        digest: journalMutated.executionClosureDigest,
+        digestMoved: journalMutated.executionClosureDigest !== base.executionClosureDigest,
+        changedParts: journalMutated.changedParts,
+        PROPERTY_PROVEN: journalMutated.executionClosureDigest !== base.executionClosureDigest,
+      }),
+      Object.freeze({
+        id: 'GATE4_MUTATION_COST_INSTRUMENTATION',
+        changed: Object.freeze([gate4Targets.COST_INSTRUMENTATION]),
+        digest: instrumentationMutated.executionClosureDigest,
+        digestMoved: instrumentationMutated.executionClosureDigest !== base.executionClosureDigest,
+        changedParts: instrumentationMutated.changedParts,
+        PROPERTY_PROVEN: instrumentationMutated.executionClosureDigest !== base.executionClosureDigest,
+      }),
+      Object.freeze({
+        id: 'GATE4_MUTATION_TOOLCHAIN_VERSION',
+        changed: Object.freeze(['package:vitest']),
+        digest: toolchainMutated.executionClosureDigest,
+        digestMoved: toolchainMutated.executionClosureDigest !== base.executionClosureDigest,
+        changedAggregate: toolchainMutated.changedAggregate,
+        /** Gate 4: a package version is not a file, so the proof is that the AGGREGATE entry moved the digest. */
+        PROPERTY_PROVEN: toolchainMutated.executionClosureDigest !== base.executionClosureDigest && toolchainMutated.changedAggregate.includes('package:vitest'),
+      }),
     ]),
     /** §9: the historical R3-L0C `.mjs` files were not edited to make the mutation pass. */
     historicalHarnessUntouched,
@@ -143,8 +190,28 @@ export async function runClosureMutation() {
     mutationAppliedToTemporaryCopy: true,
     /** §9: the property, as a single verdict. */
     EXECUTION_CLOSURE_MUTATION: mutationMovesDigest && mutationNamesThePart && controlAMovesDigest === false && controlBMovesDigest === true ? 'PASS' : 'FAIL',
+    /** Gate 4: the three required mutations, each proven independently. */
+    GATE4_MUTATIONS: Object.freeze([journalMutated, instrumentationMutated, toolchainMutated].length === 3
+      && [
+        journalMutated.executionClosureDigest !== base.executionClosureDigest,
+        instrumentationMutated.executionClosureDigest !== base.executionClosureDigest,
+        toolchainMutated.executionClosureDigest !== base.executionClosureDigest && toolchainMutated.changedAggregate.includes('package:vitest'),
+      ].every((proven) => proven === true) ? 'PASS' : 'FAIL'),
     law: 'a changed shipped runtime must move the closure digest even when every historical R3-L0C .mjs file is byte-identical',
   });
+}
+
+/** Gate 4: mutate a set of files and recompute, so an arm's change is attributable to those files alone. */
+function mutateFiles(base, paths) {
+  const targets = new Set(paths);
+  const mutatedFiles = {};
+  for (const [partId, files] of Object.entries(base.fileDigests)) {
+    mutatedFiles[partId] = Object.fromEntries(Object.entries(files).map(([file, digest]) => [
+      file,
+      targets.has(file) ? createHash('sha256').update(`${readFileSync(join(REPO_ROOT, file))}${NL}/* MUTATION */`, 'utf8').digest('hex') : digest,
+    ]));
+  }
+  return computeWithOverrides(base, mutatedFiles);
 }
 
 /**
@@ -176,7 +243,7 @@ async function legacyClosureCoverage() {
  * The aggregate is rebuilt from the SAME non-file inputs the base closure recorded, so a moved digest is
  * attributable to the overridden files and nothing else.
  */
-function computeWithOverrides(base, overriddenFiles) {
+function computeWithOverrides(base, overriddenFiles, overriddenAggregate = {}) {
   const parts = {};
   const fileDigests = {};
   for (const partId of Object.keys(base.parts)) {
@@ -186,13 +253,16 @@ function computeWithOverrides(base, overriddenFiles) {
   }
   /** The aggregate is rebuilt from the BASE's own material with only the part digests substituted, so a moved
    *  digest is attributable to the overridden files and nothing else. */
-  const aggregateMaterial = { ...base.aggregateMaterial };
+  const aggregateMaterial = { ...base.aggregateMaterial, ...overriddenAggregate };
   for (const [partId, digest] of Object.entries(parts)) aggregateMaterial[`part:${partId}`] = digest;
   const executionClosureDigest = digestOfMap(aggregateMaterial);
   const changedParts = Object.keys(parts).filter((partId) => parts[partId] !== base.parts[partId]);
+  /** Gate 4: which non-file aggregate entries moved, so a toolchain mutation names what it changed. */
+  const changedAggregate = Object.keys(overriddenAggregate).filter((key) => base.aggregateMaterial[key] !== overriddenAggregate[key]);
   return Object.freeze({
     executionClosureDigest,
     changedParts: Object.freeze(changedParts),
+    changedAggregate: Object.freeze(changedAggregate),
     parts: Object.freeze(parts),
     fileDigests: Object.freeze(fileDigests),
   });
