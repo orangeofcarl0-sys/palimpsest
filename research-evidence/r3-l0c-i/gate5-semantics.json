@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I",
+  "kind": "semantic rulings",
+  "capitalSufficiency": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-I",
+    "kind": "capital semantic sufficiency verification",
+    "results": [
+      {
+        "id": "p1a",
+        "classId": "P1",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p1b",
+        "classId": "P1",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p2a",
+        "classId": "P2",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p2b",
+        "classId": "P2",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p3a",
+        "classId": "P3",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p4a",
+        "classId": "P4",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p4b",
+        "classId": "P4",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p5a",
+        "classId": "P5",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p5b",
+        "classId": "P5",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p6a",
+        "classId": "P6",
+        "prepaid": true,
+        "pass": true,
+        "detail": "refused as required"
+      },
+      {
+        "id": "p6b",
+        "classId": "P6",
+        "prepaid": true,
+        "pass": true,
+        "detail": "refused and mutated nothing"
+      },
+      {
+        "id": "p7a",
+        "classId": "P7",
+        "prepaid": true,
+        "pass": true,
+        "detail": "ok"
+      },
+      {
+        "id": "p7b",
+        "classId": "P7",
+        "prepaid": true,
+        "pass": true,
+        "detail": "refused as required"
+      },
+      {
+        "id": "x1a",
+        "classId": "X1",
+        "prepaid": false,
+        "pass": true,
+        "detail": "ok"
+      }
+    ],
+    "totalCases": 14,
+    "prepaidCases": 13,
+    "passed": 14,
+    "failed": [],
+    "failedPrepaid": [],
+    "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+    "onFailure": "STOP — the capital does not determine the standing, so a reader would have to consult the history",
+    "method": "compile the capital method into an explicit procedure, run it against the frozen reference cases, and compare against the oracle's own expected values",
+    "reliedOnFieldPresence": false,
+    "reliedOnTokenOverlap": false,
+    "oracleCases": 14
+  },
+  "procedureFalsifiers": {
+    "schemaVersion": 1,
+    "kind": "capital procedure falsifiers",
+    "variants": [
+      {
+        "id": "NAIVE_LATEST_WINS_AND_NAMED_REVOKE",
+        "expects": "the reader without the capital",
+        "failedCases": [
+          "p1a:expected deny, got ALLOW",
+          "p1b:expected deny, got ALLOW",
+          "p4a:expected deny, got ALLOW",
+          "p5a:after revoke expected deny, got ALLOW"
+        ],
+        "DETECTED": true
+      },
+      {
+        "id": "ANY_DENY_IS_FINAL",
+        "expects": "the cutover comparison dropped",
+        "failedCases": [
+          "p2a:expected allow, got DENY",
+          "p2b:expected allow, got DENY",
+          "p4b:expected allow, got DENY"
+        ],
+        "DETECTED": true
+      },
+      {
+        "id": "REVOKE_WITHOUT_HOLDING",
+        "expects": "the I2 precondition dropped",
+        "failedCases": [
+          "p6a:expected a refusal, but the revocation was accepted",
+          "p6b:expected a refusal, but the revocation was accepted",
+          "p7b:expected a refusal, but the revocation was accepted"
+        ],
+        "DETECTED": true
+      }
+    ],
+    "ALL_VARIANTS_DETECTED": true,
+    "undetected": [],
+    "law": "a procedure whose mutations all pass would not be measuring the capital"
+  },
+  "CAPITAL_SEMANTIC_SUFFICIENCY": "PASS",
+  "PROMPT_NEUTRALITY": "LIMITED",
+  "promptNeutralityResolved": false,
+  "readmeEdited": false,
+  "corpusEdited": false,
+  "routeRuling": {
+    "id": "OMNIGATE_DEEPSEEK_ROUTE_IS_AN_EXECUTION_STACK_DEVIATION",
+    "classifiedAs": "separately recorded execution-stack deviation",
+    "provesCheckpointEquivalence": false,
+    "note": "the configured family does not prove checkpoint identity with the old direct provider"
+  }
+}

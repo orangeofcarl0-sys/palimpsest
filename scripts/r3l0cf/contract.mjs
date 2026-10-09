@@ -37,7 +37,17 @@ export const BASELINE_COMMIT = '19f0c69833f33c51ada8642379980c490cb75d04';
 export const STAGE_BRANCH = 'r3-l0c-f-fail-stop-qualification';
 
 /** §0: this stage's own evidence namespace. The ONLY place it may add under `research-evidence/`. */
-export const STAGE_EVIDENCE_PATH = 'research-evidence/r3-l0c-f';
+/**
+ * R3-L0C-I: THIS STAGE'S OWN EVIDENCE NAMESPACE.
+ *
+ * It is separate from R3-L0C-F's, and that is a requirement rather than tidiness: §"Do not rewrite old commits" and
+ * the immutability rule mean a new stage must not add to a prior stage's evidence directory, because a reader
+ * comparing R3-L0C-F's artifacts before and after this stage could not then tell which records were its own.
+ */
+export const STAGE_EVIDENCE_PATH = 'research-evidence/r3-l0c-i';
+
+/** R3-L0C-F's evidence namespace, read but never written by this stage. */
+export const PRIOR_STAGE_EVIDENCE_PATH = 'research-evidence/r3-l0c-f';
 
 /** §1: the stages whose evidence and contracts are frozen and must not be edited. */
 export const FROZEN_STAGES = Object.freeze([
