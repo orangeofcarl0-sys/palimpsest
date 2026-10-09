@@ -1,0 +1,800 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "deterministic fail-stop crash matrix",
+  "cases": [
+    {
+      "id": "C1_FAILURE_BEFORE_LAUNCH",
+      "arm": "C",
+      "fault": "NONE",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [],
+      "maxLaunchesPerSession": 0,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "PREFLIGHT_FAILURE_BEFORE_ANY_LAUNCH",
+        "detail": "a load-bearing preflight check failed before the first session was exposed"
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 0 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 0
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "no session failed, so the property is not exercised",
+            "violated": [],
+            "failureIndex": null
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C2_FAILURE_AFTER_EXPOSURE_INTENT",
+      "arm": "C",
+      "fault": "HOST_FAILURE",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "HOST_FAILURE",
+        "detail": "HOST_FAILURE",
+        "workCannotProgress": false
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+            "violated": [],
+            "failureIndex": 0
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C3_CHILD_LAUNCH_OR_REPORT_MISSING",
+      "arm": "C",
+      "fault": "REPORT_MISSING",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "MISSING_WORKER_REPORT",
+        "detail": "MISSING_WORKER_REPORT",
+        "workCannotProgress": false
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+            "violated": [],
+            "failureIndex": 0
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C4_WORKER_HOST_FAILURE",
+      "arm": "C",
+      "fault": "HOST_FAILURE",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "HOST_FAILURE",
+        "detail": "HOST_FAILURE",
+        "workCannotProgress": false
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+            "violated": [],
+            "failureIndex": 0
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C5_WORLD_LOSES_GIT_OBJECTS",
+      "arm": "C",
+      "fault": "GIT_OBJECTS_LOST",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "GIT_OBJECT_RESOLUTION_FAILURE",
+        "detail": "GIT_OBJECT_RESOLUTION_FAILURE, LAUNCH_THREW",
+        "workCannotProgress": false
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+            "violated": [],
+            "failureIndex": 0
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C6_C_TREATMENT_HANDLES_ABSENT",
+      "arm": "C",
+      "fault": "TREATMENT_HANDLES_ABSENT",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G1",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+        "detail": "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+        "workCannotProgress": true
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+            "violated": [],
+            "failureIndex": 0
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C7_G1_COMPLETES_G2_FAILS",
+      "arm": "C",
+      "fault": "HOST_FAILURE",
+      "terminalState": "ABORT_PRESERVED",
+      "completedSessions": [
+        "b0-C-G1"
+      ],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        },
+        {
+          "sessionId": "b0-C-G2",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": {
+        "sessionId": "b0-C-G2",
+        "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+        "cause": "HOST_FAILURE",
+        "detail": "HOST_FAILURE",
+        "workCannotProgress": false
+      },
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 2 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "nothing was started after the failure at \"b0-C-G2\" (schedule index 1)",
+            "violated": [],
+            "failureIndex": 1
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 1 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 1
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "ABORT_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C8_HOST_TERMINATES_BETWEEN_JOURNAL_WRITES",
+      "arm": "C",
+      "fault": "HOST_TERMINATES",
+      "terminalState": "UNCERTAIN_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": null,
+      "matrixCompleted": false,
+      "journalIntact": true,
+      "manifestTerminalState": "UNCERTAIN_PRESERVED",
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "no session failed, so the property is not exercised",
+            "violated": [],
+            "failureIndex": null
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "UNCERTAIN_PRESERVED",
+      "terminalMatchesExpectation": true
+    },
+    {
+      "id": "C9_RESTART_AGAINST_UNFINISHED_RUN",
+      "arm": "C",
+      "terminalState": "UNCERTAIN_PRESERVED",
+      "completedSessions": [],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": null,
+      "journalIntact": true,
+      "inspection": {
+        "schemaVersion": 1,
+        "kind": "preserved run inspection",
+        "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C9_RESTART_AGAINST_UNFINISHED_RUN",
+        "verdict": "UNCERTAIN",
+        "preserveMarker": true,
+        "journalIntact": true,
+        "interrupted": [],
+        "temporaryFiles": [],
+        "exposureIntents": 1,
+        "launches": 1,
+        "trials": 0,
+        "uncertain": 1,
+        "manifestTerminalState": "UNCERTAIN_PRESERVED",
+        "mayResumeAutomatically": false,
+        "mayReplaceAutomatically": false,
+        "mayStartFresh": false,
+        "decision": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling",
+        "law": "a restart must never automatically resume or replace a run in which exposure was possible"
+      },
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 1 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "no session failed, so the property is not exercised",
+            "violated": [],
+            "failureIndex": null
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 0 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 0
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "UNCERTAIN_PRESERVED",
+      "terminalMatchesExpectation": true,
+      "NO_RESTART_RESUME": true
+    },
+    {
+      "id": "C10_HEALTHY_TWO_GENERATION_TRAJECTORY",
+      "arm": "C",
+      "terminalState": "MATRIX_COMPLETE",
+      "completedSessions": [
+        "b0-C-G1",
+        "b0-C-G2"
+      ],
+      "launches": [
+        {
+          "sessionId": "b0-C-G1",
+          "attempt": 1
+        },
+        {
+          "sessionId": "b0-C-G2",
+          "attempt": 1
+        }
+      ],
+      "maxLaunchesPerSession": 1,
+      "failure": null,
+      "journalIntact": true,
+      "properties": {
+        "schemaVersion": 1,
+        "kind": "fail-stop property evaluation",
+        "properties": [
+          {
+            "id": "NO_SECOND_LAUNCH",
+            "holds": true,
+            "detail": "every one of the 2 launch(es) is the first for its session",
+            "violated": [],
+            "maxLaunchesPerSession": 1
+          },
+          {
+            "id": "NEXT_SESSION_NOT_STARTED",
+            "holds": true,
+            "detail": "no session failed, so the property is not exercised",
+            "violated": [],
+            "failureIndex": null
+          },
+          {
+            "id": "EVIDENCE_PRESERVED",
+            "holds": true,
+            "detail": "all 2 completed session(s) have a durable record",
+            "violated": [],
+            "durableRecordCount": 2
+          },
+          {
+            "id": "NO_FAKE_ATTEMPT_TERMINAL",
+            "holds": true,
+            "detail": "no attempt terminal event was synthesized",
+            "violated": []
+          },
+          {
+            "id": "NO_CAUSAL_VERDICT",
+            "holds": true,
+            "detail": "no causal treatment verdict was issued",
+            "violated": []
+          }
+        ],
+        "ALL_PROPERTIES_HOLD": true,
+        "failing": [],
+        "missing": [],
+        "evaluated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED",
+          "NO_FAKE_ATTEMPT_TERMINAL",
+          "NO_CAUSAL_VERDICT"
+        ]
+      },
+      "ADVANCED_THROUGH_GOVERNED_PATH": true,
+      "promoted": [
+        "PROMOTED",
+        "PROMOTED"
+      ],
+      "headsMoved": [
+        true,
+        true
+      ],
+      "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+      "expectedTerminal": "MATRIX_COMPLETE",
+      "terminalMatchesExpectation": true
+    }
+  ],
+  "requiredCases": [
+    "C1_FAILURE_BEFORE_LAUNCH",
+    "C2_FAILURE_AFTER_EXPOSURE_INTENT",
+    "C3_CHILD_LAUNCH_OR_REPORT_MISSING",
+    "C4_WORKER_HOST_FAILURE",
+    "C5_WORLD_LOSES_GIT_OBJECTS",
+    "C6_C_TREATMENT_HANDLES_ABSENT",
+    "C7_G1_COMPLETES_G2_FAILS",
+    "C8_HOST_TERMINATES_BETWEEN_JOURNAL_WRITES",
+    "C9_RESTART_AGAINST_UNFINISHED_RUN",
+    "C10_HEALTHY_TWO_GENERATION_TRAJECTORY"
+  ],
+  "allCasesRun": true,
+  "failureCases": 9,
+  "failing": [],
+  "unexpectedTerminal": [],
+  "CRASH_MATRIX": "PASS",
+  "healthyControlAdvanced": true,
+  "modelCallsMade": 0,
+  "law": "every failure case must show NO_SECOND_LAUNCH, NEXT_SESSION_NOT_STARTED, EVIDENCE_PRESERVED, NO_FAKE_ATTEMPT_TERMINAL and NO_CAUSAL_VERDICT, and the healthy control must still advance through the governed path"
+}

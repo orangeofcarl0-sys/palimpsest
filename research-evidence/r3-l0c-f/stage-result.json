@@ -1,0 +1,2204 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "fail-stop resume qualification",
+  "startedAt": "2026-10-09T03:58:03.108Z",
+  "endedAt": "2026-10-09T03:58:44.172Z",
+  "baseline": "19f0c69833f33c51ada8642379980c490cb75d04",
+  "protocolDeviation": {
+    "schemaVersion": 1,
+    "kind": "R3-L0C-F prospective protocol revision",
+    "OLD_PROTOCOL": "INFRASTRUCTURE_RETRY_UP_TO_4",
+    "NEW_PROTOCOL": "NO_RETRY_AFTER_POSSIBLE_EXPOSURE",
+    "oldRule": "a session the harness judged infrastructure-invalid was re-launched, up to four attempts, until a report was produced or the attempts were exhausted",
+    "newRule": "a session is launched AT MOST ONCE; a failure after the exposure-intent was durably recorded stops the whole matrix and is never re-launched",
+    "prospective": true,
+    "executionDesignIdentical": false,
+    "executionDesignNote": "the behavioral design is preserved, but the EXECUTION design is deliberately revised: retry-after-infrastructure-invalidity is removed",
+    "unchanged": [
+      "research question",
+      "treatment (SELECTION_ONLY)",
+      "experimental unit (ProjectTrajectory)",
+      "history corpus and capital assets",
+      "hidden diagnostic oracle",
+      "quality and reconstruction-cost measures",
+      "four matched blocks",
+      "two generations per trajectory",
+      "H/C arm ordering and randomization seed",
+      "positive/adverse verdict thresholds"
+    ],
+    "implementedIn": "new stage-owned modules under scripts/r3l0cf/",
+    "frozenContractsEdited": false
+  },
+  "legacyFalsifiers": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "legacy runner falsifiers",
+    "declaredDefects": [
+      "D1_RETRIES_INFRASTRUCTURE_INVALID",
+      "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+      "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+      "D4_G2_WITHOUT_RESOLVED_G1",
+      "D5_NO_POST_MATRIX_VALIDITY_GATE"
+    ],
+    "falsifiers": [
+      {
+        "id": "D1_RETRIES_INFRASTRUCTURE_INVALID",
+        "companionId": "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+        "fault": "the first launch of G1 returns an infrastructure-invalid result (no report)",
+        "legacyObservation": {
+          "attemptsForG1": 2,
+          "launchesForG1": 2,
+          "totalLaunches": 3,
+          "launchSequence": [
+            {
+              "generation": "G1",
+              "attempt": 1
+            },
+            {
+              "generation": "G1",
+              "attempt": 2
+            },
+            {
+              "generation": "G2",
+              "attempt": 1
+            }
+          ],
+          "recordedJobPhase": "FINISHED"
+        },
+        "defectPresent": true,
+        "requirement": "a session must be launched at most once, and an infrastructure-invalid result must not trigger a re-launch",
+        "newRunnerMustShow": {
+          "MAX_WORKER_LAUNCHES": 1,
+          "POST_EXPOSURE_RETRIES": 0
+        }
+      },
+      {
+        "id": "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+        "fault": "G2 throws, simulating a host interruption in the middle of the first trajectory",
+        "legacyObservation": {
+          "threw": "SIMULATED_HOST_INTERRUPTION_DURING_G2",
+          "ledgerWriteCount": 0,
+          "ledgerWrites": [],
+          "launchesObserved": [
+            {
+              "generation": "G1",
+              "attempt": 1,
+              "infrastructureInvalid": false
+            }
+          ],
+          "g1CompletedBeforeThrow": true,
+          "durableRecordOfCompletedG1": false
+        },
+        "defectPresent": true,
+        "requirement": "each generation must have a durable record written before the next generation starts",
+        "newRunnerMustShow": {
+          "perGenerationDurableRecord": true,
+          "interruptedWriteDetectable": true
+        }
+      },
+      {
+        "id": "D4_G2_WITHOUT_RESOLVED_G1",
+        "fault": "G1's worker cannot commit, so its canonical Attempt remains RUNNING",
+        "legacyObservation": {
+          "g1AttemptState": "RUNNING",
+          "generationsEntered": [
+            "G1",
+            "G2"
+          ],
+          "g2Entered": true,
+          "priorAttemptChecksPerformed": 0
+        },
+        "defectPresent": true,
+        "requirement": "a generation must not be entered while the previous generation's canonical Attempt is unresolved",
+        "newRunnerMustShow": {
+          "blocksNextGenerationOnUnresolvedAttempt": true,
+          "stopIsWholeMatrix": true
+        }
+      },
+      {
+        "id": "D5_NO_POST_MATRIX_VALIDITY_GATE",
+        "fault": "every G1 produces no report, so half the scheduled generations are lost",
+        "legacyObservation": {
+          "plannedSessions": 4,
+          "recordedSessions": 4,
+          "validSessions": 2,
+          "infrastructureInvalidSessions": 2,
+          "postMatrixValidityGate": false,
+          "completionReported": true,
+          "completionLine": "REPAIR REPLICATION COMPLETE — 2/4 valid sessions",
+          "reportedDenominator": "2/4"
+        },
+        "defectPresent": true,
+        "requirement": "matrix completion requires all scheduled sessions present AND a green post-matrix validity gate",
+        "newRunnerMustShow": {
+          "requiresAllScheduledSessions": true,
+          "requiresPostMatrixValidityGate": true
+        }
+      }
+    ],
+    "propertyWitness": {
+      "id": "SHARED_PREDICATE_WITNESS",
+      "scenarios": [
+        {
+          "id": "SCENARIO_A_REPORT_NEVER_APPEARS",
+          "observation": {
+            "schemaVersion": 1,
+            "plannedSessions": [
+              "b0-H-G1",
+              "b0-H-G2",
+              "b0-C-G1",
+              "b0-C-G2"
+            ],
+            "launches": [
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 1
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 2
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 3
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 4
+              },
+              {
+                "sessionId": "b0-H-G2",
+                "attempt": 1
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 5
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 6
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 7
+              },
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 8
+              },
+              {
+                "sessionId": "b0-H-G2",
+                "attempt": 2
+              }
+            ],
+            "completedSessions": [
+              "b0-H-G2",
+              "b0-H-G2"
+            ],
+            "failedSessions": [
+              {
+                "sessionId": "b0-H-G1",
+                "failureClass": "INFRASTRUCTURE_OR_PROTOCOL"
+              }
+            ],
+            "durableRecords": [],
+            "terminalEventsSynthesized": [],
+            "causalVerdictIssued": false,
+            "terminalState": "MATRIX_COMPLETE",
+            "matrixCompleted": true,
+            "postMatrixValidityGate": false
+          },
+          "violated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED"
+          ],
+          "launches": 10,
+          "completionLine": "REPAIR REPLICATION COMPLETE — 2/4 valid sessions"
+        },
+        {
+          "id": "SCENARIO_B_HOST_INTERRUPTION",
+          "observation": {
+            "schemaVersion": 1,
+            "plannedSessions": [
+              "b0-H-G1",
+              "b0-H-G2",
+              "b0-C-G1",
+              "b0-C-G2"
+            ],
+            "launches": [
+              {
+                "sessionId": "b0-H-G1",
+                "attempt": 1
+              },
+              {
+                "sessionId": "b0-H-G2",
+                "attempt": 1
+              }
+            ],
+            "completedSessions": [
+              "b0-H-G1"
+            ],
+            "failedSessions": [
+              {
+                "sessionId": "b0-H-G2",
+                "failureClass": "INFRASTRUCTURE_OR_PROTOCOL"
+              }
+            ],
+            "durableRecords": [],
+            "terminalEventsSynthesized": [],
+            "causalVerdictIssued": false,
+            "terminalState": "CRASHED",
+            "matrixCompleted": false,
+            "postMatrixValidityGate": false
+          },
+          "violated": [
+            "EVIDENCE_PRESERVED"
+          ],
+          "threw": "SIMULATED_HOST_INTERRUPTION_DURING_G2"
+        }
+      ],
+      "violated": [
+        "EVIDENCE_PRESERVED",
+        "NEXT_SESSION_NOT_STARTED",
+        "NO_SECOND_LAUNCH"
+      ],
+      "violatedBy": {
+        "EVIDENCE_PRESERVED": [
+          "SCENARIO_A_REPORT_NEVER_APPEARS",
+          "SCENARIO_B_HOST_INTERRUPTION"
+        ],
+        "NEXT_SESSION_NOT_STARTED": [
+          "SCENARIO_A_REPORT_NEVER_APPEARS"
+        ],
+        "NO_SECOND_LAUNCH": [
+          "SCENARIO_A_REPORT_NEVER_APPEARS"
+        ]
+      },
+      "nonDiscriminating": [
+        "NO_FAKE_ATTEMPT_TERMINAL",
+        "NO_CAUSAL_VERDICT"
+      ],
+      "anyViolated": true,
+      "detail": "the legacy runner violates EVIDENCE_PRESERVED, NEXT_SESSION_NOT_STARTED, NO_SECOND_LAUNCH; it does not discriminate on NO_FAKE_ATTEMPT_TERMINAL, NO_CAUSAL_VERDICT, whose falsifiers are the qualification suite's negative controls",
+      "WITNESS_FAILS_AGAINST_LEGACY": true
+    },
+    "LEGACY_DEFECTS_PRESENT": true,
+    "defectsDemonstrated": [
+      "D1_RETRIES_INFRASTRUCTURE_INVALID",
+      "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+      "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+      "D4_G2_WITHOUT_RESOLVED_G1",
+      "D5_NO_POST_MATRIX_VALIDITY_GATE"
+    ],
+    "vacuous": [],
+    "uncovered": [],
+    "FALSIFIERS_FAIL_AGAINST_LEGACY": true,
+    "LEGACY_PROPERTY_VIOLATIONS": [
+      "EVIDENCE_PRESERVED",
+      "NEXT_SESSION_NOT_STARTED",
+      "NO_SECOND_LAUNCH"
+    ],
+    "law": "a falsifier that cannot fail proves nothing, so a defect that is absent is reported as VACUOUS rather than as a pass"
+  },
+  "propertyNegativeControls": {
+    "schemaVersion": 1,
+    "kind": "fail-stop property negative controls",
+    "controls": [
+      {
+        "id": "NO_SECOND_LAUNCH",
+        "violates": "a session launched twice",
+        "holds": false,
+        "DETECTED": true,
+        "detail": "1 session(s) were launched more than once"
+      },
+      {
+        "id": "NEXT_SESSION_NOT_STARTED",
+        "violates": "a later session started after a failure",
+        "holds": false,
+        "DETECTED": true,
+        "detail": "1 session(s) were started after the failure"
+      },
+      {
+        "id": "EVIDENCE_PRESERVED",
+        "violates": "a completed session with no durable record",
+        "holds": false,
+        "DETECTED": true,
+        "detail": "1 completed session(s) have no durable record"
+      },
+      {
+        "id": "NO_FAKE_ATTEMPT_TERMINAL",
+        "violates": "a synthesized attempt terminal event",
+        "holds": false,
+        "DETECTED": true,
+        "detail": "1 attempt terminal event(s) were synthesized"
+      },
+      {
+        "id": "NO_CAUSAL_VERDICT",
+        "violates": "a causal verdict issued over a stopped matrix",
+        "holds": false,
+        "DETECTED": true,
+        "detail": "a causal treatment verdict was issued"
+      }
+    ],
+    "ALL_PROPERTIES_FALSIFIABLE": true,
+    "undetected": [],
+    "law": "a property whose evaluator has never been observed to return false is an untested predicate"
+  },
+  "crashMatrix": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "deterministic fail-stop crash matrix",
+    "cases": [
+      {
+        "id": "C1_FAILURE_BEFORE_LAUNCH",
+        "arm": "C",
+        "fault": "NONE",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [],
+        "maxLaunchesPerSession": 0,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "PREFLIGHT_FAILURE_BEFORE_ANY_LAUNCH",
+          "detail": "a load-bearing preflight check failed before the first session was exposed"
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 0 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 0
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "no session failed, so the property is not exercised",
+              "violated": [],
+              "failureIndex": null
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C2_FAILURE_AFTER_EXPOSURE_INTENT",
+        "arm": "C",
+        "fault": "HOST_FAILURE",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "HOST_FAILURE",
+          "detail": "HOST_FAILURE",
+          "workCannotProgress": false
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+              "violated": [],
+              "failureIndex": 0
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C3_CHILD_LAUNCH_OR_REPORT_MISSING",
+        "arm": "C",
+        "fault": "REPORT_MISSING",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "MISSING_WORKER_REPORT",
+          "detail": "MISSING_WORKER_REPORT",
+          "workCannotProgress": false
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+              "violated": [],
+              "failureIndex": 0
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C4_WORKER_HOST_FAILURE",
+        "arm": "C",
+        "fault": "HOST_FAILURE",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "HOST_FAILURE",
+          "detail": "HOST_FAILURE",
+          "workCannotProgress": false
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+              "violated": [],
+              "failureIndex": 0
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C5_WORLD_LOSES_GIT_OBJECTS",
+        "arm": "C",
+        "fault": "GIT_OBJECTS_LOST",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "GIT_OBJECT_RESOLUTION_FAILURE",
+          "detail": "GIT_OBJECT_RESOLUTION_FAILURE, LAUNCH_THREW",
+          "workCannotProgress": false
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+              "violated": [],
+              "failureIndex": 0
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C6_C_TREATMENT_HANDLES_ABSENT",
+        "arm": "C",
+        "fault": "TREATMENT_HANDLES_ABSENT",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G1",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+          "detail": "CONSUMER_VISIBLE_TREATMENT_MISMATCH",
+          "workCannotProgress": true
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G1\" (schedule index 0)",
+              "violated": [],
+              "failureIndex": 0
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C7_G1_COMPLETES_G2_FAILS",
+        "arm": "C",
+        "fault": "HOST_FAILURE",
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": [
+          "b0-C-G1"
+        ],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          },
+          {
+            "sessionId": "b0-C-G2",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": {
+          "sessionId": "b0-C-G2",
+          "failureClass": "INFRASTRUCTURE_OR_PROTOCOL",
+          "cause": "HOST_FAILURE",
+          "detail": "HOST_FAILURE",
+          "workCannotProgress": false
+        },
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "ABORT_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 2 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "nothing was started after the failure at \"b0-C-G2\" (schedule index 1)",
+              "violated": [],
+              "failureIndex": 1
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 1 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 1
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "ABORT_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C8_HOST_TERMINATES_BETWEEN_JOURNAL_WRITES",
+        "arm": "C",
+        "fault": "HOST_TERMINATES",
+        "terminalState": "UNCERTAIN_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": null,
+        "matrixCompleted": false,
+        "journalIntact": true,
+        "manifestTerminalState": "UNCERTAIN_PRESERVED",
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "no session failed, so the property is not exercised",
+              "violated": [],
+              "failureIndex": null
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "UNCERTAIN_PRESERVED",
+        "terminalMatchesExpectation": true
+      },
+      {
+        "id": "C9_RESTART_AGAINST_UNFINISHED_RUN",
+        "arm": "C",
+        "terminalState": "UNCERTAIN_PRESERVED",
+        "completedSessions": [],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": null,
+        "journalIntact": true,
+        "inspection": {
+          "schemaVersion": 1,
+          "kind": "preserved run inspection",
+          "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C9_RESTART_AGAINST_UNFINISHED_RUN",
+          "verdict": "UNCERTAIN",
+          "preserveMarker": true,
+          "journalIntact": true,
+          "interrupted": [],
+          "temporaryFiles": [],
+          "exposureIntents": 1,
+          "launches": 1,
+          "trials": 0,
+          "uncertain": 1,
+          "manifestTerminalState": "UNCERTAIN_PRESERVED",
+          "mayResumeAutomatically": false,
+          "mayReplaceAutomatically": false,
+          "mayStartFresh": false,
+          "decision": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling",
+          "law": "a restart must never automatically resume or replace a run in which exposure was possible"
+        },
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 1 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "no session failed, so the property is not exercised",
+              "violated": [],
+              "failureIndex": null
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 0 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 0
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "UNCERTAIN_PRESERVED",
+        "terminalMatchesExpectation": true,
+        "NO_RESTART_RESUME": true
+      },
+      {
+        "id": "C10_HEALTHY_TWO_GENERATION_TRAJECTORY",
+        "arm": "C",
+        "terminalState": "MATRIX_COMPLETE",
+        "completedSessions": [
+          "b0-C-G1",
+          "b0-C-G2"
+        ],
+        "launches": [
+          {
+            "sessionId": "b0-C-G1",
+            "attempt": 1
+          },
+          {
+            "sessionId": "b0-C-G2",
+            "attempt": 1
+          }
+        ],
+        "maxLaunchesPerSession": 1,
+        "failure": null,
+        "journalIntact": true,
+        "properties": {
+          "schemaVersion": 1,
+          "kind": "fail-stop property evaluation",
+          "properties": [
+            {
+              "id": "NO_SECOND_LAUNCH",
+              "holds": true,
+              "detail": "every one of the 2 launch(es) is the first for its session",
+              "violated": [],
+              "maxLaunchesPerSession": 1
+            },
+            {
+              "id": "NEXT_SESSION_NOT_STARTED",
+              "holds": true,
+              "detail": "no session failed, so the property is not exercised",
+              "violated": [],
+              "failureIndex": null
+            },
+            {
+              "id": "EVIDENCE_PRESERVED",
+              "holds": true,
+              "detail": "all 2 completed session(s) have a durable record",
+              "violated": [],
+              "durableRecordCount": 2
+            },
+            {
+              "id": "NO_FAKE_ATTEMPT_TERMINAL",
+              "holds": true,
+              "detail": "no attempt terminal event was synthesized",
+              "violated": []
+            },
+            {
+              "id": "NO_CAUSAL_VERDICT",
+              "holds": true,
+              "detail": "no causal treatment verdict was issued",
+              "violated": []
+            }
+          ],
+          "ALL_PROPERTIES_HOLD": true,
+          "failing": [],
+          "missing": [],
+          "evaluated": [
+            "NO_SECOND_LAUNCH",
+            "NEXT_SESSION_NOT_STARTED",
+            "EVIDENCE_PRESERVED",
+            "NO_FAKE_ATTEMPT_TERMINAL",
+            "NO_CAUSAL_VERDICT"
+          ]
+        },
+        "ADVANCED_THROUGH_GOVERNED_PATH": true,
+        "promoted": [
+          "PROMOTED",
+          "PROMOTED"
+        ],
+        "headsMoved": [
+          true,
+          true
+        ],
+        "PASSES_CRASH_MATRIX_REQUIREMENTS": true,
+        "expectedTerminal": "MATRIX_COMPLETE",
+        "terminalMatchesExpectation": true
+      }
+    ],
+    "requiredCases": [
+      "C1_FAILURE_BEFORE_LAUNCH",
+      "C2_FAILURE_AFTER_EXPOSURE_INTENT",
+      "C3_CHILD_LAUNCH_OR_REPORT_MISSING",
+      "C4_WORKER_HOST_FAILURE",
+      "C5_WORLD_LOSES_GIT_OBJECTS",
+      "C6_C_TREATMENT_HANDLES_ABSENT",
+      "C7_G1_COMPLETES_G2_FAILS",
+      "C8_HOST_TERMINATES_BETWEEN_JOURNAL_WRITES",
+      "C9_RESTART_AGAINST_UNFINISHED_RUN",
+      "C10_HEALTHY_TWO_GENERATION_TRAJECTORY"
+    ],
+    "allCasesRun": true,
+    "failureCases": 9,
+    "failing": [],
+    "unexpectedTerminal": [],
+    "CRASH_MATRIX": "PASS",
+    "healthyControlAdvanced": true,
+    "modelCallsMade": 0,
+    "law": "every failure case must show NO_SECOND_LAUNCH, NEXT_SESSION_NOT_STARTED, EVIDENCE_PRESERVED, NO_FAKE_ATTEMPT_TERMINAL and NO_CAUSAL_VERDICT, and the healthy control must still advance through the governed path"
+  },
+  "preservation": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "preservation proof",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+    "checks": [
+      {
+        "id": "PRESERVE_MARKER_PRESENT",
+        "holds": true,
+        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\PRESERVE"
+      },
+      {
+        "id": "ABORT_MANIFEST_PRESENT",
+        "holds": true,
+        "detail": "terminalState=ABORT_PRESERVED"
+      },
+      {
+        "id": "JOURNAL_PRESENT",
+        "holds": true,
+        "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\generation-journal.jsonl"
+      },
+      {
+        "id": "EVIDENCE_INDEX_PRESENT",
+        "holds": true,
+        "detail": "3 artifact(s)"
+      },
+      {
+        "id": "SWEEP_REFUSES_PRESERVED_ROOT",
+        "holds": true,
+        "detail": "survived=true removedBySweep=false refusalReported=false",
+        "refusalReported": false
+      },
+      {
+        "id": "RESTART_DETECTS_UNFINISHED_RUN",
+        "holds": true,
+        "detail": "ABORTED"
+      },
+      {
+        "id": "RESTART_REFUSES_AUTOMATIC_RESUME",
+        "holds": true,
+        "detail": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling"
+      }
+    ],
+    "inspection": {
+      "schemaVersion": 1,
+      "kind": "preserved run inspection",
+      "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+      "verdict": "ABORTED",
+      "preserveMarker": true,
+      "journalIntact": true,
+      "interrupted": [],
+      "temporaryFiles": [],
+      "exposureIntents": 1,
+      "launches": 1,
+      "trials": 0,
+      "uncertain": 0,
+      "manifestTerminalState": "ABORT_PRESERVED",
+      "mayResumeAutomatically": false,
+      "mayReplaceAutomatically": false,
+      "mayStartFresh": false,
+      "decision": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling",
+      "law": "a restart must never automatically resume or replace a run in which exposure was possible"
+    },
+    "sweepProtected": [],
+    "CRASH_PRESERVATION": "CLOSED",
+    "law": "a successful return from a cleanup function is not proof that evidence survived; the evidence is read from disk"
+  },
+  "executionClosure": {
+    "digest": "3835ddbcade1161f166651024ddfbf259874f8e97e55205af75206a3f542cca3",
+    "parts": {
+      "SOURCE_CLOSURE": "ecb0150ff9fec1fa09bf1ef49d6500d941d284c004134846beb7a227b563aa72",
+      "COMPILED_RUNTIME_CLOSURE": "4933d91281947ba5317b7d3895ae29a8d6725f1ba541ed5bd89f330a9e9d4c4d",
+      "EXECUTOR_CONFIGURATION": "d6b90123fa444b3356f2185e838b7dc3af8237fa6a1892ccbf012b0ca1c13705",
+      "MODEL_IDENTITY_EVIDENCE": "74d8033333fe7b509d900830441db15967dbfd6b8c18243b8b558c06fa4c6c91",
+      "EXPERIMENT_PLAN_DIGEST": "f8f39288b19710c8c5ad381d4a8ca0a6263f56afec47823bc8fa2417123ea590"
+    },
+    "fileCount": 40,
+    "selfExclusions": [
+      "research-evidence/r3-l0c-f/plan.json",
+      "research-evidence/r3-l0c-f/stage-result.json",
+      "research-evidence/r3-l0c-f/closure.json",
+      "research-evidence/r3-l0c-f/qualification.json"
+    ],
+    "toolchain": {
+      "node": "v24.14.1",
+      "git": "git version 2.53.0.windows.2",
+      "platform": "win32",
+      "arch": "x64",
+      "packages": {
+        "ordarium": "1.3.1",
+        "vitest": "NOT_INSTALLED",
+        "typescript": "NOT_INSTALLED",
+        "dshSandboxWindowsAcl": "NOT_INSTALLED"
+      }
+    },
+    "compiledVerification": {
+      "kind": "compiled-against-source verification",
+      "pairs": 9,
+      "missing": [],
+      "stale": [],
+      "method": "modification-order heuristic over the committed pair; the authoritative check is the build performed before freezing",
+      "COMPILED_MATCHES_SOURCE": true
+    },
+    "mutation": {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "executable closure mutation",
+      "baseDigest": "3835ddbcade1161f166651024ddfbf259874f8e97e55205af75206a3f542cca3",
+      "target": {
+        "path": "src/effects/git_port.ts",
+        "part": "SOURCE_CLOSURE",
+        "compiledCounterpart": "dist/src/effects/git_port.js",
+        "why": "the GitPort creates, observes and reuses a World; it is the shipped runtime R3-WR through R3-WR5 changed, and the old closure did not cover it"
+      },
+      "arms": [
+        {
+          "id": "MUTATION_LOAD_BEARING_PRODUCTION_INPUT",
+          "changed": [
+            "src/effects/git_port.ts",
+            "dist/src/effects/git_port.js"
+          ],
+          "digest": "814d6dae3bfcf03ab363bac917d240205bbd1a376f345802acd347fb3cc9ef26",
+          "digestMoved": true,
+          "changedParts": [
+            "SOURCE_CLOSURE",
+            "COMPILED_RUNTIME_CLOSURE"
+          ],
+          "namesThePart": true,
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "CONTROL_UNCOVERED_FILE",
+          "changed": [
+            "scripts/r3l0cf/control-uncovered.mjs"
+          ],
+          "digest": "3835ddbcade1161f166651024ddfbf259874f8e97e55205af75206a3f542cca3",
+          "digestMoved": false,
+          "PROPERTY_PROVEN": true
+        },
+        {
+          "id": "CONTROL_HISTORICAL_HARNESS_FILE",
+          "changed": [
+            "scripts/r3l0c/plan.mjs"
+          ],
+          "digest": "012dc61bf2f6b7f1334146417470f90d47123476f9c13b1855f96ccb8eb1c072",
+          "digestMoved": true,
+          "changedParts": [
+            "MODEL_IDENTITY_EVIDENCE",
+            "EXPERIMENT_PLAN_DIGEST"
+          ],
+          "PROPERTY_PROVEN": true
+        }
+      ],
+      "historicalHarnessUntouched": true,
+      "legacyClosure": {
+        "source": "scripts/r3l0cr/mutations.mjs closureFileMap()",
+        "digest": "7ac167a1c9a6668dd9beb1dae7b624c3abcc21b3c8ae26729229928635b98ea4",
+        "fileCount": 16,
+        "coversGitPort": false,
+        "coversShippedRuntimeFiles": [],
+        "shippedRuntimeFileCount": 0,
+        "BLIND_TO_SHIPPED_RUNTIME": true
+      },
+      "treeMutated": false,
+      "mutationAppliedToTemporaryCopy": true,
+      "EXECUTION_CLOSURE_MUTATION": "PASS",
+      "law": "a changed shipped runtime must move the closure digest even when every historical R3-L0C .mjs file is byte-identical"
+    }
+  },
+  "treatmentBoundary": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "G1/G2 H/C treatment-boundary witnesses",
+    "controls": [
+      {
+        "schemaVersion": 1,
+        "stage": "R3-L0C-F",
+        "kind": "zero-model treatment-boundary control",
+        "arm": "H",
+        "generationId": "G1",
+        "projectId": "cutover-entitlements",
+        "phase": "FINISHED",
+        "attemptId": "attempt-047c328552c110cd873ab1ea42b9570b",
+        "hostError": null,
+        "consumerVisibleHandles": [],
+        "consumerVisibleKinds": [],
+        "expectedHandles": [],
+        "expectedCount": 0,
+        "expectationDigest": "39be1ed2b06a6a90323d438be8ef69ebce372d1a993202e50ab237a817d6b605",
+        "expectedCountFrozen": 0,
+        "expectedCountMatchesFrozenDesign": true,
+        "missingFromBoundary": [],
+        "unexpectedAtBoundary": [],
+        "pulls": [],
+        "failures": [],
+        "identityMatches": true,
+        "kindMatches": true,
+        "pullsAllResolved": false,
+        "pullsResolveCanonicalBody": false,
+        "allowedPullHandles": [],
+        "allowedEqualsVisible": true,
+        "hiddenReadChannelExposed": false,
+        "BOUNDARY_CONTROL": "PASS",
+        "noLlmInvoked": true,
+        "usedPackagedRuntime": true,
+        "usedRealPrehistory": true,
+        "usedScriptedWorker": true,
+        "usedCanonicalBuilder": true,
+        "usedGovernedPullBoundary": true,
+        "calledOldPlumbingCheck": false,
+        "dummyProject": false
+      },
+      {
+        "schemaVersion": 1,
+        "stage": "R3-L0C-F",
+        "kind": "zero-model treatment-boundary control",
+        "arm": "H",
+        "generationId": "G2",
+        "projectId": "cutover-entitlements",
+        "phase": "FINISHED",
+        "attemptId": "attempt-fb68d95ad7914258c9d457cce8120166",
+        "hostError": null,
+        "consumerVisibleHandles": [],
+        "consumerVisibleKinds": [],
+        "expectedHandles": [],
+        "expectedCount": 0,
+        "expectationDigest": "d134d27996e4afc1ce0bb2cdc327b6b2f5fa416454a7db78f4d4f1841c2f0957",
+        "expectedCountFrozen": 0,
+        "expectedCountMatchesFrozenDesign": true,
+        "missingFromBoundary": [],
+        "unexpectedAtBoundary": [],
+        "pulls": [],
+        "failures": [],
+        "identityMatches": true,
+        "kindMatches": true,
+        "pullsAllResolved": false,
+        "pullsResolveCanonicalBody": false,
+        "allowedPullHandles": [],
+        "allowedEqualsVisible": true,
+        "hiddenReadChannelExposed": false,
+        "BOUNDARY_CONTROL": "PASS",
+        "noLlmInvoked": true,
+        "usedPackagedRuntime": true,
+        "usedRealPrehistory": true,
+        "usedScriptedWorker": true,
+        "usedCanonicalBuilder": true,
+        "usedGovernedPullBoundary": true,
+        "calledOldPlumbingCheck": false,
+        "dummyProject": false
+      },
+      {
+        "schemaVersion": 1,
+        "stage": "R3-L0C-F",
+        "kind": "zero-model treatment-boundary control",
+        "arm": "C",
+        "generationId": "G1",
+        "projectId": "cutover-entitlements",
+        "phase": "FINISHED",
+        "attemptId": "attempt-b10a2c1fc1af13839a9908c41b9041f3",
+        "hostError": null,
+        "consumerVisibleHandles": [
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0"
+        ],
+        "consumerVisibleKinds": [
+          "reasoning",
+          "procedure"
+        ],
+        "expectedHandles": [
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+        ],
+        "expectedCount": 2,
+        "expectationDigest": "85ed6d86551380ecf5d02ed121296c4f5256b9be630d31f2393e2030f813741e",
+        "expectedCountFrozen": 2,
+        "expectedCountMatchesFrozenDesign": true,
+        "missingFromBoundary": [],
+        "unexpectedAtBoundary": [],
+        "pulls": [
+          {
+            "handle": "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+            "resolved": true,
+            "bodyBytes": 257,
+            "bodyDigest": "8602f4f15620e6849a55572fd47b1c08f706238d90616a42c04c0e20165c2403"
+          },
+          {
+            "handle": "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+            "resolved": true,
+            "bodyBytes": 2136,
+            "bodyDigest": "1bfac3b70c2f46049a3b5d9604beae3ed0460b5fac12c0898d38e95cc50c0715"
+          }
+        ],
+        "failures": [],
+        "identityMatches": true,
+        "kindMatches": true,
+        "pullsAllResolved": true,
+        "pullsResolveCanonicalBody": true,
+        "allowedPullHandles": [
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0"
+        ],
+        "allowedEqualsVisible": true,
+        "hiddenReadChannelExposed": false,
+        "BOUNDARY_CONTROL": "PASS",
+        "noLlmInvoked": true,
+        "usedPackagedRuntime": true,
+        "usedRealPrehistory": true,
+        "usedScriptedWorker": true,
+        "usedCanonicalBuilder": true,
+        "usedGovernedPullBoundary": true,
+        "calledOldPlumbingCheck": false,
+        "dummyProject": false
+      },
+      {
+        "schemaVersion": 1,
+        "stage": "R3-L0C-F",
+        "kind": "zero-model treatment-boundary control",
+        "arm": "C",
+        "generationId": "G2",
+        "projectId": "cutover-entitlements",
+        "phase": "FINISHED",
+        "attemptId": "attempt-34317148c2758b9279741a6db6648a6f",
+        "hostError": null,
+        "consumerVisibleHandles": [
+          "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0"
+        ],
+        "consumerVisibleKinds": [
+          "reasoning",
+          "reasoning",
+          "procedure",
+          "procedure"
+        ],
+        "expectedHandles": [
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+          "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+        ],
+        "expectedCount": 4,
+        "expectationDigest": "b2879103b0e3911c2dffce44e08be734611286e1991eb6ee8c665d29caf3e14a",
+        "expectedCountFrozen": 4,
+        "expectedCountMatchesFrozenDesign": true,
+        "missingFromBoundary": [],
+        "unexpectedAtBoundary": [],
+        "pulls": [
+          {
+            "handle": "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+            "resolved": true,
+            "bodyBytes": 393,
+            "bodyDigest": "7cddb322a3e1da0fdcde10126b7c6a887d46269cfcb9798b9f2352e9a11b040e"
+          },
+          {
+            "handle": "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+            "resolved": true,
+            "bodyBytes": 257,
+            "bodyDigest": "8602f4f15620e6849a55572fd47b1c08f706238d90616a42c04c0e20165c2403"
+          },
+          {
+            "handle": "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+            "resolved": true,
+            "bodyBytes": 2136,
+            "bodyDigest": "1bfac3b70c2f46049a3b5d9604beae3ed0460b5fac12c0898d38e95cc50c0715"
+          },
+          {
+            "handle": "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+            "resolved": true,
+            "bodyBytes": 1906,
+            "bodyDigest": "bcafd403bf38c35cc2f0e17749674bfe4434a8cd3e326a55f8f185dcd562439c"
+          }
+        ],
+        "failures": [],
+        "identityMatches": true,
+        "kindMatches": true,
+        "pullsAllResolved": true,
+        "pullsResolveCanonicalBody": true,
+        "allowedPullHandles": [
+          "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0"
+        ],
+        "allowedEqualsVisible": true,
+        "hiddenReadChannelExposed": false,
+        "BOUNDARY_CONTROL": "PASS",
+        "noLlmInvoked": true,
+        "usedPackagedRuntime": true,
+        "usedRealPrehistory": true,
+        "usedScriptedWorker": true,
+        "usedCanonicalBuilder": true,
+        "usedGovernedPullBoundary": true,
+        "calledOldPlumbingCheck": false,
+        "dummyProject": false
+      }
+    ],
+    "TREATMENT_BOUNDARY": "PASS",
+    "failing": [],
+    "expectedCounts": {
+      "H/G1": {
+        "expected": 0,
+        "observed": 0,
+        "canonicalPulls": 0
+      },
+      "H/G2": {
+        "expected": 0,
+        "observed": 0,
+        "canonicalPulls": 0
+      },
+      "C/G1": {
+        "expected": 2,
+        "observed": 2,
+        "canonicalPulls": 2
+      },
+      "C/G2": {
+        "expected": 4,
+        "observed": 4,
+        "canonicalPulls": 4
+      }
+    },
+    "modelCallsMade": 0
+  },
+  "containment": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "topology-derived matrix containment gate",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment",
+    "unitIds": [
+      "b0-C",
+      "b0-H",
+      "b1-C",
+      "b1-H",
+      "b2-C",
+      "b2-H",
+      "b3-C",
+      "b3-H"
+    ],
+    "unitCount": 8,
+    "topologyDigest": "7d53e4fb8aba64870f5238a8131ddc0362a0e361e22f36ea27bbc3c7e5e90cd8",
+    "derivedFromSchedule": true,
+    "manuallyEnumerated": false,
+    "protectedRootsExist": true,
+    "missingRoots": [],
+    "perUnit": [
+      {
+        "unitId": "b0-C",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b0-C\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b0-H",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b0-H\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b1-C",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b1-C\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b1-H",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b1-H\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b2-C",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b2-C\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b2-H",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b2-H\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b3-C",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b3-C\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      },
+      {
+        "unitId": "b3-H",
+        "ownWorld": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\units\\b3-H\\world",
+        "ownWorldReachable": true,
+        "siblingWorldsInaccessible": true,
+        "ownStateProtected": true,
+        "oracleInaccessible": true,
+        "referenceInaccessible": true,
+        "controlInaccessible": true,
+        "protectedRootCount": 14
+      }
+    ],
+    "canaryPlanUnits": 8,
+    "probes": 32,
+    "reachable": [],
+    "livenessLive": true,
+    "livenessDirectReads": "10/10",
+    "fence": {
+      "applied": true,
+      "rootsVerified": true,
+      "treesVerified": true,
+      "supported": true,
+      "roots": 6,
+      "fencedRoots": [
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\oracle",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\control",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\reference",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\units\\b0-H\\world",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\evidence",
+        "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\containment-root\\containment\\private\\units"
+      ],
+      "detail": null
+    },
+    "sandbox": {
+      "root": "C:\\Users\\66494\\AppData\\Roaming\\npm\\node_modules\\@deepseek-ai\\dsh",
+      "available": true
+    },
+    "confidentialProfileUnchanged": true,
+    "confidentialMaxActiveWorkers": 1,
+    "distributedSecurityClaim": false,
+    "requirements": [
+      "own World reachable",
+      "every sibling World inaccessible",
+      "sibling and own durable state protected",
+      "oracle/reference inaccessible",
+      "control/evidence/runner artifacts inaccessible",
+      "liveness canaries succeed",
+      "protected roots actually exist"
+    ],
+    "EXPERIMENT_CONTAINMENT": "PASS",
+    "law": "the topology is derived from the frozen schedule, and a canary in a different layout is not proof for the actual matrix topology"
+  },
+  "substitutability": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "reconstruction substitutability audit",
+    "records": {
+      "RAW_HISTORY_SUFFICIENT": "YES",
+      "SELECTED_CAPITAL_SUFFICIENT": "YES",
+      "HISTORY_READING_REQUIRED_BY_PROMPT": "YES",
+      "EXHAUSTIVE_HISTORY_READING_REQUIRED": "NO",
+      "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION": "YES",
+      "PROMPT_SUBSTITUTION_NEUTRALITY": "LIMITED"
+    },
+    "recordNames": [
+      "RAW_HISTORY_SUFFICIENT",
+      "SELECTED_CAPITAL_SUFFICIENT",
+      "HISTORY_READING_REQUIRED_BY_PROMPT",
+      "EXHAUSTIVE_HISTORY_READING_REQUIRED",
+      "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION",
+      "PROMPT_SUBSTITUTION_NEUTRALITY"
+    ],
+    "distinctions": {
+      "historyAvailable": true,
+      "relevantHistoryRequired": true,
+      "exhaustiveHistoryRequired": false,
+      "evidence": {
+        "historyAvailable": "26 documents, complete=true",
+        "relevantHistoryRequired": "16 of 26 documents bear on the exposed invariants",
+        "exhaustiveHistoryRequired": "the README does not instruct reading all history"
+      }
+    },
+    "readmeAdjudication": {
+      "path": "README.md",
+      "quote": "The rules this Project actually follows are recorded in its history, under `docs/history/` — incidents, decisions, revisions, verification results and migration notes. Read them before changing how resolution or revocation decides.",
+      "instructionPresentInFrozenReadme": true,
+      "requiresReadingHistory": true,
+      "requiresExhaustiveReading": false,
+      "adjudication": "the README directs the reader to the history and requires the RELEVANT part of it; it does not require exhaustive reading, so a capital selection that supplies the current standing answers the question the history is there to answer",
+      "instructionPretendedAbsent": false,
+      "readmeEditedInThisStage": false,
+      "futureWordingRevisionRequires": "a new, explicitly labeled prospective design version"
+    },
+    "generationRequirements": [
+      {
+        "id": "G1",
+        "requirement": "Add `resolveEntitlement(store, tenantId, capability, atDate)` to the service: it returns the tenant's effective decision for that capability AS OF `atDate`, honouring the Project's recorded precedence rules. A request for a tenant the store does not know is refused.",
+        "exposes": [
+          "I1"
+        ],
+        "requiresHistoryRead": false
+      },
+      {
+        "id": "G2",
+        "requirement": "Add `revokeEntitlement(store, tenantId, capability)` to the service: it removes the tenant's effective access for that capability, so that a subsequent `resolveEntitlement` at a later date returns a refusal. It must honour the Project's recorded rules about which stored record constitutes the tenant's access, and it must keep the store consistent for every tenant that holds a related record.",
+        "exposes": [
+          "I1",
+          "I2"
+        ],
+        "requiresHistoryRead": false
+      }
+    ],
+    "requirementsMentionCapital": false,
+    "readmeIdenticalAcrossArms": true,
+    "byteComparison": {
+      "relevantHistoryBytes": 18291,
+      "standingBodyBytes": 1887,
+      "ratioStandingToRelevant": 0.1032,
+      "descriptiveOnly": true,
+      "isMeasuredCognitiveSavings": false,
+      "caveat": "a body-level byte compression ratio is DESCRIPTIVE ONLY; it is not measured cognitive savings, and the primary cost measures come from the session artifacts"
+    },
+    "behavioralDesign": {
+      "blocks": 4,
+      "arms": 2,
+      "generations": 2,
+      "sessions": 16,
+      "trajectoryUnits": 8,
+      "matchedComparisons": 4,
+      "armOrderSource": "the frozen R3-L0C randomization seed 0x524c3002, reused exactly",
+      "rerandomized": false,
+      "combinesOldHWithNewC": false,
+      "bothArmsStartFrom": "the same Project world, history, capital assets and associations",
+      "onlyIntendedDifference": "the selection of current-standing capital",
+      "executorRouteIdenticalAcrossContemporaneousArms": true,
+      "executorStackDeviation": {
+        "id": "OMNIGATE_DEEPSEEK_ROUTE_REPLACED",
+        "recorded": true,
+        "note": "the changed omnigate DeepSeek route is an explicitly recorded executor-stack deviation; its configured family does not prove checkpoint identity with the old direct provider"
+      },
+      "hiddenCasesChanged": false,
+      "qualityThresholdsChanged": false,
+      "primaryEndpointChanged": false
+    },
+    "consequences": {
+      "SELECTED_CAPITAL_SUFFICIENT": "none — capital supplies the current standing for every exposed invariant",
+      "EXHAUSTIVE_HISTORY_READING_REQUIRED": "none — the prompt requires relevance, not exhaustiveness"
+    },
+    "qualificationStopRequired": false,
+    "modelCallsMade": 0,
+    "corpusDigest": "786f3ad892830e95ca3c86039e24ed60525d9e159d7e9d01d85fd2ed4c64cc2a",
+    "law": "distinguish history available, relevant history required, and exhaustive history required"
+  },
+  "behavioralDesign": {
+    "blocks": 4,
+    "arms": 2,
+    "generations": 2,
+    "sessions": 16,
+    "trajectoryUnits": 8,
+    "matchedComparisons": 4,
+    "armOrderSource": "the frozen R3-L0C randomization seed 0x524c3002, reused exactly",
+    "rerandomized": false,
+    "combinesOldHWithNewC": false,
+    "bothArmsStartFrom": "the same Project world, history, capital assets and associations",
+    "onlyIntendedDifference": "the selection of current-standing capital",
+    "executorRouteIdenticalAcrossContemporaneousArms": true,
+    "executorStackDeviation": {
+      "id": "OMNIGATE_DEEPSEEK_ROUTE_REPLACED",
+      "recorded": true,
+      "note": "the changed omnigate DeepSeek route is an explicitly recorded executor-stack deviation; its configured family does not prove checkpoint identity with the old direct provider"
+    },
+    "hiddenCasesChanged": false,
+    "qualityThresholdsChanged": false,
+    "primaryEndpointChanged": false
+  },
+  "verdictAdmissionPreconditions": [
+    "exactly 16 uniquely identified scheduled sessions exist",
+    "all eight trajectories satisfy the required execution/admission rules",
+    "all four matched blocks are complete",
+    "actual treatment realization matches its frozen expectation",
+    "experiment containment holds",
+    "the execution closure matches",
+    "pre- and post-matrix validity gates are green",
+    "no missing session has been replaced or silently retried"
+  ],
+  "failStopPolicy": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "fail-stop policy ruling",
+    "policy": "PROPOSED",
+    "protocol": "a load-bearing failure stops the RESEARCH RUN, retains its World and evidence, refuses a session retry and refuses a causal claim",
+    "boundary": {
+      "createsOperatorCancellation": false,
+      "implementsAttemptCancelled": false,
+      "implementsAttemptFailedFromHostFailure": false,
+      "introducesNewGovernanceAuthority": false,
+      "turnsHostFailureIntoAttemptFailed": false,
+      "failStopMeans": "the RESEARCH RUN stops, retains its World and evidence, and refuses to make a causal claim",
+      "canonicalAttemptMayRemainRunning": true,
+      "canonicalAttemptResidual": "an explicitly scoped product-liveness residual, not a fake terminal state",
+      "requiresExplicitAuthorizationRuling": true,
+      "thisDocumentCreatesProjectTerminalAuthority": false
+    },
+    "residual": {
+      "id": "CANONICAL_ATTEMPT_MAY_REMAIN_RUNNING",
+      "description": "the Canonical Attempt may remain RUNNING in the preserved experimental Project",
+      "classification": "explicitly scoped product-liveness residual, not a fake terminal state",
+      "refusedAlternative": "synthesizing ATTEMPT_CANCELLED or ATTEMPT_FAILED would be a fabricated canonical fact",
+      "openAtStageClose": true,
+      "requiresSeparateDecision": "if the project needs an automatic machine-failure terminal, that is a separate semantic decision and must not be reached by reinterpreting CANCELLED as FAILED"
+    },
+    "authorizationRequired": {
+      "required": true,
+      "what": "an explicit authorization ruling for this fail-stop protocol before the 16-session behavioral matrix runs",
+      "thisDocumentProvidesIt": false,
+      "thisDocumentSupports": "a determination that the frozen design is executable under fail-stop, with every gate green"
+    },
+    "stageStop": {
+      "ranModelMatrix": false,
+      "beganR3L1": false,
+      "beganFusion": false,
+      "modelCallsMade": 0,
+      "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+    },
+    "modelCallsMade": 0
+  },
+  "resumeQualification": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "fail-stop resume qualification",
+    "question": "can the frozen R3-L0C capital-reuse design be executed under a strict fail-stop protocol?",
+    "answer": "YES — the design is executable under fail-stop, and every qualification gate is green",
+    "mission": [
+      {
+        "id": "NEVER_REPEATS_A_POSSIBLY_EXPOSED_SESSION",
+        "satisfied": true,
+        "evidence": "every crash case launched each session at most once; MAX_WORKER_LAUNCHES=1 and POST_EXPOSURE_RETRIES=0 are asserted"
+      },
+      {
+        "id": "PRESERVES_ALL_EVIDENCE_FOLLOWING_A_FAILURE",
+        "satisfied": true,
+        "evidence": "the PRESERVE marker, the abort manifest and the evidence index survive a sweep and are read from disk after it"
+      },
+      {
+        "id": "NEVER_FABRICATES_CANONICAL_ATTEMPT_SETTLEMENT",
+        "satisfied": true,
+        "evidence": "terminalEventsSynthesized is empty for every case; the runner writes no product store"
+      },
+      {
+        "id": "NEVER_REPLACES_A_FAILED_EXPERIMENTAL_UNIT",
+        "satisfied": true,
+        "evidence": "a failure stops the whole matrix; no later session starts and no trajectory is replaced"
+      },
+      {
+        "id": "BINDS_THE_ACTUAL_SHIPPED_RUNTIME_AND_EXECUTION_ROUTE",
+        "satisfied": true,
+        "evidence": "the closure covers SOURCE and COMPILED_RUNTIME separately, and the mutation shows a shipped-runtime change moves the digest while the old closure was blind to it"
+      },
+      {
+        "id": "PRESERVES_THE_ORIGINAL_RESEARCH_ESTIMAND_AND_OUTCOME_RULES",
+        "satisfied": true,
+        "evidence": "the frozen corpus, invariants, exposures, verdict rules and arm order are untouched; the boundary witnesses match the frozen expectation manifests exactly"
+      }
+    ],
+    "allSatisfied": true,
+    "gates": {
+      "FAIL_STOP_RUNNER": "CLOSED",
+      "POST_EXPOSURE_RETRY": "ZERO",
+      "GENERATION_EVIDENCE_DURABILITY": "CLOSED",
+      "CRASH_PRESERVATION": "CLOSED",
+      "EXECUTION_CLOSURE": "COMPLETE",
+      "TREATMENT_BOUNDARY": "PASS",
+      "EXPERIMENT_CONTAINMENT": "PASS"
+    },
+    "falsifierHalves": {
+      "failsAgainstLegacy": true,
+      "legacyViolatedProperties": [
+        "EVIDENCE_PRESERVED",
+        "NEXT_SESSION_NOT_STARTED",
+        "NO_SECOND_LAUNCH"
+      ],
+      "legacyNonDiscriminating": [
+        "NO_FAKE_ATTEMPT_TERMINAL",
+        "NO_CAUSAL_VERDICT"
+      ],
+      "allPropertiesFalsifiable": true
+    },
+    "substitutability": {
+      "RAW_HISTORY_SUFFICIENT": "YES",
+      "SELECTED_CAPITAL_SUFFICIENT": "YES",
+      "HISTORY_READING_REQUIRED_BY_PROMPT": "YES",
+      "EXHAUSTIVE_HISTORY_READING_REQUIRED": "NO",
+      "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION": "YES",
+      "PROMPT_SUBSTITUTION_NEUTRALITY": "LIMITED"
+    },
+    "verdictIssued": false,
+    "verdictNotIssuedBecause": "no model session ran in this stage; §0 requires a qualification, not an execution",
+    "policyStatus": "PROPOSED",
+    "requiresAuthorizationRuling": true,
+    "stageStop": {
+      "ranModelMatrix": false,
+      "beganR3L1": false,
+      "beganFusion": false,
+      "modelCallsMade": 0,
+      "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+    },
+    "modelCallsMade": 0
+  },
+  "regression": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "regression record",
+    "suites": [
+      {
+        "id": "TYPESCRIPT_BUILD",
+        "command": "tsc -b",
+        "result": "PASS",
+        "detail": "clean build; the three new test files and every new stage module typecheck under strict/noImplicitAny"
+      },
+      {
+        "id": "UNIT_SUITE",
+        "command": "vitest run",
+        "result": "PASS",
+        "detail": "3925/3925 across 284 files (baseline 3876/281; +3 files, +49 tests)"
+      },
+      {
+        "id": "E2E",
+        "command": "playwright test",
+        "result": "PASS",
+        "detail": "38/38"
+      },
+      {
+        "id": "ARCHITECTURE",
+        "command": "module-architecture.mjs --check",
+        "result": "PASS",
+        "detail": "0 violations, 9 accepted baseline exceptions"
+      },
+      {
+        "id": "PUBLIC_API",
+        "command": "module-architecture.mjs --check-public-api",
+        "result": "PASS",
+        "detail": "0 missing, 0 changed kind, 0 added"
+      },
+      {
+        "id": "R3_S0",
+        "command": "graph-audit.mjs + event-audit.mjs",
+        "result": "PASS",
+        "detail": "10/10 graph invariants, 5/5 event audit checks"
+      },
+      {
+        "id": "R3_L0B",
+        "command": "vitest r3l0b_canary + r3l0b_containment",
+        "result": "PASS",
+        "detail": "included in the 169-test D-series run and the 287-test R3 run"
+      },
+      {
+        "id": "R1_H",
+        "command": "r1h/conformance.mjs",
+        "result": "PASS",
+        "detail": "the read boundary holds on this host"
+      },
+      {
+        "id": "R1_HR",
+        "command": "r1hr/conformance.mjs",
+        "result": "PASS",
+        "detail": "disclosed limits HR-17, HR-39b, HR-33"
+      },
+      {
+        "id": "R1_HC",
+        "command": "r1hc/conformance.mjs",
+        "result": "PASS",
+        "detail": "disclosed limit HC-27 (the known parallel-active-worker limit)"
+      },
+      {
+        "id": "R1_L",
+        "command": "r1l-live-gate.mjs",
+        "result": "PASS",
+        "detail": "§R1-L-LIVE PASS"
+      },
+      {
+        "id": "D2_D4_D5_TESTS",
+        "command": "vitest lean_d2_live_composition + lean_d4c_read_evidence + lean_d5_0_effect_authority + lean_d5d_result_continuation_service + r3s0_systemic + r3l0b_canary + r3l0b_containment",
+        "result": "PASS",
+        "detail": "169/169 across 7 files"
+      },
+      {
+        "id": "R3_WR_THROUGH_WR5",
+        "command": "vitest r3l0c_* + r3l0cr_*",
+        "result": "PASS",
+        "detail": "287/287 across 9 files"
+      },
+      {
+        "id": "R3_L0C_R_SELECTION_CONTAINMENT_ANALYSIS",
+        "command": "vitest r3l0c_selection + r3l0cr_boundary + r3l0cr_contract",
+        "result": "PASS",
+        "detail": "included in the 287-test R3 run"
+      },
+      {
+        "id": "FAIL_STOP_MUTATION_SUITE",
+        "command": "vitest r3l0cf_*",
+        "result": "PASS",
+        "detail": "50/50 across 3 files, including the closure mutation and the property negative controls"
+      },
+      {
+        "id": "EXECUTABLE_CLOSURE_MUTATIONS",
+        "command": "runClosureMutation()",
+        "result": "PASS",
+        "detail": "the load-bearing-input arm moves the digest and names the part; both controls behave"
+      },
+      {
+        "id": "EVIDENCE_IMMUTABILITY",
+        "command": "r3l0c/immutability.mjs",
+        "result": "PASS",
+        "detail": "358 protected files, baseline e51df1f4; no protected mutation"
+      }
+    ],
+    "suiteCount": 17,
+    "failing": [],
+    "limits": [
+      {
+        "id": "D2_D4_D5_LIVE_GATES_DO_NOT_RUN",
+        "status": "PRE_EXISTING",
+        "detail": "scripts/gates/d2-live-gate.mjs, d4-live-gate.mjs and d5-live-gate.mjs drive a REAL DSH worker on a REAL model route",
+        "observed": {
+          "D2": "FAIL — the same verdict line at baseline and at HEAD",
+          "D4": "fatal: Not a valid object name null^{commit} — identical at baseline and at HEAD",
+          "D5": "plan revision blocked (quiescence_required) — identical at baseline and at HEAD"
+        },
+        "baselineComparison": "verified in a scratch worktree at 19f0c69, not inferred; the errors are byte-identical",
+        "introducedByThisStage": false,
+        "whyNotRepaired": "§0 forbids model calls in this stage, and the gates require one; src/**, host/** and scripts/gates/** are byte-identical to the baseline, so nothing this stage changed could have caused or fixed them",
+        "whatWasRunInstead": "the D-series TESTS (169 tests across 7 files), which is what the prior stage recorded as its D2/D4/D5 regression"
+      },
+      {
+        "id": "LIVE_MODEL_MATRIX_NOT_RUN",
+        "status": "BY_DESIGN",
+        "detail": "the 16-session model matrix was not run",
+        "introducedByThisStage": false,
+        "whyNotRepaired": "§0 defines this stage as a deterministic qualification and §18 ends with a mandatory stop; the matrix requires an explicit authorization ruling"
+      }
+    ],
+    "REGRESSION": "PASS",
+    "limitsIntroducedByThisStage": [],
+    "modelCallsMade": 0,
+    "law": "report genuine failures and limits rather than smoothing them"
+  },
+  "verdicts": {
+    "R3_L0C_F": "COMPLETE",
+    "FAIL_STOP_RUNNER": "CLOSED",
+    "POST_EXPOSURE_RETRY": "ZERO",
+    "GENERATION_EVIDENCE_DURABILITY": "CLOSED",
+    "CRASH_PRESERVATION": "CLOSED",
+    "EXECUTION_CLOSURE": "COMPLETE",
+    "TREATMENT_BOUNDARY": "PASS",
+    "EXPERIMENT_CONTAINMENT": "PASS",
+    "RAW_HISTORY_SUFFICIENT": "YES",
+    "SELECTED_CAPITAL_SUFFICIENT": "YES",
+    "PROMPT_SUBSTITUTION_NEUTRALITY": "LIMITED",
+    "SYSTEM_VALID": "YES",
+    "EXPERIMENT_ENVIRONMENT_VALID": "YES",
+    "FAIL_STOP_POLICY": "PROPOSED",
+    "PAID_REPLICATION": "READY_FOR_AUTHORIZATION"
+  },
+  "stageStop": {
+    "ranModelMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0,
+    "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+  },
+  "preflightLaw": {
+    "realModelCallsPermitted": 0,
+    "doNotCall": "the old real-model `runPlumbingCheck()`",
+    "uses": [
+      "packaged runtime",
+      "real Project prehistory",
+      "real capital associations",
+      "actual KnowledgeSelectionRequest builder",
+      "ScriptedWorker",
+      "actual governed pull boundary"
+    ],
+    "anyFailedBoundaryControl": "QUALIFICATION STOP"
+  },
+  "modelCallsMade": 0,
+  "newRunnerObservation": {
+    "schemaVersion": 1,
+    "kind": "fail-stop property evaluation",
+    "properties": [
+      {
+        "id": "NO_SECOND_LAUNCH",
+        "holds": true,
+        "detail": "every one of the 2 launch(es) is the first for its session",
+        "violated": [],
+        "maxLaunchesPerSession": 1
+      },
+      {
+        "id": "NEXT_SESSION_NOT_STARTED",
+        "holds": true,
+        "detail": "no session failed, so the property is not exercised",
+        "violated": [],
+        "failureIndex": null
+      },
+      {
+        "id": "EVIDENCE_PRESERVED",
+        "holds": true,
+        "detail": "all 2 completed session(s) have a durable record",
+        "violated": [],
+        "durableRecordCount": 2
+      },
+      {
+        "id": "NO_FAKE_ATTEMPT_TERMINAL",
+        "holds": true,
+        "detail": "no attempt terminal event was synthesized",
+        "violated": []
+      },
+      {
+        "id": "NO_CAUSAL_VERDICT",
+        "holds": true,
+        "detail": "no causal treatment verdict was issued",
+        "violated": []
+      }
+    ],
+    "ALL_PROPERTIES_HOLD": true,
+    "failing": [],
+    "missing": [],
+    "evaluated": [
+      "NO_SECOND_LAUNCH",
+      "NEXT_SESSION_NOT_STARTED",
+      "EVIDENCE_PRESERVED",
+      "NO_FAKE_ATTEMPT_TERMINAL",
+      "NO_CAUSAL_VERDICT"
+    ]
+  }
+}

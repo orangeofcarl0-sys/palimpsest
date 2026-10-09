@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "preservation proof",
+  "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+  "checks": [
+    {
+      "id": "PRESERVE_MARKER_PRESENT",
+      "holds": true,
+      "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\PRESERVE"
+    },
+    {
+      "id": "ABORT_MANIFEST_PRESENT",
+      "holds": true,
+      "detail": "terminalState=ABORT_PRESERVED"
+    },
+    {
+      "id": "JOURNAL_PRESENT",
+      "holds": true,
+      "detail": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT\\generation-journal.jsonl"
+    },
+    {
+      "id": "EVIDENCE_INDEX_PRESENT",
+      "holds": true,
+      "detail": "3 artifact(s)"
+    },
+    {
+      "id": "SWEEP_REFUSES_PRESERVED_ROOT",
+      "holds": true,
+      "detail": "survived=true removedBySweep=false refusalReported=false",
+      "refusalReported": false
+    },
+    {
+      "id": "RESTART_DETECTS_UNFINISHED_RUN",
+      "holds": true,
+      "detail": "ABORTED"
+    },
+    {
+      "id": "RESTART_REFUSES_AUTOMATIC_RESUME",
+      "holds": true,
+      "detail": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling"
+    }
+  ],
+  "inspection": {
+    "schemaVersion": 1,
+    "kind": "preserved run inspection",
+    "runRoot": "C:\\Users\\66494\\AppData\\Local\\Temp\\r3l0cf-qual-8pWqX2\\cases\\C2_FAILURE_AFTER_EXPOSURE_INTENT",
+    "verdict": "ABORTED",
+    "preserveMarker": true,
+    "journalIntact": true,
+    "interrupted": [],
+    "temporaryFiles": [],
+    "exposureIntents": 1,
+    "launches": 1,
+    "trials": 0,
+    "uncertain": 0,
+    "manifestTerminalState": "ABORT_PRESERVED",
+    "mayResumeAutomatically": false,
+    "mayReplaceAutomatically": false,
+    "mayStartFresh": false,
+    "decision": "REFUSE: the run recorded exposure-intent or a launch, so a restart must not resume or replace it automatically; the evidence is preserved for an explicit ruling",
+    "law": "a restart must never automatically resume or replace a run in which exposure was possible"
+  },
+  "sweepProtected": [],
+  "CRASH_PRESERVATION": "CLOSED",
+  "law": "a successful return from a cleanup function is not proof that evidence survived; the evidence is read from disk"
+}

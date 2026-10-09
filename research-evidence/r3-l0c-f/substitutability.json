@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "reconstruction substitutability audit",
+  "records": {
+    "RAW_HISTORY_SUFFICIENT": "YES",
+    "SELECTED_CAPITAL_SUFFICIENT": "YES",
+    "HISTORY_READING_REQUIRED_BY_PROMPT": "YES",
+    "EXHAUSTIVE_HISTORY_READING_REQUIRED": "NO",
+    "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION": "YES",
+    "PROMPT_SUBSTITUTION_NEUTRALITY": "LIMITED"
+  },
+  "recordNames": [
+    "RAW_HISTORY_SUFFICIENT",
+    "SELECTED_CAPITAL_SUFFICIENT",
+    "HISTORY_READING_REQUIRED_BY_PROMPT",
+    "EXHAUSTIVE_HISTORY_READING_REQUIRED",
+    "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION",
+    "PROMPT_SUBSTITUTION_NEUTRALITY"
+  ],
+  "distinctions": {
+    "historyAvailable": true,
+    "relevantHistoryRequired": true,
+    "exhaustiveHistoryRequired": false,
+    "evidence": {
+      "historyAvailable": "26 documents, complete=true",
+      "relevantHistoryRequired": "16 of 26 documents bear on the exposed invariants",
+      "exhaustiveHistoryRequired": "the README does not instruct reading all history"
+    }
+  },
+  "readmeAdjudication": {
+    "path": "README.md",
+    "quote": "The rules this Project actually follows are recorded in its history, under `docs/history/` — incidents, decisions, revisions, verification results and migration notes. Read them before changing how resolution or revocation decides.",
+    "instructionPresentInFrozenReadme": true,
+    "requiresReadingHistory": true,
+    "requiresExhaustiveReading": false,
+    "adjudication": "the README directs the reader to the history and requires the RELEVANT part of it; it does not require exhaustive reading, so a capital selection that supplies the current standing answers the question the history is there to answer",
+    "instructionPretendedAbsent": false,
+    "readmeEditedInThisStage": false,
+    "futureWordingRevisionRequires": "a new, explicitly labeled prospective design version"
+  },
+  "generationRequirements": [
+    {
+      "id": "G1",
+      "requirement": "Add `resolveEntitlement(store, tenantId, capability, atDate)` to the service: it returns the tenant's effective decision for that capability AS OF `atDate`, honouring the Project's recorded precedence rules. A request for a tenant the store does not know is refused.",
+      "exposes": [
+        "I1"
+      ],
+      "requiresHistoryRead": false
+    },
+    {
+      "id": "G2",
+      "requirement": "Add `revokeEntitlement(store, tenantId, capability)` to the service: it removes the tenant's effective access for that capability, so that a subsequent `resolveEntitlement` at a later date returns a refusal. It must honour the Project's recorded rules about which stored record constitutes the tenant's access, and it must keep the store consistent for every tenant that holds a related record.",
+      "exposes": [
+        "I1",
+        "I2"
+      ],
+      "requiresHistoryRead": false
+    }
+  ],
+  "requirementsMentionCapital": false,
+  "readmeIdenticalAcrossArms": true,
+  "byteComparison": {
+    "relevantHistoryBytes": 18291,
+    "standingBodyBytes": 1887,
+    "ratioStandingToRelevant": 0.1032,
+    "descriptiveOnly": true,
+    "isMeasuredCognitiveSavings": false,
+    "caveat": "a body-level byte compression ratio is DESCRIPTIVE ONLY; it is not measured cognitive savings, and the primary cost measures come from the session artifacts"
+  },
+  "behavioralDesign": {
+    "blocks": 4,
+    "arms": 2,
+    "generations": 2,
+    "sessions": 16,
+    "trajectoryUnits": 8,
+    "matchedComparisons": 4,
+    "armOrderSource": "the frozen R3-L0C randomization seed 0x524c3002, reused exactly",
+    "rerandomized": false,
+    "combinesOldHWithNewC": false,
+    "bothArmsStartFrom": "the same Project world, history, capital assets and associations",
+    "onlyIntendedDifference": "the selection of current-standing capital",
+    "executorRouteIdenticalAcrossContemporaneousArms": true,
+    "executorStackDeviation": {
+      "id": "OMNIGATE_DEEPSEEK_ROUTE_REPLACED",
+      "recorded": true,
+      "note": "the changed omnigate DeepSeek route is an explicitly recorded executor-stack deviation; its configured family does not prove checkpoint identity with the old direct provider"
+    },
+    "hiddenCasesChanged": false,
+    "qualityThresholdsChanged": false,
+    "primaryEndpointChanged": false
+  },
+  "consequences": {
+    "SELECTED_CAPITAL_SUFFICIENT": "none — capital supplies the current standing for every exposed invariant",
+    "EXHAUSTIVE_HISTORY_READING_REQUIRED": "none — the prompt requires relevance, not exhaustiveness"
+  },
+  "qualificationStopRequired": false,
+  "modelCallsMade": 0,
+  "corpusDigest": "786f3ad892830e95ca3c86039e24ed60525d9e159d7e9d01d85fd2ed4c64cc2a",
+  "law": "distinguish history available, relevant history required, and exhaustive history required"
+}

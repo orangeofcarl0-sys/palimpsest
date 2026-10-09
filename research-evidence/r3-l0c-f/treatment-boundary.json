@@ -1,0 +1,254 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "G1/G2 H/C treatment-boundary witnesses",
+  "controls": [
+    {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "zero-model treatment-boundary control",
+      "arm": "H",
+      "generationId": "G1",
+      "projectId": "cutover-entitlements",
+      "phase": "FINISHED",
+      "attemptId": "attempt-047c328552c110cd873ab1ea42b9570b",
+      "hostError": null,
+      "consumerVisibleHandles": [],
+      "consumerVisibleKinds": [],
+      "expectedHandles": [],
+      "expectedCount": 0,
+      "expectationDigest": "39be1ed2b06a6a90323d438be8ef69ebce372d1a993202e50ab237a817d6b605",
+      "expectedCountFrozen": 0,
+      "expectedCountMatchesFrozenDesign": true,
+      "missingFromBoundary": [],
+      "unexpectedAtBoundary": [],
+      "pulls": [],
+      "failures": [],
+      "identityMatches": true,
+      "kindMatches": true,
+      "pullsAllResolved": false,
+      "pullsResolveCanonicalBody": false,
+      "allowedPullHandles": [],
+      "allowedEqualsVisible": true,
+      "hiddenReadChannelExposed": false,
+      "BOUNDARY_CONTROL": "PASS",
+      "noLlmInvoked": true,
+      "usedPackagedRuntime": true,
+      "usedRealPrehistory": true,
+      "usedScriptedWorker": true,
+      "usedCanonicalBuilder": true,
+      "usedGovernedPullBoundary": true,
+      "calledOldPlumbingCheck": false,
+      "dummyProject": false
+    },
+    {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "zero-model treatment-boundary control",
+      "arm": "H",
+      "generationId": "G2",
+      "projectId": "cutover-entitlements",
+      "phase": "FINISHED",
+      "attemptId": "attempt-fb68d95ad7914258c9d457cce8120166",
+      "hostError": null,
+      "consumerVisibleHandles": [],
+      "consumerVisibleKinds": [],
+      "expectedHandles": [],
+      "expectedCount": 0,
+      "expectationDigest": "d134d27996e4afc1ce0bb2cdc327b6b2f5fa416454a7db78f4d4f1841c2f0957",
+      "expectedCountFrozen": 0,
+      "expectedCountMatchesFrozenDesign": true,
+      "missingFromBoundary": [],
+      "unexpectedAtBoundary": [],
+      "pulls": [],
+      "failures": [],
+      "identityMatches": true,
+      "kindMatches": true,
+      "pullsAllResolved": false,
+      "pullsResolveCanonicalBody": false,
+      "allowedPullHandles": [],
+      "allowedEqualsVisible": true,
+      "hiddenReadChannelExposed": false,
+      "BOUNDARY_CONTROL": "PASS",
+      "noLlmInvoked": true,
+      "usedPackagedRuntime": true,
+      "usedRealPrehistory": true,
+      "usedScriptedWorker": true,
+      "usedCanonicalBuilder": true,
+      "usedGovernedPullBoundary": true,
+      "calledOldPlumbingCheck": false,
+      "dummyProject": false
+    },
+    {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "zero-model treatment-boundary control",
+      "arm": "C",
+      "generationId": "G1",
+      "projectId": "cutover-entitlements",
+      "phase": "FINISHED",
+      "attemptId": "attempt-b10a2c1fc1af13839a9908c41b9041f3",
+      "hostError": null,
+      "consumerVisibleHandles": [
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0"
+      ],
+      "consumerVisibleKinds": [
+        "reasoning",
+        "procedure"
+      ],
+      "expectedHandles": [
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+      ],
+      "expectedCount": 2,
+      "expectationDigest": "85ed6d86551380ecf5d02ed121296c4f5256b9be630d31f2393e2030f813741e",
+      "expectedCountFrozen": 2,
+      "expectedCountMatchesFrozenDesign": true,
+      "missingFromBoundary": [],
+      "unexpectedAtBoundary": [],
+      "pulls": [
+        {
+          "handle": "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "resolved": true,
+          "bodyBytes": 257,
+          "bodyDigest": "8602f4f15620e6849a55572fd47b1c08f706238d90616a42c04c0e20165c2403"
+        },
+        {
+          "handle": "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "resolved": true,
+          "bodyBytes": 2136,
+          "bodyDigest": "1bfac3b70c2f46049a3b5d9604beae3ed0460b5fac12c0898d38e95cc50c0715"
+        }
+      ],
+      "failures": [],
+      "identityMatches": true,
+      "kindMatches": true,
+      "pullsAllResolved": true,
+      "pullsResolveCanonicalBody": true,
+      "allowedPullHandles": [
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0"
+      ],
+      "allowedEqualsVisible": true,
+      "hiddenReadChannelExposed": false,
+      "BOUNDARY_CONTROL": "PASS",
+      "noLlmInvoked": true,
+      "usedPackagedRuntime": true,
+      "usedRealPrehistory": true,
+      "usedScriptedWorker": true,
+      "usedCanonicalBuilder": true,
+      "usedGovernedPullBoundary": true,
+      "calledOldPlumbingCheck": false,
+      "dummyProject": false
+    },
+    {
+      "schemaVersion": 1,
+      "stage": "R3-L0C-F",
+      "kind": "zero-model treatment-boundary control",
+      "arm": "C",
+      "generationId": "G2",
+      "projectId": "cutover-entitlements",
+      "phase": "FINISHED",
+      "attemptId": "attempt-34317148c2758b9279741a6db6648a6f",
+      "hostError": null,
+      "consumerVisibleHandles": [
+        "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+        "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0"
+      ],
+      "consumerVisibleKinds": [
+        "reasoning",
+        "reasoning",
+        "procedure",
+        "procedure"
+      ],
+      "expectedHandles": [
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+        "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+        "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8"
+      ],
+      "expectedCount": 4,
+      "expectationDigest": "b2879103b0e3911c2dffce44e08be734611286e1991eb6ee8c665d29caf3e14a",
+      "expectedCountFrozen": 4,
+      "expectedCountMatchesFrozenDesign": true,
+      "missingFromBoundary": [],
+      "unexpectedAtBoundary": [],
+      "pulls": [
+        {
+          "handle": "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+          "resolved": true,
+          "bodyBytes": 393,
+          "bodyDigest": "7cddb322a3e1da0fdcde10126b7c6a887d46269cfcb9798b9f2352e9a11b040e"
+        },
+        {
+          "handle": "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+          "resolved": true,
+          "bodyBytes": 257,
+          "bodyDigest": "8602f4f15620e6849a55572fd47b1c08f706238d90616a42c04c0e20165c2403"
+        },
+        {
+          "handle": "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+          "resolved": true,
+          "bodyBytes": 2136,
+          "bodyDigest": "1bfac3b70c2f46049a3b5d9604beae3ed0460b5fac12c0898d38e95cc50c0715"
+        },
+        {
+          "handle": "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0",
+          "resolved": true,
+          "bodyBytes": 1906,
+          "bodyDigest": "bcafd403bf38c35cc2f0e17749674bfe4434a8cd3e326a55f8f185dcd562439c"
+        }
+      ],
+      "failures": [],
+      "identityMatches": true,
+      "kindMatches": true,
+      "pullsAllResolved": true,
+      "pullsResolveCanonicalBody": true,
+      "allowedPullHandles": [
+        "@ctx/reasoning/cell-capability-consolidation/cl-e30bb83cc79c0b6c71c4c595",
+        "@ctx/reasoning/cell-cutover-precedence/cl-40ba99af09d412b3337f5aa8",
+        "@ctx/procedure/prc-45b46c3d4e82fca7919bb6d704786051/0",
+        "@ctx/procedure/prc-6bd403190d16be302f10d889d3edcf97/0"
+      ],
+      "allowedEqualsVisible": true,
+      "hiddenReadChannelExposed": false,
+      "BOUNDARY_CONTROL": "PASS",
+      "noLlmInvoked": true,
+      "usedPackagedRuntime": true,
+      "usedRealPrehistory": true,
+      "usedScriptedWorker": true,
+      "usedCanonicalBuilder": true,
+      "usedGovernedPullBoundary": true,
+      "calledOldPlumbingCheck": false,
+      "dummyProject": false
+    }
+  ],
+  "TREATMENT_BOUNDARY": "PASS",
+  "failing": [],
+  "expectedCounts": {
+    "H/G1": {
+      "expected": 0,
+      "observed": 0,
+      "canonicalPulls": 0
+    },
+    "H/G2": {
+      "expected": 0,
+      "observed": 0,
+      "canonicalPulls": 0
+    },
+    "C/G1": {
+      "expected": 2,
+      "observed": 2,
+      "canonicalPulls": 2
+    },
+    "C/G2": {
+      "expected": 4,
+      "observed": 4,
+      "canonicalPulls": 4
+    }
+  },
+  "modelCallsMade": 0
+}
