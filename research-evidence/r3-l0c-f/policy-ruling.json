@@ -1,0 +1,125 @@
+{
+  "policy": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "fail-stop policy ruling",
+    "policy": "PROPOSED",
+    "protocol": "a load-bearing failure stops the RESEARCH RUN, retains its World and evidence, refuses a session retry and refuses a causal claim",
+    "boundary": {
+      "createsOperatorCancellation": false,
+      "implementsAttemptCancelled": false,
+      "implementsAttemptFailedFromHostFailure": false,
+      "introducesNewGovernanceAuthority": false,
+      "turnsHostFailureIntoAttemptFailed": false,
+      "failStopMeans": "the RESEARCH RUN stops, retains its World and evidence, and refuses to make a causal claim",
+      "canonicalAttemptMayRemainRunning": true,
+      "canonicalAttemptResidual": "an explicitly scoped product-liveness residual, not a fake terminal state",
+      "requiresExplicitAuthorizationRuling": true,
+      "thisDocumentCreatesProjectTerminalAuthority": false
+    },
+    "residual": {
+      "id": "CANONICAL_ATTEMPT_MAY_REMAIN_RUNNING",
+      "description": "the Canonical Attempt may remain RUNNING in the preserved experimental Project",
+      "classification": "explicitly scoped product-liveness residual, not a fake terminal state",
+      "refusedAlternative": "synthesizing ATTEMPT_CANCELLED or ATTEMPT_FAILED would be a fabricated canonical fact",
+      "openAtStageClose": true,
+      "requiresSeparateDecision": "if the project needs an automatic machine-failure terminal, that is a separate semantic decision and must not be reached by reinterpreting CANCELLED as FAILED"
+    },
+    "authorizationRequired": {
+      "required": true,
+      "what": "an explicit authorization ruling for this fail-stop protocol before the 16-session behavioral matrix runs",
+      "thisDocumentProvidesIt": false,
+      "thisDocumentSupports": "a determination that the frozen design is executable under fail-stop, with every gate green"
+    },
+    "stageStop": {
+      "ranModelMatrix": false,
+      "beganR3L1": false,
+      "beganFusion": false,
+      "modelCallsMade": 0,
+      "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+    },
+    "modelCallsMade": 0
+  },
+  "resumeQualification": {
+    "schemaVersion": 1,
+    "stage": "R3-L0C-F",
+    "kind": "fail-stop resume qualification",
+    "question": "can the frozen R3-L0C capital-reuse design be executed under a strict fail-stop protocol?",
+    "answer": "YES — the design is executable under fail-stop, and every qualification gate is green",
+    "mission": [
+      {
+        "id": "NEVER_REPEATS_A_POSSIBLY_EXPOSED_SESSION",
+        "satisfied": true,
+        "evidence": "every crash case launched each session at most once; MAX_WORKER_LAUNCHES=1 and POST_EXPOSURE_RETRIES=0 are asserted"
+      },
+      {
+        "id": "PRESERVES_ALL_EVIDENCE_FOLLOWING_A_FAILURE",
+        "satisfied": true,
+        "evidence": "the PRESERVE marker, the abort manifest and the evidence index survive a sweep and are read from disk after it"
+      },
+      {
+        "id": "NEVER_FABRICATES_CANONICAL_ATTEMPT_SETTLEMENT",
+        "satisfied": true,
+        "evidence": "terminalEventsSynthesized is empty for every case; the runner writes no product store"
+      },
+      {
+        "id": "NEVER_REPLACES_A_FAILED_EXPERIMENTAL_UNIT",
+        "satisfied": true,
+        "evidence": "a failure stops the whole matrix; no later session starts and no trajectory is replaced"
+      },
+      {
+        "id": "BINDS_THE_ACTUAL_SHIPPED_RUNTIME_AND_EXECUTION_ROUTE",
+        "satisfied": true,
+        "evidence": "the closure covers SOURCE and COMPILED_RUNTIME separately, and the mutation shows a shipped-runtime change moves the digest while the old closure was blind to it"
+      },
+      {
+        "id": "PRESERVES_THE_ORIGINAL_RESEARCH_ESTIMAND_AND_OUTCOME_RULES",
+        "satisfied": true,
+        "evidence": "the frozen corpus, invariants, exposures, verdict rules and arm order are untouched; the boundary witnesses match the frozen expectation manifests exactly"
+      }
+    ],
+    "allSatisfied": true,
+    "gates": {
+      "FAIL_STOP_RUNNER": "CLOSED",
+      "POST_EXPOSURE_RETRY": "ZERO",
+      "GENERATION_EVIDENCE_DURABILITY": "CLOSED",
+      "CRASH_PRESERVATION": "CLOSED",
+      "EXECUTION_CLOSURE": "COMPLETE",
+      "TREATMENT_BOUNDARY": "PASS",
+      "EXPERIMENT_CONTAINMENT": "PASS"
+    },
+    "falsifierHalves": {
+      "failsAgainstLegacy": true,
+      "legacyViolatedProperties": [
+        "EVIDENCE_PRESERVED",
+        "NEXT_SESSION_NOT_STARTED",
+        "NO_SECOND_LAUNCH"
+      ],
+      "legacyNonDiscriminating": [
+        "NO_FAKE_ATTEMPT_TERMINAL",
+        "NO_CAUSAL_VERDICT"
+      ],
+      "allPropertiesFalsifiable": true
+    },
+    "substitutability": {
+      "RAW_HISTORY_SUFFICIENT": "YES",
+      "SELECTED_CAPITAL_SUFFICIENT": "YES",
+      "HISTORY_READING_REQUIRED_BY_PROMPT": "YES",
+      "EXHAUSTIVE_HISTORY_READING_REQUIRED": "NO",
+      "CAPITAL_CAN_REDUCE_HISTORY_RECONSTRUCTION": "YES",
+      "PROMPT_SUBSTITUTION_NEUTRALITY": "LIMITED"
+    },
+    "verdictIssued": false,
+    "verdictNotIssuedBecause": "no model session ran in this stage; §0 requires a qualification, not an execution",
+    "policyStatus": "PROPOSED",
+    "requiresAuthorizationRuling": true,
+    "stageStop": {
+      "ranModelMatrix": false,
+      "beganR3L1": false,
+      "beganFusion": false,
+      "modelCallsMade": 0,
+      "law": "then STOP: do not run the 16-session model matrix; do not begin R3-L1 or Fusion"
+    },
+    "modelCallsMade": 0
+  }
+}

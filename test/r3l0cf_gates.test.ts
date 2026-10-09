@@ -50,7 +50,7 @@ describe("R3-L0C-F §8 — the deterministic crash matrix", () => {
   it("runs all ten required cases", () => {
     expect(crashMatrix.allCasesRun).toBe(true);
     expect(crashMatrix.cases.length).toBe(10);
-    for (const required of CRASH_MATRIX_CASES) expect(crashMatrix.cases.some((entry) => entry.id === required.id)).toBe(true);
+    for (const required of CRASH_MATRIX_CASES) expect(crashMatrix.cases.some((entry: { id: string }) => entry.id === required.id)).toBe(true);
   });
 
   it("every failure case exhibits all five §8 properties", () => {
@@ -75,14 +75,29 @@ describe("R3-L0C-F §8 — the deterministic crash matrix", () => {
   });
 
   it("the failure cases stop the matrix rather than continuing to later sessions", () => {
-    const stopped = crashMatrix.cases.filter((entry) => entry.id !== "C10_HEALTHY_TWO_GENERATION_TRAJECTORY");
+    const stopped = crashMatrix.cases.filter((entry: { id: string }) => entry.id !== "C10_HEALTHY_TWO_GENERATION_TRAJECTORY");
     for (const entry of stopped) {
       expect(entry.properties.properties.find((item: { id: string }) => item.id === "NEXT_SESSION_NOT_STARTED")?.holds, `${entry.id}`).toBe(true);
     }
   });
 
+  it("§4 does not infer uncertainty where no launch was possible", () => {
+    /**
+     * The distinction §4 turns on, asserted directly. A failure BEFORE the launch seam was entered is
+     * ABORT_PRESERVED with zero launches — NOT UNCERTAIN, because inferring that a model call might have occurred
+     * when none could have is the same class of error as inferring that none occurred when one might have.
+     */
+    const beforeLaunch = crashMatrix.cases.find((entry: { id: string }) => entry.id === "C1_FAILURE_BEFORE_LAUNCH");
+    expect(beforeLaunch?.launches.length).toBe(0);
+    expect(beforeLaunch?.terminalState).toBe("ABORT_PRESERVED");
+    /** The genuinely uncertain case DID enter the seam, and is reported as uncertain. */
+    const uncertain = crashMatrix.cases.find((entry: { id: string }) => entry.id === "C8_HOST_TERMINATES_BETWEEN_JOURNAL_WRITES");
+    expect(uncertain?.launches.length).toBe(1);
+    expect(uncertain?.terminalState).toBe("UNCERTAIN_PRESERVED");
+  });
+
   it("the healthy control still advances through legitimate Work, Result and verification", () => {
-    const healthy = crashMatrix.cases.find((entry) => entry.id === "C10_HEALTHY_TWO_GENERATION_TRAJECTORY");
+    const healthy = crashMatrix.cases.find((entry: { id: string }) => entry.id === "C10_HEALTHY_TWO_GENERATION_TRAJECTORY");
     expect(healthy).toBeDefined();
     /** §8: a POSITIVE assertion — both generations promoted and both moved the head. */
     expect(healthy?.ADVANCED_THROUGH_GOVERNED_PATH).toBe(true);
@@ -92,7 +107,7 @@ describe("R3-L0C-F §8 — the deterministic crash matrix", () => {
   });
 
   it("§8 case C9 refuses to resume or replace an unfinished run", () => {
-    const restart = crashMatrix.cases.find((entry) => entry.id === "C9_RESTART_AGAINST_UNFINISHED_RUN");
+    const restart = crashMatrix.cases.find((entry: { id: string }) => entry.id === "C9_RESTART_AGAINST_UNFINISHED_RUN");
     expect(restart?.NO_RESTART_RESUME).toBe(true);
     expect(restart?.inspection.mayResumeAutomatically).toBe(false);
     expect(restart?.inspection.mayReplaceAutomatically).toBe(false);
@@ -119,7 +134,7 @@ describe("R3-L0C-F §10 — the zero-model treatment boundary", () => {
 
   it("H/G1 and H/G2 carry an empty boundary; C/G1 carries 2 and C/G2 carries 4", () => {
     expect(boundary.TREATMENT_BOUNDARY).toBe("PASS");
-    const byKey = Object.fromEntries(boundary.controls.map((control) => [`${control.arm}/${control.generationId}`, control]));
+    const byKey = Object.fromEntries(boundary.controls.map((control: { arm: string; generationId: string }) => [`${control.arm}/${control.generationId}`, control])) as Record<string, any>;
     expect(byKey["H/G1"].expectedCount).toBe(0);
     expect(byKey["H/G2"].expectedCount).toBe(0);
     expect(byKey["C/G1"].expectedCount).toBe(2);
@@ -135,7 +150,7 @@ describe("R3-L0C-F §10 — the zero-model treatment boundary", () => {
   });
 
   it("every C pull resolves a canonical body digest, and no hidden read channel is exposed", () => {
-    for (const control of boundary.controls.filter((entry) => entry.arm === "C")) {
+    for (const control of boundary.controls.filter((entry: { arm: string }) => entry.arm === "C")) {
       expect(control.pulls.length).toBe(control.expectedCount);
       expect(control.pullsResolveCanonicalBody).toBe(true);
       for (const pull of control.pulls) {

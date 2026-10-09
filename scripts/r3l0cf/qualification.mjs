@@ -41,6 +41,8 @@ import { computeExecutionClosure, verifyCompiledAgainstSource } from './closure.
 import { runBoundaryControl } from './boundary-witness.mjs';
 import { buildObservation, evaluateFailStopProperties, runPropertyNegativeControls } from './properties.mjs';
 import { readJournal } from './journal.mjs';
+import { FAIL_STOP_POLICY_RULING, resumeQualification } from './policy.mjs';
+import { regressionRecord } from './regression.mjs';
 
 const NL = String.fromCharCode(10);
 const EVIDENCE = join(REPO_ROOT, STAGE_EVIDENCE_PATH);
@@ -173,6 +175,20 @@ export async function runQualification() {
     PAID_REPLICATION: gatesGreen ? 'READY_FOR_AUTHORIZATION' : 'BLOCKED',
   });
 
+  /** §15/§18: the policy ruling and the resume qualification, built from the gates so they cannot diverge. */
+  const policy = FAIL_STOP_POLICY_RULING;
+  const resume = resumeQualification({
+    verdicts: finalVerdicts,
+    crashMatrix,
+    preservation,
+    closure: { mutation: closureMutation },
+    boundary,
+    containment,
+    substitutability,
+    falsifiers,
+    negativeControls: propertyNegativeControls,
+  });
+
   const result = Object.freeze({
     schemaVersion: 1,
     stage: 'R3-L0C-F',
@@ -210,7 +226,11 @@ export async function runQualification() {
     /** §14: the admission rules. */
     verdictAdmissionPreconditions: VERDICT_ADMISSION_PRECONDITIONS,
     /** §15: the policy boundary. */
-    failStopPolicy: 'PROPOSED',
+    failStopPolicy: policy,
+    /** §18: the resume qualification. */
+    resumeQualification: resume,
+    /** §17: the regression record, including the pre-existing live-gate limit. */
+    regression: regressionRecord(),
     /** §18: the verdicts. */
     verdicts: finalVerdicts,
     /** §0/§18: the mandatory stop, as a value. */
@@ -235,6 +255,8 @@ async function main() {
   writeEvidence('treatment-boundary.json', result.treatmentBoundary);
   writeEvidence('containment.json', result.containment);
   writeEvidence('substitutability.json', result.substitutability);
+  writeEvidence('policy-ruling.json', { policy: result.failStopPolicy, resumeQualification: result.resumeQualification });
+  writeEvidence('regression.json', result.regression);
   writeEvidence('stage-result.json', result);
   const out = (line) => process.stdout.write(`${line}${NL}`);
   out(`R3-L0C-F: ${result.verdicts.R3_L0C_F}`);
@@ -242,6 +264,8 @@ async function main() {
   out(`  CRASH_MATRIX: ${result.crashMatrix.CRASH_MATRIX}  CRASH_PRESERVATION: ${result.verdicts.CRASH_PRESERVATION}`);
   out(`  EXECUTION_CLOSURE: ${result.verdicts.EXECUTION_CLOSURE}  mutation ${result.executionClosure.mutation.EXECUTION_CLOSURE_MUTATION}`);
   out(`  TREATMENT_BOUNDARY: ${result.verdicts.TREATMENT_BOUNDARY}  EXPERIMENT_CONTAINMENT: ${result.verdicts.EXPERIMENT_CONTAINMENT}`);
+  out(`  RESUME QUALIFICATION: ${result.resumeQualification.allSatisfied ? 'SATISFIED' : 'NOT SATISFIED'}  POLICY: ${result.verdicts.FAIL_STOP_POLICY}`);
+  out(`  REGRESSION: ${result.regression.REGRESSION}  limits introduced by this stage: ${String(result.regression.limitsIntroducedByThisStage.length)}`);
   out(`  PAID_REPLICATION: ${result.verdicts.PAID_REPLICATION}`);
   return result;
 }

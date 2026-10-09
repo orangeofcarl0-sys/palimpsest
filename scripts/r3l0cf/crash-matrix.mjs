@@ -69,7 +69,7 @@ export function copyPrehistoryFor(caseRoot, prehistory, name) {
  * one holds.
  */
 export async function runCrashCase(input) {
-  const { id, caseRoot, prehistory, admittedRefs, fault, arm = 'C', launchGeneration = null, injectStop = null, expectedTerminal = null } = input;
+  const { id, caseRoot, prehistory, admittedRefs, fault, arm = 'C', launchGeneration = null, injectStop = null, beforeSession = null, expectedTerminal = null } = input;
   const fresh = copyPrehistoryFor(caseRoot, prehistory, id);
   const schedule = twoGenerationSchedule(0, arm);
   const refs = admittedRefs;
@@ -99,6 +99,8 @@ export async function runCrashCase(input) {
     runRoot: fresh.root,
     schedule,
     launch,
+    /** §8: a pre-exposure stop, so a case can fail before the launch seam is ever entered. */
+    beforeSession: typeof beforeSession === 'function' ? beforeSession : null,
     validityGate: async () => ({ green: true, detail: 'the crash matrix supplies a green gate for the healthy control only' }),
     intendedExecutorRoute: 'omnigate-ai/deepseek-v4.1-flash',
   });
@@ -145,12 +147,20 @@ export async function runCrashMatrix(input) {
   const { caseRoot, prehistory, admittedRefs } = input;
   const cases = [];
 
-  /** C1: failure before any Worker launch. */
+  /**
+   * C1: failure before any Worker launch.
+   *
+   * The failure is injected BEFORE the launch seam is entered, so no exposure-intent and no launch exist for the
+   * first session. The terminal is ABORT_PRESERVED rather than UNCERTAIN_PRESERVED, and the distinction is the
+   * point: §4 forbids inferring that a model call occurred when none was possible, so a case that never reached
+   * the seam must NOT be reported as uncertain. Measured: modelling this with an unknown outcome after the launch
+   * reported UNCERTAIN_PRESERVED, which overstates the uncertainty.
+   */
   cases.push(await runCrashCase({
     id: 'C1_FAILURE_BEFORE_LAUNCH', caseRoot, prehistory, admittedRefs, arm: 'C',
     fault: FAULT_SEAMS.NONE,
-    injectStop: ({ session }) => session.generation === 'G1',
-    expectedTerminal: 'UNCERTAIN_PRESERVED',
+    beforeSession: ({ session }) => (session.generation === 'G1' ? { stop: true, cause: 'PREFLIGHT_FAILURE_BEFORE_ANY_LAUNCH', detail: 'a load-bearing preflight check failed before the first session was exposed' } : null),
+    expectedTerminal: 'ABORT_PRESERVED',
   }));
 
   /** C2: failure immediately after exposure-intent persistence — the launch throws. */

@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "regression record",
+  "suites": [
+    {
+      "id": "TYPESCRIPT_BUILD",
+      "command": "tsc -b",
+      "result": "PASS",
+      "detail": "clean build; the three new test files and every new stage module typecheck under strict/noImplicitAny"
+    },
+    {
+      "id": "UNIT_SUITE",
+      "command": "vitest run",
+      "result": "PASS",
+      "detail": "3925/3925 across 284 files (baseline 3876/281; +3 files, +49 tests)"
+    },
+    {
+      "id": "E2E",
+      "command": "playwright test",
+      "result": "PASS",
+      "detail": "38/38"
+    },
+    {
+      "id": "ARCHITECTURE",
+      "command": "module-architecture.mjs --check",
+      "result": "PASS",
+      "detail": "0 violations, 9 accepted baseline exceptions"
+    },
+    {
+      "id": "PUBLIC_API",
+      "command": "module-architecture.mjs --check-public-api",
+      "result": "PASS",
+      "detail": "0 missing, 0 changed kind, 0 added"
+    },
+    {
+      "id": "R3_S0",
+      "command": "graph-audit.mjs + event-audit.mjs",
+      "result": "PASS",
+      "detail": "10/10 graph invariants, 5/5 event audit checks"
+    },
+    {
+      "id": "R3_L0B",
+      "command": "vitest r3l0b_canary + r3l0b_containment",
+      "result": "PASS",
+      "detail": "included in the 169-test D-series run and the 287-test R3 run"
+    },
+    {
+      "id": "R1_H",
+      "command": "r1h/conformance.mjs",
+      "result": "PASS",
+      "detail": "the read boundary holds on this host"
+    },
+    {
+      "id": "R1_HR",
+      "command": "r1hr/conformance.mjs",
+      "result": "PASS",
+      "detail": "disclosed limits HR-17, HR-39b, HR-33"
+    },
+    {
+      "id": "R1_HC",
+      "command": "r1hc/conformance.mjs",
+      "result": "PASS",
+      "detail": "disclosed limit HC-27 (the known parallel-active-worker limit)"
+    },
+    {
+      "id": "R1_L",
+      "command": "r1l-live-gate.mjs",
+      "result": "PASS",
+      "detail": "§R1-L-LIVE PASS"
+    },
+    {
+      "id": "D2_D4_D5_TESTS",
+      "command": "vitest lean_d2_live_composition + lean_d4c_read_evidence + lean_d5_0_effect_authority + lean_d5d_result_continuation_service + r3s0_systemic + r3l0b_canary + r3l0b_containment",
+      "result": "PASS",
+      "detail": "169/169 across 7 files"
+    },
+    {
+      "id": "R3_WR_THROUGH_WR5",
+      "command": "vitest r3l0c_* + r3l0cr_*",
+      "result": "PASS",
+      "detail": "287/287 across 9 files"
+    },
+    {
+      "id": "R3_L0C_R_SELECTION_CONTAINMENT_ANALYSIS",
+      "command": "vitest r3l0c_selection + r3l0cr_boundary + r3l0cr_contract",
+      "result": "PASS",
+      "detail": "included in the 287-test R3 run"
+    },
+    {
+      "id": "FAIL_STOP_MUTATION_SUITE",
+      "command": "vitest r3l0cf_*",
+      "result": "PASS",
+      "detail": "50/50 across 3 files, including the closure mutation and the property negative controls"
+    },
+    {
+      "id": "EXECUTABLE_CLOSURE_MUTATIONS",
+      "command": "runClosureMutation()",
+      "result": "PASS",
+      "detail": "the load-bearing-input arm moves the digest and names the part; both controls behave"
+    },
+    {
+      "id": "EVIDENCE_IMMUTABILITY",
+      "command": "r3l0c/immutability.mjs",
+      "result": "PASS",
+      "detail": "358 protected files, baseline e51df1f4; no protected mutation"
+    }
+  ],
+  "suiteCount": 17,
+  "failing": [],
+  "limits": [
+    {
+      "id": "D2_D4_D5_LIVE_GATES_DO_NOT_RUN",
+      "status": "PRE_EXISTING",
+      "detail": "scripts/gates/d2-live-gate.mjs, d4-live-gate.mjs and d5-live-gate.mjs drive a REAL DSH worker on a REAL model route",
+      "observed": {
+        "D2": "FAIL — the same verdict line at baseline and at HEAD",
+        "D4": "fatal: Not a valid object name null^{commit} — identical at baseline and at HEAD",
+        "D5": "plan revision blocked (quiescence_required) — identical at baseline and at HEAD"
+      },
+      "baselineComparison": "verified in a scratch worktree at 19f0c69, not inferred; the errors are byte-identical",
+      "introducedByThisStage": false,
+      "whyNotRepaired": "§0 forbids model calls in this stage, and the gates require one; src/**, host/** and scripts/gates/** are byte-identical to the baseline, so nothing this stage changed could have caused or fixed them",
+      "whatWasRunInstead": "the D-series TESTS (169 tests across 7 files), which is what the prior stage recorded as its D2/D4/D5 regression"
+    },
+    {
+      "id": "LIVE_MODEL_MATRIX_NOT_RUN",
+      "status": "BY_DESIGN",
+      "detail": "the 16-session model matrix was not run",
+      "introducedByThisStage": false,
+      "whyNotRepaired": "§0 defines this stage as a deterministic qualification and §18 ends with a mandatory stop; the matrix requires an explicit authorization ruling"
+    }
+  ],
+  "REGRESSION": "PASS",
+  "limitsIntroducedByThisStage": [],
+  "modelCallsMade": 0,
+  "law": "report genuine failures and limits rather than smoothing them"
+}

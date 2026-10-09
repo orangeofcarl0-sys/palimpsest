@@ -1,0 +1,272 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-F",
+  "kind": "legacy runner falsifiers",
+  "declaredDefects": [
+    "D1_RETRIES_INFRASTRUCTURE_INVALID",
+    "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+    "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+    "D4_G2_WITHOUT_RESOLVED_G1",
+    "D5_NO_POST_MATRIX_VALIDITY_GATE"
+  ],
+  "falsifiers": [
+    {
+      "id": "D1_RETRIES_INFRASTRUCTURE_INVALID",
+      "companionId": "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+      "fault": "the first launch of G1 returns an infrastructure-invalid result (no report)",
+      "legacyObservation": {
+        "attemptsForG1": 2,
+        "launchesForG1": 2,
+        "totalLaunches": 3,
+        "launchSequence": [
+          {
+            "generation": "G1",
+            "attempt": 1
+          },
+          {
+            "generation": "G1",
+            "attempt": 2
+          },
+          {
+            "generation": "G2",
+            "attempt": 1
+          }
+        ],
+        "recordedJobPhase": "FINISHED"
+      },
+      "defectPresent": true,
+      "requirement": "a session must be launched at most once, and an infrastructure-invalid result must not trigger a re-launch",
+      "newRunnerMustShow": {
+        "MAX_WORKER_LAUNCHES": 1,
+        "POST_EXPOSURE_RETRIES": 0
+      }
+    },
+    {
+      "id": "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+      "fault": "G2 throws, simulating a host interruption in the middle of the first trajectory",
+      "legacyObservation": {
+        "threw": "SIMULATED_HOST_INTERRUPTION_DURING_G2",
+        "ledgerWriteCount": 0,
+        "ledgerWrites": [],
+        "launchesObserved": [
+          {
+            "generation": "G1",
+            "attempt": 1,
+            "infrastructureInvalid": false
+          }
+        ],
+        "g1CompletedBeforeThrow": true,
+        "durableRecordOfCompletedG1": false
+      },
+      "defectPresent": true,
+      "requirement": "each generation must have a durable record written before the next generation starts",
+      "newRunnerMustShow": {
+        "perGenerationDurableRecord": true,
+        "interruptedWriteDetectable": true
+      }
+    },
+    {
+      "id": "D4_G2_WITHOUT_RESOLVED_G1",
+      "fault": "G1's worker cannot commit, so its canonical Attempt remains RUNNING",
+      "legacyObservation": {
+        "g1AttemptState": "RUNNING",
+        "generationsEntered": [
+          "G1",
+          "G2"
+        ],
+        "g2Entered": true,
+        "priorAttemptChecksPerformed": 0
+      },
+      "defectPresent": true,
+      "requirement": "a generation must not be entered while the previous generation's canonical Attempt is unresolved",
+      "newRunnerMustShow": {
+        "blocksNextGenerationOnUnresolvedAttempt": true,
+        "stopIsWholeMatrix": true
+      }
+    },
+    {
+      "id": "D5_NO_POST_MATRIX_VALIDITY_GATE",
+      "fault": "every G1 produces no report, so half the scheduled generations are lost",
+      "legacyObservation": {
+        "plannedSessions": 4,
+        "recordedSessions": 4,
+        "validSessions": 2,
+        "infrastructureInvalidSessions": 2,
+        "postMatrixValidityGate": false,
+        "completionReported": true,
+        "completionLine": "REPAIR REPLICATION COMPLETE — 2/4 valid sessions",
+        "reportedDenominator": "2/4"
+      },
+      "defectPresent": true,
+      "requirement": "matrix completion requires all scheduled sessions present AND a green post-matrix validity gate",
+      "newRunnerMustShow": {
+        "requiresAllScheduledSessions": true,
+        "requiresPostMatrixValidityGate": true
+      }
+    }
+  ],
+  "propertyWitness": {
+    "id": "SHARED_PREDICATE_WITNESS",
+    "scenarios": [
+      {
+        "id": "SCENARIO_A_REPORT_NEVER_APPEARS",
+        "observation": {
+          "schemaVersion": 1,
+          "plannedSessions": [
+            "b0-H-G1",
+            "b0-H-G2",
+            "b0-C-G1",
+            "b0-C-G2"
+          ],
+          "launches": [
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 1
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 2
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 3
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 4
+            },
+            {
+              "sessionId": "b0-H-G2",
+              "attempt": 1
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 5
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 6
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 7
+            },
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 8
+            },
+            {
+              "sessionId": "b0-H-G2",
+              "attempt": 2
+            }
+          ],
+          "completedSessions": [
+            "b0-H-G2",
+            "b0-H-G2"
+          ],
+          "failedSessions": [
+            {
+              "sessionId": "b0-H-G1",
+              "failureClass": "INFRASTRUCTURE_OR_PROTOCOL"
+            }
+          ],
+          "durableRecords": [],
+          "terminalEventsSynthesized": [],
+          "causalVerdictIssued": false,
+          "terminalState": "MATRIX_COMPLETE",
+          "matrixCompleted": true,
+          "postMatrixValidityGate": false
+        },
+        "violated": [
+          "NO_SECOND_LAUNCH",
+          "NEXT_SESSION_NOT_STARTED",
+          "EVIDENCE_PRESERVED"
+        ],
+        "launches": 10,
+        "completionLine": "REPAIR REPLICATION COMPLETE — 2/4 valid sessions"
+      },
+      {
+        "id": "SCENARIO_B_HOST_INTERRUPTION",
+        "observation": {
+          "schemaVersion": 1,
+          "plannedSessions": [
+            "b0-H-G1",
+            "b0-H-G2",
+            "b0-C-G1",
+            "b0-C-G2"
+          ],
+          "launches": [
+            {
+              "sessionId": "b0-H-G1",
+              "attempt": 1
+            },
+            {
+              "sessionId": "b0-H-G2",
+              "attempt": 1
+            }
+          ],
+          "completedSessions": [
+            "b0-H-G1"
+          ],
+          "failedSessions": [
+            {
+              "sessionId": "b0-H-G2",
+              "failureClass": "INFRASTRUCTURE_OR_PROTOCOL"
+            }
+          ],
+          "durableRecords": [],
+          "terminalEventsSynthesized": [],
+          "causalVerdictIssued": false,
+          "terminalState": "CRASHED",
+          "matrixCompleted": false,
+          "postMatrixValidityGate": false
+        },
+        "violated": [
+          "EVIDENCE_PRESERVED"
+        ],
+        "threw": "SIMULATED_HOST_INTERRUPTION_DURING_G2"
+      }
+    ],
+    "violated": [
+      "EVIDENCE_PRESERVED",
+      "NEXT_SESSION_NOT_STARTED",
+      "NO_SECOND_LAUNCH"
+    ],
+    "violatedBy": {
+      "EVIDENCE_PRESERVED": [
+        "SCENARIO_A_REPORT_NEVER_APPEARS",
+        "SCENARIO_B_HOST_INTERRUPTION"
+      ],
+      "NEXT_SESSION_NOT_STARTED": [
+        "SCENARIO_A_REPORT_NEVER_APPEARS"
+      ],
+      "NO_SECOND_LAUNCH": [
+        "SCENARIO_A_REPORT_NEVER_APPEARS"
+      ]
+    },
+    "nonDiscriminating": [
+      "NO_FAKE_ATTEMPT_TERMINAL",
+      "NO_CAUSAL_VERDICT"
+    ],
+    "anyViolated": true,
+    "detail": "the legacy runner violates EVIDENCE_PRESERVED, NEXT_SESSION_NOT_STARTED, NO_SECOND_LAUNCH; it does not discriminate on NO_FAKE_ATTEMPT_TERMINAL, NO_CAUSAL_VERDICT, whose falsifiers are the qualification suite's negative controls",
+    "WITNESS_FAILS_AGAINST_LEGACY": true
+  },
+  "LEGACY_DEFECTS_PRESENT": true,
+  "defectsDemonstrated": [
+    "D1_RETRIES_INFRASTRUCTURE_INVALID",
+    "D2_RELAUNCH_AFTER_FIRST_LAUNCH",
+    "D3_LEDGER_ONLY_AFTER_TRAJECTORY",
+    "D4_G2_WITHOUT_RESOLVED_G1",
+    "D5_NO_POST_MATRIX_VALIDITY_GATE"
+  ],
+  "vacuous": [],
+  "uncovered": [],
+  "FALSIFIERS_FAIL_AGAINST_LEGACY": true,
+  "LEGACY_PROPERTY_VIOLATIONS": [
+    "EVIDENCE_PRESERVED",
+    "NEXT_SESSION_NOT_STARTED",
+    "NO_SECOND_LAUNCH"
+  ],
+  "law": "a falsifier that cannot fail proves nothing, so a defect that is absent is reported as VACUOUS rather than as a pass"
+}
