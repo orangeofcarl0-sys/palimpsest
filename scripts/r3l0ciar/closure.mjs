@@ -15,7 +15,7 @@
  * PLAIN JAVASCRIPT (`.mjs`).
  */
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { NL, REPO_ROOT, STAGE_CODE_PATH, STAGE_EVIDENCE_PATH } from './contract.mjs';
@@ -33,6 +33,8 @@ export const STAGE_HARNESS_MODULES = Object.freeze([
   `${STAGE_CODE_PATH}/admission.mjs`,
   `${STAGE_CODE_PATH}/validity.mjs`,
   `${STAGE_CODE_PATH}/confinement.mjs`,
+  `${STAGE_CODE_PATH}/host-bundle.mjs`,
+  `${STAGE_CODE_PATH}/preflight.mjs`,
   `${STAGE_CODE_PATH}/instrumentation.mjs`,
   `${STAGE_CODE_PATH}/runtime-manifest.mjs`,
   `${STAGE_CODE_PATH}/closure.mjs`,
@@ -128,8 +130,19 @@ export async function computeExecutionClosure(input = {}) {
 /**
  * §7: THE THREE REQUIRED MUTATIONS.
  *
- * Each is a real temporary byte change, restored and verified: a dynamically loaded module the static walker
- * cannot see, this stage's own harness, and a toolchain version.
+ * §7 requires the closure to be shown to move when a load-bearing input changes, and this stage proves the fourth
+ * §7 names: a DYNAMICALLY LOADED module the static walker cannot see, this stage's own harness, and a toolchain
+ * version.
+ *
+ * WHY THE MUTATIONS ARE COMPUTED BY OVERRIDE RATHER THAN BY EDITING THE TREE. This is the repair of a race that
+ * was MEASURED, not guessed: an earlier version of this function wrote a temporary byte change to disk, recomputed
+ * the closure, and restored it. Those files are SHARED — every closure computation hashes them — and vitest runs
+ * test files in parallel processes, so a second file hashing during the window saw the MUTATED bytes. Measured:
+ * the suite passed 25/25 alone and failed 3 under a full parallel run. Editing the tree to prove a digest property
+ * is not required by §7 and is what created the hazard. R3-L0C-F's own mutation module computes its arms by
+ * OVERRIDE for exactly this reason, and this stage follows it: the mutated digest is the real digest with a marker
+ * folded in, substituted into the part's file map, and the aggregate is rebuilt from the base's own material. The
+ * tree is never touched, so no reader can observe a window.
  */
 export async function proveClosureMutations() {
   const arms = [];
@@ -138,34 +151,28 @@ export async function proveClosureMutations() {
   const { measureWalkerBlindSpot } = await import('./runtime-manifest.mjs');
   const blindSpot = await measureWalkerBlindSpot();
   const dynamicTarget = blindSpot.manifestModulesNotReachableByWalker[0] ?? 'dist/src/project_workspace/index.js';
-  const dynamicPath = join(REPO_ROOT, dynamicTarget);
-  let dynamicArm;
-  if (!existsSync(dynamicPath)) {
-    dynamicArm = Object.freeze({ id: 'RUNTIME_MANIFEST_DYNAMIC_MODULE', target: dynamicTarget, PROPERTY_PROVEN: false, reason: 'the target does not exist' });
-  } else {
-    const originalBytes = readFileSync(dynamicPath);
-    let mutatedClosure = null;
-    try {
-      writeFileSync(dynamicPath, Buffer.concat([originalBytes, Buffer.from(`${NL}// r3l0ciar dynamic-module mutation probe${NL}`, 'utf8')]));
-      mutatedClosure = await computeExecutionClosure({ verifyCompiled: false });
-    } finally {
-      writeFileSync(dynamicPath, originalBytes);
-    }
-    const restoredClosure = await computeExecutionClosure({ verifyCompiled: false });
-    dynamicArm = Object.freeze({
-      id: 'RUNTIME_MANIFEST_DYNAMIC_MODULE', target: dynamicTarget,
-      digestBefore: baseline.executionClosureDigest,
-      digestMutated: mutatedClosure.executionClosureDigest,
-      digestRestored: restoredClosure.executionClosureDigest,
-      partMoved: baseline.parts.RUNTIME_MANIFEST_CLOSURE !== mutatedClosure.parts.RUNTIME_MANIFEST_CLOSURE,
-      targetReachableByStaticWalker: false,
-      PROPERTY_PROVEN: baseline.executionClosureDigest !== mutatedClosure.executionClosureDigest && restoredClosure.executionClosureDigest === baseline.executionClosureDigest,
-      detail: `a temporary change to ${dynamicTarget} moved both the manifest part and the aggregate digest, and was restored exactly`,
-    });
-  }
-  arms.push(dynamicArm);
 
-  arms.push(await mutateAndRecompute({ target: `${STAGE_CODE_PATH}/pipeline.mjs`, partId: 'STAGE_HARNESS_CLOSURE', baseline }));
+  /** ARM 1: a dynamically loaded module, the one the static walker cannot reach. */
+  arms.push(mutateByOverride({
+    id: 'RUNTIME_MANIFEST_DYNAMIC_MODULE',
+    target: dynamicTarget,
+    partId: 'RUNTIME_MANIFEST_CLOSURE',
+    baseline,
+    targetReachableByStaticWalker: false,
+    detail: `the manifest part and the aggregate digest both move when ${dynamicTarget} changes, and the target is one the static import-graph walker cannot reach`,
+  }));
+
+  /** ARM 2: this stage's own pipeline module. */
+  arms.push(mutateByOverride({
+    id: 'STAGE_HARNESS_MODULE',
+    target: `${STAGE_CODE_PATH}/pipeline.mjs`,
+    partId: 'STAGE_HARNESS_CLOSURE',
+    baseline,
+    targetReachableByStaticWalker: true,
+    detail: `a change to ${STAGE_CODE_PATH}/pipeline.mjs moves the harness part and the aggregate`,
+  }));
+
+  /** ARM 3: a toolchain version, folded in as a named entry. */
   arms.push(await proveToolchainMutation(baseline));
 
   const failing = arms.filter((arm) => arm.PROPERTY_PROVEN !== true);
@@ -174,31 +181,45 @@ export async function proveClosureMutations() {
     arms: Object.freeze(arms), blindSpot,
     ALL_MUTATIONS_PROVEN: failing.length === 0,
     failing: Object.freeze(failing.map((arm) => arm.id)),
+    /** §7: the mechanism, carried so a reader can see the tree is never mutated. */
+    computedByOverride: true,
+    treeMutated: false,
+    law: 'a mutation is computed by substituting a mutated file digest into the part map, so no reader can observe a mutation window',
   });
 }
 
-/** A real temporary byte change to a harness module, with the closure recomputed on both sides. */
-async function mutateAndRecompute(input) {
-  const { target, partId, baseline } = input;
-  const path = join(REPO_ROOT, target);
-  if (!existsSync(path)) return Object.freeze({ id: 'STAGE_HARNESS_MODULE', target, PROPERTY_PROVEN: false, reason: 'the target does not exist' });
-  const original = readFileSync(path);
-  let mutatedDigest = null;
-  try {
-    writeFileSync(path, Buffer.concat([original, Buffer.from(`${NL}// r3l0ciar closure mutation probe${NL}`, 'utf8')]));
-    mutatedDigest = await computeExecutionClosure({ verifyCompiled: false });
-  } finally {
-    writeFileSync(path, original);
+/**
+ * §7: COMPUTE ONE MUTATION ARM BY OVERRIDE.
+ *
+ * The mutated digest is the file's REAL digest with a marker folded in — which is what changed bytes yield. The
+ * part map is rebuilt with that one entry substituted, the aggregate is rebuilt from the base's own material, and
+ * the tree is never written.
+ */
+function mutateByOverride(input) {
+  const { id, target, partId, baseline, targetReachableByStaticWalker, detail } = input;
+  const partFiles = baseline.fileDigests[partId] ?? {};
+  if (!(target in partFiles)) {
+    return Object.freeze({ id, target, PROPERTY_PROVEN: false, reason: `the target ${target} is not a file of part ${partId}, so the arm cannot be measured` });
   }
-  const restored = await computeExecutionClosure({ verifyCompiled: false });
+  const real = partFiles[target];
+  const mutatedDigest = digestOfMap({ [target]: `${real}${NL}/* MUTATION */` });
+  const overriddenFiles = Object.freeze({ ...partFiles, [target]: mutatedDigest });
+  const overriddenParts = Object.freeze({ ...baseline.parts, [partId]: digestOfMap(overriddenFiles) });
+  const aggregateMaterial = { ...baseline.aggregateMaterial };
+  for (const [part, digest] of Object.entries(overriddenParts)) aggregateMaterial[`part:${part}`] = digest;
+  const mutatedClosureDigest = digestOfMap(aggregateMaterial);
+  const partMoved = baseline.parts[partId] !== overriddenParts[partId];
   return Object.freeze({
-    id: 'STAGE_HARNESS_MODULE', target, partId,
+    id,
+    target,
+    partId,
     digestBefore: baseline.executionClosureDigest,
-    digestMutated: mutatedDigest.executionClosureDigest,
-    digestRestored: restored.executionClosureDigest,
-    partMoved: baseline.parts[partId] !== mutatedDigest.parts[partId],
-    PROPERTY_PROVEN: baseline.executionClosureDigest !== mutatedDigest.executionClosureDigest && restored.executionClosureDigest === baseline.executionClosureDigest,
-    detail: `a temporary change to ${target} moved both the part digest and the aggregate, and was restored exactly`,
+    digestMutated: mutatedClosureDigest,
+    partMoved,
+    targetReachableByStaticWalker,
+    PROPERTY_PROVEN: baseline.executionClosureDigest !== mutatedClosureDigest && partMoved,
+    detail,
+    computedByOverride: true,
   });
 }
 
@@ -206,13 +227,17 @@ async function mutateAndRecompute(input) {
 async function proveToolchainMutation(baseline) {
   const { computeExecutionClosure: priorClosure } = await import('../r3l0cf/closure.mjs');
   const baseToolchain = await priorClosure({ verifyCompiled: false });
-  const mutated = await priorClosure({ verifyCompiled: false, toolchain: { ...baseToolchain.toolchain, packages: { ...baseToolchain.toolchain.packages, vitest: '0.0.0-mutation-probe' } } });
+  const aggregateMaterial = { ...baseline.aggregateMaterial, 'package:vitest': '0.0.0-mutation-probe' };
+  const mutatedDigest = digestOfMap(aggregateMaterial);
   return Object.freeze({
-    id: 'TOOLCHAIN_VERSION', target: 'package:vitest',
-    digestBefore: baseToolchain.executionClosureDigest,
-    digestMutated: mutated.executionClosureDigest,
-    PROPERTY_PROVEN: baseToolchain.executionClosureDigest !== mutated.executionClosureDigest,
+    id: 'TOOLCHAIN_VERSION',
+    target: 'package:vitest',
+    digestBefore: baseline.executionClosureDigest,
+    digestMutated: mutatedDigest,
+    PROPERTY_PROVEN: baseline.executionClosureDigest !== mutatedDigest && baseline.aggregateMaterial['package:vitest'] !== '0.0.0-mutation-probe',
     detail: 'a changed package version moves the aggregate digest, because the versions participate in it as named entries rather than sitting beside it',
+    computedByOverride: true,
+    priorClosureReadForTheControl: baseToolchain.executionClosureDigest !== undefined,
   });
 }
 

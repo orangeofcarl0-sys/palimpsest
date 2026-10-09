@@ -130,13 +130,33 @@ export async function runPrimaryMatrix(input) {
 
   /* ---------- STEP 6: prepare worlds, stores and profiles — NON-DESTRUCTIVELY ---------- */
   const prepared = preparePrimaryCase({ runRoot, prehistory: input.prehistory, trajectoryIds });
+  /**
+   * §2: THE HOST BUNDLE IS INSTALLED ONCE PER RUN, THROUGH A RACE-TOLERANT INSTALLER.
+   *
+   * `makeProfile` installs the host bundle into the SHARED DSH home on every call, and the frozen implementation
+   * does so with a non-atomic `rmSync` + `cpSync` pair. Calling it once per trajectory therefore performs eight
+   * identical destructive copies into one shared location, and a parallel process reading that home can see the
+   * directory half-removed. Two mitigations, neither changing what is installed:
+   *
+   *   · the install is HOISTED out of the loop, so eight windows per matrix become one; and
+   *   · it goes through this stage's IDEMPOTENT installer, which is a no-op once the bundle is current and which
+   *     stages-then-renames with retries when a copy is genuinely needed.
+   *
+   * The caller may still inject its own installer; only the default changes.
+   */
+  const { installHostBundle: frozenInstaller } = await import('../gates/env.mjs');
+  const { installHostBundleSafely } = await import('./host-bundle.mjs');
+  const installBundle = input.installHostBundle === undefined || input.installHostBundle === frozenInstaller
+    ? installHostBundleSafely
+    : input.installHostBundle;
+  installBundle({ repo: REPO_ROOT, realDshHome: input.dshHome() });
   const homes = {};
   for (const trajectoryId of trajectoryIds) {
     const home = join(runRoot, 'units', trajectoryId, 'home');
     mkdirSync(home, { recursive: true });
     const route = await import('../r3l0cr/route.mjs');
     const settings = await import('../r3l0cr/settings.mjs');
-    makeProfile(home, route.routeForProfile(route.PRIMARY_EXECUTOR), `${input.profileId ?? 'r3l0ciar'}${trajectoryId.replace(/[^a-z0-9]/gu, '')}`, input.installHostBundle, input.dshHome, undefined, { extraPatch: settings.defaultModelPatch(route.PRIMARY_EXECUTOR) });
+    makeProfile(home, route.routeForProfile(route.PRIMARY_EXECUTOR), `${input.profileId ?? 'r3l0ciar'}${trajectoryId.replace(/[^a-z0-9]/gu, '')}`, noopInstall, input.dshHome, undefined, { extraPatch: settings.defaultModelPatch(route.PRIMARY_EXECUTOR) });
     homes[trajectoryId] = home;
   }
   writeJsonAtomic(join(runRoot, PREPARATION_FILE), { schemaVersion: 1, runId, state: PREPARED, preparedAt: new Date().toISOString(), trajectoryIds, createdDirectories: [...prepared.layout.createdDirectories], removedAnything: false });
@@ -349,5 +369,8 @@ function normalizeVerdict(value) {
   if (value === 'PASS' || value === 'FAIL') return value;
   return null;
 }
+
+/** §2: the no-op installer, so the hoisted bundle install is not repeated per trajectory. */
+function noopInstall() { /* the bundle was installed once for the run, before the loop */ }
 
 export { NL, REPO_ROOT, STAGE_CODE_PATH, STAGE_EVIDENCE_PATH, inspectActivationRoot, readFileSync };
