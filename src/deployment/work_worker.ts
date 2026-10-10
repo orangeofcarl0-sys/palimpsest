@@ -35,11 +35,20 @@
  * Host/deployment packaging (`src/deployment/**`): it imports the tool contract and nothing semantic.
  */
 import { spawn } from "node:child_process";
+import { createHash, randomUUID } from "node:crypto";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { basename, join } from "node:path";
 
 import type { WorkWorkerAttemptContext, WorkWorkerTaskContext } from "../context/service.js";
+import {
+  HOST_OBSERVATION_DOES_NOT_PROVE,
+  HOST_OBSERVATION_PROVES,
+  HOST_OBSERVATION_SCHEMA_VERSION,
+  type HostProcessObservation,
+  type HostProcessRole,
+  type WorkObservationSink,
+} from "../interaction/work_delegation.js";
 
 
 /**
@@ -252,6 +261,11 @@ export interface WorkWorkerExecutionInput {
    */
   readonly contextPull?: ((handle: string) => Promise<unknown>) | undefined;
   readonly signal?: AbortSignal | undefined;
+  /**
+   * R3-L0C-G1 §4: the OPTIONAL host-only observation sink. The product path passes `undefined` unless a research
+   * consumer attaches one; the worker process never sees it and the payload is byte-identical either way (§9).
+   */
+  readonly observe?: WorkObservationSink | undefined;
 }
 
 /**
@@ -472,6 +486,76 @@ function hostFailure(detail: string): WorkWorkerExecutionOutcome {
 }
 
 /**
+ * §4: what a caller of the emitter supplies. Every observational field is OPTIONAL, because an event kind that
+ * genuinely has no pid (a failed spawn) or no exit code (a request) must not be forced to invent one — the
+ * emitter fills the unobserved fields with `null`, which is the honest value.
+ */
+interface ObservationEmitInput {
+  readonly eventKind: HostProcessObservation["eventKind"];
+  readonly directChildPid?: number | null | undefined;
+  readonly processRole?: HostProcessRole | undefined;
+  readonly exitCode?: number | null | undefined;
+  readonly exitSignal?: string | null | undefined;
+  readonly hostFailureDetail?: string | null | undefined;
+}
+
+/**
+ * R3-L0C-G1 §4: the observation emitter for ONE port invocation.
+ *
+ * WHAT IT DOES NOT DO. It cannot alter the outcome: `emit` returns void, the caller ignores a throw, and the
+ * emitter holds no reference to the promise's resolver. An observation is a report ABOUT the process, never a
+ * channel INTO the run.
+ *
+ * WHAT IT DOES NOT RECORD. No command line, no environment value, no worker context, no model prompt. The
+ * executable identity is sanitized: the Node path and the worker bin path are recorded as DIGESTS, and the
+ * worker bin also contributes its basename only — so a reader sees WHICH binary was launched without a raw
+ * machine path appearing in durable evidence.
+ */
+function makeObservationEmitter(input: {
+  readonly sink: WorkObservationSink | undefined;
+  readonly invocationId: string;
+  readonly adapterId: string;
+  readonly nodeExecPath: string;
+  readonly workerBin: string;
+}): { readonly emit: (event: ObservationEmitInput) => void } {
+  const digest = (value: string): string => createHash("sha256").update(value, "utf8").digest("hex");
+  const executableIdentity = Object.freeze({
+    adapterId: input.adapterId,
+    nodeExecutableDigest: digest(input.nodeExecPath),
+    workerBinBasename: basename(input.workerBin),
+    workerBinDigest: digest(input.workerBin),
+  });
+  let sequence = 0;
+  return {
+    emit: (event): void => {
+      if (input.sink === undefined) return;
+      sequence += 1;
+      const observation: HostProcessObservation = Object.freeze({
+        schemaVersion: HOST_OBSERVATION_SCHEMA_VERSION,
+        producer: "dshSubprocessWorkWorkerPort",
+        eventKind: event.eventKind,
+        invocationId: input.invocationId,
+        sequence,
+        observedAt: new Date().toISOString(),
+        directChildPid: event.directChildPid ?? null,
+        processRole: event.processRole ?? "DIRECT_CHILD",
+        exitCode: event.exitCode ?? null,
+        exitSignal: event.exitSignal ?? null,
+        hostFailureDetail: event.hostFailureDetail ?? null,
+        executableIdentity,
+        proves: HOST_OBSERVATION_PROVES,
+        doesNotProve: HOST_OBSERVATION_DOES_NOT_PROVE,
+      });
+      try {
+        input.sink(observation);
+      } catch {
+        /* §4: a failing observer must not change the port's outcome or fabricate a Work terminal state */
+      }
+    },
+  };
+}
+
+/**
  * R1-L §6: the task text a worker receives, with the pull index appended.
  *
  * This is the PRODUCT's rendering of the worker protocol. The host decides WHERE the index goes in its
@@ -611,6 +695,20 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
     async run(runInput): Promise<WorkWorkerExecutionOutcome> {
       if (runInput.signal?.aborted === true) return hostFailure("worker execution aborted by the caller before it started");
 
+      /**
+       * §4: ONE emitter per invocation. It is created BEFORE the spawn so `SPAWN_ATTEMPTED` is observable even
+       * when the spawn itself fails — which is the only way P1-C can distinguish "no child was ever created"
+       * from "a child existed and its start failed".
+       */
+      const invocationId = `wpi-${randomUUID()}`;
+      const { emit } = makeObservationEmitter({
+        sink: runInput.observe,
+        invocationId,
+        adapterId: `dsh-subprocess-work-worker:${input.profile}`,
+        nodeExecPath,
+        workerBin: input.dshBin,
+      });
+
       let payloadJson: string;
       try {
         payloadJson = JSON.stringify(workWorkerEnvironmentPayload(runInput.context));
@@ -629,14 +727,29 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
           let settled = false;
           let stdout = "";
           let stderr = "";
+          /** §4: whether a real close/exit event was observed, so the absence is reportable rather than implied. */
+          let exitObserved = false;
+          /** §4: whether the SPAWN ITSELF failed, in which case no child ever existed and no exit may be claimed. */
+          let spawnErrored = false;
+          /** §4: the pid the Host actually obtained, or null when the spawn never produced one. */
+          let observedPid: number | null = null;
           const finish = (outcome: WorkWorkerExecutionOutcome): void => {
             if (settled) return;
             settled = true;
             if (timer !== undefined) clearTimeout(timer);
             runInput.signal?.removeEventListener("abort", onAbort);
+            /**
+             * §4: A CHILD THAT NEVER PRODUCED A CLOSE EVENT DID NOT CLEANLY EXIT. When the host is finishing
+             * because of a timeout or an abort rather than an observed exit, that absence is emitted as
+             * `DIRECT_CHILD_EXIT_UNCONFIRMED` — so a consumer cannot read the missing event as a clean exit.
+             */
+            if (!exitObserved && !spawnErrored && observedPid !== null) {
+              emit({ eventKind: "DIRECT_CHILD_EXIT_UNCONFIRMED", directChildPid: observedPid, hostFailureDetail: outcome.kind === "HOST_FAILURE" ? outcome.detail : null });
+            }
             resolve(outcome);
           };
 
+          emit({ eventKind: "DIRECT_CHILD_SPAWN_ATTEMPTED" });
           const spawned = spawn(nodeExecPath, [input.dshBin, "--profile", input.profile, "--work", contextFile], {
             // The worker's WHOLE filesystem world is the prepared worktree. This is the one capability
             // condition D2-c insists on: freedom inside the world, not freedom to leave it.
@@ -647,6 +760,14 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
             // collide with its own transports.
             stdio: ["ignore", "pipe", "pipe", "ipc"],
           });
+          /**
+           * §4: `spawned.pid` proves at most that the Host obtained a DIRECT-CHILD process identity. It is
+           * recorded as observed, and `processRole` stays `DIRECT_CHILD` — never promoted to a DSH worker.
+           */
+          observedPid = typeof spawned.pid === "number" ? spawned.pid : null;
+          if (observedPid !== null) {
+            emit({ eventKind: "DIRECT_CHILD_SPAWN_OBSERVED", directChildPid: observedPid });
+          }
 
           /**
            * §10/§11: answer a pull by delegating to the caller's canonical resolver. The port supplies
@@ -706,6 +827,7 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
           }
 
           const onAbort = (): void => {
+            emit({ eventKind: "DIRECT_CHILD_ABORT_REQUESTED", directChildPid: observedPid });
             try {
               spawned.kill();
             } catch {
@@ -714,6 +836,7 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
             finish(hostFailure("worker execution aborted by the caller"));
           };
           const timer = setTimeout(() => {
+            emit({ eventKind: "DIRECT_CHILD_TIMEOUT_REQUESTED", directChildPid: observedPid });
             try {
               spawned.kill();
             } catch {
@@ -729,8 +852,25 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
           spawned.stderr?.on("data", (chunk: Buffer | string) => {
             stderr += chunk.toString();
           });
-          spawned.on("error", (error: Error) => finish(hostFailure(`the worker host failed to start: ${error.message}`)));
-          spawned.on("close", (code: number | null) => {
+          spawned.on("error", (error: Error) => {
+            /**
+             * §4: a spawn error is a failure to CREATE the child, so no pid and no exit event are claimed.
+             * `spawnErrored` is what stops the `close` handler — which Node still fires after a failed spawn —
+             * from reporting an exit for a process that never existed.
+             */
+            spawnErrored = true;
+            emit({ eventKind: "DIRECT_CHILD_SPAWN_ERROR", directChildPid: observedPid, hostFailureDetail: error.message });
+            finish(hostFailure(`the worker host failed to start: ${error.message}`));
+          });
+          spawned.on("close", (code: number | null, signal: NodeJS.Signals | null) => {
+            /** §4: no child was ever created, so a close event here is not an exit of a real direct child. */
+            if (spawnErrored) return;
+            /**
+             * §4: THE DIRECT CHILD'S EXIT IS OBSERVED HERE, and only here. `exitObserved` is set so `finish`
+             * does not also emit an UNCONFIRMED event for a child that really did close.
+             */
+            exitObserved = true;
+            emit({ eventKind: "DIRECT_CHILD_EXIT_OBSERVED", directChildPid: observedPid, exitCode: code, exitSignal: signal });
             // §11: the pull capability dies with the worker process. Every in-flight request is
             // abandoned here rather than left to resolve against a child that no longer exists.
             for (const timeout of pending.values()) clearTimeout(timeout);
