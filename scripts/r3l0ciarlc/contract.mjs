@@ -245,20 +245,47 @@ export const FROZEN_SESSION_SCOPE = 16;
 /**
  * §5: THE TRUSTED EXECUTION-ENVIRONMENT VALUES.
  *
- * These are the inputs a PRIMARY run must not take from its caller. They are resolved from a trusted host
- * configuration, so the boundary is a trusted source rather than a growing blacklist of measurement properties.
+ * These are the values a PRIMARY run must NOT take from its caller. §5: "Move trusted execution-environment
+ * values into a trusted host configuration or a comparably restrictive boundary." They are resolved from the
+ * HOST's own environment and the repository's own installer — a boundary the invocation does not control — so the
+ * restriction is a trusted source rather than a growing blacklist of measurement properties.
  */
-export const TRUSTED_HOST_INPUTS = Object.freeze([
-  'dshHome', 'installHostBundle', 'verifyCompiled', 'artifactRoot', 'workerExecutable', 'protectedRoots',
-]);
+export const TRUSTED_HOST_INPUTS = Object.freeze(['dshHome', 'installHostBundle', 'verifyCompiled']);
 
-/** §5: the full set of inputs a PRIMARY run may not substitute with caller objects. */
+/**
+ * §5: THE INPUTS A PRIMARY RUN MAY NOT SUBSTITUTE WITH CALLER OBJECTS.
+ *
+ * THREE CATEGORIES, kept separate because conflating them is itself a defect — an over-broad list would refuse the
+ * frozen experimental inputs a legitimate PRIMARY run must supply, which makes the boundary untestable:
+ *
+ *   PRIMARY_DERIVED_INPUTS   measurements the pipeline DERIVES; a caller value is a substituted measurement
+ *   TRUSTED_HOST_INPUTS      execution-environment values; a caller value is refused and the trusted boundary used
+ *   PRIMARY_FORBIDDEN_SEAMS  execution-configuration substitutes: fault injection and an outer timeout budget
+ *
+ * The EXPERIMENTAL_INPUTS below are NOT in the list: the frozen prehistory, the admitted capital refs, the run
+ * identity and the artifact output root are the experiment's own inputs, and a PRIMARY run supplies them. An
+ * artifact root only says WHERE to look; the artifact's bytes are digest-verified against the sidecar, so a
+ * caller-supplied path cannot fabricate a measurement.
+ */
 export const PRIMARY_DERIVED_INPUTS = Object.freeze([
   'plan', 'planPath', 'closure', 'preExposureChecks', 'validityGate', 'costAttribution', 'costProvenance',
-  'routeConfiguration', 'realizationPreflight', 'replacements', 'retries', 'systemValid',
-  'verifyCompiled', 'artifactRoot', 'faultAt', 'faultKind', 'timeoutMs', 'prehistory', 'admittedRefs',
-  'installHostBundle', 'dshHome', 'expectedPlanId',
+  'routeConfiguration', 'realizationPreflight', 'replacements', 'retries', 'systemValid', 'containment',
+  'expectedPlanId',
+  /** §3/§4: the DETERMINISTIC-only seams, so an injected artifact or a recomputation cannot enter a PRIMARY run. */
+  'artifactFixture', 'terminalRecompute', 'terminalCompiledVerification',
 ]);
+
+/** §5: the execution-configuration substitutes a PRIMARY run may not supply. */
+export const PRIMARY_FORBIDDEN_SEAMS = Object.freeze(['faultAt', 'faultKind', 'timeoutMs']);
+
+/** §5: the frozen experimental inputs a PRIMARY run legitimately supplies. */
+export const EXPERIMENTAL_INPUTS = Object.freeze(['prehistory', 'admittedRefs', 'artifactRoot', 'runId', 'runRoot', 'profileId']);
+
+/** §5: every input refused in PRIMARY, as one set, so the binding check and the report agree. */
+export const PRIMARY_REFUSED_INPUTS = Object.freeze([...PRIMARY_DERIVED_INPUTS, ...TRUSTED_HOST_INPUTS, ...PRIMARY_FORBIDDEN_SEAMS]);
+
+/** §3/§4: the seams that exist ONLY so a deterministic test can drive the gate, refused in PRIMARY by the list above. */
+export const DETERMINISTIC_ONLY_SEAMS = Object.freeze(['artifactFixture', 'terminalRecompute', 'terminalCompiledVerification']);
 
 /* ================================================================ §6 Gate D the in-run attestation */
 

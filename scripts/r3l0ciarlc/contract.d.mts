@@ -68,6 +68,10 @@ export const AUTHORIZATION_REQUIREMENTS: readonly { readonly id: string; readonl
 export const FROZEN_SESSION_SCOPE: number;
 export const TRUSTED_HOST_INPUTS: readonly string[];
 export const PRIMARY_DERIVED_INPUTS: readonly string[];
+export const PRIMARY_FORBIDDEN_SEAMS: readonly string[];
+export const EXPERIMENTAL_INPUTS: readonly string[];
+export const PRIMARY_REFUSED_INPUTS: readonly string[];
+export const DETERMINISTIC_ONLY_SEAMS: readonly string[];
 export const ATTESTATION_POINTS: readonly { readonly id: string; readonly when: string; readonly compared: string }[];
 export const ATTESTATION_RULES: Readonly<Record<string, unknown>>;
 export const CLOSURE_MUTATION_ARMS: readonly string[];
