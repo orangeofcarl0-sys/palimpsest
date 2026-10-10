@@ -370,8 +370,17 @@ export async function controlDurableReconciliation() {
 export async function controlPlanIdentityAndBudget() {
   const { fullPlanDigest, proveFullPlanDigestMoves, planDigestCoverage } = await import('./plan-identity.mjs');
   const { verifyExternalAuthority, budgetSemantics, schemaValidity, trustedAuthoritySource } = await import('./trust-boundary.mjs');
-  const planPath = join(REPO_ROOT_FOR_PLAN(), 'research-evidence', 'r3-l0c-iar-lc', 'execution-plan.json');
-  const plan = JSON.parse(readFileSync(planPath, 'utf8'));
+  const root = REPO_ROOT_FOR_PLAN();
+  /**
+   * TWO PLANS ARE READ, AND FOR DIFFERENT REASONS.
+   *
+   * The F-stage plan is the one this control's coverage and mutation assertions are about: it is the plan whose
+   * full digest must cover every material field. The PRIOR LC plan is read too, because it is the plan the baseline
+   * measured — its digest is the SELECTED-projection one, so computing the full digest over it demonstrates that the
+   * two methods differ. Neither file is written.
+   */
+  const plan = JSON.parse(readFileSync(join(root, 'research-evidence', 'r3-l0c-iar-lcf', 'execution-plan.json'), 'utf8'));
+  const priorPlan = JSON.parse(readFileSync(join(root, 'research-evidence', 'r3-l0c-iar-lc', 'execution-plan.json'), 'utf8'));
   const mutations = proveFullPlanDigestMoves(plan);
   const coverage = planDigestCoverage(plan);
   const decisions = Object.fromEntries(['PAID_MODEL_USAGE', 'BOUNDED_FAIL_STOP_PROTOCOL', 'NO_AUTOMATIC_RETRIES_OR_REPLACEMENTS', 'PRESERVE_PARTIALLY_COMPLETED_INVALID_RUNS', 'ACCEPTED_PROMPT_NEUTRALITY_LIMITED'].map((id) => [id, true]));
@@ -381,9 +390,11 @@ export async function controlPlanIdentityAndBudget() {
   return Object.freeze({
     id: 'FULL_PLAN_DIGEST',
     authorityBearingFunction: 'scripts/r3l0ciarlcf/plan-identity.mjs fullPlanDigest + scripts/r3l0ciarlcf/trust-boundary.mjs budgetSemantics',
-    durableEvidence: 'the committed LC prospective plan, read rather than rewritten',
+    durableEvidence: 'the committed F-stage prospective plan (read, never rewritten), and the prior LC plan for the method comparison',
     positiveControl: Object.freeze({
-      fullDigestDiffersFromPartialDigest: fullPlanDigest(plan) !== plan.planContentDigest,
+      /** §6: the full digest differs from the prior stage's selected-projection digest OVER THE SAME PLAN. */
+      fullDigestDiffersFromPriorProjection: fullPlanDigest(priorPlan) !== priorPlan.planContentDigest,
+      fullDigestDiffersFromClosureDigest: fullPlanDigest(plan) !== plan.executionClosure?.executionClosureDigest,
       coveredFields: coverage.coveredCount,
       missingMaterialFields: coverage.missingMaterialFields,
       allMutationsMove: mutations.allMutationsMove,

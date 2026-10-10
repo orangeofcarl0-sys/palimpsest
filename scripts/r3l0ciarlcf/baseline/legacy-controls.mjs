@@ -80,15 +80,35 @@ export function writeRealFormatArtifact(input) {
  */
 export async function controlCapturedNotFresh(input) {
   const { runAdmissionClosureMatrix } = await import('../../r3l0ciarlc/pipeline.mjs');
-  const common = input.common;
+  const { computeExecutionClosure } = await import('../../r3l0ciarlc/closure.mjs');
+  const { buildProspectivePlan, PLAN_ID } = await import('../../r3l0ciarlc/prospective-plan.mjs');
+  const { deterministicArtifactFixture } = await import('../../r3l0ciarlc/qualification.mjs');
+  const { verifyCompiledSource } = await import('../../r3l0ciarlc/attestation.mjs');
+  /**
+   * THE BASELINE RUN NEEDS THE BASELINE'S OWN IDENTITY, PLAN AND CLOSURE. The LC pipeline guards on
+   * `r3-l0c-iar-lc-primary-plan` and checks its closure against that plan's binding, so driving it with this
+   * stage's plan id or closure would refuse before the branch under test is reached. These are therefore
+   * constructed here from the LC stage's own modules, and only the expensive prehistory/containment/refs come from
+   * the caller.
+   */
+  const lcClosure = await computeExecutionClosure({ verifyCompiled: false });
+  const lcPlan = await buildProspectivePlan({ closure: lcClosure, verifyCompiled: false });
+  const artifactRoot = input.artifactRoot ?? join(input.base, 'f1-artifacts');
+  const artifactFixture = await deterministicArtifactFixture({ artifactRoot });
+  const compiledVerification = await verifyCompiledSource();
   /**
    * A DETERMINISTIC run with NO injected `terminalRecompute`, so the default branch is taken. The reducer's own
    * `freshClosureDigest` is the value it compared, and the pipeline's preflight `closure` is the value it was
-   * supposed to have recomputed. If the default captured rather than recomputed, the two are the same object.
+   * supposed to have recomputed. If the default captured rather than recomputed, the two are the same.
    */
-  const run = await runAdmissionClosureMatrix({ ...common, runId: 'r3lcf-baseline-f1', runRoot: join(input.base, 'f1') });
+  const run = await runAdmissionClosureMatrix({
+    ...input.common,
+    plan: lcPlan, closure: lcClosure, artifactRoot, artifactFixture, terminalCompiledVerification: compiledVerification,
+    authorizedBy: PLAN_ID, caller: PLAN_ID,
+    runId: 'r3lcf-baseline-f1', runRoot: join(input.base, 'f1'),
+  });
   const gate = run.validityGate ?? null;
-  const preflightClosureDigest = common.closure?.executionClosureDigest ?? null;
+  const preflightClosureDigest = lcClosure?.executionClosureDigest ?? null;
   const admissionClosureDigest = gate?.freshClosureDigest ?? null;
   return Object.freeze({
     id: 'F1_CAPTURED_NOT_FRESH',

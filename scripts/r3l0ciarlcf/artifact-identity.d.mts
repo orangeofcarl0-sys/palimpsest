@@ -57,6 +57,6 @@ export function corroborateExecutionWitness(input: {
   readonly scheduledRunId?: string | null;
   readonly scheduledSessionId?: string | null;
   readonly expectedAttemptId?: string | null;
-  readonly discovery?: ArtifactDiscovery | null;
+  readonly discovery?: any;
   readonly artifactDigestVerified?: boolean;
 }): WitnessCorroboration;
