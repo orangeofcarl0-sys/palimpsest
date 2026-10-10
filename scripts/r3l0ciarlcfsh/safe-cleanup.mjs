@@ -82,6 +82,19 @@ export function realFilesystemAdapter() {
   return Object.freeze({
     exists: (path) => { try { lstatSync(path); return true; } catch { return false; } },
     lstat: (path) => lstatSync(path),
+    /**
+     * §3 S1-B: an ERROR-AWARE inspection that does NOT collapse every failure into "absent". It reports the raw
+     * outcome so the caller can distinguish `ENOENT` (positively absent) from a permission error or any other
+     * unclassified failure, which must never be read as a successful removal.
+     */
+    inspect: (path) => {
+      try { lstatSync(path); return { present: true, absent: false, code: null, error: null }; }
+      catch (error) {
+        const code = error?.code ?? null;
+        if (code === 'ENOENT') return { present: false, absent: true, code, error: null };
+        return { present: null, absent: false, code, error: String(error?.message ?? error).slice(0, 160) };
+      }
+    },
     realpath: (path) => realpathSync(path),
     readdir: (path) => readdirSync(path, { withFileTypes: true }),
     /**
@@ -129,6 +142,15 @@ function blocked(input) {
     linksRemoved: Object.freeze([]),
     linksRemaining: Object.freeze(input.linksRemaining ?? []),
     unclassified: Object.freeze(input.unclassified ?? []),
+    /** §3 S1-A: the named depth-exhaustion condition is carried onto the blocked result, never dropped. */
+    ENUMERATION_COMPLETE: input.ENUMERATION_COMPLETE ?? null,
+    DEPTH_LIMIT_EXCEEDED: input.DEPTH_LIMIT_EXCEEDED ?? null,
+    depthExhausted: Object.freeze(input.depthExhausted ?? []),
+    /** §3 S1-B: the classified removal state, when the block happened after a removal attempt. */
+    removalState: input.removalState ?? null,
+    gitRemovalThrew: input.gitRemovalThrew ?? null,
+    gitError: input.gitError ?? null,
+    inspectionCode: input.inspectionCode ?? null,
     reason: input.reason,
     /** §4: a leaked disposable directory is preferable to a destructive delete, so its location is reported. */
     diagnosticLocation: input.root ?? null,
@@ -261,9 +283,11 @@ export function enumerateLinks(input) {
   const links = [];
   const unclassified = [];
   const directories = [];
+  /** §3 S1-A: a named condition for "a further directory exists below the declared bound and cannot be inspected". */
+  const depthExhausted = [];
   let entries;
   try { entries = fs.readdir(root); } catch (error) {
-    return Object.freeze({ ok: false, links: Object.freeze([]), unclassified: Object.freeze([]), directories: Object.freeze([]), reason: `the directory ${root} could not be read: ${String(error?.message ?? error).slice(0, 160)}` });
+    return Object.freeze({ ok: false, links: Object.freeze([]), unclassified: Object.freeze([]), directories: Object.freeze([]), depthExhausted: Object.freeze([]), DEPTH_LIMIT_EXCEEDED: false, reason: `the directory ${root} could not be read: ${String(error?.message ?? error).slice(0, 160)}` });
   }
   for (const entry of entries) {
     const path = join(root, entry.name);
@@ -289,6 +313,15 @@ export function enumerateLinks(input) {
         links.push(...nested.links);
         unclassified.push(...nested.unclassified);
         directories.push(...nested.directories);
+        depthExhausted.push(...nested.depthExhausted);
+      } else {
+        /**
+         * §3 S1-A: DESCENDING ANY FURTHER WOULD EXCEED THE DECLARED BOUND. The baseline simply stopped here, so a
+         * link below the boundary was never inspected while the enumeration still reported success. The resource
+         * bound is kept — §3 forbids an arbitrarily enormous limit — but the exhaustion is now a NAMED CONDITION
+         * that fails the enumeration closed instead of being silently treated as "nothing dangerous below".
+         */
+        depthExhausted.push(Object.freeze({ path, depth: depth + 1, bound: MAX_ENUMERATION_DEPTH }));
       }
       continue;
     }
@@ -296,7 +329,24 @@ export function enumerateLinks(input) {
     /** §4: anything that is not a link, a directory and not a file is a special file or an unknown reparse point. */
     unclassified.push(Object.freeze({ path, kind: 'UNCLASSIFIABLE', reason: 'the entry is neither a file, a directory nor a link, so it may be a reparse point or a special file' }));
   }
-  return Object.freeze({ ok: true, links: Object.freeze(links), unclassified: Object.freeze(unclassified), directories: Object.freeze(directories), reason: null });
+  /**
+   * §3 S1-A: FAIL CLOSED ON DEPTH EXHAUSTION. If any directory remained below the bound, the enumeration did NOT
+   * inspect the whole tree, so it must not report success. `ok:false` is what stops `destroyDisposableCheckout`
+   * before the Git removal decision, and the named condition travels with the result for diagnosis.
+   */
+  const depthLimitExceeded = depthExhausted.length > 0;
+  return Object.freeze({
+    ok: !depthLimitExceeded,
+    links: Object.freeze(links),
+    unclassified: Object.freeze(unclassified),
+    directories: Object.freeze(directories),
+    depthExhausted: Object.freeze(depthExhausted),
+    DEPTH_LIMIT_EXCEEDED: depthLimitExceeded,
+    depthBound: MAX_ENUMERATION_DEPTH,
+    reason: depthLimitExceeded
+      ? `the traversal reached the declared depth bound ${MAX_ENUMERATION_DEPTH} with ${depthExhausted.length} directory(ies) still uninspected below it, so the tree was NOT fully enumerated and cleanup cannot be proven safe`
+      : null,
+  });
 }
 
 /**
@@ -316,6 +366,45 @@ export function reinspectLink(input) {
     if (code === 'ENOENT') return Object.freeze({ path, removed: true, proof: 'ENOENT', reason: null });
     return Object.freeze({ path, removed: false, proof: 'INSPECTION_ERROR', code, reason: `the link path could not be inspected: ${String(error?.message ?? error).slice(0, 160)}` });
   }
+}
+
+/** §3 S1-B: the removal-state vocabulary, so success, failure and indeterminacy are DISTINCT outcomes. */
+export const REMOVAL_STATES = Object.freeze({
+  REMOVED_CONFIRMED: 'REMOVED_CONFIRMED',
+  STILL_PRESENT: 'STILL_PRESENT',
+  STATE_UNKNOWN: 'STATE_UNKNOWN',
+});
+
+/**
+ * §3 S1-B: CLASSIFY THE PHYSICAL STATE OF THE WORKTREE PATH AFTER A REMOVAL ATTEMPT.
+ *
+ * §3 requires: `REMOVED_CONFIRMED` only when absence is POSITIVELY established (`ENOENT`); `STILL_PRESENT` when
+ * the directory remains; `STATE_UNKNOWN` for a permission error or any unclassified inspection failure. A
+ * swallowed error must never become "removed", which is the baseline defect this closes.
+ */
+export function classifyRemovalState(input) {
+  const { path, fs } = input;
+  const inspection = typeof fs.inspect === 'function'
+    ? fs.inspect(path)
+    /** §3: if an adapter predates `inspect`, fall back to `lstat` and read the code rather than assuming absence. */
+    : (() => {
+      try { fs.lstat(path); return { present: true, absent: false, code: null, error: null }; }
+      catch (error) {
+        const code = error?.code ?? null;
+        if (code === 'ENOENT') return { present: false, absent: true, code, error: null };
+        return { present: null, absent: false, code, error: String(error?.message ?? error).slice(0, 160) };
+      }
+    })();
+  if (inspection.present === true) return Object.freeze({ state: REMOVAL_STATES.STILL_PRESENT, code: inspection.code ?? null, observation: inspection.error ?? null, positivelyAbsent: false, positivelyPresent: true });
+  if (inspection.absent === true) return Object.freeze({ state: REMOVAL_STATES.REMOVED_CONFIRMED, code: inspection.code ?? 'ENOENT', observation: null, positivelyAbsent: true, positivelyPresent: false });
+  return Object.freeze({
+    state: REMOVAL_STATES.STATE_UNKNOWN,
+    code: inspection.code ?? null,
+    observation: inspection.error ?? null,
+    positivelyAbsent: false,
+    positivelyPresent: false,
+    reason: `the worktree path could not be inspected, so its physical state is UNKNOWN${inspection.code ? ` (code ${inspection.code})` : ''}`,
+  });
 }
 
 /**
@@ -376,8 +465,19 @@ export function destroyDisposableCheckout(input) {
     unclassified: Object.freeze(enumeration.unclassified.map((entry) => relative(resolvedRoot, entry.path))),
     directoryCount: enumeration.directories.length,
     depthBound: MAX_ENUMERATION_DEPTH,
+    /** §3 S1-A: the named depth-exhaustion condition travels into the durable step record. */
+    DEPTH_LIMIT_EXCEEDED: enumeration.DEPTH_LIMIT_EXCEEDED === true,
+    depthExhausted: Object.freeze((enumeration.depthExhausted ?? []).map((entry) => relative(resolvedRoot, entry.path))),
   }));
-  if (enumeration.ok !== true) return blocked(Object.freeze({ root: resolvedRoot, steps, ownership, reason: enumeration.reason }));
+  if (enumeration.ok !== true) {
+    return blocked(Object.freeze({
+      root: resolvedRoot, steps, ownership, reason: enumeration.reason,
+      /** §3 S1-A: the required named fields on the blocked result. */
+      ENUMERATION_COMPLETE: false,
+      DEPTH_LIMIT_EXCEEDED: enumeration.DEPTH_LIMIT_EXCEEDED === true,
+      depthExhausted: Object.freeze((enumeration.depthExhausted ?? []).map((entry) => entry.path)),
+    }));
+  }
 
   /** 4. CLASSIFY: an unknown reparse point or special file BLOCKS. */
   record('CLASSIFY_EVERY_ENTRY_BY_LSTAT_WITHOUT_TRAVERSING', Object.freeze({
@@ -433,27 +533,58 @@ export function destroyDisposableCheckout(input) {
   }
 
   let gitRemovalThrew = false;
-  try { git.removeWorktreeForce(resolvedRoot); } catch { gitRemovalThrew = true; }
-  let worktreeRemoved = fs.exists(resolvedRoot) !== true;
-  if (worktreeRemoved !== true) {
-    /** §4: no automatic recursive fallback. The tree is kept and the failure is reported. */
-    record('REMOVE_WORKTREE_AFTER_LINK_CONFIRMATION', Object.freeze({ gitRemovalThrew, worktreeRemoved, recursiveFallbackTaken: false }));
+  let gitError = null;
+  try { git.removeWorktreeForce(resolvedRoot); } catch (error) { gitRemovalThrew = true; gitError = String(error?.message ?? error).slice(0, 200); }
+
+  /**
+   * §3 S1-B: THE POST-REMOVAL STATE IS CLASSIFIED, NOT ASSUMED.
+   *
+   * The baseline read `fs.exists(resolvedRoot) !== true` as proof of removal, which turned a swallowed `EPERM`,
+   * `EACCES` or any unclassified `lstat` failure into a false `CLEANED` while the directory was still on disk. The
+   * state is now derived from an error-aware inspection: `REMOVED_CONFIRMED` requires `ENOENT`, a present directory
+   * is `STILL_PRESENT`, and anything else is `STATE_UNKNOWN` and blocks.
+   */
+  const removal = classifyRemovalState({ path: resolvedRoot, fs });
+  const removalState = removal.state;
+  const worktreeRemoved = removalState === REMOVAL_STATES.REMOVED_CONFIRMED;
+
+  record('REMOVE_WORKTREE_AFTER_LINK_CONFIRMATION', Object.freeze({
+    gitRemovalThrew, gitError, removalState, inspectionCode: removal.code ?? null,
+    recursiveFallbackTaken: false,
+  }));
+
+  /** §3 S1-B: NEVER report `CLEANED` when the physical state is unknown or the directory is still present. */
+  if (removalState !== REMOVAL_STATES.REMOVED_CONFIRMED) {
+    const unknown = removalState === REMOVAL_STATES.STATE_UNKNOWN;
     return blocked(Object.freeze({
       root: resolvedRoot, steps, ownership,
-      reason: `every link was confirmed removed, but the worktree directory itself could not be removed (git removal threw: ${String(gitRemovalThrew)}); a recursive fallback is NOT taken and the worktree is preserved`,
+      removalState,
+      gitRemovalThrew,
+      gitError,
+      inspectionCode: removal.code ?? null,
+      worktreeRemoved: false,
+      reason: unknown
+        ? `every link was confirmed removed, but the worktree directory's physical state is UNKNOWN (${removal.reason}); Git removal threw: ${String(gitRemovalThrew)}; the state is NOT treated as a removal and a recursive fallback is NOT taken`
+        : `every link was confirmed removed, but the worktree directory is STILL_PRESENT after Git removal (Git removal threw: ${String(gitRemovalThrew)}); a recursive fallback is NOT taken and the worktree is preserved`,
     }));
   }
-  record('REMOVE_WORKTREE_AFTER_LINK_CONFIRMATION', Object.freeze({ gitRemovalThrew, worktreeRemoved, recursiveFallbackTaken: false }));
 
   return Object.freeze({
     outcome: CLEANUP_OUTCOMES.CLEANED, blocked: false, destructiveFallbackExecuted: true,
     worktreeRemoved: true, recursiveRemoveExecuted: false, gitWorktreeRemoveForceExecuted: true,
     worktreePreserved: false, root: resolvedRoot, preserved: false, ownership, steps: Object.freeze(steps),
+    /** §3 S1-B: the explicit removal state and the Git outcome travel with every result. */
+    removalState,
+    gitRemovalThrew,
+    gitError,
+    inspectionCode: removal.code ?? null,
     linksRemoved: Object.freeze(linksRemoved), linksRemaining: Object.freeze([]),
     reason: null, diagnosticLocation: resolvedRoot, safetyOrdering: CLEANUP_SAFETY_STEPS,
     /** §4: the only path on which a destructive operation runs is one where every link was proven gone. */
     destructiveOperationGatedOnConfirmedLinkRemoval: true,
-    law: 'the destructive operation runs only after every link capable of referring outside the worktree — nested ones included — has been positively identified and CONFIRMED removed by ENOENT; a remaining, unclassifiable or unsafely-unlinkable link preserves the worktree and returns CLEANUP_BLOCKED',
+    /** §3 S1-B: absence was POSITIVELY established by `ENOENT`, not inferred from a swallowed error. */
+    removalPositivelyConfirmed: removal.positivelyAbsent === true,
+    law: 'the destructive operation runs only after every link capable of referring outside the worktree — nested ones included — has been positively identified and CONFIRMED removed by ENOENT, and the worktree itself is reported CLEANED only when its absence is POSITIVELY established; a remaining, unclassifiable, unsafely-unlinkable or UNKNOWN-STATE outcome preserves the worktree and returns CLEANUP_BLOCKED',
   });
 }
 
