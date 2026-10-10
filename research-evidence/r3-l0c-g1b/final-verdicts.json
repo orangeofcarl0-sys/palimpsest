@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "measured final verdicts",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "verdicts": {
+    "PORT_OBSERVATION_PRODUCER": "PASS_LOCAL_NONMODEL",
+    "SINGLE_INVOCATION_IDENTITY": "PASS_LOCAL_NONMODEL",
+    "HOST_JOB_ATTEMPT_BINDING": "PASS_LOCAL_NONMODEL",
+    "NONEMPTY_PROCESS_OBSERVATION": "PASS_LOCAL_NONMODEL",
+    "PROCESS_EVENT_SEQUENCE_VALID": "PASS_LOCAL_NONMODEL",
+    "DIRECT_CHILD_PID_EXIT_COHERENCE": "PASS_LOCAL_NONMODEL",
+    "DURABLE_EVENT_READBACK": "PASS_LOCAL_NONMODEL",
+    "DURABLE_EVENT_INTEGRITY": "PASS_LOCAL_NONMODEL",
+    "RECORD_DUPLICATION_REFUSED": "PASS_LOCAL_NONMODEL",
+    "ACTUAL_JOURNAL_SCHEMA_COMPATIBILITY": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "JOURNAL_INTEGRITY_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "RUN_CLAIM_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "DURABLE_TRIAL_IDENTITY_VERIFIED": "PASS_REAL_JOURNAL_FORMAT_FIXTURE",
+    "CALLER_FORGED_ORIGIN_REFUSED": "PASS_LOCAL_NONMODEL",
+    "LOCAL_HOST_ORIGIN_BOUNDARY": "PASS_LOCAL_TRUST_MODEL",
+    "CANONICAL_ATTEMPT_LOCATOR": "PASS_SOURCE_GROUNDED",
+    "INCOMPLETE_DISCOVERY_REFUSED": "PASS_SOURCE_GROUNDED",
+    "MODEL_VISIBLE_CONTEXT_UNCHANGED": "PASS",
+    "WORK_SEMANTICS_UNCHANGED": "PASS",
+    "HISTORICAL_EVIDENCE_IMMUTABILITY": "PASS",
+    "INDEPENDENT_HOST_ORIGIN_AUTHENTICATION": "NOT_ESTABLISHED",
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": "NOT_ESTABLISHED",
+    "REAL_DSH_WORKER_PROCESS_ATTESTED": "NOT_ESTABLISHED",
+    "ACTUAL_PROVIDER_ROUTE_ATTESTED": "NOT_ESTABLISHED",
+    "LIVE_PRIMARY_PROVENANCE": "NOT_ESTABLISHED",
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "HOST_SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "CURRENT_LAUNCH_PERMISSION": false,
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "positiveChain": {
+    "invocationId": "wpi-1427bb32-f715-432e-8c96-544c5283a96e",
+    "canonicalAttemptId": "attempt-5d853626b3c61a9353ab23c2c3181f53",
+    "hostLocalJobId": "wdj-048d04a2-2644-4edb-ac01-b5b8a599d895",
+    "processRole": "DIRECT_CHILD",
+    "eventKinds": [
+      "DIRECT_CHILD_SPAWN_ATTEMPTED",
+      "DIRECT_CHILD_SPAWN_OBSERVED",
+      "DIRECT_CHILD_EXIT_OBSERVED"
+    ],
+    "acceptedEventCount": 3,
+    "rejectedEventCount": 0,
+    "persistedEventCount": 3,
+    "readBackEventCount": 3,
+    "pidCoherent": true,
+    "journalIntact": true,
+    "correlationState": "RUN_ATTEMPT_CORRELATED",
+    "modelCallsMade": 0
+  },
+  "negativeMutations": [
+    {
+      "id": "N1_SECOND_INVOCATION_IDENTITY",
+      "state": "PROVENANCE_CONFLICT",
+      "refused": true
+    },
+    {
+      "id": "N2_EVENT_REMOVED",
+      "state": "PROVENANCE_INCOMPLETE",
+      "refused": true
+    },
+    {
+      "id": "N3_ATTEMPT_ID_CHANGED",
+      "state": "PROVENANCE_CONFLICT",
+      "refused": true
+    },
+    {
+      "id": "N4_WRONG_CLAIM_NONCE",
+      "state": "PROVENANCE_CONFLICT",
+      "refused": true
+    },
+    {
+      "id": "N5_DUPLICATE_TRIAL",
+      "state": "PROVENANCE_CONFLICT",
+      "refused": true
+    },
+    {
+      "id": "N6_FORGED_ORIGIN_SUBSTITUTION",
+      "state": "ORIGIN_NOT_ESTABLISHED",
+      "refused": true
+    }
+  ],
+  "unearnedVerdictsNotPromoted": [
+    "INDEPENDENT_HOST_ORIGIN_AUTHENTICATION",
+    "REAL_DSH_ARTIFACT_COMPATIBILITY",
+    "REAL_DSH_WORKER_PROCESS_ATTESTED",
+    "ACTUAL_PROVIDER_ROUTE_ATTESTED",
+    "LIVE_PRIMARY_PROVENANCE",
+    "EXTERNAL_AUTHORITY",
+    "HOST_SPEND_ENFORCEMENT"
+  ],
+  "sectionsMerged": false,
+  "law": "each verdict is reported at the evidence level it actually reaches; the local producer and binding are qualified at their limited class, and no verdict is collapsed into one readiness score"
+}

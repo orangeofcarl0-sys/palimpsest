@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "forward erratum for the G1 overclaims",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "erratumFor": {
+    "stage": "R3-L0C-G1",
+    "head": "43ca525599031d431796cb37d0c182d265597d84",
+    "evidenceNamespace": "research-evidence/r3-l0c-g1"
+  },
+  "g1EvidenceRewritten": false,
+  "whatG1EstablishedCorrectly": [
+    "the optional host-private process observation seam on the real Work Delegation and Deployment runtime",
+    "a real direct-child pid and a real close event, correlated to the product-minted AttemptId and the host-local job id",
+    "a source-grounded artifact locator grammar for the documented DSH session layout"
+  ],
+  "whatG1Overclaimed": [
+    {
+      "claim": "the observation record was durable, verified evidence",
+      "correction": "the G1 recorder rejected every real observation because the wrapper and the port minted different invocation ids, and the resulting ZERO-event record still wrote successfully and reported durabilityVerified: true"
+    },
+    {
+      "claim": "the correlator read the run journal and the durable trial identity",
+      "correction": "it matched flattened type/runId fields the frozen journal never produces, so on real records it returned MISSING_RUN_STARTED and an empty trial map"
+    },
+    {
+      "claim": "origin was established by the recorder",
+      "correction": "a caller-built record copying the G1_LOCAL_RECORDER marker with a recomputed digest and an empty event array reached RUN_ATTEMPT_CORRELATED"
+    },
+    {
+      "claim": "the locator accepted the Work Attempt identity",
+      "correction": "the canonical attempt-<32hex> form was rejected because the comparison used the bare hex, and an incomplete scan was reported as an absence"
+    }
+  ],
+  "g1LocalProducerClaimStillValid": true,
+  "g1EvidenceLevelAfterCorrection": "the G1 producer is real; its durable-correlation and host-origin claims must be read at the corrected evidence level",
+  "correctedBy": [
+    "B1_SINGLE_INVOCATION_IDENTITY",
+    "B2_REAL_EVENT_PERSISTENCE",
+    "B3_REAL_JOURNAL_BINDING",
+    "B4_LOCAL_ORIGIN_BOUNDARY",
+    "B5_CANONICAL_LOCATOR"
+  ],
+  "law": "the G1 evidence is preserved unmodified; this erratum names the overclaims and points at the corrected binding"
+}

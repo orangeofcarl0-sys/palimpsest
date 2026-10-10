@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "local host origin trust boundary",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baselineDefect": {
+    "copiedOriginMarker": "G1_LOCAL_RECORDER",
+    "recomputedDigestValid": true,
+    "eventCount": 0,
+    "correlatorState": null,
+    "forgedRecordAdmitted": true
+  },
+  "layers": [
+    {
+      "layer": "UNTRUSTED_RECORD_INSPECTION",
+      "accepts": "arbitrary JSON, to validate shape and content consistency only",
+      "mayPromote": false
+    },
+    {
+      "layer": "TRUSTED_LOCAL_RECORDER_INGESTION",
+      "accepts": "observations through the actual host-private callback installed on the product execution path",
+      "mayPromote": true
+    },
+    {
+      "layer": "VERIFIED_LOCAL_PERSISTENT_READBACK",
+      "accepts": "an owned record from the expected run-scoped location, content-verified and compared with the trusted local run/attempt/invocation bindings",
+      "mayPromote": true
+    }
+  ],
+  "corrected": {
+    "copiedMarkerNowReaches": "ORIGIN_NOT_ESTABLISHED",
+    "emptyEventRecordNowReaches": "PROVENANCE_INCOMPLETE",
+    "originEstablishedByIngestion": true,
+    "markerIsNotTheTrustDecision": true
+  },
+  "trustModel": {
+    "establishes": "a genuinely distinguishable local host origin within the local trust model",
+    "doesNotEstablish": [
+      "an independent cryptographic Host Attestation Authority",
+      "protection against malicious code already executing with full control of the same host process and evidence directory",
+      "independently authenticated cross-process or cross-machine provenance"
+    ],
+    "independentAuthentication": "INDEPENDENT_HOST_ORIGIN_AUTHENTICATION = NOT_ESTABLISHED",
+    "selfSignedCredentialCreated": false
+  },
+  "verdict": {
+    "CALLER_FORGED_ORIGIN_REFUSED": "PASS_LOCAL_NONMODEL",
+    "LOCAL_HOST_ORIGIN_BOUNDARY": "PASS_LOCAL_TRUST_MODEL",
+    "INDEPENDENT_HOST_ORIGIN_AUTHENTICATION": "NOT_ESTABLISHED"
+  },
+  "law": "origin is established by a live recorder handle, not by a marker string and a self-computed hash; the local trust model does not claim protection against malicious code already executing with full control of the same host process"
+}

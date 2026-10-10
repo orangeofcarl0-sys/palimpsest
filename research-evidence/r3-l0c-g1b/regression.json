@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "regression record",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baseline": "43ca525599031d431796cb37d0c182d265597d84",
+  "deterministic": [
+    {
+      "id": "TYPESCRIPT_BUILD",
+      "verdict": "PASS",
+      "detail": "npx tsc -b exit 0"
+    },
+    {
+      "id": "G1B_CONTRACT_AND_FALSIFIERS",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1b_contract.test.ts: 17 tests; all five baseline defects re-measured CLOSED"
+    },
+    {
+      "id": "G1B_AUTHORITATIVE_CHAIN",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1b_chain.test.ts: 9 tests; the positive chain plus all six negative mutations"
+    },
+    {
+      "id": "G1_PRODUCER_TESTS",
+      "verdict": "PASS",
+      "detail": "test/r3l0c_g1_{contract,observer,correlation,integrated}.test.ts: 55 tests, corrected where they encoded the obsolete flattened journal schema"
+    },
+    {
+      "id": "ARCHITECTURE",
+      "verdict": "PASS",
+      "detail": "architecture:check PASS, 0 violations, 9 accepted baseline exceptions"
+    },
+    {
+      "id": "PUBLIC_API",
+      "verdict": "PASS",
+      "detail": "public-api:check PASS, 0 missing / 0 changed kind / 0 added"
+    },
+    {
+      "id": "WORK_DELEGATION_AND_WORKER",
+      "verdict": "PASS",
+      "detail": "lean_work_worker_runtime, lean_work_delegation_transport, lean_delegation_runtime, lean_delegation_orthogonality: unchanged"
+    },
+    {
+      "id": "CONTEXT_PULL_BOUNDARY",
+      "verdict": "PASS",
+      "detail": "r1l_pull_boundary, r1l_pull_transport, r1l_worker_context_pull: 80 tests across the work/pull group"
+    },
+    {
+      "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+      "verdict": "PASS",
+      "detail": "21 protected namespaces, 0 changed, 0 removed; G1 evidence preserved unmodified"
+    },
+    {
+      "id": "FULL_UNIT_SUITE",
+      "verdict": "PARTIAL",
+      "detail": "npx vitest run --exclude \"**/r3l0ciarlcf_gates.test.ts\" --maxWorkers=4: 309 files, 4360 tests; 305 files passed, 13 tests failed across 4 files, ALL archived-plan closure-binding tests",
+      "tests": 4360,
+      "files": 309,
+      "passed": 4347,
+      "failed": 13
+    }
+  ],
+  "archivedPlanClosureBindingFailures": {
+    "count": 13,
+    "files": [
+      "test/r3l0ciarl_gates.test.ts",
+      "test/r3l0ciarlc_gates.test.ts",
+      "test/r3l0ciarlcfs_gates.test.ts",
+      "test/r3l0ciarlcfsh_persisted.test.ts"
+    ],
+    "cause": "these tests require an ARCHIVED execution plan closure to equal the closure recomputed from the current tree; G1 and G1-B both modify closure-covered product files",
+    "preExisting": true,
+    "verifiedBy": "the same 13 failures reproduce at the G1 baseline commit 43ca525 with no G1-B change present",
+    "compatibilityState": "ARCHIVED_PLAN_COMPATIBILITY = DRIFTED_EXPECTED",
+    "guardNotDefeated": true,
+    "archivedPlanRegenerated": false,
+    "closureGuardWeakened": false
+  },
+  "environmentalFlakiness": {
+    "observed": "at --maxWorkers=6 two additional tests failed in test/r3l0ci_gates.test.ts",
+    "cause": "ENOTEMPTY on the SHARED ~/.dsh/profiles/node_modules/palimpsest-dsh-host during a concurrent installHostBundle, and a compiler UNSUPPORTED report",
+    "notCausedByG1B": true,
+    "evidence": "the same family of failures appeared at the G1 baseline in test/r3l0cia_gates.test.ts instead, and both tests pass in isolation and at --maxWorkers=4",
+    "g1bTouchesSharedProfile": false,
+    "resolution": "reported at --maxWorkers=4, where only the 13 archived-closure failures remain"
+  },
+  "blockedForSafety": [
+    {
+      "id": "test/r3l0ciarlcf_gates.test.ts",
+      "verdict": "BLOCKED_FOR_SAFETY",
+      "reason": "it drives the legacy isolated-mutation helper whose forced worktree removal can follow a junction into the shared node_modules/dist; §12 keeps it blocked unless a genuinely safe environment is proven"
+    }
+  ],
+  "notRun": [
+    {
+      "id": "BROWSER_E2E",
+      "verdict": "NOT_RUN",
+      "reason": "no product UI behaviour was modified"
+    },
+    {
+      "id": "D2_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route"
+    },
+    {
+      "id": "D4_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route"
+    },
+    {
+      "id": "D5_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route"
+    }
+  ],
+  "expensiveTestsIntroduced": false,
+  "sixteenSessionMatrixIntroduced": false,
+  "notRunIsNotPass": true,
+  "law": "a NOT_RUN gate is never reported as PASS; the archived-plan drift is tracked separately and the closure guard is not weakened to make it green"
+}
