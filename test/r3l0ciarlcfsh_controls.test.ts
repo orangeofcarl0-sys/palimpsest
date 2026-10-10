@@ -247,6 +247,6 @@ describe("R3-L0C-I-A-R-L-C-F-S-H §2 baseline control runner", () => {
   it("discloses the legacy helper quarantine rather than claiming impossibility", () => {
     expect(LEGACY_HELPER_QUARANTINE.physicallyUnexecutable).toBe(false);
     expect(LEGACY_HELPER_QUARANTINE.quarantineIsAGuardNotAnImpossibility).toBe(true);
-    expect(LEGACY_HELPER_QUARANTINE.helpers.length).toBeGreaterThanOrEqual(2);
+    expect((LEGACY_HELPER_QUARANTINE.helpers as readonly string[]).length).toBeGreaterThanOrEqual(2);
   });
 });

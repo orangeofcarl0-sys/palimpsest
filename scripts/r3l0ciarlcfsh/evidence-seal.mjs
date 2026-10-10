@@ -190,6 +190,7 @@ export async function sealPersistedEvidence(input = {}) {
     planIdEqualities,
     closureEqualities,
     evaluationPhase: SEAL_PHASES.PHASE_B.id,
+    isFinalVerdict: true,
     sourceFiles: Object.freeze({ plan: planRelative, qualification: qualificationRelative, stageResult: stageResultRelative }),
     result,
   });
