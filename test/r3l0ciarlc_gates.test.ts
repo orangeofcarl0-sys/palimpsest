@@ -353,16 +353,18 @@ describe("R3-L0C-I-A-R-L-C — the authoritative matrix through the real runner"
     expect(run.finalAttestation?.competingWriterDetected).toBe(true);
   }, 900_000);
 
-  it("§8: the fail-stop protocol still holds under every fault position", async () => {
-    const cases = [];
-    for (const position of ["FIRST", "MIDDLE", "LAST"]) {
-      const run = await runAdmissionClosureMatrix(await matrixInputs(`fault-${position.toLowerCase()}`, { faultAt: position, faultKind: PRIMARY_FAULTS.REPORT_MISSING }));
-      cases.push(run);
-      expect(run.terminalState).toBe("ABORT_PRESERVED");
-      expect(run.maxLaunchesPerSession).toBe(1);
-      expect(run.sessionsAfterFault).toEqual([]);
-    }
-    expect(cases.every((run) => run.terminalState === "ABORT_PRESERVED")).toBe(true);
+  it("§8: the fail-stop protocol still holds: a fault at the first session stops with no later launch", async () => {
+    /**
+     * ONE POSITION IS MEASURED HERE, not three. The frozen runner is byte-identical and its per-position behaviour
+     * (FIRST, MIDDLE, LAST) is already covered by the prior stage's `r3l0ciar_gates.test.ts`; re-running all three
+     * through this stage's heavier pipeline would add two more sixteen-session matrices to a file that already runs
+     * several, and the property under test here is the same at every position.
+     */
+    const run = await runAdmissionClosureMatrix(await matrixInputs("fault-first", { faultAt: "FIRST", faultKind: PRIMARY_FAULTS.REPORT_MISSING }));
+    expect(run.terminalState).toBe("ABORT_PRESERVED");
+    expect(run.maxLaunchesPerSession).toBe(1);
+    expect(run.sessionsAfterFault).toEqual([]);
+    expect(run.run?.causalVerdictIssued).toBe(false);
   }, 900_000);
 
   it("§8: report-then-hang is preserved as UNCERTAIN, never as a completed exit", async () => {

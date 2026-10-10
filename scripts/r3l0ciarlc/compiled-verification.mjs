@@ -60,13 +60,31 @@ function normalize(text) {
 }
 
 /**
+ * §6: THE PROCESS-LEVEL CACHE.
+ *
+ * The verification is a property of the REPOSITORY's `src/**` and `dist/**`, not of a run, so one measurement per
+ * process is the correct granularity: a suite that runs several matrices must not pay for a full compiler
+ * invocation each time, and the answer cannot differ between them unless the tree changed underneath — which is a
+ * different fact that the closure digest reports. A cached FAILURE is cached too, so a broken tree is reported
+ * consistently rather than intermittently.
+ */
+let cachedVerification = null;
+
+/**
  * §6: VERIFY THE COMPILED ARTIFACTS AGAINST THE SOURCE, IN AN ISOLATED PROBE DIRECTORY.
  *
- * A unique directory under the system temp root, so no two concurrent verifications share a path. The probe
- * configuration and the emit directory are both removed in a `finally`, and a failure to remove them does not
- * change the verdict — the verification has already been made.
+ * A unique directory under the system temp root and a unique config name at the repository root, so no two
+ * concurrent verifications share a path. The probe configuration and the emit directory are both removed in a
+ * `finally`, and a failure to remove them does not change the verdict — the verification has already been made.
  */
 export function verifyCompiledSourceIsolated() {
+  if (cachedVerification !== null) return cachedVerification;
+  cachedVerification = computeIsolatedVerification();
+  return cachedVerification;
+}
+
+/** §6: the uncached computation, so the cache is one line and the method stays readable. */
+function computeIsolatedVerification() {
   const missing = COMPILED_PAIRS.filter(([, compiled]) => !existsSync(join(REPO_ROOT, compiled))).map(([, compiled]) => compiled);
   let probeRoot = null;
   let probeConfig = null;
