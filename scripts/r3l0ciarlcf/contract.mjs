@@ -257,10 +257,12 @@ export const BUDGET_CONCEPTS = Object.freeze([
 
 /** §6: the material plan fields a full digest must cover, so a reader can see the coverage is complete. */
 export const PLAN_DIGEST_COVERAGE = Object.freeze([
-  'planId', 'stage', 'kind', 'baseline', 'frozenBefore', 'planSupersession', 'executionPathDeviations',
-  'pipelineOrder', 'primaryDerivedInputs', 'authorizationRecordFields', 'authorizationDecisions',
-  'terminalAdmissionConditions', 'reusedModules', 'stageHarnessModules', 'preservedDesign', 'schedule',
-  'executionClosure', 'executionRoute', 'authorizationRequired', 'stageStop', 'frozenAt', 'orderingLaw',
+  'planId', 'stage', 'kind', 'baseline', 'frozenBefore', 'planSupersession', 'measurementPathDeviations',
+  'pipelineOrder', 'primaryDerivedInputs', 'primaryRefusedInputs', 'authorizationRecordFields',
+  'authorizationDecisions', 'terminalAdmissionConditions', 'durableReconciliationConditions',
+  'costCompletenessLevels', 'causalPrerequisites', 'budgetConcepts', 'reusedModules', 'stageHarnessModules',
+  'preservedDesign', 'schedule', 'executionClosure', 'executionRoute', 'authorizationRequired', 'stageStop',
+  'frozenAt', 'orderingLaw',
 ]);
 
 /** §6: the digest's own self-referential field, which is the ONE thing a full digest must exclude. */

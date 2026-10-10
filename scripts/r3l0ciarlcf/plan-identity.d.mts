@@ -31,6 +31,6 @@ export interface PlanDigestMutations {
 export const NL: string;
 
 export function canonical(value: unknown): string;
-export function fullPlanDigest(plan: Readonly<Record<string, unknown>> | null | undefined): string | null;
-export function planDigestCoverage(plan: Readonly<Record<string, unknown>> | null | undefined): PlanDigestCoverage;
-export function proveFullPlanDigestMoves(plan: Readonly<Record<string, unknown>> | null | undefined): PlanDigestMutations;
+export function fullPlanDigest(plan: any): string | null;
+export function planDigestCoverage(plan: any): PlanDigestCoverage;
+export function proveFullPlanDigestMoves(plan: any): PlanDigestMutations;

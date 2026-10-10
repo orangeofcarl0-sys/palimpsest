@@ -28,14 +28,13 @@ import {
   MEASUREMENT_GAPS,
   NL,
   PRESERVED_DESIGN,
-  PRIMARY_DERIVED_INPUTS,
   REPO_ROOT,
   STAGE_EVIDENCE_PATH,
   SUPERSEDED_STAGE,
 } from './contract.mjs';
 import { computeExecutionClosure, REUSED_MODULES, STAGE_HARNESS_MODULES } from './closure.mjs';
 import { fullPlanDigest } from './plan-identity.mjs';
-import { PRIMARY_REFUSED_INPUTS } from './trust-boundary.mjs';
+import { PRIMARY_DERIVED_INPUTS, PRIMARY_REFUSED_INPUTS } from './trust-boundary.mjs';
 import { REQUIRED_TERMINAL_CONDITIONS } from './postmatrix-admission.mjs';
 
 const sha256 = (text) => createHash('sha256').update(String(text), 'utf8').digest('hex');

@@ -38,7 +38,14 @@ export const MEASUREMENT_GAPS: readonly MeasurementGap[];
 export const MEASUREMENT_GAP_IDS: readonly string[];
 export const FRESHNESS_BASIS: Readonly<Record<string, string>>;
 export const FRESHNESS_FIELDS: readonly string[];
-export const ATTEMPT_ID: Readonly<Record<string, unknown>>;
+export const ATTEMPT_ID: {
+  readonly canonicalPrefix: string;
+  readonly canonicalExample: string;
+  readonly pathDerivedExample: string;
+  readonly comparison: string;
+  readonly substringMatchingPermitted: boolean;
+  readonly law: string;
+};
 export const ARTIFACT_DISCOVERY_OUTCOMES: readonly { readonly id: string; readonly discovered: boolean; readonly ambiguous: boolean; readonly detail: string }[];
 export const EXECUTION_WITNESS: Readonly<Record<string, unknown>>;
 export const ARTIFACT_PROVENANCE_UNPROVEN: Readonly<Record<string, string>>;

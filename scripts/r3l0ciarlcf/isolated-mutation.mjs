@@ -27,6 +27,7 @@
  * PLAIN JAVASCRIPT (`.mjs`).
  */
 import { execFileSync } from 'node:child_process';
+
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -52,7 +53,15 @@ function git(cwd, args) {
 export function createIsolatedCheckout() {
   const root = mkdtempSync(join(tmpdir(), 'r3lcf-worktree-'));
   const head = git(REPO_ROOT, ['rev-parse', 'HEAD']);
-  git(REPO_ROOT, ['worktree', 'add', '--detach', root, head]);
+  /**
+   * §3: THE CHECKOUT MUST BE BYTE-IDENTICAL, so line-ending conversion is DISABLED for it.
+   *
+   * Measured: with the host's default `core.autocrlf`, a Windows checkout rewrites LF to CRLF, so every tracked
+   * text file's BYTES differ from the shared tree and the closure digest differs for a reason that has nothing to
+   * do with the mutation under test. `core.autocrlf=false` and `core.eol=lf` make the checkout reproduce the
+   * committed bytes exactly, which is what makes the "at HEAD the two agree" comparison meaningful.
+   */
+  git(REPO_ROOT, ['-c', 'core.autocrlf=false', '-c', 'core.eol=lf', 'worktree', 'add', '--detach', root, head]);
   /** §3: the heavy paths are junctions, never copies, and this module never writes through them. */
   const links = [];
   for (const name of ['node_modules', 'dist']) {
@@ -157,17 +166,49 @@ export async function sharedTreeClosureDigest() {
 }
 
 /**
+ * §3: WHETHER THE ISOLATED CHECKOUT REPRODUCES THE COMMITTED BYTES.
+ *
+ * The anchor is the COMMIT, not the shared working tree, and the distinction is measured rather than assumed: this
+ * host's working tree carries CRLF in some tracked files while the commit carries LF, so a fresh checkout cannot
+ * byte-match the working tree. The commit IS the reproducible artifact.
+ *
+ * THE COMPARISON USES GIT'S OWN BLOB HASHES. `git show HEAD:<path>` applies the host's line-ending conversion on
+ * output, so reading its bytes and hashing them is NOT a byte-exact comparison — measured. `git hash-object` on the
+ * checkout file and `git rev-parse HEAD:<path>` on the commit both return the same kind of value over the RAW bytes,
+ * so their equality is exact.
+ */
+export function checkoutMatchesCommittedBytes(input) {
+  const { checkout, files } = input;
+  const compared = [];
+  for (const relative of files) {
+    const path = join(checkout.root, relative);
+    if (!existsSync(path)) { compared.push(Object.freeze({ relative, exists: false, matches: false })); continue; }
+    let committedBlob = null;
+    let checkoutBlob = null;
+    try { committedBlob = git(REPO_ROOT, ['rev-parse', `HEAD:${relative}`]); } catch { committedBlob = null; }
+    try { checkoutBlob = git(checkout.root, ['hash-object', '--', relative]); } catch { checkoutBlob = null; }
+    compared.push(Object.freeze({ relative, exists: true, committedBlob, checkoutBlob, matches: committedBlob !== null && committedBlob === checkoutBlob }));
+  }
+  const mismatched = compared.filter((entry) => entry.matches !== true).map((entry) => entry.relative);
+  return Object.freeze({ compared: compared.length, matched: compared.length - mismatched.length, mismatched: Object.freeze(mismatched), allMatchCommittedBytes: mismatched.length === 0, method: 'git blob-hash equality over the raw bytes' });
+}
+
+/**
  * §3 F1-B: A REAL CLOSURE CHANGE, DETECTED BY ACTUAL RECOMPUTATION.
  *
- * The control proves: the isolated checkout at HEAD computes the SAME digest as the shared tree; a real byte change
- * to a tracked file the closure hashes then MOVES that digest; and the shared tree's own digest is UNCHANGED, which
- * is the evidence that no shared file was mutated.
+ * The control proves three things, and the anchor is the COMMIT rather than the shared working tree:
+ *
+ *   1. the isolated checkout reproduces the COMMITTED bytes exactly (measured, because this host's working tree
+ *      carries CRLF in some tracked files while the commit carries LF);
+ *   2. a real byte change to a tracked file the closure hashes MOVES the checkout's recomputed digest;
+ *   3. the shared working tree's own digest is UNCHANGED, which is the evidence that no shared file was mutated.
  */
 export async function proveRealClosureChangeDetection(input = {}) {
   const relative = input.relative ?? MUTABLE_TRACKED_FILES[0];
   const sharedBefore = await sharedTreeClosureDigest();
   const checkout = createIsolatedCheckout();
   try {
+    const matchesCommitted = checkoutMatchesCommittedBytes({ checkout, files: input.compareFiles ?? [relative, 'scripts/r3l0cf/closure.mjs', 'scripts/r3l0ciarlcf/closure.mjs'] });
     const atHead = computeClosureInCheckout(checkout);
     const mutation = applyByteMutation({ checkout, relative });
     const afterMutation = computeClosureInCheckout(checkout);
@@ -175,7 +216,9 @@ export async function proveRealClosureChangeDetection(input = {}) {
     return Object.freeze({
       id: 'F1_B_REAL_CLOSURE_CHANGE',
       authorityBearingFunction: 'scripts/r3l0ciarlcf/closure.mjs computeExecutionClosure, in an isolated git worktree',
-      isolatedCheckoutAtHeadMatchesSharedTree: atHead.digest === sharedBefore,
+      /** §3: the anchor is the COMMIT, and the checkout is shown to reproduce it. */
+      checkoutReproducesCommittedBytes: matchesCommitted.allMatchCommittedBytes,
+      committedByteComparison: matchesCommitted,
       checkoutDigestAtHead: atHead.digest,
       sharedTreeDigestBefore: sharedBefore,
       mutationApplied: mutation.applied,
@@ -188,8 +231,8 @@ export async function proveRealClosureChangeDetection(input = {}) {
       sharedTreeUnchanged: sharedAfter === sharedBefore,
       detectedByActualRecomputation: atHead.digest !== afterMutation.digest,
       injectedFakeDigest: false,
-      PROVEN: atHead.digest === sharedBefore && mutation.applied === true && atHead.digest !== afterMutation.digest && sharedAfter === sharedBefore,
-      law: 'a real byte change to a tracked file the closure hashes moves the recomputed closure digest, measured in an isolated checkout, with the shared working tree untouched',
+      PROVEN: matchesCommitted.allMatchCommittedBytes === true && mutation.applied === true && atHead.digest !== afterMutation.digest && sharedAfter === sharedBefore,
+      law: 'a real byte change to a tracked file the closure hashes moves the recomputed closure digest, measured in an isolated checkout that reproduces the committed bytes, with the shared working tree untouched',
     });
   } finally {
     destroyIsolatedCheckout(checkout);

@@ -11,7 +11,8 @@ export interface IsolatedCheckout {
 export interface RealClosureChangeProof {
   readonly id: string;
   readonly authorityBearingFunction: string;
-  readonly isolatedCheckoutAtHeadMatchesSharedTree: boolean;
+  readonly checkoutReproducesCommittedBytes: boolean;
+  readonly committedByteComparison: Readonly<Record<string, any>>;
   readonly checkoutDigestAtHead: string;
   readonly sharedTreeDigestBefore: string;
   readonly mutationApplied: boolean;
@@ -52,5 +53,6 @@ export function applyValueMutation(input: Readonly<Record<string, any>>): Readon
 export function restoreTrackedFile(input: Readonly<Record<string, any>>): boolean;
 export function computeClosureInCheckout(checkout: IsolatedCheckout): Readonly<Record<string, any>>;
 export function sharedTreeClosureDigest(): Promise<string>;
+export function checkoutMatchesCommittedBytes(input: Readonly<Record<string, any>>): Readonly<Record<string, any>>;
 export function proveRealClosureChangeDetection(input?: Readonly<Record<string, any>>): Promise<RealClosureChangeProof>;
 export function proveRealRouteChangeDetection(input?: Readonly<Record<string, any>>): Promise<RealRouteChangeProof>;
