@@ -1,0 +1,145 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "external authorization and spending enforcement audit (read-only)",
+  "applicableCommit": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "auditIsReadOnly": true,
+  "authorityCreatedInG0": false,
+  "approvalGrantedInG0": false,
+  "trustedAuthoritySource": {
+    "implementation": "scripts/r3l0ciarlcf/trust-boundary.mjs:80-116 trustedAuthoritySource()",
+    "readsConfiguredFilePath": true,
+    "envVar": "PALIMPSEST_AUTHORITY_SOURCE",
+    "configured": false,
+    "verifiesIssuerIdentity": false,
+    "independentlyControlled": false,
+    "validityRulesPresent": false,
+    "revocationRulesPresent": false,
+    "verified": false,
+    "refusalReasonQuote": "a file outside the repository exists, but this stage implements no issuer-identity verification, no independent-control proof and no revocation rules, so the source is PRESENT but NOT TRUSTED",
+    "note": "existence outside the repository is not trust; the module refuses to create a self-approved trust root"
+  },
+  "spendEnforcement": {
+    "implementation": "scripts/r3l0ciarlcf/trust-boundary.mjs:198-205 detectHostSpendEnforcement()",
+    "enforced": false,
+    "mechanism": null,
+    "reasonQuote": "no host-side or provider-side spending-enforcement mechanism exists in this repository, and this stage does not implement one; a caller-declared session ceiling is not an enforced monetary limit",
+    "hardLimitExists": false
+  },
+  "concepts": [
+    {
+      "concept": "configured file path",
+      "exists": "MECHANISM_ONLY",
+      "note": "env var is currently unset"
+    },
+    {
+      "concept": "parseable decision record",
+      "exists": "SHAPE_CHECK_ONLY",
+      "note": "decisionPrefixIsNotVerification: true"
+    },
+    {
+      "concept": "verified issuer identity",
+      "exists": false
+    },
+    {
+      "concept": "independently controlled approval",
+      "exists": false
+    },
+    {
+      "concept": "validity and revocation rules",
+      "exists": false
+    },
+    {
+      "concept": "approved full prospective-plan digest",
+      "exists": "BINDING_LOGIC",
+      "note": "planBinding requires approvedPlanDigest === planContentDigest"
+    },
+    {
+      "concept": "approved session scope",
+      "exists": "DECLARED_ONLY",
+      "note": "FROZEN_SESSION_SCOPE = 16"
+    },
+    {
+      "concept": "approved monetary budget",
+      "exists": "DECLARED_ONLY",
+      "note": "not enforced"
+    },
+    {
+      "concept": "current launch permission",
+      "exists": true,
+      "value": false
+    }
+  ],
+  "decisionStringIsAuthority": false,
+  "testSourceRelabeledAsAuthorization": false,
+  "testFixtureCannotOpenLaunch": true,
+  "spendingControls": [
+    {
+      "control": "user-declared budget",
+      "kind": "DECLARATION_NOT_ENFORCED"
+    },
+    {
+      "control": "planned session count",
+      "kind": "DECLARATION",
+      "value": 16
+    },
+    {
+      "control": "session-launch limit",
+      "kind": "SOFT",
+      "note": "one launch per session; no monetary stop"
+    },
+    {
+      "control": "request/token limits",
+      "kind": "NONE",
+      "note": "only unrelated timeout budgets in milliseconds"
+    },
+    {
+      "control": "estimated spending",
+      "kind": "NONE"
+    },
+    {
+      "control": "actual provider billing",
+      "kind": "NONE"
+    },
+    {
+      "control": "host/provider-enforced hard limit",
+      "kind": "NOT_ESTABLISHED"
+    }
+  ],
+  "currentLaunchPermission": false,
+  "currentLaunchPermissionCitations": [
+    "scripts/r3l0ciarlcfs/authorization-verdict.mjs:131",
+    "scripts/r3l0ciarlcf/trust-boundary.mjs:173",
+    "scripts/r3l0ciarlcf/trust-boundary.mjs:264"
+  ],
+  "approvalPacketRequiredFields": [
+    "new executable Plan ID",
+    "full Plan Content Digest",
+    "Git commit/blob identity",
+    "approved model/provider route",
+    "approved sixteen-session scope",
+    "monetary currency and maximum",
+    "proven spending-control mechanism",
+    "bounded fail-stop protocol",
+    "no automatic retries or replacement sessions",
+    "preservation of invalid or incomplete runs",
+    "acceptance of PROMPT_NEUTRALITY = LIMITED",
+    "revocation and validity conditions",
+    "named approving authority"
+  ],
+  "trustedSourceRequirementsNotImplemented": [
+    "verified issuer identity",
+    "independent control proof",
+    "validity rules",
+    "revocation rules",
+    "proven host/provider spending enforcement"
+  ],
+  "fabricatedValuesPresent": false,
+  "thisDocumentIsNotAnApproval": true,
+  "outcomes": {
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "HOST_SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "PRIMARY_LAUNCH_PERMISSION": false
+  },
+  "law": "a decision: string is not external authority and a declared budget is not an enforceable limit; G0 creates neither"
+}

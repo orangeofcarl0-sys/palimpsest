@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "archived plan governance record",
+  "archivedPlan": {
+    "planId": "r3-l0c-iar-lcfsh-primary-plan",
+    "planContentDigest": "b6a163d0efbdc09e88972ac443dd704022a35b1258c8823cb25084005991b034",
+    "executionClosureDigest": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+    "gitCommit": "1cf7a0f242d77b7c2d0d0e6da39381af27c41051",
+    "evidenceSealDigest": "adfdec91a27c6b2f00f1e5e7af83fc8ea189f360fac0b29f0412fd4851bb5bfc",
+    "stageResultCommit": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422"
+  },
+  "planVersioningDeviation": {
+    "classification": "PRE_EXPOSURE_PLAN_IDENTITY_REUSE",
+    "planIdReused": "r3-l0c-iar-lcfsh-primary-plan",
+    "distinctContentDigestsForThatId": 6,
+    "revisions": [
+      {
+        "commit": "bed0bacba0fcd4eb08cda49a3208ffa01ba6ba5f",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "0f1b99dadfa5bcc6974c641b21530d6d0caf4bcc54353aed05d1739ddbb02294",
+        "closure": "24e8670d65b3ce93d5b5e5813f032b1208749a41e2b9c5f145c0672fae27f953"
+      },
+      {
+        "commit": "1f8712c16defbf43edc768237318beea71a40ece",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "8ce126a77a59781d67dffd0d162b4ff11b8523d161c227ab299bb2a478e946b4",
+        "closure": "41dd994190ce2d4ead4152d420d9dbf164eeae2f30429495d8cde4cf3817030f"
+      },
+      {
+        "commit": "6aa28643843611def56518c09645e9e660363a79",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "c38839173a750f890546f03b04de3e3d71be31847fcaae88bac6eeda8e9b135c",
+        "closure": "9c61a5e7ece1fcdbb2855510b91ddce098ce1406d1346f76a6f99953f25ea28e"
+      },
+      {
+        "commit": "cb560ae191f77e839acd5bde19ececab9b3f4556",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "b77b2b6360182872fb3f94075d9f849ed4e16acce23df876f4a5192a70543823",
+        "closure": "ad04b98225724b7590d9789eebf01f158aa0c95d3f1ade883d87b77ccb7973f8"
+      },
+      {
+        "commit": "d665825a07ede45c61c52f11f3b4f241c68980a0",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "165cc41329ea47c2c820cbbe44fd41c4d08254d4cdae515c091980e486ca4e4d",
+        "closure": "a935637550bf5dac8f177c497c47318a308d1d730588b4a07ba82dcda699ca0d"
+      },
+      {
+        "commit": "1cf7a0f242d77b7c2d0d0e6da39381af27c41051",
+        "planId": "r3-l0c-iar-lcfsh-primary-plan",
+        "contentDigest": "b6a163d0efbdc09e88972ac443dd704022a35b1258c8823cb25084005991b034",
+        "closure": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6"
+      }
+    ],
+    "cause": "the plan was re-frozen three times during the previous stage after load-bearing corrections, each time under the SAME Plan ID but with a different full content digest",
+    "genuinePrimaryExposureOccurred": false,
+    "exposureEvidence": "stage-result.json records modelCallsMade: 0 and enteredPrimaryExecution: false; no paid model call is recorded in any durable repository artifact",
+    "externalBillingAbsenceProven": false,
+    "externalBillingCaveat": "a report of zero model calls does not by itself prove the absence of all external billing activity unless corresponding external provider records exist; no such records are available in this repository",
+    "allRevisionsPreExposure": true,
+    "versionIdentityChanged": true,
+    "remediation": "for any future authorization, require the exact Plan Content Digest and the Git object identity in addition to the Plan ID; a clean one-time freeze is mandatory before exposure"
+  },
+  "currentMaintenanceHead": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "archivedClosureDigest": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+  "currentMaintenanceClosure": {
+    "digest": "dc6f5673ff78638480e0a5719ae3e1a027c1fbe0cc0109d527984b30f10dccd2",
+    "computedBy": "scripts/r3l0ciarlcfsh/closure.mjs computeExecutionClosure({ verifyCompiled: false })",
+    "closureComplete": true
+  },
+  "compatibility": "DRIFTED_EXPECTED",
+  "compatibilityStatement": "the maintenance patch changes load-bearing cleanup code, so the current HEAD execution closure differs from the archived plan closure; the current maintenance HEAD is NOT a valid execution candidate under the archived frozen plan and must not claim closure equality",
+  "archivedPlanStillValidSnapshot": true,
+  "archivedPlanRecalculated": false,
+  "archivedSealOverwritten": false,
+  "newPlanFrozenInG0": false,
+  "evidencePreservation": {
+    "stageResultBlob": "24e25f76bb639d0b363bf32768215f0b0e7c1977",
+    "qualificationBlob": "fbf1cd5d947e192522c8fe880d6b342b641a5833",
+    "planBlob": "641ea00f3eb367a2cfb0f8766474743927445e50",
+    "sealBlob": "65bafdc1254336ebba2a577d9bbe6cdc9fcd0a48",
+    "priorEvidenceModified": false
+  },
+  "law": "the archived plan is a valid historical snapshot of the code at its commit; a post-freeze load-bearing change invalidates that execution identity and requires a new prospective-plan identity, which G0 does not create"
+}

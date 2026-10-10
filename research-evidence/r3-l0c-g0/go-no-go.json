@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "readiness Go/No-Go decision packet",
+  "applicableCommit": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "baseline": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422",
+  "gates": [
+    {
+      "gate": "G0-SAFETY",
+      "status": "PASS",
+      "evidence": "the bounded cleanup patch passed S1-A and S1-B1..B6 on disposable fixtures; no destructive operation outside the disposable root; external sentinel byte-identical",
+      "blocker": null
+    },
+    {
+      "gate": "G0-PLAN",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "no new executable plan is frozen in G0; the current maintenance HEAD closure (dc6f5673…) differs from the archived plan closure (e850e1c5…) by design",
+      "blocker": "a future executable plan must be frozen once against the final approved code and plan identity"
+    },
+    {
+      "gate": "G0-ROUTE",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "ROUTE_DECLARED and SHIPPED_EXECUTABLE_RESOLVED are established; ROUTE_IDENTITY_ATTESTED, PROVIDER_ACCESS_VERIFIED and REAL_WORKER_OBSERVED are not",
+      "blocker": "no runtime attestation from a real worker and no authorized connectivity verification"
+    },
+    {
+      "gate": "G0-ARTIFACT",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "sessionArtifactPath is caller-supplied; discovery is unreachable (dshHomePath null); the attempt parser rejects the real artifact path",
+      "blocker": "artifact attribution to the intended Attempt is not achievable on the real layout"
+    },
+    {
+      "gate": "G0-WITNESS",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "no execution witness producer is wired; runId is absent from the durable record and workerProcessId is discarded by the port contract",
+      "blocker": "an independent execution witness cannot be produced without additional runtime integration"
+    },
+    {
+      "gate": "G0-AUTHORITY",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "no trusted authority source is configured; trustedAuthoritySource() refuses to verify a file that merely exists",
+      "blocker": "an explicit independent authorization decision bound to the plan digest is required"
+    },
+    {
+      "gate": "G0-BUDGET",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "detectHostSpendEnforcement() reports enforced:false; every available control is a declaration or an estimate",
+      "blocker": "a proven host/provider monetary ceiling is required"
+    },
+    {
+      "gate": "G0-FAILSTOP",
+      "status": "PASS",
+      "evidence": "the frozen fail-stop runner preserves evidence, refuses replay and treats uncertainty as UNCERTAIN_PRESERVED; verified by the archived stage and re-read here",
+      "blocker": null
+    },
+    {
+      "gate": "G0-PRIMARY",
+      "status": "NOT_ESTABLISHED",
+      "evidence": "PRIMARY is prohibited before launch in the terminal stages; no launch-capable implementation was created in G0",
+      "blocker": "a separately authorized launch-capable implementation and a newly frozen executable plan are required"
+    }
+  ],
+  "statusVocabulary": [
+    "PASS",
+    "FAIL",
+    "NOT_ESTABLISHED",
+    "BLOCKED",
+    "NOT_APPLICABLE",
+    "NOT_RUN"
+  ],
+  "defaultPassUsed": false,
+  "interpretation": {
+    "G0_READINESS_AUDIT_COMPLETE": true,
+    "meansRealPrimaryReady": false,
+    "note": "the audit is complete and the remaining conditions are identified; this does not mean real PRIMARY is ready"
+  },
+  "mandatoryPrerequisitesUnknown": true,
+  "PRIMARY_DECISION": "NO_GO",
+  "blockers": [
+    "G0-PLAN: no executable plan is frozen against the final approved code identity",
+    "G0-ROUTE: route identity is declared but not attested from a real worker; provider access is unverified",
+    "G0-ARTIFACT: real DSH session artifacts cannot be uniquely attributed to the intended Attempt",
+    "G0-WITNESS: no independent execution witness can be produced by an existing component",
+    "G0-AUTHORITY: no explicit independent authorization exists",
+    "G0-BUDGET: no enforceable monetary ceiling exists",
+    "G0-PRIMARY: no separately authorized launch-capable implementation exists"
+  ],
+  "nextActions": [
+    "Decide whether to build a launch-capable implementation with real artifact discovery, unique Attempt attribution and a genuine execution witness (a separate authorized engineering decision)",
+    "Establish a trusted external authority source with verified issuer identity, independent control and revocation rules",
+    "Establish a host/provider-enforced monetary ceiling, or accept that no hard cap exists and decide accordingly",
+    "Finalize runtime and measurement code, then produce and freeze a single prospective plan bound to the final code and plan identity",
+    "Obtain independent approval bound to that exact plan digest and commit identity"
+  ],
+  "thisStageImplementsNextActions": false,
+  "smallestNecessaryActions": "the seven blockers above; each requires a separate authorized decision and is not implemented in G0",
+  "law": "when mandatory prerequisites remain unknown the correct decision is NO_GO with exact blockers and actionable next decisions; this is a valid and useful result, not a failed stage"
+}
