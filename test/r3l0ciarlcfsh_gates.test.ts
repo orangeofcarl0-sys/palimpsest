@@ -58,8 +58,8 @@ import { writeRealArtifact } from "../scripts/r3l0ciarlcfsh/acceptance.mjs";
 const EVIDENCE = "research-evidence/r3-l0c-iar-lcfsh";
 
 /** §3: a small durable journal fixture, so a T2 test can drive the validated bridge without the frozen matrix. */
-async function buildFixture(root, options = {}) {
-  const { records, attemptSuffix = "a".repeat(32), rawBytes = null, sidecarAttemptId = null } = options;
+async function buildFixture(root: string, options: { records?: readonly any[]; attemptSuffix?: string; rawBytes?: Buffer | null; sidecarAttemptId?: string | null } = {}) {
+  const { records = [], attemptSuffix = "a".repeat(32), rawBytes = null, sidecarAttemptId = null } = options;
   const { appendRecord } = await import("../scripts/r3l0cf/journal.mjs");
   const { LIVE_EVIDENCE_DIRECTORY } = await import("../scripts/r3l0ciarlcf/cost-bridge.mjs");
   const { createHash } = await import("node:crypto");
@@ -388,9 +388,9 @@ describe("R3-L0C-I-A-R-L-C-F-S-H §6 T1 — the identity mutation seam", () => {
     const records = [{ sessionId: "s0", attemptId: "attempt-1" }, { sessionId: "s1", attemptId: "attempt-2" }];
     const applied = applyIdentityMutation({ records, mutation: { sessionId: "s0", field: "attemptId", value: "attempt-mutated" } });
     expect(applied.applied).toBe(true);
-    expect(applied.records[0].attemptId).toBe("attempt-mutated");
-    expect(applied.records[1].attemptId).toBe("attempt-2");
-    expect(records[0].attemptId).toBe("attempt-1");
+    expect(applied.records[0]!.attemptId).toBe("attempt-mutated");
+    expect(applied.records[1]!.attemptId).toBe("attempt-2");
+    expect(records[0]!.attemptId).toBe("attempt-1");
     expect(applied.durableJournalTouched).toBe(false);
     expect(applied.historicalEvidenceTouched).toBe(false);
   });
@@ -505,7 +505,7 @@ describe("R3-L0C-I-A-R-L-C-F-S-H §9 T1 — closure and the guard", () => {
 
   it("discloses the legacy helper quarantine rather than claiming impossibility", () => {
     expect(LEGACY_HELPER_QUARANTINE.physicallyUnexecutable).toBe(false);
-    expect(LEGACY_HELPER_QUARANTINE.helpers.length).toBeGreaterThanOrEqual(2);
+    expect((LEGACY_HELPER_QUARANTINE.helpers as readonly string[]).length).toBeGreaterThanOrEqual(2);
   });
 });
 
