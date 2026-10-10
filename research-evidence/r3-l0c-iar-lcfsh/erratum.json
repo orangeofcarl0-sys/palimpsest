@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S-H",
+  "kind": "previous-stage persisted-seal and qualification erratum",
+  "erratumFor": {
+    "stage": "R3-L0C-I-A-R-L-C-F-S",
+    "commit": "80823c4e5b0015b265ae71df8d6468c0bfe9c865",
+    "planId": "r3-l0c-iar-lcfs-primary-plan",
+    "evidenceNamespace": "research-evidence/r3-l0c-iar-lcfs"
+  },
+  "previousPlanId": "r3-l0c-iar-lcfs-primary-plan",
+  "committedPlanContentDigest": "dad2abadc78294da227f687e0d4f715e77e909cebb51cae65a719339b639477e",
+  "crossArtifactSealBinding": "MISMATCH",
+  "crossArtifactSealSealed": false,
+  "verdictCrossArtifactPlanBinding": "MATCH",
+  "readinessCrossArtifactEvidenceSealed": true,
+  "deterministicQualificationVerdict": "PASS",
+  "contradictionPresent": true,
+  "cause": "runQualification called sealCrossArtifactPlanIdentity with `qualification: null` and `stageResult: null`, because at that point the two files did not exist yet. The resulting MISMATCH and sealed = false were recorded INSIDE the final Qualification as though they were a comparable final verdict. A separate source — the production plan control, sealing in-memory objects built from the plan's own identity — produced verdicts.CROSS_ARTIFACT_PLAN_BINDING = MATCH, and readiness.CROSS_ARTIFACT_EVIDENCE_SEALED was derived from those verdicts. The two sources were never compared, so one committed artifact carried a MISMATCH and a MATCH for the same property.",
+  "affectedPreviousVerdicts": [
+    "CROSS_ARTIFACT_PLAN_BINDING",
+    "DETERMINISTIC_MEASUREMENT_QUALIFICATION"
+  ],
+  "prePersistenceCheckWasRecordedAsAFinalVerdict": true,
+  "deterministicQualificationWasALiteralPass": true,
+  "whyPriorDeterministicRecordsRemainPreserved": [
+    "the deterministic measurement records describe the R3-L0C-I-A-R-L-C-F-S pipeline at 80823c4, which this stage does not edit, so they remain an accurate description of that code",
+    "the defects this stage closes are confined to the EVIDENCE ADMISSION path — the missing envelope consumer, the cleanup safety branches and the seal/verdict derivation — not to the matrix observations, the durable reconciliation or the closure measurement those records also carry",
+    "rewriting the prior evidence would make it describe bytes that never existed, which is the failure the historical-immutability rule exists to prevent, so the correction is recorded here as a NEW erratum instead",
+    "the prior stage's matrix result remains a valid MECHANICAL record; what it cannot support is the claim that its cost admission was validated and its qualification verdict derived"
+  ],
+  "newSupersedingPlanId": "r3-l0c-iar-lcfsh-primary-plan",
+  "newSupersedingEvidenceNamespace": "research-evidence/r3-l0c-iar-lcfsh",
+  "supersessionReason": "terminal enforcement and execution safety, NOT a scientific design change",
+  "priorEvidenceModified": false,
+  "priorEvidenceReadOnly": true,
+  "law": "the previous stage recorded a pre-persistence MISMATCH as a final verdict beside a MATCH derived from a different source; the prior evidence is never rewritten, and the correction is recorded as a stage-owned erratum naming the new superseding plan identity"
+}
