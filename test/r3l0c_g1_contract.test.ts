@@ -134,8 +134,10 @@ describe("R3-L0C-G1 §4/§6/§8 — the guarantees the observer must hold", () =
   });
 
   it("keeps the trust-boundary states separate", () => {
+    // R3-L0C-G1-B §7 adds ORIGIN_NOT_ESTABLISHED between DECLARATION_ONLY and LOCAL_HOST_OBSERVED.
     expect(EVIDENCE_STATES).toEqual([
       "DECLARATION_ONLY",
+      "ORIGIN_NOT_ESTABLISHED",
       "LOCAL_HOST_OBSERVED",
       "RUN_ATTEMPT_CORRELATED",
       "PROVENANCE_INCOMPLETE",

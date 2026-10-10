@@ -136,10 +136,15 @@ export async function runIntegratedValidation(input = {}) {
       await new Promise((resolve) => setTimeout(resolve, 25));
     }
 
-    /** §6: preserve the observation set durably, then re-read and verify it. */
-    const recorder = createObservationRecorder({ invocationId: correlated[0]?.invocationId ?? 'wpi-c4' });
-    for (const entry of correlated) recorder.sink(entry.observation);
+    /**
+     * R3-L0C-G1-B §5: THE RECORDER IS BOUND TO THE INVOCATION THE PORT ACTUALLY PRODUCED, so the events the
+     * port emitted are ACCEPTED rather than rejected. G1 created the recorder with the WRAPPER's id, which made
+     * every real observation a mismatch and produced a zero-event record that still reported success.
+     */
     const attemptId = view !== null && 'attemptId' in view ? view.attemptId : null;
+    const invocationId = correlated[0]?.invocationId ?? null;
+    const recorder = createObservationRecorder({ invocationId: invocationId ?? 'wpi-none' });
+    for (const entry of correlated) recorder.sink(entry.observation);
     const record = buildObservationRecord({
       recorder,
       hostLocalJobId: started.jobId,
@@ -149,7 +154,7 @@ export async function runIntegratedValidation(input = {}) {
       source: 'LOCAL_NONMODEL_PRODUCER',
     });
     const write = writeObservationRecord({ runRoot, record });
-    const readBack = readObservationRecord({ runRoot });
+    const readBack = readObservationRecord({ runRoot, invocationId: record.invocationId, expected: { attemptId, hostLocalJobId: started.jobId } });
 
     const spawned = correlated.find((entry) => entry.observation.eventKind === 'DIRECT_CHILD_SPAWN_OBSERVED');
     const exited = correlated.find((entry) => entry.observation.eventKind === 'DIRECT_CHILD_EXIT_OBSERVED');
@@ -173,12 +178,26 @@ export async function runIntegratedValidation(input = {}) {
       exitCode: exited?.observation.exitCode ?? null,
       correlationIsExact: correlated.length > 0 && correlated.every((entry) => entry.attemptId === attemptId),
       hostLocalJobIdMatches: correlated.every((entry) => entry.hostLocalJobId === started.jobId),
+      invocationId: record.invocationId,
+      acceptedEventCount: record.acceptedEventCount,
+      rejectedEventCount: record.rejectedCount,
+      persistedEventCount: record.eventCount,
+      readBackEventCount: readBack?.record.events.length ?? null,
+      lifecycle: record.lifecycle,
       recordWritten: write.written === true,
       recordDurabilityVerified: write.durabilityVerified === true,
       recordDigestOkOnReadBack: readBack?.digestOk === true,
       recordContentBindingFailed: readBack?.contentBindingFailed === true,
+      recordIdentityMatches: readBack?.identityMatches === true,
       recordProvesNothingAboutPrimary: true,
-      correlation: correlateObservationRecord({ record, journalRecords: input.journalRecords ?? [] }),
+      correlation: await correlateObservationRecord({
+        record,
+        journalRecords: input.journalRecords ?? [],
+        journalPath: input.journalPath,
+        runRoot: input.runRoot ?? null,
+        claimNonce: input.claimNonce ?? null,
+        trustedIngestion: true,
+      }),
       law: 'a real direct child on this host exercised the actual product port and the actual Work Delegation interface; the observation is LOCAL evidence, never LIVE_PRIMARY provenance',
     });
   } finally {

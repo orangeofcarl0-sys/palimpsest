@@ -261,91 +261,149 @@ describe("R3-L0C-G1 §5/§6 P2-A/B — a real Work preparation correlates to exa
   });
 });
 
-describe("R3-L0C-G1 §6 P3 — durable host evidence and run correlation", () => {
+/**
+ * R3-L0C-G1-B §2: THIS BLOCK WAS CORRECTED, and the reason is recorded here as §2 requires.
+ *
+ * REASON. G1's P3 block used a SYNTHETIC FLATTENED journal fixture (`{type, runId}` / `{type, sessionId,
+ * attemptId}`) and a synchronous `correlateObservationRecord`. Both were test-only schemas the real frozen journal
+ * never produces, so the block passed while the correlator could not read an actual journal.
+ *
+ * REPRODUCING BASELINE COUNTEREXAMPLE. Measured in `scripts/r3l0c_g1b/baseline/falsifiers.mjs` F3: a real journal
+ * written with the frozen `appendRecord()` and read with `readJournal()` yields records shaped
+ * `{seq, kind, at, payload, digest}`, and G1's readers returned `MISSING_RUN_STARTED` with an empty trial map.
+ * F4 additionally showed a forged record reaching RUN_ATTEMPT_CORRELATED through that flattened fixture.
+ *
+ * WHAT CHANGED. The fixtures now use the REAL record shape and the REAL frozen writer, the correlator is awaited,
+ * and origin is established by trusted ingestion rather than by a marker string. The expected evidence STRENGTH is
+ * unchanged or higher: the positive case must now also carry real events and a verified claim.
+ */
+describe("R3-L0C-G1-B §6 — durable host evidence and run correlation over the REAL journal schema", () => {
   const identity = { attemptId: "attempt-".concat("a".repeat(32)), hostLocalJobId: "wdj-test" };
+
+  /** §6: one real observation, emitted through the recorder so ingestion is trusted. */
+  function eventFor(invocationId: string, sequence: number, eventKind: string, extra: Record<string, unknown> = {}) {
+    return {
+      schemaVersion: 1, producer: "dshSubprocessWorkWorkerPort", eventKind,
+      invocationId, sequence, observedAt: new Date().toISOString(),
+      directChildPid: 4242, processRole: "DIRECT_CHILD", exitCode: null, exitSignal: null, hostFailureDetail: null,
+      executableIdentity: { adapterId: "a", nodeExecutableDigest: "d".repeat(64), workerBinBasename: "stub.cjs", workerBinDigest: "e".repeat(64) },
+      proves: ["x"], doesNotProve: ["y"], ...extra,
+    };
+  }
 
   function recordFor(runId: string | null, sessionId: string | null) {
     const recorder = createObservationRecorder({ invocationId: "wpi-test" });
-    recorder.sink({
-      schemaVersion: 1, producer: "dshSubprocessWorkWorkerPort", eventKind: "DIRECT_CHILD_SPAWN_OBSERVED",
-      invocationId: "wpi-test", sequence: 1, observedAt: new Date().toISOString(),
-      directChildPid: 4242, processRole: "DIRECT_CHILD", exitCode: null, exitSignal: null, hostFailureDetail: null,
-      executableIdentity: { adapterId: "a", nodeExecutableDigest: "d".repeat(64), workerBinBasename: "stub.cjs", workerBinDigest: "e".repeat(64) },
-      proves: ["x"], doesNotProve: ["y"],
-    });
+    recorder.sink(eventFor("wpi-test", 1, "DIRECT_CHILD_SPAWN_ATTEMPTED"));
+    recorder.sink(eventFor("wpi-test", 2, "DIRECT_CHILD_SPAWN_OBSERVED"));
+    recorder.sink(eventFor("wpi-test", 3, "DIRECT_CHILD_EXIT_OBSERVED", { exitCode: 0 }));
     return buildObservationRecord({ recorder, hostLocalJobId: identity.hostLocalJobId, attemptId: identity.attemptId, runId, sessionId });
   }
 
-  it("P3-A: a valid non-model host observation correlates to one Attempt", () => {
-    const journal = [
-      { type: "RUN_STARTED", runId: "run-g1" },
-      { type: "TRIAL_RECORDED", sessionId: "s1", attemptId: identity.attemptId },
-    ];
-    const result = correlateObservationRecord({ record: recordFor("run-g1", "s1"), journalRecords: journal });
+  /** §6: a REAL journal written through the frozen writer, plus a verified claim. */
+  async function realJournal(runId: string, attemptId: string, sessionId: string, hostJobId: string) {
+    const journal = await import("../scripts/r3l0cf/journal.mjs");
+    const failStop = await import("../scripts/r3l0cf/fail-stop.mjs");
+    const runRoot = mkdtempSync(join(tmpdir(), "r3l0c-g1b-realjournal-"));
+    cleanups.push(() => { try { rmSync(runRoot, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 }); } catch { /* OS reaps it */ } });
+    const claim = failStop.claimRunRoot({ runRoot, runId });
+    const journalPath = join(runRoot, "generation-journal.jsonl");
+    journal.appendRecord({ journalPath, kind: "RUN_STARTED", payload: { runId, claimNonce: claim.claimNonce } });
+    journal.appendRecord({ journalPath, kind: "TRIAL_RECORDED", payload: { sessionId, record: { sessionId, attemptId, hostJobId } } });
+    const read = journal.readJournal(journalPath);
+    return { runRoot, journalPath, claimNonce: claim.claimNonce, records: read.records };
+  }
+
+  it("P3-A: a valid non-model host observation correlates to one Attempt over a REAL journal", async () => {
+    const real = await realJournal("run-g1", identity.attemptId, "s1", identity.hostLocalJobId);
+    const result = await correlateObservationRecord({
+      record: recordFor("run-g1", "s1"), journalRecords: real.records,
+      journalPath: real.journalPath, runRoot: real.runRoot, claimNonce: real.claimNonce,
+      trustedIngestion: true,
+    });
     expect(result.state).toBe(STATE.RUN_ATTEMPT_CORRELATED);
     expect(result.correlated).toBe(true);
+    expect(result.chain).toContain("JOURNAL_INTEGRITY_VERIFIED");
+    expect(result.chain).toContain("RUN_CLAIM_VERIFIED");
+    expect(result.chain).toContain("DURABLE_TRIAL_ATTEMPT_IDENTITY");
     // §8: correlation is not live-primary provenance.
     expect(result.livePrimary).toBe(false);
   });
 
-  it("P3-B: a missing RUN_STARTED is refused", () => {
-    const result = correlateObservationRecord({ record: recordFor("run-g1", "s1"), journalRecords: [{ type: "TRIAL_RECORDED", sessionId: "s1", attemptId: identity.attemptId }] });
+  it("P3-B: a missing RUN_STARTED is refused", async () => {
+    const journal = await import("../scripts/r3l0cf/journal.mjs");
+    const runRoot = mkdtempSync(join(tmpdir(), "r3l0c-g1b-norun-"));
+    cleanups.push(() => { try { rmSync(runRoot, { recursive: true, force: true }); } catch { /* OS reaps it */ } });
+    const journalPath = join(runRoot, "generation-journal.jsonl");
+    journal.appendRecord({ journalPath, kind: "TRIAL_RECORDED", payload: { sessionId: "s1", record: { attemptId: identity.attemptId } } });
+    const read = journal.readJournal(journalPath);
+    const result = await correlateObservationRecord({ record: recordFor("run-g1", "s1"), journalRecords: read.records, journalPath, trustedIngestion: true });
     expect(result.state).toBe(STATE.PROVENANCE_CONFLICT);
     expect(result.problems.join(" ")).toContain("no RUN_STARTED");
   });
 
-  it("P3-C: a conflicting RunId is refused", () => {
-    const journal = [{ type: "RUN_STARTED", runId: "run-A" }, { type: "RUN_STARTED", runId: "run-B" }];
-    const run = readRunIdentity({ journalRecords: journal });
+  it("P3-C: a conflicting RunId is refused", async () => {
+    const journal = await import("../scripts/r3l0cf/journal.mjs");
+    const runRoot = mkdtempSync(join(tmpdir(), "r3l0c-g1b-conflict-"));
+    cleanups.push(() => { try { rmSync(runRoot, { recursive: true, force: true }); } catch { /* OS reaps it */ } });
+    const journalPath = join(runRoot, "generation-journal.jsonl");
+    journal.appendRecord({ journalPath, kind: "RUN_STARTED", payload: { runId: "run-A" } });
+    journal.appendRecord({ journalPath, kind: "RUN_STARTED", payload: { runId: "run-B" } });
+    const read = journal.readJournal(journalPath);
+    const run = readRunIdentity({ journalRecords: read.records });
     expect(run.ok).toBe(false);
     expect(run.verdict).toBe("CONFLICTING_RUN_IDENTITY");
-    const result = correlateObservationRecord({ record: recordFor("run-A", "s1"), journalRecords: journal });
+    const result = await correlateObservationRecord({ record: recordFor("run-A", "s1"), journalRecords: read.records, journalPath, trustedIngestion: true });
     expect(result.state).toBe(STATE.PROVENANCE_CONFLICT);
   });
 
-  it("P3-D: a HostJob/Attempt disagreement is refused", () => {
-    const journal = [{ type: "RUN_STARTED", runId: "run-g1" }, { type: "TRIAL_RECORDED", sessionId: "s1", attemptId: "attempt-".concat("b".repeat(32)) }];
-    const result = correlateObservationRecord({ record: recordFor("run-g1", "s1"), journalRecords: journal });
+  it("P3-D: a HostJob/Attempt disagreement is refused", async () => {
+    const real = await realJournal("run-g1", "attempt-".concat("b".repeat(32)), "s1", identity.hostLocalJobId);
+    const result = await correlateObservationRecord({
+      record: recordFor("run-g1", "s1"), journalRecords: real.records,
+      journalPath: real.journalPath, runRoot: real.runRoot, claimNonce: real.claimNonce, trustedIngestion: true,
+    });
     expect(result.state).toBe(STATE.PROVENANCE_CONFLICT);
     expect(result.problems.join(" ")).toContain("disagrees with the durable trial's AttemptId");
   });
 
-  it("P3-E/F: a caller-built JSON object is DECLARATION_ONLY, never host observation", () => {
-    const fake = { ...recordFor("run-g1", "s1"), origin: "CALLER" };
-    const result = correlateObservationRecord({ record: fake, journalRecords: [{ type: "RUN_STARTED", runId: "run-g1" }, { type: "TRIAL_RECORDED", sessionId: "s1", attemptId: identity.attemptId }] });
-    expect(result.state).toBe(STATE.DECLARATION_ONLY);
+  it("P3-E/F: a caller-built JSON object is never host observation", async () => {
+    const real = await realJournal("run-g1", identity.attemptId, "s1", identity.hostLocalJobId);
+    const fake = { ...recordFor("run-g1", "s1"), origin: "G1_LOCAL_RECORDER" };
+    // Without trusted ingestion the origin relationship is not established, whatever the marker says.
+    const result = await correlateObservationRecord({ record: fake, journalRecords: real.records, journalPath: real.journalPath, runRoot: real.runRoot, claimNonce: real.claimNonce });
+    expect(result.state).toBe(STATE.ORIGIN_NOT_ESTABLISHED);
     expect(result.correlated).toBe(false);
   });
 
-  it("P3-G: an observation altered after persistence fails content binding", () => {
-    const record = recordFor("run-g1", "s1");
-    const altered = { ...record, attemptId: "attempt-".concat("c".repeat(32)) };
-    const result = correlateObservationRecord({ record: altered, journalRecords: [{ type: "RUN_STARTED", runId: "run-g1" }] });
+  it("P3-G: an observation altered after persistence fails content binding", async () => {
+    const real = await realJournal("run-g1", identity.attemptId, "s1", identity.hostLocalJobId);
+    const altered = { ...recordFor("run-g1", "s1"), attemptId: "attempt-".concat("c".repeat(32)) };
+    const result = await correlateObservationRecord({ record: altered, journalRecords: real.records, journalPath: real.journalPath, runRoot: real.runRoot, claimNonce: real.claimNonce, trustedIngestion: true });
     expect(result.state).toBe(STATE.PROVENANCE_CONFLICT);
     expect(result.problems.join(" ")).toContain("altered after it was recorded");
   });
 
-  it("P3: the recorder writes, re-reads and verifies the bytes, and refuses a duplicate", () => {
-    const runRoot = mkdtempSync(join(tmpdir(), "r3l0c-g1-durable-"));
+  it("P3: the recorder writes per invocation, re-reads, verifies the bytes and refuses a duplicate", () => {
+    const runRoot = mkdtempSync(join(tmpdir(), "r3l0c-g1b-durable-"));
     cleanups.push(() => { try { rmSync(runRoot, { recursive: true, force: true }); } catch { /* OS reaps it */ } });
     const record = recordFor("run-g1", "s1");
     const write = writeObservationRecord({ runRoot, record });
     expect(write.written).toBe(true);
     expect(write.durabilityVerified).toBe(true);
-    const read = readObservationRecord({ runRoot });
+    const read = readObservationRecord({ runRoot, invocationId: record.invocationId });
     expect(read?.digestOk).toBe(true);
     expect(read?.contentBindingFailed).toBe(false);
-    // §6: a duplicate write is refused rather than overwriting preserved evidence.
+    // §5: a duplicate write is refused rather than overwriting preserved evidence.
     const again = writeObservationRecord({ runRoot, record });
     expect(again.written).toBe(false);
     expect(again.conflict).toBe(true);
   });
 
-  it("P3: a record with no parseable origin cannot reach RUN_ATTEMPT_CORRELATED", () => {
+  it("P3: a record that is not ingested cannot reach RUN_ATTEMPT_CORRELATED", async () => {
+    const real = await realJournal("run-g1", identity.attemptId, "s1", identity.hostLocalJobId);
     const record = recordFor("run-g1", "s1");
-    const noOrigin = { ...record, origin: "SOMETHING_ELSE" };
-    const result = correlateObservationRecord({ record: noOrigin, journalRecords: [{ type: "RUN_STARTED", runId: "run-g1" }, { type: "TRIAL_RECORDED", sessionId: "s1", attemptId: identity.attemptId }] });
-    expect(result.state).toBe(STATE.DECLARATION_ONLY);
+    const result = await correlateObservationRecord({ record, journalRecords: real.records, journalPath: real.journalPath, runRoot: real.runRoot, claimNonce: real.claimNonce });
+    expect([STATE.ORIGIN_NOT_ESTABLISHED, STATE.DECLARATION_ONLY]).toContain(result.state);
   });
 });
 

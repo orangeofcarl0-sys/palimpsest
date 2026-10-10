@@ -170,6 +170,11 @@ export function falsifierTwoInvocationProducers(stack) {
  */
 export async function falsifierFalseDurability(stack) {
   const correlation = await import('../../r3l0c_g1/observation-correlation.mjs');
+  /**
+   * R3-L0C-G1-B §5: the recorder is bound to the INVOCATION THE PORT PRODUCED. Under the G1 baseline the wrapper
+   * and the port minted different ids, so this recorder rejected every event; after the B1 correction they are the
+   * same id and the real events are accepted. The falsifier reports whichever actually happened.
+   */
   const recorder = correlation.createObservationRecorder({ invocationId: stack.correlated[0]?.invocationId ?? 'wpi-none' });
   for (const entry of stack.correlated) recorder.sink(entry.observation);
   const record = correlation.buildObservationRecord({
@@ -182,7 +187,7 @@ export async function falsifierFalseDurability(stack) {
   const runRoot = mkdtempSync(join(tmpdir(), 'g1b-f2-'));
   try {
     const write = correlation.writeObservationRecord({ runRoot, record });
-    const readBack = correlation.readObservationRecord({ runRoot });
+    const readBack = correlation.readObservationRecord({ runRoot, invocationId: record.invocationId });
     return Object.freeze({
       id: 'F2_FALSE_DURABILITY_SUCCESS',
       requirement: 'B2 — a successfully written empty record must never count as process evidence',
@@ -228,6 +233,7 @@ export async function falsifierWrongJournalSchema() {
     const read = journal.readJournal(journalPath);
     const g1Run = correlation.readRunIdentity({ journalRecords: read.records });
     const g1Trials = correlation.readTrialIdentities({ journalRecords: read.records });
+    const g1TrialMap = g1Trials?.bySession instanceof Map ? g1Trials.bySession : g1Trials;
     return Object.freeze({
       id: 'F3_WRONG_JOURNAL_SCHEMA',
       requirement: 'B3 — consume the real frozen kind/payload journal structure',
@@ -238,7 +244,7 @@ export async function falsifierWrongJournalSchema() {
         journalIntact: read.JOURNAL_INTACT === true,
         g1RunIdentityVerdict: g1Run.verdict,
         g1RunIdentityRunId: g1Run.runId,
-        g1TrialMapSize: g1Trials.size,
+        g1TrialMapSize: g1TrialMap instanceof Map ? g1TrialMap.size : (g1Trials?.total ?? 0),
       }),
       /** §3: the defect is PRESENT when the G1 readers cannot read a real, intact journal. */
       defectPresent: read.JOURNAL_INTACT === true

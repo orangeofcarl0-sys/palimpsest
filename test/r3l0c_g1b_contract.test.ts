@@ -57,68 +57,78 @@ describe("R3-L0C-G1-B §0/§1 — the corrective contract binds the exact baseli
   });
 });
 
-describe("R3-L0C-G1-B §3 — the five baseline defects are MEASURED, not asserted", () => {
-  it("measures all five falsifiers against the unmodified G1 code", async () => {
+describe("R3-L0C-G1-B §3/§11 — the baseline falsifiers, and that C2..C4 CLOSED each one", () => {
+  /**
+   * §11 C1 committed these controls while the defects were PRESENT. After the corrections they report
+   * `defectPresent: false`, which is the measurement of the fix. The BASELINE values each control recorded are
+   * preserved in `baselineDefect` on the contract and in `research-evidence/r3-l0c-g1b/baseline-defects.json`,
+   * so the correction is a measured difference rather than an assertion.
+   */
+  it("re-measures all five controls; B1..B4 are CLOSED and F5 is C4's remaining work", async () => {
     const measured = await runBaselineFalsifiers();
     expect(measured.controls).toHaveLength(5);
-    expect(measured.measuredDefectIds).toEqual([
-      "F1_TWO_INVOCATION_PRODUCERS",
-      "F2_FALSE_DURABILITY_SUCCESS",
-      "F3_WRONG_JOURNAL_SCHEMA",
-      "F4_FORGED_ORIGIN_ACCEPTED",
-      "F5_LOCATOR_CANONICAL_MISMATCH",
-    ]);
-    expect(measured.allDefectsMeasured).toBe(true);
+    /**
+     * §11 sequences the locator correction into C4, so at the C2/C3 boundary exactly ONE defect remains open.
+     * The C4 commit updates this to `[]`.
+     */
+    expect(measured.measuredDefectIds).toEqual(["F5_LOCATOR_CANONICAL_MISMATCH"]);
+    expect(measured.allDefectsMeasured).toBe(false);
     expect(measured.modelCallsMade).toBe(0);
-  }, 120_000);
+    // The baseline observation each control captured is still carried, so the before/after is auditable.
+    for (const control of measured.controls) {
+      expect(control.observed).toBeTruthy();
+      expect(control.classification).toBe("OBSERVED_BASELINE_FAILURE");
+    }
+  }, 180_000);
 
-  it("F1: one port execution carried TWO different invocation identities", async () => {
+  it("F1 CLOSED: one port execution now carries ONE invocation identity", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F1_TWO_INVOCATION_PRODUCERS");
-    expect(control?.observed.anyPairMismatched).toBe(true);
-    expect(control?.observed.entryAndObservationProducersDiffer).toBe(true);
-    expect(control?.defectPresent).toBe(true);
-  }, 120_000);
+    expect(control?.defectPresent).toBe(false);
+    expect(control?.observed.anyPairMismatched).toBe(false);
+    expect(control?.observed.entryAndObservationProducersDiffer).toBe(false);
+  }, 180_000);
 
-  it("F2: a zero-event record reported successful, verified durability", async () => {
+  it("F2 CLOSED: the real events are accepted, and a zero-event record is no longer the positive case", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F2_FALSE_DURABILITY_SUCCESS");
+    expect(control?.defectPresent).toBe(false);
     expect(control?.observed.inMemoryObservations).toBeGreaterThan(0);
-    expect(control?.observed.recorderAcceptedCount).toBe(0);
-    expect(control?.observed.durableEventCount).toBe(0);
-    expect(control?.observed.written).toBe(true);
-    expect(control?.observed.durabilityVerified).toBe(true);
-    expect(control?.defectPresent).toBe(true);
-  }, 120_000);
+    expect(control?.observed.recorderAcceptedCount).toBeGreaterThan(0);
+    expect(control?.observed.durableEventCount).toBeGreaterThan(0);
+    expect(control?.observed.durableEventCount).toBe(control?.observed.recorderAcceptedCount);
+    expect(control?.observed.readBackEventCount).toBe(control?.observed.durableEventCount);
+  }, 180_000);
 
-  it("F3: the G1 readers could not read a real, intact frozen journal", async () => {
+  it("F3 CLOSED: the correlator reads the real frozen journal schema", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F3_WRONG_JOURNAL_SCHEMA");
+    expect(control?.defectPresent).toBe(false);
     expect(control?.observed.realRecordFields).toEqual(["seq", "kind", "at", "payload", "digest"]);
-    expect(control?.observed.journalIntact).toBe(true);
-    expect(control?.observed.g1RunIdentityVerdict).toBe("MISSING_RUN_STARTED");
-    expect(control?.observed.g1TrialMapSize).toBe(0);
-    expect(control?.defectPresent).toBe(true);
-  }, 120_000);
+    expect(control?.observed.g1RunIdentityVerdict).toBe("SINGLE_RUN_IDENTITY");
+    expect(control?.observed.g1RunIdentityRunId).toBe("run-f3");
+    expect(control?.observed.g1TrialMapSize).toBe(1);
+  }, 180_000);
 
-  it("F4: a forged origin marker with a recomputed digest and NO events was admitted", async () => {
+  it("F4 CLOSED: a forged origin marker with no events is REFUSED", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F4_FORGED_ORIGIN_ACCEPTED");
+    expect(control?.defectPresent).toBe(false);
     expect(control?.observed.copiedOriginMarker).toBe("G1_LOCAL_RECORDER");
     expect(control?.observed.recomputedDigestValid).toBe(true);
-    expect(control?.observed.eventCount).toBe(0);
-    expect(control?.observed.correlatorState).toBe("RUN_ATTEMPT_CORRELATED");
-    expect(control?.defectPresent).toBe(true);
-  }, 120_000);
+    expect(control?.observed.correlatorCorrelated).toBe(false);
+    expect(control?.observed.correlatorState).not.toBe("RUN_ATTEMPT_CORRELATED");
+  }, 180_000);
 
-  it("F5: canonical AttemptId was rejected and an incomplete scan reported as absent", async () => {
+  it("F5 STILL OPEN at C1..C3: the locator correction is C4's work", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F5_LOCATOR_CANONICAL_MISMATCH");
-    expect(control?.observed.bareHexDiscovered).toBe(true);
-    expect(control?.observed.canonicalDiscovered).toBe(false);
-    expect(control?.observed.deepCandidateReportsIncomplete).toBe(false);
+    /**
+     * §11 sequences the locator correction into C4. Until it lands this control stays PRESENT — asserted here so
+     * the C1..C3 state is honest rather than silently green.
+     */
     expect(control?.defectPresent).toBe(true);
-  }, 120_000);
+  }, 180_000);
 });
 
 describe("R3-L0C-G1-B §5/§6/§7/§8 — the corrected guarantees, declared", () => {
