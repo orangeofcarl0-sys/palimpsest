@@ -134,7 +134,11 @@ export function destroyDisposableCheckout(input) {
   /** 2. VERIFY THE EXPECTED ROOT. §4: the worktree must be within the expected disposable root. */
   const normalizedRoot = resolvedRoot.replace(/\\/gu, '/');
   const normalizedExpected = resolve(expectedRoot).replace(/\\/gu, '/');
-  const withinExpectedRoot = normalizedRoot.startsWith(normalizedExpected) || (checkout?.withinExpectedRoot === true);
+  /**
+   * §4: the check is against the PATH, not against a caller-supplied flag. A flag would let a caller declare its own
+   * safety, which is the same defect as accepting an attempted unlink as a successful one.
+   */
+  const withinExpectedRoot = normalizedRoot.startsWith(normalizedExpected);
   record('VERIFY_WITHIN_DISPOSABLE_ROOT', Object.freeze({ withinExpectedRoot, expectedRoot: normalizedExpected, actual: normalizedRoot }));
   if (withinExpectedRoot !== true) {
     return blocked(Object.freeze({
