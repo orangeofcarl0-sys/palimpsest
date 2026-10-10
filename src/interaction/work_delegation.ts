@@ -302,10 +302,21 @@ export class WorkDelegationError extends Error {
 }
 
 /**
- * §5: BUILD THE CORRELATION WRAPPER, or `undefined` when no consumer is attached.
+ * §5 / R3-L0C-G1-B §4 B1: BUILD THE CORRELATION WRAPPER, or `undefined` when no consumer is attached.
  *
  * Returning `undefined` when there is no sink is what makes the seam genuinely optional: the port receives
  * `observe: undefined` and the spread leaves the run input byte-identical to the pre-G1 shape (§9, P2-G).
+ *
+ * R3-L0C-G1-B §4: THE DEPLOYMENT PORT IS THE SOLE PRODUCER OF THE INVOCATION IDENTITY. The wrapper therefore
+ * does NOT mint one. It ADOPTS the `invocationId` carried by the observation the port emitted, so a correlated
+ * entry and its own observation always name the same port execution:
+ *
+ *     entry.invocationId === entry.observation.invocationId
+ *
+ * WHY THIS IS THE CORRECT OWNER. The Work Owner does not perform the process spawn, so it must not mint port
+ * invocation identity; the Deployment Port must not mint AttemptId or HostJobId, because those belong to other
+ * owners. The correlation is the one place that legitimately holds `prepared.attemptId` and its own jobId, so it
+ * supplies THOSE two facts and takes the third from the producer that actually observed the process.
  *
  * A THROW FROM THE CONSUMER IS SWALLOWED. The sink is a research consumer, not a Work participant: if it fails,
  * the observation is lost and the worker's outcome is unchanged. §4: "A failed observer must not fabricate a
@@ -314,7 +325,7 @@ export class WorkDelegationError extends Error {
  */
 function correlateObservations(
   sink: WorkCorrelatedObservationSink | undefined,
-  identity: { readonly hostLocalJobId: string; readonly attemptId: string; readonly invocationId: string },
+  identity: { readonly hostLocalJobId: string; readonly attemptId: string },
 ): WorkObservationSink | undefined {
   if (sink === undefined) return undefined;
   return (observation: HostProcessObservation): void => {
@@ -323,7 +334,8 @@ function correlateObservations(
         Object.freeze({
           hostLocalJobId: identity.hostLocalJobId,
           attemptId: identity.attemptId,
-          invocationId: identity.invocationId,
+          /** §4 B1: taken from the PRODUCER, never generated here. */
+          invocationId: observation.invocationId,
           observation,
         }),
       );
@@ -361,8 +373,7 @@ export async function executeMutatingWorkBlocking(
    * already owns. `hostLocalJobId` is empty here because the blocking kernel has no host job — the async
    * service supplies its own.
    */
-  const invocationId = `wpi-${randomUUID()}`;
-  const observe = correlateObservations(deps.onCorrelatedObservation, { hostLocalJobId: "", attemptId: prepared.attemptId, invocationId });
+  const observe = correlateObservations(deps.onCorrelatedObservation, { hostLocalJobId: "", attemptId: prepared.attemptId });
   const workerOutcome = await worker.run({
     workDir: prepared.worldPath,
     context,
@@ -451,7 +462,6 @@ export function makeWorkDelegationService(deps: WorkDelegationServiceDeps): Work
           const observe = correlateObservations(deps.onCorrelatedObservation, {
             hostLocalJobId: jobId,
             attemptId: prepared.attemptId,
-            invocationId: `wpi-${randomUUID()}`,
           });
           // E1-K §23: the explicit selection rides WITH the compile — no side-channel compile between
           // preparation and worker delivery, and no second durable owner. An omitted selection is the

@@ -216,6 +216,12 @@ export const OBSERVATION_FIELDS = Object.freeze([
 /** §6: the trust-boundary states a research consumer must keep separate. */
 export const EVIDENCE_STATES = Object.freeze([
   'DECLARATION_ONLY',
+  /**
+   * R3-L0C-G1-B §7: the state a record reaches when it carries the origin marker and a valid digest but was NOT
+   * delivered through a live recorder handle. G1-B separates "shaped like a host record" from "produced by this
+   * host", because a caller can copy the marker and recompute the hash.
+   */
+  'ORIGIN_NOT_ESTABLISHED',
   'LOCAL_HOST_OBSERVED',
   'RUN_ATTEMPT_CORRELATED',
   'PROVENANCE_INCOMPLETE',

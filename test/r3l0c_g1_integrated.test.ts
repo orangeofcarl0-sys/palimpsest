@@ -37,12 +37,22 @@ describe("R3-L0C-G1 §12 C4 — the real product stack produces a host observati
     expect(result.jobPhase).toBe("FINISHED");
   });
 
-  it("C4: the observation record is durable, re-read and content-verified", async () => {
+  it("C4: the observation record is durable, re-read and content-verified, and NON-EMPTY", async () => {
     const result = await runIntegratedValidation();
     expect(result.recordWritten).toBe(true);
     expect(result.recordDurabilityVerified).toBe(true);
     expect(result.recordDigestOkOnReadBack).toBe(true);
     expect(result.recordContentBindingFailed).toBe(false);
+    expect(result.recordIdentityMatches).toBe(true);
+    /**
+     * R3-L0C-G1-B §5: the corrected acceptance requires REAL events. G1 accepted a ZERO-event record here, which
+     * is exactly the false durability success the falsifier F2 measured.
+     */
+    expect(result.acceptedEventCount).toBeGreaterThan(0);
+    expect(result.rejectedEventCount).toBe(0);
+    expect(result.persistedEventCount).toBe(result.acceptedEventCount);
+    expect(result.readBackEventCount).toBe(result.persistedEventCount);
+    expect(result.lifecycle.complete).toBe(true);
   });
 
   it("C4: the observation carries only the events the host actually observed", async () => {
@@ -54,13 +64,16 @@ describe("R3-L0C-G1 §12 C4 — the real product stack produces a host observati
     ]);
     // §4: an observed exit means NO unconfirmed-exit event for this invocation.
     expect(result.eventKinds).not.toContain("DIRECT_CHILD_EXIT_UNCONFIRMED");
+    // §4 B1: ONE invocation identity across every event, and it equals the correlated entry's.
+    expect(result.invocationId).not.toBeNull();
+    expect(result.correlationIsExact).toBe(true);
   });
 
   it("C4: the correlation of an uncorroborated record is NOT live-primary provenance", async () => {
     const result = await runIntegratedValidation();
     // §6: with no journal supplied, the record cannot reach RUN_ATTEMPT_CORRELATED — and never LIVE_PRIMARY.
     expect([EVIDENCE_STATE.PROVENANCE_INCOMPLETE, EVIDENCE_STATE.PROVENANCE_CONFLICT]).toContain(result.correlation.state);
-    expect(result.correlation.livePrimary).toBeUndefined();
+    expect(result.correlation.livePrimary).toBe(false);
     expect(result.recordProvesNothingAboutPrimary).toBe(true);
   });
 
