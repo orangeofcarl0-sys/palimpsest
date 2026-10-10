@@ -99,7 +99,6 @@ export function buildStageResult(qualification) {
     }),
     runnerIdentityFalsifier: qualification.productionControls.runnerIdentityFalsifier,
     deterministicQualification: qualification.deterministicQualification,
-    finalQualification: finalQualification ?? null,
     planClosure: qualification.planClosure,
     immutability: Object.freeze({ verdict: qualification.immutability.verdict, protectedNamespaces: qualification.immutability.protectedNamespaces.length, restoreAvailable: qualification.immutability.restoreAvailable }),
     plan: qualification.plan,
