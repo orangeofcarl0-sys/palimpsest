@@ -40,10 +40,10 @@ import {
 const BASE = join(tmpdir(), `palimpsest-r3l0ciarlc-gates-${String(process.pid)}`);
 let prehistory: { world: string; state: string };
 let refs: readonly unknown[];
-let closure: { executionClosureDigest: string; CLOSURE_COMPLETE: boolean };
+let closure: Awaited<ReturnType<typeof computeExecutionClosure>>;
 let containment: Awaited<ReturnType<typeof runPerTrajectoryConfinement>>;
 let schedule: Awaited<ReturnType<typeof frozenPrimarySchedule>>;
-let plan: Record<string, unknown>;
+let plan: Awaited<ReturnType<typeof buildProspectivePlan>>;
 let healthyRun: Awaited<ReturnType<typeof runAdmissionClosureMatrix>> | null = null;
 
 beforeAll(async () => {

@@ -47,6 +47,7 @@ export const STAGE_HARNESS_MODULES = Object.freeze([
   `${STAGE_CODE_PATH}/prospective-plan.mjs`,
   `${STAGE_CODE_PATH}/regression.mjs`,
   `${STAGE_CODE_PATH}/acceptance.mjs`,
+  `${STAGE_CODE_PATH}/evidence.mjs`,
   `${STAGE_CODE_PATH}/falsifiers.mjs`,
   `${STAGE_CODE_PATH}/baseline/legacy-controls.mjs`,
 ]);

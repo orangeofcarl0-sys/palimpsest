@@ -16,11 +16,26 @@ export interface ClosureMutations {
   readonly law: string;
 }
 
+export interface ExecutionClosure {
+  readonly schemaVersion: number;
+  readonly kind: string;
+  readonly parts: Readonly<Record<string, string>>;
+  readonly partIds: readonly string[];
+  readonly fileDigests: Readonly<Record<string, Readonly<Record<string, string>>>>;
+  readonly fileCount: number;
+  readonly stageHarness: { readonly digest: string; readonly moduleCount: number; readonly missing: readonly string[] };
+  readonly reusedModules: { readonly digest: string; readonly moduleCount: number; readonly missing: readonly string[] };
+  readonly executionClosureDigest: string;
+  readonly CLOSURE_COMPLETE: boolean;
+  readonly aggregateMaterial: Readonly<Record<string, string>>;
+  readonly [key: string]: unknown;
+}
+
 export const STAGE_HARNESS_MODULES: readonly string[];
 export const REUSED_MODULES: readonly string[];
 export const NL: string;
 
 export function fileDigest(relative: string): string;
 export function digestOfMap(map: Readonly<Record<string, string>>): string;
-export function computeExecutionClosure(input?: { readonly verifyCompiled?: boolean }): Promise<Readonly<Record<string, unknown>>>;
+export function computeExecutionClosure(input?: { readonly verifyCompiled?: boolean }): Promise<ExecutionClosure>;
 export function proveClosureMutations(): Promise<ClosureMutations>;
