@@ -369,7 +369,13 @@ export async function runQualification(input = {}) {
     measuredCount: record.primaryMatrix.costMeasured, absentCount: record.primaryMatrix.costAbsent,
     invalidCount: record.primaryMatrix.costInvalid,
   });
-  const qualification = reduceDeterministicQualification({
+  /**
+   * §5/§7: THE REDUCTION INPUTS ARE STORED, so §5 Phase B can RE-EVALUATE the qualification with the final
+   * persisted seal present. Phase A records PENDING_FINAL_SEAL because the seal does not exist yet; the promotion to
+   * PASS happens only when the committed seal is MATCH, and it happens by running the SAME reduction again rather
+   * than by a separate promotion rule.
+   */
+  const qualificationInputs = Object.freeze({
     planVerification: planRead,
     closureCheck: record.planClosure,
     matrix: Object.freeze({ matrixCompleted: record.primaryMatrix.matrixCompleted, terminalState: record.primaryMatrix.terminalState, completedSessions: record.primaryMatrix.completedSessions, scheduleLength: record.primaryMatrix.scheduleLength, maxLaunchesPerSession: record.primaryMatrix.maxLaunchesPerSession, retries: 0, unplannedLaunches: [] }),
@@ -378,10 +384,11 @@ export async function runQualification(input = {}) {
     costClassification,
     falseZeroPromotion,
     cleanupControls: cleanupControl,
-    /** §5: null at the pre-persistence phase, which is why the seal condition is PENDING. */
-    finalSeal: null,
     immutability: record.immutability,
   });
+  record.qualificationInputs = qualificationInputs;
+  /** §5: `finalSeal: null` at the pre-persistence phase, which is why the seal condition is PENDING. */
+  const qualification = reduceDeterministicQualification({ ...qualificationInputs, finalSeal: null });
   record.deterministicQualification = qualification;
 
   /** 13. The verdicts this stage can compute at the pre-persistence phase. */

@@ -19,6 +19,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { reduceDeterministicQualification } from './qualification.mjs';
 import {
   BASELINE_COMMIT,
   COMPLETION_CLASSIFICATIONS,
@@ -98,6 +99,7 @@ export function buildStageResult(qualification) {
     }),
     runnerIdentityFalsifier: qualification.productionControls.runnerIdentityFalsifier,
     deterministicQualification: qualification.deterministicQualification,
+    finalQualification: finalQualification ?? null,
     planClosure: qualification.planClosure,
     immutability: Object.freeze({ verdict: qualification.immutability.verdict, protectedNamespaces: qualification.immutability.protectedNamespaces.length, restoreAvailable: qualification.immutability.restoreAvailable }),
     plan: qualification.plan,
@@ -137,7 +139,18 @@ export function buildFinalVerdicts(input) {
   const cost = qualification.productionControls.validatedCostBridge;
   const runner = qualification.productionControls.runnerIdentityFalsifier;
   const invalid = qualification.invalidArtifactMatrix;
-  const qualificationVerdict = qualification.deterministicQualification?.verdict ?? 'FAIL';
+  /**
+   * §5: THE QUALIFICATION IS RE-EVALUATED WITH THE FINAL PERSISTED SEAL PRESENT.
+   *
+   * Phase A recorded `PENDING_FINAL_SEAL` because the seal did not exist yet. §5 requires the final verdict to come
+   * from the persisted seal, so the SAME reduction runs again with the seal supplied — and the promotion to PASS
+   * happens only because every other condition still holds AND the seal is MATCH. A seal that was computed and did
+   * not match yields FAIL, never a promotion.
+   */
+  const finalQualification = qualification.qualificationInputs === undefined || qualification.qualificationInputs === null
+    ? qualification.deterministicQualification
+    : reduceDeterministicQualification({ ...qualification.qualificationInputs, finalSeal: seal });
+  const qualificationVerdict = finalQualification?.verdict ?? 'FAIL';
 
   const verdicts = Object.freeze({
     VALIDATED_COST_BRIDGE: cost.PASS === true ? 'PASS' : 'FAIL',
@@ -159,7 +172,7 @@ export function buildFinalVerdicts(input) {
     PERSISTED_CROSS_ARTIFACT_SEAL: sealResult,
     /** §5: the final verdict is derived from the seal, so this holds when the seal was actually read from disk. */
     FINAL_VERDICT_DERIVED_FROM_SEAL: seal !== null && seal !== undefined && seal.evaluationPhase === SEAL_PHASES.PHASE_B.id && seal.thisSealIsTheFinalVerdict === true ? 'PASS' : 'FAIL',
-    DETERMINISTIC_MEASUREMENT_QUALIFICATION: sealResult === 'MATCH' && qualificationVerdict === 'PASS' ? 'PASS' : (sealResult === 'MATCH' ? 'FAIL' : qualificationVerdict),
+    DETERMINISTIC_MEASUREMENT_QUALIFICATION: qualificationVerdict,
     EXECUTION_CLOSURE: qualification.planClosure.EXECUTION_CLOSURE,
     HISTORICAL_EVIDENCE_IMMUTABILITY: qualification.immutability.verdict,
     REAL_DSH_ARTIFACT_COMPATIBILITY: UNEARNED_VERDICTS.REAL_DSH_ARTIFACT_COMPATIBILITY,
@@ -195,6 +208,7 @@ export function buildFinalVerdicts(input) {
       stageResultCommittedGitBlob: seal?.stageResultCommittedGitBlob ?? null,
     }),
     verdicts,
+    finalQualification: finalQualification ?? null,
     completionClassification: classification,
     completionClassifications: COMPLETION_CLASSIFICATIONS,
     /** §12: the unearned verdicts, carried so a reader sees they were not promoted. */
