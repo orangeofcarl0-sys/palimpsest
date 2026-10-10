@@ -11,6 +11,7 @@ export const sep: string;
 
 export const LOCATOR_OUTCOMES: Readonly<Record<string, string>>;
 
+export function normalizeAttemptIdentity(value: string): Readonly<{ ok: boolean; bare: string | null; canonical: string | null; reason: string | null }>;
 export function decodeCwdSlug(name: string): string | null;
 export function attemptIdFromSlug(slug: string): string | null;
 export function attemptIdFromArtifactPath(path: string): string | null;
