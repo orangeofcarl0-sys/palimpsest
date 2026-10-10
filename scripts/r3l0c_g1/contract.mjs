@@ -223,6 +223,14 @@ export const EVIDENCE_STATES = Object.freeze([
   'LIVE_PRIMARY_NOT_ESTABLISHED',
 ]);
 
+/**
+ * §6: the same states as a NAMED lookup, so code reads `EVIDENCE_STATE.RUN_ATTEMPT_CORRELATED` rather than an
+ * index. Both are exported from the ONE declaration, so they cannot drift.
+ */
+export const EVIDENCE_STATE = Object.freeze(
+  Object.fromEntries(EVIDENCE_STATES.map((state) => [state, state])),
+);
+
 /** §6: the correlation chain, each step with the producer that legitimately owns it. */
 export const CORRELATION_CHAIN = Object.freeze([
   Object.freeze({ step: 'RUN_STARTED', owner: 'the run journal' }),
