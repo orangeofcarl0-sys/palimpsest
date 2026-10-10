@@ -200,8 +200,17 @@ export async function runQualification(input = {}) {
     reportThenHangUncertain: hang.terminalState === 'UNCERTAIN_PRESERVED',
   });
 
-  /** 7. The PRIMARY refusal, through the ACTUAL entry, with every gate satisfied except the prohibition. */
-  const primaryRun = await runEvidenceSealMatrix({ ...common, mode: 'PRIMARY', runId: 'r3lcfs-qualification-primary', runRoot: join(base, 'primary') });
+  /**
+   * 7. The PRIMARY refusal, through the ACTUAL entry. §8 requires the guard to dominate the reachable path it
+   * claims to protect, so this call supplies ONLY the frozen experimental inputs a PRIMARY invocation legitimately
+   * supplies — no derived measurement, no trusted host input, no execution seam — and it is refused at the
+   * prohibition after the committed-plan guard has already passed.
+   */
+  const primaryRun = await runEvidenceSealMatrix({
+    mode: 'PRIMARY', runId: 'r3lcfs-qualification-primary', runRoot: join(base, 'primary'),
+    prehistory: { world: built.world, state: built.paths.state }, admittedRefs: refs,
+    authorizedBy: PLAN_ID, caller: PLAN_ID,
+  });
   record.primaryRefusal = Object.freeze({
     PIPELINE: primaryRun.PIPELINE,
     refusedAt: primaryRun.refusedAt,

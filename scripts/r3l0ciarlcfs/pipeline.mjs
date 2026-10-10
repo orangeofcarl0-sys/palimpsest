@@ -266,7 +266,7 @@ export async function runEvidenceSealMatrix(input) {
     const durableReconciliation = await reconcileTrialEvidence({ journal, schedule, plannedSessions, inMemoryRecords: records, liveEvidenceContinuity: continuity, costAttribution, runRoot });
     const frozenValidity = await postMatrixValidityGate({
       completed, records, plannedSessions, plan, closure, containment, schedule,
-      systemValid: input.systemValid,
+      systemValid: normalizeVerdict(input.systemValid),
       environmentValid: containment?.EXPERIMENT_ENVIRONMENT_VALID ?? containment?.EXPERIMENT_CONTAINMENT ?? null,
       costAttribution: Object.freeze({ interpretable: costAttribution.interpretable, rejectedCount: 0, measuredCount: costAttribution.measuredCount, absentCount: costAttribution.absentCount, plannedSessions: costAttribution.plannedSessions, livePrimaryCount: costAttribution.livePrimaryCount, fixtureCount: costAttribution.fixtureCount, allSixteenLivePrimary: costAttribution.allSixteenLivePrimary }),
       routeConfiguration: { MODEL_ROUTE_IDENTITY: freshness.admissionRouteIdentity },
@@ -322,3 +322,11 @@ export async function runEvidenceSealMatrix(input) {
 }
 
 export { NL, REPO_ROOT, STAGE_EVIDENCE_PATH, existsSync };
+
+/** §8: normalize a boolean or string system-validity signal into the frozen gate's PASS/FAIL vocabulary. */
+function normalizeVerdict(value) {
+  if (value === true) return 'PASS';
+  if (value === false) return 'FAIL';
+  if (value === 'PASS' || value === 'FAIL') return value;
+  return null;
+}
