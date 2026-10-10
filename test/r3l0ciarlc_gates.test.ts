@@ -28,7 +28,9 @@ import { enforcePrimaryInputBinding, verifyExternalAuthority, planContentDigest,
 import { bridgeMatrixCost, attributeSessionFromRecord } from "../scripts/r3l0ciarlc/cost-bridge.mjs";
 import { authoritativeTerminalAdmission } from "../scripts/r3l0ciarlc/postmatrix-admission.mjs";
 import { competingWriterVerdict, inRunAttestation, sampleInstallationDigest, compareInstalledBundle } from "../scripts/r3l0ciarlc/attestation.mjs";
-import { verifyCompiledSource } from "../scripts/r3l0ciarl/attestation.mjs";
+import { verifyCompiledSource } from "../scripts/r3l0ciarlc/attestation.mjs";
+import { verifyCompiledSourceIsolated, COMPILED_PAIRS } from "../scripts/r3l0ciarlc/compiled-verification.mjs";
+import { verifyCompiledSource as frozenVerifyCompiledSource } from "../scripts/r3l0ciarl/attestation.mjs";
 import { controlDurableCostBridge, controlTerminalAdmission, controlTrustBoundary, controlInRunAttestation } from "../scripts/r3l0ciarlc/acceptance.mjs";
 import { deterministicArtifactFixture } from "../scripts/r3l0ciarlc/qualification.mjs";
 import { writeRealFormatArtifact } from "../scripts/r3l0ciarlc/baseline/legacy-controls.mjs";
@@ -44,6 +46,7 @@ let closure: Awaited<ReturnType<typeof computeExecutionClosure>>;
 let containment: Awaited<ReturnType<typeof runPerTrajectoryConfinement>>;
 let schedule: Awaited<ReturnType<typeof frozenPrimarySchedule>>;
 let plan: Awaited<ReturnType<typeof buildProspectivePlan>>;
+let compiledVerification: Awaited<ReturnType<typeof verifyCompiledSource>>;
 let healthyRun: Awaited<ReturnType<typeof runAdmissionClosureMatrix>> | null = null;
 
 beforeAll(async () => {
@@ -58,22 +61,40 @@ beforeAll(async () => {
   closure = await computeExecutionClosure({ verifyCompiled: false });
   containment = await runPerTrajectoryConfinement({ runRoot: join(BASE, "containment"), trajectoryIds });
   plan = await buildProspectivePlan({ closure, verifyCompiled: false });
-}, 600_000);
+  /** Measured ONCE, because it emits at the repository root and runs a full compiler invocation. */
+  compiledVerification = await verifyCompiledSource();
+}, 900_000);
 
 afterAll(() => {
   try { rmSync(BASE, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 }); } catch { /* Windows holds handles briefly */ }
 });
 
-/** The common matrix inputs, with a fresh artifact root and the deterministic fixture. */
+/**
+ * The common matrix inputs, with an ISOLATED DSH home per case.
+ *
+ * §6 requires the attestation mutations to run "in an isolated DSH installation environment, not by transiently
+ * rewriting files shared by parallel test processes". An isolated home per case also removes the contention the
+ * shared installation would otherwise create between the matrices this suite runs.
+ *
+ * THE SOURCE-TO-COMPILED VERIFICATION IS COMPUTED ONCE, in `beforeAll`, and injected. It writes a probe
+ * configuration and an emit directory at the repository root and runs a full `tsc`, so re-running it per matrix
+ * would both cost minutes and race the frozen R3-L0C-F tests that use the same probe path. It is a property of the
+ * repository rather than of a run, so one measurement is the right one; the seam is DETERMINISTIC-only and refused
+ * in PRIMARY.
+ */
 async function matrixInputs(runId: string, extra: Record<string, unknown> = {}) {
-  const artifactRoot = join(BASE, `artifacts-${runId}`);
+  const caseRoot = join(BASE, runId);
+  const artifactRoot = join(caseRoot, "artifacts");
+  const isolatedHome = join(caseRoot, ".dsh");
   mkdirSync(artifactRoot, { recursive: true });
+  mkdirSync(join(isolatedHome, "profiles", "node_modules"), { recursive: true });
   const artifactFixture = await deterministicArtifactFixture({ artifactRoot });
   return {
-    prehistory, admittedRefs: refs, installHostBundle, dshHome,
+    prehistory, admittedRefs: refs, installHostBundle, dshHome: () => isolatedHome,
     authorizedBy: PLAN_ID, caller: PLAN_ID, plan, closure, containment,
     mode: "DETERMINISTIC", systemValid: true, artifactRoot, artifactFixture,
-    runId, runRoot: join(BASE, runId), ...extra,
+    terminalCompiledVerification: compiledVerification,
+    runId, runRoot: caseRoot, isolatedHome, ...extra,
   };
 }
 
@@ -208,8 +229,7 @@ describe("R3-L0C-I-A-R-L-C — the authoritative path", () => {
   }, 300_000);
 
   it("§6 Gate D: S1 is the post-installation baseline and a competing writer is detected despite this run's install", async () => {
-    const compiled = await verifyCompiledSource();
-    const control = await controlInRunAttestation({ repo: process.cwd(), compiledVerification: compiled });
+    const control = await controlInRunAttestation({ repo: process.cwd(), compiledVerification });
     expect(control.PASS).toBe(true);
     expect(control.positiveControl.s0DiffersFromS1).toBe(true);
     expect(control.positiveControl.cleanS1MatchesS2).toBe(true);
@@ -221,6 +241,19 @@ describe("R3-L0C-I-A-R-L-C — the authoritative path", () => {
     expect(control.mutations.s2DiffersFromS1).toBe(true);
     expect(ATTESTATION_RULES.installedDuringRunDoesNotSuppressDetection).toBe(true);
     expect(ATTESTATION_RULES.s0ToS2IsNotTheCompetingWriterTest).toBe(true);
+  }, 900_000);
+
+  it("§6: the isolated verification agrees with the frozen method, so the restatement cannot drift", async () => {
+    const isolated = verifyCompiledSourceIsolated();
+    expect(isolated.DETERMINISTIC).toBe("SUPPORTED");
+    expect(isolated.COMPILED_MATCHES_SOURCE).toBe(true);
+    expect(isolated.pairs).toBe(COMPILED_PAIRS.length);
+    expect(isolated.diverged).toEqual([]);
+    expect(isolated.probeIsolation).toContain("unique directory");
+    /** The frozen method must agree on the verdict and the pair count, or the restatement has drifted. */
+    const frozen = await frozenVerifyCompiledSource();
+    expect(frozen.COMPILED_MATCHES_SOURCE).toBe(isolated.COMPILED_MATCHES_SOURCE);
+    expect(frozen.pairs).toBe(isolated.pairs);
   }, 900_000);
 
   it("§6: a skipped compiled verification is not an attestation pass", async () => {
@@ -295,16 +328,29 @@ describe("R3-L0C-I-A-R-L-C — the authoritative matrix through the real runner"
     expect(readFileSync(join(run.runRoot, "generation-journal.jsonl"), "utf8").includes("MATRIX_COMPLETED")).toBe(false);
   }, 900_000);
 
-  it("§6: a competing writer during the run refuses completion at the terminal gate", async () => {
+  it("§6 Gate D MUTATION: a competing writer between S1 and S2 refuses completion at the terminal gate", async () => {
+    const { writeFileSync: writeFile } = await import("node:fs");
     const inputs = await matrixInputs("competing-writer");
-    /** The S2 sample is taken from the resolved home inside the gate; a changed home makes S2 differ from S1. */
+    const isolatedHome = inputs.isolatedHome as string;
     const run = await runAdmissionClosureMatrix({
       ...inputs,
-      terminalCompiledVerification: null,
-      terminalRecompute: async () => ({ closure: { executionClosureDigest: closure.executionClosureDigest }, route: { MODEL_ROUTE_IDENTITY: "MATCH" } }),
+      /** The mutation fires inside the gate, between the post-installation baseline S1 and the S2 sample. */
+      terminalMutation: () => {
+        const installedFile = join(isolatedHome, "profiles", "node_modules", "palimpsest-dsh-host", "lib", "runner.js");
+        writeFile(installedFile, `${readFileSync(installedFile, "utf8")}\n/* competing writer */`, "utf8");
+      },
     });
-    /** A healthy run with an unchanged installation completes; the competing-writer case is covered by the reducer test. */
-    expect(run.terminalState).toBe("MATRIX_COMPLETE");
+    /** The authoritative matrix must REFUSE valid completion. */
+    expect(run.terminalState).toBe("ABORT_PRESERVED");
+    expect(run.matrixCompleted).toBe(false);
+    expect(run.validityGate?.decision).toBe("RED");
+    expect(run.validityGate?.failing).toContain("RUNTIME_ATTESTED");
+    expect(run.run?.causalVerdictIssued).toBe(false);
+    /** §6: the negative control verifies the ACTUAL terminal evidence, not only the helper's return value. */
+    const journal = readFileSync(join(run.runRoot, "generation-journal.jsonl"), "utf8");
+    expect(journal.includes("MATRIX_COMPLETED")).toBe(false);
+    expect(journal.includes("MATRIX_ABORTED")).toBe(true);
+    expect(run.finalAttestation?.competingWriterDetected).toBe(true);
   }, 900_000);
 
   it("§8: the fail-stop protocol still holds under every fault position", async () => {

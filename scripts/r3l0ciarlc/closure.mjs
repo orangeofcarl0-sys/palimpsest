@@ -42,6 +42,7 @@ export const STAGE_HARNESS_MODULES = Object.freeze([
   `${STAGE_CODE_PATH}/postmatrix-admission.mjs`,
   `${STAGE_CODE_PATH}/trust-boundary.mjs`,
   `${STAGE_CODE_PATH}/attestation.mjs`,
+  `${STAGE_CODE_PATH}/compiled-verification.mjs`,
   `${STAGE_CODE_PATH}/closure.mjs`,
   `${STAGE_CODE_PATH}/qualification.mjs`,
   `${STAGE_CODE_PATH}/prospective-plan.mjs`,

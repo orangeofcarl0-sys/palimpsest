@@ -24,10 +24,12 @@ import {
   CONTROL_GATE_IDS,
   CORRECTION_GATES,
   COST_BRIDGE_OUTCOMES,
+  EXPERIMENTAL_INPUTS,
   FROZEN_SESSION_SCOPE,
   LIVE_PRIMARY_EVIDENCE,
   PRESERVED_DESIGN,
   PRIMARY_DERIVED_INPUTS,
+  PRIMARY_REFUSED_INPUTS,
   TERMINAL_ADMISSION_CONDITIONS,
   UNEARNED_VERDICTS,
   contractSummary,
@@ -56,8 +58,18 @@ describe("R3-L0C-I-A-R-L-C — the contract declares the four gates and the elev
     expect(AUTHORIZATION_REQUIREMENTS.length).toBe(5);
     expect(AUTHORIZATION_RECORD_FIELDS).toContain("paidRunBudget");
     expect(FROZEN_SESSION_SCOPE).toBe(16);
-    expect(PRIMARY_DERIVED_INPUTS).toContain("dshHome");
-    expect(PRIMARY_DERIVED_INPUTS).toContain("verifyCompiled");
+    expect(PRIMARY_DERIVED_INPUTS).toContain("plan");
+    expect(PRIMARY_DERIVED_INPUTS).toContain("closure");
+    expect(PRIMARY_DERIVED_INPUTS).toContain("validityGate");
+    expect(PRIMARY_DERIVED_INPUTS).toContain("costAttribution");
+    expect(PRIMARY_DERIVED_INPUTS).toContain("retries");
+    /** §5: the trusted host inputs and the execution-configuration seams are refused too. */
+    expect(PRIMARY_REFUSED_INPUTS).toContain("dshHome");
+    expect(PRIMARY_REFUSED_INPUTS).toContain("installHostBundle");
+    expect(PRIMARY_REFUSED_INPUTS).toContain("verifyCompiled");
+    expect(PRIMARY_REFUSED_INPUTS).toContain("timeoutMs");
+    /** §5: the frozen experimental inputs are NOT refused, or a legitimate PRIMARY run could not supply them. */
+    for (const name of EXPERIMENTAL_INPUTS) expect(PRIMARY_REFUSED_INPUTS).not.toContain(name);
     expect(LIVE_PRIMARY_EVIDENCE.modeLabelAloneIsInsufficient).toBe(true);
     expect(ATTESTATION_RULES.installedDuringRunDoesNotSuppressDetection).toBe(true);
     expect(AUTHORITY_TRUST.thisStageProvidesAuthorization).toBe(false);

@@ -54,7 +54,7 @@ export async function runQualification(input = {}) {
   const { controlDurableCostBridge, controlTerminalAdmission, controlTrustBoundary, controlInRunAttestation } = await import('./acceptance.mjs');
   const { inRunAttestation, sampleInstallationDigest } = await import('./attestation.mjs');
   const { runPerTrajectoryConfinement } = await import('../r3l0ciar/confinement.mjs');
-  const { verifyCompiledSource } = await import('../r3l0ciarl/attestation.mjs');
+  const { verifyCompiledSource } = await import('./attestation.mjs');
 
   const base = input.base ?? join(tmpdir(), `r3l0ciarlc-qualification-${String(process.pid)}`);
   mkdirSync(base, { recursive: true });
