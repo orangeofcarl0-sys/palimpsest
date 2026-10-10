@@ -35,12 +35,22 @@ export function committedPlanPath() {
  */
 export async function readAndVerifyCommittedPlan(input = {}) {
   const { readAndVerifyCommittedPlan: verify } = await import('../r3l0ciarlcfs/committed-plan.mjs');
+  const { computeExecutionClosure } = await import('./closure.mjs');
   const relative = input.relative ?? committedPlanPath();
+  /**
+   * §11: THE CLOSURE BINDING IS RECOMPUTED HERE, WITH THIS STAGE'S OWN CLOSURE.
+   *
+   * The reused verifier computes its closure with ITS OWN module, so its `PLAN_CLOSURE_BINDING` would compare this
+   * stage's plan against the PRIOR stage's closure digest and report DRIFTED for a correct plan. The other three
+   * checks are stage-independent and are taken from the reused verifier unchanged.
+   */
+  const closure = await computeExecutionClosure({ verifyCompiled: input.verifyCompiled === true });
   const verification = await verify({
     relative,
     planPath: input.planPath ?? `${REPO_ROOT}/${relative}`,
     expectedPlanId: input.expectedPlanId ?? PLAN_ID,
     verifyCompiled: input.verifyCompiled === true,
+    expectedClosureDigest: closure.executionClosureDigest,
   });
   return Object.freeze({
     ...verification,

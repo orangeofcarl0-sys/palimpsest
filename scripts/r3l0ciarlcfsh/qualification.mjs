@@ -93,8 +93,13 @@ export function reduceDeterministicQualification(input) {
   ]);
 
   const failing = Object.freeze(conditions.filter((condition) => condition.holds !== true).map((condition) => condition.id));
-  const sealPending = failing.length === 1 && failing[0] === 'FINAL_PERSISTED_SEAL_MATCHES';
-  const verdict = failing.length === 0 ? 'PASS' : (sealPending ? 'PENDING_FINAL_SEAL' : 'FAIL');
+  /**
+   * §7: PENDING is reserved for the ONE honest case — the seal has not been COMPUTED yet. A seal that was computed
+   * and did NOT match is a FAILURE, not a pending state, so it can never be promoted by re-running the seal.
+   */
+  const sealNotYetComputed = (finalSeal === null || finalSeal === undefined)
+    && failing.length === 1 && failing[0] === 'FINAL_PERSISTED_SEAL_MATCHES';
+  const verdict = failing.length === 0 ? 'PASS' : (sealNotYetComputed ? 'PENDING_FINAL_SEAL' : 'FAIL');
 
   return Object.freeze({
     schemaVersion: 1,
