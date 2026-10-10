@@ -66,7 +66,20 @@
   "currentMaintenanceClosure": {
     "digest": "dc6f5673ff78638480e0a5719ae3e1a027c1fbe0cc0109d527984b30f10dccd2",
     "computedBy": "scripts/r3l0ciarlcfsh/closure.mjs computeExecutionClosure({ verifyCompiled: false })",
-    "closureComplete": true
+    "closureComplete": true,
+    "driftCause": {
+      "verifiedBy": "single-variable experiment: reverting ONLY scripts/r3l0ciarlcfsh/safe-cleanup.mjs to its baseline bytes, with every other file identical, reproduces the archived closure digest exactly",
+      "patchedAggregate": "dc6f5673ff78638480e0a5719ae3e1a027c1fbe0cc0109d527984b30f10dccd2",
+      "baselineOnlyRevertedAggregate": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+      "archivedPlanClosure": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+      "conclusion": "the maintenance patch is the sole cause of the closure drift in this working tree; reverting the patched file alone restores the archived closure exactly",
+      "notCausedBy": [
+        "any other source file",
+        "the toolchain",
+        "the executor route or settings",
+        "the runtime manifest"
+      ]
+    }
   },
   "compatibility": "DRIFTED_EXPECTED",
   "compatibilityStatement": "the maintenance patch changes load-bearing cleanup code, so the current HEAD execution closure differs from the archived plan closure; the current maintenance HEAD is NOT a valid execution candidate under the archived frozen plan and must not claim closure equality",
@@ -81,5 +94,66 @@
     "sealBlob": "65bafdc1254336ebba2a577d9bbe6cdc9fcd0a48",
     "priorEvidenceModified": false
   },
-  "law": "the archived plan is a valid historical snapshot of the code at its commit; a post-freeze load-bearing change invalidates that execution identity and requires a new prospective-plan identity, which G0 does not create"
+  "law": "the archived plan is a valid historical snapshot of the code at its commit; a post-freeze load-bearing change invalidates that execution identity and requires a new prospective-plan identity, which G0 does not create",
+  "planDependentTestDrift": {
+    "observedOnMaintenanceHead": [
+      "test/r3l0ciarlcfsh_persisted.test.ts: 5 failures, all with root cause PLAN_CLOSURE_BINDING DRIFTED -> seal MISMATCH -> the committed-plan preflight guard refuses before PRIMARY_PROHIBITION"
+    ],
+    "isolatedArchivalCheck": {
+      "attempted": true,
+      "method": "a detached git worktree at the exact archival commit 751f2e2, with node_modules and dist junctioned from the shared tree",
+      "result": "the same 5 tests also failed in the isolated archival checkout",
+      "explanation": "a fresh worktree normalizes line endings by core.autocrlf, so the closure covers CRLF bytes there and yields a third value; the fresh-checkout result is therefore NOT a clean reproduction of the frozen-LF state and is reported as such rather than treated as a defect",
+      "sharedTreeIsTheFrozenReference": true
+    },
+    "verdict": "DRIFTED_EXPECTED",
+    "guardNotDefeated": true,
+    "archivedPlanNotRegenerated": true,
+    "archivedPlanRegenerationToMakeTestsGreenRefused": true
+  },
+  "leakedDisposableFixtures": {
+    "found": 4,
+    "origin": "the PREVIOUS stage R3-L0C-I-A-R-L-C-F-S, not G0",
+    "markers": [
+      {
+        "name": "r3lcfsh-worktree-3aJCtQ",
+        "stage": "R3-L0C-I-A-R-L-C-F-S",
+        "recordedRoot": "...r3lcfsh-gates-cleanup2-ySm9zJ/elsewhere"
+      },
+      {
+        "name": "r3lcfsh-worktree-Ne6hip",
+        "stage": "R3-L0C-I-A-R-L-C-F-S",
+        "recordedRoot": "...r3lcfsh-gates-cleanup2-P8J222/elsewhere"
+      },
+      {
+        "name": "r3lcfsh-worktree-ghyeML",
+        "stage": "R3-L0C-I-A-R-L-C-F-S",
+        "recordedRoot": "...r3lcfsh-gates-cleanup2-K4sSUk/elsewhere"
+      },
+      {
+        "name": "r3lcfsh-worktree-lCFk1C",
+        "stage": "R3-L0C-I-A-R-L-C-F-S",
+        "recordedRoot": "...r3lcfsh-gates-cleanup2-3XXFiN/elsewhere"
+      }
+    ],
+    "disposition": "LEFT IN PLACE and disclosed: the markers name the previous stage and a deliberately-wrong root (its H2-N6 case), so this stage's ownership witnesses correctly refuse them",
+    "destructiveCleanupPerformed": false,
+    "reason": "a leaked disposable test directory is preferable to a destructive deletion outside this stage's individually verified fixtures",
+    "ownG0FixturesReclaimed": 2,
+    "note": "running the PREVIOUS stage's test/r3l0ciarlcfsh_gates.test.ts produces one additional leak per run by design (its H2-N6 case corrupts the marker and the cleanup call then correctly refuses). G0 does not modify that protected test file and does not force-remove its fixtures."
+  },
+  "closureLineEndingCaveat": {
+    "finding": "the ExecutionClosureDigest is computed over working-tree BYTES and is therefore sensitive to line-ending state, which depends on how the tree was checked out",
+    "measured": {
+      "sharedTreePatched_CRLF": "dc6f5673ff78638480e0a5719ae3e1a027c1fbe0cc0109d527984b30f10dccd2",
+      "sharedTreeUnpatchedOnlySafeCleanupReverted_CRLF": "e850e1c509b854be977e039e33a748b3c9226b67067a607efa38a894b9f5dfc6",
+      "freshDetachedWorktreeUnpatched_LF": "464640fa542d15a6b3ad7db4f12bd15426590e74411ddab9b0b71182df1819b0"
+    },
+    "interpretation": "the archived closure e850e1c5 corresponds to the CRLF working-tree state in which the plan was frozen; a fresh LF checkout of the SAME unpatched commit yields 464640fa, so the archived digest is bound to a specific checkout byte-state rather than to the commit alone",
+    "notCausedByG0": true,
+    "preExistingProperty": true,
+    "whyItMatters": "a future executable plan must be frozen and verified in one declared checkout state, and the approved plan digest must be reproduced in that same state; otherwise the closure check is not reproducible across machines",
+    "doesNotBlockG0": true,
+    "recordedNotRepaired": true
+  }
 }

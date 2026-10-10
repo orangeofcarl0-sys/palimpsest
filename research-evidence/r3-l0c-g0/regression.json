@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "regression record",
+  "baseline": "751f2e2257dc00e4a5a289afa1bdd38a14f7d422",
+  "maintenanceHead": "d972ec5f88b42cf8bcd4ae513ef1e475c2d7483a",
+  "deterministic": {
+    "results": [
+      {
+        "id": "TYPESCRIPT_BUILD",
+        "verdict": "PASS",
+        "detail": "npx tsc -b exit 0"
+      },
+      {
+        "id": "NEW_G0_CLEANUP_TESTS",
+        "verdict": "PASS",
+        "detail": "test/r3l0c_g0_cleanup.test.ts: 10 tests (S1-A, S1-B1..B6, classifier, sentinel), all passed",
+        "tests": 10
+      },
+      {
+        "id": "PRIOR_STAGE_CLEANUP_GATES",
+        "verdict": "PASS",
+        "detail": "test/r3l0ciarlcfsh_gates.test.ts: 42 tests, all passed on the patched helper",
+        "tests": 42
+      },
+      {
+        "id": "PRIOR_STAGE_CONTROLS",
+        "verdict": "PASS",
+        "detail": "test/r3l0ciarlcfsh_controls.test.ts: 24 tests, all passed",
+        "tests": 24
+      },
+      {
+        "id": "FULL_UNIT_SUITE",
+        "verdict": "PARTIAL",
+        "detail": "npx vitest run --exclude \"**/r3l0ciarlcf_gates.test.ts\" --maxWorkers=6: 303 files, 4279 tests; 302 files passed, 5 tests failed, all in test/r3l0ciarlcfsh_persisted.test.ts and all with the single root cause PLAN_CLOSURE_BINDING DRIFTED",
+        "tests": 4279,
+        "files": 303,
+        "passed": 4274,
+        "failed": 5
+      },
+      {
+        "id": "ARCHITECTURE",
+        "verdict": "PASS",
+        "detail": "architecture:check PASS, 0 violations, 9 accepted baseline exceptions"
+      },
+      {
+        "id": "PUBLIC_API",
+        "verdict": "PASS",
+        "detail": "public-api:check PASS, 0 missing / 0 changed kind / 0 added"
+      },
+      {
+        "id": "WORK_LOOP_CONTAINMENT_SECURITY",
+        "verdict": "PASS",
+        "detail": "containment-targeted run: 41 tests passed across 7 files"
+      },
+      {
+        "id": "R1_H_HR_HC_L",
+        "verdict": "PASS",
+        "detail": "test/r1_harness (18) + r1l_pull_boundary + r1l_pull_transport (4) + r1l_worker_context_pull (15) = 55 tests, all passed"
+      },
+      {
+        "id": "R3_S0_SYSTEMIC",
+        "verdict": "PASS",
+        "detail": "test/r3s0_systemic.test.ts (47) + test/r3s0_contract.test.ts (57) = 104 tests, all passed; the archived research-evidence/r3-s0 files were read, never written, and are byte-identical afterwards",
+        "tests": 104
+      },
+      {
+        "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+        "verdict": "PASS",
+        "detail": "HISTORICAL_EVIDENCE_IMMUTABLE PASS: 21 protected namespaces, 402 working files, 0 changed, 0 removed"
+      }
+    ],
+    "planDependentDrift": {
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "failures": 5,
+      "rootCause": "the maintenance patch moves the execution closure, so PLAN_CLOSURE_BINDING is DRIFTED, the persisted seal is MISMATCH, and the committed-plan preflight guard refuses before PRIMARY_PROHIBITION",
+      "expected": true,
+      "guardDefeated": false,
+      "archivedPlanRegenerated": false,
+      "verifiedBy": "reverting ONLY scripts/r3l0ciarlcfsh/safe-cleanup.mjs to its baseline bytes reproduces the archived closure e850e1c5 exactly"
+    }
+  },
+  "blockedForSafety": [
+    {
+      "id": "test/r3l0ciarlcf_gates.test.ts",
+      "verdict": "BLOCKED_FOR_SAFETY",
+      "reason": "it calls the legacy scripts/r3l0ciarlcf/isolated-mutation.mjs destroyIsolatedCheckout, which removes junctions with a swallowing catch and then runs `git worktree remove --force` plus a recursive rmSync unconditionally; on Windows a forced worktree removal can follow a junction into the SHARED node_modules/dist. §12 forbids executing those paths against shared dependencies, and the isolation that would make it safe (local copies of node_modules/dist) is not established.",
+      "isolationEstablished": false,
+      "priorStageRanIt": true,
+      "priorStageNote": "the previous stage ran it and shared dependencies survived; that is evidence, not a guarantee"
+    }
+  ],
+  "notRun": [
+    {
+      "id": "BROWSER_E2E",
+      "verdict": "NOT_RUN",
+      "reason": "the maintenance patch touches a filesystem cleanup helper and no browser-facing surface; the browser E2E suite was not executed and is not claimed as passed"
+    },
+    {
+      "id": "D2_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route; G0 does not enter primary execution"
+    },
+    {
+      "id": "D4_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route; G0 does not enter primary execution"
+    },
+    {
+      "id": "D5_LIVE",
+      "verdict": "NOT_RUN",
+      "reason": "requires a model route; G0 does not enter primary execution"
+    }
+  ],
+  "sectionsMerged": false,
+  "combinedVerdictComputed": false,
+  "notRunIsNotPass": true,
+  "resourcePolicy": {
+    "boundedConcurrency": 6,
+    "reason": "the full unit suite runs real git worktrees and SQLite databases; an unbounded run exhausts this host",
+    "sharedTreeMutation": false
+  },
+  "law": "a safety-blocked test is disclosed rather than claimed as passed, a NOT_RUN gate is never reported as PASS, and the plan-dependent drift is reported separately from the patch-driven regression"
+}
