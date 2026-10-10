@@ -1,0 +1,494 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C",
+  "kind": "authoritative causal admission closure qualification",
+  "baseline": "6089947c40dab2c8c67106f1f7ee1fb1c41ac1ad",
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "prehistory": {
+    "head": "d0b56fa5a0549322e3891e3f47036f4af5fe5c0c",
+    "revision": 4,
+    "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+    "trajectoryCount": 8,
+    "sessionCount": 16
+  },
+  "correctionGates": {
+    "declared": 4,
+    "allViolated": true,
+    "violated": [
+      "LC_A_DURABLE_COST_BRIDGE",
+      "LC_B_POSTMATRIX_ADMISSION",
+      "LC_C_PRIMARY_TRUST_BOUNDARY",
+      "LC_D_INRUN_ATTESTATION"
+    ],
+    "notViolated": [],
+    "controls": [
+      {
+        "id": "LC_A_DURABLE_COST_BRIDGE",
+        "journalFieldCount": 25,
+        "journalCarriesSessionArtifactPath": false,
+        "journalCarriesHiddenInvariantVector": false,
+        "recordCarriesSessionArtifactPath": false,
+        "recordBindsTheSidecar": true,
+        "artifactExistsOnDisk": true,
+        "artifactDigestMatchesSidecar": true,
+        "consumedPath": null,
+        "costMeasured": false,
+        "costFields": null,
+        "costReason": "NO_ARTIFACT_SUPPLIED",
+        "defectPresent": true,
+        "detail": "the durable admitted record carries no sessionArtifactPath, so the cost measurement reads null even though the artifact exists on disk and the record binds its sidecar by digest; the reconstruction cost cannot be attributed from the journal",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "LC_B_POSTMATRIX_ADMISSION",
+        "runnerCallLine": 414,
+        "postflightLine": 426,
+        "postflightIsAfterTheRunner": true,
+        "postflightFeedsCompletion": false,
+        "validityGateRecomputesClosure": false,
+        "singleAuthoritativeTerminalReducer": false,
+        "defectPresent": true,
+        "detail": "the runner is awaited at line 414 and the postflight is computed at line 426, so a runtime change after the last admitted trial is detected only AFTER the runner has already decided to record MATRIX_COMPLETED; the validityGate does not recompute the closure (false)",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "LC_C_PRIMARY_TRUST_BOUNDARY",
+        "fabricatedAuthorityAccepted": true,
+        "fabricatedAuthorityValue": "decision:totally-made-up-by-the-caller",
+        "oneSessionBudgetAccepted": true,
+        "oneSessionBudgetMaxSessions": 1,
+        "frozenScopeRequired": 16,
+        "bareAuthorityRefused": true,
+        "planBindingIsTheExecutionClosureDigest": true,
+        "planContentDigestIsSeparate": false,
+        "trustedAuthoritySourceConsulted": false,
+        "launchPermissionDerivedFromTrust": false,
+        "defectPresent": true,
+        "detail": "an authorization record whose authority is the fabricated string \"decision:totally-made-up-by-the-caller\" and whose paid-run budget is 1 session(s) for a frozen 16-session scope was accepted as a verified authorization decision",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "LC_D_INRUN_ATTESTATION",
+        "changedWithOwnInstallDetected": false,
+        "changedWithoutOwnInstallDetected": true,
+        "installedDuringRunSuppressesDetection": true,
+        "sampleLine": 200,
+        "rechecksInstallationAfterTheMatrix": false,
+        "establishesS1PostInstallBaseline": false,
+        "attestationIsATerminalCondition": false,
+        "compiledVerificationIsADisclosedLimitation": false,
+        "defectPresent": true,
+        "detail": "a change to the shared installation observed while installedDuringRun is true is reported as expected rather than as a competing writer, which is exactly the case in which this stage installs; and no post-matrix sample rechecks the installation as a mandatory terminal condition",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      }
+    ]
+  },
+  "executionClosure": {
+    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE",
+      "REUSED_MODULES_CLOSURE"
+    ],
+    "fileCount": 132,
+    "complete": true,
+    "stageHarnessModules": 15,
+    "reusedModules": 21,
+    "reusedMissing": [],
+    "mutationsProven": true,
+    "mutationArms": [
+      "NEW_STAGE_PIPELINE_MODULE",
+      "REUSED_PRIOR_ADMISSION_MODULE",
+      "RUNTIME_MANIFEST_DYNAMIC_MODULE",
+      "EXECUTION_CONFIGURATION_OR_TOOLCHAIN"
+    ],
+    "treeMutated": false,
+    "walkerBlindSpotCount": 8
+  },
+  "attestation": {
+    "verdict": "PASS",
+    "s1MatchesExpectedBundle": true,
+    "s2MatchesS1": true,
+    "competingWriterDetected": false,
+    "compiledMatchesSource": true,
+    "installerIsMitigationNotProof": true,
+    "coverageLimitations": [
+      "the global DSH installation itself is not part of this repository's execution closure, so its bytes are not attested",
+      "the host-bundle installer stages and renames, which narrows the replacement window but does NOT make it atomic on every filesystem"
+    ]
+  },
+  "containment": {
+    "verdict": "PASS",
+    "environmentVerdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true
+  },
+  "primaryMatrix": {
+    "mode": "DETERMINISTIC",
+    "workerIsStageScripted": true,
+    "pipeline": "COMPLETED",
+    "terminalState": "MATRIX_COMPLETE",
+    "matrixCompleted": true,
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "costMeasured": 16,
+    "costAbsent": 0,
+    "costProvenance": "FIXTURE",
+    "costInterpretable": true,
+    "costAllSixteenLivePrimary": false,
+    "terminalAdmissionGreen": true,
+    "terminalAdmissionDecision": "GREEN",
+    "liveEvidenceSessions": 16,
+    "liveEvidencePropagation": "PASS",
+    "inRunAttestation": "PASS",
+    "s2MatchesS1": true,
+    "competingWriterDetected": false,
+    "journalRetries": 0,
+    "journalReplacements": 0,
+    "allIdentitiesExact": true,
+    "causalVerdictIssued": false
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "productionControls": {
+    "durableCostBridge": {
+      "id": "DURABLE_COST_BRIDGE",
+      "authorityBearingFunction": "scripts/r3l0ciarlc/cost-bridge.mjs bridgeMatrixCost (frozen readJournal → sidecar → artifact → frozen reconstructCost)",
+      "durableEvidence": "a TRIAL_RECORDED journal record whose contentDigests binds a live-evidence sidecar, plus a real-format session artifact",
+      "positiveControl": {
+        "measured": true,
+        "provenance": "FIXTURE",
+        "outcome": "MEASURED_FIXTURE",
+        "fieldsNonNull": true,
+        "rawHistoryArtifactsRead": 1,
+        "rawHistoryBytesReturned": 800,
+        "capitalPullActions": 1,
+        "attemptId": "a1b2c3d4e5",
+        "hostJobId": "job-9f8e7d",
+        "matrixMeasuredCount": 1,
+        "matrixAbsentCount": 0,
+        "matrixInterpretable": true,
+        "matrixProvenance": "FIXTURE"
+      },
+      "mutations": {
+        "substitutedSidecarDetected": true,
+        "modifiedArtifactDetected": true,
+        "missingArtifactDetected": true,
+        "missingSidecarDetected": true,
+        "identityConflictDetected": true,
+        "ambiguousCandidatesReported": true,
+        "absentMeasurementsAreNullNotZero": true
+      },
+      "mutant": {
+        "id": "LC_A_DURABLE_COST_BRIDGE",
+        "measuredBy": "test/r3l0ciarlc_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior matrix cost read `record.sessionArtifactPath`, which the durable record does not carry, so every session measured nothing"
+      },
+      "PASS": true
+    },
+    "terminalAdmission": {
+      "id": "POSTMATRIX_ADMISSION",
+      "authorityBearingFunction": "scripts/r3l0ciarlc/postmatrix-admission.mjs authoritativeTerminalAdmission (called by the frozen runFailStopMatrix validityGate before it writes MATRIX_COMPLETED)",
+      "durableEvidence": "the generation journal, read at admission by the frozen readJournal",
+      "positiveControl": {
+        "green": true,
+        "decision": "GREEN",
+        "conditions": 9,
+        "journalReadAtAdmission": true,
+        "freshClosureDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "routeIdentity": "MATCH"
+      },
+      "mutations": {
+        "closureDrift": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "CLOSURE_FRESH_MATCH"
+          ]
+        },
+        "routeDrift": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "ROUTE_FRESH_MATCH"
+          ]
+        },
+        "duplicatedLaunch": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "LAUNCH_CARDINALITY_EXACT"
+          ]
+        },
+        "unexpectedSession": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "IDENTITIES_EXACT"
+          ]
+        },
+        "identityMismatch": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "IDENTITIES_EXACT"
+          ]
+        },
+        "damagedJournal": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "JOURNAL_TRUSTWORTHY"
+          ]
+        },
+        "missingAttribution": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "COST_ATTRIBUTION"
+          ]
+        },
+        "attestationFail": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "RUNTIME_ATTESTED"
+          ]
+        },
+        "continuityFail": {
+          "green": false,
+          "decision": "RED",
+          "failing": [
+            "SIDECAR_CONTINUITY"
+          ]
+        }
+      },
+      "mutant": {
+        "id": "LC_B_POSTMATRIX_ADMISSION",
+        "measuredBy": "test/r3l0ciarlc_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior postflight ran after the runner had already recorded MATRIX_COMPLETED"
+      },
+      "PASS": true
+    },
+    "trustBoundary": {
+      "id": "PRIMARY_INPUT_INTEGRITY",
+      "authorityBearingFunction": "scripts/r3l0ciarlc/trust-boundary.mjs verifyExternalAuthority + enforcePrimaryInputBinding",
+      "durableEvidence": "the authorization record and the committed prospective plan",
+      "positiveControl": {
+        "completeRecordIsSchemaValid": true,
+        "completeRecordIsNotTrusted": true,
+        "verdict": "AUTHORITY_NOT_ESTABLISHED",
+        "conceptsSeparated": {
+          "SCHEMA_VALIDITY": true,
+          "EXTERNALLY_VERIFIED_AUTHORITY": false,
+          "AUTHORIZED_PROSPECTIVE_PLAN": true,
+          "ENFORCEABLE_BUDGET": true,
+          "CURRENT_LAUNCH_PERMISSION": false
+        },
+        "planContentDigestIsSeparateFromClosure": true,
+        "planBindingIsSelfReferential": false,
+        "trustedSourceAvailable": false,
+        "launchProhibited": true,
+        "deterministicInjectionPermitted": true,
+        "primaryCleanDerivesItsOwn": true
+      },
+      "mutations": {
+        "fabricatedAuthorityNotTrusted": true,
+        "fabricatedAuthorityVerdict": "AUTHORITY_NOT_ESTABLISHED",
+        "oneSessionBudgetRejected": true,
+        "wrongPlanDigestRejected": true,
+        "wrongPlanDigestReason": [
+          "the record approves plan digest bbbbbbbbbbbbbbbb but the executing plan's content digest is d8c6a38604b2f410",
+          "the authority is not externally verified: no trusted authority source is configured (PALIMPSEST_AUTHORITY_SOURCE is unset); this stage does not create one, because creating a source and then trusting it would be self-signing"
+        ],
+        "primarySubstitutionRefused": true,
+        "trustedHostInputsRefused": true,
+        "noTrustedSourceIsHonest": true
+      },
+      "mutant": {
+        "id": "LC_C_PRIMARY_TRUST_BOUNDARY",
+        "measuredBy": "test/r3l0ciarlc_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior verifier accepted a `decision:`-prefixed fabricated authority and a one-session budget"
+      },
+      "PASS": true
+    },
+    "inRunAttestation": {
+      "id": "IN_RUN_ATTESTATION",
+      "authorityBearingFunction": "scripts/r3l0ciarlc/attestation.mjs inRunAttestation + competingWriterVerdict (called inside the terminal-admission callback)",
+      "durableEvidence": "three installation digests S0/S1/S2 and a file-by-file comparison of the installed bundle against the repository",
+      "positiveControl": {
+        "s0DiffersFromS1": true,
+        "cleanS1MatchesS2": true,
+        "cleanAttestationVerdict": "PASS",
+        "installedBundleIdentical": true,
+        "comparedFileByFile": true,
+        "installedFileCount": 10,
+        "coverageLimitationsDisclosed": true,
+        "installerIsMitigationNotProof": true
+      },
+      "mutations": {
+        "mutationApplied": true,
+        "competingWriterDetectedDespiteOwnInstall": true,
+        "installedDuringRunSuppressesDetection": false,
+        "s2DiffersFromS1": true,
+        "attestationFailsOnACompetingWriter": true,
+        "skippedCompiledVerificationIsNotAPass": true
+      },
+      "mutant": {
+        "id": "LC_D_INRUN_ATTESTATION",
+        "measuredBy": "test/r3l0ciarlc_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior verdict suppressed competing-writer detection whenever installedDuringRun was true"
+      },
+      "PASS": true
+    }
+  },
+  "timeouts": {
+    "outerChildMs": 2220000,
+    "innerWorkerMs": 1800000,
+    "settlementMs": 300000,
+    "outerExceedsInnerPlusSettlement": true,
+    "marginMs": 120000,
+    "law": "the outer child budget must exceed the worker execution budget plus the required settlement interval"
+  },
+  "quarantine": {
+    "authorized": true,
+    "caller": "r3-l0c-iar-lc-primary-plan",
+    "authoritativePath": "scripts/r3l0ciarlc/pipeline.mjs",
+    "priorPipelinesQuarantined": true,
+    "priorPipelinesStillExecutable": true
+  },
+  "authority": {
+    "verdict": "AUTHORITY_NOT_ESTABLISHED",
+    "verified": false,
+    "trustedSourceAvailable": false,
+    "concepts": {
+      "SCHEMA_VALIDITY": false,
+      "EXTERNALLY_VERIFIED_AUTHORITY": false,
+      "AUTHORIZED_PROSPECTIVE_PLAN": false,
+      "ENFORCEABLE_BUDGET": false,
+      "CURRENT_LAUNCH_PERMISSION": false
+    },
+    "launchProhibited": true
+  },
+  "immutability": {
+    "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+    "verdict": "PASS",
+    "detail": "protected namespaces: 21; working files: 380",
+    "protectedNamespaces": [
+      "research-evidence/r1",
+      "research-evidence/r1-h",
+      "research-evidence/r1-hc",
+      "research-evidence/r1-hr",
+      "research-evidence/r1-l",
+      "research-evidence/r1-r",
+      "research-evidence/r1-s",
+      "research-evidence/r2-e",
+      "research-evidence/r2-lr",
+      "research-evidence/r2-m",
+      "research-evidence/r2-s",
+      "research-evidence/r2-u",
+      "research-evidence/r2-v",
+      "research-evidence/r2-vr",
+      "research-evidence/r3-a",
+      "research-evidence/r3-ae",
+      "research-evidence/r3-l0",
+      "research-evidence/r3-l0a",
+      "research-evidence/r3-l0b",
+      "research-evidence/r3-s0",
+      "research-evidence/r3-spec"
+    ],
+    "workingFileCount": 380,
+    "changed": [],
+    "removed": [],
+    "unexpectedAdditions": [],
+    "restoreAvailable": false,
+    "baselineRevision": "e51df1f4c2a666ffa7364dbdc108eb9eb7eae2fb"
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "current": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-lc-primary-plan",
+    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "planContentDigest": "c30c468cf182900b82d8b5fc5b7daa94f349abf29e8b2cedbed9cb89d3b55cc3",
+    "supersedes": "r3-l0c-iar-l-primary-plan",
+    "frozenClosure": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3"
+  },
+  "verdicts": {
+    "DURABLE_COST_BRIDGE": "PASS",
+    "POSTMATRIX_ADMISSION": "PASS",
+    "PRIMARY_INPUT_INTEGRITY": "PASS",
+    "AUTHORITY_TRUST_BOUNDARY": "PASS",
+    "IN_RUN_ATTESTATION": "PASS",
+    "FAIL_STOP_VALIDITY": "PASS",
+    "EXECUTION_CLOSURE": "MATCH",
+    "HISTORICAL_EVIDENCE_IMMUTABILITY": "PASS",
+    "PAID_AUTHORIZATION": "AUTHORITY_NOT_ESTABLISHED",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "measurementReadiness": {
+    "verdict": "READY_FOR_AUTHORIZATION",
+    "centralVerdicts": [
+      "DURABLE_COST_BRIDGE",
+      "POSTMATRIX_ADMISSION",
+      "PRIMARY_INPUT_INTEGRITY",
+      "AUTHORITY_TRUST_BOUNDARY",
+      "IN_RUN_ATTESTATION",
+      "FAIL_STOP_VALIDITY"
+    ],
+    "centralFailing": [],
+    "note": "READY_FOR_AUTHORIZATION is a readiness claim about the deterministic machinery; it is NOT an authorization, and PAID_EXECUTION remains NOT_RUN"
+  }
+}

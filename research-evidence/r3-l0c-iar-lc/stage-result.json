@@ -1,0 +1,185 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C",
+  "kind": "authoritative causal admission closure stage result",
+  "baseline": "6089947c40dab2c8c67106f1f7ee1fb1c41ac1ad",
+  "verdicts": {
+    "DURABLE_COST_BRIDGE": "PASS",
+    "POSTMATRIX_ADMISSION": "PASS",
+    "PRIMARY_INPUT_INTEGRITY": "PASS",
+    "AUTHORITY_TRUST_BOUNDARY": "PASS",
+    "IN_RUN_ATTESTATION": "PASS",
+    "FAIL_STOP_VALIDITY": "PASS",
+    "EXECUTION_CLOSURE": "MATCH",
+    "HISTORICAL_EVIDENCE_IMMUTABILITY": "PASS",
+    "PAID_AUTHORIZATION": "AUTHORITY_NOT_ESTABLISHED",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "correctionGates": {
+    "declared": 4,
+    "allViolatedByBaseline": true,
+    "violated": [
+      "LC_A_DURABLE_COST_BRIDGE",
+      "LC_B_POSTMATRIX_ADMISSION",
+      "LC_C_PRIMARY_TRUST_BOUNDARY",
+      "LC_D_INRUN_ATTESTATION"
+    ],
+    "notViolated": []
+  },
+  "admissionClosurePipeline": {
+    "pipeline": "COMPLETED",
+    "mode": "DETERMINISTIC",
+    "terminalState": "MATRIX_COMPLETE",
+    "matrixCompleted": true,
+    "completedSessions": 16,
+    "maxLaunchesPerSession": 1,
+    "terminalAdmissionDecision": "GREEN",
+    "terminalAdmissionGreen": true,
+    "journalRetries": 0,
+    "journalReplacements": 0,
+    "allIdentitiesExact": true
+  },
+  "durableCostBridge": {
+    "measuredCount": 16,
+    "absentCount": 0,
+    "provenance": "FIXTURE",
+    "interpretable": true,
+    "allSixteenLivePrimary": false
+  },
+  "liveEvidence": {
+    "sessions": 16,
+    "propagation": "PASS"
+  },
+  "attestation": {
+    "verdict": "PASS",
+    "s1MatchesExpectedBundle": true,
+    "s2MatchesS1": true,
+    "competingWriterDetected": false,
+    "compiledMatchesSource": true,
+    "installerIsMitigationNotProof": true,
+    "coverageLimitations": [
+      "the global DSH installation itself is not part of this repository's execution closure, so its bytes are not attested",
+      "the host-bundle installer stages and renames, which narrows the replacement window but does NOT make it atomic on every filesystem"
+    ]
+  },
+  "authority": {
+    "verdict": "AUTHORITY_NOT_ESTABLISHED",
+    "verified": false,
+    "trustedSourceAvailable": false,
+    "concepts": {
+      "SCHEMA_VALIDITY": false,
+      "EXTERNALLY_VERIFIED_AUTHORITY": false,
+      "AUTHORIZED_PROSPECTIVE_PLAN": false,
+      "ENFORCEABLE_BUDGET": false,
+      "CURRENT_LAUNCH_PERMISSION": false
+    },
+    "launchProhibited": true
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "executionClosure": {
+    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE",
+      "REUSED_MODULES_CLOSURE"
+    ],
+    "fileCount": 132,
+    "complete": true,
+    "stageHarnessModules": 15,
+    "reusedModules": 21,
+    "reusedMissing": [],
+    "mutationsProven": true,
+    "mutationArms": [
+      "NEW_STAGE_PIPELINE_MODULE",
+      "REUSED_PRIOR_ADMISSION_MODULE",
+      "RUNTIME_MANIFEST_DYNAMIC_MODULE",
+      "EXECUTION_CONFIGURATION_OR_TOOLCHAIN"
+    ],
+    "treeMutated": false,
+    "walkerBlindSpotCount": 8
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "current": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "immutability": {
+    "verdict": "PASS",
+    "protectedNamespaces": 21,
+    "restoreAvailable": false
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-lc-primary-plan",
+    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "planContentDigest": "c30c468cf182900b82d8b5fc5b7daa94f349abf29e8b2cedbed9cb89d3b55cc3",
+    "supersedes": "r3-l0c-iar-l-primary-plan",
+    "frozenClosure": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3"
+  },
+  "measurementReadiness": {
+    "verdict": "READY_FOR_AUTHORIZATION",
+    "centralVerdicts": [
+      "DURABLE_COST_BRIDGE",
+      "POSTMATRIX_ADMISSION",
+      "PRIMARY_INPUT_INTEGRITY",
+      "AUTHORITY_TRUST_BOUNDARY",
+      "IN_RUN_ATTESTATION",
+      "FAIL_STOP_VALIDITY"
+    ],
+    "centralFailing": [],
+    "note": "READY_FOR_AUTHORIZATION is a readiness claim about the deterministic machinery; it is NOT an authorization, and PAID_EXECUTION remains NOT_RUN"
+  },
+  "stageStop": {
+    "ranPaidMatrix": false,
+    "beganR3L1": false,
+    "beganFusion": false,
+    "modelCallsMade": 0,
+    "enteredPrimaryExecution": false
+  },
+  "finalAcceptanceQuestion": {
+    "question": "Can a missing, corrupted, stale, misattributed or caller-substituted experimental measurement still result in an apparently valid MATRIX_COMPLETED and an admitted causal result through the authoritative execution path?",
+    "answer": "NO — measured",
+    "basis": "the terminal-admission reducer is the single decision point, and it is RED for a drifted closure, a drifted route, a duplicated launch, an unexpected session, an identity mismatch, a damaged journal, a missing attribution, a failed attestation and a broken sidecar continuity; a fixture or absent cost blocks the causal verdict"
+  }
+}

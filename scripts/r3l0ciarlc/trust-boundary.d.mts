@@ -70,4 +70,8 @@ export function enforcePrimaryInputBinding(input: {
   readonly mode: string;
   readonly provided?: Readonly<Record<string, unknown>>;
 }): { readonly refused: boolean; readonly mode: string; readonly injectionPermitted: boolean; readonly supplied: readonly string[]; readonly reason: string | null; readonly law: string };
-export { PRIMARY_DERIVED_INPUTS };
+export const PRIMARY_DERIVED_INPUTS: readonly string[];
+export const PRIMARY_REFUSED_INPUTS: readonly string[];
+export const TRUSTED_HOST_INPUTS: readonly string[];
+export const EXPERIMENTAL_INPUTS: readonly string[];
+export const PRIMARY_FORBIDDEN_SEAMS: readonly string[];
