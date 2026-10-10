@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F-S",
+  "kind": "regression record",
+  "baseline": "8bf8d42298aee3b8b267b3793e015900ca7cc2a7",
+  "deterministic": {
+    "declared": [
+      "TYPESCRIPT_BUILD",
+      "STAGE_CONTROLS",
+      "STAGE_AUTHORITATIVE_TESTS",
+      "FULL_UNIT_SUITE",
+      "BROWSER_E2E",
+      "ARCHITECTURE",
+      "PUBLIC_API",
+      "WORK_LOOP_CONTAINMENT_SECURITY",
+      "R1_H_HR_HC_L",
+      "R3_S0_SYSTEMIC",
+      "R3_L0C_HISTORICAL_STAGE_SUITES",
+      "HISTORICAL_EVIDENCE_IMMUTABILITY",
+      "EXECUTION_CLOSURE_RECOMPUTATION"
+    ],
+    "results": [
+      {
+        "id": "TYPESCRIPT_BUILD",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "tsc -b and tsc --noEmit both clean",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "STAGE_CONTROLS",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "test/r3l0ciarlcfs_controls.test.ts",
+        "tests": 19,
+        "files": 1,
+        "blockedForSafety": false
+      },
+      {
+        "id": "STAGE_AUTHORITATIVE_TESTS",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "test/r3l0ciarlcfs_gates.test.ts",
+        "tests": 59,
+        "files": 1,
+        "blockedForSafety": false
+      },
+      {
+        "id": "FULL_UNIT_SUITE",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "npx vitest run --maxWorkers=6",
+        "tests": 4221,
+        "files": 300,
+        "blockedForSafety": false
+      },
+      {
+        "id": "BROWSER_E2E",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "npx playwright test",
+        "tests": 38,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "ARCHITECTURE",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "0 violations, 9 accepted baseline exceptions",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "PUBLIC_API",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "missing 0, changed 0, added 0",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "WORK_LOOP_CONTAINMENT_SECURITY",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "r3l0c_containment + r3l0b_containment",
+        "tests": 81,
+        "files": 2,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R1_H_HR_HC_L",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "R1-H 17 PASS/0 FAIL; R1-HR PASS; R1-HC PASS; R1-L-LIVE PASS",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R3_S0_SYSTEMIC",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "SYSTEM_VALID YES; see the disclosed evidence-write note",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R3_L0C_HISTORICAL_STAGE_SUITES",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "40 R3 test files inside the 300-file full suite",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "protected namespaces: 21; working files: 387",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "EXECUTION_CLOSURE_RECOMPUTATION",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "MATCH against the committed plan",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      }
+    ],
+    "passed": 13,
+    "failed": [],
+    "notRun": [],
+    "blockedForSafety": [],
+    "ALL_DETERMINISTIC_GREEN": true
+  },
+  "live": {
+    "declared": [
+      "D2_LIVE",
+      "D4_LIVE",
+      "D5_LIVE"
+    ],
+    "results": [
+      {
+        "id": "TYPESCRIPT_BUILD",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "tsc -b and tsc --noEmit both clean",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "STAGE_CONTROLS",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "test/r3l0ciarlcfs_controls.test.ts",
+        "tests": 19,
+        "files": 1,
+        "blockedForSafety": false
+      },
+      {
+        "id": "STAGE_AUTHORITATIVE_TESTS",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "test/r3l0ciarlcfs_gates.test.ts",
+        "tests": 59,
+        "files": 1,
+        "blockedForSafety": false
+      },
+      {
+        "id": "FULL_UNIT_SUITE",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "npx vitest run --maxWorkers=6",
+        "tests": 4221,
+        "files": 300,
+        "blockedForSafety": false
+      },
+      {
+        "id": "BROWSER_E2E",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "npx playwright test",
+        "tests": 38,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "ARCHITECTURE",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "0 violations, 9 accepted baseline exceptions",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "PUBLIC_API",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "missing 0, changed 0, added 0",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "WORK_LOOP_CONTAINMENT_SECURITY",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "r3l0c_containment + r3l0b_containment",
+        "tests": 81,
+        "files": 2,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R1_H_HR_HC_L",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "R1-H 17 PASS/0 FAIL; R1-HR PASS; R1-HC PASS; R1-L-LIVE PASS",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R3_S0_SYSTEMIC",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "SYSTEM_VALID YES; see the disclosed evidence-write note",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "R3_L0C_HISTORICAL_STAGE_SUITES",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "40 R3 test files inside the 300-file full suite",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "HISTORICAL_EVIDENCE_IMMUTABILITY",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "protected namespaces: 21; working files: 387",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      },
+      {
+        "id": "EXECUTION_CLOSURE_RECOMPUTATION",
+        "verdict": "PASS",
+        "passed": true,
+        "detail": "MATCH against the committed plan",
+        "tests": null,
+        "files": null,
+        "blockedForSafety": false
+      }
+    ],
+    "requiresModelRoute": true,
+    "status": "ALL_PASSED",
+    "note": "a live gate requires a model route; this stage does not enter primary execution, so its live gates remain disclosed rather than passed"
+  },
+  "resourcePolicy": {
+    "boundedConcurrency": 6,
+    "reason": "the full unit suite runs 298 files with real git worktrees and SQLite databases; an unbounded run exhausts this host, so the suite is run with bounded workers",
+    "sharedTreeMutation": false,
+    "mutationsInIsolatedEnvironmentsOnly": true
+  },
+  "sectionsMerged": false,
+  "combinedVerdictComputed": false,
+  "law": "live-gate results are kept separate from deterministic test results, and a safety-blocked test is disclosed rather than claimed as passed",
+  "r3s0EvidenceWriteDisclosure": {
+    "occurred": true,
+    "command": "node scripts/r3s0/conformance.mjs",
+    "file": "research-evidence/r3-s0/conformance-run.json",
+    "cause": "the conformance runner writes its own run record into the protected namespace; the rewritten fields were elapsedMs, child PIDs, attempt ids and world revisions",
+    "action": "restored with git checkout -- and verified byte-identical to the committed blob 8bc168b7ee221d3436fd7349d0ea0279e9a1cb13",
+    "disclosed": true,
+    "silentlyRestored": false
+  }
+}
