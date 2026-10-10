@@ -124,8 +124,17 @@ export async function controlCapturedNotFresh(input) {
       measurementBasisRecorded: gate?.measurementBasis !== undefined && gate?.measurementBasis !== null,
       preflightDigestRecordedSeparately: gate?.preflightClosureDigest !== undefined,
     }),
-    /** The defect: the terminal value is the preflight object and no measurement basis exists. */
-    defectPresent: gate?.green === true && gate?.measurementBasis === undefined && preflightClosureDigest === admissionClosureDigest,
+    /**
+     * The defect: the terminal value is the preflight object and no measurement basis exists.
+     *
+     * The condition does NOT require the matrix to have completed GREEN. The capture happens inside the terminal
+     * reducer's default branch regardless of what the reducer then decides, so requiring green would make the
+     * measurement depend on the machine's load rather than on the defect — which is exactly the kind of
+     * load-sensitive assertion this repository forbids. The two facts that constitute the defect are the equality
+     * with the preflight object and the absence of a recorded basis.
+     */
+    defectPresent: preflightClosureDigest !== null && preflightClosureDigest === admissionClosureDigest
+      && gate?.measurementBasis === undefined && gate?.preflightClosureDigest === undefined,
     detail: 'the DETERMINISTIC default returns the captured preflight `closure` and the preflight route identity, so the normal non-injected path performs no recomputation and records no measurement basis',
   });
 }

@@ -44,7 +44,7 @@ import {
   verifyCompiledSourceBoundToInputs, compiledVerificationInputIdentity, compilerCacheSize, clearCompilerCache,
   COMPILED_PAIRS,
 } from "../scripts/r3l0ciarlcf/compiler-cache.mjs";
-import { verifyCompiledSource as frozenVerifyCompiledSource } from "../scripts/r3l0ciarlc/attestation.mjs";
+import { CLOSURE_FILES } from "../scripts/r3l0cf/contract.mjs";
 import { controlArtifactIdentity, controlDurableReconciliation, controlPlanIdentityAndBudget } from "../scripts/r3l0ciarlcf/acceptance.mjs";
 import { writeRealFormatArtifact } from "../scripts/r3l0ciarlcf/baseline/legacy-controls.mjs";
 import { proveRealClosureChangeDetection, proveRealRouteChangeDetection } from "../scripts/r3l0ciarlcf/isolated-mutation.mjs";
@@ -153,8 +153,15 @@ describe("R3-L0C-I-A-R-L-C-F T1 — primitives: identity, digest, cache, classif
     const second = verifyCompiledSourceBoundToInputs();
     expect(second.cacheHit).toBe(true);
     expect(compilerCacheSize()).toBeGreaterThan(0);
-    /** The frozen method must agree on the verdict and the pair count, or the restatement has drifted. */
-    expect((await frozenVerifyCompiledSource() as { pairs: number }).pairs).toBe(first.pairs);
+    /**
+     * The restated pair list must match the FROZEN contract's own list, or the restatement has drifted.
+     *
+     * §7 forbids calling the frozen fixed-path `.emit-probe` function from a parallel test — measured: it races and
+     * one caller receives EPERM from its cleanup. The frozen contract EXPORTS the list as data, so comparing against
+     * that data is the race-free check, and it is the same comparison the verdict-and-pair-count check was for.
+     */
+    const frozenCompiled = CLOSURE_FILES.COMPILED_RUNTIME_CLOSURE as readonly string[];
+    expect(COMPILED_PAIRS.map(([, compiled]) => compiled)).toEqual([...frozenCompiled]);
   }, 900_000);
 
   it("§3: the measurement basis vocabulary distinguishes a recomputation from a capture", async () => {
