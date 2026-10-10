@@ -498,7 +498,7 @@ export async function verifyRunClaim(input) {
  * identity ALL hold. The chain is appended ONLY for relations actually checked, so no label is decoration.
  */
 export async function correlateObservationRecord(input) {
-  const { record, journalRecords, runRoot, claimNonce, expectedRunId, expectedAttemptId, trustedIngestion } = input;
+  const { record, journalRecords, runRoot, claimNonce, expectedRunId, expectedAttemptId, expectedInvocationId, trustedIngestion } = input;
   const problems = [];
   const notes = [];
   const chain = [];
@@ -524,6 +524,23 @@ export async function correlateObservationRecord(input) {
     });
   }
   chain.push('TRUSTED_LOCAL_RECORDER_INGESTION');
+
+  /**
+   * §4 B1 / §9 N1: THE RECORD'S INVOCATION MUST BE THE ONE THE TRUSTED SINK WAS BOUND TO.
+   *
+   * A record that names a DIFFERENT invocation than the live port produced is a second identity, which is exactly
+   * the defect B1 closes. Without this comparison the record's own invocationId is self-asserted.
+   */
+  if (expectedInvocationId !== undefined && expectedInvocationId !== null && record.invocationId !== expectedInvocationId) {
+    return Object.freeze({
+      state: CLASSIFICATION.PROVENANCE_CONFLICT,
+      correlated: false,
+      problems: Object.freeze([`the record names invocation "${String(record.invocationId)}" but the trusted sink was bound to "${String(expectedInvocationId)}", so a second invocation identity was introduced`]),
+      notes: Object.freeze([]),
+      chain: Object.freeze(chain),
+      livePrimary: false,
+    });
+  }
 
   /** §5: content binding — a record altered after persistence must fail. */
   if (record?.recordDigest !== recordDigest(record)) {
@@ -559,6 +576,12 @@ export async function correlateObservationRecord(input) {
   const lifecycle = classifyEventStream(events.map((event) => ({ ...event, invocationId: record.invocationId })));
   if (lifecycle.valid !== true) problems.push(...lifecycle.problems);
   else chain.push('PROCESS_EVENT_SEQUENCE_VALID');
+  /**
+   * §5 / §9 N2: A CORRELATED STATE REQUIRES A COMPLETE OBSERVED LIFECYCLE. A stream with a spawn but no observed
+   * exit is valid-but-incomplete; it is reported as incomplete evidence rather than correlated, because "the
+   * process started and we did not see it finish" is not the same fact as "the process ran and exited".
+   */
+  const lifecycleComplete = lifecycle.completeLifecycle === true;
 
   /** §6: the journal must exist and be intact. */
   const journal = await readVerifiedJournal({ journalPath: input.journalPath });
@@ -619,6 +642,18 @@ export async function correlateObservationRecord(input) {
       correlated: false,
       problems: Object.freeze(problems),
       notes: Object.freeze(notes),
+      chain: Object.freeze(chain),
+      runId: run.runId,
+      livePrimary: false,
+    });
+  }
+
+  if (chain.includes('DURABLE_TRIAL_ATTEMPT_IDENTITY') && lifecycleComplete !== true) {
+    return Object.freeze({
+      state: CLASSIFICATION.PROVENANCE_INCOMPLETE,
+      correlated: false,
+      problems: Object.freeze([]),
+      notes: Object.freeze([...notes, 'the run and Attempt identities are established, but the observed process lifecycle is INCOMPLETE (no confirmed exit), so no completed lifecycle is claimed']),
       chain: Object.freeze(chain),
       runId: run.runId,
       livePrimary: false,

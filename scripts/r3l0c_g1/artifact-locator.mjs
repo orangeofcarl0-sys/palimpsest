@@ -53,6 +53,10 @@ export const LOCATOR_OUTCOMES = Object.freeze({
   IDENTITY_UNPARSEABLE: 'IDENTITY_UNPARSEABLE',
   OUTSIDE_SCOPED_HOME: 'OUTSIDE_SCOPED_HOME',
   ESCAPE_REFUSED: 'ESCAPE_REFUSED',
+  /** R3-L0C-G1-B §8 B5: the scan could not cover every directory, so no absence or uniqueness may be claimed. */
+  DISCOVERY_INCOMPLETE: 'DISCOVERY_INCOMPLETE',
+  /** R3-L0C-G1-B §8 B5: the expected identity itself is malformed, so no comparison is meaningful. */
+  MALFORMED_EXPECTED_IDENTITY: 'MALFORMED_EXPECTED_IDENTITY',
 });
 
 /**
@@ -130,36 +134,74 @@ export function isInsideRoot(input) {
 }
 
 /**
+ * R3-L0C-G1-B §8 B5: NORMALIZE AN EXPECTED ATTEMPT IDENTITY UNDER ONE EXPLICIT CONTRACT.
+ *
+ * The Work Owner produces the CANONICAL `attempt-<32hex>` form, while the CWD slug encodes only the bare hex. G1
+ * compared the slug's bare hex against whatever the caller passed, so the canonical identity was rejected. The
+ * normalization accepts BOTH forms and rejects everything else — a malformed prefix, a wrong hex length, or a
+ * prefix collision — rather than making the comparison lenient.
+ */
+export function normalizeAttemptIdentity(value) {
+  if (typeof value !== 'string') return Object.freeze({ ok: false, bare: null, canonical: null, reason: 'the expected AttemptId is not a string' });
+  const lower = value.trim().toLowerCase();
+  const bare = lower.startsWith(ATTEMPT_PREFIX) ? lower.slice(ATTEMPT_PREFIX.length) : lower;
+  if (!/^[0-9a-f]+$/u.test(bare)) return Object.freeze({ ok: false, bare: null, canonical: null, reason: 'the expected AttemptId is not hexadecimal' });
+  if (bare.length !== ATTEMPT_HEX_LENGTH) return Object.freeze({ ok: false, bare: null, canonical: null, reason: `the expected AttemptId hex is ${String(bare.length)} characters, not ${String(ATTEMPT_HEX_LENGTH)}` });
+  return Object.freeze({ ok: true, bare, canonical: `${ATTEMPT_PREFIX}${bare}`, reason: null });
+}
+
+/**
  * §7: DISCOVER THE SCHEDULED ATTEMPT'S ARTIFACT UNDER A SCOPED DSH HOME.
  *
  * Every §7 rule is a REFUSAL here rather than a preference:
  *   1. the home must be scoped and the candidate must stay inside it;
  *   2/3. the documented grammar must prove the AttemptId boundary;
- *   4. the identity comparison is exact normalized equality;
+ *   4. the identity comparison is exact normalized equality over the canonical/bare contract;
  *   5. a prefix collision is rejected by the exact-length rule in `attemptIdFromSlug`;
  *   6. two candidates for one attempt is AMBIGUOUS, never a pick;
  *   7. a candidate with no parseable identity is not a candidate;
  *   8. an unrelated session is rejected by the identity comparison;
  *   9. a symlink or traversal escape is refused;
- *   10. recency is NEVER a selector.
+ *   10. recency is NEVER a selector;
+ *   11. R3-L0C-G1-B §8: a traversal that could not scan every directory reports DISCOVERY_INCOMPLETE rather than
+ *       claiming an exhaustive search.
  */
 export function discoverScheduledArtifact(input) {
   const { dshHomePath, expectedAttemptId, maxDepth = 6 } = input;
   if (dshHomePath === null || dshHomePath === undefined || expectedAttemptId === null || expectedAttemptId === undefined) {
-    return Object.freeze({ outcome: LOCATOR_OUTCOMES.ABSENT, discovered: false, artifactPath: null, attemptId: null, candidates: Object.freeze([]), reason: 'no scoped home or no expected AttemptId was supplied', selectedLatestByMtime: false });
+    return Object.freeze({ outcome: LOCATOR_OUTCOMES.ABSENT, discovered: false, artifactPath: null, attemptId: null, candidates: Object.freeze([]), reason: 'no scoped home or no expected AttemptId was supplied', selectedLatestByMtime: false, discoveryIncomplete: false });
+  }
+  /** §8 B5: normalize the expected identity ONCE, under the explicit contract. */
+  const expected = normalizeAttemptIdentity(expectedAttemptId);
+  if (expected.ok !== true) {
+    return Object.freeze({
+      outcome: LOCATOR_OUTCOMES.MALFORMED_EXPECTED_IDENTITY, discovered: false, artifactPath: null, attemptId: null,
+      candidates: Object.freeze([]), reason: `the expected AttemptId is malformed: ${expected.reason}`,
+      selectedLatestByMtime: false, discoveryIncomplete: false,
+    });
   }
   const home = resolve(dshHomePath);
   const sessionsRoot = join(home, 'sessions');
   if (!existsSync(sessionsRoot)) {
-    return Object.freeze({ outcome: LOCATOR_OUTCOMES.ABSENT, discovered: false, artifactPath: null, attemptId: null, candidates: Object.freeze([]), reason: `no sessions directory exists under the scoped home ${home}`, selectedLatestByMtime: false });
+    return Object.freeze({ outcome: LOCATOR_OUTCOMES.ABSENT, discovered: false, artifactPath: null, attemptId: null, candidates: Object.freeze([]), reason: `no sessions directory exists under the scoped home ${home}`, selectedLatestByMtime: false, discoveryIncomplete: false });
   }
 
   const found = [];
   const refused = [];
+  /** §8 B5: the directories the traversal could NOT enter, so an incomplete scan is reportable. */
+  const unscanned = [];
   const walk = (dir, depth) => {
-    if (depth > maxDepth) return;
+    if (depth > maxDepth) {
+      /** §8: the bound was reached with a directory still uninspected, so the search is NOT exhaustive. */
+      unscanned.push(Object.freeze({ path: dir, reason: `the declared depth bound ${String(maxDepth)} was reached before this directory was scanned` }));
+      return;
+    }
     let entries;
-    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch (error) {
+      /** §8 B5-N8: an unreadable directory is an INCOMPLETE scan, not an absence of candidates. */
+      unscanned.push(Object.freeze({ path: dir, reason: `the directory could not be read: ${String(error?.message ?? error).slice(0, 120)}` }));
+      return;
+    }
     for (const entry of entries) {
       const path = join(dir, entry.name);
       /** §7 rule 9: a link is refused, because its identity is the target's rather than the path's. */
@@ -184,34 +226,61 @@ export function discoverScheduledArtifact(input) {
   };
   walk(sessionsRoot, 0);
 
-  /** §7 rule 4: exact normalized equality — never a prefix, never case-insensitive beyond the hex normalization. */
-  const matches = found.filter((candidate) => candidate.attemptId === String(expectedAttemptId).toLowerCase());
+  /** §7 rule 4 / §8: exact normalized equality over the canonical-or-bare contract. */
+  const matches = found.filter((candidate) => candidate.attemptId === expected.bare);
   if (matches.length === 0) {
+    /**
+     * §8 B5: AN INCOMPLETE SCAN CANNOT REPORT ABSENCE. A unique candidate found in a partially scanned space is
+     * not proof of global uniqueness, and neither is an empty result from a space that was not fully searched.
+     */
+    if (unscanned.length > 0) {
+      return Object.freeze({
+        outcome: LOCATOR_OUTCOMES.DISCOVERY_INCOMPLETE, discovered: false, artifactPath: null, attemptId: null,
+        candidates: Object.freeze(found),
+        refused: Object.freeze(refused),
+        unscanned: Object.freeze(unscanned),
+        reason: `the search could not scan ${String(unscanned.length)} directory(ies), so it is NOT exhaustive and no absence can be claimed`,
+        selectedLatestByMtime: false, discoveryIncomplete: true,
+      });
+    }
     return Object.freeze({
       outcome: refused.length > 0 ? LOCATOR_OUTCOMES.ESCAPE_REFUSED : LOCATOR_OUTCOMES.ABSENT,
       discovered: false, artifactPath: null, attemptId: null,
       candidates: Object.freeze(found),
       refused: Object.freeze(refused),
+      unscanned: Object.freeze(unscanned),
       reason: refused.length > 0
         ? `no candidate matched the expected AttemptId, and ${String(refused.length)} candidate(s) were refused as unsafe`
         : 'no artifact under the scoped home encodes the expected AttemptId',
-      selectedLatestByMtime: false,
+      selectedLatestByMtime: false, discoveryIncomplete: false,
     });
   }
-  /** §7 rule 6: ambiguity is reported, never resolved by picking one. */
+  /** §7 rule 6 / §8: ambiguity is reported, never resolved by picking one. */
   if (matches.length > 1) {
     return Object.freeze({
       outcome: LOCATOR_OUTCOMES.AMBIGUOUS, discovered: false, artifactPath: null, attemptId: null,
       candidates: Object.freeze(matches),
+      unscanned: Object.freeze(unscanned),
       reason: `${String(matches.length)} artifacts encode the same AttemptId, so the candidate is ambiguous and no artifact is selected`,
-      selectedLatestByMtime: false,
+      selectedLatestByMtime: false, discoveryIncomplete: unscanned.length > 0,
+    });
+  }
+  /** §8 B5: even a unique match is NOT claimed as globally unique when the scan was incomplete. */
+  if (unscanned.length > 0) {
+    return Object.freeze({
+      outcome: LOCATOR_OUTCOMES.DISCOVERY_INCOMPLETE, discovered: false, artifactPath: null, attemptId: null,
+      candidates: Object.freeze(matches),
+      unscanned: Object.freeze(unscanned),
+      reason: `one candidate matched, but ${String(unscanned.length)} directory(ies) could not be scanned, so global uniqueness is NOT established`,
+      selectedLatestByMtime: false, discoveryIncomplete: true,
     });
   }
   return Object.freeze({
     outcome: LOCATOR_OUTCOMES.DISCOVERED_UNIQUE, discovered: true,
     artifactPath: matches[0].path, attemptId: matches[0].attemptId,
+    canonicalAttemptId: `${ATTEMPT_PREFIX}${matches[0].attemptId}`,
     candidates: Object.freeze(matches),
-    reason: null, selectedLatestByMtime: false,
+    reason: null, selectedLatestByMtime: false, discoveryIncomplete: false,
   });
 }
 

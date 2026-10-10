@@ -64,14 +64,11 @@ describe("R3-L0C-G1-B §3/§11 — the baseline falsifiers, and that C2..C4 CLOS
    * preserved in `baselineDefect` on the contract and in `research-evidence/r3-l0c-g1b/baseline-defects.json`,
    * so the correction is a measured difference rather than an assertion.
    */
-  it("re-measures all five controls; B1..B4 are CLOSED and F5 is C4's remaining work", async () => {
+  it("re-measures all five controls and reports every defect CLOSED", async () => {
     const measured = await runBaselineFalsifiers();
     expect(measured.controls).toHaveLength(5);
-    /**
-     * §11 sequences the locator correction into C4, so at the C2/C3 boundary exactly ONE defect remains open.
-     * The C4 commit updates this to `[]`.
-     */
-    expect(measured.measuredDefectIds).toEqual(["F5_LOCATOR_CANONICAL_MISMATCH"]);
+    /** §11 C4 closes F5, so after the locator correction EVERY defect is closed. */
+    expect(measured.measuredDefectIds).toEqual([]);
     expect(measured.allDefectsMeasured).toBe(false);
     expect(measured.modelCallsMade).toBe(0);
     // The baseline observation each control captured is still carried, so the before/after is auditable.
@@ -120,14 +117,13 @@ describe("R3-L0C-G1-B §3/§11 — the baseline falsifiers, and that C2..C4 CLOS
     expect(control?.observed.correlatorState).not.toBe("RUN_ATTEMPT_CORRELATED");
   }, 180_000);
 
-  it("F5 STILL OPEN at C1..C3: the locator correction is C4's work", async () => {
+  it("F5 CLOSED: the canonical AttemptId resolves and an incomplete scan is refused", async () => {
     const measured = await runBaselineFalsifiers();
     const control = measured.controls.find((entry) => entry.id === "F5_LOCATOR_CANONICAL_MISMATCH");
-    /**
-     * §11 sequences the locator correction into C4. Until it lands this control stays PRESENT — asserted here so
-     * the C1..C3 state is honest rather than silently green.
-     */
-    expect(control?.defectPresent).toBe(true);
+    expect(control?.defectPresent).toBe(false);
+    expect(control?.observed.bareHexDiscovered).toBe(true);
+    expect(control?.observed.canonicalDiscovered).toBe(true);
+    expect(control?.observed.deepCandidateReportsIncomplete).toBe(true);
   }, 180_000);
 });
 
