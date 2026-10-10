@@ -1,0 +1,146 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "measured baseline defects and their closure",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "baseline": "43ca525599031d431796cb37d0c182d265597d84",
+  "whatWasChecked": "the five evidence-binding defects an independent review identified in the G1 producer, measured against the unmodified G1 code and re-measured after the corrections",
+  "defects": [
+    {
+      "id": "B1",
+      "requirement": "exactly one Port Invocation Identity must name one actual Deployment Port execution and all observations associated with it",
+      "baselineDefect": "Work Delegation minted its own `wpi-<uuid>` for the correlated entry while the Deployment Port minted a DIFFERENT `wpi-<uuid>` for each observation, so one port execution carried two unrelated invocation identities",
+      "correction": "the Deployment Port remains the sole producer of InvocationId; the Work Delegation correlation wrapper adopts the invocationId carried by the port observation instead of generating one",
+      "invariant": "entry.invocationId === entry.observation.invocationId, and every observation from one port run shares one invocationId"
+    },
+    {
+      "id": "B2",
+      "requirement": "real Spawn/PID/Exit observations must be preserved, read back and validated as actual events; a successfully written empty record must never count as process evidence",
+      "baselineDefect": "the recorder rejected all three real observations (invocation mismatch), and the resulting zero-event record still wrote successfully and reported durabilityVerified: true",
+      "correction": "the recorder ingests the actual correlated events from the active sink; a positive qualification requires acceptedEvents > 0, rejectedEvents = 0, persistedEventCount === acceptedEvents, and a readback of the same count; per-invocation run-scoped storage replaces the single fixed file",
+      "invariant": "a record with zero events cannot satisfy the process-lifecycle edge"
+    },
+    {
+      "id": "B3",
+      "requirement": "the correlator must consume the real frozen `kind/payload` journal structure through the existing Journal Reader, validate the run-root claim, and reject missing, malformed or duplicate identities",
+      "baselineDefect": "readRunIdentity() and readTrialIdentities() matched flattened `type/runId` fields, so on real journal records they returned MISSING_RUN_STARTED and an empty trial map",
+      "correction": "the correlator reads `{seq, kind, at, payload, digest}` records through `readJournal()`, requires JOURNAL_INTACT, requires exactly one RUN_STARTED with a usable payload.runId, verifies the run-root claim through `verifyTrustedClaim()`, and reads `payload.sessionId` / `payload.record.attemptId` / `payload.record.hostJobId`",
+      "invariant": "no synthetic flattened journal format is used as the positive path"
+    },
+    {
+      "id": "B4",
+      "requirement": "caller-created JSON, even with a copied origin marker and a recomputed SHA-256, must not qualify as a host-origin observation through the authority-bearing consumer",
+      "baselineDefect": "a caller-built record with origin `G1_LOCAL_RECORDER`, a recomputed recordDigest and an EMPTY event array reached RUN_ATTEMPT_CORRELATED against a matching journal",
+      "correction": "trusted ingestion is separated from untrusted inspection: a record reaches LOCAL_HOST_OBSERVED only through the recorder handle bound to a live local invocation, and RUN_ATTEMPT_CORRELATED additionally requires non-empty validated persisted events plus a verified claim and journal reconciliation",
+      "invariant": "a copied marker plus a self-computed digest can only reach DECLARATION_ONLY or ORIGIN_NOT_ESTABLISHED"
+    },
+    {
+      "id": "B5",
+      "requirement": "the locator must accept the real Work Owner canonical `attempt-<32hex>` identity and fail closed on incomplete discovery",
+      "baselineDefect": "passing the canonical `attempt-<32hex>` returned ABSENT (the comparison used the bare hex), and a candidate below the scan bound returned ABSENT with no indication that the search was incomplete",
+      "correction": "the comparison normalizes both the canonical and the bare-hex forms under one explicit contract, and a traversal that could not scan every directory reports DISCOVERY_INCOMPLETE rather than a successful exhaustive search",
+      "invariant": "canonical AttemptId works directly; a partially scanned space is never reported as globally unique"
+    }
+  ],
+  "reMeasuredAfterCorrection": {
+    "defectsStillPresent": [],
+    "allClosed": true,
+    "controls": [
+      {
+        "id": "F1_TWO_INVOCATION_PRODUCERS",
+        "defectPresentNow": false,
+        "observed": {
+          "correlatedEventCount": 3,
+          "pairs": [
+            {
+              "entryInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "observationInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "equal": true
+            },
+            {
+              "entryInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "observationInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "equal": true
+            },
+            {
+              "entryInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "observationInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+              "equal": true
+            }
+          ],
+          "distinctEntryInvocationIds": [
+            "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245"
+          ],
+          "distinctObservationInvocationIds": [
+            "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245"
+          ],
+          "anyPairMismatched": false,
+          "entryAndObservationProducersDiffer": false
+        },
+        "evidenceClass": "REAL_PRODUCT_STACK_LOCAL_NONMODEL"
+      },
+      {
+        "id": "F2_FALSE_DURABILITY_SUCCESS",
+        "defectPresentNow": false,
+        "observed": {
+          "inMemoryObservations": 3,
+          "recorderAcceptedCount": 3,
+          "recorderRejectedCount": 0,
+          "durableEventCount": 3,
+          "durableEventsLength": 3,
+          "written": true,
+          "durabilityVerified": true,
+          "readBackEventCount": 3,
+          "readBackDigestOk": true
+        },
+        "evidenceClass": "REAL_PRODUCT_STACK_LOCAL_NONMODEL"
+      },
+      {
+        "id": "F3_WRONG_JOURNAL_SCHEMA",
+        "defectPresentNow": false,
+        "observed": {
+          "realRecordFields": [
+            "seq",
+            "kind",
+            "at",
+            "payload",
+            "digest"
+          ],
+          "realKind": "RUN_STARTED",
+          "realPayloadRunId": "run-f3",
+          "journalIntact": true,
+          "g1RunIdentityVerdict": "SINGLE_RUN_IDENTITY",
+          "g1RunIdentityRunId": "run-f3",
+          "g1TrialMapSize": 1
+        },
+        "evidenceClass": "REAL_FROZEN_JOURNAL"
+      },
+      {
+        "id": "F4_FORGED_ORIGIN_ACCEPTED",
+        "defectPresentNow": false,
+        "observed": {
+          "copiedOriginMarker": "G1_LOCAL_RECORDER",
+          "recomputedDigestValid": true,
+          "eventCount": 0,
+          "correlatorCorrelated": false
+        },
+        "evidenceClass": "REAL_CORRELATOR_WITH_CALLER_BUILT_INPUT"
+      },
+      {
+        "id": "F5_LOCATOR_CANONICAL_MISMATCH",
+        "defectPresentNow": false,
+        "observed": {
+          "bareHexOutcome": "DISCOVERED_UNIQUE",
+          "bareHexDiscovered": true,
+          "canonicalOutcome": "DISCOVERED_UNIQUE",
+          "canonicalDiscovered": true,
+          "deepCandidateOutcome": "DISCOVERY_INCOMPLETE",
+          "deepCandidateReportsIncomplete": true
+        },
+        "evidenceClass": "REAL_LOCATOR_WITH_FIXTURE_PATHS"
+      }
+    ]
+  },
+  "modelCallsMade": 0,
+  "law": "a defect is reported PRESENT only when the actual code produced the actual wrong answer, and CLOSED only when the same measurement no longer reproduces it"
+}

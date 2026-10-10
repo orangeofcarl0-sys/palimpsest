@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1-B",
+  "kind": "single invocation identity",
+  "applicableCommit": "4c1529b2dc6a7e8d76a07c03f967217110f61482",
+  "identityOwner": {
+    "producer": "DeploymentPort",
+    "producerLocation": "src/deployment/work_worker.ts dshSubprocessWorkWorkerPort().run",
+    "notProducedBy": [
+      "WorkOwner",
+      "WorkDelegation"
+    ],
+    "adoptedBy": "WorkDelegation correlation wrapper",
+    "whyOwnerChoiceMatters": [
+      "the Work Owner does not perform the actual process spawn, so it must not mint port invocation identity",
+      "the Deployment Port must not mint AttemptId or HostJobId, because those belong to different owners",
+      "correlation happens only in the host-private boundary that legitimately holds prepared.attemptId and its own jobId"
+    ]
+  },
+  "invariants": [
+    "entry.invocationId === entry.observation.invocationId for every correlated event",
+    "all observation.invocationId values from one port run are identical",
+    "distinct port runs carry different invocationId values"
+  ],
+  "baselineDefect": {
+    "entryInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+    "observationInvocationId": "wpi-225f39e7-4c2e-42ce-b6cc-a11d3e9a0245",
+    "equal": true
+  },
+  "corrected": {
+    "correlatedInvocationIds": [
+      "wpi-1427bb32-f715-432e-8c96-544c5283a96e"
+    ],
+    "observationInvocationIds": [
+      "wpi-1427bb32-f715-432e-8c96-544c5283a96e"
+    ],
+    "invocationIdentityConsistent": true,
+    "singleIdentityAcrossTheChain": true
+  },
+  "verdict": {
+    "SINGLE_INVOCATION_IDENTITY": "PASS_LOCAL_NONMODEL"
+  },
+  "law": "the Deployment Port is the sole InvocationId producer; the Work Delegation correlation wrapper adopts the identity the port emitted rather than minting a second one"
+}
