@@ -433,7 +433,13 @@ export async function controlRunnerIdentityFalsifier(input = {}) {
   });
 
   const gate = run.validityGate ?? {};
-  const durableReconciliation = run.finalReconciliation ?? gate.durableReconciliation ?? null;
+  /**
+   * §6: THE GATE'S OWN RECONCILIATION is the one the mutation reached — it is computed INSIDE `validityGate`, before
+   * the frozen Runner writes its completion decision. The post-run reconciliation reads the unmutated in-memory
+   * records, so it is reported separately rather than substituted for the authoritative one.
+   */
+  const durableReconciliation = gate.durableReconciliation ?? null;
+  const postRunReconciliation = run.finalReconciliation ?? null;
   const identityConflict = (durableReconciliation?.identity?.conflicts ?? []).some((entry) => entry.sessionId === mutatedSessionId && entry.field === 'attemptId');
   const mutationApplied = run.identityMutation?.applied === true;
 
@@ -452,6 +458,8 @@ export async function controlRunnerIdentityFalsifier(input = {}) {
       durableReconciliationFailing: durableReconciliation?.failing ?? null,
       identityConditionRed: durableReconciliation?.identity?.green === false,
       identityConflictOnMutatedSession: identityConflict,
+      postRunReconciliationGreen: postRunReconciliation?.green ?? null,
+      terminalEventWritten: run.matrixCompleted === true,
       completedSessions: run.completedSessions?.length ?? null,
       scheduleLength: run.scheduleLength ?? null,
       maxLaunchesPerSession: run.maxLaunchesPerSession,
@@ -474,6 +482,9 @@ export async function controlRunnerIdentityFalsifier(input = {}) {
       && run.matrixCompleted !== true && gate.green !== true
       && run.terminalState !== 'MATRIX_COMPLETE' && run.maxLaunchesPerSession === 1
       && (gate.causal?.CAUSAL_RESULT ?? 'NOT_EVALUABLE') === 'NOT_EVALUABLE',
+    /** §6: the mutation must never reach historical evidence or the durable journal's own bytes. */
+    mutationWasInMemoryOnly: run.identityMutation?.durableJournalTouched === false
+      && run.identityMutation?.historicalEvidenceTouched === false,
     blockedCases: 0,
   });
 }
