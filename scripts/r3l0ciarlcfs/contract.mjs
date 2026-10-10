@@ -265,6 +265,11 @@ export const COST_COMPLETENESS_LEVELS = Object.freeze([
 
 /* ================================================================ §7 Gate S5 authorization */
 
+/** §7: the fields an authorization record must carry, so the schema check and the record agree on the shape. */
+export const AUTHORIZATION_RECORD_FIELDS = Object.freeze([
+  'authority', 'approvedPlanId', 'approvedPlanDigest', 'paidRunBudget', 'decisions',
+]);
+
 /**
  * §7: THE MANDATORY AUTHORIZATION CONDITIONS, kept separate, every one required by the verdict.
  *

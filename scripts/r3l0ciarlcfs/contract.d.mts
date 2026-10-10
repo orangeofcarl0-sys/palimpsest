@@ -78,6 +78,7 @@ export const ARTIFACT_VALIDITY_STATES: readonly { readonly id: string; readonly 
 export const COST_COMPLETENESS_LEVELS: readonly NamedEntry[];
 
 export const AUTHORIZATION_CONDITIONS: readonly AuthorizationCondition[];
+export const AUTHORIZATION_RECORD_FIELDS: readonly string[];
 export const AUTHORIZATION_VERDICTS: { readonly VERIFIED: string; readonly REFUSED: string; readonly NOT_ESTABLISHED: string };
 export const AUTHORITY_CONCEPTS: readonly string[];
 
