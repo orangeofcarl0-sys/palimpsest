@@ -392,7 +392,7 @@ export async function controlSafeCleanup() {
 export async function controlRunnerIdentityFalsifier(input = {}) {
   const { runTerminalEnforcementMatrix } = await import('./pipeline.mjs');
   const { deterministicArtifactFixture } = await import('./qualification.mjs');
-  const { REPO_ROOT, STAGE_EVIDENCE_PATH } = await import('./contract.mjs');
+  const { PLAN_ID, REPO_ROOT, STAGE_EVIDENCE_PATH } = await import('./contract.mjs');
   const { readAndVerifyCommittedPlan } = await import('./committed-plan.mjs');
   const { computeExecutionClosure } = await import('./closure.mjs');
   const { frozenPrimarySchedule } = await import('../r3l0ciar/primary-adapter.mjs');
@@ -419,7 +419,7 @@ export async function controlRunnerIdentityFalsifier(input = {}) {
 
   const common = {
     prehistory: { world: built.world, state: built.paths.state }, admittedRefs: refs,
-    installHostBundle, dshHome, authorizedBy: 'r3l0c-iar-lcfsh-primary-plan', caller: 'r3l0c-iar-lcfsh-primary-plan',
+    installHostBundle, dshHome, authorizedBy: PLAN_ID, caller: PLAN_ID,
     plan, closure, containment, mode: 'DETERMINISTIC', systemValid: true, artifactRoot, artifactFixture,
     terminalCompiledVerification: compiledVerification,
   };
