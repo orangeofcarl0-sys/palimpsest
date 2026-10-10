@@ -1,0 +1,592 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-I-A-R-L-C-F",
+  "kind": "measurement fidelity and pre-authorization closure qualification",
+  "baseline": "c8cd220fea86d3bdb2d7d2a72e0326be8f99cb74",
+  "modelCallsMade": 0,
+  "enteredPrimaryExecution": false,
+  "prehistory": {
+    "head": "2249b2dec5ddb8dec6da9eeed28eaf1b6a45ed77",
+    "revision": 4,
+    "worldDigest": "01677435173f207db0e6604962a5ac7be49df0442d972076dfd04b964ef1b32b",
+    "trajectoryCount": 8,
+    "sessionCount": 16
+  },
+  "executionClosure": {
+    "digest": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "partIds": [
+      "SOURCE_CLOSURE",
+      "COMPILED_RUNTIME_CLOSURE",
+      "EXECUTOR_CONFIGURATION",
+      "MODEL_IDENTITY_EVIDENCE",
+      "EXPERIMENT_PLAN_DIGEST",
+      "INTEGRATION_CLOSURE",
+      "STAGE_HARNESS_CLOSURE",
+      "RUNTIME_MANIFEST_CLOSURE",
+      "REUSED_MODULES_CLOSURE"
+    ],
+    "fileCount": 144,
+    "complete": true,
+    "stageHarnessModules": 21,
+    "reusedModules": 27,
+    "reusedMissing": [],
+    "mutationsProven": true,
+    "mutationArms": [
+      "NEW_STAGE_PIPELINE_MODULE",
+      "REUSED_PRIOR_ADMISSION_MODULE",
+      "RUNTIME_MANIFEST_DYNAMIC_MODULE",
+      "EXECUTION_CONFIGURATION_OR_TOOLCHAIN"
+    ],
+    "treeMutated": false,
+    "walkerBlindSpotCount": 8
+  },
+  "attestation": {
+    "verdict": "PASS",
+    "s1MatchesExpectedBundle": true,
+    "s2MatchesS1": true,
+    "competingWriterDetected": false,
+    "compiledMatchesSource": true,
+    "compiledDeterministic": "SUPPORTED",
+    "compiledBoundToInputs": true,
+    "compiledInputIdentity": "55cdecdb56a962fc7ceb2e0436470d971e31131b6ccb42a3ce71d0eab534433e",
+    "installerIsMitigationNotProof": true,
+    "coverageLimitations": [
+      "the global DSH installation itself is not part of this repository's execution closure, so its bytes are not attested",
+      "the host-bundle installer stages and renames, which narrows the replacement window but does NOT make it atomic on every filesystem",
+      "the compiled verification covers the nine named source/compiled pairs, not the entire src tree"
+    ]
+  },
+  "containment": {
+    "verdict": "PASS",
+    "environmentVerdict": "PASS",
+    "cases": 8,
+    "everyOwnWorldExcluded": true,
+    "everyOwnWorldWritable": true,
+    "everySiblingProtected": true,
+    "noProtectedTargetReachable": true,
+    "noEscapeSucceeded": true,
+    "probeDiscriminates": true
+  },
+  "primaryMatrix": {
+    "mode": "DETERMINISTIC",
+    "pipeline": "COMPLETED",
+    "terminalState": "MATRIX_COMPLETE",
+    "matrixCompleted": true,
+    "completedSessions": 16,
+    "trajectoryCount": 8,
+    "maxLaunchesPerSession": 1,
+    "measurementBasis": "RECOMPUTED_AT_ADMISSION",
+    "freshClosureDigest": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "preflightClosureDigest": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "closureRecomputedAtAdmission": true,
+    "durableReconciliationGreen": true,
+    "durableReconciliationConditions": 8,
+    "costMeasured": 16,
+    "costAbsent": 0,
+    "costProvenance": "FIXTURE",
+    "costInterpretable": true,
+    "costAllSixteenLivePrimary": false,
+    "costAccountingComplete": true,
+    "costMeasuredComplete": true,
+    "livePrimaryCostComplete": false,
+    "terminalAdmissionGreen": true,
+    "terminalAdmissionDecision": "GREEN",
+    "terminalAdmissionConditions": 10,
+    "causalResult": "NOT_EVALUABLE",
+    "causalFailing": [
+      "COST_MEASUREMENT_LIVE_PRIMARY_COMPLETE"
+    ],
+    "liveEvidenceSessions": 16,
+    "liveEvidencePropagation": "PASS",
+    "inRunAttestation": "PASS",
+    "s2MatchesS1": true,
+    "competingWriterDetected": false,
+    "journalRetries": 0,
+    "journalReplacements": 0,
+    "causalVerdictIssued": false
+  },
+  "faultInjection": {
+    "cases": [
+      {
+        "position": "FIRST",
+        "scheduleIndex": 0,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 0,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "MIDDLE",
+        "scheduleIndex": 7,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 7,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      },
+      {
+        "position": "LAST",
+        "scheduleIndex": 15,
+        "terminalState": "ABORT_PRESERVED",
+        "completedSessions": 15,
+        "maxLaunchesPerSession": 1,
+        "sessionsAfterFault": []
+      }
+    ],
+    "allStopped": true,
+    "noLaterLaunch": true,
+    "oneLaunchPerSession": true,
+    "reportThenHangTerminal": "UNCERTAIN_PRESERVED",
+    "reportThenHangUncertain": true
+  },
+  "realMutations": {
+    "closureChange": {
+      "id": "F1_B_REAL_CLOSURE_CHANGE",
+      "authorityBearingFunction": "scripts/r3l0ciarlcf/closure.mjs computeExecutionClosure, in an isolated git worktree",
+      "checkoutReproducesCommittedBytes": true,
+      "committedByteComparison": {
+        "compared": 3,
+        "matched": 3,
+        "mismatched": [],
+        "allMatchCommittedBytes": true,
+        "method": "git blob-hash equality over the raw bytes"
+      },
+      "checkoutDigestAtHead": "993ec93d9a1e54f90d4db29b4f54e98ffbd13dc0c2f871b02911eb23fe81f43f",
+      "sharedTreeDigestBefore": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+      "mutationApplied": true,
+      "mutatedFile": "scripts/r3l0ciarlcf/pipeline.mjs",
+      "bytesAdded": 31,
+      "checkoutDigestAfterMutation": "619bb739e18b4be9f657bf965ad34bc684ac718175dcc6b0b1db167240939d8d",
+      "digestMoved": true,
+      "sharedTreeDigestAfter": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+      "sharedTreeUnchanged": true,
+      "detectedByActualRecomputation": true,
+      "injectedFakeDigest": false,
+      "PROVEN": true,
+      "law": "a real byte change to a tracked file the closure hashes moves the recomputed closure digest, measured in an isolated checkout that reproduces the committed bytes, with the shared working tree untouched"
+    },
+    "routeChange": {
+      "id": "F1_C_REAL_ROUTE_CHANGE",
+      "authorityBearingFunction": "scripts/r3l0ciar/preflight.mjs effectiveRouteConfiguration, in an isolated git worktree",
+      "mutatedFile": "scripts/r3l0cr/route.mjs",
+      "mutationApplied": true,
+      "mutationDetail": {
+        "applied": true,
+        "relative": "scripts/r3l0cr/route.mjs",
+        "from": "modelId: 'deepseek-v4.1-flash'",
+        "to": "modelId: 'deepseek-v4.1-flash-r3lcf-mutated'",
+        "bytesDelta": 14
+      },
+      "effectiveBefore": {
+        "routeId": "omnigate2api-deepseek-v41-flash",
+        "providerId": "omnigate-route",
+        "modelId": "deepseek-v4.1-flash",
+        "modelFamily": "deepseek",
+        "baseURL": "http://127.0.0.1:7866/v1",
+        "settingsDigest": "c9a60e8e7a368437b67908139235caf7495b5f86354ac6c39949724a9a7294cd"
+      },
+      "effectiveAfter": {
+        "routeId": "omnigate2api-deepseek-v41-flash",
+        "providerId": "omnigate-route",
+        "modelId": "deepseek-v4.1-flash-r3lcf-mutated",
+        "modelFamily": "deepseek",
+        "baseURL": "http://127.0.0.1:7866/v1",
+        "settingsDigest": "2e4e52bb98ee630a33eae0813167121c2cdf8368e1e72cf65b0884b2ab6dad17"
+      },
+      "effectiveIdentityMoved": true,
+      "detectedByActualRecomputation": true,
+      "injectedFakeDigest": false,
+      "PROVEN": true,
+      "law": "a real value change to the route module changes the effective route identity the pre-trial reducer reads, measured in an isolated checkout"
+    },
+    "sharedTreeNeverMutated": true
+  },
+  "productionControls": {
+    "artifactIdentity": {
+      "id": "ARTIFACT_IDENTITY_DISCOVERY",
+      "authorityBearingFunction": "scripts/r3l0ciarlcf/artifact-identity.mjs + scripts/r3l0ciarlcf/cost-bridge.mjs bridgeMatrixCost",
+      "durableEvidence": "a TRIAL_RECORDED journal record whose contentDigests binds a live-evidence sidecar, plus a real-format session artifact under the session-scoped DSH home",
+      "positiveControl": {
+        "measured": true,
+        "provenance": "FIXTURE",
+        "outcome": "MEASURED_FIXTURE",
+        "fieldsNonNull": true,
+        "rawHistoryArtifactsRead": 1,
+        "rawHistoryBytesReturned": 800,
+        "capitalPullActions": 1,
+        "attemptId": "dd64ac801a0e56a0c07b97a5ccc07c7c",
+        "hostJobId": "job-9f8e7d",
+        "matrixMeasuredCount": 1,
+        "matrixInterpretable": true,
+        "matrixProvenance": "FIXTURE",
+        "identitiesAgree": true,
+        "discoveryOutcome": "DISCOVERED_UNIQUE",
+        "discoverySelectedAttempt": "dd64ac801a0e56a0c07b97a5ccc07c7c",
+        "comparison": "EXACT_NORMALIZED_EQUALITY"
+      },
+      "mutations": {
+        "canonicalAndPathNormalizedAgree": true,
+        "prefixCollisionRefused": true,
+        "identityConflictDetected": true,
+        "hostJobIdConflictDetected": true,
+        "missingArtifactDetected": true,
+        "absentArtifactFieldsNull": true,
+        "discoveryRecoversUniqueCandidate": true,
+        "ambiguousRefused": true,
+        "ambiguousNotResolvedByRecency": true,
+        "corruptedNotMeasuredAsZero": true,
+        "corruptedReportedUnreadable": true,
+        "tamperedDigestRefused": true,
+        "fabricatedPrimaryNotLivePrimary": true,
+        "fabricatedDeclarationCarriedButNotDecisive": true,
+        "discoveryScopeUnavailableWithoutHome": true,
+        "noWitnessIsNotEstablished": true
+      },
+      "livePrimaryProvenance": {
+        "verdict": "NOT_ESTABLISHED",
+        "reason": "no authentic current-run execution witness exists without entering a paid PRIMARY execution, which §0 forbids"
+      },
+      "mutant": {
+        "id": "F2_UNVERIFIED_LIVE_PRIMARY",
+        "measuredBy": "test/r3l0ciarlcf_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior derivation produced LIVE_PRIMARY from a route regex, a sidecar mode and a digest, and compared identities by substring"
+      },
+      "PASS": true
+    },
+    "durableReconciliation": {
+      "id": "DURABLE_TRIAL_CONSISTENCY",
+      "authorityBearingFunction": "scripts/r3l0ciarlcf/postmatrix-admission.mjs authoritativeTerminalAdmission + scripts/r3l0ciarlcf/durable-reconciliation.mjs reconcileDurableTrials",
+      "durableEvidence": "the generation journal, read at admission by the frozen readJournal, reconciled against the runner's in-memory observation",
+      "positiveControl": {
+        "green": true,
+        "decision": "GREEN",
+        "conditions": 10,
+        "journalReadAtAdmission": true,
+        "durableTrialConsistency": true,
+        "measurementBasis": "RECOMPUTED_AT_ADMISSION"
+      },
+      "mutations": {
+        "durableInMemoryConflictRed": true,
+        "durableInMemoryConflictFailing": [
+          "DURABLE_TRIAL_CONSISTENCY"
+        ],
+        "duplicateDurableTrialRed": true,
+        "missingDurableTrialRed": true,
+        "damagedJournalRed": true,
+        "absenceSatisfiesAccountingNotMeasurement": true,
+        "forgedAllSixteenCannotOverrideRedAdmission": true,
+        "fixtureMatrixNotEvaluable": true
+      },
+      "mutant": {
+        "id": "F3_DIVIDED_IDENTITIES",
+        "measuredBy": "test/r3l0ciarlcf_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior reducer computed IDENTITIES_EXACT from the in-memory records while the cost bridge read the durable journal, so a durable/in-memory disagreement left the gate GREEN"
+      },
+      "PASS": true
+    },
+    "planIdentity": {
+      "id": "FULL_PLAN_DIGEST",
+      "authorityBearingFunction": "scripts/r3l0ciarlcf/plan-identity.mjs fullPlanDigest + scripts/r3l0ciarlcf/trust-boundary.mjs budgetSemantics",
+      "durableEvidence": "the committed F-stage prospective plan (read, never rewritten), and the prior LC plan for the method comparison",
+      "positiveControl": {
+        "fullDigestDiffersFromPriorProjection": true,
+        "fullDigestDiffersFromClosureDigest": true,
+        "coveredFields": 28,
+        "missingMaterialFields": [],
+        "allMutationsMove": true,
+        "mutationCount": 13,
+        "unmoved": [],
+        "budgetConceptsSeparated": true,
+        "declaredOnlyIsNotEnforceable": true,
+        "hostEnforcedBudget": false,
+        "spendEnforcement": "NOT_ESTABLISHED",
+        "schemaValid": true,
+        "noTrustedSource": true,
+        "authorityVerdict": "AUTHORITY_NOT_ESTABLISHED"
+      },
+      "mutations": {
+        "modelRouteMovesDigest": true,
+        "settingsMovesDigest": true,
+        "scheduleMovesDigest": true,
+        "treatmentMovesDigest": true,
+        "endpointMovesDigest": true,
+        "authorizationScopeMovesDigest": true,
+        "pipelineOrderMovesDigest": true,
+        "declaredOnlyImpliesEnforceable": false,
+        "enforceableBudgetConcept": false
+      },
+      "mutant": {
+        "id": "F4_PARTIAL_PLAN_AND_BUDGET",
+        "measuredBy": "test/r3l0ciarlcf_controls.test.ts",
+        "baselineViolates": true,
+        "note": "the prior digest hashed a selected projection and the prior ENFORCEABLE_BUDGET concept was true for a DECLARED_ONLY budget"
+      },
+      "PASS": true
+    }
+  },
+  "correctionGates": {
+    "declared": 5,
+    "allViolated": true,
+    "violated": [
+      "F1_CAPTURED_NOT_FRESH",
+      "F2_UNVERIFIED_LIVE_PRIMARY",
+      "F3_DIVIDED_IDENTITIES",
+      "F4_PARTIAL_PLAN_AND_BUDGET",
+      "F5_UNBOUND_COMPILER_CACHE"
+    ],
+    "notViolated": [],
+    "controls": [
+      {
+        "id": "F1_CAPTURED_NOT_FRESH",
+        "authorityBearingFunction": "scripts/r3l0ciarlc/pipeline.mjs runAdmissionClosureMatrix — the `recomputeAtAdmission` default branch",
+        "baselineLocation": "scripts/r3l0ciarlc/pipeline.mjs:377",
+        "observed": {
+          "pipelineMode": "DETERMINISTIC",
+          "terminalAdmissionGreen": true,
+          "preflightClosureDigest": "5db18384c9297e47c4933d947c31d799bc3415359ca926cf96368b18b015f8da",
+          "admissionClosureDigest": "5db18384c9297e47c4933d947c31d799bc3415359ca926cf96368b18b015f8da",
+          "admissionEqualsPreflight": true,
+          "measurementBasisRecorded": false,
+          "preflightDigestRecordedSeparately": false
+        },
+        "defectPresent": true,
+        "detail": "the DETERMINISTIC default returns the captured preflight `closure` and the preflight route identity, so the normal non-injected path performs no recomputation and records no measurement basis",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "F2_UNVERIFIED_LIVE_PRIMARY",
+        "authorityBearingFunction": "scripts/r3l0ciarlc/cost-bridge.mjs deriveBridgeProvenance + compareIdentity",
+        "baselineLocation": "scripts/r3l0ciarlc/cost-bridge.mjs:63 and :188",
+        "observed": {
+          "fabricatedRoute": "the frozen omnigate DeepSeek route",
+          "fabricatedMode": "PRIMARY",
+          "fabricatedProvenance": "LIVE_PRIMARY",
+          "fabricatedIsLive": true,
+          "fabricatedBasis": {
+            "recordRouteIsPrimary": true,
+            "sidecarModeIsPrimary": true,
+            "artifactDigestVerified": true,
+            "recordRoute": "the frozen omnigate DeepSeek route",
+            "sidecarMode": "PRIMARY"
+          },
+          "independentExecutionWitnessRequired": false,
+          "substringCollisionAccepted": true,
+          "substringCollisionConflicts": [],
+          "substringCollisionPathId": "abcdef",
+          "substringCollisionRecordId": "attempt-abcdef0123456789",
+          "longerPathIdAccepted": false,
+          "longerPathIdConflicts": [
+            "attemptId(path vs record)"
+          ]
+        },
+        "defectPresent": true,
+        "detail": "a route string naming the primary route plus a sidecar mode of PRIMARY plus a verified digest yields LIVE_PRIMARY with no independent execution witness; and the identity comparison uses `String.includes()`, so the path id `attempt-abcdef` is accepted as the same identity as the record id `attempt-abcdef0123456789` even though they name different attempts",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "F3_DIVIDED_IDENTITIES",
+        "authorityBearingFunction": "scripts/r3l0ciarlc/postmatrix-admission.mjs authoritativeTerminalAdmission",
+        "baselineLocation": "scripts/r3l0ciarlc/postmatrix-admission.mjs:62-75",
+        "observed": {
+          "terminalAdmissionGreen": true,
+          "reducerIdentitiesExact": true,
+          "durableArmForS1": "C",
+          "scheduledArmForS1": "H",
+          "durableTrialOutcomes": [
+            {
+              "sessionId": "s0",
+              "outcome": "SIDECAR_ABSENT"
+            },
+            {
+              "sessionId": "s1",
+              "outcome": "SIDECAR_ABSENT"
+            }
+          ],
+          "durableAndInMemoryDisagree": true
+        },
+        "defectPresent": true,
+        "detail": "the terminal reducer derives IDENTITIES_EXACT from the in-memory records while the cost bridge reads TRIAL_RECORDED from the durable journal, so a durable trial with a different arm/trajectory is invisible to the identity check and the combined gate stays GREEN",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "F4_PARTIAL_PLAN_AND_BUDGET",
+        "authorityBearingFunction": "scripts/r3l0ciarlc/trust-boundary.mjs planContentDigest + verifyExternalAuthority",
+        "baselineLocation": "scripts/r3l0ciarlc/trust-boundary.mjs:65-86 and :246",
+        "observed": {
+          "baseDigest": "4b7e08b52556b53be020345e0b6e6b462791c71568453cac360f04dc5751de74",
+          "modelRouteChangeMovesDigest": false,
+          "providerChangeMovesDigest": false,
+          "settingsChangeMovesDigest": false,
+          "pipelineOrderChangeMovesDigest": false,
+          "terminalConditionsChangeMovesDigest": false,
+          "authorizationDecisionsChangeMovesDigest": false,
+          "executionPathDeviationsChangeMovesDigest": false,
+          "reusedModulesChangeMovesDigest": false,
+          "stageStopChangeMovesDigest": false,
+          "scheduleChangeMovesDigest": true,
+          "closureChangeMovesDigest": true,
+          "budgetEnforceableField": "DECLARED_ONLY",
+          "budgetDeclaredOnly": true,
+          "budgetCoversFrozenScope": true,
+          "conceptsEnforceableBudget": true,
+          "recordIsSchemaValid": true
+        },
+        "defectPresent": true,
+        "detail": "planContentDigest hashes a SELECTED projection, so a changed execution route, pipeline order, terminal conditions, authorization decisions or execution-path deviations leaves the digest unmoved; and ENFORCEABLE_BUDGET is computed as `coversFrozenScope && enforceable === DECLARED_ONLY`, so a declared-only budget is reported as an enforceable one",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      },
+      {
+        "id": "F5_UNBOUND_COMPILER_CACHE",
+        "authorityBearingFunction": "scripts/r3l0ciarlc/compiled-verification.mjs verifyCompiledSourceIsolated",
+        "baselineLocation": "scripts/r3l0ciarlc/compiled-verification.mjs:71 and :81",
+        "observed": {
+          "pairs": 9,
+          "verdict": true,
+          "returnedKeys": [
+            "kind",
+            "pairs",
+            "missing",
+            "DETERMINISTIC",
+            "method",
+            "probeIsolation",
+            "normalization",
+            "diverged",
+            "COMPILED_MATCHES_SOURCE"
+          ],
+          "carriesInputIdentity": false,
+          "secondCallIsTheSameObject": true,
+          "cacheKeyIsTheAbsenceOfAValue": true
+        },
+        "defectPresent": true,
+        "detail": "the compiled-verification cache is a module-level variable whose key is the absence of a value; the returned object records no source digest, compiled digest, compiler-options digest or toolchain identity, so the terminal gate cannot tell whether a cached PASS describes the current inputs",
+        "PROPERTY_VIOLATED_BY_BASELINE": true
+      }
+    ]
+  },
+  "timeouts": {
+    "outerChildMs": 2220000,
+    "innerWorkerMs": 1800000,
+    "settlementMs": 300000,
+    "outerExceedsInnerPlusSettlement": true,
+    "marginMs": 120000,
+    "law": "the outer child budget must exceed the worker execution budget plus the required settlement interval"
+  },
+  "quarantine": {
+    "authorized": true,
+    "caller": "r3-l0c-iar-lcf-primary-plan",
+    "authoritativePath": "scripts/r3l0ciarlcf/pipeline.mjs",
+    "priorPipelinesQuarantined": true,
+    "priorPipelinesStillExecutable": true
+  },
+  "authority": {
+    "verdict": "AUTHORITY_NOT_ESTABLISHED",
+    "verified": false,
+    "trustedSourceAvailable": false,
+    "trustedSourceVerified": false,
+    "concepts": {
+      "SCHEMA_VALIDITY": false,
+      "EXTERNALLY_VERIFIED_AUTHORITY": false,
+      "AUTHORIZED_PROSPECTIVE_PLAN": false,
+      "ENFORCEABLE_BUDGET": false,
+      "CURRENT_LAUNCH_PERMISSION": false
+    },
+    "launchProhibited": true,
+    "budgetConcepts": {
+      "DECLARED_BUDGET": false,
+      "SESSION_SCOPE_COVERAGE": false,
+      "MAX_AUTHORIZED_MONETARY_EXPENDITURE": false,
+      "ACTUAL_HOST_ENFORCED_BUDGET": false,
+      "CURRENT_LAUNCH_PERMISSION": false
+    },
+    "spendEnforcement": "NOT_ESTABLISHED",
+    "noTrustedSource": true
+  },
+  "immutability": {
+    "id": "HISTORICAL_IMMUTABILITY",
+    "verdict": "PASS",
+    "detail": "protected namespaces: 21; working files: 381",
+    "protectedNamespaces": [
+      "research-evidence/r1",
+      "research-evidence/r1-h",
+      "research-evidence/r1-hc",
+      "research-evidence/r1-hr",
+      "research-evidence/r1-l",
+      "research-evidence/r1-r",
+      "research-evidence/r1-s",
+      "research-evidence/r2-e",
+      "research-evidence/r2-lr",
+      "research-evidence/r2-m",
+      "research-evidence/r2-s",
+      "research-evidence/r2-u",
+      "research-evidence/r2-v",
+      "research-evidence/r2-vr",
+      "research-evidence/r3-a",
+      "research-evidence/r3-ae",
+      "research-evidence/r3-l0",
+      "research-evidence/r3-l0a",
+      "research-evidence/r3-l0b",
+      "research-evidence/r3-s0",
+      "research-evidence/r3-spec"
+    ],
+    "workingFileCount": 381,
+    "changed": [],
+    "removed": [],
+    "unexpectedAdditions": [],
+    "restoreAvailable": false,
+    "baselineRevision": "e51df1f4c2a666ffa7364dbdc108eb9eb7eae2fb"
+  },
+  "planClosure": {
+    "EXECUTION_CLOSURE": "MATCH",
+    "frozen": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "current": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
+  },
+  "planContentDigest": {
+    "FULL_PLAN_DIGEST": "MATCH",
+    "frozen": "f97fd115d15d9ea36d1e8d009b195362990203f18f704772bb515166eaff0ad3",
+    "current": "f97fd115d15d9ea36d1e8d009b195362990203f18f704772bb515166eaff0ad3"
+  },
+  "plan": {
+    "planId": "r3-l0c-iar-lcf-primary-plan",
+    "digest": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5",
+    "planContentDigest": "116b65e72cbcf5f93230c75d80402930e97cd01344d29d20962948f0ca05b716",
+    "supersedes": "r3-l0c-iar-lc-primary-plan",
+    "frozenClosure": "d4c21920cd7a957d226c17a5340c8d129ef135d06eb73fc021e71c1cb3d7c6e5"
+  },
+  "verdicts": {
+    "NORMAL_PATH_FRESHNESS": "PASS",
+    "COMPILED_ATTESTATION_FRESHNESS": "PASS",
+    "DURABLE_TRIAL_CONSISTENCY": "PASS",
+    "FIXTURE_COST_BRIDGE": "PASS",
+    "ARTIFACT_IDENTITY_DISCOVERY": "PASS",
+    "LIVE_PRIMARY_PROVENANCE": "NOT_ESTABLISHED",
+    "COST_MEASUREMENT_COMPLETENESS": "PASS",
+    "CAUSAL_ADMISSION_INTEGRITY": "PASS",
+    "FULL_PLAN_DIGEST": "PASS",
+    "EXTERNAL_AUTHORITY": "NOT_ESTABLISHED",
+    "SPEND_ENFORCEMENT": "NOT_ESTABLISHED",
+    "EXECUTION_CLOSURE": "MATCH",
+    "HISTORICAL_IMMUTABILITY": "PASS",
+    "PAID_EXECUTION": "NOT_RUN",
+    "CAUSAL_RESULT": "NOT_EVALUABLE"
+  },
+  "readiness": {
+    "DETERMINISTIC_MEASUREMENT_QUALIFIED": true,
+    "REAL_ARTIFACT_COMPATIBILITY_ESTABLISHED": false,
+    "PRIMARY_EXECUTION_AUTHORIZED": false,
+    "PRIMARY_CAUSAL_DATA_AVAILABLE": false,
+    "centralVerdicts": [
+      "NORMAL_PATH_FRESHNESS",
+      "COMPILED_ATTESTATION_FRESHNESS",
+      "DURABLE_TRIAL_CONSISTENCY",
+      "FIXTURE_COST_BRIDGE",
+      "COST_MEASUREMENT_COMPLETENESS",
+      "CAUSAL_ADMISSION_INTEGRITY",
+      "FULL_PLAN_DIGEST"
+    ],
+    "centralFailing": [],
+    "collapsed": false,
+    "note": "the four readiness statements are independent; DETERMINISTIC_MEASUREMENT_QUALIFIED is NOT an authorization and does NOT imply the other three"
+  }
+}
