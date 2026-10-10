@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "artifact locator compatibility",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "grammarSource": "verified read-only against a palimpsest-controlled DSH home directory (not a personal history)",
+  "documentedLayout": "<dshHome>/sessions/--<cwd-slug>--/worker-<uuid>/session.v4.jsonl.zstd",
+  "cwdIsTheExecutionWorld": ".palimpsest/worlds/<attemptId>, so the canonical AttemptId is embedded in the slug and terminated by the slug closing delimiter rather than by a path separator",
+  "rules": [
+    "stay within the expected scoped DSH Home",
+    "use the actual documented path grammar",
+    "extract the complete canonical AttemptId only when the grammar proves the boundary",
+    "compare against the Work Attempt identity using exact normalized equality",
+    "reject partial/prefix collisions",
+    "reject ambiguous multiple candidates",
+    "reject missing identity",
+    "reject stale or unrelated Session candidates",
+    "refuse symlink or traversal escapes from the declared home",
+    "never choose the newest Artifact merely by mtime"
+  ],
+  "realPathSample": "C:/Users/66494/.palimpsest-gates/d2-live/home/sessions/--C-Users-66494-.palimpsest-gates-d2-live-repo-.palimpsest-worlds-attempt-a07384dd03aa9f5c4597b61e8f929771--/worker-c7e88db3-a360-4b1f-97ec-d16108d641e1/session.v4.jsonl.zstd",
+  "realPathResolvedAttemptId": "a07384dd03aa9f5c4597b61e8f929771",
+  "parserDisagreement": {
+    "segmentAnchored": "scripts/r3l0ciarlcf/artifact-identity.mjs:77 returns null on the real path",
+    "substring": "scripts/r3l0c/instrumentation.mjs:62 returns a07384dd03aa9f5c4597b61e8f929771 on the same path",
+    "g1ModifiesEitherParser": false
+  },
+  "frozenCostBridgeModified": false,
+  "connectedToPaidWorkerLaunch": false,
+  "evidenceLevels": {
+    "provedByGrammarTests": "ARTIFACT_LOCATOR_GRAMMAR_TESTED",
+    "requiresAuthenticEvidence": "REAL_DSH_ARTIFACT_COMPATIBILITY",
+    "realCompatibilityEstablished": false,
+    "note": "synthetic and source-grounded path tests prove the GRAMMAR; REAL_DSH_ARTIFACT_COMPATIBILITY needs authentic frozen-experiment evidence"
+  },
+  "verdict": {
+    "ARTIFACT_LOCATOR_GRAMMAR": "PASS_SOURCE_GROUNDED",
+    "REAL_DSH_ARTIFACT_COMPATIBILITY": "NOT_ESTABLISHED"
+  },
+  "law": "passing synthetic and source-grounded path tests proves the GRAMMAR; REAL_DSH_ARTIFACT_COMPATIBILITY requires authentic project-specific DSH evidence, which G1 does not have"
+}

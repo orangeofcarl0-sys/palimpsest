@@ -60,12 +60,24 @@ describe("R3-L0C-G1 §0/§1 — the contract binds the exact baseline and the ad
 });
 
 describe("R3-L0C-G1 §3 — the producer gaps are measured, not asserted", () => {
-  it("measures all five declared gaps against the unmodified baseline source", async () => {
+  it("measures every declared gap against the source, and reports which G1 has closed", async () => {
     const measured = await runAbsenceControls();
     expect(measured.controls).toHaveLength(PRODUCER_GAPS.length);
-    expect(measured.measuredGapIds).toEqual(["GAP-1", "GAP-2", "GAP-3", "GAP-4", "GAP-5"]);
-    expect(measured.allDeclaredGapsMeasured).toBe(true);
     expect(measured.modelCallsMade).toBe(0);
+    /**
+     * §12 C1 committed this control BEFORE the implementation, when all five gaps were present. C2 then CLOSED
+     * GAP-3 by declaring the observation schema, so this test asserts the honest post-implementation state:
+     * every gap is measured, and the set that remains open is exactly the set G1 does not close.
+     */
+    expect(measured.measuredGapIds).toContain("GAP-1");
+    expect(measured.measuredGapIds).toContain("GAP-2");
+    expect(measured.measuredGapIds).toContain("GAP-4");
+    expect(measured.measuredGapIds).toContain("GAP-5");
+    // GAP-3 is now CLOSED: the observation schema exists.
+    expect(measured.measuredGapIds).not.toContain("GAP-3");
+    expect(measured.allDeclaredGapsMeasured).toBe(false);
+    const gap3 = measured.controls.find((entry) => entry.id === "GAP-3");
+    expect(gap3?.observed.observationSchemaPresent).toBe(true);
   });
 
   it("GAP-1: the port spawns a child but its outcome carries no process identity", async () => {
@@ -74,6 +86,14 @@ describe("R3-L0C-G1 §3 — the producer gaps are measured, not asserted", () =>
     expect(control?.observed.portCallsSpawn).toBe(true);
     expect(control?.observed.outcomeTypeMentionsPid).toBe(false);
     expect(control?.gapPresent).toBe(true);
+  });
+
+  it("GAP-2: the port still receives no attempt id — the correlation lives in the delegation layer", async () => {
+    const measured = await runAbsenceControls();
+    const control = measured.controls.find((entry) => entry.id === "GAP-2");
+    // §5: the port deliberately still receives no attempt id; the observation seam is what correlates.
+    expect(control?.observed.portReceivesAttemptId).toBe(false);
+    expect(control?.observed.delegationHoldsAttemptId).toBe(true);
   });
 
   it("GAP-4: the two real parsers disagree on the same real path", async () => {

@@ -1,0 +1,204 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G1",
+  "kind": "source-grounded producer boundaries",
+  "applicableCommit": "2a1e194f2baf295ceeba1801cd75ecbb83404425",
+  "baseline": "fe18441de2ac40921ac4dcabe112a7670363b24a",
+  "whatWasChecked": "the actual producer of every identity and observation field the correlation depends on, read from source rather than from a report",
+  "producers": [
+    {
+      "fact": "Work AttemptId",
+      "producer": "Work owner (ProjectController.prepareMutatingWork)",
+      "producerLocation": "src/tools/controller.ts prepareMutatingWork -> stableEntityId(\"attempt\", digest)",
+      "canonical": true,
+      "durable": true,
+      "evidenceBoundary": "the canonical Work event log",
+      "g1Consumes": true,
+      "g1Owns": false
+    },
+    {
+      "fact": "Host-local JobId",
+      "producer": "Work Delegation host service (makeWorkDelegationService.start)",
+      "producerLocation": "src/interaction/work_delegation.ts:218 `wdj-${randomUUID()}`",
+      "canonical": false,
+      "durable": false,
+      "evidenceBoundary": "host-local Map, lost on restart",
+      "g1Consumes": true,
+      "g1Owns": false,
+      "note": "explicitly NOT durable canonical Work identity; an observation naming it does not make it canonical"
+    },
+    {
+      "fact": "Prepared execution world path",
+      "producer": "Work owner, materialized by the Git world port",
+      "producerLocation": "src/effects/git_port.ts worldPath() -> `<worktreeRoot>/<attemptId>`; worktreeRoot = `.palimpsest/worlds`",
+      "canonical": true,
+      "durable": true,
+      "evidenceBoundary": "the filesystem path the Work owner derived from the AttemptId",
+      "g1Consumes": true,
+      "g1Owns": false
+    },
+    {
+      "fact": "Direct child process identity (pid)",
+      "producer": "Deployment port (dshSubprocessWorkWorkerPort.run -> Node spawn)",
+      "producerLocation": "src/deployment/work_worker.ts:640 `const spawned = spawn(nodeExecPath, [...])`",
+      "canonical": false,
+      "durable": false,
+      "evidenceBoundary": "the host process; NOT returned by the port today",
+      "g1Consumes": true,
+      "g1Owns": false,
+      "note": "this is the fact G1 makes observable; it proves a direct child existed, nothing more"
+    },
+    {
+      "fact": "Worker outcome (READY_FOR_SETTLEMENT | NEEDS_ESCALATION)",
+      "producer": "Worker process, re-read strictly by the host (parseWorkWorkerResult)",
+      "producerLocation": "src/deployment/work_worker.ts:298 parseWorkWorkerResult",
+      "canonical": false,
+      "durable": true,
+      "evidenceBoundary": "testimony, re-read on the host side of the boundary",
+      "g1Consumes": true,
+      "g1Owns": false,
+      "note": "testimony, never a Work terminal fact"
+    },
+    {
+      "fact": "Attempt terminal state / settlement",
+      "producer": "Work owner (ProjectController.settleMutatingWork)",
+      "producerLocation": "src/tools/controller.ts settleMutatingWork",
+      "canonical": true,
+      "durable": true,
+      "evidenceBoundary": "the canonical Work event log",
+      "g1Consumes": false,
+      "g1Owns": false,
+      "note": "G1 must never produce this; an observer cannot settle, verify or promote"
+    },
+    {
+      "fact": "Research RunId",
+      "producer": "Research harness run root claim + RUN_STARTED journal record",
+      "producerLocation": "scripts/r3l0cf/fail-stop.mjs claimRunRoot; scripts/r3l0cf/journal.mjs",
+      "canonical": false,
+      "durable": true,
+      "evidenceBoundary": "the append-only run journal and the run-root claim file",
+      "g1Consumes": true,
+      "g1Owns": false,
+      "note": "individual TRIAL_RECORDED payloads carry no runId; the run relationship comes from RUN_STARTED + the validated claim, never from a caller-supplied string"
+    }
+  ],
+  "canonicalOwnersAddedByG1": [],
+  "evidenceStoreAddedByG1": false,
+  "schedulerAddedByG1": false,
+  "producerGaps": [
+    {
+      "id": "GAP-1",
+      "gap": "the Deployment port observes the direct child (spawn handle, close event) but returns only a worker outcome or HOST_FAILURE; the process observation is discarded",
+      "sourceLocation": "src/deployment/work_worker.ts:208 WorkWorkerExecutionOutcome (kind/detail only)",
+      "closedByG1": true,
+      "closure": "an optional host-only observation callback carried on the run input"
+    },
+    {
+      "id": "GAP-2",
+      "gap": "nothing correlates a process observation with the canonical AttemptId and the host-local JobId, because the port deliberately does not receive an attempt id",
+      "sourceLocation": "src/deployment/work_worker.ts:244 \"The port deliberately does not receive an attempt id\"",
+      "closedByG1": true,
+      "closure": "the Work Delegation host service, which already holds prepared.attemptId and its own jobId, wraps the port observation"
+    },
+    {
+      "id": "GAP-3",
+      "gap": "no durable record preserves a host observation, so no later consumer can distinguish an authentic local observation from a caller declaration",
+      "sourceLocation": "absent in the product",
+      "closedByG1": true,
+      "closure": "a stage-owned recorder writing sanitized structural metadata, with a content digest and re-read verification"
+    },
+    {
+      "id": "GAP-4",
+      "gap": "the Artifact path parsers disagree: the segment-anchored parser requires `attempt-<hex>` as a whole path segment, while the real DSH layout embeds the attempt hex inside a cwd slug terminated by `--`",
+      "sourceLocation": "scripts/r3l0ciarlcf/artifact-identity.mjs:77 vs scripts/r3l0c/instrumentation.mjs:62",
+      "closedByG1": "PARTIAL",
+      "closure": "a source-grounded read-only locator for the documented slug grammar; REAL_DSH_ARTIFACT_COMPATIBILITY stays NOT_ESTABLISHED because no authentic frozen-experiment artifact was observed"
+    },
+    {
+      "id": "GAP-5",
+      "gap": "no execution witness can be produced: runId is absent from the durable per-trial record and the port discards the worker process identity",
+      "sourceLocation": "scripts/r3l0cf/contract.mjs JOURNAL_FIELDS (no runId); src/deployment/work_worker.ts (no pid)",
+      "closedByG1": "PARTIAL",
+      "closure": "G1 produces the local host observation and the run/attempt correlation, but LIVE_PRIMARY_PROVENANCE stays NOT_ESTABLISHED: a genuine DSH worker and the actual provider route remain unobserved"
+    }
+  ],
+  "measuredAbsenceControls": [
+    {
+      "id": "GAP-1",
+      "gapPresent": true,
+      "observed": {
+        "portCallsSpawn": true,
+        "outcomeTypeMentionsPid": false,
+        "outcomeTypeMentionsObservation": false,
+        "outcomeTypeFields": [
+          "readonly kind"
+        ],
+        "outcomeTypeExcerpt": "export type WorkWorkerExecutionOutcome =\r\n  | WorkWorkerOutcome\r\n  | { readonly kind: \"HOST_FAILURE\";"
+      }
+    },
+    {
+      "id": "GAP-2",
+      "gapPresent": true,
+      "observed": {
+        "portReceivesAttemptId": false,
+        "portInputFields": [
+          "readonly workDir",
+          "readonly context",
+          "readonly contextPull",
+          "readonly signal",
+          "readonly observe"
+        ],
+        "delegationHoldsAttemptId": true,
+        "delegationDepsHaveObserverCallback": false,
+        "delegationInterfaceHasObserverCallback": false
+      }
+    },
+    {
+      "id": "GAP-3",
+      "gapPresent": false,
+      "observed": {
+        "workerDeclaresObservationSchema": true,
+        "delegationDeclaresObservationSchema": true,
+        "workerWritesOnlyWorkerContext": true,
+        "observationSchemaPresent": true
+      }
+    },
+    {
+      "id": "GAP-4",
+      "gapPresent": true,
+      "observed": {
+        "segmentAnchoredResult": null,
+        "substringResult": "a07384dd03aa9f5c4597b61e8f929771",
+        "disagree": true,
+        "segmentAnchoredNullOnRealPath": true
+      }
+    },
+    {
+      "id": "GAP-5",
+      "gapPresent": true,
+      "observed": {
+        "journalFieldsPresent": true,
+        "journalCarriesAttemptId": true,
+        "journalCarriesHostJobId": true,
+        "journalCarriesRunId": false
+      }
+    }
+  ],
+  "measuredGapIds": [
+    "GAP-1",
+    "GAP-2",
+    "GAP-4",
+    "GAP-5"
+  ],
+  "layerModel": {
+    "architectureScannerWalks": [
+      "src",
+      "host"
+    ],
+    "g1StageCodeIsOutsideTheLayerModel": true,
+    "observationVocabularyDeclaredIn": "src/interaction/work_delegation.ts (L3)",
+    "deploymentPortImportsDirection": "src/deployment (L5) -> src/interaction (L3), an allowed direction already used by src/deployment/launch.ts",
+    "forbiddenEdgeIntroduced": false
+  },
+  "law": "exactly one canonical owner per canonical fact, and G1 adds none; an observation is evidence of an observed process event, not Work settlement or provider authorization"
+}
