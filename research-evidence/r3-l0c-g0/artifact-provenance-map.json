@@ -1,0 +1,234 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "DSH artifact provenance audit (read-only)",
+  "applicableCommit": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "auditIsReadOnly": true,
+  "workerLaunched": false,
+  "modelCallsMade": 0,
+  "chainTraced": "RunId -> SessionId -> ProjectTrajectory -> DSH Home -> Worker Process -> AttemptId -> HostJobId -> Session Artifact -> Digest -> Cost",
+  "producerConsumerMap": [
+    {
+      "producer": "pipeline (run root + per-trajectory home)",
+      "durableEvidence": "runRoot/units/<trajectoryId>/home",
+      "consumer": "generation-child via spec.dshHome",
+      "verifiedRelationship": "the child sets process.env.DSH_HOME = spec.dshHome",
+      "missingIntegration": null,
+      "citation": {
+        "file": "scripts/r3l0c/generation-child.mjs",
+        "line": 51,
+        "quote": "process.env.DSH_HOME = spec.dshHome;"
+      }
+    },
+    {
+      "producer": "child report",
+      "durableEvidence": "spec.reportPath written by the child",
+      "consumer": "primary-adapter",
+      "verifiedRelationship": "adapter reads the report and lifts attemptId/hostJobId onto the outcome",
+      "missingIntegration": "the report carries no sessionId and no runId; run binding is only implicit through the reportPath filename tag",
+      "citation": {
+        "file": "scripts/r3l0c/generation-child.mjs",
+        "line": 349,
+        "quote": "writeFileSync(spec.reportPath, ...)"
+      }
+    },
+    {
+      "producer": "host work delegation",
+      "durableEvidence": "host-local jobId = wdj-<uuid>",
+      "consumer": "child report jobId",
+      "verifiedRelationship": "host-local and explicitly non-durable",
+      "missingIntegration": "HostJobId is an ephemeral in-process UUID, not a canonical durable Host identity",
+      "citation": {
+        "file": "src/interaction/work_delegation.ts",
+        "line": 218,
+        "quote": "const jobId = `wdj-${randomUUID()}`;"
+      }
+    },
+    {
+      "producer": "Work Attempt identity",
+      "durableEvidence": "attempt-<32hex>",
+      "consumer": "child report attemptId",
+      "verifiedRelationship": "canonical Work identity via stableEntityId",
+      "missingIntegration": null,
+      "citation": {
+        "file": "src/domain/idempotency.ts",
+        "line": 13,
+        "quote": "return `${prefix}-${digest.slice(0, 32)}`;"
+      }
+    },
+    {
+      "producer": "DSH worker process",
+      "durableEvidence": "<home>/sessions/<cwd-slug>/worker-<uuid>/session.v4.jsonl.zstd",
+      "consumer": "cost bridge (only if discovered)",
+      "verifiedRelationship": "written under the generation DSH home",
+      "missingIntegration": "the immediate parent directory is worker-<uuid>, not attempt-<hex>, and the canonical attempt hex is embedded inside a cwd slug",
+      "citation": {
+        "file": "scripts/r3l0ciar/primary-adapter.mjs",
+        "line": 221,
+        "quote": "sessionArtifactPath: input.artifactPath ?? null,"
+      }
+    },
+    {
+      "producer": "sessionArtifactPath",
+      "durableEvidence": "caller-named flat file artifactRoot/<sessionId>.zstd",
+      "consumer": "cost bridge sidecar",
+      "verifiedRelationship": "caller-supplied path, never independently discovered",
+      "missingIntegration": "no production code writes this path, so it is caller-named rather than DSH-produced",
+      "citation": {
+        "file": "scripts/r3l0ciarlcfsh/pipeline.mjs",
+        "line": 245,
+        "quote": "const artifactPath = ... join(input.artifactRoot, `${session.sessionId}.zstd`)"
+      }
+    },
+    {
+      "producer": "artifact discovery",
+      "durableEvidence": "discoverScheduledArtifact(dshHomePath, sessionId, expectedAttemptId)",
+      "consumer": "attributeSessionFromRecord",
+      "verifiedRelationship": "reusable API exists and refuses ambiguity",
+      "missingIntegration": "unreachable on the production path because dshHomePath is null at every production call site",
+      "citation": {
+        "file": "scripts/r3l0ciarlcfsh/validated-cost-bridge.mjs",
+        "line": 71,
+        "quote": "const { journalPath, runRoot, plannedSessions = null, artifactRoot = null, dshHomePath = null, witnesses = {} } = input;"
+      }
+    },
+    {
+      "producer": "execution witness",
+      "durableEvidence": "corroborateExecutionWitness(witness)",
+      "consumer": "cost bridge provenance verdict",
+      "verifiedRelationship": "requires all four required witness fields",
+      "missingIntegration": "no caller supplies a witness; validated-cost-bridge defaults witnesses = {}",
+      "citation": {
+        "file": "scripts/r3l0ciarlcfsh/validated-cost-bridge.mjs",
+        "line": 71,
+        "quote": "witnesses = {}"
+      }
+    }
+  ],
+  "missingEdges": [
+    {
+      "id": "E1",
+      "edge": "per-trajectory DSH home -> cost bridge",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcfsh/pipeline.mjs",
+        "line": 321,
+        "quote": "validatedCostBridge({ journalPath, runRoot, plannedSessions, artifactRoot: input.artifactRoot ?? null })"
+      },
+      "detail": "dshHomePath is not passed, so discovery is never entered on the production path"
+    },
+    {
+      "id": "E2",
+      "edge": "real artifact path -> attempt identity",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcf/artifact-identity.mjs",
+        "line": 77,
+        "quote": "/(?:^|\\/)attempt-([0-9a-fA-F]+)(?:\\/|$)/u"
+      },
+      "detail": "the parser requires attempt-<hex> as a whole path segment; the runtime emits ...worlds-attempt-<hex>--, terminated by -- rather than / or end of string, so attemptIdFromPath returns null"
+    },
+    {
+      "id": "E3",
+      "edge": "canonical AttemptId -> artifact path contract",
+      "breakAt": {
+        "file": "scripts/r3l0c/instrumentation.mjs",
+        "line": 62,
+        "quote": "/attempt-([0-9a-f]+)/u.exec(normalized)"
+      },
+      "detail": "a second, substring-based parser in the same repository resolves the same real path to a different representation than the authority-bearing parser"
+    },
+    {
+      "id": "E4",
+      "edge": "runId -> durable record -> witness",
+      "breakAt": {
+        "file": "scripts/r3l0cf/contract.mjs",
+        "line": 240,
+        "quote": "JOURNAL_FIELDS (no runId field)"
+      },
+      "detail": "runId appears only in RUN_STARTED; the witness requires witness.runId === record.runId, which is always null"
+    },
+    {
+      "id": "E5",
+      "edge": "worker process identity -> port outcome",
+      "breakAt": {
+        "file": "src/deployment/work_worker.ts",
+        "line": 208,
+        "quote": "outcome type carries kind/detail only"
+      },
+      "detail": "the port spawns the worker but returns no pid, so workerProcessId cannot be produced"
+    },
+    {
+      "id": "E6",
+      "edge": "observed route identity -> witness",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcf/artifact-identity.mjs",
+        "line": 200,
+        "quote": "observedRouteId required"
+      },
+      "detail": "only a declared route exists; the verifier rejects declarations"
+    },
+    {
+      "id": "E7",
+      "edge": "witness producer -> bridge",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcfsh/validated-cost-bridge.mjs",
+        "line": 71,
+        "quote": "witnesses = {}"
+      },
+      "detail": "no production caller supplies a witness"
+    },
+    {
+      "id": "E8",
+      "edge": "artifact path -> worker attempt (non-forgeable)",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcf/cost-bridge.mjs",
+        "line": 124,
+        "quote": "if (pathAttemptId !== null && recordAttempt !== null && !attemptIdentityEquals(...))"
+      },
+      "detail": "the identity conflict check is skipped when the path encodes no parseable attempt id, so a flat artifactRoot/<sessionId>.zstd is labelled with the record AttemptId without evidence it came from that attempt"
+    },
+    {
+      "id": "E9",
+      "edge": "session-scoped discovery",
+      "breakAt": {
+        "file": "scripts/r3l0ciarlcf/artifact-identity.mjs",
+        "line": 93,
+        "quote": "sessionId destructured but not used in candidate filtering"
+      },
+      "detail": "discovery is home-scoped rather than session-scoped in effect"
+    }
+  ],
+  "executionWitnessFields": {
+    "required": [
+      "scheduledRunAndSession",
+      "observedWorkerAttemptHostJobRelationship",
+      "executionRouteAndRealWorkerProcess",
+      "uniquelyAttributedArtifact"
+    ],
+    "availableNow": [
+      "sessionId",
+      "observedAttemptId (canonical attempt-<hex>)",
+      "observedHostJobId (weak: host-local, non-durable)"
+    ],
+    "missing": [
+      "runId (absent from durable record)",
+      "workerProcessId (discarded by the port contract)",
+      "observedRouteId (only declared, rejected by the verifier)",
+      "discovery.discovered (parser rejects the real path)",
+      "artifactDigestVerified (only for the caller-supplied fixture path)"
+    ],
+    "independentlySupplied": false,
+    "durablyBoundToRun": "partially: the canonical AttemptId is durable via TRIAL_RECORDED, but the report carries no runId and the run binding is implicit",
+    "additionalRuntimeIntegrationRequired": true
+  },
+  "syntheticWitnessCreated": false,
+  "historicalArtifactCompatibility": {
+    "status": "REAL_DSH_ARTIFACT_COMPATIBILITY = NOT_ESTABLISHED",
+    "authenticProjectArtifactsInspected": false,
+    "reason": "no safely accessible, authentic project-specific DSH artifact was identified for the frozen experiment; arbitrary personal DSH sessions were not scanned",
+    "manufacturedData": false
+  },
+  "outcome": "LIVE_PRIMARY_PROVENANCE = NOT_ESTABLISHED",
+  "outcomeEvidence": "every production caller supplies a caller-named artifact path and a null dshHomePath, and no caller supplies an execution witness, so the bridge yields ARTIFACT_ABSENT per session, livePrimaryCount = 0 and blocksCausalVerdict = true",
+  "patchedInG0": false,
+  "law": "no string, sidecar mode or filename alone may become an execution witness; the provenance verdict is derived from a corroborated witness rather than a caller declaration"
+}

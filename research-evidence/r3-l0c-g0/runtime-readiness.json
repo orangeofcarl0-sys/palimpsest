@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 1,
+  "stage": "R3-L0C-G0",
+  "kind": "real execution route and activation boundary audit (read-only)",
+  "applicableCommit": "aaef17fbda922be5989c95338f7ee7f1273b4b24",
+  "auditIsReadOnly": true,
+  "workerLaunched": false,
+  "modelCallsMade": 0,
+  "paidConnectivityProbeAttempted": false,
+  "routeIdentifiers": {
+    "routeId": "omnigate2api-deepseek-v41-flash",
+    "providerId": "omnigate-route",
+    "modelId": "deepseek-v4.1-flash",
+    "declaredAt": {
+      "file": "scripts/r3l0cr/route.mjs",
+      "line": 43,
+      "quote": "routeId: 'omnigate2api-deepseek-v41-flash',"
+    },
+    "status": "PLANNED ROUTE IDENTIFIERS, not evidence the route works or is correctly priced"
+  },
+  "states": [
+    {
+      "state": "ROUTE_DECLARED",
+      "established": true,
+      "evidence": "declared in scripts/r3l0cr/route.mjs:42-61 and rendered into the committed plan"
+    },
+    {
+      "state": "ROUTE_CONFIGURED",
+      "established": "WRITER_LEVEL_ONLY",
+      "evidence": "settings.mjs renders the route into profile bytes; applied on DETERMINISTIC runs, never verified against a running PRIMARY worker"
+    },
+    {
+      "state": "SHIPPED_EXECUTABLE_RESOLVED",
+      "established": true,
+      "evidence": "resolveShippedDshBinAsync() -> env.dshBin() resolves the shipped bin; existence confirmed read-only on this host. Resolution only; no spawn."
+    },
+    {
+      "state": "ROUTE_IDENTITY_ATTESTED",
+      "established": false,
+      "evidence": "validity.mjs compares the plan against values re-read from the same module that wrote the plan; no runtime echo from a real worker"
+    },
+    {
+      "state": "PROVIDER_ACCESS_VERIFIED",
+      "established": false,
+      "evidence": "no connectivity/probe code in the chain; no credential or gateway check was run"
+    },
+    {
+      "state": "REAL_WORKER_OBSERVED",
+      "established": false,
+      "evidence": "no non-test path launches the real worker; no PRIMARY launch record exists"
+    }
+  ],
+  "primaryProhibition": {
+    "refusedBeforeLaunch": true,
+    "citation": {
+      "file": "scripts/r3l0ciarlcfsh/pipeline.mjs",
+      "line": 150,
+      "quote": "if (requestedMode === 'PRIMARY') { return refuse('PRIMARY_PROHIBITION', 'PRIMARY_EXECUTION_PROHIBITED', ...) }"
+    },
+    "ordering": "the prohibition is step 3 of PIPELINE_ORDER and returns before the run-root claim and before the launch closure; the only launch-capable call is reached via runFailStopMatrix, which is never reached",
+    "launched": false,
+    "modelCallsMade": 0
+  },
+  "mechanisms": [
+    {
+      "mechanism": "PRIMARY mode resolution",
+      "location": "scripts/r3l0ciar/modes.mjs:34-49",
+      "note": "exact string match; unknown mode has no silent fallback"
+    },
+    {
+      "mechanism": "shipped executable resolution",
+      "location": "scripts/r3l0ciar/modes.mjs:93-102 -> scripts/gates/env.mjs:69-73"
+    },
+    {
+      "mechanism": "profile construction",
+      "location": "scripts/r3l0ciarlcfsh/pipeline.mjs:202-210"
+    },
+    {
+      "mechanism": "runtime settings",
+      "location": "scripts/r3l0cr/settings.mjs:37-123"
+    },
+    {
+      "mechanism": "worker subprocess launch",
+      "location": "scripts/r3l0ciar/primary-adapter.mjs:233-287 (spawn of the generation child)"
+    },
+    {
+      "mechanism": "Work/Attempt/Host report collection",
+      "location": "scripts/r3l0c/generation-child.mjs:200-210; scripts/r3l0cf/fail-stop.mjs:545-550"
+    },
+    {
+      "mechanism": "timeout handling",
+      "location": "scripts/r3l0ciar/primary-adapter.mjs:63-75, 275-280"
+    },
+    {
+      "mechanism": "unknown descendant exit handling",
+      "location": "scripts/r3l0ciar/primary-adapter.mjs:157, 182-183, 258-270"
+    }
+  ],
+  "residualLaunchCapableSurface": {
+    "present": true,
+    "note": "earlier pipelines r3l0ciar/r3l0ciarl/r3l0ciarlc/r3l0ciarlcf gate PRIMARY on an authorization decision rather than prohibiting it by mode; the terminal stages lcfs/lcfsh refuse it unconditionally. These earlier pipelines are quarantined-but-still-executable and are a policy guard, not a capability barrier.",
+    "disclosure": "recorded, not exercised; no launch was attempted in G0"
+  },
+  "launchCapableImplementationCreatedInG0": false,
+  "outcome": "the PRIMARY prohibition is verified in code and returns before any worker spawn; no launch-capable implementation was created",
+  "law": "a future launch-capable implementation requires a separately authorized engineering decision and a newly frozen executable plan; G0 does not create one"
+}
