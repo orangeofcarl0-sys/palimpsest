@@ -376,15 +376,37 @@ export async function runAdmissionClosureMatrix(input) {
     }
     : (input.terminalRecompute ?? (async () => Object.freeze({ closure, route: Object.freeze({ MODEL_ROUTE_IDENTITY: modelRouteIdentity(preExposureChecks) }) })));
 
+  /**
+   * §6: THE COMPILED VERIFICATION, MEASURED ONCE PER RUN.
+   *
+   * It emits `src/**` with the project's compiler and compares against `dist/**`, which costs a full compiler
+   * invocation. It is a property of the REPOSITORY rather than of a matrix, so measuring it once per run is the
+   * right granularity — and it is measured lazily, so a run that refuses before the terminal gate never pays for it.
+   * A caller may inject it in DETERMINISTIC mode; the binding check refuses that seam in PRIMARY.
+   */
+  let compiledVerificationPromise = null;
+  const compiledVerificationOnce = async () => {
+    if (input.terminalCompiledVerification !== undefined) return input.terminalCompiledVerification;
+    compiledVerificationPromise ??= (async () => (await import('./attestation.mjs')).verifyCompiledSource())();
+    return await compiledVerificationPromise;
+  };
+
   const validityGate = async ({ completed, records, plannedSessions }) => {
     const continuity = verifyLiveEvidenceContinuity({ runRoot, records });
     const costAttribution = await bridgeMatrixCost({ journalPath, runRoot, plannedSessions, artifactRoot: input.artifactRoot ?? null });
+    /**
+     * §6: THE DETERMINISTIC-ONLY IN-RUN MUTATION SEAM.
+     *
+     * It fires BETWEEN S1 and the S2 sample, which is exactly the window §6 names, so a test can drive the
+     * authoritative path with a competing write and assert that completion is REFUSED. It is refused in PRIMARY by
+     * the binding check, so it can never mutate a real run's installation.
+     */
+    if (typeof input.terminalMutation === 'function') input.terminalMutation({ dshHomePath: resolveDshHome() });
     /** §6: S2 IS SAMPLED HERE — after the matrix and before final validity admission. */
     const s2Digest = sampleInstallationDigest({ dshHomePath: resolveDshHome() });
-    const { verifyCompiledSource } = await import('../r3l0ciarl/attestation.mjs');
     const attestation = await inRunAttestation({
       dshHomePath: resolveDshHome(), s0Digest, s1Digest, s2Digest, installedDuringRun: true,
-      compiledVerification: input.terminalCompiledVerification ?? await verifyCompiledSource(),
+      compiledVerification: await compiledVerificationOnce(),
     });
     const { postMatrixValidityGate } = await import('../r3l0ciar/validity.mjs');
     const journalRecords = readJournalRecords(journalPath);
@@ -422,8 +444,7 @@ export async function runAdmissionClosureMatrix(input) {
   const costBridge = await bridgeMatrixCost({ journalPath, runRoot, plannedSessions: run.plannedSessions, artifactRoot: input.artifactRoot ?? null });
   const continuity = verifyLiveEvidenceContinuity({ runRoot, records: run.records });
   const s2Final = sampleInstallationDigest({ dshHomePath: resolveDshHome() });
-  const { verifyCompiledSource } = await import('../r3l0ciarl/attestation.mjs');
-  const finalAttestation = await inRunAttestation({ dshHomePath: resolveDshHome(), s0Digest, s1Digest, s2Digest: s2Final, installedDuringRun: true, compiledVerification: await verifyCompiledSource() });
+  const finalAttestation = await inRunAttestation({ dshHomePath: resolveDshHome(), s0Digest, s1Digest, s2Digest: s2Final, installedDuringRun: true, compiledVerification: await compiledVerificationOnce() });
   record('POST_RUN_READBACK', false, Object.freeze({
     journalRetries: counts.retries, journalReplacements: counts.replacements,
     costMeasured: costBridge.measuredCount, costAbsent: costBridge.absentCount, costProvenance: costBridge.provenance,

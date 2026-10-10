@@ -103,7 +103,8 @@
     "expectedPlanId",
     "artifactFixture",
     "terminalRecompute",
-    "terminalCompiledVerification"
+    "terminalCompiledVerification",
+    "terminalMutation"
   ],
   "authorizationRecordFields": [
     "authority",
@@ -203,6 +204,7 @@
     "scripts/r3l0ciarlc/postmatrix-admission.mjs",
     "scripts/r3l0ciarlc/trust-boundary.mjs",
     "scripts/r3l0ciarlc/attestation.mjs",
+    "scripts/r3l0ciarlc/compiled-verification.mjs",
     "scripts/r3l0ciarlc/closure.mjs",
     "scripts/r3l0ciarlc/qualification.mjs",
     "scripts/r3l0ciarlc/prospective-plan.mjs",
@@ -608,7 +610,7 @@
     }
   ],
   "executionClosure": {
-    "executionClosureDigest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "executionClosureDigest": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c",
     "partIds": [
       "SOURCE_CLOSURE",
       "COMPILED_RUNTIME_CLOSURE",
@@ -620,7 +622,7 @@
       "RUNTIME_MANIFEST_CLOSURE",
       "REUSED_MODULES_CLOSURE"
     ],
-    "fileCount": 132,
+    "fileCount": 133,
     "toolchain": {
       "node": "v24.14.1",
       "git": "git version 2.53.0.windows.2",
@@ -715,7 +717,7 @@
     "beganFusion": false,
     "modelCallsMade": 0
   },
-  "frozenAt": "2026-10-10T03:29:31.805Z",
+  "frozenAt": "2026-10-10T04:59:10.718Z",
   "orderingLaw": "the plan is committed AFTER every integration fix and BEFORE any primary model exposure",
-  "planContentDigest": "c30c468cf182900b82d8b5fc5b7daa94f349abf29e8b2cedbed9cb89d3b55cc3"
+  "planContentDigest": "329058fd510f2b1b19995806005f42d16b712275684a70ca947283c179156e70"
 }

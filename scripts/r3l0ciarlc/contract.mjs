@@ -272,7 +272,7 @@ export const PRIMARY_DERIVED_INPUTS = Object.freeze([
   'routeConfiguration', 'realizationPreflight', 'replacements', 'retries', 'systemValid', 'containment',
   'expectedPlanId',
   /** §3/§4: the DETERMINISTIC-only seams, so an injected artifact or a recomputation cannot enter a PRIMARY run. */
-  'artifactFixture', 'terminalRecompute', 'terminalCompiledVerification',
+  'artifactFixture', 'terminalRecompute', 'terminalCompiledVerification', 'terminalMutation',
 ]);
 
 /** §5: the execution-configuration substitutes a PRIMARY run may not supply. */

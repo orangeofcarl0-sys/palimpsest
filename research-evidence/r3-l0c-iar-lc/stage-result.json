@@ -59,6 +59,7 @@
     "s2MatchesS1": true,
     "competingWriterDetected": false,
     "compiledMatchesSource": true,
+    "compiledDeterministic": "SUPPORTED",
     "installerIsMitigationNotProof": true,
     "coverageLimitations": [
       "the global DSH installation itself is not part of this repository's execution closure, so its bytes are not attested",
@@ -112,7 +113,7 @@
     "reportThenHangUncertain": true
   },
   "executionClosure": {
-    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "digest": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c",
     "partIds": [
       "SOURCE_CLOSURE",
       "COMPILED_RUNTIME_CLOSURE",
@@ -124,9 +125,9 @@
       "RUNTIME_MANIFEST_CLOSURE",
       "REUSED_MODULES_CLOSURE"
     ],
-    "fileCount": 132,
+    "fileCount": 133,
     "complete": true,
-    "stageHarnessModules": 15,
+    "stageHarnessModules": 16,
     "reusedModules": 21,
     "reusedMissing": [],
     "mutationsProven": true,
@@ -141,8 +142,8 @@
   },
   "planClosure": {
     "EXECUTION_CLOSURE": "MATCH",
-    "frozen": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
-    "current": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
+    "frozen": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c",
+    "current": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c",
     "onMismatch": "STOP — a pre-exposure repair must create a NEW plan commit"
   },
   "immutability": {
@@ -152,10 +153,10 @@
   },
   "plan": {
     "planId": "r3-l0c-iar-lc-primary-plan",
-    "digest": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3",
-    "planContentDigest": "c30c468cf182900b82d8b5fc5b7daa94f349abf29e8b2cedbed9cb89d3b55cc3",
+    "digest": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c",
+    "planContentDigest": "329058fd510f2b1b19995806005f42d16b712275684a70ca947283c179156e70",
     "supersedes": "r3-l0c-iar-l-primary-plan",
-    "frozenClosure": "f75f7853def970a46d88d8c8731ce9c59ef4c5e83fa4168118a02f667defcea3"
+    "frozenClosure": "15d3f322ea36bbfc40e928a996a312d858e59e82f932b618d4b4b790d93bb36c"
   },
   "measurementReadiness": {
     "verdict": "READY_FOR_AUTHORIZATION",

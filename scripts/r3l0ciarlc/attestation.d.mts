@@ -66,6 +66,7 @@ export const BUNDLE_TARGETS: readonly { readonly source: string; readonly instal
 export const NL: string;
 
 export function compareInstalledBundle(input: { readonly dshHomePath: string }): InstalledBundleComparison;
+export function verifyCompiledSource(): Promise<Readonly<Record<string, unknown>>>;
 export function sampleInstallationDigest(input: { readonly dshHomePath: string }): string;
 export function competingWriterVerdict(input: {
   readonly s1Digest: string;

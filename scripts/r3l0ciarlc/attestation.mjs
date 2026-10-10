@@ -33,6 +33,19 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { ATTESTATION_POINTS, ATTESTATION_RULES, NL, REPO_ROOT } from './contract.mjs';
+import { verifyCompiledSourceIsolated } from './compiled-verification.mjs';
+
+/**
+ * §6: THE SOURCE-TO-COMPILED VERIFICATION THIS STAGE USES.
+ *
+ * It is the ISOLATED implementation, for a MEASURED reason: the frozen `verifyCompiledAgainstSource` emits into a
+ * FIXED path at the repository root, and a second concurrent caller receives `EPERM` from its cleanup. Measured
+ * under a full parallel run of this stage's suite. The method is identical; only the probe location differs, and
+ * `test/r3l0ciarlc_gates.test.ts` asserts the two agree on the verdict and the pair count.
+ */
+export async function verifyCompiledSource() {
+  return verifyCompiledSourceIsolated();
+}
 
 /** §6: the installer's own bookkeeping file, excluded from the byte comparison. */
 export const INSTALLER_MARKER = '.r3l0ciar-install.json';
