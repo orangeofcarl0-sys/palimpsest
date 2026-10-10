@@ -35,6 +35,7 @@ export const OBSERVATION_DOES_NOT_PROVE: readonly string[];
 export const OBSERVATION_SCHEMA_VERSION: number;
 export const OBSERVATION_FIELDS: readonly string[];
 export const EVIDENCE_STATES: readonly string[];
+export const EVIDENCE_STATE: Readonly<Record<string, string>>;
 export const CORRELATION_CHAIN: readonly Readonly<{ step: string; owner: string }>[];
 export const ARTIFACT_LOCATOR_RULES: readonly string[];
 export const LOCATOR_EVIDENCE_LEVELS: Readonly<{ TESTED: string; REAL: string; realRequiresAuthenticEvidence: boolean }>;
