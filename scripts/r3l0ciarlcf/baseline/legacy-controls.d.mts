@@ -32,6 +32,12 @@ export const BASELINE_SOURCE: Readonly<Record<string, string>>;
 export const NL: string;
 export const REPO_ROOT: string;
 
+export function writeRealFormatArtifact(input: {
+  readonly directory: string;
+  readonly attemptId: string;
+  readonly corpusBytes?: number;
+  readonly capitalBytes?: number;
+}): { readonly path: string; readonly attemptId: string; readonly records: number };
 export function controlCapturedNotFresh(input: { readonly base: string; readonly common: Readonly<Record<string, unknown>> }): Promise<BaselineControl>;
 export function controlUnverifiedLivePrimary(input: Record<string, unknown>): Promise<BaselineControl>;
 export function controlDividedIdentities(input?: Record<string, unknown>): Promise<BaselineControl>;

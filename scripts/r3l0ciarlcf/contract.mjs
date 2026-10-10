@@ -174,6 +174,9 @@ export const ARTIFACT_DISCOVERY_OUTCOMES = Object.freeze([
   Object.freeze({ id: 'SCOPE_UNAVAILABLE', discovered: false, ambiguous: false, detail: 'the session-scoped DSH home does not exist, so no discovery is possible' }),
 ]);
 
+/** §4: the provenance vocabulary, so a fixture measurement is never read as a live causal observation. */
+export const BRIDGE_PROVENANCE = Object.freeze({ LIVE_PRIMARY: 'LIVE_PRIMARY', FIXTURE: 'FIXTURE', ABSENT: 'ABSENT' });
+
 /** §4: what an INDEPENDENTLY CORROBORATED EXECUTION WITNESS must establish. */
 export const EXECUTION_WITNESS = Object.freeze({
   required: Object.freeze([
@@ -262,6 +265,47 @@ export const PLAN_DIGEST_COVERAGE = Object.freeze([
 
 /** §6: the digest's own self-referential field, which is the ONE thing a full digest must exclude. */
 export const PLAN_DIGEST_SELF_FIELD = 'planContentDigest';
+
+/* ================================================================ §6 the authority vocabulary */
+
+/** §6: the authority trust verdicts. */
+export const AUTHORITY_TRUST = Object.freeze({
+  VERIFIED: 'VERIFIED',
+  NOT_ESTABLISHED: 'AUTHORITY_NOT_ESTABLISHED',
+  PENDING: 'PENDING',
+  REFUSED: 'REFUSED',
+  thisStageProvidesAuthorization: false,
+  syntacticallyValidDecisionIsTrustedAuthority: false,
+  law: 'a syntactically valid `decision:` string is not externally verified authority; with no trusted source this stage returns AUTHORITY_NOT_ESTABLISHED and keeps the PRIMARY launch prohibited',
+});
+
+/** §6: what an authorization record must carry. */
+export const AUTHORIZATION_RECORD_FIELDS = Object.freeze([
+  'authority', 'approvedPlanId', 'approvedPlanDigest', 'paidRunBudget', 'decisions',
+]);
+
+/** §6: the five fail-stop decisions an authorization must name. */
+export const AUTHORIZATION_REQUIREMENTS = Object.freeze([
+  Object.freeze({ id: 'PAID_MODEL_USAGE', detail: 'paid model usage' }),
+  Object.freeze({ id: 'BOUNDED_FAIL_STOP_PROTOCOL', detail: 'the bounded fail-stop protocol' }),
+  Object.freeze({ id: 'NO_AUTOMATIC_RETRIES_OR_REPLACEMENTS', detail: 'no automatic retries or replacement sessions' }),
+  Object.freeze({ id: 'PRESERVE_PARTIALLY_COMPLETED_INVALID_RUNS', detail: 'preservation of partially completed invalid runs' }),
+  Object.freeze({ id: 'ACCEPTED_PROMPT_NEUTRALITY_LIMITED', detail: 'the accepted PROMPT_NEUTRALITY = LIMITED constraint' }),
+]);
+
+/* ================================================================ §4 the terminal decision vocabulary */
+
+/** §4: the terminal decision vocabulary. GREEN is the only value under which the runner may complete. */
+export const TERMINAL_DECISIONS = Object.freeze({ GREEN: 'GREEN', RED: 'RED' });
+
+/** §4: what a RED terminal decision must produce, stated as values so the falsifier can assert them. */
+export const RED_CONSEQUENCES = Object.freeze({
+  matrixCompleted: false,
+  terminalEventRecorded: 'MATRIX_ABORTED',
+  causalVerdictIssued: false,
+  laterWorkerLaunch: false,
+  preservedTerminalState: 'ABORT_PRESERVED',
+});
 
 /* ================================================================ §7 the compiler cache */
 

@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { zstdCompressSync } from 'node:zlib';
 
 import { NL, REPO_ROOT, SUPERSEDED_STAGE } from '../contract.mjs';
 
@@ -33,6 +34,31 @@ export const BASELINE_SOURCE = Object.freeze({
 /** The committed LC plan, read rather than rewritten: it is frozen evidence. */
 function committedPlan() {
   return JSON.parse(readFileSync(join(REPO_ROOT, SUPERSEDED_STAGE.planPath), 'utf8'));
+}
+
+/**
+ * §4: WRITE A REAL-FORMAT SESSION ARTIFACT.
+ *
+ * The format is what the shipped runtime writes and what the frozen instrumentation reads: a zstd-framed JSONL
+ * record set under a path carrying `attempt-<id>`. It is generated rather than mocked so the cost parser measures a
+ * real artifact rather than a fixture constant.
+ *
+ * THE CORPUS PATH IS A DECLARED CORPUS DOCUMENT, and that is required rather than tidy: the frozen instrumentation
+ * counts a raw-history read ONLY when the named path is declared, so a fixture using an arbitrary path would report
+ * zero corpus reads and the cost fields would look absent.
+ */
+export function writeRealFormatArtifact(input) {
+  const { directory, attemptId, corpusBytes = 800, capitalBytes = 6_000 } = input;
+  mkdirSync(join(directory, `attempt-${attemptId}`), { recursive: true });
+  const path = join(directory, `attempt-${attemptId}`, 'session.v4.jsonl.zstd');
+  const records = [
+    { type: 'turn/start', time: 900, data: {} },
+    { type: 'tool/ptc-dispatch', seq: 1, time: 1_000, data: { name: 'read', arguments: { file_path: 'docs/history/incidents/0007-legacy-deny-overturned.md' }, content: 'x'.repeat(corpusBytes), isError: false } },
+    { type: 'tool/ptc-dispatch', seq: 2, time: 1_100, data: { name: 'palimpsest_worker_context_pull', arguments: { handle: '@ctx/procedure/prc-1/0' }, content: 'y'.repeat(capitalBytes), isError: false } },
+    { type: 'tool/ptc-dispatch', seq: 3, time: 1_200, data: { name: 'palimpsest_worker_result', arguments: {}, content: 'ok', isError: false } },
+  ];
+  writeFileSync(path, zstdCompressSync(Buffer.from(records.map((record) => JSON.stringify(record)).join(NL) + NL, 'utf8')));
+  return Object.freeze({ path, attemptId, records: records.length });
 }
 
 /* ================================================================ F1: captured instead of fresh */
