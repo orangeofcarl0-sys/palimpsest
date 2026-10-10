@@ -163,10 +163,10 @@ describe("R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan
 
   it("dominates the execution entry and refuses before any exposure", async () => {
     const { runEvidenceSealMatrix } = await import("../scripts/r3l0ciarlcfs/pipeline.mjs");
-    const run = await runEvidenceSealMatrix({
+    const run = (await runEvidenceSealMatrix({
       mode: "DETERMINISTIC", runId: "r3lcfs-gates-mismatch", runRoot: join(tmpdir(), `r3lcfs-gates-${String(process.pid)}`),
       planPath: join(tmpdir(), "no-such-plan.json"), expectedPlanId: PLAN_ID,
-    });
+    })) as any;
     expect(run.PIPELINE).toBe("REFUSED");
     expect(run.refusedAt).toBe("COMMITTED_PLAN_PREFLIGHT_GUARD");
     expect(run.launches).toEqual([]);
@@ -177,10 +177,10 @@ describe("R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan
 
   it("refuses a PRIMARY invocation at the prohibition, after the guard has passed", async () => {
     const { runEvidenceSealMatrix } = await import("../scripts/r3l0ciarlcfs/pipeline.mjs");
-    const run = await runEvidenceSealMatrix({
+    const run = (await runEvidenceSealMatrix({
       mode: "PRIMARY", runId: "r3lcfs-gates-primary", runRoot: join(tmpdir(), `r3lcfs-gates-primary-${String(process.pid)}`),
       authorizedBy: PLAN_ID, caller: PLAN_ID,
-    });
+    })) as any;
     expect(run.PIPELINE).toBe("REFUSED");
     expect(run.refusedAt).toBe("PRIMARY_PROHIBITION");
     expect(run.launched).toBe(false);
@@ -541,6 +541,46 @@ describe("R3-L0C-I-A-R-L-C-F-S §9 — closure and contract", () => {
   });
 });
 
+/* ================================================================ T2: the persisted cross-artifact seal */
+
+describe("R3-L0C-I-A-R-L-C-F-S §3/§14 — the persisted cross-artifact seal", () => {
+  it("seals the committed plan against the PERSISTED Qualification and Stage Result", async () => {
+    const { sealCommittedEvidence } = await import("../scripts/r3l0ciarlcfs/evidence.mjs");
+    const seal = await sealCommittedEvidence({ expectedPlanId: PLAN_ID });
+    expect(seal.qualificationReadFromDisk).toBe(true);
+    expect(seal.stageResultReadFromDisk).toBe(true);
+    expect(seal.identityChecks.COMMITTED_PLAN_SELF_DIGEST).toBe("MATCH");
+    expect(seal.identityChecks.COMMITTED_PLAN_GIT_IDENTITY).toBe("MATCH");
+    expect(seal.identityChecks.QUALIFICATION_PLAN_REFERENCE).toBe("MATCH");
+    expect(seal.identityChecks.STAGE_RESULT_PLAN_REFERENCE).toBe("MATCH");
+    expect(seal.identityChecks.PLAN_CLOSURE_AGREEMENT).toBe("MATCH");
+    expect(seal.CROSS_ARTIFACT_PLAN_BINDING).toBe("MATCH");
+    expect(seal.sealed).toBe(true);
+  });
+
+  it("carries the same digest in all five recorded positions", async () => {
+    const verification = await readAndVerifyCommittedPlan({ verifyCompiled: false });
+    const qualification = JSON.parse(readFileSync(join(EVIDENCE, "qualification.json"), "utf8"));
+    const stageResult = JSON.parse(readFileSync(join(EVIDENCE, "stage-result.json"), "utf8"));
+    const digest = verification.planContentDigest;
+    expect(qualification.plan.planContentDigest).toBe(digest);
+    expect(qualification.planContentDigest.frozen).toBe(digest);
+    expect(stageResult.plan.planContentDigest).toBe(digest);
+    expect(stageResult.planContentDigest.frozen).toBe(digest);
+    expect(qualification.plan.planId).toBe(PLAN_ID);
+    expect(stageResult.plan.planId).toBe(PLAN_ID);
+  });
+
+  it("keeps the prior evidence namespace byte-identical", () => {
+    const erratum = JSON.parse(readFileSync(join(EVIDENCE, "erratum.json"), "utf8"));
+    expect(erratum.priorEvidenceModified).toBe(false);
+    expect(erratum.committedPlanContentDigest).toBe("4a6786d0e027bf6bc119ae689e39ae2066cc51e229d0ca45339f5d6c576605af");
+    expect(erratum.mismatchedQualificationPlanReferenceDigest).toBe("e715ce6fe4cd5bb30348e090f54a536e9882554116814f4168428347a5e0b5b3");
+    expect(erratum.selfCheckWasMatch).toBe(true);
+    expect(erratum.priorQualificationWasFullySealed).toBe(false);
+  });
+});
+
 /* ================================================================ T2: the seal over constructed evidence */
 
 describe("R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan", () => {
@@ -574,8 +614,16 @@ describe("R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real pla
   });
 });
 
-/** §6: the frozen instrumentation functions the envelope validator consumes. */
+/** §6: the frozen instrumentation functions the envelope validator consumes, loaded without a static import. */
 async function instrumentation() {
-  const { decompressFrames, sessionRecords } = await import("../scripts/r3l0c/instrumentation.mjs");
-  return { decompressFrames, sessionRecords };
+  /**
+   * The frozen `scripts/r3l0c/instrumentation.d.mts` is malformed at the baseline — an unterminated parameter list
+   * on `decompressFrames` — so a static import of the module fails the TypeScript build. This stage does not modify
+   * that file (§1 freezes it), and the validator takes the functions as INJECTED inputs precisely so the frozen
+   * module can be supplied dynamically. The specifier is built at runtime so the compiler does not resolve the
+   * declaration file.
+   */
+  const specifier = ["..", "scripts", "r3l0c", "instrumentation.mjs"].join("/");
+  const module = await import(/* @vite-ignore */ specifier);
+  return { decompressFrames: module.decompressFrames, sessionRecords: module.sessionRecords };
 }
