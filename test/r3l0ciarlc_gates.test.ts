@@ -22,7 +22,7 @@ import { computeExecutionClosure, proveClosureMutations, REUSED_MODULES, STAGE_H
 import { runPerTrajectoryConfinement } from "../scripts/r3l0ciar/confinement.mjs";
 import { frozenPrimarySchedule, PRIMARY_FAULTS } from "../scripts/r3l0ciar/primary-adapter.mjs";
 import { runAdmissionClosureMatrix, deriveProvenance } from "../scripts/r3l0ciarlc/pipeline.mjs";
-import { buildProspectivePlan, writeProspectivePlan, checkPlanClosure, PLAN_ID } from "../scripts/r3l0ciarlc/prospective-plan.mjs";
+import { buildProspectivePlan, checkPlanClosure, PLAN_ID } from "../scripts/r3l0ciarlc/prospective-plan.mjs";
 import { assertAuthoritativePath } from "../scripts/r3l0ciarlc/modes.mjs";
 import { enforcePrimaryInputBinding, verifyExternalAuthority, planContentDigest, trustedAuthoritySource, schemaValidity, enforceableBudget } from "../scripts/r3l0ciarlc/trust-boundary.mjs";
 import { bridgeMatrixCost, attributeSessionFromRecord } from "../scripts/r3l0ciarlc/cost-bridge.mjs";
@@ -399,10 +399,13 @@ describe("R3-L0C-I-A-R-L-C — the PRIMARY launch boundary stays closed", () => 
   }, 300_000);
 
   it("refuses a structurally complete but untrusted authorization at the launch boundary", async () => {
-    /** Commit the plan so the PRIMARY path can read it, then supply a fabricated decision reference. */
-    await writeProspectivePlan({ verifyCompiled: false });
-    const decisions = Object.fromEntries(["PAID_MODEL_USAGE", "BOUNDED_FAIL_STOP_PROTOCOL", "NO_AUTOMATIC_RETRIES_OR_REPLACEMENTS", "PRESERVE_PARTIALLY_COMPLETED_INVALID_RUNS", "ACCEPTED_PROMPT_NEUTRALITY_LIMITED"].map((id) => [id, true]));
+    /**
+     * The committed plan is READ, never rewritten: it is frozen evidence, and a test that regenerated it would
+     * move `frozenAt` and make the frozen artifact describe a different moment than the one it was committed for.
+     */
     const committed = JSON.parse(readFileSync(join(process.cwd(), "research-evidence", "r3-l0c-iar-lc", "execution-plan.json"), "utf8"));
+    expect(committed.planId).toBe(PLAN_ID);
+    const decisions = Object.fromEntries(["PAID_MODEL_USAGE", "BOUNDED_FAIL_STOP_PROTOCOL", "NO_AUTOMATIC_RETRIES_OR_REPLACEMENTS", "PRESERVE_PARTIALLY_COMPLETED_INVALID_RUNS", "ACCEPTED_PROMPT_NEUTRALITY_LIMITED"].map((id) => [id, true]));
     const run = await runAdmissionClosureMatrix({
       prehistory, admittedRefs: refs, mode: "PRIMARY", authorizedBy: PLAN_ID, caller: PLAN_ID,
       runId: "primary-fabricated", runRoot: join(BASE, "primary-fabricated"),
