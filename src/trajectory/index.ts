@@ -198,4 +198,4 @@ export {
   SELECTED_T0_RELATIONS,
   selectAttemptWorkRelations,
 } from "./relation_admission.js";
-export type { AdmittedRelation, QuarantinedRelation } from "./relation_admission.js";
+export type { AdmittedRelation, AttemptRelationContext, QuarantinedRelation } from "./relation_admission.js";

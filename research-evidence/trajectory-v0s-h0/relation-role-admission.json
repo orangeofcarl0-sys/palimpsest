@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_RELATION_ROLE_ADMISSION",
+  "stage": "Trajectory-V0S-H0",
+  "baselineBehavior": "one endpoint in the attempt's canonical event-id set (V0S)",
+  "correctedBehavior": "per-relation ROLE semantics validated against an AttemptRelationContext",
+  "contextFields": ["projectId", "attemptId", "creationEventId", "authorizationEventId", "authorizationEnvelopeId", "terminalEventIds", "completedEventId", "canonicalEventIds (quarantine scoping only)"],
+  "roles": {
+    "TASK_AUTHORIZED_ATTEMPT": { "mustBeRequestedAttempt": "destination == creationEventId", "source": "== authorizationEventId", "comparedField": "envelopeId == authorizationEnvelopeId", "crossEntityCarrierAllowed": false },
+    "ATTEMPT_PRODUCED_RESULT": { "mustBeRequestedAttempt": "source == creationEventId", "destination": "in terminalEventIds", "crossEntityCarrierAllowed": false },
+    "RESULT_PROMOTED": { "mustBeRequestedAttempt": "source == completedEventId", "destination": "a PROMOTION_COMMITTED node carrying the evidence", "comparedField": "attemptId == requested attemptId", "crossEntityCarrierAllowed": true },
+    "ATTEMPT_REOPENED_FOR_REWORK": { "mustBeRequestedAttempt": "source in terminalEventIds", "destination": "a TASK_READY node carrying the evidence", "comparedField": "originRef == requested attemptId", "crossEntityCarrierAllowed": true }
+  },
+  "positiveCoverage": {
+    "realAuthorization": "ADMITTED (real canonical Work)",
+    "realAttemptResult": "ADMITTED (real canonical Work)",
+    "realPromotion": "ADMITTED (real canonical Work) — was EXCLUDED at baseline (F2)",
+    "realGovernedRework": "ADMITTED (real canonical Work) — was EXCLUDED at baseline (F3)",
+    "multipleAttemptsIsolation": "A0/A1/promoted each admit only their OWN relations"
+  },
+  "negativeCoverage": {
+    "sharedAuthorizationWrongAttempt": "EXCLUDED with a role reason",
+    "correctTypeWrongDestination": "EXCLUDED",
+    "wrongAttemptPromotion": "EXCLUDED",
+    "wrongAttemptRework": "EXCLUDED",
+    "foreignProjectEvidence": "EXCLUDED",
+    "missingEvidence": "EXCLUDED",
+    "DECLARED_ONLY": "EXCLUDED",
+    "TEMPORAL_ONLY": "EXCLUDED",
+    "UNRESOLVED_SOURCE": "EXCLUDED",
+    "CONFLICTING_SOURCE": "EXCLUDED",
+    "labelOnlyIdentity": "EXCLUDED",
+    "attemptBRelationThroughAttemptA": "EXCLUDED"
+  },
+  "noGlobalSuppression": "every legitimate relation is asserted VISIBLE in the correct Attempt's Preview; negatives are not satisfied by suppressing relations",
+  "quarantineScoping": "a known-incomplete relation is quarantined only when it touches the requested Attempt; an unrelated unresolved relation is not reported as this Attempt's fact",
+  "quarantinedRelationsPreserved": ["RECEIPT_REFERENCED_GROUND", "GOVERNED_INTENT_CHANGED_PROJECT", "REVISION_SUCCEEDED_REVISION"],
+  "tests": { "file": "test/trajectory_h0_relations.test.ts", "count": 12, "failed": 0 }
+}
