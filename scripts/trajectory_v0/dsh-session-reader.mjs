@@ -233,7 +233,12 @@ export async function makeRealDshSessionReader(input) {
   const { SessionId } = await import(base + 'dsh-session/lib/index.js');
 
   const ctx = new Context();
-  await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
+  /**
+   * §9: `ctx.plugin` returns the Cordis FIBER that owns the mounted service. Disposing the fiber is
+   * the supported teardown — a bare Cordis `Context` has no `dispose` of its own, so retaining the
+   * fiber is what makes `close()` real rather than decorative.
+   */
+  const fiber = await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
   const persistence = ctx.sessionPersistence;
   const sourceIdentity = `dsh-session-persistence-jsonl@${packageRoot}`;
 
@@ -253,12 +258,12 @@ export async function makeRealDshSessionReader(input) {
     sourceIdentity,
     evidenceClass: 'REAL_DSH_QUERY',
 
-    /** §9: dispose the mounted persistence context. Idempotent. */
+    /** §9: dispose the mounted persistence fiber. Idempotent. */
     async close() {
       try {
-        await ctx.dispose?.();
+        await fiber?.dispose?.();
       } catch {
-        /* the context may already be disposed */
+        /* the fiber may already be disposed */
       }
     },
 
@@ -398,7 +403,7 @@ export async function listSessionIds(input) {
   const { Context } = await import(base + 'cordis/lib/index.js');
   const JsonlSessionPersistence = (await import(base + 'dsh-session-persistence-jsonl/lib/index.js')).default;
   const ctx = new Context();
-  await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
+  const fiber = await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
   try {
     const listed = await ctx.sessionPersistence.list();
     return listed.map((record) => ({
@@ -409,9 +414,9 @@ export async function listSessionIds(input) {
     }));
   } finally {
     try {
-      await ctx.dispose?.();
+      await fiber?.dispose?.();
     } catch {
-      /* the context may already be disposed */
+      /* the fiber may already be disposed */
     }
   }
 }
