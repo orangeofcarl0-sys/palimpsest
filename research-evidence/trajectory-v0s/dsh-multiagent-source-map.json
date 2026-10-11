@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_DSH_MULTIAGENT_SOURCE_MAP",
+  "stage": "Trajectory-V0S",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "runtimeIntegrationClaim": false,
+  "note": "A source-contract map only. No real Team, Workflow or Worktree interoperability is claimed; that would require a genuine executed integration test.",
+  "agentTeam": {
+    "distinction": [
+      "durable member creation/provisioning",
+      "direct Inbox message acceptance",
+      "Task Board claim/update/complete",
+      "member Session identity",
+      "actual Palimpsest Work Attempt settlement"
+    ],
+    "invariant": "A Team Task completion is not a Palimpsest Work completion.",
+    "packagesPresent": true
+  },
+  "workflow": {
+    "fields": [
+      "WorkflowRunId",
+      "workflow/agent-start",
+      "Child SessionId (childId)",
+      "workflow/agent-end",
+      "Run End / Stop Reason"
+    ],
+    "invariant": "A Workflow Child finishing does not imply canonical Work Promotion.",
+    "packagePresent": true,
+    "agentStartEvent": true,
+    "agentEndEvent": true
+  },
+  "worktree": {
+    "fields": [
+      "explicit checkout base commit",
+      "created branch and directory",
+      "Session working-directory change",
+      "relationship to the Palimpsest authorized World"
+    ],
+    "invariant": "A DSH-created Worktree does not automatically become an approved Palimpsest Attempt World."
+  }
+}

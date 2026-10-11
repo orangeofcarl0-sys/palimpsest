@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_DSH_IDENTITY_PRODUCER_FEASIBILITY",
+  "stage": "Trajectory-V0S",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "installedVersions": {
+    "dsh": "0.2.0-rc.2",
+    "dsh-session": "0.2.0-rc.2",
+    "dsh-session-query": "0.2.0-rc.2",
+    "dsh-session-persistence-jsonl": "0.2.0-rc.2",
+    "dsh-headless": "0.2.0-rc.2",
+    "dsh-workflow": "0.2.0-rc.2",
+    "dsh-subagent": "0.2.0-rc.2"
+  },
+  "dshHomeReported": "<local-path>",
+  "findings": {
+    "workerSessionMinting": {
+      "present": true,
+      "workerMintsSessionId": true,
+      "branchMintsSessionId": true,
+      "principalMintsSessionId": true,
+      "producer": "palimpsest-dsh-host/lib/runner.js (runWorker), via agents.create({ sessionId })",
+      "note": "the id is minted by the HOST BUNDLE and passed into DSH's agents service; DSH persists the session under the profile's sessions root"
+    },
+    "principalReportingChannels": {
+      "present": true,
+      "writesSessionIdFile": true,
+      "printsReadinessLine": true,
+      "readinessCarriesSessionId": true,
+      "startupOffersSessionFileFlag": true,
+      "note": "the --session-file flag and the PALIMPSEST_HOST_READY line both belong to the create/resume principal path"
+    },
+    "workerReportingChannels": {
+      "present": true,
+      "machineReadableLinePrefixes": [
+        "PALIMPSEST_WORKER_ACTIONS",
+        "PALIMPSEST_WORKER_CAPABILITIES",
+        "PALIMPSEST_WORKER_CAPACITY",
+        "PALIMPSEST_WORKER_EFFICACY",
+        "PALIMPSEST_WORKER_ENV",
+        "PALIMPSEST_WORKER_INDEX",
+        "PALIMPSEST_WORKER_PULL",
+        "PALIMPSEST_WORKER_READ_BOUNDARY"
+      ],
+      "printsWorkResult": true,
+      "workerBlockMentionsSessionIdOutsideMinting": false,
+      "workerExposesSessionId": false,
+      "note": "the worker mints `worker-<uuid>` and NEVER reports it on stdout, stderr or the IPC channel"
+    },
+    "parentChannels": {
+      "present": true,
+      "spawnArgumentShape": true,
+      "spawnsWithWorkDirCwd": true,
+      "ownsIpcChannel": true,
+      "parsesIpcMessages": true,
+      "parsesStdout": true,
+      "note": "the parent owns the child's stdout and a dedicated IPC channel (stdio[3]) and already parses structured messages on it"
+    },
+    "headlessJsonSessionEvent": {
+      "present": true,
+      "emitsOpeningSessionEvent": true,
+      "shape": "write({ type: 'session', sessionId: agent.id, cwd })",
+      "note": "DSH Headless emits a machine-readable opening `session` event under --json; this is a capability of a DIFFERENT route than the Palimpsest Work worker"
+    },
+    "multiAgentSourceMap": {
+      "workflow": {
+        "packagePresent": true,
+        "runIdType": true,
+        "agentStartEvent": true,
+        "agentEndEvent": true,
+        "childIdentityField": "childId",
+        "doesNotImply": "canonical Work Promotion"
+      },
+      "agentTeam": {
+        "subagentPackagesPresent": true,
+        "note": "durable member provisioning, Inbox acceptance, Task Board updates and member session identity are separate DSH surfaces; a Team Task completion is not a Palimpsest Work completion"
+      },
+      "worktree": {
+        "note": "a DSH-created worktree is not automatically an approved Palimpsest Attempt World; the authorized world remains the one the port hands the worker as its cwd"
+      }
+    }
+  },
+  "identityChain": [
+    "Canonical Work AttemptId        (the Work owner; has a producer)",
+    "Host-local JobId                (the delegation service; has a producer, ephemeral)",
+    "Port InvocationId               (the worker port; has a producer)",
+    "Direct Child Process            (the port's spawn; has a producer)",
+    "Actual DSH SessionId            (MISSING: no producer reports it to the parent)"
+  ],
+  "outcome": "PRODUCER_REQUIRES_RUNTIME_INTEGRATION",
+  "smallestSupportedIntegrationPoint": {
+    "candidate": "P2 (supported worker output protocol), on the EXISTING IPC channel",
+    "detail": "runWorker already holds `handle.agent.session.id` from agents.create and the parent already parses structured messages on the dedicated stdio[3] IPC channel. Reporting the session identity as ONE structured message on that channel BEFORE the first model turn would let the parent bind the exact session to the exact InvocationId it spawned.",
+    "whyItIsNotImplementedHere": "S2 is a read-only gate: it forbids modifying the Worker Port and forbids adding a Worker output schema extension.",
+    "requiredChanges": [
+      "palimpsest-dsh-host/lib/runner.js (runWorker): report the created session identity on the IPC channel",
+      "src/deployment/work_worker.ts: accept and record that identity against the invocation"
+    ],
+    "whyTheChannelMatters": "stdout is model-writable (the worker can run bash), so a stdout line is worker testimony. The IPC channel is owned by the host bundle and is not reachable by the model, which is what makes the report a host observation rather than a claim.",
+    "whatItStillWouldNotProve": [
+      "that no OTHER session was created for the same attempt",
+      "that the session's cwd equals the attempt's authorized world (it would need a header check)",
+      "canonical ownership: only a durable producer-side binding record can establish that"
+    ]
+  },
+  "threatAndLifecycleAssessment": {
+    "whoProducesSessionId": "the Palimpsest host bundle mints `worker-<uuid>` and passes it to DSH's agents.create",
+    "canWorkerForgeIt": "not on the IPC channel; yes on stdout",
+    "canHostDistinguishCreation": "not today: the worker route reports no session identity at all",
+    "crashBeforePersistence": "the session would be unreadable, so the binding would have to be recorded as SOURCE_UNAVAILABLE rather than as a session",
+    "multipleSessions": "a retry or a resumed worker could create a second session; the binding would need a cardinality rule",
+    "forkOrResume": "a forked child carries parentSession in its header, which is lineage, not Attempt ownership",
+    "oneAttemptMultipleSessions": "possible in principle and currently unconstrained, so the binding must be one-to-many or explicitly one-to-one",
+    "wrapperChild": "the direct child may be a wrapper, so the pid proves only the direct child",
+    "survivesParentShutdown": "the session persists; the host job id does not",
+    "secondCanonicalOwner": "no: a binding record referencing the Work AttemptId would remain a read-side reference, not a new authority",
+    "verifiableAfterRestart": "only if the binding is durable; the session id alone is readable but its Attempt ownership would not be",
+    "requiresLiveModel": "no: session creation is a non-model operation",
+    "changesExecutionEnvironment": "it would add one structured IPC message, not a new capability"
+  },
+  "permittedOutcomes": [
+    "SUPPORTED_PRODUCER_IDENTIFIED_SOURCE_ONLY",
+    "SUPPORTED_PRODUCER_DEMONSTRATED_NO_MODEL",
+    "PRODUCER_REQUIRES_RUNTIME_INTEGRATION",
+    "PRODUCER_NOT_ESTABLISHED"
+  ],
+  "note": "no permitted outcome authorizes PRIMARY execution"
+}
