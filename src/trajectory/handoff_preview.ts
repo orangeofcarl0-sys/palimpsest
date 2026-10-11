@@ -318,7 +318,12 @@ function caveatsOf(input: {
   const contradictoryObservations: string[] = [];
   const epistemicLimits: string[] = [];
 
-  if (input.binding.bindingStatus === "SESSION_UNBOUND") {
+  /**
+   * §4/§6: the "no DSH session" caveat follows the SESSION, not the binding state. An attempt can
+   * be host-observed (BOUND_LOCAL_ONLY) while still having no DSH session at all, and that absence
+   * must be stated either way.
+   */
+  if (input.binding.dshSessionId === null) {
     epistemicLimits.push(
       "No DSH session is bound to this attempt: no producer records an Attempt→Session relationship, so no session events are presented.",
     );
@@ -365,7 +370,7 @@ function caveatsOf(input: {
 
   return Object.freeze({
     sourcesUnavailable: Object.freeze([...new Set(sourcesUnavailable)]),
-    missingSession: input.binding.bindingStatus === "SESSION_UNBOUND",
+    missingSession: input.binding.dshSessionId === null,
     staleBasis: input.projectEvolution.currentnessCaveats.some((caveat) => caveat.toLowerCase().includes("stale")),
     contradictoryObservations: Object.freeze([...new Set(contradictoryObservations)]),
     epistemicLimits: Object.freeze([...new Set(epistemicLimits)]),
