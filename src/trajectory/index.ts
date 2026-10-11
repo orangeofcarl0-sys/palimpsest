@@ -108,3 +108,65 @@ export type {
 
 export { buildTrajectoryReadModel, classifyCurrentness } from "./currentness.js";
 export type { CurrentnessVerdict, OwnerCurrentnessInput, TrajectoryReadModel } from "./currentness.js";
+
+/**
+ * Trajectory-V0 §3/§4 (V0-A/V0-B) — execution identity, the Attempt→Session binding contract, and
+ * the narrow read-only DSH session port. Distinct from T0's Project Evolution projection: this is
+ * the EXECUTION view, and it never mints a Work, host or DSH identity.
+ */
+export {
+  BINDING_SOURCES,
+  BINDING_STATES,
+  classifyBinding,
+  DSH_PAGE_DOES_NOT_PROVE,
+  DSH_PAGE_PROVES,
+  DSH_READ_DEFAULT_PAGE,
+  RECOGNIZED_DSH_EVENT_TYPES,
+  sanitizeDshEvent,
+  SESSION_READ_STATES,
+  trajectoryViewIdOf,
+} from "./execution.js";
+export type {
+  AttemptExecutionBinding,
+  BindingEvidenceRef,
+  BindingSource,
+  BindingState,
+  DshEventReference,
+  DshEventView,
+  DshSessionEventPage,
+  DshSessionHeaderIdentity,
+  DshSessionReadPort,
+  DshSessionReadRequest,
+  RecognizedDshEventType,
+  SessionReadState,
+} from "./execution.js";
+
+/**
+ * Trajectory-V0 §6/§10 (V0-D/V0-H) — the read-only Handoff Preview over both views.
+ */
+export {
+  buildHandoffPreview,
+  PREVIEW_DOES_NOT_AUTHORIZE,
+  PREVIEW_COMPLETENESS_STATES,
+  previewCompletenessOf,
+  PROCESS_LIFECYCLE_STATES,
+  readOnlyViolations,
+  SESSION_LIFECYCLE_STATES,
+  sessionLifecycleOf,
+} from "./handoff_preview.js";
+export type {
+  HandoffPreview,
+  HandoffPreviewInput,
+  PreviewAttemptIdentity,
+  PreviewCanonicalFacts,
+  PreviewCanonicalOutcome,
+  PreviewCaveats,
+  PreviewCompleteness,
+  PreviewExecutionEvidence,
+  PreviewHostObservationSummary,
+  PreviewProjectContext,
+  PreviewProjectEvolutionSummary,
+  ProcessLifecycle,
+  ReadOnlySnapshot,
+  SessionLifecycle,
+} from "./handoff_preview.js";
