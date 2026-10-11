@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_T0_TRACE_ATTEMPT_AUDIT",
+  "stage": "Trajectory-V0S-H0",
+  "status": "DEFERRED_TO_A_SEPARATE_T0_SLICE",
+  "actualDefect": {
+    "function": "traceAttempt()",
+    "file": "src/trajectory/projection.ts",
+    "selector": "node.label.includes(attemptId) && node.label.startsWith(\"ATTEMPT_CREATED\")",
+    "whyItIsWrong": "a Work node's label is `${event_type} ${entity_id}`; a display-label substring match is satisfied by a LONGER attempt id that contains this one as a prefix, so the helper can select the wrong node",
+    "affectedSurface": "the public T0 helper only — buildProjectTrajectory's output and the projection semantic digest are NOT affected by which node this helper returns"
+  },
+  "reproducerClassification": "SOURCE_DEMONSTRATED",
+  "reproducer": {
+    "test": "test/trajectory_h0_falsifiers.test.ts > F10",
+    "method": "source-text assertion that the substring form is present",
+    "notDynamicallyReproduced": "no product scenario creates two attempt ids where one is a prefix of the other, so the defect is source-demonstrated rather than executed"
+  },
+  "recommendedMinimalFutureCorrection": "compare the exact label `ATTEMPT_CREATED ${attemptId}`, or better, resolve the node by its canonical event identity as the H0 relation selector now does",
+  "compatibilityRisks": [
+    "the exact-label form depends on the label format, which is a presentation choice; resolving by canonicalId is the more durable form",
+    "neither form changes the projection output or the semantic digest, so a correction is digest-neutral"
+  ],
+  "whyNotCorrectedInH0": "the ruling names src/trajectory/projection.ts as a file not to modify in H0 merely to complete a checklist, and directs a T0 correctness change to its own forward-only slice",
+  "modifiedInH0": false,
+  "verifiedUnmodified": "git diff HEAD -- src/trajectory/projection.ts is empty"
+}
