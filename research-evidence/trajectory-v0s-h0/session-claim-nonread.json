@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_SESSION_CLAIM_NONREAD",
+  "stage": "Trajectory-V0S-H0",
+  "invariant": "H0-I3: a caller-provided SessionId cannot trigger Session Header or Session Event reads through the ordinary Attempt Preview while no verified binding producer exists",
+  "measured": {
+    "claimedSessionIdRecorded": true,
+    "dshSessionId": null,
+    "sessionBindingStatus": "SESSION_CLAIMED_UNVERIFIED",
+    "sessionReadAdmission": "NOT_REQUESTED",
+    "sessionReadState": null,
+    "sessionLifecycle": "SESSION_IDENTIFIED_NOT_READ",
+    "readerHeaderCalls": 0,
+    "readerEventCalls": 0,
+    "eventsAdmitted": 0,
+    "readWatermark": null,
+    "sourceIdentity": null,
+    "headerAgreementClaimed": false,
+    "workOnlyPreviewRemainsUseful": true
+  },
+  "semanticsCorrection": {
+    "readFailedMisuse": "READ_FAILED is reserved for an operation that was ATTEMPTED and failed; an un-attempted read is NOT_REQUESTED",
+    "sourceUnavailableReserved": "SOURCE_UNAVAILABLE now requires readAttempted === true; an un-attempted read is SESSION_CLAIMED_UNVERIFIED",
+    "caveatStringCorrected": "the caveat now states that a DECLARATION was recorded and no read was performed, instead of claiming a header was checked"
+  },
+  "globalProbeRemoved": {
+    "before": "an unknown attempt triggered controller.store.listEvents() with no project scope",
+    "after": "the Attempt Preview reads only the configured project; an out-of-scope attempt is refused as ATTEMPT_NOT_FOUND within project scope",
+    "operatorCrossProjectDiagnostic": "documented as a future operator-only capability, NOT implemented"
+  },
+  "operatorDiagnosticsPreserved": "the first-party DSH reader is not deleted; it remains a working port usable directly, asserted by its own test",
+  "attemptServiceSurface": ["previewAttempt", "hasDshReader"],
+  "tests": { "file": "test/trajectory_h0_session_claim.test.ts", "count": 4, "failed": 0 },
+  "correctedExistingAssertions": [
+    "test/trajectory_v0_contract.test.ts: an identified but unreadable session (now readAttempted:true vs false)",
+    "test/trajectory_v0s_admission.test.ts: S1-B2, S1-C4, S1-E1, S1-E7 (claim read -> claim not read)",
+    "test/trajectory_v0_preview.test.ts: four integration tests (READ_OK -> no read)"
+  ]
+}

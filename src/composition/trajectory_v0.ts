@@ -185,22 +185,15 @@ function admitAttempt(input: {
   readonly attemptId: string;
   readonly events: readonly SchedulerEvent[];
   readonly record: ReturnType<TrajectoryV0WorkOwner["attemptWorkRecord"]>;
-  readonly foreignAttemptExists: boolean;
 }): { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null } {
   const { created, terminal, authorization } = attemptEvents(input.events, input.attemptId);
   if (created === null) {
     /**
-     * §4 S1-A1/A2: distinguish "this id exists nowhere" from "this id belongs to another project".
-     * The distinction matters because the second is a scope violation, not a typo. The caller
-     * supplies the second fact as a BOOLEAN from an identity-only probe, so this gate never reads
-     * another project's content to decide its own refusal.
+     * §4 S1-A1/A2, corrected by H0 §7.2: a project-scoped read cannot see another project's events,
+     * so an attempt outside this project is refused as ATTEMPT_NOT_FOUND WITHIN THE PROJECT SCOPE.
+     * The FOREIGN_ATTEMPT code remains for the case the read itself surfaces an out-of-scope creation
+     * event, which is checked below; no unscoped global probe is performed to manufacture it.
      */
-    if (input.foreignAttemptExists) {
-      throw new AttemptAdmissionRefusal(
-        "FOREIGN_ATTEMPT",
-        `attempt ${input.attemptId} is not a canonical attempt of project ${input.projectId}; the same id exists in another project`,
-      );
-    }
     throw new AttemptAdmissionRefusal(
       "ATTEMPT_NOT_FOUND",
       `no canonical ATTEMPT_CREATED event names attempt ${input.attemptId} in project ${input.projectId}`,
@@ -476,18 +469,12 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
       const events = controller.store.listEvents(projectId);
       const record = controller.attemptWorkRecord(request.attemptId);
       /**
-       * §4 S1-A2: the FOREIGN_ATTEMPT distinction needs one fact the project-scoped read cannot
-       * supply — whether this id exists in ANOTHER project. The probe runs ONLY when the
-       * project-scoped lookup already failed, so the common path reads exactly one project, and it
-       * inspects only identity fields (event type, entity id, project id), never content.
+       * H0 §7.2: the ordinary Attempt Preview is PROJECT-SCOPED. It does NOT probe other projects to
+       * distinguish a foreign attempt from an unknown one: a normal project-scoped read must not
+       * require an unrestricted `listEvents()`. An attempt outside this project is refused within the
+       * project scope.
        */
-      const foreignAttemptExists =
-        events.some((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === request.attemptId)
-          ? false
-          : controller.store
-              .listEvents()
-              .some((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === request.attemptId && event.project_id !== projectId);
-      const admitted = admitAttempt({ projectId, attemptId: request.attemptId, events, record, foreignAttemptExists });
+      const admitted = admitAttempt({ projectId, attemptId: request.attemptId, events, record });
 
       /* ---- §5: the host record's identity is checked before any of its fields are accepted. ---- */
       if (request.hostRecord !== undefined && request.hostRecord.attemptId !== request.attemptId) {
@@ -502,70 +489,23 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
 
       const canonical = canonicalFactsOf({ events, attemptId: request.attemptId, record, basis, promotions, admitted });
 
-      /** §5: resolve the session binding from REAL evidence only. */
-      const claimedSessionId = request.claimedSessionId ?? null;
-      let sessionPage: DshSessionEventPage | undefined;
-      let conflictDetail: string | null = null;
-      let sourceReadable = true;
-
       /**
-       * §5: NO canonical Attempt→Session producer exists in this deployment (see the V0S S2 audit),
-       * so a claim can never be read THROUGH the Attempt preview. The claimed id is compared against
-       * the source's own header to classify the claim honestly, but its events are never admitted:
-       * the read admission is computed from the binding, and the binding can never be verified here.
+       * H0 §7 (C3): A CLAIMED SESSION IS A DECLARATION, NOT A SOURCE ACCESS.
+       *
+       * No canonical Attempt→Session producer exists in this deployment (V0S S2), so a caller-supplied
+       * session id can never establish a binding. V0S nevertheless performed a header read and an event
+       * read for any claimed id, which meant caller testimony triggered DSH I/O and produced event
+       * counts and watermarks for a session the attempt does not own.
+       *
+       * The corrected rule: while no producer exists, the ordinary Attempt Preview performs ZERO reads.
+       * The claim is recorded as a declaration, the established session id stays null, and the read
+       * admission is `NOT_REQUESTED` — because nothing was requested THROUGH this path.
        */
-      if (claimedSessionId !== null && reader !== undefined) {
-        const headerResult = await reader.readHeaderIdentity(claimedSessionId);
-        if (headerResult.readState === "READ_OK" && headerResult.header !== null) {
-          if (headerResult.header.sessionId !== claimedSessionId) {
-            conflictDetail = `the source's header names session ${headerResult.header.sessionId} but ${claimedSessionId} was claimed`;
-          } else {
-            /**
-             * §5/§9: the header agreed, which classifies the CLAIM. The page is still read so a
-             * diagnostic can see the source state, and it stays unadmitted because no producer
-             * establishes the relationship.
-             */
-            sessionPage = await reader.readEvents({ sessionId: claimedSessionId });
-            sourceReadable = sessionPage.readState === "READ_OK";
-          }
-        } else if (headerResult.readState === "IDENTITY_CONFLICT") {
-          conflictDetail = headerResult.detail;
-        } else {
-          sourceReadable = false;
-          sessionPage = await reader.readEvents({ sessionId: claimedSessionId });
-        }
-      } else if (claimedSessionId !== null && reader === undefined) {
-        /**
-         * §5: a session was claimed but NO reader is composed. This must not collapse to "no session
-         * bound" — the consumer asked for a session and the capability is absent, which is a missing
-         * SOURCE.
-         */
-        sourceReadable = false;
-        sessionPage = Object.freeze({
-          schemaVersion: 1 as const,
-          readState: "READ_CAPABILITY_ABSENT" as const,
-          sessionId: claimedSessionId,
-          header: null,
-          sourceIdentity: "NONE",
-          sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
-          throughSeq: null,
-          knownEventCount: null,
-          inheritedEventCount: null,
-          requestedFromSeq: 0,
-          requestedMaxEvents: 0,
-          returnedCount: 0,
-          pageBounded: true as const,
-          diskIoBounded: true,
-          durabilityProvenance: "DURABILITY_UNRESOLVED" as const,
-          persistedEventCount: null,
-          syntheticRecoveryEventCount: null,
-          events: Object.freeze([]),
-          knownParentSession: null,
-          proves: Object.freeze([]),
-          doesNotProve: Object.freeze(["a missing read capability is not evidence that no events occurred"]),
-          detail: "a session was claimed for this attempt but no DSH session reader is composed in this deployment",
-        });
-      }
+      const claimedSessionId = request.claimedSessionId ?? null;
+      const sessionPage: DshSessionEventPage | undefined = undefined;
+      const conflictDetail: string | null = null;
+      /** §7: no read happened, so the source's readability is UNKNOWN, not false. */
+      const sourceReadable = claimedSessionId === null;
 
       const classification = classifySessionBinding({
         claimedSessionId,
@@ -577,17 +517,10 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
       });
 
       /**
-       * §5/S-I4: the read admission follows the BINDING, not the read outcome. Without a verified
-       * binding, a successful read is `NOT_ADMITTED_TO_ATTEMPT` and its events never enter the view.
+       * §7.1: the read admission describes what ACTUALLY happened. Nothing was requested through the
+       * Attempt path, so it is `NOT_REQUESTED` — NOT `READ_FAILED`, which would claim a failed attempt.
        */
-      const sessionReadAdmission: SessionReadAdmission =
-        claimedSessionId === null
-          ? "NOT_REQUESTED"
-          : sessionPage?.readState === "READ_OK"
-            ? classification.state === "BOUND_VERIFIED"
-              ? "ADMITTED_TO_ATTEMPT"
-              : "NOT_ADMITTED_TO_ATTEMPT"
-            : "READ_FAILED";
+      const sessionReadAdmission: SessionReadAdmission = "NOT_REQUESTED";
 
       const hostClassification = classifyHostObservation({
         recordPresent: request.hostRecord !== undefined,
@@ -601,21 +534,8 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
         evidenceRefs.push(
           Object.freeze({
             source: "CALLER_DECLARATION" as const,
-            detail: "the caller supplied this session id for the attempt",
+            detail: "the caller supplied this session id as a declaration; no read was performed and no header agreement is claimed",
             compared: Object.freeze({ claimedSessionId, attemptId: request.attemptId }),
-          }),
-        );
-      }
-      if (sessionPage?.header != null) {
-        evidenceRefs.push(
-          Object.freeze({
-            source: "CALLER_DECLARATION" as const,
-            detail: "the source's immutable header agreed with the claimed id; this classifies the claim, not a binding",
-            compared: Object.freeze({
-              headerSessionId: sessionPage.header.sessionId,
-              headerCwd: sessionPage.header.cwd ?? "",
-              headerIsSeeded: String(sessionPage.header.isSeeded),
-            }),
           }),
         );
       }

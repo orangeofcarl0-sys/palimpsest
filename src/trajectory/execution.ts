@@ -219,10 +219,14 @@ export interface AttemptExecutionBinding {
  *
  *   1. a CONFLICT anywhere wins — a contradiction is never downgraded to "unbound";
  *   2. a canonical producer yields BOUND_VERIFIED;
- *   3. a claimed-but-unreadable session yields SOURCE_UNAVAILABLE;
+ *   3. no claim at all yields SESSION_UNBOUND;
  *   4. more than one candidate yields AMBIGUOUS;
- *   5. a caller claim yields SESSION_CLAIMED_UNVERIFIED — never a binding;
- *   6. otherwise SESSION_UNBOUND.
+ *   5. a claim whose read was ATTEMPTED and failed yields SOURCE_UNAVAILABLE;
+ *   6. a claim with no read attempt yields SESSION_CLAIMED_UNVERIFIED — never a binding.
+ *
+ * H0 §7.1: `readAttempted` is a separate input from `sourceReadable`, because "the source could not
+ * be read" and "we never tried to read it" are different facts. Reporting an un-attempted read as
+ * SOURCE_UNAVAILABLE would claim the source is broken when nothing was asked of it.
  *
  * Note what is NOT an input: whether a host observation exists. A host observation is a different
  * fact and cannot move this state (§5 "No-session invariant").
@@ -231,6 +235,9 @@ export function classifySessionBinding(input: {
   readonly claimedSessionId: string | null;
   readonly canonicalBindingPresent: boolean;
   readonly candidateCount: number;
+  /** Whether a read was actually attempted through this path. */
+  readonly readAttempted?: boolean | undefined;
+  /** Whether an ATTEMPTED read succeeded. Meaningless when `readAttempted` is false. */
   readonly sourceReadable: boolean;
   readonly conflictDetail: string | null;
 }): { readonly state: SessionBindingState; readonly source: BindingSource; readonly detail: string } {
@@ -262,18 +269,22 @@ export function classifySessionBinding(input: {
       detail: `${String(input.candidateCount)} sessions could satisfy this attempt, so none is selected`,
     });
   }
-  if (!input.sourceReadable) {
+  /**
+   * H0 §7.1: SOURCE_UNAVAILABLE is reserved for a read that was actually ATTEMPTED and failed. When
+   * no read was attempted, the honest state is the unverified claim below.
+   */
+  if (input.readAttempted === true && !input.sourceReadable) {
     return Object.freeze({
       state: "SOURCE_UNAVAILABLE" as const,
       source: "CALLER_DECLARATION" as const,
-      detail: "a session was claimed but its source could not be read",
+      detail: "a session was claimed, a read was attempted, and its source could not be read",
     });
   }
   return Object.freeze({
     state: "SESSION_CLAIMED_UNVERIFIED" as const,
     source: "CALLER_DECLARATION" as const,
     detail:
-      "the caller supplied this session id and its header agrees, but no producer establishes an Attempt→Session relationship; a declaration is evidence of a request, not of a binding",
+      "the caller supplied this session id, but no producer establishes an Attempt→Session relationship and no read was performed through this path; a declaration is evidence of a request, not of a binding",
   });
 }
 
