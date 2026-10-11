@@ -271,12 +271,29 @@ describe("Trajectory-V0 §5 — session binding states", () => {
     expect(classification.state).toBe("AMBIGUOUS");
   });
 
-  it("an identified but unreadable session is SOURCE_UNAVAILABLE", () => {
-    const classification = classifySessionBinding({
+  it("an ATTEMPTED but unreadable session is SOURCE_UNAVAILABLE", () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H0 C3)
+     *
+     * The baseline assertion passed only `sourceReadable: false` and expected SOURCE_UNAVAILABLE. The
+     * counterexample is H0 §7.1: the ordinary Attempt Preview performs NO read at all, so reporting an
+     * un-attempted read as SOURCE_UNAVAILABLE claimed a broken source that was never asked anything.
+     *
+     * The corrected contract separates "the read failed" from "no read was attempted": SOURCE_UNAVAILABLE
+     * now requires `readAttempted: true`.
+     */
+    const attempted = classifySessionBinding({
       claimedSessionId: "session-gone", canonicalBindingPresent: false,
-      candidateCount: 1, sourceReadable: false, conflictDetail: null,
+      candidateCount: 1, readAttempted: true, sourceReadable: false, conflictDetail: null,
     });
-    expect(classification.state).toBe("SOURCE_UNAVAILABLE");
+    expect(attempted.state).toBe("SOURCE_UNAVAILABLE");
+    // And with NO read attempted, the claim stays unverified rather than claiming a broken source.
+    const unread = classifySessionBinding({
+      claimedSessionId: "session-gone", canonicalBindingPresent: false,
+      candidateCount: 1, readAttempted: false, sourceReadable: false, conflictDetail: null,
+    });
+    expect(unread.state).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(unread.detail).toContain("no read was performed");
   });
 
   it("§5: a HOST OBSERVATION cannot move the session binding", () => {

@@ -368,9 +368,19 @@ describe("Trajectory-V0S §5 S1-B — host observation and session binding are s
     expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
     expect(preview.execution.dshSessionId).toBeNull();
     expect(preview.execution.claimedSessionId).toBe("session-unrelated");
-    expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S asserted `sessionReadAdmission === NOT_ADMITTED_TO_ATTEMPT` and
+     * `sessionLifecycle === SESSION_READ_NOT_ATTRIBUTED`, because V0S still READ the claimed session and
+     * then declined to admit it. H0 §7 goes further: the ordinary Attempt Preview performs NO read at
+     * all, so the honest admission is `NOT_REQUESTED` and the lifecycle is `SESSION_IDENTIFIED_NOT_READ`.
+     * The assertion that matters — no events enter the attempt — is retained and strengthened.
+     */
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(preview.execution.sessionReadState).toBeNull();
     expect(preview.execution.events).toEqual([]);
-    expect(preview.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
+    expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
     expect(preview.completeness).not.toBe("COMPLETE");
     expect(preview.caveats.epistemicLimits.join(" ")).toContain("UNVERIFIED");
   }, 180_000);
@@ -538,7 +548,9 @@ describe("Trajectory-V0S §6 S1-C — the arbitrary Session read surface is clos
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-child" });
     // The lineage is not a Work relation, and the attempt owns no session.
     expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
-    expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+    // H0 C3: the claim is recorded and NO read is performed, so the admission is NOT_REQUESTED.
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(preview.execution.events).toEqual([]);
     expect(preview.projectContext.selectedRelations.map((relation) => relation.relation)).not.toContain("SESSION_FORKED_FROM");
     // No Work relation names the parent session.
     expect(JSON.stringify(preview.projectContext.selectedRelations)).not.toContain("session-parent");
@@ -624,11 +636,17 @@ describe("Trajectory-V0S §8 S1-E — Handoff completeness and interruption sema
       dshSessionReader: agreeingReader("session-unrelated"),
     });
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-unrelated", hostRecord });
-    // The read was real; the Preview is still not complete.
-    expect(preview.execution.sessionReadState).toBe("READ_OK");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S asserted `sessionReadState === READ_OK` and `sourceReadability === READABLE`, because V0S read
+     * the claimed session. H0 §7 performs no read, so the read state is null and the source readability
+     * is `NOT_REQUESTED` — the Preview still cannot be COMPLETE, which is the property under test.
+     */
+    expect(preview.execution.sessionReadState).toBeNull();
     expect(preview.completeness).not.toBe("COMPLETE");
     expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
-    expect(preview.attribution.sourceReadability).toBe("READABLE");
+    expect(preview.attribution.sourceReadability).toBe("NOT_REQUESTED");
   }, 180_000);
 
   it("S1-E2: a Work Result with SESSION_UNBOUND remains a useful PARTIAL Preview", async () => {
@@ -706,9 +724,18 @@ describe("Trajectory-V0S §8 S1-E — Handoff completeness and interruption sema
       dshSessionReader: agreeingReader("session-fixture-id"),
     });
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-fixture-id" });
-    // §8: the provenance class travels with the page, so a consumer can tell a fixture from a real read.
-    expect(preview.execution.sourceEvidenceClass).toBe("DSH_QUERY_PORT_FIXTURE");
-    expect(preview.execution.sourceIdentity).toBe("DSH_QUERY_PORT_FIXTURE");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S read the claimed session and therefore carried the fixture's provenance class into the
+     * Preview. H0 §7 performs no read, so no page exists and the provenance fields are null: a consumer
+     * cannot be shown fixture metadata as if it were evidence about this attempt. The property under
+     * test — a fixture is not presented as real DSH evidence — holds a fortiori, because nothing is
+     * presented at all.
+     */
+    expect(preview.execution.sourceEvidenceClass).toBeNull();
+    expect(preview.execution.sourceIdentity).toBeNull();
+    expect(preview.execution.events).toEqual([]);
   }, 180_000);
 
   it("S1-E8: a semantic digest is not mislabeled as a byte attestation", async () => {

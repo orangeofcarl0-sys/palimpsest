@@ -270,27 +270,30 @@ describe("Trajectory-V0 §6 V0-D — one Handoff Preview over both views", () =>
     expect(preview.execution.processLifecycle).toBe("EXITED");
     expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
 
-    if (reader !== null) {
-      // §9: the real DSH read succeeded, and the page is bounded.
-      expect(preview.execution.sessionReadState).toBe("READ_OK");
-      expect(preview.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
-      // §5: the claim is recorded, and NO session is ESTABLISHED for this attempt.
-      expect(preview.execution.claimedSessionId).toBe(PINNED_SESSION);
-      expect(preview.execution.dshSessionId).toBeNull();
-      expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
-      expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
-      // §5/S-I4: the read is real, and its events are NOT admitted to this attempt.
-      expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
-      expect(preview.execution.events).toEqual([]);
-      expect(preview.execution.eventsDetail).toContain("NOT admitted");
-      expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
-      // §8: an unattributed read cannot make the Handoff COMPLETE.
-      expect(preview.completeness).not.toBe("COMPLETE");
-      expect(preview.caveats.epistemicLimits.join(" ")).toContain("UNVERIFIED");
-    } else {
-      expect(preview.execution.sessionReadState).toBe("READ_CAPABILITY_ABSENT");
-      expect(preview.caveats.sourcesUnavailable.join(" ")).toContain("missing source");
-    }
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S read the claimed session through the Attempt Preview and asserted READ_OK /
+     * NOT_ADMITTED_TO_ATTEMPT. H0 §7 makes the ordinary Attempt Preview NON-READING: a claimed session
+     * is a declaration, so no read state exists and the admission is NOT_REQUESTED. The real DSH reader
+     * is still composed and still works — it is exercised directly by the cold-read suite — but it is
+     * not invoked on this path.
+     *
+     * The property that matters is unchanged and strengthened: the claim is recorded, NO session is
+     * established, NO events enter the attempt, and the Handoff cannot be COMPLETE.
+     */
+    expect(preview.execution.sessionReadState).toBeNull();
+    expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
+    expect(preview.execution.claimedSessionId).toBe(PINNED_SESSION);
+    expect(preview.execution.dshSessionId).toBeNull();
+    expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(preview.execution.events).toEqual([]);
+    expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
+    expect(preview.completeness).not.toBe("COMPLETE");
+    expect(preview.caveats.epistemicLimits.join(" ")).toContain("UNVERIFIED");
+    expect(reader !== null || reader === null).toBe(true);
 
     // §6 "Canonical Outcome" — real Work facts, and no promotion.
     expect(preview.canonical.attemptState).toBe("COMPLETED");
@@ -466,13 +469,19 @@ describe("Trajectory-V0 §10 — negative controls", () => {
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-self-declared", hostRecord });
 
     /**
-     * V0S §5/§8: the self-declared claim does NOT establish a binding, and — the stronger property —
-     * its events are NOT admitted to the attempt. V0 stopped at "not BOUND_VERIFIED"; the corrected
-     * model must also keep the claimed session's events out of the execution view.
+     * V0S §5/§8, strengthened by H0 §7: the self-declared claim does NOT establish a binding, its
+     * events are NOT admitted, and — the strongest form — the boasting reader is never even CALLED
+     * through this path. V0S read the session and declined to admit it; H0 performs no read at all,
+     * so a reader's self-description has no opportunity to influence the Preview.
+     *
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     * `sessionReadAdmission` moved from NOT_ADMITTED_TO_ATTEMPT to NOT_REQUESTED, because nothing was
+     * requested through this path.
      */
     expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
     expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
-    expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(preview.execution.sessionReadState).toBeNull();
     expect(preview.execution.events).toEqual([]);
     expect(preview.completeness).not.toBe("COMPLETE");
     // §10: and it does NOT change the canonical outcome — promotion is still the owner's fact.
@@ -507,9 +516,19 @@ describe("Trajectory-V0 §10 — negative controls", () => {
       dshSessionReader: failingReader,
     });
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-corrupt", hostRecord });
-    expect(preview.execution.sessionReadState).toBe("CORRUPT_SESSION");
-    expect(preview.execution.sessionLifecycle).toBe("SESSION_UNREADABLE");
-    expect(preview.caveats.sourcesUnavailable.join(" ")).toContain("failed validation");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S read the claimed session and surfaced its CORRUPT_SESSION state in the Preview. H0 §7 performs
+     * no read on this path, so the reader's failure is never observed here. The property that matters —
+     * a failed source is never reported as an empty history — still holds, and is now exercised by the
+     * cold-read suite directly against the real reader. Here the honest report is that no read was
+     * requested.
+     */
+    expect(preview.execution.sessionReadState).toBeNull();
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
+    expect(preview.execution.events).toEqual([]);
     // The canonical facts are untouched by the unreadable session.
     expect(preview.canonical.attemptState).toBe("COMPLETED");
   }, 240_000);
@@ -551,7 +570,7 @@ describe("Trajectory-V0 §6 — one sanitized example per outcome class", () => 
       ...(reader === null ? {} : { dshSessionReader: reader }),
     });
 
-    /** The CLAIMED example (a session read was performed, and NOT attributed). */
+    /** The CLAIMED example (a session was claimed, recorded as a declaration, and NOT read). */
     const bound = await v0.previewAttempt({ attemptId, claimedSessionId: PINNED_SESSION, hostRecord });
     /** The UNBOUND example (no session claimed at all). */
     const unbound = await v0.previewAttempt({ attemptId, hostRecord });
@@ -569,18 +588,19 @@ describe("Trajectory-V0 §6 — one sanitized example per outcome class", () => 
     expect(unbound.execution.claimedSessionId).toBeNull();
     expect(unbound.execution.sessionLifecycle).toBe("NO_SESSION_BOUND");
     expect(unbound.caveats.missingSession).toBe(true);
-    if (reader !== null) {
-      /**
-       * V0S §5/§8: the claimed session is READ and NOT ATTRIBUTED. V0 asserted
-       * `dshSessionId === PINNED_SESSION` and `SESSION_READ` here, which is exactly the overclaim
-       * this stage corrects: a readable unrelated session is not the attempt's session.
-       */
-      expect(bound.execution.claimedSessionId).toBe(PINNED_SESSION);
-      expect(bound.execution.dshSessionId).toBeNull();
-      expect(bound.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
-      expect(bound.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
-      expect(bound.execution.events).toEqual([]);
-      expect(bound.completeness).not.toBe("COMPLETE");
-    }
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0 asserted `dshSessionId === PINNED_SESSION` / `SESSION_READ`; V0S corrected that to a READ
+     * with NOT_ADMITTED_TO_ATTEMPT. H0 §7 removes the read entirely on this path: the claim is a
+     * declaration, so the lifecycle is SESSION_IDENTIFIED_NOT_READ and the admission is NOT_REQUESTED.
+     * The claim is still recorded and still establishes nothing.
+     */
+    expect(bound.execution.claimedSessionId).toBe(PINNED_SESSION);
+    expect(bound.execution.dshSessionId).toBeNull();
+    expect(bound.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
+    expect(bound.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
+    expect(bound.execution.events).toEqual([]);
+    expect(bound.completeness).not.toBe("COMPLETE");
   }, 240_000);
 });

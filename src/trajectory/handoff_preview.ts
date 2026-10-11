@@ -367,8 +367,14 @@ function attributionOf(input: {
 }): PreviewAttribution {
   const canonicalCoverage = input.canonical.attemptState !== null || input.projectEvolution.projectionRootId !== null ? "PRESENT" : "ABSENT";
 
+  /**
+   * H0 §7: source readability follows what ACTUALLY happened. When no read was requested through this
+   * path — which is the case for every caller claim while no binding producer exists — the honest value
+   * is `NOT_REQUESTED`, never `UNREADABLE`: a source that was never asked anything is not unreadable.
+   */
   let sourceReadability: PreviewAttribution["sourceReadability"];
-  if (input.binding.claimedSessionId === null && input.binding.dshSessionId === null) sourceReadability = "NOT_REQUESTED";
+  if (input.binding.sessionReadAdmission === "NOT_REQUESTED" && input.sessionPage === undefined) sourceReadability = "NOT_REQUESTED";
+  else if (input.binding.claimedSessionId === null && input.binding.dshSessionId === null) sourceReadability = "NOT_REQUESTED";
   else if (input.sessionPage?.readState === "READ_CAPABILITY_ABSENT") sourceReadability = "NOT_COMPOSED";
   else if (input.sessionPage?.readState === "READ_OK") sourceReadability = "READABLE";
   else sourceReadability = "UNREADABLE";
@@ -436,8 +442,12 @@ function caveatsOf(input: {
     contradictoryObservations.push(input.binding.detail);
   }
   if (input.binding.sessionBindingStatus === "SESSION_CLAIMED_UNVERIFIED") {
+    /**
+     * H0 §7.1: the caveat states what actually happened — a declaration was recorded and NO read was
+     * performed — rather than claiming a header was checked or a source was unreadable.
+     */
     epistemicLimits.push(
-      "The session binding is UNVERIFIED: the caller supplied the id and its header agreed, which is evidence of a request rather than of an established binding.",
+      "The session binding is UNVERIFIED: the caller supplied the id as a DECLARATION. No producer establishes an Attempt→Session relationship, so no session read was performed through this path and no header agreement is claimed.",
     );
   }
   if (input.sessionPage !== undefined && input.sessionPage.readState === "CORRUPT_SESSION") {

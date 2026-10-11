@@ -433,17 +433,24 @@ describe("H0 F3 — legitimate Governed Rework preserved", () => {
 
 /* ================================================================== F4 */
 
-describe("H0 F4 — caller-selected Session still triggers I/O", () => {
-  it("F4: previewAttempt with a claimedSessionId performs header and event reads (source-demonstrated)", () => {
+describe("H0 F4 — caller-selected Session no longer triggers I/O", () => {
+  it("F4 (corrected): the composition adapter performs NO read for a claimed session", () => {
     /**
-     * SOURCE_DEMONSTRATED. The composition adapter calls `reader.readHeaderIdentity(claimedSessionId)`
-     * and `reader.readEvents(...)` whenever a session is claimed, regardless of whether any producer
-     * establishes the binding. The dynamic reproduction of this is in the V0S admission suite, which
-     * asserts a claim is not ADMITTED; H0 changes the requirement to ZERO reads.
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C3)
+     *
+     * The baseline assertion pinned the DEFECT: the adapter called `readHeaderIdentity(claimedSessionId)`
+     * and `readEvents(...)` whenever a session was claimed, so caller testimony triggered DSH I/O and
+     * produced event counts and watermarks for a session the attempt does not own.
+     *
+     * The corrected contract asserts the OPPOSITE: the ordinary Attempt Preview performs no read at all
+     * while no binding producer exists. The dynamic proof — a counting reader observing zero calls — is
+     * in `trajectory_h0_session_claim.test.ts`; this is the source-level half.
      */
     const code = source(SOURCE_FILES.composition);
-    expect(code).toContain("await reader.readHeaderIdentity(claimedSessionId)");
-    expect(code).toContain("await reader.readEvents({ sessionId: claimedSessionId })");
+    expect(code).not.toContain("await reader.readHeaderIdentity(claimedSessionId)");
+    expect(code).not.toContain("await reader.readEvents({ sessionId: claimedSessionId })");
+    // The reader is still composed (operator diagnostics are preserved) but is not invoked on this path.
+    expect(code).toContain("const reader = input.dshSessionReader");
   });
 });
 
@@ -537,19 +544,22 @@ describe("H0 F8 — exit chronology inferred without ordering proof", () => {
 
 /* ================================================================== F9 */
 
-describe("H0 F9 — unscoped global event probe", () => {
-  it("F9: an unknown attempt triggers a full cross-project scan (source-demonstrated)", () => {
+describe("H0 F9 — unscoped global event probe removed", () => {
+  it("F9 (corrected): the Attempt Preview reads only the configured project", () => {
     /**
-     * SOURCE_DEMONSTRATED. When the project-scoped lookup fails, the adapter calls
-     * `controller.store.listEvents()` with NO project scope to distinguish FOREIGN_ATTEMPT from
-     * ATTEMPT_NOT_FOUND. This is an architectural cost/privacy boundary finding, not a proven
-     * security vulnerability.
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C3)
+     *
+     * The baseline called `controller.store.listEvents()` with NO project scope to distinguish
+     * FOREIGN_ATTEMPT from ATTEMPT_NOT_FOUND. H0 §7.2 removes that probe: an attempt outside this
+     * project is refused within the project scope.
      */
     const code = source(SOURCE_FILES.composition);
     // Whitespace-normalized, so the assertion survives formatting and line-ending changes.
     const flat = code.replace(/\s+/gu, " ");
-    expect(flat).toContain("controller.store .listEvents()");
-    expect(flat).toContain("foreignAttemptExists");
+    // H0 C3 removed the unscoped probe: the adapter now reads ONLY the configured project.
+    expect(flat).not.toContain("controller.store .listEvents()");
+    expect(flat).not.toContain("foreignAttemptExists");
+    expect(flat).toContain("controller.store.listEvents(projectId)");
   });
 });
 
