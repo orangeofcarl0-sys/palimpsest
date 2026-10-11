@@ -190,6 +190,13 @@ function fixtureReader(spec: {
             data: event.data ?? {},
             inherited: event.seq < inherited,
             surface: null,
+            /**
+             * §9: the fixture models a session whose whole stored prefix is durable, so it labels its
+             * events as persisted. A fixture that modelled an interrupted tail would label the
+             * synthesized closers SYNTHETIC_RECOVERY_EVENT instead — which is the distinction the
+             * real reader must also make.
+             */
+            durability: "PERSISTED_DSH_EVENT" as const,
           }),
         );
       return Object.freeze({
@@ -201,9 +208,18 @@ function fixtureReader(spec: {
           parentSession: spec.knownParentSession ?? null, isSeeded: inherited > 0, origin: null, delegationDepth: null,
         }),
         sourceIdentity: "DSH_QUERY_PORT_FIXTURE",
+        sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
         throughSeq: views.length === 0 ? null : views[views.length - 1]!.seq,
         knownEventCount: spec.events.length,
         inheritedEventCount: inherited,
+        requestedFromSeq: fromSeq,
+        requestedMaxEvents: maxEvents,
+        returnedCount: views.length,
+        pageBounded: true as const,
+        diskIoBounded: true,
+        durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED" as const,
+        persistedEventCount: views.length,
+        syntheticRecoveryEventCount: 0,
         events: Object.freeze(views),
         knownParentSession: spec.knownParentSession ?? null,
         proves: Object.freeze(["fixture events, for structural cases only"]),
