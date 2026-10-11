@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_FINAL_VERDICTS",
+  "stage": "Trajectory-V0S-H0",
+  "baseline": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "invariants": {
+    "H0-I1_EXACT_ATTEMPT_ATTRIBUTION": "PASS_REAL_OWNER_NONMODEL",
+    "H0-I2_GENUINE_CROSS_ENTITY_RELATIONS_PRESERVED": "PASS_REAL_OWNER_NONMODEL",
+    "H0-I3_NO_UNVERIFIED_SESSION_READ": "PASS_REAL_OWNER_NONMODEL",
+    "H0-I4_NO_PROVENANCE_LAUNDERING": "PASS_CONTROLLED_FIXTURE",
+    "H0-I5_NO_COMPLETENESS_OVERCLAIM": "PASS_CONTROLLED_FIXTURE",
+    "H0-I6_NO_DUPLICATE_CANONICAL_OWNERSHIP": "PASS_SOURCE_GROUNDED",
+    "H0-I7_HISTORICAL_EVIDENCE_IMMUTABLE": "PASS_READ_ONLY"
+  },
+  "acceptanceConditions": {
+    "1_exactGitBaseline": "PASS",
+    "2_protectedEvidenceUnchanged": "PASS",
+    "3_relationAdmissionExactRoleSemantics": "PASS",
+    "4_crossAttemptContaminationPrevented": "PASS",
+    "5_genuinePromotionAndReworkVisible": "PASS",
+    "6_unverifiedClaimsDoNotTriggerReads": "PASS",
+    "7_noCallerClaimBecomesBOUND_VERIFIED": "PASS",
+    "8_noDefaultMetadataLeaksLocalPaths": "PASS_REAL_DSH_NO_MODEL",
+    "9_callerHostIdentifiersNotAuthority": "PASS",
+    "10_processObservationDoesNotOverstate": "PASS",
+    "11_partialPagesDoNotImplyFullCoverage": "PASS",
+    "12_durabilityUncertaintyHonest": "PASS",
+    "13_noNewStoreSchedulerRuntimeHandoff": "PASS",
+    "14_gatesPassOrDocumented": "PASS",
+    "15_branchCleanAndAuditable": "PASS"
+  },
+  "deferredFindings": {
+    "T0_TRACE_ATTEMPT_LABEL_MATCHER": "DEFERRED_TO_A_SEPARATE_T0_SLICE (projection.ts verified unmodified; exact correction recorded and digest-neutral)",
+    "COLD_READ_ATOMICITY": "LIMITATION_REPORTED (DSH offers no atomic snapshot across two reads; the reader fails closed to DURABILITY_UNRESOLVED)",
+    "P2_SESSION_IDENTITY_PRODUCER": "NOT_IMPLEMENTED (deferred by the ruling; H0 preserves future compatibility)",
+    "HOST_ORIGIN": "a producer-established origin still has no route through the ordinary Preview; the caller record is conservatively a declaration"
+  },
+  "notClaimed": [
+    "real Attempt to DSH Session binding",
+    "cold-recovery correctness",
+    "live PRIMARY provenance",
+    "Agent Handoff execution",
+    "any Session identity producer"
+  ],
+  "regression": { "newRegressions": 0, "archivedClosureDrift": 13, "classification": "DRIFTED_EXPECTED", "baselineReproduced": true },
+  "completionState": "TRAJECTORY_V0S_H0_CONSUMER_INTEGRITY_QUALIFIED",
+  "finalAcceptanceAnswer": "An Attempt-scoped Trajectory consumer now admits exactly the relations justified by canonical source evidence — neither less (genuine Promotion and Governed Rework are visible) nor more (shared-endpoint, wrong-attempt, foreign-project, unestablished and label-only relations are excluded) — and its execution observations are exactly what canonical evidence supports, with no caller-triggered Session reads, no caller-established provenance, and no overstated completeness."
+}
