@@ -268,7 +268,8 @@ describe("Trajectory-V0 §6 V0-D — one Handoff Preview over both views", () =>
     expect(preview.execution.portInvocationId).toBe(hostRecord.portInvocationId);
     expect(preview.execution.hostLocalJobId).not.toBeNull();
     expect(preview.execution.processLifecycle).toBe("EXITED");
-    expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
+    // H0 C4: a caller-supplied record is a CALLER_DECLARATION, not a producer-established observation.
+    expect(preview.execution.hostObservationProvenance).toBe("CALLER_DECLARATION");
 
     /**
      * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)

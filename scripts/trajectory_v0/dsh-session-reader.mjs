@@ -240,7 +240,14 @@ export async function makeRealDshSessionReader(input) {
    */
   const fiber = await ctx.plugin(JsonlSessionPersistence, { root: sessionsRoot, compression: 'zstd' });
   const persistence = ctx.sessionPersistence;
-  const sourceIdentity = `dsh-session-persistence-jsonl@${packageRoot}`;
+  /**
+   * H0 §8.1: the CONSUMER-VISIBLE source identity is a stable LOGICAL label. It names the adapter and
+   * its evidence class and carries NO absolute local installation path, because this string travels
+   * into a consumer-visible page. The resolved package root stays internal, in `diagnosticSourcePath`,
+   * for operator diagnostics only.
+   */
+  const sourceIdentity = 'dsh-session-persistence-jsonl';
+  const diagnosticSourcePath = packageRoot;
 
   const headerOf = (header, inheritedCount) => Object.freeze({
     sessionId: header.id,
@@ -257,6 +264,12 @@ export async function makeRealDshSessionReader(input) {
   return Object.freeze({
     sourceIdentity,
     evidenceClass: 'REAL_DSH_QUERY',
+    /**
+     * H0 §8.1: INTERNAL diagnostic information. Deliberately NOT part of the consumer-visible page:
+     * a caller that needs the resolved installation path for operator diagnostics reads it here, and
+     * no default consumer-visible field carries it.
+     */
+    diagnosticSourcePath,
 
     /** §9: dispose the mounted persistence fiber. Idempotent. */
     async close() {

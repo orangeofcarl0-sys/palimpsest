@@ -293,11 +293,23 @@ export function classifySessionBinding(input: {
  *
  * `attemptMatches` is the identity check: a record whose `attemptId` is not the requested attempt is
  * `CONFLICTING_SOURCE`, never silently dropped (§5 "HostRecord identity").
+ *
+ * H0 §8.2: the ordinary Attempt Preview receives the record FROM THE CALLER, and nothing in the
+ * request proves a host component produced it. So a caller-supplied record is a
+ * `CALLER_DECLARATION` — the honest classification — regardless of how many host-shaped identifiers it
+ * carries. `LOCAL_PORT_OBSERVATION` is reserved for a record whose origin is established by a
+ * supported, non-caller-controlled mechanism (`originEstablished`), which this Preview cannot supply.
+ * A non-null HostJobId or InvocationId is NOT evidence of origin.
  */
 export function classifyHostObservation(input: {
   readonly recordPresent: boolean;
   readonly attemptMatches: boolean;
   readonly hasLocalIdentity: boolean;
+  /**
+   * H0 §8.2: whether a supported producer established this record's origin. Defaults to false; a
+   * caller cannot set it, because the ordinary Preview has no way to verify it.
+   */
+  readonly originEstablished?: boolean | undefined;
   readonly conflictDetail: string | null;
 }): { readonly provenance: HostObservationProvenance; readonly detail: string } {
   if (input.conflictDetail !== null) {
@@ -315,15 +327,21 @@ export function classifyHostObservation(input: {
       detail: "a host record was supplied but its attempt scope could not be tied to the requested attempt",
     });
   }
-  if (!input.hasLocalIdentity) {
+  /**
+   * §8.2: only a producer-established origin earns LOCAL_PORT_OBSERVATION. Absent that, the record is
+   * a caller declaration — its process facts are still reported, with the honest qualification.
+   */
+  if (input.originEstablished !== true) {
     return Object.freeze({
       provenance: "CALLER_DECLARATION" as const,
-      detail: "the caller supplied a record for this attempt that carries no host-local identity of its own",
+      detail: input.hasLocalIdentity
+        ? "the caller supplied this record; its host job and invocation identifiers are caller testimony, and no producer established its origin"
+        : "the caller supplied a record for this attempt that carries no host-local identity of its own",
     });
   }
   return Object.freeze({
     provenance: "LOCAL_PORT_OBSERVATION" as const,
-    detail: "a real local host observation supports this attempt's process lifecycle; it establishes no DSH session",
+    detail: "a producer-established local host observation supports this attempt's process lifecycle; it establishes no DSH session",
   });
 }
 

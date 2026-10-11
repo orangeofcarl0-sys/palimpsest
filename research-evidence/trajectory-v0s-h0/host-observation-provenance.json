@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_HOST_OBSERVATION_PROVENANCE",
+  "stage": "Trajectory-V0S-H0",
+  "invariant": "H0-I4: a caller-supplied HostRecord, a non-null HostJobId, an InvocationId, a matching Session Header or a self-declared reader evidence class cannot establish authority beyond its actual source",
+  "before": "classifyHostObservation promoted a record with a matching attemptId and a non-null HostJobId/InvocationId to LOCAL_PORT_OBSERVATION, from caller-supplied fields alone",
+  "after": {
+    "callerRecord": "CALLER_DECLARATION — its identifiers are caller testimony",
+    "producerEstablishedOrigin": "LOCAL_PORT_OBSERVATION — requires originEstablished === true, which the ordinary Preview cannot supply",
+    "noCallerTrustFlag": "no `trusted` / `verified` / `trustedIngestion` boolean exists as a substitute for evidence"
+  },
+  "processCoverage": {
+    "callerDeclaration": "PARTIAL — a declared record proves no actual host observation",
+    "producerEstablished": "COMPLETE — and it describes only the DIRECT CHILD the host saw",
+    "notObserved": "NOT_OBSERVED",
+    "conflicting": "CONFLICTING"
+  },
+  "chronology": {
+    "before": "an exit flag plus a termination flag produced 'and an exit was LATER observed'",
+    "after": "both facts are reported and the ordering is stated as NOT established, because the record carries flags rather than an ordered log",
+    "lifecycleStates": ["NOT_OBSERVED", "SPAWN_ATTEMPTED", "RUNNING", "EXITED", "SPAWN_FAILED", "TIMEOUT_REQUESTED", "ABORT_REQUESTED", "EXIT_UNCONFIRMED", "UNKNOWN_AFTER_RESTART"]
+  },
+  "g1bLimitationPreserved": true,
+  "noHostProvenanceLedgerIntroduced": true,
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "tests": { "files": ["test/trajectory_h0_source_privacy.test.ts", "test/trajectory_v0s_admission.test.ts"], "failed": 0 }
+}

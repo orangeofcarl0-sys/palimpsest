@@ -343,8 +343,14 @@ describe("Trajectory-V0S §5 S1-B — host observation and session binding are s
       dshSessionReader: undefined,
     });
     const preview = await v0.previewAttempt({ attemptId, hostRecord });
-    // §5: the host observed a real direct child...
-    expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C4)
+     *
+     * V0S asserted LOCAL_PORT_OBSERVATION for a record the CALLER handed the Preview. H0 §8.2 reserves
+     * that classification for a producer-established origin, so a caller-supplied record is a
+     * CALLER_DECLARATION. Its process facts are still reported; only the provenance claim changed.
+     */
+    expect(preview.execution.hostObservationProvenance).toBe("CALLER_DECLARATION");
     expect(preview.execution.hostLocalJobId).toBe(hostRecord.hostLocalJobId);
     expect(preview.execution.portInvocationId).toBe(hostRecord.portInvocationId);
     // ...and there is still NO session. The two facts do not merge.
@@ -352,7 +358,14 @@ describe("Trajectory-V0S §5 S1-B — host observation and session binding are s
     expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
     expect(preview.execution.sessionLifecycle).toBe("NO_SESSION_BOUND");
     expect(preview.execution.dshSessionId).toBeNull();
-    expect(preview.attribution.processObservation).toBe("COMPLETE");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C4)
+     *
+     * V0S reported processObservation COMPLETE for a caller-supplied record. H0 §8.3 does not let
+     * provenance imply coverage: a caller declaration is at most PARTIAL, because a declared record
+     * proves no actual host observation. The session separation is unchanged.
+     */
+    expect(preview.attribution.processObservation).toBe("PARTIAL");
     expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
   }, 180_000);
 
@@ -692,7 +705,15 @@ describe("Trajectory-V0S §8 S1-E — Handoff completeness and interruption sema
     /** S1-E5: an actual exit AFTER an abort request preserves both facts. */
     const exitedAfterAbort = await v0.previewAttempt({ attemptId, hostRecord: record(["DIRECT_CHILD_SPAWN_OBSERVED", "DIRECT_CHILD_ABORT_REQUESTED", "DIRECT_CHILD_EXIT_OBSERVED"], true) });
     expect(exitedAfterAbort.execution.processLifecycle).toBe("EXITED");
-    expect(exitedAfterAbort.execution.processDetail).toContain("LATER observed");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C4)
+     *
+     * V0S asserted the detail claimed the exit was "LATER observed". The counterexample is H0 F8: the
+     * record carries flags, not an ordered log, so that chronology was invented. The corrected contract
+     * reports both facts and states the ordering is NOT established.
+     */
+    expect(exitedAfterAbort.execution.processDetail).toContain("NOT established");
+    expect(exitedAfterAbort.execution.processDetail).toContain("no ordering evidence");
 
     // §8: the lifecycle vocabulary carries the request states explicitly.
     for (const state of ["TIMEOUT_REQUESTED", "ABORT_REQUESTED", "EXIT_UNCONFIRMED"]) {

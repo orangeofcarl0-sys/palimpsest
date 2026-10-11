@@ -44,6 +44,7 @@ import {
   buildProjectTrajectory,
   classifyHostObservation,
   classifySessionBinding,
+  TrajectoryRefusal,
   selectAttemptWorkRelations,
   trajectoryViewIdOf,
   type AttemptExecutionBinding,
@@ -291,7 +292,16 @@ async function projectEvolutionOf(
   let projection;
   try {
     projection = await buildProjectTrajectory(inputs);
-  } catch {
+  } catch (error) {
+    /**
+     * H0 §10.3: a FAILED projection is not the same fact as an uncomposed optional owner.
+     *
+     * T0 refuses a Work history that fails its own validation by throwing `TrajectoryRefusal`, which
+     * means the CANONICAL source is the problem. Any other failure is an optional cross-owner plane
+     * that could not be read. The two are reported differently so a corrupted Work history is never
+     * presented as though the canonical source were merely absent.
+     */
+    const workSourceFailed = error instanceof TrajectoryRefusal;
     return Object.freeze({
       projectionRootId: null,
       projectionSemanticDigest: null,
@@ -301,7 +311,13 @@ async function projectEvolutionOf(
       selectedRelations: Object.freeze([]),
       quarantinedRelations: Object.freeze([]),
       unresolvedReferences: Object.freeze([]),
-      currentnessCaveats: Object.freeze(["the T0 project-evolution projection could not be built for this project"]),
+      currentnessCaveats: Object.freeze([
+        workSourceFailed
+          ? `the CANONICAL WORK SOURCE failed T0 validation (${error.kind}), so no project context is presented: this is a source-integrity failure, not an uncomposed optional owner`
+          : "an optional cross-owner plane could not be projected, so the project context is partial",
+      ]),
+      /** H0 §10.3: a failed projection is not the same as an uncomposed optional owner. */
+      basisCompleteness: null,
     });
   }
 
@@ -325,6 +341,8 @@ async function projectEvolutionOf(
     quarantinedRelations: Object.freeze(quarantined),
     unresolvedReferences: Object.freeze(projection.unresolved.map((entry) => `${entry.relation ?? "UNKNOWN"}:${entry.requestedIdentity}`)),
     currentnessCaveats: Object.freeze(caveats),
+    /** H0 §9.2: the STRUCTURED basis-vector completeness, so no consumer scans caveat text. */
+    basisCompleteness: projection.basisVector.completeness,
   });
 }
 
@@ -413,10 +431,15 @@ function hostSummaryOf(record: TrajectoryV0HostRecord | undefined): PreviewHostO
   else if (kinds.includes("DIRECT_CHILD_SPAWN_ATTEMPTED")) lifecycle = "SPAWN_ATTEMPTED";
   else lifecycle = "NOT_OBSERVED";
 
-  /** §8 S1-E5: when an exit was observed after a request, say so rather than dropping the request. */
+  /**
+   * H0 §8.3: the chronology is NOT invented. The record carries flags, not an ordered event log, so
+   * the consumer cannot establish that an exit was observed AFTER a termination request. When both a
+   * request and an exit are present, both facts are REPORTED and the ordering is stated as
+   * unestablished.
+   */
   const chronology =
     record.exited && (requestedAbort || requestedTimeout)
-      ? `${record.detail}; a termination was requested (${requestedAbort ? "abort" : "timeout"}) and an exit was LATER observed`
+      ? `${record.detail}; a termination was requested (${requestedAbort ? "abort" : "timeout"}) and an exit was reported, but the record carries no ordering evidence, so whether the exit followed the request is NOT established`
       : record.detail;
 
   return Object.freeze({
@@ -526,6 +549,11 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
         recordPresent: request.hostRecord !== undefined,
         attemptMatches: request.hostRecord === undefined ? false : request.hostRecord.attemptId === request.attemptId,
         hasLocalIdentity: request.hostRecord === undefined ? false : request.hostRecord.hostLocalJobId !== null || request.hostRecord.portInvocationId !== null,
+        /**
+         * H0 §8.2: this Preview receives the record FROM THE CALLER, so no producer-established origin
+         * is available here. A caller's non-null HostJobId or InvocationId is testimony, not authority.
+         */
+        originEstablished: false,
         conflictDetail: null,
       });
 

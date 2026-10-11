@@ -267,7 +267,14 @@ describe("Trajectory-V0 §7 V0-E — real non-model Work, inspected independentl
      * was claimed and no producer exists. V0 reported BOUND_LOCAL_ONLY here, which conflated the
      * two — this assertion records the corrected split.
      */
-    expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C4)
+     *
+     * V0S asserted LOCAL_PORT_OBSERVATION for a record the CALLER supplied. H0 §8.2 reserves that
+     * classification for a producer-established origin, so a caller-supplied record is a
+     * CALLER_DECLARATION. The session-binding property (SESSION_UNBOUND) is unchanged.
+     */
+    expect(preview.execution.hostObservationProvenance).toBe("CALLER_DECLARATION");
     expect(preview.execution.sessionBindingStatus).toBe("SESSION_UNBOUND");
     expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
     expect(preview.execution.sessionLifecycle).toBe("NO_SESSION_BOUND");
@@ -435,19 +442,19 @@ describe("Trajectory-V0 §8 V0-F — two interleaved asynchronous Attempts", () 
       hostRecord: hostRecords.get(attemptId)!,
     });
     expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
-    expect(preview.execution.sessionBindingStatus).toBe("SOURCE_UNAVAILABLE");
-    // §5: the session is identified but the read capability is absent, so it is NOT read — and it is
-    // explicitly not "no session bound", because the caller did identify one.
-    expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
-    expect(preview.execution.sessionReadState).toBe("READ_CAPABILITY_ABSENT");
-    expect(preview.caveats.sourcesUnavailable.join(" ")).toContain("missing source");
     /**
-     * V0S §5: the claimed id is recorded as a CLAIM and never as an established session, and the
-     * read is not admitted, so the attempt's execution view stays empty.
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S read the claimed session, found no reader, and reported SOURCE_UNAVAILABLE. H0 §7 performs no
+     * read at all on this path, so the honest state is SESSION_CLAIMED_UNVERIFIED — a source that was
+     * never asked anything is not an unavailable source.
      */
+    expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
+    expect(preview.execution.sessionReadState).toBeNull();
     expect(preview.execution.claimedSessionId).toBe("session-belonging-to-someone-else");
     expect(preview.execution.dshSessionId).toBeNull();
-    expect(preview.execution.sessionReadAdmission).toBe("READ_FAILED");
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
     expect(preview.execution.events).toEqual([]);
     expect(preview.completeness).not.toBe("COMPLETE");
   }, 180_000);
@@ -499,9 +506,15 @@ describe("Trajectory-V0 §8 V0-F — two interleaved asynchronous Attempts", () 
       claimedSessionId: "session-claimed-by-caller",
       hostRecord: hostRecords.get(attemptId)!,
     });
-    expect(preview.execution.sessionBindingStatus).toBe("CONFLICT");
-    expect(preview.caveats.contradictoryObservations.join(" ")).toContain("names session");
-    // And a conflict never silently becomes a session read.
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (H0 C3)
+     *
+     * V0S read the header, observed the mismatch, and reported CONFLICT. H0 §7 performs no read, so the
+     * header is never consulted and no conflict can be detected — the claim is simply unverified. The
+     * property that matters is retained: the reader is never reached and no events are admitted.
+     */
+    expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(preview.execution.sessionReadState).toBeNull();
     expect(preview.execution.sessionLifecycle).not.toBe("SESSION_READ");
     expect(preview.execution.events).toEqual([]);
   }, 180_000);

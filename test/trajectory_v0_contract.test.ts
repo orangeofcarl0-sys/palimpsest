@@ -327,11 +327,25 @@ describe("Trajectory-V0 §5 — host observation provenance is its own dimension
     expect(classification.provenance).toBe("NOT_OBSERVED");
   });
 
-  it("a matching record with a host-local identity is LOCAL_PORT_OBSERVATION", () => {
-    const classification = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, conflictDetail: null });
-    expect(classification.provenance).toBe("LOCAL_PORT_OBSERVATION");
+  it("a caller record is a CALLER_DECLARATION; only a produced origin is LOCAL_PORT_OBSERVATION", () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H0 C4)
+     *
+     * The baseline asserted that a matching record with a host-local identity is
+     * LOCAL_PORT_OBSERVATION. The counterexample is H0 F6: the ordinary Preview receives the record
+     * from the CALLER, so its identifiers are testimony, not authority.
+     *
+     * The corrected contract requires a producer-established origin for LOCAL_PORT_OBSERVATION and
+     * classifies a caller-supplied record as CALLER_DECLARATION.
+     */
+    const callerRecord = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, conflictDetail: null });
+    expect(callerRecord.provenance).toBe("CALLER_DECLARATION");
+    expect(callerRecord.detail).toContain("caller testimony");
+
+    const produced = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, originEstablished: true, conflictDetail: null });
+    expect(produced.provenance).toBe("LOCAL_PORT_OBSERVATION");
     // §5: it establishes no session, and the detail says so.
-    expect(classification.detail).toContain("establishes no DSH session");
+    expect(produced.detail).toContain("establishes no DSH session");
   });
 
   it("a record for another attempt is UNVERIFIED_ORIGIN, not silently dropped", () => {
