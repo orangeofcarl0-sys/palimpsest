@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_CORRECTION_CONTRACT",
+  "stage": "Trajectory-V0S",
+  "correctedClaims": [
+    {
+      "id": "C-1",
+      "v0Claim": "A caller-selected SessionId, once its header agrees, may be presented as the Attempt's session (BOUND_LOCAL_ONLY) and its events may populate the Attempt's execution view.",
+      "correction": "A caller's SessionId is a CLAIM (SESSION_CLAIMED_UNVERIFIED). It never establishes a binding, its events are never admitted to the Attempt (sessionReadAdmission = NOT_ADMITTED_TO_ATTEMPT), and an unattributed read cannot make the Handoff COMPLETE.",
+      "authority": "V0S S-I2, S-I4; §5",
+      "falsifier": "F1"
+    },
+    {
+      "id": "C-2",
+      "v0Claim": "A supplied HostRecord's fields may be merged into an Attempt's Preview without checking that the record names that Attempt.",
+      "correction": "hostRecord.attemptId must equal the requested attemptId before any field is accepted; a mismatch raises HOST_RECORD_CONFLICT rather than being silently dropped.",
+      "authority": "V0S §5 'HostRecord identity'",
+      "falsifier": "F2"
+    },
+    {
+      "id": "C-3",
+      "v0Claim": "The Preview may be constructed for any attemptId; the absence of canonical Work facts is reported as a null record.",
+      "correction": "The attempt must be admitted against the canonical Work history BEFORE any execution source is read: exactly one ATTEMPT_CREATED with entity_id === attemptId and project_id === projectId, plus a canonical Work record that does not contradict it. Refusals are typed: ATTEMPT_NOT_FOUND, FOREIGN_ATTEMPT, ATTEMPT_SOURCE_CONFLICT.",
+      "authority": "V0S S-I1; §4 S1-A",
+      "falsifier": "F3"
+    },
+    {
+      "id": "C-4",
+      "v0Claim": "Work nodes belonging to the requested Attempt can be located by node.label.includes(attemptId), and a permitted relation name is sufficient to present a relation as selected.",
+      "correction": "Selection uses the exact canonical Work event_id identity set, requires ESTABLISHED_BY_OWNER_REFERENCE, requires a non-null TrajectoryEdgeEvidence whose carrying reference is one of those canonical events in this project. Anything else is quarantined or unresolved.",
+      "authority": "V0S S-I6; §7 S1-D",
+      "falsifier": "F4"
+    },
+    {
+      "id": "C-5",
+      "v0Claim": "Every event returned by the cold DSH read is a persisted event of the session.",
+      "correction": "readColdSessionLog appends interruptedTurnClosers, so returned events are classified PERSISTED_DSH_EVENT or SYNTHETIC_RECOVERY_EVENT by comparing against the stored prefix read through the persistence handle seam; when the seam is unavailable the boundary is DURABILITY_UNRESOLVED.",
+      "authority": "V0S S-I5; §9",
+      "falsifier": "F5"
+    },
+    {
+      "id": "C-6",
+      "v0Claim": "The reader may coerce an unusable cursor to a default and read the whole log before returning a bounded slice, without disclosing the distinction.",
+      "correction": "A negative, fractional or excessive cursor is refused (INVALID_REQUEST). A hard maximum page size applies. RETURN_PAGE_BOUNDED is reported separately from DISK_IO_PAGE_BOUNDED, and the reader discloses that it reads the whole validated log before slicing.",
+      "authority": "V0S §9",
+      "falsifier": "F6"
+    }
+  ],
+  "invariantsEnforced": ["S-I1", "S-I2", "S-I3", "S-I4", "S-I5", "S-I6", "S-I7"],
+  "noNewAuthority": "Trajectory remains a read-only consumer: no store, no scheduler, no settlement, no promotion, no admission, no resumption, no injection."
+}

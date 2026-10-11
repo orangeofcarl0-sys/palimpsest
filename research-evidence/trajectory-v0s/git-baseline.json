@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_GIT_BASELINE",
+  "stage": "Trajectory-V0S",
+  "requiredBaseline": "526f377eac0343004c17a484a6f9057989f433df",
+  "verifiedHead": "526f377eac0343004c17a484a6f9057989f433df",
+  "baselineBranch": "trajectory-v0-dual-view-slice",
+  "newBranch": "trajectory-v0s-attempt-source-boundary",
+  "workingTreeClean": true,
+  "untrackedFileCount": 0,
+  "remoteHeadMatchesLocal": true,
+  "parentChain": [
+    "ba334ce research(trajectory-t0): record the trajectory evidence, the read-only proof and the final verdicts",
+    "97a4911 research(trajectory-v0): audit the DSH session-query read seam before building the slice",
+    "2e1fee5 feat(trajectory-v0): add execution identity, the session binding contract and the handoff preview",
+    "8bb503d feat(trajectory-v0): inspect real asynchronous work attempts and prove two-attempt isolation",
+    "404062e feat(trajectory-v0): read real DSH sessions through the first-party persistence reader",
+    "9da0324 test(trajectory-v0): combine both views in one preview and prove read-only consumer safety",
+    "526f377 research(trajectory-v0): record the dual-view evidence, the weight measurement and the final verdicts"
+  ],
+  "protectedBlobs": {
+    "src/trajectory/execution.ts": "ab01d1065d5192daf366ee6a7de97284ca61fd26",
+    "src/trajectory/handoff_preview.ts": "5c647a17c7437408e656dc4f33303c2124199ec9",
+    "src/composition/trajectory_v0.ts": "e422e66f6ceb32df7ec311ad8db0127b323aec1e",
+    "scripts/trajectory_v0/dsh-session-reader.mjs": "a46e4c401edc0b406b5acb4fcfe5f1bc7c1e490b"
+  },
+  "protectedTrees": {
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419"
+  },
+  "priorBranchTipsUnchanged": {
+    "main": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+    "trajectory-t0-owner-referenced-projection": "ba334cede59b92a880467d03e67af849acbe90ed",
+    "r3-l0c-g1b-evidence-binding": "fae6c668685a23da6839da3069707d3de2e91121"
+  },
+  "repositoryConfigAltered": false,
+  "note": "The V0S corrections live in the same three product modules V0 created plus the DSH adapter. Historical V0 evidence is not edited; the V0S erratum records the corrected claims forward."
+}
