@@ -100,6 +100,11 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   // EXISTING evolution histories and empirical memory — it owns no store, no Organization, no
   // RuntimeScope, no DynamicsProposal and no authority, so it sits beside the owners it connects.
   institutional_learning: "L2",
+  // Trajectory-T0 §10: the read-only TRAJECTORY PROJECTION. It owns no store, no scheduler, no
+  // canonical event, no promotion and no authority: it references facts other owners recorded and
+  // interprets their relationships and currentness. A pure semantic capability beside the owners it
+  // reads, which is why it is L2 and may name L1/L2 only.
+  trajectory: "L2",
   // E5-P §3/§30: the governed PROCEDURAL CAPITAL owner. The §2 gap test proved NEW_OWNER_JUSTIFIED —
   // learned procedure is durable semantic truth belonging to none of the existing owners (Recipe is
   // executable product config, Journal is a note, OrganizationMemory is observation, ExternalAsset is
