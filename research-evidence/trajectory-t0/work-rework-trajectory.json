@@ -1,0 +1,119 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C3",
+  "kind": "real owner replay scenario A — Work Result -> Rework -> New Attempt",
+  "fixtureAuthority": "REAL_OWNER_FIXTURE",
+  "fixtureAuthorityDetail": "The history is produced by the real product machinery (ProjectController, EventStore, the Effects runtime and the governed appendReworkReopening seam). No TrajectoryNode is hand-authored.",
+  "testFile": "test/trajectory_t0_work_rework.test.ts",
+  "testCount": 16,
+  "result": "16 passed",
+  "modelCallsMade": 0,
+  "dshWorkerLaunched": false,
+  "primaryEnabled": false,
+  "positiveRelations": [
+    {
+      "owner": "WORK",
+      "canonicalSource": "TASK_CREATED.payload.task_envelope.envelope_id",
+      "basis": "the authorizing event's project_sequence and event_digest",
+      "observedRelation": "TASK_AUTHORIZED_ATTEMPT",
+      "establishedBy": "ATTEMPT_CREATED.payload.envelope_id == TASK_*.payload.task_envelope.envelope_id",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORK",
+      "canonicalSource": "ATTEMPT_COMPLETED.payload.attempt_report.attempt_id",
+      "basis": "the terminal event's event_digest",
+      "observedRelation": "ATTEMPT_PRODUCED_RESULT",
+      "establishedBy": "the attempt report's attempt_id equals the terminal event's entity_id",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORK",
+      "canonicalSource": "PROMOTION_COMMITTED.payload.attempt_id",
+      "basis": "the promotion event's project_sequence",
+      "observedRelation": "RESULT_PROMOTED",
+      "establishedBy": "the promotion names an attempt whose completed result is in this project history",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORK",
+      "canonicalSource": "TASK_READY.payload.rework_provenance.origin_result_subject.ref",
+      "basis": "the governed TASK_READY event",
+      "observedRelation": "ATTEMPT_REOPENED_FOR_REWORK",
+      "establishedBy": "the provenance ref resolves to an ATTEMPT_COMPLETED event in the same project",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORK",
+      "canonicalSource": "PROJECT_REVISED.payload.project_ir.parent_revision",
+      "basis": "the ProjectIR revision chain",
+      "observedRelation": "REVISION_SUCCEEDED_REVISION",
+      "establishedBy": "parent_revision resolves to an event carrying that revision in this cut",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    }
+  ],
+  "historicalAuthorizationPreserved": {
+    "mechanism": "A0's authorization is resolved from A0's OWN ATTEMPT_CREATED.payload.envelope_id and the TASK_CREATED/TASK_REAUTHORIZED event carrying that envelope — never from the task's current row.",
+    "measuredBy": "§6: a LATER change to the task's current envelope row does not rebind A0's historical authorization (the compared envelopeId is unchanged)."
+  },
+  "asOfCut": {
+    "excludesFutureEvents": true,
+    "verifiedBy": "a cut taken at the governed TASK_READY sequence contains no A1 ATTEMPT_CREATED node, and rebuilding the same cut yields the same semantic digest"
+  },
+  "readOnlyIntegrity": {
+    "ownerEventCountUnchanged": true,
+    "ownerChainDigestUnchanged": true,
+    "ownerVerifyFullStillPasses": true
+  },
+  "negativeControls": [
+    {
+      "id": "A-N1",
+      "invalidRelation": "A0's authorization replaced with the current Task Envelope",
+      "refused": "UNRESOLVED_SOURCE edge + an unresolved reference entry",
+      "reason": "no TASK_CREATED/TASK_REAUTHORIZED event in this project carries the rebound envelope_id"
+    },
+    {
+      "id": "A-N2",
+      "invalidRelation": "an event from another project",
+      "refused": "TrajectoryRefusal FOREIGN_PROJECT_EVENT",
+      "reason": "the event's project_id differs from the requested project"
+    },
+    {
+      "id": "A-N3",
+      "invalidRelation": "a forged Rework relation without the governed TASK_READY provenance",
+      "refused": "no ATTEMPT_REOPENED_FOR_REWORK edge is produced at all",
+      "reason": "with no rework_provenance there is no source for the relation, so it cannot be invented"
+    },
+    {
+      "id": "A-N4",
+      "invalidRelation": "removal of the event a relation depends on",
+      "refused": "RESULT_PROMOTED edge degrades to UNRESOLVED_SOURCE with evidence null",
+      "reason": "the promoted attempt's completed result is absent from the history"
+    },
+    {
+      "id": "A-N5",
+      "invalidRelation": "a mutated payload without an updated digest",
+      "refused": "TrajectoryRefusal INVALID_SOURCE_EVENT",
+      "reason": "parseSchedulerEvent recomputed the digest and it disagreed"
+    },
+    {
+      "id": "A-N6",
+      "invalidRelation": "a corrupted previous-event digest chain",
+      "refused": "TrajectoryRefusal PREVIOUS_DIGEST_MISMATCH",
+      "reason": "the event does not link to the prior event digest"
+    },
+    {
+      "id": "A-N7",
+      "invalidRelation": "a causation reference to a later event",
+      "refused": "TrajectoryRefusal CAUSATION_NOT_EARLIER",
+      "reason": "the cited event is neither already walked nor below the interval start"
+    },
+    {
+      "id": "A-N8",
+      "invalidRelation": "a stale/missing World Basis presented as current",
+      "refused": "the world component is EMPTY with basisDigest null; the attempt's result is still reported from the Work owner",
+      "reason": "no recorded basis exists, so an explicit absence is recorded rather than a pass"
+    }
+  ],
+  "fabricatedSuccessfulEdge": false
+}

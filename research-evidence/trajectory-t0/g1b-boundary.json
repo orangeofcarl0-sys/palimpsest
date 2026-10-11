@@ -1,0 +1,31 @@
+{
+  "stage": "Trajectory-T0",
+  "kind": "the G1-B host-evidence boundary inside T0",
+  "baselineG1bCommit": "fae6c668685a23da6839da3069707d3de2e91121",
+  "g1bEvidenceRewritten": false,
+  "g1bCorrelatorModified": false,
+  "whyLocalHostCorrelationIsNotYetAuthorityBearingProvenance": [
+    "G1-B produces authentic local spawn/pid/exit observations on its healthy execution path, and its own evidence records that.",
+    "The current Correlator still exposes caller-controlled trust admission surfaces: a record's origin field is read from the record itself, so a caller that copies an origin marker and recomputes the record digest presents a record the Correlator cannot distinguish from one the recorder wrote.",
+    "It does not enforce every claimed Run / Claim / Readback relationship for all inputs, so a producer's own assertion of a correlation state is not corroborated by an independent witness.",
+    "There is no independent, authority-bearing readback contract that would let a third party verify the observation without trusting the producer."
+  ],
+  "t0Treatment": {
+    "maximalAdmittedStatus": "LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION",
+    "establishedExecutionCausationEdge": false,
+    "mayOmitInputEntirely": true,
+    "optionalPort": "TrajectoryHostObservationPort is optional; when it is absent the capability is recorded as unavailable rather than stubbed.",
+    "recordedAndNotPromoted": "A producer-claimed correlation state is carried as `claimedState` and never becomes an edge or a node."
+  },
+  "measuredControls": [
+    {
+      "id": "G-N8",
+      "test": "test/trajectory_t0_falsifiers.test.ts",
+      "setup": "A host-observation port returns records whose claimedState is RUN_ATTEMPT_CORRELATED for both a spawn and an exit event.",
+      "result": "projection.hostObservationAdmission === 'LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION'; no HOST-plane node is created; no causal edge exists; the read model carries the quarantine as a caveat.",
+      "unverifiedExecutionEdgePromoted": false
+    }
+  ],
+  "noteOnRUN_ATTEMPT_CORRELATED": "The string RUN_ATTEMPT_CORRELATED is a G1-B correlator output, not a product-authoritative causal fact. T0 does not promote it merely because a G1-B function returned it.",
+  "stageBoundary": "No change to the G1-B Correlator was made in this stage; the flaw is recorded as a forward finding for a future correction stage, not fixed here."
+}
