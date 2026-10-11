@@ -260,12 +260,16 @@ describe("Trajectory-V0 §7 V0-E — real non-model Work, inspected independentl
 
     // §7: no DSH SessionId is fabricated — the stub has no DSH session.
     expect(preview.execution.dshSessionId).toBeNull();
+    expect(preview.execution.claimedSessionId).toBeNull();
     /**
-     * §3: a real host observation supports the binding, so it is BOUND_LOCAL_ONLY — never
-     * BOUND_VERIFIED, because no canonical producer confirms it.
+     * V0S §5: a real host observation and a session binding are SEPARATE facts. The host observation
+     * is a genuine local port observation; the session binding is SESSION_UNBOUND because no session
+     * was claimed and no producer exists. V0 reported BOUND_LOCAL_ONLY here, which conflated the
+     * two — this assertion records the corrected split.
      */
-    expect(preview.execution.bindingStatus).toBe("BOUND_LOCAL_ONLY");
-    expect(preview.execution.bindingSource).toBe("HOST_PORT_OBSERVATION");
+    expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
+    expect(preview.execution.sessionBindingStatus).toBe("SESSION_UNBOUND");
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_REQUESTED");
     expect(preview.execution.sessionLifecycle).toBe("NO_SESSION_BOUND");
     // §4: with no session bound there are no events — and that absence is stated as such.
     expect(preview.execution.events).toEqual([]);
@@ -430,13 +434,22 @@ describe("Trajectory-V0 §8 V0-F — two interleaved asynchronous Attempts", () 
       claimedSessionId: "session-belonging-to-someone-else",
       hostRecord: hostRecords.get(attemptId)!,
     });
-    expect(preview.execution.bindingStatus).not.toBe("BOUND_VERIFIED");
-    expect(preview.execution.bindingStatus).toBe("SOURCE_UNAVAILABLE");
-    // §4: the session is identified but the read capability is absent, so it is NOT read — and it is
+    expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
+    expect(preview.execution.sessionBindingStatus).toBe("SOURCE_UNAVAILABLE");
+    // §5: the session is identified but the read capability is absent, so it is NOT read — and it is
     // explicitly not "no session bound", because the caller did identify one.
     expect(preview.execution.sessionLifecycle).toBe("SESSION_IDENTIFIED_NOT_READ");
     expect(preview.execution.sessionReadState).toBe("READ_CAPABILITY_ABSENT");
     expect(preview.caveats.sourcesUnavailable.join(" ")).toContain("missing source");
+    /**
+     * V0S §5: the claimed id is recorded as a CLAIM and never as an established session, and the
+     * read is not admitted, so the attempt's execution view stays empty.
+     */
+    expect(preview.execution.claimedSessionId).toBe("session-belonging-to-someone-else");
+    expect(preview.execution.dshSessionId).toBeNull();
+    expect(preview.execution.sessionReadAdmission).toBe("READ_FAILED");
+    expect(preview.execution.events).toEqual([]);
+    expect(preview.completeness).not.toBe("COMPLETE");
   }, 180_000);
 
   it("§8 negative control: a composed reader whose header names a DIFFERENT session is a CONFLICT, never a binding", async () => {
@@ -486,11 +499,65 @@ describe("Trajectory-V0 §8 V0-F — two interleaved asynchronous Attempts", () 
       claimedSessionId: "session-claimed-by-caller",
       hostRecord: hostRecords.get(attemptId)!,
     });
-    expect(preview.execution.bindingStatus).toBe("CONFLICT");
+    expect(preview.execution.sessionBindingStatus).toBe("CONFLICT");
     expect(preview.caveats.contradictoryObservations.join(" ")).toContain("names session");
     // And a conflict never silently becomes a session read.
     expect(preview.execution.sessionLifecycle).not.toBe("SESSION_READ");
     expect(preview.execution.events).toEqual([]);
+  }, 180_000);
+
+  it("§4 S1-A: an attempt that is not in the project's canonical history is refused BEFORE any read", async () => {
+    /**
+     * V0S §4: the admission gate runs before the reader is touched. A counting reader proves it: a
+     * nonexistent attempt must invoke ZERO read-port methods (S1-A6).
+     */
+    const rig = makeRig({ projectId: "v0fa6" });
+    let reads = 0;
+    const countingReader = {
+      sourceIdentity: "counting",
+      evidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
+      async readEvents() {
+        reads += 1;
+        throw new Error("readEvents must never be reached for a non-canonical attempt");
+      },
+      async readHeaderIdentity() {
+        reads += 1;
+        throw new Error("readHeaderIdentity must never be reached for a non-canonical attempt");
+      },
+    };
+    const v0 = composeTrajectoryV0({
+      projectId: "v0fa6",
+      controller: rig.installed.controller,
+      promotions: rig.installed.controller.promotions,
+      reasoning: undefined, proof: undefined, projectWorkspace: undefined,
+      journalStore: undefined, associationStore: undefined,
+      dshSessionReader: countingReader,
+    });
+
+    await expect(
+      v0.previewAttempt({ attemptId: `attempt-${"f".repeat(32)}`, claimedSessionId: "session-anything" }),
+    ).rejects.toMatchObject({ code: "ATTEMPT_NOT_FOUND" });
+    expect(reads).toBe(0);
+  }, 180_000);
+
+  it("§5 S1-B3: a host record for ANOTHER attempt is refused, never silently dropped", async () => {
+    const rig = makeRig({ projectId: "v0fh1" });
+    const stubPath = writeCommittingStub(stubDir("v0fh1"), "v0fh1");
+    const hostRecords = new Map<string, TrajectoryV0HostRecord>();
+    const service = observingService(rig.installed, stubPath, "v0fh1", hostRecords);
+    const head = execFileSync("git", ["rev-parse", "HEAD"], { cwd: rig.repo, encoding: "utf8" }).trim();
+    rig.installed.controller.start({
+      projectId: "v0fh1", goal: "g", headCommit: head,
+      tasks: [{ task_id: "t1", objective: "o", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] }],
+    });
+    const { attemptId } = await startAndAwait(service, "t1");
+
+    await expect(
+      rig.v0.previewAttempt({
+        attemptId,
+        hostRecord: { attemptId: `attempt-${"9".repeat(32)}`, hostLocalJobId: "wdj-other", portInvocationId: "wpi-other", eventKinds: [], exited: true, exitCode: 0, spawnFailed: false, unknownAfterRestart: false, detail: "another attempt's record" },
+      }),
+    ).rejects.toMatchObject({ code: "HOST_RECORD_CONFLICT" });
   }, 180_000);
 
   it("§8 negative control: the same display label on two different Attempts does not merge them", async () => {

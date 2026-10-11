@@ -13,15 +13,27 @@
  * port that a supported first-party reader satisfies.
  *
  * The identity separation the ruling requires is structural, not conventional — four different
- * owners produce four different ids, and V0 never collapses them:
+ * owners produce four different ids, and this module never collapses them:
  *
  *     Work AttemptId    canonical Work identity           (the Work owner; never minted here)
  *     HostJobId         ephemeral host-local job identity  (the delegation service; may vanish on restart)
  *     Port InvocationId one process-port invocation        (the worker port; per invocation)
  *     DSH SessionId     DSH-owned session identity         (DSH; never minted here)
  *
- * Their cardinality is NOT assumed. A Trajectory View ID is derived from `(projectId, attemptId)`
- * and is a read-model address, not an authority.
+ * Trajectory-V0S §5 — THE THREE FACTS THAT V0 CONFLATED.
+ *
+ * V0 used ONE state (`BOUND_LOCAL_ONLY`) for two different situations: a real local Host process
+ * observation with no session at all, and a caller-selected readable session. Those are different
+ * facts and the corrected model keeps them apart as three independent dimensions:
+ *
+ *     HOST OBSERVATION PROVENANCE   what the host actually saw (may exist with NO session)
+ *     SESSION BINDING               whether an Attempt→Session relationship was ESTABLISHED
+ *     SESSION READ ADMISSION        whether a read was requested, succeeded, and was ADMITTED
+ *
+ * The invariant that makes the separation real rather than cosmetic: a session read is ADMITTED to
+ * an Attempt's execution view ONLY when `sessionBindingStatus === "BOUND_VERIFIED"`. A caller's
+ * claim, a matching header, a scope match and an adapter's self-declared evidence class are all
+ * provenance metadata — none of them can raise a claim to a binding (S-I2).
  */
 import { canonicalDigest } from "../schema/index.js";
 
@@ -45,21 +57,49 @@ export function trajectoryViewIdOf(input: { readonly projectId: string; readonly
 }
 
 /* ------------------------------------------------------------------ *
- * §3 — Binding states
+ * §5 — Host observation provenance (SEPARATE from session binding)
  * ------------------------------------------------------------------ */
 
 /**
- * §3: how well an Attempt is bound to a DSH Session.
+ * §5: where a HOST PROCESS OBSERVATION came from.
  *
- * `BOUND_VERIFIED` is assigned ONLY when a real binding producer establishes the relationship. A
- * caller-supplied `dshSessionId` never reaches it: the strongest a caller's claim can earn is
- * `BOUND_LOCAL_ONLY`, and even that requires the header to agree.
+ * This says nothing about any DSH Session. A real local spawn/exit observation is a fact about a
+ * direct child process; it may exist while no session exists at all, and it never implies one.
  */
-export const BINDING_STATES = [
-  /** A real producer established the Attempt→Session relationship. */
+export const HOST_OBSERVATION_PROVENANCE_STATES = [
+  /** A real local observation the host process made about its own direct child. */
+  "LOCAL_PORT_OBSERVATION",
+  /** The caller supplied the record. Evidence of a report, not of an origin. */
+  "CALLER_DECLARATION",
+  /** A record exists but its scope could not be tied to the requested attempt. */
+  "UNVERIFIED_ORIGIN",
+  /** A record was expected but the observation source is absent. */
+  "SOURCE_UNAVAILABLE",
+  /** The supplied record contradicts the requested attempt. */
+  "CONFLICTING_SOURCE",
+  /** No observation was supplied at all. */
+  "NOT_OBSERVED",
+] as const;
+export type HostObservationProvenance = (typeof HOST_OBSERVATION_PROVENANCE_STATES)[number];
+
+/* ------------------------------------------------------------------ *
+ * §5 — Session binding (SEPARATE from host observation)
+ * ------------------------------------------------------------------ */
+
+/**
+ * §5: whether an Attempt→DSH Session relationship was ESTABLISHED.
+ *
+ * `BOUND_VERIFIED` is assigned ONLY when a real binding producer establishes the relationship.
+ * No such producer exists in this deployment (see the V0S S2 audit), so it is unreachable today by
+ * construction rather than by convention. A caller-supplied `dshSessionId` earns
+ * `SESSION_CLAIMED_UNVERIFIED` — a distinct state that says "someone asked for this", never "this
+ * attempt owns this session".
+ */
+export const SESSION_BINDING_STATES = [
+  /** A real producer established the Attempt→Session relationship. UNREACHABLE without one. */
   "BOUND_VERIFIED",
-  /** A local, non-durable observation supports the binding; the producer is not canonical. */
-  "BOUND_LOCAL_ONLY",
+  /** A session id was claimed but NO verified producer supports the relationship. */
+  "SESSION_CLAIMED_UNVERIFIED",
   /** No session is bound to this Attempt. The honest default. */
   "SESSION_UNBOUND",
   /** More than one candidate could satisfy the binding. */
@@ -69,13 +109,18 @@ export const BINDING_STATES = [
   /** A session was claimed but the source cannot be read. */
   "SOURCE_UNAVAILABLE",
 ] as const;
-export type BindingState = (typeof BINDING_STATES)[number];
+export type SessionBindingState = (typeof SESSION_BINDING_STATES)[number];
 
-/** §3: where a session binding came from. Only a real producer can yield `BOUND_VERIFIED`. */
+/**
+ * §5: where a session binding came from. Only a real producer can yield `BOUND_VERIFIED`.
+ *
+ * `evidenceClass` on a read adapter is PROVENANCE METADATA, not authorization: an adapter calling
+ * itself `REAL_DSH_QUERY` cannot grant an Attempt ownership of a session (§8).
+ */
 export const BINDING_SOURCES = [
-  /** A durable Attempt-keyed binding record written by a real producer. NOT PRESENT IN V0. */
+  /** A durable Attempt-keyed binding record written by a real producer. NOT PRESENT IN V0/V0S. */
   "CANONICAL_ATTEMPT_BINDING",
-  /** The host port observed the session it spawned. Local and non-durable. */
+  /** The host port observed the session it spawned. Local and non-durable. NOT PRESENT IN V0S. */
   "HOST_PORT_OBSERVATION",
   /** The caller supplied the id. Evidence of a REQUEST, not of a binding. */
   "CALLER_DECLARATION",
@@ -84,12 +129,34 @@ export const BINDING_SOURCES = [
 ] as const;
 export type BindingSource = (typeof BINDING_SOURCES)[number];
 
+/* ------------------------------------------------------------------ *
+ * §5 — Session read admission (SEPARATE from both above)
+ * ------------------------------------------------------------------ */
+
 /**
- * §3: the immutable DSH session header identity, as far as V0 reads it.
+ * §5: whether a session read happened AND whether its events are admitted to the Attempt.
+ *
+ * A successful read of an unrelated session is `NOT_ADMITTED_TO_ATTEMPT`: the read is real, and its
+ * events still do not belong to this attempt's execution history (S-I4).
+ */
+export const SESSION_READ_ADMISSION_STATES = [
+  /** No read was requested (no session claimed, or the claim was refused before any read). */
+  "NOT_REQUESTED",
+  /** The read succeeded and the binding is verified, so its events are admitted. */
+  "ADMITTED_TO_ATTEMPT",
+  /** The read was attempted and failed. */
+  "READ_FAILED",
+  /** The read succeeded, but the binding is not verified, so its events are NOT admitted. */
+  "NOT_ADMITTED_TO_ATTEMPT",
+] as const;
+export type SessionReadAdmission = (typeof SESSION_READ_ADMISSION_STATES)[number];
+
+/**
+ * §3: the immutable DSH session header identity, as far as this consumer reads it.
  *
  * `cwd` and `isSeeded` support a SCOPE CHECK — a session whose cwd is the Attempt's execution world
- * is plausibly that Attempt's session. But scope alone does not establish EXCLUSIVE ownership, so it
- * can never raise a binding above `BOUND_LOCAL_ONLY`.
+ * is plausibly that Attempt's session. But scope alone does not establish EXCLUSIVE ownership, and
+ * it is NOT an Attempt→Session binding (S-I2).
  */
 export interface DshSessionHeaderIdentity {
   readonly sessionId: string;
@@ -110,7 +177,7 @@ export interface BindingEvidenceRef {
   readonly compared: Readonly<Record<string, string>>;
 }
 
-/** §3: the execution identity and binding for one Work Attempt. */
+/** §3: the execution identity, the host-observation provenance and the session binding for one Attempt. */
 export interface AttemptExecutionBinding {
   readonly schemaVersion: 1;
   readonly projectId: string;
@@ -126,35 +193,47 @@ export interface AttemptExecutionBinding {
   readonly hostLocalJobId: string | null;
   /** Genuinely observed port invocation id, or null. */
   readonly portInvocationId: string | null;
-  /** Positively established DSH session id, or null. */
+  /**
+   * §5: the POSITIVELY ESTABLISHED DSH session id, or null.
+   *
+   * Non-null ONLY when `sessionBindingStatus === "BOUND_VERIFIED"`. A claimed-but-unverified id is
+   * recorded in `claimedSessionId`, never here, so no consumer can read a claim as a binding.
+   */
   readonly dshSessionId: string | null;
+  /** §5: the session id a caller supplied, recorded as a CLAIM. Never binding authority. */
+  readonly claimedSessionId: string | null;
+  /** §5: the host-observation provenance dimension. Independent of any session. */
+  readonly hostObservationProvenance: HostObservationProvenance;
   readonly sessionSource: BindingSource;
-  readonly bindingStatus: BindingState;
+  readonly sessionBindingStatus: SessionBindingState;
+  readonly sessionReadAdmission: SessionReadAdmission;
   readonly bindingEvidenceRefs: readonly BindingEvidenceRef[];
   /** Why the binding holds the state it does. */
   readonly detail: string;
 }
 
 /**
- * §3: decide the binding state from the evidence actually present.
+ * §5: decide the SESSION BINDING state from the evidence actually present.
  *
  * The precedence is deliberately conservative:
  *
  *   1. a CONFLICT anywhere wins — a contradiction is never downgraded to "unbound";
  *   2. a canonical producer yields BOUND_VERIFIED;
- *   3. a local observation yields BOUND_LOCAL_ONLY (it may not claim verified);
+ *   3. a claimed-but-unreadable session yields SOURCE_UNAVAILABLE;
  *   4. more than one candidate yields AMBIGUOUS;
- *   5. a claimed-but-unreadable session yields SOURCE_UNAVAILABLE;
+ *   5. a caller claim yields SESSION_CLAIMED_UNVERIFIED — never a binding;
  *   6. otherwise SESSION_UNBOUND.
+ *
+ * Note what is NOT an input: whether a host observation exists. A host observation is a different
+ * fact and cannot move this state (§5 "No-session invariant").
  */
-export function classifyBinding(input: {
+export function classifySessionBinding(input: {
   readonly claimedSessionId: string | null;
   readonly canonicalBindingPresent: boolean;
-  readonly localObservationPresent: boolean;
   readonly candidateCount: number;
   readonly sourceReadable: boolean;
   readonly conflictDetail: string | null;
-}): { readonly state: BindingState; readonly source: BindingSource; readonly detail: string } {
+}): { readonly state: SessionBindingState; readonly source: BindingSource; readonly detail: string } {
   if (input.conflictDetail !== null) {
     return Object.freeze({
       state: "CONFLICT" as const,
@@ -169,7 +248,7 @@ export function classifyBinding(input: {
       detail: "a durable Attempt-keyed binding record establishes this session for this attempt",
     });
   }
-  if (input.claimedSessionId === null && !input.localObservationPresent) {
+  if (input.claimedSessionId === null) {
     return Object.freeze({
       state: "SESSION_UNBOUND" as const,
       source: "NONE" as const,
@@ -186,21 +265,54 @@ export function classifyBinding(input: {
   if (!input.sourceReadable) {
     return Object.freeze({
       state: "SOURCE_UNAVAILABLE" as const,
-      source: input.claimedSessionId !== null ? ("CALLER_DECLARATION" as const) : ("HOST_PORT_OBSERVATION" as const),
-      detail: "a session was identified but its source could not be read",
+      source: "CALLER_DECLARATION" as const,
+      detail: "a session was claimed but its source could not be read",
     });
   }
-  /**
-   * §3: a caller-supplied id, or a local host observation, can never exceed BOUND_LOCAL_ONLY.
-   * `BOUND_VERIFIED` is reserved for a real producer.
-   */
   return Object.freeze({
-    state: "BOUND_LOCAL_ONLY" as const,
-    source: input.claimedSessionId !== null ? ("CALLER_DECLARATION" as const) : ("HOST_PORT_OBSERVATION" as const),
+    state: "SESSION_CLAIMED_UNVERIFIED" as const,
+    source: "CALLER_DECLARATION" as const,
     detail:
-      input.claimedSessionId !== null
-        ? "the caller supplied this session id and its header agrees; a declaration is evidence of a request, not of a binding"
-        : "a local host observation supports this binding, but no canonical producer confirms it",
+      "the caller supplied this session id and its header agrees, but no producer establishes an Attempt→Session relationship; a declaration is evidence of a request, not of a binding",
+  });
+}
+
+/**
+ * §5: decide the HOST OBSERVATION provenance from the evidence actually present.
+ *
+ * `attemptMatches` is the identity check: a record whose `attemptId` is not the requested attempt is
+ * `CONFLICTING_SOURCE`, never silently dropped (§5 "HostRecord identity").
+ */
+export function classifyHostObservation(input: {
+  readonly recordPresent: boolean;
+  readonly attemptMatches: boolean;
+  readonly hasLocalIdentity: boolean;
+  readonly conflictDetail: string | null;
+}): { readonly provenance: HostObservationProvenance; readonly detail: string } {
+  if (input.conflictDetail !== null) {
+    return Object.freeze({ provenance: "CONFLICTING_SOURCE" as const, detail: input.conflictDetail });
+  }
+  if (!input.recordPresent) {
+    return Object.freeze({
+      provenance: "NOT_OBSERVED" as const,
+      detail: "no host observation was supplied for this attempt",
+    });
+  }
+  if (!input.attemptMatches) {
+    return Object.freeze({
+      provenance: "UNVERIFIED_ORIGIN" as const,
+      detail: "a host record was supplied but its attempt scope could not be tied to the requested attempt",
+    });
+  }
+  if (!input.hasLocalIdentity) {
+    return Object.freeze({
+      provenance: "CALLER_DECLARATION" as const,
+      detail: "the caller supplied a record for this attempt that carries no host-local identity of its own",
+    });
+  }
+  return Object.freeze({
+    provenance: "LOCAL_PORT_OBSERVATION" as const,
+    detail: "a real local host observation supports this attempt's process lifecycle; it establishes no DSH session",
   });
 }
 
@@ -225,10 +337,29 @@ export const SESSION_READ_STATES = [
   "EVENT_GAP",
   /** The observation is truncated or incomplete. */
   "TRUNCATED_OBSERVATION",
+  /** The requested cursor or page size was not a usable bounded request. */
+  "INVALID_REQUEST",
   /** No read capability is composed at all. */
   "READ_CAPABILITY_ABSENT",
 ] as const;
 export type SessionReadState = (typeof SESSION_READ_STATES)[number];
+
+/**
+ * §9: the DURABILITY PROVENANCE of one returned event.
+ *
+ * DSH's cold read appends `interruptedTurnClosers(events)` to the stored prefix, so a returned event
+ * is either something the writer actually persisted or something DSH synthesized in memory to
+ * balance an interrupted turn. They are NOT the same fact and must not be reported as one.
+ */
+export const DSH_EVENT_DURABILITY_STATES = [
+  /** The event was read from the session's stored prefix. */
+  "PERSISTED_DSH_EVENT",
+  /** DSH synthesized this closer in memory; it was never written by the original execution. */
+  "SYNTHETIC_RECOVERY_EVENT",
+  /** The persisted/synthetic boundary could not be verified against the storage seam. */
+  "DURABILITY_UNRESOLVED",
+] as const;
+export type DshEventDurability = (typeof DSH_EVENT_DURABILITY_STATES)[number];
 
 /** §4: one event reference. Its own SessionId and Session Seq — never merged into a global sequence. */
 export interface DshEventReference {
@@ -237,6 +368,8 @@ export interface DshEventReference {
   readonly type: string;
   /** Whether this event is inside the fork-inherited prefix, when the source reports the cut. */
   readonly inherited: boolean;
+  /** §9: whether this event is stored or was synthesized for an interrupted tail. */
+  readonly durability: DshEventDurability;
 }
 
 /**
@@ -265,11 +398,29 @@ export interface DshSessionEventPage {
   readonly header: DshSessionHeaderIdentity | null;
   /** The source identity this page was read from (a backend label or a fixture label). */
   readonly sourceIdentity: string;
+  /** §8/§9: which reader produced this page. Provenance metadata, NOT authorization. */
+  readonly sourceEvidenceClass: "REAL_DSH_QUERY" | "DSH_QUERY_PORT_FIXTURE";
   /** The read watermark: the highest seq included in this page. */
   readonly throughSeq: number | null;
   /** The highest seq the source reports, independent of the page bound. */
   readonly knownEventCount: number | null;
   readonly inheritedEventCount: number | null;
+  /** §9: the cursor that was actually requested, so a reviewer sees what was asked for. */
+  readonly requestedFromSeq: number;
+  /** §9: the maximum that was actually requested, after validation. */
+  readonly requestedMaxEvents: number;
+  /** §9: how many events this page returned — distinct from `requestedMaxEvents`. */
+  readonly returnedCount: number;
+  /** §9: the RETURN is bounded. This does NOT mean the DISK IO was bounded. */
+  readonly pageBounded: true;
+  /** §9: whether the underlying read was itself bounded, or the whole log was read first. */
+  readonly diskIoBounded: boolean;
+  /** §9: whether the persisted/synthetic boundary was verified for this page. */
+  readonly durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED" | "DURABILITY_UNRESOLVED";
+  /** §9: events read from the stored prefix, when the boundary was verified. */
+  readonly persistedEventCount: number | null;
+  /** §9: synthetic in-memory closers, when the boundary was verified. */
+  readonly syntheticRecoveryEventCount: number | null;
   readonly events: readonly DshEventView[];
   readonly knownParentSession: string | null;
   /** What this page proves, stated on the page itself. */
@@ -282,20 +433,57 @@ export interface DshSessionEventPage {
 /** §4: a bounded read request. */
 export interface DshSessionReadRequest {
   readonly sessionId: string;
-  /** First seq to include (inclusive). Defaults to 0. */
+  /** First seq to include (inclusive). Defaults to 0. Must be a non-negative safe integer. */
   readonly fromSeq?: number | undefined;
-  /** Maximum number of events to return. Defaults to 50. */
+  /** Maximum number of events to return. Defaults to 50. Must be a positive safe integer. */
   readonly maxEvents?: number | undefined;
 }
 
 /** §4: the default small page size. */
 export const DSH_READ_DEFAULT_PAGE = 50;
 
+/** §9: the hard maximum page size. A request above it is refused rather than silently clamped. */
+export const DSH_READ_MAX_PAGE = 200;
+
+/**
+ * §9: validate a bounded read request.
+ *
+ * A negative, fractional, non-finite or absent-bounds cursor is REFUSED, not coerced: silently
+ * turning `-1` into `0` would let a caller believe it read a range it never addressed.
+ */
+export function validateReadRequest(request: DshSessionReadRequest): {
+  readonly ok: boolean;
+  readonly fromSeq: number;
+  readonly maxEvents: number;
+  readonly detail: string;
+} {
+  const rawFrom = request.fromSeq ?? 0;
+  const rawMax = request.maxEvents ?? DSH_READ_DEFAULT_PAGE;
+  if (!Number.isSafeInteger(rawFrom) || rawFrom < 0) {
+    return Object.freeze({ ok: false, fromSeq: 0, maxEvents: 0, detail: `fromSeq must be a non-negative safe integer, received ${String(rawFrom)}` });
+  }
+  if (!Number.isSafeInteger(rawMax) || rawMax <= 0) {
+    return Object.freeze({ ok: false, fromSeq: rawFrom, maxEvents: 0, detail: `maxEvents must be a positive safe integer, received ${String(rawMax)}` });
+  }
+  if (rawMax > DSH_READ_MAX_PAGE) {
+    return Object.freeze({
+      ok: false,
+      fromSeq: rawFrom,
+      maxEvents: rawMax,
+      detail: `maxEvents ${String(rawMax)} exceeds the hard maximum of ${String(DSH_READ_MAX_PAGE)}`,
+    });
+  }
+  return Object.freeze({ ok: true, fromSeq: rawFrom, maxEvents: rawMax, detail: `bounded read of at most ${String(rawMax)} events from seq ${String(rawFrom)}` });
+}
+
 /**
  * §4: the narrow read-only port over DSH's own Session events.
  *
  * Every method is a read. There is no `append`, `create`, `resume`, `flush` or `activate` — a
  * Trajectory consumer cannot make a session live through this interface.
+ *
+ * §6: this port is an OPERATOR/DIAGNOSTIC capability. It is deliberately NOT exposed on the
+ * Attempt-scoped consumer service, because a `sessionId`-only read is not Attempt-scoped.
  */
 export interface DshSessionReadPort {
   /** A label naming the backing reader, so evidence can state which reader was used. */
@@ -310,6 +498,8 @@ export interface DshSessionReadPort {
     readonly header: DshSessionHeaderIdentity | null;
     readonly detail: string;
   }>;
+  /** §9: release any resources this reader holds. Idempotent. */
+  close?(): Promise<void>;
 }
 
 /* ------------------------------------------------------------------ *
@@ -317,8 +507,8 @@ export interface DshSessionReadPort {
  * ------------------------------------------------------------------ */
 
 /**
- * §4: the DSH event types V0 recognizes by name. Anything else stays opaque and is referenced by
- * exact SessionId/Seq rather than interpreted.
+ * §4: the DSH event types this consumer recognizes by name. Anything else stays opaque and is
+ * referenced by exact SessionId/Seq rather than interpreted.
  */
 export const RECOGNIZED_DSH_EVENT_TYPES = [
   "turn/start",
@@ -340,6 +530,10 @@ const RECOGNIZED = new Set<string>(RECOGNIZED_DSH_EVENT_TYPES);
  * The rule is that the DEFAULT view never carries content. A recognized type contributes a
  * structural summary built from non-content fields; an unrecognized type contributes only its kind
  * and position. Nothing here reads `data.message`, `data.arguments` or any other content field.
+ *
+ * §9: `durability` defaults to `DURABILITY_UNRESOLVED`. A bare sanitize call has verified no
+ * storage boundary, so claiming `PERSISTED_DSH_EVENT` here would be exactly the overclaim the
+ * ruling forbids; the real reader supplies the class it actually proved.
  */
 export function sanitizeDshEvent(input: {
   readonly sessionId: string;
@@ -349,6 +543,7 @@ export function sanitizeDshEvent(input: {
   readonly data: Record<string, unknown>;
   readonly inherited: boolean;
   readonly surface: string | null;
+  readonly durability?: DshEventDurability | undefined;
 }): DshEventView {
   const { data } = input;
   const num = (value: unknown): number | null => (typeof value === "number" && Number.isFinite(value) ? value : null);
@@ -399,6 +594,7 @@ export function sanitizeDshEvent(input: {
     seq: input.seq,
     type: input.type,
     inherited: input.inherited,
+    durability: input.durability ?? "DURABILITY_UNRESOLVED",
     time: input.time,
     surface: input.surface,
     summary,
@@ -426,4 +622,37 @@ export const DSH_PAGE_DOES_NOT_PROVE = Object.freeze([
   "that the current model surface equals the complete raw execution history",
   "that no tool was called, merely because no tool/call event appears in this page",
   "that this session belongs to the requested Work Attempt (binding is a separate fact)",
+  "that a synthetic recovery event was written by the original execution",
 ] as const);
+
+/* ------------------------------------------------------------------ *
+ * §4/§5 — Attempt admission refusal
+ * ------------------------------------------------------------------ */
+
+/**
+ * §4/§5: the machine-readable refusals an Attempt-scoped consumer raises.
+ *
+ * These exist so a caller learns WHY an attempt was refused before any execution source was read,
+ * instead of receiving a superficially valid Preview over an unverified identity.
+ */
+export const ATTEMPT_ADMISSION_REFUSAL_CODES = [
+  /** No canonical ATTEMPT_CREATED event matches the requested id in the configured project. */
+  "ATTEMPT_NOT_FOUND",
+  /** The attempt's canonical creation event belongs to a different project. */
+  "FOREIGN_ATTEMPT",
+  /** The canonical Work record contradicts its own creation event or is unreadable. */
+  "ATTEMPT_SOURCE_CONFLICT",
+  /** A supplied host record names a different attempt than the requested one. */
+  "HOST_RECORD_CONFLICT",
+] as const;
+export type AttemptAdmissionRefusalCode = (typeof ATTEMPT_ADMISSION_REFUSAL_CODES)[number];
+
+/** §4/§5: a typed, machine-readable Attempt admission refusal. */
+export class AttemptAdmissionRefusal extends Error {
+  readonly code: AttemptAdmissionRefusalCode;
+  constructor(code: AttemptAdmissionRefusalCode, message: string) {
+    super(`${code}: ${message}`);
+    this.name = "AttemptAdmissionRefusal";
+    this.code = code;
+  }
+}

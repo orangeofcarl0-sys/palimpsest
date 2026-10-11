@@ -113,31 +113,47 @@ export type { CurrentnessVerdict, OwnerCurrentnessInput, TrajectoryReadModel } f
  * Trajectory-V0 §3/§4 (V0-A/V0-B) — execution identity, the Attempt→Session binding contract, and
  * the narrow read-only DSH session port. Distinct from T0's Project Evolution projection: this is
  * the EXECUTION view, and it never mints a Work, host or DSH identity.
+ *
+ * Trajectory-V0S §5/§9 — the binding contract now separates THREE facts V0 conflated: host
+ * observation provenance, session binding and session read admission. A read is admitted to an
+ * attempt only under a verified binding, and every returned event carries its durability class.
  */
 export {
+  ATTEMPT_ADMISSION_REFUSAL_CODES,
+  AttemptAdmissionRefusal,
   BINDING_SOURCES,
-  BINDING_STATES,
-  classifyBinding,
+  classifyHostObservation,
+  classifySessionBinding,
+  DSH_EVENT_DURABILITY_STATES,
   DSH_PAGE_DOES_NOT_PROVE,
   DSH_PAGE_PROVES,
   DSH_READ_DEFAULT_PAGE,
+  DSH_READ_MAX_PAGE,
+  HOST_OBSERVATION_PROVENANCE_STATES,
   RECOGNIZED_DSH_EVENT_TYPES,
   sanitizeDshEvent,
+  SESSION_BINDING_STATES,
+  SESSION_READ_ADMISSION_STATES,
   SESSION_READ_STATES,
   trajectoryViewIdOf,
+  validateReadRequest,
 } from "./execution.js";
 export type {
+  AttemptAdmissionRefusalCode,
   AttemptExecutionBinding,
   BindingEvidenceRef,
   BindingSource,
-  BindingState,
+  DshEventDurability,
   DshEventReference,
   DshEventView,
   DshSessionEventPage,
   DshSessionHeaderIdentity,
   DshSessionReadPort,
   DshSessionReadRequest,
+  HostObservationProvenance,
   RecognizedDshEventType,
+  SessionBindingState,
+  SessionReadAdmission,
   SessionReadState,
 } from "./execution.js";
 
@@ -158,6 +174,7 @@ export type {
   HandoffPreview,
   HandoffPreviewInput,
   PreviewAttemptIdentity,
+  PreviewAttribution,
   PreviewCanonicalFacts,
   PreviewCanonicalOutcome,
   PreviewCaveats,

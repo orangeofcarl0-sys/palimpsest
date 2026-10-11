@@ -13,27 +13,37 @@
  *
  *   §6 "Critical status separation" — there is no single `COMPLETED` boolean. Process lifecycle,
  *   DSH session lifecycle, canonical Work state, result verification, promotion and preview
- *   completeness are SIX separate fields, because a direct child exiting zero does not prove
+ *   completeness are separate fields, because a direct child exiting zero does not prove
  *   settlement, a `turn/end` does not prove promotion, and an attempt completing does not prove
  *   every DSH event was recovered.
  *
- * §10's admission policy is applied here rather than in the caller: a canonical fact may come from a
- * Work owner; a DSH fact only from a bound, readable source; a host fact only from a real local
- * observation with the G1-B limitation stated; and a cross-owner relation only when its source
- * relationship is exact. Missing source is never an empty history, and an unknown exit is never a
- * successful exit.
+ * Trajectory-V0S §8 — WHAT THE V0 MODEL OVERSTATED.
+ *
+ * V0 derived completeness from "a session was read", so a readable but UNRELATED session made an
+ * Attempt Handoff `COMPLETE`. The corrected model keeps four attribution dimensions distinct and
+ * never lets one stand in for another:
+ *
+ *     canonicalCoverage   the canonical Work facts are present
+ *     sourceReadability   the DSH source could be read at all
+ *     sessionAttribution  the session is ATTRIBUTED to this Attempt (a verified binding)
+ *     processObservation  the local process observation is complete
+ *
+ * A Preview cannot be `COMPLETE` unless the session is ATTRIBUTED, and an unattributed read is
+ * reported as `NOT_ADMITTED_TO_ATTEMPT` rather than quietly presented as this attempt's history.
  */
 import { canonicalDigest } from "../schema/index.js";
 import {
   DSH_PAGE_DOES_NOT_PROVE,
   type AttemptExecutionBinding,
-  type BindingState,
   type DshSessionEventPage,
+  type HostObservationProvenance,
+  type SessionBindingState,
+  type SessionReadAdmission,
   type SessionReadState,
 } from "./execution.js";
 
 /* ------------------------------------------------------------------ *
- * §6 — The six separate statuses
+ * §6 — The separate statuses
  * ------------------------------------------------------------------ */
 
 /**
@@ -42,6 +52,11 @@ import {
  * `UNKNOWN_AFTER_RESTART` exists because the host-local job map is not durable: after a restart the
  * view must not fabricate a prior RUNNING/FINISHED phase, and a lost host job never retroactively
  * changes canonical Work settlement.
+ *
+ * §8 S1-E3/E4: `TIMEOUT_REQUESTED` and `ABORT_REQUESTED` are separate from `EXITED` and from
+ * `EXIT_UNCONFIRMED`, because REQUESTING termination is not OBSERVING it. A process whose abort was
+ * requested but whose exit was never confirmed is not `RUNNING` in the ordinary sense and is
+ * certainly not `EXITED`.
  */
 export const PROCESS_LIFECYCLE_STATES = [
   "NOT_OBSERVED",
@@ -51,6 +66,7 @@ export const PROCESS_LIFECYCLE_STATES = [
   "SPAWN_FAILED",
   "TIMEOUT_REQUESTED",
   "ABORT_REQUESTED",
+  "EXIT_UNCONFIRMED",
   "UNKNOWN_AFTER_RESTART",
 ] as const;
 export type ProcessLifecycle = (typeof PROCESS_LIFECYCLE_STATES)[number];
@@ -59,6 +75,7 @@ export type ProcessLifecycle = (typeof PROCESS_LIFECYCLE_STATES)[number];
 export const SESSION_LIFECYCLE_STATES = [
   "NO_SESSION_BOUND",
   "SESSION_IDENTIFIED_NOT_READ",
+  "SESSION_READ_NOT_ATTRIBUTED",
   "SESSION_READ",
   "SESSION_UNREADABLE",
 ] as const;
@@ -67,6 +84,17 @@ export type SessionLifecycle = (typeof SESSION_LIFECYCLE_STATES)[number];
 /** §6: how complete this Preview is. Distinct from every lifecycle above. */
 export const PREVIEW_COMPLETENESS_STATES = ["COMPLETE", "PARTIAL", "MINIMAL"] as const;
 export type PreviewCompleteness = (typeof PREVIEW_COMPLETENESS_STATES)[number];
+
+/**
+ * §8: the four attribution dimensions, reported side by side so no consumer can read one as another.
+ */
+export interface PreviewAttribution {
+  readonly canonicalCoverage: "PRESENT" | "ABSENT";
+  readonly sourceReadability: "READABLE" | "UNREADABLE" | "NOT_REQUESTED" | "NOT_COMPOSED";
+  readonly sessionAttribution: "ATTRIBUTED" | "NOT_ATTRIBUTED" | "NO_SESSION";
+  readonly processObservation: "COMPLETE" | "PARTIAL" | "NOT_OBSERVED" | "CONFLICTING";
+  readonly detail: string;
+}
 
 /* ------------------------------------------------------------------ *
  * §6 — The Preview shape
@@ -89,22 +117,40 @@ export interface PreviewAttemptIdentity {
 
 /** §6 "Execution Evidence". */
 export interface PreviewExecutionEvidence {
-  readonly bindingStatus: BindingState;
+  readonly sessionBindingStatus: SessionBindingState;
   readonly bindingSource: string;
   readonly bindingDetail: string;
+  readonly hostObservationProvenance: HostObservationProvenance;
+  readonly hostObservationDetail: string;
+  readonly sessionReadAdmission: SessionReadAdmission;
   readonly processLifecycle: ProcessLifecycle;
   readonly processDetail: string;
   readonly sessionLifecycle: SessionLifecycle;
   readonly sessionReadState: SessionReadState | null;
+  /** The session id a caller CLAIMED, if any. A claim is not a binding. */
+  readonly claimedSessionId: string | null;
+  /** The session id a verified producer ESTABLISHED, if any. Null without a producer. */
   readonly dshSessionId: string | null;
   readonly hostLocalJobId: string | null;
   readonly portInvocationId: string | null;
-  /** Bounded, sanitized event views. Empty when no session is bound — which is NOT "no events happened". */
+  /** §9: which reader produced the page, when one did. Provenance metadata, not authorization. */
+  readonly sourceEvidenceClass: string | null;
+  /** §9: the sanitized source identity, when a page was read. */
+  readonly sourceIdentity: string | null;
+  /** §9: the read watermark and the requested/returned page bounds, when a page was read. */
+  readonly readWatermark: number | null;
+  readonly requestedPageSize: number | null;
+  readonly returnedPageSize: number | null;
+  /**
+   * §5: bounded, sanitized event views. EMPTY whenever the read is not ADMITTED to this attempt —
+   * which is NOT "no events happened".
+   */
   readonly events: readonly {
     readonly sessionId: string;
     readonly seq: number;
     readonly type: string;
     readonly inherited: boolean;
+    readonly durability: string;
     readonly summary: string;
     readonly observedStatus: string | null;
   }[];
@@ -170,6 +216,7 @@ export interface HandoffPreview {
   readonly canonical: PreviewCanonicalOutcome;
   readonly projectContext: PreviewProjectContext;
   readonly caveats: PreviewCaveats;
+  readonly attribution: PreviewAttribution;
   readonly completeness: PreviewCompleteness;
   /**
    * §6: what this Preview is. Stated on the object so no consumer can mistake it for an authority.
@@ -234,7 +281,7 @@ export interface PreviewHostObservationSummary {
 /**
  * §5: the safe portion of the T0 project evolution projection, already selected.
  *
- * V0 does NOT re-derive T0 semantics here. The composition layer runs T0 and hands over only the
+ * V0 does not re-derive T0 semantics here. The composition layer runs T0 and hands over only the
  * relations that are exactly source-backed, plus an explicit quarantine list for the rest.
  */
 export interface PreviewProjectEvolutionSummary {
@@ -273,23 +320,33 @@ export interface HandoffPreviewInput {
  * ------------------------------------------------------------------ */
 
 /**
- * §10: map a session read state onto the Preview's session lifecycle.
+ * §5/§10: map a session read state onto the Preview's session lifecycle.
  *
  * An unsupported format or a corrupt session is `SESSION_UNREADABLE` — never "no events".
+ *
+ * §8: a READ_OK page whose binding is not verified is `SESSION_READ_NOT_ATTRIBUTED`. The read
+ * happened; the events are not this attempt's, and the lifecycle says so.
+ *
+ * §5: a session that was IDENTIFIED (claimed) but never read is `SESSION_IDENTIFIED_NOT_READ` —
+ * distinct from `NO_SESSION_BOUND`, because a caller did name one.
  */
-export function sessionLifecycleOf(readState: SessionReadState | null): SessionLifecycle {
-  if (readState === null) return "NO_SESSION_BOUND";
-  if (readState === "READ_OK") return "SESSION_READ";
+export function sessionLifecycleOf(
+  readState: SessionReadState | null,
+  admission: SessionReadAdmission = "NOT_REQUESTED",
+  identified = false,
+): SessionLifecycle {
+  if (readState === null) return identified ? "SESSION_IDENTIFIED_NOT_READ" : "NO_SESSION_BOUND";
   if (readState === "READ_CAPABILITY_ABSENT") return "SESSION_IDENTIFIED_NOT_READ";
-  return "SESSION_UNREADABLE";
+  if (readState !== "READ_OK") return "SESSION_UNREADABLE";
+  return admission === "ADMITTED_TO_ATTEMPT" ? "SESSION_READ" : "SESSION_READ_NOT_ATTRIBUTED";
 }
 
 /**
- * §10: derive the Preview's completeness from what is actually present.
+ * §8: derive the Preview's completeness from what is actually present.
  *
- * `COMPLETE` requires a readable bound session AND canonical result facts. A minimal Preview is a
- * legitimate outcome — an unbound attempt with full canonical facts is still useful, and calling it
- * incomplete would be more honest than calling it complete.
+ * `COMPLETE` requires the session read to be ATTRIBUTED to this attempt AND canonical result facts
+ * AND project context. A readable but unattributed session therefore cannot make a Preview complete.
+ * A Work-only Preview is `PARTIAL` and remains useful — that is the honest classification.
  */
 export function previewCompletenessOf(input: {
   readonly sessionLifecycle: SessionLifecycle;
@@ -299,6 +356,43 @@ export function previewCompletenessOf(input: {
   if (input.sessionLifecycle === "SESSION_READ" && input.hasCanonicalResult && input.hasProjectContext) return "COMPLETE";
   if (input.hasCanonicalResult || input.hasProjectContext) return "PARTIAL";
   return "MINIMAL";
+}
+
+/** §8: the four attribution dimensions, derived together so they stay consistent. */
+function attributionOf(input: {
+  readonly binding: AttemptExecutionBinding;
+  readonly sessionPage: DshSessionEventPage | undefined;
+  readonly canonical: PreviewCanonicalFacts;
+  readonly projectEvolution: PreviewProjectEvolutionSummary;
+}): PreviewAttribution {
+  const canonicalCoverage = input.canonical.attemptState !== null || input.projectEvolution.projectionRootId !== null ? "PRESENT" : "ABSENT";
+
+  let sourceReadability: PreviewAttribution["sourceReadability"];
+  if (input.binding.claimedSessionId === null && input.binding.dshSessionId === null) sourceReadability = "NOT_REQUESTED";
+  else if (input.sessionPage?.readState === "READ_CAPABILITY_ABSENT") sourceReadability = "NOT_COMPOSED";
+  else if (input.sessionPage?.readState === "READ_OK") sourceReadability = "READABLE";
+  else sourceReadability = "UNREADABLE";
+
+  let sessionAttribution: PreviewAttribution["sessionAttribution"];
+  if (input.binding.dshSessionId === null) sessionAttribution = "NO_SESSION";
+  else if (input.binding.sessionBindingStatus === "BOUND_VERIFIED") sessionAttribution = "ATTRIBUTED";
+  else sessionAttribution = "NOT_ATTRIBUTED";
+
+  let processObservation: PreviewAttribution["processObservation"];
+  if (input.binding.hostObservationProvenance === "CONFLICTING_SOURCE") processObservation = "CONFLICTING";
+  else if (input.binding.hostObservationProvenance === "NOT_OBSERVED") processObservation = "NOT_OBSERVED";
+  else if (input.binding.hostObservationProvenance === "LOCAL_PORT_OBSERVATION") processObservation = "COMPLETE";
+  else processObservation = "PARTIAL";
+
+  return Object.freeze({
+    canonicalCoverage,
+    sourceReadability,
+    sessionAttribution,
+    processObservation,
+    detail:
+      `canonical=${canonicalCoverage}; source=${sourceReadability}; session=${sessionAttribution}; process=${processObservation} — ` +
+      "these are separate facts: a readable source is not an attributed session, and a local process observation is not a session identity",
+  });
 }
 
 /**
@@ -319,24 +413,31 @@ function caveatsOf(input: {
   const epistemicLimits: string[] = [];
 
   /**
-   * §4/§6: the "no DSH session" caveat follows the SESSION, not the binding state. An attempt can
-   * be host-observed (BOUND_LOCAL_ONLY) while still having no DSH session at all, and that absence
-   * must be stated either way.
+   * §5: the "no session" caveat follows the SESSION, not the binding state. An attempt can be
+   * host-observed while having no DSH session at all, and that absence must be stated either way.
    */
-  if (input.binding.dshSessionId === null) {
+  if (input.binding.dshSessionId === null && input.binding.claimedSessionId === null) {
     epistemicLimits.push(
       "No DSH session is bound to this attempt: no producer records an Attempt→Session relationship, so no session events are presented.",
     );
   }
-  if (input.binding.bindingStatus === "SOURCE_UNAVAILABLE" || input.sessionPage?.readState === "READ_CAPABILITY_ABSENT") {
-    sourcesUnavailable.push("The DSH session source could not be read; its absence is a missing source, not an empty history.");
+  if (input.binding.claimedSessionId !== null && input.binding.dshSessionId === null) {
+    epistemicLimits.push(
+      "A DSH session id was CLAIMED by the caller but no producer establishes an Attempt→Session binding, so the session's events are not admitted to this attempt's execution history.",
+    );
   }
-  if (input.binding.bindingStatus === "CONFLICT") {
+  if (input.binding.hostObservationProvenance === "CONFLICTING_SOURCE") {
     contradictoryObservations.push(input.binding.detail);
   }
-  if (input.binding.bindingStatus === "BOUND_LOCAL_ONLY") {
+  if (input.binding.sessionBindingStatus === "SOURCE_UNAVAILABLE" || input.sessionPage?.readState === "READ_CAPABILITY_ABSENT") {
+    sourcesUnavailable.push("The DSH session source could not be read; its absence is a missing source, not an empty history.");
+  }
+  if (input.binding.sessionBindingStatus === "CONFLICT") {
+    contradictoryObservations.push(input.binding.detail);
+  }
+  if (input.binding.sessionBindingStatus === "SESSION_CLAIMED_UNVERIFIED") {
     epistemicLimits.push(
-      "The session binding is LOCAL ONLY: the caller supplied the id and its header agreed, which is evidence of a request rather than of an established binding.",
+      "The session binding is UNVERIFIED: the caller supplied the id and its header agreed, which is evidence of a request rather than of an established binding.",
     );
   }
   if (input.sessionPage !== undefined && input.sessionPage.readState === "CORRUPT_SESSION") {
@@ -347,6 +448,14 @@ function caveatsOf(input: {
   }
   if (input.sessionPage !== undefined && input.sessionPage.readState === "EVENT_GAP") {
     epistemicLimits.push("The session log has a sequence gap, so the event view is incomplete.");
+  }
+  if (input.sessionPage !== undefined && input.sessionPage.readState === "INVALID_REQUEST") {
+    sourcesUnavailable.push("The session read request was refused because its cursor or page size was not a usable bounded request.");
+  }
+  if (input.sessionPage !== undefined && input.sessionPage.durabilityProvenance === "DURABILITY_UNRESOLVED" && input.sessionPage.events.length > 0) {
+    epistemicLimits.push(
+      "The persisted/synthetic boundary of the returned events could not be verified against the storage seam, so no event is asserted to have been durably stored.",
+    );
   }
 
   epistemicLimits.push(input.host.originLimitation);
@@ -388,11 +497,18 @@ function caveatsOf(input: {
  * produce the same Preview and the same `previewDigest`.
  */
 export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview {
-  const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null);
+  const identified = input.binding.claimedSessionId !== null || input.binding.dshSessionId !== null;
+  const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified);
   const hasCanonicalResult = input.canonical.resultRefs.length > 0;
   const hasProjectContext = input.projectEvolution.projectionRootId !== null;
 
   const completeness = previewCompletenessOf({ sessionLifecycle, hasCanonicalResult, hasProjectContext });
+  const attribution = attributionOf({
+    binding: input.binding,
+    sessionPage: input.sessionPage,
+    canonical: input.canonical,
+    projectEvolution: input.projectEvolution,
+  });
 
   const attempt: PreviewAttemptIdentity = Object.freeze({
     projectId: input.projectId,
@@ -408,33 +524,51 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     }),
   });
 
-  const events = (input.sessionPage?.events ?? []).map((event) =>
+  /**
+   * §5/S-I4: events enter the execution view ONLY when the read is ADMITTED. An unattributed read
+   * returns an empty view with a detail that says the events exist elsewhere and are not this
+   * attempt's — never a silently populated history.
+   */
+  const admitted = input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT";
+  const events = (admitted ? (input.sessionPage?.events ?? []) : []).map((event) =>
     Object.freeze({
       sessionId: event.sessionId,
       seq: event.seq,
       type: event.type,
       inherited: event.inherited,
+      durability: event.durability,
       summary: event.summary,
       observedStatus: event.observedStatus,
     }),
   );
 
   const execution: PreviewExecutionEvidence = Object.freeze({
-    bindingStatus: input.binding.bindingStatus,
+    sessionBindingStatus: input.binding.sessionBindingStatus,
     bindingSource: input.binding.sessionSource,
     bindingDetail: input.binding.detail,
+    hostObservationProvenance: input.binding.hostObservationProvenance,
+    hostObservationDetail: input.host.processDetail,
+    sessionReadAdmission: input.binding.sessionReadAdmission,
     processLifecycle: input.host.processLifecycle,
     processDetail: input.host.processDetail,
     sessionLifecycle,
     sessionReadState: input.sessionPage?.readState ?? null,
+    claimedSessionId: input.binding.claimedSessionId,
     dshSessionId: input.binding.dshSessionId,
     hostLocalJobId: input.binding.hostLocalJobId ?? input.host.hostLocalJobId,
     portInvocationId: input.binding.portInvocationId ?? input.host.portInvocationId,
+    sourceEvidenceClass: input.sessionPage?.sourceEvidenceClass ?? null,
+    sourceIdentity: input.sessionPage?.sourceIdentity ?? null,
+    readWatermark: input.sessionPage?.throughSeq ?? null,
+    requestedPageSize: input.sessionPage?.requestedMaxEvents ?? null,
+    returnedPageSize: input.sessionPage?.returnedCount ?? null,
     events: Object.freeze(events),
     eventsDetail:
       input.sessionPage === undefined
         ? "no DSH session read was performed, so no events are presented — this is NOT evidence that no events occurred"
-        : input.sessionPage.detail,
+        : !admitted && input.sessionPage.events.length > 0
+          ? `the session read returned ${String(input.sessionPage.returnedCount)} event(s), but no verified Attempt→Session binding exists, so they are NOT admitted to this attempt's execution history`
+          : input.sessionPage.detail,
   });
 
   const canonical: PreviewCanonicalOutcome = Object.freeze({
@@ -489,11 +623,14 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     previewId,
     attempt,
     execution: {
-      bindingStatus: execution.bindingStatus,
+      sessionBindingStatus: execution.sessionBindingStatus,
       bindingSource: execution.bindingSource,
+      hostObservationProvenance: execution.hostObservationProvenance,
+      sessionReadAdmission: execution.sessionReadAdmission,
       processLifecycle: execution.processLifecycle,
       sessionLifecycle: execution.sessionLifecycle,
       sessionReadState: execution.sessionReadState,
+      claimedSessionId: execution.claimedSessionId,
       dshSessionId: execution.dshSessionId,
       hostLocalJobId: execution.hostLocalJobId,
       portInvocationId: execution.portInvocationId,
@@ -502,6 +639,7 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     canonical,
     projectContext,
     caveats,
+    attribution,
     completeness,
   });
 
@@ -514,6 +652,7 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     canonical,
     projectContext,
     caveats,
+    attribution,
     completeness,
     isInspectionData: true as const,
     doesNotAuthorize: PREVIEW_DOES_NOT_AUTHORIZE,
