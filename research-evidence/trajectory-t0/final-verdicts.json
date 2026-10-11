@@ -1,0 +1,53 @@
+{
+  "stage": "Trajectory-T0",
+  "baselineCommit": "fae6c668685a23da6839da3069707d3de2e91121",
+  "branch": "trajectory-t0-owner-referenced-projection",
+  "statusVocabulary": ["PASS_REAL_OWNER_FIXTURE", "PASS_SOURCE_GROUNDED", "PASS_DETERMINISTIC", "PARTIAL", "FAIL", "BLOCKED", "NOT_ESTABLISHED", "NOT_RUN"],
+  "verdicts": [
+    { "verdict": "OWNER_BOUNDARIES_PRESERVED", "status": "PASS_SOURCE_GROUNDED", "evidence": "src/trajectory/** names no owner implementation; only src/composition/trajectory.ts adapts owners, and it exposes reads only. No owner imports Trajectory (architecture:check 0 violations, 0 new cycles)." },
+    { "verdict": "WORK_EVENT_HISTORY_VERIFIED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "validateWorkHistory re-parses every event through parseSchedulerEvent and checks project identity, sequence continuity, previous-digest linkage and causation-earlier; 16 tests pass over a real ProjectController/EventStore history." },
+    { "verdict": "REASONING_HISTORY_VERIFIED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "The reasoning plane is read through replay/basis/frontier; the accepted frontier and the store chain are both consumed, and a frontier move is detected. 14 tests pass over a real reasoning service." },
+    { "verdict": "PROOF_HISTORY_VERIFIED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "The proof plane's published-claim view and chain basis are read through the port; a non-published candidate yields UNRESOLVED_SOURCE (G-N10)." },
+    { "verdict": "PROJECT_JOURNAL_HISTORY_VERIFIED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "The journal store's replay and basis are read per project; a NEGATIVE_RESULT entry is resolved by id at its sequence and chain digest." },
+    { "verdict": "TRAJECTORY_IDENTITY_STABLE", "status": "PASS_DETERMINISTIC", "evidence": "Node, edge and root ids are domain-separated canonical digests over canonical source coordinates; no UUID is generated during projection and no timestamp enters identity. G-N1/G-N2 and the identity-stability test pass." },
+    { "verdict": "CROSS_OWNER_REFERENCE_RESOLUTION", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "Every receipt ground resolves through its owning plane and requires a project association; the three ground kinds resolve to PROOF, REASONING and WORKSPACE in scenario B." },
+    { "verdict": "TEMPORAL_ORDER_NOT_CONFUSED_WITH_CAUSATION", "status": "PASS_DETERMINISTIC", "evidence": "Adjacency is emitted only as SAME_OWNER_SEQUENCE_SUCCESSOR with TEMPORAL_ONLY and null evidence; no relation name contains 'CAUS'; G-N5/G-N7 pass." },
+    { "verdict": "MULTI_OWNER_BASIS_VECTOR", "status": "PASS_SOURCE_GROUNDED", "evidence": "The vector records the actual position in Work, ProjectIR, each referenced Reasoning cell, Proof, Journal and World, plus explicit availability and completeness. No global clock is invented." },
+    { "verdict": "OBSERVATION_WINDOW_CONSISTENCY", "status": "PASS_DETERMINISTIC", "evidence": "The basis is read before and after the history; a moved basis marks the window RACED (G-N11) rather than silently re-reading." },
+    { "verdict": "AS_OF_RECONSTRUCTION", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "A non-genesis cut requires a validated predecessor basis; the cut excludes later events and a rebuild yields the same digest. Verified in scenario A and by G-N14." },
+    { "verdict": "HISTORICAL_AUTHORIZATION_PRESERVED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "A0's authorization is resolved from A0's own ATTEMPT_CREATED envelope_id; a later change to the task's current envelope row does not rebind it (scenario A)." },
+    { "verdict": "REWORK_LINEAGE_RECONSTRUCTED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "The rework edge is established from the governed TASK_READY rework_provenance and points at A0's actual completed result; a forged relation with no provenance produces no edge (A-N3)." },
+    { "verdict": "REASONING_CANDIDATE_ADMISSION_SEPARATED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "Branch, Candidate and Claim are distinct identities; a pending candidate is not an admission (B-N1) and a pending sibling never leaks through the accepted frontier (B-N9)." },
+    { "verdict": "GROUNDED_INTENT_REVISION_RECONSTRUCTED", "status": "PASS_REAL_OWNER_FIXTURE", "evidence": "The accepted receipt's proposalDigest equals the proposal's, its three grounds resolve to their owners, and the resulting ProjectIR revision is read from the canonical Work event history." },
+    { "verdict": "PROOF_STANDING_TEMPORAL_SEPARATION", "status": "PASS_SOURCE_GROUNDED", "evidence": "Historical standing (publishedStanding) and current effective standing are separate fields; a digest difference establishes CHANGED, never invalidity, and STALE_BY_OWNER requires the owner's own semantics (G-N13)." },
+    { "verdict": "UNRESOLVED_EDGES_NOT_PROMOTED", "status": "PASS_DETERMINISTIC", "evidence": "The invariant evidenceState === ESTABLISHED_BY_OWNER_REFERENCE ⟺ evidence !== null holds across both real scenarios and every falsifier; unresolved relations appear only as diagnostics." },
+    { "verdict": "G1B_HOST_EVIDENCE_QUARANTINED", "status": "PASS_SOURCE_GROUNDED", "evidence": "The maximal admitted host status is LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION; a producer-claimed RUN_ATTEMPT_CORRELATED creates no node and no edge (G-N8). The G1-B Correlator was not modified." },
+    { "verdict": "READ_ONLY_NO_CANONICAL_MUTATION", "status": "PASS_SOURCE_GROUNDED", "evidence": "No port exposes a write; the module holds no store; the barrel exports no writer; two queries leave the Work event count, the proof chain digest and the reasoning cell view unchanged, and the owner's verifyFull still passes." },
+    { "verdict": "DETERMINISTIC_PROJECTION_DIGEST", "status": "PASS_DETERMINISTIC", "evidence": "Two rebuilds from the same history are byte-identical and reordering independent inputs does not move the digest (G-N17/G-N18)." },
+    { "verdict": "HISTORICAL_EVIDENCE_IMMUTABILITY", "status": "PASS_SOURCE_GROUNDED", "evidence": "21 protected evidence namespaces unchanged, 0 removed; the G1 and G1-B evidence tree hashes are identical to the baseline." },
+    { "verdict": "PRODUCT_ARCHITECTURE_CHECK", "status": "PASS", "evidence": "architecture:check PASS — 0 violations, 9 accepted baseline exceptions observed (unchanged)." },
+    { "verdict": "PUBLIC_API_COMPATIBILITY", "status": "PASS", "evidence": "check-public-api PASS — 0 missing, 0 changed kind, 0 added." }
+  ],
+  "notRun": [
+    { "verdict": "BROWSER_E2E", "status": "NOT_RUN", "reason": "No UI surface was modified, which the ruling permits." }
+  ],
+  "notEstablished": [
+    {
+      "capability": "INDEPENDENT_HOST_ORIGIN_AUTHENTICATION",
+      "status": "NOT_ESTABLISHED",
+      "reason": "G1-B's Correlator still exposes caller-controlled trust admission surfaces and does not enforce every claimed Run/Claim/Readback relationship for all inputs. T0 records this as a forward finding and quarantines the observation; it does not fix it, because the ruling forbids fixing G1-B inside T0."
+    }
+  ],
+  "completionState": "TRAJECTORY_T0_QUALIFIED",
+  "completionStateJustification": "The minimum read-only contract and BOTH real Owner-backed paths work: scenario A (Work Result → Rework → New Attempt) and scenario B (Reasoning/Proof → Grounded Intent Revision) are driven through the real product machinery and reconstructed from actual owner records. Identity, source boundaries, temporal basis and unresolved-edge behaviour are proven, and all 35 negative controls are refused. 71 T0 tests pass; architecture and public-API checks pass; the owner evidence is byte-identical; and T0 introduces zero new suite failures (proven by an isolated baseline-commit comparison).",
+  "isPrimaryLaunchDecision": false,
+  "finalAcceptanceAnswer": {
+    "question": "Can Palimpsest reconstruct a trustworthy project evolution view from actual Work, Reasoning, Proof, Intent and Workspace owner histories, preserve the historical basis of each fact, establish only source-backed relationships, and refuse to turn unresolved observations into canonical truth?",
+    "answer": "YES, for the bounded read-only foundation T0 implements.",
+    "whatThisDoesNotProve": [
+      "that every project evolution is causally understood",
+      "that multi-Agent collaboration is autonomously intelligent",
+      "that real PRIMARY execution is ready"
+    ]
+  }
+}

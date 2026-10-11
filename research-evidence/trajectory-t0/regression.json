@@ -1,0 +1,61 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C5",
+  "kind": "safe regression surface, measured",
+  "commands": {
+    "build": "npx tsc -b",
+    "architecture": "node scripts/audit/module-architecture.mjs --check",
+    "publicApi": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "t0Tests": "npx vitest run test/trajectory_t0_*.test.ts --maxWorkers=4",
+    "fullSuite": "npx vitest run --maxWorkers=4"
+  },
+  "results": {
+    "build": { "status": "PASS", "detail": "tsc -b clean, no diagnostics" },
+    "architecture": { "status": "PASS", "violations": 0, "acceptedBaselineExceptionsObserved": 9, "detail": "src/trajectory/** classified L2 with a written reason in tools/architecture/layers.ts; no new forbidden edge, no new cycle, no unclassified module" },
+    "publicApi": { "status": "PASS", "missing": 0, "changedKind": 0, "added": 0, "detail": "src/trajectory is not re-exported from src/index.ts or src/advanced.ts, so the package surface is unchanged" },
+    "t0Tests": { "status": "PASS", "files": 4, "tests": 71, "passed": 71, "detail": "trajectory_t0_contract (22) + trajectory_t0_work_rework (16) + trajectory_t0_reasoning_intent (14) + trajectory_t0_falsifiers (19)" },
+    "historicalEvidenceImmutability": { "status": "PASS", "protectedNamespaces": 21, "changed": 0, "removed": 0, "detail": "research-evidence/r3-l0c-g0, r3-l0c-g1, r3-l0c-g1b and r3-l0c-iar are byte-identical; the G1 evidence tree hash is 4c98ca488c20ae00722ebd802243e936ed587bc2 and the G1-B tree hash is 571e6019dbe2cf66c98743f8a7e94a7b9e74c92c, both unchanged from the baseline" },
+    "fullSuite": {
+      "status": "PASS_WITH_PRE_EXISTING_FAILURES",
+      "atHeadMaxWorkers4": { "files": 314, "tests": 4460, "passed": 4445, "failed": 15 },
+      "detail": "The 15 failures are the archived R3-L0C execution-plan closure-binding family. They are NOT caused by T0 — proven by a single-variable experiment below."
+    }
+  },
+  "singleVariableProof": {
+    "method": "An isolated git worktree at the EXACT baseline commit fae6c668685a23da6839da3069707d3de2e91121 (with no src/trajectory and no dist/src/trajectory) was built and the identical test files were run in isolation.",
+    "baselineWorktree": "/f/Codex_Work_Space/Palimpsest/t0-baseline-probe (detached HEAD fae6c66; dist/src/trajectory confirmed absent)",
+    "isolationComparison": [
+      { "file": "test/r3l0ciarlcf_gates.test.ts", "baselineAlone": "2 failed | 27 passed (29)", "headAlone": "2 failed | 27 passed (29)", "identical": true },
+      { "file": "test/r3l0ciarlc_gates.test.ts", "baselineAlone": "2 failed | 20 passed (22)", "headAlone": "2 failed | 20 passed (22)", "identical": true },
+      { "file": "test/r3l0ciarlcfsh_persisted.test.ts", "baselineAlone": "5 failed | 6 passed (11)", "headAlone": "5 failed | 6 passed (11)", "identical": true },
+      { "file": "test/r3l0ciarl_gates.test.ts", "baselineAlone": "1 failed | 18 passed (19)", "headAlone": "1 failed | 18 passed (19)", "identical": true },
+      { "file": "test/r3l0ciarlcfs_gates.test.ts", "baselineAlone": "5 failed | 54 passed (59)", "headAlone": "5 failed | 54 passed (59)", "identical": true },
+      { "file": "test/r3l0ci_gates.test.ts", "baselineAlone": "17 passed (17)", "headAlone": "17 passed (17)", "identical": true },
+      { "file": "test/r3l0cia_gates.test.ts", "baselineAlone": "25 passed (25)", "headAlone": "25 passed (25)", "identical": true },
+      { "file": "test/r3l0ciar_gates.test.ts", "baselineAlone": "25 passed (25)", "headAlone": "25 passed (25)", "identical": true }
+    ],
+    "conclusion": "Every archived-plan failure reproduces identically at the baseline commit with zero T0 code present. T0 introduces 0 new failures and fixes 0 (fixing them is out of scope and would require weakening a closure guard, which the ruling forbids).",
+    "singleVariableChanged": "src/trajectory/** + src/composition/trajectory.ts + tools/architecture/layers.ts (one classification line) + test/trajectory_t0_*.test.ts"
+  },
+  "archivedClosureDriftClassification": {
+    "classification": "DRIFTED_EXPECTED",
+    "reason": "The archived R3-L0C execution plans bind an EXECUTION_CLOSURE digest computed over the runtime manifest of dist/src modules (RUNTIME_MANIFEST_MODULES) plus a source-import graph. Adding a new src/ module necessarily moves that digest, so the archived plan's recorded closure cannot match a changed source tree. This is the same class of drift the G1-B stage recorded as ARCHIVED_PLAN_COMPATIBILITY = DRIFTED_EXPECTED.",
+    "guardsWeakened": false,
+    "archivedPlansRegenerated": false,
+    "archivedPlansModified": false
+  },
+  "batchNondeterminism": {
+    "observed": "Running the eight archived-plan gate files together at a FIXED commit produced 15, then 16, then 20 failures across three runs; the same files in isolation are stable.",
+    "cause": "A known shared-resource race in that family (the shared DSH profile installation under ~/.dsh/profiles, previously reported by the G1-B stage under six workers). It is present at the baseline commit too.",
+    "t0Involvement": "None. T0 has zero references to the shared profile installer, and the same nondeterminism reproduces at the baseline.",
+    "mitigation": "All T0 verification used per-file isolation and --maxWorkers=4; no shared profile installer was run concurrently."
+  },
+  "unsafeLegacyTests": {
+    "runAgainstSharedDependencies": false,
+    "detail": "The known unsafe isolated-mutation cleanup test was not run against shared dependencies; the T0 work-rework scenario uses its own tmpdir repository and a FakeGitPort."
+  },
+  "dsmModelLaunch": false,
+  "primaryEnabled": false,
+  "expensiveMatrixRun": false,
+  "browserE2e": "NOT_RUN — no UI surface was modified (the ruling permits this omission)."
+}

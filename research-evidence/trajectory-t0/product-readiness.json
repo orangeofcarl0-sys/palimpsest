@@ -1,0 +1,46 @@
+{
+  "stage": "Trajectory-T0",
+  "kind": "what a future capability may reuse from T0, and what T0 deliberately did not implement",
+  "implementedHere": false,
+  "reusableFoundation": [
+    {
+      "capability": "Agent Handoff",
+      "reuses": ["TrajectoryNode + TrajectoryOwnerReference (small, verifiable references)", "the basis vector (what basis the handoff describes)", "the unresolved set (what the receiver must not assume)"],
+      "whatT0Provides": "typed read-only references and explicit caveats; no prompt injection and no selection policy"
+    },
+    {
+      "capability": "Project History Explorer",
+      "reuses": ["buildTrajectoryReadModel", "the currentness classification", "the source-coverage table"],
+      "whatT0Provides": "the answers as data; the presentation is not built"
+    },
+    {
+      "capability": "Context selection",
+      "reuses": ["resolvableReferences with SAFE_TO_RESOLVE | UNRESOLVED | CONFLICTING", "per-node owner plane and canonical id"],
+      "whatT0Provides": "which references are safely resolvable; a future Context owner selects under existing authorization and budget rules"
+    },
+    {
+      "capability": "Cross-Agent continuation",
+      "reuses": ["the rework lineage and result-subject references", "the historical authorization preservation"],
+      "whatT0Provides": "the reconstruction; continuation decisions stay with the existing owners"
+    },
+    {
+      "capability": "Capital provenance",
+      "reuses": ["RESULT_PROMOTED and GOVERNED_INTENT_CHANGED_PROJECT edges with their owner evidence", "the established-vs-unresolved distinction"],
+      "whatT0Provides": "provenance that is source-backed or explicitly unresolved; T0 creates no Procedure and publishes no Proof"
+    },
+    {
+      "capability": "Institutional learning",
+      "reuses": ["the negative-result and failed-attempt references surfaced as candidates", "the temporal separation of historical standing from current standing"],
+      "whatT0Provides": "candidates for future learning; admission remains with the existing owners"
+    }
+  ],
+  "deliberatelyNotImplemented": [
+    "no automatic injection of the whole trajectory into a prompt",
+    "no automatic capital promotion from a failed attempt or a negative result",
+    "no Trajectory-driven Knowledge Admission policy",
+    "no automatic multi-Agent orchestration",
+    "no Trajectory SQL table, persistent scheduler or background re-indexing daemon",
+    "no model-facing action tool",
+    "no second canonical ProjectIR projection and no global event-ordering service"
+  ]
+}

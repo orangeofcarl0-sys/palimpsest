@@ -1,0 +1,41 @@
+{
+  "stage": "Trajectory-T0",
+  "kind": "proof that querying Trajectory mutates nothing",
+  "claim": "Trajectory is read-only by construction, not by discipline.",
+  "structuralEvidence": {
+    "portMethodNaming": "Every method on every Trajectory port matches ^(list|read|assess|replay|basis|frontier|observations|journal|associations|proofClaimView|projectScopedAssets).",
+    "noWriterInPorts": "There is no append, settle, publish, admit, revise, promote, write or mutate method anywhere in src/trajectory/**.",
+    "noStoreInModule": "src/trajectory/** opens no database, creates no table and holds no durable state. The projection is a pure function of its inputs.",
+    "compositionAdapterExposesReadsOnly": "src/composition/trajectory.ts maps owner READS into the ports and declares no owner write. It is the only module that names both Trajectory and an owner.",
+    "noReverseDependency": "No owner module imports src/trajectory/**. The architecture checker reports 0 forbidden edges and 0 new cycles.",
+    "noPackageExport": "The public API check reports 0 added names: src/trajectory is an internal capability and is not re-exported from src/index.ts or src/advanced.ts.",
+    "projectionFlag": "Every TrajectoryProjection carries readOnly: true as a literal."
+  },
+  "runtimeEvidence": [
+    {
+      "test": "test/trajectory_t0_work_rework.test.ts :: §8 G-N16",
+      "measured": "After two buildProjectTrajectory calls, the Work event count and the last event digest are unchanged, and the owner's own EventStore.verifyFull() still passes."
+    },
+    {
+      "test": "test/trajectory_t0_reasoning_intent.test.ts :: §8 G-N16",
+      "measured": "After two projections, the Work event count is unchanged, the proof plane's chainDigest is unchanged, and the reasoning cell view is deeply equal to its pre-query value."
+    },
+    {
+      "test": "test/trajectory_t0_falsifiers.test.ts :: G-N15 / G-N16",
+      "measured": "The port method names are asserted against ^(list|read|assess); the module barrel is asserted to export no name matching ^(append|settle|publish|admit|revise|promote|write|mutate); a repeated query leaves the input history's length and digest unchanged."
+    }
+  ],
+  "uncheckedDimensions": [
+    {
+      "dimension": "Git HEAD",
+      "status": "NOT_APPLICABLE",
+      "reason": "The Trajectory projection reads no git repository. It has no git port, so it cannot move a HEAD or a worktree."
+    },
+    {
+      "dimension": "project asset content",
+      "status": "NOT_APPLICABLE",
+      "reason": "The projection reads journal entries and associations through their stores; it never writes asset content, and the stores it reads are append-only with no Trajectory-held handle."
+    }
+  ],
+  "canonicalMutationByTrajectory": false
+}

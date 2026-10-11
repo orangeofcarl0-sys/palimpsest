@@ -1,0 +1,96 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C2",
+  "kind": "trajectory semantic contract and pure projection",
+  "module": "src/trajectory/**",
+  "architectureLayer": "L2 (semantic capability; owns no store, no scheduler, no writer)",
+  "architectureCheck": "PASS (0 violations)",
+  "publicApiCheck": "PASS (0 missing, 0 changed kind, 0 added — the module is not re-exported from the package entries)",
+  "foundationalEquation": "Trajectory = Owner History + Provenance Relations + Temporal Currentness",
+  "modules": [
+    { "file": "src/trajectory/refs.ts", "owns": "OWNER_PLANES, REFERENCE_VERIFICATION_STATES, EDGE_EVIDENCE_STATES, TRAJECTORY_RELATIONS, SOURCE_AUTHENTICITY_STATES, EPISTEMIC_STATUS_STATES, CURRENTNESS_STATES, COMPLETENESS_STATES, trajectoryNodeIdOf, trajectoryEdgeIdOf, makeOwnerReference, makeTrajectoryNode, EDGE_DOES_NOT_AUTHORIZE" },
+    { "file": "src/trajectory/contract.ts", "owns": "TrajectoryBasisVector, OwnerBasisCursor, BASIS_VECTOR_COMPLETENESS, readObservationWindow, trajectorySemanticDigestOf, workBasisComponent" },
+    { "file": "src/trajectory/ports.ts", "owns": "TrajectoryWorkPort, TrajectoryReasoningPort, TrajectoryProofPort, TrajectoryWorkspacePort, TrajectoryHostObservationPort, TrajectoryProjectionInputs, HOST_OBSERVATION_ADMISSION" },
+    { "file": "src/trajectory/projection.ts", "owns": "buildProjectTrajectory, validateWorkHistory, trajectoryAsOf, traceAttempt, traceIntentRevision, trajectoryRootIdOf, TrajectoryRefusal" },
+    { "file": "src/trajectory/currentness.ts", "owns": "classifyCurrentness, buildTrajectoryReadModel" },
+    { "file": "src/trajectory/index.ts", "owns": "the package barrel (internal only; not a package entry)" },
+    { "file": "src/composition/trajectory.ts", "owns": "composeTrajectoryInputs — the ONE adapter that sees the concrete owners and exposes reads only" }
+  ],
+  "fourSeparateDimensions": {
+    "rationale": "§3 T0-B3: a single ordered enum would incorrectly treat HOST_OBSERVED, ADMITTED and CURRENT as interchangeable levels of truth.",
+    "dimensions": ["authenticity (SOURCE_AUTHENTICITY_STATES)", "epistemicStatus (EPISTEMIC_STATUS_STATES)", "currentness (CURRENTNESS_STATES)", "completeness (COMPLETENESS_STATES)"]
+  },
+  "identityRules": {
+    "nodeId": "tn-<32 hex> = canonicalDigest({domain:'palimpsest.trajectory.node.v1', schemaVersion, ownerPlane, ownerScope, canonicalId, sourceSequence, sourceDigest, projectId})",
+    "edgeId": "te-<32 hex> = canonicalDigest({domain:'palimpsest.trajectory.edge.v1', relation, fromNodeId, toNodeId})",
+    "rootId": "tr-<32 hex> = canonicalDigest({domain:'palimpsest.trajectory.root.v1', schemaVersion, projectId, asOfSequence})",
+    "semanticDigest": "canonicalDigest({domain:'palimpsest.trajectory.projection.v1', rootId, basisVector, nodes, edges, unresolved})",
+    "noUuidGeneratedDuringProjection": true,
+    "noTimestampInSemanticIdentity": true,
+    "noModelAuthoredIdentity": true,
+    "labelIsPresentationOnly": true
+  },
+  "edgeEvidenceStates": ["ESTABLISHED_BY_OWNER_REFERENCE", "TEMPORAL_ONLY", "DECLARED_ONLY", "UNRESOLVED_SOURCE", "CONFLICTING_SOURCE"],
+  "edgeInvariant": "evidenceState === ESTABLISHED_BY_OWNER_REFERENCE ⟺ evidence !== null; every other state carries evidence === null",
+  "relationFamilies": {
+    "temporal": ["SAME_OWNER_SEQUENCE_SUCCESSOR", "EXPLICIT_PREDECESSOR"],
+    "work": ["TASK_AUTHORIZED_ATTEMPT", "ATTEMPT_PRODUCED_RESULT", "RESULT_VERIFIED", "RESULT_PROMOTED", "ATTEMPT_REOPENED_FOR_REWORK"],
+    "cognitive": ["BRANCH_SUBMITTED_CANDIDATE", "CANDIDATE_EVALUATED", "CLAIM_ADMITTED", "CLAIM_INVALIDATED", "PROOF_SOURCE_SUPPORTED_EVIDENCE", "RECEIPT_REFERENCED_GROUND"],
+    "projectEvolution": ["REVISION_SUCCEEDED_REVISION", "GOVERNED_INTENT_CHANGED_PROJECT", "PROMOTION_APPLIED_TO_PROJECT"]
+  },
+  "noGenericCausedByEdge": {
+    "generated": false,
+    "reason": "§3: do not generate generic CAUSED_BY edges merely from adjacency. No relation name in TRAJECTORY_RELATIONS contains 'CAUS'; adjacency is emitted only as SAME_OWNER_SEQUENCE_SUCCESSOR with evidenceState TEMPORAL_ONLY."
+  },
+  "edgeDoesNotAuthorize": ["Work execution", "Work settlement", "Proof publication", "Reasoning admission", "ProjectIR revision", "Promotion", "External spending"],
+  "workEventValidation": {
+    "parser": "parseSchedulerEvent (owner parser; recomputes request_digest AND event_digest, so a mutated payload with a stale digest is refused)",
+    "checks": [
+      "project identity (FOREIGN_PROJECT_EVENT)",
+      "per-project sequence continuity (SEQUENCE_DISCONTINUITY)",
+      "previous-event-digest linkage (PREVIOUS_DIGEST_MISMATCH)",
+      "causation reference must be an EARLIER same-project event (CAUSATION_NOT_EARLIER)",
+      "duplicate project_sequence (DUPLICATE_PROJECT_SEQUENCE)",
+      "non-genesis interval requires an explicit validated predecessor basis (MISSING_PREDECESSOR_BASIS, PREDECESSOR_BASIS_MISMATCH)"
+    ],
+    "nonGenesisCausationRule": "A causation_id below the interval's first event is accepted ONLY because a validated predecessor basis was supplied and event_id is strictly increasing; without that basis validation has already refused."
+  },
+  "basisVector": {
+    "components": ["work", "projectIr", "reasoning[]", "proof", "journal[]", "world[]"],
+    "availabilityVocabulary": ["AVAILABLE", "EMPTY", "UNAVAILABLE", "NOT_COMPOSED"],
+    "completenessVocabulary": ["COMPLETE", "INCOMPLETE", "RACED"],
+    "absentOwnerIsNotEmptyHistory": true,
+    "observationWindowProtocol": "read basis → read history → read basis → compare; a moved basis marks the window RACED rather than silently re-reading",
+    "claimsGlobalAtomicSnapshot": false,
+    "explicitStatement": "This is an optimistic observation protocol, not a global distributed transaction."
+  },
+  "asOfSemantics": {
+    "requiresExplicitOwnerCursor": true,
+    "requiresValidatedPredecessorBasisForNonGenesisCut": true,
+    "futureEventsExcluded": true,
+    "historicalFactRetained": ["original Task Envelope", "historical authorization", "historical World Basis", "actual Result reference", "verification outcomes available at that time"]
+  },
+  "hostEvidenceBoundary": {
+    "maximalAdmittedStatus": "LOCAL_HOST_OBSERVATION_UNVERIFIED_FOR_CAUSAL_ADMISSION",
+    "establishesVerifiedExecutionCausationEdge": false,
+    "reason": "G1-B's Correlator still exposes caller-controlled trust admission surfaces and does not enforce every claimed Run/Claim/Readback relationship for all inputs, so its returned string is recorded and never promoted."
+  },
+  "forbiddenExpansionCheck": {
+    "trajectorySqlTables": false,
+    "persistentScheduler": false,
+    "newDurableWorkEvents": false,
+    "secondCanonicalProjectIrProjection": false,
+    "globalEventOrderingService": false,
+    "agentMemoryTranscription": false,
+    "autonomousSynthesis": false,
+    "backgroundReindexingDaemon": false,
+    "uiFramework": false,
+    "modelFacingActionTool": false
+  },
+  "tests": {
+    "file": "test/trajectory_t0_contract.test.ts",
+    "count": 22,
+    "result": "22 passed",
+    "covers": ["deterministic identity", "edge evidence states", "basis vector", "currentness separation", "work event validation", "as-of cuts", "read model caveats"]
+  }
+}

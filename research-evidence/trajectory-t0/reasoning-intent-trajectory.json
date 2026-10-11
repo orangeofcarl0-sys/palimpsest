@@ -1,0 +1,75 @@
+{
+  "stage": "Trajectory-T0",
+  "commit": "C4",
+  "kind": "real owner replay scenario B — Reasoning / Proof -> Grounded Intent Revision",
+  "fixtureAuthority": "REAL_OWNER_FIXTURE",
+  "fixtureAuthorityDetail": "Every fact is produced by the real services via installPalimpsest: the Reasoning service, the Proof service, the Project Workspace service and the Project Intent service. The admission authority is a DETERMINISTIC TEST POLICY, not independent real-world approval, and the trajectory reports it as exactly that.",
+  "testFile": "test/trajectory_t0_reasoning_intent.test.ts",
+  "testCount": 14,
+  "result": "14 passed",
+  "modelCallsMade": 0,
+  "dshWorkerLaunched": false,
+  "primaryEnabled": false,
+  "positiveRelations": [
+    {
+      "owner": "REASONING",
+      "canonicalSource": "PROJECT_REVISED.payload.intent_reconciliation.groundBindings[kind=reasoning].claimId",
+      "basis": "the cell's accepted frontier (frontierRevision + frontierDigest)",
+      "observedRelation": "RECEIPT_REFERENCED_GROUND",
+      "establishedBy": "the reasoning plane resolves the claim on the cell's ACTIVE frontier AND the cell carries a REASONING_CELL association for this project",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "PROOF",
+      "canonicalSource": "PROJECT_REVISED.payload.intent_reconciliation.groundBindings[kind=proof].claimId",
+      "basis": "the proof plane's published-claim view",
+      "observedRelation": "RECEIPT_REFERENCED_GROUND",
+      "establishedBy": "the proof plane reports the claim as PUBLISHED AND a PROOF_CLAIM association exists for this project",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORKSPACE",
+      "canonicalSource": "PROJECT_REVISED.payload.intent_reconciliation.groundBindings[kind=negative_result].entryId",
+      "basis": "the project journal's per-project sequence and chain digest",
+      "observedRelation": "RECEIPT_REFERENCED_GROUND",
+      "establishedBy": "the journal holds a JOURNAL_ENTRY_RECORDED event carrying the entry id, in this project's scope",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    },
+    {
+      "owner": "WORK",
+      "canonicalSource": "PROJECT_REVISED.payload.intent_reconciliation.proposalBasis",
+      "basis": "the ProjectIR revision the proposal was made AGAINST",
+      "observedRelation": "GOVERNED_INTENT_CHANGED_PROJECT",
+      "establishedBy": "the receipt's proposalBasis.revision resolves to a revision node in the same cut",
+      "evidenceLevel": "REAL_OWNER_FIXTURE"
+    }
+  ],
+  "distinctionsProven": {
+    "branchCandidateClaimDistinct": {
+      "branchIdShape": "br-<24 hex>",
+      "claimIdShape": "cl-<24 hex>",
+      "candidateDigestShape": "bare 64 hex",
+      "measured": "the three identities are distinct kinds; a candidate reports status PENDING | ADMITTED | REJECTED | DEDUPLICATED | UNRESOLVED and its presence never implies Admission"
+    },
+    "candidateIsNotAdmission": "B-N1: a deliberately unevaluated candidate stays PENDING, admittedClaimIds is empty, the Intent owner refuses a ground on it, and the trajectory records no established ground edge.",
+    "receiptReferencesExactProposalDigest": "measured: receipt.proposalDigest === prepared.proposal.digest and receipt.proposalId === prepared.proposal.proposalId",
+    "negativeResultIsNotProofTruth": "B-N7: the journal entry node has epistemicStatus RECORDED (never PUBLISHED, never ADMITTED) while the edge that grounds on it is ESTABLISHED_BY_OWNER_REFERENCE",
+    "pendingSiblingDoesNotLeak": "B-N9: the accepted frontier holds only the admitted claim; the pending sibling candidate appears in neither the frontier nor any trajectory reasoning node"
+  },
+  "historicalReceiptNotRewritten": {
+    "verifiedBy": "a later claim invalidation leaves receipt.digest and receipt.groundBindings byte-identical while the node's currentness becomes STALE_BY_OWNER and its epistemicStatus becomes INVALIDATED",
+    "currentnessReportedSeparatelyFromHistoricalAdmission": true
+  },
+  "negativeControls": [
+    { "id": "B-N1", "invalidRelation": "a pending/rejected Candidate treated as an admitted claim", "refused": "the candidate stays PENDING; the Intent owner refuses the ground; no established ground edge exists", "reason": "admittedClaimIds and activeClaimIds are both empty for the cell" },
+    { "id": "B-N2", "invalidRelation": "a Claim from another project supplied as a Ground without association", "refused": "the Intent owner refuses at prepare time (INTENT_GROUND_NOT_PROJECT_ASSOCIATED); the trajectory never sees a ground edge", "reason": "the owner's project-association boundary holds before the projection is reached" },
+    { "id": "B-N3", "invalidRelation": "an Intent Receipt whose Proposal Digest disagrees with the source", "refused": "the authority approving a different digest than it was shown is refused; no PROJECT_REVISED is committed; no GOVERNED_INTENT_CHANGED_PROJECT edge", "reason": "the owner's admission checks the exact digest it was shown" },
+    { "id": "B-N4", "invalidRelation": "a missing Source Ground", "refused": "RECEIPT_REFERENCED_GROUND with evidenceState UNRESOLVED_SOURCE and evidence null; the proof component of the basis vector is NOT_COMPOSED", "reason": "the ground's owning plane is absent from the composition" },
+    { "id": "B-N5", "invalidRelation": "a current Project Revision substituted for the historical Proposal Basis", "refused": "the edge's compared basisRevision is the HISTORICAL revision (0) while the basis vector reports the CURRENT revision (1) separately", "reason": "the receipt records the basis the proposal was made against; T0-I4 forbids silent rebasing" },
+    { "id": "B-N6", "invalidRelation": "a Reasoning Frontier that changed after observation reported as unchanged", "refused": "the frontierRevision differs between the two observations and the node's currentness is STALE_BY_OWNER", "reason": "the frontier digest moves on CLAIM_ADMITTED / CLAIM_INVALIDATED, which the projection re-reads" },
+    { "id": "B-N7", "invalidRelation": "a NEGATIVE_RESULT journal entry promoted to Proof truth because it grounded a proposal", "refused": "the node's epistemicStatus is RECORDED; the serialized node contains neither 'published' nor 'admitted'", "reason": "a journal negative result is a note that grounded a proposal, not proof" },
+    { "id": "B-N8", "invalidRelation": "a ProjectIR revision inferred from a proposal that was never admitted", "refused": "no PROJECT_REVISED event, no revision change, and no GOVERNED_INTENT_CHANGED_PROJECT edge", "reason": "a proposal without an accepted receipt is not a revision" },
+    { "id": "B-N9", "invalidRelation": "a Branch's pending sibling Candidate leaking through an accepted-frontier view", "refused": "the frontier holds only the admitted claim; the sibling candidate digest appears in no reasoning node", "reason": "the accepted frontier is the owner's own read, and T0 does not widen it" }
+  ],
+  "fabricatedSuccessfulEdge": false
+}

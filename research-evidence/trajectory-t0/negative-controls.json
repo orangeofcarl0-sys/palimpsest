@@ -1,0 +1,54 @@
+{
+  "stage": "Trajectory-T0",
+  "kind": "negative controls across both real-owner scenarios and the projection falsifiers",
+  "totals": {
+    "scenarioA": 8,
+    "scenarioB": 9,
+    "projectionFalsifiers": 18,
+    "combined": 35
+  },
+  "allRefused": true,
+  "fabricatedSuccessfulEdge": false,
+  "scenarioA_A_N1_to_A_N8": [
+    { "id": "A-N1", "invalidRelation": "A0's authorization replaced with the current Task Envelope", "refusal": "UNRESOLVED_SOURCE edge and an unresolved reference", "exactReason": "no TASK_CREATED/TASK_REAUTHORIZED event carries the rebound envelope_id" },
+    { "id": "A-N2", "invalidRelation": "an event from another project", "refusal": "TrajectoryRefusal FOREIGN_PROJECT_EVENT", "exactReason": "event.project_id differs from the requested project" },
+    { "id": "A-N3", "invalidRelation": "a forged Rework relation without the governed TASK_READY provenance", "refusal": "no rework edge produced", "exactReason": "with no rework_provenance the relation has no source and cannot be invented" },
+    { "id": "A-N4", "invalidRelation": "removal of the event a relation depends on", "refusal": "RESULT_PROMOTED degrades to UNRESOLVED_SOURCE, evidence null", "exactReason": "the promoted attempt's completed result is absent" },
+    { "id": "A-N5", "invalidRelation": "a mutated payload with an un-updated digest", "refusal": "TrajectoryRefusal INVALID_SOURCE_EVENT", "exactReason": "parseSchedulerEvent recomputed the digest and it disagreed" },
+    { "id": "A-N6", "invalidRelation": "a corrupted previous-event digest chain", "refusal": "TrajectoryRefusal PREVIOUS_DIGEST_MISMATCH", "exactReason": "the event does not link to the prior event digest" },
+    { "id": "A-N7", "invalidRelation": "a causation reference to a later event", "refusal": "TrajectoryRefusal CAUSATION_NOT_EARLIER", "exactReason": "the cited event is not earlier in the same project" },
+    { "id": "A-N8", "invalidRelation": "a stale/missing World Basis presented as current", "refusal": "world component EMPTY with basisDigest null", "exactReason": "no recorded basis exists; the absence is explicit rather than a pass" }
+  ],
+  "scenarioB_B_N1_to_B_N9": [
+    { "id": "B-N1", "invalidRelation": "a pending Candidate treated as an admitted claim", "refusal": "the candidate stays PENDING and no ground edge exists", "exactReason": "admittedClaimIds and activeClaimIds are empty for the cell" },
+    { "id": "B-N2", "invalidRelation": "a Claim from another project supplied as a Ground without association", "refusal": "INTENT_GROUND_NOT_PROJECT_ASSOCIATED at prepare time", "exactReason": "the owner's project-association boundary holds before the projection is reached" },
+    { "id": "B-N3", "invalidRelation": "an Intent Receipt whose Proposal Digest disagrees with the source", "refusal": "the apply is refused; no PROJECT_REVISED; no governed-intent edge", "exactReason": "the authority approved a digest different from the one it was shown" },
+    { "id": "B-N4", "invalidRelation": "a missing Source Ground", "refusal": "UNRESOLVED_SOURCE with evidence null; proof availability NOT_COMPOSED", "exactReason": "the ground's owning plane is absent from the composition" },
+    { "id": "B-N5", "invalidRelation": "a current Project Revision substituted for the historical Proposal Basis", "refusal": "the edge keeps the historical basisRevision (0); the current revision (1) is reported separately", "exactReason": "the receipt records the basis the proposal was made against" },
+    { "id": "B-N6", "invalidRelation": "a Reasoning Frontier that changed after observation reported as unchanged", "refusal": "frontierRevision differs and the node's currentness is STALE_BY_OWNER", "exactReason": "the frontier digest moves on claim admission and invalidation" },
+    { "id": "B-N7", "invalidRelation": "a NEGATIVE_RESULT promoted to Proof truth because it grounded a proposal", "refusal": "epistemicStatus RECORDED; the node contains neither 'published' nor 'admitted'", "exactReason": "a journal note is not proof" },
+    { "id": "B-N8", "invalidRelation": "a ProjectIR revision inferred from a proposal that was never admitted", "refusal": "no PROJECT_REVISED, no revision change, no governed-intent edge", "exactReason": "a proposal without an accepted receipt is not a revision" },
+    { "id": "B-N9", "invalidRelation": "a pending sibling Candidate leaking through the accepted frontier", "refusal": "the frontier holds only the admitted claim; the sibling digest appears in no reasoning node", "exactReason": "the accepted frontier is the owner's own read and is not widened" }
+  ],
+  "projectionFalsifiers_G_N1_to_G_N18": [
+    { "id": "G-N1", "invalid": "same-title events merging", "outcome": "two distinct nodes" },
+    { "id": "G-N2", "invalid": "one source event yielding two node identities", "outcome": "exactly one nodeId per canonical source id" },
+    { "id": "G-N3", "invalid": "a foreign ProjectId accepted via matching numeric ids", "outcome": "refused" },
+    { "id": "G-N4", "invalid": "sequence continuity violated", "outcome": "refused" },
+    { "id": "G-N5", "invalid": "recency fabricating a causal predecessor", "outcome": "TEMPORAL_ONLY only; no causal relation exists" },
+    { "id": "G-N6", "invalid": "independent histories presented as a total order", "outcome": "per-owner cursors only" },
+    { "id": "G-N7", "invalid": "correlation_id as proof of causation", "outcome": "no established edge uses correlation_id" },
+    { "id": "G-N8", "invalid": "an unverified Host record claiming correlation", "outcome": "quarantined; no node, no edge" },
+    { "id": "G-N9", "invalid": "a Worker summary as verified changed files", "outcome": "no changed-file claim exists in the projection" },
+    { "id": "G-N10", "invalid": "a Proof Candidate as a published claim", "outcome": "UNRESOLVED_SOURCE" },
+    { "id": "G-N11", "invalid": "an owner advancing during projection reported as consistent", "outcome": "RACED" },
+    { "id": "G-N12", "invalid": "an unavailable Owner treated as empty", "outcome": "NOT_COMPOSED / INCOMPLETE" },
+    { "id": "G-N13", "invalid": "current standing overwriting historical standing", "outcome": "two separate fields preserved" },
+    { "id": "G-N14", "invalid": "an as-of view including later events", "outcome": "the later event is absent" },
+    { "id": "G-N15", "invalid": "the projection appending an owner event", "outcome": "no writer exists in the API surface" },
+    { "id": "G-N16", "invalid": "querying changing the owner's state", "outcome": "count and digest unchanged" },
+    { "id": "G-N17", "invalid": "input array order changing the digest", "outcome": "digest unchanged" },
+    { "id": "G-N18", "invalid": "two rebuilds differing", "outcome": "byte-identical" }
+  ],
+  "traceability": "Every control is traceable to an actual owner boundary: A-N1/A-N3/A-N4/A-N5/A-N6/A-N7 to the Work event contract and chain; A-N2 to the project scope; A-N8 to the world-basis store; B-N1/B-N6/B-N9 to the reasoning cell's frontier and candidate status; B-N2/B-N4 to the workspace association and the composed planes; B-N3/B-N5/B-N8 to the intent receipt and admission; B-N7 to the journal entry kind. None is a generic object validator."
+}
