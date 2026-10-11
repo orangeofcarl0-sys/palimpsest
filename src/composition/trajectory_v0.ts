@@ -187,6 +187,20 @@ function admitAttempt(input: {
   readonly events: readonly SchedulerEvent[];
   readonly record: ReturnType<TrajectoryV0WorkOwner["attemptWorkRecord"]>;
 }): { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null } {
+  /**
+   * §10.3: a DEFENSIVE integrity check, not a second uniqueness authority. The owner already enforces
+   * `PRIMARY KEY (project_id, attempt_id)` and its projector refuses a duplicate ATTEMPT_CREATED, so
+   * more than one matching creation event in one project means the history is corrupted. The check is
+   * cheap and fails closed.
+   */
+  const creationCount = input.events.filter((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === input.attemptId).length;
+  if (creationCount > 1) {
+    throw new AttemptAdmissionRefusal(
+      "ATTEMPT_SOURCE_CONFLICT",
+      `project ${input.projectId} records ${String(creationCount)} ATTEMPT_CREATED events for attempt ${input.attemptId}, so its canonical identity is ambiguous`,
+    );
+  }
+
   const { created, terminal, authorization } = attemptEvents(input.events, input.attemptId);
   if (created === null) {
     /**

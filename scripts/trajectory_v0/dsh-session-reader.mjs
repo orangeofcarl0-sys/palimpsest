@@ -327,13 +327,29 @@ export async function makeRealDshSessionReader(input) {
          * SYNTHETIC RECOVERY EVENT — an event the original execution never wrote.
          */
         const stored = await readStoredPrefix(persistence, request.sessionId, SessionId);
-        const boundaryKnown = stored !== null;
-        const storedCount = stored === null ? null : stored.count;
+        /**
+         * H0 §10.2: COLD-READ CONSISTENCY. `readColdSessionLog` and `readStoredPrefix` are two
+         * separate reads, and DSH documents that "reads concurrent with a mutation carry no ordering
+         * promise beyond the valid contiguous prefix". So the stored prefix could have GROWN between
+         * the two reads, which would classify stored events as synthetic closers (or vice versa).
+         *
+         * The fail-closed check: if the second read reports MORE stored events than the first read
+         * returned in total, the two reads observed different snapshots and the boundary is UNRESOLVED.
+         * A prefix that shrank or matched is consistent with the first read's snapshot.
+         */
+        const boundaryConsistent = stored === null ? false : stored.count <= all.length;
+        const boundaryKnown = stored !== null && boundaryConsistent;
+        const storedCount = boundaryKnown ? stored.count : null;
         const durabilityOf = (seq) => {
           if (!boundaryKnown) return 'DURABILITY_UNRESOLVED';
           return seq < storedCount ? 'PERSISTED_DSH_EVENT' : 'SYNTHETIC_RECOVERY_EVENT';
         };
         const syntheticCount = boundaryKnown ? all.filter((event) => event.seq >= storedCount).length : null;
+        const boundaryDetail = boundaryKnown
+          ? `(${String(storedCount)} stored, ${String(syntheticCount)} synthetic recovery closer(s))`
+          : stored !== null && !boundaryConsistent
+            ? '(the storage changed between the cold read and the prefix read, so the persisted/synthetic boundary is unresolved)'
+            : '(the persisted/synthetic boundary could not be verified against the storage seam)';
 
         const inheritedCount = log.inheritedEventCount;
         const page = all.slice(fromSeq, fromSeq + maxEvents).map((event) =>
@@ -368,11 +384,7 @@ export async function makeRealDshSessionReader(input) {
           knownParentSession: typeof log.header.parentSession === 'string' ? log.header.parentSession : null,
           proves: PAGE_PROVES,
           doesNotProve: PAGE_DOES_NOT_PROVE,
-          detail:
-            `read ${String(page.length)} of ${String(all.length)} events from the session's own log ` +
-            (boundaryKnown
-              ? `(${String(storedCount)} stored, ${String(syntheticCount)} synthetic recovery closer(s))`
-              : '(the persisted/synthetic boundary could not be verified against the storage seam)'),
+          detail: `read ${String(page.length)} of ${String(all.length)} events from the session's own log ${boundaryDetail}`,
         });
       } catch (error) {
         const readState = classifyFailure(error);

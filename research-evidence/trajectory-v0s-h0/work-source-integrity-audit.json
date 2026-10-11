@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_WORK_SOURCE_INTEGRITY_AUDIT",
+  "stage": "Trajectory-V0S-H0",
+  "attemptUniqueness": {
+    "ownerAuthority": "the `attempts` table declares PRIMARY KEY (project_id, attempt_id)",
+    "projectorBehavior": "the ATTEMPT_CREATED projector INSERT is wrapped so a duplicate raises ProjectionError('attempt already exists')",
+    "conclusion": "the canonical owner already enforces Attempt uniqueness; the consumer's `.find()` is NOT a second authority",
+    "consumerCheckAdded": "a DEFENSIVE duplicate-count check in admitAttempt raises ATTEMPT_SOURCE_CONFLICT if more than one canonical ATTEMPT_CREATED names the same attempt in one project — a cheap integrity assertion, not a new authority"
+  },
+  "readIntegrityLayers": {
+    "rowToEvent": "validates and parses each stored row",
+    "verifyFull": "the owner's full event-chain validation (per-project sequence, previous-digest linkage, causation-earlier)",
+    "consumerAdmission": "reads the project-scoped event list and requires exactly one matching ATTEMPT_CREATED",
+    "buildProjectTrajectory": "re-parses each Work event and recomputes both digests"
+  },
+  "failedProjectionHandling": {
+    "before": "every T0 projection failure collapsed into one 'could not be built' caveat, so a corrupted canonical Work source was indistinguishable from an uncomposed optional owner",
+    "after": "a TrajectoryRefusal (T0's own Work-history validation refusal) is reported as a CANONICAL WORK SOURCE integrity failure; any other failure is reported as an optional cross-owner plane that could not be projected",
+    "canonicalFactsUnaffected": "the canonical Work facts come from the owner's own read, so they are not lost when the projection fails; the PROJECT CONTEXT is what degrades, and it now says why"
+  },
+  "secondValidatorIntroduced": false,
+  "parallelWorkDatabaseIntroduced": false,
+  "classification": "SOURCE_DEMONSTRATED",
+  "tests": { "files": ["test/trajectory_h0_relations.test.ts", "test/trajectory_h0_falsifiers.test.ts"], "failed": 0 }
+}
