@@ -1,0 +1,74 @@
+{
+  "stage": "Trajectory-V0",
+  "kind": "the Attempt→Session binding, as measured",
+  "verdict": "SESSION_UNBOUND_FOR_REAL_PRODUCT_ATTEMPTS",
+  "whyNoBoundVerifiedExists": "No component in this deployment writes a durable, canonical binding from a Work AttemptId to a DSH SessionId. `BOUND_VERIFIED` is therefore unreachable in V0 for a real product attempt, and V0 never assigns it.",
+  "identityOwners": [
+    { "identity": "Work AttemptId", "producedBy": "the Work owner — `stableEntityId('attempt', actionKey('attempt-create-v1', {...}))` at src/scheduler/scheduler.ts:493", "shape": "attempt-<32 hex>", "durability": "canonical and durable", "cardinality": "one per prepared attempt; the address V0 uses" },
+    { "identity": "HostJobId", "producedBy": "the delegation service — `wdj-${randomUUID()}` at src/interaction/work_delegation.ts:423", "shape": "wdj-<uuid>", "durability": "EPHEMERAL host-local; lost on restart", "cardinality": "one per start() call" },
+    { "identity": "Port InvocationId", "producedBy": "the worker port's observation emitter (src/deployment/work_worker.ts)", "shape": "wpi-<uuid>", "durability": "one process-port invocation", "cardinality": "one per port invocation" },
+    { "identity": "DSH SessionId", "producedBy": "DSH itself — the SessionHeader.id", "shape": "session-<uuid> or a caller-chosen id", "durability": "DSH-owned; durable in the session log", "cardinality": "NOT assumed to be 1:1 with an attempt" },
+    { "identity": "Trajectory View ID", "producedBy": "Trajectory — `trajectoryViewIdOf({projectId, attemptId})`", "shape": "tv-<32 hex>", "durability": "derived read-model address; NOT an authority", "cardinality": "one per (projectId, attemptId)" }
+  ],
+  "cardinalityNotAssumed": "V0 keeps the four execution identities as four separate fields and never derives one from another. The tests assert that a caller-supplied SessionId can reach at most BOUND_LOCAL_ONLY, and that a conflicting header is CONFLICT.",
+  "bindingStates": ["BOUND_VERIFIED", "BOUND_LOCAL_ONLY", "SESSION_UNBOUND", "AMBIGUOUS", "CONFLICT", "SOURCE_UNAVAILABLE"],
+  "bindingSources": ["CANONICAL_ATTEMPT_BINDING", "HOST_PORT_OBSERVATION", "CALLER_DECLARATION", "NONE"],
+  "measuredOutcomes": [
+    {
+      "scenario": "a real non-model Work Attempt, no session claimed",
+      "observedStatus": "BOUND_LOCAL_ONLY",
+      "observedSource": "HOST_PORT_OBSERVATION",
+      "evidenceClass": "PASS_REAL_OWNER_NONMODEL",
+      "note": "a real host observation supports the binding, but no canonical producer confirms it, so it may not claim BOUND_VERIFIED"
+    },
+    {
+      "scenario": "a real attempt with a caller-supplied session id and NO reader composed",
+      "observedStatus": "SOURCE_UNAVAILABLE",
+      "observedSource": "CALLER_DECLARATION",
+      "evidenceClass": "PASS_REAL_OWNER_NONMODEL",
+      "note": "the session is IDENTIFIED but the read capability is absent — reported as SESSION_IDENTIFIED_NOT_READ, never as an empty history"
+    },
+    {
+      "scenario": "a real attempt with a caller-supplied id whose header names a DIFFERENT session",
+      "observedStatus": "CONFLICT",
+      "observedSource": "CALLER_DECLARATION",
+      "evidenceClass": "PASS_DSH_QUERY_PORT_FIXTURE",
+      "note": "a contradiction is never downgraded to unbound"
+    },
+    {
+      "scenario": "a caller-supplied id accepted by a real reader (header agrees)",
+      "observedStatus": "BOUND_LOCAL_ONLY",
+      "observedSource": "CALLER_DECLARATION",
+      "evidenceClass": "PASS_REAL_DSH_QUERY_NO_MODEL",
+      "note": "a declaration is evidence of a REQUEST, not of a binding — this is the ceiling for a caller-supplied id"
+    },
+    {
+      "scenario": "no session, no host observation",
+      "observedStatus": "SESSION_UNBOUND",
+      "observedSource": "NONE",
+      "evidenceClass": "synthetic contract test",
+      "note": "the honest default"
+    }
+  ],
+  "cwdScopeCheckIsNotOwnership": {
+    "supported": true,
+    "limitation": "A DSH Session's cwd matching a Work World would support a SCOPE check, but scope alone does not establish exclusive Attempt ownership — so it can never raise a binding above BOUND_LOCAL_ONLY.",
+    "measuredAbsence": "A scan of all 1142 persisted session headers found 462 whose cwd contains `palimpsest`, and ZERO whose cwd is a `.palimpsest/worlds/<attemptId>` execution world."
+  },
+  "missingProducerRequirement": {
+    "requirement": "A durable Attempt→DSH Session binding producer",
+    "producerThatWouldOwnIt": "the host/deployment boundary (the worker port already knows the child it spawned and the attempt it was prepared for)",
+    "authority": "host-local lifecycle metadata, NOT a canonical Work fact and NOT a new owner",
+    "lifecycle": "written when the port spawns the child; readable after the child exits; may be lost on host restart",
+    "failureSemantics": "a missing binding must degrade to SESSION_UNBOUND, never to a guess",
+    "implementedInV0": false,
+    "reason": "§11 forbids creating the store prematurely; V0 records the requirement instead"
+  },
+  "prohibitionsObserved": {
+    "newestSessionSelectedByMtime": false,
+    "sessionSelectedByFilenameSimilarity": false,
+    "arbitraryPersonalHistoriesSearched": false,
+    "callerSuppliedSessionIdTrustedWithoutEvidence": false,
+    "genericUnrestrictedListSessionsExposedToAgents": false
+  }
+}

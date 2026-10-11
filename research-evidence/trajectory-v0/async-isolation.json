@@ -1,0 +1,79 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C3/C5",
+  "kind": "real non-model Work, asynchronous inspection, and two-attempt isolation",
+  "evidenceClass": "PASS_REAL_OWNER_NONMODEL",
+  "stack": "installPalimpsest → ProjectController → makeWorkDelegationService → dshSubprocessWorkWorkerPort, driven by a LOCAL NON-MODEL Node stub",
+  "stubSafety": {
+    "invokesDsh": false,
+    "contactsProvider": false,
+    "touchesRemoteService": false,
+    "modelCallsMade": 0,
+    "onlyEffect": "a file edit plus a git commit inside the attempt's own execution world"
+  },
+  "asynchronousInspection": {
+    "startReturnsBeforeCompletion": true,
+    "measured": "`start()` returned { state: 'STARTED' } before the job finished; the terminal phase was observed by polling `followup`",
+    "separateCallerAddressesTheAttempt": true,
+    "measured": "the Trajectory service addressed the attempt by its canonical id AFTER start() returned, with no reference to the host job handle and no active main Agent Turn",
+    "attemptIdentityShape": "attempt-<32 hex>",
+    "hostJobIdMatchesTheCorrectInvocation": true,
+    "portInvocationIdMatchesTheCorrectInvocation": true,
+    "portInvocationIdShape": "wpi-<uuid>"
+  },
+  "workerOutcomeIsNotSettlement": {
+    "processLifecycle": "EXITED",
+    "canonicalPromotionState": "NOT_PROMOTED",
+    "canonicalVerificationState": "NOT_OBSERVED_BY_V0",
+    "caveatPresent": "a direct child exiting with code zero does not prove Work settlement, and a DSH turn/end does not prove promotion",
+    "measured": "the Preview reports the process as EXITED while promotion remains NOT_PROMOTED — the two facts never collapse"
+  },
+  "noFabricatedSession": {
+    "dshSessionId": null,
+    "bindingStatus": "BOUND_LOCAL_ONLY",
+    "bindingSource": "HOST_PORT_OBSERVATION",
+    "sessionLifecycle": "NO_SESSION_BOUND",
+    "measured": "the stub produces no DSH session; V0 reports SESSION_UNBOUND semantics explicitly rather than inventing an id"
+  },
+  "projectEvolutionIdentifiesTheCorrectAttempt": {
+    "resultRefsPresent": true,
+    "selectedRelationObserved": "ATTEMPT_PRODUCED_RESULT with evidenceState ESTABLISHED_BY_OWNER_REFERENCE",
+    "projectionRootIdPresent": true
+  },
+  "afterRestart": {
+    "hostJobHandle": "UNKNOWN",
+    "followupDetail": "this host has no such job (host-local jobs are not durable, so a restart forgets them) — inspect the attempt by its own id for the canonical truth",
+    "processLifecycle": "UNKNOWN_AFTER_RESTART",
+    "canonicalAttemptStateStillReadable": "COMPLETED",
+    "canonicalResultStillReadable": true,
+    "newHostJobPersistenceImplemented": false,
+    "measured": "a NEW delegation service reported the old handle as UNKNOWN, and the Preview reported UNKNOWN_AFTER_RESTART while the canonical attempt and its result stayed independently readable and unchanged"
+  },
+  "twoAttemptIsolation": {
+    "evidenceClass": "PASS_REAL_OWNER_NONMODEL",
+    "arrangement": "two INDEPENDENT projects, both started before either was awaited, so their executions genuinely interleave — the ruling's permitted arrangement when the scheduler would refuse simultaneous attempts in one project",
+    "distinctCanonicalIdentities": true,
+    "distinctHostJobs": true,
+    "distinctPortInvocationIds": true,
+    "distinctViewIds": true,
+    "distinctProjectionRootIds": true,
+    "crossContamination": {
+      "previewAContainsBEvents": false,
+      "previewBContainsAEvents": false,
+      "measured": "each Preview's host/attempt identity matches only its own attempt, and each projection root differs"
+    },
+    "interleavedTimingIsNotCausality": "V0 derives no precedence from wall-clock interleaving; the two Previews share no edge and no ordering claim",
+    "completionDoesNotTerminalizeTheOther": true,
+    "measured": "both attempts reached COMPLETED independently",
+    "reconstructibleAfterObservation": true,
+    "measured": "a second build for attempt A produced the same previewDigest and the same viewId"
+  },
+  "negativeControls": [
+    { "control": "supply B's SessionId as A's claimed binding (no reader composed)", "outcome": "SOURCE_UNAVAILABLE with sessionLifecycle SESSION_IDENTIFIED_NOT_READ — never a successful binding", "refused": true },
+    { "control": "a composed reader whose header names a DIFFERENT session", "outcome": "CONFLICT, and readEvents is never reached", "refused": true },
+    { "control": "the same display label (task_id 't1') on two different Attempts", "outcome": "distinct canonical ids, distinct view ids, neither view claims the other's attempt", "refused": true },
+    { "control": "a reader asserting trustedIngestion / RUN_ATTEMPT_CORRELATED / 'the attempt settled and was promoted'", "outcome": "the self-declared claim does not raise the binding above BOUND_LOCAL_ONLY and does not change the canonical promotion state", "refused": true },
+    { "control": "an unrelated event page from the Session reader", "outcome": "the page's own proves-list is never propagated into the Preview's canonical facts", "refused": true }
+  ],
+  "fabricatedSuccessfulBinding": false
+}

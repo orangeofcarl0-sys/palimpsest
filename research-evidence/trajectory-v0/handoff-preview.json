@@ -1,0 +1,77 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C5",
+  "kind": "the read-only Handoff Preview, with two sanitized examples",
+  "shape": "one bounded, serializable read model — HandoffPreview",
+  "statusSeparation": {
+    "singleCompletedBoolean": false,
+    "separateDimensions": ["processLifecycle", "sessionLifecycle", "canonical.attemptState", "canonical.verificationState", "canonical.promotionState", "completeness"],
+    "why": "§6: a direct child exiting zero does not prove settlement, a DSH turn/end does not prove promotion, and an attempt completing does not prove every DSH event was recovered"
+  },
+  "questionsAnswered": [
+    { "question": "Which project and Attempt are being inspected?", "fields": ["attempt.projectId", "attempt.taskId", "attempt.attemptId", "attempt.viewId"] },
+    { "question": "On which Work/World basis was the Attempt authorized?", "fields": ["attempt.historicalAuthorization.envelopeId", "attempt.historicalAuthorization.basisDigest", "attempt.historicalAuthorization.capturedAtRevision", "attempt.historicalAuthorization.detail"] },
+    { "question": "What execution activity is genuinely observable?", "fields": ["execution.processLifecycle", "execution.processDetail", "execution.events", "execution.eventsDetail"] },
+    { "question": "Which DSH Session is bound, if any?", "fields": ["execution.dshSessionId", "execution.bindingStatus", "execution.bindingSource", "execution.bindingDetail"] },
+    { "question": "Which process events are known?", "fields": ["execution.hostLocalJobId", "execution.portInvocationId", "execution.processLifecycle"] },
+    { "question": "Which Work Result and verification facts exist?", "fields": ["canonical.resultRefs", "canonical.resultDetail", "canonical.verificationState", "canonical.attemptState"] },
+    { "question": "Was a result promoted?", "fields": ["canonical.promotionState", "canonical.promotionId"] },
+    { "question": "Is there a governed Rework relation?", "fields": ["canonical.reworkState", "canonical.reworkDetail"] },
+    { "question": "Which evidence is incomplete or conflicted?", "fields": ["caveats.sourcesUnavailable", "caveats.contradictoryObservations", "caveats.epistemicLimits", "projectContext.unresolvedReferences"] },
+    { "question": "What sources should a future Agent inspect rather than blindly assume?", "fields": ["projectContext.selectedRelations", "projectContext.quarantinedRelations", "caveats.epistemicLimits"] }
+  ],
+  "exampleA_settledAttempt": {
+    "evidenceClass": "PASS_REAL_OWNER_NONMODEL",
+    "sanitized": true,
+    "shape": {
+      "attempt": { "projectId": "<project>", "taskId": "t1", "attemptId": "attempt-<32hex>", "viewId": "tv-<32hex>", "historicalAuthorization": { "envelopeId": "envelope-<32hex>", "basisDigest": "<64hex>", "capturedAtRevision": 0 } },
+      "execution": { "bindingStatus": "BOUND_LOCAL_ONLY", "bindingSource": "HOST_PORT_OBSERVATION", "processLifecycle": "EXITED", "sessionLifecycle": "NO_SESSION_BOUND", "dshSessionId": null, "hostLocalJobId": "wdj-<uuid>", "portInvocationId": "wpi-<uuid>", "events": [] },
+      "canonical": { "attemptState": "COMPLETED", "resultRefs": ["<40hex commit>"], "verificationState": "NOT_OBSERVED_BY_V0", "promotionState": "NOT_PROMOTED", "reworkState": "NONE" },
+      "projectContext": { "projectionRootId": "tr-<32hex>", "historicalBasisNote": "WORK_HISTORICAL_CUT_WITH_CURRENT_CROSS_OWNER_READS: ...", "selectedRelations": ["TASK_AUTHORIZED_ATTEMPT", "ATTEMPT_PRODUCED_RESULT"] },
+      "completeness": "PARTIAL"
+    },
+    "caveats": [
+      "No DSH session is bound to this attempt: no producer records an Attempt→Session relationship, so no session events are presented.",
+      "G1-B local host observations are NOT independent, authority-bearing provenance...",
+      "A direct child exiting with code zero does not prove Work settlement, and a DSH turn/end does not prove promotion.",
+      "A Work attempt completing does not prove every DSH event was durably recovered.",
+      "the T0 basis vector is INCOMPLETE, so the projection is not a globally consistent snapshot"
+    ],
+    "sourceReferences": "every relation carries its carryingField and compared values; the authorization names its event_id and project_sequence"
+  },
+  "exampleB_incompleteOrUnboundAttempt": {
+    "evidenceClass": "PASS_REAL_OWNER_NONMODEL (with a caller-claimed session)",
+    "sanitized": true,
+    "shape": {
+      "execution": { "bindingStatus": "SOURCE_UNAVAILABLE", "bindingSource": "CALLER_DECLARATION", "processLifecycle": "EXITED", "sessionLifecycle": "SESSION_IDENTIFIED_NOT_READ", "sessionReadState": "READ_CAPABILITY_ABSENT", "dshSessionId": "<caller-supplied>", "events": [] },
+      "canonical": { "attemptState": "COMPLETED", "promotionState": "NOT_PROMOTED" },
+      "completeness": "PARTIAL"
+    },
+    "caveats": [
+      "The DSH session source could not be read; its absence is a missing source, not an empty history.",
+      "A session was claimed for this attempt but no DSH session reader is composed in this deployment."
+    ],
+    "sourceReferences": "the binding evidence records the caller's claimed id and the absence of a readable source"
+  },
+  "noAutomaticContinuation": {
+    "canResumeSession": false,
+    "canScheduleWorker": false,
+    "canSettleAttempt": false,
+    "canApprovePromotion": false,
+    "canSelectCapital": false,
+    "canInjectContext": false,
+    "structuralReason": "the module holds no owner and every input is a value; there is no method that could perform any of these"
+  },
+  "usability": {
+    "boundedSerializableModel": true,
+    "newWebUi": false,
+    "fullAgentTimelineExplorer": false,
+    "usableWithoutOpeningRawJson": true,
+    "measuredSize": "a real Preview serializes well under 200 KB, asserted by test"
+  },
+  "determinism": {
+    "twoBuildsByteIdentical": true,
+    "digestExcludesTimeAndPath": true,
+    "measured": "two builds from the same inputs produced the same previewDigest and byte-identical JSON; no host path or wall-clock time enters the digest"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "stage": "Trajectory-V0",
+  "kind": "measured implementation weight and consumer feedback",
+  "measuredRatherThanAsserted": true,
+  "identityQuality": {
+    "attemptLookupSuccess": "every real-attempt lookup by canonical AttemptId succeeded; the selector uses the canonical Work event's entity_id plus event type and project id",
+    "sessionBindingSuccess": 0,
+    "sessionBindingMissing": "all real product attempts — SESSION_UNBOUND, because no Attempt→Session producer exists",
+    "sessionBindingAmbiguous": 0,
+    "sessionBindingLocalOnly": "every real attempt with a host observation (BOUND_LOCAL_ONLY)",
+    "sessionBindingConflict": "1 (measured with a reader whose header names a different session)",
+    "wrongSourceRejections": "the CONFLICT control refused a header mismatch, and the SESSION_MISSING control refused an absent id",
+    "duplicateSourceHandling": "AMBIGUOUS is a first-class state; no candidate is ever picked by convenience"
+  },
+  "readCompleteness": {
+    "executionEventsAvailable": "a real DSH session read returned a bounded page (50 of 37-75 known events depending on the session); the ruled vocabulary is present in real logs",
+    "canonicalWorkFactsAvailable": ["attempt state", "task id", "historical authorization envelope id", "historical world basis digest and captured-at revision", "result commit reference", "promotion state and id", "rework state"],
+    "unresolvedRelationships": "reported in projectContext.unresolvedReferences; empty in the real non-model scenarios because those histories contain no cross-owner ground",
+    "missingOrStaleSources": "reported in caveats.sourcesUnavailable, caveats.missingSession and projectContext.currentnessCaveats"
+  },
+  "consumerUsefulness": {
+    "answersTheRulingQuestions": true,
+    "fieldsRequiringTheOriginalOwner": [
+      "verification state — V0 reports NOT_OBSERVED_BY_V0 rather than reading the verification plane",
+      "the reasoning/proof/workspace bases — read by T0 but presented only as coverage and caveats"
+    ],
+    "additionalDataThatWouldMateriallyImproveThePreview": [
+      "a durable Attempt→DSH Session binding, which would let the execution half be authoritative rather than caller-requested",
+      "the verification owner's verdict, so canonical.verificationState becomes a real fact",
+      "a T0 exact Ground verifier, so the quarantined cross-owner relations become selectable"
+    ],
+    "fieldsPresentButNotObviousToAConsumer": [
+      "attempt.historicalAuthorization.basisDigest — useful only to a consumer that can resolve a basis digest",
+      "projectContext.projectionSemanticDigest — useful for reproducibility checks, not for reading"
+    ]
+  },
+  "operationalCost": {
+    "ownerReadsPerPreview": "1 Work event-list read, 1 attempt record read, 1 basis resolution, 1 promotion-facts read, plus 1 T0 projection build (which itself reads the Work history once and each referenced cross-owner scope)",
+    "dshSessionReadsPerPreview": "1 header read and 1 bounded event read when a session is claimed; 0 otherwise",
+    "eventsReadPerPage": 50,
+    "localNonModelTestTime": "the real-stack test files complete in roughly 15-60 s each on this machine; the DSH source tests in roughly 37 s",
+    "dshEventsDuplicatedIntoNewPersistentStorage": false,
+    "newProductionModules": 3,
+    "changedExistingInterfaces": "src/trajectory/index.ts — additive exports only; the public package API check reports 0 added names because src/trajectory is not re-exported from the package entries"
+  },
+  "complexity": {
+    "newCanonicalOwners": 0,
+    "newAgentLoops": 0,
+    "newSessionStores": 0,
+    "newAutomaticExecutionPaths": 0,
+    "newSchedulers": 0,
+    "newGraphDatabases": 0
+  },
+  "decisionFramework": [
+    { "capability": "read a DSH session's events and header identity", "classification": "REUSE_EXISTING_SOURCE", "reason": "readColdSessionLog and the JSONL backend are first-party and reachable; no new code was needed beyond a thin adapter" },
+    { "capability": "inspect a Work Attempt's canonical facts", "classification": "REUSE_EXISTING_SOURCE", "reason": "the Work owner and the T0 projection already provide every canonical fact V0 presents" },
+    { "capability": "combine both views into one read model", "classification": "SMALL_ADAPTER_SUFFICIENT", "reason": "one composition adapter (507 lines) plus two semantic modules; no storage, no scheduler" },
+    { "capability": "bind a Work Attempt to a DSH Session durably", "classification": "MISSING_TRUSTED_BINDING", "reason": "no producer exists; V0 records the requirement rather than creating the store" },
+    { "capability": "restart-safe host job lifecycle", "classification": "REQUIRES_PROVEN_NEW_PERSISTENCE", "reason": "host jobs are deliberately ephemeral; a durable host lifecycle would be a new persistence decision, deferred until a consumer needs it" },
+    { "capability": "raw event inspection / full transcript view", "classification": "DEFER_UNTIL_CONSUMER_DEMAND", "reason": "the default Preview must not expose raw content; a future separately-authorized capability is the right shape" },
+    { "capability": "an exact T0 cross-owner Ground verifier", "classification": "DEFER_UNTIL_CONSUMER_DEMAND", "reason": "the quarantined relations are not needed by this consumer; fixing them would be another T0 reconstruction framework" }
+  ],
+  "strongBindingRequirementIfNeeded": {
+    "producer": "the host/deployment boundary (the worker port already knows the child it spawned and the attempt it prepared for)",
+    "authority": "host-local lifecycle metadata — not a canonical Work fact and not a new owner",
+    "lifecycle": "written at spawn, readable after exit, lost on host restart",
+    "failureSemantics": "a missing binding degrades to SESSION_UNBOUND, never to a guess",
+    "createdInV0": false
+  }
+}
