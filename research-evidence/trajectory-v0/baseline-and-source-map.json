@@ -1,0 +1,62 @@
+{
+  "stage": "Trajectory-V0",
+  "commit": "C1",
+  "kind": "baseline and source map",
+  "baseline": {
+    "commit": "ba334cede59b92a880467d03e67af849acbe90ed",
+    "branch": "trajectory-t0-owner-referenced-projection",
+    "remoteRef": "origin/trajectory-t0-owner-referenced-projection",
+    "remoteEqualsLocal": true,
+    "treeClean": true,
+    "v0Branch": "trajectory-v0-dual-view-slice",
+    "v0BranchPreExisted": false
+  },
+  "t0CommitIdentities": [
+    { "sha": "ba334cede59b92a880467d03e67af849acbe90ed", "subject": "research(trajectory-t0): record the trajectory evidence, the read-only proof and the final verdicts" },
+    { "sha": "7ec640aaac653d79bafbf2993ef364a2328283a1", "subject": "test(trajectory-t0): falsify identity, ordering, evidence, currentness and determinism" },
+    { "sha": "c9d59f82775e64626fb9d2302286751f9905dd6a", "subject": "test(trajectory-t0): reconstruct the grounded intent revision from the real reasoning, proof and workspace owners" },
+    { "sha": "71c98bf684fbafb061575b0a004bf01e417655e1", "subject": "feat(trajectory-t0): reconstruct the Work rework lineage from the real owners" },
+    { "sha": "7150ec63c30c4cb9f45581dd3daed31020aaef4d", "subject": "feat(trajectory-t0): define the read-only trajectory contract, basis vector and pure projection" },
+    { "sha": "5e5055b7666ac56f385752a3299e0f5b8932b817", "subject": "research(trajectory-t0): audit the owner read boundaries before defining the trajectory contract" }
+  ],
+  "t0TreeIdentities": {
+    "codeTree": "3bf488946fc8ed7211c47c9c8f1c8a803514a4c5",
+    "codeTreePath": "src/trajectory",
+    "evidenceTree": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "evidenceTreePath": "research-evidence/trajectory-t0"
+  },
+  "t0ArchitectureClassification": {
+    "file": "tools/architecture/layers.ts",
+    "line": 107,
+    "entry": "trajectory: \"L2\"",
+    "reason": "the read-only TRAJECTORY PROJECTION owns no store, no scheduler, no canonical event, no promotion and no authority"
+  },
+  "protectedEvidenceUnchanged": {
+    "checked": ["research-evidence/r3-l0c-g0", "research-evidence/r3-l0c-g1", "research-evidence/r3-l0c-g1b", "research-evidence/r3-l0c-iar", "research-evidence/trajectory-t0", "docs/research"],
+    "changed": 0,
+    "removed": 0,
+    "g1EvidenceTree": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "g1bEvidenceTree": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c"
+  },
+  "historicalRestrictionsObserved": {
+    "archivedPlansRegenerated": false,
+    "closureGuardsWeakened": false,
+    "archivedEvidenceRewritten": false,
+    "closureDriftClassification": "DRIFTED_EXPECTED — V0 adds product source, so the archived R3-L0C execution-closure digest necessarily moves; this stays explicit and is not treated as a new regression."
+  },
+  "sourceMap": {
+    "existingReused": [
+      { "path": "src/trajectory/**", "role": "the T0 read-only Project Evolution projection, reused by V0-C" },
+      { "path": "src/interaction/work_delegation.ts", "role": "the Work delegation service and worker port contract" },
+      { "path": "src/deployment/work_worker.ts", "role": "the real DSH subprocess worker port (used with a local non-model stub)" },
+      { "path": "src/tools/controller.ts", "role": "Work/ProjectIR owner reads (attempt record, basis, currentness, promotions)" },
+      { "path": "src/state/event_store.ts", "role": "the canonical Work event log" }
+    ],
+    "newInV0": [
+      { "path": "src/trajectory/execution.ts", "role": "execution identity + binding contract (V0-A) and the DSH session read port contract (V0-B)" },
+      { "path": "src/trajectory/handoff_preview.ts", "role": "the read-only Handoff Preview (V0-D)" },
+      { "path": "src/composition/trajectory_v0.ts", "role": "the composition adapter that wires the real owners + the DSH reader into the Preview" }
+    ],
+    "notModified": ["src/trajectory/projection.ts (T0's 1682-line projector)", "canonical Owner state transitions", "G1-B's Correlator", "R3 experimental pipelines"]
+  }
+}
