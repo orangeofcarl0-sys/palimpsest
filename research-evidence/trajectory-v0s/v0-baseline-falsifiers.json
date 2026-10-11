@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_BASELINE_FALSIFIERS",
+  "measuredAgainst": "526f377eac0343004c17a484a6f9057989f433df",
+  "evidenceClasses": [
+    "DYNAMICALLY_REPRODUCED",
+    "SOURCE_DEMONSTRATED",
+    "NOT_ESTABLISHED"
+  ],
+  "counts": {
+    "DYNAMICALLY_REPRODUCED": 3,
+    "SOURCE_DEMONSTRATED": 3
+  },
+  "results": [
+    {
+      "id": "F1",
+      "claim": "an unrelated but readable caller-selected session enters the Attempt Preview as its session",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "measured": {
+        "bindingStatus": "BOUND_LOCAL_ONLY",
+        "sessionLifecycle": "SESSION_READ",
+        "dshSessionId": "session-unrelated-to-attempt",
+        "eventsEnteredPreview": 4,
+        "completeness": "COMPLETE"
+      },
+      "verdict": "CONFIRMED: the unrelated session's events were presented as the attempt's, and the attempt's Preview reported the foreign session id as its own."
+    },
+    {
+      "id": "F2",
+      "claim": "a wrong-attempt HostRecord is accepted and its job/invocation identity appears in another attempt's Preview",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "measured": {
+        "accepted": true,
+        "hostLocalJobId": "wdj-another-attempt",
+        "portInvocationId": "wpi-another-attempt",
+        "processLifecycle": "EXITED",
+        "attempted": "attempt-bf57d95cf74ab58f5f60902d3068213d"
+      },
+      "verdict": "CONFIRMED: the wrong-attempt record was accepted; the Preview reported hostLocalJobId=wdj-another-attempt and portInvocationId=wpi-another-attempt for a different attempt."
+    },
+    {
+      "id": "F3",
+      "claim": "a foreign/nonexistent Attempt is accepted and the claimed Session is read before the Attempt is rejected",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "measured": {
+        "threw": true,
+        "reads": 1,
+        "code": "readHeaderIdentity reached"
+      },
+      "verdict": "CONFIRMED: 1 read-port call(s) occurred for an attempt not present in the project's canonical Work history."
+    },
+    {
+      "id": "F4",
+      "claim": "the Work node selector admits relationships by display label, and admitted relation kinds without requiring ESTABLISHED_BY_OWNER_REFERENCE",
+      "classification": "SOURCE_DEMONSTRATED",
+      "measured": {
+        "usesLabelIncludes": true,
+        "requiresEstablishedInSelector": false,
+        "labelOnlyMatchDemonstrated": false,
+        "foreignLabel": "ATTEMPT_CREATED attempt-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaab"
+      },
+      "verdict": "CONFIRMED: the baseline selector is `node.label.includes(attemptId)`. It cannot distinguish a node whose canonical event belongs to another entity, and it does not require ESTABLISHED_BY_OWNER_REFERENCE before admitting a relation."
+    },
+    {
+      "id": "F5",
+      "claim": "every returned DSH event is reported as persisted, with no synthetic-recovery distinction",
+      "classification": "SOURCE_DEMONSTRATED",
+      "measured": {
+        "usesColdRead": true,
+        "labelsDurability": false,
+        "slicesWholeLog": true
+      },
+      "verdict": "CONFIRMED: the baseline calls `readColdSessionLog` (whose contract appends `interruptedTurnClosers`) and emits every returned event with no durability field, so a synthesized recovery closer is indistinguishable from a stored event."
+    },
+    {
+      "id": "F6",
+      "claim": "the baseline reader accepts an unusable bounded read request instead of refusing it",
+      "classification": "SOURCE_DEMONSTRATED",
+      "measured": {
+        "coercesNegativeFromSeq": true,
+        "coercesFractionalFromSeq": true,
+        "coercesMaxEvents": true,
+        "enforcesHardMaximum": false,
+        "exportedHelpers": [
+          "PAGE_DOES_NOT_PROVE",
+          "PAGE_PROVES",
+          "SESSION_FILE_CANDIDATES",
+          "listSessionIds",
+          "makeRealDshSessionReader",
+          "resolveDshPackageRoot"
+        ]
+      },
+      "verdict": "CONFIRMED: the baseline coerces the cursor (`Number.isInteger(x) ? x : 0`), so a fractional cursor becomes 0 and a negative integer passes through, and there is no hard maximum page size."
+    }
+  ]
+}
