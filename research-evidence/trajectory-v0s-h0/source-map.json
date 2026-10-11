@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_SOURCE_MAP",
+  "stage": "Trajectory-V0S-H0",
+  "purpose": "For each Attempt-scoped relation, name the canonical owner, the exact field that establishes it, the baseline consumer behavior, the missing validation, the minimal correction, and the test coverage.",
+  "relations": [
+    {
+      "relation": "TASK_AUTHORIZED_ATTEMPT",
+      "canonicalOwner": "WORK (TASK_CREATED / TASK_REAUTHORIZED)",
+      "sourceField": "ATTEMPT_CREATED.payload.envelope_id == TASK_*.payload.task_envelope.envelope_id",
+      "t0Carrier": "the TASK_CREATED/TASK_REAUTHORIZED node (byReference)",
+      "t0Edge": "from=authorizationNode to=attemptNode",
+      "baselineBehavior": "admitted when EITHER endpoint is in the attempt's event-id set",
+      "missingValidation": "the rule cannot tell which ATTEMPT the destination is; a shared authorization admits BOTH attempts' relations",
+      "correction": "require edge.toNodeId === the requested attempt's ATTEMPT_CREATED node AND the compared envelopeId === the attempt's own historical authorization envelope",
+      "tests": ["H0-I1 shared-authorization negative", "real Authorization positive"]
+    },
+    {
+      "relation": "ATTEMPT_PRODUCED_RESULT",
+      "canonicalOwner": "WORK (ATTEMPT_COMPLETED / ATTEMPT_FAILED)",
+      "sourceField": "ATTEMPT_COMPLETED.payload.attempt_report.attempt_id",
+      "t0Carrier": "the terminal node (byReference)",
+      "t0Edge": "from=createdNode to=terminalNode",
+      "baselineBehavior": "admitted when either endpoint is in the attempt's set",
+      "missingValidation": "an endpoint match does not prove the terminal event is THIS attempt's terminal event",
+      "correction": "require edge.fromNodeId === creation node AND edge.toNodeId === the attempt's own terminal node",
+      "tests": ["real Result positive", "wrong-destination negative"]
+    },
+    {
+      "relation": "RESULT_PROMOTED",
+      "canonicalOwner": "WORK (PROMOTION_COMMITTED)",
+      "sourceField": "PROMOTION_COMMITTED.payload.attempt_id",
+      "t0Carrier": "the PROMOTION_COMMITTED node (byReference) — a DIFFERENT entity type from the attempt",
+      "t0Edge": "from=resultNode to=promotionNode",
+      "baselineBehavior": "EXCLUDED: the promotion node's event id is not in the attempt-entity identity set, so the carrier check fails",
+      "missingValidation": "the selector assumed the evidence carrier must be one of the attempt's own events; a genuine cross-entity carrier is rejected",
+      "correction": "require edge.fromNodeId === the attempt's completed result node, edge.toNodeId is a PROMOTION_COMMITTED node, and evidence.compared.attemptId === the requested attemptId; do NOT require the carrier to be an attempt-entity event",
+      "tests": ["real Promotion positive (F2)", "wrong-Attempt Promotion negative"]
+    },
+    {
+      "relation": "ATTEMPT_REOPENED_FOR_REWORK",
+      "canonicalOwner": "WORK (governed TASK_READY.rework_provenance)",
+      "sourceField": "TASK_READY.payload.rework_provenance.origin_result_subject.ref",
+      "t0Carrier": "the TASK_READY node (byReference) — a TASK entity, not an attempt",
+      "t0Edge": "from=originTerminalNode to=readyNode",
+      "baselineBehavior": "EXCLUDED for the same reason as RESULT_PROMOTED: the TASK_READY event id is not an attempt-entity event id",
+      "missingValidation": "cross-entity carrier rejected",
+      "correction": "require edge.fromNodeId === the attempt's own terminal result node AND evidence.compared.originRef === the requested attemptId",
+      "tests": ["real Governed Rework positive (F3)", "wrong-Attempt Rework negative"]
+    }
+  ],
+  "quarantinedRelations": {
+    "RECEIPT_REFERENCED_GROUND": "preserved",
+    "GOVERNED_INTENT_CHANGED_PROJECT": "preserved",
+    "REVISION_SUCCEEDED_REVISION": "preserved",
+    "scopeCorrection": "quarantine reporting must be scoped to the requested Attempt; unrelated relations must not be reported as this Attempt's unresolved facts"
+  },
+  "attemptUniqueness": {
+    "owner": "WORK (attempts table primary key (project_id, attempt_id) + ATTEMPT_CREATED projector insert)",
+    "finding": "the owner already enforces uniqueness; the consumer's `.find()` is not a second authority",
+    "consumerCheck": "a defensive duplicate-count check is retained only as a cheap integrity assertion, not as a new authority"
+  },
+  "otherConsumerDefects": {
+    "sessionClaimReads": "previewAttempt calls readHeaderIdentity + readEvents for any claimed session",
+    "sourceIdentityPath": "reader sourceIdentity interpolates the local package root",
+    "hostProvenance": "classifyHostObservation promotes caller fields to LOCAL_PORT_OBSERVATION",
+    "exitChronology": "hostSummaryOf asserts 'LATER observed' from flag presence alone",
+    "globalProbe": "unknown attempt triggers an unscoped store.listEvents()",
+    "completeness": "COMPLETE ignores page coverage against knownEventCount",
+    "t0LabelMatcher": "traceAttempt() uses node.label.includes(attemptId)",
+    "coldReadRace": "readColdSessionLog and readStoredPrefix are two separate reads",
+    "workIntegrity": "a failed T0 projection is indistinguishable from an uncomposed optional owner"
+  }
+}
