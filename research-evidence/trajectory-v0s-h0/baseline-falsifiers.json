@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-V0S-H0",
+  "measuredAgainst": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "evidenceClasses": ["DYNAMICALLY_REPRODUCED", "SOURCE_DEMONSTRATED", "NOT_ESTABLISHED"],
+  "results": [
+    { "id": "F1", "claim": "a shared authorization event admits the OTHER Attempt's TASK_AUTHORIZED_ATTEMPT relation", "classification": "DYNAMICALLY_REPRODUCED", "fixture": "CONTROLLED_PROJECTION", "sourceLocation": "src/trajectory/relation_admission.ts:82-86", "observed": "2 authorization relations selected for attempt A, one of them belonging to attempt B", "expectedInvariant": "H0-I1" },
+    { "id": "F2", "claim": "a genuine RESULT_PROMOTED relation is excluded", "classification": "DYNAMICALLY_REPRODUCED", "fixture": "REAL_CANONICAL_WORK", "sourceLocation": "src/composition/trajectory_v0.ts:606-613 + relation_admission.ts:111", "observed": "T0 establishes the relation with real evidence; the consumer selects 0 and quarantines it", "expectedInvariant": "H0-I2" },
+    { "id": "F3", "claim": "a genuine ATTEMPT_REOPENED_FOR_REWORK relation is excluded", "classification": "DYNAMICALLY_REPRODUCED", "fixture": "REAL_CANONICAL_WORK", "sourceLocation": "src/composition/trajectory_v0.ts:606-613", "observed": "T0 establishes the relation; the consumer selects 0", "expectedInvariant": "H0-I2" },
+    { "id": "F4", "claim": "a caller-selected SessionId still triggers header and event reads", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "src/composition/trajectory_v0.ts:473-492", "observed": "readHeaderIdentity and readEvents are called whenever a session is claimed", "expectedInvariant": "H0-I3" },
+    { "id": "F5", "claim": "a successful page's sourceIdentity exposes the local installation path", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "scripts/trajectory_v0/dsh-session-reader.mjs sourceIdentity", "observed": "sourceIdentity interpolates the resolved package root", "expectedInvariant": "privacy" },
+    { "id": "F6", "claim": "caller-controlled Host identifiers become LOCAL_PORT_OBSERVATION", "classification": "DYNAMICALLY_REPRODUCED", "fixture": "CONTROLLED_FIXTURE", "sourceLocation": "src/trajectory/execution.ts classifyHostObservation", "observed": "provenance = LOCAL_PORT_OBSERVATION from caller fields alone", "expectedInvariant": "H0-I4" },
+    { "id": "F7", "claim": "a partial attributed page (50 of 200) still yields COMPLETE", "classification": "DYNAMICALLY_REPRODUCED", "fixture": "CONTROLLED_FIXTURE", "sourceLocation": "src/trajectory/handoff_preview.ts previewCompletenessOf", "observed": "completeness = COMPLETE with 50/200 coverage", "expectedInvariant": "H0-I5" },
+    { "id": "F8", "claim": "exit chronology is asserted from flag presence alone", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "src/composition/trajectory_v0.ts hostSummaryOf", "observed": "detail asserts 'and an exit was LATER observed'", "expectedInvariant": "H0-I5" },
+    { "id": "F9", "claim": "an unknown attempt triggers an unscoped cross-project scan", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "src/composition/trajectory_v0.ts:440-445", "observed": "controller.store.listEvents() with no project scope", "expectedInvariant": "cost/privacy boundary", "note": "architectural finding, not a proven security vulnerability" },
+    { "id": "F10", "claim": "T0 traceAttempt() matches by display-label substring", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "src/trajectory/projection.ts traceAttempt", "observed": "node.label.includes(attemptId)", "expectedInvariant": "identity exactness", "deferred": "T0 correction deferred to a separate forward-only slice" },
+    { "id": "F11", "claim": "the durability boundary is located by a second, separate read", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "scripts/trajectory_v0/dsh-session-reader.mjs", "observed": "readColdSessionLog then readStoredPrefix", "expectedInvariant": "honest durability", "note": "a source-structural race is not a dynamically reproduced failure" },
+    { "id": "F12", "claim": "a failed T0 projection is indistinguishable from an uncomposed optional owner", "classification": "SOURCE_DEMONSTRATED", "fixture": "SOURCE_ONLY", "sourceLocation": "src/composition/trajectory_v0.ts projectEvolutionOf catch", "observed": "every failure collapses to 'the T0 project-evolution projection could not be built'", "expectedInvariant": "H0-I6" }
+  ],
+  "counts": { "DYNAMICALLY_REPRODUCED": 5, "SOURCE_DEMONSTRATED": 7, "NOT_ESTABLISHED": 0 },
+  "noModelExecution": true,
+  "noPersonalSessionsRead": true
+}

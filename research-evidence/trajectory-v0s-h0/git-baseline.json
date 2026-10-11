@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_GIT_BASELINE",
+  "stage": "Trajectory-V0S-H0",
+  "requiredBaseline": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "verifiedHead": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "baselineBranch": "trajectory-v0s-attempt-source-boundary",
+  "remoteBaselineBranchHead": "34dec4234a384e537fcd9b774470db4673e9f431",
+  "newBranch": "trajectory-v0s-h0-consumer-hardening",
+  "workingTreeClean": true,
+  "indexClean": true,
+  "untrackedFileCount": 0,
+  "proposedBranchAlreadyExisted": false,
+  "parentChain": [
+    "526f377 research(trajectory-v0): record the dual-view evidence, the weight measurement and the final verdicts",
+    "86335c9 research(trajectory-v0s): reproduce the V0 source-admission defects and record the correction contract",
+    "45faa99 fix(trajectory-v0s): admit the Work Attempt before reading any execution source",
+    "582a75f fix(trajectory-v0s): bound the cold-read input and separate persisted from synthetic events",
+    "3a9a144 test(trajectory-v0s): prove the Attempt-scoped admission contract end to end",
+    "50e2d92 research(trajectory-v0s): audit the DSH session identity producer and the multi-agent source contracts",
+    "a5f083a refactor(trajectory-v0s): move the relation admission policy into the trajectory layer",
+    "a262fec research(trajectory-v0s): record the correction evidence, the erratum and the final verdicts",
+    "34dec42 chore(trajectory-v0s): drop an archived-gate temp artifact accidentally staged"
+  ],
+  "protectedTrees": {
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-v0s": "c4677c4b8eaa66dfb58bf479873b083bd904d32d",
+    "research-evidence/r3-l0c-g1": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "research-evidence/r3-l0c-g1b": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c"
+  },
+  "protectedImplementationBlobs": {
+    "src/trajectory/execution.ts": "2bb0d2b78aff84475fb312d3667f4115164ec40a",
+    "src/trajectory/handoff_preview.ts": "6e243a4b7d8f7182656d1ddcac91fb9b8bca1264",
+    "src/trajectory/relation_admission.ts": "dcc1cedb1e100f5fd5d68559c378e94832e63100",
+    "src/composition/trajectory_v0.ts": "0285c0f39728388fc50fff9f5f4f549282629904",
+    "scripts/trajectory_v0/dsh-session-reader.mjs": "6731899fcdaf125d8e13b2d2f9e5fcb81854fd55"
+  },
+  "environment": {
+    "node": "v24.14.1",
+    "pnpm": "11.21.0",
+    "dshVersion": "0.2.0-rc.2",
+    "dshPackagesInspected": ["dsh", "dsh-session", "dsh-session-query", "dsh-session-persistence", "dsh-session-persistence-jsonl", "dsh-headless", "dsh-workflow"],
+    "firstPartyDshAvailable": true,
+    "differencesFromPriorReport": "none material: the same DSH 0.2.0-rc.2 tree and Node major are installed"
+  },
+  "repositoryConfigAltered": false
+}
