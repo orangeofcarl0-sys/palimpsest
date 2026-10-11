@@ -10,6 +10,20 @@
  *   PASS_REAL_DSH_QUERY_NO_MODEL — the session half is a real DSH read (skipped when no DSH tree).
  *   PASS_DSH_QUERY_PORT_FIXTURE — the session half is a labelled structural fixture.
  *   PASS_READ_ONLY — the construction changed nothing.
+ *
+ * ------------------------------------------------------------------ V0S §3 changed assertions
+ *
+ * V0 encoded an acceptance rule V0S disproved: that a readable, caller-selected session could be
+ * presented as the attempt's session and could complete the Handoff. Each correction is recorded:
+ *
+ *   1. `bindingStatus` → `sessionBindingStatus`. The binding is now one of three separate facts.
+ *   2. "the real DSH read is bound to the attempt" is NO LONGER asserted. The read is real and the
+ *      session is NOT the attempt's, so `dshSessionId` is null, `claimedSessionId` holds the claim,
+ *      the admission is `NOT_ADMITTED_TO_ATTEMPT`, the lifecycle is `SESSION_READ_NOT_ATTRIBUTED`,
+ *      and the events are NOT in the attempt's execution view.
+ *   3. `BOUND_LOCAL_ONLY` → `SESSION_CLAIMED_UNVERIFIED` for a caller-claimed readable session.
+ *   4. The "self-declared trusted session" control no longer stops at "not BOUND_VERIFIED"; it now
+ *      additionally proves the events are excluded from the attempt.
  */
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
@@ -26,7 +40,9 @@ import { dshSubprocessWorkWorkerPort } from "../src/deployment/work_worker.js";
 import { composeTrajectoryV0, type TrajectoryV0HostRecord } from "../src/composition/trajectory_v0.js";
 import {
   buildHandoffPreview,
+  DSH_PAGE_DOES_NOT_PROVE,
   readOnlyViolations,
+  type DshSessionEventPage,
   type DshSessionReadPort,
   type HandoffPreview,
   type ReadOnlySnapshot,
@@ -48,6 +64,38 @@ const readerModule = await import("../scripts/trajectory_v0/dsh-session-reader.m
 async function realReader(): Promise<DshSessionReadPort | null> {
   if (readerModule === null || !hasDsh) return null;
   return await readerModule.makeRealDshSessionReader({ dshHomePath: DSH_HOME, sessionsRoot: SESSIONS_ROOT });
+}
+
+/**
+ * §9: a complete page for the structural fixtures. Every required field is present so a fixture that
+ * cares about one dimension cannot inherit a misleading default for another.
+ */
+function fixturePage(overrides: Partial<DshSessionEventPage> = {}): DshSessionEventPage {
+  return Object.freeze({
+    schemaVersion: 1 as const,
+    readState: "READ_OK" as const,
+    sessionId: "session-fixture",
+    header: Object.freeze({ sessionId: "session-fixture", version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }),
+    sourceIdentity: "DSH_QUERY_PORT_FIXTURE",
+    sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
+    throughSeq: 0,
+    knownEventCount: 1,
+    inheritedEventCount: 0,
+    requestedFromSeq: 0,
+    requestedMaxEvents: 50,
+    returnedCount: 1,
+    pageBounded: true as const,
+    diskIoBounded: false,
+    durabilityProvenance: "DURABILITY_UNRESOLVED" as const,
+    persistedEventCount: null,
+    syntheticRecoveryEventCount: null,
+    events: Object.freeze([]),
+    knownParentSession: null,
+    proves: Object.freeze([]),
+    doesNotProve: DSH_PAGE_DOES_NOT_PROVE,
+    detail: "a structural fixture page",
+    ...overrides,
+  });
 }
 
 /* ------------------------------------------------------------------ *
@@ -197,9 +245,11 @@ describe("Trajectory-V0 §6 V0-D — one Handoff Preview over both views", () =>
     });
 
     /**
-     * §3/§10: the session id is supplied as a CALLER REQUEST. No canonical Attempt→Session producer
-     * exists, so the binding can never exceed BOUND_LOCAL_ONLY — and the test asserts exactly that
-     * rather than pretending the session is the attempt's own.
+     * V0S §5/§8: the session id is supplied as a CALLER REQUEST. No canonical Attempt→Session
+     * producer exists, so the read is real but NOT ATTRIBUTED to the attempt: the established id
+     * stays null, the claim is recorded separately, the admission is NOT_ADMITTED_TO_ATTEMPT, and
+     * the events do NOT enter the attempt's execution view. V0 presented this read as the attempt's
+     * session; that was the overclaim this stage corrects.
      */
     const preview = await v0.previewAttempt({
       attemptId,
@@ -218,20 +268,25 @@ describe("Trajectory-V0 §6 V0-D — one Handoff Preview over both views", () =>
     expect(preview.execution.portInvocationId).toBe(hostRecord.portInvocationId);
     expect(preview.execution.hostLocalJobId).not.toBeNull();
     expect(preview.execution.processLifecycle).toBe("EXITED");
+    expect(preview.execution.hostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
 
     if (reader !== null) {
       // §9: the real DSH read succeeded, and the page is bounded.
       expect(preview.execution.sessionReadState).toBe("READ_OK");
-      expect(preview.execution.sessionLifecycle).toBe("SESSION_READ");
-      expect(preview.execution.dshSessionId).toBe(PINNED_SESSION);
-      expect(preview.execution.events.length).toBeGreaterThan(0);
-      expect(preview.execution.events.length).toBeLessThanOrEqual(50);
-      // §4: the events are sanitized — a tool call names the tool and never its arguments.
-      expect(JSON.stringify(preview.execution.events)).not.toContain('"arguments"');
-      // §3/§10: a caller-supplied id is a REQUEST, so the binding is LOCAL ONLY.
-      expect(preview.execution.bindingStatus).toBe("BOUND_LOCAL_ONLY");
-      expect(preview.execution.bindingSource).toBe("CALLER_DECLARATION");
-      expect(preview.caveats.epistemicLimits.join(" ")).toContain("LOCAL ONLY");
+      expect(preview.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
+      // §5: the claim is recorded, and NO session is ESTABLISHED for this attempt.
+      expect(preview.execution.claimedSessionId).toBe(PINNED_SESSION);
+      expect(preview.execution.dshSessionId).toBeNull();
+      expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
+      expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
+      // §5/S-I4: the read is real, and its events are NOT admitted to this attempt.
+      expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+      expect(preview.execution.events).toEqual([]);
+      expect(preview.execution.eventsDetail).toContain("NOT admitted");
+      expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
+      // §8: an unattributed read cannot make the Handoff COMPLETE.
+      expect(preview.completeness).not.toBe("COMPLETE");
+      expect(preview.caveats.epistemicLimits.join(" ")).toContain("UNVERIFIED");
     } else {
       expect(preview.execution.sessionReadState).toBe("READ_CAPABILITY_ABSENT");
       expect(preview.caveats.sourcesUnavailable.join(" ")).toContain("missing source");
@@ -269,11 +324,12 @@ describe("Trajectory-V0 §6 V0-D — one Handoff Preview over both views", () =>
     const serialized = JSON.stringify(preview);
     expect(serialized.length).toBeLessThan(200_000);
     expect(preview.attempt.projectId).toBe("v0c2");
-    expect(preview.execution.bindingStatus).toBeDefined();
+    expect(preview.execution.sessionBindingStatus).toBeDefined();
     expect(preview.execution.processLifecycle).toBeDefined();
     expect(preview.canonical.promotionState).toBeDefined();
     expect(preview.canonical.reworkState).toBeDefined();
     expect(preview.caveats.sourcesUnavailable).toBeDefined();
+    expect(preview.attribution.canonicalCoverage).toBeDefined();
     expect(preview.completeness).toBeDefined();
 
     // §10: a serialized round-trip preserves the digest — the model is plain data.
@@ -385,17 +441,13 @@ describe("Trajectory-V0 §10 — negative controls", () => {
       sourceIdentity: "SELF_DECLARED",
       evidenceClass: "DSH_QUERY_PORT_FIXTURE",
       async readEvents() {
-        return Object.freeze({
-          schemaVersion: 1 as const,
-          readState: "READ_OK" as const,
+        return fixturePage({
           sessionId: "session-self-declared",
           header: Object.freeze({ sessionId: "session-self-declared", version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }),
           sourceIdentity: "SELF_DECLARED",
-          throughSeq: 0, knownEventCount: 1, inheritedEventCount: 0,
           events: Object.freeze([
-            Object.freeze({ sessionId: "session-self-declared", seq: 0, type: "turn/end", inherited: false, time: 1, surface: null, summary: "turn 0 closed", durationMs: null, observedStatus: "completed" }),
+            Object.freeze({ sessionId: "session-self-declared", seq: 0, type: "turn/end", inherited: false, durability: "PERSISTED_DSH_EVENT" as const, time: 1, surface: null, summary: "turn 0 closed", durationMs: null, observedStatus: "completed" }),
           ]),
-          knownParentSession: null,
           // The reader CLAIMS verification. That claim is not authority.
           proves: Object.freeze(["trustedIngestion: true", "RUN_ATTEMPT_CORRELATED", "the attempt settled and was promoted"]),
           doesNotProve: Object.freeze([]),
@@ -413,9 +465,16 @@ describe("Trajectory-V0 §10 — negative controls", () => {
     });
     const preview = await v0.previewAttempt({ attemptId, claimedSessionId: "session-self-declared", hostRecord });
 
-    // §10: the self-declared claim does NOT raise the binding above LOCAL ONLY.
-    expect(preview.execution.bindingStatus).toBe("BOUND_LOCAL_ONLY");
-    expect(preview.execution.bindingStatus).not.toBe("BOUND_VERIFIED");
+    /**
+     * V0S §5/§8: the self-declared claim does NOT establish a binding, and — the stronger property —
+     * its events are NOT admitted to the attempt. V0 stopped at "not BOUND_VERIFIED"; the corrected
+     * model must also keep the claimed session's events out of the execution view.
+     */
+    expect(preview.execution.sessionBindingStatus).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+    expect(preview.execution.events).toEqual([]);
+    expect(preview.completeness).not.toBe("COMPLETE");
     // §10: and it does NOT change the canonical outcome — promotion is still the owner's fact.
     expect(preview.canonical.promotionState).toBe("NOT_PROMOTED");
     // §10: the page's own proves-list is NOT propagated into the Preview's canonical facts.
@@ -430,10 +489,10 @@ describe("Trajectory-V0 §10 — negative controls", () => {
       sourceIdentity: "FAILING",
       evidenceClass: "DSH_QUERY_PORT_FIXTURE",
       async readEvents(request) {
-        return Object.freeze({
-          schemaVersion: 1 as const, readState: "CORRUPT_SESSION" as const, sessionId: request.sessionId, header: null,
+        return fixturePage({
+          readState: "CORRUPT_SESSION" as const, sessionId: request.sessionId, header: null,
           sourceIdentity: "FAILING", throughSeq: null, knownEventCount: null, inheritedEventCount: null,
-          events: Object.freeze([]), knownParentSession: null, proves: Object.freeze([]),
+          returnedCount: 0, events: Object.freeze([]), proves: Object.freeze([]),
           doesNotProve: Object.freeze(["a corrupt session is not an empty history"]),
           detail: "the stored session failed validation",
         });
@@ -492,7 +551,7 @@ describe("Trajectory-V0 §6 — one sanitized example per outcome class", () => 
       ...(reader === null ? {} : { dshSessionReader: reader }),
     });
 
-    /** The BOUND example (a session read was performed). */
+    /** The CLAIMED example (a session read was performed, and NOT attributed). */
     const bound = await v0.previewAttempt({ attemptId, claimedSessionId: PINNED_SESSION, hostRecord });
     /** The UNBOUND example (no session claimed at all). */
     const unbound = await v0.previewAttempt({ attemptId, hostRecord });
@@ -507,12 +566,21 @@ describe("Trajectory-V0 §6 — one sanitized example per outcome class", () => 
     }
     // §6: they differ exactly where the evidence differs.
     expect(unbound.execution.dshSessionId).toBeNull();
+    expect(unbound.execution.claimedSessionId).toBeNull();
     expect(unbound.execution.sessionLifecycle).toBe("NO_SESSION_BOUND");
     expect(unbound.caveats.missingSession).toBe(true);
     if (reader !== null) {
-      expect(bound.execution.dshSessionId).toBe(PINNED_SESSION);
-      expect(bound.execution.sessionLifecycle).toBe("SESSION_READ");
-      expect(bound.caveats.missingSession).toBe(false);
+      /**
+       * V0S §5/§8: the claimed session is READ and NOT ATTRIBUTED. V0 asserted
+       * `dshSessionId === PINNED_SESSION` and `SESSION_READ` here, which is exactly the overclaim
+       * this stage corrects: a readable unrelated session is not the attempt's session.
+       */
+      expect(bound.execution.claimedSessionId).toBe(PINNED_SESSION);
+      expect(bound.execution.dshSessionId).toBeNull();
+      expect(bound.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
+      expect(bound.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+      expect(bound.execution.events).toEqual([]);
+      expect(bound.completeness).not.toBe("COMPLETE");
     }
   }, 240_000);
 });

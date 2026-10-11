@@ -9,29 +9,55 @@
  * The boundaries this file pins:
  *
  *     Work AttemptId ≠ HostJobId ≠ Port InvocationId ≠ DSH SessionId ≠ Trajectory View ID
- *     BOUND_VERIFIED   requires a real producer — a caller's declaration cannot reach it
- *     turn/end         ≠ Work settlement      tool/call ≠ success
- *     missing session  ≠ empty event history  unknown exit ≠ successful exit
+ *     BOUND_VERIFIED      requires a real producer — a caller's declaration cannot reach it
+ *     host observation    ≠ session binding ≠ session read admission  (V0S §5)
+ *     turn/end            ≠ Work settlement      tool/call ≠ success
+ *     missing session     ≠ empty event history  unknown exit ≠ successful exit
+ *
+ * ------------------------------------------------------------------ V0S §3 changed assertions
+ *
+ * This file previously encoded the acceptance rule V0S disproved. Each correction is recorded:
+ *
+ *   1. `BINDING_STATES` / `classifyBinding` → `SESSION_BINDING_STATES` /
+ *      `classifySessionBinding`. V0 had ONE binding vocabulary whose lowest non-unbound state
+ *      (`BOUND_LOCAL_ONLY`) covered both a host observation and a caller-selected session. The
+ *      corrected model splits the fact into host-observation provenance, session binding and read
+ *      admission, so the old name no longer denotes one thing.
+ *   2. `BOUND_LOCAL_ONLY` → `SESSION_CLAIMED_UNVERIFIED`. The old name asserted a local BINDING;
+ *      the corrected name says only that a claim was made, which is what the evidence supports.
+ *   3. "a caller-supplied session id can NEVER reach BOUND_VERIFIED" is RETAINED and strengthened:
+ *      the caller claim now also cannot make the read ADMITTED.
+ *   4. `completeness === "COMPLETE"` from a session page alone is NO LONGER asserted. V0 derived
+ *      completeness from "a session was read", which let a readable but unrelated session complete
+ *      an Attempt Handoff. COMPLETE now additionally requires `ADMITTED_TO_ATTEMPT`.
+ *   5. `sanitizeDshEvent` gained a `durability` field defaulting to `DURABILITY_UNRESOLVED`; the
+ *      new assertion pins that a bare sanitize call never claims an event was persisted.
  */
 import { describe, expect, it } from "vitest";
 
 import {
   BINDING_SOURCES,
-  BINDING_STATES,
   buildHandoffPreview,
-  classifyBinding,
+  classifyHostObservation,
+  classifySessionBinding,
+  DSH_EVENT_DURABILITY_STATES,
   DSH_PAGE_DOES_NOT_PROVE,
   DSH_READ_DEFAULT_PAGE,
+  DSH_READ_MAX_PAGE,
+  HOST_OBSERVATION_PROVENANCE_STATES,
   PREVIEW_COMPLETENESS_STATES,
   PREVIEW_DOES_NOT_AUTHORIZE,
   PROCESS_LIFECYCLE_STATES,
   readOnlyViolations,
   RECOGNIZED_DSH_EVENT_TYPES,
   sanitizeDshEvent,
+  SESSION_BINDING_STATES,
   SESSION_LIFECYCLE_STATES,
+  SESSION_READ_ADMISSION_STATES,
   SESSION_READ_STATES,
   sessionLifecycleOf,
   trajectoryViewIdOf,
+  validateReadRequest,
   type AttemptExecutionBinding,
   type DshSessionEventPage,
   type HandoffPreviewInput,
@@ -44,11 +70,14 @@ import {
 const PROJECT = "t0v0";
 const ATTEMPT = "attempt-".concat("a".repeat(32));
 
+/**
+ * A binding with no session at all: the honest default. `overrides` lets a test state exactly the
+ * dimension it is about, so a wrong classification cannot hide behind another field's default.
+ */
 function bindingOf(overrides: Partial<AttemptExecutionBinding> = {}): AttemptExecutionBinding {
-  const classification = classifyBinding({
+  const classification = classifySessionBinding({
     claimedSessionId: null,
     canonicalBindingPresent: false,
-    localObservationPresent: false,
     candidateCount: 0,
     sourceReadable: true,
     conflictDetail: null,
@@ -62,14 +91,21 @@ function bindingOf(overrides: Partial<AttemptExecutionBinding> = {}): AttemptExe
     hostLocalJobId: null,
     portInvocationId: null,
     dshSessionId: null,
+    claimedSessionId: null,
+    hostObservationProvenance: "NOT_OBSERVED" as const,
     sessionSource: classification.source,
-    bindingStatus: classification.state,
+    sessionBindingStatus: classification.state,
+    sessionReadAdmission: "NOT_REQUESTED" as const,
     bindingEvidenceRefs: Object.freeze([]),
     detail: classification.detail,
     ...overrides,
   });
 }
 
+/**
+ * §9: a page carrying every field the corrected contract requires, so a test that cares about ONE
+ * of them does not silently inherit a wrong default for another.
+ */
 function pageOf(overrides: Partial<DshSessionEventPage> = {}): DshSessionEventPage {
   return Object.freeze({
     schemaVersion: 1 as const,
@@ -80,13 +116,22 @@ function pageOf(overrides: Partial<DshSessionEventPage> = {}): DshSessionEventPa
       cwd: "C:/worlds/attempt", parentSession: null, isSeeded: false, origin: null, delegationDepth: null,
     }),
     sourceIdentity: "DSH_QUERY_PORT_FIXTURE",
+    sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
     throughSeq: 2,
     knownEventCount: 3,
     inheritedEventCount: 0,
+    requestedFromSeq: 0,
+    requestedMaxEvents: 50,
+    returnedCount: 3,
+    pageBounded: true as const,
+    diskIoBounded: false,
+    durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED" as const,
+    persistedEventCount: 3,
+    syntheticRecoveryEventCount: 0,
     events: Object.freeze([
-      Object.freeze({ sessionId: "session-fixture", seq: 0, type: "turn/start", inherited: false, time: 1, surface: null, summary: "turn 0 opened", durationMs: null, observedStatus: null }),
-      Object.freeze({ sessionId: "session-fixture", seq: 1, type: "tool/call", inherited: false, time: 2, surface: null, summary: "tool call bash at step 0", durationMs: null, observedStatus: null }),
-      Object.freeze({ sessionId: "session-fixture", seq: 2, type: "turn/end", inherited: false, time: 3, surface: null, summary: "turn 0 closed", durationMs: null, observedStatus: "aborted" }),
+      Object.freeze({ sessionId: "session-fixture", seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT" as const, time: 1, surface: null, summary: "turn 0 opened", durationMs: null, observedStatus: null }),
+      Object.freeze({ sessionId: "session-fixture", seq: 1, type: "tool/call", inherited: false, durability: "PERSISTED_DSH_EVENT" as const, time: 2, surface: null, summary: "tool call bash at step 0", durationMs: null, observedStatus: null }),
+      Object.freeze({ sessionId: "session-fixture", seq: 2, type: "turn/end", inherited: false, durability: "PERSISTED_DSH_EVENT" as const, time: 3, surface: null, summary: "turn 0 closed", durationMs: null, observedStatus: "aborted" }),
     ]),
     knownParentSession: null,
     proves: Object.freeze(["x"]),
@@ -155,38 +200,43 @@ describe("Trajectory-V0 §3 — identity separation", () => {
   });
 
   it("§3: the four execution identities are separate fields and are never collapsed", () => {
-    const binding = bindingOf({ hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", dshSessionId: "session-x" });
+    const binding = bindingOf({ hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", claimedSessionId: "session-x" });
     // Each identity keeps its own field; no field is derived from another.
     expect(binding.attemptId).toBe(ATTEMPT);
     expect(binding.hostLocalJobId).toBe("wdj-1");
     expect(binding.portInvocationId).toBe("wpi-1");
-    expect(binding.dshSessionId).toBe("session-x");
-    expect(new Set([binding.attemptId, binding.hostLocalJobId, binding.portInvocationId, binding.dshSessionId]).size).toBe(4);
+    expect(binding.claimedSessionId).toBe("session-x");
+    expect(new Set([binding.attemptId, binding.hostLocalJobId, binding.portInvocationId, binding.claimedSessionId]).size).toBe(4);
+  });
+
+  it("§5: a claimed session id is NOT the established session id", () => {
+    const binding = bindingOf({ claimedSessionId: "session-claimed" });
+    // The claim is recorded as a claim, and the ESTABLISHED id stays null without a producer.
+    expect(binding.claimedSessionId).toBe("session-claimed");
+    expect(binding.dshSessionId).toBeNull();
   });
 });
 
-/* ================================================================== §3 Binding classification */
+/* ================================================================== §5 Binding classification */
 
-describe("Trajectory-V0 §3 — binding states", () => {
+describe("Trajectory-V0 §5 — session binding states", () => {
   it("a caller-supplied session id can NEVER reach BOUND_VERIFIED", () => {
-    const classification = classifyBinding({
+    const classification = classifySessionBinding({
       claimedSessionId: "session-caller-supplied",
       canonicalBindingPresent: false,
-      localObservationPresent: false,
       candidateCount: 1,
       sourceReadable: true,
       conflictDetail: null,
     });
-    expect(classification.state).toBe("BOUND_LOCAL_ONLY");
+    expect(classification.state).toBe("SESSION_CLAIMED_UNVERIFIED");
     expect(classification.source).toBe("CALLER_DECLARATION");
     expect(classification.state).not.toBe("BOUND_VERIFIED");
   });
 
   it("only a real producer yields BOUND_VERIFIED", () => {
-    const classification = classifyBinding({
+    const classification = classifySessionBinding({
       claimedSessionId: null,
       canonicalBindingPresent: true,
-      localObservationPresent: false,
       candidateCount: 1,
       sourceReadable: true,
       conflictDetail: null,
@@ -196,8 +246,8 @@ describe("Trajectory-V0 §3 — binding states", () => {
   });
 
   it("no evidence at all is SESSION_UNBOUND — the honest default", () => {
-    const classification = classifyBinding({
-      claimedSessionId: null, canonicalBindingPresent: false, localObservationPresent: false,
+    const classification = classifySessionBinding({
+      claimedSessionId: null, canonicalBindingPresent: false,
       candidateCount: 0, sourceReadable: true, conflictDetail: null,
     });
     expect(classification.state).toBe("SESSION_UNBOUND");
@@ -205,8 +255,8 @@ describe("Trajectory-V0 §3 — binding states", () => {
   });
 
   it("a contradiction is CONFLICT, never downgraded to unbound", () => {
-    const classification = classifyBinding({
-      claimedSessionId: "session-a", canonicalBindingPresent: false, localObservationPresent: false,
+    const classification = classifySessionBinding({
+      claimedSessionId: "session-a", canonicalBindingPresent: false,
       candidateCount: 1, sourceReadable: true, conflictDetail: "the stored header disagrees with the claimed id",
     });
     expect(classification.state).toBe("CONFLICT");
@@ -214,25 +264,68 @@ describe("Trajectory-V0 §3 — binding states", () => {
   });
 
   it("more than one candidate is AMBIGUOUS — never resolved by picking one", () => {
-    const classification = classifyBinding({
-      claimedSessionId: null, canonicalBindingPresent: false, localObservationPresent: true,
+    const classification = classifySessionBinding({
+      claimedSessionId: "session-a", canonicalBindingPresent: false,
       candidateCount: 2, sourceReadable: true, conflictDetail: null,
     });
     expect(classification.state).toBe("AMBIGUOUS");
   });
 
   it("an identified but unreadable session is SOURCE_UNAVAILABLE", () => {
-    const classification = classifyBinding({
-      claimedSessionId: "session-gone", canonicalBindingPresent: false, localObservationPresent: false,
+    const classification = classifySessionBinding({
+      claimedSessionId: "session-gone", canonicalBindingPresent: false,
       candidateCount: 1, sourceReadable: false, conflictDetail: null,
     });
     expect(classification.state).toBe("SOURCE_UNAVAILABLE");
   });
 
+  it("§5: a HOST OBSERVATION cannot move the session binding", () => {
+    /**
+     * V0S §5 "No-session invariant": a real local host process observation is a different fact from
+     * a session binding. With no claim, the binding is SESSION_UNBOUND even though the host
+     * observation exists — `classifySessionBinding` has no host input at all, which is the point.
+     */
+    const classification = classifySessionBinding({
+      claimedSessionId: null, canonicalBindingPresent: false,
+      candidateCount: 0, sourceReadable: true, conflictDetail: null,
+    });
+    expect(classification.state).toBe("SESSION_UNBOUND");
+    // The host dimension is decided separately and does not appear in this result.
+    expect(Object.keys(classification)).toEqual(["state", "source", "detail"]);
+  });
+
   it("the vocabularies are exactly the ruled sets", () => {
-    expect([...BINDING_STATES]).toEqual(["BOUND_VERIFIED", "BOUND_LOCAL_ONLY", "SESSION_UNBOUND", "AMBIGUOUS", "CONFLICT", "SOURCE_UNAVAILABLE"]);
+    expect([...SESSION_BINDING_STATES]).toEqual(["BOUND_VERIFIED", "SESSION_CLAIMED_UNVERIFIED", "SESSION_UNBOUND", "AMBIGUOUS", "CONFLICT", "SOURCE_UNAVAILABLE"]);
     expect([...BINDING_SOURCES]).toContain("CANONICAL_ATTEMPT_BINDING");
     expect([...BINDING_SOURCES]).toContain("CALLER_DECLARATION");
+    expect([...SESSION_READ_ADMISSION_STATES]).toEqual(["NOT_REQUESTED", "ADMITTED_TO_ATTEMPT", "READ_FAILED", "NOT_ADMITTED_TO_ATTEMPT"]);
+  });
+});
+
+/* ================================================================== §5 Host observation provenance */
+
+describe("Trajectory-V0 §5 — host observation provenance is its own dimension", () => {
+  it("no record at all is NOT_OBSERVED", () => {
+    const classification = classifyHostObservation({ recordPresent: false, attemptMatches: false, hasLocalIdentity: false, conflictDetail: null });
+    expect(classification.provenance).toBe("NOT_OBSERVED");
+  });
+
+  it("a matching record with a host-local identity is LOCAL_PORT_OBSERVATION", () => {
+    const classification = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, conflictDetail: null });
+    expect(classification.provenance).toBe("LOCAL_PORT_OBSERVATION");
+    // §5: it establishes no session, and the detail says so.
+    expect(classification.detail).toContain("establishes no DSH session");
+  });
+
+  it("a record for another attempt is UNVERIFIED_ORIGIN, not silently dropped", () => {
+    const classification = classifyHostObservation({ recordPresent: true, attemptMatches: false, hasLocalIdentity: true, conflictDetail: null });
+    expect(classification.provenance).toBe("UNVERIFIED_ORIGIN");
+  });
+
+  it("the provenance vocabulary is exactly the ruled set", () => {
+    expect([...HOST_OBSERVATION_PROVENANCE_STATES]).toEqual([
+      "LOCAL_PORT_OBSERVATION", "CALLER_DECLARATION", "UNVERIFIED_ORIGIN", "SOURCE_UNAVAILABLE", "CONFLICTING_SOURCE", "NOT_OBSERVED",
+    ]);
   });
 });
 
@@ -292,19 +385,43 @@ describe("Trajectory-V0 §4 — event views carry structure, never content", () 
     expect(JSON.stringify(view)).not.toContain("content");
   });
 
-  it("§4: the default page size is small", () => {
+  it("§9: a bare sanitize call does NOT claim the event was persisted", () => {
+    /**
+     * §9: only a reader that verified the storage boundary may label an event `PERSISTED_DSH_EVENT`.
+     * A plain projection has verified nothing, so it reports `DURABILITY_UNRESOLVED` — the honest
+     * value, and the one that keeps a synthesized closer from being read as stored.
+     */
+    const view = sanitizeDshEvent({
+      sessionId: "s", seq: 6, type: "turn/start", time: 1, inherited: false, surface: null, data: { turn: 0 },
+    });
+    expect(view.durability).toBe("DURABILITY_UNRESOLVED");
+    expect([...DSH_EVENT_DURABILITY_STATES]).toContain("SYNTHETIC_RECOVERY_EVENT");
+  });
+
+  it("§4: the default page size is small and the hard maximum is bounded", () => {
     expect(DSH_READ_DEFAULT_PAGE).toBe(50);
+    expect(DSH_READ_MAX_PAGE).toBe(200);
+  });
+
+  it("§9: a bounded read request refuses negative, fractional and excessive bounds", () => {
+    expect(validateReadRequest({ sessionId: "s" }).ok).toBe(true);
+    expect(validateReadRequest({ sessionId: "s", fromSeq: -1 }).ok).toBe(false);
+    expect(validateReadRequest({ sessionId: "s", fromSeq: 1.5 }).ok).toBe(false);
+    expect(validateReadRequest({ sessionId: "s", maxEvents: 0 }).ok).toBe(false);
+    expect(validateReadRequest({ sessionId: "s", maxEvents: -5 }).ok).toBe(false);
+    expect(validateReadRequest({ sessionId: "s", maxEvents: DSH_READ_MAX_PAGE + 1 }).ok).toBe(false);
+    expect(validateReadRequest({ sessionId: "s", maxEvents: DSH_READ_MAX_PAGE }).ok).toBe(true);
   });
 });
 
 /* ================================================================== §6 Status separation */
 
-describe("Trajectory-V0 §6 — the six statuses stay separate", () => {
+describe("Trajectory-V0 §6 — the statuses stay separate", () => {
   it("there is NO single COMPLETED boolean on the Preview", () => {
     const preview = buildHandoffPreview(inputOf());
     const rendered = JSON.stringify(preview);
     expect(rendered).not.toContain("\"COMPLETED\":");
-    // The six dimensions exist as separate fields.
+    // The dimensions exist as separate fields.
     expect(preview.execution.processLifecycle).toBeDefined();
     expect(preview.execution.sessionLifecycle).toBeDefined();
     expect(preview.canonical.attemptState).toBeDefined();
@@ -331,7 +448,12 @@ describe("Trajectory-V0 §6 — the six statuses stay separate", () => {
   });
 
   it("a DSH turn/end does NOT become promotion", () => {
-    const preview = buildHandoffPreview(inputOf({ sessionPage: pageOf() }));
+    const preview = buildHandoffPreview(
+      inputOf({
+        binding: bindingOf({ dshSessionId: "session-fixture", claimedSessionId: "session-fixture", sessionBindingStatus: "BOUND_VERIFIED", sessionSource: "CANONICAL_ATTEMPT_BINDING", sessionReadAdmission: "ADMITTED_TO_ATTEMPT" }),
+        sessionPage: pageOf(),
+      }),
+    );
     expect(preview.execution.sessionLifecycle).toBe("SESSION_READ");
     expect(preview.canonical.promotionState).toBe("NOT_PROMOTED");
     expect(preview.caveats.epistemicLimits.join(" ")).toContain("turn/end does not prove promotion");
@@ -361,23 +483,69 @@ describe("Trajectory-V0 §6 — the six statuses stay separate", () => {
     expect(preview.canonical.attemptState).toBe("COMPLETED");
   });
 
+  it("§8: a termination REQUEST is a distinct lifecycle from an observed exit", () => {
+    for (const state of ["TIMEOUT_REQUESTED", "ABORT_REQUESTED", "EXIT_UNCONFIRMED"] as const) {
+      expect([...PROCESS_LIFECYCLE_STATES]).toContain(state);
+    }
+  });
+
   it("session read states map honestly onto session lifecycle", () => {
-    expect(sessionLifecycleOf("READ_OK")).toBe("SESSION_READ");
+    expect(sessionLifecycleOf("READ_OK", "ADMITTED_TO_ATTEMPT")).toBe("SESSION_READ");
     expect(sessionLifecycleOf(null)).toBe("NO_SESSION_BOUND");
+    expect(sessionLifecycleOf(null, "NOT_REQUESTED", true)).toBe("SESSION_IDENTIFIED_NOT_READ");
     expect(sessionLifecycleOf("READ_CAPABILITY_ABSENT")).toBe("SESSION_IDENTIFIED_NOT_READ");
-    for (const state of ["SESSION_MISSING", "CORRUPT_SESSION", "BACKEND_UNAVAILABLE", "FORMAT_UNSUPPORTED", "EVENT_GAP", "TRUNCATED_OBSERVATION", "IDENTITY_CONFLICT"] as const) {
+    for (const state of ["SESSION_MISSING", "CORRUPT_SESSION", "BACKEND_UNAVAILABLE", "FORMAT_UNSUPPORTED", "EVENT_GAP", "TRUNCATED_OBSERVATION", "IDENTITY_CONFLICT", "INVALID_REQUEST"] as const) {
       expect(sessionLifecycleOf(state)).toBe("SESSION_UNREADABLE");
       expect(SESSION_READ_STATES).toContain(state);
     }
   });
+
+  it("§8: a READ_OK page that is NOT attributed reads SESSION_READ_NOT_ATTRIBUTED", () => {
+    const preview = buildHandoffPreview(inputOf({ sessionPage: pageOf() }));
+    expect(preview.execution.sessionLifecycle).toBe("SESSION_READ_NOT_ATTRIBUTED");
+  });
 });
 
-/* ================================================================== §5/§10 Admission */
+/* ================================================================== §5/§8 Admission */
 
-describe("Trajectory-V0 §5/§10 — admission and quarantine", () => {
+describe("Trajectory-V0 §5/§8 — admission, attribution and quarantine", () => {
   it("§5: the historical-basis note is always stated", () => {
     const preview = buildHandoffPreview(inputOf());
     expect(preview.projectContext.historicalBasisNote).toContain("WORK_HISTORICAL_CUT_WITH_CURRENT_CROSS_OWNER_READS");
+  });
+
+  it("§8: an unattributed readable session contributes NO events to the attempt", () => {
+    /**
+     * §5: `buildHandoffPreview` is PURE — it takes the admission as given, and the composition layer
+     * derives it from the binding. So this fixture states the pair the composition produces for a
+     * caller-claimed, readable, unverified session: a claim recorded, an unverified binding, and a
+     * read that is explicitly NOT admitted.
+     */
+    const preview = buildHandoffPreview(
+      inputOf({
+        sessionPage: pageOf(),
+        binding: bindingOf({
+          claimedSessionId: "session-fixture",
+          sessionBindingStatus: "SESSION_CLAIMED_UNVERIFIED",
+          sessionReadAdmission: "NOT_ADMITTED_TO_ATTEMPT",
+        }),
+      }),
+    );
+    // The read happened, the events are real, and they are NOT this attempt's.
+    expect(preview.execution.sessionReadAdmission).toBe("NOT_ADMITTED_TO_ATTEMPT");
+    expect(preview.execution.events).toEqual([]);
+    expect(preview.execution.eventsDetail).toContain("NOT admitted");
+    expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
+    expect(preview.completeness).not.toBe("COMPLETE");
+  });
+
+  it("§8: the four attribution dimensions are reported separately", () => {
+    const preview = buildHandoffPreview(inputOf());
+    expect(preview.attribution.canonicalCoverage).toBe("PRESENT");
+    expect(preview.attribution.sourceReadability).toBe("NOT_REQUESTED");
+    expect(preview.attribution.sessionAttribution).toBe("NO_SESSION");
+    expect(preview.attribution.processObservation).toBe("NOT_OBSERVED");
+    expect(preview.attribution.detail).toContain("separate facts");
   });
 
   it("§5: a quarantined T0 relation is never presented as an actionable fact", () => {
@@ -413,6 +581,19 @@ describe("Trajectory-V0 §5/§10 — admission and quarantine", () => {
     expect(preview.canonical.resultRefs).toEqual([]);
     expect(preview.caveats.epistemicLimits.join(" ")).toContain("No canonical result reference exists");
   });
+
+  it("§9: the page's provenance class and bounds are carried into the Preview", () => {
+    const preview = buildHandoffPreview(
+      inputOf({
+        binding: bindingOf({ dshSessionId: "session-fixture", claimedSessionId: "session-fixture", sessionBindingStatus: "BOUND_VERIFIED", sessionSource: "CANONICAL_ATTEMPT_BINDING", sessionReadAdmission: "ADMITTED_TO_ATTEMPT" }),
+        sessionPage: pageOf(),
+      }),
+    );
+    expect(preview.execution.sourceEvidenceClass).toBe("DSH_QUERY_PORT_FIXTURE");
+    expect(preview.execution.readWatermark).toBe(2);
+    expect(preview.execution.requestedPageSize).toBe(50);
+    expect(preview.execution.returnedPageSize).toBe(3);
+  });
 });
 
 /* ================================================================== §4/§6 Determinism + read-only */
@@ -433,11 +614,25 @@ describe("Trajectory-V0 §4/§6 — determinism and read-only construction", () 
     expect(rendered).not.toContain("C:\\Users");
   });
 
-  it("completeness is derived, not asserted", () => {
+  it("§8: completeness requires ATTRIBUTION, not merely a readable session", () => {
     const unbound = buildHandoffPreview(inputOf({ sessionPage: undefined }));
     expect(unbound.completeness).toBe("PARTIAL");
-    const bound = buildHandoffPreview(inputOf({ sessionPage: pageOf() }));
-    expect(bound.completeness).toBe("COMPLETE");
+    // A readable but UNATTRIBUTED session cannot complete the Preview.
+    const unattributed = buildHandoffPreview(
+      inputOf({
+        sessionPage: pageOf(),
+        binding: bindingOf({ claimedSessionId: "session-fixture", sessionBindingStatus: "SESSION_CLAIMED_UNVERIFIED", sessionReadAdmission: "NOT_ADMITTED_TO_ATTEMPT" }),
+      }),
+    );
+    expect(unattributed.completeness).toBe("PARTIAL");
+    // Only a verified, admitted read completes it.
+    const attributed = buildHandoffPreview(
+      inputOf({
+        binding: bindingOf({ dshSessionId: "session-fixture", claimedSessionId: "session-fixture", sessionBindingStatus: "BOUND_VERIFIED", sessionSource: "CANONICAL_ATTEMPT_BINDING", sessionReadAdmission: "ADMITTED_TO_ATTEMPT" }),
+        sessionPage: pageOf(),
+      }),
+    );
+    expect(attributed.completeness).toBe("COMPLETE");
   });
 
   it("§10: readOnlyViolations reports exactly the dimension that moved", () => {
