@@ -162,6 +162,8 @@ export type {
  */
 export {
   buildHandoffPreview,
+  EVENT_PAGE_COVERAGE_STATES,
+  eventPageCoverageOf,
   PREVIEW_DOES_NOT_AUTHORIZE,
   PREVIEW_COMPLETENESS_STATES,
   previewCompletenessOf,
@@ -171,6 +173,7 @@ export {
   sessionLifecycleOf,
 } from "./handoff_preview.js";
 export type {
+  EventPageCoverage,
   HandoffPreview,
   HandoffPreviewInput,
   PreviewAttemptIdentity,

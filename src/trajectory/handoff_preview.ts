@@ -93,6 +93,8 @@ export interface PreviewAttribution {
   readonly sourceReadability: "READABLE" | "UNREADABLE" | "NOT_REQUESTED" | "NOT_COMPOSED";
   readonly sessionAttribution: "ATTRIBUTED" | "NOT_ATTRIBUTED" | "NO_SESSION";
   readonly processObservation: "COMPLETE" | "PARTIAL" | "NOT_OBSERVED" | "CONFLICTING";
+  /** H0 §9.1: how much of the attributed session's event log this Preview covers. */
+  readonly eventPageCoverage: EventPageCoverage;
   readonly detail: string;
 }
 
@@ -301,6 +303,12 @@ export interface PreviewProjectEvolutionSummary {
   }[];
   readonly unresolvedReferences: readonly string[];
   readonly currentnessCaveats: readonly string[];
+  /**
+   * H0 §9.2: the STRUCTURED basis-vector completeness (`COMPLETE` | `INCOMPLETE` | `RACED`), or null
+   * when the projection could not be built. The Preview reads this field rather than scanning caveat
+   * text for words such as "stale".
+   */
+  readonly basisCompleteness?: "COMPLETE" | "INCOMPLETE" | "RACED" | null | undefined;
 }
 
 /** §6: the whole input to one Preview. */
@@ -342,20 +350,60 @@ export function sessionLifecycleOf(
 }
 
 /**
- * §8: derive the Preview's completeness from what is actually present.
+ * §8, corrected by H0 §9 — derive the Preview's completeness from what is actually present.
  *
- * `COMPLETE` requires the session read to be ATTRIBUTED to this attempt AND canonical result facts
- * AND project context. A readable but unattributed session therefore cannot make a Preview complete.
- * A Work-only Preview is `PARTIAL` and remains useful — that is the honest classification.
+ * `COMPLETE` requires the session read to be ATTRIBUTED to this attempt AND canonical result facts AND
+ * project context AND — the H0 addition — FULL event-page coverage.
+ *
+ * H0 §9.1: V0S required only `SESSION_READ`, so an attributed read returning 50 events from a known
+ * 200-event source still produced `COMPLETE`. A partial page is not complete coverage, and the Preview
+ * must not imply it is. `eventPageCoverage` reports that dimension explicitly.
  */
 export function previewCompletenessOf(input: {
   readonly sessionLifecycle: SessionLifecycle;
   readonly hasCanonicalResult: boolean;
   readonly hasProjectContext: boolean;
+  /**
+   * H0 §9.1: whether the attributed page covered the WHOLE known event range. Defaults to
+   * `NOT_APPLICABLE`, which is correct when no attributed read happened at all.
+   */
+  readonly eventPageCoverage?: EventPageCoverage | undefined;
 }): PreviewCompleteness {
-  if (input.sessionLifecycle === "SESSION_READ" && input.hasCanonicalResult && input.hasProjectContext) return "COMPLETE";
+  const coverage = input.eventPageCoverage ?? "NOT_APPLICABLE";
+  if (input.sessionLifecycle === "SESSION_READ" && coverage === "FULL" && input.hasCanonicalResult && input.hasProjectContext) return "COMPLETE";
   if (input.hasCanonicalResult || input.hasProjectContext) return "PARTIAL";
   return "MINIMAL";
+}
+
+/**
+ * H0 §9.1: how much of the attributed session's event log the Preview actually covers.
+ *
+ *   FULL           every event the source reports is present in the page
+ *   PARTIAL        the page returned fewer events than the source reports
+ *   UNKNOWN        the source did not report a total, so coverage cannot be claimed
+ *   NOT_APPLICABLE no attributed read happened
+ */
+export const EVENT_PAGE_COVERAGE_STATES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"] as const;
+export type EventPageCoverage = (typeof EVENT_PAGE_COVERAGE_STATES)[number];
+
+/**
+ * H0 §9.1: derive the coverage from the page's own bounds.
+ *
+ * The comparison is against the SOURCE's reported total, so a page that returned everything the source
+ * knows about is FULL, and a page that returned fewer is PARTIAL. A source that reports no total yields
+ * UNKNOWN — the honest value, never an assumed FULL.
+ *
+ * A fully-read prefix is still not proof that a LIVE session will never append more events; that
+ * limitation is stated in the caveats rather than encoded here.
+ */
+export function eventPageCoverageOf(input: {
+  readonly admitted: boolean;
+  readonly knownEventCount: number | null;
+  readonly returnedCount: number;
+}): EventPageCoverage {
+  if (!input.admitted) return "NOT_APPLICABLE";
+  if (input.knownEventCount === null) return "UNKNOWN";
+  return input.returnedCount >= input.knownEventCount ? "FULL" : "PARTIAL";
 }
 
 /** §8: the four attribution dimensions, derived together so they stay consistent. */
@@ -364,6 +412,7 @@ function attributionOf(input: {
   readonly sessionPage: DshSessionEventPage | undefined;
   readonly canonical: PreviewCanonicalFacts;
   readonly projectEvolution: PreviewProjectEvolutionSummary;
+  readonly eventPageCoverage: EventPageCoverage;
 }): PreviewAttribution {
   const canonicalCoverage = input.canonical.attemptState !== null || input.projectEvolution.projectionRootId !== null ? "PRESENT" : "ABSENT";
 
@@ -384,6 +433,12 @@ function attributionOf(input: {
   else if (input.binding.sessionBindingStatus === "BOUND_VERIFIED") sessionAttribution = "ATTRIBUTED";
   else sessionAttribution = "NOT_ATTRIBUTED";
 
+  /**
+   * H0 §8.3: process observation coverage is NOT implied by provenance. A caller declaration is at
+   * most `PARTIAL`, because a declared record proves no actual host observation. Only a
+   * producer-established observation may reach `COMPLETE`, and even then it describes the DIRECT CHILD
+   * the host saw, not the whole lifecycle.
+   */
   let processObservation: PreviewAttribution["processObservation"];
   if (input.binding.hostObservationProvenance === "CONFLICTING_SOURCE") processObservation = "CONFLICTING";
   else if (input.binding.hostObservationProvenance === "NOT_OBSERVED") processObservation = "NOT_OBSERVED";
@@ -395,6 +450,7 @@ function attributionOf(input: {
     sourceReadability,
     sessionAttribution,
     processObservation,
+    eventPageCoverage: input.eventPageCoverage,
     detail:
       `canonical=${canonicalCoverage}; source=${sourceReadability}; session=${sessionAttribution}; process=${processObservation} — ` +
       "these are separate facts: a readable source is not an attributed session, and a local process observation is not a session identity",
@@ -413,6 +469,7 @@ function caveatsOf(input: {
   readonly sessionPage: DshSessionEventPage | undefined;
   readonly projectEvolution: PreviewProjectEvolutionSummary;
   readonly canonical: PreviewCanonicalFacts;
+  readonly eventPageCoverage: EventPageCoverage;
 }): PreviewCaveats {
   const sourcesUnavailable: string[] = [];
   const contradictoryObservations: string[] = [];
@@ -486,11 +543,38 @@ function caveatsOf(input: {
   if (input.canonical.resultRefs.length === 0) {
     epistemicLimits.push("No canonical result reference exists for this attempt, so no result is asserted.");
   }
+  /**
+   * H0 §9.1: coverage is stated when an attributed page is partial or unknown, and the live-session
+   * limitation is stated whenever an attributed read happened at all.
+   */
+  if (input.eventPageCoverage === "PARTIAL") {
+    epistemicLimits.push(
+      "The attributed session page is PARTIAL: it returned fewer events than the source reports, so it is NOT complete execution-event coverage.",
+    );
+  }
+  if (input.eventPageCoverage === "UNKNOWN") {
+    epistemicLimits.push("The source reported no total event count, so the page's event coverage cannot be claimed.");
+  }
+  if (input.eventPageCoverage !== "NOT_APPLICABLE") {
+    epistemicLimits.push(
+      "A fully read event prefix is not proof that a live session has terminated or will never append more events.",
+    );
+  }
+  if (input.sessionPage !== undefined && input.sessionPage.syntheticRecoveryEventCount !== null && input.sessionPage.syntheticRecoveryEventCount > 0) {
+    epistemicLimits.push(
+      "Synthetic recovery closers are present; they balance an interrupted tail and are NOT evidence that the original execution completed successfully.",
+    );
+  }
 
   return Object.freeze({
     sourcesUnavailable: Object.freeze([...new Set(sourcesUnavailable)]),
     missingSession: input.binding.dshSessionId === null,
-    staleBasis: input.projectEvolution.currentnessCaveats.some((caveat) => caveat.toLowerCase().includes("stale")),
+    /**
+     * H0 §9.2: derived from the STRUCTURED basis completeness, never by scanning caveat text. A basis
+     * that is not globally COMPLETE means the Work cut and the cross-owner reads are not one atomic
+     * snapshot, which is exactly what "stale basis" names.
+     */
+    staleBasis: input.projectEvolution.basisCompleteness !== undefined && input.projectEvolution.basisCompleteness !== null && input.projectEvolution.basisCompleteness !== "COMPLETE",
     contradictoryObservations: Object.freeze([...new Set(contradictoryObservations)]),
     epistemicLimits: Object.freeze([...new Set(epistemicLimits)]),
   });
@@ -512,12 +596,20 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
   const hasCanonicalResult = input.canonical.resultRefs.length > 0;
   const hasProjectContext = input.projectEvolution.projectionRootId !== null;
 
-  const completeness = previewCompletenessOf({ sessionLifecycle, hasCanonicalResult, hasProjectContext });
+  /** H0 §9.1: coverage is derived from the page's own bounds, never assumed. */
+  const eventPageCoverage = eventPageCoverageOf({
+    admitted: input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT",
+    knownEventCount: input.sessionPage?.knownEventCount ?? null,
+    returnedCount: input.sessionPage?.returnedCount ?? 0,
+  });
+
+  const completeness = previewCompletenessOf({ sessionLifecycle, hasCanonicalResult, hasProjectContext, eventPageCoverage });
   const attribution = attributionOf({
     binding: input.binding,
     sessionPage: input.sessionPage,
     canonical: input.canonical,
     projectEvolution: input.projectEvolution,
+    eventPageCoverage,
   });
 
   const attempt: PreviewAttemptIdentity = Object.freeze({
@@ -616,6 +708,7 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     sessionPage: input.sessionPage,
     projectEvolution: input.projectEvolution,
     canonical: input.canonical,
+    eventPageCoverage,
   });
 
   const previewId = `hp-${canonicalDigest({

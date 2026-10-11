@@ -456,37 +456,53 @@ describe("H0 F4 — caller-selected Session no longer triggers I/O", () => {
 
 /* ================================================================== F5 */
 
-describe("H0 F5 — reader source identity exposes a local path", () => {
-  it("F5: the successful page's sourceIdentity is built from the local package root (source-demonstrated)", () => {
+describe("H0 F5 — reader source identity no longer exposes a local path", () => {
+  it("F5 (corrected): the consumer-visible sourceIdentity is a logical label", () => {
     /**
-     * SOURCE_DEMONSTRATED. `sourceIdentity` interpolates the resolved local package root, so a
-     * consumer-visible SUCCESSFUL page carries an absolute installation path. Error-message
-     * sanitization does not cover this field.
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C4)
+     *
+     * The baseline assertion pinned the DEFECT: `sourceIdentity` interpolated the resolved local
+     * package root, so a consumer-visible SUCCESSFUL page carried an absolute installation path.
+     *
+     * The corrected contract asserts the OPPOSITE: the consumer-visible identity is a stable logical
+     * label, and the resolved path is available only as an internal diagnostic field. The dynamic
+     * proof (a real page whose serialization contains no path) is in
+     * `trajectory_h0_source_privacy.test.ts`.
      */
     const code = source(SOURCE_FILES.reader);
-    expect(code).toContain("sourceIdentity = `dsh-session-persistence-jsonl@${packageRoot}`");
-    expect(code).toContain("sourceIdentity,");
+    expect(code).not.toContain("sourceIdentity = `dsh-session-persistence-jsonl@${packageRoot}`");
+    expect(code).toContain("const sourceIdentity = 'dsh-session-persistence-jsonl';");
+    // The path is retained INTERNALLY for diagnostics, not in the consumer page.
+    expect(code).toContain("diagnosticSourcePath");
   });
 });
 
 /* ================================================================== F6 */
 
-describe("H0 F6 — caller-controlled Host identifiers overstate provenance", () => {
-  it("F6: a caller record with a matching attemptId and a HostJobId becomes LOCAL_PORT_OBSERVATION", () => {
+describe("H0 F6 — caller-controlled Host identifiers do not overstate provenance", () => {
+  it("F6 (corrected): a caller record is a CALLER_DECLARATION, not LOCAL_PORT_OBSERVATION", () => {
     /**
-     * CONTROLLED_FIXTURE. `classifyHostObservation` promotes a record to LOCAL_PORT_OBSERVATION from
-     * caller-supplied fields alone: nothing in the classification is produced by a host component the
-     * caller does not control.
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C4)
+     *
+     * The baseline assertion pinned the DEFECT: a record with a matching attemptId and a HostJobId was
+     * promoted to LOCAL_PORT_OBSERVATION from caller-supplied fields alone.
+     *
+     * The corrected contract asserts the OPPOSITE: a caller-supplied record is a CALLER_DECLARATION
+     * regardless of its identifiers, and LOCAL_PORT_OBSERVATION requires a producer-established origin.
+     * The dynamic proof is in `trajectory_h0_source_privacy.test.ts`.
      */
-    const classification = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, conflictDetail: null });
-    expect(classification.provenance as HostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
+    const callerRecord = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, conflictDetail: null });
+    expect(callerRecord.provenance as HostObservationProvenance).toBe("CALLER_DECLARATION");
+    // A producer-established origin is the ONLY route to LOCAL_PORT_OBSERVATION.
+    const produced = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, originEstablished: true, conflictDetail: null });
+    expect(produced.provenance as HostObservationProvenance).toBe("LOCAL_PORT_OBSERVATION");
   });
 });
 
 /* ================================================================== F7 */
 
-describe("H0 F7 — an incomplete Session page can satisfy COMPLETE", () => {
-  it("F7: a page whose known count exceeds its returned coverage still yields COMPLETE", () => {
+describe("H0 F7 — an incomplete Session page no longer satisfies COMPLETE", () => {
+  it("F7 (corrected): a page whose known count exceeds its returned coverage yields PARTIAL", () => {
     /**
      * CONTROLLED_FIXTURE. This models the consumer state a verified binding would produce; it does NOT
      * claim a real binding producer exists.
@@ -523,21 +539,35 @@ describe("H0 F7 — an incomplete Session page can satisfy COMPLETE", () => {
       projectEvolution: { projectionRootId: "tr-x", projectionSemanticDigest: null, workSequence: 1, workEventDigest: null, projectIrRevision: 0, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [] },
     };
     const preview = buildHandoffPreview(input);
-    // The defect: 50 of 200 events read, and the Preview still reports COMPLETE.
-    expect(preview.completeness).toBe("COMPLETE");
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C5)
+     *
+     * The baseline assertion pinned the DEFECT: 50 of 200 events read, and the Preview still reported
+     * COMPLETE. The corrected contract requires FULL event-page coverage for COMPLETE, so a partial
+     * page yields PARTIAL, reports the coverage explicitly, and carries the limitation as a caveat.
+     */
+    expect(preview.completeness).toBe("PARTIAL");
+    expect(preview.attribution.eventPageCoverage).toBe("PARTIAL");
+    expect(preview.caveats.epistemicLimits.join(" ")).toContain("PARTIAL");
+    // And a FULL page of the same source DOES complete it, so the rule is not simply "never complete".
+    const full = buildHandoffPreview({ ...input, sessionPage: { ...page, knownEventCount: 50 } as never });
+    expect(full.completeness).toBe("COMPLETE");
+    expect(full.attribution.eventPageCoverage).toBe("FULL");
   });
 });
 
 /* ================================================================== F8 */
 
-describe("H0 F8 — exit chronology inferred without ordering proof", () => {
-  it("F8: abort + exit flags produce a 'LATER observed' chronology with no ordering evidence (source-demonstrated)", () => {
+describe("H0 F8 — exit chronology no longer inferred without ordering proof", () => {
+  it("F8 (corrected): abort + exit flags report both facts and state the ordering is unestablished", () => {
     /**
      * SOURCE_DEMONSTRATED. `hostSummaryOf` asserts the exit was observed AFTER the termination request
      * from the mere presence of both flags; the record carries no ordering proof.
      */
     const code = source(SOURCE_FILES.composition);
-    expect(code).toContain("and an exit was LATER observed");
+    // H0 C4: the invented ordering is gone; the chronology is reported as unestablished.
+    expect(code).not.toContain("and an exit was LATER observed");
+    expect(code).toContain("the exit followed the request is NOT established");
     expect(code).toContain("record.exited && (requestedAbort || requestedTimeout)");
   });
 });
@@ -594,17 +624,24 @@ describe("H0 F11 — cold-read provenance race", () => {
 /* ================================================================== F12 */
 
 describe("H0 F12 — canonical Work read integrity", () => {
-  it("F12: a failed T0 projection is reported as an optional-owner absence (source-demonstrated)", () => {
+  it("F12 (corrected): a canonical Work failure is distinguished from an uncomposed optional owner", () => {
     /**
      * SOURCE_DEMONSTRATED. `projectEvolutionOf` catches EVERY projection failure and returns a summary
      * whose only caveat is that the projection "could not be built". A corrupted canonical Work source
      * is therefore indistinguishable from an uncomposed optional owner.
      */
     const code = source(SOURCE_FILES.composition);
-    expect(code).toContain("catch {");
-    expect(code).toContain("the T0 project-evolution projection could not be built for this project");
-    // The canonical Work facts themselves come from the owner directly, so they are NOT lost; the
-    // PROJECT CONTEXT is what degrades silently.
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C5)
+     *
+     * The baseline collapsed EVERY projection failure into one caveat, so a corrupted canonical Work
+     * source was indistinguishable from an uncomposed optional owner. The corrected contract separates
+     * them: a `TrajectoryRefusal` names a CANONICAL WORK SOURCE failure.
+     */
+    expect(code).toContain("error instanceof TrajectoryRefusal");
+    expect(code).toContain("CANONICAL WORK SOURCE failed T0 validation");
+    expect(code).toContain("an optional cross-owner plane could not be projected");
+    // The canonical Work facts themselves come from the owner directly, so they are NOT lost.
     expect(code).toContain("const canonical = canonicalFactsOf");
   });
 });

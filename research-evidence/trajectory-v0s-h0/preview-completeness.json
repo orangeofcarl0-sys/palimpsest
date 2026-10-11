@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_PREVIEW_COMPLETENESS",
+  "stage": "Trajectory-V0S-H0",
+  "invariant": "H0-I5: a readable source, a successful page read, a process exit, a DSH turn/end or a canonical Attempt result must not independently imply complete execution coverage or successful Work settlement",
+  "dimensions": {
+    "canonicalCoverage": ["PRESENT", "ABSENT"],
+    "sourceReadability": ["READABLE", "UNREADABLE", "NOT_REQUESTED", "NOT_COMPOSED"],
+    "sessionAttribution": ["ATTRIBUTED", "NOT_ATTRIBUTED", "NO_SESSION"],
+    "processObservation": ["COMPLETE", "PARTIAL", "NOT_OBSERVED", "CONFLICTING"],
+    "eventPageCoverage": ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"]
+  },
+  "completenessRule": "COMPLETE requires sessionLifecycle === SESSION_READ AND eventPageCoverage === FULL AND canonical result facts AND project context",
+  "measurements": {
+    "attributedPartialPage_50of200": { "completeness": "PARTIAL", "eventPageCoverage": "PARTIAL", "caveatStates": "the page returned fewer events than the source reports" },
+    "attributedFullPage_50of50": { "completeness": "COMPLETE", "eventPageCoverage": "FULL", "note": "the rule is not simply 'never complete'" },
+    "sourceReportsNoTotal": { "completeness": "PARTIAL", "eventPageCoverage": "UNKNOWN", "note": "never an assumed FULL" },
+    "syntheticRecoveryCloserPresent": { "caveat": "synthetic closers are NOT evidence that the original execution completed successfully" },
+    "unattributedClaim": { "eventPageCoverage": "NOT_APPLICABLE", "completeness": "not COMPLETE" }
+  },
+  "structuredCurrentness": {
+    "before": "staleBasis was derived by scanning caveat text for the word 'stale'",
+    "after": "staleBasis is derived from the STRUCTURED basisVector.completeness (COMPLETE | INCOMPLETE | RACED)",
+    "measurement": "an INCOMPLETE basis with no keyword caveat yields staleBasis true; a COMPLETE basis with a caveat containing 'stale' yields false"
+  },
+  "canonicalWorkFailureDistinguished": {
+    "before": "every T0 projection failure collapsed into one 'could not be built' caveat",
+    "after": "a TrajectoryRefusal names a CANONICAL WORK SOURCE integrity failure; any other failure names an optional cross-owner plane",
+    "basisCompleteness": null
+  },
+  "readOnly": true,
+  "evidenceClass": "CONTROLLED_FIXTURE (the attributed state models a future verified binding; it does NOT claim a real producer)",
+  "tests": { "file": "test/trajectory_h0_completeness.test.ts", "count": 9, "failed": 0 }
+}
