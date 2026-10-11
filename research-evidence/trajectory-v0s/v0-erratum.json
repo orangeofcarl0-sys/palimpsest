@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_ERRATUM",
+  "stage": "Trajectory-V0S",
+  "corrects": "Trajectory-V0 (commit 526f377eac0343004c17a484a6f9057989f433df)",
+  "historicalEvidenceRewritten": false,
+  "note": "This is a FORWARD erratum. The original V0 evidence and verdicts are untouched; the corrected claims are recorded here and in the V0S verdicts.",
+  "preservedAccomplishments": [
+    "real DSH cold reading through the first-party persistence and session-query packages, with no host, no activation and no model call",
+    "real non-model asynchronous Work inspection through the product delegation and worker-port stack",
+    "T0 Project Evolution reuse inside one read-only Handoff Preview",
+    "a read-only Handoff Preview with structural status separation and no continuation authority"
+  ],
+  "correctedClaims": [
+    {
+      "v0Claim": "arbitrary caller-selected Sessions were adequately Attempt-scoped (BOUND_LOCAL_ONLY, events presented as the attempt's)",
+      "correction": "a caller's SessionId is SESSION_CLAIMED_UNVERIFIED and its events are NOT_ADMITTED_TO_ATTEMPT; no producer establishes Attempt ownership in this deployment",
+      "falsifier": "F1",
+      "evidence": "v0-baseline-falsifiers.json (DYNAMICALLY_REPRODUCED)"
+    },
+    {
+      "v0Claim": "two-Attempt isolation included all malicious wrong-source substitutions",
+      "correction": "V0 covered a wrong SessionId claim and a header mismatch, but accepted a wrong-attempt HostRecord and did not check host-record identity at all; HOST_RECORD_CONFLICT now refuses it",
+      "falsifier": "F2",
+      "evidence": "v0-baseline-falsifiers.json (DYNAMICALLY_REPRODUCED)"
+    },
+    {
+      "v0Claim": "Session readability was sufficient for complete execution attribution",
+      "correction": "readability is one of four separate attribution dimensions; a readable unrelated Session yields PARTIAL, never COMPLETE",
+      "falsifier": "F1",
+      "evidence": "handoff-completeness.json"
+    },
+    {
+      "v0Claim": "all returned DSH recovery events were independently persisted",
+      "correction": "readColdSessionLog appends interruptedTurnClosers; each event is now PERSISTED_DSH_EVENT or SYNTHETIC_RECOVERY_EVENT, or DURABILITY_UNRESOLVED when the seam cannot prove the boundary",
+      "falsifier": "F5",
+      "evidence": "dsh-cold-read-provenance.json"
+    },
+    {
+      "v0Claim": "the reader's bounded page implied bounded cost, and an unusable cursor could be coerced",
+      "correction": "RETURN_PAGE_BOUNDED is reported separately from DISK_IO_PAGE_BOUNDED; negative, fractional and excessive cursors are refused as INVALID_REQUEST",
+      "falsifier": "F6",
+      "evidence": "dsh-cold-read-provenance.json"
+    },
+    {
+      "v0Claim": "Work nodes belonging to the Attempt could be located by a display label",
+      "correction": "selection uses the exact canonical Work event_id identity set and requires ESTABLISHED_BY_OWNER_REFERENCE with matching edge evidence",
+      "falsifier": "F4",
+      "evidence": "project-relation-admission.json"
+    }
+  ],
+  "notCorrected": [
+    "the Attempt→DSH Session binding remains absent: no producer reports the DSH SessionId to the Palimpsest Host (see dsh-identity-producer-feasibility.json)",
+    "the G1-B host-origin trust limitation is unchanged and remains stated on every Preview"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_HANDOFF_COMPLETENESS",
+  "stage": "Trajectory-V0S",
+  "attributionDimensions": {
+    "canonicalCoverage": ["PRESENT", "ABSENT"],
+    "sourceReadability": ["READABLE", "UNREADABLE", "NOT_REQUESTED", "NOT_COMPOSED"],
+    "sessionAttribution": ["ATTRIBUTED", "NOT_ATTRIBUTED", "NO_SESSION"],
+    "processObservation": ["COMPLETE", "PARTIAL", "NOT_OBSERVED", "CONFLICTING"]
+  },
+  "completenessRule": "COMPLETE requires sessionLifecycle === SESSION_READ (which requires ADMITTED_TO_ATTEMPT) AND canonical result facts AND project context",
+  "processLifecycleVocabulary": ["NOT_OBSERVED", "SPAWN_ATTEMPTED", "RUNNING", "EXITED", "SPAWN_FAILED", "TIMEOUT_REQUESTED", "ABORT_REQUESTED", "EXIT_UNCONFIRMED", "UNKNOWN_AFTER_RESTART"],
+  "sessionLifecycleVocabulary": ["NO_SESSION_BOUND", "SESSION_IDENTIFIED_NOT_READ", "SESSION_READ_NOT_ATTRIBUTED", "SESSION_READ", "SESSION_UNREADABLE"],
+  "measurements": {
+    "S1-E1_readableUnrelatedSession": { "sessionReadState": "READ_OK", "sessionLifecycle": "SESSION_READ_NOT_ATTRIBUTED", "completeness": "PARTIAL", "eventsAdmitted": 0 },
+    "S1-E2_workResultSessionUnbound": { "completeness": "PARTIAL", "useful": true, "canonicalResultRefs": ">0" },
+    "S1-E3_timeoutRequestedNoExit": { "processLifecycle": "TIMEOUT_REQUESTED", "isExited": false },
+    "S1-E4_abortRequestedExitUnconfirmed": { "processLifecycle": "EXIT_UNCONFIRMED", "isRunning": false, "isExited": false },
+    "S1-E5_exitAfterAbort": { "processLifecycle": "EXITED", "chronologyPreserved": "a termination was requested (abort) and an exit was LATER observed" },
+    "S1-E6_turnEnd": { "promotionState": "NOT_PROMOTED", "caveat": "turn/end does not prove promotion" },
+    "S1-E7_fixtureIdentity": { "sourceEvidenceClass": "DSH_QUERY_PORT_FIXTURE", "presentedAsRealDsh": false },
+    "S1-E8_digest": { "kind": "semantic digest of the read model", "byteAttestationClaimed": false }
+  }
+}

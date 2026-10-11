@@ -44,6 +44,7 @@ import {
   buildProjectTrajectory,
   classifyHostObservation,
   classifySessionBinding,
+  selectAttemptWorkRelations,
   trajectoryViewIdOf,
   type AttemptExecutionBinding,
   type BindingEvidenceRef,
@@ -56,7 +57,6 @@ import {
   type PreviewProjectEvolutionSummary,
   type ProcessLifecycle,
   type SessionReadAdmission,
-  type TrajectoryEdge,
   type TrajectoryProjection,
   type TrajectoryProjectionInputs,
 } from "../trajectory/index.js";
@@ -109,28 +109,12 @@ export interface TrajectoryV0HostRecord {
 }
 
 /**
- * §5: the T0 relations whose cross-owner verifier the T0 review found incomplete.
+ * §6: the Attempt-scoped consumer surface.
  *
- * Each is quarantined rather than presented as an actionable fact. This is the honest reading of
- * §5's list: these are exactly the relationships that depend on the incomplete verifiers.
+ * Deliberately TWO members. `previewAttempt` is Attempt-scoped by construction, and `hasDshReader`
+ * reports whether a reader is composed. There is NO `readSessionPage`: an operation that takes a bare
+ * session id is not Attempt-scoped, so it does not belong on this service (§6 S1-C).
  */
-const QUARANTINED_T0_RELATIONS: Readonly<Record<string, string>> = Object.freeze({
-  RECEIPT_REFERENCED_GROUND:
-    "T0's ground matching uses a substring scan over the serialized payload, so the exact Reasoning/Journal ground match is not guaranteed",
-  GOVERNED_INTENT_CHANGED_PROJECT:
-    "T0's cross-owner historical asOf and full ProjectIR parent/basis digest comparison are known incomplete",
-  REVISION_SUCCEEDED_REVISION:
-    "T0's ProjectIR parent/basis digest comparison is known incomplete",
-});
-
-/** §5: relations this consumer may present as selected, because their T0 verifier is exact for Work facts. */
-const SELECTED_T0_RELATIONS = new Set([
-  "TASK_AUTHORIZED_ATTEMPT",
-  "ATTEMPT_PRODUCED_RESULT",
-  "RESULT_PROMOTED",
-  "ATTEMPT_REOPENED_FOR_REWORK",
-]);
-
 export interface TrajectoryV0Service {
   /**
    * §6: build the read-only Handoff Preview for one canonical Work Attempt.
@@ -305,90 +289,6 @@ function canonicalFactsOf(input: {
   });
 }
 
-/**
- * §7 S1-D: select the T0 Work relations that provably belong to THIS attempt.
- *
- * The V0 selector used `node.label.includes(attemptId)`, which a display label can satisfy
- * accidentally and which cannot distinguish one attempt's event from another's. This one builds the
- * exact canonical identity set from the attempt's own Work events and requires:
- *
- *   1. an explicitly allowed Work relation;
- *   2. an endpoint that IS one of those canonical `event_id`s;
- *   3. `evidenceState === "ESTABLISHED_BY_OWNER_REFERENCE"`;
- *   4. a non-null `TrajectoryEdgeEvidence`;
- *   5. an evidence source whose owner plane is WORK and whose canonical id is one of those events;
- *   6. the edge's own endpoints agreeing with the evidence reference it carries.
- *
- * Anything else stays unresolved/quarantined rather than being presented as fact.
- */
-function selectWorkRelations(
-  projection: TrajectoryProjection,
-  canonicalEventIds: ReadonlySet<string>,
-): { readonly selected: readonly { relation: string; evidenceState: string; detail: string }[]; readonly quarantined: readonly { relation: string; reason: string }[] } {
-  const selected: { relation: string; evidenceState: string; detail: string }[] = [];
-  const quarantined: { relation: string; reason: string }[] = [];
-
-  const nodeEventId = new Map<string, string | null>();
-  for (const node of projection.nodes) {
-    nodeEventId.set(node.nodeId, node.reference.ownerPlane === "WORK" ? node.reference.canonicalId : null);
-  }
-
-  for (const edge of projection.edges) {
-    const quarantineReason = QUARANTINED_T0_RELATIONS[edge.relation];
-    if (quarantineReason !== undefined) {
-      if (touchesCanonical(edge, nodeEventId, canonicalEventIds)) quarantined.push({ relation: edge.relation, reason: quarantineReason });
-      continue;
-    }
-    if (!SELECTED_T0_RELATIONS.has(edge.relation)) continue;
-    if (!touchesCanonical(edge, nodeEventId, canonicalEventIds)) continue;
-
-    /** §7 requirement 3+4: an established edge must carry its evidence, or it is not established. */
-    if (edge.evidenceState !== "ESTABLISHED_BY_OWNER_REFERENCE" || edge.evidence === null) {
-      quarantined.push({
-        relation: edge.relation,
-        reason: `the edge touches this attempt but its evidence state is ${edge.evidenceState}${edge.evidence === null ? " with no edge evidence" : ""}, so it is not an established relation`,
-      });
-      continue;
-    }
-    /**
-     * §7 requirement 5+6: the carrying record must be a real owner reference, and it must be one of
-     * THIS attempt's canonical Work events. A digest/scope mismatch is a wrong-source edge.
-     */
-    const by = edge.evidence.byReference;
-    if (by.ownerPlane !== "WORK" || by.canonicalId === null || !canonicalEventIds.has(by.canonicalId)) {
-      quarantined.push({
-        relation: edge.relation,
-        reason: `the edge's evidence names ${by.ownerPlane}:${String(by.canonicalId)}, which is not one of this attempt's canonical Work events`,
-      });
-      continue;
-    }
-    if (by.projectId !== null && by.projectId !== projection.projectId) {
-      quarantined.push({
-        relation: edge.relation,
-        reason: `the edge's evidence belongs to project ${by.projectId}, not ${projection.projectId}`,
-      });
-      continue;
-    }
-    selected.push({ relation: edge.relation, evidenceState: edge.evidenceState, detail: edge.detail });
-  }
-
-  return Object.freeze({
-    selected: Object.freeze(selected),
-    quarantined: Object.freeze([...new Map(quarantined.map((entry) => [entry.relation, entry])).values()]),
-  });
-}
-
-/** §7: whether either endpoint of an edge is one of the attempt's canonical Work events. */
-function touchesCanonical(
-  edge: TrajectoryEdge,
-  nodeEventId: ReadonlyMap<string, string | null>,
-  canonicalEventIds: ReadonlySet<string>,
-): boolean {
-  const from = nodeEventId.get(edge.fromNodeId) ?? null;
-  const to = nodeEventId.get(edge.toNodeId) ?? null;
-  return (from !== null && canonicalEventIds.has(from)) || (to !== null && canonicalEventIds.has(to));
-}
-
 /** §5: build the safe project-evolution summary, quarantining the known-incomplete relations. */
 async function projectEvolutionOf(
   inputs: TrajectoryProjectionInputs,
@@ -411,7 +311,7 @@ async function projectEvolutionOf(
     });
   }
 
-  const { selected, quarantined } = selectWorkRelations(projection, canonicalEventIds);
+  const { selected, quarantined } = selectAttemptWorkRelations(projection, canonicalEventIds);
 
   const caveats: string[] = [];
   if (projection.basisVector.completeness !== "COMPLETE") {

@@ -187,3 +187,15 @@ export type {
   ReadOnlySnapshot,
   SessionLifecycle,
 } from "./handoff_preview.js";
+
+/**
+ * Trajectory-V0S §7 (S1-D) — the Attempt-scoped Work relation admission policy. A read-side selection
+ * over a T0 projection: it can only remove relations, never add one, and it requires exact canonical
+ * identity plus explicit owner evidence rather than a display label.
+ */
+export {
+  QUARANTINED_T0_RELATIONS,
+  SELECTED_T0_RELATIONS,
+  selectAttemptWorkRelations,
+} from "./relation_admission.js";
+export type { AdmittedRelation, QuarantinedRelation } from "./relation_admission.js";

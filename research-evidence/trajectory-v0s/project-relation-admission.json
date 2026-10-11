@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_PROJECT_RELATION_ADMISSION",
+  "stage": "Trajectory-V0S",
+  "v0Selector": "node.label.includes(attemptId) plus a permitted relation name",
+  "v0sSelector": "the exact canonical Work event_id identity set, with six requirements",
+  "requirements": [
+    "1. an explicitly allowed Work relation kind",
+    "2. an endpoint that IS one of the attempt's canonical Work event ids",
+    "3. evidenceState === ESTABLISHED_BY_OWNER_REFERENCE",
+    "4. a non-null TrajectoryEdgeEvidence",
+    "5. an evidence source whose owner plane is WORK and whose canonicalId is one of those event ids",
+    "6. the evidence reference's projectId agreeing with the projection's project"
+  ],
+  "measurements": {
+    "S1-D1_D2_D3_D4_D5": { "classification": "SOURCE_DEMONSTRATED", "note": "the label rule is gone and the six requirements are present in the shipped selector; the label-matching form cannot satisfy requirements 2 and 5" },
+    "S1-D6_realWorkRelations": { "ATTEMPT_PRODUCED_RESULT": "selected", "evidenceState": "ESTABLISHED_BY_OWNER_REFERENCE", "detailNamesCanonicalEventId": true },
+    "S1-D7_knownIncompleteRelations": { "quarantined": ["RECEIPT_REFERENCED_GROUND", "GOVERNED_INTENT_CHANGED_PROJECT", "REVISION_SUCCEEDED_REVISION"], "selected": false }
+  },
+  "t0Unchanged": "T0's 1682-line projection was not modified; only the V0 consumer's local selection policy changed.",
+  "unresolvedPolicy": "if the source does not establish the relation, it is quarantined or left unresolved rather than presented as fact"
+}

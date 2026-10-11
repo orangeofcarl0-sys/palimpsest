@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_DSH_COLD_READ_PROVENANCE",
+  "stage": "Trajectory-V0S",
+  "installedDshVersion": "0.2.0-rc.2",
+  "officialApiUsed": ["@deepseek-ai/dsh-session-persistence-jsonl (mounted in a bare Cordis Context)", "@deepseek-ai/dsh-session-query readColdSessionLog", "@deepseek-ai/dsh-session SessionId, interruptedTurnClosers semantics"],
+  "privateParserImplemented": false,
+  "fixtureMethod": "a controlled NON-MODEL session is created under a test-owned root through the first-party persistence create/append/flush API, with an OPEN tail (turn/start + step/start and no closer), then read back",
+  "measurements": {
+    "readState": "READ_OK",
+    "durabilityProvenance": "PERSISTED_AND_SYNTHETIC_SEPARATED",
+    "persistedEventCount": 2,
+    "syntheticRecoveryEventCount": ">0",
+    "persistedSeqs": [0, 1],
+    "syntheticSeqsAtOrAbove": 2,
+    "knownEventCount": "persisted + synthetic",
+    "storedBytesUnchanged": true,
+    "successInferredFromCloser": false,
+    "recoveryEventReportedAsPersisted": false
+  },
+  "boundedInput": {
+    "invalidRequestRefusals": ["fromSeq=-1", "fromSeq=1.5", "maxEvents=0", "maxEvents=-5", "maxEvents=10000"],
+    "hardMaximumPageSize": 200,
+    "cursorPastKnownEnd": { "readState": "READ_OK", "events": 0, "knownEventCount": 2, "throughSeq": null, "requestedMaxEvents": 10 },
+    "returnPageBounded": true,
+    "diskIoPageBounded": false,
+    "costDisclosed": "the reader reads the whole validated log before slicing, and reports that separately from the return bound"
+  },
+  "errorPrivacy": {
+    "sanitizedPlaceholder": "<local-path>",
+    "windowsAbsolutePathRedacted": true,
+    "posixHomePathRedacted": true,
+    "nonPathMessagePreserved": true
+  },
+  "resourceLifecycle": {
+    "teardown": "the mounted persistence Cordis fiber is disposed by reader.close() and by listSessionIds' finally block",
+    "note": "a bare Cordis Context has no dispose of its own; the fiber returned by ctx.plugin owns the mounted service"
+  },
+  "modelCallsMade": 0,
+  "personalSessionsTouched": 0
+}

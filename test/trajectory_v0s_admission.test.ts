@@ -568,12 +568,15 @@ describe("Trajectory-V0S §7 S1-D — exact Project Evolution relation admission
 
   it("S1-D1/D5: no display label can substitute for canonical source identity", () => {
     /**
-     * §7: the corrected selector matches `event_id` identity, never a label. This is a source-level
-     * property of the composition adapter. The scan strips comments first, because the file's own
-     * header deliberately QUOTES the old anti-pattern when explaining what was corrected — a
-     * substring search over raw text would flag the documentation of the fix as the defect.
+     * §7: the corrected selector matches `event_id` identity, never a label. The policy lives in
+     * `src/trajectory/relation_admission.ts` and the composition adapter consumes it, so BOTH files
+     * are scanned. Comments are stripped first, because the files deliberately QUOTE the old
+     * anti-pattern when explaining what was corrected — a substring search over raw text would flag
+     * the documentation of the fix as the defect.
      */
-    const code = stripComments(readFileSyncShipped());
+    const code = stripComments(
+      readShipped("src", "composition", "trajectory_v0.ts") + readShipped("src", "trajectory", "relation_admission.ts"),
+    );
     expect(code).not.toContain(".label.includes(");
     expect(code).toContain("ESTABLISHED_BY_OWNER_REFERENCE");
     expect(code).toContain("canonicalEventIds");
@@ -595,13 +598,13 @@ describe("Trajectory-V0S §7 S1-D — exact Project Evolution relation admission
   }, 180_000);
 });
 
-/** §7: read the shipped composition source so a source-level property can be asserted. */
-function readFileSyncShipped(): string {
+/** §7: read a shipped source file so a source-level property can be asserted. */
+function readShipped(...segments: readonly string[]): string {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { readFileSync } = require("node:fs") as typeof import("node:fs");
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { join: joinPath } = require("node:path") as typeof import("node:path");
-  return readFileSync(joinPath(process.cwd(), "src", "composition", "trajectory_v0.ts"), "utf8");
+  return readFileSync(joinPath(process.cwd(), ...segments), "utf8");
 }
 
 /** §7: remove block and line comments so a source assertion cannot match documentation prose. */
