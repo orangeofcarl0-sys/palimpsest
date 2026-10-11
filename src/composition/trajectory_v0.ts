@@ -200,20 +200,20 @@ function admitAttempt(input: {
   readonly attemptId: string;
   readonly events: readonly SchedulerEvent[];
   readonly record: ReturnType<TrajectoryV0WorkOwner["attemptWorkRecord"]>;
+  readonly foreignAttemptExists: boolean;
 }): { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null } {
   const { created, terminal, authorization } = attemptEvents(input.events, input.attemptId);
   if (created === null) {
     /**
      * §4 S1-A1/A2: distinguish "this id exists nowhere" from "this id belongs to another project".
-     * The distinction matters because the second is a scope violation, not a typo.
+     * The distinction matters because the second is a scope violation, not a typo. The caller
+     * supplies the second fact as a BOOLEAN from an identity-only probe, so this gate never reads
+     * another project's content to decide its own refusal.
      */
-    const foreign = input.events.some(
-      (event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === input.attemptId && event.project_id !== input.projectId,
-    );
-    if (foreign) {
+    if (input.foreignAttemptExists) {
       throw new AttemptAdmissionRefusal(
         "FOREIGN_ATTEMPT",
-        `attempt ${input.attemptId} is not a canonical attempt of project ${input.projectId}`,
+        `attempt ${input.attemptId} is not a canonical attempt of project ${input.projectId}; the same id exists in another project`,
       );
     }
     throw new AttemptAdmissionRefusal(
@@ -531,7 +531,19 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
       /* ---- §4 STEP 1-3: canonical Work admission, BEFORE any execution source is touched. ---- */
       const events = controller.store.listEvents(projectId);
       const record = controller.attemptWorkRecord(request.attemptId);
-      const admitted = admitAttempt({ projectId, attemptId: request.attemptId, events, record });
+      /**
+       * §4 S1-A2: the FOREIGN_ATTEMPT distinction needs one fact the project-scoped read cannot
+       * supply — whether this id exists in ANOTHER project. The probe runs ONLY when the
+       * project-scoped lookup already failed, so the common path reads exactly one project, and it
+       * inspects only identity fields (event type, entity id, project id), never content.
+       */
+      const foreignAttemptExists =
+        events.some((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === request.attemptId)
+          ? false
+          : controller.store
+              .listEvents()
+              .some((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === request.attemptId && event.project_id !== projectId);
+      const admitted = admitAttempt({ projectId, attemptId: request.attemptId, events, record, foreignAttemptExists });
 
       /* ---- §5: the host record's identity is checked before any of its fields are accepted. ---- */
       if (request.hostRecord !== undefined && request.hostRecord.attemptId !== request.attemptId) {
