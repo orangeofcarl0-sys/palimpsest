@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_SESSION_SOURCE_QUARANTINE",
+  "stage": "Trajectory-V0S",
+  "question": "Can an Attempt-scoped consumer read an arbitrary Session by id?",
+  "answer": "No. The composed Attempt-scoped service surface is exactly { previewAttempt, hasDshReader }.",
+  "measurements": {
+    "S1-C1_composedSurface": { "keys": ["hasDshReader", "previewAttempt"], "readSessionPagePresent": false, "listSessionsPresent": false },
+    "S1-C2_unknownAttempt": { "readPortCalls": 0, "refusal": "ATTEMPT_NOT_FOUND" },
+    "S1-C3_selfConsistentHeader": { "binding": "SESSION_CLAIMED_UNVERIFIED", "dshSessionId": null, "sessionAttribution": "NO_SESSION" },
+    "S1-C4_forkParentId": { "workRelationCreated": false, "binding": "SESSION_CLAIMED_UNVERIFIED" },
+    "S1-C5_diagnosticReader": "the first-party reader remains available to a trusted operator/research adapter; it is not composed onto the Attempt-scoped service",
+    "S1-C6_modelOrPublicExposure": "no unrestricted session list or read operation is reachable from the Attempt consumer"
+  },
+  "authorizationLimitation": "A TypeScript interface is not a security boundary. This stage does not claim multi-user authorization; it removes the unrestricted operation from the Attempt-oriented service and leaves raw session reading as an internal operator-only capability.",
+  "removedOperation": "TrajectoryV0Service.readSessionPage({ sessionId })"
+}

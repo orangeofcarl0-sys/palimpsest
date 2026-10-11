@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_HOST_OBSERVATION_BINDING",
+  "stage": "Trajectory-V0S",
+  "dimensions": {
+    "hostObservationProvenance": {
+      "values": ["LOCAL_PORT_OBSERVATION", "CALLER_DECLARATION", "UNVERIFIED_ORIGIN", "SOURCE_UNAVAILABLE", "CONFLICTING_SOURCE", "NOT_OBSERVED"],
+      "authority": "a real local observation of the host's own direct child; establishes NO session"
+    },
+    "sessionBinding": {
+      "values": ["BOUND_VERIFIED", "SESSION_CLAIMED_UNVERIFIED", "SESSION_UNBOUND", "AMBIGUOUS", "CONFLICT", "SOURCE_UNAVAILABLE"],
+      "authority": "BOUND_VERIFIED requires a real producer; none exists in this deployment"
+    },
+    "sessionReadAdmission": {
+      "values": ["NOT_REQUESTED", "ADMITTED_TO_ATTEMPT", "READ_FAILED", "NOT_ADMITTED_TO_ATTEMPT"],
+      "authority": "ADMITTED_TO_ATTEMPT requires sessionBindingStatus === BOUND_VERIFIED"
+    }
+  },
+  "invariants": {
+    "noSessionInvariant": "when dshSessionId === null the binding is SESSION_UNBOUND even when a valid local host process observation exists",
+    "callerClaimInvariant": "a caller-supplied SessionId with no verified producer is SESSION_CLAIMED_UNVERIFIED, is not read through the Attempt preview as the attempt's session, and its events are not admitted",
+    "hostRecordIdentity": "hostRecord.attemptId must equal the requested attemptId; a mismatch raises HOST_RECORD_CONFLICT"
+  },
+  "measurements": {
+    "S1-B1_hostObservationNoSession": { "hostObservationProvenance": "LOCAL_PORT_OBSERVATION", "sessionBindingStatus": "SESSION_UNBOUND", "sessionReadAdmission": "NOT_REQUESTED", "sessionLifecycle": "NO_SESSION_BOUND" },
+    "S1-B2_callerClaimedReadable": { "sessionBindingStatus": "SESSION_CLAIMED_UNVERIFIED", "dshSessionId": null, "sessionReadAdmission": "NOT_ADMITTED_TO_ATTEMPT", "eventsAdmitted": 0, "completeness": "PARTIAL" },
+    "S1-B3_wrongHostRecord": { "refusal": "HOST_RECORD_CONFLICT" },
+    "S1-B4_matchingHostRecord": { "binding": "SESSION_UNBOUND", "note": "a matching record cannot mint BOUND_VERIFIED; the classifier has no host input" },
+    "S1-B5_selfDeclaredTrust": { "binding": "SESSION_CLAIMED_UNVERIFIED", "note": "an adapter's own evidenceClass is provenance metadata, not authorization" },
+    "S1-B6_spawnExitWithoutSettlement": { "processLifecycle": "EXITED", "promotionState": "NOT_PROMOTED", "verificationState": "NOT_OBSERVED_BY_V0" },
+    "S1-B7_lostHostJob": { "processLifecycle": "UNKNOWN_AFTER_RESTART", "canonicalAttemptState": "COMPLETED" },
+    "S1-B8_missingSession": { "events": 0, "detail": "the absence is a missing SOURCE, not a claim about what happened" }
+  },
+  "g1bLimitationPreserved": "Caller-supplied local host observations remain NOT independent authority-bearing provenance; the Correlator trust limitation is stated on every Preview."
+}
