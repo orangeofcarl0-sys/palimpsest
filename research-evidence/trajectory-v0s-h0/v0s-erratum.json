@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_V0S_H0_ERRATUM",
+  "stage": "Trajectory-V0S-H0",
+  "corrects": "Trajectory-V0S (commit 34dec4234a384e537fcd9b774470db4673e9f431)",
+  "historicalEvidenceRewritten": false,
+  "note": "A FORWARD erratum. The V0S evidence is untouched; the corrected claims are recorded here and in the H0 verdicts.",
+  "preservedAccomplishments": [
+    "canonical Attempt admission before execution-source reads",
+    "host observation separated from session binding",
+    "caller Session claims quarantined",
+    "persisted DSH events distinguished from synthetic recovery closers",
+    "bounded read requests with a hard maximum",
+    "exact Work event identity replacing display labels in the relation selector",
+    "the DSH session identity producer feasibility audit"
+  ],
+  "correctedClaims": [
+    {
+      "v0sClaim": "one endpoint in the attempt's canonical event-id set is sufficient to admit a Work relation",
+      "correction": "per-relation ROLE semantics: the correct endpoint must be the requested Attempt AND the evidence's own compared field must name it; a shared node cannot satisfy two attempts",
+      "falsifier": "F1"
+    },
+    {
+      "v0sClaim": "requiring the evidence carrier to be one of the attempt's own events is the safe rule",
+      "correction": "that rule EXCLUDED two genuine relations, because T0 carries a promotion on PROMOTION_COMMITTED and a governed reopening on TASK_READY — different entity types. The requirement is on the ROLE, not the carrier's entity type",
+      "falsifier": "F2/F3"
+    },
+    {
+      "v0sClaim": "a claimed SessionId may be READ and then not admitted",
+      "correction": "a claimed SessionId triggers ZERO reads; the claim is a declaration, the admission is NOT_REQUESTED, and READ_FAILED/SOURCE_UNAVAILABLE are reserved for an attempted read",
+      "falsifier": "F4"
+    },
+    {
+      "v0sClaim": "the reader's sourceIdentity identifies the adapter",
+      "correction": "it identified the adapter AND leaked an absolute local installation path into a consumer-visible successful page; the identity is now a logical label with the path retained only internally",
+      "falsifier": "F5"
+    },
+    {
+      "v0sClaim": "a matching attemptId with a non-null HostJobId is a LOCAL_PORT_OBSERVATION",
+      "correction": "a caller-supplied record is a CALLER_DECLARATION; LOCAL_PORT_OBSERVATION requires a producer-established origin",
+      "falsifier": "F6"
+    },
+    {
+      "v0sClaim": "an attributed session read is sufficient for COMPLETE",
+      "correction": "COMPLETE additionally requires FULL event-page coverage; a partial page is PARTIAL and says so",
+      "falsifier": "F7"
+    },
+    {
+      "v0sClaim": "an exit flag plus a termination flag means the exit was LATER observed",
+      "correction": "both facts are reported and the ordering is stated as NOT established",
+      "falsifier": "F8"
+    },
+    {
+      "v0sClaim": "a FOREIGN_ATTEMPT distinction may be made by scanning all projects",
+      "correction": "the ordinary Attempt Preview is project-scoped; the unscoped probe is removed",
+      "falsifier": "F9"
+    },
+    {
+      "v0sClaim": "a failed T0 projection is reported as an unavailable optional owner",
+      "correction": "a TrajectoryRefusal names a CANONICAL WORK SOURCE integrity failure",
+      "falsifier": "F12"
+    }
+  ],
+  "notCorrected": [
+    "the T0 traceAttempt label matcher (deferred to a separate T0 slice; projection.ts unmodified)",
+    "the two-read cold-read atomicity limitation (reported, fail-closed)",
+    "the Attempt to DSH Session binding remains absent"
+  ]
+}
