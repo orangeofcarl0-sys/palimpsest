@@ -36,6 +36,7 @@ import { buildProjectTrajectory } from "../src/trajectory/projection.js";
 import {
   makeOwnerReference,
   makeTrajectoryNode,
+  type AttemptRelationContext,
   type TrajectoryEdge,
   type TrajectoryProjection,
 } from "../src/trajectory/index.js";
@@ -246,18 +247,6 @@ async function fullScenario(): Promise<Rig> {
   return r;
 }
 
-/** §5: the exact identity set the V0S composition adapter hands the selector. */
-function v0sCanonicalEventIds(events: readonly { event_type: string; entity_type: string; entity_id: string; event_id: number }[], attemptId: string): Set<string> {
-  const ids = new Set<string>(
-    events.filter((event) => event.entity_type === "attempt" && event.entity_id === attemptId).map((event) => String(event.event_id)),
-  );
-  const created = events.find((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === attemptId);
-  if (created !== undefined) ids.add(String(created.event_id));
-  const terminal = events.find((event) => event.entity_id === attemptId && (event.event_type === "ATTEMPT_COMPLETED" || event.event_type === "ATTEMPT_FAILED"));
-  if (terminal !== undefined) ids.add(String(terminal.event_id));
-  return ids;
-}
-
 const SOURCE_FILES = {
   composition: "src/composition/trajectory_v0.ts",
   relation: "src/trajectory/relation_admission.ts",
@@ -270,75 +259,142 @@ function source(relative: string): string {
   return readFileSync(join(process.cwd(), relative), "utf8");
 }
 
+/**
+ * §5: the exact relation context the H0 composition adapter hands the selector.
+ *
+ * This mirrors `buildRelationContext` in the composition adapter: every identity is resolved from the
+ * attempt's OWN records. It exists here so the falsifiers can drive the selector with the real shape.
+ */
+function h0RelationContext(
+  events: readonly { event_type: string; entity_type: string; entity_id: string; event_id: number; payload?: unknown }[],
+  attemptId: string,
+): AttemptRelationContext {
+  const attemptEvents = events.filter((event) => event.entity_type === "attempt" && event.entity_id === attemptId);
+  const created = events.find((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === attemptId);
+  const terminalEvents = attemptEvents.filter((event) => event.event_type === "ATTEMPT_COMPLETED" || event.event_type === "ATTEMPT_FAILED");
+  const completed = terminalEvents.find((event) => event.event_type === "ATTEMPT_COMPLETED") ?? null;
+  const envelopeId = created === undefined ? null : ((created.payload as { envelope_id?: unknown } | undefined)?.envelope_id ?? null);
+  const authorization =
+    typeof envelopeId === "string"
+      ? events.find((event) => {
+          if (event.event_type !== "TASK_CREATED" && event.event_type !== "TASK_REAUTHORIZED") return false;
+          const envelope = (event.payload as { task_envelope?: { envelope_id?: unknown } } | undefined)?.task_envelope;
+          return envelope?.envelope_id === envelopeId;
+        })
+      : undefined;
+  const canonicalEventIds = new Set<string>(attemptEvents.map((event) => String(event.event_id)));
+  if (created !== undefined) canonicalEventIds.add(String(created.event_id));
+  for (const event of terminalEvents) canonicalEventIds.add(String(event.event_id));
+  if (authorization !== undefined) canonicalEventIds.add(String(authorization.event_id));
+  return {
+    projectId: PROJECT,
+    attemptId,
+    creationEventId: created === undefined ? null : String(created.event_id),
+    authorizationEventId: authorization === undefined ? null : String(authorization.event_id),
+    authorizationEnvelopeId: typeof envelopeId === "string" ? envelopeId : null,
+    terminalEventIds: terminalEvents.map((event) => String(event.event_id)),
+    completedEventId: completed === null ? null : String(completed.event_id),
+    canonicalEventIds,
+  };
+}
+
 /* ================================================================== F1 */
 
 describe("H0 F1 — shared authorization contamination", () => {
-  it("F1: an Attempt sharing an authorization event admits the OTHER Attempt's authorization relation", () => {
+  it("F1 (corrected): a shared authorization event no longer admits the OTHER Attempt's relation", () => {
     /**
      * CONTROLLED_PROJECTION. The ordinary product workflow mints a distinct envelope per activation,
      * so two attempts sharing one authorization event is not naturally producible; the ruling permits
-     * a source-grounded projection fixture for exactly this case. The fixture is the SHAPE T0 would
-     * emit if two ATTEMPT_CREATED events named the same envelope_id.
+     * a source-grounded projection fixture for exactly this case.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C2)
+     *
+     * The baseline assertion was `expect(authRelations.length).toBe(2)`: it pinned the DEFECT, that a
+     * shared authorization admitted BOTH attempts' relations. The counterexample is that attempt A's
+     * Preview then carried attempt B's authorization.
+     *
+     * The corrected contract requires the edge's SOURCE to be the requested attempt's OWN
+     * authorization event id, so exactly ONE relation is admitted and attempt B's is quarantined with
+     * a reason. This test is the negative half of H0-I1; the positive half is in the H0 relation suite.
      */
     const authNode = makeTrajectoryNode({
       reference: makeOwnerReference({ ownerPlane: "WORK", ownerScope: PROJECT, canonicalId: "10", sourceSequence: 1, sourceDigest: HEX("1"), projectId: PROJECT, verification: "VERIFIED_AGAINST_OWNER", verificationDetail: "fixture" }),
       authenticity: "OWNER_RECORDED", epistemicStatus: "RECORDED", currentness: "CURRENT", completeness: "COMPLETE", label: "TASK_CREATED task-a",
     });
+    const attemptA = `attempt-${"a".repeat(32)}`;
+    const attemptB = `attempt-${"b".repeat(32)}`;
     const aCreated = makeTrajectoryNode({
       reference: makeOwnerReference({ ownerPlane: "WORK", ownerScope: PROJECT, canonicalId: "20", sourceSequence: 2, sourceDigest: HEX("2"), projectId: PROJECT, verification: "VERIFIED_AGAINST_OWNER", verificationDetail: "fixture" }),
-      authenticity: "OWNER_RECORDED", epistemicStatus: "RECORDED", currentness: "CURRENT", completeness: "COMPLETE", label: `ATTEMPT_CREATED ${"attempt-" + "a".repeat(32)}`,
+      authenticity: "OWNER_RECORDED", epistemicStatus: "RECORDED", currentness: "CURRENT", completeness: "COMPLETE", label: `ATTEMPT_CREATED ${attemptA}`,
     });
     const bCreated = makeTrajectoryNode({
       reference: makeOwnerReference({ ownerPlane: "WORK", ownerScope: PROJECT, canonicalId: "21", sourceSequence: 3, sourceDigest: HEX("3"), projectId: PROJECT, verification: "VERIFIED_AGAINST_OWNER", verificationDetail: "fixture" }),
-      authenticity: "OWNER_RECORDED", epistemicStatus: "RECORDED", currentness: "CURRENT", completeness: "COMPLETE", label: `ATTEMPT_CREATED ${"attempt-" + "b".repeat(32)}`,
+      authenticity: "OWNER_RECORDED", epistemicStatus: "RECORDED", currentness: "CURRENT", completeness: "COMPLETE", label: `ATTEMPT_CREATED ${attemptB}`,
     });
-    const authEdge = (to: typeof aCreated, nodeId: string): TrajectoryEdge => ({
+    const authEdge = (to: typeof aCreated): TrajectoryEdge => ({
       schemaVersion: 1,
       relation: "TASK_AUTHORIZED_ATTEMPT",
       fromNodeId: authNode.nodeId,
       toNodeId: to.nodeId,
       evidenceState: "ESTABLISHED_BY_OWNER_REFERENCE",
       evidence: { byReference: authNode.reference, carryingField: "ATTEMPT_CREATED.payload.envelope_id", compared: { envelopeId: "env-shared" } },
-      detail: `authorized by TASK_CREATED at event_id 10 (${nodeId})`,
+      detail: "authorized by TASK_CREATED at event_id 10",
     });
     const projection: TrajectoryProjection = {
       schemaVersion: 1, rootId: "tr-fixture", projectId: PROJECT,
       basisVector: { completeness: "COMPLETE", work: { projectSequence: 3, eventDigest: HEX("9"), projectIrRevision: 0 }, reasoning: [], proof: null, journal: [], world: [], unavailable: [] } as never,
       nodes: [authNode, aCreated, bCreated],
-      edges: [authEdge(aCreated, "A"), authEdge(bCreated, "B")],
+      edges: [authEdge(aCreated), authEdge(bCreated)],
       sourceCoverage: [], unresolved: [], conflicts: [], currentness: [], asOf: null,
       hostObservationAdmission: "NOT_APPLICABLE", semanticDigest: HEX("8"), readOnly: true,
     };
 
-    /** Attempt A's identity set contains its creation (20) and the SHARED authorization (10). */
-    const result = selectAttemptWorkRelations(projection, new Set(["20", "10"]));
+    /** Attempt A's OWN authorization is event 10; its creation is 20. */
+    const context: AttemptRelationContext = {
+      projectId: PROJECT, attemptId: attemptA,
+      creationEventId: "20", authorizationEventId: "10", authorizationEnvelopeId: "env-shared",
+      terminalEventIds: [], completedEventId: null,
+      canonicalEventIds: new Set(["20", "10"]),
+    };
+    const result = selectAttemptWorkRelations(projection, context);
     const authRelations = result.selected.filter((relation) => relation.relation === "TASK_AUTHORIZED_ATTEMPT");
-    // The defect: TWO authorization relations are admitted, and one of them belongs to attempt B.
-    expect(authRelations.length).toBe(2);
+    // Exactly ONE authorization relation is admitted — attempt A's own.
+    expect(authRelations.length).toBe(1);
+    // Attempt B's relation is reported as excluded, with a role reason.
+    const bExcluded = result.quarantined.filter((relation) => relation.relation === "TASK_AUTHORIZED_ATTEMPT");
+    expect(bExcluded.length).toBe(1);
+    expect(bExcluded[0]!.reason).toContain("destination is not this attempt's creation event");
   });
 });
 
 /* ================================================================== F2 */
 
-describe("H0 F2 — legitimate Promotion incorrectly excluded", () => {
-  it("F2: T0 establishes RESULT_PROMOTED, and the V0S selector excludes it", async () => {
+describe("H0 F2 — legitimate Promotion preserved", () => {
+  it("F2 (corrected): T0 establishes RESULT_PROMOTED and the selector now ADMITS it", async () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C2)
+     *
+     * The baseline assertion was `expect(selectedPromotions.length).toBe(0)` plus
+     * `expect(quarantinedPromotions.length).toBeGreaterThan(0)`: it pinned the DEFECT, that a genuine
+     * promotion was excluded because its carrier is a PROMOTION_COMMITTED (a different entity type).
+     *
+     * The corrected contract admits a promotion whose SOURCE is this attempt's completed result and
+     * whose own `attempt_id` field names this attempt — the carrier's entity type is irrelevant
+     * (H0-I2). The positive half is here; the wrong-Attempt negative is in the H0 relation suite.
+     */
     const r = await fullScenario();
     try {
       const projection = await buildProjectTrajectory(r.inputs);
       const promotionEdges = projection.edges.filter((edge) => edge.relation === "RESULT_PROMOTED");
-      // T0 DOES establish the relation, with real owner evidence.
       expect(promotionEdges.length).toBeGreaterThan(0);
       expect(promotionEdges[0]!.evidenceState).toBe("ESTABLISHED_BY_OWNER_REFERENCE");
       expect(promotionEdges[0]!.evidence).not.toBeNull();
 
-      // The V0S consumer excludes it, because the carrying PROMOTION_COMMITTED event is not in the
-      // attempt-entity identity set.
-      const ids = v0sCanonicalEventIds(r.events(), r.attempts.promoted);
-      const selection = selectAttemptWorkRelations(projection, ids);
+      const context = h0RelationContext(r.events(), r.attempts.promoted);
+      const selection = selectAttemptWorkRelations(projection, context);
       const selectedPromotions = selection.selected.filter((relation) => relation.relation === "RESULT_PROMOTED");
-      const quarantinedPromotions = selection.quarantined.filter((relation) => relation.relation === "RESULT_PROMOTED");
-      expect(selectedPromotions.length).toBe(0);
-      expect(quarantinedPromotions.length).toBeGreaterThan(0);
+      expect(selectedPromotions.length).toBeGreaterThan(0);
+      expect(selectedPromotions[0]!.evidenceState).toBe("ESTABLISHED_BY_OWNER_REFERENCE");
     } finally {
       await r.close();
     }
@@ -347,8 +403,17 @@ describe("H0 F2 — legitimate Promotion incorrectly excluded", () => {
 
 /* ================================================================== F3 */
 
-describe("H0 F3 — legitimate Governed Rework incorrectly excluded", () => {
-  it("F3: T0 establishes ATTEMPT_REOPENED_FOR_REWORK, and the V0S selector excludes it", async () => {
+describe("H0 F3 — legitimate Governed Rework preserved", () => {
+  it("F3 (corrected): T0 establishes ATTEMPT_REOPENED_FOR_REWORK and the selector now ADMITS it", async () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C2)
+     *
+     * The baseline assertion was `expect(selected.length).toBe(0)`: it pinned the DEFECT, that a
+     * genuine governed reopening was excluded because its carrier is a TASK_READY (a TASK entity).
+     *
+     * The corrected contract admits a reopening whose SOURCE is this attempt's terminal result and
+     * whose provenance `originRef` names this attempt (H0-I2).
+     */
     const r = await fullScenario();
     try {
       const projection = await buildProjectTrajectory(r.inputs);
@@ -356,10 +421,10 @@ describe("H0 F3 — legitimate Governed Rework incorrectly excluded", () => {
       expect(reworkEdges.length).toBeGreaterThan(0);
       expect(reworkEdges[0]!.evidenceState).toBe("ESTABLISHED_BY_OWNER_REFERENCE");
 
-      const ids = v0sCanonicalEventIds(r.events(), r.attempts.a0);
-      const selection = selectAttemptWorkRelations(projection, ids);
+      const context = h0RelationContext(r.events(), r.attempts.a0);
+      const selection = selectAttemptWorkRelations(projection, context);
       const selected = selection.selected.filter((relation) => relation.relation === "ATTEMPT_REOPENED_FOR_REWORK");
-      expect(selected.length).toBe(0);
+      expect(selected.length).toBeGreaterThan(0);
     } finally {
       await r.close();
     }

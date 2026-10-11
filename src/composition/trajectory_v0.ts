@@ -47,6 +47,7 @@ import {
   selectAttemptWorkRelations,
   trajectoryViewIdOf,
   type AttemptExecutionBinding,
+  type AttemptRelationContext,
   type BindingEvidenceRef,
   type DshSessionEventPage,
   type DshSessionReadPort,
@@ -292,7 +293,7 @@ function canonicalFactsOf(input: {
 /** §5: build the safe project-evolution summary, quarantining the known-incomplete relations. */
 async function projectEvolutionOf(
   inputs: TrajectoryProjectionInputs,
-  canonicalEventIds: ReadonlySet<string>,
+  context: AttemptRelationContext,
 ): Promise<PreviewProjectEvolutionSummary> {
   let projection;
   try {
@@ -311,7 +312,7 @@ async function projectEvolutionOf(
     });
   }
 
-  const { selected, quarantined } = selectAttemptWorkRelations(projection, canonicalEventIds);
+  const { selected, quarantined } = selectAttemptWorkRelations(projection, context);
 
   const caveats: string[] = [];
   if (projection.basisVector.completeness !== "COMPLETE") {
@@ -334,9 +335,52 @@ async function projectEvolutionOf(
   });
 }
 
+/**
+ * §6.3: build the exact AttemptRelationContext from this attempt's OWN canonical records.
+ *
+ * Every identity here is resolved from the attempt's own events, never from a label or a shared node.
+ * The `canonicalEventIds` set is retained ONLY to scope quarantine reporting; admission itself uses the
+ * precise role fields.
+ */
+function buildRelationContext(input: {
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly events: readonly SchedulerEvent[];
+  readonly admitted: { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null };
+}): AttemptRelationContext {
+  const { attemptId, events, admitted } = input;
+
+  /** §6.1: every event the Work owner recorded against this attempt entity. */
+  const attemptEvents = events.filter((event) => event.entity_type === "attempt" && event.entity_id === attemptId);
+
+  /** §6.1: the terminal result events for THIS attempt, split into all-terminal and completed-only. */
+  const terminalEvents = attemptEvents.filter((event) => event.event_type === "ATTEMPT_COMPLETED" || event.event_type === "ATTEMPT_FAILED");
+  const terminalEventIds = terminalEvents.map((event) => String(event.event_id));
+  const completed = terminalEvents.find((event) => event.event_type === "ATTEMPT_COMPLETED") ?? null;
+
+  /** §6.1: the envelope this attempt's creation event names, which is its own authorization. */
+  const createdEnvelopeId = (admitted.created.payload as { envelope_id?: unknown }).envelope_id;
+  const authorizationEnvelopeId = typeof createdEnvelopeId === "string" ? createdEnvelopeId : null;
+
+  const canonicalEventIds = new Set<string>(attemptEvents.map((event) => String(event.event_id)));
+  canonicalEventIds.add(String(admitted.created.event_id));
+  if (admitted.terminal !== null) canonicalEventIds.add(String(admitted.terminal.event_id));
+  if (admitted.authorization !== null) canonicalEventIds.add(String(admitted.authorization.event_id));
+
+  return Object.freeze({
+    projectId: input.projectId,
+    attemptId,
+    creationEventId: String(admitted.created.event_id),
+    authorizationEventId: admitted.authorization === null ? null : String(admitted.authorization.event_id),
+    authorizationEnvelopeId,
+    terminalEventIds: Object.freeze(terminalEventIds),
+    completedEventId: completed === null ? null : String(completed.event_id),
+    canonicalEventIds,
+  });
+}
+
 /** §5: the host observation event kinds that describe a TERMINATION REQUEST rather than an outcome. */
 const TERMINATION_REQUEST_KINDS = new Set(["DIRECT_CHILD_TIMEOUT_REQUESTED", "DIRECT_CHILD_ABORT_REQUESTED"]);
-
 /**
  * §8 S1-E3/E4/E5: derive the host-observation summary from a captured record.
  *
@@ -602,17 +646,19 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
         detail: classification.detail,
       });
 
-      /** §7: the exact canonical Work identity set this attempt's relations must touch. */
-      const canonicalEventIds = new Set<string>(
-        events
-          .filter((event) => event.entity_type === "attempt" && event.entity_id === request.attemptId)
-          .map((event) => String(event.event_id)),
-      );
-      canonicalEventIds.add(String(admitted.created.event_id));
-      if (admitted.terminal !== null) canonicalEventIds.add(String(admitted.terminal.event_id));
-      if (admitted.authorization !== null) canonicalEventIds.add(String(admitted.authorization.event_id));
+      /**
+       * §6.3: the AttemptRelationContext the selector validates against. Every field is an EXACT
+       * canonical identity resolved from this attempt's own records, so a shared authorization event
+       * cannot satisfy two attempts' relations and a genuine cross-entity carrier is admitted by ROLE.
+       */
+      const relationContext: AttemptRelationContext = buildRelationContext({
+        projectId,
+        attemptId: request.attemptId,
+        events,
+        admitted,
+      });
 
-      const projectEvolution = await projectEvolutionOf(projectionInputs, canonicalEventIds);
+      const projectEvolution = await projectEvolutionOf(projectionInputs, relationContext);
 
       return buildHandoffPreview({
         projectId,
