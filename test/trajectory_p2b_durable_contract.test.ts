@@ -21,6 +21,7 @@ import {
   computeTrustedSourceBasis,
   createExecutionAssociationRecorder,
   makeAssociationQualifier,
+  registryFromSingleBasis,
   parseSessionIdentityObserved,
   EXECUTION_ASSOCIATION_SCHEMA_VERSION,
   type SessionIdentityObservedPayload,
@@ -102,7 +103,15 @@ describe("P2B B1 §7 — typed, append-only durable observation", () => {
     store.close();
   });
 
-  it("§7.3 — the same event id with DIFFERENT content fails closed", () => {
+  it("§7.3 — the same canonical event id with DIFFERENT content fails closed", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED (P2C C2)
+     *
+     * C2 added the canonical-identity check, so a payload whose IDENTITY fields differ now fails the
+     * identity check first (a stronger, earlier refusal). The event_conflict property is still real and is
+     * exercised here through a NON-identity field: the same logical identity (same canonical id) with a
+     * different source basis is divergent content under one id, and must conflict rather than overwrite.
+     */
     const store = new SqliteExecutionAssociationStore(":memory:");
     const eventId = associationEventId({
       type: "SESSION_IDENTITY_OBSERVED",
@@ -111,7 +120,7 @@ describe("P2B B1 §7 — typed, append-only durable observation", () => {
       invocationId: "wpi-00000000-0000-4000-8000-000000000001",
       dshSessionId: "worker-a",
     });
-    const base = (sessionId: string) => ({
+    const base = (basis: typeof BASIS) => ({
       eventId,
       projectId: "p2b",
       type: "SESSION_IDENTITY_OBSERVED" as const,
@@ -120,16 +129,48 @@ describe("P2B B1 §7 — typed, append-only durable observation", () => {
         projectId: "p2b",
         attemptId: "attempt-00000000000000000000000000000001",
         invocationId: "wpi-00000000-0000-4000-8000-000000000001",
-        dshSessionId: sessionId,
-        sourceBasis: BASIS,
+        dshSessionId: "worker-a",
+        sourceBasis: basis,
         sourceKind: "FIRST_PARTY_DSH_HOST" as const,
         sourceQualificationDeclared: "FIRST_PARTY_DSH_QUALIFIED",
         directChildPid: 1,
         hostLocalJobId: null,
       },
     });
-    store.append(base("worker-a"));
-    expect(() => store.append(base("worker-b"))).toThrow(ExecutionAssociationConflictError);
+    const otherBasis = computeTrustedSourceBasis({ adapterId: "other", workerBin: "/other/dsh.js", nodeExecPath: "/other/node.exe" });
+    store.append(base(BASIS));
+    expect(() => store.append(base(otherBasis))).toThrow(ExecutionAssociationConflictError);
+    store.close();
+  });
+
+  it("§6.3 (C2) — a payload whose identity fields disagree with its event id is refused", () => {
+    const store = new SqliteExecutionAssociationStore(":memory:");
+    const eventId = associationEventId({
+      type: "SESSION_IDENTITY_OBSERVED",
+      projectId: "p2b",
+      attemptId: "attempt-00000000000000000000000000000001",
+      invocationId: "wpi-00000000-0000-4000-8000-000000000001",
+      dshSessionId: "worker-a",
+    });
+    expect(() =>
+      store.append({
+        eventId,
+        projectId: "p2b",
+        type: "SESSION_IDENTITY_OBSERVED",
+        payload: {
+          schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION,
+          projectId: "p2b",
+          attemptId: "attempt-00000000000000000000000000000001",
+          invocationId: "wpi-00000000-0000-4000-8000-000000000001",
+          dshSessionId: "worker-DIFFERENT",
+          sourceBasis: BASIS,
+          sourceKind: "FIRST_PARTY_DSH_HOST",
+          sourceQualificationDeclared: "x",
+          directChildPid: 1,
+          hostLocalJobId: null,
+        } as never,
+      }),
+    ).toThrow(/canonical identity/u);
     store.close();
   });
 
@@ -242,9 +283,20 @@ function qualificationHarness(options: {
 }) {
   return makeAssociationQualifier({
     store: options.store,
-    trustedBasis: BASIS,
+    registry: registryFromSingleBasis(BASIS, "FIRST_PARTY_DSH_HOST"),
     work: {
-      readAttempt: () => (options.work === undefined ? { taskId: "t1", state: "RUNNING" } : options.work),
+      /**
+       * -------------------------------------------------------------- CHANGED (P2C C2)
+       *
+       * The Work revalidation port now returns an EXPLICIT result (ok/refused) so the qualifier can reuse
+       * the V0S/H0 admission logic and verify the exact ATTEMPT_CREATED event (P2-C F10).
+       */
+      readAttempt: () =>
+        options.work === undefined
+          ? { ok: true as const, taskId: "t1", state: "RUNNING", creationEventId: "ev-1" }
+          : options.work === null
+            ? { ok: false as const, reason: "canonical Work has no such attempt under this project" }
+            : { ok: true as const, taskId: options.work.taskId, state: options.work.state, creationEventId: "ev-1" },
     },
     dsh: {
       async readHeaderIdentity(sessionId: string) {

@@ -57,4 +57,16 @@ export type {
   AssociationQualifier,
   WorkRevalidationPort,
   DshSourceRevalidationPort,
+  QualificationBasis,
 } from "./qualification.js";
+
+export {
+  SUPPORTED_PRODUCER_SOURCE_KINDS,
+  makeTrustedSourceRegistry,
+  registryFromSingleBasis,
+  qualifyRecordSource,
+} from "./source.js";
+export type { TrustedSourceEpoch, TrustedSourceRegistry, SourceQualificationOutcome } from "./source.js";
+
+export { WINDOW_INTEGRITY_STATES, WINDOW_INTEGRITY_REASONS, validateObservationWindow } from "./window_integrity.js";
+export type { WindowIntegrityState, WindowIntegrityReason, WindowIntegrityVerdict } from "./window_integrity.js";

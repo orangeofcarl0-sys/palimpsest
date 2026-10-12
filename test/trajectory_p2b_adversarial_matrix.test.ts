@@ -22,6 +22,7 @@ import {
   computeTrustedSourceBasis,
   createExecutionAssociationRecorder,
   makeAssociationQualifier,
+  registryFromSingleBasis,
   EXECUTION_ASSOCIATION_SCHEMA_VERSION,
   type TrustedSourceBasis,
 } from "../src/execution_association/index.js";
@@ -74,8 +75,13 @@ function recorderOn(store: SqliteExecutionAssociationStore) {
 function qualifierFor(store: SqliteExecutionAssociationStore, options: { work?: unknown; header?: { readState: string; sessionId: string | null } } = {}) {
   return makeAssociationQualifier({
     store,
-    trustedBasis: BASIS,
-    work: { readAttempt: () => (options.work === undefined ? { taskId: "t1", state: "RUNNING" } : (options.work as never)) },
+    registry: registryFromSingleBasis(BASIS, "FIRST_PARTY_DSH_HOST"),
+    work: {
+      readAttempt: () =>
+        options.work === undefined
+          ? { ok: true as const, taskId: "t1", state: "RUNNING", creationEventId: "ev-1" }
+          : (options.work as never),
+    },
     dsh: {
       async readHeaderIdentity(sessionId: string) {
         const header = options.header ?? { readState: "READ_OK", sessionId };
@@ -149,8 +155,16 @@ describe("P2B §11 B1 — durable-observation adversarial cases", () => {
     // A second store whose append is forced to fail by a read-only-ish corruption: assert the failure
     // surfaces rather than a false APPENDED.
     const reopened = new SqliteExecutionAssociationStore(path);
-    // Same logical event with divergent content is a conflict, not a silent overwrite.
+    /**
+     * -------------------------------------------------------------- CHANGED (P2C C2)
+     *
+     * C2 added the canonical-identity check, so a payload whose IDENTITY differs from its eventId is now
+     * refused EARLIER (a stronger refusal). The event_conflict property is still real: the same canonical
+     * identity with divergent NON-identity content (here a different source basis) must conflict rather
+     * than silently overwrite.
+     */
     const eventId = associationEventId({ type: "SESSION_IDENTITY_OBSERVED", projectId: "p2b", attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", dshSessionId: "worker-1" });
+    const otherBasis = computeTrustedSourceBasis({ adapterId: "other", workerBin: "/other/dsh.js", nodeExecPath: "/other/node.exe" });
     expect(() =>
       reopened.append({
         eventId,
@@ -161,8 +175,8 @@ describe("P2B §11 B1 — durable-observation adversarial cases", () => {
           projectId: "p2b",
           attemptId: ATTEMPT,
           invocationId: "wpi-00000000-0000-4000-8000-000000000001",
-          dshSessionId: "worker-DIFFERENT",
-          sourceBasis: BASIS,
+          dshSessionId: "worker-1",
+          sourceBasis: otherBasis,
           sourceKind: "FIRST_PARTY_DSH_HOST",
           sourceQualificationDeclared: "x",
           directChildPid: null,
@@ -244,7 +258,8 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     recorder.recordIdentity(correlated({ sessionId: "worker-done" }));
     recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
     // The attempt is terminal in Work; §9.1 says that is NOT a reason to refuse historical provenance.
-    const result = await qualifierFor(store, { work: { taskId: "t1", state: "COMPLETED" } }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
+    // (P2C C2: the Work port now returns an explicit admission result.)
+    const result = await qualifierFor(store, { work: { ok: true, taskId: "t1", state: "COMPLETED", creationEventId: "ev-1" } }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("ASSOCIATION_QUALIFIED");
     store.close();
   });
