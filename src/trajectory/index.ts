@@ -163,7 +163,6 @@ export type {
 export {
   buildHandoffPreview,
   EVENT_PAGE_COVERAGE_STATES,
-  eventPageCoverageOf,
   PREVIEW_DOES_NOT_AUTHORIZE,
   PREVIEW_COMPLETENESS_STATES,
   previewCompletenessOf,
@@ -190,6 +189,24 @@ export type {
   ReadOnlySnapshot,
   SessionLifecycle,
 } from "./handoff_preview.js";
+
+/**
+ * Trajectory-H1 §7 (C3) — SESSION PAGE INTEGRITY. A structural validator over a returned DSH page:
+ * coverage is a conclusion drawn only after the page's identity, counts, sequence positions and
+ * watermark agree with one another. An INVALID page claims no coverage and admits no events.
+ */
+export {
+  eventPageCoverageOfPage,
+  PAGE_INTEGRITY_REASONS,
+  PAGE_INTEGRITY_STATES,
+  validateSessionEventPage,
+} from "./page_integrity.js";
+export type {
+  PageIntegrityCheck,
+  PageIntegrityReason,
+  PageIntegrityState,
+  PageIntegrityVerdict,
+} from "./page_integrity.js";
 
 /**
  * Trajectory-V0S §7 (S1-D) — the Attempt-scoped Work relation admission policy. A read-side selection
