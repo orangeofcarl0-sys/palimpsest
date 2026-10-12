@@ -1,25 +1,35 @@
 /**
- * Trajectory-V0 §4/§9 (V0-B / V0-G) — THE REAL DSH SESSION READER.
+ * Trajectory-H1 §6 (C2) — THE PERSISTED/SYNTHETIC BOUNDARY IS DERIVED FROM ONE OFFICIAL READ.
  *
- * This is the ACTUAL, first-party-backed implementation of the `DshSessionReadPort` contract: it
- * mounts DSH's own `@deepseek-ai/dsh-session-persistence-jsonl` backend in a bare Cordis context and
- * reads a session through `readColdSessionLog` from `@deepseek-ai/dsh-session-query`. It never
- * resumes an Agent, never writes a session, never contacts a provider and never calls a model.
+ * V0S located the boundary with a SECOND, independent read (`readStoredPrefix`) and compared its
+ * count against the cold read's total. That comparison was unsound for two reasons, both measured at
+ * the H0 baseline:
  *
- * WHY THIS IS A SCRIPT AND NOT `src/`. Palimpsest's own `node_modules` contains no `@deepseek-ai/*`
- * package; the installed DSH lives at `~/.dsh/profiles/node_modules/@deepseek-ai/`. A `src/` module
- * importing an absolute profile path would make the product source depend on one machine's
- * deployment layout. So the reader lives here, resolves the DSH home at CALL time, and exposes
- * exactly the `DshSessionReadPort` shape the product contract declares.
+ *   F1  the cold read's total ALREADY CONTAINS the synthetic closers, so `stored.count <= total` is
+ *       satisfied by a stored count that is larger than the true boundary. An event that the FIRST
+ *       read synthesized could then be classified as persisted.
+ *   H1  DSH documents that "reads concurrent with a mutation carry no ordering promise beyond the
+ *       valid contiguous prefix", so the two reads need not observe one snapshot at all.
+ *
+ * The corrected derivation needs no second read. The official `SessionHandle` exposes exactly the
+ * seam this requires, and `readColdSessionLog` itself is built on it:
+ *
+ *     handle = await persistence.open(sessionId, 'read')
+ *     read   = await handle.read(0, undefined)     // ONE validated contiguous stored prefix
+ *     stored = read.events                         // the boundary is this array's own length
+ *     closers = interruptedTurnClosers(stored)     // the official recovery helper, over THOSE events
+ *     observed = [...stored, ...closers]
+ *
+ * Every event at an index below `stored.length` was read from storage. Every event produced by the
+ * helper is synthetic. The two groups are distinguished by their POSITION IN ONE ARRAY, never by a
+ * later storage count. The §4 audit (`scripts/trajectory_h1/dsh-source-audit.mjs`) measured this
+ * derivation to be byte-identical to `readColdSessionLog` in length, sequence, type and turn-end
+ * reason, on both a balanced and an interrupted session.
+ *
+ * The reader remains READ-ONLY: it opens a read handle, never appends, never flushes, never resumes
+ * an Agent, never starts a model and never writes to DSH storage.
  *
  * ------------------------------------------------------------------ Trajectory-V0S §9 corrections
- *
- *   PERSISTED vs SYNTHETIC. `readColdSessionLog` returns `[...storedEvents, ...closers]`, where the
- *   closers are synthesized in memory by `interruptedTurnClosers`. V0 labelled every returned event
- *   as if it were stored. This reader instead reads the STORED PREFIX through the persistence
- *   handle's own `read` seam, counts it, and labels each event by whether its seq falls inside that
- *   prefix. When the handle seam is unavailable the boundary is reported UNRESOLVED rather than
- *   assumed.
  *
  *   BOUNDED INPUT. A negative, fractional or excessive cursor is REFUSED (`INVALID_REQUEST`) rather
  *   than silently coerced, and `RETURN_PAGE_BOUNDED` is explicitly distinguished from
@@ -29,8 +39,8 @@
  *   are mapped to stable classifications and the detail is SANITIZED, so no personal path reaches a
  *   consumer through the default read.
  *
- *   RESOURCE LIFECYCLE. `close()` disposes the Cordis context, so a long-lived reader does not
- *   accumulate mounted persistence contexts.
+ *   RESOURCE LIFECYCLE. `close()` disposes the Cordis context, and each read closes its own handle,
+ *   so a long-lived reader does not accumulate mounted persistence contexts or leaked handles.
  *
  * PLAIN JAVASCRIPT (`.mjs`). No new dependency: it imports the installed DSH directly.
  */
@@ -185,30 +195,51 @@ function validateRequest(request) {
 }
 
 /**
- * §9: read the STORED PREFIX length through the persistence handle's own seam.
+ * Trajectory-H1 §6.1 (C2): ONE official read produces both the stored prefix and the observed view.
  *
- * `readColdSessionLog` returns stored events PLUS synthetic closers, so the returned array's length
- * is NOT the stored count. This opens a read handle directly and asks it for the stored log, which
- * is the only source-grounded way to locate the boundary. Returns null when the seam is unavailable,
- * in which case the caller reports the durability boundary UNRESOLVED rather than assuming.
+ * This is the whole correction. It opens an official READ handle, takes ONE validated contiguous
+ * stored prefix from it, and derives the synthetic closers from THAT array with DSH's own recovery
+ * helper. There is no second read and therefore no cross-snapshot boundary: the classification is a
+ * property of one array's own shape.
+ *
+ * The handle's own `read` already resolves exactly one physical generation and returns a slice of
+ * it (`JsonlSessionHandle.read -> readCurrent -> resolveCurrentLog` once, then `readStoredLog` once),
+ * and the handle refuses to observe a log that shrank below a previously observed prefix. So the
+ * prefix this function returns is a valid contiguous prefix of the log as of this one read.
+ *
+ * Returns a discriminated result so a failure is reported rather than turned into an empty success.
  */
-async function readStoredPrefix(persistence, sessionId, SessionId) {
+async function readStoredPrefix(persistence, sessionId, SessionId, interruptedTurnClosers) {
   let handle;
   try {
     handle = await persistence.open(SessionId(sessionId), 'read');
-  } catch {
-    return null;
+  } catch (error) {
+    return { ok: false, error };
   }
   try {
-    const stored = await handle.read(0, undefined);
-    return { count: stored.events.length, eventState: stored.eventState };
-  } catch {
-    return null;
+    /** ONE read. `length` is omitted so the handle returns the rest of the valid contiguous log. */
+    const read = await handle.read(0, undefined);
+    const stored = read.events;
+    /**
+     * §6.1: the synthetic closers are derived from the SAME array, using the official helper. A
+     * balanced log yields none. The helper does not mutate its input (measured in the §4 audit).
+     */
+    const closers = interruptedTurnClosers(stored);
+    return {
+      ok: true,
+      stored,
+      closers,
+      eventState: read.eventState,
+      header: handle.header,
+      inheritedEventCount: handle.inheritedEventCount,
+    };
+  } catch (error) {
+    return { ok: false, error };
   } finally {
     try {
       await handle.close();
     } catch {
-      /* the handle is already gone; nothing to release */
+      /* §12: close is idempotent; a close failure must not discard the read result above */
     }
   }
 }
@@ -218,7 +249,7 @@ async function readStoredPrefix(persistence, sessionId, SessionId) {
  *
  * `sessionsRoot` is the DSH session root (e.g. `<dshHome>/sessions`). The reader mounts the JSONL
  * backend in a bare Cordis context — no agent, no tools, no provider — and reads through
- * `readColdSessionLog`, which the DSH README documents as never making a session live.
+ * an official read handle, which DSH documents as never making a session live.
  */
 export async function makeRealDshSessionReader(input) {
   const { dshHomePath, sessionsRoot } = input;
@@ -229,8 +260,12 @@ export async function makeRealDshSessionReader(input) {
   const base = pathToFileURL(packageRoot + '/').href;
   const { Context } = await import(base + 'cordis/lib/index.js');
   const JsonlSessionPersistence = (await import(base + 'dsh-session-persistence-jsonl/lib/index.js')).default;
-  const { readColdSessionLog } = await import(base + 'dsh-session-query/lib/index.js');
-  const { SessionId } = await import(base + 'dsh-session/lib/index.js');
+  /**
+   * H1 §6.1: `interruptedTurnClosers` is DSH's OWN recovery helper, exported by `@deepseek-ai/dsh-session`
+   * and used by `readColdSessionLog` itself. Reusing it — rather than reimplementing the recovery state
+   * machine — is what keeps this reader a supported derivation rather than a second implementation.
+   */
+  const { SessionId, interruptedTurnClosers } = await import(base + 'dsh-session/lib/index.js');
 
   const ctx = new Context();
   /**
@@ -299,8 +334,24 @@ export async function makeRealDshSessionReader(input) {
       }
       const { fromSeq, maxEvents } = bounds;
       try {
-        const log = await readColdSessionLog(persistence, SessionId(request.sessionId));
-        const all = log.events;
+        /**
+         * H1 §6.1: ONE read produces the stored prefix AND the observed view. The returned `all`
+         * array is `[...stored, ...closers]`, and the persisted/synthetic boundary is the stored
+         * array's own length — a property of this ONE array, not of a later storage count.
+         */
+        const observed = await readStoredPrefix(persistence, request.sessionId, SessionId, interruptedTurnClosers);
+        if (!observed.ok) throw observed.error;
+        const { stored, closers } = observed;
+        const all = [...stored, ...closers];
+        const storedCount = stored.length;
+        /**
+         * H1 §6.1: every event at an index below the stored count came from storage; every event the
+         * helper produced is synthetic. The classification is positional, so it can never be revised
+         * by a later append: it is fixed by the shape of the array this read produced.
+         */
+        const durabilityOf = (index) => (index < storedCount ? 'PERSISTED_DSH_EVENT' : 'SYNTHETIC_RECOVERY_EVENT');
+        const syntheticCount = closers.length;
+
         /**
          * §4: a CONTIGUOUS seq check. DSH documents its log as contiguous from 0, so a gap is a
          * real anomaly and is reported rather than silently paginated over.
@@ -309,8 +360,8 @@ export async function makeRealDshSessionReader(input) {
           if (all[index].seq !== index) {
             return Object.freeze({
               schemaVersion: 1, readState: 'EVENT_GAP', sessionId: request.sessionId,
-              header: headerOf(log.header, log.inheritedEventCount), sourceIdentity, sourceEvidenceClass: 'REAL_DSH_QUERY',
-              throughSeq: null, knownEventCount: all.length, inheritedEventCount: log.inheritedEventCount,
+              header: headerOf(observed.header, observed.inheritedEventCount), sourceIdentity, sourceEvidenceClass: 'REAL_DSH_QUERY',
+              throughSeq: null, knownEventCount: all.length, inheritedEventCount: observed.inheritedEventCount,
               requestedFromSeq: fromSeq, requestedMaxEvents: maxEvents, returnedCount: 0,
               pageBounded: true, diskIoBounded: false,
               durabilityProvenance: 'DURABILITY_UNRESOLVED', persistedEventCount: null, syntheticRecoveryEventCount: null,
@@ -321,48 +372,19 @@ export async function makeRealDshSessionReader(input) {
           }
         }
 
-        /**
-         * §9: locate the persisted/synthetic boundary through the storage seam. The cold read
-         * appended `interruptedTurnClosers`, so anything at or beyond the stored prefix length is a
-         * SYNTHETIC RECOVERY EVENT — an event the original execution never wrote.
-         */
-        const stored = await readStoredPrefix(persistence, request.sessionId, SessionId);
-        /**
-         * H0 §10.2: COLD-READ CONSISTENCY. `readColdSessionLog` and `readStoredPrefix` are two
-         * separate reads, and DSH documents that "reads concurrent with a mutation carry no ordering
-         * promise beyond the valid contiguous prefix". So the stored prefix could have GROWN between
-         * the two reads, which would classify stored events as synthetic closers (or vice versa).
-         *
-         * The fail-closed check: if the second read reports MORE stored events than the first read
-         * returned in total, the two reads observed different snapshots and the boundary is UNRESOLVED.
-         * A prefix that shrank or matched is consistent with the first read's snapshot.
-         */
-        const boundaryConsistent = stored === null ? false : stored.count <= all.length;
-        const boundaryKnown = stored !== null && boundaryConsistent;
-        const storedCount = boundaryKnown ? stored.count : null;
-        const durabilityOf = (seq) => {
-          if (!boundaryKnown) return 'DURABILITY_UNRESOLVED';
-          return seq < storedCount ? 'PERSISTED_DSH_EVENT' : 'SYNTHETIC_RECOVERY_EVENT';
-        };
-        const syntheticCount = boundaryKnown ? all.filter((event) => event.seq >= storedCount).length : null;
-        const boundaryDetail = boundaryKnown
-          ? `(${String(storedCount)} stored, ${String(syntheticCount)} synthetic recovery closer(s))`
-          : stored !== null && !boundaryConsistent
-            ? '(the storage changed between the cold read and the prefix read, so the persisted/synthetic boundary is unresolved)'
-            : '(the persisted/synthetic boundary could not be verified against the storage seam)';
-
-        const inheritedCount = log.inheritedEventCount;
-        const page = all.slice(fromSeq, fromSeq + maxEvents).map((event) =>
+        const boundaryDetail = `(${String(storedCount)} stored, ${String(syntheticCount)} synthetic recovery closer(s))`;
+        const inheritedCount = observed.inheritedEventCount;
+        const page = all.slice(fromSeq, fromSeq + maxEvents).map((event, offset) =>
           sanitizeEvent({
             sessionId: request.sessionId,
             event,
             inherited: event.seq < inheritedCount,
-            durability: durabilityOf(event.seq),
+            durability: durabilityOf(fromSeq + offset),
           }),
         );
         return Object.freeze({
           schemaVersion: 1, readState: 'READ_OK', sessionId: request.sessionId,
-          header: headerOf(log.header, inheritedCount),
+          header: headerOf(observed.header, inheritedCount),
           sourceIdentity, sourceEvidenceClass: 'REAL_DSH_QUERY',
           throughSeq: page.length === 0 ? null : page[page.length - 1].seq,
           knownEventCount: all.length,
@@ -377,11 +399,15 @@ export async function makeRealDshSessionReader(input) {
            */
           pageBounded: true,
           diskIoBounded: false,
-          durabilityProvenance: boundaryKnown ? 'PERSISTED_AND_SYNTHETIC_SEPARATED' : 'DURABILITY_UNRESOLVED',
+          /**
+           * H1 §6.3: the boundary is ALWAYS separated now, because it is derived from the one read
+           * that produced this page. There is no unresolved case for a successful read.
+           */
+          durabilityProvenance: 'PERSISTED_AND_SYNTHETIC_SEPARATED',
           persistedEventCount: storedCount,
           syntheticRecoveryEventCount: syntheticCount,
           events: Object.freeze(page),
-          knownParentSession: typeof log.header.parentSession === 'string' ? log.header.parentSession : null,
+          knownParentSession: typeof observed.header.parentSession === 'string' ? observed.header.parentSession : null,
           proves: PAGE_PROVES,
           doesNotProve: PAGE_DOES_NOT_PROVE,
           detail: `read ${String(page.length)} of ${String(all.length)} events from the session's own log ${boundaryDetail}`,
@@ -409,8 +435,18 @@ export async function makeRealDshSessionReader(input) {
     /** §4: read a session's immutable header identity, or report why it is unavailable. */
     async readHeaderIdentity(sessionId) {
       try {
-        const log = await readColdSessionLog(persistence, SessionId(sessionId));
-        return Object.freeze({ readState: 'READ_OK', header: headerOf(log.header, log.inheritedEventCount), detail: 'the stored header was read and validated' });
+        /**
+         * H1 §6.1: the header comes from the SAME official read-handle path as the events, so a
+         * header is never paired with a body read from a different snapshot. Only the header is
+         * returned; no event array is produced or classified here.
+         */
+        const observed = await readStoredPrefix(persistence, sessionId, SessionId, interruptedTurnClosers);
+        if (!observed.ok) throw observed.error;
+        return Object.freeze({
+          readState: 'READ_OK',
+          header: headerOf(observed.header, observed.inheritedEventCount),
+          detail: 'the stored header was read and validated',
+        });
       } catch (error) {
         const readState = classifyFailure(error);
         return Object.freeze({ readState, header: null, detail: `${readState}: ${sanitize(error instanceof Error ? error.message : String(error))}` });

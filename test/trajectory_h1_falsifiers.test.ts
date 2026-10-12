@@ -142,9 +142,20 @@ describe("H1 F1 — H0's counter consistency rule is insufficient", () => {
     const baselineDurabilityOf = (seq: number): string => (seq < laterStoredCount ? "PERSISTED_DSH_EVENT" : "SYNTHETIC_RECOVERY_EVENT");
     expect(baselineDurabilityOf(2)).toBe("PERSISTED_DSH_EVENT"); // was synthetic in the observed read
 
-    // The source rule is still the baseline one at this commit (it is corrected by C2).
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C2)
+     *
+     * The baseline assertion PINNED THE DEFECT by requiring the source to still contain
+     * `const boundaryConsistent = stored === null ? false : stored.count <= all.length;`.
+     *
+     * The corrected contract asserts the OPPOSITE: that rule is gone, and the reader derives the
+     * boundary from the ONE array its read produced.
+     */
     const code = source(SOURCE_FILES.reader);
-    expect(code).toContain("const boundaryConsistent = stored === null ? false : stored.count <= all.length;");
+    expect(code).not.toContain("const boundaryConsistent = stored === null ? false : stored.count <= all.length;");
+    expect(code).not.toContain("boundaryConsistent");
+    expect(code).toContain("const all = [...stored, ...closers];");
+    expect(code).toContain("const durabilityOf = (index) => (index < storedCount ? 'PERSISTED_DSH_EVENT' : 'SYNTHETIC_RECOVERY_EVENT');");
   });
 });
 

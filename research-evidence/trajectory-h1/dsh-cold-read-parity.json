@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_DSH_COLD_READ_PARITY",
+  "evidenceClass": "PASS_REAL_DSH_NO_MODEL",
+  "method": "compare the single-read derivation and the shipped reader against official readColdSessionLog on a static interrupted Session",
+  "observed": {
+    "parityLength": true,
+    "paritySeq": true,
+    "parityType": true,
+    "parityTurnEndReason": true,
+    "shippedReaderKnownEventCountEqualsOfficial": true
+  },
+  "verdict": "PASS — identical logical events, sequence ordering and recovery-closer semantics"
+}
