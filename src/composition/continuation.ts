@@ -85,6 +85,22 @@ export interface ContinuationCompositionOptions {
    * `READY_FOR_DELEGATION` — the capability is absent, never stubbed.
    */
   readonly workWorkerPort?: ((worldPath: string) => WorkWorkerRunPort) | undefined;
+  /**
+   * Trajectory-P2-C §7.3: the trusted execution-association recorder, when the deployment composed one.
+   *
+   * Supplying it wires the delegation service's `onCorrelatedSessionIdentity` sink to the recorder, so a
+   * real Parent-observed Session identity is durably recorded through the CONTROLLED ingestion path. The
+   * recorder is attached at the Parent/Delegation boundary — the one place that legitimately holds the
+   * canonical AttemptId and its own job id — so the worker or model can never name its own AttemptId.
+   *
+   * ABSENT ⇒ the delegation service records nothing, which is exactly the P2-B behavior.
+   */
+  readonly sessionIdentityRecorder?: import("../execution_association/index.js").ExecutionAssociationRecorder | undefined;
+  /**
+   * Trajectory-P2-C §7.4: how the deployment classifies the worker executable for identity observations.
+   * Absent ⇒ the port's own `DIRECT_CHILD_IPC` default applies.
+   */
+  readonly sessionSourceQualification?: import("../interaction/work_delegation.js").WorkerSessionSourceQualification | undefined;
 }
 
 export interface ContinuationCompositionInput {
@@ -212,7 +228,29 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
   const workDelegation: WorkDelegationService | undefined =
     options.workWorkerPort === undefined
       ? undefined
-      : makeWorkDelegationService({ controller, workerFor: options.workWorkerPort });
+      : makeWorkDelegationService({
+          controller,
+          workerFor: options.workWorkerPort,
+          /**
+           * Trajectory-P2-C §7.3/§7.4: wire the durable recorder at the Parent observation boundary when
+           * one was composed, and record the window finalization when the delegation returns (the honest
+           * closure signal: the Parent stopped waiting on the child). Both are best-effort sinks; a
+           * recorder failure cannot change the job's phase or the canonical Work state.
+           */
+          ...(options.sessionIdentityRecorder === undefined
+            ? {}
+            : {
+                onCorrelatedSessionIdentity: (entry: import("../interaction/work_delegation.js").CorrelatedSessionIdentityObservation) => {
+                  options.sessionIdentityRecorder?.recordIdentity(entry);
+                },
+                onTerminal: (terminal: { readonly attemptId: string | null }) => {
+                  if (terminal.attemptId !== null) {
+                    options.sessionIdentityRecorder?.finalizeAttempt({ attemptId: terminal.attemptId, closeReason: "INVOCATION_RETURNED" });
+                  }
+                },
+              }),
+          ...(options.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: options.sessionSourceQualification }),
+        });
 
   // ── the narrow owner reads (SR-2 §20) ──
   /**

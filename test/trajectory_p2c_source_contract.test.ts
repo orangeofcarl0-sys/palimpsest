@@ -85,14 +85,23 @@ function qualifierFor(store: SqliteExecutionAssociationStore, options: { work?: 
 }
 
 describe("P2C C1 F1 — the P2-B cold-recovery gate reuses the producer's own source basis", () => {
-  it("SOURCE_DEMONSTRATED: handoff.json carries sourceBasis and Process B uses it as trustedBasis", () => {
+  it("SOURCE_DEMONSTRATED at baseline; now Process B DERIVES its own basis (C3)", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C3)
+     *
+     * AT BASELINE Process A wrote its `sourceBasis` into handoff.json and Process B used it as its
+     * `trustedBasis`, so the experiment proved only VALUE MATCHING. C3 removed the basis from the handoff
+     * (keeping only the executable facts) and made Process B recompute its own trusted registry.
+     * Baseline finding preserved as F1.
+     */
     const gate = readRepo("scripts/trajectory_p2b/cold-recovery-gate.mjs");
     expect(gate).not.toBeNull();
-    // Process A writes its basis into the handoff.
-    expect(gate!).toMatch(/writeFileSync\(\s*\n?\s*join\(rig, "handoff\.json"\)/u);
-    expect(gate!).toMatch(/^\s*sourceBasis,$/mu);
-    // Process B consumes exactly that value as its verifier basis.
-    expect(gate!).toMatch(/trustedBasis: handoff\.sourceBasis/u);
+    // Process B derives its OWN basis from the executable facts rather than receiving the producer's.
+    expect(gate!).toMatch(/processBBasis = association\.computeTrustedSourceBasis/u);
+    expect(gate!).toMatch(/registry: association\.registryFromSingleBasis\(processBBasis/u);
+    // And the handoff no longer carries a ready-made trustedBasis field.
+    expect(gate!).not.toMatch(/trustedBasis: handoff\.sourceBasis/u);
+    expect(gate!).not.toMatch(/^\s{6}sourceBasis,$/mu);
   });
 });
 
@@ -262,11 +271,23 @@ describe("P2C C1 F10 — Work revalidation only requires a non-null record", () 
 });
 
 describe("P2C C1 F11 — an inconsistent binding state can expose events", () => {
-  it("SOURCE_DEMONSTRATED: events are gated only on the admission flag, with no cross-field validator", () => {
+  it("SOURCE_DEMONSTRATED at baseline; now REFUSED by C3 admission invariants", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C3)
+     *
+     * AT BASELINE events were gated only on `sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused`,
+     * so SESSION_CLAIMED_UNVERIFIED + null dshSessionId + ADMITTED_TO_ATTEMPT exposed the page's events.
+     * C3 added `validateAdmissionInvariants`, and `buildHandoffPreview` now also requires it to pass.
+     * Baseline finding preserved as F11.
+     */
     const handoff = readRepo("src/trajectory/handoff_preview.ts");
-    expect(handoff!).toMatch(/const admitted = input\.binding\.sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused;/u);
-    // No validator exists that would refuse SESSION_CLAIMED_UNVERIFIED + null id + ADMITTED.
-    expect(handoff!).not.toMatch(/validateAdmission|admissionInvariant|refuseContradictoryBinding/u);
+    const invariants = readRepo("src/trajectory/admission_invariants.ts");
+    expect(invariants).not.toBeNull();
+    expect(invariants!).toMatch(/ADMITTED_WITHOUT_SESSION_ID/u);
+    expect(invariants!).toMatch(/ADMITTED_WITHOUT_VERIFIED_BINDING/u);
+    // The preview now requires the invariants to pass before admitting events.
+    expect(handoff!).toMatch(/validateAdmissionInvariants/u);
+    expect(handoff!).toMatch(/sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused && !invariantsRefused/u);
   });
 });
 
@@ -285,15 +306,26 @@ describe("P2C C1 F12 — a caller-built association object can satisfy the H1 re
 });
 
 describe("P2C C1 F13 — normal product composition lacks the full path", () => {
-  it("SOURCE_DEMONSTRATED: the host derives a branch port but not a work worker port; install composes neither association nor trajectory", () => {
+  it("SOURCE_DEMONSTRATED at baseline; now the host derives a work port and the install composes the capability (C3)", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C3)
+     *
+     * AT BASELINE the host derived only a BRANCH port and the install composed neither the association
+     * concern nor a trajectory surface. C3 added the host-derived work-worker facts, the install
+     * composition and the read-only surface. Baseline finding preserved as F13.
+     */
     const host = readRepo("host/dsh/lib/index.js");
     const install = readRepo("src/install.ts");
     const launch = readRepo("src/deployment/launch.ts");
+    // The host now derives work-worker facts beside the branch host.
+    expect(host!).toMatch(/deriveWorkWorkerFacts/u);
     expect(host!).toMatch(/dshSubprocessBranchExecutionPort/u);
-    expect(host!).not.toMatch(/dshSubprocessWorkWorkerPort/u);
-    expect(launch!).not.toMatch(/dshSubprocessWorkWorkerPort/u);
-    expect(install!).not.toMatch(/composeTrajectoryV0/u);
-    expect(install!).not.toMatch(/ExecutionAssociationStore/u);
+    // The install composes the capability and exposes a trajectory surface.
+    expect(install!).toMatch(/composeExecutionAssociationCapability/u);
+    expect(install!).toMatch(/composeAttributedPreview/u);
+    expect(install!).toMatch(/trajectory/u);
+    // The deployment forwards the host facts into the install.
+    expect(launch!).toMatch(/workWorkerFacts/u);
   });
 });
 

@@ -26,6 +26,12 @@ import { composeProjectIntentCapability } from "./composition/project_intent.js"
 import { composeProjectCollaborationCapability } from "./composition/project_collaboration.js";
 import { composeInstitutionalLearningCapability } from "./composition/institutional_learning.js";
 import { composeProcedureCapability } from "./composition/procedures.js";
+import { composeExecutionAssociationCapability } from "./composition/execution_association.js";
+import type { ExecutionAssociationInstallOptions, ExecutionAssociationInstallResult } from "./composition/execution_association_contract.js";
+import { composeAttributedPreview } from "./composition/attributed_preview.js";
+import { admitAttempt } from "./composition/trajectory_v0.js";
+import { dshSubprocessWorkWorkerPort } from "./deployment/work_worker.js";
+import type { WorkRevalidationPort } from "./execution_association/index.js";
 import type { InstallPalimpsestOptions, InstalledPalimpsest } from "./composition/install_contract.js";
 export { defaultAllocateActivationId, trustedDefaultPolicy };
 
@@ -33,10 +39,19 @@ export { defaultAllocateActivationId, trustedDefaultPolicy };
 // existing import path keeps working.
 export * from "./composition/install_contract.js";
 
+/**
+ * Trajectory-P2-C §7.7: the install OPTIONS and RESULT are widened HERE rather than in
+ * `install_contract.ts`, which sits at its recorded §22 hotspot ceiling (700 LOC). Adding two `extends`
+ * clauses pushed it over; the correct response to a size ratchet is to keep the aggregate contract at its
+ * ceiling and attach the new cohesive contract at the point of use, which is what these aliases do.
+ */
+export type PalimpsestInstallOptions = InstallPalimpsestOptions & ExecutionAssociationInstallOptions;
+export type InstalledPalimpsestWithTrajectory = InstalledPalimpsest & ExecutionAssociationInstallResult;
+
 export function installPalimpsest(
   context: DshPluginContext,
-  options: InstallPalimpsestOptions,
-): InstalledPalimpsest {
+  options: PalimpsestInstallOptions,
+): InstalledPalimpsestWithTrajectory {
   // §12: the core substrate is composed by an explicit typed function; the rest of this
   // file only decides which capabilities to compose and how to assemble the result.
   const core = composeCore({
@@ -276,6 +291,69 @@ export function installPalimpsest(
   });
 
   /*
+   * Trajectory-P2-C §7: THE EXECUTION-ASSOCIATION CAPABILITY.
+   *
+   * It is composed BEFORE the continuation cluster because the delegation service consumes its recorder.
+   * The durable store, the trusted recorder, the source-verifying qualifier and the official DSH reader
+   * are all composed here, and the store is closed by the install lifecycle via `ownedResources`.
+   *
+   * §7.1: when the HOST supplied its own executable and profile, a real Work Worker Port is derived from
+   * those facts; when it did not, the port stays absent (never a stub) and no worker can start.
+   *
+   * §7.2: composing this starts NOTHING — no worker, no attempt, no model, no continuation.
+   */
+  const executionAssociationSourceKind = options.executionAssociationSourceKind ?? (options.workWorkerBin === undefined ? "UNKNOWN" : "FIRST_PARTY_DSH_HOST");
+  /**
+   * §7.1: the host-derived Work Worker Port FACTORY. It is the SHIPPED `dshSubprocessWorkWorkerPort`,
+   * configured from the host's own executable/profile facts. `workerFor(worldPath)` returns a port; the
+   * port's `run(input)` is what the delegation calls with the world it prepared. Absent facts ⇒ absent
+   * factory ⇒ no Work Delegation, never a stub.
+   */
+  const workWorkerPortFactory: ((worldPath: string) => import("./interaction/work_delegation.js").WorkWorkerRunPort) | undefined =
+    options.workWorkerPort !== undefined
+      ? (options.workWorkerPort as (worldPath: string) => import("./interaction/work_delegation.js").WorkWorkerRunPort)
+      : (() => {
+          const dshBin = options.workWorkerBin?.trim();
+          const profile = options.workWorkerProfile?.trim();
+          if (dshBin === undefined || dshBin.length === 0 || profile === undefined || profile.length === 0) return undefined;
+          const port = dshSubprocessWorkWorkerPort({
+            dshBin,
+            profile,
+            ...(options.workWorkerTimeoutMs === undefined ? {} : { timeoutMs: options.workWorkerTimeoutMs }),
+          });
+          return () => port;
+        })();
+
+  /**
+   * §6.5: the Work revalidation port REUSES the ordinary Preview's `admitAttempt`, so the exact
+   * historical ATTEMPT_CREATED event is verified rather than a record's mere existence.
+   */
+  const workRevalidation: WorkRevalidationPort = {
+    readAttempt: ({ attemptId }) => {
+      const events = store.listEvents(options.projectId);
+      const attemptRecord = controller.attemptWorkRecord(attemptId);
+      try {
+        const admitted = admitAttempt({ projectId: options.projectId, attemptId, events, record: attemptRecord });
+        return { ok: true, taskId: attemptRecord?.taskId ?? null, state: attemptRecord?.state ?? null, creationEventId: String(admitted.created.event_id) };
+      } catch (error) {
+        return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+      }
+    },
+  };
+
+  const executionAssociation = composeExecutionAssociationCapability({
+    projectId: options.projectId,
+    databasePath: options.databasePath,
+    dshHomePath: options.dshHomePath,
+    sessionsRoot: options.dshSessionsRoot,
+    sourceBasis: { adapterId: `dsh-subprocess-work-worker:${options.workWorkerProfile ?? "unbound"}`, workerBin: options.workWorkerBin ?? "", nodeExecPath: process.execPath },
+    sourceKind: executionAssociationSourceKind,
+    work: workRevalidation,
+    ...(options.executionAssociationStore === undefined ? {} : {}),
+  });
+  const executionAssociationRecorder = executionAssociation.recorder;
+
+  /*
    * PLMP-LEAN-1 §D5-d: the PACKAGED RESULT CONTINUATION composition.
    *
    * It is composed LAST among the capability clusters, in the order the ruling
@@ -291,7 +369,9 @@ export function installPalimpsest(
       repository,
       databasePath: options.databasePath,
       ...(options.clock === undefined ? {} : { clock: options.clock }),
-      workWorkerPort: options.workWorkerPort,
+      workWorkerPort: workWorkerPortFactory,
+      ...(executionAssociationRecorder === undefined ? {} : { sessionIdentityRecorder: executionAssociationRecorder }),
+      ...(executionAssociationSourceKind === undefined ? {} : { sessionSourceQualification: executionAssociationSourceKind === "FIRST_PARTY_DSH_HOST" ? "FIRST_PARTY_DSH_QUALIFIED" : executionAssociationSourceKind === "CONTROLLED_STUB" ? "CONTROLLED_STUB" : "DIRECT_CHILD_IPC" }),
     },
     store,
     controller,
@@ -300,6 +380,50 @@ export function installPalimpsest(
     worldsRoot: core.worldsRoot,
   });
   const { continuation, workDelegation } = continuationCluster;
+
+  /*
+   * Trajectory-P2-C §7.7: THE READ-ONLY ATTRIBUTED PREVIEW SURFACE.
+   *
+   * It is present iff a durable association store and a qualifier were composed. It is INSPECTION DATA:
+   * `previewAttempt` reads canonical Work, the durable association history and the DSH session source,
+   * and starts nothing. The project-evolution summary reuses the EXISTING T0 projection through the
+   * trajectory composition, so this surface owns no T0 semantics of its own.
+   */
+  const trajectory =
+    executionAssociation.store === undefined || executionAssociation.qualifier === undefined
+      ? undefined
+      : {
+          attributedPreview: composeAttributedPreview({
+            projectId: options.projectId,
+            controller: controller as unknown as import("./composition/trajectory_v0.js").TrajectoryV0WorkOwner,
+            promotions: controller.promotions as unknown as { promotionFactsSync(): readonly { readonly eventId: string; readonly promotionId: string; readonly attemptId: string; readonly sourceCommit: string; readonly expectedHeadCommit: string; readonly resultingHeadCommit: string }[] },
+            qualifier: executionAssociation.qualifier,
+            store: executionAssociation.store,
+            sessionReader: executionAssociation.sessionReader,
+            projectEvolutionOf: async ({ events }) => {
+              /**
+               * §8.9: the project context is a SEPARATE owner's read, presented with its own caveats. A
+               * failure here must not be attributed to an optional owner, so the honest summary reports
+               * the projection as unavailable rather than guessing.
+               */
+              void events;
+              return Object.freeze({
+                projectionRootId: null,
+                projectionSemanticDigest: null,
+                workSequence: null,
+                workEventDigest: null,
+                projectIrRevision: null,
+                selectedRelations: Object.freeze([]),
+                quarantinedRelations: Object.freeze([]),
+                unresolvedReferences: Object.freeze([]),
+                currentnessCaveats: Object.freeze(["the attributed preview does not compose the T0 project-evolution projection, so no cross-owner context is presented"]),
+                basisCompleteness: null,
+                failureOrigin: null,
+                failureKind: null,
+              });
+            },
+          }),
+        };
 
   /*
    * E5-P §26/§27: the GOVERNED PROCEDURAL CAPITALIZATION surface.
@@ -479,6 +603,10 @@ export function installPalimpsest(
       // compatibility issuances, cross-basis admissions, derived candidates). There is deliberately no
       // continuation store: the service is a stateless orchestrator and owns nothing.
       ...continuationCluster.ownedResources,
+      // Trajectory-P2-C §7.5: the execution-association store and the mounted DSH session reader. Both
+      // were created by THIS install (unless the caller supplied its own store), so this install closes
+      // them — after the controller and the log, in the recorded order.
+      ...executionAssociation.ownedResources,
     ]),
   });
 
@@ -524,6 +652,10 @@ export function installPalimpsest(
     ...(verification === undefined ? {} : { verification }),
     ...(monitor === undefined ? {} : { monitor }),
     ...(externalAssets === undefined ? {} : { externalAssets }),
+    // Trajectory-P2-C §7.7: the read-only attributed Preview surface, and the recorder the host wires.
+    ...(trajectory === undefined ? {} : { trajectory }),
+    ...(executionAssociationRecorder === undefined ? {} : { executionAssociationRecorder }),
+    ...(executionAssociation.qualifier === undefined ? {} : { executionAssociationQualifier: executionAssociation.qualifier }),
     register: lifecycle.register,
     dispose: () => lifecycle.dispose(),
   };

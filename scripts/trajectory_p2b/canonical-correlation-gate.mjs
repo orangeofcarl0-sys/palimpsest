@@ -171,11 +171,17 @@ const measurement = identity === null ? { readState: "NO_IDENTITY" } : await mea
 const durableEvents = store.replay();
 const qualifier = association.makeAssociationQualifier({
   store,
-  trustedBasis: sourceBasis,
+  /**
+   * P2-C §6.1: the qualifier now takes a TRUSTED SOURCE REGISTRY the deployment built, not a bare basis.
+   * This gate derives the registry from its own deployment facts — the same basis it configured the
+   * recorder with — so the verification is a registry match rather than a raw value comparison.
+   */
+  registry: association.registryFromSingleBasis(sourceBasis, "FIRST_PARTY_DSH_HOST"),
   work: {
     readAttempt: ({ attemptId }) => {
       const record2 = installed.controller.attemptWorkRecord(attemptId);
-      return record2 === null ? null : { taskId: record2.taskId, state: record2.state };
+      // P2-C §6.5: the port returns an explicit admission result.
+      return record2 === null ? { ok: false, reason: "no canonical attempt record" } : { ok: true, taskId: record2.taskId, state: record2.state, creationEventId: "ev-admitted" };
     },
   },
   dsh: {

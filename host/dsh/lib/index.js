@@ -119,6 +119,23 @@ function deriveBranchHost(palimpsest, profile) {
 }
 
 /**
+ * Trajectory-P2-C §7.1: the HOST derives the WORK WORKER port facts from its own runtime knowledge — the
+ * same DSH bin and `--profile` the branch host uses. It is deliberately SEPARATE from `deriveBranchHost`:
+ * a work worker is not a research branch, and requiring the reasoning bundle merely to obtain a work port
+ * would couple two unrelated capabilities.
+ *
+ * This returns the FACTS (`dshBin`, `profile`) rather than a port, because the port belongs to the
+ * deployment's composition (`dshSubprocessWorkWorkerPort`) and the install derives it from these facts.
+ * Returning `undefined` when the host cannot establish them is what keeps an absent capability absent.
+ */
+function deriveWorkWorkerFacts() {
+  const profileName = flagValue('--profile');
+  const bin = process.env.PALIMPSEST_DSH_BIN?.trim() || (typeof process.argv[1] === 'string' && process.argv[1].endsWith('.js') ? process.argv[1] : undefined);
+  if (profileName === undefined || bin === undefined) return undefined;
+  return { dshBin: bin, profile: profileName };
+}
+
+/**
  * WORK WORKER MODE: compose the worker environment and nothing else. The runner reads `host.work` and
  * prints the ONE outcome line.
  *
@@ -378,6 +395,12 @@ export async function apply(ctx, config) {
   const agents = ctx.get('agents');
   const branchHost = deriveBranchHost(palimpsest, profile);
   const branchExecution = branchHost?.blocking();
+  /**
+   * Trajectory-P2-C §7.1/§7.2: the HOST's own work-worker facts, and the DSH home it runs under. They let
+   * the deployment derive a real Work Worker Port and compose the official session reader. Composing them
+   * starts nothing — execution stays with the existing Work/Continuation authority.
+   */
+  const workWorkerFacts = deriveWorkWorkerFacts();
 
   // The dashboard url exists only AFTER serving (a profile may ask for port 0 and let the OS pick),
   // so the deployment reads it through a getter rather than receiving a value it cannot know yet.
@@ -390,6 +413,8 @@ export async function apply(ctx, config) {
       // PLMP-LEAN-1 §C.11 ②: a delegated branch is bound to a frozen snapshot's workDir, so the
       // delegation needs the factory rather than the one port above.
       ...(branchHost === undefined ? {} : { branchExecutionFor: branchHost.build }),
+      ...(workWorkerFacts === undefined ? {} : { workWorkerFacts }),
+      ...(process.env.DSH_HOME === undefined ? {} : { dshHomePath: process.env.DSH_HOME }),
       facts: {
         dashboardUrl: () => (serve === undefined ? null : serve.url),
         dashboardAuth: () => (serve === undefined ? null : serve.auth),

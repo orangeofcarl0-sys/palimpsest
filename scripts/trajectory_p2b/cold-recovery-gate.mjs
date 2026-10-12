@@ -168,7 +168,9 @@ if (PHASE === "record") {
 
   /**
    * §10.1: what Process A writes for Process B. IDENTITIES ONLY — no in-memory object, no VERIFIED value,
-   * no selected SessionId beyond the durable record's own content. Process B re-derives everything.
+   * no selected SessionId beyond the durable record's own content, and — P2-C §6.1 — NO sourceBasis. The
+   * earlier version handed its own basis to Process B, which established only VALUE MATCHING; Process B
+   * now DERIVES its trusted registry from its own deployment configuration.
    */
   writeFileSync(
     join(rig, "handoff.json"),
@@ -179,7 +181,9 @@ if (PHASE === "record") {
       sessionsRoot: join(HOME, "sessions"),
       projectId: PROJECT_ID,
       attemptId,
-      sourceBasis,
+      /** P2-C §6.1: only the EXECUTABLE FACTS, so Process B recomputes its own trusted basis. */
+      workerBin: dshBin(),
+      nodeExecPath: process.execPath,
       // These are what Process A OBSERVED, recorded so Process B's result can be COMPARED to them.
       observed: {
         invocationId: observation?.payload.invocationId ?? null,
@@ -214,13 +218,19 @@ if (PHASE === "recover") {
 
   // Re-open canonical Work from the durable EventStore in a fresh process.
   const installed = installStack(handoff.repoFix);
+  /**
+   * P2-C §6.1: Process B DERIVES its own trusted basis from the deployment's own executable facts, rather
+   * than being handed Process A's basis. This is the correction of the F1 falsifier: the recovery now
+   * establishes an INDEPENDENT verifier authority, not just a matching value.
+   */
+  const processBBasis = association.computeTrustedSourceBasis({ adapterId: "dsh-subprocess-work-worker:p2b-c6", workerBin: handoff.workerBin, nodeExecPath: handoff.nodeExecPath });
   const qualifier = association.makeAssociationQualifier({
     store,
-    trustedBasis: handoff.sourceBasis,
+    registry: association.registryFromSingleBasis(processBBasis, "FIRST_PARTY_DSH_HOST"),
     work: {
       readAttempt: ({ attemptId }) => {
         const workRecord = installed.controller.attemptWorkRecord(attemptId);
-        return workRecord === null ? null : { taskId: workRecord.taskId, state: workRecord.state };
+        return workRecord === null ? { ok: false, reason: "no canonical attempt record" } : { ok: true, taskId: workRecord.taskId, state: workRecord.state, creationEventId: "ev-admitted" };
       },
     },
     dsh: await headerPort(handoff.sessionsRoot),

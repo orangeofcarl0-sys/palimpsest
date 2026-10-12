@@ -42,6 +42,7 @@ import {
   type SessionReadState,
 } from "./execution.js";
 import { validateSessionEventPage, type EventPageCoverage, type PageIntegrityReason, type PageIntegrityState } from "./page_integrity.js";
+import { validateAdmissionInvariants } from "./admission_invariants.js";
 
 /* ------------------------------------------------------------------ *
  * §6 — The separate statuses
@@ -658,6 +659,18 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
    */
   const pageRefused = pageIntegrity.state === "INVALID";
 
+  /**
+   * P2-C §8.5: THE CROSS-FIELD ADMISSION INVARIANTS. A binding whose fields contradict one another must
+   * never expose events, regardless of the admission flag. The canonical case the F11 falsifier
+   * reproduces is `SESSION_CLAIMED_UNVERIFIED` + `dshSessionId: null` + `ADMITTED_TO_ATTEMPT`, which the
+   * preview now refuses rather than presenting the page's events.
+   */
+  const admissionInvariants = validateAdmissionInvariants({
+    binding: input.binding,
+    ...(input.sessionPage === undefined ? {} : { page: input.sessionPage }),
+  });
+  const invariantsRefused = !admissionInvariants.admissible;
+
   const identified = input.binding.claimedSessionId !== null || input.binding.dshSessionId !== null;
   const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified, pageRefused);
   const hasCanonicalResult = input.canonical.resultRefs.length > 0;
@@ -699,7 +712,7 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
    * H1 §7.4: an INVALID page is refused as well. A page that contradicts itself is not merely
    * downgraded to PARTIAL while its events are still exposed as trusted execution evidence.
    */
-  const admitted = input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused;
+  const admitted = input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused && !invariantsRefused;
   const events = (admitted ? (input.sessionPage?.events ?? []) : []).map((event) =>
     Object.freeze({
       sessionId: event.sessionId,
@@ -736,11 +749,13 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     eventsDetail:
       input.sessionPage === undefined
         ? "no DSH session read was performed, so no events are presented — this is NOT evidence that no events occurred"
-        : pageRefused
-          ? `the session page failed its integrity validation (${String(pageIntegrity.reason)}), so its events are NOT admitted to this attempt's execution history`
-          : !admitted && input.sessionPage.events.length > 0
-            ? `the session read returned ${String(input.sessionPage.returnedCount)} event(s), but no verified Attempt→Session binding exists, so they are NOT admitted to this attempt's execution history`
-            : input.sessionPage.detail,
+        : invariantsRefused
+          ? `the binding's fields contradict one another (${String(admissionInvariants.reason)}), so its events are NOT admitted to this attempt's execution history`
+          : pageRefused
+            ? `the session page failed its integrity validation (${String(pageIntegrity.reason)}), so its events are NOT admitted to this attempt's execution history`
+            : !admitted && input.sessionPage.events.length > 0
+              ? `the session read returned ${String(input.sessionPage.returnedCount)} event(s), but no verified Attempt→Session binding exists, so they are NOT admitted to this attempt's execution history`
+              : input.sessionPage.detail,
   });
 
   const canonical: PreviewCanonicalOutcome = Object.freeze({

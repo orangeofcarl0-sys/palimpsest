@@ -9,7 +9,7 @@
  */
 
 import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
@@ -100,6 +100,14 @@ export interface DeploymentHostServices {
    * honestly reports READY_FOR_DELEGATION (capability absent, never stubbed).
    */
   readonly workWorkerPort?: ((worldPath: string) => import("../interaction/work_delegation.js").WorkWorkerRunPort) | undefined;
+  /**
+   * Trajectory-P2-C §7.1: the host's own WORK WORKER facts (its DSH bin and `--profile`). Supplying them
+   * lets the install derive a real Work Worker Port and the trusted source basis; absent ⇒ the port is
+   * absent and no worker can start. Composing them starts nothing.
+   */
+  readonly workWorkerFacts?: { readonly dshBin: string; readonly profile: string } | undefined;
+  /** Trajectory-P2-C §7.6: the DSH home the host runs under, so the official session reader can be composed. */
+  readonly dshHomePath?: string | undefined;
 }
 
 export interface DeploymentActivationReport {
@@ -521,6 +529,13 @@ export function launchDeployment(
     ...(delegationBranchExecution === undefined ? {} : { delegationBranchExecution }),
     // §D5-d: the D2-d worker port, so packaged rework reaches a real execution world.
     ...(options.host?.workWorkerPort === undefined ? {} : { workWorkerPort: options.host.workWorkerPort }),
+    /**
+     * Trajectory-P2-C §7.1/§7.6: the host's own work-worker facts and DSH home. They let the install
+     * derive a real Work Worker Port, the trusted source basis, and the official session reader — the
+     * normal product path the P2-B research rig had to build by hand.
+     */
+    ...(options.host?.workWorkerFacts === undefined ? {} : { workWorkerBin: options.host.workWorkerFacts.dshBin, workWorkerProfile: options.host.workWorkerFacts.profile }),
+    ...(options.host?.dshHomePath === undefined ? {} : { dshHomePath: options.host.dshHomePath, dshSessionsRoot: join(options.host.dshHomePath, "sessions") }),
     // The stable late-bound READ port: the delegation service holds THIS object for its whole life,
     // and whatever the host binds later becomes the delivery. A terminal result that arrives before a
     // binding reports `delivered: false` with that reason instead of vanishing.
