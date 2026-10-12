@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_FIRST_PARTY_GATE",
+  "stage": "Trajectory-P2-B",
+  "outcome": "PASS",
+  "testRootContained": true,
+  "testRootIsReparsePoint": false,
+  "parentOutcomeKind": "HOST_FAILURE",
+  "parentFailureDetail": "the worker reported an unusable outcome: worker result has unknown argument \"detail\": (node:41644) ExperimentalWarning: SQLite is an experimental feature and might change at any time | (Use `node --trace-warnings ...` to show where the warning was created)",
+  "identityObservationCount": 1,
+  "observedSessionId": "worker-34f568f3-df2b-43a0-b7ec-6ad824c1acb6",
+  "observedInvocationId": "wpi-916104f4-5935-4ac7-aa2b-a9da3c000327",
+  "observedSource": "DIRECT_CHILD_IPC_REPORT",
+  "observedState": "OBSERVED",
+  "officialSessionMeasurement": {
+    "readState": "READ_OK",
+    "headerSessionId": "worker-34f568f3-df2b-43a0-b7ec-6ad824c1acb6",
+    "persistedEventCount": 3,
+    "syntheticRecoveryEventCount": 0,
+    "counts": {
+      "total": 3,
+      "turnStart": 0,
+      "stepStart": 0,
+      "requestHeader": 0,
+      "turnEnd": 0
+    }
+  },
+  "hostOwnTelemetry": {
+    "hostIdentityTelemetry": "{\"reported\":true,\"outcome\":\"REPORT_ATTEMPTED\",\"detail\":null}",
+    "hostWorkerResultLine": "{\"kind\":\"HOST_FAILURE\",\"detail\":\"refusing to run this worker: UNCLASSIFIED worker-visible capability(ies): p2a_refusal_probe — an unknown capability is not assumed safe, so the worker must not start\"}"
+  },
+  "testRootCleanup": {
+    "cleaned": true
+  },
+  "noModelProof": {
+    "method": "the logical Session Event stream read through the official SessionPersistence reader",
+    "turnStart": 0,
+    "stepStart": 0,
+    "requestHeader": 0,
+    "structuralExclusion": "the runner's capability refusal is thrown between agents.create and the only agent.followup call",
+    "note": "the measurement is the logical stream, NOT a UTF-8 scan of the Zstandard artifact (B0-F1)"
+  },
+  "realFirstPartyDshPathRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "permittedOutcomes": [
+    "PASS",
+    "SKIPPED",
+    "BLOCKED",
+    "NOT_ESTABLISHED"
+  ],
+  "qualified": true
+}
