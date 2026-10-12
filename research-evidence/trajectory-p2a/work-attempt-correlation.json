@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_WORK_ATTEMPT_CORRELATION",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceLocations": [
+    "src/interaction/work_delegation.ts (correlateSessionIdentity, WorkDelegationServiceDeps.onCorrelatedSessionIdentity)"
+  ],
+  "method": "read the delegation seam and exercise the per-invocation tracker in isolation; assert the ownership rules and the optionality contract",
+  "testFile": "test/trajectory_p2a_work_correlation.test.ts",
+  "ownership": {
+    "attemptId": "canonical Work, prepared.attemptId",
+    "hostLocalJobId": "the delegation service own ephemeral job id; empty string on the blocking path that has none",
+    "invocationId": "the port observation, adopted verbatim, never minted here",
+    "dshSessionId": "the port observed identity, never derived from a payload"
+  },
+  "blockingPath": {
+    "hostLocalJobId": "\"\" (explicitly absent, never invented)"
+  },
+  "asyncPath": {
+    "hostLocalJobId": "the service own wdj-<uuid> job id"
+  },
+  "optionality": "the wrapper returns undefined when no sink is attached, so the run input stays byte-identical to the baseline",
+  "failureContainment": "a throwing consumer is swallowed; settlement authority is untouched",
+  "expectedInvariant": "each identity comes from its own owner, and the correlation introduces no settlement or promotion authority",
+  "verdict": "CORRELATION_WIRED_WITH_NO_AUTHORITY_CHANGE",
+  "realFirstPartyDshPathRan": false,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}
