@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_IPC_PROTOCOL_CONTRACT",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "sourceLocations": [
+    "host/dsh/lib/session-identity.js (the producer)",
+    "host/dsh/lib/runner.js (runWorker, the emission point)"
+  ],
+  "messageSchema": {
+    "channel": "palimpsest-worker-session-identity-v1",
+    "kind": "session-created",
+    "fields": [
+      "channel",
+      "kind",
+      "sessionId"
+    ],
+    "additionalProperties": false,
+    "direction": "child (host bundle) -> parent (worker port), on the existing stdio[3] IPC channel"
+  },
+  "identityValidation": {
+    "rule": "a non-empty string of at most 200 characters containing no whitespace and no control character",
+    "rationale": "DSH SessionId is an unconstrained branded string (its session schema is z.string().min(1)) and the worker host mints worker-<uuid>; a prefix rule would break on a resumed or forked session, and an any-string rule would admit control characters or path-shaped values into durable evidence",
+    "accepts": [
+      "worker-<uuid>",
+      "session-<uuid>",
+      "probe-session-1",
+      "a",
+      "200 chars"
+    ],
+    "rejects": [
+      "absent",
+      "null",
+      "empty",
+      "non-string",
+      "whitespace-containing",
+      "control-character-containing",
+      "201 chars"
+    ]
+  },
+  "forbiddenFields": [
+    "attemptId",
+    "projectId",
+    "hostLocalJobId",
+    "invocationId",
+    "durableBindingRef",
+    "verified",
+    "promotion",
+    "settlement",
+    "modelOutcome"
+  ],
+  "protocolSeparation": {
+    "contextPullChannel": "palimpsest-worker-context-v1",
+    "identityChannel": "palimpsest-worker-session-identity-v1",
+    "distinctChannels": true,
+    "distinctKinds": true
+  },
+  "emissionPoint": {
+    "location": "host/dsh/lib/runner.js runWorker, immediately after agents.create() resolves",
+    "beforeFirstModelTurn": true,
+    "beforeCapabilityRefusal": true,
+    "identitySource": "handle.agent.session.id (the CREATED handle), never the candidate string passed into agents.create"
+  },
+  "testFile": "test/trajectory_p2a_producer.test.ts",
+  "testCount": 15,
+  "method": "exercise the shipped producer over controlled send channels; assert the closed field set, the validation boundary, the no-IPC and send-failure containment, and the runner source ordering",
+  "expectedInvariant": "the report carries exactly the created session identity, is emitted before any model turn, and can never fail a worker",
+  "verdict": "PRODUCER_IMPLEMENTED_AND_CONTRACT_TESTED",
+  "transportCompatibilityChanges": "none: the message reuses the existing stdio[3] IPC channel; no new transport, no new ACK protocol",
+  "realFirstPartyDshPathRan": false,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": "the real Host -> Parent route is measured separately in the Level C integration evidence"
+}
