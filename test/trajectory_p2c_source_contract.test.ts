@@ -23,6 +23,7 @@ import {
   computeTrustedSourceBasis,
   createExecutionAssociationRecorder,
   makeAssociationQualifier,
+  registryFromSingleBasis,
   EXECUTION_ASSOCIATION_SCHEMA_VERSION,
   type TrustedSourceBasis,
 } from "../src/execution_association/index.js";
@@ -60,8 +61,13 @@ function correlated(input: { sessionId: string; invocationId?: string }): Correl
 function qualifierFor(store: SqliteExecutionAssociationStore, options: { work?: unknown; header?: { readState: string; sessionId: string | null } } = {}) {
   return makeAssociationQualifier({
     store,
-    trustedBasis: BASIS,
-    work: { readAttempt: () => (options.work === undefined ? { taskId: "t1", state: "RUNNING" } : (options.work as never)) },
+    registry: registryFromSingleBasis(BASIS, "FIRST_PARTY_DSH_HOST"),
+    work: {
+      readAttempt: () =>
+        options.work === undefined
+          ? { ok: true as const, taskId: "t1", state: "RUNNING", creationEventId: "ev-1" }
+          : (options.work as never),
+    },
     dsh: {
       async readHeaderIdentity(sessionId: string) {
         const header = options.header ?? { readState: "READ_OK", sessionId };
@@ -101,45 +107,65 @@ describe("P2C C1 F2 — computeTrustedSourceBasis hashes path strings, not execu
 });
 
 describe("P2C C1 F3 — a CONTROLLED_STUB record with a matching basis still qualifies", () => {
-  it("DYNAMICALLY_REPRODUCED: sourceKind is never consulted by the qualifier", async () => {
+  it("DYNAMICALLY_REPRODUCED at baseline; now REFUSED by C2 source-kind enforcement", async () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE this test reproduced the defect: a CONTROLLED_STUB record with the verifier's exact
+     * basis returned ASSOCIATION_QUALIFIED, because the qualifier never read `sourceKind`.
+     *
+     * C2's source.ts enforces that a record's KIND must be a supported producer kind AND must agree with
+     * the matching trusted epoch's kind, so the stub is now refused. The baseline finding is preserved in
+     * `research-evidence/trajectory-p2c/baseline-falsifiers.json` (F3) and the assertion is flipped here.
+     */
     const store = new SqliteExecutionAssociationStore(":memory:");
-    // A record whose KIND is a controlled stub, but whose BASIS matches the verifier exactly.
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: BASIS, sourceKind: "CONTROLLED_STUB" });
     recorder.recordIdentity(correlated({ sessionId: "worker-stub" }));
     recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
-    // BASELINE BEHAVIOR: it qualifies. P2-C must refuse a non-first-party source kind.
-    expect(result.qualifications[0]!.state).toBe("ASSOCIATION_QUALIFIED");
+    expect(result.qualifications[0]!.state).toBe("SOURCE_REFUSED");
+    expect(result.summary.qualifiedCount).toBe(0);
     store.close();
   });
 });
 
 describe("P2C C1 F4 — a finalization BEFORE the observation is accepted", () => {
-  it("DYNAMICALLY_REPRODUCED: the qualifier does not check finalization ordering", async () => {
+  it("DYNAMICALLY_REPRODUCED at baseline; now REFUSED by C2 window integrity", async () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE the qualifier accepted this: it only required windowState===CLOSED. C2's
+     * `validateObservationWindow` derives the window from the durable record ORDER, so an observation
+     * recorded AFTER the finalization is CONTRADICTORY and the association is not qualified. Baseline
+     * finding preserved as F4 in baseline-falsifiers.json.
+     */
     const store = new SqliteExecutionAssociationStore(":memory:");
     const invocationId = "wpi-00000000-0000-4000-8000-000000000001";
-    // Seq 1: a CLOSED finalization that claims zero candidates.
     store.append({
       eventId: associationEventId({ type: "INVOCATION_OBSERVATION_FINALIZED", projectId: "p2b", attemptId: ATTEMPT, invocationId }),
       projectId: "p2b",
       type: "INVOCATION_OBSERVATION_FINALIZED",
       payload: { schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION, projectId: "p2b", attemptId: ATTEMPT, invocationId, windowState: "CLOSED", closeReason: "INVOCATION_RETURNED", observedCandidateCount: 0 } as never,
     });
-    // Seq 2: the observation arrives AFTER the window was sealed.
     createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" }).recordIdentity(correlated({ sessionId: "worker-late" }));
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
-    // BASELINE BEHAVIOR: the post-finalization observation is accepted and qualifies.
-    expect(result.qualifications[0]!.state).toBe("ASSOCIATION_QUALIFIED");
+    expect(result.qualifications[0]!.state).toBe("OBSERVATION_INCOMPLETE");
     store.close();
   });
 });
 
 describe("P2C C1 F5 — a finalization whose candidate count disagrees is not detected", () => {
-  it("DYNAMICALLY_REPRODUCED: observedCandidateCount is never checked against the actual set", async () => {
+  it("DYNAMICALLY_REPRODUCED at baseline; now REFUSED by C2 window integrity", async () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE the recorded `observedCandidateCount` was never compared to the actual candidate set.
+     * C2 compares it, so a finalization claiming 99 candidates for an invocation that observed 1 is
+     * CONTRADICTORY. Baseline finding preserved as F5.
+     */
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ sessionId: "worker-a" }));
-    // A finalization claiming 99 candidates for an invocation that observed 1.
     const invocationId = "wpi-00000000-0000-4000-8000-000000000001";
     store.append({
       eventId: associationEventId({ type: "INVOCATION_OBSERVATION_FINALIZED", projectId: "p2b", attemptId: ATTEMPT, invocationId }),
@@ -148,8 +174,7 @@ describe("P2C C1 F5 — a finalization whose candidate count disagrees is not de
       payload: { schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION, projectId: "p2b", attemptId: ATTEMPT, invocationId, windowState: "CLOSED", closeReason: "INVOCATION_RETURNED", observedCandidateCount: 99 } as never,
     });
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
-    // BASELINE BEHAVIOR: the inconsistent count is ignored and the association qualifies.
-    expect(result.qualifications[0]!.state).toBe("ASSOCIATION_QUALIFIED");
+    expect(result.qualifications[0]!.state).toBe("OBSERVATION_INCOMPLETE");
     store.close();
   });
 });
@@ -169,7 +194,13 @@ describe("P2C C1 F6 — the port distinguishes close/exit/timeout, but the deleg
 });
 
 describe("P2C C1 F8 — Store Append does not validate eventId against the canonical identity", () => {
-  it("DYNAMICALLY_REPRODUCED: a wrong eventId is accepted", () => {
+  it("DYNAMICALLY_REPRODUCED at baseline; now REFUSED by C2 identity enforcement", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE a wrong eventId was accepted verbatim. C2 validates `eventId === associationEventId(...)`
+     * on BOTH append and replay, so the non-canonical id is refused. Baseline finding preserved as F8.
+     */
     const store = new SqliteExecutionAssociationStore(":memory:");
     const payload = {
       schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION,
@@ -183,47 +214,48 @@ describe("P2C C1 F8 — Store Append does not validate eventId against the canon
       directChildPid: null,
       hostLocalJobId: null,
     };
-    // The eventId does NOT equal associationEventId(...).
-    const outcome = store.append({ eventId: "xas-deliberately-wrong", projectId: "p2b", type: "SESSION_IDENTITY_OBSERVED", payload: payload as never });
-    // BASELINE BEHAVIOR: accepted.
-    expect(outcome.state).toBe("APPENDED");
-    expect(store.replay()[0]!.eventId).toBe("xas-deliberately-wrong");
+    expect(() =>
+      store.append({ eventId: "xas-deliberately-wrong", projectId: "p2b", type: "SESSION_IDENTITY_OBSERVED", payload: payload as never }),
+    ).toThrow(/does not match the canonical identity/u);
     store.close();
   });
 });
 
 describe("P2C C1 F9 — Store Replay does not check the SQLite columns against the payload", () => {
-  it("DYNAMICALLY_REPRODUCED: a row whose attempt_id contradicts the payload replays without complaint", async () => {
-    const store = new SqliteExecutionAssociationStore(":memory:");
-    const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
-    recorder.recordIdentity(correlated({ sessionId: "worker-x" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
-    // Corrupt the indexed column only, leaving the payload intact.
-    const connection = (store as unknown as { ["#database"]?: never });
-    void connection;
-    // Reach the underlying sqlite through a second handle on the same in-memory DB is not possible; the
-    // claim is established by reading the replay path instead.
-    const replayed = store.replay();
-    expect(replayed.length).toBe(2);
-    // The replayed event exposes ONLY the payload's attemptId; the row's attempt_id is never compared.
-    expect(replayed[0]!.payload.attemptId).toBe(ATTEMPT);
+  it("SOURCE_DEMONSTRATED at baseline; now ENFORCED by C2 record-scope validation", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE parseStoredEvent never read `row.attempt_id`. C2 compares the row's project_id and
+     * attempt_id against the payload and fails closed on a mismatch, so a mutated column can no longer
+     * be replayed as a valid record. Baseline finding preserved as F9.
+     */
     const storeSource = readRepo("src/execution_association/store.ts");
-    expect(storeSource!).toMatch(/function parseStoredEvent\(row: StoredRow\)/u);
-    // parseStoredEvent does not read row.attempt_id at all.
-    const parseBody = storeSource!.slice(storeSource!.indexOf("function parseStoredEvent"), storeSource!.indexOf("export class SqliteExecutionAssociationStore"));
-    expect(parseBody).not.toMatch(/row\.attempt_id/u);
-    store.close();
+    expect(storeSource!).toMatch(/row\.attempt_id !== typed\.attemptId/u);
+    expect(storeSource!).toMatch(/row\.project_id !== typed\.projectId/u);
+    // And the append path validates the canonical id too.
+    expect(storeSource!).toMatch(/eventId !== canonicalId/u);
   });
 });
 
 describe("P2C C1 F10 — Work revalidation only requires a non-null record", () => {
-  it("SOURCE_DEMONSTRATED: the port has no ATTEMPT_CREATED verification, but V0 does", () => {
+  it("SOURCE_DEMONSTRATED at baseline; now the port requires an EXACT admission result (C2)", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2C C2)
+     *
+     * AT BASELINE `readAttempt` returned `{taskId,state}|null`, so the qualifier could only check that a
+     * record EXISTED. C2 changed the port to return an explicit `{ok:true, ...creationEventId} | {ok:false,
+     * reason}` so an implementation can reuse the V0S/H0 admission logic that verifies the exact
+     * ATTEMPT_CREATED event. The baseline finding is preserved as F10.
+     */
     const qualifier = readRepo("src/execution_association/qualification.ts");
     const v0 = readRepo("src/composition/trajectory_v0.ts");
-    // The qualifier's Work port returns a record or null; no creation-event check.
-    expect(qualifier!).toMatch(/readAttempt\(input: \{ readonly projectId: string; readonly attemptId: string \}\)/u);
-    expect(qualifier!).not.toMatch(/ATTEMPT_CREATED/u);
-    // The V0 admission DOES verify the exact creation event — the reusable logic P2-C should prefer.
+    // The port now carries an explicit admission outcome, including the creation event identity.
+    expect(qualifier!).toMatch(/readonly ok: true; readonly taskId: string \| null; readonly state: string \| null; readonly creationEventId: string \| null/u);
+    expect(qualifier!).toMatch(/readonly ok: false; readonly reason: string/u);
+    // A Work refusal is surfaced as SOURCE_REFUSED rather than being read as "attempt not found".
+    expect(qualifier!).toMatch(/canonical Work refused this attempt/u);
+    // The V0 admission logic that verifies the exact creation event remains the reusable source.
     expect(v0!).toMatch(/creationCount > 1/u);
     expect(v0!).toMatch(/ATTEMPT_CREATED/u);
   });

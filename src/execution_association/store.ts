@@ -43,6 +43,7 @@ import { dirname, join } from "node:path";
 import { canonicalJsonBytes } from "../schema/canonical.js";
 import {
   EXECUTION_ASSOCIATION_EVENT_PARSERS,
+  associationEventId,
   type ExecutionAssociationAppendRequest,
   type ExecutionAssociationEvent,
   type ExecutionAssociationEventType,
@@ -115,13 +116,53 @@ function parseStoredEvent(row: StoredRow): ExecutionAssociationEvent {
   if (parser === undefined) {
     throw new ExecutionAssociationStoreError(`execution association event "${row.event_id}" has unknown type "${row.type}"`);
   }
+  const typed = parser(payload);
+  /**
+   * §6.4: THE ROW AND ITS PAYLOAD MUST AGREE. A record whose indexed columns contradict its own payload
+   * is a corrupted history, and a corrupted history is refused rather than presented (F9). Before P2-C
+   * the replay path never read `row.attempt_id` at all, so a mutated column was invisible.
+   */
+  if (row.project_id !== typed.projectId) {
+    throw new ExecutionAssociationStoreError(
+      `execution association event "${row.event_id}" stores project_id "${row.project_id}" but its payload names project "${typed.projectId}"`,
+    );
+  }
+  if (row.attempt_id !== typed.attemptId) {
+    throw new ExecutionAssociationStoreError(
+      `execution association event "${row.event_id}" stores attempt_id "${row.attempt_id}" but its payload names attempt "${typed.attemptId}"`,
+    );
+  }
+  /**
+   * §6.3: THE STORED EVENT ID MUST EQUAL THE CANONICAL IDENTITY. An eventId that does not match the
+   * payload's own identity means the record's stable identity was tampered with or written by a
+   * non-canonical path, so it is refused (F8).
+   */
+  const canonicalId = canonicalEventIdOf(typed, row.type as ExecutionAssociationEventType);
+  if (row.event_id !== canonicalId) {
+    throw new ExecutionAssociationStoreError(
+      `execution association event "${row.event_id}" does not match its canonical identity "${canonicalId}"`,
+    );
+  }
   return Object.freeze({
     eventId: row.event_id,
     seq: row.seq,
     projectId: row.project_id,
     type: row.type as ExecutionAssociationEventType,
-    payload: parser(payload),
+    payload: typed,
   });
+}
+
+/** §6.3: the canonical id for a validated payload of a known type. */
+function canonicalEventIdOf(payload: ExecutionAssociationPayload, type: ExecutionAssociationEventType): string {
+  return type === "SESSION_IDENTITY_OBSERVED"
+    ? associationEventId({
+        type,
+        projectId: payload.projectId,
+        attemptId: payload.attemptId,
+        invocationId: (payload as { readonly invocationId: string }).invocationId,
+        dshSessionId: (payload as { readonly dshSessionId: string }).dshSessionId,
+      })
+    : associationEventId({ type, projectId: payload.projectId, attemptId: payload.attemptId, invocationId: (payload as { readonly invocationId: string }).invocationId });
 }
 
 export class SqliteExecutionAssociationStore implements ExecutionAssociationStore {
@@ -196,6 +237,16 @@ export class SqliteExecutionAssociationStore implements ExecutionAssociationStor
     if (validated.projectId !== event.projectId) {
       throw new ExecutionAssociationStoreError(
         `execution association payload projectId "${validated.projectId}" does not match the event projectId "${event.projectId}"`,
+      );
+    }
+    /**
+     * §6.3: the APPEND path enforces the same canonical identity the replay path enforces, so a
+     * non-canonical eventId can never enter the history in the first place (F8).
+     */
+    const canonicalId = canonicalEventIdOf(validated, event.type);
+    if (event.eventId !== canonicalId) {
+      throw new ExecutionAssociationStoreError(
+        `execution association eventId "${event.eventId}" does not match the canonical identity "${canonicalId}" for this payload`,
       );
     }
     const payloadJson = canonicalJson(validated);
