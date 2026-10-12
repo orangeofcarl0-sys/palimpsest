@@ -114,6 +114,15 @@ const DIRECTORY_LAYERS: Readonly<Record<string, LogicalLayer>> = Object.freeze({
   experiment: "L2",
   external_assets: "L2",
   recovery: "L2",
+  // Trajectory-P2-B §6/§12: the DURABLE EXECUTION-ASSOCIATION concern. It owns a typed, append-only
+  // record of what a trusted ingestion path actually OBSERVED (canonical AttemptId, Parent InvocationId,
+  // real DSH SessionId, the trusted source basis) and derives a qualification on the READ side by
+  // re-reading canonical Work and the real DSH Session header. It decides nothing about Work — no
+  // settlement, no verification, no promotion, no handoff — and owns no runtime or scheduler, so it is a
+  // semantic capability (L2) beside `project_world`, not kernel substrate and not a host adapter. It may
+  // name L1/L2 only; the L3/L5 producer passes its observation through a STRUCTURAL contract declared
+  // here (`ObservedIdentityInput`), which is what keeps the dependency direction one-way.
+  execution_association: "L2",
   // The durable transport plane embeds PeerRef and BoundaryRemoteOperation, so it is bound
   // to those capabilities rather than being layer-free substrate: it is part of the L2
   // peer/boundary cluster (measured: transport ↔ boundary_memory ↔ coordination form one SCC).
