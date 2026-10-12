@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_OBSERVATION_WINDOW_FINALIZATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "closureBoundary": {
+    "nodeLifecycle": "IPC messages arrive on spawned.on('message'); Node closes the IPC channel before 'close' fires, so 'close' is the last moment an identity message can arrive",
+    "chosenBoundary": "the Work Delegation boundary returning from worker.run() — the SHIPPED port resolves that promise only from a close/exit/timeout/abort/error handler, i.e. after it stopped waiting on the child",
+    "closeReason": "INVOCATION_RETURNED",
+    "explicitlyNotClaimed": [
+      "that a Worker Result line means IPC delivery is complete",
+      "that a timeout means all earlier messages arrived"
+    ]
+  },
+  "separatedFacts": [
+    "an identity observation was received",
+    "the identity observation was durably committed",
+    "the Invocation's observation window reached a known terminal boundary",
+    "the complete observed candidate set was evaluated",
+    "the association was qualified"
+  ],
+  "observed": {
+    "unfinalizedWindowIsDurableButNotQualified": true,
+    "finalizedWindowRecordsCandidateCountFromCommittedEvidence": true,
+    "candidateCountSource": "the durable store, not an in-memory map"
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": "a Parent crash before the durable write loses that observation; the guarantee is only that a COMMITTED observation is recoverable (§8.4)",
+  "verdict": "WINDOW_FINALIZATION_SOURCE_GROUNDED"
+}

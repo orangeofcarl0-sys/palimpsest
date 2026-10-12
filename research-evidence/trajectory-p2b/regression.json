@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_REGRESSION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "build": { "command": "npx tsc -b", "result": "PASS", "exit": 0 },
+  "architecture": { "command": "node scripts/audit/module-architecture.mjs --check", "result": "PASS", "violations": 0, "acceptedBaselineExceptions": 9 },
+  "publicApi": { "command": "node scripts/audit/module-architecture.mjs --check-public-api", "result": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+  "focusedP2BSuites": {
+    "files": 6,
+    "tests": 54,
+    "passed": 54,
+    "failed": 0,
+    "note": "source contract, durable contract, first-party gate, canonical correlation, cold recovery, adversarial matrix"
+  },
+  "affectedExistingSuites": {
+    "files": 13,
+    "tests": 153,
+    "passed": 153,
+    "failed": 0,
+    "note": "P2-A suites (source contract, producer, parent observation, work correlation, first-party gate), H1 durability/readers, lean work delegation transport, lean work worker runtime, coordination integrity"
+  },
+  "broadSuite": {
+    "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+    "files": 1770,
+    "tests": 4749,
+    "passed": 4736,
+    "failed": 13,
+    "failedFiles": [
+      { "file": "test/r3l0ciarlcfsh_persisted.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlcfs_gates.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlc_gates.test.ts", "failures": 2 },
+      { "file": "test/r3l0ciarl_gates.test.ts", "failures": 1 }
+    ],
+    "deltaVsP2ABaseline": {
+      "p2aTests": 4695,
+      "p2aPassed": 4682,
+      "p2aFailed": 13,
+      "p2bTests": 4749,
+      "p2bPassed": 4736,
+      "p2bFailed": 13,
+      "newTests": 54,
+      "newRegressions": 0
+    }
+  },
+  "archivedDriftClassification": {
+    "family": "r3l0ciarl*",
+    "classification": "BASELINE_REPRODUCED_DRIFT",
+    "perFileCountsIdenticalToP2A": true,
+    "failureKinds": ["DRIFTED vs MATCH on a committed plan", "MISMATCH vs MATCH on a persisted evidence seal", "PRIMARY_PROHIBITION vs COMMITTED_PLAN_PREFLIGHT_GUARD", "STOPPED_AT_LAUNCH_BOUNDARY vs REFUSED"],
+    "evidence": "the same four files fail with the same per-file counts (5, 5, 2, 1 = 13) recorded in research-evidence/trajectory-p2a/regression.json at baseline 39cdabc; the total test count rose by exactly the 54 new P2-B tests",
+    "note": "these are an archived frozen-research closure family about a committed plan and a PRIMARY launch boundary; no P2-B file is imported by them, and no frozen historical evidence was regenerated to silence them",
+    "notRegenerated": true,
+    "notWeakened": true
+  },
+  "unsafeTestExclusion": {
+    "file": "test/r3l0ciarlcf_gates.test.ts",
+    "reason": "§14.1: its isolated-mutation path may traverse Windows junctions or affect user files; not executed in this shared workspace",
+    "executed": false
+  },
+  "resourceLimitations": {
+    "concurrency": "--maxWorkers=2",
+    "reason": "unrestricted Vitest concurrency exhausts memory on this Windows host (the P2-A precedent)"
+  },
+  "runtimeCaveat": "Node 24.14.1 is below the README-declared >=24.15.0; the first-party route was exercised on the installed runtime",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ZERO_NEW_REGRESSIONS"
+}

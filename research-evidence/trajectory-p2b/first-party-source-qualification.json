@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_FIRST_PARTY_SOURCE_QUALIFICATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "p2aWeakness": {
+    "field": "sessionSourceQualification",
+    "behavior": "a caller-supplied classification hint recorded verbatim by the port; P2-A's own gate passed FIRST_PARTY_DSH_QUALIFIED itself",
+    "consequence": "the label was not independent verification of the executable's provenance"
+  },
+  "trustedSourceChain": [
+    "the Parent owns the ChildProcess spawn",
+    "the Parent owns the InvocationId",
+    "the Parent receives a strict IPC report on that child's channel",
+    "Work Delegation supplies the canonical AttemptId",
+    "the execution source is qualified through the deployment's OWN TrustedSourceBasis (a digest of the configured worker bin, its basename, and the node executable)",
+    "the real DSH Session header is read through the official source adapter",
+    "the observed identities agree"
+  ],
+  "enforcement": {
+    "recorderBoundToDeploymentBasis": "createExecutionAssociationRecorder stamps the deployment's own basis; it cannot upgrade its kind from an observation",
+    "readSideComparesVerifierBasis": "makeAssociationQualifier refuses a record whose sourceBasis does not match the verifier's own, regardless of what the record declares",
+    "declaredLabelNeverConsulted": "sourceQualificationDeclared is preserved for audit only"
+  },
+  "honestLimit": "this is a defensible LOCAL Host provenance chain, NOT remote cryptographic attestation and NOT hardware identity proof. A caller holding the raw store reference can still write a well-formed record; the read side's basis comparison plus the Work and DSH re-reads are what refuse it.",
+  "observed": {
+    "aStubBasisDeclaringFirstPartyIsRefused": true,
+    "aForeignWorkAttemptIsRefused": true,
+    "aHeaderContradictionIsRefused": true
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "CALLER_LABEL_CANNOT_AUTHORIZE"
+}

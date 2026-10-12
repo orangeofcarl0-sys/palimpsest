@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_COLD_RECOVERY",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "gate": "scripts/trajectory_p2b/cold-recovery-gate.mjs",
+  "method": "TWO INDEPENDENT Node processes. Process A creates a real canonical Work Attempt, runs the real first-party DSH worker (no model), correlates the identity, and COMMITS the observation + window finalization durably, then exits. Process B starts fresh with ONLY the durable store path and the trusted basis, replays the typed records, re-opens canonical Work, re-opens the official DSH Session source, and recomputes the qualification.",
+  "whatProcessBdidNotReceive": [
+    "Process A's Work Delegation job map",
+    "Process A's Invocation Tracker",
+    "an in-memory Association object from Process A",
+    "a caller-supplied VERIFIED value",
+    "an already-selected SessionId from old process memory"
+  ],
+  "observed": {
+    "processAOutcome": "PASS",
+    "processADurableEventCount": 2,
+    "processBOutcome": "PASS",
+    "processBReplayCount": 2,
+    "processBReplayTypes": ["SESSION_IDENTITY_OBSERVED", "INVOCATION_OBSERVATION_FINALIZED"],
+    "recoveredSessionIdMatchesRecorded": true,
+    "recoveredInvocationIdMatchesRecorded": true,
+    "recoveredSessionReadState": "READ_OK",
+    "recoveredTurnStartCount": 0,
+    "recoveredQualificationSummary": {"invocationCount": 1, "qualifiedCount": 1, "conflictCount": 0, "incompleteCount": 0, "unavailableCount": 0, "refusedCount": 0}
+  },
+  "expectedInvariant": "a committed, uniquely observed, finalized, source-qualified association recovers to the same semantic identity without the original Parent's memory",
+  "evidenceClass": "REAL_COLD_PROCESS_RECOVERY",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "coldProcessRecoveryPerformed": true,
+  "independentProcessCount": 2,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": [
+    "cold recovery here means recovery of EVIDENCE and ASSOCIATION, not resumption of a DSH Agent (§10.2)",
+    "the crash-before-durable-write window is not recovered and is not claimed to be (§8.4)"
+  ],
+  "verdict": "RECOVERABLE_ASSOCIATION_DEMONSTRATED"
+}

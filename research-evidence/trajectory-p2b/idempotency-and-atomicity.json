@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_IDEMPOTENCY_AND_ATOMICITY",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "stableIdentity": "xas-<sha256(canonicalDigest({domain, type, projectId, attemptId, invocationId, dshSessionId}))>",
+  "idempotency": {
+    "mechanism": "the durable payload contains ONLY immutable facts — no ingestion timestamp — so a retry is byte-identical and an idempotent no-op",
+    "sameIdDifferentContent": "fails closed with ExecutionAssociationConflictError; no last-write-wins",
+    "transaction": "BEGIN IMMEDIATE per append; rollback on any error"
+  },
+  "observed": {
+    "repeatedDeliveryIsIdempotent": true,
+    "sameIdDivergenceRefused": true,
+    "duplicateDoesNotDuplicateOnRestart": true,
+    "malformedPayloadFailsClosedBeforeWrite": true,
+    "malformedStoredRecordFailsClosedOnReplay": true
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "IDEMPOTENT_AND_FAIL_CLOSED"
+}
