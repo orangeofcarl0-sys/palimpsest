@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_DSH_SOURCE_REVALIDATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "method": "the qualifier reads the immutable DSH Session header through the OFFICIAL reader (SessionPersistence.open(id,read)) and requires the header SessionId to equal the observed identity",
+  "checks": [
+    "the Session exists and is readable",
+    "the header SessionId matches the observed SessionId",
+    "an unreadable/unsupported/missing source is SOURCE_UNAVAILABLE, distinct from a conflict",
+    "a header naming a different session is SOURCE_REFUSED"
+  ],
+  "notClaimed": "a matching Session Header CWD alone does not prove Attempt ownership — a Session may share a workspace with others",
+  "observed": {
+    "realHeaderReadOKInColdProcess": true,
+    "headerContradictionRefused": true,
+    "missingSessionIsUnavailableNotEmpty": true
+  },
+  "evidenceClass": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+  "actualFirstPartyDshRan": true,
+  "coldProcessRecoveryPerformed": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "DSH_SOURCE_REVALIDATED_OFFICIALLY"
+}

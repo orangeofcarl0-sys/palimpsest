@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_DSH_EVENT_MEASUREMENT",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "purpose": "Correct the P2-A Level C gate's vacuous UTF-8 measurement (B0-F1) with an OFFICIAL logical-stream read.",
+  "p2aDefect": {
+    "method": "readFileSync(<artifact>, 'utf8') then regex-match textual event types",
+    "artifactEncoding": "session.v4.jsonl.zstd (Zstandard frame magic 28 b5 2f fd)",
+    "consequence": "the scan can never match a turn event in a compressed artifact, so its zero is a property of the method, not of the session"
+  },
+  "correctedMethod": "scripts/trajectory_v0/dsh-session-reader.mjs (makeRealDshSessionReader) -> SessionPersistence.open(id,'read') -> handle.read(0, undefined); durability classified by array position with the official interruptedTurnClosers",
+  "observed": {
+    "readState": "READ_OK",
+    "persistedEventCount": 3,
+    "syntheticRecoveryEventCount": 0,
+    "headerSessionIdMatchesObservedIdentity": true,
+    "turnStartCount": 0,
+    "stepStartCount": 0,
+    "requestHeaderCount": 0
+  },
+  "expectedInvariant": "a real Session is created; its logical stream contains NO model turn and NO provider request event",
+  "evidenceClass": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": "the gate observes the created Session's stored prefix; a session created by a different process is out of scope",
+  "verdict": "MEASUREMENT_CORRECTED_AND_NON_VACUOUS"
+}

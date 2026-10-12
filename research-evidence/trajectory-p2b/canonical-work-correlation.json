@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_CANONICAL_WORK_CORRELATION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "gate": "scripts/trajectory_p2b/canonical-correlation-gate.mjs",
+  "method": "a REAL ProjectController (installPalimpsest) over a REAL git fixture with a REAL EventStore declares a REAL canonical Task via the public lifecycle; a REAL Attempt is prepared through the product path; the REAL first-party DSH Host Bundle runs through the SHIPPED dshSubprocessWorkWorkerPort with the SHIPPED capability refusal as the no-model stop",
+  "chain": {
+    "canonicalAttemptId": "from ProjectController.prepareMutatingWork (shape attempt-<32 hex>)",
+    "hostLocalJobId": "from Work Delegation (shape wdj-<uuid>)",
+    "invocationId": "from the Parent Worker Port (shape wpi-<uuid>)",
+    "dshSessionId": "reported by the Host that created it (shape worker-<uuid>)",
+    "source": "DIRECT_CHILD_IPC_REPORT"
+  },
+  "observed": {
+    "attemptIdShapeValid": true,
+    "attemptStatesAfter": ["RUNNING"],
+    "fabricatedAttemptCompleted": false,
+    "fabricatedAttemptFailed": false,
+    "officialSessionReadState": "READ_OK",
+    "turnStartCount": 0,
+    "requestHeaderCount": 0,
+    "durableObservationCount": 2,
+    "durableTypes": ["SESSION_IDENTITY_OBSERVED", "INVOCATION_OBSERVATION_FINALIZED"],
+    "qualificationSummary": {"invocationCount": 1, "qualifiedCount": 1, "conflictCount": 0, "incompleteCount": 0, "unavailableCount": 0, "refusedCount": 0}
+  },
+  "expectedInvariant": "one run establishes canonical Work Attempt -> Work Delegation -> Parent Invocation -> real DSH Session, with no model turn and no settlement",
+  "evidenceClass": "REAL_CANONICAL_WORK_NO_MODEL",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "coldProcessRecoveryPerformed": false,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": "the Attempt remains nonterminal by design: source observation grants no settlement, so no ATTEMPT_COMPLETED is produced",
+  "verdict": "CANONICAL_CHAIN_DEMONSTRATED_IN_ONE_RUN"
+}

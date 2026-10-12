@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_TEST_ROOT_SAFETY",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "p2aDefect": {
+    "behavior": "GATE_ROOT = env(PALIMPSEST_P2A_GATE_ROOT) ?? ~/.palimpsest-gates; RIG = join(GATE_ROOT, 'p2a-level-c'); rmSync(RIG, {recursive:true, force:true})",
+    "risks": ["a caller-controllable root could point at a user directory", "a fixed name collides across parallel runs", "no containment proof before a recursive delete", "no reparse-point refusal"]
+  },
+  "correctedBehavior": {
+    "allocation": "mkdtempSync(join(GATE_ROOT, 'p2b-<gate>-')) — a unique per-run directory",
+    "containmentProof": "realpathSync both root and gate root; assert the relative path is non-empty and does not escape",
+    "reparseRefusal": "lstatSync(root).isSymbolicLink() — a junction/symlink target is never deleted",
+    "cleanup": "delete ONLY the created directory, with bounded async retries (Windows releases SQLite/git handles after close); on persistent failure the directory is PRESERVED and the reason reported",
+    "parallelSafety": "unique per-run names mean concurrent gate executions cannot corrupt each other's artifacts"
+  },
+  "observed": {
+    "testRootContained": true,
+    "testRootIsReparsePoint": false,
+    "cleanupSucceeded": true
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "CLEANUP_OWNED_AND_BOUNDED"
+}
