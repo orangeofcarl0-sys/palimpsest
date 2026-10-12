@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_GIT_BASELINE",
+  "stage": "Trajectory-H1",
+  "requiredBaseline": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "verifiedHead": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "baselineBranch": "trajectory-v0s-h0-consumer-hardening",
+  "remoteBaselineBranchHead": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "newBranch": "trajectory-h1-source-binding-contract",
+  "workingTreeClean": true,
+  "indexClean": true,
+  "untrackedFileCount": 0,
+  "proposedBranchAlreadyExisted": false,
+  "parentChain": [
+    "34dec42 chore(trajectory-v0s): drop an archived-gate temp artifact accidentally staged",
+    "3d40079 research(trajectory-h0): reproduce V0S consumer attribution and relation defects",
+    "f0d93a6 fix(trajectory-h0): enforce role-specific Attempt relation admission",
+    "295f167 fix(trajectory-h0): quarantine unverified Session claims before source access",
+    "b198b42 fix(trajectory-h0): correct source identity, host provenance and Preview completeness",
+    "da191b3 research(trajectory-h0): audit the T0 label matcher, cold-read consistency and Work integrity",
+    "789f7ee research(trajectory-h0): attest consumer hardening and record deferred producer gates"
+  ],
+  "protectedTrees": {
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-v0s": "c4677c4b8eaa66dfb58bf479873b083bd904d32d",
+    "research-evidence/trajectory-v0s-h0": "0ce8e4baf3be05c4e833dd78acd189f6604a48d6",
+    "research-evidence/r3-l0c-g1": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "research-evidence/r3-l0c-g1b": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c"
+  },
+  "protectedImplementationBlobs": {
+    "src/trajectory/execution.ts": "fabe2be1e3da10de6af45fa7387303f5b11e118f",
+    "src/trajectory/handoff_preview.ts": "6925dd14de7acb386924c57efdd9b324c1172d0b",
+    "src/trajectory/relation_admission.ts": "00f50d958cadf854d913d2c6e59384f6603f1ae1",
+    "src/composition/trajectory_v0.ts": "ce120a02580213766f106a647c6c109522192a4f",
+    "scripts/trajectory_v0/dsh-session-reader.mjs": "871dd7db6356e9e54d628d7207eb6e579d9565ca",
+    "src/trajectory/projection.ts": "736badc4e1070fa139892f6ca6a5a4e353a7a769"
+  },
+  "environment": {
+    "node": "v24.14.1",
+    "pnpm": "11.21.0",
+    "dshVersion": "0.2.0-rc.2",
+    "repositoryDeclaredNodeMinimum": ">=24.15.0",
+    "nodeVersionMeetsDeclaredMinimum": false,
+    "dshPackagesInspected": [
+      "dsh",
+      "dsh-session",
+      "dsh-session-query",
+      "dsh-session-persistence",
+      "dsh-session-persistence-jsonl"
+    ],
+    "firstPartyDshAvailable": true,
+    "caveat": "the installed Node is BELOW the repository engines minimum; every test reported in H1 ran under it, and the runtime acceptance result is qualified accordingly"
+  },
+  "repositoryConfigAltered": false,
+  "modelRun": false,
+  "personalSessionsAccessed": false
+}
