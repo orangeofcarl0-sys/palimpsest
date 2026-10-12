@@ -62,6 +62,12 @@ import {
   renderIndexMetadata,
   resolveIndexMetadataMode,
 } from './index-metadata.js';
+/**
+ * Trajectory-P2A §6: THE WORKER SESSION IDENTITY REPORT. Loaded statically like the other small
+ * host-side modules — it imports nothing, so it can never be why a worker fails to compose. In the
+ * default configuration it is inert unless the parent supplied an IPC channel.
+ */
+import { reportWorkerSessionIdentity } from './session-identity.js';
 
 /**
  * R1-H: the host-execution read boundary.
@@ -340,6 +346,13 @@ async function runWorker(ctx, deps) {
   // produced. `off` and `m0` both leave the production index bytes untouched; only `m1` rewrites entries.
   const indexMode = resolveIndexMetadataMode(process.env[INDEX_METADATA_ENV]);
   let indexMetadata = null;
+  /**
+   * Trajectory-P2A §6: what the worker session identity report ATTEMPTED, for the noncanonical
+   * telemetry line. `null` until the report runs, so a worker that failed before creation reports
+   * "not attempted" rather than a false success. This records the host's own attempt, never a claim
+   * that the parent received anything.
+   */
+  let sessionIdentityReport = null;
   /** @type {undefined | (() => void)} */
   let releaseCapacity;
   /**
@@ -485,6 +498,33 @@ async function runWorker(ctx, deps) {
           agentOptions,
           setup: workerSetup,
         });
+        /**
+         * Trajectory-P2A §6.3: THE WORKER SESSION IDENTITY REPORT.
+         *
+         * Emitted HERE — after `agents.create()` resolved successfully and BEFORE any model turn —
+         * for three reasons:
+         *
+         *   · The identity EXISTS now. DSH stores the session and publishes the agent inside
+         *     `agents.create`, so a resolved handle is proof the Session Creation boundary was
+         *     crossed (measured: the created session's `seq` is 0, i.e. no turn was appended).
+         *   · It does NOT depend on the model. The first `agent.followup()` is a later statement, so
+         *     a report placed here cannot be affected by what a model does or fails to do.
+         *   · §6.5: a worker that is REFUSED next still reported a real created Session.
+         *     `SESSION_CREATED` does not imply `WORKER_ADMITTED` or `MODEL_TURN_STARTED`, and the
+         *     refusal below is unchanged by this report.
+         *
+         * The identity is read from the CREATED HANDLE, never from the candidate string passed in.
+         * A read that throws, a malformed identity or an absent IPC channel are all contained: the
+         * report is best-effort telemetry and can never change this worker's outcome (§6.4).
+         */
+        try {
+          sessionIdentityReport = reportWorkerSessionIdentity({
+            sessionId: handle?.agent?.session?.id,
+            send: process.send,
+          });
+        } catch (error) {
+          sessionIdentityReport = { reported: false, outcome: 'REPORT_THREW', detail: error?.message ?? String(error) };
+        }
         /**
          * The gate fired: the worker's surface contained a capability the host cannot vouch for. The agent is
          * disposed immediately and the attempt is reported as a HOST failure — never as a Work outcome,
@@ -765,6 +805,16 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_CAPACITY ${JSON.stringify(capacity ?? { granted: false, detail: 'the confidential profile slot was not consulted' })}
+`,
+  );
+  /**
+   * Trajectory-P2A §6: WHAT THE SESSION IDENTITY REPORT ATTEMPTED. Counts and outcome codes only —
+   * never a body and never a claim of delivery. A reviewer reads from here whether the host produced
+   * and attempted to send a well-formed created identity, which is the host-side half of the
+   * observation; the PARENT's receipt is a separate fact recorded on the parent side.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_SESSION_IDENTITY ${JSON.stringify(sessionIdentityReport ?? { reported: false, outcome: 'NOT_ATTEMPTED' })}
 `,
   );
   process.stdout.write(
