@@ -163,6 +163,7 @@ export type {
 export {
   buildHandoffPreview,
   EVENT_PAGE_COVERAGE_STATES,
+  HOST_LIFECYCLE_COVERAGE_STATES,
   PREVIEW_DOES_NOT_AUTHORIZE,
   PREVIEW_COMPLETENESS_STATES,
   previewCompletenessOf,
@@ -175,6 +176,7 @@ export type {
   EventPageCoverage,
   HandoffPreview,
   HandoffPreviewInput,
+  HostLifecycleCoverage,
   PreviewAttemptIdentity,
   PreviewAttribution,
   PreviewCanonicalFacts,

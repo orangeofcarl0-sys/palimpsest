@@ -318,7 +318,20 @@ describe("H0 §6.4 negative — role violations are excluded with a reason", () 
     });
     const result = selectAttemptWorkRelations(projectionOf([auth, aCreated, bCreated], [edge(aCreated), edge(bCreated)]), context);
     expect(result.selected.filter((relation) => relation.relation === "TASK_AUTHORIZED_ATTEMPT").length).toBe(1);
-    expect(result.quarantined.some((relation) => relation.reason.includes("destination is not this attempt's creation event"))).toBe(true);
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * The H0 assertion required attempt B's rejected edge to appear in attempt A's quarantine. That was
+     * the §9.2 defect: the shared authorization node is inside A's broad `canonicalEventIds` scope set,
+     * so another attempt's rejected relation was reported as A's quarantined fact.
+     *
+     * H1 scopes quarantine to the attempt's OWN identities (its creation, terminal and completed
+     * events). Attempt B's relation touches only the SHARED authorization and B's own creation, so it
+     * is not attempt A's unresolved fact and is correctly not reported at all.
+     */
+    expect(result.quarantined.filter((relation) => relation.relation === "TASK_AUTHORIZED_ATTEMPT").length).toBe(0);
+    // Attempt A's own relation is the one admitted.
+    expect(result.selected[0]!.relation).toBe("TASK_AUTHORIZED_ATTEMPT");
   });
 
   it("correct relation type but wrong destination: excluded", () => {

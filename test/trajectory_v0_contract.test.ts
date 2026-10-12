@@ -167,7 +167,7 @@ function inputOf(overrides: Partial<HandoffPreviewInput> = {}): HandoffPreviewIn
       portInvocationId: null,
       processLifecycle: "NOT_OBSERVED",
       processDetail: "no host observation was supplied",
-      observedEventKinds: [],
+      observedEventKinds: [], lifecycleCoverage: "NONE" as const,
       originLimitation: "G1-B local host observations are not independent, authority-bearing provenance.",
     },
     projectEvolution: {
@@ -502,7 +502,7 @@ describe("Trajectory-V0 §6 — the statuses stay separate", () => {
   it("a child exiting zero does NOT become Work settlement", () => {
     const preview = buildHandoffPreview(
       inputOf({
-        host: { hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", processLifecycle: "EXITED", processDetail: "the direct child exited with code 0", observedEventKinds: ["DIRECT_CHILD_EXIT_OBSERVED"], originLimitation: "local only" },
+        host: { hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", processLifecycle: "EXITED", processDetail: "the direct child exited with code 0", observedEventKinds: ["DIRECT_CHILD_EXIT_OBSERVED"], lifecycleCoverage: "NONE" as const, originLimitation: "local only" },
         canonical: { ...inputOf().canonical, attemptState: "COMPLETED", promotionState: "NOT_PROMOTED", verificationState: "NOT_RUN" },
       }),
     );
@@ -542,7 +542,7 @@ describe("Trajectory-V0 §6 — the statuses stay separate", () => {
 
   it("a host restart is UNKNOWN_AFTER_RESTART, not a fabricated FINISHED", () => {
     const preview = buildHandoffPreview(
-      inputOf({ host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "UNKNOWN_AFTER_RESTART", processDetail: "the host job map was lost", observedEventKinds: [], originLimitation: "local only" } }),
+      inputOf({ host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "UNKNOWN_AFTER_RESTART", processDetail: "the host job map was lost", observedEventKinds: [], lifecycleCoverage: "NONE" as const, originLimitation: "local only" } }),
     );
     expect(preview.execution.processLifecycle).toBe("UNKNOWN_AFTER_RESTART");
     // And canonical settlement is untouched by the lost host job.

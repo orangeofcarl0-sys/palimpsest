@@ -25,6 +25,7 @@
  * T0's projection is NOT modified. This is a read-side selection policy over a projection T0 already
  * built, and it can only ever REMOVE relations from what T0 produced.
  */
+import { trajectoryEdgeIdOf } from "./refs.js";
 import type { TrajectoryEdge } from "./refs.js";
 import type { TrajectoryProjection } from "./projection.js";
 
@@ -95,6 +96,12 @@ export interface AdmittedRelation {
 export interface QuarantinedRelation {
   readonly relation: string;
   readonly reason: string;
+  /**
+   * H1 §9.2: the stable EDGE identity, so two distinct rejected edges of the same relation remain
+   * distinguishable. Without it, deduplication by relation NAME collapsed them and the second reason
+   * was lost.
+   */
+  readonly edgeId: string;
 }
 
 /** §6: the result of an admission decision for one edge. */
@@ -203,6 +210,28 @@ function verdictFor(edge: TrajectoryEdge, context: AttemptRelationContext, nodeE
  *
  * A relation that fails 4 is reported with the exact reason it failed. A relation that does not
  * concern this attempt at all is neither admitted nor reported.
+ *
+ * ------------------------------------------------------------------ H1 §9.1 THE TRUST BOUNDARY
+ *
+ * This function is a SELECTOR OVER A T0-VALIDATED PROJECTION. It is NOT a standalone validator of
+ * arbitrary externally supplied `TrajectoryProjection` objects. T0's `buildProjectTrajectory` has
+ * already validated the canonical Work history, resolved each node's owner reference, and established
+ * the edge evidence before this function sees anything. What this function enforces ON ITS OWN
+ * authority is the Attempt-scoped ROLE requirement — which endpoint must be this attempt, and which
+ * compared field must name it — because that is the judgement T0 cannot make.
+ *
+ * It deliberately does NOT re-derive edges from canonical state, does NOT consult
+ * `byReference.verification` (T0 resolved it), and does NOT rebuild the Work relation graph. Those
+ * would be a second Work Relation Builder, which the ruling forbids.
+ *
+ * ------------------------------------------------------------------ H1 §9.2 QUARANTINE PRECISION
+ *
+ * Quarantine is scoped by the attempt's OWN role identities — its creation, authorization, terminal
+ * and completed events — plus a check that the edge genuinely concerns this attempt. The broad
+ * `canonicalEventIds` set is no longer used as the scope test on its own, because it includes the
+ * attempt's AUTHORIZATION event, which two attempts can SHARE; that shared node could previously make
+ * a rejected edge appear as both attempts' quarantined fact. Entries are now deduplicated by stable
+ * EDGE identity, so two distinct rejected edges of one relation both remain visible.
  */
 export function selectAttemptWorkRelations(
   projection: TrajectoryProjection,
@@ -216,6 +245,16 @@ export function selectAttemptWorkRelations(
   for (const node of projection.nodes) {
     nodeEventId.set(node.nodeId, node.reference.ownerPlane === "WORK" ? node.reference.canonicalId : null);
   }
+
+  /**
+   * H1 §9.2: the identities that make a relation unambiguously THIS attempt's, as opposed to the
+   * broader `canonicalEventIds` scope set that also contains a potentially SHARED authorization.
+   */
+  const ownIdentities = new Set<string>();
+  if (context.creationEventId !== null) ownIdentities.add(context.creationEventId);
+  if (context.completedEventId !== null) ownIdentities.add(context.completedEventId);
+  for (const terminalId of context.terminalEventIds) ownIdentities.add(terminalId);
+
   /**
    * §6.2: quarantine is scoped to the requested attempt. A relation whose endpoints do not touch this
    * attempt at all is not this attempt's unresolved fact and is not reported.
@@ -226,20 +265,33 @@ export function selectAttemptWorkRelations(
     return (from !== null && context.canonicalEventIds.has(from)) || (to !== null && context.canonicalEventIds.has(to));
   };
 
+  /**
+   * H1 §9.2: a relation is THIS attempt's ONLY when one endpoint is one of the attempt's own
+   * identities. A relation that touches only the shared authorization node is another attempt's
+   * business, even though that node is inside the broad scope set.
+   */
+  const ownsAnEndpoint = (edge: TrajectoryEdge): boolean => {
+    const from = nodeEventId.get(edge.fromNodeId) ?? null;
+    const to = nodeEventId.get(edge.toNodeId) ?? null;
+    return (from !== null && ownIdentities.has(from)) || (to !== null && ownIdentities.has(to));
+  };
+
   for (const edge of projection.edges) {
+    const edgeId = trajectoryEdgeIdOf(edge);
     const quarantineReason = QUARANTINED_T0_RELATIONS[edge.relation];
     if (quarantineReason !== undefined) {
-      if (concernsThisAttempt(edge)) quarantined.push({ relation: edge.relation, reason: quarantineReason });
+      if (concernsThisAttempt(edge) && ownsAnEndpoint(edge)) quarantined.push({ relation: edge.relation, reason: quarantineReason, edgeId });
       continue;
     }
     if (!SELECTED_T0_RELATIONS.has(edge.relation)) continue;
-    if (!concernsThisAttempt(edge)) continue;
+    if (!ownsAnEndpoint(edge)) continue;
 
     /** §6.2 requirement 2+3: only an established, evidenced edge may be admitted. */
     if (edge.evidenceState !== "ESTABLISHED_BY_OWNER_REFERENCE" || edge.evidence === null) {
       quarantined.push({
         relation: edge.relation,
         reason: `the edge concerns this attempt but its evidence state is ${edge.evidenceState}${edge.evidence === null ? " with no edge evidence" : ""}, so it is not an established relation`,
+        edgeId,
       });
       continue;
     }
@@ -247,7 +299,7 @@ export function selectAttemptWorkRelations(
     /** §6.1/§6.2 requirement 4: the relation-specific role must hold. */
     const verdict = verdictFor(edge, context, nodeEventId);
     if (!verdict.admit) {
-      quarantined.push({ relation: edge.relation, reason: verdict.reason });
+      quarantined.push({ relation: edge.relation, reason: verdict.reason, edgeId });
       continue;
     }
     selected.push({ relation: edge.relation, evidenceState: edge.evidenceState, detail: edge.detail });
@@ -255,6 +307,10 @@ export function selectAttemptWorkRelations(
 
   return Object.freeze({
     selected: Object.freeze(selected),
-    quarantined: Object.freeze([...new Map(quarantined.map((entry) => [entry.relation, entry])).values()]),
+    /**
+     * H1 §9.2: deduplicated by EDGE IDENTITY rather than by relation name, so distinct rejected edges
+     * of the same relation are all reported with their own reasons.
+     */
+    quarantined: Object.freeze([...new Map(quarantined.map((entry) => [entry.edgeId, entry])).values()]),
   });
 }

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_HOST_PROVENANCE_AUDIT",
+  "evidenceClass": "CONTROLLED_FIXTURE + SOURCE_DEMONSTRATED",
+  "sourceFiles": [
+    "src/composition/trajectory_v0.ts",
+    "src/trajectory/handoff_preview.ts"
+  ],
+  "separation": "source authenticity, process observation COVERAGE, process lifecycle and Work outcome are four separate facts",
+  "defectCorrected": "H0 mapped LOCAL_PORT_OBSERVATION directly to processObservation=COMPLETE, so a producer that observed only a Spawn still reported complete lifecycle coverage (F6)",
+  "correction": "lifecycleCoverage is derived from the observed facts (spawn observed AND exit reported) and COMPLETE now requires SPAWN_AND_EXIT",
+  "measured": {
+    "LOCAL_PORT_OBSERVATION + SPAWN_ONLY": "PARTIAL",
+    "LOCAL_PORT_OBSERVATION + SPAWN_AND_EXIT": "COMPLETE",
+    "CALLER_DECLARATION + SPAWN_AND_EXIT": "PARTIAL",
+    "NOT_OBSERVED": "NOT_OBSERVED",
+    "CONFLICTING_SOURCE": "CONFLICTING"
+  },
+  "preserved": [
+    "a caller exited:true flag is not independent proof of exit",
+    "an IPC report is not proof of Work settlement",
+    "the G1-B origin limitation is still stated",
+    "no Host Provenance Ledger was built"
+  ],
+  "verdict": "PASS — provenance and coverage are separate dimensions"
+}

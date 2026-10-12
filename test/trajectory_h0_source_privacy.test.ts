@@ -169,7 +169,7 @@ describe("Trajectory-V0S-H0 §8.2 — host provenance is not caller testimony", 
         authorizationDetail: "x", resultRefs: ["1".repeat(40)], resultDetail: "x", verificationState: "NOT_RUN",
         promotionState: "NOT_PROMOTED", promotionId: null, reworkState: "NONE", reworkDetail: "x",
       },
-      host: { hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", processLifecycle: "RUNNING", processDetail: "declared", observedEventKinds: [], originLimitation: "x" },
+      host: { hostLocalJobId: "wdj-1", portInvocationId: "wpi-1", processLifecycle: "RUNNING", processDetail: "declared", observedEventKinds: [], lifecycleCoverage: "NONE" as const, originLimitation: "x" },
       projectEvolution: { projectionRootId: "tr-x", projectionSemanticDigest: null, workSequence: 1, workEventDigest: null, projectIrRevision: 0, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [] },
     };
     const preview = buildHandoffPreview(input);
@@ -193,7 +193,7 @@ describe("Trajectory-V0S-H0 §8.2 — host provenance is not caller testimony", 
         authorizationDetail: "x", resultRefs: [], resultDetail: "x", verificationState: "NOT_RUN",
         promotionState: "NOT_PROMOTED", promotionId: null, reworkState: "NONE", reworkDetail: "x",
       },
-      host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "none", observedEventKinds: [], originLimitation: "G1-B local host observations are NOT independent, authority-bearing provenance." },
+      host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "none", observedEventKinds: [], lifecycleCoverage: "NONE" as const, originLimitation: "G1-B local host observations are NOT independent, authority-bearing provenance." },
       projectEvolution: { projectionRootId: null, projectionSemanticDigest: null, workSequence: null, workEventDigest: null, projectIrRevision: null, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [] },
     });
     expect(preview.caveats.epistemicLimits.join(" ")).toContain("NOT independent, authority-bearing provenance");
