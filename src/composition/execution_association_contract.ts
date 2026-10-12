@@ -33,6 +33,12 @@ export interface ExecutionAssociationInstallOptions {
   readonly dshHomePath?: string | undefined;
   readonly dshSessionsRoot?: string | undefined;
   /**
+   * §7.6: an override for the official reader module specifier. Production omits it (the bare
+   * `palimpsest-host-deployment/runtime/session_reader.js` resolves inside the DSH host process); a test
+   * process outside the DSH profile points at the same file by absolute path, so there is one reader.
+   */
+  readonly sessionReaderModule?: string | undefined;
+  /**
    * §7.5: an explicitly CALLER-OWNED association store. When supplied, the install uses it and does NOT
    * close it (the caller keeps its lifetime); when omitted, the install creates one beside the
    * orchestration store and closes it itself.

@@ -46,7 +46,15 @@ export * from "./composition/install_contract.js";
  * ceiling and attach the new cohesive contract at the point of use, which is what these aliases do.
  */
 export type PalimpsestInstallOptions = InstallPalimpsestOptions & ExecutionAssociationInstallOptions;
-export type InstalledPalimpsestWithTrajectory = InstalledPalimpsest & ExecutionAssociationInstallResult;
+export type InstalledPalimpsestWithTrajectory = InstalledPalimpsest &
+  ExecutionAssociationInstallResult & {
+    /**
+     * Trajectory-P2-C §11.1: the composed Work Delegation service, exposed so a host (and the product
+     * cold-recovery gate) can start real work through the ORDINARY product path rather than constructing
+     * the service by hand. Present iff a Work Worker Port was composed.
+     */
+    readonly workDelegation?: import("./interaction/work_delegation.js").WorkDelegationService | undefined;
+  };
 
 export function installPalimpsest(
   context: DshPluginContext,
@@ -349,7 +357,7 @@ export function installPalimpsest(
     sourceBasis: { adapterId: `dsh-subprocess-work-worker:${options.workWorkerProfile ?? "unbound"}`, workerBin: options.workWorkerBin ?? "", nodeExecPath: process.execPath },
     sourceKind: executionAssociationSourceKind,
     work: workRevalidation,
-    ...(options.executionAssociationStore === undefined ? {} : {}),
+    ...(options.sessionReaderModule === undefined ? {} : { sessionReaderModule: options.sessionReaderModule }),
   });
   const executionAssociationRecorder = executionAssociation.recorder;
 
@@ -656,6 +664,7 @@ export function installPalimpsest(
     ...(trajectory === undefined ? {} : { trajectory }),
     ...(executionAssociationRecorder === undefined ? {} : { executionAssociationRecorder }),
     ...(executionAssociation.qualifier === undefined ? {} : { executionAssociationQualifier: executionAssociation.qualifier }),
+    ...(workDelegation === undefined ? {} : { workDelegation }),
     register: lifecycle.register,
     dispose: () => lifecycle.dispose(),
   };

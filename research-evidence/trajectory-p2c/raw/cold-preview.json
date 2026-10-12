@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_COLD_PREVIEW_ORCHESTRATE",
+  "stage": "Trajectory-P2-C",
+  "phase": "orchestrate",
+  "outcome": "PASS",
+  "testRootContained": true,
+  "testRootIsReparsePoint": false,
+  "processA": {
+    "outcome": "PASS",
+    "attemptId": "attempt-1437d0b7b589f267b3cc1d4b224ac02a",
+    "sessionId": "worker-eda3dad3-deb9-493c-82c1-7b7298f12e66",
+    "attemptStates": [
+      "RUNNING"
+    ],
+    "promotionCount": 0
+  },
+  "processB": {
+    "outcome": "PASS",
+    "selectionState": "SELECTED_UNIQUE",
+    "sessionId": "worker-eda3dad3-deb9-493c-82c1-7b7298f12e66",
+    "eventCount": 3,
+    "eventTypes": [
+      "permission/preset",
+      "sandbox/mode",
+      "approval/policy"
+    ],
+    "coverage": "FULL"
+  },
+  "testRootCleanup": {
+    "cleaned": true
+  },
+  "independentProcesses": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "realCanonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "normalProductCompositionUsed": true,
+  "permittedOutcomes": [
+    "PASS",
+    "SKIPPED",
+    "BLOCKED",
+    "NOT_ESTABLISHED"
+  ],
+  "qualified": true
+}

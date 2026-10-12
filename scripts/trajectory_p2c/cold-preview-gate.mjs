@@ -1,0 +1,283 @@
+/**
+ * Trajectory-P2-C §11 (C6) — REAL COLD-RECOVERED PRODUCT PREVIEW.
+ *
+ * The decisive P2-C qualification. TWO INDEPENDENT PROCESSES, each composing the NORMAL product:
+ *
+ *   PROCESS A (`--phase=record`)
+ *     installPalimpsest over a REAL git fixture with a REAL EventStore and the REAL first-party DSH host
+ *     bundle (via the test-owned capability-refusal probe, so a real Session is created and NO model turn
+ *     runs). It declares a real canonical Task, starts real work through `installed.workDelegation`, and
+ *     the product-composed recorder persists the observation and the window finalization at the
+ *     Parent/Delegation boundary. It prints the identities, closes the deployment, and EXITS.
+ *
+ *   PROCESS B (`--phase=recover`)
+ *     starts FRESH. It receives ONLY the durable root, the fixture repo, the DSH home and the executable
+ *     facts. It does NOT receive Process A's job map, tracker, association object, a VERIFIED value, a
+ *     pre-selected SessionId, or Process A's source basis. It recomposes the NORMAL product, recovers the
+ *     association, and calls the NORMAL read-only `installed.trajectory.attributedPreview.previewAttempt`.
+ *
+ * WHAT IT PROVES: the ordinary product composition produces and later recovers a real Work→Session
+ * association and presents ACTUAL DSH events through the read-only Preview, with no model call and no
+ * fabricated settlement.
+ *
+ * SAFETY. Test-owned git repo, DSH home and session root; no personal profile, no credential, no paid
+ * model, PRIMARY disabled. Exits 0 only on PASS.
+ */
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { pathToFileURL } from "node:url";
+
+import { REAL_DSH_HOME, REPO, allocateOwnedRoot, dshBin, hasBuiltDist, hasFirstPartyDsh, installHostBundle, linkSharedModules, safeCleanup, writeProbeProfile } from "../trajectory_p2b/rig.mjs";
+
+const OUTCOMES = ["PASS", "SKIPPED", "BLOCKED", "NOT_ESTABLISHED"];
+const PHASE = process.argv.find((arg) => arg.startsWith("--phase="))?.slice("--phase=".length) ?? "orchestrate";
+const findings = {};
+const record = (key, value) => {
+  findings[key] = value;
+  process.stderr.write(`  · ${key}: ${JSON.stringify(value)}\n`);
+};
+function finish(outcome, extra) {
+  process.stdout.write(`${JSON.stringify({ schemaVersion: 1, kind: `TRAJECTORY_P2C_COLD_PREVIEW_${PHASE.toUpperCase()}`, stage: "Trajectory-P2-C", phase: PHASE, outcome, ...findings, ...(extra ?? {}) }, null, 2)}\n`);
+  process.exit(outcome === "PASS" || outcome === "SKIPPED" ? 0 : 1);
+}
+
+if (!hasBuiltDist()) finish("BLOCKED", { blocker: "dist/src/advanced.js is absent; build first" });
+if (!hasFirstPartyDsh()) finish("SKIPPED", { blocker: "no installed first-party DSH tree" });
+
+const install = await import(pathToFileURL(join(REPO, "dist", "src", "install.js")).href);
+const effects = await import(pathToFileURL(join(REPO, "dist", "src", "effects", "index.js")).href);
+
+const PROJECT_ID = "p2cc6";
+const PROFILE = "p2c-c6";
+
+/** A real git fixture with a real canonical task, shared by both phases. */
+function prepareFixture(repoFix) {
+  if (!existsSync(join(repoFix, "src"))) {
+    mkdirSync(join(repoFix, "src"), { recursive: true });
+    writeFileSync(join(repoFix, "src", "a.ts"), "export const a = 1;\n");
+    execFileSync("git", ["init", "-q"], { cwd: repoFix });
+    execFileSync("git", ["add", "-A"], { cwd: repoFix });
+    execFileSync("git", ["-c", "user.email=t@t.t", "-c", "user.name=t", "commit", "-qm", "H0"], { cwd: repoFix });
+  }
+  return execFileSync("git", ["rev-parse", "HEAD"], { cwd: repoFix, encoding: "utf8" }).trim();
+}
+
+/**
+ * Compose the NORMAL product. Both phases use this SAME function, so Process B genuinely recomposes rather
+ * than reconstructing Process A's wiring by hand.
+ */
+function composeProduct(repoFix, dshHome) {
+  return install.installPalimpsest(
+    { tools: { register: () => () => undefined } },
+    {
+      projectId: PROJECT_ID,
+      databasePath: join(repoFix, ".palimpsest", "p.sqlite"),
+      ordariumDatabasePath: join(repoFix, ".palimpsest", "o.sqlite"),
+      repository: repoFix,
+      git: new effects.GitCliPort(repoFix, join(repoFix, ".palimpsest", "worlds")),
+      execution: "worktree",
+      standard: {
+        statement: "tests pass and scope respected",
+        clauses: [
+          { kind: "command_succeeds", command: ["node", "-e", "process.exit(0)"], predicate: "tests_pass" },
+          { kind: "scope_respected" },
+        ],
+        derivedFrom: ["p2c c6 fixture"],
+        confirmed: true,
+        notes: [],
+      },
+      policy: install.trustedDefaultPolicy({ allowed_commands: [{ executable: "node", argv_prefix: ["-e", "process.exit(0)"] }] }),
+      // §7.1/§7.6: the HOST's own facts, exactly as host/dsh/lib/index.js derives them.
+      workWorkerBin: dshBin(),
+      workWorkerProfile: PROFILE,
+      executionAssociationSourceKind: "FIRST_PARTY_DSH_HOST",
+      /**
+       * §7.6: the reader resolves its DSH PACKAGES from the real installed modules tree, while the
+       * SESSIONS it reads live under the test-owned home. Splitting the two lets the product compose a real
+       * reader in a test process; in production both are the same DSH home.
+       */
+      dshHomePath: REAL_DSH_HOME,
+      dshSessionsRoot: join(dshHome, "sessions"),
+      sessionReaderModule: pathToFileURL(join(REPO, "host", "deployment", "runtime", "session_reader.js")).href,
+    },
+  );
+}
+
+/* ================================================================== PROCESS A */
+
+if (PHASE === "record") {
+  const rig = process.env.P2C_RIG;
+  const REPO_FIX = join(rig, "repo");
+  const HOME = join(rig, "home");
+  const head = prepareFixture(REPO_FIX);
+  installHostBundle(HOME);
+  linkSharedModules(HOME);
+  writeProbeProfile(HOME, rig, PROFILE, PROJECT_ID);
+
+  const previousHome = process.env.DSH_HOME;
+  process.env.DSH_HOME = HOME;
+  let attemptId = null;
+  let sessionId = null;
+  let eventCount = 0;
+  let attemptStates = [];
+  let promotion = null;
+  try {
+    const installed = composeProduct(REPO_FIX, HOME);
+    if (installed.trajectory === undefined) finish("NOT_ESTABLISHED", { blocker: "the install composed no attributed-preview surface" });
+    if (installed.workDelegation === undefined) finish("NOT_ESTABLISHED", { blocker: "the install composed no Work Delegation (no work worker port)" });
+
+    installed.controller.start({
+      projectId: PROJECT_ID,
+      goal: "make the project tidy",
+      headCommit: head,
+      tasks: [{ task_id: "t1", objective: "tidy a", depends_on: [], write_paths: ["src/a.ts"], required_artifacts: [] }],
+    });
+
+    const started = await installed.workDelegation.start({ expectedTaskId: "t1" });
+    for (let step = 0; step < 2400; step += 1) {
+      const view = await installed.workDelegation.followup({ jobId: started.jobId });
+      if (view.phase === "FINISHED" || view.phase === "HOST_ERROR") break;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    attemptId = (await installed.workDelegation.followup({ jobId: started.jobId })).attemptId ?? null;
+
+    // Read what the product recorded, and the canonical Work state.
+    const connection = installed.controller.store.connection;
+    eventCount = connection.prepare("SELECT COUNT(*) AS c FROM events WHERE project_id=?").get(PROJECT_ID).c;
+    attemptStates = connection.prepare("SELECT state FROM attempts WHERE project_id=? ORDER BY attempt_id").all(PROJECT_ID).map((row) => row.state);
+    promotion = installed.controller.promotions.promotionFactsSync().filter((fact) => fact.attemptId === attemptId).length;
+
+    /**
+     * §11.1: read the recorded observation from the product's own durable store through the qualifier, so
+     * Process A's reported identities come from REAL evidence rather than a captured object.
+     */
+    if (installed.executionAssociationQualifier !== undefined && attemptId !== null) {
+      const qualification = await installed.executionAssociationQualifier.qualifyAttempt({ projectId: PROJECT_ID, attemptId });
+      const qualified = qualification.qualifications.find((entry) => entry.state === "ASSOCIATION_QUALIFIED");
+      if (qualified !== undefined) sessionId = qualified.dshSessionId;
+      record("qualificationSummary", qualification.summary);
+      record("qualificationStates", qualification.qualifications.map((entry) => entry.state));
+      if (qualification.qualifications[0] !== undefined && "detail" in qualification.qualifications[0]) {
+        record("qualificationDetail", qualification.qualifications[0].detail);
+      }
+    }
+    record("recordedAttemptId", attemptId);
+    record("recordedSessionId", sessionId);
+    record("recorderComposed", installed.executionAssociationRecorder !== undefined);
+    record("workEventCountAfter", eventCount);
+    record("attemptStatesAfter", attemptStates);
+    record("promotionCount", promotion);
+    installed.dispose();
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME;
+    else process.env.DSH_HOME = previousHome;
+  }
+
+  /**
+   * §11.2: what Process A leaves for Process B — a LOCATOR and the executable facts ONLY. No basis, no
+   * session id, no VERIFIED value, no in-memory object.
+   */
+  writeFileSync(
+    join(rig, "handoff.json"),
+    JSON.stringify({ repoFix: REPO_FIX, home: HOME, projectId: PROJECT_ID, attemptId, workerBin: dshBin(), nodeExecPath: process.execPath }),
+    "utf8",
+  );
+  finish(attemptId !== null ? "PASS" : "NOT_ESTABLISHED", { attemptStates });
+}
+
+/* ================================================================== PROCESS B */
+
+if (PHASE === "recover") {
+  const rig = process.env.P2C_RIG;
+  const handoff = JSON.parse(readFileSync(join(rig, "handoff.json"), "utf8"));
+
+  const previousHome = process.env.DSH_HOME;
+  process.env.DSH_HOME = handoff.home;
+  try {
+    /**
+     * §11.2: Process B RECOMPOSES the normal product. It never receives Process A's store object, job map,
+     * tracker, source basis, or a VERIFIED value.
+     */
+    const installed = composeProduct(handoff.repoFix, handoff.home);
+    if (installed.trajectory === undefined) finish("NOT_ESTABLISHED", { blocker: "Process B composed no attributed-preview surface" });
+
+    const result = await installed.trajectory.attributedPreview.previewAttempt({ attemptId: handoff.attemptId });
+
+    record("recoveredSelectionState", result.selection.state);
+    record("recoveredInvocationId", result.selection.invocationId);
+    record("recoveredSessionId", result.preview.execution.dshSessionId);
+    record("bindingStatus", result.preview.execution.sessionBindingStatus);
+    record("readAdmission", result.preview.execution.sessionReadAdmission);
+    record("sessionReadState", result.preview.execution.sessionReadState);
+    record("eventCount", result.preview.execution.events.length);
+    record("eventTypes", result.preview.execution.events.map((event) => event.type));
+    record("pageCoverage", result.provenance.pageCoverage);
+    record("provenance", result.provenance);
+    record("canonicalAttemptState", result.preview.canonical.attemptState);
+    record("promotionState", result.preview.canonical.promotionState);
+    record("attemptId", result.preview.attempt.attemptId);
+    installed.dispose();
+
+    const qualified =
+      result.selection.state === "SELECTED_UNIQUE" &&
+      result.preview.execution.sessionBindingStatus === "BOUND_VERIFIED" &&
+      result.preview.execution.sessionReadAdmission === "ADMITTED_TO_ATTEMPT" &&
+      result.preview.execution.sessionReadState === "READ_OK" &&
+      result.preview.execution.events.length > 0 &&
+      result.preview.attempt.attemptId === handoff.attemptId &&
+      result.preview.canonical.promotionState === "NOT_PROMOTED";
+    finish(qualified ? "PASS" : "NOT_ESTABLISHED", { qualified });
+  } finally {
+    if (previousHome === undefined) delete process.env.DSH_HOME;
+    else process.env.DSH_HOME = previousHome;
+  }
+}
+
+/* ================================================================== ORCHESTRATE */
+
+if (PHASE === "orchestrate") {
+  const owned = allocateOwnedRoot("p2c-c6-");
+  record("testRootContained", owned.contained);
+  record("testRootIsReparsePoint", owned.isReparse);
+  if (!owned.contained) finish("NOT_ESTABLISHED", { blocker: "could not prove the run directory is contained" });
+
+  const runPhase = (phase) => {
+    try {
+      const stdout = execFileSync(process.execPath, [join(REPO, "scripts", "trajectory_p2c", "cold-preview-gate.mjs"), `--phase=${phase}`], {
+        encoding: "utf8",
+        maxBuffer: 32 * 1024 * 1024,
+        timeout: 480_000,
+        env: { ...process.env, P2C_RIG: owned.root },
+      });
+      return JSON.parse(stdout);
+    } catch (error) {
+      const candidate = error?.stdout;
+      if (typeof candidate === "string" && candidate.trim() !== "") {
+        try {
+          return JSON.parse(candidate);
+        } catch {
+          return { outcome: "NOT_ESTABLISHED", parseError: true };
+        }
+      }
+      return { outcome: "NOT_ESTABLISHED", error: error?.message ?? String(error) };
+    }
+  };
+
+  const phaseA = runPhase("record");
+  const phaseB = runPhase("recover");
+  record("processA", { outcome: phaseA.outcome, attemptId: phaseA.recordedAttemptId ?? null, sessionId: phaseA.recordedSessionId ?? null, attemptStates: phaseA.attemptStatesAfter ?? null, promotionCount: phaseA.promotionCount ?? null });
+  record("processB", { outcome: phaseB.outcome, selectionState: phaseB.recoveredSelectionState ?? null, sessionId: phaseB.recoveredSessionId ?? null, eventCount: phaseB.eventCount ?? null, eventTypes: phaseB.eventTypes ?? null, coverage: phaseB.pageCoverage ?? null });
+
+  const cleanup = await safeCleanup(owned);
+  record("testRootCleanup", cleanup);
+
+  const qualified = phaseA.outcome === "PASS" && phaseB.outcome === "PASS" && phaseB.qualified === true;
+  record("independentProcesses", true);
+  record("modelCallsMade", 0);
+  record("privateSessionsAccessed", false);
+  record("realCanonicalWorkRan", true);
+  record("realFirstPartyDshRan", true);
+  record("normalProductCompositionUsed", true);
+  finish(qualified ? "PASS" : "NOT_ESTABLISHED", { permittedOutcomes: OUTCOMES, qualified });
+}

@@ -46,8 +46,11 @@ import type { DshSessionReadPort } from "../trajectory/execution.js";
 import type { WorkRevalidationPort } from "../execution_association/index.js";
 import type { OwnedResource } from "./lifecycle.js";
 
-/** §7.6: the official reader module, loaded dynamically so a host without it still composes. */
-const SESSION_READER_MODULE = "palimpsest-host-deployment/runtime/session_reader.js";
+/** §7.6: the official reader module, resolved as a bare specifier in production (the DSH host process has
+ * the package installed under its profile's `node_modules`). A caller may override it — the same
+ * configuration style the host already uses for `palimpsestEntry` — which is what lets a test process
+ * (running outside the DSH profile) point at the same implementation by absolute path. */
+const DEFAULT_SESSION_READER_MODULE = "palimpsest-host-deployment/runtime/session_reader.js";
 
 export interface ExecutionAssociationCompositionInput {
   readonly projectId: string;
@@ -68,6 +71,12 @@ export interface ExecutionAssociationCompositionInput {
    * `install.ts` (the same reuse boundary the continuation cluster uses).
    */
   readonly work: WorkRevalidationPort;
+  /**
+   * §7.6: an override for the official reader module specifier. Production uses the bare package name
+   * (the DSH host has it installed); a test process outside the DSH profile points at the same file by
+   * absolute path, so there is still exactly ONE implementation.
+   */
+  readonly sessionReaderModule?: string | undefined;
 }
 
 export interface ExecutionAssociationComposition {
@@ -116,11 +125,12 @@ export function deriveWorkWorkerPortFactory(input: {
 async function loadSessionReader(input: {
   readonly dshHomePath: string | undefined;
   readonly sessionsRoot: string | undefined;
+  readonly moduleSpecifier: string;
 }): Promise<DshSessionReadPort | undefined> {
   if (input.dshHomePath === undefined || input.sessionsRoot === undefined) return undefined;
   let module: { makeRealDshSessionReader: (i: { dshHomePath: string; sessionsRoot: string }) => Promise<DshSessionReadPort | null> };
   try {
-    module = (await import(SESSION_READER_MODULE)) as typeof module;
+    module = (await import(input.moduleSpecifier)) as typeof module;
   } catch {
     return undefined;
   }
@@ -189,7 +199,7 @@ export function composeExecutionAssociationCapability(
   const ensureReader = async (): Promise<DshSessionReadPort | undefined> => {
     if (mountedReader !== undefined) return mountedReader;
     if (readerPromise === undefined) {
-      readerPromise = loadSessionReader({ dshHomePath: input.dshHomePath, sessionsRoot: input.sessionsRoot });
+      readerPromise = loadSessionReader({ dshHomePath: input.dshHomePath, sessionsRoot: input.sessionsRoot, moduleSpecifier: input.sessionReaderModule ?? DEFAULT_SESSION_READER_MODULE });
     }
     mountedReader = await readerPromise;
     return mountedReader;
