@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_P2B_FORWARD_ERRATUM",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "purpose": "Forward-only correction of P2-B claims and statistics. P2-B's historical evidence is NOT rewritten; what was demonstrated is preserved and the overstatements are corrected here.",
+  "erratum": [
+    {
+      "id": "ERRATUM-P2C-1",
+      "p2bClaim": "the final report's Section 9 said 'New: ... Net diff: 25 files, 4,227 insertions'",
+      "whatWasActuallyDemonstrated": "the committed P2-B diff is 42 files and 5,003 insertions",
+      "correction": "the narrative figure was taken before the final C7 evidence/doc commit; the actual committed diff is 42 files / 5,003 insertions / 0 deletions",
+      "impact": "statistic only; no verdict changes"
+    },
+    {
+      "id": "ERRATUM-P2C-2",
+      "p2bClaim": "P2-B established 'Read-side association qualification using Work, source basis and DSH Header checks' and an 'independently executed cold-recovery experiment'",
+      "whatWasActuallyDemonstrated": "the qualification performs a Work RECORD existence check (not the exact historical ATTEMPT_CREATED event), compares the record's basis to a basis handed over from the producing process, and does not consult sourceKind, finalization ordering or candidate counts",
+      "correction": "the cold-recovery experiment proved DURABLE RECOVERY of the record, but its source verification was VALUE MATCHING against a producer-supplied basis, not independent recovery of the verifier's trusted configuration",
+      "impact": "the durable-observation verdict stands; the SOURCE-QUALIFICATION strength was overstated",
+      "p2cResolution": "C2 introduces an independent trusted deployment basis, sourceKind enforcement, EventId and store-scope checks, finalization integrity and a currentness protocol"
+    },
+    {
+      "id": "ERRATUM-P2C-3",
+      "p2bClaim": "P2-B's observation-window finalization was 'basic'",
+      "whatWasActuallyDemonstrated": "finalization is recorded from the Work Delegation boundary returning, with a single close reason (INVOCATION_RETURNED); the qualifier only requires windowState===CLOSED with a non-UNKNOWN reason",
+      "correction": "the finalization does not distinguish a timeout from a real close, does not check ordering, and does not check the candidate count",
+      "impact": "the finalization claim was accurate as 'basic'; P2-C hardens it"
+    },
+    {
+      "id": "ERRATUM-P2C-4",
+      "p2bClaim": "P2-B did not connect the association to product Preview admission",
+      "whatWasActuallyDemonstrated": "accurate, and additionally: normal product composition does not even construct a WORK worker port, the association store, the qualifier or a trajectory surface",
+      "correction": "the gap is larger than 'not connected' — the capability is absent from normal composition entirely",
+      "impact": "P2-C's C3 is a real product-composition stage, not a wiring tweak"
+    }
+  ],
+  "protectedEvidenceUntouched": [
+    "research-evidence/trajectory-p2b/final-verdicts.json",
+    "research-evidence/trajectory-p2b/regression.json",
+    "research-evidence/trajectory-p2b/cold-recovery.json"
+  ],
+  "verdict": "P2B_ERRATA_RECORDED_FORWARD_ONLY"
+}

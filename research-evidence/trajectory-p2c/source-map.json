@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_SOURCE_MAP",
+  "stage": "Trajectory-P2-C",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "dshHomeReported": "<local-path>",
+  "findings": {
+    "sourceBasisProvenance": {
+      "computedBy": "src/execution_association/ingestion.ts:computeTrustedSourceBasis",
+      "hashesWhat": "executable PATH STRINGS (not contents, not a signed manifest)",
+      "coldGateReusesProducerBasis": true,
+      "note": "the P2-B cold gate supplies Process A's own sourceBasis to Process B, so it establishes VALUE MATCHING, not independent recovery of the verifier's trusted configuration"
+    },
+    "sourceKindEnforcement": {
+      "recordedOnRecord": true,
+      "consultedByQualifier": false,
+      "note": "sourceKind is persisted but the qualifier never reads it, so a CONTROLLED_STUB record with a matching basis is not distinguished"
+    },
+    "durableRecordIntegrity": {
+      "eventIdValidatedAgainstCanonicalIdentity": false,
+      "rowColumnVsPayloadCheckedOnReplay": false,
+      "malformedFailsClosed": true,
+      "note": "the store validates the payload SHAPE and the projectId, but not that eventId equals the canonical identity, nor that the SQLite columns agree with the payload"
+    },
+    "workRevalidation": {
+      "port": "src/execution_association/qualification.ts:WorkRevalidationPort.readAttempt",
+      "verifiesExactAttemptCreatedEvent": false,
+      "note": "the port only requires a non-null Attempt record; it does not verify the exact historical ATTEMPT_CREATED event identity",
+      "v0AlreadyVerifiesIt": true
+    },
+    "observationWindow": {
+      "finalizationEvent": true,
+      "qualifierChecksClosed": true,
+      "qualifierChecksCandidateCount": false,
+      "qualifierChecksOrdering": false,
+      "closeReasonUsedByDelegation": false,
+      "portObservesClose": true,
+      "portDistinguishesTimeoutFromExit": true,
+      "note": "finalization is recorded from the delegation boundary returning; the port itself distinguishes close/exit/timeout/abort, but the delegation closeReason collapses them into INVOCATION_RETURNED"
+    },
+    "handoffAdmission": {
+      "crossFieldInvariantEnforced": false,
+      "eventsGatedOnAdmissionFlagOnly": true,
+      "pageIntegrityFailClosed": true,
+      "note": "events are gated on the admission FLAG, but there is no validator that refuses an internally contradictory combination of binding status, session id and admission"
+    },
+    "untrustedAssociations": {
+      "resolver": "src/trajectory/binding.ts:resolveVerifiedSessionBinding",
+      "requiresProducerObserved": true,
+      "requiresDurableRef": true,
+      "requiresVerified": true,
+      "note": "the resolver accepts any association object carrying those three fields; nothing binds the OBJECT to a durable store, so a caller-built object can satisfy it",
+      "productionBoundaryNeeded": "the product adapter must obtain associations from the durable read side, never from a caller-supplied array"
+    },
+    "productComposition": {
+      "installSuppliesWorkWorkerPort": true,
+      "launchSuppliesWorkWorkerPort": false,
+      "hostDerivesWorkWorkerPort": false,
+      "hostDerivesBranchPort": true,
+      "installComposesTrajectory": false,
+      "installComposesAssociation": false,
+      "note": "the host derives a BRANCH port but not a WORK worker port; the install composes neither the association concern nor a trajectory surface"
+    },
+    "previewDigest": {
+      "coversWatermarks": false,
+      "coversKnownCounts": false,
+      "note": "the digest covers execution events and identity but not the read watermark or known event count, so an observation-basis change can leave the digest unchanged"
+    },
+    "readerProductization": {
+      "path": "scripts/trajectory_v0/dsh-session-reader.mjs",
+      "isPlainEsm": true,
+      "importedFromSrc": false,
+      "note": "the official reader lives under scripts/ and is imported only by tests; no src/ module imports a .mjs script today"
+    }
+  }
+}
