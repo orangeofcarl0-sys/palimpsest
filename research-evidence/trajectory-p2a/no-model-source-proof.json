@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_NO_MODEL_SOURCE_PROOF",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceLocations": [
+    "host/dsh/lib/runner.js (runWorker)",
+    "node_modules/@deepseek-ai/dsh-agent-loop/lib/index.js (AgentLoop.createAgent)"
+  ],
+  "sourceLevelExclusionGuarantee": {
+    "claim": "no model turn can occur on the refused path",
+    "mechanism": "in runWorker the order is: agents.create -> capabilityRefusal check (throws + disposes) -> handle.agent -> agent.followup. The capability refusal throws BEFORE the only agent.followup call in the block, so on a refusal the first turn is unreachable.",
+    "measuredOrder": {
+      "createBeforeRefusal": true,
+      "refusalBeforeFirstFollowup": true
+    }
+  },
+  "runtimeMeasurement": {
+    "point": "the written DSH session artifact",
+    "observation": "turn/start, turn/end and request/header events in the written session = 0",
+    "interpretation": "a model turn appends these events; zero of them shows no turn was appended"
+  },
+  "explicitNonReliance": "the claim does NOT rest on an absent provider or a failed request: a failed network call would still be an attempted request. No provider is contacted at all because no turn exists.",
+  "counters": {
+    "followupCount": 0,
+    "providerRequestCount": 0,
+    "toolExecutionCount": 0
+  },
+  "verdict": "NO_MODEL_EXECUTION_ESTABLISHED_BY_STRUCTURE_AND_MEASUREMENT",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_IPC_NEGATIVE_CONTROLS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "CONTROLLED_IPC_FIXTURE",
+  "testFile": "test/trajectory_p2a_parent_observation.test.ts",
+  "controls": [
+    {
+      "id": "N1",
+      "case": "wrong channel refused",
+      "result": "PASS"
+    },
+    {
+      "id": "N2",
+      "case": "wrong kind refused",
+      "result": "PASS"
+    },
+    {
+      "id": "N3",
+      "case": "extra field refused",
+      "result": "PASS"
+    },
+    {
+      "id": "N4",
+      "case": "missing SessionId refused",
+      "result": "PASS"
+    },
+    {
+      "id": "N5",
+      "case": "invalid/oversized SessionId refused",
+      "result": "PASS"
+    },
+    {
+      "id": "N6",
+      "case": "stdout imitation ignored",
+      "result": "PASS"
+    },
+    {
+      "id": "N7",
+      "case": "stderr imitation ignored",
+      "result": "PASS"
+    },
+    {
+      "id": "N8",
+      "case": "context pull never treated as identity",
+      "result": "PASS"
+    },
+    {
+      "id": "N9",
+      "case": "two children never cross-attribute",
+      "result": "PASS"
+    },
+    {
+      "id": "N10",
+      "case": "spawn failure fabricates no session",
+      "result": "PASS"
+    },
+    {
+      "id": "N11",
+      "case": "observer throw leaves the outcome unchanged",
+      "result": "PASS"
+    },
+    {
+      "id": "N12",
+      "case": "timeout fabricates no identity and no Work success",
+      "result": "PASS"
+    }
+  ],
+  "verdict": "NEGATIVE_CONTROLS_ALL_PASS",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_IDENTITY_CONFLICT_CONTROLS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "testFile": "test/trajectory_p2a_parent_observation.test.ts",
+  "controls": [
+    {
+      "id": "C1",
+      "case": "repeated identical report is idempotent",
+      "result": "PASS"
+    },
+    {
+      "id": "C2",
+      "case": "two different identities become CONFLICT",
+      "result": "PASS"
+    },
+    {
+      "id": "C3",
+      "case": "neither conflicting identity is chosen; the first is retained only as evidence",
+      "result": "PASS"
+    },
+    {
+      "id": "C4",
+      "case": "message order does not decide authority",
+      "result": "PASS"
+    },
+    {
+      "id": "C5",
+      "case": "a later report cannot resolve a conflict by arriving",
+      "result": "PASS"
+    }
+  ],
+  "verdict": "CONFLICT_SEMANTICS_FAIL_CLOSED",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

@@ -520,7 +520,13 @@ async function runWorker(ctx, deps) {
         try {
           sessionIdentityReport = reportWorkerSessionIdentity({
             sessionId: handle?.agent?.session?.id,
-            send: process.send,
+            /**
+             * BOUND to its receiver on purpose. Node's `process.send` reads `this.connected`, so an
+             * unbound reference throws `Cannot read properties of undefined (reading 'connected')` —
+             * measured by the Level C gate, where the report was attempted and failed for exactly this
+             * reason. The producer takes a send function; the runner supplies one that works.
+             */
+            send: typeof process.send === 'function' ? process.send.bind(process) : undefined,
           });
         } catch (error) {
           sessionIdentityReport = { reported: false, outcome: 'REPORT_THREW', detail: error?.message ?? String(error) };
