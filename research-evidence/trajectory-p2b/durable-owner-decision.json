@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_DURABLE_OWNER_DECISION",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "decision": {
+    "semanticOwner": "the Execution Association concern (src/execution_association/**)",
+    "physicalSubstrate": "a dedicated, typed, append-only SQLite file ($DSH_HOME/palimpsest/execution-associations.sqlite; the deployment may pass an explicit path)",
+    "trustedWriteEntryPoint": "createExecutionAssociationRecorder(...) — bound to the deployment's own TrustedSourceBasis and SourceKind, reachable only from the composition that wired the worker port",
+    "readReplayBoundary": "makeAssociationQualifier(...) — replays typed records, re-reads canonical Work, re-reads the real DSH Session header, and compares the record's basis to the verifier's own",
+    "eventSchema": {
+      "SESSION_IDENTITY_OBSERVED": {
+        "fields": ["schemaVersion", "projectId", "attemptId", "invocationId", "dshSessionId", "sourceBasis", "sourceKind", "sourceQualificationDeclared", "directChildPid", "hostLocalJobId"],
+        "note": "immutable facts only — NO ingestion timestamp, so a retry is byte-identical (§7.4)"
+      },
+      "INVOCATION_OBSERVATION_FINALIZED": {
+        "fields": ["schemaVersion", "projectId", "attemptId", "invocationId", "windowState", "closeReason", "observedCandidateCount"]
+      }
+    },
+    "stableEventIdentity": "xas-<sha256(canonicalDigest({domain:'palimpsest.execution-association.v1', type, projectId, attemptId, invocationId, dshSessionId}))>",
+    "failureModes": [
+      "malformed payload → fail closed before any write, through ExecutionAssociationStoreError",
+      "same eventId with different content → ExecutionAssociationConflictError (no last-write-wins)",
+      "malformed stored record on replay → fail closed; never read as an empty history",
+      "observer/store failure → reported, never converted into a Work success or failure (§7.7)"
+    ],
+    "migrationCompatibility": "a NEW dedicated file and a NEW concern; it adds no Work event type, no projector case and no snapshot table. Older readers are unaffected because nothing else reads this file.",
+    "defaultCapabilityAbsenceBehavior": "a deployment that does not compose the concern simply has no execution-association evidence. Work, Delegation and the Worker Port do not import it (verified: src/interaction/work_delegation.ts contains no `execution_association` reference), so ordinary Work execution is unchanged when the concern is absent (§7.7)."
+  },
+  "rejectedAlternatives": [
+    {
+      "candidate": "A — Canonical Work EventStore",
+      "reason": "§6.1: a Host observation is not a Work lifecycle transition. Writing it as a Work event would place an observation inside the canonical lifecycle and risk the invalid implication `session created ⇒ attempt progressed`. settleMutatingWork must remain the only thing that completes an attempt.",
+      "verdict": "REJECTED"
+    },
+    {
+      "candidate": "B — Existing CoordinationStore",
+      "reason": "§6.2: its semantic ownership is peer coordination/federation (participation, collaboration, commitment, handoff), and it is composed only when a deployment wires the full federation surface. Reusing it would either merge concern domains under one authority or silently require a peer stack to record a purely local Host fact. Its idempotency/atomicity contract is retained as the REFERENCE this store is modelled on.",
+      "verdict": "REJECTED_AS_HOST; RETAINED_AS_CONTRACT_REFERENCE",
+      "verifiedFacts": [
+        "src/coordination/store.ts: the store is constructed by src/deployment/launch.ts:306 from profile.databases.coordination",
+        "src/composition/collaboration.ts: the participation/federation surface is composed only when localPeer + coordinationStore + peerTransportPort + peerDirectoryPort + attemptCatalog are all present"
+      ]
+    },
+    {
+      "candidate": "C — G1-B Observation Recorder (scripts/r3l0c_g1/observation-correlation.mjs)",
+      "reason": "§6.3: a research script. Its principles (controlled ingestion, content digest, atomic publication, conflict refusal, rejection of caller-declared origin markers) are reused, but it is not promoted into production architecture, and a self-computed digest is not independent provenance when the writer may choose both data and digest.",
+      "verdict": "REJECTED_AS_OWNER; PRINCIPLES_REUSED"
+    },
+    {
+      "candidate": "D — Minimal dedicated Association Store",
+      "reason": "§6.4: selected. A source-grounded comparison showed the existing facilities cannot safely accommodate the concern (A: wrong authority; B: absent without federation). The store is small, typed, adds no runtime or scheduler, stores no DSH event bodies and no copy of canonical Work state.",
+      "verdict": "SELECTED"
+    }
+  ],
+  "precedent": "src/project_world/basis_store.ts — a dedicated L2 append-only store owning its own file rather than an event-sourced Work table, for the same 'execution provenance is not Work state' reason. The P2-B store follows its design.",
+  "authorityBoundaries": {
+    "canonicalWorkAuthorityChanged": false,
+    "workSettlementAuthorityChanged": false,
+    "verificationAuthorityChanged": false,
+    "promotionAuthorityChanged": false,
+    "automaticHandoffIntroduced": false,
+    "dshRuntimeCodeChanged": false
+  },
+  "verdict": "OWNER_DECISION_SOURCE_GROUNDED"
+}

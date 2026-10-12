@@ -79,15 +79,26 @@ function allocateOwnedRoot() {
   return { root: resolvedRoot, contained, isReparse };
 }
 
-/** Delete ONLY the directory this run created, after re-proving containment. */
-function safeCleanup(owned) {
+/**
+ * Delete ONLY the directory this run created, after re-proving containment.
+ *
+ * ASYNC: Windows releases the DSH/SQLite handles slightly after the child exits, and a synchronous sleep
+ * would block the event loop so those closes never drain. Bounded retries; if all fail, the directory is
+ * PRESERVED and the reason reported (§5 B0-F3) rather than deleted with a wider sweep.
+ */
+async function safeCleanup(owned) {
   if (!owned.contained || owned.isReparse) return { cleaned: false, reason: "containment or reparse check failed; preserving the directory" };
-  try {
-    rmSync(owned.root, { recursive: true, force: true });
-    return { cleaned: true };
-  } catch (error) {
-    return { cleaned: false, reason: error?.message ?? String(error) };
+  let lastReason = "";
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      rmSync(owned.root, { recursive: true, force: true, maxRetries: 2, retryDelay: 100 });
+      return { cleaned: true };
+    } catch (error) {
+      lastReason = error?.message ?? String(error);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
   }
+  return { cleaned: false, reason: `preserved after retries: ${lastReason}`, preserved: true };
 }
 
 /* ------------------------------------------------------------------ *
@@ -320,7 +331,7 @@ const hostTelemetry = (() => {
 })();
 record("hostOwnTelemetry", hostTelemetry);
 
-const cleanup = safeCleanup(owned);
+const cleanup = await safeCleanup(owned);
 record("testRootCleanup", cleanup);
 
 /* ------------------------------------------------------------------ *
