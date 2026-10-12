@@ -420,13 +420,35 @@ describe("Trajectory-V0S §5 S1-B — host observation and session binding are s
      * observation cannot raise a binding. The "trusted" claim lives on a reader's own record and is
      * not consulted by the classifier.
      */
-    const withHostOnly = classifySessionBinding({ claimedSessionId: null, canonicalBindingPresent: false, candidateCount: 0, sourceReadable: true, conflictDetail: null });
+    const withHostOnly = classifySessionBinding({ claimedSessionId: null, candidateCount: 0, sourceReadable: true, conflictDetail: null });
     expect(withHostOnly.state).toBe("SESSION_UNBOUND");
-    const claimed = classifySessionBinding({ claimedSessionId: "session-x", canonicalBindingPresent: false, candidateCount: 1, sourceReadable: true, conflictDetail: null });
+    const claimed = classifySessionBinding({ claimedSessionId: "session-x", candidateCount: 1, sourceReadable: true, conflictDetail: null });
     expect(claimed.state).toBe("SESSION_CLAIMED_UNVERIFIED");
     expect(claimed.state).not.toBe("BOUND_VERIFIED");
-    // Only a canonical producer reaches BOUND_VERIFIED.
-    expect(classifySessionBinding({ claimedSessionId: "session-x", canonicalBindingPresent: true, candidateCount: 1, sourceReadable: true, conflictDetail: null }).state).toBe("BOUND_VERIFIED");
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C4)
+     *
+     * The baseline assertion was
+     *   `classifySessionBinding({claimedSessionId: "session-x", canonicalBindingPresent: true, ...}).state === "BOUND_VERIFIED"`.
+     *
+     * It pinned the DEFECT: a bare boolean plus the caller's own id produced a VERIFIED binding. The
+     * parameter is removed, so the classifier cannot reach BOUND_VERIFIED at all. The positive route is
+     * now `resolveVerifiedSessionBinding`, which takes the id from producer evidence.
+     */
+    const boundStates = new Set<string>();
+    for (const claimedId of [null, "session-x"]) {
+      for (const candidates of [0, 1, 3]) {
+        for (const readAttempted of [undefined, true]) {
+          for (const sourceReadable of [true, false]) {
+            for (const conflictDetail of [null, "a conflict"]) {
+              boundStates.add(classifySessionBinding({ claimedSessionId: claimedId, candidateCount: candidates, readAttempted, sourceReadable, conflictDetail }).state);
+            }
+          }
+        }
+      }
+    }
+    // The classifier's REACHABLE STATE SET excludes BOUND_VERIFIED entirely.
+    expect(boundStates.has("BOUND_VERIFIED")).toBe(false);
     // §5: the vocabularies are the ruled sets.
     expect([...SESSION_BINDING_STATES]).toContain("SESSION_CLAIMED_UNVERIFIED");
     expect([...SESSION_READ_ADMISSION_STATES]).toContain("NOT_ADMITTED_TO_ATTEMPT");

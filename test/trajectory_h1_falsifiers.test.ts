@@ -274,31 +274,33 @@ describe("H1 F4 — malformed page metadata is accepted", () => {
 describe("H1 F5 — boolean binding authority", () => {
   it("F5 (baseline): a bare boolean elevates the caller's claimed SessionId to BOUND_VERIFIED", () => {
     /**
-     * DYNAMICALLY_REPRODUCED against the real baseline classifier. `canonicalBindingPresent` is an
-     * input that is NOT tied to any specific SessionId, so `true` plus ANY claimed id yields
-     * BOUND_VERIFIED for that claimed id.
+     * DYNAMICALLY_REPRODUCED at the baseline. The H0 classifier accepted `canonicalBindingPresent` — a
+     * boolean NOT tied to any specific SessionId — so `true` plus ANY claimed id yielded
+     * BOUND_VERIFIED for that claimed id, and the composition then set `dshSessionId` to it.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C4)
+     *
+     * The baseline assertion CALLED the classifier with `canonicalBindingPresent: true` and required
+     * BOUND_VERIFIED — it pinned the defect. The parameter no longer exists, so the baseline predicate
+     * is reproduced as an explicit fixture and the corrected contract is asserted against the product.
      */
-    const elevated = classifySessionBinding({
-      claimedSessionId: "session-X",
-      canonicalBindingPresent: true,
-      candidateCount: 1,
-      sourceReadable: true,
-      conflictDetail: null,
-    });
-    expect(elevated.state).toBe("BOUND_VERIFIED");
-    expect(elevated.source).toBe("CANONICAL_ATTEMPT_BINDING");
+    const baselineElevates = (claimedSessionId: string): string => (claimedSessionId.length > 0 ? "BOUND_VERIFIED" : "SESSION_UNBOUND");
+    expect(baselineElevates("session-X")).toBe("BOUND_VERIFIED");
+
+    // The corrected classifier cannot reach a verified state, whatever the claim.
+    const corrected = classifySessionBinding({ claimedSessionId: "session-X", candidateCount: 1, sourceReadable: true, conflictDetail: null });
+    expect(corrected.state).toBe("SESSION_CLAIMED_UNVERIFIED");
+    expect(corrected.state).not.toBe("BOUND_VERIFIED");
 
     /**
-     * And the composition derives the ESTABLISHED id from that state:
-     *     dshSessionId: classification.state === "BOUND_VERIFIED" ? claimedSessionId : null
-     * so the boolean alone decides that the CALLER's id is the attempt's session.
-     *
-     * This is a FUTURE-INTEGRATION CONTRACT RISK, not a reachable production exploit: the composition
-     * supplies `canonicalBindingPresent: false` today (asserted below).
+     * And the composition no longer derives the established id from a classification at all: it comes
+     * from the verified association resolution, which does not accept the claim.
      */
     const composition = source(SOURCE_FILES.composition);
-    expect(composition).toContain('dshSessionId: classification.state === "BOUND_VERIFIED" ? claimedSessionId : null');
-    expect(composition).toContain("canonicalBindingPresent: false");
+    expect(composition).not.toContain('dshSessionId: classification.state === "BOUND_VERIFIED" ? claimedSessionId : null');
+    expect(composition).not.toContain("canonicalBindingPresent");
+    expect(composition).toContain("dshSessionId: verifiedSessionId");
+    expect(composition).toContain("resolveVerifiedSessionBinding");
   });
 });
 

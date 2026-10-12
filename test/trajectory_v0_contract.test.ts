@@ -50,6 +50,7 @@ import {
   PROCESS_LIFECYCLE_STATES,
   readOnlyViolations,
   RECOGNIZED_DSH_EVENT_TYPES,
+  resolveVerifiedSessionBinding,
   sanitizeDshEvent,
   SESSION_BINDING_STATES,
   SESSION_LIFECYCLE_STATES,
@@ -77,7 +78,6 @@ const ATTEMPT = "attempt-".concat("a".repeat(32));
 function bindingOf(overrides: Partial<AttemptExecutionBinding> = {}): AttemptExecutionBinding {
   const classification = classifySessionBinding({
     claimedSessionId: null,
-    canonicalBindingPresent: false,
     candidateCount: 0,
     sourceReadable: true,
     conflictDetail: null,
@@ -223,7 +223,6 @@ describe("Trajectory-V0 §5 — session binding states", () => {
   it("a caller-supplied session id can NEVER reach BOUND_VERIFIED", () => {
     const classification = classifySessionBinding({
       claimedSessionId: "session-caller-supplied",
-      canonicalBindingPresent: false,
       candidateCount: 1,
       sourceReadable: true,
       conflictDetail: null,
@@ -233,21 +232,50 @@ describe("Trajectory-V0 §5 — session binding states", () => {
     expect(classification.state).not.toBe("BOUND_VERIFIED");
   });
 
-  it("only a real producer yields BOUND_VERIFIED", () => {
-    const classification = classifySessionBinding({
+  it("only a VERIFIED PRODUCER ASSOCIATION yields a verified session identity", () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C4)
+     *
+     * The baseline assertion called `classifySessionBinding({claimedSessionId: null, candidateCount: 1,
+     * canonicalBindingPresent: true})` and required `BOUND_VERIFIED`. It pinned the DEFECT: a bare
+     * boolean authorized a binding with no evidence about any session.
+     *
+     * The corrected contract asserts the OPPOSITE: the classifier cannot produce a verified state at
+     * all, and verification comes from `resolveVerifiedSessionBinding` over producer-side evidence.
+     */
+    const classifierResult = classifySessionBinding({
       claimedSessionId: null,
-      canonicalBindingPresent: true,
       candidateCount: 1,
       sourceReadable: true,
       conflictDetail: null,
     });
-    expect(classification.state).toBe("BOUND_VERIFIED");
-    expect(classification.source).toBe("CANONICAL_ATTEMPT_BINDING");
+    // With no claim and no session input, the honest state is UNBOUND — not VERIFIED.
+    expect(classifierResult.state).toBe("SESSION_UNBOUND");
+
+    const resolved = resolveVerifiedSessionBinding({
+      projectId: PROJECT,
+      attemptId: ATTEMPT,
+      invocationId: "inv-1",
+      associations: [
+        {
+          schemaVersion: 1 as const, projectId: PROJECT, attemptId: ATTEMPT, invocationId: "inv-1",
+          dshSessionId: "session-produced",
+          producerEvidence: { source: "HOST_PORT_OBSERVATION" as const, reference: "ipc-1" },
+          observationState: "PRODUCER_OBSERVED" as const,
+          durableBindingRef: "binding-1",
+          verification: "VERIFIED" as const,
+          conflictDetail: null,
+        },
+      ],
+    });
+    expect(resolved.outcome).toBe("RESOLVED_VERIFIED");
+    expect(resolved.verifiedSessionId).toBe("session-produced");
+    expect(resolved.invocationId).toBe("inv-1");
   });
 
   it("no evidence at all is SESSION_UNBOUND — the honest default", () => {
     const classification = classifySessionBinding({
-      claimedSessionId: null, canonicalBindingPresent: false,
+      claimedSessionId: null,
       candidateCount: 0, sourceReadable: true, conflictDetail: null,
     });
     expect(classification.state).toBe("SESSION_UNBOUND");
@@ -256,7 +284,7 @@ describe("Trajectory-V0 §5 — session binding states", () => {
 
   it("a contradiction is CONFLICT, never downgraded to unbound", () => {
     const classification = classifySessionBinding({
-      claimedSessionId: "session-a", canonicalBindingPresent: false,
+      claimedSessionId: "session-a",
       candidateCount: 1, sourceReadable: true, conflictDetail: "the stored header disagrees with the claimed id",
     });
     expect(classification.state).toBe("CONFLICT");
@@ -265,7 +293,7 @@ describe("Trajectory-V0 §5 — session binding states", () => {
 
   it("more than one candidate is AMBIGUOUS — never resolved by picking one", () => {
     const classification = classifySessionBinding({
-      claimedSessionId: "session-a", canonicalBindingPresent: false,
+      claimedSessionId: "session-a",
       candidateCount: 2, sourceReadable: true, conflictDetail: null,
     });
     expect(classification.state).toBe("AMBIGUOUS");
@@ -283,17 +311,24 @@ describe("Trajectory-V0 §5 — session binding states", () => {
      * now requires `readAttempted: true`.
      */
     const attempted = classifySessionBinding({
-      claimedSessionId: "session-gone", canonicalBindingPresent: false,
+      claimedSessionId: "session-gone",
       candidateCount: 1, readAttempted: true, sourceReadable: false, conflictDetail: null,
     });
     expect(attempted.state).toBe("SOURCE_UNAVAILABLE");
     // And with NO read attempted, the claim stays unverified rather than claiming a broken source.
     const unread = classifySessionBinding({
-      claimedSessionId: "session-gone", canonicalBindingPresent: false,
+      claimedSessionId: "session-gone",
       candidateCount: 1, readAttempted: false, sourceReadable: false, conflictDetail: null,
     });
     expect(unread.state).toBe("SESSION_CLAIMED_UNVERIFIED");
-    expect(unread.detail).toContain("no read was performed");
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C4)
+     *
+     * The H0 detail said "...and no read was performed through this path". H1 C4 reworded it to state
+     * the structural reason the claim cannot bind: this classifier has no verification authority.
+     */
+    expect(unread.detail).toContain("DECLARATION");
+    expect(unread.detail).toContain("no authority to establish an Attempt→Session binding");
   });
 
   it("§5: a HOST OBSERVATION cannot move the session binding", () => {
@@ -303,7 +338,7 @@ describe("Trajectory-V0 §5 — session binding states", () => {
      * observation exists — `classifySessionBinding` has no host input at all, which is the point.
      */
     const classification = classifySessionBinding({
-      claimedSessionId: null, canonicalBindingPresent: false,
+      claimedSessionId: null,
       candidateCount: 0, sourceReadable: true, conflictDetail: null,
     });
     expect(classification.state).toBe("SESSION_UNBOUND");
