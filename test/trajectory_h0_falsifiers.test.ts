@@ -609,15 +609,35 @@ describe("H0 F10 — existing T0 label matcher", () => {
 /* ================================================================== F11 */
 
 describe("H0 F11 — cold-read provenance race", () => {
-  it("F11: the durability boundary is located by a SECOND read (source-demonstrated)", () => {
+  it("F11 (corrected by H1 C2): the durability boundary is derived from ONE read", () => {
     /**
-     * SOURCE_DEMONSTRATED. `readColdSessionLog` and `readStoredPrefix` are two separate reads, so a
-     * concurrent append between them could classify an event against a boundary from a different
-     * snapshot. A source-structural race is not a dynamically reproduced failure.
+     * SOURCE_DEMONSTRATED. At the H0 baseline `readColdSessionLog` and `readStoredPrefix` were two
+     * separate reads, so a concurrent append between them could classify an event against a boundary
+     * from a different snapshot. A source-structural race is not a dynamically reproduced failure.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C2)
+     *
+     * The baseline assertion PINNED THE DEFECT: it required the reader to contain both
+     * `readColdSessionLog(persistence, SessionId(request.sessionId))` and
+     * `readStoredPrefix(persistence, request.sessionId, SessionId)` — i.e. exactly the two-read shape
+     * H1 §6.1 forbids.
+     *
+     * The counterexample is falsifier F1 in `trajectory_h1_falsifiers.test.ts`: with 2 stored events
+     * and 2 synthetic closers, a later prefix read of 3 satisfies `3 <= 4`, so a synthetic closer of
+     * the observed read is reclassified as persisted.
+     *
+     * The corrected contract asserts the OPPOSITE: the reader no longer calls `readColdSessionLog` at
+     * all, and its single-read helper derives the closers from the SAME array it read.
      */
     const code = source(SOURCE_FILES.reader);
-    expect(code).toContain("await readColdSessionLog(persistence, SessionId(request.sessionId))");
-    expect(code).toContain("await readStoredPrefix(persistence, request.sessionId, SessionId)");
+    // The two-read shape is gone: the query-package import and the counter heuristic are removed.
+    expect(code).not.toContain("await readColdSessionLog(persistence, SessionId(request.sessionId))");
+    expect(code).not.toContain("dsh-session-query/lib/index.js");
+    expect(code).not.toContain("stored.count <= all.length");
+    // ONE read produces the stored prefix, and the official helper derives closers from that array.
+    expect(code).toContain("const read = await handle.read(0, undefined);");
+    expect(code).toContain("const closers = interruptedTurnClosers(stored);");
+    expect(code).toContain("const all = [...stored, ...closers];");
   });
 });
 
