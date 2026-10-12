@@ -41,7 +41,7 @@ import {
   type SessionReadAdmission,
   type SessionReadState,
 } from "./execution.js";
-import { validateSessionEventPage, type PageIntegrityReason, type PageIntegrityState } from "./page_integrity.js";
+import { validateSessionEventPage, type EventPageCoverage, type PageIntegrityReason, type PageIntegrityState } from "./page_integrity.js";
 
 /* ------------------------------------------------------------------ *
  * §6 — The separate statuses
@@ -195,11 +195,18 @@ export interface PreviewProjectContext {
   }[];
   /** §5: T0 relations whose verifier is known incomplete are quarantined here, not presented as fact. */
   readonly quarantinedRelations: readonly {
-    readonly relation: string;
-    readonly reason: string;
-  }[];
+      readonly relation: string;
+      readonly reason: string;
+      /** H1 §9.2: the stable edge identity, so distinct rejected edges stay distinguishable. */
+      readonly edgeId?: string | undefined;
+     }[];
   readonly unresolvedReferences: readonly string[];
   readonly currentnessCaveats: readonly string[];
+  /**
+   * H1 §9.5: the structured projection failure origin, surfaced so a consumer can distinguish a
+   * canonical Work failure from an unknown source-stage failure without parsing caveat text.
+   */
+  readonly projectionFailureOrigin: "CANONICAL_WORK_VALIDATION" | "UNKNOWN_SOURCE_STAGE" | null;
 }
 
 /** §6 "Handoff Caveats". */
@@ -282,11 +289,29 @@ export interface PreviewHostObservationSummary {
   readonly processDetail: string;
   readonly observedEventKinds: readonly string[];
   /**
+   * H1 §9.3: WHICH lifecycle phases the observation actually covers.
+   *
+   * A producer-established observation is not automatically a complete lifecycle observation: a host
+   * that saw a Spawn has not seen an Exit. This is a SEPARATE dimension from provenance (§9.3 keeps
+   * source authenticity, process observation coverage, process lifecycle and Work outcome apart), and
+   * it is what `processObservation` is derived from.
+   *
+   *   SPAWN_AND_EXIT  both a spawn and an exit were observed
+   *   SPAWN_ONLY      a spawn was observed; no exit was
+   *   EXIT_ONLY       an exit was observed without a recorded spawn observation
+   *   NONE            neither was observed
+   */
+  readonly lifecycleCoverage: HostLifecycleCoverage;
+  /**
    * §10: a caller-supplied `trustedIngestion: true` is NOT evidence. This field records that the
    * observation came from a real local producer, and states the G1-B limitation.
    */
   readonly originLimitation: string;
 }
+
+/** H1 §9.3: which lifecycle phases a host observation actually covers. */
+export const HOST_LIFECYCLE_COVERAGE_STATES = ["SPAWN_AND_EXIT", "SPAWN_ONLY", "EXIT_ONLY", "NONE"] as const;
+export type HostLifecycleCoverage = (typeof HOST_LIFECYCLE_COVERAGE_STATES)[number];
 
 /**
  * §5: the safe portion of the T0 project evolution projection, already selected.
@@ -306,9 +331,11 @@ export interface PreviewProjectEvolutionSummary {
     readonly detail: string;
   }[];
   readonly quarantinedRelations: readonly {
-    readonly relation: string;
-    readonly reason: string;
-  }[];
+      readonly relation: string;
+      readonly reason: string;
+      /** H1 §9.2: the stable edge identity, so distinct rejected edges stay distinguishable. */
+      readonly edgeId?: string | undefined;
+     }[];
   readonly unresolvedReferences: readonly string[];
   readonly currentnessCaveats: readonly string[];
   /**
@@ -317,6 +344,17 @@ export interface PreviewProjectEvolutionSummary {
    * text for words such as "stale".
    */
   readonly basisCompleteness?: "COMPLETE" | "INCOMPLETE" | "RACED" | null | undefined;
+  /**
+   * H1 §9.5: the STRUCTURED failure origin, or null when the projection succeeded.
+   *
+   * `CANONICAL_WORK_VALIDATION` means T0 refused the canonical Work history itself.
+   * `UNKNOWN_SOURCE_STAGE` means the projection failed but its origin could not be established — a
+   * canonical-source failure must NOT be silently downgraded to an optional owner's absence, and the
+   * honest report is "unknown" rather than a guess.
+   */
+  readonly failureOrigin?: "CANONICAL_WORK_VALIDATION" | "UNKNOWN_SOURCE_STAGE" | null | undefined;
+  /** H1 §9.5: T0's own refusal kind, when the origin is `CANONICAL_WORK_VALIDATION`. */
+  readonly failureKind?: string | null | undefined;
 }
 
 /** §6: the whole input to one Preview. */
@@ -393,23 +431,17 @@ export function previewCompletenessOf(input: {
 /**
  * H0 §9.1: how much of the attributed session's event log the Preview actually covers.
  *
- *   FULL           every event the source reports is present in the page
- *   PARTIAL        the page returned fewer events than the source reports
- *   UNKNOWN        the source did not report a total, so coverage cannot be claimed
- *   NOT_APPLICABLE no attributed read happened, or the page failed validation
- *
- * H1 §7.1: the value is produced by `validateSessionEventPage` in `page_integrity.ts`. The H0
- * two-number helper (`returnedCount >= knownEventCount`) was REMOVED rather than deprecated: it
- * reported FULL for a page that claimed fifty events while carrying an empty array, and a helper that
- * can only be misused is not worth keeping as an alternative entry point.
+ * The vocabulary and the derivation both live in `page_integrity.ts`, beside the structural validator
+ * that produces them, so the dependency between the two modules runs one way.
  */
-export const EVENT_PAGE_COVERAGE_STATES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"] as const;
-export type EventPageCoverage = (typeof EVENT_PAGE_COVERAGE_STATES)[number];
+export { EVENT_PAGE_COVERAGE_STATES } from "./page_integrity.js";
+export type { EventPageCoverage } from "./page_integrity.js";
 
 /** §8: the four attribution dimensions, derived together so they stay consistent. */
 function attributionOf(input: {
   readonly binding: AttemptExecutionBinding;
   readonly sessionPage: DshSessionEventPage | undefined;
+  readonly host: PreviewHostObservationSummary;
   readonly canonical: PreviewCanonicalFacts;
   readonly projectEvolution: PreviewProjectEvolutionSummary;
   readonly eventPageCoverage: EventPageCoverage;
@@ -437,15 +469,18 @@ function attributionOf(input: {
 
   /**
    * H0 §8.3: process observation coverage is NOT implied by provenance. A caller declaration is at
-   * most `PARTIAL`, because a declared record proves no actual host observation. Only a
-   * producer-established observation may reach `COMPLETE`, and even then it describes the DIRECT CHILD
-   * the host saw, not the whole lifecycle.
+   * most `PARTIAL`, because a declared record proves no actual host observation.
+   *
+   * H1 §9.3: and a producer-established observation is NOT automatically COMPLETE either. `COMPLETE`
+   * now additionally requires that BOTH a spawn and an exit were actually observed; a producer that
+   * saw only a Spawn reports `PARTIAL`, which is the F6 defect corrected.
    */
   let processObservation: PreviewAttribution["processObservation"];
   if (input.binding.hostObservationProvenance === "CONFLICTING_SOURCE") processObservation = "CONFLICTING";
   else if (input.binding.hostObservationProvenance === "NOT_OBSERVED") processObservation = "NOT_OBSERVED";
-  else if (input.binding.hostObservationProvenance === "LOCAL_PORT_OBSERVATION") processObservation = "COMPLETE";
-  else processObservation = "PARTIAL";
+  else if (input.binding.hostObservationProvenance === "LOCAL_PORT_OBSERVATION") {
+    processObservation = input.host.lifecycleCoverage === "SPAWN_AND_EXIT" ? "COMPLETE" : "PARTIAL";
+  } else processObservation = "PARTIAL";
 
   return Object.freeze({
     canonicalCoverage,
@@ -634,6 +669,7 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
   const attribution = attributionOf({
     binding: input.binding,
     sessionPage: input.sessionPage,
+    host: input.host,
     canonical: input.canonical,
     projectEvolution: input.projectEvolution,
     eventPageCoverage,
@@ -734,6 +770,11 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     quarantinedRelations: Object.freeze(input.projectEvolution.quarantinedRelations.map((relation) => Object.freeze({ ...relation }))),
     unresolvedReferences: Object.freeze([...input.projectEvolution.unresolvedReferences]),
     currentnessCaveats: Object.freeze([...input.projectEvolution.currentnessCaveats]),
+    /**
+     * H1 §9.5: the failure origin is reported structurally. A canonical Work validation failure and an
+     * unattributable projection failure are different facts and must not be collapsed into one caveat.
+     */
+    projectionFailureOrigin: input.projectEvolution.failureOrigin ?? null,
   });
 
   const caveats = caveatsOf({

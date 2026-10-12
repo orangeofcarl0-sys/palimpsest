@@ -99,7 +99,7 @@ function attributedInput(sessionPage: DshSessionEventPage): HandoffPreviewInput 
       authorizationDetail: "x", resultRefs: ["1".repeat(40)], resultDetail: "x", verificationState: "NOT_RUN",
       promotionState: "NOT_PROMOTED", promotionId: null, reworkState: "NONE", reworkDetail: "x",
     },
-    host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "x", observedEventKinds: [], originLimitation: "x" },
+    host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "x", observedEventKinds: [], lifecycleCoverage: "NONE" as const, originLimitation: "x" },
     sessionPage,
     projectEvolution: {
       projectionRootId: "tr-x", projectionSemanticDigest: null, workSequence: 1, workEventDigest: null, projectIrRevision: 0,
@@ -307,27 +307,40 @@ describe("H1 F5 — boolean binding authority", () => {
 /* ================================================================== F6 */
 
 describe("H1 F6 — host provenance implies process coverage", () => {
-  it("F6 (baseline): LOCAL_PORT_OBSERVATION yields COMPLETE coverage regardless of what was observed", () => {
+  it("F6 (baseline): LOCAL_PORT_OBSERVATION yielded COMPLETE coverage regardless of what was observed", () => {
     /**
-     * DYNAMICALLY_REPRODUCED. `attributionOf` maps provenance to coverage directly:
+     * DYNAMICALLY_REPRODUCED at the baseline. `attributionOf` mapped provenance directly to coverage:
      *     LOCAL_PORT_OBSERVATION -> processObservation = "COMPLETE"
-     * with no reference to which lifecycle phases the producer actually saw. A producer that observed
-     * only a Spawn would still report COMPLETE coverage of the process lifecycle.
+     * with no reference to which lifecycle phases the producer actually saw.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * The baseline assertion required COMPLETE for a spawn-only observation. H1 §9.3 makes coverage a
+     * SEPARATE dimension from provenance: COMPLETE now additionally requires that BOTH a spawn and an
+     * exit were observed, so a spawn-only observation reports PARTIAL.
      */
     const produced = classifyHostObservation({ recordPresent: true, attemptMatches: true, hasLocalIdentity: true, originEstablished: true, conflictDetail: null });
     expect(produced.provenance).toBe("LOCAL_PORT_OBSERVATION");
 
     const input = attributedInput(page({ knownEventCount: 50, returnedCount: 50 }));
-    const preview = buildHandoffPreview({
+    const spawnOnly = buildHandoffPreview({
       ...input,
       binding: { ...input.binding, hostObservationProvenance: "LOCAL_PORT_OBSERVATION" },
-      host: { ...input.host, processLifecycle: "RUNNING", observedEventKinds: ["DIRECT_CHILD_SPAWN_OBSERVED"] },
+      host: { ...input.host, processLifecycle: "RUNNING", observedEventKinds: ["DIRECT_CHILD_SPAWN_OBSERVED"], lifecycleCoverage: "SPAWN_ONLY" },
     });
-    expect(preview.attribution.processObservation).toBe("COMPLETE");
+    expect(spawnOnly.attribution.processObservation).toBe("PARTIAL");
+
+    // A producer observation covering BOTH phases IS complete — the rule is not "never complete".
+    const spawnAndExit = buildHandoffPreview({
+      ...input,
+      binding: { ...input.binding, hostObservationProvenance: "LOCAL_PORT_OBSERVATION" },
+      host: { ...input.host, processLifecycle: "EXITED", observedEventKinds: ["DIRECT_CHILD_SPAWN_OBSERVED", "DIRECT_CHILD_EXIT_OBSERVED"], lifecycleCoverage: "SPAWN_AND_EXIT" },
+    });
+    expect(spawnAndExit.attribution.processObservation).toBe("COMPLETE");
 
     /**
-     * This is a CONTROLLED FUTURE-PATH contract defect: no producer establishes origin on the ordinary
-     * Preview path today (H0 supplies `originEstablished: false`), so it is not an ordinary exploit.
+     * This remains a CONTROLLED FUTURE-PATH contract: no producer establishes origin on the ordinary
+     * Preview path today (the composition supplies `originEstablished: false`).
      */
     const composition = source(SOURCE_FILES.composition);
     expect(composition).toContain("originEstablished: false");
@@ -365,25 +378,28 @@ describe("H1 F7 — relation evidence preconditions and the T0 trust boundary", 
 /* ================================================================== F8 */
 
 describe("H1 F8 — quarantine identity loss", () => {
-  it("F8 (baseline): quarantine entries are deduplicated by relation NAME, collapsing distinct edges", () => {
+  it("F8 (baseline): quarantine entries were deduplicated by relation NAME, collapsing distinct edges", () => {
     /**
-     * SOURCE_DEMONSTRATED. The final dedup is:
-     *     [...new Map(quarantined.map((entry) => [entry.relation, entry])).values()]
-     * The map key is the RELATION NAME, so two genuinely distinct rejected edges of the same relation
-     * (for example two different ATTEMPT_PRODUCED_RESULT edges that both fail their role check for
-     * different reasons) collapse to ONE reported entry and the second reason is lost.
+     * SOURCE_DEMONSTRATED at the baseline. The dedup key was the RELATION NAME, so two genuinely
+     * distinct rejected edges of the same relation collapsed to ONE reported entry and the second
+     * reason was lost. The quarantine SCOPE also used the broad `canonicalEventIds` set, which includes
+     * the attempt's AUTHORIZATION event — the one identity two attempts can share — so a rejected
+     * relation touching the shared node could be reported as BOTH attempts' quarantined fact.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * The baseline assertions required the defective forms. H1 §9.2 replaces both: entries carry a
+     * stable `edgeId` and are deduplicated by it, and the scope requires the edge to touch one of the
+     * attempt's OWN identities rather than merely the shared authorization.
      */
     const code = source(SOURCE_FILES.relation);
-    expect(code).toContain("new Map(quarantined.map((entry) => [entry.relation, entry])).values()");
-
-    /**
-     * The quarantine SCOPE also uses the broad `canonicalEventIds` set, which includes the attempt's
-     * AUTHORIZATION event. A shared authorization event is therefore in two attempts' scope sets, so a
-     * rejected relation touching the shared node can be reported as BOTH attempts' quarantined fact.
-     */
-    expect(code).toContain("context.canonicalEventIds.has(from)");
-    // The scope set itself is built in the composition adapter, and it includes the AUTHORIZATION
-    // event — the one identity two attempts can share.
+    expect(code).not.toContain("new Map(quarantined.map((entry) => [entry.relation, entry])).values()");
+    expect(code).toContain("new Map(quarantined.map((entry) => [entry.edgeId, entry])).values()");
+    expect(code).toContain("readonly edgeId: string;");
+    // The scope now requires an OWN identity, not merely membership in the broad set.
+    expect(code).toContain("ownsAnEndpoint(edge)");
+    expect(code).toContain("if (context.creationEventId !== null) ownIdentities.add(context.creationEventId);");
+    // The broad set is still built (it is T0-scoped evidence), but it is no longer the scope test.
     expect(source(SOURCE_FILES.composition)).toContain("canonicalEventIds.add(String(admitted.authorization.event_id))");
   });
 });
@@ -410,22 +426,27 @@ describe("H1 F9 — T0 traceAttempt identity matching", () => {
 /* ================================================================== F10 */
 
 describe("H1 F10 — projection failure taxonomy", () => {
-  it("F10 (baseline): a non-TrajectoryRefusal failure of CANONICAL WORK access is reported as optional", () => {
+  it("F10 (baseline): a non-TrajectoryRefusal failure of CANONICAL WORK access was reported as optional", () => {
     /**
-     * SOURCE_DEMONSTRATED. H0 distinguishes `error instanceof TrajectoryRefusal` (a canonical Work
-     * source failure) from everything else, and describes "everything else" as an OPTIONAL cross-owner
-     * plane that could not be projected.
+     * SOURCE_DEMONSTRATED at the baseline. H0 distinguished `error instanceof TrajectoryRefusal` (a
+     * canonical Work source failure) from everything else, and described "everything else" as an
+     * OPTIONAL cross-owner plane that could not be projected. The residual defect: T0 reads the
+     * canonical Work plane through the SAME input object without wrapping its failures, so a raw
+     * failure from that read is NOT a `TrajectoryRefusal` and was reported as an optional owner's
+     * absence — downgrading a possible canonical-source failure.
      *
-     * The residual defect: the T0 projection reads the canonical Work plane through the SAME input
-     * object, and a raw failure from that read (for example an EventStore error that is not wrapped in
-     * a `TrajectoryRefusal`) is NOT a `TrajectoryRefusal`, so it is reported as an optional owner's
-     * absence. A canonical-source failure is thereby downgraded to an optional limitation.
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * The baseline assertions required the guessing branch. H1 §9.5 removes the guess: an
+     * unattributable failure is reported as `UNKNOWN_SOURCE_STAGE`, structurally, and is explicitly NOT
+     * attributed to an optional owner.
      */
     const code = source(SOURCE_FILES.composition);
-    expect(code).toContain("const workSourceFailed = error instanceof TrajectoryRefusal;");
-    expect(code).toContain("an optional cross-owner plane could not be projected, so the project context is partial");
-    // The optional branch is reached by ANY error that is not a TrajectoryRefusal, including one whose
-    // origin is the canonical Work plane itself.
-    expect(code).not.toContain("isCanonicalWorkFailure(error)");
+    expect(code).toContain("const workValidationFailed = error instanceof TrajectoryRefusal;");
+    expect(code).not.toContain("an optional cross-owner plane could not be projected");
+    expect(code).toContain('failureOrigin: workValidationFailed ? ("CANONICAL_WORK_VALIDATION" as const) : ("UNKNOWN_SOURCE_STAGE" as const)');
+    expect(code).toContain("NOT attributed to an optional owner");
+    // The structured kind travels with the structured origin.
+    expect(code).toContain("failureKind: workValidationFailed ? error.kind : null");
   });
 });

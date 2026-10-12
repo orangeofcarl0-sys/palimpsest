@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_RELATION_EVIDENCE_AUDIT",
+  "evidenceClass": "SOURCE_DEMONSTRATED + CONTROLLED_PROJECTION",
+  "sourceFiles": [
+    "src/trajectory/relation_admission.ts",
+    "test/trajectory_h1_supporting_semantics.test.ts"
+  ],
+  "trustBoundary": {
+    "interpretation": "SELECTOR OVER A T0-VALIDATED PROJECTION (the ruling preferred interpretation)",
+    "selectorEnforcesOnItsOwnAuthority": [
+      "the evidence reference names the WORK plane",
+      "the evidence carries a canonical id",
+      "the evidence project scope matches when present",
+      "the relation-specific endpoint roles",
+      "the compared identity field equals the requested attempt"
+    ],
+    "reliesOnT0For": [
+      "canonical Work history validation",
+      "owner reference resolution and verification state",
+      "edge evidence establishment",
+      "projection node consistency"
+    ],
+    "explicitlyNotA": [
+      "standalone validator of arbitrary externally supplied projections",
+      "second Work Relation Builder",
+      "edge re-derivation from canonical state"
+    ],
+    "whyThisIsCorrect": "T0 has already run buildProjectTrajectory over the canonical Work events before the selector sees anything; re-verifying its source resolution here would duplicate T0 and could only produce a divergent second authority"
+  },
+  "quarantinePrecision": {
+    "before": "deduplicated by relation NAME, so distinct rejected edges of one relation collapsed and later reasons were lost; scope used the broad canonicalEventIds set, which includes the attempt AUTHORIZATION event that two attempts can share",
+    "after": "entries carry a stable edgeId (trajectoryEdgeIdOf) and are deduplicated by it; scope requires the edge to touch one of the attempt OWN identities (creation, terminal, completed)",
+    "measured": [
+      "two distinct rejected ATTEMPT_PRODUCED_RESULT edges are BOTH reported with distinct edgeIds",
+      "a shared authorization node no longer makes another Attempt rejected relation this Attempt quarantined fact",
+      "a genuinely rejected edge of this attempt is still reported"
+    ]
+  },
+  "verdict": "PASS — the trust boundary is explicit and tested; quarantine preserves edge identity and exact Attempt scope",
+  "limitations": [
+    "the selector is not hardened against a deliberately malformed projection; that is T0 responsibility by design and is recorded rather than duplicated"
+  ]
+}

@@ -56,6 +56,7 @@ import {
   type DshSessionEventPage,
   type DshSessionReadPort,
   type HandoffPreview,
+  type HostLifecycleCoverage,
   type HostObservationProvenance,
   type PreviewCanonicalFacts,
   type PreviewHostObservationSummary,
@@ -323,12 +324,21 @@ async function projectEvolutionOf(
     /**
      * H0 §10.3: a FAILED projection is not the same fact as an uncomposed optional owner.
      *
-     * T0 refuses a Work history that fails its own validation by throwing `TrajectoryRefusal`, which
-     * means the CANONICAL source is the problem. Any other failure is an optional cross-owner plane
-     * that could not be read. The two are reported differently so a corrupted Work history is never
-     * presented as though the canonical source were merely absent.
+     * H1 §9.5: the taxonomy is now THREE-VALUED, because two different failure origins must not be
+     * conflated:
+     *
+     *   TrajectoryRefusal   the canonical Work history failed T0's own validation. T0 throws this
+     *                       ONLY from its Work validation, so the origin is KNOWN and canonical.
+     *   anything else       the origin is UNKNOWN. T0 reads the canonical Work plane through the SAME
+     *                       input object without wrapping its failures, so a raw error could come from
+     *                       canonical Work I/O, from an optional cross-owner plane, or from a defect.
+     *                       Asserting "an optional owner was absent" would be a guess, so the summary
+     *                       reports the failure as of UNKNOWN origin rather than downgrading it.
      */
-    const workSourceFailed = error instanceof TrajectoryRefusal;
+    const workValidationFailed = error instanceof TrajectoryRefusal;
+    const detail = workValidationFailed
+      ? `the CANONICAL WORK SOURCE failed T0 validation (${error.kind}), so no project context is presented: this is a source-integrity failure, not an uncomposed optional owner`
+      : "the T0 project-evolution projection failed and its SOURCE STAGE could not be established from the failure, so the project context is unavailable and the failure is NOT attributed to an optional owner";
     return Object.freeze({
       projectionRootId: null,
       projectionSemanticDigest: null,
@@ -338,13 +348,12 @@ async function projectEvolutionOf(
       selectedRelations: Object.freeze([]),
       quarantinedRelations: Object.freeze([]),
       unresolvedReferences: Object.freeze([]),
-      currentnessCaveats: Object.freeze([
-        workSourceFailed
-          ? `the CANONICAL WORK SOURCE failed T0 validation (${error.kind}), so no project context is presented: this is a source-integrity failure, not an uncomposed optional owner`
-          : "an optional cross-owner plane could not be projected, so the project context is partial",
-      ]),
+      currentnessCaveats: Object.freeze([detail]),
       /** H0 §10.3: a failed projection is not the same as an uncomposed optional owner. */
       basisCompleteness: null,
+      /** H1 §9.5: the structured failure origin, so no consumer parses the caveat text. */
+      failureOrigin: workValidationFailed ? ("CANONICAL_WORK_VALIDATION" as const) : ("UNKNOWN_SOURCE_STAGE" as const),
+      failureKind: workValidationFailed ? error.kind : null,
     });
   }
 
@@ -370,6 +379,9 @@ async function projectEvolutionOf(
     currentnessCaveats: Object.freeze(caveats),
     /** H0 §9.2: the STRUCTURED basis-vector completeness, so no consumer scans caveat text. */
     basisCompleteness: projection.basisVector.completeness,
+    /** H1 §9.5: a successful projection has no failure origin. */
+    failureOrigin: null,
+    failureKind: null,
   });
 }
 
@@ -434,6 +446,7 @@ function hostSummaryOf(record: TrajectoryV0HostRecord | undefined): PreviewHostO
       processLifecycle: "NOT_OBSERVED" as ProcessLifecycle,
       processDetail: "no host observation was supplied for this attempt",
       observedEventKinds: Object.freeze([]),
+      lifecycleCoverage: "NONE" as HostLifecycleCoverage,
       originLimitation:
         "G1-B local host observations are NOT independent, authority-bearing provenance: the Correlator exposes caller-controlled trust surfaces and does not enforce every Run/Claim/Readback relationship.",
     });
@@ -442,6 +455,14 @@ function hostSummaryOf(record: TrajectoryV0HostRecord | undefined): PreviewHostO
   const requestedAbort = kinds.includes("DIRECT_CHILD_ABORT_REQUESTED");
   const requestedTimeout = kinds.includes("DIRECT_CHILD_TIMEOUT_REQUESTED");
   const exitUnconfirmed = kinds.includes("DIRECT_CHILD_EXIT_UNCONFIRMED");
+  /**
+   * H1 §9.3: WHICH phases the record actually covers. `exited` is the caller's report of an observed
+   * exit; a spawn is covered only when a spawn observation is present. Provenance and coverage are
+   * separate dimensions, so a producer-established observation with a Spawn alone is NOT complete.
+   */
+  const observedSpawn = kinds.includes("DIRECT_CHILD_SPAWN_OBSERVED");
+  const observedExit = record.exited === true;
+  const lifecycleCoverage: HostLifecycleCoverage = observedSpawn && observedExit ? "SPAWN_AND_EXIT" : observedSpawn ? "SPAWN_ONLY" : observedExit ? "EXIT_ONLY" : "NONE";
 
   let lifecycle: ProcessLifecycle;
   if (record.unknownAfterRestart) lifecycle = "UNKNOWN_AFTER_RESTART";
@@ -475,6 +496,7 @@ function hostSummaryOf(record: TrajectoryV0HostRecord | undefined): PreviewHostO
     processLifecycle: lifecycle,
     processDetail: chronology,
     observedEventKinds: Object.freeze([...kinds]),
+    lifecycleCoverage,
     originLimitation:
       "G1-B local host observations are NOT independent, authority-bearing provenance: the Correlator exposes caller-controlled trust surfaces and does not enforce every Run/Claim/Readback relationship. A caller-supplied trustedIngestion flag is not evidence.",
   });

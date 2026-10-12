@@ -361,9 +361,16 @@ describe("H0 F1 — shared authorization contamination", () => {
     // Exactly ONE authorization relation is admitted — attempt A's own.
     expect(authRelations.length).toBe(1);
     // Attempt B's relation is reported as excluded, with a role reason.
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * H0 required B's rejected edge to appear in A's quarantine. That was the §9.2 defect: the shared
+     * authorization node is inside A's broad scope set, so another attempt's rejected relation was
+     * reported as A's fact. H1 scopes quarantine to the attempt's OWN identities, so B's edge — which
+     * touches only the shared authorization and B's own creation — is not reported for A at all.
+     */
     const bExcluded = result.quarantined.filter((relation) => relation.relation === "TASK_AUTHORIZED_ATTEMPT");
-    expect(bExcluded.length).toBe(1);
-    expect(bExcluded[0]!.reason).toContain("destination is not this attempt's creation event");
+    expect(bExcluded.length).toBe(0);
   });
 });
 
@@ -534,7 +541,7 @@ describe("H0 F7 — an incomplete Session page no longer satisfies COMPLETE", ()
         authorizationDetail: "x", resultRefs: ["1".repeat(40)], resultDetail: "x", verificationState: "NOT_RUN",
         promotionState: "NOT_PROMOTED", promotionId: null, reworkState: "NONE", reworkDetail: "x",
       },
-      host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "x", observedEventKinds: [], originLimitation: "x" },
+      host: { hostLocalJobId: null, portInvocationId: null, processLifecycle: "NOT_OBSERVED", processDetail: "x", observedEventKinds: [], lifecycleCoverage: "NONE" as const, originLimitation: "x" },
       sessionPage: page as never,
       projectEvolution: { projectionRootId: "tr-x", projectionSemanticDigest: null, workSequence: 1, workEventDigest: null, projectIrRevision: 0, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [] },
     };
@@ -681,7 +688,17 @@ describe("H0 F12 — canonical Work read integrity", () => {
      */
     expect(code).toContain("error instanceof TrajectoryRefusal");
     expect(code).toContain("CANONICAL WORK SOURCE failed T0 validation");
-    expect(code).toContain("an optional cross-owner plane could not be projected");
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C5)
+     *
+     * H0 described every non-TrajectoryRefusal failure as "an optional cross-owner plane could not be
+     * projected". H1 §9.5 removed that guess: T0 reads the canonical Work plane through the same input
+     * object without wrapping its failures, so the origin of such an error cannot be established, and
+     * attributing it to an OPTIONAL owner downgraded a possible canonical-source failure.
+     */
+    expect(code).not.toContain("an optional cross-owner plane could not be projected");
+    expect(code).toContain("UNKNOWN_SOURCE_STAGE");
+    expect(code).toContain("NOT attributed to an optional owner");
     // The canonical Work facts themselves come from the owner directly, so they are NOT lost.
     expect(code).toContain("const canonical = canonicalFactsOf");
   });

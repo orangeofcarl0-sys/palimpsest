@@ -27,7 +27,25 @@
  * Layer: L2 (`src/trajectory/`). Pure, read-only, owns no store and decides no authority.
  */
 import type { DshSessionEventPage, DshEventView } from "./execution.js";
-import type { EventPageCoverage } from "./handoff_preview.js";
+
+/**
+ * §7: how much of the attributed session's event log a validated page actually covers.
+ *
+ *   FULL           every event the source reports is present in the page
+ *   PARTIAL        the page returned fewer events than the source reports
+ *   UNKNOWN        the source did not report a total, so coverage cannot be claimed
+ *   NOT_APPLICABLE no attributed read happened, or the page failed validation
+ *
+ * H1 §7.1: the value is produced by `validateSessionEventPage` below. The H0 two-number helper
+ * (`returnedCount >= knownEventCount`) was REMOVED rather than deprecated: it reported FULL for a page
+ * that claimed fifty events while carrying an empty array, and a helper that can only be misused is not
+ * worth keeping as an alternative entry point.
+ *
+ * The vocabulary lives here, beside the validator that produces it, so the dependency runs one way:
+ * `handoff_preview` consumes this module and this module consumes nothing from it.
+ */
+export const EVENT_PAGE_COVERAGE_STATES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"] as const;
+export type EventPageCoverage = (typeof EVENT_PAGE_COVERAGE_STATES)[number];
 
 /**
  * §7.2: the page-integrity verdict.
