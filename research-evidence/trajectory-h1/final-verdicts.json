@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_FINAL_VERDICTS",
+  "stage": "Trajectory-H1",
+  "baseline": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "branch": "trajectory-h1-source-binding-contract",
+  "completionState": "TRAJECTORY_H1_SOURCE_AND_BINDING_CONTRACT_QUALIFIED",
+  "gateResults": {
+    "C2 DSH source integrity": "PASS",
+    "C3 page integrity and coverage": "PASS",
+    "C4 binding authority": "PASS",
+    "C5 supporting semantics": "PASS",
+    "architecture": "PASS (0 violations, 9 accepted baseline exceptions)",
+    "public API parity": "PASS (0 missing, 0 changed kind, 0 added)"
+  },
+  "whatH1NowProves": [
+    "the persisted/synthetic DSH boundary is derived from ONE official read, with byte-parity to the official cold read",
+    "no second independent read determines the boundary of an observed read, and a later append cannot retroactively reclassify it",
+    "attributed event-page coverage requires a structurally consistent page; FULL cannot result from contradictory count metadata",
+    "an invalid page fails closed: no coverage, no admitted events, no COMPLETE Handoff, and no fabricated Work failure",
+    "a caller Session claim cannot become a verified binding: the classifier cannot return a verified state at all",
+    "verified session identity is source-derived from producer-side association evidence, and duplicates/conflicts are deterministic and fail-closed",
+    "the ordinary Attempt Preview still performs ZERO reads for an unverified claim and exposes no verified SessionId",
+    "the relation selector trust boundary is explicit, and quarantine preserves edge identity and exact Attempt scope",
+    "host observation provenance and lifecycle coverage are separate dimensions",
+    "a canonical Work validation failure is distinguishable from an unattributable projection failure"
+  ],
+  "whatRemainsUnproven": [
+    "no real DSH IPC Session identity report exists",
+    "no real Parent-owned durable Attempt to Session binding exists",
+    "cold recovery was NOT tested",
+    "no live model execution occurred; PRIMARY was not enabled",
+    "no automatic Agent Handoff was implemented",
+    "the T0 traceAttempt label matcher is still present and deferred"
+  ],
+  "prohibitedStillInForce": [
+    "implementing the Attempt to DSH Session identity producer",
+    "durable binding persistence",
+    "cold recovery proof",
+    "automatic Agent Handoff or continuation",
+    "enabling PRIMARY",
+    "paid model calls",
+    "real engineering model workers",
+    "a new canonical owner, store, scheduler or second Harness",
+    "merging into main"
+  ],
+  "realSessionBindingProducerImplemented": false,
+  "coldRecoveryTested": false,
+  "liveModelExecutionOccurred": false,
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "protectedEvidenceUnchanged": true,
+  "t0ProjectionUnmodified": true
+}

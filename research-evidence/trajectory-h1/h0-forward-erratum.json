@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_H0_FORWARD_ERRATUM",
+  "stage": "Trajectory-H1",
+  "erratumIsForwardOnly": true,
+  "protectedEvidenceNotModified": true,
+  "items": [
+    {
+      "id": "E1",
+      "h0Claim": "the persisted/synthetic boundary is located by a storage-seam read and accepted when stored.count <= coldRead.length",
+      "correction": "the comparison was unsound: the cold-read total already contains the synthetic closers, so a larger stored count was accepted and a synthetic event of the observed read could be reclassified as persisted. H1 C2 derives the boundary from ONE read.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/cold-read-consistency-audit.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/single-read-durability.json"
+    },
+    {
+      "id": "E2",
+      "h0Claim": "eventPageCoverageOf derives FULL from returnedCount >= knownEventCount",
+      "correction": "coverage was derived from two numbers and never inspected the returned event array, so a page claiming 50 events with an empty array was FULL and its Preview COMPLETE. H1 C3 replaces the helper with a structural validator and DELETES the two-number entry point.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/preview-completeness.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/page-integrity.json"
+    },
+    {
+      "id": "E3",
+      "h0Claim": "classifySessionBinding accepts canonicalBindingPresent and can return BOUND_VERIFIED",
+      "correction": "a bare boolean not tied to any SessionId authorized the caller-selected id as the attempt session. H1 C4 removes the input and the branch, and verification now requires producer-side association evidence.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/session-claim-nonread.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/binding-authority-contract.json"
+    },
+    {
+      "id": "E4",
+      "h0Claim": "a caller-supplied host record with identifiers is CALLER_DECLARATION and a producer-established observation reaches COMPLETE coverage",
+      "correction": "the provenance half stands, but coverage was implied by provenance: a producer that observed only a Spawn reported COMPLETE. H1 C5 makes lifecycle coverage its own dimension.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/host-observation-provenance.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/host-provenance-audit.json"
+    },
+    {
+      "id": "E5",
+      "h0Claim": "quarantine reports the rejected relations that concern this attempt",
+      "correction": "deduplication by relation NAME collapsed distinct rejected edges, and the broad scope set (which includes the SHARED authorization event) could attribute another attempt rejected relation to this attempt. H1 C5 deduplicates by edge identity and scopes to the attempt OWN identities.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/relation-role-admission.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/relation-evidence-audit.json"
+    },
+    {
+      "id": "E6",
+      "h0Claim": "a non-TrajectoryRefusal projection failure is described as an optional cross-owner plane that could not be projected",
+      "correction": "T0 reads the canonical Work plane through the same input object without wrapping its failures, so the origin cannot be established; describing it as OPTIONAL downgraded a possible canonical-source failure. H1 C5 reports UNKNOWN_SOURCE_STAGE instead.",
+      "h0Evidence": "research-evidence/trajectory-v0s-h0/work-source-integrity-audit.json (left byte-identical)",
+      "h1Correction": "research-evidence/trajectory-h1/source-map.json + test/trajectory_h1_supporting_semantics.test.ts"
+    }
+  ],
+  "note": "No historical H0 evidence file was edited. Every correction is recorded forward, and the H0 files remain byte-identical (verified by git diff against the baseline)."
+}
