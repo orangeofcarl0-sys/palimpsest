@@ -230,6 +230,17 @@ export type {
 } from "./page_integrity.js";
 
 /**
+ * Trajectory-P2-C §8.5 — CROSS-FIELD ADMISSION INVARIANTS. A small pure validator that refuses an
+ * internally contradictory binding (admission without an established SessionId, BOUND_VERIFIED with a
+ * null id, a page whose session differs from the binding), so a contradiction can never expose events.
+ */
+export {
+  ADMISSION_INVARIANT_REASONS,
+  validateAdmissionInvariants,
+} from "./admission_invariants.js";
+export type { AdmissionInvariantReason, AdmissionInvariantVerdict } from "./admission_invariants.js";
+
+/**
  * Trajectory-V0S §7 (S1-D) — the Attempt-scoped Work relation admission policy. A read-side selection
  * over a T0 projection: it can only remove relations, never add one, and it requires exact canonical
  * identity plus explicit owner evidence rather than a display label.

@@ -154,8 +154,11 @@ export interface TrajectoryV0Service {
  *
  * The selector uses `event.entity_id === attemptId` plus the event type, project id and source
  * digest. It deliberately does NOT match on a display label.
+ *
+ * P2-C §6.5: EXPORTED so the execution-association read side can REUSE this admission logic rather than
+ * reimplementing it — the same exact-`ATTEMPT_CREATED` verification the ordinary Preview already performs.
  */
-function attemptEvents(events: readonly SchedulerEvent[], attemptId: string): {
+export function attemptEvents(events: readonly SchedulerEvent[], attemptId: string): {
   readonly created: SchedulerEvent | null;
   readonly terminal: SchedulerEvent | null;
   readonly authorization: SchedulerEvent | null;
@@ -194,14 +197,16 @@ function attemptEvents(events: readonly SchedulerEvent[], attemptId: string): {
  *
  * Note what it does NOT do: it never falls back to a display label, a task title or a substring
  * match, and it never consults the DSH reader.
+ *
+ * P2-C §6.5: EXPORTED so the execution-association read side REUSES it as its `WorkRevalidationPort`,
+ * rather than reimplementing the exact-`ATTEMPT_CREATED` verification.
  */
-function admitAttempt(input: {
+export function admitAttempt(input: {
   readonly projectId: string;
   readonly attemptId: string;
   readonly events: readonly SchedulerEvent[];
   readonly record: ReturnType<TrajectoryV0WorkOwner["attemptWorkRecord"]>;
-}): { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null } {
-  /**
+}): { readonly created: SchedulerEvent; readonly terminal: SchedulerEvent | null; readonly authorization: SchedulerEvent | null } {  /**
    * §10.3: a DEFENSIVE integrity check, not a second uniqueness authority. The owner already enforces
    * `PRIMARY KEY (project_id, attempt_id)` and its projector refuses a duplicate ATTEMPT_CREATED, so
    * more than one matching creation event in one project means the history is corrupted. The check is
