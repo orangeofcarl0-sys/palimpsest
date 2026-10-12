@@ -41,6 +41,7 @@ import {
   type SessionReadAdmission,
   type SessionReadState,
 } from "./execution.js";
+import { validateSessionEventPage, type PageIntegrityReason, type PageIntegrityState } from "./page_integrity.js";
 
 /* ------------------------------------------------------------------ *
  * §6 — The separate statuses
@@ -95,6 +96,13 @@ export interface PreviewAttribution {
   readonly processObservation: "COMPLETE" | "PARTIAL" | "NOT_OBSERVED" | "CONFLICTING";
   /** H0 §9.1: how much of the attributed session's event log this Preview covers. */
   readonly eventPageCoverage: EventPageCoverage;
+  /**
+   * H1 §7: the STRUCTURAL integrity of the page that produced the coverage. `INVALID` means the page
+   * contradicted itself, so no coverage is claimed and none of its events entered the execution view.
+   */
+  readonly pageIntegrity: PageIntegrityState;
+  /** H1 §7.4: the bounded, machine-readable reason a page was refused, or null. */
+  readonly pageIntegrityReason: PageIntegrityReason | null;
   readonly detail: string;
 }
 
@@ -342,10 +350,17 @@ export function sessionLifecycleOf(
   readState: SessionReadState | null,
   admission: SessionReadAdmission = "NOT_REQUESTED",
   identified = false,
+  /**
+   * H1 §7.4: an INVALID page is not a readable source. Its `readState` may be `READ_OK` while the
+   * page contradicts itself, so the lifecycle must report `SESSION_UNREADABLE` rather than
+   * `SESSION_READ`: a page that failed validation is not a trustworthy read.
+   */
+  pageInvalid = false,
 ): SessionLifecycle {
   if (readState === null) return identified ? "SESSION_IDENTIFIED_NOT_READ" : "NO_SESSION_BOUND";
   if (readState === "READ_CAPABILITY_ABSENT") return "SESSION_IDENTIFIED_NOT_READ";
   if (readState !== "READ_OK") return "SESSION_UNREADABLE";
+  if (pageInvalid) return "SESSION_UNREADABLE";
   return admission === "ADMITTED_TO_ATTEMPT" ? "SESSION_READ" : "SESSION_READ_NOT_ATTRIBUTED";
 }
 
@@ -381,30 +396,15 @@ export function previewCompletenessOf(input: {
  *   FULL           every event the source reports is present in the page
  *   PARTIAL        the page returned fewer events than the source reports
  *   UNKNOWN        the source did not report a total, so coverage cannot be claimed
- *   NOT_APPLICABLE no attributed read happened
+ *   NOT_APPLICABLE no attributed read happened, or the page failed validation
+ *
+ * H1 §7.1: the value is produced by `validateSessionEventPage` in `page_integrity.ts`. The H0
+ * two-number helper (`returnedCount >= knownEventCount`) was REMOVED rather than deprecated: it
+ * reported FULL for a page that claimed fifty events while carrying an empty array, and a helper that
+ * can only be misused is not worth keeping as an alternative entry point.
  */
 export const EVENT_PAGE_COVERAGE_STATES = ["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"] as const;
 export type EventPageCoverage = (typeof EVENT_PAGE_COVERAGE_STATES)[number];
-
-/**
- * H0 §9.1: derive the coverage from the page's own bounds.
- *
- * The comparison is against the SOURCE's reported total, so a page that returned everything the source
- * knows about is FULL, and a page that returned fewer is PARTIAL. A source that reports no total yields
- * UNKNOWN — the honest value, never an assumed FULL.
- *
- * A fully-read prefix is still not proof that a LIVE session will never append more events; that
- * limitation is stated in the caveats rather than encoded here.
- */
-export function eventPageCoverageOf(input: {
-  readonly admitted: boolean;
-  readonly knownEventCount: number | null;
-  readonly returnedCount: number;
-}): EventPageCoverage {
-  if (!input.admitted) return "NOT_APPLICABLE";
-  if (input.knownEventCount === null) return "UNKNOWN";
-  return input.returnedCount >= input.knownEventCount ? "FULL" : "PARTIAL";
-}
 
 /** §8: the four attribution dimensions, derived together so they stay consistent. */
 function attributionOf(input: {
@@ -413,6 +413,8 @@ function attributionOf(input: {
   readonly canonical: PreviewCanonicalFacts;
   readonly projectEvolution: PreviewProjectEvolutionSummary;
   readonly eventPageCoverage: EventPageCoverage;
+  readonly pageIntegrity: PageIntegrityState;
+  readonly pageIntegrityReason: PageIntegrityReason | null;
 }): PreviewAttribution {
   const canonicalCoverage = input.canonical.attemptState !== null || input.projectEvolution.projectionRootId !== null ? "PRESENT" : "ABSENT";
 
@@ -451,9 +453,12 @@ function attributionOf(input: {
     sessionAttribution,
     processObservation,
     eventPageCoverage: input.eventPageCoverage,
+    pageIntegrity: input.pageIntegrity,
+    pageIntegrityReason: input.pageIntegrityReason,
     detail:
-      `canonical=${canonicalCoverage}; source=${sourceReadability}; session=${sessionAttribution}; process=${processObservation} — ` +
-      "these are separate facts: a readable source is not an attributed session, and a local process observation is not a session identity",
+      `canonical=${canonicalCoverage}; source=${sourceReadability}; session=${sessionAttribution}; process=${processObservation}` +
+      (input.pageIntegrity === "INVALID" ? `; page=INVALID (${String(input.pageIntegrityReason)})` : `; page=${input.pageIntegrity}`) +
+      " — these are separate facts: a readable source is not an attributed session, and a local process observation is not a session identity",
   });
 }
 
@@ -470,6 +475,8 @@ function caveatsOf(input: {
   readonly projectEvolution: PreviewProjectEvolutionSummary;
   readonly canonical: PreviewCanonicalFacts;
   readonly eventPageCoverage: EventPageCoverage;
+  readonly pageIntegrity: PageIntegrityState;
+  readonly pageIntegrityReason: PageIntegrityReason | null;
 }): PreviewCaveats {
   const sourcesUnavailable: string[] = [];
   const contradictoryObservations: string[] = [];
@@ -555,6 +562,15 @@ function caveatsOf(input: {
   if (input.eventPageCoverage === "UNKNOWN") {
     epistemicLimits.push("The source reported no total event count, so the page's event coverage cannot be claimed.");
   }
+  /**
+   * H1 §7.4: an INVALID page is reported as a SOURCE contradiction, and the exact bounded reason is
+   * named so an operator can act on it without re-deriving the page.
+   */
+  if (input.pageIntegrity === "INVALID") {
+    contradictoryObservations.push(
+      `The DSH session page is INVALID (${String(input.pageIntegrityReason)}): the page contradicts itself, so no event coverage is claimed and none of its events are admitted to this attempt's execution history.`,
+    );
+  }
   if (input.eventPageCoverage !== "NOT_APPLICABLE") {
     epistemicLimits.push(
       "A fully read event prefix is not proof that a live session has terminated or will never append more events.",
@@ -591,17 +607,28 @@ function caveatsOf(input: {
  * produce the same Preview and the same `previewDigest`.
  */
 export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview {
+  /**
+   * H1 §7: coverage is derived from a STRUCTURAL validation of the page, not from two numbers. An
+   * INVALID page yields `NOT_APPLICABLE`, so it can never claim FULL and can never complete a Handoff.
+   */
+  const pageIntegrity = validateSessionEventPage({
+    page: input.sessionPage,
+    admitted: input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT",
+    expectedSessionId: input.binding.dshSessionId,
+  });
+  /**
+   * §7.4 FAIL CLOSED: an INVALID page contributes NO events to the execution view, cannot complete the
+   * Handoff and is not reported as a readable session. The canonical Work facts are untouched — a
+   * malformed Session page is not a Work failure, and the Preview must not fabricate one.
+   */
+  const pageRefused = pageIntegrity.state === "INVALID";
+
   const identified = input.binding.claimedSessionId !== null || input.binding.dshSessionId !== null;
-  const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified);
+  const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified, pageRefused);
   const hasCanonicalResult = input.canonical.resultRefs.length > 0;
   const hasProjectContext = input.projectEvolution.projectionRootId !== null;
 
-  /** H0 §9.1: coverage is derived from the page's own bounds, never assumed. */
-  const eventPageCoverage = eventPageCoverageOf({
-    admitted: input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT",
-    knownEventCount: input.sessionPage?.knownEventCount ?? null,
-    returnedCount: input.sessionPage?.returnedCount ?? 0,
-  });
+  const eventPageCoverage = pageIntegrity.coverage;
 
   const completeness = previewCompletenessOf({ sessionLifecycle, hasCanonicalResult, hasProjectContext, eventPageCoverage });
   const attribution = attributionOf({
@@ -610,6 +637,8 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     canonical: input.canonical,
     projectEvolution: input.projectEvolution,
     eventPageCoverage,
+    pageIntegrity: pageIntegrity.state,
+    pageIntegrityReason: pageIntegrity.reason,
   });
 
   const attempt: PreviewAttemptIdentity = Object.freeze({
@@ -630,8 +659,11 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
    * §5/S-I4: events enter the execution view ONLY when the read is ADMITTED. An unattributed read
    * returns an empty view with a detail that says the events exist elsewhere and are not this
    * attempt's — never a silently populated history.
+   *
+   * H1 §7.4: an INVALID page is refused as well. A page that contradicts itself is not merely
+   * downgraded to PARTIAL while its events are still exposed as trusted execution evidence.
    */
-  const admitted = input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT";
+  const admitted = input.binding.sessionReadAdmission === "ADMITTED_TO_ATTEMPT" && !pageRefused;
   const events = (admitted ? (input.sessionPage?.events ?? []) : []).map((event) =>
     Object.freeze({
       sessionId: event.sessionId,
@@ -668,9 +700,11 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     eventsDetail:
       input.sessionPage === undefined
         ? "no DSH session read was performed, so no events are presented — this is NOT evidence that no events occurred"
-        : !admitted && input.sessionPage.events.length > 0
-          ? `the session read returned ${String(input.sessionPage.returnedCount)} event(s), but no verified Attempt→Session binding exists, so they are NOT admitted to this attempt's execution history`
-          : input.sessionPage.detail,
+        : pageRefused
+          ? `the session page failed its integrity validation (${String(pageIntegrity.reason)}), so its events are NOT admitted to this attempt's execution history`
+          : !admitted && input.sessionPage.events.length > 0
+            ? `the session read returned ${String(input.sessionPage.returnedCount)} event(s), but no verified Attempt→Session binding exists, so they are NOT admitted to this attempt's execution history`
+            : input.sessionPage.detail,
   });
 
   const canonical: PreviewCanonicalOutcome = Object.freeze({
@@ -709,6 +743,8 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     projectEvolution: input.projectEvolution,
     canonical: input.canonical,
     eventPageCoverage,
+    pageIntegrity: pageIntegrity.state,
+    pageIntegrityReason: pageIntegrity.reason,
   });
 
   const previewId = `hp-${canonicalDigest({

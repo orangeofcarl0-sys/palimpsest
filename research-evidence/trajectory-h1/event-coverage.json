@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_EVENT_COVERAGE",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "separationOfFacts": [
+    "page structural integrity",
+    "observed event-range coverage",
+    "Session termination",
+    "canonical Work completion",
+    "verification",
+    "promotion",
+    "project basis completeness"
+  ],
+  "coverageIsNotTermination": "a FULL observed range is a statement about what the source reported at read time; the Preview states that a fully read prefix is not proof a live Session has terminated",
+  "workIndependence": "verificationState and promotionState are unchanged by any page verdict (asserted in the page-integrity suite)",
+  "deferred": "multi-page event aggregation is not implemented; no consumer currently requires it",
+  "verdict": "PASS"
+}

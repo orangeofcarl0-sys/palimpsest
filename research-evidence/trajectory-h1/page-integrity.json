@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_PAGE_INTEGRITY",
+  "evidenceClass": "CONTROLLED_FIXTURE + PASS_REAL_DSH_NO_MODEL (the same validator runs over real pages in trajectory_h1_durability.test.ts)",
+  "sourceFiles": [
+    "src/trajectory/page_integrity.ts",
+    "src/trajectory/handoff_preview.ts",
+    "test/trajectory_h1_page_integrity.test.ts"
+  ],
+  "validator": "validateSessionEventPage(page, admitted, expectedSessionId) -> { state, coverage, reason, checks }",
+  "verdictStates": [
+    "VALID_FULL",
+    "VALID_PARTIAL",
+    "VALID_UNKNOWN_COVERAGE",
+    "NOT_APPLICABLE",
+    "INVALID"
+  ],
+  "reasonCodes": [
+    "READ_STATE_NOT_OK",
+    "PAGE_SESSION_ID_MISSING",
+    "SESSION_ID_MISMATCH",
+    "HEADER_SESSION_MISMATCH",
+    "EVENT_SESSION_MISMATCH",
+    "RETURNED_COUNT_MISMATCH",
+    "RETURNED_EXCEEDS_REQUESTED_MAX",
+    "INVALID_NUMERIC_METADATA",
+    "SEQUENCE_NOT_CONTIGUOUS",
+    "WATERMARK_MISMATCH",
+    "CURSOR_MISMATCH",
+    "DURABILITY_METADATA_CONTRADICTORY",
+    "KNOWN_COUNT_BELOW_RETURNED"
+  ],
+  "checksPerformed": [
+    "readState === READ_OK",
+    "page names a session",
+    "page session == verified binding session",
+    "header session == page session",
+    "every event session == page session",
+    "all numeric fields are non-negative safe integers or explicitly null",
+    "returnedCount === events.length",
+    "returnedCount <= requestedMaxEvents",
+    "returnedCount <= knownEventCount",
+    "sequences contiguous",
+    "watermark == final returned event",
+    "final event seq < knownEventCount",
+    "first event seq == requestedFromSeq",
+    "empty page reports no watermark",
+    "durability counts add up and every label matches the boundary"
+  ],
+  "coverageDerivation": "FULL requires the page to begin at the START of the Session-local range AND to reach the known end; a nonzero cursor therefore cannot claim whole-history FULL",
+  "negativeOutcomes": {
+    "returnedCount=50 with events=[]": "INVALID / RETURNED_COUNT_MISMATCH",
+    "sequence gap, duplicate, descending": "INVALID / SEQUENCE_NOT_CONTIGUOUS",
+    "incorrect throughSeq": "INVALID / WATERMARK_MISMATCH",
+    "event or header SessionId mismatch": "INVALID / EVENT_SESSION_MISMATCH or HEADER_SESSION_MISMATCH",
+    "returned exceeds requested max": "INVALID / RETURNED_EXCEEDS_REQUESTED_MAX",
+    "negative metadata": "INVALID / INVALID_NUMERIC_METADATA",
+    "known total below returned": "INVALID / KNOWN_COUNT_BELOW_RETURNED",
+    "contradictory durability labels/counts": "INVALID / DURABILITY_METADATA_CONTRADICTORY",
+    "page for a different session than the binding": "INVALID / SESSION_ID_MISMATCH",
+    "non-READ_OK read state": "INVALID / READ_STATE_NOT_OK"
+  },
+  "positiveOutcomes": {
+    "50 real events, known 50": "VALID_FULL",
+    "50 real events, known 200": "VALID_PARTIAL",
+    "known total null": "VALID_UNKNOWN_COVERAGE",
+    "empty session, known 0": "VALID_FULL",
+    "no admitted page": "NOT_APPLICABLE"
+  },
+  "failClosed": "an INVALID page yields coverage NOT_APPLICABLE, admits ZERO events, reports SESSION_UNREADABLE, and cannot be COMPLETE; the canonical Work facts and the project context are untouched",
+  "removedEntryPoint": "H0 eventPageCoverageOf (the two-number helper) was DELETED, not deprecated: no remaining entry point can produce FULL from counts alone",
+  "completenessSemantics": "COMPLETE means the required Preview evidence is complete under the selected observation scope; it does NOT mean an Agent finished, Work was accepted, or the Session terminated",
+  "invariant": "FULL coverage cannot result from contradictory count metadata; event identity, sequence, watermark and bounds are verified before any coverage is claimed",
+  "verdict": "PASS — coverage is now a conclusion of a structural validation",
+  "limitations": [
+    "multi-page aggregation is deliberately NOT implemented: if FULL coverage cannot be established from one page the honest PARTIAL/UNKNOWN state is preserved",
+    "Node v24.14.1 is below the repository-declared engines minimum"
+  ]
+}

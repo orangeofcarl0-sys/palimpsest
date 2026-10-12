@@ -540,19 +540,40 @@ describe("H0 F7 — an incomplete Session page no longer satisfies COMPLETE", ()
     };
     const preview = buildHandoffPreview(input);
     /**
-     * ------------------------------------------------------------------ CHANGED ASSERTION (C5)
+     * ------------------------------------------------------------------ CHANGED ASSERTION (C5, H1 C3)
      *
      * The baseline assertion pinned the DEFECT: 50 of 200 events read, and the Preview still reported
-     * COMPLETE. The corrected contract requires FULL event-page coverage for COMPLETE, so a partial
-     * page yields PARTIAL, reports the coverage explicitly, and carries the limitation as a caveat.
+     * COMPLETE. H0 corrected that to require FULL event-page coverage for COMPLETE, so a partial page
+     * yields PARTIAL and reports the coverage explicitly.
+     *
+     * H1 C3 then replaced the coverage DERIVATION itself: coverage now comes from a structural
+     * validation of the page, so this fixture — which declares `returnedCount: 50` while carrying an
+     * EMPTY event array — is INVALID rather than PARTIAL. The H0 property (a partial page cannot be
+     * COMPLETE) is preserved and strengthened: an inconsistent page cannot even claim coverage.
      */
-    expect(preview.completeness).toBe("PARTIAL");
-    expect(preview.attribution.eventPageCoverage).toBe("PARTIAL");
-    expect(preview.caveats.epistemicLimits.join(" ")).toContain("PARTIAL");
-    // And a FULL page of the same source DOES complete it, so the rule is not simply "never complete".
-    const full = buildHandoffPreview({ ...input, sessionPage: { ...page, knownEventCount: 50 } as never });
-    expect(full.completeness).toBe("COMPLETE");
+    expect(preview.attribution.pageIntegrity).toBe("INVALID");
+    expect(preview.attribution.pageIntegrityReason).toBe("RETURNED_COUNT_MISMATCH");
+    expect(preview.attribution.eventPageCoverage).toBe("NOT_APPLICABLE");
+    expect(preview.completeness).not.toBe("COMPLETE");
+    /**
+     * And a page that REALLY carries its events does complete a Preview when it covers the whole
+     * source, so the rule is not simply "never complete".
+     */
+    const realEvents = Object.freeze(
+      Array.from({ length: 50 }, (_, index) =>
+        Object.freeze({
+          sessionId: "session-partial", seq: index, type: "step/start", inherited: false,
+          durability: "PERSISTED_DSH_EVENT" as const, time: index, surface: null,
+          summary: `step ${String(index)}`, durationMs: null, observedStatus: null,
+        }),
+      ),
+    );
+    const full = buildHandoffPreview({
+      ...input,
+      sessionPage: { ...page, knownEventCount: 50, events: realEvents, persistedEventCount: 50, syntheticRecoveryEventCount: 0 } as never,
+    });
     expect(full.attribution.eventPageCoverage).toBe("FULL");
+    expect(full.completeness).toBe("COMPLETE");
   });
 });
 

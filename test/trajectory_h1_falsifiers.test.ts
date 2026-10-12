@@ -27,9 +27,9 @@ import {
 } from "../src/trajectory/execution.js";
 import {
   buildHandoffPreview,
-  eventPageCoverageOf,
   type HandoffPreviewInput,
 } from "../src/trajectory/handoff_preview.js";
+import { validateSessionEventPage } from "../src/trajectory/page_integrity.js";
 import type { DshSessionEventPage } from "../src/trajectory/execution.js";
 
 const PROJECT = "h1a";
@@ -164,16 +164,27 @@ describe("H1 F1 — H0's counter consistency rule is insufficient", () => {
 describe("H1 F2 — false FULL coverage from inconsistent counts", () => {
   it("F2 (baseline): known=50, returned=50, events=[] still yields FULL and COMPLETE", () => {
     /**
-     * DYNAMICALLY_REPRODUCED against the real baseline pure functions. The ruling's exact construction:
-     * a page whose count metadata claims 50 events while the returned array is EMPTY.
+     * DYNAMICALLY_REPRODUCED. The ruling's exact construction: a page whose count metadata claims 50
+     * events while the returned array is EMPTY.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C3)
+     *
+     * The baseline assertion called the H0 helper `eventPageCoverageOf({admitted:true, knownEventCount:50,
+     * returnedCount:50})` and required it to return "FULL" — it PINNED THE DEFECT. H1 C3 removed that
+     * helper entirely, so the baseline predicate is reproduced here as an explicit fixture.
      */
-    expect(eventPageCoverageOf({ admitted: true, knownEventCount: 50, returnedCount: 50 })).toBe("FULL");
+    const baselineCoverageOf = (known: number | null, returned: number): string =>
+      known === null ? "UNKNOWN" : returned >= known ? "FULL" : "PARTIAL";
+    expect(baselineCoverageOf(50, 50)).toBe("FULL");
 
+    // The corrected product refuses the same page: the empty array contradicts the claimed count.
     const preview = buildHandoffPreview(attributedInput(page({ knownEventCount: 50, returnedCount: 50, events: Object.freeze([]) })));
-    expect(preview.attribution.eventPageCoverage).toBe("FULL");
-    expect(preview.completeness).toBe("COMPLETE");
-    // The absence is invisible: no caveat reports that the page carried no events at all.
-    expect(preview.caveats.epistemicLimits.join(" ")).not.toContain("no events");
+    expect(preview.attribution.pageIntegrity).toBe("INVALID");
+    expect(preview.attribution.pageIntegrityReason).toBe("RETURNED_COUNT_MISMATCH");
+    expect(preview.attribution.eventPageCoverage).toBe("NOT_APPLICABLE");
+    expect(preview.completeness).not.toBe("COMPLETE");
+    // And the contradiction is now VISIBLE rather than silent.
+    expect(preview.caveats.contradictoryObservations.join(" ")).toContain("INVALID");
   });
 });
 
@@ -182,16 +193,42 @@ describe("H1 F2 — false FULL coverage from inconsistent counts", () => {
 describe("H1 F3 — a nonzero cursor is not distinguished from full-history coverage", () => {
   it("F3 (baseline): a page beginning mid-history still reports FULL coverage", () => {
     /**
-     * DYNAMICALLY_REPRODUCED. H0 has no notion of "the page must begin at the start of the relevant
-     * Session-local range to claim full coverage". A page requesting from seq 50 that reports a
-     * returned count equal to the source's total is reported FULL even though seqs 0..49 are absent.
+     * DYNAMICALLY_REPRODUCED. H0 had no notion of "the page must begin at the start of the relevant
+     * Session-local range to claim full coverage".
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C3)
+     *
+     * The baseline assertion called the removed helper and required "FULL". The corrected contract
+     * refuses the self-contradictory form and reports the consistent form as PARTIAL.
      */
-    const midHistory = page({ requestedFromSeq: 50, knownEventCount: 100, returnedCount: 100, throughSeq: 149 });
-    expect(eventPageCoverageOf({ admitted: true, knownEventCount: midHistory.knownEventCount ?? null, returnedCount: midHistory.returnedCount })).toBe("FULL");
+    const baselineCoverageOf = (known: number | null, returned: number): string =>
+      known === null ? "UNKNOWN" : returned >= known ? "FULL" : "PARTIAL";
+    expect(baselineCoverageOf(100, 100)).toBe("FULL");
+
+    // (a) a page claiming as many events as the source reports while starting at seq 50 contradicts
+    //     the source's own total, so it is INVALID rather than FULL.
+    const appearsComplete = page({ requestedFromSeq: 50, knownEventCount: 100, returnedCount: 100, throughSeq: 149 });
+    const contradictory = buildHandoffPreview(attributedInput(appearsComplete));
+    expect(contradictory.attribution.pageIntegrity).toBe("INVALID");
+    expect(contradictory.attribution.eventPageCoverage).not.toBe("FULL");
+
+    // (b) an honestly mid-history page is PARTIAL, and the detail says it does not begin at the start.
+    const realEvents = Object.freeze(
+      Array.from({ length: 100 }, (_, index) =>
+        Object.freeze({
+          sessionId: SESSION, seq: 50 + index, type: "step/start", inherited: false,
+          durability: "PERSISTED_DSH_EVENT" as const, time: index, surface: null,
+          summary: `step ${String(50 + index)}`, durationMs: null, observedStatus: null,
+        }),
+      ),
+    );
+    const midHistory = page({
+      requestedFromSeq: 50, knownEventCount: 150, returnedCount: 100, throughSeq: 149,
+      requestedMaxEvents: 200, persistedEventCount: 150, events: realEvents as never,
+    });
     const preview = buildHandoffPreview(attributedInput(midHistory));
-    expect(preview.attribution.eventPageCoverage).toBe("FULL");
-    // The baseline has no field that records the page did not begin at the beginning.
-    expect(preview.attribution.detail).not.toContain("begins");
+    expect(preview.attribution.eventPageCoverage).toBe("PARTIAL");
+    expect(preview.attribution.pageIntegrity).toBe("VALID_PARTIAL");
   });
 });
 
@@ -200,8 +237,13 @@ describe("H1 F3 — a nonzero cursor is not distinguished from full-history cove
 describe("H1 F4 — malformed page metadata is accepted", () => {
   it("F4 (baseline): watermark, count, sequence and identity inconsistencies all still yield FULL", () => {
     /**
-     * DYNAMICALLY_REPRODUCED. `eventPageCoverageOf` reads ONLY `knownEventCount` and `returnedCount`,
-     * so none of these malformations is detected.
+     * DYNAMICALLY_REPRODUCED at the baseline: the H0 helper read ONLY `knownEventCount` and
+     * `returnedCount`, so none of these malformations was detected.
+     *
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C3)
+     *
+     * The baseline assertions called the removed helper. The corrected contract is now the assertion:
+     * every one of these pages is refused with its own bounded reason.
      */
     const malformed: ReadonlyArray<readonly [string, DshSessionEventPage]> = [
       ["incorrect throughSeq (claims a watermark the events cannot reach)", page({ knownEventCount: 50, returnedCount: 50, throughSeq: 9 })],
@@ -210,16 +252,20 @@ describe("H1 F4 — malformed page metadata is accepted", () => {
       ["negative metadata", page({ knownEventCount: -1, returnedCount: 50 })],
     ];
     for (const [label, candidate] of malformed) {
-      expect(eventPageCoverageOf({ admitted: true, knownEventCount: candidate.knownEventCount, returnedCount: candidate.returnedCount }), label).toBe("FULL");
+      const verdict = validateSessionEventPage({ page: candidate, admitted: true, expectedSessionId: SESSION });
+      expect(verdict.state, label).toBe("INVALID");
+      expect(verdict.reason, label).not.toBeNull();
+      expect(verdict.coverage, label).toBe("NOT_APPLICABLE");
     }
 
     /**
-     * The reader-level checks that WOULD catch a sequence gap exist (the reader scans contiguity), but
-     * the CONSUMER's coverage helper validates none of the page's own fields. That asymmetry is the
-     * defect: a page reaching the consumer through any other path is not validated at all.
+     * The baseline source no longer contains the two-number rule at all, which is the durable form of
+     * the correction: there is no remaining entry point that can produce FULL from counts alone.
      */
     const previewCode = source(SOURCE_FILES.preview);
-    expect(previewCode).toContain("return input.returnedCount >= input.knownEventCount ? \"FULL\" : \"PARTIAL\";");
+    expect(previewCode).not.toContain('return input.returnedCount >= input.knownEventCount ? "FULL" : "PARTIAL";');
+    expect(previewCode).not.toContain("export function eventPageCoverageOf(");
+    expect(previewCode).toContain("validateSessionEventPage");
   });
 });
 

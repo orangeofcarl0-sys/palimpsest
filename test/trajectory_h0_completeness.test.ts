@@ -8,45 +8,84 @@
  * The attributed state is set by a CONTROLLED FIXTURE, because no binding producer exists in this
  * deployment. It models the consumer state a future verified binding WOULD produce; it does NOT claim
  * a real binding.
+ *
+ * ---------------------------------------------------------------- H1 C3 update (read this first)
+ *
+ * H0's `page()` helper set `returnedCount` while leaving `events: []` — the anti-pattern H1 §7.5
+ * forbids. Under H1's page-integrity validator such a page is INVALID, so these fixtures now build
+ * REAL contiguous event arrays. The H0 properties they assert are unchanged; only the fixtures are
+ * honest now, which is why the assertions below are the SAME properties stated against real pages.
  */
 import { describe, expect, it } from "vitest";
 
 import {
   EVENT_PAGE_COVERAGE_STATES,
-  eventPageCoverageOf,
   previewCompletenessOf,
+  type DshEventView,
   type DshSessionEventPage,
 } from "../src/trajectory/index.js";
+import { validateSessionEventPage } from "../src/trajectory/page_integrity.js";
 import { buildHandoffPreview, type HandoffPreviewInput } from "../src/trajectory/handoff_preview.js";
 
 const PROJECT = "h0d";
 const ATTEMPT = `attempt-${"a".repeat(32)}`;
+const SESSION = "session-fixture";
 
-/** §9: a page with the given known/returned bounds, attributed by the caller's binding. */
+/** H1 C3: a real event view at the given sequence. */
+function realEvent(seq: number): DshEventView {
+  return Object.freeze({
+    sessionId: SESSION, seq, type: "step/start", inherited: false,
+    durability: "PERSISTED_DSH_EVENT" as const, time: 1_700_000_000_000 + seq, surface: null,
+    summary: `step ${String(seq)} opened`, durationMs: null, observedStatus: null,
+  });
+}
+
+/**
+ * §9: a page with the given known/returned bounds and REAL contiguous events.
+ *
+ * `returnedCount` defaults to the number of events actually supplied, so a caller asking for a
+ * "50 of 200" page gets fifty real events and a source that reports two hundred.
+ */
 function page(knownEventCount: number | null, returnedCount: number, syntheticRecoveryEventCount: number | null = 0): DshSessionEventPage {
+  const synthetic = syntheticRecoveryEventCount ?? 0;
+  /**
+   * H1 C3: the durability counts describe the WHOLE OBSERVED LOG, exactly as the real reader reports
+   * them (`persistedEventCount = stored.length`, `syntheticRecoveryEventCount = closers.length`,
+   * `knownEventCount = stored + closers`). A page may return a SLICE of that log, so the counts are
+   * anchored on the source's total rather than on the page's returned count.
+   */
+  const observedTotal = knownEventCount ?? returnedCount;
+  const persistedCount = observedTotal - synthetic;
+  const events = Object.freeze(
+    Array.from({ length: returnedCount }, (_, index) =>
+      index < persistedCount
+        ? realEvent(index)
+        : Object.freeze({ ...realEvent(index), durability: "SYNTHETIC_RECOVERY_EVENT" as const, type: "turn/end", observedStatus: "interrupted" }),
+    ),
+  );
   return Object.freeze({
     schemaVersion: 1 as const,
     readState: "READ_OK" as const,
-    sessionId: "session-fixture",
-    header: Object.freeze({ sessionId: "session-fixture", version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }),
+    sessionId: SESSION,
+    header: Object.freeze({ sessionId: SESSION, version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }),
     sourceIdentity: "DSH_QUERY_PORT_FIXTURE",
     sourceEvidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
-    throughSeq: returnedCount - 1,
+    throughSeq: returnedCount === 0 ? null : returnedCount - 1,
     knownEventCount,
     inheritedEventCount: 0,
     requestedFromSeq: 0,
-    requestedMaxEvents: 50,
+    requestedMaxEvents: 200,
     returnedCount,
     pageBounded: true as const,
     diskIoBounded: false,
     durabilityProvenance: "PERSISTED_AND_SYNTHETIC_SEPARATED" as const,
-    persistedEventCount: knownEventCount,
+    persistedEventCount: persistedCount,
     syntheticRecoveryEventCount,
-    events: Object.freeze([]),
+    events,
     knownParentSession: null,
     proves: Object.freeze([]),
     doesNotProve: Object.freeze([]),
-    detail: "a fixture page",
+    detail: "a fixture page with real events",
   });
 }
 
@@ -85,11 +124,18 @@ describe("Trajectory-V0S-H0 §9 — coverage is its own dimension", () => {
     expect([...EVENT_PAGE_COVERAGE_STATES]).toEqual(["FULL", "PARTIAL", "UNKNOWN", "NOT_APPLICABLE"]);
   });
 
-  it("coverageOf derives FULL / PARTIAL / UNKNOWN / NOT_APPLICABLE from the page's own bounds", () => {
-    expect(eventPageCoverageOf({ admitted: false, knownEventCount: 200, returnedCount: 50 })).toBe("NOT_APPLICABLE");
-    expect(eventPageCoverageOf({ admitted: true, knownEventCount: 50, returnedCount: 50 })).toBe("FULL");
-    expect(eventPageCoverageOf({ admitted: true, knownEventCount: 200, returnedCount: 50 })).toBe("PARTIAL");
-    expect(eventPageCoverageOf({ admitted: true, knownEventCount: null, returnedCount: 50 })).toBe("UNKNOWN");
+  it("coverageOf derives FULL / PARTIAL / UNKNOWN / NOT_APPLICABLE from a validated page", () => {
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C3)
+     *
+     * The baseline called the H0 two-number helper `eventPageCoverageOf({admitted, knownEventCount,
+     * returnedCount})`. H1 C3 removed that helper, so the same four outcomes are asserted through the
+     * validated accessor, with REAL events supplied for the pages that claim coverage.
+     */
+    expect(validateSessionEventPage({ page: undefined, admitted: false }).coverage).toBe("NOT_APPLICABLE");
+    expect(validateSessionEventPage({ page: page(50, 50), admitted: true }).coverage).toBe("FULL");
+    expect(validateSessionEventPage({ page: page(200, 50), admitted: true }).coverage).toBe("PARTIAL");
+    expect(validateSessionEventPage({ page: page(null, 50), admitted: true }).coverage).toBe("UNKNOWN");
   });
 
   it("completeness requires FULL coverage, not merely an attributed read", () => {
