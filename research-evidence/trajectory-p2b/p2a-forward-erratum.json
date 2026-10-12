@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_P2A_FORWARD_ERRATUM",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "purpose": "Forward-only correction of P2-A evidence interpretation. P2-A's historical final-verdicts.json is NOT modified; what was actually demonstrated is preserved and the overstatement is corrected here.",
+  "erratum": [
+    {
+      "id": "ERRATUM-1",
+      "p2aClaim": "the Level C gate's 'no model turn ran' was supported by 'turnEventCountInWrittenSessions: 0'",
+      "whatWasActuallyDemonstrated": "the gate text-scanned a Zstandard-compressed artifact as UTF-8, which can never contain the scanned literal; the value 0 is a property of the measurement method, not of the session",
+      "correction": "the zero is VACUOUS as a runtime measurement. The no-model claim at P2-A rested entirely on the STRUCTURAL exclusion (the capability refusal is thrown between agents.create and the only agent.followup call), which remains valid and independently verifiable from source",
+      "impactOnP2aVerdict": "the structural no-model argument is unaffected; the runtime MEASUREMENT was overstated",
+      "p2bResolution": "B0-C2 reads the logical Session Event stream through the official DSH reader and reports the actual turn/start, step/start and request event counts"
+    },
+    {
+      "id": "ERRATUM-2",
+      "p2aClaim": "the first-party gate qualified the identity route",
+      "whatWasActuallyDemonstrated": "the gate did run against the real Host Bundle on this machine and did observe a real worker-<uuid> matching a written session; the qualification was genuine",
+      "correction": "the gate's WRAPPER could also have returned a passing assertion without running when DSH/dist were absent; the qualification was genuine on the machine it ran, but the wrapper was not a non-vacuous gate",
+      "impactOnP2aVerdict": "no change to the observed result; the gate's FAILURE MODE was under-specified",
+      "p2bResolution": "the P2-B first-party gate reports an explicit outcome vocabulary and the wrapper asserts execution actually occurred"
+    },
+    {
+      "id": "ERRATUM-3",
+      "p2aClaim": "the identity observation carries a `sourceQualification` field",
+      "whatWasActuallyDemonstrated": "the field exists and is recorded",
+      "correction": "the field is a CALLER-SUPPLIED HINT. P2-A's Level C gate passed 'FIRST_PARTY_DSH_QUALIFIED' itself. The label is not independent verification of the executable's provenance and must never authorize a durable binding on its own",
+      "impactOnP2aVerdict": "the observation semantics are unchanged; the label's epistemic weight was over-read",
+      "p2bResolution": "B0-C3 defines the trusted source chain and requires read-side qualification from trusted deployment facts and actual DSH reads"
+    },
+    {
+      "id": "ERRATUM-4",
+      "p2aClaim": "the P2-A tracker handles identity conflict",
+      "whatWasActuallyDemonstrated": "the tracker distinguishes a first identity from a single conflicting identity (A vs B)",
+      "correction": "with three or more distinct identities the tracker retains only two slots, so an intermediate identity is LOST",
+      "impactOnP2aVerdict": "no change for the two-identity case P2-A actually exercised; the cardinality bound was not disclosed",
+      "p2bResolution": "the durable model preserves every distinct observation; conflict is derived from the full candidate set"
+    }
+  ],
+  "protectedEvidenceUntouched": [
+    "research-evidence/trajectory-p2a/final-verdicts.json",
+    "research-evidence/trajectory-p2a/first-party-dsh-integration.json",
+    "research-evidence/trajectory-p2a/no-model-source-proof.json"
+  ],
+  "verdict": "P2A_ERRATA_RECORDED_FORWARD_ONLY"
+}
