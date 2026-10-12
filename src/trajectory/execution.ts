@@ -218,22 +218,31 @@ export interface AttemptExecutionBinding {
  * The precedence is deliberately conservative:
  *
  *   1. a CONFLICT anywhere wins — a contradiction is never downgraded to "unbound";
- *   2. a canonical producer yields BOUND_VERIFIED;
- *   3. no claim at all yields SESSION_UNBOUND;
- *   4. more than one candidate yields AMBIGUOUS;
- *   5. a claim whose read was ATTEMPTED and failed yields SOURCE_UNAVAILABLE;
- *   6. a claim with no read attempt yields SESSION_CLAIMED_UNVERIFIED — never a binding.
+ *   2. no claim at all yields SESSION_UNBOUND;
+ *   3. more than one candidate yields AMBIGUOUS;
+ *   4. a claim whose read was ATTEMPTED and failed yields SOURCE_UNAVAILABLE;
+ *   5. a claim with no read attempt yields SESSION_CLAIMED_UNVERIFIED — never a binding.
  *
  * H0 §7.1: `readAttempted` is a separate input from `sourceReadable`, because "the source could not
  * be read" and "we never tried to read it" are different facts. Reporting an un-attempted read as
  * SOURCE_UNAVAILABLE would claim the source is broken when nothing was asked of it.
+ *
+ * ------------------------------------------------------------------ H1 §8.5 (C4)
+ *
+ * This function CANNOT return `BOUND_VERIFIED`. Its H0 `canonicalBindingPresent: boolean` input was
+ * REMOVED: it authorized an arbitrary SessionId (that flag plus any claimed id produced
+ * `BOUND_VERIFIED` for that id), and the composition derived the established id from the result. The
+ * branch is deleted rather than guarded, because a classifier with no way to say "verified" cannot be
+ * accidentally wired to one.
+ *
+ * Verification now lives ONLY in `resolveVerifiedSessionBinding` (`binding.ts`), which takes the
+ * session id from producer-side association evidence and does not accept a caller claim at all.
  *
  * Note what is NOT an input: whether a host observation exists. A host observation is a different
  * fact and cannot move this state (§5 "No-session invariant").
  */
 export function classifySessionBinding(input: {
   readonly claimedSessionId: string | null;
-  readonly canonicalBindingPresent: boolean;
   readonly candidateCount: number;
   /** Whether a read was actually attempted through this path. */
   readonly readAttempted?: boolean | undefined;
@@ -244,15 +253,8 @@ export function classifySessionBinding(input: {
   if (input.conflictDetail !== null) {
     return Object.freeze({
       state: "CONFLICT" as const,
-      source: input.canonicalBindingPresent ? ("CANONICAL_ATTEMPT_BINDING" as const) : ("CALLER_DECLARATION" as const),
+      source: "CALLER_DECLARATION" as const,
       detail: input.conflictDetail,
-    });
-  }
-  if (input.canonicalBindingPresent) {
-    return Object.freeze({
-      state: "BOUND_VERIFIED" as const,
-      source: "CANONICAL_ATTEMPT_BINDING" as const,
-      detail: "a durable Attempt-keyed binding record establishes this session for this attempt",
     });
   }
   if (input.claimedSessionId === null) {
@@ -284,7 +286,7 @@ export function classifySessionBinding(input: {
     state: "SESSION_CLAIMED_UNVERIFIED" as const,
     source: "CALLER_DECLARATION" as const,
     detail:
-      "the caller supplied this session id, but no producer establishes an Attempt→Session relationship and no read was performed through this path; a declaration is evidence of a request, not of a binding",
+      "the caller supplied this session id as a DECLARATION; a claim is evidence of a request, and this classifier has no authority to establish an Attempt→Session binding",
   });
 }
 

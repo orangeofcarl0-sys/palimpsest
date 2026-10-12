@@ -191,6 +191,25 @@ export type {
 } from "./handoff_preview.js";
 
 /**
+ * Trajectory-H1 §8 (C4) — THE BINDING AUTHORITY CONTRACT. A caller's Session claim can never become a
+ * verified binding: the claim classifier cannot return `BOUND_VERIFIED`, and the ONLY function that can
+ * name a verified session takes its identity from producer-side association evidence.
+ */
+export {
+  ASSOCIATION_OBSERVATION_STATES,
+  ASSOCIATION_VERIFICATION_STATES,
+  BINDING_RESOLUTION_REFUSAL_CODES,
+  resolveVerifiedSessionBinding,
+} from "./binding.js";
+export type {
+  AssociationObservationState,
+  AssociationVerificationState,
+  AttemptSessionAssociation,
+  BindingResolutionRefusalCode,
+  VerifiedSessionBindingResolution,
+} from "./binding.js";
+
+/**
  * Trajectory-H1 §7 (C3) — SESSION PAGE INTEGRITY. A structural validator over a returned DSH page:
  * coverage is a conclusion drawn only after the page's identity, counts, sequence positions and
  * watermark agree with one another. An INVALID page claims no coverage and admits no events.

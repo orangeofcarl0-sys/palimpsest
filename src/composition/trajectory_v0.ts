@@ -44,12 +44,15 @@ import {
   buildProjectTrajectory,
   classifyHostObservation,
   classifySessionBinding,
+  resolveVerifiedSessionBinding,
   TrajectoryRefusal,
   selectAttemptWorkRelations,
   trajectoryViewIdOf,
   type AttemptExecutionBinding,
   type AttemptRelationContext,
+  type AttemptSessionAssociation,
   type BindingEvidenceRef,
+  type BindingSource,
   type DshSessionEventPage,
   type DshSessionReadPort,
   type HandoffPreview,
@@ -58,6 +61,7 @@ import {
   type PreviewHostObservationSummary,
   type PreviewProjectEvolutionSummary,
   type ProcessLifecycle,
+  type SessionBindingState,
   type SessionReadAdmission,
   type TrajectoryProjection,
   type TrajectoryProjectionInputs,
@@ -95,6 +99,15 @@ export interface TrajectoryV0CompositionInput {
    * SESSION_UNBOUND, and the Preview says so rather than pretending no events occurred.
    */
   readonly dshSessionReader?: DshSessionReadPort | undefined;
+  /**
+   * H1 §8.4: producer-side Attempt→Session association evidence, when a real producer has recorded it.
+   *
+   * This is the SEAM P2-A/P2-B will populate. H1 implements no producer: the list is absent in this
+   * deployment, so `resolveVerifiedSessionBinding` returns `NO_ASSOCIATION_EVIDENCE` and no session is
+   * ever verified. The parameter exists so the consumer contract is fixed BEFORE the producer exists —
+   * the point of the stage is that a future integration cannot elevate a caller's claim.
+   */
+  readonly sessionAssociations?: readonly AttemptSessionAssociation[] | undefined;
 }
 
 /** §4/§7: one host observation record the caller captured for an attempt. */
@@ -546,12 +559,32 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
 
       const classification = classifySessionBinding({
         claimedSessionId,
-        /** §5: NO canonical Attempt→Session producer exists in this deployment, so this is false. */
-        canonicalBindingPresent: false,
         candidateCount: claimedSessionId === null ? 0 : 1,
         sourceReadable,
         conflictDetail,
       });
+
+      /**
+       * H1 §8.5 (C4): THE ESTABLISHED ID IS NEVER THE CLAIM.
+       *
+       * H0 selected the established id by asking whether the classification was verified and, if so,
+       * using the CALLER's claimed id — so a boolean decided that the caller's session was the
+       * attempt's session. The classifier can no longer return `BOUND_VERIFIED` at all, and the
+       * established id now comes from a VERIFIED PRODUCER ASSOCIATION resolved below.
+       *
+       * No producer exists in this deployment (§8.3 steps 4-7 are deferred to P2-A/P2-B), so the
+       * associations list is empty and the resolution is `NO_ASSOCIATION_EVIDENCE`. The seam is
+       * present and typed, and it takes its session identity from the association — never the claim.
+       */
+      const sessionBinding = resolveVerifiedSessionBinding({
+        projectId,
+        attemptId: request.attemptId,
+        invocationId: request.hostRecord?.portInvocationId ?? null,
+        associations: input.sessionAssociations ?? Object.freeze([]),
+      });
+      const verifiedSessionId = sessionBinding.verifiedSessionId;
+      const effectiveBindingStatus: SessionBindingState = verifiedSessionId === null ? classification.state : "BOUND_VERIFIED";
+      const effectiveBindingSource: BindingSource = verifiedSessionId === null ? classification.source : "CANONICAL_ATTEMPT_BINDING";
 
       /**
        * §7.1: the read admission describes what ACTUALLY happened. Nothing was requested through the
@@ -595,17 +628,18 @@ export function composeTrajectoryV0(input: TrajectoryV0CompositionInput): Trajec
         hostLocalJobId: request.hostRecord?.hostLocalJobId ?? null,
         portInvocationId: request.hostRecord?.portInvocationId ?? null,
         /**
-         * §5: NO producer establishes an Attempt→Session relationship, so the ESTABLISHED id is
-         * always null and the caller's id is recorded only as a CLAIM.
+         * H1 §8.5: the established id comes from the VERIFIED ASSOCIATION RESOLUTION, never from the
+         * caller's claim. With no producer composed it is always null, and the claim is recorded only
+         * as a claim.
          */
-        dshSessionId: classification.state === "BOUND_VERIFIED" ? claimedSessionId : null,
+        dshSessionId: verifiedSessionId,
         claimedSessionId,
         hostObservationProvenance: hostClassification.provenance as HostObservationProvenance,
-        sessionSource: classification.source,
-        sessionBindingStatus: classification.state,
+        sessionSource: effectiveBindingSource,
+        sessionBindingStatus: effectiveBindingStatus,
         sessionReadAdmission,
         bindingEvidenceRefs: Object.freeze(evidenceRefs),
-        detail: classification.detail,
+        detail: verifiedSessionId === null ? classification.detail : sessionBinding.detail,
       });
 
       /**

@@ -232,7 +232,14 @@ describe("Trajectory-V0S-H0 §7 — an unverified Session claim is non-reading",
     const rendered = JSON.stringify(preview);
     expect(rendered).not.toContain("header agreed");
     expect(rendered).not.toContain("headerSessionId");
-    expect(preview.execution.bindingDetail).toContain("no read was performed");
+    /**
+     * ------------------------------------------------------------------ CHANGED ASSERTION (H1 C4)
+     *
+     * The H0 detail read "...and no read was performed through this path". H1 C4 reworded it to name
+     * the structural reason: the claim classifier has no verification authority.
+     */
+    expect(preview.execution.bindingDetail).toContain("DECLARATION");
+    expect(preview.execution.bindingDetail).toContain("no authority to establish an Attempt→Session binding");
 
     /** §7.1: a useful Work-only Preview remains. */
     expect(preview.canonical.attemptState).toBe("COMPLETED");

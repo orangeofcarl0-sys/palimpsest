@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_BINDING_CONFLICT_CONTROLS",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "counterexamples": {
+    "B1": "caller claim session-X + producer evidence session-Y -> claim stays SESSION_CLAIMED_UNVERIFIED, only session-Y is producer-supported, the disagreement remains visible",
+    "B2": "an association naming a different Attempt -> UNRESOLVED / ATTEMPT_MISMATCH",
+    "B3": "an association bound to a different Invocation -> UNRESOLVED / INVOCATION_MISMATCH",
+    "B4": "the same evidence delivered four times (including a retry reference) -> ONE binding, one session identity, one invocation",
+    "B5": "one invocation reported with two Session identities -> UNRESOLVED / CONFLICTING_SESSION_IDENTITY, and reversing the input gives the identical refusal (no first-wins or last-wins)",
+    "B6": "a producer observation with durableBindingRef=null -> UNRESOLVED / DURABLE_BINDING_MISSING; the observation is still represented",
+    "B7": "no association evidence at all, however readable a session is -> UNRESOLVED / NO_ASSOCIATION_EVIDENCE; the resolver has no readability input",
+    "B8": "a caller-declared association -> UNRESOLVED / NOT_PRODUCER_OBSERVED; the ordinary Preview performs zero reads and reports no verified SessionId and no admitted events"
+  },
+  "cardinality": "Attempt -> Invocation(s) -> Session(s) is representable; a conflicting pair is refused rather than silently overwritten, and a retry reference for the same identity does not create a second binding",
+  "verdict": "PASS — every §8.7 counterexample has deterministic, fail-closed semantics"
+}
