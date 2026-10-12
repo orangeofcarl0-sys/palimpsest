@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "modelRun": false,
+  "personalSessionsAccessed": false,
+  "kind": "TRAJECTORY_H1_P2_READINESS",
+  "target": "Trajectory-P2-A — Real DSH Session Identity Producer (NOT implemented in H1)",
+  "integrationPoints": [
+    {
+      "id": 1,
+      "item": "the actual worker SessionId producer",
+      "detail": "host/dsh/lib/runner.js runWorker mints brandString(`worker-${randomUUID()}`) through agents.create and NEVER reports it on stdout, stderr or IPC",
+      "source": "host/dsh/lib/runner.js",
+      "verifiedIn": "V0S S2 audit, re-read in H1"
+    },
+    {
+      "id": 2,
+      "item": "the Parent-owned InvocationId",
+      "detail": "src/deployment/work_worker.ts owns the port invocation and already correlates host observations per invocation",
+      "source": "src/deployment/work_worker.ts"
+    },
+    {
+      "id": 3,
+      "item": "the existing structured IPC mechanism",
+      "detail": "the parent spawns `node <dshBin> --profile P --work <ctx>` with cwd=runInput.workDir and owns stdio[3]; that channel is model-unreachable, so it is the natural identity-report carrier",
+      "source": "host/dsh/lib/runner.js + src/deployment/work_worker.ts"
+    },
+    {
+      "id": 4,
+      "item": "the proposed narrow Session identity message shape",
+      "detail": "a single structured message carrying { projectId, attemptId, invocationId, dshSessionId, hostLocalJobId } on the existing channel; H1 fixes no wire format, only the consumer contract it must satisfy"
+    },
+    {
+      "id": 5,
+      "item": "how the Parent establishes which Invocation delivered the message",
+      "detail": "the Parent must bind the message to the invocation it launched on THAT channel; a message on an unrelated channel is not an observation of this invocation"
+    },
+    {
+      "id": 6,
+      "item": "fields that must be compared before accepting an observation",
+      "detail": "projectId, attemptId, invocationId (all exact), plus the session id the producer reports; H1 resolveVerifiedSessionBinding refuses ATTEMPT_MISMATCH and INVOCATION_MISMATCH"
+    },
+    {
+      "id": 7,
+      "item": "facts that are ONLY Host observations",
+      "detail": "the session identity report is evidence of what a particular process observed; it is NOT by itself a durable canonical binding"
+    },
+    {
+      "id": 8,
+      "item": "facts additionally required for durable binding",
+      "detail": "a durable, verified association record written by a designated existing owner and revalidated against canonical Attempt and Session source facts; H1 requires a non-null durableBindingRef and verification === VERIFIED"
+    },
+    {
+      "id": 9,
+      "item": "duplicate and conflicting message handling",
+      "detail": "duplicates of one identity are idempotent (H1 B4); two distinct Session identities for one invocation are CONFLICTING_SESSION_IDENTITY (H1 B5); a marked conflict is refused before any resolution"
+    },
+    {
+      "id": 10,
+      "item": "failure windows before and after IPC delivery",
+      "detail": "before delivery the Parent has no identity report (NO_ASSOCIATION_EVIDENCE); after delivery but before a durable association it has an observation only (DURABLE_BINDING_MISSING) — neither establishes BOUND_VERIFIED"
+    },
+    {
+      "id": 11,
+      "item": "how a cold restart changes what can be proven",
+      "detail": "a SessionId that remains present does not restore Attempt ownership; only a durable association survives (H1 B7). Cold recovery of the association itself is P2-B and is NOT tested in H1."
+    },
+    {
+      "id": 12,
+      "item": "how H1 contracts will be consumed",
+      "detail": "H1 page integrity validates the page a producer-supplied session yields; H1 verified binding resolution supplies the session id to read. P2-A success alone must NOT be called BOUND_VERIFIED unless the source and durability requirements actually hold."
+    }
+  ],
+  "stages": {
+    "P2-A": "Real Host/Parent Session identity observation",
+    "P2-B": "Durable Attempt→Invocation→Session binding and cold recovery",
+    "P2-C": "Real attributed Execution Trajectory and Handoff Preview"
+  },
+  "readyToBegin": "P2-A is READY to begin: the consumer-side contract is fixed and typed, the resolver refuses every insufficient evidence class, and the ordinary Preview remains zero-read and incapable of elevating a claim. The producer itself is NOT implemented.",
+  "explicitlyNotImplemented": [
+    "the Attempt→DSH Session identity producer",
+    "durable binding persistence",
+    "cold recovery proof",
+    "retry cardinality persistence",
+    "live PRIMARY provenance",
+    "automatic Agent Handoff"
+  ]
+}

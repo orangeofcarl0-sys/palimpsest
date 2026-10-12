@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_REGRESSION",
+  "stage": "Trajectory-H1",
+  "baseline": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "build": {
+    "command": "npx tsc -b",
+    "result": "PASS (exit 0)"
+  },
+  "architecture": {
+    "command": "node scripts/audit/module-architecture.mjs --check",
+    "result": "PASS",
+    "violations": 0,
+    "acceptedBaselineExceptions": 9,
+    "note": "one new import cycle (handoff_preview <-> page_integrity) was introduced during C5, detected by this gate and fixed by moving the coverage vocabulary beside the validator"
+  },
+  "publicApi": {
+    "command": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "result": "PASS",
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0
+  },
+  "focusedTrajectorySuites": {
+    "files": 16,
+    "tests": 211,
+    "passed": 211,
+    "failed": 0,
+    "note": "H1 falsifiers, durability, page integrity, binding authority, supporting semantics, plus the corrected H0/V0/V0S suites"
+  },
+  "architectureSelfTests": {
+    "files": 22,
+    "tests": 315,
+    "passed": 315,
+    "failed": 0
+  },
+  "broadSuite": {
+    "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+    "files": 329,
+    "tests": 4642,
+    "passed": 4629,
+    "failed": 13,
+    "failingFiles": [
+      {
+        "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlcfs_gates.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlc_gates.test.ts",
+        "failures": 2
+      },
+      {
+        "file": "test/r3l0ciarl_gates.test.ts",
+        "failures": 1
+      }
+    ],
+    "perFileCounts": "1, 2, 5, 5 — IDENTICAL to the archived-drift counts H0 reported at its own baseline",
+    "excludedUnsafe": "test/r3l0ciarlcf_gates.test.ts is excluded from the BROAD run because it imports a legacy isolated-mutation path; it was run explicitly and individually and its 2 failures are reproduced at the baseline",
+    "durationSeconds": 2468,
+    "confirmedBySecondRun": true
+  },
+  "archivedClosureDrift": {
+    "classification": "KNOWN_HISTORICAL_CLOSURE_DRIFT (DRIFTED_EXPECTED)",
+    "family": "test/r3l0ciarl* gates",
+    "measuredAtHead": 15,
+    "measuredAtBaseline": 15,
+    "identical": true,
+    "perFile": [
+      {
+        "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlcfs_gates.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlcf_gates.test.ts",
+        "failures": 2
+      },
+      {
+        "file": "test/r3l0ciarlc_gates.test.ts",
+        "failures": 2
+      },
+      {
+        "file": "test/r3l0ciarl_gates.test.ts",
+        "failures": 1
+      }
+    ],
+    "method": "an isolated git worktree pinned at the exact baseline 789f7ee was created, built with tsc -b, and the SAME archived family was run there with the same worker bound; the failure set and per-file counts are IDENTICAL",
+    "cause": "the archived r3l0c plan closure digest is computed over a fixed module list that does not include the new Trajectory modules, so adding src modules moves the closure digest and the archived gate reports DRIFTED",
+    "notRegenerated": "the frozen historical evidence was NOT regenerated to silence these tests",
+    "notWeakened": "no new contract test was weakened for a green result",
+    "measuredInBroadRun": 13,
+    "note": "the broad run excludes r3l0ciarlcf_gates (2 failures); including it the archived family total is 15, measured identically at HEAD and at the baseline worktree"
+  },
+  "environmentLimitation": {
+    "observed": "one earlier broad run reported 14 failures: test/r3l0c_g0_cleanup.test.ts S1-B2b timed out at 30s",
+    "classification": "ENVIRONMENT_LIMITATION (resource contention under a 4,642-test run), NOT a regression",
+    "evidence": "the confirming run reports 13 failures, and the same file passes 10/10 in isolation at HEAD",
+    "resolved": true
+  },
+  "newRegressions": 0,
+  "verdict": "PASS — every remaining failure is archived closure drift or a resource-contention timeout, each reproduced or cleared independently; ZERO new regressions attributable to H1",
+  "nodeVersionCaveat": "Node v24.14.1 is below the repository-declared engines minimum >=24.15.0; all results above ran under it"
+}
