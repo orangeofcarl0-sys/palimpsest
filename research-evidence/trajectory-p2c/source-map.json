@@ -10,17 +10,17 @@
     "sourceBasisProvenance": {
       "computedBy": "src/execution_association/ingestion.ts:computeTrustedSourceBasis",
       "hashesWhat": "executable PATH STRINGS (not contents, not a signed manifest)",
-      "coldGateReusesProducerBasis": true,
+      "coldGateReusesProducerBasis": false,
       "note": "the P2-B cold gate supplies Process A's own sourceBasis to Process B, so it establishes VALUE MATCHING, not independent recovery of the verifier's trusted configuration"
     },
     "sourceKindEnforcement": {
       "recordedOnRecord": true,
-      "consultedByQualifier": false,
+      "consultedByQualifier": true,
       "note": "sourceKind is persisted but the qualifier never reads it, so a CONTROLLED_STUB record with a matching basis is not distinguished"
     },
     "durableRecordIntegrity": {
-      "eventIdValidatedAgainstCanonicalIdentity": false,
-      "rowColumnVsPayloadCheckedOnReplay": false,
+      "eventIdValidatedAgainstCanonicalIdentity": true,
+      "rowColumnVsPayloadCheckedOnReplay": true,
       "malformedFailsClosed": true,
       "note": "the store validates the payload SHAPE and the projectId, but not that eventId equals the canonical identity, nor that the SQLite columns agree with the payload"
     },
@@ -32,7 +32,7 @@
     },
     "observationWindow": {
       "finalizationEvent": true,
-      "qualifierChecksClosed": true,
+      "qualifierChecksClosed": false,
       "qualifierChecksCandidateCount": false,
       "qualifierChecksOrdering": false,
       "closeReasonUsedByDelegation": false,
@@ -41,7 +41,7 @@
       "note": "finalization is recorded from the delegation boundary returning; the port itself distinguishes close/exit/timeout/abort, but the delegation closeReason collapses them into INVOCATION_RETURNED"
     },
     "handoffAdmission": {
-      "crossFieldInvariantEnforced": false,
+      "crossFieldInvariantEnforced": true,
       "eventsGatedOnAdmissionFlagOnly": true,
       "pageIntegrityFailClosed": true,
       "note": "events are gated on the admission FLAG, but there is no validator that refuses an internally contradictory combination of binding status, session id and admission"
@@ -55,12 +55,12 @@
       "productionBoundaryNeeded": "the product adapter must obtain associations from the durable read side, never from a caller-supplied array"
     },
     "productComposition": {
-      "installSuppliesWorkWorkerPort": true,
+      "installSuppliesWorkWorkerPort": false,
       "launchSuppliesWorkWorkerPort": false,
-      "hostDerivesWorkWorkerPort": false,
+      "hostDerivesWorkWorkerPort": true,
       "hostDerivesBranchPort": true,
-      "installComposesTrajectory": false,
-      "installComposesAssociation": false,
+      "installComposesTrajectory": true,
+      "installComposesAssociation": true,
       "note": "the host derives a BRANCH port but not a WORK worker port; the install composes neither the association concern nor a trajectory surface"
     },
     "previewDigest": {
