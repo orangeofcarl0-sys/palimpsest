@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_GIT_BASELINE",
+  "stage": "Trajectory-P2A",
+  "requiredBaseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "verifiedHead": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "baselineBranch": "trajectory-h1-source-binding-contract",
+  "remoteBaselineBranchHead": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "newBranch": "trajectory-p2a-session-identity-observation",
+  "newBranchExistedBefore": false,
+  "workingTreeClean": false,
+  "indexClean": true,
+  "untrackedFileCount": 0,
+  "localMain": "67b29c9e7907b08fe594738973ce48b55e10d80b",
+  "remoteMain": "044330b2e55198542d545edc42ed9c36e7ce896b",
+  "localMainEqualsRemoteMain": false,
+  "h1CommitChain": [
+    "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf research(trajectory-h1): attest source integrity and P2 boundary readiness",
+    "a813ba60d85fbcd77e21282511a93444db0b5686 fix(trajectory-h1): tighten supporting evidence semantics",
+    "6353c469d690225a00317c294cf19ed17c079014 refactor(trajectory-h1): separate caller claims from verified session identity",
+    "f087dd2126cd888261c502001af1770caf4d2b32 fix(trajectory-h1): validate attributed event-page identity and coverage",
+    "e562303a263ca507fa384bcd10fbc074d8083e5d fix(trajectory-h1): derive DSH durability from one official persistence read",
+    "1bf4583b8586351e45efe91f103b3468d35c1c50 research(trajectory-h1): establish source and binding contract falsifiers",
+    "789f7ee16e86f34cef910c4a0b425a38df470a58 research(trajectory-h0): attest consumer hardening and record deferred producer gates"
+  ],
+  "protectedTrees": {
+    "research-evidence/trajectory-t0": "58b699a28daac94db26bc6f0c343c9a0c655f419",
+    "research-evidence/trajectory-v0": "58761f19a7feba3039e6910375cc81361143eaaa",
+    "research-evidence/trajectory-v0s": "c4677c4b8eaa66dfb58bf479873b083bd904d32d",
+    "research-evidence/trajectory-v0s-h0": "0ce8e4baf3be05c4e833dd78acd189f6604a48d6",
+    "research-evidence/trajectory-h1": "a7364123b70a1cf9c24f88cdbe33300c98dd43da",
+    "research-evidence/r3-l0c-g1": "4c98ca488c20ae00722ebd802243e936ed587bc2",
+    "research-evidence/r3-l0c-g1b": "571e6019dbe2cf66c98743f8a7e94a7b9e74c92c"
+  },
+  "environment": {
+    "os": "win32 x64",
+    "node": "v24.14.1",
+    "pnpm": "11.21.0",
+    "dshVersion": "0.2.0-rc.2",
+    "repositoryDeclaredNodeMinimum": ">=24.15.0",
+    "nodeVersionMeetsDeclaredMinimum": false,
+    "dshProfileModulesPresent": true,
+    "palimpsestHostBundleInstalled": true,
+    "workerHostTestInfrastructure": [
+      "test/r3l0c_g1_observer.test.ts",
+      "test/r3l0c_g1_integrated.test.ts",
+      "test/r3l0c_g1b_chain.test.ts",
+      "scripts/gates/d2-live-tee-worker.mjs",
+      "scripts/gates/env.mjs (installHostBundle)"
+    ]
+  },
+  "environmentIncident": {
+    "kind": "PRE_EXISTING_NODE_MODULES_CORRUPTION_REPAIRED",
+    "detail": "164 of 248 pnpm package directories under node_modules/.pnpm were empty (including vitest, typescript and @ordarium/*). Detected before any product change. Repaired by re-linking from the local pnpm content store with --frozen-lockfile: 128 packages reused, 0 downloaded, versions unchanged. node_modules is gitignored, so no tracked state was affected.",
+    "versionsChanged": false,
+    "networkUsed": false
+  },
+  "protectedEvidenceUnchanged": true,
+  "note": "no repository configuration was modified; no merge to main is authorized"
+}

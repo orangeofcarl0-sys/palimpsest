@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClassesUsed": [
+    "SOURCE_DEMONSTRATED",
+    "REAL_DSH_NO_MODEL",
+    "CONTROLLED_FIXTURE",
+    "NOT_ESTABLISHED"
+  ],
+  "testFile": "test/trajectory_p2a_source_contract.test.ts",
+  "falsifiers": [
+    {
+      "id": "F1",
+      "claim": "no identity producer exists on the Work route",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the worker block mints sessionId: brandString(`worker-${randomUUID()}`) and, with that minting expression removed, mentions NO session identity; the block contains no process.send at all; the only process.send in the host bundle is the context-pull tool, whose envelope carries no session identity",
+      "expectedInvariant": "the Work route must transport the created session identity to the parent",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F2",
+      "claim": "the parent has no Session Identity parser",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "spawned.on(\"message\") consults only parseWorkerPullEnvelope and drops every other message via `if (envelope === undefined) return;`; no identity channel constant, parser or observation type exists",
+      "expectedInvariant": "a correctly shaped identity message must be recognized on the parent IPC channel",
+      "verdict": "DEFECT_CONFIRMED"
+    },
+    {
+      "id": "F3",
+      "claim": "the parent already owns the invocation identity",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "const invocationId = `wpi-${randomUUID()}` is minted BEFORE spawn and carried on the port observation; the parent owns the spawned object",
+      "expectedInvariant": "the receiving parent must associate an identity with its OWN invocation, never a payload-supplied one",
+      "verdict": "PRECONDITION_SATISFIED"
+    },
+    {
+      "id": "F4",
+      "claim": "Work Delegation already owns Attempt correlation",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "correlateObservations stamps prepared.attemptId (canonical Work) and adopts observation.invocationId from the producer; the blocking kernel supplies hostLocalJobId \"\" rather than inventing one",
+      "expectedInvariant": "AttemptId comes from Work and InvocationId from the port",
+      "verdict": "PRECONDITION_SATISFIED"
+    },
+    {
+      "id": "F5",
+      "claim": "session creation and the model turn are separate",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "in runWorker the order is create -> capabilityRefusal check -> handle.agent -> followup; in the installed dsh-agent-loop, createStoredSession precedes setupAndPublish, and AgentRegistry refuses an agent whose id disagrees with its session id",
+      "expectedInvariant": "a session-created observation must be possible without any model turn",
+      "verdict": "PRECONDITION_SATISFIED"
+    },
+    {
+      "id": "F6",
+      "claim": "runtime IPC authenticity is limited",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the observer sink is best-effort (a throw is swallowed); the port records executable identity as digests; the observation itself publishes HOST_OBSERVATION_DOES_NOT_PROVE including \"that a downstream wrapper spawned the genuine DSH binary\"",
+      "expectedInvariant": "receipt on the IPC channel must not be reported as first-party provenance",
+      "verdict": "LIMITATION_CONFIRMED"
+    },
+    {
+      "id": "F7",
+      "claim": "runtime compatibility",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "package.json engines.node is >=24.15.0; the measured runtime is v24.14.1, so the declared minimum is NOT met; the installed DSH build is 0.2.0-rc.2",
+      "expectedInvariant": "a P2-A runtime verdict must disclose the runtime limitation",
+      "verdict": "LIMITATION_CONFIRMED"
+    }
+  ],
+  "summary": {
+    "confirmed": 7,
+    "notEstablished": 0
+  },
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "realFirstPartyDshPathRan": false,
+  "note": "every falsifier is measured against the exact P2-A baseline before any product behaviour changed"
+}
