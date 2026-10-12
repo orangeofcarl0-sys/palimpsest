@@ -55,19 +55,25 @@ describe("P2A F1 — no identity producer exists on the Work route", () => {
     // The worker DOES call agents.create with a candidate identity.
     expect(block).toContain("sessionId: brandString(`worker-${randomUUID()}`)");
     expect(block).toContain("const handle = await agents.create({");
+
     /**
-     * The falsifier: with the minting expression removed, the worker block mentions NO session
-     * identity at all. The created identity is therefore never read into any report.
+     * CHANGED ASSERTION (P2A C2). At the baseline this falsifier proved the ABSENCE of any identity
+     * report: with the minting expression removed, the worker block mentioned no session id at all and
+     * held no IPC send. C2 CLOSED that gap, so the honest post-implementation assertion is the
+     * opposite — the block now reads the CREATED handle's identity and reports it — and the absence
+     * claim is recorded above as the baseline finding rather than kept as a live assertion.
      */
-    const stripped = block.replace(/sessionId:\s*brandString\(`worker-\$\{randomUUID\(\)\}`\)/u, "");
-    expect(stripped).not.toMatch(/sessionId/u);
-    // And the worker holds no IPC send at all: the ONE channel the parent owns is unused here.
-    expect(block).not.toContain("process.send");
+    const reportIndex = block.indexOf("sessionIdentityReport = reportWorkerSessionIdentity({");
+    expect(reportIndex).toBeGreaterThan(block.indexOf("const handle = await agents.create({"));
+    // The identity comes from the CREATED handle, and the channel is the parent IPC capability.
+    expect(block).toContain("sessionId: handle?.agent?.session?.id,");
+    expect(block).toContain("send: process.send,");
   });
 
   it("F1: the only IPC producer in the host bundle is the CONTEXT PULL tool, and it carries no session identity", () => {
     const index = source(FILES.hostIndex);
-    // The pull tool is the sole `process.send` site in the shipped host bundle.
+    // The pull tool remains the sole `process.send` site in the shipped host bundle: the identity report
+    // lives in the RUNNER (the worker path), not in the plugin's tool surface.
     const sends = index.match(/process\.send\(/gu) ?? [];
     expect(sends.length).toBe(1);
     // Its envelope names a channel, a kind, a requestId and a handle — no session identity field.
@@ -77,16 +83,21 @@ describe("P2A F1 — no identity producer exists on the Work route", () => {
     expect(index).not.toContain("session-created");
   });
 
-  it("F1: the installed host bundle agrees with the working tree — this is not a build-staleness artifact", () => {
-    const installed = join(PROFILE_MODULES, "palimpsest-dsh-host", "lib", "runner.js");
-    if (!existsSync(installed)) {
-      // A machine with no installed Palimpsest host bundle cannot run the Level C gate either.
-      expect(existsSync(join(PROFILE_MODULES, "palimpsest-dsh-host"))).toBe(false);
-      return;
-    }
-    const text = readFileSync(installed, "utf8");
-    expect(text).not.toMatch(/process\.send[\s\S]{0,200}session/iu);
-    expect(text).toContain("sessionId: brandString(`worker-${randomUUID()}`)");
+  it("F1: the BASELINE absence was measured against the installed bundle too, not only the working tree", () => {
+    /**
+     * CHANGED ASSERTION (P2A C2). At the baseline this test asserted the INSTALLED bundle also lacked a
+     * producer, which ruled out build staleness as an explanation. C2 implemented the producer, so the
+     * live assertion can no longer be "the installed bundle has no producer" — the installed copy is a
+     * deployment artifact that the C5 gate refreshes from this branch.
+     *
+     * The baseline measurement is preserved as EVIDENCE
+     * (`research-evidence/trajectory-p2a/source-map.json`, `installed_bundle_measurement`), and the live
+     * assertion becomes the property that actually matters: the WORKING TREE carries the producer, so a
+     * refreshed bundle will too.
+     */
+    const workingRunner = source(FILES.runner);
+    expect(workingRunner).toContain("reportWorkerSessionIdentity");
+    expect(existsSync(join(PROFILE_MODULES, "palimpsest-dsh-host", "lib", "runner.js")) || !existsSync(join(PROFILE_MODULES, "palimpsest-dsh-host"))).toBe(true);
   });
 });
 
@@ -96,14 +107,25 @@ describe("P2A F2 — the parent has no Session Identity parser", () => {
   it("F2 (baseline, SOURCE_DEMONSTRATED): spawned.on('message') recognizes only the pull envelope", () => {
     const text = source(FILES.workWorker);
     expect(text).toContain('spawned.on("message", (message: unknown) => {');
-    // The ONE parser the listener consults.
+    // The pull parser is still consulted.
     expect(text).toContain("const envelope = parseWorkerPullEnvelope(message);");
-    // Any message that is not the pull envelope is dropped without inspection.
+    // Any message that is neither protocol is dropped without inspection.
     expect(text).toContain("if (envelope === undefined) return;");
-    // No session identity parser, channel constant or observation field exists yet.
-    expect(text).not.toContain("parseWorkerSessionIdentityEnvelope");
-    expect(text).not.toContain("WORK_WORKER_SESSION_IDENTITY_CHANNEL");
-    expect(text).not.toContain("WorkerSessionIdentityObservation");
+
+    /**
+     * CHANGED ASSERTION (P2A C3). At the baseline this falsifier proved the ABSENCE of a session
+     * identity branch: no parser, no channel constant and no observation field existed, so an
+     * identity-shaped message was silently dropped. C3 CLOSED that gap, so the honest
+     * post-implementation assertion is that the branch now exists and is consulted FIRST — while the
+     * pull protocol remains independent, which the assertions above pin.
+     */
+    expect(text).toContain("parseWorkerSessionIdentityEnvelope");
+    expect(text).toContain("WORK_WORKER_SESSION_IDENTITY_CHANNEL");
+    expect(text).toContain("observeSessionIdentity");
+    const identityBranch = text.indexOf("const identity = parseWorkerSessionIdentityEnvelope(message);");
+    const pullBranch = text.indexOf("const envelope = parseWorkerPullEnvelope(message);");
+    expect(identityBranch).toBeGreaterThan(-1);
+    expect(pullBranch).toBeGreaterThan(identityBranch);
   });
 });
 
@@ -148,7 +170,14 @@ describe("P2A F5 — session creation and the model turn are separate", () => {
     const block = workerBlock();
     const createIndex = block.indexOf("const handle = await agents.create({");
     const handleIndex = block.indexOf("const agent = handle.agent;");
-    const followupIndex = block.indexOf("agent.followup(");
+    /**
+     * CHANGED ASSERTION (P2A C2). The baseline anchor for the first model turn was the bare
+     * `agent.followup(` token, which now also appears in the identity report's own comment. The real
+     * call site is matched with its argument expression instead, so the ordering fact is measured on
+     * the call rather than on prose.
+     */
+    const followupMatch = /agent\.followup\(\s*\r?\n\s*userMessage\(/u.exec(block);
+    const followupIndex = followupMatch === null ? -1 : followupMatch.index;
     expect(createIndex).toBeGreaterThan(-1);
     expect(handleIndex).toBeGreaterThan(createIndex);
     expect(followupIndex).toBeGreaterThan(handleIndex);
@@ -156,6 +185,10 @@ describe("P2A F5 — session creation and the model turn are separate", () => {
     const refusalIndex = block.indexOf("if (capabilityRefusal !== null)");
     expect(refusalIndex).toBeGreaterThan(createIndex);
     expect(refusalIndex).toBeLessThan(followupIndex);
+    // C2's report sits in that same window, before the refusal.
+    const reportIndex = block.indexOf("sessionIdentityReport = reportWorkerSessionIdentity({");
+    expect(reportIndex).toBeGreaterThan(createIndex);
+    expect(reportIndex).toBeLessThan(refusalIndex);
   });
 
   it("F5: the installed DSH factory stores the session BEFORE setup and publication", () => {

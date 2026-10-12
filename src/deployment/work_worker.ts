@@ -45,9 +45,13 @@ import {
   HOST_OBSERVATION_DOES_NOT_PROVE,
   HOST_OBSERVATION_PROVES,
   HOST_OBSERVATION_SCHEMA_VERSION,
+  WORKER_SESSION_IDENTITY_SCHEMA_VERSION,
+  makeWorkerSessionIdentityTracker,
   type HostProcessObservation,
   type HostProcessRole,
   type WorkObservationSink,
+  type WorkSessionIdentitySink,
+  type WorkerSessionSourceQualification,
 } from "../interaction/work_delegation.js";
 
 
@@ -87,6 +91,52 @@ export const WORK_WORKER_CONTEXT_PULL_TOOL_NAME = "palimpsest_worker_context_pul
  * vocabulary. Single constants so the two processes cannot disagree about the protocol string.
  */
 export const WORK_WORKER_CONTEXT_CHANNEL = "palimpsest-worker-context-v1";
+
+/**
+ * Trajectory-P2A §7.1: the ONE channel name and kind for the host→parent SESSION IDENTITY report.
+ *
+ * A SEPARATE protocol from the context pull, deliberately: an identity message must never be processed
+ * as a pull request and vice versa (§7.1). The channel string is duplicated from the host bundle's own
+ * constant because the host is plain JavaScript outside the TypeScript program and cannot import from
+ * it; the two are pinned equal by a test that reads the host module.
+ */
+export const WORK_WORKER_SESSION_IDENTITY_CHANNEL = "palimpsest-worker-session-identity-v1";
+export const WORK_WORKER_SESSION_IDENTITY_KIND = "session-created";
+
+/**
+ * §7.1: parse the SESSION IDENTITY envelope strictly.
+ *
+ * The envelope admits EXACTLY `{channel, kind, sessionId}` — no more and no fewer keys. A message that
+ * does not match exactly is not ours: it is dropped rather than coerced, because a lenient parser on the
+ * transport is how "a session was created" quietly becomes a claim about which session, or about a
+ * session that was never created. There is no reading of stdout or stderr here at all (§7.1, §10.1).
+ *
+ * The SessionId must satisfy the producer's own output contract (see `workerSessionIdWellFormed`).
+ */
+export function parseWorkerSessionIdentityEnvelope(
+  raw: unknown,
+): { readonly sessionId: string } | undefined {
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return undefined;
+  const record = raw as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
+  if (keys.length !== 3 || keys.join(",") !== "channel,kind,sessionId") return undefined;
+  if (record.channel !== WORK_WORKER_SESSION_IDENTITY_CHANNEL || record.kind !== WORK_WORKER_SESSION_IDENTITY_KIND) return undefined;
+  const { sessionId } = record;
+  if (!workerSessionIdWellFormed(sessionId)) return undefined;
+  return Object.freeze({ sessionId });
+}
+
+/**
+ * §7.1: the SessionId syntax the PARENT admits, matching the producer's own rule.
+ *
+ * Deliberately moderate for the same reason as the producer's: DSH's SessionId is an unconstrained
+ * branded string and the worker host mints `worker-<uuid>`, so a prefix rule would break on a resumed or
+ * forked session, while an any-string rule would admit control characters or path-shaped values. This
+ * admits a non-empty, bounded, non-whitespace, non-control string and nothing more.
+ */
+export function workerSessionIdWellFormed(value: unknown): value is string {
+  return typeof value === "string" && value.length >= 1 && value.length <= 200 && !/[\s\u0000-\u001f\u007f]/u.test(value);
+}
 
 /** §11: a pull response is exactly one of these. `refused` is distinct from `not_found` on purpose. */
 export const WORKER_PULL_STATUSES = ["resolved", "not_found", "refused", "error"] as const;
@@ -266,6 +316,21 @@ export interface WorkWorkerExecutionInput {
    * consumer attaches one; the worker process never sees it and the payload is byte-identical either way (§9).
    */
   readonly observe?: WorkObservationSink | undefined;
+  /**
+   * Trajectory-P2A §7.3: the OPTIONAL host-only SESSION IDENTITY sink.
+   *
+   * Absent ⇒ the port records no session identity and behaves exactly as before (§13). Present ⇒ the port
+   * reports the identity it actually observed on its OWN child's IPC channel. Like `observe`, this is a
+   * report the port makes and never reads back, and it can never change the returned outcome.
+   */
+  readonly observeSessionIdentity?: WorkSessionIdentitySink | undefined;
+  /**
+   * Trajectory-P2A §7.4/§10.2: how the executable behind `dshBin` is QUALIFIED, as a separate dimension
+   * from the observation state. Defaults to `DIRECT_CHILD_IPC` — the honest value when a caller says
+   * nothing, because a configured binary may be a wrapper. A first-party integration test raises it
+   * explicitly; a controlled stub lowers it. It is NEVER inferred from the message.
+   */
+  readonly sessionSourceQualification?: WorkerSessionSourceQualification | undefined;
 }
 
 /**
@@ -776,7 +841,51 @@ export function dshSubprocessWorkWorkerPort(input: DshSubprocessWorkWorkerPortIn
            * `pullSeen` records the handles actually pulled, for §17 telemetry.
            */
           const pending = new Map<string, NodeJS.Timeout>();
+          /**
+           * Trajectory-P2A §7.5: the per-invocation session identity tracker. It is created ONCE per
+           * `run()` call and closed over the port's OWN `invocationId`, so a report is associated with the
+           * invocation this parent launched and never with a message-supplied identity.
+           */
+          const sessionIdentity = makeWorkerSessionIdentityTracker({ invocationId });
           spawned.on("message", (message: unknown) => {
+            /**
+             * §7.1: the SESSION IDENTITY branch is consulted FIRST and independently. The two protocols
+             * are disjoint by channel and kind, so neither can be read as the other.
+             *
+             * §7.2: the parent supplies its OWN invocationId and its OWN child pid. The message carries
+             * neither, so there is nothing in the payload that could mis-attribute the report.
+             *
+             * §7.6: the sink is optional and best-effort. A throwing consumer must not change the worker's
+             * outcome, so the call is contained and the result is only ever reported through it.
+             */
+            const identity = parseWorkerSessionIdentityEnvelope(message);
+            if (identity !== undefined) {
+              /**
+               * §7.5: the tracker enforces the repetition semantics. A first valid report establishes the
+               * identity; a repeated identical report is idempotent; two DIFFERENT identities become an
+               * explicit conflict in which neither is chosen. Arrival order never decides authority.
+               */
+              sessionIdentity.observe({
+                sessionId: identity.sessionId,
+                directChildPid: observedPid,
+                sourceQualification: runInput.sessionSourceQualification ?? "DIRECT_CHILD_IPC",
+              });
+              const sink = runInput.observeSessionIdentity;
+              const observed = sessionIdentity.observation;
+              if (sink !== undefined && observed !== null) {
+                try {
+                  /**
+                   * §7.6: the sink is contained. It reports the observation — including when the tracker's
+                   * state is CONFLICT, so the consumer can see the disagreement rather than only the first
+                   * identity. The sink's own throw is swallowed and cannot change the worker's outcome.
+                   */
+                  sink(observed);
+                } catch {
+                  /* §7.6: an observer failure is not a Work failure and not a Host failure */
+                }
+              }
+              return;
+            }
             const envelope = parseWorkerPullEnvelope(message);
             if (envelope === undefined) return;
             const resolver = runInput.contextPull;
