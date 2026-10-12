@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_H1_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-H1",
+  "measuredAgainst": "789f7ee16e86f34cef910c4a0b425a38df470a58",
+  "evidenceClasses": [
+    "DYNAMICALLY_REPRODUCED",
+    "SOURCE_DEMONSTRATED",
+    "NOT_ESTABLISHED"
+  ],
+  "results": [
+    {
+      "id": "F1",
+      "claim": "H0's counter consistency rule compares a raw stored count against a cold-read total that already contains synthetic closers",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_RULE_FIXTURE",
+      "sourceLocation": "scripts/trajectory_v0/dsh-session-reader.mjs:340",
+      "observed": "stored.count=3 <= coldRead.length=4 is accepted, so seq 2 of the observed read is reclassified PERSISTED although it was a synthetic closer of that read",
+      "expectedInvariant": "H1 single-read durability",
+      "correction": "C2 derives the boundary from the same array"
+    },
+    {
+      "id": "F2",
+      "claim": "known=50, returned=50, events=[] still yields FULL coverage and a COMPLETE Preview",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_FIXTURE",
+      "sourceLocation": "src/trajectory/handoff_preview.ts eventPageCoverageOf",
+      "observed": "eventPageCoverage=FULL; completeness=COMPLETE; no caveat reports the empty event array",
+      "expectedInvariant": "page integrity",
+      "correction": "C3"
+    },
+    {
+      "id": "F3",
+      "claim": "a page beginning at a nonzero cursor can claim FULL coverage of the whole Session history",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_FIXTURE",
+      "sourceLocation": "src/trajectory/handoff_preview.ts eventPageCoverageOf",
+      "observed": "requestedFromSeq=50 with knownEventCount=100 and returnedCount=100 reports FULL",
+      "expectedInvariant": "page integrity",
+      "correction": "C3"
+    },
+    {
+      "id": "F4",
+      "claim": "malformed page metadata (watermark, requested max, SessionId mismatch, negative counts) is accepted",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_FIXTURE",
+      "sourceLocation": "src/trajectory/handoff_preview.ts eventPageCoverageOf",
+      "observed": "every malformed page reports FULL because only two numeric fields are read",
+      "expectedInvariant": "page integrity",
+      "correction": "C3"
+    },
+    {
+      "id": "F5",
+      "claim": "a bare canonicalBindingPresent boolean elevates the CALLER-selected SessionId to BOUND_VERIFIED",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_FIXTURE",
+      "sourceLocation": "src/trajectory/execution.ts classifySessionBinding:251-257 + src/composition/trajectory_v0.ts:601",
+      "observed": "claimedSessionId=session-X with canonicalBindingPresent=true yields BOUND_VERIFIED, and the composition then sets dshSessionId to the claimed id",
+      "expectedInvariant": "binding authority",
+      "note": "FUTURE-INTEGRATION CONTRACT RISK: the composition supplies false today, so this is not a reachable ordinary product path",
+      "correction": "C4"
+    },
+    {
+      "id": "F6",
+      "claim": "LOCAL_PORT_OBSERVATION implies COMPLETE process coverage regardless of which phases were observed",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "fixture": "CONTROLLED_FIXTURE",
+      "sourceLocation": "src/trajectory/handoff_preview.ts attributionOf:445",
+      "observed": "a producer that observed only a Spawn reports processObservation=COMPLETE",
+      "expectedInvariant": "host provenance honesty",
+      "note": "CONTROLLED FUTURE-PATH contract defect: the ordinary Preview supplies originEstablished=false today",
+      "correction": "C5"
+    },
+    {
+      "id": "F7",
+      "claim": "the relation selector enforces its own role checks but relies on T0 for source verification and projection validity",
+      "classification": "SOURCE_DEMONSTRATED",
+      "fixture": "SOURCE_ONLY",
+      "sourceLocation": "src/trajectory/relation_admission.ts verdictFor",
+      "observed": "verdictFor checks plane/canonicalId/projectScope/roles/compared but never byReference.verification, and never re-derives the edge from canonical state",
+      "expectedInvariant": "documented trust boundary",
+      "note": "the selector is correctly a selector OVER a T0-validated projection; the trust boundary is recorded rather than treated as a defect",
+      "correction": "C5 documents and tests the boundary"
+    },
+    {
+      "id": "F8",
+      "claim": "quarantine entries are deduplicated by relation NAME, collapsing distinct rejected edges",
+      "classification": "SOURCE_DEMONSTRATED",
+      "fixture": "SOURCE_ONLY",
+      "sourceLocation": "src/trajectory/relation_admission.ts:258 + src/composition/trajectory_v0.ts canonicalEventIds",
+      "observed": "new Map keyed on entry.relation keeps only the first rejected edge per relation; the quarantine scope set also includes the shared authorization event, so a rejected edge touching it can be reported for two attempts",
+      "expectedInvariant": "quarantine precision",
+      "correction": "C5"
+    },
+    {
+      "id": "F9",
+      "claim": "T0 traceAttempt() matches by display-label substring",
+      "classification": "SOURCE_DEMONSTRATED",
+      "fixture": "SOURCE_ONLY",
+      "sourceLocation": "src/trajectory/projection.ts:1626-1628",
+      "observed": "node.label.includes(attemptId) && node.label.startsWith(\"ATTEMPT_CREATED\")",
+      "expectedInvariant": "identity exactness",
+      "deferred": "T0 is NOT modified in H1: a correct fix needs new T0 domain structure and is deferred to an independently reviewable T0 correctness slice"
+    },
+    {
+      "id": "F10",
+      "claim": "a non-TrajectoryRefusal failure of CANONICAL WORK access is reported as an optional cross-owner unavailability",
+      "classification": "SOURCE_DEMONSTRATED",
+      "fixture": "SOURCE_ONLY",
+      "sourceLocation": "src/composition/trajectory_v0.ts projectEvolutionOf catch",
+      "observed": "only TrajectoryRefusal is treated as a canonical Work failure; any other error falls into the OPTIONAL branch, so a raw canonical-source failure is downgraded",
+      "expectedInvariant": "projection failure taxonomy",
+      "correction": "C5"
+    }
+  ],
+  "counts": {
+    "DYNAMICALLY_REPRODUCED": 6,
+    "SOURCE_DEMONSTRATED": 4,
+    "NOT_ESTABLISHED": 0
+  },
+  "noModelExecution": true,
+  "noPersonalSessionsRead": true
+}
