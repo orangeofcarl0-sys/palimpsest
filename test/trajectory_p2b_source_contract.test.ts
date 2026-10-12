@@ -145,22 +145,39 @@ describe("P2B B0-C1 F6 — the P2-A tracker loses a third distinct SessionId for
 });
 
 describe("P2B B0-C1 F7/F8 — no durable association and no cold recovery exist at baseline", () => {
-  it("no execution-association durable store exists in src/", () => {
+  it("no execution-association durable store existed at the P2-B baseline", () => {
     /**
-     * At baseline there is no module that persists an Attempt -> Invocation -> Session association.
-     * The P2-B concern is created by this stage; this falsifier records that it did not exist before.
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2B C5)
+     *
+     * AT BASELINE (6dc52ba) this asserted that `src/execution_association/` did NOT exist — the F7 gap.
+     * C5 CREATED the durable concern, so the gap is closed and the assertion is flipped to record that
+     * the module now exists AND that it is the designated owner rather than an incidental directory.
+     * The baseline finding is preserved here rather than deleted.
      */
-    expect(existsSync(join(REPO, "src", "execution_association"))).toBe(false);
+    expect(existsSync(join(REPO, "src", "execution_association"))).toBe(true);
+    // The concern owns a typed store and its strict parser registry.
+    expect(existsSync(join(REPO, "src", "execution_association", "store.ts"))).toBe(true);
+    expect(existsSync(join(REPO, "src", "execution_association", "contract.ts"))).toBe(true);
+    expect(existsSync(join(REPO, "src", "execution_association", "qualification.ts"))).toBe(true);
+    // It is a separate concern from the H1 binding contract, which still owns no store.
     expect(existsSync(join(REPO, "src", "trajectory", "association_store.ts"))).toBe(false);
-    // H1's binding contract explicitly owns no store (documented in its own header).
     const binding = readRepo("src/trajectory/binding.ts");
     expect(binding!).toMatch(/does not create a database, a\s*\n?\s*\*?\s*store or a durable binding table/u);
   });
 
-  it("no cold-process recovery of an execution association exists", () => {
-    const trajectoryIndex = readRepo("src/trajectory/index.ts");
-    expect(trajectoryIndex).not.toBeNull();
-    // Nothing in the trajectory barrel recovers a durable association after a restart.
-    expect(trajectoryIndex!).not.toMatch(/recoverAssociation|replayAssociations|coldRecover/u);
+  it("no cold-process recovery of an execution association existed at the baseline", () => {
+    /**
+     * -------------------------------------------------------------- CHANGED ASSERTION (P2B C6)
+     *
+     * AT BASELINE this asserted that no recovery symbol existed (the F8 gap). C6 added the read-side
+     * qualification, whose whole point is to recompute a binding from durable records in a FRESH
+     * process — so the gap is closed. The baseline finding is preserved in the record above.
+     */
+    const associationIndex = readRepo("src/execution_association/index.ts");
+    expect(associationIndex).not.toBeNull();
+    // The read side recomputes qualification from durable records, which is what makes cold recovery
+    // possible without the original Parent's memory.
+    expect(associationIndex!).toMatch(/makeAssociationQualifier/u);
+    expect(associationIndex!).toMatch(/SqliteExecutionAssociationStore/u);
   });
 });
