@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_REGRESSION",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "build": {
+    "command": "npx tsc -b",
+    "result": "PASS (exit 0)"
+  },
+  "architecture": {
+    "command": "node scripts/audit/module-architecture.mjs --check",
+    "result": "PASS",
+    "violations": 0,
+    "acceptedBaselineExceptions": 9
+  },
+  "publicApi": {
+    "command": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "result": "PASS",
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0
+  },
+  "focusedP2ASuites": {
+    "files": 5,
+    "tests": 53,
+    "passed": 53,
+    "failed": 0,
+    "note": "source contract, producer, parent observation, work correlation, first-party gate"
+  },
+  "trajectorySuites": {
+    "files": 20,
+    "tests": 282,
+    "passed": 282,
+    "failed": 0,
+    "note": "T0/V0/V0S/H0/H1 plus the P2-A suites"
+  },
+  "affectedExistingSuites": {
+    "files": 7,
+    "tests": 90,
+    "passed": 90,
+    "failed": 0,
+    "note": "G1/G1-B observer, contract, correlation, chain; lean worker runtime; context pull transport"
+  },
+  "broadSuite": {
+    "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+    "files": 334,
+    "tests": 4695,
+    "passed": 4682,
+    "failed": 13,
+    "failingFiles": [
+      {
+        "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlcfs_gates.test.ts",
+        "failures": 5
+      },
+      {
+        "file": "test/r3l0ciarlc_gates.test.ts",
+        "failures": 2
+      },
+      {
+        "file": "test/r3l0ciarl_gates.test.ts",
+        "failures": 1
+      }
+    ],
+    "perFileCounts": "1, 2, 5, 5 — IDENTICAL to the archived-drift counts H1 and H0 reported at their own baselines",
+    "classification": "ARCHIVED_CLOSURE_DRIFT (pre-existing, not a P2-A regression)",
+    "newRegressions": 0
+  },
+  "unsafeTestExclusion": "test/r3l0ciarlcf_gates.test.ts contains a legacy isolated-mutation path and is excluded from the broad run; it was not executed here because the ruling forbids running it in a shared workspace where Windows junction cleanup could affect user files",
+  "historicalDriftDisclosure": "the 13 failures are the SAME archived-family failures H1 recorded at its own baseline, with identical per-file counts; no new failure was introduced and no frozen historical evidence was regenerated",
+  "environmentCaveat": "Node v24.14.1 is below the repository declared minimum of >=24.15.0; the broad run was executed with --maxWorkers=2 because unrestricted Vitest concurrency exhausts memory on this Windows host",
+  "nodeModulesIncident": "detected and repaired BEFORE any product change: 164 of 248 pnpm package directories were empty; re-linked from the local content store with --frozen-lockfile (128 reused, 0 downloaded, versions unchanged)",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

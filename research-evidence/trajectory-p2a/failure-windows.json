@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_FAILURE_WINDOWS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "evidenceClass": "CONTROLLED_IPC_FIXTURE",
+  "windows": [
+    {
+      "window": "before spawn",
+      "behaviour": "abort returns HOST_FAILURE; no child, no identity",
+      "tested": true
+    },
+    {
+      "window": "spawn failure",
+      "behaviour": "HOST_FAILURE; no pid and no identity fabricated",
+      "tested": true
+    },
+    {
+      "window": "child exists, session not created",
+      "behaviour": "no report; NOT_OBSERVED",
+      "tested": true
+    },
+    {
+      "window": "session created, IPC not delivered",
+      "behaviour": "host reports IPC_SEND_FAILED or an attempt; the Parent stays NOT_OBSERVED",
+      "tested": true
+    },
+    {
+      "window": "IPC received before exit",
+      "behaviour": "observation recorded normally",
+      "tested": true
+    },
+    {
+      "window": "IPC received then host failure",
+      "behaviour": "the identity is a real observation; the failure is a separate host fact",
+      "tested": true
+    },
+    {
+      "window": "timeout / abort",
+      "behaviour": "an identity observed before the timeout is real; the outcome is HOST_FAILURE, never a fabricated Work success",
+      "tested": true
+    },
+    {
+      "window": "repeated reports",
+      "behaviour": "idempotent",
+      "tested": true
+    },
+    {
+      "window": "conflicting reports",
+      "behaviour": "CONFLICT; neither chosen",
+      "tested": true
+    },
+    {
+      "window": "restart",
+      "behaviour": "host jobs and observations are not durable; nothing here survives a restart and nothing claims to",
+      "tested": false,
+      "note": "stated as a non-claim rather than measured"
+    }
+  ],
+  "invariant": "a missing identity observation is NEVER equated with proof that no Session was created",
+  "verdict": "FAILURE_WINDOWS_HANDLED_WITHOUT_FABRICATION",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}
