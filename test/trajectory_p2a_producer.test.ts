@@ -201,8 +201,12 @@ describe("P2A C2 §6.3 — the runner emits after creation and before the first 
     const text = source("host/dsh/lib/runner.js");
     // The report reads handle.agent.session.id.
     expect(text).toContain("sessionId: handle?.agent?.session?.id,");
-    // It passes process.send as the channel — the ONE IPC capability, never stdout.
-    expect(text).toContain("send: process.send,");
+    /**
+     * It passes process.send as the channel — the ONE IPC capability, never stdout — BOUND to its
+     * receiver. Node's `process.send` reads `this.connected`, so an unbound reference throws; the
+     * Level C gate measured exactly that before the binding was added.
+     */
+    expect(text).toContain("send: typeof process.send === 'function' ? process.send.bind(process) : undefined,");
     // And the report is NOT built from the candidate string.
     const reportIndex = text.indexOf("sessionIdentityReport = reportWorkerSessionIdentity({");
     const reportCall = text.slice(reportIndex, reportIndex + 300);

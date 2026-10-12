@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2A_FINAL_VERDICTS",
+  "stage": "Trajectory-P2A",
+  "baseline": "39cdabc0688d2dd08ccf5ab68611a1695dc97bbf",
+  "branch": "trajectory-p2a-session-identity-observation",
+  "completionState": "TRAJECTORY_P2A_SESSION_IDENTITY_OBSERVATION_QUALIFIED",
+  "gateResults": {
+    "C1 source map and baseline falsifiers": "PASS",
+    "C2 host session identity producer": "PASS",
+    "C3 parent strict parser and invocation correlation": "PASS (IPC_OBSERVATION_DEMONSTRATED)",
+    "C4 work delegation correlation": "PASS",
+    "C5 real Host Bundle -> Parent no-model integration": "PASS (REAL_HOST_PARENT_IDENTITY_ROUTE_QUALIFIED_NO_MODEL)",
+    "architecture": "PASS (0 violations, 9 accepted baseline exceptions)",
+    "public API parity": "PASS (0 missing, 0 changed kind, 0 added)"
+  },
+  "evidenceLevels": {
+    "SOURCE_DEMONSTRATED": [
+      "the source map and the producer/parent/correlation contracts",
+      "the no-model source-level exclusion guarantee"
+    ],
+    "CONTROLLED_IPC_FIXTURE": [
+      "the parent parser, invocation correlation, negative controls and identity-conflict controls"
+    ],
+    "REAL_FIRST_PARTY_DSH_NO_MODEL": [
+      "agents.create succeeds with session.seq 0 and zero provider requests"
+    ],
+    "REAL_HOST_PARENT_INTEGRATION_NO_MODEL": [
+      "the real host bundle reports the created session identity to the parent over IPC, with zero turn events"
+    ]
+  },
+  "whatP2ANowProves": [
+    "a real first-party DSH Agent Session is created and its ACTUAL SessionId is read from the created handle",
+    "the identity travels on the direct-child IPC channel and the parent stamps its OWN invocationId",
+    "the observed identity names a session the host actually wrote",
+    "no model turn ran: zero turn/request events in the written session, and no provider was contacted",
+    "the parent rejects wrong-channel, wrong-kind, extra-field, missing and malformed identities, and ignores stdout/stderr imitation",
+    "repeated identities are idempotent and conflicting identities are an explicit conflict in which neither is chosen",
+    "the correlation reuses the existing AttemptId/JobId ownership and introduces no settlement or promotion authority"
+  ],
+  "whatRemainsUnproven": [
+    "no durable Attempt->Invocation->Session binding exists",
+    "cold recovery was NOT tested",
+    "no real canonical Attempt correlation was demonstrated end to end (the seam is tested with a controlled port)",
+    "no Session events were admitted to the ordinary Attempt Preview",
+    "BOUND_VERIFIED remains unreachable from a caller claim and was not enabled",
+    "automatic Agent Handoff was not implemented",
+    "no live PRIMARY execution and no paid model call occurred"
+  ],
+  "propertyChecklist": {
+    "realDshSessionCreated": "YES (measured)",
+    "actualParentReceivedIdentity": "YES (Level C, real IPC channel)",
+    "canonicalAttemptCorrelationDemonstrated": "NO (seam wired and controlled-tested; no real Attempt run)",
+    "modelRequestOccurred": "NO",
+    "durableBindingExists": "NO",
+    "coldRecoveryProven": "NO",
+    "sessionEventsAdmittedToAttemptPreview": "NO",
+    "automaticHandoffImplemented": "NO"
+  },
+  "environmentLimitation": "Node v24.14.1 is below the repository declared minimum of >=24.15.0; the first-party runtime verdict is awarded with that limitation disclosed and no global configuration was changed",
+  "protectedEvidenceUnchanged": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "primaryEnabled": false
+}

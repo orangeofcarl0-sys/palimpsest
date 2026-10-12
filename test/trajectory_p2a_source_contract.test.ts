@@ -66,8 +66,10 @@ describe("P2A F1 — no identity producer exists on the Work route", () => {
     const reportIndex = block.indexOf("sessionIdentityReport = reportWorkerSessionIdentity({");
     expect(reportIndex).toBeGreaterThan(block.indexOf("const handle = await agents.create({"));
     // The identity comes from the CREATED handle, and the channel is the parent IPC capability.
+    // §6.4: the sender is BOUND to its receiver — an unbound `process.send` throws, measured by the
+    // Level C gate.
     expect(block).toContain("sessionId: handle?.agent?.session?.id,");
-    expect(block).toContain("send: process.send,");
+    expect(block).toContain("send: typeof process.send === 'function' ? process.send.bind(process) : undefined,");
   });
 
   it("F1: the only IPC producer in the host bundle is the CONTEXT PULL tool, and it carries no session identity", () => {
