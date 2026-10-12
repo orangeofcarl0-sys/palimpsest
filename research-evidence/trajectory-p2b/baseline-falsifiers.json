@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2B_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-P2-B",
+  "baseline": "6dc52ba3766d22fb69f5da040da434139a11c758",
+  "evidenceClassesUsed": ["SOURCE_DEMONSTRATED", "CONTROLLED_FIXTURE", "NOT_ESTABLISHED"],
+  "testFile": "test/trajectory_p2b_source_contract.test.ts",
+  "sourceMapScript": "scripts/trajectory_p2b/source-map.mjs",
+  "falsifiers": [
+    {
+      "id": "F1",
+      "claim": "the P2-A Level C gate's zero-turn measurement is vacuous on the real artifact encoding",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the gate's inspectSessions() does readFileSync(<artifact>, 'utf8') and regex-matches textual event types ('turn/start'|'turn/end'|'request/header'); the installed DSH JSONL backend writes session.v4.jsonl.zstd, whose first four bytes are 28 b5 2f fd (Zstandard magic); the gate never imports makeRealDshSessionReader or readColdSessionLog",
+      "measuredArtifact": {"suffix": "session.v4.jsonl.zstd", "firstBytesHex": "28b52ffd", "utf8ScanMatchedTurnLiteral": false, "utf8ScanCharLength": 324},
+      "expectedInvariant": "a 'zero model turns' claim must read the LOGICAL Session Event stream through official DSH facilities",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "B0-C2 reads the session through the official SessionPersistence reader and counts turn/start, step/start and request events from the logical stream"
+    },
+    {
+      "id": "F2",
+      "claim": "the mandatory first-party gate can return a passing result without running",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "test/trajectory_p2a_first_party_gate.test.ts computes hasFirstPartyDsh/hasBuiltDist and, when either is false, `return null` then asserts expect(hasFirstPartyDsh && hasBuiltDist).toBe(false); no SKIPPED/BLOCKED/NOT_ESTABLISHED outcome vocabulary exists",
+      "expectedInvariant": "a mandatory qualification gate must distinguish PASS from SKIPPED from BLOCKED and must not count a non-executed test as a pass",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "the P2-B first-party gate exits with an explicit outcome vocabulary and the wrapper asserts the gate actually executed against the real Host Bundle"
+    },
+    {
+      "id": "F3",
+      "claim": "the P2-A gate recursively deletes a fixed, caller-influenced directory without a containment proof",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "GATE_ROOT = process.env.PALIMPSEST_P2A_GATE_ROOT ?? <home>/.palimpsest-gates; RIG = join(GATE_ROOT, 'p2a-level-c'); rmSync(RIG, {recursive:true, force:true}); no mkdtempSync, no containment assertion, no ownership check",
+      "expectedInvariant": "cleanup must be bounded to a uniquely-owned directory whose containment is verified before any recursive delete",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "the P2-B gate allocates a per-run mkdtempSync directory, asserts it lies inside the gate root and is not a reparse point, and deletes only that directory"
+    },
+    {
+      "id": "F4",
+      "claim": "a Host Failure reason is not observable through the Parent's structured result parser",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "the shipped port captures stdout, but parseWorkWorkerResult rejects any key other than kind/summary/reason/proposedAction with 'worker result has unknown argument'; the host prints printWorkResult({kind:'HOST_FAILURE', detail}) whose `detail` the parent parser therefore refuses; P2-A observed exactly 'worker result has unknown argument \"detail\"'",
+      "expectedInvariant": "Host Failure, Worker Result parse failure and identity IPC success must be distinguishable; an observation-side fix must not widen the Work Result authority vocabulary",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "B0-C2 distinguishes these as separate facts and does not claim the corroborating run's refusal detail was observed through the primary run's Parent parser; no new Worker assertion verb is introduced"
+    },
+    {
+      "id": "F5",
+      "claim": "a caller-supplied source label is recorded verbatim and is not independent verification",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "WorkWorkerExecutionInput.sessionSourceQualification is a caller field; the port stamps `sourceQualification: runInput.sessionSourceQualification ?? 'DIRECT_CHILD_IPC'` onto the observation with no verifier in the module",
+      "expectedInvariant": "a caller-built object carrying sourceQualification:'FIRST_PARTY_DSH_QUALIFIED' must not thereby become a verified first-party source",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "B0-C3 defines a trusted source chain and a read-side qualification that consumes trusted deployment facts and actual DSH reads, never the message's own declaration"
+    },
+    {
+      "id": "F6",
+      "claim": "the P2-A tracker loses a third distinct SessionId for one invocation",
+      "classification": "CONTROLLED_FIXTURE",
+      "observation": "makeWorkerSessionIdentityTracker holds only `sessionId` + `conflictingSessionId`; observing A, B, C for one invocation yields state CONFLICT with sessionId=A and conflictingSessionId=C, so B is dropped from the exposed candidate set",
+      "expectedInvariant": "the durable history must preserve ALL distinct observed identities; conflict is a projection over the complete accepted observation set",
+      "verdict": "DEFECT_CONFIRMED",
+      "p2bCorrection": "B1's durable model persists one record per distinct identity and derives conflict from the complete candidate set; no last-write-wins and no two-slot cap"
+    },
+    {
+      "id": "F7",
+      "claim": "no durable Attempt -> Invocation -> Session association exists in src/",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "src/execution_association does not exist; src/trajectory/association_store.ts does not exist; src/trajectory/binding.ts documents that it deliberately creates no database, store or durable binding table",
+      "expectedInvariant": "P2-B must create the designated durable owner for the association",
+      "verdict": "GAP_CONFIRMED"
+    },
+    {
+      "id": "F8",
+      "claim": "no cold-process recovery of an execution association exists",
+      "classification": "SOURCE_DEMONSTRATED",
+      "observation": "src/trajectory/index.ts exports no recoverAssociation/replayAssociations/coldRecover; the P2-A tracker's lifetime is exactly one port invocation and holds no store",
+      "expectedInvariant": "a committed, source-qualified association must be recoverable in an independent process",
+      "verdict": "GAP_CONFIRMED"
+    }
+  ],
+  "verdict": "BASELINE_DEFECTS_PINNED"
+}
