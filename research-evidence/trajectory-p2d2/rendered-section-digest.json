@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_RENDERED_SECTION_DIGEST",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C3 §7.8 / C5 §9.3",
+  "evidenceClass": "CONTROLLED_RENDERER",
+  "sourceReferences": [
+    "src/trajectory/presentation.ts (sectionTextDigest, userMessageDigest)",
+    "host/dsh/lib/trajectory-presentation.js (userMessageDigest, sectionDigestOf)"
+  ],
+  "testFiles": ["test/trajectory_p2d2_presentation.test.ts", "test/trajectory_p2d2_host_delivery.test.ts"],
+  "digestRules": {
+    "capsuleContentDigest": { "algorithm": "SHA-256", "encoding": "canonical JSON (schema/canonical.ts canonicalDigest)", "over": "the Capsule VALUE" },
+    "renderedSectionDigest": { "algorithm": "SHA-256", "encoding": "raw UTF-8 bytes", "over": "the rendered section text" },
+    "fullUserMessageDigest": { "algorithm": "SHA-256", "encoding": "raw UTF-8 bytes", "over": "the FINAL message text the host hands to agent.followup()" }
+  },
+  "distinctness": {
+    "capsuleDigestDiffersFromSectionDigest": true,
+    "why": "a Capsule digest proves WHICH Capsule was admitted; it does NOT prove Section delivery. The two are recorded separately and never conflated"
+  },
+  "observedResults": {
+    "sectionDigestMatchesActualBytes": true,
+    "userMessageDigestMatchesCapturedText": true,
+    "sectionBytesDeclaredEqualsActualUtf8Bytes": true
+  },
+  "expectedInvariant": "the recorded digests identify exactly the bytes that were placed, so a later trial can freeze them and prove the delivered bytes did not change",
+  "verdict": "PASS",
+  "remainingUncertainty": "the digest proves byte identity of the delivered text; it does not prove a model read or understood it",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

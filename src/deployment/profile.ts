@@ -226,6 +226,11 @@ export interface ProjectAgentDeploymentProfile {
    * about reasoning changes (never a stub).
    */
   readonly reasoning?: DeploymentReasoningConfig | undefined;
+  /**
+   * Trajectory-P2-D2 §10 (additive): the EXPERIMENTAL, DEFAULT-OFF model-visible Trajectory delivery.
+   * Present (even `{}`) composes the capability; `mode` selects the arm. Absent ⇒ nothing changes.
+   */
+  readonly trajectory?: DeploymentTrajectoryConfig | undefined;
   readonly attention?: DeploymentAttentionConfig | undefined;
   readonly boundaryHomeId?: string | undefined;
   /** Deployment binding workspaceId → canonical boundary homeId (never social semantics). */
@@ -406,6 +411,55 @@ function parseReasoning(raw: unknown, what: string): DeploymentReasoningConfig {
   });
 }
 
+/**
+ * Trajectory-P2-D2 §10 — THE EXPERIMENTAL TRAJECTORY DELIVERY CONFIGURATION.
+ *
+ * The narrowest supported way for a NORMAL packaged deployment to enable the experimental, model-visible
+ * Trajectory delivery. Presence of this section (even `{}`) is the ONE switch; `mode` selects the arm and is
+ * STRICTLY validated. It is TRUSTED deployment configuration, fixed before Worker execution — a model can
+ * never choose an arm, supply a substitute Capsule or nominate a historical Session.
+ *
+ * It carries NO authority: enabling it starts no Worker, no model, no Attempt, no Session and no
+ * Continuation. It only makes the Context Owner materialize a bounded, read-only historical section for an
+ * attempt that ALREADY has a governed lineage, and only when that attempt's Work is actually started by the
+ * existing governance.
+ *
+ * DEFAULT OFF: an absent section (or `mode: "OFF"`) composes nothing and the default packaged path is
+ * unchanged.
+ */
+export interface DeploymentTrajectoryConfig {
+  /** The experimental arm. `OFF` (default) renders nothing; `CONTROL`/`TREATMENT` are the two arms. */
+  readonly mode?: "OFF" | "CONTROL" | "TREATMENT" | undefined;
+  /** An optional LOWER Capsule byte budget. It can only lower the product ceiling. */
+  readonly capsuleMaxSerializedBytes?: number | undefined;
+  /** An optional LOWER rendered-section byte budget. It can only lower the product ceiling. */
+  readonly sectionMaxBytes?: number | undefined;
+}
+
+function parseTrajectory(raw: unknown, what: string): DeploymentTrajectoryConfig {
+  const object = asObject(raw, what);
+  exactKeys(object, ["mode", "capsuleMaxSerializedBytes", "sectionMaxBytes"], what);
+  const mode = object.mode;
+  if (mode !== undefined && mode !== "OFF" && mode !== "CONTROL" && mode !== "TREATMENT") {
+    fail("invalid_value", `${what}.mode must be one of "OFF", "CONTROL", "TREATMENT", got ${JSON.stringify(mode)}`);
+  }
+  const bound = (key: string): number | undefined => {
+    const value = object[key];
+    if (value === undefined) return undefined;
+    if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+      fail("invalid_value", `${what}.${key} must be a finite nonnegative integer, got ${JSON.stringify(value)}`);
+    }
+    return value as number;
+  };
+  const capsuleMaxSerializedBytes = bound("capsuleMaxSerializedBytes");
+  const sectionMaxBytes = bound("sectionMaxBytes");
+  return Object.freeze({
+    ...(mode === undefined ? {} : { mode: mode as DeploymentTrajectoryConfig["mode"] }),
+    ...(capsuleMaxSerializedBytes === undefined ? {} : { capsuleMaxSerializedBytes }),
+    ...(sectionMaxBytes === undefined ? {} : { sectionMaxBytes }),
+  });
+}
+
 function parseServe(raw: unknown, what: string): DeploymentServeConfig {
   const object = asObject(raw, what);
   exactKeys(object, ["port", "host", "token"], what);
@@ -440,6 +494,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       "directory",
       "projectDirectory",
       "reasoning",
+      "trajectory",
       "attention",
       "boundaryHomeId",
       "boundaryRoutes",
@@ -507,6 +562,7 @@ export function parseDeploymentProfile(raw: unknown, what = "DeploymentProfile")
       ? {}
       : { projectDirectory: parseProjectDirectory(object.projectDirectory, `${what}.projectDirectory`) }),
     ...(object.reasoning === undefined ? {} : { reasoning: parseReasoning(object.reasoning, `${what}.reasoning`) }),
+    ...(object.trajectory === undefined ? {} : { trajectory: parseTrajectory(object.trajectory, `${what}.trajectory`) }),
     ...(object.attention === undefined ? {} : { attention: parseAttention(object.attention, `${what}.attention`) }),
     ...(optionalStableId(object, "boundaryHomeId", what) === undefined ? {} : { boundaryHomeId: optionalStableId(object, "boundaryHomeId", what)! }),
     ...(object.boundaryRoutes === undefined

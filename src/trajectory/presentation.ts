@@ -26,6 +26,8 @@
  *
  * Layer: L2 (`src/trajectory/`). Pure; it reads no owner, writes nothing and decides no authority.
  */
+import { createHash } from "node:crypto";
+
 import { canonicalDigest } from "../schema/canonical.js";
 import { CapsuleLimitInvalidError, type TrajectoryContextCapsule } from "./context_capsule.js";
 
@@ -95,6 +97,24 @@ const CONTROL_SECTION = [
 
 function utf8Bytes(text: string): number {
   return Buffer.byteLength(text, "utf8");
+}
+
+/**
+ * §7.8: the SECTION DIGEST rule, stated exactly so the Host can reproduce it: SHA-256 over the RAW UTF-8
+ * bytes of the rendered section text (no canonicalization, no JSON wrapping). This is deliberately DIFFERENT
+ * from `canonicalDigest`, which is used for the Capsule VALUE, so the two digests can never be confused.
+ */
+export function sectionTextDigest(text: string): string {
+  return createHash("sha256").update(Buffer.from(text, "utf8")).digest("hex");
+}
+
+/**
+ * §7.8: the full UserMessage digest rule, stated exactly: SHA-256 over the RAW UTF-8 bytes of the complete
+ * message text the Host is about to hand to the model. The Host computes this on the FINAL text, so it
+ * proves the delivered bytes rather than the intended ones.
+ */
+export function userMessageDigest(text: string): string {
+  return createHash("sha256").update(Buffer.from(text, "utf8")).digest("hex");
 }
 
 /** §7.7: validate the presentation bound at runtime, exactly as the Capsule bounds are validated. */
@@ -211,7 +231,7 @@ export function buildTrajectoryPresentation(input: {
         mode: "CONTROL" as const,
         sectionText: CONTROL_SECTION,
         sectionBytes,
-        sectionDigest: canonicalDigest(CONTROL_SECTION),
+        sectionDigest: sectionTextDigest(CONTROL_SECTION),
         capsuleDigest: null,
         consumerBasisDigest: input.consumerBasisDigest,
         originAttemptId: null,
@@ -242,7 +262,7 @@ export function buildTrajectoryPresentation(input: {
       mode: "TREATMENT" as const,
       sectionText,
       sectionBytes,
-      sectionDigest: canonicalDigest(sectionText),
+      sectionDigest: sectionTextDigest(sectionText),
       capsuleDigest: canonicalDigest(input.capsule),
       consumerBasisDigest: input.consumerBasisDigest,
       originAttemptId: input.capsule.originAttemptId,
@@ -270,7 +290,7 @@ export function validateTrajectoryPresentation(raw: unknown): { readonly ok: tru
   if (value.authority !== TRAJECTORY_PRESENTATION_AUTHORITY) return { ok: false, detail: `the presentation authority is ${JSON.stringify(value.authority)}, not ${TRAJECTORY_PRESENTATION_AUTHORITY}` };
   const sectionBytes = utf8Bytes(value.sectionText);
   if (value.sectionBytes !== sectionBytes) return { ok: false, detail: `the presentation declares ${JSON.stringify(value.sectionBytes)} bytes but the section is ${String(sectionBytes)} bytes` };
-  const sectionDigest = canonicalDigest(value.sectionText);
+  const sectionDigest = sectionTextDigest(value.sectionText);
   if (value.sectionDigest !== sectionDigest) return { ok: false, detail: "the presentation section digest does not match the actual section bytes" };
   if (sectionBytes > TRAJECTORY_PRESENTATION_HARD_MAX_SECTION_BYTES) return { ok: false, detail: `the presentation section exceeds the product ceiling ${String(TRAJECTORY_PRESENTATION_HARD_MAX_SECTION_BYTES)} bytes` };
   return { ok: true, presentation: raw as TrajectoryPresentation };

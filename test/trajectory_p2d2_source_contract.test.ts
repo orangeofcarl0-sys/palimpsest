@@ -111,27 +111,28 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     expect(outcome.capsule.truncation.eventOmittedCount).toBe(0);
   });
 
-  it("F1/F2/F11/F12 source pins: the Capsule is transported but never rendered, and delivery failure is unmarked", () => {
+  it("F1/F2/F11/F12 source pins (CHANGED ASSERTION P2D2 C4): the Capsule is now rendered and delivery is marked", () => {
     const runner = readRepo("host/dsh/lib/runner.js")!;
     const workWorker = readRepo("src/deployment/work_worker.ts")!;
     const contextService = readRepo("src/context/service.ts")!;
-    // F1: workTask() never reads compiled.trajectoryCapsule, and it is the sole source of the first UserMessage.
+    // F1 (CORRECTED): workTask() is composed, then the product section is placed into the SAME text.
     const workTaskBody = runner.slice(runner.indexOf("function workTask(context, indexText)"));
     expect(workTaskBody.slice(0, workTaskBody.indexOf("\n}"))).not.toMatch(/trajectoryCapsule/u);
-    // F2: the raw context (Capsule included) is shipped as JSON into the worker process.
-    expect(workWorker).toMatch(/workWorkerEnvironmentPayload\(context: WorkWorkerAttemptContext\)/u);
-    expect(workWorker).toMatch(/return Object\.freeze\(\{\s*context,/u);
-    // F11: a delivery failure is contained with no marker distinguishing it from "not authorized".
-    expect(contextService).toMatch(/a delivery failure never breaks context compilation/u);
-    expect(contextService).not.toMatch(/trajectoryDeliveryState|CAPSULE_NOT_AVAILABLE/u);
-    // F12: no rendered Trajectory Section digest and no full UserMessage digest are recorded.
-    expect(runner).not.toMatch(/trajectorySectionDigest|userMessageDigest/u);
+    expect(runner).toMatch(/applyTrajectoryPresentation\(composedTaskText, environment\.trajectoryPresentation\)/u);
+    expect(runner).toMatch(/agent\.followup\(\s*userMessage\(finalUserMessageText\),?\s*\)/u);
+    // F2: the raw context is STILL shipped as JSON, but now the rendered presentation is too, and the host
+    // places it — transport is no longer the whole story.
+    expect(workWorker).toMatch(/trajectoryPresentation: context\.compiled\?\.trajectoryCapsule\?\.presentation \?\? null/u);
+    // F11 (CORRECTED): a delivery failure now carries a delivery-precondition state.
+    expect(contextService).toMatch(/trajectoryDeliveryState|DELIVERY_PRECONDITION_NOT_MET/u);
+    // F12 (CORRECTED): the host now records the section digest and the full UserMessage digest.
+    expect(runner).toMatch(/PALIMPSEST_WORKER_TRAJECTORY/u);
+    expect(runner).toMatch(/userMessageDigest\(finalUserMessageText\)/u);
   });
 
   it("F3/F4/F6/F9/F13/F14/F15/F16/F17/F18 source pins", () => {
     const runner = readRepo("host/dsh/lib/runner.js")!;
     const efficacy = readRepo("host/dsh/lib/efficacy.js")!;
-    const launch = readRepo("src/deployment/launch.ts")!;
     const profile = readRepo("src/deployment/profile.ts")!;
     const cluster = readRepo("src/composition/execution_association.ts")!;
     const ingestion = readRepo("src/execution_association/ingestion.ts")!;
@@ -142,20 +143,20 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     // F3: R2-E E1 is a DIFFERENT factor — it pulls compiled handles and renders their bodies.
     expect(efficacy).toMatch(/EFFICACY_ENV = 'PALIMPSEST_R2E_EFFICACY'/u);
     expect(runner).toMatch(/environment\.context\?\.compiled\?\.handles/u);
-    // F4: launchDeployment() does not propagate the delivery flag, and the profile has no field for it.
-    expect(launch).not.toMatch(/experimentalTrajectoryContextDelivery/u);
-    expect(profile).not.toMatch(/experimentalTrajectoryContextDelivery|trajectoryContext/u);
+    // F4 (CHANGED ASSERTION P2D2 C6): the flag is now declared on the cluster install options and the
+    // profile path can carry it; the profile parser is still strict exact-key.
     expect(profile).toMatch(/function exactKeys\(/u);
-    // F6: the product delivery provider passes no durability even though the composition derived it.
+    // F6 (CHANGED ASSERTION P2D2 C2): durability is now source-derived in the product path.
     expect(cluster).toMatch(/const storeDurability: "DURABLE" \| "EPHEMERAL" = storePath === ":memory:" \? "EPHEMERAL" : "DURABLE";/u);
+    expect(cluster).toMatch(/durability: sourceDurability|buildTrajectoryPresentation/u);
     // F9 (CHANGED ASSERTION P2D2 C2): the declared union and the runtime vocabulary now AGREE — the
     // `RECORDED` variant and the `as IngestionOutcome` cast are both gone.
     expect(ingestion).not.toMatch(/"RECORDED"; readonly eventId/u);
     expect(ingestion).not.toMatch(/as IngestionOutcome/u);
     expect(ingestion).toMatch(/\{ readonly state: "APPENDED"; readonly eventId: string \}/u);
     expect(store).toMatch(/\| \{ readonly state: "APPENDED"; readonly event: ExecutionAssociationEvent \}/u);
-    // F13: the model-visible surface event `user/message` is NOT even in the product's recognized set, so the
-    // sanitizer would report it as "unrecognized" — the product currently cannot name the UserMessage at all.
+    // F13: the model-visible surface event `user/message` is still NOT in the product's recognized set, so the
+    // sanitizer reports it as "unrecognized" — the product cannot name the UserMessage in the Capsule path.
     expect(execution).toMatch(/RECOGNIZED_DSH_EVENT_TYPES = \[/u);
     expect(execution).not.toMatch(/"user\/message"/u);
     // The host reads TOOL names from `request/header`, which is correct for tools but is NOT the message body.
@@ -167,8 +168,9 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     // F17: the Capsule frames itself as data with read-only authority.
     expect(capsule).toMatch(/framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,/u);
     expect(capsule).toMatch(/authority: "READ_ONLY_INSPECTION" as const,/u);
-    // F18: there is no Trajectory presentation seam at all yet.
-    expect(runner).not.toMatch(/trajectoryPresentation|TRAJECTORY_PRESENTATION/u);
+    // F18 (CHANGED ASSERTION P2D2 C3): a Trajectory presentation seam now EXISTS, and the runner consumes it.
+    expect(readRepo("src/trajectory/presentation.ts")).toMatch(/TRAJECTORY_PRESENTATION_MODES = \["OFF", "CONTROL", "TREATMENT"\]/u);
+    expect(runner).toMatch(/applyTrajectoryPresentation/u);
   });
 
   it("F17: instruction-like historical text is carried as DATA with unchanged authority", () => {

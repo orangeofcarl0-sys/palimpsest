@@ -516,6 +516,15 @@ export function workWorkerEnvironmentPayload(context: WorkWorkerAttemptContext):
   readonly allowedPullHandles: readonly string[];
   /** The Palimpsest tool-name prefix a worker must not inherit (enumerated by the host at run time). */
   readonly deniedAuthorityPrefix: string;
+  /**
+   * Trajectory-P2-D2 §7/§8.1: the PRODUCT-RENDERED, model-visible Trajectory presentation for THIS attempt's
+   * arm, or `null` when the arm renders no section. The host's ONLY job is to place this text; it never
+   * composes a section, reads a canonical owner or chooses an arm. An absent value is NOT forwarded, so a
+   * payload predating this field produces a byte-identical prompt to before.
+   */
+  readonly trajectoryPresentation: import("../context/service.js").TrajectoryPresentationDelivery | null;
+  /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is distinguishable from CONTROL. */
+  readonly trajectoryDeliveryState: import("../context/service.js").TrajectoryDeliveryState | null;
 } {
   const handles = context.compiled?.handles ?? [];
   return Object.freeze({
@@ -526,6 +535,13 @@ export function workWorkerEnvironmentPayload(context: WorkWorkerAttemptContext):
     contextPullChannel: WORK_WORKER_CONTEXT_CHANNEL,
     allowedPullHandles: Object.freeze(handles.map((entry: { readonly handle: string }) => entry.handle)),
     deniedAuthorityPrefix: "palimpsest_",
+    /**
+     * §7/§8.1: the presentation the PRODUCT rendered for this attempt's arm, forwarded verbatim. It is
+     * `null` when the arm renders no section (OFF), and the runner then places nothing — so an OFF
+     * deployment's prompt is byte-identical to the pre-D2 baseline.
+     */
+    trajectoryPresentation: context.compiled?.trajectoryCapsule?.presentation ?? null,
+    trajectoryDeliveryState: context.compiled?.trajectoryCapsule?.deliveryState ?? null,
   });
 }
 

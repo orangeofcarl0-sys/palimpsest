@@ -311,6 +311,23 @@ async function applyWork(ctx, palimpsest, workFile) {
        * forwarded, so a payload predating this field produces a byte-identical prompt to before.
        */
       ...(typeof raw.contextIndexText === 'string' ? { contextIndexText: raw.contextIndexText } : {}),
+      /**
+       * Trajectory-P2-D2 §7/§8.1: THE PRODUCT-RENDERED TRAJECTORY PRESENTATION.
+       *
+       * The product already rendered this — `buildTrajectoryPresentation` composed it from the attempt's OWN
+       * qualified Capsule and the TRUSTED arm — and `workWorkerEnvironmentPayload` ships it in the work
+       * payload. This adapter forwards it VERBATIM and does nothing else: it composes no section, reads no
+       * canonical owner, chooses no arm and widens no authority. The runner's `workTask()` is what places it.
+       *
+       * STRICT SHAPE HANDLING (§8.2): only an actual object with a string `sectionText` is forwarded; a
+       * malformed value is NOT stringified, because a bad presentation must degrade to "the worker sees no
+       * section" rather than to "the worker sees a rendering of whatever object arrived". An ABSENT value is
+       * likewise not forwarded, so a payload predating this field produces a byte-identical prompt to before.
+       */
+      ...(raw.trajectoryPresentation !== null && typeof raw.trajectoryPresentation === 'object' && typeof raw.trajectoryPresentation.sectionText === 'string'
+        ? { trajectoryPresentation: raw.trajectoryPresentation }
+        : {}),
+      ...(typeof raw.trajectoryDeliveryState === 'string' ? { trajectoryDeliveryState: raw.trajectoryDeliveryState } : {}),
       // §17: the handles this worker actually pulled, for the runner's telemetry line.
       pulledHandles,
       deniedAuthorityPrefix: typeof raw.deniedAuthorityPrefix === 'string' ? raw.deniedAuthorityPrefix : 'palimpsest_',

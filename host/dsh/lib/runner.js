@@ -68,6 +68,13 @@ import {
  * default configuration it is inert unless the parent supplied an IPC channel.
  */
 import { reportWorkerSessionIdentity } from './session-identity.js';
+/**
+ * Trajectory-P2-D2 §7/§8: THE MODEL-VISIBLE TRAJECTORY PRESENTATION SEAM. Loaded statically like the other
+ * small host-side modules — it imports only `node:crypto`, so it can never be why a worker fails to compose.
+ * In the default configuration no presentation is present, so `applyTrajectoryPresentation` is the identity
+ * function and the prompt is byte-identical to production.
+ */
+import { applyTrajectoryPresentation, userMessageDigest } from './trajectory-presentation.js';
 
 /**
  * R1-H: the host-execution read boundary.
@@ -346,6 +353,12 @@ async function runWorker(ctx, deps) {
   // produced. `off` and `m0` both leave the production index bytes untouched; only `m1` rewrites entries.
   const indexMode = resolveIndexMetadataMode(process.env[INDEX_METADATA_ENV]);
   let indexMetadata = null;
+  /**
+   * Trajectory-P2-D2 §9.3: what the model-visible Trajectory delivery achieved, for the telemetry line.
+   * `null` until the prompt is composed, so a worker that failed before composing reports "not attempted"
+   * rather than a false success.
+   */
+  let trajectoryDelivery = null;
   /**
    * Trajectory-P2A §6: what the worker session identity report ATTEMPTED, for the noncanonical
    * telemetry line. `null` until the report runs, so a worker that failed before creation reports
@@ -707,10 +720,34 @@ async function runWorker(ctx, deps) {
          * rendered — and if the two ever disagree, the session is right.
          */
         indexMetadata = Object.freeze({ ...indexMetadata, renderedSectionDigest: indexSectionDigest(indexTextForPrompt) });
+        /**
+         * Trajectory-P2-D2 §8.3: THE MODEL-VISIBLE TRAJECTORY SECTION.
+         *
+         * The PRODUCT rendered the section (from this attempt's qualified Capsule and the TRUSTED arm) and
+         * the payload carries it. This host VALIDATES it (§8.2) and PLACES it at ONE deterministic point:
+         * appended after the composed task text, separated by one blank line. In OFF — or when the received
+         * presentation is malformed — `applyTrajectoryPresentation` returns the text UNCHANGED, so the prompt
+         * is byte-identical to the pre-D2 baseline.
+         *
+         * The full UserMessage digest is computed on the FINAL text, so it proves the delivered bytes rather
+         * than the intended ones, and the section digest proves WHICH section bytes entered that message.
+         */
+        const composedTaskText = workTask(environment.context, indexTextForPrompt);
+        const trajectoryPlacement = applyTrajectoryPresentation(composedTaskText, environment.trajectoryPresentation);
+        const placedTaskText = trajectoryPlacement.text;
+        const finalUserMessageText = applyEfficacyReview(applyAffordance(placedTaskText, affordanceMode), efficacyReview);
+        trajectoryDelivery = Object.freeze({
+          state: trajectoryPlacement.state,
+          placed: trajectoryPlacement.placed,
+          detail: trajectoryPlacement.detail,
+          deliveryState: typeof environment.trajectoryDeliveryState === 'string' ? environment.trajectoryDeliveryState : null,
+          sectionBytes: trajectoryPlacement.sectionBytes,
+          sectionDigest: trajectoryPlacement.sectionDigest,
+          userMessageDigest: userMessageDigest(finalUserMessageText),
+          userMessageBytes: Buffer.byteLength(finalUserMessageText, 'utf8'),
+        });
         agent.followup(
-          userMessage(
-            applyEfficacyReview(applyAffordance(workTask(environment.context, indexTextForPrompt), affordanceMode), efficacyReview),
-          ),
+          userMessage(finalUserMessageText),
         );
         await agent.whenIdle();
         offeredTools = offeredToolNames(agent.session);
@@ -795,6 +832,17 @@ async function runWorker(ctx, deps) {
    */
   process.stdout.write(
     `PALIMPSEST_WORKER_INDEX ${JSON.stringify({ mode: indexMode, metadata: indexMetadata })}
+`,
+  );
+  /**
+   * Trajectory-P2-D2 §9.3: THE TRAJECTORY DELIVERY PROOF. The arm state, whether the section was PLACED,
+   * the section byte count and digest, and the FULL UserMessage digest and byte count — never the section
+   * text and never the message text. A reviewer reads from here whether the PRODUCT-rendered section
+   * actually entered the `agent.followup()` UserMessage, and the UserMessage digest is what a later trial
+   * freezes so one manifest cannot be misread as proof the delivered bytes stayed unchanged.
+   */
+  process.stdout.write(
+    `PALIMPSEST_WORKER_TRAJECTORY ${JSON.stringify({ delivery: trajectoryDelivery })}
 `,
   );
   /**
@@ -1163,4 +1211,4 @@ function apply(ctx) {
   });
 }
 
-export { apply, branchTask };
+export { apply, branchTask, runWorker, workTask, userMessage };

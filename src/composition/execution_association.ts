@@ -45,6 +45,7 @@ import {
   type WorkRevalidationPort,
 } from "../execution_association/index.js";
 import type { DshSessionReadPort } from "../trajectory/execution.js";
+import { buildTrajectoryPresentation } from "../trajectory/presentation.js";
 import { dshSubprocessWorkWorkerPort } from "../deployment/work_worker.js";
 import { admitAttempt, buildRelationContext, projectEvolutionOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
 import { composeTrajectoryInputs } from "./trajectory.js";
@@ -93,6 +94,14 @@ export interface ExecutionAssociationClusterOptions {
   readonly experimentalTrajectoryContextDelivery?: boolean | undefined;
   /** Trajectory-P2-D1 §9.2: an optional LOWER Capsule byte budget for the experimental delivery. */
   readonly trajectoryCapsuleMaxSerializedBytes?: number | undefined;
+  /**
+   * Trajectory-P2-D2 §7/§8: the EXPERIMENTAL presentation ARM. `CONTROL` renders the no-history boundary;
+   * `TREATMENT` renders the actual qualified Capsule. Absent ⇒ `OFF` (no section). The arm is TRUSTED
+   * CONFIGURATION fixed before Worker execution; a model cannot choose it (§8.4).
+   */
+  readonly trajectoryPresentationMode?: "OFF" | "CONTROL" | "TREATMENT" | undefined;
+  /** Trajectory-P2-D2 §7.7: an optional LOWER section byte budget. A caller may lower, never raise. */
+  readonly trajectorySectionMaxBytes?: number | undefined;
 }
 
 export interface ExecutionAssociationClusterInput {
@@ -118,7 +127,7 @@ export interface ExecutionAssociationCluster {
    * consumer attempt's own Capsule through the ordinary `capsuleForConsumer` path.
    */
   readonly trajectoryCapsuleDelivery:
-    | ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>)
+    | ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number; readonly presentation: import("../context/service.js").TrajectoryPresentationDelivery | null; readonly deliveryState: import("../context/service.js").TrajectoryDeliveryState } | null>)
     | undefined;
   /** §7.5: resources this cluster created and the install must close. */
   readonly ownedResources: readonly OwnedResource[];
@@ -417,6 +426,29 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
           });
           if (result.state !== "AUTHORIZED" || result.capsule === null) return null;
           const bytes = Buffer.byteLength(JSON.stringify(result.capsule), "utf8");
+          /**
+           * Trajectory-P2-D2 §7/§8.6: THE PRODUCT RENDERS THE MODEL-VISIBLE SECTION.
+           *
+           * The arm is TRUSTED CONFIGURATION (never a model choice). The consumer-basis digest is the
+           * Capsule's own authorization basis, so the presentation is bound to the SAME permission that
+           * admitted the Capsule. A TREATMENT whose presentation cannot be built is reported as a
+           * DELIVERY PRECONDITION failure — never silently relabeled CONTROL.
+           */
+          const mode = options.trajectoryPresentationMode ?? "OFF";
+          const presentationOutcome = buildTrajectoryPresentation({
+            mode,
+            capsule: result.capsule,
+            consumerBasisDigest: canonicalDigest(result.capsule.authorizationBasis),
+            ...(options.trajectorySectionMaxBytes === undefined ? {} : { limits: { maxSectionBytes: options.trajectorySectionMaxBytes } }),
+          });
+          const presentation = presentationOutcome.ok ? presentationOutcome.presentation : null;
+          const deliveryState: import("../context/service.js").TrajectoryDeliveryState = !presentationOutcome.ok
+            ? "DELIVERY_PRECONDITION_NOT_MET"
+            : presentation === null
+              ? "DELIVERY_DISABLED"
+              : presentation.mode === "CONTROL"
+                ? "CONTROL_SECTION_RENDERED"
+                : "SECTION_RENDERED";
           return Object.freeze({
             schemaVersion: result.capsule.schemaVersion,
             capsule: result.capsule,
@@ -425,6 +457,8 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
             originAttemptId: result.capsule.originAttemptId,
             framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
             authority: "READ_ONLY_INSPECTION" as const,
+            presentation,
+            deliveryState,
           });
         }
       : undefined;
@@ -502,6 +536,15 @@ export interface ExecutionAssociationInstallOptions {
    * product ceiling, never raise it.
    */
   readonly trajectoryCapsuleMaxSerializedBytes?: number | undefined;
+  /**
+   * Trajectory-P2-D2 §7/§8: the EXPERIMENTAL presentation ARM. `CONTROL` renders the no-history boundary,
+   * `TREATMENT` renders the actual qualified Capsule, `OFF` (the default) renders nothing. It is TRUSTED
+   * CONFIGURATION fixed before Worker execution — a model cannot choose it and cannot supply a substitute
+   * Capsule. It changes NO authority: the section is read-only historical data.
+   */
+  readonly trajectoryPresentationMode?: "OFF" | "CONTROL" | "TREATMENT" | undefined;
+  /** P2-D2 §7.7: an optional LOWER section byte budget. It can only lower the product ceiling. */
+  readonly trajectorySectionMaxBytes?: number | undefined;
 }
 
 /**

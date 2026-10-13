@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_DSH_USER_MESSAGE_QUALIFICATION",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C5 §9.1 L2",
+  "evidenceClass": "REAL_DSH_USER_MESSAGE",
+  "sourceReferences": [
+    "scripts/trajectory_p2d2/l2-gate.mjs (real DSH boot + DSH's own persistence read)",
+    "scripts/trajectory_p2d2/deterministic-llm-plugin.mjs (test-owned deterministic local adapter)",
+    "host/deployment/runtime/session_reader.js (the official read path, reused by the product)"
+  ],
+  "method": "the real first-party DSH Host is booted with a TEST-OWNED DETERMINISTIC LOCAL LLM ADAPTER that performs NO I/O, then the persisted session is read through DSH's OWN persistence and the `user/message` events are extracted and digested",
+  "whyNotRequestHeader": "`request/header` is a header snapshot (tools/model) and does NOT carry the message text; DSH's model-visible surface event is `user/message`, which projects `content` verbatim. The gate reads `user/message` directly",
+  "observedResults": {
+    "off": { "seq": 8, "sourceKind": "user", "bytes": 1910, "carriesObjective": true, "carriesTrajectorySection": false },
+    "treatment": { "seq": 8, "sourceKind": "user", "bytes": 2264, "carriesObjective": true, "carriesTrajectorySection": true },
+    "sectionBytes": 352,
+    "byteDelta": 354,
+    "byteDeltaExplained": "the 352-byte section plus the single blank-line separator",
+    "sectionDigest": "4713064a0f2f321833dd50907f6159b23afd4e76fc862f0b0c3e1898a4a84eec"
+  },
+  "providerActivity": {
+    "controlledProviderRequestOccurred": false,
+    "externalProviderRequestOccurred": false,
+    "adapter": "a test-owned deterministic local adapter that performs no I/O and opens no socket",
+    "note": "the ONLY adapter mounted is the local deterministic one; no credential exists in the test-owned profile, and the adapter's stream() performs no network call"
+  },
+  "expectedInvariant": "the ACTUAL DSH Session records the intended `user/message` content, and under TREATMENT that content carries the qualified Trajectory Section while under OFF it does not",
+  "verdict": "PASS",
+  "remainingUncertainty": "L2 proves the SESSION recorded the intended bytes; it does NOT prove a model UNDERSTOOD the section. L3 (real model utility) is explicitly out of scope",
+  "realFirstPartyDshRan": true,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": true,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

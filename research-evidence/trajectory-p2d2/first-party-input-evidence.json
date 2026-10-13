@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_FIRST_PARTY_INPUT_EVIDENCE",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C5 §9",
+  "evidenceClass": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+  "sourceReferences": [
+    "scripts/trajectory_p2d2/l2-gate.mjs",
+    "scripts/trajectory_p2d2/deterministic-llm-plugin.mjs",
+    "host/dsh/lib/runner.js"
+  ],
+  "deliveryLevels": {
+    "L0_rendererQualification": { "state": "ESTABLISHED", "evidence": "test/trajectory_p2d2_presentation.test.ts" },
+    "L1_hostInputCapture": { "state": "ESTABLISHED", "evidence": "test/trajectory_p2d2_host_delivery.test.ts" },
+    "L2_dshUserMessage": { "state": "ESTABLISHED", "evidence": "scripts/trajectory_p2d2/l2-gate.mjs", "note": "the real first-party DSH Session recorded the intended user/message under a test-owned deterministic local adapter; no external provider request occurred" },
+    "L3_realModelUtility": { "state": "NOT_ATTEMPTED", "note": "out of scope for D2; requires authorized model repetitions" }
+  },
+  "whatIsNotClaimed": [
+    "MODEL_CONSUMED_CAPSULE (Host Input Capture does not prove the model read or understood the section)",
+    "that the deterministic adapter is a model (it is a test-owned stub that performs no I/O)",
+    "that a persisted DSH user/message proves model understanding"
+  ],
+  "providerActivity": {
+    "controlledProviderRequestOccurred": false,
+    "externalProviderRequestOccurred": false,
+    "externalPaidModelCalled": false
+  },
+  "expectedInvariant": "the strongest SAFE first-party path is demonstrated without external model execution, and each evidence level is reported separately and honestly",
+  "verdict": "PASS",
+  "remainingUncertainty": "L3 (real model utility) remains NOT ESTABLISHED; a future stage must run authorized model repetitions",
+  "realFirstPartyDshRan": true,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": true,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

@@ -306,6 +306,8 @@ export {
   buildTrajectoryPresentation,
   renderTrajectorySection,
   validateTrajectoryPresentation,
+  sectionTextDigest,
+  userMessageDigest,
 } from "./presentation.js";
 export type {
   TrajectoryPresentation,
