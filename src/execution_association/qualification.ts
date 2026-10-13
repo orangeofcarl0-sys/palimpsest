@@ -23,7 +23,7 @@
  */
 import type { DshSessionReadPort } from "../trajectory/execution.js";
 import type { AttemptSessionAssociation } from "../trajectory/binding.js";
-import { type ExecutionAssociationEvent, type SessionIdentityObservedPayload, type TrustedSourceBasis } from "./contract.js";
+import { sourceScopeKeyOf, type ExecutionAssociationEvent, type SessionIdentityObservedPayload, type TrustedSourceBasis } from "./contract.js";
 import { qualifyRecordSource, type TrustedSourceRegistry } from "./source.js";
 import { validateObservationWindow } from "./window_integrity.js";
 import type { ExecutionAssociationStore } from "./store.js";
@@ -81,6 +81,15 @@ export interface QualifiedAssociation {
   readonly durableBindingRef: string;
   readonly hostLocalJobId: string | null;
   readonly sourceEpochId: string;
+  /**
+   * P2-D0 §9.3: whether the association store this qualification was derived from is COLD-RECOVERABLE.
+   *
+   * `DURABLE` means the record lives in a file-backed store, so a restart can recover it. `EPHEMERAL`
+   * means the store is in-memory only, so the association exists for this process alone. An ephemeral
+   * qualification is a legitimate test-time result, but it must NEVER be presented as recoverable
+   * durable authority — a caller that needs durability must refuse an EPHEMERAL binding.
+   */
+  readonly durability: "DURABLE" | "EPHEMERAL";
   readonly basis: {
     readonly sourceEpochMatched: boolean;
     readonly sourceKindAgreed: boolean;
@@ -108,6 +117,11 @@ export interface UnqualifiedAssociation {
 export type AssociationQualification = QualifiedAssociation | UnqualifiedAssociation;
 
 export interface AssociationQualifier {
+  /**
+   * P2-D0 §9.3: whether the underlying store is cold-recoverable. Exposed so a caller that REQUIRES
+   * durability can refuse an ephemeral qualification without inspecting the store itself.
+   */
+  readonly durability: "DURABLE" | "EPHEMERAL";
   qualifyAttempt(input: { readonly projectId: string; readonly attemptId: string }): Promise<{
     readonly attemptId: string;
     readonly qualifications: readonly AssociationQualification[];
@@ -155,7 +169,13 @@ export function makeAssociationQualifier(input: {
   readonly dsh: DshSourceRevalidationPort;
   /** §6.1: the VERIFIER'S OWN trusted epochs. A record must match one, and its kind must agree. */
   readonly registry: TrustedSourceRegistry;
+  /**
+   * P2-D0 §9.3: whether this store is cold-recoverable. Defaults to `DURABLE`; the product composition
+   * passes `EPHEMERAL` when it derived an in-memory path, so a qualification carries the honest value.
+   */
+  readonly durability?: "DURABLE" | "EPHEMERAL" | undefined;
 }): AssociationQualifier {
+  const durability: "DURABLE" | "EPHEMERAL" = input.durability ?? "DURABLE";
   async function qualifyInvocation(input2: {
     readonly projectId: string;
     readonly attemptId: string;
@@ -214,6 +234,33 @@ export function makeAssociationQualifier(input: {
 
     const sessionId = window.candidateSessionIds[0]!;
 
+    /**
+     * §6.5 CROSS-ATTEMPT CREATOR CONFLICT.
+     *
+     * The first-party Work Worker path CREATES a fresh Session. If a DIFFERENT Attempt claims the same
+     * SessionId under the SAME source scope, the two incompatible fresh-creation claims must not both
+     * qualify: at most one Attempt created that session, and this one cannot be assumed to be it.
+     *
+     * The scope is the deployment's own source identity, so two unrelated roots that merely contain an
+     * identical SessionId string do not manufacture a conflict. A same-Attempt duplicate is not a
+     * conflict (it is the same creator), and this is checked BEFORE the DSH header read so a conflict
+     * costs no source I/O.
+     */
+    const scopeKey = sourceScopeKeyOf(candidates[0]!.payload.sourceBasis);
+    const foreignCreatorsOf = (): readonly string[] =>
+      input.store
+        .replayForSession({ projectId: input2.projectId, dshSessionId: sessionId })
+        .filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED")
+        .filter((event) => event.payload.attemptId !== input2.attemptId && sourceScopeKeyOf(event.payload.sourceBasis) === scopeKey)
+        .map((event) => event.payload.attemptId);
+    const foreignCreators = foreignCreatorsOf();
+    if (foreignCreators.length > 0) {
+      return unqualified(
+        "CONFLICT",
+        `session ${sessionId} is also claimed as created by attempt ${[...new Set(foreignCreators)].join(", ")} under the same DSH source scope, so this attempt's creation claim is not established`,
+      );
+    }
+
     /** §6.1: read the REAL DSH Session header. */
     const header = await input.dsh.readHeaderIdentity(sessionId);
     if (header.readState !== "READ_OK" || header.header === null) {
@@ -227,13 +274,19 @@ export function makeAssociationQualifier(input: {
      * §6.7 CURRENTNESS: the asynchronous header read may have taken time. Re-read the store and refuse a
      * result bound to a basis that no longer holds. This is a bounded optimistic read-check, not a
      * transaction, and it makes a stale qualification impossible to return silently.
+     *
+     * P2-D0 §7.5: the basis covers BOTH this attempt's own durable history AND the cross-Attempt creator
+     * claim set for the session, so a conflict committed during the read is caught here too — not only a
+     * change to this attempt's own rows.
      */
     const headAfter = input.store.head();
     const eventsAfter = input.store.replayForAttempt({ projectId: input2.projectId, attemptId: input2.attemptId });
+    const foreignCreatorsAfter = foreignCreatorsOf();
     const relevantChanged =
       headAfter !== input2.storeHeadAtStart &&
       (eventsAfter.length !== input2.attemptEventCountAtStart ||
-        eventsAfter.some((event, index) => event.eventId !== input2.events[index]?.eventId));
+        eventsAfter.some((event, index) => event.eventId !== input2.events[index]?.eventId) ||
+        foreignCreatorsAfter.length > 0);
     if (relevantChanged) {
       return unqualified(
         "RACED",
@@ -251,6 +304,7 @@ export function makeAssociationQualifier(input: {
       durableBindingRef: chosen.eventId,
       hostLocalJobId: chosen.payload.hostLocalJobId,
       sourceEpochId: epochId,
+      durability,
       basis: Object.freeze({
         sourceEpochMatched: true,
         sourceKindAgreed: true,
@@ -266,6 +320,7 @@ export function makeAssociationQualifier(input: {
   }
 
   return Object.freeze({
+    durability,
     async qualifyAttempt(input2: { readonly projectId: string; readonly attemptId: string }) {
       /** §6.7: capture the basis BEFORE any asynchronous source read. */
       const storeHeadAtStart = input.store.head();

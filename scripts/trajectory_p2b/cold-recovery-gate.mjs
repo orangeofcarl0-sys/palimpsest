@@ -160,8 +160,11 @@ if (PHASE === "record") {
     else process.env.DSH_HOME = previousHome;
   }
 
+  /* §8.1 / P2-D0 §7.1: finalize THIS Invocation from its own observed terminal boundary. */
   const attemptId = correlated[0]?.attemptId ?? "";
-  recorder.finalizeAttempt({ attemptId, closeReason: "INVOCATION_RETURNED" });
+  if (correlated.length > 0) {
+    recorder.finalizeInvocation({ attemptId: correlated[0].attemptId, invocationId: correlated[0].observation.invocationId, closeReason: "CHILD_EXIT_OBSERVED" });
+  }
   const durable = store.replay();
   const observation = durable.find((event) => event.type === "SESSION_IDENTITY_OBSERVED");
   const measurement = observation === undefined ? { readState: "NONE" } : await measureSessionThroughOfficialReader(join(HOME, "sessions"), observation.payload.dshSessionId);

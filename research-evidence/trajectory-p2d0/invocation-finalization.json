@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "invocation finalization",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifiers": ["F5", "F6"],
+  "defects": {
+    "F5": "the delegation finalized every window with the single closeReason INVOCATION_RETURNED, so a timeout/abort that never observed a child close was recorded CLOSED",
+    "F6": "finalizeAttempt closed EVERY Invocation the store knew for the Attempt, so one Job's terminal finalized unrelated Invocations"
+  },
+  "correction": {
+    "closeReasons": "src/execution_association/contract.ts — CHILD_EXIT_OBSERVED is the only reason that establishes a real terminal boundary; INVOCATION_RETURNED is retained but documented as NOT proof of closure",
+    "productPath": "src/composition/continuation.ts — the recorder is wired to onCorrelatedObservation, and ONLY a DIRECT_CHILD_EXIT_OBSERVED observation finalizes, for the Invocation that observation names, with closeReason CHILD_EXIT_OBSERVED. DIRECT_CHILD_EXIT_UNCONFIRMED deliberately does not finalize: the window stays incomplete",
+    "finalizeAttempt": "src/execution_association/ingestion.ts — finalizeAttempt is no longer an attempt-wide CLOSED. It records the only honest attempt-wide fact (the Parent process ending) as windowState UNKNOWN / PARENT_TERMINATED, which the window validator correctly refuses to treat as a closure. The product path never calls it"
+  },
+  "evidence": [
+    {
+      "class": "REAL_PARENT_IPC",
+      "test": "test/trajectory_p2d0_ipc_preservation.test.ts > the REAL delegation service wires the correlation",
+      "observed": { "finalizations": 1, "closeReason": "CHILD_EXIT_OBSERVED", "wiredThrough": "makeWorkDelegationService.onCorrelatedObservation" }
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C3): the delegation now finalizes on an OBSERVED child exit",
+      "observed": "continuation.ts matches DIRECT_CHILD_EXIT_OBSERVED and closeReason CHILD_EXIT_OBSERVED and finalizeInvocation, and no longer matches finalizeAttempt"
+    }
+  ],
+  "expectedInvariant": "a timeout/abort request is not proof of child closure; a terminal event for Job J must only finalize its own Invocation",
+  "verdict": "PASS",
+  "remainingUncertainty": "the port's exit observation is a DIRECT-CHILD fact; a descendant process exiting after the direct child is not observed, which the port's own doesNotProve list already states",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}
