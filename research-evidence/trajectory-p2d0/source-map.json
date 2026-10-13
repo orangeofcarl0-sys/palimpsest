@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D0_SOURCE_MAP",
+  "stage": "Trajectory-P2-D0",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "readOnly": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "dshHomeReported": "<local-path>",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 7,
+    "SOURCE_DEMONSTRATED": 11
+  },
+  "findings": {
+    "F1_ipcConflictDisappearsFromPersistence": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "trackerRetainsFirstId": true,
+      "trackerCarriesOnlyLastConflict": true,
+      "recorderPersistsTrackerField": true,
+      "recorderReadsConflictingSessionId": false,
+      "note": "the Tracker rebuilds ONE observation whose dshSessionId is always the FIRST observed id; the Recorder persists only that field and never reads conflictingSessionId, so A/B/C collapse to a durable candidate set of {A}"
+    },
+    "F2_multiInvocationMixedStateSelection": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "uniqueCaseConsultsAllStates": true,
+      "uniqueCaseIgnoresUnresolvedAlternatives": true,
+      "note": "selectInvocation returns SELECTED_UNIQUE for exactly one qualified invocation WITHOUT consulting the unresolved states of the other invocations, so I-1 QUALIFIED + I-2 OBSERVATION_INCOMPLETE reports 'no unresolved alternative exists'"
+    },
+    "F3_raceDuringEventRead": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "qualifierRechecksCurrentness": true,
+      "previewRechecksAfterEventRead": false,
+      "note": "the qualifier rechecks currentness BEFORE returning; the attributed adapter then reads the session page and builds the binding with no second relevant-basis check, so a conflict committed during Event Read is admitted as current"
+    },
+    "F4_aggregateQualificationCurrentness": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "oneBasisForWholePass": true,
+      "postPassRecheck": false,
+      "note": "qualifyAttempt captures ONE basis before the pass and each invocation rechecks only against that snapshot; an early invocation can already have been returned ASSOCIATION_QUALIFIED while a later invocation's read reveals a change, so the aggregate result is not bound to one confirmed basis"
+    },
+    "F5_prematureTerminalFinalization": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "portResolvesBeforeClose": true,
+      "delegationFinalizesOnReturn": false,
+      "closeReasonDistinguishesTimeout": false,
+      "note": "the port resolves the promise from the timeout/abort handler BEFORE any child close is observed, and the delegation finalizes the window with the single closeReason INVOCATION_RETURNED, so an unclosed Invocation is recorded CLOSED"
+    },
+    "F6_attemptWideFinalizationScope": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "finalizeAttemptExists": true,
+      "finalizeAttemptClosesEveryInvocation": true,
+      "delegationCallsFinalizeAttempt": true,
+      "note": "onTerminal calls finalizeAttempt, which closes EVERY invocation the store knows for the attempt, so a terminal for one Job finalizes unrelated Invocations"
+    },
+    "F7_crossAttemptDuplicateProducerIdentity": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "eventIdIncludesAttemptId": true,
+      "crossAttemptUniquenessCheck": false,
+      "note": "the observation event id is scoped by attemptId, so the same source-scoped SessionId claimed by two Attempts yields two distinct records that qualify independently; there is no source-scoped cross-attempt creator check"
+    },
+    "F8_invariantRefusedPreviewMetadata": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "invariantsValidated": true,
+      "lifecycleUsesInvariantVerdict": false,
+      "coverageUsesInvariantVerdict": false,
+      "note": "events ARE refused when invariants fail, but sessionLifecycle, eventPageCoverage and completeness are computed from the page and the admission flag only, so a refused page can still report SESSION_READ + FULL + COMPLETE"
+    },
+    "F9_memoryDurabilityOverclaim": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "memoryPathAccepted": true,
+      "storeIsInMemory": true,
+      "verifiedBindingUnconditional": true,
+      "note": "deriveExecutionAssociationPath accepts ':memory:' and the qualifier sets verification VERIFIED with a durableBindingRef for any record, so an in-memory store yields a BOUND_VERIFIED-looking result that cannot survive process termination"
+    },
+    "F10_readerAsyncDisposal": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "readerCloseIsAsync": true,
+      "ownedResourceCloseVoided": true,
+      "lifecycleAwaitsResourceClose": true,
+      "ownedResourceCloseIsSync": true,
+      "note": "OwnedResource.close is synchronous and the reader's async close is voided, so dispose() returns before the mounted Cordis fiber is disposed"
+    },
+    "F11_sourceConfigurationMismatch": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "expertPortShortCircuitsFactory": true,
+      "basisStillFromConfiguredBin": true,
+      "sourceKindDefaultsFromBin": true,
+      "note": "an explicitly supplied Worker Port replaces the derived one, but the trusted basis and FIRST_PARTY_DSH_HOST kind are still computed from workWorkerBin, so a stub port with a claimed first-party bin is source-qualified as first-party"
+    },
+    "F12_normalDshEnvironment": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "hostDerivesWorkerFacts": true,
+      "hostSetsDshHomeOnlyWhenConfigured": true,
+      "launchDerivesSessionsRoot": true,
+      "defaultReaderSpecifier": true,
+      "note": "the reader is composed only when the host supplies DSH_HOME; without an explicit DSH_HOME no reader exists, so the supported default-home behavior is not exercised by the product path"
+    },
+    "F13_incompleteCanonicalT0View": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "adapterPlaceholderResultRefs": true,
+      "adapterPlaceholderVerification": true,
+      "adapterPlaceholderRework": true,
+      "adapterPlaceholderBasis": true,
+      "v0ComputesRealFacts": true,
+      "clusterEmptyProjectEvolution": true,
+      "note": "the attributed adapter supplies resultRefs [], verificationState NOT_OBSERVED_BY_P2C, reworkState NONE and a null basis, and the product cluster supplies an empty project-evolution projection, so facts the V0 composition can establish are replaced by placeholders"
+    },
+    "F14_callerClaimDisagreement": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "claimRecordedOnBinding": true,
+      "claimDisagreementReported": false,
+      "note": "the Caller Claim is recorded on the binding, but when it differs from the source-verified SessionId the discrepancy is not explicitly reported as a discrepancy"
+    },
+    "F15_crossAttemptContextReachability": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "previewTakesArbitraryAttemptId": true,
+      "consumerAttemptBinding": false,
+      "note": "previewAttempt admits ANY canonical Attempt of the project by its AttemptId with no consumer-Attempt binding, so a consumer can inspect another Attempt's history by naming it"
+    },
+    "F16_existingConsumerDeliveryMechanism": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "priorResultContextExists": true,
+      "manifestCarriesContinuation": true,
+      "attemptBoundPullHandles": true,
+      "handleAllowlistIsAttemptBound": true,
+      "note": "PriorResultContext compiled into the per-Attempt ContextManifest, delivered through the attempt-bound pull allowlist, is the narrowest existing mechanism; no unrestricted session-read tool exists"
+    },
+    "F17_historicalSourceEpochProductWiring": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "clusterAcceptsHistoricalEpochs": true,
+      "installOptionsExposeHistoricalEpochs": true,
+      "installPassesHistoricalEpochs": false,
+      "note": "the cluster accepts historical epochs, but the install options do not expose them and install.ts never passes them, so a normal deployment cannot supply a trusted historical epoch after an upgrade"
+    },
+    "F18_publicTypeCompatibility": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "installReturnsWidened": true,
+      "deploymentInstalledIsBase": true,
+      "note": "installPalimpsest returns InstalledPalimpsestWithTrajectory and the runtime object carries trajectory, but Deployment.installed is typed InstalledPalimpsest, so the extended capability is not statically reachable through the supported deployment surface"
+    }
+  }
+}

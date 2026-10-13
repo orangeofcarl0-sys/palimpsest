@@ -1,0 +1,183 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "baseline falsifiers",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 7,
+    "SOURCE_DEMONSTRATED": 11
+  },
+  "sourceMap": "research-evidence/trajectory-p2d0/source-map.json",
+  "testFile": "test/trajectory_p2d0_source_contract.test.ts",
+  "evidenceClasses": ["DYNAMICALLY_REPRODUCED", "SOURCE_DEMONSTRATED"],
+  "note": "F1/F2/F6/F7/F9/F13/F17 are dynamically reproduced against the shipped code; the rest are source-demonstrated because no DSH runtime is required to read them. The mandatory REAL Parent-IPC preservation gate is established in C2 (test/trajectory_p2d0_ipc_preservation.test.ts).",
+  "cases": {
+    "F1": {
+      "finding": "the Parent-observed A/B/C conflict disappears before durability",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F1",
+      "method": "drive the shipped port logic (tracker.observe -> tracker.observation -> sink) and read the durable store",
+      "observed": "the tracker rebuilds ONE observation whose dshSessionId is always the first; the durable candidate set is {worker-A} and B/C are absent",
+      "expectedInvariant": "every distinct valid IPC Session identity report must reach durable ingestion as an immutable candidate",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F2": {
+      "finding": "one qualified + one incomplete Invocation reports SELECTED_UNIQUE",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F2",
+      "method": "real product install + real attributed preview + controlled association",
+      "observed": "selection.state = SELECTED_UNIQUE with detail claiming no unresolved alternative, while a second invocation is OBSERVATION_INCOMPLETE",
+      "expectedInvariant": "an automatic unique selection may occur only when the whole relevant Invocation set justifies it",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F3": {
+      "finding": "no post-Event-Read relevant-basis recheck",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F3",
+      "method": "source inspection of the adapter between the page read and the invariant check",
+      "observed": "the adapter reads the page and builds the binding with no second store-head comparison",
+      "expectedInvariant": "a conflict committed during Event Read must not be admitted as current verified attribution",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F4": {
+      "finding": "aggregate qualification captures ONE basis for the whole pass",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F4",
+      "method": "source inspection",
+      "observed": "qualifyAttempt captures storeHeadAtStart once and every invocation rechecks only against it",
+      "expectedInvariant": "the multi-invocation result must be bound to one confirmed basis, or each result to its own",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F5": {
+      "finding": "the delegation finalizes with the single closeReason INVOCATION_RETURNED",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F5",
+      "method": "source inspection of contract.ts and continuation.ts",
+      "observed": "the port resolves from the timeout/abort handler before any close is observed; the delegation records CLOSED with INVOCATION_RETURNED for both",
+      "expectedInvariant": "a timeout/abort request is not proof of child closure",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F6": {
+      "finding": "one Job terminal closes every Invocation of the Attempt",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F6",
+      "method": "drive finalizeAttempt with two recorded invocations",
+      "observed": "finalizeAttempt returns two outcomes and both windows are recorded CLOSED",
+      "expectedInvariant": "a terminal event for Job J must only finalize its own Invocation",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F7": {
+      "finding": "two Attempts both qualify the same source-scoped Session identity",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F7",
+      "method": "record the same SessionId for two attempts and qualify both",
+      "observed": "both qualifications are ASSOCIATION_QUALIFIED with no cross-attempt creator conflict",
+      "expectedInvariant": "two incompatible fresh-creation claims for the same source-scoped SessionId must not both qualify silently",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F8": {
+      "finding": "invariant-refused Preview metadata",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F8",
+      "method": "source inspection of handoff_preview.ts",
+      "observed": "events are refused but sessionLifecycle, eventPageCoverage and completeness are not gated on the invariant verdict",
+      "expectedInvariant": "a refused page must not claim SESSION_READ + FULL + COMPLETE",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F9": {
+      "finding": "in-memory durability overclaim",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F9",
+      "method": "qualify an in-memory store",
+      "observed": "verification VERIFIED with a durableBindingRef from an in-memory store",
+      "expectedInvariant": "an in-memory-only association must not claim cold-recoverable durability",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F10": {
+      "finding": "reader async disposal is not awaited",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F10",
+      "method": "source inspection of lifecycle.ts and the cluster",
+      "observed": "OwnedResource.close is synchronous and the reader async close is voided",
+      "expectedInvariant": "await installed.dispose() must wait for the mounted Reader close",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F11": {
+      "finding": "source configuration mismatch",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F11",
+      "method": "source inspection",
+      "observed": "an expert port replaces the derived one while the basis and FIRST_PARTY_DSH_HOST kind still come from workWorkerBin",
+      "expectedInvariant": "a stub must not become first-party-qualified by borrowing the DSH Bin path",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F12": {
+      "finding": "normal DSH environment",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F12",
+      "method": "source inspection of host/dsh/lib/index.js",
+      "observed": "the reader is composed only when DSH_HOME is explicitly set",
+      "expectedInvariant": "the supported default-home behavior must be source-grounded",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F13": {
+      "finding": "incomplete Canonical/T0 view",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F13",
+      "method": "real product install + attributed preview with a real canonical attempt",
+      "observed": "resultRefs [], verificationState NOT_OBSERVED_BY_P2C, reworkState NONE, null basis, empty project evolution",
+      "expectedInvariant": "the attributed preview must not silently lose facts the V0 composition can establish",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F14": {
+      "finding": "Caller Claim disagreement is not explicitly reported",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F14",
+      "method": "source inspection",
+      "observed": "the claim is recorded but a disagreement with the verified SessionId is not reported as a discrepancy",
+      "expectedInvariant": "the discrepancy must be explicitly reported",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F15": {
+      "finding": "cross-Attempt Context reachability",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F15",
+      "method": "source inspection",
+      "observed": "previewAttempt admits any canonical Attempt of the project with no consumer-Attempt binding",
+      "expectedInvariant": "the consumer-side authority must be the Work/Rework lineage or Context allowlist",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F16": {
+      "finding": "existing consumer-delivery mechanism",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "scripts/trajectory_p2d0/source-map.mjs F16",
+      "method": "source inspection of prior_result.ts, manifest.ts, service.ts, work_worker.ts",
+      "observed": "PriorResultContext compiled into the per-Attempt ContextManifest, delivered through the attempt-bound pull allowlist",
+      "expectedInvariant": "the narrowest correct Capsule delivery reuses this mechanism; no unrestricted session-read tool",
+      "verdict": "ESTABLISHED"
+    },
+    "F17": {
+      "finding": "historical source epoch product wiring",
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "test": "trajectory_p2d0_source_contract.test.ts > P2D0 F17",
+      "method": "source inspection of the cluster and install.ts",
+      "observed": "the cluster accepts epochs but the install options do not expose them and install.ts never passes them",
+      "expectedInvariant": "a normal deployment must be able to supply trusted historical epochs after an upgrade",
+      "verdict": "CONFIRMED_DEFECT"
+    },
+    "F18": {
+      "finding": "public type compatibility",
+      "classification": "SOURCE_DEMONSTRATED",
+      "test": "trajectory_p2d0_source_contract.test.ts > F18",
+      "method": "source inspection of launch.ts and install.ts",
+      "observed": "Deployment.installed is typed InstalledPalimpsest while the runtime carries trajectory",
+      "expectedInvariant": "the extended installed capability must be statically reachable through the supported deployment surface",
+      "verdict": "CONFIRMED_DEFECT"
+    }
+  },
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "sourceDataChanged": false
+}
