@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D1_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "verdict": "TRAJECTORY_GOVERNED_CONSUMER_DELIVERY_QUALIFIED",
+  "gates": {
+    "D1-G0-A_durableObservationCompleteness": {
+      "status": "PASS",
+      "evidence": "ingestion-health.json, failed-identity-append.json, invocation-completeness.json, cold-replay-completeness.json"
+    },
+    "D1-G0-B_completeAssociationCurrentness": {
+      "status": "PASS",
+      "evidence": "association-admission-basis.json, event-read-currentness.json, foreign-creator-race.json, qualification-read-handoff.json"
+    },
+    "D1-G0-C_capsuleAdmissionAndBudget": {
+      "status": "PASS",
+      "evidence": "capsule-admission-contract.json, capsule-whole-byte-budget.json, capsule-uncertainty.json"
+    },
+    "D1-G1-A_canonicalGovernedConsumerAuthorization": {
+      "status": "PASS",
+      "evidence": "governed-rework-source.json, consumer-origin-authorization.json, positive-capsule-delivery.json"
+    },
+    "D1-G1-B_attemptBoundMechanicalDelivery": {
+      "status": "PASS",
+      "evidence": "attempt-bound-context.json, host-prework-delivery.json, prompt-injection-controls.json"
+    },
+    "D1-G1-C_realSourceAndProductIntegration": {
+      "status": "PARTIAL - levels reported separately",
+      "evidence": "first-party-non-model-integration.json"
+    },
+    "D1-G2-READINESS_utilityExperimentPreparationOnly": {
+      "status": "PASS (prepared, NOT run)",
+      "evidence": "utility-benchmark-readiness.json"
+    }
+  },
+  "evidenceLevels": {
+    "1_realFirstPartyDshColdRecovery": "ESTABLISHED",
+    "2_realGovernedA0A1Lineage": "ESTABLISHED",
+    "3_controlledPositiveCapsuleDelivery": "ESTABLISHED",
+    "4_combinedRealDshAndRealGovernedSingleChain": "NOT_ESTABLISHED - the non-model DSH probe ends in capability refusal, so its Attempt has no completed Result, and §10.5 forbids manufacturing one to merge the rigs"
+  },
+  "questionAnswers": {
+    "1_failedIngestionProducesFalseCompleteWindow": "No - a durable INGESTION-INCOMPLETE marker prevents closure and the Qualifier refuses",
+    "2_newInvocationInvalidatesStaleSelectedUnique": "Yes - the post-read relevant-basis recheck yields RACED",
+    "3_foreignCreatorInvalidatesOwnershipDuringRead": "Yes - the recheck includes the cross-Attempt creator claim set",
+    "4_lawfulLineageProducesCapsuleWithoutAdmittedEvidence": "No - authorization, admission and deliverability are separate; an unadmitted origin is refused",
+    "5_wholeCapsuleSatisfiesSerializedByteLimit": "Yes - measured in UTF-8 bytes, with an essential-metadata floor and CAPSULE_BUDGET_EXCEEDED refusal",
+    "6_durabilityAndUnresolvedEvidenceAccuratelyCarried": "Yes - derived from the admission, not defaulted",
+    "7_isA0A1ReworkReal": "Yes - a real canonical chain through the shipped controller and appendReworkReopening seam",
+    "8_isOriginAuthorizedThroughExistingContextOwner": "Yes - ContextService.governedReworkOriginOf",
+    "9_canAgentNameAnotherConsumerAttempt": "No - the delivery provider is bound to the attempt being compiled by the Host",
+    "10_doesAttemptBoundDeliveryWork": "Yes at the controlled level (CAPSULE_RENDERED_FOR_WORKER); MODEL_CONSUMED_CAPSULE is out of scope",
+    "11_didGenuineFirstPartyDshEvidenceParticipate": "Yes - real first-party DSH cold recovery with 3 real events, no model turn",
+    "12_whichGatesRelyOnControlledFixtures": "the governed A0->A1 positive path and the attempt-bound delivery use controlled-fixture ORIGIN execution evidence; stated explicitly",
+    "13_didAModelRequestOccur": "No",
+    "14_wasPrimaryEnabled": "No",
+    "15_wasAutomaticHandoffImplemented": "No",
+    "16_hasAgentUtilityBeenMeasured": "No"
+  },
+  "requiredNoAnswers": {
+    "question16": "No"
+  },
+  "limitations": [
+    "the combined real-first-party-DSH + real-governed single chain is NOT established",
+    "the origin Execution Association in the positive delivery tests is a controlled fixture",
+    "the source scope key cannot distinguish two deployments sharing an adapter id and worker-bin digest that write to different session roots",
+    "Node 24.14.1 is below the documented >=24.15.0 minimum",
+    "the experimental delivery is CAPSULE_RENDERED_FOR_WORKER, not MODEL_CONSUMED_CAPSULE"
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "primaryEnabled": false,
+  "automaticHandoffImplemented": false,
+  "stochasticTrialsRun": 0
+}

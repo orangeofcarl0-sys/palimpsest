@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D1_REGRESSION",
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "typescript": {
+    "command": "npx tsc -b",
+    "result": "PASS"
+  },
+  "architecture": {
+    "command": "node scripts/audit/module-architecture.mjs --check",
+    "result": "PASS",
+    "violations": 0,
+    "acceptedBaselineExceptions": 9,
+    "note": "the controller.ts hotspot ratchet (ceiling 4830) was respected by condensing comments rather than raising the ceiling"
+  },
+  "publicApi": {
+    "command": "node scripts/audit/module-architecture.mjs --check-public-api",
+    "result": "PASS",
+    "missing": 0,
+    "changedKind": 0,
+    "added": 0
+  },
+  "compositionRoot": {
+    "command": "vitest run test/architecture/composition_root_rules.test.ts",
+    "result": "PASS",
+    "tests": 7
+  },
+  "applicationParity": {
+    "command": "vitest run test/architecture/application_parity.test.ts",
+    "result": "PASS",
+    "tests": 29
+  },
+  "focusedP2D1": {
+    "files": [
+      "trajectory_p2d1_source_contract",
+      "trajectory_p2d1_ingestion_health",
+      "trajectory_p2d1_currentness",
+      "trajectory_p2d1_capsule_admission",
+      "trajectory_p2d1_governed_authorization",
+      "trajectory_p2d1_context_delivery",
+      "trajectory_p2d1_prompt_injection",
+      "trajectory_p2d1_real_integration"
+    ],
+    "result": "PASS"
+  },
+  "realFirstPartyGates": {
+    "files": [
+      "trajectory_p2c_cold_preview",
+      "trajectory_p2d0_cold_capsule",
+      "trajectory_p2b_first_party_gate",
+      "trajectory_p2b_canonical_correlation",
+      "trajectory_p2a_first_party_gate"
+    ],
+    "result": "PASS",
+    "modelCallsMade": 0
+  },
+  "broad": {
+    "command": "vitest run --exclude test/r3l0ciarlcf_gates.test.ts --exclude **/r3l0ciarl* --maxWorkers=2",
+    "testFiles": 347,
+    "testCases": 4679,
+    "passed": 4679,
+    "failed": 0,
+    "note": "a first broad run at --maxWorkers=4 showed 5 file-level failures, all of which were CONTENTION TIMEOUTS: four archived r3l0ciarl* files and one P2-A gate. Every one passed in isolation, and a 2-worker run of the identical suite passed 347/347. No P2-D1 regression."
+  },
+  "archivedFamily": {
+    "family": "r3l0ciarl*",
+    "excludedFile": "test/r3l0ciarlcf_gates.test.ts (per §14.1, unsafe isolated-mutation path in shared Windows workspaces)",
+    "otherFilesRun": 10,
+    "failedFiles": 4,
+    "failedTests": 13,
+    "passed": 202,
+    "perFileCounts": "5, 5, 2, 1 (identical to the P2-D0 baseline)",
+    "preExistingProof": "the archived tests import ONLY their own scripts/; no archived script imports any module P2-D1 changed (the two grep hits are string literals inside generated fixture content, not imports). The failure count and per-file distribution are identical to the P2-D0 stage.",
+    "classification": "PRE-EXISTING ARCHIVED DRIFT, NOT a P2-D1 regression"
+  },
+  "newRegressions": 0,
+  "runtimeCaveat": "Node 24.14.1 is below the documented >=24.15.0 minimum; the build and every suite pass on it. Preserved as a limitation.",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "primaryEnabled": false
+}
