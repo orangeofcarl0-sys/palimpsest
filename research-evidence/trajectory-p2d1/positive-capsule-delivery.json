@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_governed_authorization.test.ts",
+  "evidenceClass": "REAL_GOVERNED_REWORK",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_POSITIVE_CAPSULE_DELIVERY",
+  "title": "Positive capsuleForConsumer(A1) === AUTHORIZED at the controlled evidence level",
+  "method": "the ordinary attributed Preview over the real governed chain plus a controlled-fixture origin association",
+  "observed": "capsuleForConsumer(A1) returns AUTHORIZED, permittedOriginAttemptId A0, a bounded read-only Capsule with admitted events and a serialized byte count; a forged origin returns ORIGIN_NOT_PERMITTED",
+  "expectedInvariant": "a genuine governed consumer can obtain a Capsule for its permitted origin",
+  "verdict": "PASS",
+  "remainingUncertainty": "the origin execution evidence is a controlled fixture, not real first-party DSH evidence; the combined real-DSH + real-governed chain is NOT established in this stage"
+}

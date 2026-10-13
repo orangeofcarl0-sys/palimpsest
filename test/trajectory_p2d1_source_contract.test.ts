@@ -443,12 +443,15 @@ describe("F8 §9.5 — uncertainty is derived from source evidence", () => {
 
 /* ================================================================== F9 / F10 */
 
-describe("F9/F10 §10 — lineage duplication and consumer spoofability", () => {
-  it("SOURCE_DEMONSTRATED F9: makeCapsuleAuthorization() scans events itself instead of the Context Owner's reworkProvenanceBefore", () => {
+describe("F9/F10 §10 — lineage reuse and consumer spoofability", () => {
+  it("CHANGED ASSERTION (P2D1 C5) F9: makeCapsuleAuthorization reuses the Context Owner's lineage, not its own scan", () => {
     const cluster = readRepo("src/composition/execution_association.ts")!;
     const context = readRepo("src/context/service.ts")!;
-    expect(cluster).toContain("function makeCapsuleAuthorization");
-    expect(cluster).not.toContain("reworkProvenanceBefore");
+    // The cluster now delegates to the Context Owner's governedReworkOriginOf.
+    expect(cluster).toContain("governedReworkOriginOf");
+    // It no longer scans the event log for TASK_READY itself.
+    expect(cluster).not.toContain('event.event_type === "TASK_READY"');
+    expect(context).toContain("governedReworkOriginOf");
     expect(context).toContain("reworkProvenanceBefore");
   });
 
@@ -460,11 +463,12 @@ describe("F9/F10 §10 — lineage duplication and consumer spoofability", () => 
 
 /* ================================================================== F11 / F12 / F13 / F14 */
 
-describe("F11–F14 §10–§13 — no positive path, no delivery, no digest, no qualified fixture", () => {
-  it("SOURCE_DEMONSTRATED F11: no shipped test drives a real A0→Rework→A1→AUTHORIZED path", () => {
-    const test = readRepo("test/trajectory_p2d0_context_capsule.test.ts")!;
-    expect(test).toContain("a consumer with no governed rework lineage may inspect no historical Attempt");
-    expect(/capsuleForConsumer\([\s\S]{0,300}\.state\)\.toBe\("AUTHORIZED"\)/u.test(test)).toBe(false);
+describe("F11–F14 §10–§13 — positive path, delivery, digest, qualified fixture", () => {
+  it("CHANGED ASSERTION (P2D1 C5) F11: a shipped test NOW drives a real A0→Rework→A1→AUTHORIZED path", () => {
+    const test = readRepo("test/trajectory_p2d1_governed_authorization.test.ts")!;
+    expect(test).toContain("governedReworkOriginOf");
+    expect(test).toContain("appendReworkReopening");
+    expect(/capsuleForConsumer\([\s\S]{0,300}state\)\.toBe\("AUTHORIZED"\)/u.test(test)).toBe(true);
   });
 
   it("SOURCE_DEMONSTRATED F12: no Capsule reaches Compiled Context, a Handle, Context Pull or Host Prework", () => {
