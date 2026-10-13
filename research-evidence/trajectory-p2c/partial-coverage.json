@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PARTIAL_COVERAGE",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "property": "a page containing fewer events than the source reports is admitted as ACTUAL attributed evidence, but its coverage is PARTIAL and the Preview states so",
+  "independence": "read admission, page integrity and history completeness remain three separate dimensions",
+  "notProvenByFullCoverage": [
+    "that the Work Attempt settled, verified or promoted",
+    "that the session terminated",
+    "that no further events will be appended"
+  ],
+  "observed": {
+    "coldPreviewCoverage": "FULL (the created session had 3 stored events and all were returned)",
+    "note": "the gate reports the ACTUAL coverage rather than assuming FULL"
+  },
+  "tests": ["the H1 coverage suite and the page-integrity falsifiers pin the FULL/PARTIAL/UNKNOWN/NOT_APPLICABLE distinctions"],
+  "evidenceClass": "REAL_COLD_RECOVERED_ATTRIBUTED_PREVIEW",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "PARTIAL_COVERAGE_REPRESENTED_ACCURATELY"
+}

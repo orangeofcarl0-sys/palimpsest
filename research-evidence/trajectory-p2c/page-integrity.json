@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PAGE_INTEGRITY",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "note": "P2-C reuses the EXISTING H1 structural validator (src/trajectory/page_integrity.ts) rather than reimplementing it; the attributed adapter runs it through buildHandoffPreview",
+  "checks": [
+    "read state is READ_OK",
+    "the page names a session and it equals the verified binding's session",
+    "the page's header agrees with the page",
+    "every returned event names the page's session",
+    "returnedCount equals the event array length",
+    "sequences are contiguous and the watermark equals the final event",
+    "durability metadata agrees with the persisted boundary"
+  ],
+  "failClosed": "an INVALID page yields NOT_APPLICABLE coverage, admits NO events, and cannot complete a Handoff",
+  "tests": [
+    "P2C §11.5 an invalid event page (count mismatch) is refused by page integrity",
+    "the H1 page-integrity suite is unchanged and passes"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "PAGE_INTEGRITY_REUSED_AND_ENFORCED"
+}

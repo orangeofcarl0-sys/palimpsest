@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PRODUCT_RECORDER_COMPOSITION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "wiring": {
+    "site": "src/composition/continuation.ts",
+    "identitySink": "onCorrelatedSessionIdentity -> recorder.recordIdentity",
+    "finalization": "onTerminal -> recorder.finalizeAttempt({ closeReason: INVOCATION_RETURNED })",
+    "boundary": "the Work Delegation service is the ONE host-private place holding prepared.attemptId and its own jobId, so the correlation is built there and the model never sees either"
+  },
+  "properties": [
+    "the worker/model never names its own AttemptId",
+    "the recorder failure cannot change the job's phase or the canonical Work state",
+    "absence of the recorder is exactly the P2-B behavior (nothing recorded)"
+  ],
+  "observed": {
+    "productRecorderComposedInColdPreview": true,
+    "durableQualifiedCount": 1
+  },
+  "evidenceClass": "REAL_PRODUCT_COMPOSITION",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "RECORDER_WIRED_AT_TRUSTED_BOUNDARY"
+}

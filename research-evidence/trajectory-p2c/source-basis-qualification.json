@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_SOURCE_BASIS_QUALIFICATION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "module": "src/execution_association/source.ts",
+  "p2bWeakness": {
+    "F1": "the cold-recovery gate handed Process A's sourceBasis to Process B, so verification proved value matching, not independent recovery",
+    "F2": "computeTrustedSourceBasis hashes executable PATH strings, not contents or a signed manifest",
+    "F3": "the qualifier never consulted sourceKind, so a CONTROLLED_STUB record with a matching basis qualified"
+  },
+  "correctedModel": {
+    "trustedRegistry": "makeTrustedSourceRegistry({epochs, supportedProducerKinds}) — built by the DEPLOYMENT composition from its own configuration",
+    "epochs": "a LIST, so a legitimate upgrade ADDS an epoch rather than invalidating every historical association",
+    "enforcement": [
+      "a record must match a trusted epoch's basis",
+      "the record's sourceKind must be a supported producer kind (FIRST_PARTY_DSH_HOST)",
+      "the record's sourceKind must AGREE with the matching epoch's kind"
+    ],
+    "verifierAuthority": "the registry is constructed at the composition boundary (src/composition/execution_association.ts) from the deployment's own executable facts; it is never read from a record or a handoff file"
+  },
+  "contentVsPathDistinction": {
+    "hashed": "executable PATH strings (worker bin + node executable), plus the worker bin basename and the port adapter id",
+    "notHashed": "executable CONTENTS, a build manifest, or a signed bundle identity",
+    "honestLimitation": "this is a defensible LOCAL trusted-composition boundary: it establishes that the deployment was CONFIGURED with this executable, not that the bytes on disk were the expected ones. It is not remote attestation and not hardware identity.",
+    "whyAcceptable": "the ruling forbids cryptographic attestation theater and explicitly permits a defensible local provenance chain; the limitation is stated on every qualified result (sourceLimit)"
+  },
+  "historicalCompatibility": {
+    "behavior": "a second trusted epoch admits a historical record without invalidating it",
+    "test": "test/trajectory_p2c_admission_integrity.test.ts 'a second epoch admits a historical record without invalidating it'"
+  },
+  "sourceKindChecks": {
+    "supportedProducerKinds": ["FIRST_PARTY_DSH_HOST"],
+    "controlledStubRefused": true,
+    "kindMismatchRefused": true,
+    "unsupportedKindRefused": true
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "actualFirstPartyDshRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "SOURCE_BASIS_INDEPENDENTLY_QUALIFIED"
+}

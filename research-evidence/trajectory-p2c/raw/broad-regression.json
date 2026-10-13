@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_BROAD_REGRESSION_RAW",
+  "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+  "numTotalTestSuites": 1800,
+  "numTotalTests": 4807,
+  "numPassedTests": 4794,
+  "numFailedTests": 13,
+  "success": false,
+  "failedFiles": [
+    {
+      "file": "test/r3l0ciarlcfsh_persisted.test.ts",
+      "failures": [
+        "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan reports the four identity facts separately",
+        "R3-L0C-I-A-R-L-C-F-S-H §11 T2 — the committed plan agrees with the current recomputed closure",
+        "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+        "R3-L0C-I-A-R-L-C-F-S-H §5 T2 — the persisted evidence seal derives the final verdict from the persisted seal",
+        "R3-L0C-I-A-R-L-C-F-S-H §8 T3 — the authoritative entry refuses a PRIMARY invocation at the prohibition, after the committed-plan guard passed"
+      ]
+    },
+    {
+      "file": "test/r3l0ciarlcfs_gates.test.ts",
+      "failures": [
+        "R3-L0C-I-A-R-L-C-F-S §3 T1 — committed-plan identity reports the four identity facts separately",
+        "R3-L0C-I-A-R-L-C-F-S §3 T3 — the authoritative entry refuses a plan mismatch refuses a PRIMARY invocation at the prohibition, after the guard has passed",
+        "R3-L0C-I-A-R-L-C-F-S §3/§14 — the persisted cross-artifact seal seals the committed plan against the PERSISTED Qualification and Stage Result",
+        "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan seals the committed plan against evidence built from its OWN identity",
+        "R3-L0C-I-A-R-L-C-F-S §3 — the cross-artifact seal over the real plan is MISMATCH for the previous stage's real persisted pair"
+      ]
+    },
+    {
+      "file": "test/r3l0ciarlc_gates.test.ts",
+      "failures": [
+        "R3-L0C-I-A-R-L-C — the PRIMARY launch boundary stays closed refuses a structurally complete but untrusted authorization at the launch boundary",
+        "R3-L0C-I-A-R-L-C — the closure covers the live path the plan binds the closure and the plan closure matches"
+      ]
+    },
+    {
+      "file": "test/r3l0ciarl_gates.test.ts",
+      "failures": [
+        "R3-L0C-I-A-R-L §3 — primary-only input discipline a fully-authorized PRIMARY run stops at the launch boundary with no model call"
+      ]
+    }
+  ]
+}

@@ -251,7 +251,12 @@ const SOURCE_FILES = {
   composition: "src/composition/trajectory_v0.ts",
   relation: "src/trajectory/relation_admission.ts",
   projection: "src/trajectory/projection.ts",
-  reader: "scripts/trajectory_v0/dsh-session-reader.mjs",
+  /**
+   * P2-C §7.6: the reader IMPLEMENTATION moved into the shipped host package so the product composition
+   * and research share one reader; `scripts/trajectory_v0/dsh-session-reader.mjs` is now a thin re-export.
+   * This falsifier reads the implementation directly.
+   */
+  reader: "host/deployment/runtime/session_reader.js",
   preview: "src/trajectory/handoff_preview.ts",
 } as const;
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_READER_PRODUCTIZATION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "decision": "moved the implementation into the shipped host package rather than duplicating it",
+  "implementation": "host/deployment/runtime/session_reader.js",
+  "packageExport": "palimpsest-host-deployment/runtime/session_reader.js",
+  "researchEntryPoint": "scripts/trajectory_v0/dsh-session-reader.mjs (thin re-export)",
+  "preservedProperties": [
+    "official SessionPersistence reads (open(id,'read') + handle.read(0, undefined))",
+    "persisted/synthetic classification by array position using DSH's own interruptedTurnClosers",
+    "fork inheritance flags",
+    "session-local sequences",
+    "source privacy (sanitized detail, no absolute path in the consumer-visible page)",
+    "bounded returned pages with honest disk-IO cost",
+    "resource disposal via the mounted Cordis fiber"
+  ],
+  "secondImplementation": false,
+  "secondSanitizer": false,
+  "tests": ["the H1 falsifier and durability suites now read the implementation directly and still pass"],
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ONE_SHARED_OFFICIAL_READER"
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PREVIEW_SEMANTIC_BASIS",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "closedLimitation": {
+    "id": "F14",
+    "observation": "the preview digest covered execution events and identity but not the read watermark or known event count, so an observation-basis change could leave the digest unchanged"
+  },
+  "decision": {
+    "frozenContractUntouched": true,
+    "reason": "changing the existing previewDigest meaning would silently reinterpret every historical Preview; the ruling forbids that and asks for a clear distinction instead",
+    "forwardCompatibleSurface": "the attributed adapter returns a SEPARATE `provenance` block carrying the qualification state, source epoch id, durable binding reference, window-closed flag, read watermark, known event count and page coverage — so a consumer distinguishes semantic content from observation basis without changing the digest's meaning",
+    "digestRemains": "a deterministic digest of the SEMANTIC content, exactly as H1 defined it"
+  },
+  "whatAViewerCanDistinguish": [
+    "what was actually read (watermark, known count, coverage)",
+    "what was inferred or missing",
+    "which durable binding and source epoch the association rests on"
+  ],
+  "tests": ["P2C C6 the recovered Preview's provenance block reports the durable binding ref, epoch and coverage alongside the preview digest"],
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "BASIS_SEPARATE_FROM_SEMANTIC_DIGEST"
+}

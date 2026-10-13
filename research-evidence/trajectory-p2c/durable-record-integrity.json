@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_DURABLE_RECORD_INTEGRITY",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "module": "src/execution_association/store.ts",
+  "closedDefects": [
+    {
+      "id": "F8",
+      "defect": "Store Append did not validate eventId against the canonical identity",
+      "correction": "both append and replay enforce eventId === associationEventId(canonical identity) for the validated payload",
+      "tests": ["P2C C2 §6.3 a non-canonical eventId is refused on append", "P2C C1 F8 now REFUSED"]
+    },
+    {
+      "id": "F9",
+      "defect": "Store Replay never read row.attempt_id, so a mutated column was invisible",
+      "correction": "parseStoredEvent compares row.project_id and row.attempt_id against the payload and fails closed on a mismatch",
+      "tests": ["P2C C2 §6.4 a row whose columns contradict the payload fails closed on replay", "P2C C1 F9 now ENFORCED"]
+    }
+  ],
+  "properties": [
+    "typed strict payload validation before any write",
+    "same eventId with different content fails closed (event_conflict)",
+    "byte-identical duplicate delivery is an idempotent no-op",
+    "malformed stored record fails closed on replay, never reads as an empty history",
+    "the canonical identity check runs on BOTH append and replay"
+  ],
+  "multiCandidatePreservation": {
+    "behavior": "three distinct Session identities for one invocation are all preserved as separate durable records",
+    "test": "test/trajectory_p2b_adversarial_matrix.test.ts 'three distinct identities remain THREE candidates after a restart'"
+  },
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "DURABLE_RECORD_IDENTITY_ENFORCED"
+}

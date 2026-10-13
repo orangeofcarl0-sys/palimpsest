@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_REAL_PRODUCT_COLD_PREVIEW",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "gate": "scripts/trajectory_p2c/cold-preview-gate.mjs",
+  "method": "TWO INDEPENDENT processes, each composing the NORMAL product (installPalimpsest with host-derived work-worker facts and the real DSH home). Process A starts real work through installed.workDelegation and the product-composed recorder durably records the association; Process B recomposes the product and calls installed.trajectory.attributedPreview.previewAttempt.",
+  "whatProcessBDidNotReceive": [
+    "Process A's Work Delegation job map",
+    "Process A's Invocation Tracker",
+    "an in-memory Association object",
+    "a caller-supplied VERIFIED value",
+    "a pre-selected SessionId",
+    "Process A's sourceBasis"
+  ],
+  "observed": {
+    "processA": {
+      "outcome": "PASS",
+      "attemptId": "attempt-<32 hex>",
+      "attemptStates": ["RUNNING"],
+      "promotionCount": 0,
+      "durableQualifiedCount": 1
+    },
+    "processB": {
+      "outcome": "PASS",
+      "selectionState": "SELECTED_UNIQUE",
+      "bindingStatus": "BOUND_VERIFIED",
+      "readAdmission": "ADMITTED_TO_ATTEMPT",
+      "sessionReadState": "READ_OK",
+      "eventCount": 3,
+      "pageCoverage": "FULL",
+      "recoveredSessionIdMatchesRecorded": true
+    }
+  },
+  "noModelProof": {
+    "structuralExclusion": "the runner's capability refusal is thrown between agents.create and the only agent.followup call",
+    "runtimeMeasurement": "the official reader reports READ_OK with zero turn/step/request events on the created session",
+    "note": "the measurement is the logical Session Event stream, never a UTF-8 scan"
+  },
+  "expectedInvariant": "a real canonical Work Attempt producing a first-party DSH Session observation is durably recorded through normal composition and recovered as an attributed Preview in an independent process, with no model call, no fabricated settlement and no source mutation",
+  "evidenceClass": "REAL_COLD_RECOVERED_ATTRIBUTED_PREVIEW",
+  "actualFirstPartyDshRan": true,
+  "actualCanonicalWorkRan": true,
+  "coldProcessRecoveryPerformed": true,
+  "independentProcessCount": 2,
+  "normalProductCompositionUsed": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "remainingUncertainty": [
+    "the exact event count may differ per run; the gate reports the actual count rather than a hardcoded value",
+    "cold recovery means recovery of EVIDENCE and a read-only Preview, not resumption of a DSH Agent"
+  ],
+  "verdict": "TRAJECTORY_P2C_ATTRIBUTED_EXECUTION_PREVIEW_QUALIFIED"
+}

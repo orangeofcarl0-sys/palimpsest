@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_NEXT_PRODUCT_EXPERIMENT",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "notImplemented": true,
+  "description": "The minimal next experiment: have an EXISTING DSH agent consume a bounded, source-qualified execution history to improve continuation or collaboration.",
+  "shape": {
+    "input": "one canonical Work Attempt whose durable association is ASSOCIATION_QUALIFIED",
+    "readPath": "the read-only attributed Preview already implemented by P2-C, bounded to a small page and carrying its coverage and durability provenance",
+    "consumer": "the existing principal or a delegated worker, receiving the attributed execution history as READ-ONLY background — never as authority",
+    "bound": "the Preview must remain inspection data: it cannot resume a session, settle Work, verify a result or promote"
+  },
+  "whatItWouldTest": [
+    "whether a source-qualified execution history measurably improves continuation decisions",
+    "whether the bounded page size and coverage metadata are sufficient for the consumer to reason honestly",
+    "whether presenting execution facts as read-only background preserves the owner separation"
+  ],
+  "whatItMustNotDo": [
+    "enable automatic Handoff",
+    "let the Preview resume an Agent",
+    "turn a Session event into Work settlement or Promotion",
+    "expose a raw Session history to every model, route or peer"
+  ],
+  "prerequisites": [
+    "a live model turn (out of P2-C scope)",
+    "an explicit product decision on which consumer receives the history",
+    "a measurement plan that separates the history's effect from other continuation signals"
+  ],
+  "evidenceClass": "NOT_ESTABLISHED",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "NEXT_EXPERIMENT_SPECIFIED_NOT_STARTED"
+}

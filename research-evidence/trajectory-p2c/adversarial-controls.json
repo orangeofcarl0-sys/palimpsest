@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_ADVERSARIAL_CONTROLS",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "testFile": "test/trajectory_p2c_adversarial_controls.test.ts",
+  "controls": [
+    { "case": "a Session exists but has NO durable association", "result": "NO_DURABLE_EVIDENCE; no read; no events" },
+    { "case": "an untrusted source manifest (foreign basis)", "result": "refused; no session established" },
+    { "case": "a Session Header that contradicts the association", "result": "SOURCE_REFUSED; no events" },
+    { "case": "the reader is unavailable", "result": "binding verified but NOT_REQUESTED; no events, never an empty success" },
+    { "case": "several qualified invocations", "result": "AMBIGUOUS_REQUIRES_SELECTION; nothing auto-selected" },
+    { "case": "a conflict within one invocation", "result": "no arbitrary session selected" },
+    { "case": "an invalid event page (count mismatch)", "result": "pageIntegrity INVALID; no events" },
+    { "case": "a CONTROLLED_STUB declaring FIRST_PARTY_DSH_QUALIFIED", "result": "refused; the label grants nothing" },
+    { "case": "invalid binding-state combinations (F11)", "result": "validateAdmissionInvariants refuses" }
+  ],
+  "property": "none of these silently authorizes an unrelated Session, and none exposes events",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ADVERSARIAL_CONTROLS_REFUSE"
+}

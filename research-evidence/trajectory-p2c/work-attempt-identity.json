@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_WORK_ATTEMPT_IDENTITY",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "closedDefect": {
+    "id": "F10",
+    "defect": "WorkRevalidationPort.readAttempt returned {taskId,state}|null, so the qualifier could only check that a record EXISTED"
+  },
+  "correction": {
+    "portShape": "{ ok: true, taskId, state, creationEventId } | { ok: false, reason }",
+    "reuse": "src/install.ts constructs the port by calling the SAME exported `admitAttempt` the ordinary V0 Preview uses, so the exact historical ATTEMPT_CREATED event is verified (entity_id === attemptId, project_id === projectId, exactly one creation event, and the record must not contradict its own creation event)",
+    "refusalSurfaced": "a Work refusal is reported as SOURCE_REFUSED rather than read as 'attempt not found'"
+  },
+  "properties": [
+    "exact canonical ATTEMPT_CREATED identity is verified",
+    "an unknown or foreign Attempt causes ZERO DSH reads (the adapter admits Work before any association access)",
+    "a historical COMPLETED attempt still retains valid historical execution evidence (an old attempt need not remain RUNNING)",
+    "the association does not modify Work truth: the gate measured the Attempt left RUNNING with no Promotion"
+  ],
+  "reusedExistingLogic": "src/composition/trajectory_v0.ts:admitAttempt (exported for reuse; the P2-C stage did not reimplement Work admission)",
+  "tests": [
+    "P2C C2 §6.5 a Work refusal is reported as SOURCE_REFUSED",
+    "P2C C2 §6.5 a historical COMPLETED attempt still qualifies",
+    "P2C C3 §8.1 an UNKNOWN attempt causes zero reads and throws before any association access",
+    "P2C C1 F10 now ENFORCED"
+  ],
+  "evidenceClass": "REAL_CANONICAL_WORK_NO_MODEL",
+  "actualCanonicalWorkRan": true,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "EXACT_ATTEMPT_IDENTITY_VERIFIED"
+}

@@ -317,13 +317,15 @@ describe("P2C C1 F13 — normal product composition lacks the full path", () => 
     const host = readRepo("host/dsh/lib/index.js");
     const install = readRepo("src/install.ts");
     const launch = readRepo("src/deployment/launch.ts");
+    const cluster = readRepo("src/composition/execution_association.ts");
     // The host now derives work-worker facts beside the branch host.
     expect(host!).toMatch(/deriveWorkWorkerFacts/u);
     expect(host!).toMatch(/dshSubprocessBranchExecutionPort/u);
-    // The install composes the capability and exposes a trajectory surface.
-    expect(install!).toMatch(/composeExecutionAssociationCapability/u);
-    expect(install!).toMatch(/composeAttributedPreview/u);
+    // The install composes the cluster and exposes a trajectory surface (the cluster module owns the
+    // wiring, keeping install.ts a composition root).
+    expect(install!).toMatch(/composeExecutionAssociationCluster/u);
     expect(install!).toMatch(/trajectory/u);
+    expect(cluster!).toMatch(/composeAttributedPreview/u);
     // The deployment forwards the host facts into the install.
     expect(launch!).toMatch(/workWorkerFacts/u);
   });

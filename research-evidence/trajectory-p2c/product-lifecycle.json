@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_PRODUCT_LIFECYCLE",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "ownership": [
+    { "resource": "executionAssociationStore", "createdBy": "the install (src/composition/execution_association.ts)", "category": "INSTALL_CREATED_AND_MANAGED", "closedBy": "the install lifecycle, after the controller and the log" },
+    { "resource": "dshSessionReader", "createdBy": "the install (lazy; mounts on first read)", "category": "INSTALL_CREATED_AND_MANAGED", "closedBy": "the install lifecycle, disposing the mounted Cordis fiber" },
+    { "resource": "recorder", "createdBy": "the install", "category": "stateless", "closedBy": "nothing to dispose; its lifetime is the store's" },
+    { "resource": "qualifier", "createdBy": "the install", "category": "stateless", "closedBy": "nothing to dispose" }
+  ],
+  "callerSuppliedStore": {
+    "honored": true,
+    "closedByInstall": false,
+    "note": "a caller that supplies its own association store keeps its lifetime"
+  },
+  "ordering": "tool disposers (reverse) -> monitor stop -> controller.close -> store.close -> ownedResources in recorded order -> effects.close; the association store and reader are appended to ownedResources after the continuation resources",
+  "leaks": {
+    "cordisFibers": "the reader's fiber is disposed by reader.close(); idempotent",
+    "sessionPersistenceHandles": "each read opens and closes its own handle inside the reader"
+  },
+  "tests": ["P2C C6 the cold-preview gate composes, uses and disposes the product in two processes with a clean test-root cleanup"],
+  "evidenceClass": "REAL_PRODUCT_COMPOSITION",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "OWNERSHIP_AND_LIFECYCLE_CORRECT"
+}
