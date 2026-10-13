@@ -565,6 +565,20 @@ export function launchDeployment(
           },
         }),
     ...(options.host?.facts === undefined ? {} : { hostFacts: options.host.facts }),
+    /**
+     * Trajectory-P2-D2 §10.2: the EXPERIMENTAL, DEFAULT-OFF model-visible Trajectory delivery, enabled ONLY
+     * by an explicit `trajectory` profile section. It is TRUSTED configuration: it composes the delivery
+     * capability but starts no Worker, no model, no Attempt and no Session — actual execution stays under the
+     * existing governance. Absent ⇒ nothing is composed and the default packaged path is unchanged.
+     */
+    ...(profile.trajectory === undefined
+      ? {}
+      : {
+          experimentalTrajectoryContextDelivery: true,
+          ...(profile.trajectory.mode === undefined ? {} : { trajectoryPresentationMode: profile.trajectory.mode }),
+          ...(profile.trajectory.capsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: profile.trajectory.capsuleMaxSerializedBytes }),
+          ...(profile.trajectory.sectionMaxBytes === undefined ? {} : { trajectorySectionMaxBytes: profile.trajectory.sectionMaxBytes }),
+        }),
     remoteTransport,
   });
 

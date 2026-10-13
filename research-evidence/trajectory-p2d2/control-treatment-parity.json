@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_CONTROL_TREATMENT_PARITY",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C3/C4 §7.4/§7.5/§8.4",
+  "evidenceClass": "HOST_INPUT_CAPTURED",
+  "sourceReferences": [
+    "src/trajectory/presentation.ts (CONTROL_SECTION, buildTrajectoryPresentation)",
+    "host/dsh/lib/trajectory-presentation.js (applyTrajectoryPresentation)",
+    "test/trajectory_p2d2_presentation.test.ts",
+    "test/trajectory_p2d2_host_delivery.test.ts"
+  ],
+  "factors": {
+    "armSource": "TRUSTED deployment configuration fixed before Worker execution; a model cannot choose the arm",
+    "capsuleSubstitution": "impossible: the section text is the PRODUCT-rendered text of the attempt's OWN authorized Capsule",
+    "originNomination": "impossible: the Origin is resolved from the consumer's canonical governed lineage",
+    "r2eInteraction": "R2-E efficacy is a SEPARATE experimental seam (its own env var, its own section); it is not conflated with the Trajectory presentation"
+  },
+  "observedResults": {
+    "controlBoundaryIdenticalToTreatmentFirstAndLastLines": true,
+    "controlContainsNoSessionId": true,
+    "controlContainsNoOriginAttemptId": true,
+    "controlContainsNoResultVerificationFailurePromotion": true,
+    "treatmentContainsActualQualifiedSection": true,
+    "offPlacesNothing": true,
+    "taskTextBeforeSectionIdenticalAcrossArms": true,
+    "toolCatalogueUnchanged": true,
+    "writeScopeUnchanged": true
+  },
+  "expectedInvariant": "Control and Treatment differ in ACTUAL UserMessage bytes while retaining IDENTICAL Work/tool authority",
+  "verdict": "PASS",
+  "remainingUncertainty": "the parity is proven at the L1/L2 delivery levels; it says nothing about whether a model behaves differently",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

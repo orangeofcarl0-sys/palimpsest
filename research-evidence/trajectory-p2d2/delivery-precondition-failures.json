@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_DELIVERY_PRECONDITION_FAILURES",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C4 §8.6",
+  "evidenceClass": "CONTROLLED_RENDERER",
+  "sourceReferences": [
+    "src/trajectory/presentation.ts (buildTrajectoryPresentation refusal states)",
+    "src/context/service.ts (TRAJECTORY_DELIVERY_STATES)",
+    "src/composition/execution_association.ts (delivery provider deliveryState)",
+    "host/dsh/lib/trajectory-presentation.js (host-side refusal)"
+  ],
+  "testFiles": ["test/trajectory_p2d2_presentation.test.ts", "test/trajectory_p2d2_host_delivery.test.ts"],
+  "vocabulary": ["DELIVERY_DISABLED", "CONTROL_SECTION_RENDERED", "SECTION_RENDERED", "CAPSULE_NOT_AVAILABLE", "DELIVERY_PRECONDITION_NOT_MET"],
+  "failureSemantics": {
+    "absentCapsuleUnderTreatment": "DELIVERY_PRECONDITION_NOT_MET (never a silent CONTROL)",
+    "malformedCapsuleUnderTreatment": "DELIVERY_PRECONDITION_NOT_MET",
+    "overBudgetSection": "DELIVERY_PRECONDITION_NOT_MET (the section is NOT truncated)",
+    "invalidPresentationBudget": "PRESENTATION_LIMIT_INVALID",
+    "malformedReceivedPresentation": "the host REFUSES it and places NO section, rather than stringifying it into the prompt",
+    "ordinaryProductionWork": "continues without the optional Capsule; a failed optional delivery does not settle or fail Work"
+  },
+  "observedResults": {
+    "absentCapsuleRefused": true,
+    "malformedCapsuleRefused": true,
+    "overBudgetRefused": true,
+    "invalidBudgetRefused": true,
+    "hostRefusesMalformed": true,
+    "failedTreatmentNotRelabeledControl": true
+  },
+  "expectedInvariant": "a failed TREATMENT materialization is recorded as a delivery-precondition failure and is never counted as a delivered Treatment or silently relabeled CONTROL",
+  "verdict": "PASS",
+  "remainingUncertainty": "the delivery-precondition state is reported through the worker context and the host telemetry; a future trial harness must READ it to classify a trial, which is C8's job",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": true,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

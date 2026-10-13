@@ -105,9 +105,51 @@ export interface TrajectoryCapsuleDelivery {
   readonly originAttemptId: string;
   readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
   readonly authority: "READ_ONLY_INSPECTION";
+  /**
+   * Trajectory-P2-D2 §7/§8: the PRODUCT-RENDERED, model-visible presentation for this attempt's arm. It is
+   * built by the Context/Trajectory composition (the product decides WHAT may be shown); the Host decides
+   * only WHERE it appears. `null`/absent when the arm renders no section (OFF). A TREATMENT whose
+   * presentation could not be built is reported through `deliveryState` rather than silently becoming
+   * CONTROL (§8.6). Optional so an existing P2-D1 delivery (which carries no presentation) still type-checks.
+   */
+  readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
+  /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is never counted as a CONTROL. */
+  readonly deliveryState?: TrajectoryDeliveryState | undefined;
 }
 
-/** §11: the delivery provider. Given an attempt id, resolve its Capsule or null (nothing authorized). */
+/** P2-D2 §9.4: the small, source-grounded delivery-precondition vocabulary. */
+export const TRAJECTORY_DELIVERY_STATES = [
+  /** The arm renders no section (OFF, or the feature is disabled). */
+  "DELIVERY_DISABLED",
+  /** CONTROL rendered its no-history boundary. */
+  "CONTROL_SECTION_RENDERED",
+  /** TREATMENT rendered the qualified Capsule. */
+  "SECTION_RENDERED",
+  /** TREATMENT was assigned but no qualified Capsule was available. */
+  "CAPSULE_NOT_AVAILABLE",
+  /** TREATMENT was assigned but the Capsule was malformed or over budget. */
+  "DELIVERY_PRECONDITION_NOT_MET",
+] as const;
+export type TrajectoryDeliveryState = (typeof TRAJECTORY_DELIVERY_STATES)[number];
+
+/**
+ * P2-D2 §7.2/§8.2: the presentation the product hands to the Host. Its declared bytes and digest are over
+ * the ACTUAL rendered text, so the Host can verify that the section it places is the section produced.
+ */
+export interface TrajectoryPresentationDelivery {
+  readonly schemaVersion: 1;
+  readonly mode: "CONTROL" | "TREATMENT";
+  readonly sectionText: string;
+  readonly sectionBytes: number;
+  readonly sectionDigest: string;
+  readonly capsuleDigest: string | null;
+  readonly consumerBasisDigest: string;
+  readonly originAttemptId: string | null;
+  readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+  readonly authority: "READ_ONLY_INSPECTION";
+}
+
+/** §11: the delivery provider. Given an attempt id, resolve its delivery or null (nothing authorized). */
 export type TrajectoryCapsuleDeliveryProvider = (input: { readonly attemptId: string }) => Promise<TrajectoryCapsuleDelivery | null>;
 
 /**
@@ -142,6 +184,13 @@ export interface WorkWorkerAttemptContext {
           readonly originAttemptId: string;
           readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
           readonly authority: "READ_ONLY_INSPECTION";
+          /**
+           * Trajectory-P2-D2 §7: the PRODUCT-RENDERED, model-visible section for this attempt's arm, or
+           * `null` when the arm renders no section. The HOST places this text; it never composes one.
+           */
+          readonly presentation?: TrajectoryPresentationDelivery | null | undefined;
+          /** P2-D2 §8.6: the delivery-precondition state, so a failed TREATMENT is distinguishable. */
+          readonly deliveryState?: TrajectoryDeliveryState | undefined;
         }
       | undefined;
   };
@@ -707,6 +756,8 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
               originAttemptId: delivered.originAttemptId,
               framing: delivered.framing,
               authority: delivered.authority,
+              presentation: delivered.presentation ?? null,
+              deliveryState: delivered.deliveryState ?? "SECTION_RENDERED",
             });
           }
         } catch {

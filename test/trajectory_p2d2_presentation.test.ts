@@ -21,6 +21,7 @@ import {
   buildTrajectoryContextCapsuleChecked,
   buildTrajectoryPresentation,
   renderTrajectorySection,
+  sectionTextDigest,
   validateTrajectoryPresentation,
   TRAJECTORY_PRESENTATION_HARD_MAX_SECTION_BYTES,
   type HandoffPreview,
@@ -125,7 +126,7 @@ describe("P2D2 §7.5/§7.6 — TREATMENT renders the actual qualified Capsule", 
     // Bounded and declared consistently.
     expect(a.presentation.sectionBytes).toBe(Buffer.byteLength(a.presentation.sectionText, "utf8"));
     expect(a.presentation.sectionBytes).toBeLessThanOrEqual(TRAJECTORY_PRESENTATION_HARD_MAX_SECTION_BYTES);
-    expect(a.presentation.sectionDigest).toBe(canonicalDigest(a.presentation.sectionText));
+    expect(a.presentation.sectionDigest).toBe(sectionTextDigest(a.presentation.sectionText));
     // The Capsule digest and the Section digest are DISTINCT: a Capsule digest does not prove Section delivery.
     expect(a.presentation.capsuleDigest).not.toBeNull();
     expect(a.presentation.capsuleDigest).not.toBe(a.presentation.sectionDigest);

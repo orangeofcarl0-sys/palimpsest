@@ -315,6 +315,9 @@ export function installPalimpsest(
        */
       ...(options.experimentalTrajectoryContextDelivery === undefined ? {} : { experimentalTrajectoryContextDelivery: options.experimentalTrajectoryContextDelivery }),
       ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes }),
+      /** Trajectory-P2-D2 §7/§8: the experimental presentation ARM and section budget, DEFAULT OFF. */
+      ...(options.trajectoryPresentationMode === undefined ? {} : { trajectoryPresentationMode: options.trajectoryPresentationMode }),
+      ...(options.trajectorySectionMaxBytes === undefined ? {} : { trajectorySectionMaxBytes: options.trajectorySectionMaxBytes }),
       /**
        * P2-D0 §8.3: the cross-owner reads the T0 project-evolution projection consumes, so the attributed
        * Preview presents the real projection rather than an empty one. These are the SAME owners the V0
