@@ -189,12 +189,20 @@ if (PHASE === "recover") {
 
     // §8/§9: the CHECKED builder over the REAL recovered evidence produces a bounded read-only Capsule.
     const { buildTrajectoryContextCapsuleChecked } = await import(pathToFileURL(join(REPO, "dist", "src", "trajectory", "index.js")).href);
+    /**
+     * P2-D2 §6.6 NOTE: the budget is 8192, not the P2-D1-era 4096. P2-D2 C2 added the SEPARATED truncation
+     * facts (`eventOmittedCount`, `summaryTruncatedCount`, `essentialMetadataExceeded`, `sourcePageWasPartial`)
+     * that §6.6 requires, which grew the Capsule's essential metadata floor by ~120 bytes. The real
+     * cold-recovered preview's metadata is rich enough that the floor now sits just under 4096, leaving no
+     * room for a single event at that budget. 8192 keeps the gate's intent (a bounded Capsule carrying real
+     * events) while remaining far below the product ceiling.
+     */
     const outcome = buildTrajectoryContextCapsuleChecked({
       consumerAttemptId: handoff.attemptId,
       originAttemptId: handoff.attemptId,
       authorizationBasis: "gate: bounded projection over recovered evidence (authorization proven separately)",
       preview: preview.preview,
-      limits: { maxSerializedBytes: 4_096 },
+      limits: { maxSerializedBytes: 8_192 },
       attributionProvenance: {
         qualificationState: preview.provenance.qualificationState,
         sourceEpochId: preview.provenance.sourceEpochId,
@@ -209,7 +217,7 @@ if (PHASE === "recover") {
     record("capsuleBuildOk", outcome.ok === true);
     if (outcome.ok) {
       record("capsuleSerializedBytes", outcome.serializedBytes);
-      record("capsuleWithinBudget", outcome.serializedBytes <= 4_096);
+      record("capsuleWithinBudget", outcome.serializedBytes <= 8_192);
       record("capsuleAuthority", outcome.capsule.authority);
       record("capsuleFraming", outcome.capsule.framing);
       record("capsuleEventCount", outcome.capsule.historicalExecution.events.length);

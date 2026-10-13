@@ -190,6 +190,10 @@ describe("R3-L0C-G1 §4 P1-F — the worker payload is byte-identical with obser
   it("P1-G: the model-visible payload carries no host authority metadata", async () => {
     const { workWorkerEnvironmentPayload } = await import("../src/deployment/work_worker.js");
     const payload = workWorkerEnvironmentPayload(CONTEXT);
+    // CHANGED ASSERTION (P2D2 C4): the payload now also carries the PRODUCT-rendered Trajectory presentation
+    // and its delivery state. Neither is host authority: the presentation is bounded historical text the
+    // PRODUCT rendered, and the state is a label. In a default (OFF) deployment both are `null`, so no host
+    // authority metadata is added.
     expect(Object.keys(payload)).toEqual([
       "context",
       "resultTool",
@@ -198,7 +202,11 @@ describe("R3-L0C-G1 §4 P1-F — the worker payload is byte-identical with obser
       "contextPullChannel",
       "allowedPullHandles",
       "deniedAuthorityPrefix",
+      "trajectoryPresentation",
+      "trajectoryDeliveryState",
     ]);
+    expect(payload.trajectoryPresentation).toBeNull();
+    expect(payload.trajectoryDeliveryState).toBeNull();
   });
 });
 
