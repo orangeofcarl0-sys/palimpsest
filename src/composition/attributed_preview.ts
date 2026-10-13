@@ -39,7 +39,7 @@ import {
   type PreviewProjectEvolutionSummary,
 } from "../trajectory/index.js";
 import type { AssociationQualifier, ExecutionAssociationStore, QualifiedAssociation } from "../execution_association/index.js";
-import { admitAttempt, attemptEvents, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
+import { admitAttempt, attemptEvents, buildRelationContext, canonicalFactsOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
 
 /** §8.3: how the adapter selected (or refused to select) an invocation. */
 export const INVOCATION_SELECTION_STATES = [
@@ -98,7 +98,12 @@ export interface AttributedPreviewCompositionInput {
   readonly store: ExecutionAssociationStore | undefined;
   readonly sessionReader: { readonly sourceIdentity: string; readonly evidenceClass: "REAL_DSH_QUERY" | "DSH_QUERY_PORT_FIXTURE"; readEvents(request: { readonly sessionId: string; readonly fromSeq?: number | undefined; readonly maxEvents?: number | undefined }): Promise<DshSessionEventPage>; close?(): Promise<void> } | undefined;
   /** §8.9: the project-evolution summary builder, injected so this module owns no T0 semantics. */
-  readonly projectEvolutionOf: (input: { readonly attemptId: string; readonly events: readonly import("../schema/index.js").SchedulerEvent[] }) => Promise<PreviewProjectEvolutionSummary>;
+  readonly projectEvolutionOf: (input: {
+    readonly attemptId: string;
+    readonly events: readonly import("../schema/index.js").SchedulerEvent[];
+    /** P2-D0 §8.3: the attempt's own relation context, so the injected builder can select its relations. */
+    readonly relationContext: import("../trajectory/index.js").AttemptRelationContext;
+  }) => Promise<PreviewProjectEvolutionSummary>;
 }
 
 /** §8.5: a binding that is not verified at all. */
@@ -145,21 +150,22 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       }
 
       const viewId = `tv-${request.attemptId}`;
-      const canonical: PreviewCanonicalFacts = Object.freeze({
-        attemptState: record?.state ?? null,
-        taskId: record?.taskId ?? null,
-        workState: null,
-        envelopeId: (admitted.created.payload as { envelope_id?: unknown }).envelope_id as string | null,
-        basisDigest: null,
-        capturedAtRevision: null,
-        authorizationDetail: `admitted by canonical ATTEMPT_CREATED at event_id ${String(admitted.created.event_id)}`,
-        resultRefs: Object.freeze([]),
-        resultDetail: "no terminal result event is read by the attributed adapter",
-        verificationState: "NOT_OBSERVED_BY_P2C",
-        promotionState: input.promotions.promotionFactsSync().some((fact) => fact.attemptId === request.attemptId) ? "PROMOTED" : "NOT_PROMOTED",
-        promotionId: null,
-        reworkState: "NONE",
-        reworkDetail: "rework is not derived by the attributed adapter",
+      /**
+       * P2-D0 §8.1/§8.2: THE CANONICAL FACTS COME FROM THE EXISTING V0 SEMANTIC, NOT PLACEHOLDERS.
+       *
+       * `canonicalFactsOf` is the SAME function the ordinary V0 Preview uses, so the attributed Preview
+       * reports the real terminal result reference, the promotion identity, the governed-rework state and
+       * the historical Work basis. Verification remains `NOT_OBSERVED_BY_V0` — the same honest value the
+       * V0 composition uses, because verification is a separate owner's fact that neither composition
+       * infers from a completed attempt. No Session admission depends on any of this (§8.5).
+       */
+      const canonical: PreviewCanonicalFacts = canonicalFactsOf({
+        events,
+        attemptId: request.attemptId,
+        record,
+        basis: controller.attemptBasisForResolution(request.attemptId),
+        promotions: input.promotions.promotionFactsSync(),
+        admitted,
       });
       const host: PreviewHostObservationSummary = Object.freeze({
         hostLocalJobId: request.hostRecord?.hostLocalJobId ?? null,
@@ -170,7 +176,15 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         lifecycleCoverage: "NONE" as const,
         originLimitation: "a caller-supplied host record is not producer-established provenance",
       });
-      const projectEvolution = await input.projectEvolutionOf({ attemptId: request.attemptId, events });
+      /**
+       * P2-D0 §8.3: the T0 project-evolution projection is supplied by the COMPOSITION through the
+       * injected `projectEvolutionOf`, which the product cluster now wires to the SAME `projectEvolutionOf`
+       * the V0 composition uses (with the attempt's own relation context). The adapter therefore presents
+       * the real projection root, semantic digest, Work sequence/digest, ProjectIR revision, selected and
+       * quarantined relations and the cross-owner basis caveats — or the honest structured failure origin.
+       */
+      const relationContext = buildRelationContext({ projectId, attemptId: request.attemptId, events, admitted });
+      const projectEvolution = await input.projectEvolutionOf({ attemptId: request.attemptId, events, relationContext });
 
       /**
        * §7.2: no qualifier ⇒ no association authority at all. The honest result is a Work-only preview.
@@ -194,7 +208,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       if (selection.selected === null) {
         const detail =
           selection.state === "AMBIGUOUS_REQUIRES_SELECTION"
-            ? `${String(qualified.length)} invocations are qualified for this attempt, so an explicit invocationId is required; none is auto-selected`
+            ? selection.detail
             : selection.state === "REQUESTED_NOT_QUALIFIED"
               ? `the requested invocation ${String(request.requestedInvocationId)} is not qualified for this attempt`
               : selection.state === "REQUESTED_FOREIGN"
@@ -210,8 +224,62 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
 
       const chosen = selection.selected;
 
-      /* ---- §8.6 STEP 4: read ONLY the selected session, through the official reader. ---- */
+      /**
+       * P2-D0 §9.2: A CALLER CLAIM IS A DECLARATION, AND A DISAGREEMENT IS REPORTED.
+       *
+       * The verified SessionId remains the ONLY read target. When the caller's claimed id differs from it,
+       * the discrepancy is recorded on the binding's evidence and stated in the detail, so a consumer sees
+       * that the claim was contradicted rather than silently ignored. The claim creates no source authority.
+       */
+      const claimDisagrees = request.claimedSessionId !== undefined && request.claimedSessionId !== chosen.dshSessionId;
+
+      /**
+       * §8.6 STEP 4 / P2-D0 §7.6: read ONLY the selected session, through the official reader.
+       *
+       * THE FINAL RELEVANT-BASIS RECHECK. The qualifier rechecked currentness BEFORE it returned, but the
+       * Event Read is asynchronous: a conflicting observation or a relevant finalization can be committed
+       * to the SAME Invocation while the page is being read (F3). The store head is captured before the
+       * read and re-checked after it; a relevant change yields an explicit RACED outcome rather than a
+       * stale admission. This is a bounded optimistic read-check, not a distributed transaction, and it
+       * does not loop.
+       */
+      const headBeforeRead = input.store.head();
+      const invocationEventIdsBefore = input.store
+        .replayForAttempt({ projectId, attemptId: request.attemptId })
+        .filter((event) => event.payload.invocationId === chosen.invocationId)
+        .map((event) => event.eventId);
       const page = await readSelectedSession(input.sessionReader, chosen.dshSessionId, request.maxEvents);
+      const headAfterRead = input.store.head();
+      const invocationEventIdsAfter = input.store
+        .replayForAttempt({ projectId, attemptId: request.attemptId })
+        .filter((event) => event.payload.invocationId === chosen.invocationId)
+        .map((event) => event.eventId);
+      const relevantChangedDuringRead =
+        headAfterRead !== headBeforeRead &&
+        (invocationEventIdsAfter.length !== invocationEventIdsBefore.length ||
+          invocationEventIdsAfter.some((eventId, index) => eventId !== invocationEventIdsBefore[index]));
+      if (relevantChangedDuringRead) {
+        const binding = unboundBinding({
+          projectId,
+          attemptId: request.attemptId,
+          viewId,
+          detail: `the association evidence for invocation ${chosen.invocationId} changed while its session page was being read, so the page is NOT admitted as current attribution`,
+          claimedSessionId: request.claimedSessionId ?? null,
+        });
+        return Object.freeze({
+          preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
+          selection: Object.freeze({ state: "AMBIGUOUS_REQUIRES_SELECTION" as const, invocationId: null, detail: `the qualification basis for invocation ${chosen.invocationId} changed during the event read, so the preview is not bound to a stable basis` }),
+          provenance: Object.freeze({
+            qualificationState: "RACED",
+            sourceEpochId: chosen.sourceEpochId,
+            durableBindingRef: chosen.durableBindingRef,
+            windowClosedConsistently: chosen.basis.windowClosedConsistently,
+            readWatermark: page?.throughSeq ?? null,
+            knownEventCount: page?.knownEventCount ?? null,
+            pageCoverage: "NOT_APPLICABLE",
+          }),
+        });
+      }
 
       /* ---- §8.4/§8.5 STEP 5-6: admission requires a verified binding, a valid page and consistent fields. ---- */
       const pageOk = page !== undefined && page.readState === "READ_OK";
@@ -232,8 +300,13 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         sessionReadAdmission: (pageOk ? "ADMITTED_TO_ATTEMPT" : page === undefined ? "NOT_REQUESTED" : "READ_FAILED") as SessionReadAdmission,
         bindingEvidenceRefs: Object.freeze([
           Object.freeze({ source: "CANONICAL_ATTEMPT_BINDING" as const, detail: "a source-qualified durable association establishes this session for this invocation", compared: Object.freeze({ attemptId: request.attemptId, invocationId: chosen.invocationId, dshSessionId: chosen.dshSessionId }) }),
+          ...(claimDisagrees
+            ? [Object.freeze({ source: "CALLER_DECLARATION" as const, detail: `the caller claimed session ${String(request.claimedSessionId)}, which the verified association contradicts; the claim is a declaration and grants no read authority`, compared: Object.freeze({ claimedSessionId: String(request.claimedSessionId), verifiedSessionId: chosen.dshSessionId, attemptId: request.attemptId }) })]
+            : []),
         ]),
-        detail: `a source-qualified durable association (epoch ${chosen.sourceEpochId}) establishes session ${chosen.dshSessionId} for invocation ${chosen.invocationId}`,
+        detail: claimDisagrees
+          ? `a source-qualified durable association (epoch ${chosen.sourceEpochId}) establishes session ${chosen.dshSessionId} for invocation ${chosen.invocationId}; the caller's claim of ${String(request.claimedSessionId)} DISAGREES and is retained only as a declaration`
+          : `a source-qualified durable association (epoch ${chosen.sourceEpochId}) establishes session ${chosen.dshSessionId} for invocation ${chosen.invocationId}`,
       });
 
       const invariants = validateAdmissionInvariants({ binding, ...(page === undefined ? {} : { page }) });
@@ -275,11 +348,21 @@ async function readSelectedSession(
 }
 
 /**
- * §8.3: select an invocation from the qualified set.
+ * §8.3 / P2-D0 §7.4: select an invocation from the qualified set.
  *
  * A caller-supplied invocation id is a SELECTOR, never authority: it must be one of the QUALIFIED
- * invocations, or the request is refused. With several qualified invocations and no request, the adapter
- * refuses rather than auto-selecting the latest.
+ * invocations, or the request is refused.
+ *
+ * THE P2-D0 CORRECTION. An automatic unique selection is allowed ONLY when the whole relevant Invocation
+ * set justifies it. Before P2-D0 the adapter returned SELECTED_UNIQUE for one qualified invocation without
+ * consulting the unresolved states of the others, so `I-1 QUALIFIED + I-2 OBSERVATION_INCOMPLETE` reported
+ * "no unresolved alternative exists" (F2) — a claim the evidence does not support. Now:
+ *
+ *   · zero qualified            → NO_DURABLE_EVIDENCE;
+ *   · a requested, qualified id → SELECTED_REQUESTED, and the result states that other Invocations may
+ *                                 remain unresolved (the selected page is not the whole Attempt history);
+ *   · exactly one qualified AND no other Invocation exists at all → SELECTED_UNIQUE;
+ *   · otherwise                 → AMBIGUOUS_REQUIRES_SELECTION.
  */
 function selectInvocation(input: {
   readonly qualified: readonly QualifiedAssociation[];
@@ -290,9 +373,24 @@ function selectInvocation(input: {
     const states = [...new Set(input.all.map((entry) => entry.state))];
     return { selected: null, state: "NO_DURABLE_EVIDENCE", detail: `no invocation is qualified for this attempt (observed states: ${states.join(", ") || "none"})`, qualificationState: states[0] ?? "NO_DURABLE_OBSERVATION" };
   }
+  /**
+   * P2-D0 §7.4: the invocations that exist but did NOT qualify. These are the "unresolved alternatives"
+   * the detail must name — the whole reason a single qualified invocation is not automatically the answer.
+   */
+  const unresolved = input.all.filter((entry) => entry.state !== "ASSOCIATION_QUALIFIED").map((entry) => `${entry.invocationId} (${entry.state})`);
   if (input.requested !== undefined) {
     const match = input.qualified.find((entry) => entry.invocationId === input.requested);
-    if (match !== undefined) return { selected: match, state: "SELECTED_REQUESTED", detail: `the requested invocation ${input.requested} is qualified`, qualificationState: "ASSOCIATION_QUALIFIED" };
+    if (match !== undefined) {
+      return {
+        selected: match,
+        state: "SELECTED_REQUESTED",
+        detail:
+          unresolved.length === 0
+            ? `the requested invocation ${input.requested} is qualified and no other invocation remains unresolved`
+            : `the requested invocation ${input.requested} is qualified; ${String(unresolved.length)} other invocation(s) remain unresolved (${unresolved.join(", ")}), so this page is not the entire Attempt history`,
+        qualificationState: "ASSOCIATION_QUALIFIED",
+      };
+    }
     const belongs = input.all.some((entry) => entry.invocationId === input.requested);
     return {
       selected: null,
@@ -301,10 +399,22 @@ function selectInvocation(input: {
       qualificationState: "ASSOCIATION_QUALIFIED",
     };
   }
-  if (input.qualified.length === 1) {
+  /**
+   * §7.4: SELECTED_UNIQUE requires that NO other invocation exists at all. A qualified invocation beside an
+   * unresolved one is an ambiguous set, not a unique answer.
+   */
+  if (input.qualified.length === 1 && input.all.length === 1) {
     return { selected: input.qualified[0]!, state: "SELECTED_UNIQUE", detail: "exactly one invocation is qualified and no unresolved alternative exists", qualificationState: "ASSOCIATION_QUALIFIED" };
   }
-  return { selected: null, state: "AMBIGUOUS_REQUIRES_SELECTION", detail: `${String(input.qualified.length)} invocations are qualified; an explicit invocationId is required`, qualificationState: "ASSOCIATION_QUALIFIED" };
+  return {
+    selected: null,
+    state: "AMBIGUOUS_REQUIRES_SELECTION",
+    detail:
+      unresolved.length > 0
+        ? `${String(input.qualified.length)} invocation(s) are qualified and ${String(unresolved.length)} remain unresolved (${unresolved.join(", ")}); an explicit invocationId is required`
+        : `${String(input.qualified.length)} invocations are qualified; an explicit invocationId is required`,
+    qualificationState: "ASSOCIATION_QUALIFIED",
+  };
 }
 
 /** §9.5: the H1 associations for one attempt, when a caller wants the raw evidence rather than a preview. */

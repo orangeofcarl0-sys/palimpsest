@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "invocation selection and currentness",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifiers": ["F2", "F3", "F4"],
+  "defects": {
+    "F2": "one qualified + one incomplete Invocation reported SELECTED_UNIQUE with 'no unresolved alternative exists'",
+    "F3": "the adapter read the DSH page after the qualifier returned, with no second relevant-basis check",
+    "F4": "qualifyAttempt captured ONE store head for the whole pass and each invocation rechecked only against it"
+  },
+  "correction": {
+    "selection": "src/composition/attributed_preview.ts selectInvocation — SELECTED_UNIQUE requires that NO other invocation exists at all (qualified.length === 1 && all.length === 1); otherwise AMBIGUOUS_REQUIRES_SELECTION; a requested qualified invocation is SELECTED_REQUESTED and its detail names the remaining unresolved invocations",
+    "postReadRecheck": "the store head and this Invocation's durable event-id sequence are captured before readSelectedSession and compared after; a relevant change yields qualificationState RACED with no admitted events, and the loop does not retry",
+    "aggregateCurrentness": "the qualifier's per-invocation recheck now also covers the cross-Attempt creator claim set (foreignCreatorsAfter), so a conflict committed during the read is caught",
+    "detailSurfacing": "the selected===null branch now returns the selection's own detail, so the unresolved-invocation list is visible to the consumer"
+  },
+  "evidence": [
+    {
+      "class": "DYNAMICALLY_REPRODUCED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > P2D0 F2 (CHANGED ASSERTION P2D0 C3)",
+      "observed": { "state": "AMBIGUOUS_REQUIRES_SELECTION", "invocationId": null, "detailContains": "unresolved" }
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C3): post-Event-Read recheck",
+      "observed": "headAfterRead and relevantChangedDuringRead are present between the read and the invariant check"
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > F4",
+      "observed": "the qualifier still captures one basis at the start of the pass, and each invocation rechecks against it; the recheck basis now also includes the cross-Attempt creator set"
+    }
+  ],
+  "expectedInvariant": "an automatic unique selection may occur only when the whole relevant Invocation set justifies it; a conflict committed during a read must not be admitted as current attribution",
+  "verdict": "PASS",
+  "remainingUncertainty": "the recheck is a bounded optimistic read-check, not a distributed transaction: a change committed after the recheck and before the response is still possible, and is reported as the honest limit rather than hidden",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

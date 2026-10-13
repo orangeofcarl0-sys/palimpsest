@@ -232,10 +232,20 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
           controller,
           workerFor: options.workWorkerPort,
           /**
-           * Trajectory-P2-C §7.3/§7.4: wire the durable recorder at the Parent observation boundary when
-           * one was composed, and record the window finalization when the delegation returns (the honest
-           * closure signal: the Parent stopped waiting on the child). Both are best-effort sinks; a
-           * recorder failure cannot change the job's phase or the canonical Work state.
+           * Trajectory-P2-C §7.3 / P2-D0 §7.1–§7.2: wire the durable recorder at the Parent observation
+           * boundary when one was composed.
+           *
+           * THE FINALIZATION AUTHORITY IS THE OBSERVED CHILD EXIT, PER INVOCATION. The Delegation's
+           * `onTerminal` fires once per JOB and cannot say which Invocation closed, and the shipped Port
+           * resolves its promise from a timeout/abort/error handler as well as from an observed close — so
+           * neither a returned Port nor an Attempt-wide terminal is proof of closure. The Port's OWN
+           * observation stream carries the two facts that are: `DIRECT_CHILD_EXIT_OBSERVED` (a real exit)
+           * and `DIRECT_CHILD_EXIT_UNCONFIRMED` (a request that was never confirmed). Finalizing on the
+           * former, and only for the Invocation it names, is what makes closure Invocation-scoped and
+           * source-grounded. A timeout/abort therefore leaves its window INCOMPLETE rather than CLOSED.
+           *
+           * Both sinks are best-effort: a recorder failure cannot change the job's phase or the canonical
+           * Work state.
            */
           ...(options.sessionIdentityRecorder === undefined
             ? {}
@@ -243,10 +253,17 @@ export function composeContinuationCapability(input: ContinuationCompositionInpu
                 onCorrelatedSessionIdentity: (entry: import("../interaction/work_delegation.js").CorrelatedSessionIdentityObservation) => {
                   options.sessionIdentityRecorder?.recordIdentity(entry);
                 },
-                onTerminal: (terminal: { readonly attemptId: string | null }) => {
-                  if (terminal.attemptId !== null) {
-                    options.sessionIdentityRecorder?.finalizeAttempt({ attemptId: terminal.attemptId, closeReason: "INVOCATION_RETURNED" });
-                  }
+                onCorrelatedObservation: (entry: import("../interaction/work_delegation.js").CorrelatedHostObservation) => {
+                  /**
+                   * §7.2: only an OBSERVED exit establishes the boundary. `DIRECT_CHILD_EXIT_UNCONFIRMED`
+                   * deliberately does not finalize: the window stays incomplete, which is the honest state.
+                   */
+                  if (entry.observation.eventKind !== "DIRECT_CHILD_EXIT_OBSERVED") return;
+                  options.sessionIdentityRecorder?.finalizeInvocation({
+                    attemptId: entry.attemptId,
+                    invocationId: entry.invocationId,
+                    closeReason: "CHILD_EXIT_OBSERVED",
+                  });
                 },
               }),
           ...(options.sessionSourceQualification === undefined ? {} : { sessionSourceQualification: options.sessionSourceQualification }),

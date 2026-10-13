@@ -153,7 +153,12 @@ try {
 }
 
 /* §8.1: finalize the observation window — the delegation boundary returned, so the Parent stopped waiting. */
-const finalizations = recorder.finalizeAttempt({ attemptId: correlated[0]?.attemptId ?? "", closeReason: "INVOCATION_RETURNED" });
+/* §8.1 / P2-D0 §7.1: finalize THIS Invocation from its own observed terminal boundary. The Product path
+   finalizes per Invocation on the Port's DIRECT_CHILD_EXIT_OBSERVED; this research gate drives the port
+   directly and knows the invocation it observed, so it finalizes exactly that one. */
+const finalizations = correlated.length === 0
+  ? []
+  : [recorder.finalizeInvocation({ attemptId: correlated[0].attemptId, invocationId: correlated[0].observation.invocationId, closeReason: "CHILD_EXIT_OBSERVED" })];
 
 /* ---- the facts ---- */
 const identity = correlated[0] ?? null;
