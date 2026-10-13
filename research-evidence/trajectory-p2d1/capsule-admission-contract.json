@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_capsule_admission.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_CAPSULE_ADMISSION_CONTRACT",
+  "title": "Authorization, Origin admission and deliverability are separate",
+  "method": "capsuleForConsumer judges Consumer Authorization (lineage), then Origin Execution Admission (SELECTED, BOUND_VERIFIED, ADMITTED_TO_ATTEMPT), then Capsule Deliverability (byte budget), each with its own typed refusal",
+  "observed": "AMBIGUOUS/REQUESTED_NOT_QUALIFIED origin => ORIGIN_NOT_SELECTED; unavailable source => ORIGIN_SOURCE_UNAVAILABLE; invalid/failed page => ORIGIN_PAGE_REFUSED; no qualified association => NO_QUALIFIED_ORIGIN; over budget => CAPSULE_BUDGET_EXCEEDED. A successful Capsule satisfies the full §8.4 conjunction",
+  "expectedInvariant": "a lawful consumer lineage does not automatically imply a qualified historical Execution Capsule",
+  "verdict": "PASS",
+  "remainingUncertainty": "an Ephemeral origin is refused only where durability is REQUIRED by the caller; the Capsule records durability rather than refusing it outright"
+}

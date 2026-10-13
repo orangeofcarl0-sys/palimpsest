@@ -27,7 +27,7 @@ import type { EventStore } from "../state/index.js";
 import {
   AttemptAdmissionRefusal,
   buildHandoffPreview,
-  buildTrajectoryContextCapsule,
+  buildTrajectoryContextCapsuleChecked,
   validateAdmissionInvariants,
   type AttemptSessionAssociation,
   type DshSessionEventPage,
@@ -77,6 +77,15 @@ export interface AttributedPreviewResult {
     readonly readWatermark: number | null;
     readonly knownEventCount: number | null;
     readonly pageCoverage: string;
+    /**
+     * P2-D1 §9.5: the Invocations that exist for the Attempt but did NOT qualify, as `id (STATE)` strings.
+     * A real unresolved set — never an empty array substituted for one.
+     */
+    readonly otherInvocationsUnresolved: readonly string[];
+    /** P2-D1 §9.5: the source page's synthetic-recovery event count, when the reader reported it. */
+    readonly syntheticRecoveryEventCount: number | null;
+    /** P2-D1 §9.5: the source page's inherited event count, when the reader reported it. */
+    readonly inheritedEventCount: number | null;
   };
 }
 
@@ -118,6 +127,17 @@ export const CAPSULE_AUTHORIZATION_STATES = [
   "ORIGIN_NOT_PERMITTED",
   /** The permitted origin Attempt produced no qualified execution evidence. */
   "NO_QUALIFIED_ORIGIN",
+  /**
+   * P2-D1 §8.3: the origin's Invocation selection is AMBIGUOUS or the association RACED, so no specific
+   * execution is established. The consumer is authorized, but no Execution Capsule may be delivered.
+   */
+  "ORIGIN_NOT_SELECTED",
+  /** P2-D1 §8.3: the origin's DSH source could not be read. */
+  "ORIGIN_SOURCE_UNAVAILABLE",
+  /** P2-D1 §8.3: the origin's page failed integrity or the read failed. */
+  "ORIGIN_PAGE_REFUSED",
+  /** P2-D1 §9.3: the admitted evidence cannot be represented within the byte budget. */
+  "CAPSULE_BUDGET_EXCEEDED",
 ] as const;
 export type CapsuleAuthorizationState = (typeof CAPSULE_AUTHORIZATION_STATES)[number];
 
@@ -126,6 +146,8 @@ export interface CapsuleForConsumerResult {
   readonly detail: string;
   /** §10.6: present only when the state is AUTHORIZED. A refused Capsule is NOT fabricated. */
   readonly capsule: TrajectoryContextCapsule | null;
+  /** P2-D1 §9.1: the serialized byte count of the delivered Capsule, when one was built. */
+  readonly serializedBytes?: number | undefined;
   readonly originAttemptId: string | null;
   /** §10.3: the internal source identity the Context owner bound — never chosen by the model. */
   readonly permittedOriginAttemptId: string | null;
@@ -253,7 +275,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         return Object.freeze({
           preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
           selection: Object.freeze({ state: "NO_DURABLE_EVIDENCE" as const, invocationId: null, detail: "the execution-association qualifier is not composed" }),
-          provenance: Object.freeze({ qualificationState: "NO_DURABLE_OBSERVATION", sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE" }),
+          provenance: Object.freeze({ qualificationState: "NO_DURABLE_OBSERVATION", sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze([]), syntheticRecoveryEventCount: null, inheritedEventCount: null }),
         });
       }
 
@@ -277,7 +299,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         return Object.freeze({
           preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
           selection: Object.freeze({ state: selection.state, invocationId: null, detail }),
-          provenance: Object.freeze({ qualificationState: selection.qualificationState, sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE" }),
+          provenance: Object.freeze({ qualificationState: selection.qualificationState, sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((e) => e.state !== "ASSOCIATION_QUALIFIED").map((e) => e.invocationId + " (" + e.state + ")")), syntheticRecoveryEventCount: null, inheritedEventCount: null }),
         });
       }
 
@@ -336,6 +358,8 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
             readWatermark: page?.throughSeq ?? null,
             knownEventCount: page?.knownEventCount ?? null,
             pageCoverage: "NOT_APPLICABLE",
+            otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((entry) => entry.state !== "ASSOCIATION_QUALIFIED").map((entry) => `${entry.invocationId} (${entry.state})`)),
+            syntheticRecoveryEventCount: page?.syntheticRecoveryEventCount ?? null, inheritedEventCount: page?.inheritedEventCount ?? null,
           }),
         });
       }
@@ -390,6 +414,8 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
           readWatermark: page?.throughSeq ?? null,
           knownEventCount: page?.knownEventCount ?? null,
           pageCoverage: preview.attribution.eventPageCoverage,
+          otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((entry) => entry.state !== "ASSOCIATION_QUALIFIED").map((entry) => `${entry.invocationId} (${entry.state})`)),
+          syntheticRecoveryEventCount: page?.syntheticRecoveryEventCount ?? null, inheritedEventCount: page?.inheritedEventCount ?? null,
         }),
       });
     },
@@ -398,6 +424,10 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       readonly consumerAttemptId: string;
       readonly requestedOriginAttemptId?: string | undefined;
       readonly maxEvents?: number | undefined;
+      /** P2-D1 §9.5: the durability to record, when the caller knows the store's own classification. */
+      readonly durability?: "DURABLE" | "EPHEMERAL" | "UNKNOWN" | undefined;
+      /** P2-D1 §9.2: an optional LOWER budget. A caller may lower the product ceiling, never raise it. */
+      readonly limits?: Partial<import("../trajectory/index.js").TrajectoryCapsuleLimits> | undefined;
     }): Promise<CapsuleForConsumerResult> {
       /**
        * §10.3 STEP 1: THE CONSUMER'S PERMISSION IS ITS OWN CANONICAL LINEAGE.
@@ -429,8 +459,8 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       }
 
       /**
-       * §10.4 STEP 2: build the origin Attempt's ATTRIBUTED Preview through the SAME admission path, so a
-       * Capsule can only ever present evidence that already passed qualification and admission.
+       * §10.4 STEP 2 / P2-D1 §8.2: build the origin Attempt's ATTRIBUTED Preview through the SAME admission
+       * path, so a Capsule can only ever present evidence that already passed qualification and admission.
        */
       let origin: AttributedPreviewResult;
       try {
@@ -443,24 +473,58 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       }
 
       /**
-       * §10.6: the Capsule's uncertainty is fed the admission's OWN provenance, so it cannot be less
-       * complete than the attribution it presents.
+       * P2-D1 §8.2/§8.4: THE THREE JUDGMENTS ARE SEPARATE.
+       *
+       * Consumer Authorization is already established above (the lineage). ORIGIN EXECUTION ADMISSION and
+       * CAPSULE DELIVERABILITY are judged HERE. A lawful lineage does NOT imply a qualified historical
+       * Execution Capsule: an ambiguous/raced origin, an unavailable source, a failed or invalid page, and an
+       * over-budget Capsule are each their OWN explicit refusal — never an AUTHORIZED Capsule with no admitted
+       * events.
        */
-      const capsule = buildTrajectoryContextCapsule({
+      if (origin.provenance.qualificationState === "RACED") {
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId}'s association raced during the read, so no specific execution is established`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+      if (origin.selection.state !== "SELECTED_UNIQUE" && origin.selection.state !== "SELECTED_REQUESTED") {
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId} has no single selected execution (${origin.selection.state}): ${origin.selection.detail}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+      const originExecution = origin.preview.execution;
+      if (originExecution.sessionBindingStatus !== "BOUND_VERIFIED") {
+        return Object.freeze({ state: "ORIGIN_NOT_SELECTED" as const, detail: `the origin attempt ${permitted.originAttemptId} has no verified session binding (${originExecution.sessionBindingStatus})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+      if (originExecution.sessionReadAdmission !== "ADMITTED_TO_ATTEMPT") {
+        const sourceUnavailable = originExecution.sessionReadState === "READ_CAPABILITY_ABSENT" || originExecution.sessionReadState === "SESSION_MISSING" || originExecution.sessionReadState === "BACKEND_UNAVAILABLE";
+        const state = sourceUnavailable ? "ORIGIN_SOURCE_UNAVAILABLE" : "ORIGIN_PAGE_REFUSED";
+        return Object.freeze({ state: state as CapsuleAuthorizationState, detail: `the origin attempt ${permitted.originAttemptId}'s session page was not admitted (admission ${originExecution.sessionReadAdmission}, read ${String(originExecution.sessionReadState)})`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+
+      /**
+       * §10.6/§9.5: the Capsule's uncertainty is fed the admission's OWN provenance, so it cannot be less
+       * complete than the attribution it presents. The unresolved-invocation set and the durability come
+       * from the qualification, and the synthetic/inherited counts come from the page the reader returned.
+       */
+      const page = origin.preview.execution;
+      const capsuleOutcome = buildTrajectoryContextCapsuleChecked({
         consumerAttemptId: request.consumerAttemptId,
         originAttemptId: permitted.originAttemptId,
         authorizationBasis: permitted.basis,
         preview: origin.preview,
+        durability: request.durability,
+        ...(request.limits === undefined ? {} : { limits: request.limits }),
         attributionProvenance: {
           qualificationState: origin.provenance.qualificationState,
           sourceEpochId: origin.provenance.sourceEpochId,
           durableBindingRef: origin.provenance.durableBindingRef,
           invocationSelectionState: origin.selection.state,
-          otherInvocationsUnresolved: [],
+          otherInvocationsUnresolved: [...origin.provenance.otherInvocationsUnresolved],
           knownEventCount: origin.provenance.knownEventCount,
+          syntheticRecoveryEventCount: origin.provenance.syntheticRecoveryEventCount,
+          inheritedEventCount: origin.provenance.inheritedEventCount,
         },
       });
-      return Object.freeze({ state: "AUTHORIZED" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}`, capsule, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      if (!capsuleOutcome.ok) {
+        return Object.freeze({ state: "CAPSULE_BUDGET_EXCEEDED" as const, detail: capsuleOutcome.detail, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+      return Object.freeze({ state: "AUTHORIZED" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}, whose execution is qualified and admitted`, capsule: capsuleOutcome.capsule, serializedBytes: capsuleOutcome.serializedBytes, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
     },
   };
   return Object.freeze(service);

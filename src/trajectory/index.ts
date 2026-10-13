@@ -262,9 +262,12 @@ export type { AdmittedRelation, AttemptRelationContext, QuarantinedRelation } fr
 export {
   TRAJECTORY_CONTEXT_CAPSULE_SCHEMA_VERSION,
   TRAJECTORY_CAPSULE_LIMITS,
+  TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES,
   TRAJECTORY_CAPSULE_CONTENT_CATEGORIES,
   CAPSULE_DOES_NOT_AUTHORIZE,
+  CapsuleBudgetExceededError,
   buildTrajectoryContextCapsule,
+  buildTrajectoryContextCapsuleChecked,
   trajectoryCapsuleBytes,
   capsuleIsBounded,
 } from "./context_capsule.js";
@@ -273,6 +276,7 @@ export type {
   TrajectoryCapsuleInput,
   TrajectoryCapsuleLimits,
   TrajectoryCapsuleContentCategory,
+  TrajectoryCapsuleBuildOutcome,
   CapsuleEventSummary,
   CapsuleUncertainty,
 } from "./context_capsule.js";
