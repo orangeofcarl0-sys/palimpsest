@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "P2-C forward erratum",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "note": "P2-D0 corrects defects that code review found in the P2-C result. The P2-C evidence trees are byte-identical and are NOT regenerated; the corrections below are recorded forward-only.",
+  "errata": [
+    {
+      "id": "E1",
+      "p2cClaim": "the P2-C attributed Preview admits only source-qualified, current execution evidence",
+      "defect": "the qualifier rechecks currentness BEFORE returning, but the adapter reads the DSH page afterwards with no second relevant-basis check, so a conflict committed during Event Read is still admitted (F3)",
+      "correction": "a bounded post-Event-Read relevant-basis recheck, yielding RACED or an unresolved outcome rather than a stale admission"
+    },
+    {
+      "id": "E2",
+      "p2cClaim": "mixed Invocation states are handled without misleading default selection",
+      "defect": "selectInvocation returns SELECTED_UNIQUE for one qualified invocation without consulting the unresolved states of the others (F2)",
+      "correction": "automatic unique selection only when the whole relevant Invocation set justifies it; the output states the remaining unresolved invocations"
+    },
+    {
+      "id": "E3",
+      "p2cClaim": "Invocation windows close from actual supported Parent lifecycle evidence",
+      "defect": "the delegation finalizes every invocation of the Attempt with the single closeReason INVOCATION_RETURNED, so a timeout/abort finalizes an unclosed window and one Job closes another (F5, F6)",
+      "correction": "Invocation-scoped finalization from real Parent lifecycle evidence; a timeout/abort before confirmed closure remains incomplete"
+    },
+    {
+      "id": "E4",
+      "p2cClaim": "the attributed Preview presents Canonical Work and Project Evolution context",
+      "defect": "the adapter supplies resultRefs [], verificationState NOT_OBSERVED_BY_P2C, reworkState NONE and an empty project-evolution projection, replacing facts the V0 composition can establish (F13)",
+      "correction": "reuse the existing V0/T0 helpers (canonicalFactsOf, buildRelationContext, projectEvolutionOf, composeTrajectoryInputs) rather than placeholders"
+    },
+    {
+      "id": "E5",
+      "p2cClaim": "the durable association is cold-recoverable",
+      "defect": "the composition accepts databasePath ':memory:' and the qualifier still sets verification VERIFIED with a durableBindingRef, so an in-memory store yields a durable-looking result (F9)",
+      "correction": "an explicit ephemeral qualification distinct from durable qualification; an ephemeral record cannot claim cold-recoverable durability"
+    },
+    {
+      "id": "E6",
+      "p2cClaim": "the mounted DSH Reader is disposed by installed.dispose()",
+      "defect": "OwnedResource.close is synchronous and the reader async close is voided, so disposal does not wait for the Cordis fiber (F10)",
+      "correction": "an additive void | Promise<void> close contract with sequential awaiting, preserving the existing synchronous-resource behavior"
+    },
+    {
+      "id": "E7",
+      "p2cClaim": "a record cannot become first-party-verified by declaring a label",
+      "defect": "an expert-supplied Worker Port replaces the derived port while the trusted basis and FIRST_PARTY_DSH_HOST kind still come from workWorkerBin, so a stub can borrow first-party authority (F11)",
+      "correction": "require source-basis alignment between the port and the basis, or conservatively mark the producer unqualified"
+    },
+    {
+      "id": "E8",
+      "p2cClaim": "the P2-A identity observation path preserves what the Parent observed",
+      "defect": "the tracker rebuilds one observation whose dshSessionId is always the first, and the recorder persists only that field, so A/B/C collapse to {A} (F1)",
+      "correction": "every distinct valid IPC Session identity report reaches durable ingestion as an immutable candidate"
+    },
+    {
+      "id": "E9",
+      "p2cClaim": "the extended installed Trajectory capability is a supported public surface",
+      "defect": "Deployment.installed is typed InstalledPalimpsest while the runtime carries trajectory, so the capability is not statically reachable (F18)",
+      "correction": "the narrowest supported contract extraction so the public type describes the runtime capability"
+    }
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "sourceDataChanged": false
+}
