@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_DURABILITY_AUTHORITY",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C2 §6.1/§6.2",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "sourceReferences": [
+    "src/trajectory/context_capsule.ts (assembleCapsule durability)",
+    "src/composition/attributed_preview.ts (capsuleForConsumer sourceDurability derivation)",
+    "src/composition/attributed_preview.ts (previewAttempt provenance.sourceDurability = chosen.durability)"
+  ],
+  "testFile": "test/trajectory_p2d2_capsule_contract.test.ts",
+  "observedResults": {
+    "ephemeralSourceRecordsEphemeral": true,
+    "callerUpgradeToDurableRefused": "CAPSULE_DURABILITY_MISMATCH",
+    "callerAgreementHarmless": "AUTHORIZED",
+    "durableSourcePropagatesDurable": true,
+    "unsetRecordsUnknown": true
+  },
+  "path": [
+    "Execution Association Store (storeDurability: DURABLE | EPHEMERAL)",
+    "Qualifier durability (QualifiedAssociation.durability)",
+    "Attributed Preview provenance.sourceDurability = chosen.durability",
+    "Capsule Builder durability (source-derived, never caller-upgraded)",
+    "Delivered Capsule attribution.durability"
+  ],
+  "expectedInvariant": "the Capsule's Durability is the class the trusted Qualification established; an ordinary consumer can never upgrade EPHEMERAL to DURABLE, and a disagreement is refused rather than silently overridden",
+  "verdict": "PASS",
+  "remainingUncertainty": "when the source established no class the Capsule honestly records UNKNOWN; that is not a failure but it is not durability either",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_CAPSULE_BUDGET_CONTRACT",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C2 §6.3/§6.4/§6.6",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "sourceReferences": [
+    "src/trajectory/context_capsule.ts (validateCapsuleLimits, TRAJECTORY_CAPSULE_LIMIT_CEILINGS, buildTrajectoryContextCapsuleChecked)",
+    "src/composition/attributed_preview.ts (CAPSULE_LIMIT_INVALID propagation)"
+  ],
+  "testFile": "test/trajectory_p2d2_capsule_contract.test.ts",
+  "numericValidation": {
+    "policy": "each bound must be a finite, nonnegative INTEGER and at or below the product ceiling; a violation is REFUSED with CAPSULE_LIMIT_INVALID naming the key",
+    "rejected": ["NaN", "Infinity", "-Infinity", "negative", "fractional", "above the product ceiling"],
+    "accepted": ["a finite nonnegative integer at or below the ceiling"],
+    "baselineDefect": "P2-D1 used Math.max(0, Math.min(value, ceiling)); Math.min(NaN, x) is NaN and every `bytes > NaN` comparison is false, so a NaN budget silently DISABLED the whole-byte bound (F7)"
+  },
+  "legacyMaxTotalChars": {
+    "decision": "Option A — ENFORCED",
+    "meaning": "the SUM of the INCLUDED event-summary character lengths",
+    "behavior": "an event whose clamped summary would breach the aggregate budget is OMITTED rather than admitted",
+    "baselineDefect": "P2-D1 declared the bound and never summed against it (F8)"
+  },
+  "truncation": {
+    "separated": ["eventOmittedCount", "summaryTruncatedCount", "essentialMetadataExceeded", "sourcePageWasPartial"],
+    "baselineDefect": "P2-D1 reported `truncated: omitted > 0` and mentioned only omitted events, so a summary-only shortening read as untruncated and a PARTIAL source was not separated (F10)"
+  },
+  "wholeByteCeiling": "TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES = 16384, enforced on the UTF-8 JSON encoding; a caller may lower, never raise",
+  "expectedInvariant": "no runtime input can disable or widen a declared Capsule bound, and no truncation kind is disguised as another",
+  "verdict": "PASS",
+  "remainingUncertainty": "the essential-metadata floor can still exceed a very small budget, in which case the build refuses with CAPSULE_BUDGET_EXCEEDED rather than dropping required provenance",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

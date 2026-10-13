@@ -417,12 +417,16 @@ describe("F7 §9 — the whole Capsule is now bounded by SERIALIZED BYTES", () =
       execution: { events: [], bindingSource: "CANONICAL_ATTEMPT_BINDING", bindingDetail: "d", dshSessionId: "s", portInvocationId: "i", sessionBindingStatus: "BOUND_VERIFIED", readWatermark: null, returnedPageSize: 0 },
       caveats: { sourcesUnavailable: [], contradictoryObservations: [], epistemicLimits: [] },
     } as unknown as HandoffPreview;
-    // A caller asking for an ENORMOUS budget still gets the product ceiling enforced: the reported bytes
-    // never exceed the hard ceiling, and the effective limit is clamped.
+    // A caller asking for an ENORMOUS budget is REFUSED (P2-D2 C2): silently clamping would reinterpret the
+    // caller's bound; a request AT the ceiling is accepted and stays within it.
     const outcome = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 10_000_000 } });
-    expect(outcome.ok).toBe(true);
-    if (!outcome.ok) throw new Error("unreachable");
-    expect(outcome.serializedBytes).toBeLessThanOrEqual(TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES);
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) throw new Error("unreachable");
+    expect(outcome.state).toBe("CAPSULE_LIMIT_INVALID");
+    const atCeiling = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES } });
+    expect(atCeiling.ok).toBe(true);
+    if (!atCeiling.ok) throw new Error("unreachable");
+    expect(atCeiling.serializedBytes).toBeLessThanOrEqual(TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES);
   });
 });
 

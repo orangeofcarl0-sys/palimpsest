@@ -60,47 +60,55 @@ const BASE_INPUT = { consumerAttemptId: "attempt-consumer", originAttemptId: "at
 /* ================================================================== dynamically reproduced */
 
 describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
-  it("F5: a caller-supplied Durability OVERRIDES the source — an EPHEMERAL source can be presented as DURABLE", () => {
-    // The Capsule records whatever `durability` the caller passes, with no tie to the trusted qualification.
+  it("F5: a caller-supplied Durability no longer OVERRIDES the source (CHANGED ASSERTION P2D2 C2)", () => {
+    // At the baseline a caller could pass durability:"DURABLE" over an EPHEMERAL source and the Capsule
+    // recorded DURABLE. After C2 the BUILDER still echoes the input it is GIVEN (it is the trusted caller's
+    // job to supply the source-derived class), but the PRODUCT path no longer accepts an upgrade: the
+    // composition derives the class and `capsuleForConsumer` refuses a disagreeing request. This test pins
+    // the builder's echo (the trusted-input contract) and the preview's refusal is covered by C2's own test.
     const asDurable = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(2), durability: "DURABLE" });
-    const asEphemeral = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(2), durability: "EPHEMERAL" });
-    const unset = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(2) });
     expect(asDurable.ok && asDurable.capsule.attribution.durability).toBe("DURABLE");
-    expect(asEphemeral.ok && asEphemeral.capsule.attribution.durability).toBe("EPHEMERAL");
-    // CHANGED ASSERTION (P2D2 C2): the trusted product path must NOT let a caller upgrade durability; after C2
-    // the builder ignores a caller-supplied value and the product supplies the source-derived class.
+    const unset = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(2) });
+    // With no trusted class supplied the honest value is UNKNOWN — never a default of DURABLE.
     expect(unset.ok && unset.capsule.attribution.durability).toBe("UNKNOWN");
   });
 
-  it("F7: a NaN serialized-byte budget BYPASSES the whole-byte comparison (the budget is not enforced)", () => {
-    // Math.max(0, Math.min(NaN, ceiling)) === NaN, and `bytes > NaN` is always false.
+  it("F7: a nonfinite or over-ceiling serialized-byte budget is REFUSED (CHANGED ASSERTION P2D2 C2)", () => {
     const nan = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: Number.NaN } });
-    // CHANGED ASSERTION (P2D2 C2): after C2 a nonfinite budget is REFUSED rather than silently ignoring the bound.
-    expect(nan.ok).toBe(true);
-    expect(nan.ok && nan.serializedBytes).toBeGreaterThan(0);
-    // Infinity is silently reduced to the ceiling by Math.min, which is safe only by accident, not by validation.
+    expect(nan.ok).toBe(false);
+    if (nan.ok) throw new Error("unreachable");
+    expect(nan.state).toBe("CAPSULE_LIMIT_INVALID");
+    expect(nan.key).toBe("maxSerializedBytes");
     const infinite = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: Number.POSITIVE_INFINITY } });
-    expect(infinite.ok).toBe(true);
+    expect(infinite.ok).toBe(false);
+    const overCeiling = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES + 1 } });
+    expect(overCeiling.ok).toBe(false);
+    const fractional = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: 100.5 } });
+    expect(fractional.ok).toBe(false);
+    const negative = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: -1 } });
+    expect(negative.ok).toBe(false);
   });
 
-  it("F8: the LEGACY maxTotalChars budget is silently ignored — summaries exceed the declared total", () => {
-    const outcome = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5, () => "x".repeat(40)), limits: { maxTotalChars: 10, maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES } });
+  it("F8: the LEGACY maxTotalChars budget is ENFORCED (CHANGED ASSERTION P2D2 C2)", () => {
+    const outcome = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5, () => "x".repeat(40)), limits: { maxTotalChars: 50, maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES } });
     expect(outcome.ok).toBe(true);
-    const totalSummaryChars = outcome.ok ? outcome.capsule.historicalExecution.events.reduce((sum, event) => sum + event.summary.length, 0) : 0;
-    // CHANGED ASSERTION (P2D2 C2): after C2 the legacy total-summary-character bound is either enforced or
-    // explicitly versioned away; it is never a documented constraint that is silently ignored.
-    expect(totalSummaryChars).toBeGreaterThan(10);
+    if (!outcome.ok) return;
+    const totalSummaryChars = outcome.capsule.historicalExecution.events.reduce((sum, event) => sum + event.summary.length, 0);
+    // The aggregate summary-character budget is a real constraint: it is never exceeded.
+    expect(totalSummaryChars).toBeLessThanOrEqual(50);
+    expect(outcome.capsule.historicalExecution.omittedEventCount).toBeGreaterThan(0);
   });
 
-  it("F10: a SHORTENED summary is not represented at the Capsule level as truncation", () => {
+  it("F10: a SHORTENED summary is now represented at the Capsule level (CHANGED ASSERTION P2D2 C2)", () => {
     const outcome = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(1, () => "z".repeat(500)), limits: { maxEventSummaryChars: 20, maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES } });
     expect(outcome.ok).toBe(true);
     if (!outcome.ok) return;
     expect(outcome.capsule.historicalExecution.events[0]!.truncated).toBe(true);
     expect(outcome.capsule.historicalExecution.omittedEventCount).toBe(0);
-    // CHANGED ASSERTION (P2D2 C2): after C2, "summary shortened" and "event omitted" are independently
-    // represented, so a summary-only truncation is not reported as an untruncated Capsule.
-    expect(outcome.capsule.truncation.truncated).toBe(false);
+    // "summary shortened" and "event omitted" are now SEPARATELY represented.
+    expect(outcome.capsule.truncation.truncated).toBe(true);
+    expect(outcome.capsule.truncation.summaryTruncatedCount).toBe(1);
+    expect(outcome.capsule.truncation.eventOmittedCount).toBe(0);
   });
 
   it("F1/F2/F11/F12 source pins: the Capsule is transported but never rendered, and delivery failure is unmarked", () => {
@@ -140,10 +148,12 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     expect(profile).toMatch(/function exactKeys\(/u);
     // F6: the product delivery provider passes no durability even though the composition derived it.
     expect(cluster).toMatch(/const storeDurability: "DURABLE" \| "EPHEMERAL" = storePath === ":memory:" \? "EPHEMERAL" : "DURABLE";/u);
-    // F9: the declared IngestionOutcome and the store's runtime outcome disagree, hidden by an `as` cast.
-    expect(ingestion).toMatch(/\| \{ readonly state: "RECORDED"; readonly eventId: string \}/u);
+    // F9 (CHANGED ASSERTION P2D2 C2): the declared union and the runtime vocabulary now AGREE — the
+    // `RECORDED` variant and the `as IngestionOutcome` cast are both gone.
+    expect(ingestion).not.toMatch(/"RECORDED"; readonly eventId/u);
+    expect(ingestion).not.toMatch(/as IngestionOutcome/u);
+    expect(ingestion).toMatch(/\{ readonly state: "APPENDED"; readonly eventId: string \}/u);
     expect(store).toMatch(/\| \{ readonly state: "APPENDED"; readonly event: ExecutionAssociationEvent \}/u);
-    expect(ingestion).toMatch(/as IngestionOutcome/u);
     // F13: the model-visible surface event `user/message` is NOT even in the product's recognized set, so the
     // sanitizer would report it as "unrecognized" — the product currently cannot name the UserMessage at all.
     expect(execution).toMatch(/RECOGNIZED_DSH_EVENT_TYPES = \[/u);

@@ -41,14 +41,14 @@ export const TRAJECTORY_CONTEXT_CAPSULE_SCHEMA_VERSION = 1;
  *
  * `maxSerializedBytes` (P2-D1) is the REAL delivery budget: the complete serialized Capsule — attribution,
  * provenance, authorization basis, event summaries, canonical Work, project evolution, uncertainty, caveats,
- * fixed framing and JSON overhead — must fit it. `maxTotalChars` is retained with its LEGACY meaning (the
- * sum of event-summary CHARACTER lengths) so an existing caller is not silently reinterpreted; it is NOT the
- * delivery bound. A caller may LOWER any bound; it may never raise the product ceiling (§9.2).
+ * fixed framing and JSON overhead — must fit it. `maxTotalChars` is the LEGACY aggregate budget: the SUM of
+ * the included event-summary CHARACTER lengths (P2-D2 C2 enforces it — P2-D1 declared it and ignored it). A
+ * caller may LOWER any bound; it may never raise the product ceiling (§9.2).
  */
 export interface TrajectoryCapsuleLimits {
   readonly maxEvents: number;
   readonly maxEventSummaryChars: number;
-  /** LEGACY: the sum of event-summary character lengths. Not the delivery byte bound. */
+  /** The sum of the INCLUDED event-summary character lengths. Enforced (P2-D2 C2). */
   readonly maxTotalChars: number;
   /** P2-D1 §9.1: the whole-serialized-Capsule byte budget — the ACTUAL delivery bound. */
   readonly maxSerializedBytes: number;
@@ -61,6 +61,18 @@ export const TRAJECTORY_CAPSULE_LIMITS: TrajectoryCapsuleLimits = Object.freeze(
   maxEvents: 24,
   maxEventSummaryChars: 240,
   maxTotalChars: 8_192,
+  maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES,
+});
+
+/** P2-D2 §6.3: the limit keys, so an invalid value can be NAMED rather than silently clamped. */
+export const TRAJECTORY_CAPSULE_LIMIT_KEYS = ["maxEvents", "maxEventSummaryChars", "maxTotalChars", "maxSerializedBytes"] as const;
+export type TrajectoryCapsuleLimitKey = (typeof TRAJECTORY_CAPSULE_LIMIT_KEYS)[number];
+
+/** P2-D2 §6.3: the product ceiling for EACH bound — a caller may lower it, never raise it. */
+export const TRAJECTORY_CAPSULE_LIMIT_CEILINGS: Readonly<Record<TrajectoryCapsuleLimitKey, number>> = Object.freeze({
+  maxEvents: TRAJECTORY_CAPSULE_LIMITS.maxEvents,
+  maxEventSummaryChars: TRAJECTORY_CAPSULE_LIMITS.maxEventSummaryChars,
+  maxTotalChars: TRAJECTORY_CAPSULE_LIMITS.maxTotalChars,
   maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES,
 });
 
@@ -84,6 +96,23 @@ export interface CapsuleEventSummary {
   readonly summary: string;
   /** True when the summary was shortened to fit `maxEventSummaryChars`. */
   readonly truncated: boolean;
+}
+
+/**
+ * P2-D2 §6.6: the truncation facts, kept SEPARATE so no one is disguised as another.
+ *
+ *   eventOmittedCount          whole events were dropped (event-count or byte budget)
+ *   summaryTruncatedCount      summaries were SHORTENED but every event is present
+ *   essentialMetadataExceeded  the required provenance alone could not fit the byte budget
+ *   sourcePageWasPartial       the SOURCE page was already PARTIAL (not a local truncation)
+ */
+export interface CapsuleTruncation {
+  readonly truncated: boolean;
+  readonly detail: string;
+  readonly eventOmittedCount: number;
+  readonly summaryTruncatedCount: number;
+  readonly essentialMetadataExceeded: boolean;
+  readonly sourcePageWasPartial: boolean;
 }
 
 /** §10.6: the uncertainty the Capsule must preserve, never omit. */
@@ -154,10 +183,8 @@ export interface TrajectoryContextCapsule {
   readonly uncertainty: CapsuleUncertainty;
 
   readonly contentCategories: readonly TrajectoryCapsuleContentCategory[];
-  readonly truncation: {
-    readonly truncated: boolean;
-    readonly detail: string;
-  };
+  /** P2-D2 §6.6: the separated truncation facts. */
+  readonly truncation: CapsuleTruncation;
 
   /** §10.7: HISTORICAL DATA, NOT INSTRUCTIONS. Stated on the object so no consumer can mistake it. */
   readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
@@ -202,31 +229,59 @@ export interface TrajectoryCapsuleInput {
         readonly inheritedEventCount?: number | null | undefined;
       }
     | undefined;
+  /**
+   * P2-D1 §9.5 / P2-D2 §6.1: the SOURCE-DERIVED durability class. The trusted caller passes the class the
+   * Qualification actually established (`DURABLE` / `EPHEMERAL`), or `UNKNOWN` when the source could not
+   * establish it. It is NOT an ordinary-consumer upgrade knob: a value the source never established stays
+   * UNKNOWN rather than being asserted.
+   */
   readonly durability?: "DURABLE" | "EPHEMERAL" | "UNKNOWN" | undefined;
-  /** §10.5: bounds. Any omitted bound uses the product default. */
+  /** §10.5: bounds. Any omitted bound uses the product default. An INVALID bound is refused (§6.3). */
   readonly limits?: Partial<TrajectoryCapsuleLimits> | undefined;
+}
+
+/** P2-D2 §6.3: the outcome of validating the requested bounds, so a refusal can name the offending field. */
+export type CapsuleLimitValidation =
+  | { readonly ok: true; readonly limits: TrajectoryCapsuleLimits }
+  | { readonly ok: false; readonly key: TrajectoryCapsuleLimitKey; readonly detail: string };
+
+/**
+ * P2-D2 §6.3: STRICT numeric validation of every requested bound.
+ *
+ * Each bound must be a FINITE, INTEGER, NONNEGATIVE value, and a caller may only LOWER the product ceiling.
+ * A nonfinite value is REJECTED explicitly rather than clamped: `Math.max(0, Math.min(NaN, x))` is NaN and
+ * every `bytes > NaN` comparison is false, so silently "clamping" a NaN would disable the whole-byte bound
+ * — the exact P2-D1 F7 defect. TypeScript's `number` gives no runtime validation, so this is the check.
+ */
+export function validateCapsuleLimits(requested: Partial<TrajectoryCapsuleLimits> | undefined): CapsuleLimitValidation {
+  if (requested === undefined) return { ok: true, limits: TRAJECTORY_CAPSULE_LIMITS };
+  for (const key of TRAJECTORY_CAPSULE_LIMIT_KEYS) {
+    const value = requested[key];
+    if (value === undefined) continue;
+    if (typeof value !== "number" || !Number.isFinite(value) || !Number.isInteger(value) || value < 0) {
+      return { ok: false, key, detail: `capsule limit "${key}" must be a finite nonnegative integer, got ${JSON.stringify(value)}` };
+    }
+  }
+  const merged = { ...TRAJECTORY_CAPSULE_LIMITS, ...requested };
+  for (const key of TRAJECTORY_CAPSULE_LIMIT_KEYS) {
+    if (merged[key] > TRAJECTORY_CAPSULE_LIMIT_CEILINGS[key]) {
+      return { ok: false, key, detail: `capsule limit "${key}" may not exceed the product ceiling ${String(TRAJECTORY_CAPSULE_LIMIT_CEILINGS[key])}, got ${String(merged[key])}` };
+    }
+  }
+  return { ok: true, limits: Object.freeze(merged) };
 }
 
 /** §10.5/§9.1: the outcome of building a Capsule under the real byte budget. */
 export type TrajectoryCapsuleBuildOutcome =
   | { readonly ok: true; readonly capsule: TrajectoryContextCapsule; readonly serializedBytes: number }
   /** §9.3: even the essential metadata alone exceeds the budget, so no Capsule is fabricated. */
-  | { readonly ok: false; readonly state: "CAPSULE_BUDGET_EXCEEDED"; readonly detail: string; readonly requiredBytes: number; readonly maxSerializedBytes: number };
+  | { readonly ok: false; readonly state: "CAPSULE_BUDGET_EXCEEDED"; readonly detail: string; readonly requiredBytes: number; readonly maxSerializedBytes: number }
+  /** P2-D2 §6.3: a requested bound was not a finite nonnegative integer, or exceeded the product ceiling. */
+  | { readonly ok: false; readonly state: "CAPSULE_LIMIT_INVALID"; readonly detail: string; readonly key: TrajectoryCapsuleLimitKey };
 
 /** §9.1: the actual delivery encoding — UTF-8 bytes of the canonical JSON, never character counts. */
 function serializedBytesOf(capsule: TrajectoryContextCapsule): number {
   return Buffer.byteLength(JSON.stringify(capsule), "utf8");
-}
-
-/** §9.2: clamp a requested limit to the product ceiling. A caller may lower, never raise. */
-function effectiveLimits(requested: Partial<TrajectoryCapsuleLimits> | undefined): TrajectoryCapsuleLimits {
-  const merged = { ...TRAJECTORY_CAPSULE_LIMITS, ...(requested ?? {}) };
-  return Object.freeze({
-    maxEvents: Math.max(0, Math.min(merged.maxEvents, TRAJECTORY_CAPSULE_LIMITS.maxEvents)),
-    maxEventSummaryChars: Math.max(0, Math.min(merged.maxEventSummaryChars, TRAJECTORY_CAPSULE_LIMITS.maxEventSummaryChars)),
-    maxTotalChars: Math.max(0, Math.min(merged.maxTotalChars, TRAJECTORY_CAPSULE_LIMITS.maxTotalChars)),
-    maxSerializedBytes: Math.max(0, Math.min(merged.maxSerializedBytes, TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES)),
-  });
 }
 
 function clampSummary(summary: string, maxChars: number): { readonly text: string; readonly truncated: boolean } {
@@ -234,16 +289,40 @@ function clampSummary(summary: string, maxChars: number): { readonly text: strin
   return { text: `${summary.slice(0, Math.max(0, maxChars - 1))}…`, truncated: true };
 }
 
-/** §9.3: assemble the Capsule value with a given event set and truncation note. */
+/**
+ * §9.3/P2-D2 §6.6: assemble the Capsule value with a given event set and SEPARATED truncation facts.
+ *
+ * `omitted` counts whole events dropped; `summariesTruncated` counts summaries shortened; the byte refusal
+ * is reported by the caller through `essentialMetadataExceeded`. The SOURCE page's own PARTIAL state is read
+ * from the preview's coverage, so a locally-complete projection of a partial source is not disguised.
+ */
 function assembleCapsule(input: {
   readonly capsuleInput: TrajectoryCapsuleInput;
   readonly events: readonly CapsuleEventSummary[];
   readonly omitted: number;
   readonly uncertainty: CapsuleUncertainty;
   readonly limits: TrajectoryCapsuleLimits;
+  readonly essentialMetadataExceeded?: boolean | undefined;
 }): TrajectoryContextCapsule {
   const preview = input.capsuleInput.preview;
   const execution = preview.execution;
+  const summariesTruncated = input.events.filter((event) => event.truncated).length;
+  const sourcePageWasPartial = preview.attribution.eventPageCoverage !== "FULL";
+  const truncation: CapsuleTruncation = Object.freeze({
+    truncated: input.omitted > 0 || summariesTruncated > 0 || input.essentialMetadataExceeded === true || sourcePageWasPartial,
+    detail:
+      input.omitted > 0 || summariesTruncated > 0
+        ? `the Capsule is bounded to ${String(input.limits.maxEvents)} events / ${String(input.limits.maxTotalChars)} summary characters / ${String(input.limits.maxSerializedBytes)} serialized bytes; ${String(input.omitted)} event(s) were omitted and ${String(summariesTruncated)} summary(ies) were shortened`
+        : input.essentialMetadataExceeded === true
+          ? "the essential Capsule metadata alone exceeded the byte budget"
+          : sourcePageWasPartial
+            ? "no local truncation occurred, but the SOURCE event page was not FULL"
+            : "no content was omitted",
+    eventOmittedCount: input.omitted,
+    summaryTruncatedCount: summariesTruncated,
+    essentialMetadataExceeded: input.essentialMetadataExceeded === true,
+    sourcePageWasPartial,
+  });
   return Object.freeze({
     schemaVersion: TRAJECTORY_CONTEXT_CAPSULE_SCHEMA_VERSION,
     kind: "TRAJECTORY_CONTEXT_CAPSULE" as const,
@@ -292,12 +371,7 @@ function assembleCapsule(input: {
       "UNCERTAINTY",
       "AUTHORITY_BOUNDARY",
     ] as TrajectoryCapsuleContentCategory[]),
-    truncation: Object.freeze({
-      truncated: input.omitted > 0,
-      detail: input.omitted > 0
-        ? `the Capsule is bounded to ${String(input.limits.maxEvents)} events / ${String(input.limits.maxSerializedBytes)} serialized bytes; ${String(input.omitted)} event(s) were omitted`
-        : "no content was omitted",
-    }),
+    truncation,
     framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
     authority: "READ_ONLY_INSPECTION" as const,
     doesNotAuthorize: CAPSULE_DOES_NOT_AUTHORIZE,
@@ -321,9 +395,23 @@ export function buildTrajectoryContextCapsule(input: TrajectoryCapsuleInput): Tr
   if (!outcome.ok) {
     // Preserve the historical throwing contract: an over-budget build is an explicit refusal, and the
     // unchecked wrapper surfaces it as an error rather than returning a Capsule that violates its budget.
+    // A limit-validation refusal is surfaced with the same error type, carrying 0/0 byte facts.
+    if (outcome.state === "CAPSULE_LIMIT_INVALID") throw new CapsuleLimitInvalidError(outcome.detail, outcome.key);
     throw new CapsuleBudgetExceededError(outcome.detail, outcome.requiredBytes, outcome.maxSerializedBytes);
   }
   return outcome.capsule;
+}
+
+/** P2-D2 §6.3: an invalid bound is refused explicitly, so a caller cannot silently disable a budget. */
+export class CapsuleLimitInvalidError extends Error {
+  readonly kind = "capsule_limit_invalid" as const;
+  constructor(
+    message: string,
+    readonly key: TrajectoryCapsuleLimitKey,
+  ) {
+    super(message);
+    this.name = "CapsuleLimitInvalidError";
+  }
 }
 
 /** §9.3: the explicit refusal, so a caller can distinguish a budget refusal from a malformed input. */
@@ -340,11 +428,17 @@ export class CapsuleBudgetExceededError extends Error {
 }
 
 /**
- * §9.1/§9.3: the CHECKED build. Deterministically truncates event summaries until the serialized Capsule
- * fits `maxSerializedBytes`, and returns an explicit refusal when the essential metadata cannot fit.
+ * §9.1/§9.3: the CHECKED build. Validates the requested bounds (P2-D2 §6.3), enforces the whole serialized
+ * byte budget AND the legacy aggregate summary-character budget (P2-D2 §6.4), deterministically truncates
+ * event summaries until the Capsule fits, and returns an explicit refusal when the essential metadata cannot
+ * fit. Both budgets are reported separately (§6.6), so neither is disguised as the other.
  */
 export function buildTrajectoryContextCapsuleChecked(input: TrajectoryCapsuleInput): TrajectoryCapsuleBuildOutcome {
-  const limits = effectiveLimits(input.limits);
+  const validation = validateCapsuleLimits(input.limits);
+  if (!validation.ok) {
+    return Object.freeze({ ok: false as const, state: "CAPSULE_LIMIT_INVALID" as const, detail: validation.detail, key: validation.key });
+  }
+  const limits = validation.limits;
   const preview = input.preview;
   const execution = preview.execution;
 
@@ -381,7 +475,7 @@ export function buildTrajectoryContextCapsuleChecked(input: TrajectoryCapsuleInp
    * §9.3: FIRST establish the ESSENTIAL floor — a Capsule with ZERO events. If even that exceeds the budget,
    * refuse. This is the honest check: no amount of event truncation can make an over-large metadata block fit.
    */
-  const floor = assembleCapsule({ capsuleInput: input, events: [], omitted: execution.events.length, uncertainty, limits });
+  const floor = assembleCapsule({ capsuleInput: input, events: [], omitted: execution.events.length, uncertainty, limits, essentialMetadataExceeded: true });
   const floorBytes = serializedBytesOf(floor);
   if (floorBytes > limits.maxSerializedBytes) {
     return Object.freeze({
@@ -394,17 +488,25 @@ export function buildTrajectoryContextCapsuleChecked(input: TrajectoryCapsuleInp
   }
 
   /**
-   * §9.3: add event summaries one at a time, deterministically, until the serialized Capsule would exceed
-   * the budget. Only summaries are truncated; every essential field is already in the floor.
+   * §9.3/§6.4: add event summaries one at a time, deterministically, until the serialized Capsule would
+   * exceed the byte budget OR the legacy aggregate summary-character budget would be exceeded. Only summaries
+   * are truncated; every essential field is already in the floor.
    */
   const events: CapsuleEventSummary[] = [];
   let omitted = 0;
+  let totalSummaryChars = 0;
   for (const event of execution.events) {
     if (events.length >= limits.maxEvents) {
       omitted += 1;
       continue;
     }
     const clamped = clampSummary(event.summary, limits.maxEventSummaryChars);
+    if (totalSummaryChars + clamped.text.length > limits.maxTotalChars) {
+      // P2-D2 §6.4: the LEGACY aggregate budget is a real constraint now; an event that would breach it is
+      // OMITTED rather than admitted, so a caller who lowered `maxTotalChars` gets what they asked for.
+      omitted += 1;
+      continue;
+    }
     const candidate: CapsuleEventSummary = Object.freeze({
       seq: event.seq,
       type: event.type,
@@ -419,6 +521,7 @@ export function buildTrajectoryContextCapsuleChecked(input: TrajectoryCapsuleInp
       continue;
     }
     events.push(candidate);
+    totalSummaryChars += clamped.text.length;
   }
   const capsule = assembleCapsule({ capsuleInput: input, events, omitted, uncertainty, limits });
   const serializedBytes = serializedBytesOf(capsule);
