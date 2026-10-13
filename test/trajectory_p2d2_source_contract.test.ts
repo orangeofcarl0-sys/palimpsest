@@ -78,7 +78,7 @@ describe("P2D2 — dynamically reproduced baseline falsifiers", () => {
     expect(nan.ok).toBe(false);
     if (nan.ok) throw new Error("unreachable");
     expect(nan.state).toBe("CAPSULE_LIMIT_INVALID");
-    expect(nan.key).toBe("maxSerializedBytes");
+    if (nan.state === "CAPSULE_LIMIT_INVALID") expect(nan.key).toBe("maxSerializedBytes");
     const infinite = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: Number.POSITIVE_INFINITY } });
     expect(infinite.ok).toBe(false);
     const overCeiling = buildTrajectoryContextCapsuleChecked({ ...BASE_INPUT, preview: previewFixture(5), limits: { maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES + 1 } });
