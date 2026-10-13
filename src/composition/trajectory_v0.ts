@@ -260,8 +260,9 @@ export function admitAttempt(input: {
   return Object.freeze({ created, terminal, authorization });
 }
 
-/** §5: derive the canonical facts for one attempt from its own records. */
-function canonicalFactsOf(input: {
+/** §5: derive the canonical facts for one attempt from its own records.
+ * P2-D0 §8.1: EXPORTED so the attributed Preview REUSES this semantic (ONE implementation, no placeholders). */
+export function canonicalFactsOf(input: {
   readonly events: readonly SchedulerEvent[];
   readonly attemptId: string;
   readonly record: ReturnType<TrajectoryV0WorkOwner["attemptWorkRecord"]>;
@@ -317,8 +318,9 @@ function canonicalFactsOf(input: {
   });
 }
 
-/** §5: build the safe project-evolution summary, quarantining the known-incomplete relations. */
-async function projectEvolutionOf(
+/** §5: build the safe project-evolution summary, quarantining the known-incomplete relations.
+ * P2-D0 §8.1: EXPORTED so the attributed Preview reuses the SAME T0 projection semantics. */
+export async function projectEvolutionOf(
   inputs: TrajectoryProjectionInputs,
   context: AttemptRelationContext,
 ): Promise<PreviewProjectEvolutionSummary> {
@@ -397,7 +399,7 @@ async function projectEvolutionOf(
  * The `canonicalEventIds` set is retained ONLY to scope quarantine reporting; admission itself uses the
  * precise role fields.
  */
-function buildRelationContext(input: {
+export function buildRelationContext(input: {
   readonly projectId: string;
   readonly attemptId: string;
   readonly events: readonly SchedulerEvent[];

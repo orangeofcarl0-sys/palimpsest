@@ -44,7 +44,8 @@ import {
 } from "../execution_association/index.js";
 import type { DshSessionReadPort } from "../trajectory/execution.js";
 import { dshSubprocessWorkWorkerPort } from "../deployment/work_worker.js";
-import { admitAttempt, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
+import { admitAttempt, buildRelationContext, projectEvolutionOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
+import { composeTrajectoryInputs } from "./trajectory.js";
 import { composeAttributedPreview, type AttributedPreviewService } from "./attributed_preview.js";
 import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import type { OwnedResource } from "./lifecycle.js";
@@ -73,6 +74,19 @@ export interface ExecutionAssociationClusterOptions {
   readonly workWorkerPort: ((worldPath: string) => WorkWorkerRunPort) | undefined;
   /** §6.1: historical trusted epochs, so an upgrade does not invalidate history. */
   readonly historicalEpochs?: readonly TrustedSourceEpoch[] | undefined;
+  /**
+   * P2-D0 §8.3: the optional cross-owner reads the T0 project-evolution projection consumes. They are the
+   * SAME owners `composeTrajectoryV0` is composed from, passed through so the attributed Preview presents
+   * the real projection rather than an empty one with a caveat. Absent ⇒ the projection honestly reports
+   * the missing owners through its basis vector, exactly as the V0 composition does.
+   */
+  readonly trajectoryOwners?: {
+    readonly reasoning: import("../reasoning_cell/index.js").ReasoningCellService | undefined;
+    readonly proof: import("../proof_asset/index.js").ProofEvidenceService | undefined;
+    readonly projectWorkspace: import("../project_workspace/index.js").ProjectWorkspaceService | undefined;
+    readonly journalStore: import("../project_workspace/index.js").ProjectJournalStore | undefined;
+    readonly associationStore: import("../project_workspace/index.js").ProjectAssetAssociationStore | undefined;
+  } | undefined;
 }
 
 export interface ExecutionAssociationClusterInput {
@@ -175,7 +189,21 @@ async function loadSessionReader(input: {
  */
 export function composeExecutionAssociationCluster(input: ExecutionAssociationClusterInput): ExecutionAssociationCluster {
   const { options } = input;
-  const sourceKind: SourceKind = options.executionAssociationSourceKind ?? (options.workWorkerBin === undefined ? "UNKNOWN" : "FIRST_PARTY_DSH_HOST");
+  /**
+   * P2-D0 §9.6: THE EXPERT-PORT ALIGNMENT RULE.
+   *
+   * An explicitly supplied Worker Port replaces the host-derived one, but it is an OPAQUE caller object:
+   * nothing proves it launches the executable `workWorkerBin` names. Deriving a FIRST_PARTY_DSH_HOST basis
+   * from `workWorkerBin` while the ACTUAL producer is a caller stub is exactly how a stub would borrow
+   * first-party authority (F11). The two facts must agree, and only the caller can assert that they do.
+   *
+   * So: an explicit port with NO explicit source kind is classified `UNKNOWN`, never `FIRST_PARTY_DSH_HOST`.
+   * A caller that really is driving the configured first-party binary says so explicitly (and, when a test
+   * drives a stub, says `CONTROLLED_STUB`); the conservative default refuses to guess.
+   */
+  const explicitPortWithoutKind = options.workWorkerPort !== undefined && options.executionAssociationSourceKind === undefined;
+  const sourceKind: SourceKind =
+    options.executionAssociationSourceKind ?? (options.workWorkerBin === undefined || explicitPortWithoutKind ? "UNKNOWN" : "FIRST_PARTY_DSH_HOST");
   const workWorkerPortFactory = deriveWorkWorkerPortFactory(options);
   const sessionSourceQualification = qualificationLabelOf(sourceKind);
 
@@ -227,7 +255,12 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
     : undefined;
 
   if (readerHandle !== undefined) {
-    ownedResources.push({ what: "dshSessionReader", ownership: "INSTALL_CREATED_AND_MANAGED", close: () => { void readerHandle.close?.(); } });
+    /**
+     * P2-D0 §9.4: the reader's close is ASYNCHRONOUS (it disposes a mounted Cordis fiber), so the owned
+     * resource RETURNS the promise. `composeInstalledLifecycle` awaits it, which is what makes
+     * `await installed.dispose()` actually wait for the reader rather than discarding its promise.
+     */
+    ownedResources.push({ what: "dshSessionReader", ownership: "INSTALL_CREATED_AND_MANAGED", close: () => readerHandle.close?.() });
   }
 
   const storePath = deriveExecutionAssociationPath(options.databasePath);
@@ -256,9 +289,15 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
   });
 
   const recorder = createExecutionAssociationRecorder({ store: associationStore, projectId: options.projectId, sourceBasis: basis, sourceKind });
+  /**
+   * P2-D0 §9.3: an in-memory path cannot be cold-recovered, so the qualifier carries EPHEMERAL and the
+   * attributed Preview reports it. A caller that requires durability can then refuse the binding.
+   */
+  const storeDurability: "DURABLE" | "EPHEMERAL" = storePath === ":memory:" ? "EPHEMERAL" : "DURABLE";
   const qualifier = makeAssociationQualifier({
     store: associationStore,
     registry,
+    durability: storeDurability,
     work: makeWorkRevalidation({ projectId: options.projectId, store: input.store, controller: input.controller }),
     dsh: {
       readHeaderIdentity: async (sessionId) => {
@@ -276,21 +315,26 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
       qualifier,
       store: associationStore,
       sessionReader: readerHandle,
-      projectEvolutionOf: async () =>
-        Object.freeze({
-          projectionRootId: null,
-          projectionSemanticDigest: null,
-          workSequence: null,
-          workEventDigest: null,
-          projectIrRevision: null,
-          selectedRelations: Object.freeze([]),
-          quarantinedRelations: Object.freeze([]),
-          unresolvedReferences: Object.freeze([]),
-          currentnessCaveats: Object.freeze(["the attributed preview does not compose the T0 project-evolution projection, so no cross-owner context is presented"]),
-          basisCompleteness: null,
-          failureOrigin: null,
-          failureKind: null,
-        }),
+      /**
+       * P2-D0 §8.3: the SAME `projectEvolutionOf` the V0 composition uses, over the SAME projection inputs.
+       * The adapter supplies the attempt's own relation context, so selected/quarantined relations stay
+       * Attempt-scoped and a cross-owner basis failure is reported with its real structured origin.
+       */
+      projectEvolutionOf: async ({ attemptId, events, relationContext }) => {
+        const owners = options.trajectoryOwners;
+        const projectionInputs = composeTrajectoryInputs({
+          projectId: options.projectId,
+          controller: input.controller as unknown as Parameters<typeof composeTrajectoryInputs>[0]["controller"],
+          promotions: input.controller.promotions as unknown as Parameters<typeof composeTrajectoryInputs>[0]["promotions"],
+          reasoning: owners?.reasoning,
+          proof: owners?.proof,
+          projectWorkspace: owners?.projectWorkspace,
+          journalStore: owners?.journalStore,
+          associationStore: owners?.associationStore,
+        });
+        void events;
+        return projectEvolutionOf(projectionInputs, relationContext);
+      },
     }),
   };
 
@@ -340,6 +384,13 @@ export interface ExecutionAssociationInstallOptions {
    * process outside the DSH profile points at the same file by absolute path, so there is one reader.
    */
   readonly sessionReaderModule?: string | undefined;
+  /**
+   * P2-D0 §9.7: trusted HISTORICAL source epochs, so a legitimate upgrade ADDS an epoch rather than
+   * invalidating every historical association. A deployment supplies the epochs it established; the
+   * current basis is always appended by the composition. Supplying nothing means only the current
+   * configuration is trusted, which is the honest default for a deployment that never upgraded.
+   */
+  readonly historicalEpochs?: readonly TrustedSourceEpoch[] | undefined;
 }
 
 /**
