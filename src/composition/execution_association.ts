@@ -46,7 +46,7 @@ import type { DshSessionReadPort } from "../trajectory/execution.js";
 import { dshSubprocessWorkWorkerPort } from "../deployment/work_worker.js";
 import { admitAttempt, buildRelationContext, projectEvolutionOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
 import { composeTrajectoryInputs } from "./trajectory.js";
-import { composeAttributedPreview, type AttributedPreviewService } from "./attributed_preview.js";
+import { composeAttributedPreview, type AttributedPreviewService, type CapsuleAuthorizationPort } from "./attributed_preview.js";
 import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import type { OwnedResource } from "./lifecycle.js";
 
@@ -155,6 +155,44 @@ function makeWorkRevalidation(input: { readonly projectId: string; readonly stor
       } catch (error) {
         return { ok: false, reason: error instanceof Error ? error.message : String(error) };
       }
+    },
+  };
+}
+
+/**
+ * P2-D0 §10.3: THE CONSUMER-AUTHORIZATION PORT, built from the SAME governed rework lineage the Context
+ * owner resolves for its PriorResultContext.
+ *
+ * The source of permission is the consumer Attempt's own canonical Work lineage: a governed TASK_READY
+ * that names this attempt's creation event and carries a `rework_provenance.origin_result_subject.ref`.
+ * The consumer cannot choose an origin by naming one — only the durable lineage can permit it — and an
+ * attempt with no such lineage may inspect no historical Attempt at all.
+ */
+function makeCapsuleAuthorization(input: { readonly projectId: string; readonly store: EventStore; readonly controller: ProjectController }): CapsuleAuthorizationPort {
+  return {
+    resolvePermittedOrigin: ({ consumerAttemptId }) => {
+      const record = input.controller.attemptWorkRecord(consumerAttemptId);
+      if (record === null) return { ok: false, reason: "CONSUMER_NOT_CANONICAL", detail: `attempt ${consumerAttemptId} is not a canonical attempt of this project` };
+      const events = input.store.listEvents(input.projectId);
+      const created = events.find((event) => event.event_type === "ATTEMPT_CREATED" && event.entity_id === consumerAttemptId);
+      if (created === undefined || record.taskId === null) return { ok: false, reason: "NO_LINEAGE", detail: `attempt ${consumerAttemptId} has no canonical creation event, so no lineage can be resolved` };
+      const createdEventId = Number(created.event_id);
+      /** The governed rework lineage: a TASK_READY for this task, before this attempt was created, naming an origin result. */
+      const candidates = events
+        .filter((event) => event.event_type === "TASK_READY" && event.entity_id === record.taskId && Number(event.event_id) < createdEventId)
+        .sort((a, b) => Number(b.event_id) - Number(a.event_id));
+      for (const event of candidates) {
+        const provenance = (event.payload as { rework_provenance?: { origin_result_subject?: { ref?: unknown } } }).rework_provenance;
+        const originRef = provenance?.origin_result_subject?.ref;
+        if (typeof originRef === "string" && originRef.length > 0) {
+          return {
+            ok: true,
+            originAttemptId: originRef,
+            basis: `the consumer attempt ${consumerAttemptId} is a governed continuation of origin attempt ${originRef}, established by the rework lineage at event_id ${String(event.event_id)}`,
+          };
+        }
+      }
+      return { ok: false, reason: "NO_LINEAGE", detail: `attempt ${consumerAttemptId} has no governed rework lineage, so it may inspect no historical attempt` };
     },
   };
 }
@@ -315,6 +353,7 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
       qualifier,
       store: associationStore,
       sessionReader: readerHandle,
+      capsuleAuthorization: makeCapsuleAuthorization({ projectId: options.projectId, store: input.store, controller: input.controller }),
       /**
        * P2-D0 §8.3: the SAME `projectEvolutionOf` the V0 composition uses, over the SAME projection inputs.
        * The adapter supplies the attempt's own relation context, so selected/quarantined relations stay

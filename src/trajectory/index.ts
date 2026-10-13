@@ -251,3 +251,28 @@ export {
   selectAttemptWorkRelations,
 } from "./relation_admission.js";
 export type { AdmittedRelation, AttemptRelationContext, QuarantinedRelation } from "./relation_admission.js";
+
+/**
+ * Trajectory-P2-D0 §10 — the BOUNDED, READ-ONLY TRAJECTORY CONTEXT CAPSULE.
+ *
+ * A derived presentation of one historical Attempt's already-qualified execution evidence, bounded and
+ * origin-qualified, framed as HISTORICAL DATA rather than instructions. It is not a storage owner, not an
+ * execution authority and not a substitute for the Handoff Preview.
+ */
+export {
+  TRAJECTORY_CONTEXT_CAPSULE_SCHEMA_VERSION,
+  TRAJECTORY_CAPSULE_LIMITS,
+  TRAJECTORY_CAPSULE_CONTENT_CATEGORIES,
+  CAPSULE_DOES_NOT_AUTHORIZE,
+  buildTrajectoryContextCapsule,
+  trajectoryCapsuleBytes,
+  capsuleIsBounded,
+} from "./context_capsule.js";
+export type {
+  TrajectoryContextCapsule,
+  TrajectoryCapsuleInput,
+  TrajectoryCapsuleLimits,
+  TrajectoryCapsuleContentCategory,
+  CapsuleEventSummary,
+  CapsuleUncertainty,
+} from "./context_capsule.js";
