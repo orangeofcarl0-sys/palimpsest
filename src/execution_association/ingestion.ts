@@ -64,9 +64,16 @@ export function computeTrustedSourceBasis(input: {
   });
 }
 
-/** §7.6: the recorder's outcome. A rejected observation is reported, never silently dropped. */
+/**
+ * §7.6/P2-D2 §6.5: the recorder's outcome. A rejected observation is reported, never silently dropped.
+ *
+ * P2-D2 C2 unifies the DECLARED union with the runtime vocabulary: the store's own append outcome is
+ * `APPENDED` (a newly committed observation) or `IDEMPOTENT` (an identical re-delivery), and the recorder
+ * now DECLARES exactly that. `RECORDED` is gone because it was never a value any consumer could observe;
+ * a `REJECTED` outcome carries why. No consumer has to reason about an `as` cast any more.
+ */
 export type IngestionOutcome =
-  | { readonly state: "RECORDED"; readonly eventId: string }
+  | { readonly state: "APPENDED"; readonly eventId: string }
   | { readonly state: "IDEMPOTENT"; readonly eventId: string }
   | { readonly state: "REJECTED"; readonly reason: string };
 
@@ -251,7 +258,8 @@ export function createExecutionAssociationRecorder(input: {
         const byAttempt = invocationsByAttempt.get(attemptId) ?? new Set<string>();
         byAttempt.add(identity.invocationId);
         invocationsByAttempt.set(attemptId, byAttempt);
-        return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+        // P2-D2 §6.5: `outcome.state` is narrowed to the declared vocabulary, so no cast is needed.
+        return Object.freeze({ state: outcome.state, eventId });
       }
       /**
        * §6.3: an explicit refusal (a store that returned a REJECTED/unknown outcome) is the OTHER failure
@@ -260,7 +268,7 @@ export function createExecutionAssociationRecorder(input: {
       const reason = outcome.reason ?? `the store returned an unrecognized outcome "${outcome.state}"`;
       failedInvocations.add(healthKey(attemptId, identity.invocationId));
       markIncomplete({ attemptId, invocationId: identity.invocationId, reason: "APPEND_REJECTED", detail: reason });
-      return Object.freeze({ state: "REJECTED" as const, reason }) as IngestionOutcome;
+      return Object.freeze({ state: "REJECTED" as const, reason });
     },
 
     finalizeInvocation(input2: {
@@ -299,7 +307,7 @@ export function createExecutionAssociationRecorder(input: {
           observedCandidateCount: candidateCount,
         }),
       });
-      return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+      return Object.freeze({ state: outcome.state, eventId });
     },
 
     finalizeAttempt(input2: { readonly attemptId: string; readonly closeReason: ObservationWindowCloseReason }): readonly IngestionOutcome[] {
@@ -348,7 +356,7 @@ export function createExecutionAssociationRecorder(input: {
               observedCandidateCount: candidateCount,
             }),
           });
-          return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+          return Object.freeze({ state: outcome.state, eventId });
         }),
       );
     },

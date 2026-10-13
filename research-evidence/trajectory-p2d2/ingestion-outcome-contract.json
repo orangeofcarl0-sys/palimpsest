@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_INGESTION_OUTCOME_CONTRACT",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C2 §6.5",
+  "evidenceClass": "DYNAMICALLY_REPRODUCED",
+  "sourceReferences": [
+    "src/execution_association/ingestion.ts (IngestionOutcome declaration and the recordIdentity/finalizeInvocation/finalizeAttempt returns)",
+    "src/execution_association/store.ts (AssociationAppendOutcome: APPENDED | IDEMPOTENT)"
+  ],
+  "testFile": "test/trajectory_p2d2_capsule_contract.test.ts",
+  "declaredVocabularyBefore": ["RECORDED", "IDEMPOTENT", "REJECTED"],
+  "runtimeVocabularyBefore": ["APPENDED", "IDEMPOTENT"],
+  "declaredVocabularyAfter": ["APPENDED", "IDEMPOTENT", "REJECTED"],
+  "castRemoved": true,
+  "observedResults": {
+    "committedObservation": "APPENDED",
+    "reDelivery": "IDEMPOTENT",
+    "untrustedSource": "REJECTED"
+  },
+  "expectedInvariant": "every consumer of an IngestionOutcome observes a state the declaration names, so no consumer must reason about an `as` cast and none can write `outcome.state === 'RECORDED'` truthfully",
+  "verdict": "PASS",
+  "remainingUncertainty": "a store that returns an unrecognized outcome is still surfaced as REJECTED with the raw state in the reason, which is the honest reading",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

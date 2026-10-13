@@ -311,12 +311,19 @@ describe("P2D1 §9 — the whole serialized Capsule satisfies its byte budget", 
 
   it("33. a caller cannot raise the hard ceiling", () => {
     const preview = previewWith([]);
+    // CHANGED ASSERTION (P2D2 C2): P2-D1 silently CLAMPED an over-ceiling request via Math.min. P2-D2 now
+    // refuses it explicitly with CAPSULE_LIMIT_INVALID rather than quietly reinterpreting the caller's bound.
     const outcome = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 10_000_000 } });
-    expect(outcome.ok).toBe(true);
-    if (!outcome.ok) throw new Error("unreachable");
-    expect(outcome.serializedBytes).toBeLessThanOrEqual(TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES);
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) throw new Error("unreachable");
+    expect(outcome.state).toBe("CAPSULE_LIMIT_INVALID");
+    // A budget AT the ceiling is still accepted, and the whole Capsule stays within it.
+    const atCeiling = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES } });
+    expect(atCeiling.ok).toBe(true);
+    if (!atCeiling.ok) throw new Error("unreachable");
+    expect(atCeiling.serializedBytes).toBeLessThanOrEqual(TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES);
     // trajectoryCapsuleBytes agrees with the reported serialized size.
-    expect(trajectoryCapsuleBytes(outcome.capsule)).toBe(outcome.serializedBytes);
+    expect(trajectoryCapsuleBytes(atCeiling.capsule)).toBe(atCeiling.serializedBytes);
   });
 
   it("34. near-limit and over-limit payloads behave deterministically", () => {

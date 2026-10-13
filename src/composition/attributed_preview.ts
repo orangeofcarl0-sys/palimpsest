@@ -86,6 +86,12 @@ export interface AttributedPreviewResult {
     readonly syntheticRecoveryEventCount: number | null;
     /** P2-D1 §9.5: the source page's inherited event count, when the reader reported it. */
     readonly inheritedEventCount: number | null;
+    /**
+     * P2-D2 §6.2: the SOURCE-DERIVED durability class the trusted Qualification established for the selected
+     * invocation's store. `null` when no invocation was selected. This is the ONLY value the Capsule's
+     * `attribution.durability` may record — a caller cannot upgrade it.
+     */
+    readonly sourceDurability: "DURABLE" | "EPHEMERAL" | null;
   };
 }
 
@@ -138,6 +144,13 @@ export const CAPSULE_AUTHORIZATION_STATES = [
   "ORIGIN_PAGE_REFUSED",
   /** P2-D1 §9.3: the admitted evidence cannot be represented within the byte budget. */
   "CAPSULE_BUDGET_EXCEEDED",
+  /** P2-D2 §6.3: a requested Capsule bound was not a finite nonnegative integer, or exceeded the ceiling. */
+  "CAPSULE_LIMIT_INVALID",
+  /**
+   * P2-D2 §6.1: the caller asked for a Durability class that DISAGREES with the trusted source. The source
+   * is the authority; a disagreement is refused rather than silently overridden.
+   */
+  "CAPSULE_DURABILITY_MISMATCH",
 ] as const;
 export type CapsuleAuthorizationState = (typeof CAPSULE_AUTHORIZATION_STATES)[number];
 
@@ -275,7 +288,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         return Object.freeze({
           preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
           selection: Object.freeze({ state: "NO_DURABLE_EVIDENCE" as const, invocationId: null, detail: "the execution-association qualifier is not composed" }),
-          provenance: Object.freeze({ qualificationState: "NO_DURABLE_OBSERVATION", sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze([]), syntheticRecoveryEventCount: null, inheritedEventCount: null }),
+          provenance: Object.freeze({ qualificationState: "NO_DURABLE_OBSERVATION", sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze([]), syntheticRecoveryEventCount: null, inheritedEventCount: null, sourceDurability: null }),
         });
       }
 
@@ -299,7 +312,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         return Object.freeze({
           preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
           selection: Object.freeze({ state: selection.state, invocationId: null, detail }),
-          provenance: Object.freeze({ qualificationState: selection.qualificationState, sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((e) => e.state !== "ASSOCIATION_QUALIFIED").map((e) => e.invocationId + " (" + e.state + ")")), syntheticRecoveryEventCount: null, inheritedEventCount: null }),
+          provenance: Object.freeze({ qualificationState: selection.qualificationState, sourceEpochId: null, durableBindingRef: null, windowClosedConsistently: false, readWatermark: null, knownEventCount: null, pageCoverage: "NOT_APPLICABLE", otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((e) => e.state !== "ASSOCIATION_QUALIFIED").map((e) => e.invocationId + " (" + e.state + ")")), syntheticRecoveryEventCount: null, inheritedEventCount: null, sourceDurability: null }),
         });
       }
 
@@ -360,6 +373,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
             pageCoverage: "NOT_APPLICABLE",
             otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((entry) => entry.state !== "ASSOCIATION_QUALIFIED").map((entry) => `${entry.invocationId} (${entry.state})`)),
             syntheticRecoveryEventCount: page?.syntheticRecoveryEventCount ?? null, inheritedEventCount: page?.inheritedEventCount ?? null,
+            sourceDurability: chosen.durability,
           }),
         });
       }
@@ -416,6 +430,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
           pageCoverage: preview.attribution.eventPageCoverage,
           otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter((entry) => entry.state !== "ASSOCIATION_QUALIFIED").map((entry) => `${entry.invocationId} (${entry.state})`)),
           syntheticRecoveryEventCount: page?.syntheticRecoveryEventCount ?? null, inheritedEventCount: page?.inheritedEventCount ?? null,
+          sourceDurability: chosen.durability,
         }),
       });
     },
@@ -424,7 +439,12 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       readonly consumerAttemptId: string;
       readonly requestedOriginAttemptId?: string | undefined;
       readonly maxEvents?: number | undefined;
-      /** P2-D1 §9.5: the durability to record, when the caller knows the store's own classification. */
+      /**
+       * P2-D2 §6.1: DEPRECATED as an upgrade knob. Retained for compatibility only, and it can NEVER
+       * upgrade the source: the Capsule's Durability is derived from the trusted Qualification the admission
+       * already established (`chosen.durability`). A value that DISAGREES with the source is refused rather
+       * than silently overriding it, so an EPHEMERAL origin can never be presented as DURABLE.
+       */
       readonly durability?: "DURABLE" | "EPHEMERAL" | "UNKNOWN" | undefined;
       /** P2-D1 §9.2: an optional LOWER budget. A caller may lower the product ceiling, never raise it. */
       readonly limits?: Partial<import("../trajectory/index.js").TrajectoryCapsuleLimits> | undefined;
@@ -498,6 +518,18 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       }
 
       /**
+       * P2-D2 §6.1/§6.2: DURABILITY IS SOURCE-DERIVED. The class recorded on the Capsule is the one the
+       * trusted Qualification established for the selected invocation's store (`origin.provenance
+       * .sourceDurability`), NOT a caller-supplied value. A caller that names a DIFFERENT class is refused
+       * explicitly rather than silently overriding the source, so an EPHEMERAL origin can never be presented
+       * as DURABLE. When the source did not establish a class the honest value is UNKNOWN.
+       */
+      const sourceDurability: "DURABLE" | "EPHEMERAL" | "UNKNOWN" = origin.provenance.sourceDurability ?? "UNKNOWN";
+      if (request.durability !== undefined && request.durability !== "UNKNOWN" && request.durability !== sourceDurability) {
+        return Object.freeze({ state: "CAPSULE_DURABILITY_MISMATCH" as const, detail: `the trusted source established durability "${sourceDurability}", so a caller may not present it as "${request.durability}"`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+
+      /**
        * §10.6/§9.5: the Capsule's uncertainty is fed the admission's OWN provenance, so it cannot be less
        * complete than the attribution it presents. The unresolved-invocation set and the durability come
        * from the qualification, and the synthetic/inherited counts come from the page the reader returned.
@@ -508,7 +540,7 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         originAttemptId: permitted.originAttemptId,
         authorizationBasis: permitted.basis,
         preview: origin.preview,
-        durability: request.durability,
+        durability: sourceDurability,
         ...(request.limits === undefined ? {} : { limits: request.limits }),
         attributionProvenance: {
           qualificationState: origin.provenance.qualificationState,
@@ -522,7 +554,8 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         },
       });
       if (!capsuleOutcome.ok) {
-        return Object.freeze({ state: "CAPSULE_BUDGET_EXCEEDED" as const, detail: capsuleOutcome.detail, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+        const state: CapsuleAuthorizationState = capsuleOutcome.state === "CAPSULE_LIMIT_INVALID" ? "CAPSULE_LIMIT_INVALID" : "CAPSULE_BUDGET_EXCEEDED";
+        return Object.freeze({ state, detail: capsuleOutcome.detail, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
       }
       return Object.freeze({ state: "AUTHORIZED" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}, whose execution is qualified and admitted`, capsule: capsuleOutcome.capsule, serializedBytes: capsuleOutcome.serializedBytes, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
     },
