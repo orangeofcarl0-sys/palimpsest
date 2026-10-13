@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "D1 benchmark readiness",
+  "note": "§11: D0 PREPARES a D1 protocol and runs NO stochastic or paid model trial. Nothing here is an experimental result.",
+  "estimatedEffect": {
+    "estimand": "the INCREMENTAL effect of source-qualified Trajectory evidence beyond existing Context",
+    "control": "Existing Canonical Work Context + Existing PriorResultContext",
+    "treatment": "the SAME Context + a Source-qualified Trajectory Capsule",
+    "explicitlyNotTheComparison": "no context versus full context"
+  },
+  "consumer": "the existing Governed Rework / PriorResultContext path: a consumer Attempt A1 whose canonical lineage names origin Attempt A0; the Context Owner verifies the relationship, so the consumer cannot choose an arbitrary historical Attempt",
+  "taskFamilies": [
+    {
+      "id": "FamilyA",
+      "name": "Governed Rework Continuation",
+      "shape": "a prior Attempt has real execution history and an observed failure or incomplete result; the consumer Attempt is a legitimate governed continuation",
+      "measures": "whether Trajectory helps the Agent avoid repeating historical failures and choose a more accurate next action"
+    },
+    {
+      "id": "FamilyB",
+      "name": "Multi-Invocation Reconstruction",
+      "shape": "an Attempt has more than one execution Invocation with potentially different qualification and coverage states",
+      "measures": "whether the Agent accurately distinguishes confirmed actions, missing observations, incomplete Invocations, historical interpretation and the actual Work outcome"
+    }
+  ],
+  "benchmarkQualificationLaw": {
+    "source": "research-evidence/r2-vr/benchmark-qualification-law.json",
+    "requirements": [
+      "UQ-1 baseline neither at the floor nor the ceiling, with room to move in BOTH directions",
+      "UQ-2 at least two outcome dimensions vary under repetition of the control",
+      "UQ-3 at least one treatment-relevant failure class varies",
+      "UQ-4 the Capsule's own recorded method mechanically covers a case that varies",
+      "UQ-5 success cannot hinge entirely on one unrelated residual case"
+    ],
+    "carriedForward": "all five requirements; a task that fails the law is NOT ready for a utility trial",
+    "avoidedPriorFailure": "R2-VR showed Scenario D was saturated (every trial 13/14 or 14/14) and its remaining variance was one unrelated case (h14) that no added capital addressed; D1 must not reuse Scenario C/D merely because they are easy to run"
+  },
+  "baselineOnlyCalibration": {
+    "required": "D1 begins with baseline-only calibration before ANY Treatment execution",
+    "method": "run the control arm alone across the frozen dimensions and measure the per-dimension distribution",
+    "ifSaturated": "BENCHMARK_NOT_QUALIFIED — NOT a reason to increase the number of Treatment trials",
+    "runInD0": false
+  },
+  "frozenDimensions": [
+    "task family", "initial Git state", "model family and version", "provider", "tool set", "Work Scope",
+    "execution budget", "context budget", "Capsule format and truncation", "Control/Treatment assignment",
+    "pairing and randomization", "independent acceptance oracle", "known failure classes",
+    "usage/cost telemetry", "stop conditions"
+  ],
+  "crossModelGenerality": "NOT claimed unless the model-family axis is frozen before execution",
+  "consumptionProofPlan": [
+    "Capsule Qualified", "Capsule Selected", "Capsule Delivered", "Model Turn Started", "Model Actions Observed", "Outcome Independently Judged"
+  ],
+  "consumptionProofLimits": [
+    "delivery is not proof of understanding",
+    "model citation of a historical fact is not proof of correct application",
+    "self-reported model confidence is not an acceptance oracle"
+  ],
+  "primaryOutcomeCandidates": [
+    "Final Acceptance", "Known Failure Recurrence", "Incorrect Tool Actions", "First Useful Action",
+    "Repeated Unnecessary Exploration", "Historical Fact Reconstruction Accuracy", "Invalid Authority Assumptions",
+    "Execution Cost", "Token/Byte Cost", "Retrieval/Materialization Cost", "Continuation Decision Quality"
+  ],
+  "outcomeVocabulary": [
+    "BENCHMARK_QUALIFIED", "BENCHMARK_NOT_QUALIFIED", "DELIVERY_QUALIFIED", "DELIVERY_PRECONDITION_NOT_MET",
+    "UTILITY_MEASURED", "UTILITY_POSITIVE_SIGNAL", "UTILITY_NEGATIVE_SIGNAL", "UTILITY_INCONCLUSIVE"
+  ],
+  "authorizationBoundary": {
+    "required": ["provider and model", "budget", "number of trials", "permitted repositories/worlds", "execution privileges", "stop conditions"],
+    "d0Action": "D0 created NO live-model run and wrote NO UTILITY_POSITIVE_SIGNAL anywhere"
+  },
+  "stochasticTrialsRunInD0": 0,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "final verdicts",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "targetState": "TRAJECTORY_CONSUMER_CONTEXT_READY",
+  "verdict": "TRAJECTORY_CONSUMER_CONTEXT_READY",
+  "answers": {
+    "1_allObservedSessionIdentitiesRetained": "Yes — the tracker carries reportedSessionId and the recorder persists it, so A/B/C reach the durable candidate set (REAL_PARENT_IPC)",
+    "2_canAConflictDisappearBeforeDurability": "No — every distinct valid IPC report is an immutable durable candidate; a repeated identical report is idempotent",
+    "3_canMixedInvocationSetBeCalledSelectedUniqueIncorrectly": "No — SELECTED_UNIQUE requires that no other Invocation exists at all",
+    "4_canEventReadRaceProduceStaleAttributedAdmission": "No — a bounded post-Event-Read relevant-basis recheck yields RACED with no admitted events",
+    "5_canTimeoutAbortFinalizeAnUnclosedInvocation": "No — only a Parent-observed DIRECT_CHILD_EXIT_OBSERVED finalizes; a timeout/abort leaves the window incomplete",
+    "6_canOneJobFinalizeAnotherInvocation": "No — finalization is Invocation-scoped; finalizeAttempt no longer records CLOSED for every invocation",
+    "7_isCanonicalWorkHistoryPreserved": "Yes — the attributed Preview reuses the existing canonicalFactsOf; result, verification, promotion and rework stay separate",
+    "8_isProjectEvolutionPreserved": "Yes — the product cluster wires projectEvolutionOf over composeTrajectoryInputs; a failure is reported with its structured origin",
+    "9_canAnEphemeralRecordBecomeDurableAuthority": "No — an in-memory store yields durability EPHEMERAL on the qualification and the Capsule",
+    "10_doesAwaitedDisposalReallyAwaitReaderClose": "Yes — OwnedResource.close may return a promise and the lifecycle awaits it",
+    "11_isTheCapsuleAttemptBound": "Yes — the consumer's permission is its own canonical governed-rework lineage",
+    "12_canACallerRequestArbitrarySessionHistory": "No — a requested origin must agree with the lineage; an unpermitted origin is refused; there is no global Session lookup",
+    "13_canHistoricalPromptInjectionTextAuthorizeAnything": "No — the Capsule is HISTORICAL_DATA_NOT_INSTRUCTIONS with authority READ_ONLY_INSPECTION and seven explicit non-authorizations",
+    "14_didRealFirstPartyDshRunWithoutAModelTurn": "Yes — the cold-capsule gate creates a real Session and reads it with zero model turns",
+    "15_wereAnyPaidModelCallsMade": "No",
+    "16_wasPrimaryEnabled": "No",
+    "17_wasAutomaticHandoffImplemented": "No",
+    "18_hasActualAgentUtilityBeenMeasured": "No — this is a D1 question; D0 only prepared the protocol"
+  },
+  "gates": {
+    "A_identityAndProvenance": "PASS",
+    "B_temporalIntegrity": "PASS",
+    "C_projectReality": "PASS",
+    "D_runtimeAndResources": "PASS",
+    "E_consumerContext": "PASS",
+    "F_regressionAndExperimentReadiness": "PASS"
+  },
+  "disclosedLimitations": [
+    "Node v24.14.1 < the documented >=24.15.0 minimum; the only runtime available on this host",
+    "the source basis hashes executable PATH strings, so it is a local trusted-composition boundary, not content attestation",
+    "the cross-Attempt conflict scope is the adapter id and worker-bin digest, not the sessions root on disk",
+    "the reader is composed only when the host supplies DSH_HOME; the supported default-home behavior is recorded as a limitation",
+    "the Capsule AUTHORIZED lineage path is proven at the controlled level; the real-DSH gate proves the bounded projection and the refusal of an arbitrary attempt",
+    "the post-read currentness recheck is a bounded optimistic read-check, not a distributed transaction",
+    "full product historical-epoch management is outside the bounded D0 scope"
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "sourceDataChanged": false
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "qualification currentness",
+  "falsifier": "F4",
+  "finding": "qualifyAttempt captured ONE store head for the whole multi-invocation pass, and each invocation rechecked only against it",
+  "correction": {
+    "perInvocationBasis": "each invocation's currentness check compares the store head and the attempt's event-id sequence captured for THAT pass, and now ALSO re-probes the cross-Attempt creator claim set for its session (foreignCreatorsAfter)",
+    "aggregateHonesty": "the aggregate result reports each invocation's own qualification state, so an early qualified result is not presented as a stable global answer while a later invocation's read is in flight",
+    "selectionConsequence": "the mixed-invocation selection rule (SELECTED_UNIQUE only when no other invocation exists at all) prevents a partially-current pass from producing a false unique selection"
+  },
+  "evidence": {
+    "class": "SOURCE_DEMONSTRATED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > F4",
+    "observed": "storeHeadAtStart is captured once per pass; the per-invocation recheck basis now includes the cross-Attempt creator set"
+  },
+  "expectedInvariant": "the multi-invocation result is bound to a confirmed basis, or each result to its own",
+  "verdict": "PASS",
+  "remainingUncertainty": "a full multi-invocation atomic snapshot is not claimed; the result is a set of per-invocation qualifications, each with its own basis",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "sourceDataChanged": false
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "public type compatibility",
+  "falsifier": "F18",
+  "finding": "Deployment.installed was typed InstalledPalimpsest while the runtime carried trajectory, so the extended capability was present at run time but not statically reachable",
+  "correction": {
+    "type": "src/deployment/launch.ts — Deployment.installed is typed InstalledPalimpsestWithTrajectory (InstalledPalimpsest & ExecutionAssociationInstallResult)",
+    "reachable": ["trajectory.attributedPreview.previewAttempt", "trajectory.attributedPreview.capsuleForConsumer", "executionAssociationRecorder", "executionAssociationQualifier", "workDelegation"],
+    "noRuntimeChangeForTypes": "the runtime already carried these fields; the change makes the public type describe the actual runtime capability"
+  },
+  "evidence": {
+    "class": "SOURCE_DEMONSTRATED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): Deployment.installed is now the widened trajectory result",
+    "gates": ["tsc -b PASS", "module-architecture --check-public-api PASS (missing 0, changed kind 0, added 0)", "module-architecture --check PASS (0 violations, 9 accepted exceptions)"]
+  },
+  "expectedInvariant": "the supported public TypeScript surfaces accurately describe the runtime capability",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "sourceDataChanged": false
+}

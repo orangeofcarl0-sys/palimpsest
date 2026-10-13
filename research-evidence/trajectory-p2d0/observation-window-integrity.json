@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "observation window integrity",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "relation": "the P2-C window validator is retained unchanged; P2-D0 corrects what the PRODUCT writes into the window",
+  "p2cValidator": {
+    "function": "src/execution_association/window_integrity.ts validateObservationWindow",
+    "states": ["OPEN", "CLOSED_CONSISTENT", "CONTRADICTORY", "MULTIPLE_FINALIZATIONS"],
+    "reasons": ["OBSERVATION_AFTER_FINALIZATION", "CANDIDATE_COUNT_MISMATCH", "FINALIZATION_BEFORE_FIRST_OBSERVATION", "MULTIPLE_FINALIZATIONS"]
+  },
+  "p2d0Correction": {
+    "finalizeAttempt": "no longer records CLOSED for every invocation; it records windowState UNKNOWN with a PARENT_TERMINATED-derived reason, which the validator refuses to treat as a closure",
+    "productPath": "finalizes per Invocation on DIRECT_CHILD_EXIT_OBSERVED only; a timeout/abort (DIRECT_CHILD_EXIT_UNCONFIRMED) leaves the window OPEN/incomplete"
+  },
+  "evidence": {
+    "class": "DYNAMICALLY_REPRODUCED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > P2D0 F6 (drive finalizeAttempt) and the C3 real-IPC finalization assertion",
+    "observed": "a returned port no longer closes a window; the real delegation gate records exactly one CHILD_EXIT_OBSERVED finalization for the observed exit"
+  },
+  "expectedInvariant": "a window closes only from a supported Parent-observed terminal fact, per Invocation",
+  "verdict": "PASS",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "sourceDataChanged": false
+}

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "read-only source comparison",
+  "question": "did P2-D0 mutate any DSH Session, any canonical Work, or any protected evidence?",
+  "checks": [
+    { "what": "DSH Session storage", "how": "the reader opens a read handle only (persistence.open(id,'read'), handle.read); it never appends, flushes or resumes", "result": "READ_ONLY" },
+    { "what": "canonical Work", "how": "P2-D0 calls no settleMutatingWork, no promote, no append of a Work event; the only writes are to the dedicated execution-association store", "result": "UNCHANGED" },
+    { "what": "protected research evidence", "how": "all pre-D0 research-evidence trees are byte-identical; P2-D0 writes only under research-evidence/trajectory-p2d0/", "result": "BYTE_IDENTICAL" },
+    { "what": "the attributed Preview", "how": "it is a read-only service; every method reads owners and returns a value", "result": "READ_ONLY" },
+    { "what": "the Capsule", "how": "buildTrajectoryContextCapsule is a pure function over a Preview; capsuleForConsumer reads and returns", "result": "READ_ONLY" }
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "sourceDataChanged": false,
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "verdict": "PASS"
+}
