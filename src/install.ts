@@ -310,6 +310,12 @@ export function installPalimpsest(
       workWorkerPort: options.workWorkerPort,
       ...(options.historicalEpochs === undefined ? {} : { historicalEpochs: options.historicalEpochs }),
       /**
+       * Trajectory-P2-D1 §11.5: the EXPERIMENTAL Attempt-bound delivery, DEFAULT OFF. Passed through only
+       * when the deployment enabled it, so a default deployment composes exactly what it did before.
+       */
+      ...(options.experimentalTrajectoryContextDelivery === undefined ? {} : { experimentalTrajectoryContextDelivery: options.experimentalTrajectoryContextDelivery }),
+      ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { trajectoryCapsuleMaxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes }),
+      /**
        * P2-D0 §8.3: the cross-owner reads the T0 project-evolution projection consumes, so the attributed
        * Preview presents the real projection rather than an empty one. These are the SAME owners the V0
        * trajectory composition uses; an absent owner is reported by the projection's own basis vector.
@@ -326,6 +332,15 @@ export function installPalimpsest(
     controller,
   });
   const { workWorkerPortFactory, recorder: executionAssociationRecorder, sessionSourceQualification, trajectory } = executionAssociationCluster;
+
+  /**
+   * Trajectory-P2-D1 §11.5: bind the EXPERIMENTAL Attempt-bound Capsule delivery provider, when the
+   * deployment enabled it. DEFAULT OFF: with the option absent or false, `trajectoryCapsuleDelivery` is
+   * undefined and nothing is bound, so the worker context is byte-identical to production.
+   */
+  if (executionAssociationCluster.trajectoryCapsuleDelivery !== undefined) {
+    core.trajectoryCapsuleDelivery.bind(executionAssociationCluster.trajectoryCapsuleDelivery);
+  }
 
   /*
    * PLMP-LEAN-1 §D5-d: the PACKAGED RESULT CONTINUATION composition.

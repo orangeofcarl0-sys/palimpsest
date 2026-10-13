@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_context_delivery.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": true,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_HOST_PREWORK_DELIVERY",
+  "title": "Default-off experimental delivery, no model turn",
+  "method": "the capability is gated on the install option experimentalTrajectoryContextDelivery, DEFAULT OFF; the Capsule is materialized into the attempt worker context BEFORE any model turn",
+  "observed": "with the option absent, compiled.trajectoryCapsule is undefined and the worker context is unchanged; with it enabled and an authorized lineage, the bounded Capsule is present; no model request occurs; R2-E efficacy env vars are untouched",
+  "expectedInvariant": "default production behavior is unchanged when the experimental capability is OFF; delivery is not model-controlled",
+  "verdict": "PASS",
+  "remainingUncertainty": "the delivered Capsule is CAPSULE_RENDERED_FOR_WORKER, not MODEL_CONSUMED_CAPSULE; the host prompt composition is unchanged (the Capsule rides in context.compiled), so a host MAY render it, but this stage does not modify the host prompt"
+}

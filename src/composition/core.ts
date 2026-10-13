@@ -96,6 +96,14 @@ export interface CoreComposition {
   readonly contextKnowledge: {
     bind(ports: import("../context/knowledge.js").ContextKnowledgePorts): void;
   };
+  /**
+   * Trajectory-P2-D1 §11: the LATE-BOUND experimental Trajectory Capsule delivery provider. The execution-
+   * association cluster is composed AFTER the controller, so the context owner reads through this holder and
+   * sees the binding when it happens. NEVER bound ⇒ the deployment delivers no Capsule (the default).
+   */
+  readonly trajectoryCapsuleDelivery: {
+    bind(provider: (input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>): void;
+  };
   readonly verificationCapabilities: {
     bind(next: import("../domain/completion_contract.js").CompletionCapabilities): void;
   };
@@ -211,6 +219,14 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
   } = { current: undefined, bound: false };
 
   /**
+   * Trajectory-P2-D1 §11: the capsule-delivery holder, the SAME late-bind idiom. It holds the provider the
+   * execution-association cluster binds, and the controller reads through it. Unbound ⇒ null ⇒ no delivery.
+   */
+  const trajectoryCapsuleHolder: {
+    current: ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>) | undefined;
+  } = { current: undefined };
+
+  /**
    * §D2-LIVE: the capability statement is LATE-BOUND, exactly like `verificationAdmission` below.
    *
    * The controller gates `begin`/`prepareMutatingWork` on `attemptResultVerificationAvailable`, so
@@ -296,6 +312,11 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
      * answer for a deployment that composed no knowledge owners.
      */
     contextKnowledge: () => contextKnowledgeHolder.current,
+    /**
+     * Trajectory-P2-D1 §11: the read-through capsule provider. The controller wraps it in an async function
+     * that resolves the provider at CALL time, so a binding made after construction is visible.
+     */
+    trajectoryCapsuleFor: () => trajectoryCapsuleHolder.current,
     clock: options.clock,
   });
   // §D3-a: bind the Work owner the observation port reads through, ONCE, now that it exists.
@@ -334,6 +355,18 @@ export function composeCore(options: CoreCompositionOptions): CoreComposition {
         }
         contextKnowledgeHolder.current = next;
         contextKnowledgeHolder.bound = true;
+      },
+    },
+    /**
+     * Trajectory-P2-D1 §11: the ONE-TIME capsule-delivery binding. A second bind is REFUSED, for the same
+     * reason as the knowledge binding: one capability, one owner.
+     */
+    trajectoryCapsuleDelivery: {
+      bind(provider) {
+        if (trajectoryCapsuleHolder.current !== undefined) {
+          throw new Error("the trajectory capsule delivery provider was already bound — a second binding would re-point reads a live context owner already depends on");
+        }
+        trajectoryCapsuleHolder.current = provider;
       },
     },
     worldBasisStore,
