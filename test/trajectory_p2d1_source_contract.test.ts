@@ -33,8 +33,11 @@ import {
 } from "../src/execution_association/index.js";
 import {
   buildTrajectoryContextCapsule,
+  buildTrajectoryContextCapsuleChecked,
+  CapsuleBudgetExceededError,
   trajectoryCapsuleBytes,
   TRAJECTORY_CAPSULE_LIMITS,
+  TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES,
   type HandoffPreview,
 } from "../src/trajectory/index.js";
 import { validateObservationWindow } from "../src/execution_association/window_integrity.js";
@@ -296,7 +299,7 @@ describe("F5/F6 §8 — an authorized consumer still receives a Capsule without 
     return { stack: makeStack(projectId) };
   }
 
-  it("DYNAMICALLY_REPRODUCED F6: valid lineage + a FAILED origin read still yields AUTHORIZED with an empty-event Capsule", async () => {
+  it("CHANGED ASSERTION (P2D1 C4) F6: valid lineage + a FAILED origin read is now refused, not AUTHORIZED", async () => {
     const { stack } = capsuleStack("p2d1-f6");
     const attemptId = await prepareAttempt(stack.installed, "p2d1-f6", stack.head);
     const store = new SqliteExecutionAssociationStore(":memory:");
@@ -321,25 +324,45 @@ describe("F5/F6 §8 — an authorized consumer still receives a Capsule without 
       projectEvolutionOf: async () => EMPTY_EVOLUTION,
     });
     const result = await service.capsuleForConsumer({ consumerAttemptId: attemptId });
-    // BASELINE DEFECT: a failed origin read still produces an AUTHORIZED Capsule with no admitted events.
-    expect(result.state).toBe("AUTHORIZED");
-    expect(result.capsule).not.toBeNull();
-    expect(result.capsule!.historicalExecution.events.length).toBe(0);
+    // C4 CORRECTION: a failed origin read is now an explicit refusal, not an AUTHORIZED empty Capsule.
+    expect(result.state).not.toBe("AUTHORIZED");
+    expect(result.capsule).toBeNull();
     store.close();
   });
 
-  it("SOURCE_DEMONSTRATED F5: an AMBIGUOUS origin is not refused by capsuleForConsumer", () => {
-    const preview = readRepo("src/composition/attributed_preview.ts")!;
-    // Only NO_DURABLE_EVIDENCE is refused; AMBIGUOUS/RACED/REQUESTED_NOT_QUALIFIED fall through.
-    expect(preview).toContain('origin.selection.state === "NO_DURABLE_EVIDENCE"');
-    expect(/AMBIGUOUS_REQUIRES_SELECTION[\s\S]{0,200}NO_QUALIFIED_ORIGIN/u.test(preview)).toBe(false);
+  it("CHANGED ASSERTION (P2D1 C4) F5: an AMBIGUOUS origin is refused with ORIGIN_NOT_SELECTED", async () => {
+    const { stack } = capsuleStack("p2d1-f5");
+    const attemptId = await prepareAttempt(stack.installed, "p2d1-f5", stack.head);
+    const store = new SqliteExecutionAssociationStore(":memory:");
+    const recorder = createExecutionAssociationRecorder({ store, projectId: "p2d1-f5", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
+    // Two qualified invocations ⇒ AMBIGUOUS_REQUIRES_SELECTION for the origin.
+    for (const invocationId of ["wpi-1", "wpi-2"]) {
+      recorder.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId, observation: Object.freeze({ invocationId, dshSessionId: `worker-${invocationId}`, reportedSessionId: `worker-${invocationId}`, source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
+      recorder.finalizeInvocation({ attemptId, invocationId, closeReason: "CHILD_EXIT_OBSERVED" });
+    }
+    const { composeAttributedPreview } = await import("../src/composition/attributed_preview.js");
+    const qualifier = makeAssociationQualifier(QUALIFIER_PORTS(stack.installed, store));
+    const service = composeAttributedPreview({
+      projectId: "p2d1-f5",
+      controller: stack.installed.controller as never,
+      promotions: stack.installed.controller.promotions as never,
+      qualifier,
+      store,
+      sessionReader: { sourceIdentity: "fixture", evidenceClass: "DSH_QUERY_PORT_FIXTURE", async readEvents(request: { readonly sessionId: string }) { return pageFixture(request.sessionId, [{ sessionId: request.sessionId, seq: 0, type: "turn/start", inherited: false, durability: "PERSISTED_DSH_EVENT", time: 0, surface: null, summary: "s", durationMs: null, observedStatus: null }]) as never; } } as never,
+      capsuleAuthorization: { resolvePermittedOrigin: () => ({ ok: true as const, originAttemptId: attemptId, basis: "fixture lineage" }) },
+      projectEvolutionOf: async () => EMPTY_EVOLUTION,
+    });
+    const result = await service.capsuleForConsumer({ consumerAttemptId: attemptId });
+    expect(result.state).toBe("ORIGIN_NOT_SELECTED");
+    expect(result.capsule).toBeNull();
+    store.close();
   });
 });
 
 /* ================================================================== F7 */
 
-describe("F7 §9 — the whole Capsule has no enforced serialized-byte budget", () => {
-  it("DYNAMICALLY_REPRODUCED: a Capsule whose EVENT SUMMARIES fit the char budget exceeds it once serialized in bytes", () => {
+describe("F7 §9 — the whole Capsule is now bounded by SERIALIZED BYTES", () => {
+  it("CHANGED ASSERTION (P2D1 C4): the builder truncates events so the serialized Capsule fits the byte budget", () => {
     const preview = {
       canonical: { attemptState: "COMPLETED", resultRefs: [], verificationState: "NOT_OBSERVED_BY_V0", promotionState: "NOT_PROMOTED", reworkState: "NONE" },
       attempt: { historicalAuthorization: { detail: "authorized" } },
@@ -352,25 +375,69 @@ describe("F7 §9 — the whole Capsule has no enforced serialized-byte budget", 
       },
       caveats: { sourcesUnavailable: [], contradictoryObservations: [], epistemicLimits: [] },
     } as unknown as HandoffPreview;
-    const capsule = buildTrajectoryContextCapsule({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview });
-    // Every summary passes the CHAR check...
-    expect(capsule.historicalExecution.events.every((event) => event.summary.length <= TRAJECTORY_CAPSULE_LIMITS.maxEventSummaryChars)).toBe(true);
-    // ...but the SERIALIZED Capsule is far larger than the declared char budget, because chars ≠ bytes.
-    const bytes = trajectoryCapsuleBytes(capsule);
-    expect(bytes).toBeGreaterThan(TRAJECTORY_CAPSULE_LIMITS.maxTotalChars);
+    const outcome = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 4_096 } });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) throw new Error("unreachable");
+    // The WHOLE serialized Capsule fits the budget, measured in bytes.
+    expect(outcome.serializedBytes).toBeLessThanOrEqual(4_096);
+    expect(trajectoryCapsuleBytes(outcome.capsule)).toBeLessThanOrEqual(4_096);
+    // Events were omitted to make it fit, and the truncation is reported.
+    expect(outcome.capsule.truncation.truncated).toBe(true);
+    expect(outcome.capsule.historicalExecution.omittedEventCount).toBeGreaterThan(0);
+    // Essential provenance is NOT truncated away.
+    expect(outcome.capsule.authority).toBe("READ_ONLY_INSPECTION");
+    expect(outcome.capsule.framing).toBe("HISTORICAL_DATA_NOT_INSTRUCTIONS");
+    expect(outcome.capsule.attribution.bindingStatus).toBe("BOUND_VERIFIED");
+  });
+
+  it("CHANGED ASSERTION (P2D1 C4): an over-large essential metadata block returns an explicit refusal", () => {
+    const preview = {
+      canonical: { attemptState: "COMPLETED", resultRefs: [], verificationState: "NOT_OBSERVED_BY_V0", promotionState: "NOT_PROMOTED", reworkState: "NONE" },
+      attempt: { historicalAuthorization: { detail: "authorized" } },
+      projectContext: { projectionRootId: null, projectionSemanticDigest: null, workSequence: null, projectIrRevision: null, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [], projectionFailureOrigin: null },
+      attribution: { eventPageCoverage: "FULL" },
+      execution: { events: [], bindingSource: "CANONICAL_ATTEMPT_BINDING", bindingDetail: "d", dshSessionId: "s", portInvocationId: "i", sessionBindingStatus: "BOUND_VERIFIED", readWatermark: null, returnedPageSize: 0 },
+      caveats: { sourcesUnavailable: [], contradictoryObservations: [], epistemicLimits: [] },
+    } as unknown as HandoffPreview;
+    // A budget far below the essential floor.
+    const outcome = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 16 } });
+    expect(outcome.ok).toBe(false);
+    if (outcome.ok) throw new Error("unreachable");
+    expect(outcome.state).toBe("CAPSULE_BUDGET_EXCEEDED");
+    // The unchecked builder throws rather than fabricating a Capsule that drops required provenance.
+    expect(() => buildTrajectoryContextCapsule({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 16 } })).toThrow(CapsuleBudgetExceededError);
+  });
+
+  it("CHANGED ASSERTION (P2D1 C4): a caller cannot RAISE the product ceiling", () => {
+    const preview = {
+      canonical: { attemptState: "COMPLETED", resultRefs: [], verificationState: "NOT_OBSERVED_BY_V0", promotionState: "NOT_PROMOTED", reworkState: "NONE" },
+      attempt: { historicalAuthorization: { detail: "authorized" } },
+      projectContext: { projectionRootId: null, projectionSemanticDigest: null, workSequence: null, projectIrRevision: null, selectedRelations: [], quarantinedRelations: [], unresolvedReferences: [], currentnessCaveats: [], projectionFailureOrigin: null },
+      attribution: { eventPageCoverage: "FULL" },
+      execution: { events: [], bindingSource: "CANONICAL_ATTEMPT_BINDING", bindingDetail: "d", dshSessionId: "s", portInvocationId: "i", sessionBindingStatus: "BOUND_VERIFIED", readWatermark: null, returnedPageSize: 0 },
+      caveats: { sourcesUnavailable: [], contradictoryObservations: [], epistemicLimits: [] },
+    } as unknown as HandoffPreview;
+    // A caller asking for an ENORMOUS budget still gets the product ceiling enforced: the reported bytes
+    // never exceed the hard ceiling, and the effective limit is clamped.
+    const outcome = buildTrajectoryContextCapsuleChecked({ consumerAttemptId: "c", originAttemptId: "o", authorizationBasis: "b", preview, limits: { maxSerializedBytes: 10_000_000 } });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) throw new Error("unreachable");
+    expect(outcome.serializedBytes).toBeLessThanOrEqual(TRAJECTORY_CAPSULE_HARD_MAX_SERIALIZED_BYTES);
   });
 });
 
 /* ================================================================== F8 */
 
-describe("F8 §9.5 — uncertainty is defaulted, not derived from source evidence", () => {
-  it("SOURCE_DEMONSTRATED: otherInvocationsUnresolved is hard-coded [] and durability defaults to UNKNOWN", () => {
+describe("F8 §9.5 — uncertainty is derived from source evidence", () => {
+  it("CHANGED ASSERTION (P2D1 C4): otherInvocationsUnresolved and the durability/inherited counts come from the admission", () => {
     const preview = readRepo("src/composition/attributed_preview.ts")!;
     const capsule = readRepo("src/trajectory/context_capsule.ts")!;
-    expect(preview).toContain("otherInvocationsUnresolved: []");
-    expect(capsule).toContain("syntheticRecoveryEventCount: null");
-    expect(capsule).toContain("inheritedEventCount: null");
-    expect(capsule).toContain('durability: input.durability ?? "UNKNOWN"');
+    // The hard-coded empty array is gone; the unresolved set is derived from the qualification.
+    expect(preview).not.toContain("otherInvocationsUnresolved: [],");
+    expect(preview).toContain("otherInvocationsUnresolved: Object.freeze(qualification.qualifications.filter");
+    // The counts come from the page/input, not constants.
+    expect(capsule).toContain("syntheticRecoveryEventCount: input.attributionProvenance?.syntheticRecoveryEventCount ?? null");
+    expect(capsule).toContain("inheritedEventCount: input.attributionProvenance?.inheritedEventCount ?? null");
   });
 });
 
