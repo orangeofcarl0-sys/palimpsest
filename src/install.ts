@@ -308,6 +308,19 @@ export function installPalimpsest(
       dshSessionsRoot: options.dshSessionsRoot,
       sessionReaderModule: options.sessionReaderModule,
       workWorkerPort: options.workWorkerPort,
+      ...(options.historicalEpochs === undefined ? {} : { historicalEpochs: options.historicalEpochs }),
+      /**
+       * P2-D0 §8.3: the cross-owner reads the T0 project-evolution projection consumes, so the attributed
+       * Preview presents the real projection rather than an empty one. These are the SAME owners the V0
+       * trajectory composition uses; an absent owner is reported by the projection's own basis vector.
+       */
+      trajectoryOwners: {
+        reasoning: reasoningCellsInstalled?.service,
+        proof,
+        projectWorkspace,
+        journalStore: options.projectJournalStore,
+        associationStore: options.projectAssociationStore,
+      },
     },
     store,
     controller,
