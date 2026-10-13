@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_BASELINE_FALSIFIERS",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "method": "each finding is either EXECUTED against the shipped code (DYNAMICALLY_REPRODUCED) or READ from the actual source (SOURCE_DEMONSTRATED); static reasoning is never reported as a dynamic reproduction",
+  "testFile": "test/trajectory_p2d2_source_contract.test.ts",
+  "sourceMapFile": "scripts/trajectory_p2d2/source-map.mjs",
+  "classificationCounts": {
+    "DYNAMICALLY_REPRODUCED": 4,
+    "SOURCE_DEMONSTRATED": 18
+  },
+  "note": "18 findings are read from the actual source; 4 of them (F5, F7, F8, F10) are ALSO dynamically reproduced against the shipped builder. F1/F2/F11/F12/F13/F18 are corrected by C3/C4/C5; F3 by C3 (separate seam); F4 by C6; F5/F6 by C2; F7/F8/F10 by C2; F9 by C2; F14 by C7; F15/F16 by C7 information-sufficiency; F17 by C3/C4. Corrections are recorded as each stage lands; each falsifier test carries a CHANGED ASSERTION marker where its baseline expectation is flipped.",
+  "findings": {
+    "F1_capsuleNotRenderedIntoWorkTask": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "workTaskReadsTrajectoryCapsule": false,
+      "workTaskReadsContinuation": true,
+      "workTaskReadsIndexText": true,
+      "promptBuiltFromWorkTask": true,
+      "note": "the baseline first engineering UserMessage is `workTask(environment.context, indexTextForPrompt)`. workTask() reads the task half, the PriorResultContext continuation and the pull index, but NEVER context.compiled?.trajectoryCapsule. The P2-D1 Capsule therefore reaches the worker PROCESS but is dropped before the prompt is composed — the PRIMARY D2 source gap"
+    },
+    "F2_rawWorkerContextIsNotModelVisibility": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "payloadCarriesContext": true,
+      "payloadShipsContextObject": true,
+      "hostReadsContextFromFile": true,
+      "hostDropsUnrenderedContext": true,
+      "note": "`workWorkerEnvironmentPayload()` returns the FULL attempt context as JSON, and the host adapter forwards `raw.context` to the runner as `environment.context`. JSON transport into the worker PROCESS is not model visibility: only what `workTask()` renders into the UserMessage text is seen by the model"
+    },
+    "F3_r2ePreworkIsADistinctFactor": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "e1PullsCompiledHandles": true,
+      "e1RendersPulledBodies": true,
+      "efficacyEnvIsItsOwnSeam": true,
+      "note": "R2-E's E1 treatment pulls the attempt's compiled HANDLES through the governed pull tool and renders their BODIES (Proof/Reasoning/Procedure capital). A Trajectory Capsule is a different object: a bounded projection of ONE qualified prior Attempt's execution evidence. Conflating them would silently merge two experimental factors"
+    },
+    "F4_deploymentProfileCannotEnableDelivery": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "installOptionExists": true,
+      "launchPropagatesFlag": false,
+      "profileHasField": false,
+      "profileParserIsStrict": true,
+      "note": "the expert `installPalimpsest()` accepts `experimentalTrajectoryContextDelivery`, but the normal `launchDeployment()` profile path neither propagates it nor declares a profile field, and `parseDeploymentProfile()` is strict exact-key. A normal packaged deployment CANNOT enable the experimental capability"
+    },
+    "F5_durabilityIsCallerSupplied": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "capsuleDurabilityFromInput": true,
+      "capsuleForConsumerTakesDurability": true,
+      "dynamicEvidence": "buildTrajectoryContextCapsuleChecked with durability:'DURABLE' over a fixture whose trusted source is EPHEMERAL records attribution.durability === 'DURABLE'; with no durability it records 'UNKNOWN'",
+      "note": "`assembleCapsule()` sets `attribution.durability = input.durability ?? 'UNKNOWN'`, and `capsuleForConsumer()` accepts a caller-supplied `durability`. Nothing ties the recorded Durability to the ACTUAL trusted Association/Store qualification, so a caller can present historical evidence as durable"
+    },
+    "F6_productDeliveryDoesNotDeriveDurability": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "deliveryProviderPassesDurability": false,
+      "compositionKnowsStoreDurability": true,
+      "qualifierExposesDurability": true,
+      "note": "the product-composed delivery provider calls `capsuleForConsumer({ consumerAttemptId })` with NO durability, so the delivered Capsule records UNKNOWN — even though the composition ALREADY derived `storeDurability` and the Qualifier ALREADY exposes the real `durability`"
+    },
+    "F7_nonfiniteBudgetNotValidated": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "effectiveLimitsClampsOnly": true,
+      "effectiveLimitsRejectsNonfinite": false,
+      "dynamicEvidence": "buildTrajectoryContextCapsuleChecked with limits.maxSerializedBytes = NaN returns ok:true with serializedBytes 2620 — the whole-byte comparison is bypassed. Infinity is silently reduced to the ceiling by Math.min",
+      "note": "`Math.max(0, Math.min(NaN, ceiling))` is NaN and `bytes > NaN` is always false, so a NaN budget disables the bound. TypeScript's `number` provides no runtime validation"
+    },
+    "F8_legacyMaxTotalCharsNotEnforced": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "legacyFieldDeclared": true,
+      "builderSumsSummaryChars": false,
+      "dynamicEvidence": "buildTrajectoryContextCapsuleChecked with limits.maxTotalChars = 10 over five 40-char summaries returns ok:true with a total summary length of 200 characters",
+      "note": "`maxTotalChars` is DECLARED as the sum of event-summary character lengths, but no code sums summary lengths against it. The field is a documented constraint that is silently ignored"
+    },
+    "F9_ingestionOutcomeContractMismatch": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "declaredOutcomeIsRecorded": true,
+      "storeReturnsAppended": true,
+      "recorderCastsOutcome": true,
+      "note": "the declared `IngestionOutcome` union is RECORDED | IDEMPOTENT | REJECTED, but the store's own append outcome is APPENDED | IDEMPOTENT and the Recorder passes it through with `as IngestionOutcome`. The declared TypeScript contract and the runtime value DISAGREE"
+    },
+    "F10_truncationNotDistinguished": {
+      "classification": "DYNAMICALLY_REPRODUCED",
+      "eventSummaryHasTruncatedFlag": true,
+      "capsuleLevelDistinguishesSummaryTruncation": false,
+      "capsuleLevelDistinguishesEssentialOverflow": false,
+      "dynamicEvidence": "a Capsule whose single event summary was clamped to 20 chars reports events[0].truncated === true but capsule.truncation.truncated === false with omittedEventCount 0",
+      "note": "the Capsule-level `truncation` block sets `truncated: omitted > 0` and mentions ONLY omitted events. A Capsule whose summaries were shortened reports `truncated: false`; a source page already PARTIAL is not separated from local truncation"
+    },
+    "F11_treatmentDeliveryFailureCanBeSilent": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "deliveryFailureContained": true,
+      "contextCarriesDeliveryState": false,
+      "note": "`workWorkerContext()` wraps the delivery provider in a try/catch and returns a context WITHOUT the Capsule on failure, with NO marker distinguishing 'no lineage' from 'authorized but materialization failed'. Because the Capsule is also not rendered (F1), a Treatment that loses its Capsule would produce a prompt indistinguishable from CONTROL"
+    },
+    "F12_noHostSectionDigest": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "hostRecordsTrajectorySectionDigest": false,
+      "hostRecordsIndexSectionDigest": true,
+      "note": "the host records a digest of the R2-M index section, but there is NO rendered Trajectory Section digest and no full UserMessage digest. Without them a reviewer cannot prove WHICH section bytes entered the actual `agent.followup()` UserMessage"
+    },
+    "F13_requestHeaderDoesNotEstablishMessageContents": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "dshSessionDeclaresUserMessage": true,
+      "productRecognizesUserMessage": false,
+      "hostReadsToolNamesFromRequestHeader": true,
+      "note": "for dsh-v0.2.0-rc.2 the model-visible surface event is `user/message`; `request/header` is a header snapshot that carries tools/model, NOT the message text. The product's RECOGNIZED_DSH_EVENT_TYPES does not even include `user/message`. Any D2 user-message proof must read the DSH session's `user/message` event directly"
+    },
+    "F14_currentRealCapsuleIsNotAFailureTreatment": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "realGateUsesRefusalProbe": true,
+      "realGateNoModelTurn": true,
+      "note": "the strongest real P2-D1 evidence is a non-model first-party Session created via the capability-refusal probe: its admitted events are session start / configuration, not a documented engineering failure. §12.2 forbids using a startup-only Session as failure-avoidance evidence"
+    },
+    "F15_sanitizerInformationLimits": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "sanitizerRetainsTypeSeqDurability": true,
+      "toolResultStatusIsNotSuccess": true,
+      "sanitizerExcludesRawContent": true,
+      "note": "`sanitizeDshEvent()` excludes raw content and retains only type, seq, turn/step structure, tool NAME, durability, inheritance and a limited structural status. For `tool/result`, `observedStatus = 'recorded'` is NOT proof the tool succeeded. A Capsule CANNOT establish what a tool returned, why a command failed, or what an assistant concluded"
+    },
+    "F16_eventWindowSufficiencyNotAssumed": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleDefaultsToMaxEvents": true,
+      "capsuleTakesPrefix": true,
+      "note": "the Capsule defaults to at most 24 events taken from the START of the read page (a prefix). Nothing establishes that the task-relevant failure evidence lies within that prefix. §11.4 requires the selection policy to be FROZEN before a utility trial"
+    },
+    "F17_modelVisibleAuthorityIsolation": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "capsuleFramingIsData": true,
+      "capsuleAuthorityIsReadOnly": true,
+      "capsuleListsDoesNotAuthorize": true,
+      "workerScopeDeniesPalimpsest": true,
+      "note": "the Capsule already carries framing/authority/doesNotAuthorize, and the worker's scope denies the inherited `palimpsest_` authority surface. What is NOT yet enforced is that the Capsule's TEXT reaches the model under those frames with the authority fields visible and inseparable from the content"
+    },
+    "F18_controlTreatmentDistinctionNotProven": {
+      "classification": "SOURCE_DEMONSTRATED",
+      "noTrajectoryPresentationSeam": true,
+      "experimentalSeamsAreSeparateEnv": true,
+      "note": "there is no Trajectory presentation seam at all, so the implementation cannot presently produce two arms that differ ONLY in whether the qualified Trajectory Section is present. §13 Group D requires this to be proven, not assumed, once the seam exists"
+    }
+  },
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}
