@@ -475,14 +475,17 @@ describe("F11–F14 §10–§13 — positive path, delivery, digest, qualified f
     expect(/capsuleForConsumer\([\s\S]{0,300}state\)\.toBe\("AUTHORIZED"\)/u.test(test)).toBe(true);
   });
 
-  it("CHANGED ASSERTION (P2D1 C6) F12: a Capsule NOW reaches the Worker Context boundary through the Context Owner", () => {
+  it("CHANGED ASSERTION (P2D1 C6 / P2D2 C4) F12: a Capsule reaches the Worker Context boundary AND the payload now carries its rendered presentation", () => {
     const context = readRepo("src/context/service.ts")!;
     const worker = readRepo("src/deployment/work_worker.ts")!;
     // The Context Owner now carries the experimental Attempt-bound Capsule in the worker context.
     expect(context).toContain("trajectoryCapsule");
     expect(context).toContain("trajectoryCapsuleFor");
-    // The worker payload shape is unchanged (the Capsule rides in `context.compiled`), so the host needs no change.
-    expect(/TrajectoryContextCapsule|trajectoryCapsule/u.test(worker)).toBe(false);
+    // P2-D2 C4 CORRECTION: at the P2-D1 baseline the worker payload shape was deliberately unchanged. P2-D2
+    // now forwards the PRODUCT-rendered presentation in the payload so the Host can place it in the actual
+    // UserMessage — the payload carries `trajectoryPresentation` (and its delivery state), nothing else.
+    expect(worker).toContain("trajectoryPresentation: context.compiled?.trajectoryCapsule?.presentation ?? null");
+    expect(worker).toContain("trajectoryDeliveryState");
   });
 
   it("CHANGED ASSERTION (P2D1 C6) F13: the delivery carries a digest and byte count", () => {

@@ -310,14 +310,19 @@ function assembleCapsule(input: {
   const sourcePageWasPartial = preview.attribution.eventPageCoverage !== "FULL";
   const truncation: CapsuleTruncation = Object.freeze({
     truncated: input.omitted > 0 || summariesTruncated > 0 || input.essentialMetadataExceeded === true || sourcePageWasPartial,
+    /**
+     * P2-D2 §6.6: a SHORT note. The four separated counts above are the machine-readable facts; this string
+     * is a human summary and is deliberately terse, because it counts against the Capsule's own byte budget
+     * and a verbose note would shrink the room available for actual event summaries.
+     */
     detail:
       input.omitted > 0 || summariesTruncated > 0
-        ? `the Capsule is bounded to ${String(input.limits.maxEvents)} events / ${String(input.limits.maxTotalChars)} summary characters / ${String(input.limits.maxSerializedBytes)} serialized bytes; ${String(input.omitted)} event(s) were omitted and ${String(summariesTruncated)} summary(ies) were shortened`
+        ? `${String(input.omitted)} omitted, ${String(summariesTruncated)} shortened`
         : input.essentialMetadataExceeded === true
-          ? "the essential Capsule metadata alone exceeded the byte budget"
+          ? "essential metadata exceeded the budget"
           : sourcePageWasPartial
-            ? "no local truncation occurred, but the SOURCE event page was not FULL"
-            : "no content was omitted",
+            ? "source page was not FULL"
+            : "none",
     eventOmittedCount: input.omitted,
     summaryTruncatedCount: summariesTruncated,
     essentialMetadataExceeded: input.essentialMetadataExceeded === true,
