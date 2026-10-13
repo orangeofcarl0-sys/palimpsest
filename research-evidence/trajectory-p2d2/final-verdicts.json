@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_FINAL_VERDICTS",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "branch": "trajectory-p2d2-model-visible-delivery",
+  "verdict": "TRAJECTORY_MODEL_VISIBLE_DELIVERY_QUALIFIED",
+  "secondaryVerdict": "TRAJECTORY_UTILITY_ASSAY_PROTOCOL_READY",
+  "verdictBasis": "a real Host-side model-input boundary demonstration exists (L1 Host Input Capture AND L2 real DSH user/message), with the source and runtime qualification explicitly stated. A Capsule present only in compiled.trajectoryCapsule is NOT what is claimed.",
+  "gateResults": {
+    "G0-A_sourceAndCapsuleContract": "PASS",
+    "G0-B_modelVisiblePresentation": "PASS",
+    "G0-C_deliveryProof": "PASS",
+    "G1-A_informationSufficiency": "PASS (with Target B honestly NOT ESTABLISHED)",
+    "G1-B_assayReadiness": "PASS"
+  },
+  "evidenceLevels": {
+    "L0_rendererQualification": "ESTABLISHED",
+    "L1_hostInputCapture": "ESTABLISHED",
+    "L2_dshUserMessage": "ESTABLISHED",
+    "L3_realModelUtility": "NOT_ATTEMPTED"
+  },
+  "questions": {
+    "1_doesCapsuleEnterModelVisibleUserMessageConstruction": "Yes — at the Host input-construction level (L1) and in the real DSH Session's user/message (L2).",
+    "2_isOffByteIdenticalToBaseline": "Yes — OFF places no section, and the L1 capture shows the task text is byte-identical with and without a presentation field.",
+    "3_doesControlAvoidInventedHistory": "Yes — CONTROL renders the no-history boundary with no SessionId, Origin, Result, Verification, Failure or Promotion.",
+    "4_isTreatmentGenuinelySourceQualified": "Yes — the section is the product-rendered text of the attempt's OWN authorized Capsule, whose permission comes from the consumer's canonical governed lineage.",
+    "5_isCorrectSectionInCapturedFollowupInput": "Yes — the captured agent.followup() UserMessage carries the actual section under TREATMENT.",
+    "6_doesSectionDigestMatchActualBytes": "Yes — the section digest is SHA-256 over the raw UTF-8 bytes and the host's declared digest equals the captured text's digest.",
+    "7_doesFullUserMessageDigestMatchActualBytes": "Yes — the host's userMessageDigest equals the digest of the captured UserMessage.",
+    "8_wasRealDshUserMessageVerified": "Yes — the real DSH Session's user/message event was read through DSH's own persistence under a test-owned deterministic local adapter.",
+    "9_wasAnyControlledProviderRequestInitiated": "No — the only adapter is the test-owned deterministic local one, which performs no I/O and opens no socket.",
+    "10_wasAnyExternalPaidModelRequestInitiated": "No.",
+    "11_doesDurabilityComeFromActualAssociationSourceEvidence": "Yes — the Capsule records the class the trusted Qualification established, and a caller value that disagrees is refused.",
+    "12_areNumericAndSerializedByteLimitsEnforced": "Yes — every bound is validated at runtime (finite nonnegative integer, at or below the ceiling) and the whole-Capsule serialized-byte budget is enforced, plus the legacy aggregate summary-character budget.",
+    "13_areCandidateHistoriesRelevantToProposedMeasuredFailures": "Partially — Family A and Family B candidates are source-qualified and their Capsule-visible facts stated; the failure-avoidance dimension specifically requires content the current sanitizer does not deliver, and is flagged not-currently-measurable.",
+    "14_areAtLeastTwoFutureBenchmarkFamiliesSpecified": "Yes — Governed Rework Continuation and Multi-Invocation Reconstruction.",
+    "15_hasBaselineOnlyCalibrationBeenRun": "No.",
+    "16_hasAgentUtilityBeenMeasured": "No.",
+    "17_wasPrimaryEnabled": "No.",
+    "18_wasAutomaticHandoffImplemented": "No."
+  },
+  "limitations": [
+    "L3 (real model utility) is NOT ESTABLISHED; nothing downstream of 'Model Turn started' is measured.",
+    "the combined real-DSH + real-governed A0→A1 single chain remains NOT ESTABLISHED (carried from P2-D1).",
+    "Target B (Engineering Failure Avoidance) is NOT supported by the current Capsule content.",
+    "Node 24.14.1 remains below the documented minimum >=24.15.",
+    "CAPSULE_RENDERED_FOR_WORKER / SECTION_PLACED / DSH_USER_MESSAGE_CONFIRMED are distinct from MODEL_CONSUMED_CAPSULE, which is never claimed."
+  ],
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false
+}
