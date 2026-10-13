@@ -419,10 +419,15 @@ describe("P2D0 — source-demonstrated findings (no dynamic path exists without 
     expect(preview).toMatch(/DISAGREES and is retained only as a declaration/u);
   });
 
-  it("F15 previewAttempt admits any canonical Attempt with no consumer-Attempt binding", () => {
+  it("CHANGED ASSERTION (P2D0 C6): the CONSUMER surface is now bound to a consumer Attempt", () => {
     const preview = readRepo("src/composition/attributed_preview.ts")!;
+    // The ordinary inspection surface still takes an attemptId (an operator read)...
     expect(preview).toMatch(/previewAttempt\(input: \{\s*readonly attemptId: string;/u);
-    expect(preview).not.toMatch(/consumerAttemptId/u);
+    // ...but the CONSUMER surface (the Capsule) is lineage-bound: it names the consumer attempt and
+    // refuses an origin the lineage does not permit. (At the C1 baseline there was no consumer binding.)
+    expect(preview).toMatch(/capsuleForConsumer/u);
+    expect(preview).toMatch(/consumerAttemptId/u);
+    expect(preview).toMatch(/ORIGIN_NOT_PERMITTED/u);
   });
 
   it("CHANGED ASSERTION (P2D0 C5): Deployment.installed is now the widened trajectory result", () => {
