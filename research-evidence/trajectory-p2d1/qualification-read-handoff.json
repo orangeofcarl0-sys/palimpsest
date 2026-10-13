@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_currentness.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_QUALIFICATION_READ_HANDOFF",
+  "title": "Qualification→Read handoff basis",
+  "method": "the read boundary uses chosen.relevantBasis (the qualifier own basis), not a fresh head snapshot captured after the qualifier returned",
+  "observed": "the P2-D0 headBeforeRead capture is removed; a change between qualifier-return and read-start is now detectable",
+  "expectedInvariant": "a change between Qualification returned and Event Read started must not be ignored",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material"
+}

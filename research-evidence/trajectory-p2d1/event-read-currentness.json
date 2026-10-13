@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_currentness.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_EVENT_READ_CURRENTNESS",
+  "title": "Post-Event-Read currentness over the complete basis",
+  "method": "the attributed Preview captures chosen.relevantBasis at qualification time and recomputes it after readEvents(); relevantBasisDifference() reports the first semantic difference",
+  "observed": "a new Invocation, a changed selected-invocation history, or a competing creator claim yields RACED; a duplicate identical observation and an unrelated project append do NOT",
+  "expectedInvariant": "a detected change to the basis supporting admission cannot silently produce stale SELECTED_UNIQUE or stale Session ownership",
+  "verdict": "PASS",
+  "remainingUncertainty": "this is a bounded optimistic read-check, not a distributed transaction; it does not loop and does not retry indefinitely"
+}

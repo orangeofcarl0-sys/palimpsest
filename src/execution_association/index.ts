@@ -52,7 +52,7 @@ export type { ExecutionAssociationStore, AssociationAppendOutcome } from "./stor
 export { computeTrustedSourceBasis, createExecutionAssociationRecorder, INGESTION_HEALTH_STATES } from "./ingestion.js";
 export type { ExecutionAssociationRecorder, IngestionOutcome, IngestionHealthState } from "./ingestion.js";
 
-export { ASSOCIATION_QUALIFICATION_STATES, makeAssociationQualifier } from "./qualification.js";
+export { ASSOCIATION_QUALIFICATION_STATES, makeAssociationQualifier, associationRelevantBasisOf, relevantBasisDifference } from "./qualification.js";
 export type {
   AssociationQualificationState,
   AssociationQualification,
@@ -62,6 +62,7 @@ export type {
   WorkRevalidationPort,
   DshSourceRevalidationPort,
   QualificationBasis,
+  AssociationRelevantBasis,
 } from "./qualification.js";
 
 export {

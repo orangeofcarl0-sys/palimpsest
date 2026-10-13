@@ -119,6 +119,9 @@
   "modelCallsMade": 0,
   "privateSessionsAccessed": false,
   "corrections": {
-    "F1": "C2: a durable INGESTION-INCOMPLETE marker + UNKNOWN finalization + OBSERVATION_INCOMPLETE refusal. The C1 F1 test now carries a CHANGED ASSERTION (P2D1 C2) block asserting the CORRECTED behavior."
+    "F1": "C2: a durable INGESTION-INCOMPLETE marker + UNKNOWN finalization + OBSERVATION_INCOMPLETE refusal. The C1 F1 test now carries a CHANGED ASSERTION (P2D1 C2) block asserting the CORRECTED behavior.",
+    "F2": "C3: the post-read recheck now compares the complete relevant basis; a new Invocation yields RACED. Test flipped to CHANGED ASSERTION (P2D1 C3).",
+    "F3": "C3: the post-read recheck now re-reads the cross-Attempt creator claim set; a foreign creator yields RACED. Test flipped to CHANGED ASSERTION (P2D1 C3).",
+    "F4": "C3: the read boundary now carries the qualifier relevant basis instead of a fresh head snapshot. Test flipped to CHANGED ASSERTION (P2D1 C3)."
   }
 }

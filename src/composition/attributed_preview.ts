@@ -41,6 +41,7 @@ import {
   type TrajectoryContextCapsule,
 } from "../trajectory/index.js";
 import type { AssociationQualifier, ExecutionAssociationStore, QualifiedAssociation } from "../execution_association/index.js";
+import { associationRelevantBasisOf, relevantBasisDifference } from "../execution_association/index.js";
 import { admitAttempt, attemptEvents, buildRelationContext, canonicalFactsOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
 
 /** §8.3: how the adapter selected (or refused to select) an invocation. */
@@ -292,41 +293,41 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
       const claimDisagrees = request.claimedSessionId !== undefined && request.claimedSessionId !== chosen.dshSessionId;
 
       /**
-       * §8.6 STEP 4 / P2-D0 §7.6: read ONLY the selected session, through the official reader.
+       * §8.6 STEP 4 / P2-D0 §7.6 / P2-D1 §7.2–§7.3: read ONLY the selected session, through the official reader.
        *
        * THE FINAL RELEVANT-BASIS RECHECK. The qualifier rechecked currentness BEFORE it returned, but the
-       * Event Read is asynchronous: a conflicting observation or a relevant finalization can be committed
-       * to the SAME Invocation while the page is being read (F3). The store head is captured before the
-       * read and re-checked after it; a relevant change yields an explicit RACED outcome rather than a
-       * stale admission. This is a bounded optimistic read-check, not a distributed transaction, and it
-       * does not loop.
+       * Event Read is asynchronous: a new Invocation, a competing creator claim, or a change to the selected
+       * invocation's own history can be committed while the page is being read (F2/F3), and a change between
+       * "qualifier returned" and the read can evade a check that only starts at `headBeforeRead` (F4).
+       *
+       * P2-D1 replaces the P2-D0 selected-invocation-only comparison with the COMPLETE relevant association
+       * basis the qualification itself rested on (`chosen.relevantBasis`): the whole Attempt Invocation set,
+       * the selected invocation's event set, the source-scoped foreign creator claims, the source epoch and
+       * the store head. A relevant change yields an explicit RACED outcome. This is a bounded optimistic
+       * read-check, not a distributed transaction, and it does not loop.
        */
-      const headBeforeRead = input.store.head();
-      const invocationEventIdsBefore = input.store
-        .replayForAttempt({ projectId, attemptId: request.attemptId })
-        .filter((event) => event.payload.invocationId === chosen.invocationId)
-        .map((event) => event.eventId);
+      const basisBeforeRead = chosen.relevantBasis;
       const page = await readSelectedSession(input.sessionReader, chosen.dshSessionId, request.maxEvents);
-      const headAfterRead = input.store.head();
-      const invocationEventIdsAfter = input.store
-        .replayForAttempt({ projectId, attemptId: request.attemptId })
-        .filter((event) => event.payload.invocationId === chosen.invocationId)
-        .map((event) => event.eventId);
-      const relevantChangedDuringRead =
-        headAfterRead !== headBeforeRead &&
-        (invocationEventIdsAfter.length !== invocationEventIdsBefore.length ||
-          invocationEventIdsAfter.some((eventId, index) => eventId !== invocationEventIdsBefore[index]));
-      if (relevantChangedDuringRead) {
+      const basisAfterRead = associationRelevantBasisOf({
+        store: input.store,
+        projectId,
+        attemptId: request.attemptId,
+        invocationId: chosen.invocationId,
+        dshSessionId: chosen.dshSessionId,
+        sourceEpochId: chosen.sourceEpochId,
+      });
+      const relevantChangedDuringRead = relevantBasisDifference(basisBeforeRead, basisAfterRead);
+      if (relevantChangedDuringRead !== null) {
         const binding = unboundBinding({
           projectId,
           attemptId: request.attemptId,
           viewId,
-          detail: `the association evidence for invocation ${chosen.invocationId} changed while its session page was being read, so the page is NOT admitted as current attribution`,
+          detail: `the association evidence for invocation ${chosen.invocationId} changed while its session page was being read (${relevantChangedDuringRead}), so the page is NOT admitted as current attribution`,
           claimedSessionId: request.claimedSessionId ?? null,
         });
         return Object.freeze({
           preview: buildHandoffPreview({ projectId, attemptId: request.attemptId, binding, canonical, host, projectEvolution }),
-          selection: Object.freeze({ state: "AMBIGUOUS_REQUIRES_SELECTION" as const, invocationId: null, detail: `the qualification basis for invocation ${chosen.invocationId} changed during the event read, so the preview is not bound to a stable basis` }),
+          selection: Object.freeze({ state: "AMBIGUOUS_REQUIRES_SELECTION" as const, invocationId: null, detail: `the qualification basis for invocation ${chosen.invocationId} changed during the event read (${relevantChangedDuringRead}), so the preview is not bound to a stable basis` }),
           provenance: Object.freeze({
             qualificationState: "RACED",
             sourceEpochId: chosen.sourceEpochId,
