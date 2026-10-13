@@ -45,6 +45,17 @@ export const EXECUTION_ASSOCIATION_EVENT_TYPES = [
   "SESSION_IDENTITY_OBSERVED",
   /** The Invocation's observation window reached a known terminal boundary. */
   "INVOCATION_OBSERVATION_FINALIZED",
+  /**
+   * Trajectory-P2-D1 §6: a VALID Session Identity report for this Invocation was RECEIVED by the Parent but
+   * could NOT be durably recorded. The marker carries no SessionId — the identity that failed to persist is
+   * NOT fabricated — only the fact that the Invocation's identity-observation history is incomplete.
+   *
+   * WHY IT IS DURABLE. An in-memory flag would be lost by a restart, and a later finalization (possibly by a
+   * different Recorder instance, or after cold recovery) would then record a CLOSED window over a candidate
+   * set that silently omits the lost identity (F1). A durable marker makes the incompleteness a property of
+   * the evidence, so no Recorder — present or future — can launder it into a complete candidate set.
+   */
+  "INVOCATION_INGESTION_INCOMPLETE",
 ] as const;
 export type ExecutionAssociationEventType = (typeof EXECUTION_ASSOCIATION_EVENT_TYPES)[number];
 
@@ -77,6 +88,12 @@ export const OBSERVATION_WINDOW_CLOSE_REASONS = [
   "INVOCATION_RETURNED",
   /** The Parent process itself ended before it could finalize. */
   "PARENT_TERMINATED",
+  /**
+   * Trajectory-P2-D1 §6.4: the Invocation's identity-observation history is KNOWN INCOMPLETE — a valid
+   * report was received but could not be durably recorded — so its window cannot be closed. The recorded
+   * `windowState` is `UNKNOWN`, and the window validator refuses it as a closure.
+   */
+  "INGESTION_INCOMPLETE",
   /** The window boundary could not be established. */
   "UNKNOWN",
 ] as const;
@@ -149,9 +166,32 @@ export interface InvocationObservationFinalizedPayload {
   readonly observedCandidateCount: number;
 }
 
+/**
+ * Trajectory-P2-D1 §6.2: THE PER-INVOCATION INGESTION-HEALTH MARKER.
+ *
+ * A durable record that ONE valid Session Identity report for this Invocation was received by the Parent but
+ * could not be recorded, so the Invocation's observation history is INCOMPLETE. It deliberately carries NO
+ * SessionId: the identity that failed to persist is unknown to the durable evidence and must never be
+ * fabricated. It carries only the reason, so an operator can tell a rejected append from a thrown one.
+ */
+export const INGESTION_INCOMPLETE_REASONS = ["APPEND_FAILED", "APPEND_REJECTED"] as const;
+export type IngestionIncompleteReason = (typeof INGESTION_INCOMPLETE_REASONS)[number];
+
+export interface InvocationIngestionIncompletePayload {
+  readonly schemaVersion: number;
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+  /** Why the identity could not be recorded. The SessionId itself is NOT recorded (it is not known). */
+  readonly reason: IngestionIncompleteReason;
+  /** A bounded, sanitized detail string for diagnosis. Never a SessionId, path or credential. */
+  readonly detail: string;
+}
+
 export type ExecutionAssociationPayload =
   | SessionIdentityObservedPayload
-  | InvocationObservationFinalizedPayload;
+  | InvocationObservationFinalizedPayload
+  | InvocationIngestionIncompletePayload;
 
 /** §7.1: the durable record shape the store returns. `seq` is assigned by the store on append. */
 export interface ExecutionAssociationEvent<T extends ExecutionAssociationEventType = ExecutionAssociationEventType> {
@@ -239,7 +279,8 @@ export function sourceScopeKeyOf(basis: TrustedSourceBasis): string {
  */
 export function associationEventId(input:
   | { readonly type: "SESSION_IDENTITY_OBSERVED"; readonly projectId: string; readonly attemptId: string; readonly invocationId: string; readonly dshSessionId: string }
-  | { readonly type: "INVOCATION_OBSERVATION_FINALIZED"; readonly projectId: string; readonly attemptId: string; readonly invocationId: string }): string {
+  | { readonly type: "INVOCATION_OBSERVATION_FINALIZED"; readonly projectId: string; readonly attemptId: string; readonly invocationId: string }
+  | { readonly type: "INVOCATION_INGESTION_INCOMPLETE"; readonly projectId: string; readonly attemptId: string; readonly invocationId: string }): string {
   const identity =
     input.type === "SESSION_IDENTITY_OBSERVED"
       ? { type: input.type, projectId: input.projectId, attemptId: input.attemptId, invocationId: input.invocationId, dshSessionId: input.dshSessionId }
@@ -386,8 +427,39 @@ export function parseInvocationObservationFinalized(payload: unknown): Invocatio
   });
 }
 
+/** §22–§24: the strict parser for the ingestion-incompleteness marker. It carries NO SessionId. */
+export function parseInvocationIngestionIncomplete(payload: unknown): InvocationIngestionIncompletePayload {
+  const record = strictObject(
+    payload,
+    ["schemaVersion", "projectId", "attemptId", "invocationId", "reason", "detail"],
+    ["schemaVersion", "projectId", "attemptId", "invocationId", "reason", "detail"],
+    "INVOCATION_INGESTION_INCOMPLETE",
+  );
+  if (record.schemaVersion !== EXECUTION_ASSOCIATION_SCHEMA_VERSION) {
+    throw new Error(`INVOCATION_INGESTION_INCOMPLETE has unsupported schemaVersion ${String(record.schemaVersion)}`);
+  }
+  for (const key of ["projectId", "attemptId", "invocationId"] as const) {
+    if (!isIdentifier(record[key])) throw new Error(`INVOCATION_INGESTION_INCOMPLETE field "${key}" must be a non-empty identifier`);
+  }
+  if (typeof record.reason !== "string" || !(INGESTION_INCOMPLETE_REASONS as readonly string[]).includes(record.reason)) {
+    throw new Error(`INVOCATION_INGESTION_INCOMPLETE reason must be one of ${INGESTION_INCOMPLETE_REASONS.join(", ")}`);
+  }
+  if (typeof record.detail !== "string" || record.detail.length > 400) {
+    throw new Error("INVOCATION_INGESTION_INCOMPLETE detail must be a bounded string");
+  }
+  return Object.freeze({
+    schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION,
+    projectId: record.projectId as string,
+    attemptId: record.attemptId as string,
+    invocationId: record.invocationId as string,
+    reason: record.reason as IngestionIncompleteReason,
+    detail: record.detail,
+  });
+}
+
 /** §22–§24: the per-type registry, so the store validates every artifact before any write. */
 export const EXECUTION_ASSOCIATION_EVENT_PARSERS: Readonly<Record<string, (payload: unknown) => ExecutionAssociationPayload>> = Object.freeze({
   SESSION_IDENTITY_OBSERVED: parseSessionIdentityObserved,
   INVOCATION_OBSERVATION_FINALIZED: parseInvocationObservationFinalized,
+  INVOCATION_INGESTION_INCOMPLETE: parseInvocationIngestionIncomplete,
 });

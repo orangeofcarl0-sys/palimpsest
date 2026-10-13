@@ -16,12 +16,14 @@ export {
   EXECUTION_ASSOCIATION_DOMAIN,
   EXECUTION_ASSOCIATION_EVENT_TYPES,
   EXECUTION_ASSOCIATION_EVENT_PARSERS,
+  INGESTION_INCOMPLETE_REASONS,
   OBSERVATION_WINDOW_STATES,
   OBSERVATION_WINDOW_CLOSE_REASONS,
   SOURCE_KINDS,
   associationEventId,
   parseSessionIdentityObserved,
   parseInvocationObservationFinalized,
+  parseInvocationIngestionIncomplete,
 } from "./contract.js";
 export type {
   ExecutionAssociationEventType,
@@ -30,6 +32,8 @@ export type {
   ExecutionAssociationPayload,
   SessionIdentityObservedPayload,
   InvocationObservationFinalizedPayload,
+  InvocationIngestionIncompletePayload,
+  IngestionIncompleteReason,
   ObservationWindowState,
   ObservationWindowCloseReason,
   TrustedSourceBasis,
@@ -45,8 +49,8 @@ export {
 } from "./store.js";
 export type { ExecutionAssociationStore, AssociationAppendOutcome } from "./store.js";
 
-export { computeTrustedSourceBasis, createExecutionAssociationRecorder } from "./ingestion.js";
-export type { ExecutionAssociationRecorder, IngestionOutcome } from "./ingestion.js";
+export { computeTrustedSourceBasis, createExecutionAssociationRecorder, INGESTION_HEALTH_STATES } from "./ingestion.js";
+export type { ExecutionAssociationRecorder, IngestionOutcome, IngestionHealthState } from "./ingestion.js";
 
 export { ASSOCIATION_QUALIFICATION_STATES, makeAssociationQualifier } from "./qualification.js";
 export type {
