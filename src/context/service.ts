@@ -317,6 +317,18 @@ export interface ContextService {
   workWorkerContext(attemptId: string, options?: ContextCompileOptions): Promise<WorkWorkerAttemptContext>;
   /** The task-level static half a worker receives. */
   taskContext(taskId: string): WorkWorkerTaskContext;
+  /**
+   * Trajectory-P2-D1 §10.3: THE OWNER-DERIVED GOVERNED REWORK ORIGIN.
+   *
+   * The Context Owner ALREADY resolves the governed rework lineage for an attempt (bounded by the
+   * attempt's own creation event) to compile its PriorResultContext. This exposes the SAME resolution as a
+   * narrow read, so a consumer-authorization decision reuses ONE meaning of "Governed Rework lineage"
+   * instead of maintaining a second event-log scan.
+   *
+   * Returns null when the attempt has no creation event or no governed lineage before it. It is a READ: it
+   * grants nothing and changes nothing.
+   */
+  governedReworkOriginOf(attemptId: string): { readonly originAttemptId: string; readonly reworkEventId: number; readonly originResultSubjectKind: string } | null;
 }
 
 /** The deterministic manifest identity for one attempt — the SAME key compile and fetch use. */
@@ -641,6 +653,26 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
 
     taskContext(taskId: string): WorkWorkerTaskContext {
       return taskContextOf(taskId);
+    },
+
+    /**
+     * §10.3: the SAME governed-rework lineage `compile` uses, exposed as a narrow read so consumer
+     * authorization reuses one meaning. Bounded by the attempt's own creation event, so a later Task update
+     * cannot rebind an old consumer.
+     */
+    governedReworkOriginOf(attemptId: string) {
+      const attemptRow = ports.attempt(attemptId);
+      if (attemptRow === null) return null;
+      const lineage = reworkLineageFor(attemptId, attemptRow.taskId);
+      if (lineage === undefined) return null;
+      const subject = lineage.provenance.origin_result_subject as Record<string, unknown> | undefined;
+      const ref = subject?.ref;
+      if (typeof ref !== "string" || ref.length === 0) return null;
+      return Object.freeze({
+        originAttemptId: ref,
+        reworkEventId: lineage.reworkEventId,
+        originResultSubjectKind: typeof subject?.kind === "string" ? subject.kind : "unknown",
+      });
     },
   });
 

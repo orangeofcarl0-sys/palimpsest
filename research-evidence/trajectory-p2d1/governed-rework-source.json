@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_governed_authorization.test.ts",
+  "evidenceClass": "REAL_GOVERNED_REWORK",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_GOVERNED_REWORK_SOURCE",
+  "title": "The A0 -> Rework -> A1 chain is genuine",
+  "method": "a real ProjectController drives two tasks to VERIFYING, promotes one, and governed-reopens the other through the shipped appendReworkReopening seam with a real ReworkAdmissionPermit",
+  "observed": "A0 is a canonical Attempt with a real Result; the permit is issued by the shipped authority; the landed TASK_READY carries permit-derived rework_provenance naming A0; A1 is a DISTINCT canonical Attempt created afterward",
+  "expectedInvariant": "the governed lineage is real, not hand-authored",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material"
+}
