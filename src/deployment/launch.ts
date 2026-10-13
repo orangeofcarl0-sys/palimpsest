@@ -12,7 +12,7 @@ import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
-import { installPalimpsest, type InstalledPalimpsest } from "../install.js";
+import { installPalimpsest, type InstalledPalimpsestWithTrajectory } from "../install.js";
 
 /** The commands a deployment with no policy of its own starts from. */
 const PACKAGED_DEFAULT_COMMANDS: ReadonlyArray<{ executable: string; argv_prefix: string[] }> = [
@@ -125,7 +125,12 @@ export interface DeploymentPumpReport {
 export interface Deployment {
   readonly profile: ProjectAgentDeploymentProfile;
   readonly localPeer: PeerRef;
-  readonly installed: InstalledPalimpsest;
+  /**
+   * P2-D0 §9.8: the WIDENED installed surface, so the runtime capability this deployment composes
+   * (the read-only attributed Preview, the execution-association recorder and qualifier, and the
+   * composed Work Delegation service) is statically reachable rather than only present at run time.
+   */
+  readonly installed: InstalledPalimpsestWithTrajectory;
   readonly transport: DurableOperationTransport;
   readonly pump: FederationInboundPump;
   readonly attention?: AttentionService | undefined;

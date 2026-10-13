@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "ephemeral versus durable boundary",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F9",
+  "defect": "the composition accepted databasePath ':memory:' and the qualifier still set verification VERIFIED with a durableBindingRef, so an in-memory store produced a durable-looking verified binding that cannot survive process termination",
+  "correction": {
+    "qualificationDurability": "src/execution_association/qualification.ts — QualifiedAssociation carries durability DURABLE | EPHEMERAL and the qualifier exposes the same value; makeAssociationQualifier defaults to DURABLE and the product composition passes EPHEMERAL when the derived path is ':memory:'",
+    "productWiring": "src/composition/execution_association.ts — storeDurability = storePath === ':memory:' ? 'EPHEMERAL' : 'DURABLE'",
+    "consumerRule": "a caller that REQUIRES cold-recoverable authority refuses an EPHEMERAL qualification; the value travels on the result rather than being inferred"
+  },
+  "evidence": {
+    "class": "DYNAMICALLY_REPRODUCED",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > P2D0 F9",
+    "observed": "an in-memory store still yields verification VERIFIED (the H1 association is assembled from real evidence), and it now ALSO carries durability EPHEMERAL, so it cannot be presented as recoverable durable authority",
+    "note": "the smallest coherent design consistent with the existing tests: the durable-binding reference is retained because it names the committed record, and the DURABILITY dimension is added beside it rather than removing the reference"
+  },
+  "expectedInvariant": "an in-memory-only association must not masquerade as cold-recoverable durability",
+  "verdict": "PASS",
+  "remainingUncertainty": "durability describes the STORE substrate; a file-backed store on a volatile filesystem is DURABLE by this classification, which is the same local-provenance limit the source basis carries",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

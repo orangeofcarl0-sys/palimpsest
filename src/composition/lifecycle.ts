@@ -53,7 +53,12 @@ export interface OwnedResource {
   /** Human-readable identity, used by the lifecycle tests. */
   readonly what: string;
   readonly ownership: LifetimeCategory;
-  readonly close: () => void;
+  /**
+   * P2-D0 §9.4: the close may be SYNCHRONOUS or ASYNCHRONOUS. A resource that owns an asynchronous
+   * teardown (the mounted DSH reader's Cordis fiber) returns a promise; the lifecycle awaits it in order.
+   * A synchronous resource keeps returning `void`, so every existing resource is unchanged.
+   */
+  readonly close: () => void | Promise<void>;
 }
 
 /**
@@ -125,8 +130,10 @@ export function composeInstalledLifecycle(input: InstalledLifecycleInput): Insta
       // 3. The controller, then the log it writes to.
       await input.controller.close();
       input.store.close();
-      // 4. The optional stores, in the recorded order.
-      for (const resource of input.ownedResources) resource.close();
+      // 4. The optional stores, in the recorded order. P2-D0 §9.4: a resource whose close is asynchronous
+      //    (the mounted DSH reader) is AWAITED here, so `dispose()` really waits for its cleanup rather
+      //    than returning while a Cordis fiber is still mounted. A synchronous resource is unaffected.
+      for (const resource of input.ownedResources) await resource.close();
       // 5. Finally the Ordarium ledger handle, so an embedder does not leak it.
       await input.effects.close();
     },

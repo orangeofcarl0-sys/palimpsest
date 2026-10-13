@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "historical source epochs and public type compatibility",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifiers": ["F17", "F18", "F11"],
+  "defects": {
+    "F17": "the cluster accepted historical epochs but the install options did not expose them and install.ts never passed them, so a normal deployment could not supply a trusted historical epoch after an upgrade",
+    "F18": "Deployment.installed was typed InstalledPalimpsest while the runtime carried trajectory, so the capability was not statically reachable",
+    "F11": "an expert-supplied Worker Port replaced the derived one while the trusted basis and FIRST_PARTY_DSH_HOST kind still came from workWorkerBin, so a stub could borrow first-party authority"
+  },
+  "correction": {
+    "historicalEpochs": "src/composition/execution_association.ts — ExecutionAssociationInstallOptions now exposes historicalEpochs, and src/install.ts forwards them; the registry always appends the current basis, so an upgrade ADDS an epoch rather than invalidating history. A deployment that never upgraded supplies nothing, which is the honest default",
+    "publicType": "src/deployment/launch.ts — Deployment.installed is typed InstalledPalimpsestWithTrajectory, so the attributed Preview, recorder, qualifier and composed Work Delegation are statically reachable",
+    "expertPortAlignment": "src/composition/execution_association.ts — an explicitly supplied Worker Port with NO explicit executionAssociationSourceKind is classified UNKNOWN, never FIRST_PARTY_DSH_HOST; a caller that really drives the configured first-party binary says so explicitly"
+  },
+  "evidence": [
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): the install surface now exposes historicalEpochs",
+      "observed": "the install option interface and install.ts both carry historicalEpochs"
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): Deployment.installed is now the widened trajectory result",
+      "observed": "launch.ts types installed as InstalledPalimpsestWithTrajectory"
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): an expert port no longer borrows a first-party basis",
+      "observed": "explicitPortWithoutKind forces UNKNOWN for an explicit port with no explicit kind"
+    },
+    {
+      "class": "CONTROLLED_FIXTURE",
+      "test": "test/architecture/composition_root_rules.test.ts",
+      "observed": "install.ts fan-out and direct-import counts remain within the SR-1 §25 A03 ceilings"
+    }
+  ],
+  "expectedInvariant": "a normal deployment must be able to supply trusted historical epochs; the extended installed capability must be statically reachable; a stub must not become first-party-qualified by borrowing the DSH Bin path",
+  "verdict": "PASS",
+  "remainingUncertainty": "full product epoch management (a durable epoch journal, migration workflow) is outside the bounded D0 scope; the supported behavior is an explicit caller-supplied epoch list, recorded here as the remaining limitation",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

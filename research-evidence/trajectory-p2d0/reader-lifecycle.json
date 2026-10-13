@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "reader lifecycle",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F10",
+  "defect": "OwnedResource.close was synchronous and the mounted DSH reader's asynchronous close was voided, so await installed.dispose() returned before the Cordis fiber was disposed",
+  "correction": {
+    "contract": "src/composition/lifecycle.ts — OwnedResource.close is now () => void | Promise<void>; the disposal loop AWAITS each resource in the recorded order, so a synchronous resource is unchanged and an asynchronous one is truly awaited",
+    "readerResource": "src/composition/execution_association.ts — the dshSessionReader owned resource returns readerHandle.close() (the promise) instead of voiding it",
+    "noNewManager": "no separate resource manager was introduced; the change is the smallest extension of the existing contract"
+  },
+  "evidence": [
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): the OwnedResource close contract now awaits an async reader close",
+      "observed": "the close signature is void | Promise<void>, the loop awaits resource.close(), and the reader resource returns the promise"
+    },
+    {
+      "class": "CONTROLLED_FIXTURE",
+      "test": "test/composition/lifecycle_ownership.test.ts",
+      "observed": "the existing disposal-order suite still passes, with the ordering (tools reverse, monitor stop, controller, store, ownedResources, effects) unchanged"
+    }
+  ],
+  "expectedInvariant": "await installed.dispose() must actually wait for the mounted Reader's cleanup; the existing synchronous-resource behavior must be preserved",
+  "verdict": "PASS",
+  "remainingUncertainty": "the reader's own close swallows a fiber-dispose failure (idempotent teardown); a failure to dispose is therefore not surfaced as an error, which matches the reader's documented close semantics",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}
