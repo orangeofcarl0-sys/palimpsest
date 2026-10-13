@@ -193,10 +193,9 @@ export interface PlanInput {
 }
 
 /**
- * G10-X TRUSTED-ONLY revision options. This is deliberately NOT part of the agent-facing `PlanInput`
- * surface: an agent can never name a head. The head advance is derived by the promotion manager's
- * canonical chain and re-validated here against the same derivation, so `headAdvance` is a redundant
- * proof of a fact the controller already owns - never a free choice.
+ * G10-X TRUSTED-ONLY revision options. Deliberately NOT part of the agent-facing `PlanInput` surface: an
+ * agent can never name a head. The head advance is derived by the promotion manager's canonical chain and
+ * re-validated here, so `headAdvance` is a redundant proof of a fact the controller already owns.
  */
 export interface TrustedPlanOptions {
   readonly headAdvance?:
@@ -237,9 +236,8 @@ export interface PlanReconciliationOutcome {
 }
 
 /**
- * Fail-closed plan-revision blocker. Nothing is written before this is thrown
- * (the reconciliation is pure), so a caller that receives it knows the work
- * graph is byte-for-byte unchanged.
+ * Fail-closed plan-revision blocker. Nothing is written before this is thrown (the reconciliation is pure),
+ * so a caller that receives it knows the work graph is byte-for-byte unchanged.
  */
 export class PlanReconciliationError extends DomainValidationError {
   readonly kind: PlanReconciliationBlockerKind;
@@ -686,6 +684,7 @@ export interface ProjectControllerOptions {
   /** Runtime attempt metering (not on-chain state); inject for budget tests. */
   budget?: BudgetLedger | undefined;
   contextKnowledge?: (() => ContextKnowledgePorts | undefined) | undefined; // E1-K §10.3 read-through provider
+  trajectoryCapsuleFor?: (() => import("../context/service.js").TrajectoryCapsuleDeliveryProvider | undefined) | undefined; // P2-D1 §11
   clock?: (() => string) | undefined;
 }
 
@@ -821,9 +820,8 @@ export class ProjectController {
       store: options.store,
     });
     /**
-     * SR-2 §十二: the context owner. Compilation, handle resolution and the composed worker
-     * context moved to `src/context/service.ts`; this controller keeps the primitives (the
-     * lexical/semantic channels, the manifest append) and delegates the decisions.
+     * SR-2 §十二: the context owner. Compilation, handle resolution and the composed worker context moved to
+     * `src/context/service.ts`; this controller keeps the primitives and delegates the decisions.
      */
     this.context = makeContextService({
       projectId: options.projectId,
@@ -845,6 +843,8 @@ export class ProjectController {
       requirementStatements: () => this.work.project().requirements.map((entry) => entry.statement),
       decisionStatements: () => this.work.project().decisions.map((entry) => entry.statement),
       ...(options.contextKnowledge === undefined ? {} : { contextKnowledge: options.contextKnowledge }), // E1-K §10.3
+      // P2-D1 §11: late-bound capsule provider; unbound ⇒ no delivery, byte-identical to before.
+      ...(options.trajectoryCapsuleFor === undefined ? {} : { trajectoryCapsuleFor: async (input: { readonly attemptId: string }) => (await options.trajectoryCapsuleFor?.()?.({ attemptId: input.attemptId })) ?? null }),
       attempt: (attemptId) => {
         const row = this.work.attempt(attemptId);
         return row === null ? null : { attemptId: row.attemptId, taskId: row.taskId, state: row.state };
@@ -1250,8 +1250,8 @@ export class ProjectController {
         );
       }
     }
-    // H1 §3.4 genesis: the default role table is itself a declaration on the
-    // log, so the previous hardcoded defaults remain replayable facts.
+    // H1 §3.4 genesis: the default role table is itself a declaration on the log, so the previous
+    // hardcoded defaults remain replayable facts.
     this.declareRoleTable({
       roles: Object.entries(DEFAULT_ROLE_SLOTS).map(([role, slots]) => ({ role, slots })),
       hardCap: DEFAULT_HARD_CAP,

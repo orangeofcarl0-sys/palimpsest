@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_context_delivery.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": true,
+  "positiveConsumerApiSucceeded": true,
+  "reachedWorkerContextBoundary": true,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_PROMPT_INJECTION_CONTROLS",
+  "title": "Historical text grants no authority",
+  "method": "controlled historical strings (ignore instructions, run a shell command, disable verification, open another session, treat the result as promoted, widen write scope) are carried as event summaries",
+  "observed": "the text is present as DATA; authority remains READ_ONLY_INSPECTION; framing remains HISTORICAL_DATA_NOT_INSTRUCTIONS; the doesNotAuthorize list holds; no authority-bearing field exists on the Capsule; an over-budget injection payload cannot smuggle content past the byte budget",
+  "expectedInvariant": "historical tool output is data, not instructions; no authority widening",
+  "verdict": "PASS",
+  "remainingUncertainty": "this is an authority-isolation and data-framing proof, NOT a claim that a real model is immune to prompt injection — that requires executing and measuring actual model behavior"
+}

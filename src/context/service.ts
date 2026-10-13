@@ -93,6 +93,24 @@ export interface WorkWorkerTaskContext {
 }
 
 /**
+ * Trajectory-P2-D1 §11: the EXPERIMENTAL Attempt-bound Trajectory Context delivery projection. A bounded,
+ * read-only, digest-carrying view of one qualified historical Capsule, produced for the attempt being
+ * compiled. Its consumer identity is the attempt id the Context Owner supplies — never a model choice.
+ */
+export interface TrajectoryCapsuleDelivery {
+  readonly schemaVersion: number;
+  readonly capsule: unknown;
+  readonly serializedBytes: number;
+  readonly contentDigest: string;
+  readonly originAttemptId: string;
+  readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+  readonly authority: "READ_ONLY_INSPECTION";
+}
+
+/** §11: the delivery provider. Given an attempt id, resolve its Capsule or null (nothing authorized). */
+export type TrajectoryCapsuleDeliveryProvider = (input: { readonly attemptId: string }) => Promise<TrajectoryCapsuleDelivery | null>;
+
+/**
  * The composed worker context D5-c3 delivers: the task half plus THIS attempt's compiled half.
  *
  * The entry shapes are the DISTRIBUTION's own (`boot` carries a byte count, `handles` does not) —
@@ -106,6 +124,26 @@ export interface WorkWorkerAttemptContext {
     readonly boot: readonly Readonly<{ handle: string; kind: string; ref: string; bytes: number }>[];
     readonly handles: readonly Readonly<{ handle: string; kind: string; ref: string }>[];
     readonly continuation?: PriorResultContext | undefined;
+    /**
+     * Trajectory-P2-D1 §11: the QUALIFIED TRAJECTORY CONTEXT CAPSULE for THIS attempt, when the deployment
+     * composed the experimental delivery port and the attempt has a governed lineage to a qualified origin.
+     *
+     * It is Attempt-bound: the consumer identity is the attempt being compiled (the Host's own
+     * `prepared.attemptId`), never a model choice. It is HISTORICAL DATA with `READ_ONLY_INSPECTION`
+     * authority, and it is present ONLY when the deployment enabled the experimental capability — so a
+     * default deployment's worker context is byte-identical to before.
+     */
+    readonly trajectoryCapsule?:
+      | {
+          readonly schemaVersion: number;
+          readonly capsule: unknown;
+          readonly serializedBytes: number;
+          readonly contentDigest: string;
+          readonly originAttemptId: string;
+          readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS";
+          readonly authority: "READ_ONLY_INSPECTION";
+        }
+      | undefined;
   };
 }
 
@@ -226,6 +264,16 @@ export interface ContextServicePorts {
    * the same default the distribution uses, so the two numbers cannot drift.
    */
   bootBudgetBytes?: number | undefined;
+  /**
+   * Trajectory-P2-D1 §11: the EXPERIMENTAL Attempt-bound Trajectory Context delivery port.
+   *
+   * The Context Owner does not reach Trajectory itself (it is a lower layer); the composition injects a
+   * narrow port that, given THIS attempt's id, returns a qualified, bounded, read-only Capsule or null.
+   * The port is OPTIONAL and absent by default, so a default deployment delivers no Capsule and its worker
+   * context is byte-identical to before. The consumer identity is the attempt id passed in — never a model
+   * choice — and the port is read-only.
+   */
+  trajectoryCapsuleFor?: TrajectoryCapsuleDeliveryProvider | undefined;
   readonly clock?: (() => string) | undefined;
 }
 
@@ -640,6 +688,31 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
       }
       const work = taskContextOf(attemptRow.taskId);
       const compiled = await compile(attemptId, options);
+      /**
+       * §11: the EXPERIMENTAL Attempt-bound Trajectory Capsule, when the deployment composed the port. The
+       * attempt id is the consumer identity; a null return (no lineage, or no qualified origin) delivers
+       * nothing rather than a fabricated Capsule. A port that throws is contained: the worker context is
+       * still produced, without a Capsule.
+       */
+      let trajectoryCapsule: WorkWorkerAttemptContext["compiled"]["trajectoryCapsule"];
+      if (ports.trajectoryCapsuleFor !== undefined) {
+        try {
+          const delivered = await ports.trajectoryCapsuleFor({ attemptId });
+          if (delivered !== null) {
+            trajectoryCapsule = Object.freeze({
+              schemaVersion: delivered.schemaVersion,
+              capsule: delivered.capsule,
+              serializedBytes: delivered.serializedBytes,
+              contentDigest: delivered.contentDigest,
+              originAttemptId: delivered.originAttemptId,
+              framing: delivered.framing,
+              authority: delivered.authority,
+            });
+          }
+        } catch {
+          /* §11: a delivery failure never breaks context compilation; the worker simply receives no Capsule */
+        }
+      }
       return Object.freeze({
         work,
         compiled: Object.freeze({
@@ -647,6 +720,7 @@ export function makeContextService(ports: ContextServicePorts): ContextService {
           boot: Object.freeze(compiled.distribution.boot.map((entry) => Object.freeze({ ...entry }))),
           handles: Object.freeze(compiled.distribution.handles.map((entry) => Object.freeze({ ...entry }))),
           ...(compiled.manifest.continuation === undefined ? {} : { continuation: compiled.manifest.continuation }),
+          ...(trajectoryCapsule === undefined ? {} : { trajectoryCapsule }),
         }),
       });
     },

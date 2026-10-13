@@ -471,16 +471,21 @@ describe("F11–F14 §10–§13 — positive path, delivery, digest, qualified f
     expect(/capsuleForConsumer\([\s\S]{0,300}state\)\.toBe\("AUTHORIZED"\)/u.test(test)).toBe(true);
   });
 
-  it("SOURCE_DEMONSTRATED F12: no Capsule reaches Compiled Context, a Handle, Context Pull or Host Prework", () => {
+  it("CHANGED ASSERTION (P2D1 C6) F12: a Capsule NOW reaches the Worker Context boundary through the Context Owner", () => {
     const context = readRepo("src/context/service.ts")!;
     const worker = readRepo("src/deployment/work_worker.ts")!;
-    expect(/TrajectoryContextCapsule|trajectoryCapsule/u.test(context)).toBe(false);
+    // The Context Owner now carries the experimental Attempt-bound Capsule in the worker context.
+    expect(context).toContain("trajectoryCapsule");
+    expect(context).toContain("trajectoryCapsuleFor");
+    // The worker payload shape is unchanged (the Capsule rides in `context.compiled`), so the host needs no change.
     expect(/TrajectoryContextCapsule|trajectoryCapsule/u.test(worker)).toBe(false);
   });
 
-  it("SOURCE_DEMONSTRATED F13: no delivery digest, byte count or before-first-turn fact is recorded", () => {
-    const capsule = readRepo("src/trajectory/context_capsule.ts")!;
-    expect(/capsuleDigest|contentDigest|deliveryDigest/u.test(capsule)).toBe(false);
+  it("CHANGED ASSERTION (P2D1 C6) F13: the delivery carries a digest and byte count", () => {
+    const context = readRepo("src/context/service.ts")!;
+    // The delivered projection carries a content digest and serialized byte count.
+    expect(context).toContain("contentDigest");
+    expect(context).toContain("serializedBytes");
   });
 
   it("SOURCE_DEMONSTRATED F14: D0 prepared a protocol and ran no trials; no fixture is yet qualified", () => {

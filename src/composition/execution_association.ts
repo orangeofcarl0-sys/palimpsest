@@ -27,6 +27,7 @@
  */
 import { dirname, join } from "node:path";
 
+import { canonicalDigest } from "../schema/canonical.js";
 import type { EventStore } from "../state/index.js";
 import type { ProjectController } from "../tools/controller.js";
 import type { ContextService } from "../context/service.js";
@@ -88,6 +89,10 @@ export interface ExecutionAssociationClusterOptions {
     readonly journalStore: import("../project_workspace/index.js").ProjectJournalStore | undefined;
     readonly associationStore: import("../project_workspace/index.js").ProjectAssetAssociationStore | undefined;
   } | undefined;
+  /** Trajectory-P2-D1 §11.5: the EXPERIMENTAL Attempt-bound delivery toggle. DEFAULT OFF. */
+  readonly experimentalTrajectoryContextDelivery?: boolean | undefined;
+  /** Trajectory-P2-D1 §9.2: an optional LOWER Capsule byte budget for the experimental delivery. */
+  readonly trajectoryCapsuleMaxSerializedBytes?: number | undefined;
 }
 
 export interface ExecutionAssociationClusterInput {
@@ -107,6 +112,14 @@ export interface ExecutionAssociationCluster {
   readonly qualifier: AssociationQualifier | undefined;
   /** §7.7: the read-only attributed Preview surface. */
   readonly trajectory: { readonly attributedPreview: AttributedPreviewService } | undefined;
+  /**
+   * Trajectory-P2-D1 §11: the Attempt-bound delivery provider for the EXPERIMENTAL capability, or undefined.
+   * Present ONLY when the deployment enabled it; the install binds it to the context owner. It resolves the
+   * consumer attempt's own Capsule through the ordinary `capsuleForConsumer` path.
+   */
+  readonly trajectoryCapsuleDelivery:
+    | ((input: { readonly attemptId: string }) => Promise<{ readonly capsule: unknown; readonly serializedBytes: number; readonly contentDigest: string; readonly originAttemptId: string; readonly framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS"; readonly authority: "READ_ONLY_INSPECTION"; readonly schemaVersion: number } | null>)
+    | undefined;
   /** §7.5: resources this cluster created and the install must close. */
   readonly ownedResources: readonly OwnedResource[];
 }
@@ -318,6 +331,7 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
       sessionSourceQualification,
       qualifier: undefined,
       trajectory: undefined,
+      trajectoryCapsuleDelivery: undefined,
       ownedResources: Object.freeze(ownedResources),
     });
   }
@@ -385,12 +399,43 @@ export function composeExecutionAssociationCluster(input: ExecutionAssociationCl
     }),
   };
 
+  /**
+   * Trajectory-P2-D1 §11.5: the EXPERIMENTAL Attempt-bound delivery provider, DEFAULT OFF.
+   *
+   * When enabled, the provider resolves the consumer attempt's OWN Capsule through the ordinary
+   * `capsuleForConsumer` path — so the consumer identity is the attempt id the Host supplies (the attempt
+   * being compiled), never a model choice — and returns a bounded, digest-carrying, read-only projection.
+   * Any refusal (no lineage, no qualified origin, over budget) returns null, so nothing is delivered rather
+   * than a fabricated or partial Capsule. It changes no authority.
+   */
+  const trajectoryCapsuleDelivery =
+    options.experimentalTrajectoryContextDelivery === true
+      ? async (input2: { readonly attemptId: string }) => {
+          const result = await trajectory.attributedPreview.capsuleForConsumer({
+            consumerAttemptId: input2.attemptId,
+            ...(options.trajectoryCapsuleMaxSerializedBytes === undefined ? {} : { limits: { maxSerializedBytes: options.trajectoryCapsuleMaxSerializedBytes } }),
+          });
+          if (result.state !== "AUTHORIZED" || result.capsule === null) return null;
+          const bytes = Buffer.byteLength(JSON.stringify(result.capsule), "utf8");
+          return Object.freeze({
+            schemaVersion: result.capsule.schemaVersion,
+            capsule: result.capsule,
+            serializedBytes: bytes,
+            contentDigest: canonicalDigest(result.capsule),
+            originAttemptId: result.capsule.originAttemptId,
+            framing: "HISTORICAL_DATA_NOT_INSTRUCTIONS" as const,
+            authority: "READ_ONLY_INSPECTION" as const,
+          });
+        }
+      : undefined;
+
   return Object.freeze({
     workWorkerPortFactory,
     recorder,
     sessionSourceQualification,
     qualifier,
     trajectory,
+    trajectoryCapsuleDelivery,
     ownedResources: Object.freeze(ownedResources),
   });
 }
@@ -438,6 +483,25 @@ export interface ExecutionAssociationInstallOptions {
    * configuration is trusted, which is the honest default for a deployment that never upgraded.
    */
   readonly historicalEpochs?: readonly TrustedSourceEpoch[] | undefined;
+  /**
+   * Trajectory-P2-D1 §11.5: the EXPERIMENTAL, non-model, DEFAULT-OFF Attempt-bound Trajectory Context
+   * delivery capability.
+   *
+   * When `true`, the install binds a provider that materializes the consumer attempt's OWN qualified
+   * Trajectory Capsule into that attempt's worker context (via `workWorkerContext`), so the correct bounded
+   * historical material reaches the trusted Worker Context boundary BEFORE the first model turn. The
+   * consumer identity is the attempt being compiled — the Host's own `prepared.attemptId` — never a model
+   * choice. It changes NO authority: the Capsule is read-only historical data.
+   *
+   * DEFAULT OFF. Absent or false ⇒ nothing is bound and the worker context is byte-identical to production.
+   * This is an EXPERIMENTAL delivery contract, deliberately separate from R2-E's efficacy env var.
+   */
+  readonly experimentalTrajectoryContextDelivery?: boolean | undefined;
+  /**
+   * P2-D1 §9.2: an optional LOWER Capsule byte budget for the experimental delivery. It can only lower the
+   * product ceiling, never raise it.
+   */
+  readonly trajectoryCapsuleMaxSerializedBytes?: number | undefined;
 }
 
 /**
