@@ -201,8 +201,8 @@ describe("F1 §6 — a failed durable append can disappear from the completeness
 
 /* ================================================================== F2 / F3 / F4 */
 
-describe("F2/F3/F4 §7 — the post-read recheck is narrower than the admission basis", () => {
-  it("DYNAMICALLY_REPRODUCED F2: a second Invocation appended during Event Read leaves SELECTED_UNIQUE", async () => {
+describe("F2/F3/F4 §7 — the post-read recheck now covers the COMPLETE relevant basis", () => {
+  it("CHANGED ASSERTION (P2D1 C3) F2: a second Invocation appended during Event Read now yields RACED, not SELECTED_UNIQUE", async () => {
     const stack = makeStack("p2d1-f2");
     const attemptId = await prepareAttempt(stack.installed, "p2d1-f2", stack.head);
     const store = new SqliteExecutionAssociationStore(":memory:");
@@ -236,13 +236,14 @@ describe("F2/F3/F4 §7 — the post-read recheck is narrower than the admission 
       projectEvolutionOf: async () => EMPTY_EVOLUTION,
     });
     const result = await service.previewAttempt({ attemptId });
-    // BASELINE DEFECT: a second Invocation appeared during the read and the selection still claims UNIQUE.
-    expect(result.selection.state).toBe("SELECTED_UNIQUE");
-    expect(result.selection.detail).toContain("no unresolved alternative exists");
+    // C3 CORRECTION: the Attempt's Invocation set grew during the read, so the page is NOT admitted as current.
+    expect(result.selection.state).toBe("AMBIGUOUS_REQUIRES_SELECTION");
+    expect(result.provenance.qualificationState).toBe("RACED");
+    expect(result.preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
     store.close();
   });
 
-  it("DYNAMICALLY_REPRODUCED F3: a foreign creator claim appended during Event Read leaves stale Session ownership", async () => {
+  it("CHANGED ASSERTION (P2D1 C3) F3: a foreign creator claim during Event Read now yields RACED, not stale ownership", async () => {
     const stack = makeStack("p2d1-f3");
     const attemptId = await prepareAttempt(stack.installed, "p2d1-f3", stack.head);
     const store = new SqliteExecutionAssociationStore(":memory:");
@@ -273,18 +274,18 @@ describe("F2/F3/F4 §7 — the post-read recheck is narrower than the admission 
       projectEvolutionOf: async () => EMPTY_EVOLUTION,
     });
     const result = await service.previewAttempt({ attemptId });
-    // BASELINE DEFECT: the competing creation claim committed during the read is not re-read, so ownership
-    // is still admitted as BOUND_VERIFIED for this attempt.
-    expect(result.selection.state).toBe("SELECTED_UNIQUE");
-    expect(result.preview.execution.sessionBindingStatus).toBe("BOUND_VERIFIED");
+    // C3 CORRECTION: the competing creation claim committed during the read IS re-read, so ownership is RACED.
+    expect(result.provenance.qualificationState).toBe("RACED");
+    expect(result.preview.execution.sessionBindingStatus).not.toBe("BOUND_VERIFIED");
     store.close();
   });
 
-  it("SOURCE_DEMONSTRATED F4: the qualification basis is not carried across the Qualification→Read handoff", () => {
+  it("CHANGED ASSERTION (P2D1 C3) F4: the qualification basis IS carried across the Qualification→Read handoff", () => {
     const preview = readRepo("src/composition/attributed_preview.ts")!;
-    expect(preview).toContain("const headBeforeRead = input.store.head();");
-    // The qualifier's own currentness basis is never consulted at the read boundary.
-    expect(/qualification\.(qualifications|basis)[\s\S]{0,400}headBeforeRead/u.test(preview)).toBe(false);
+    // The read boundary now captures the qualifier's OWN relevant basis, not a fresh head snapshot.
+    expect(preview).toContain("const basisBeforeRead = chosen.relevantBasis;");
+    expect(preview).toContain("relevantBasisDifference(basisBeforeRead, basisAfterRead)");
+    expect(preview).not.toContain("const headBeforeRead = input.store.head();");
   });
 });
 

@@ -72,6 +72,35 @@ export interface QualificationBasis {
   readonly attemptEventCount: number;
 }
 
+/**
+ * Trajectory-P2-D1 §7.1: THE COMPLETE RELEVANT ASSOCIATION BASIS.
+ *
+ * The P2-D0 post-read check compared only the SELECTED invocation's event ids. That is narrower than the
+ * admission it claims to protect (F2/F3/F4). This basis names every association fact the selection and the
+ * Session ownership actually rest on, so a read-side recheck can detect a RELEVANT change without treating
+ * an unrelated project's append as a conflict (§7.4):
+ *
+ *   · the complete known Invocation set for this Attempt;
+ *   · the SELECTED Invocation's durable event set;
+ *   · the source-scoped foreign creator claims for the Session;
+ *   · the source qualification epoch;
+ *   · the association revision/watermark (store head).
+ */
+export interface AssociationRelevantBasis {
+  /** The store head at the moment the qualification was bound. */
+  readonly storeHead: number;
+  /** Every Invocation observed for this Attempt, sorted, so a new one is a relevant change. */
+  readonly attemptInvocationIds: readonly string[];
+  /** The selected Invocation's durable event ids, in seq order. */
+  readonly selectedInvocationEventIds: readonly string[];
+  /** The source-scoped competing creator Attempts for this Session, sorted. */
+  readonly foreignCreatorAttemptIds: readonly string[];
+  /** The trusted source epoch the qualification matched. */
+  readonly sourceEpochId: string;
+  /** The deployment source-scope key the foreign-creator probe uses, so a recheck uses the SAME scope. */
+  readonly sourceScopeKey: string;
+}
+
 export interface QualifiedAssociation {
   readonly state: "ASSOCIATION_QUALIFIED";
   readonly projectId: string;
@@ -99,6 +128,11 @@ export interface QualifiedAssociation {
     readonly candidateCount: number;
     readonly currentness: QualificationBasis;
   };
+  /**
+   * Trajectory-P2-D1 §7.1: the COMPLETE relevant association basis this qualification rests on, so a
+   * read-side recheck compares like with like rather than only the selected invocation's own event ids.
+   */
+  readonly relevantBasis: AssociationRelevantBasis;
   /** §6.8: the H1-compatible association, assembled from REAL evidence — no fabricated fields. */
   readonly h1Association: AttemptSessionAssociation;
   /** §6.1: the honest limit of the local source boundary. */
@@ -139,6 +173,74 @@ export interface AssociationQualifier {
 
 const SOURCE_LIMIT =
   "the source basis is a digest of the configured executable PATHS, so this is a local trusted-composition boundary: it establishes that the deployment was configured with this executable, not that the bytes on disk were the expected ones, and it is not remote attestation";
+
+/**
+ * Trajectory-P2-D1 §7.1/§7.3: compute the COMPLETE relevant association basis for ONE selected
+ * Invocation, from the durable store. BOTH the read-side Qualifier and the attributed Preview's post-read
+ * recheck call THIS, so the two compare like with like and a change to any relevant fact is detectable.
+ *
+ * It reads only the Attempt's own rows plus the cross-Attempt creator probe for the ONE session, so an
+ * unrelated project's append never enters the basis (§7.4) and no global snapshot is taken.
+ */
+export function associationRelevantBasisOf(input: {
+  readonly store: ExecutionAssociationStore;
+  readonly projectId: string;
+  readonly attemptId: string;
+  readonly invocationId: string;
+  readonly dshSessionId: string;
+  readonly sourceEpochId: string;
+}): AssociationRelevantBasis {
+  const events = input.store.replayForAttempt({ projectId: input.projectId, attemptId: input.attemptId });
+  const attemptInvocationIds = [...new Set(events.map((event) => event.payload.invocationId))].sort();
+  const selectedInvocationEventIds = events.filter((event) => event.payload.invocationId === input.invocationId).map((event) => event.eventId);
+  const observations = events.filter(
+    (event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED",
+  );
+  const chosen = observations.find((event) => event.payload.dshSessionId === input.dshSessionId);
+  const scopeKey = chosen === undefined ? "" : sourceScopeKeyOf(chosen.payload.sourceBasis);
+  const foreignCreatorAttemptIds =
+    scopeKey === ""
+      ? []
+      : [
+          ...new Set(
+            input.store
+              .replayForSession({ projectId: input.projectId, dshSessionId: input.dshSessionId })
+              .filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED")
+              .filter((event) => event.payload.attemptId !== input.attemptId && sourceScopeKeyOf(event.payload.sourceBasis) === scopeKey)
+              .map((event) => event.payload.attemptId),
+          ),
+        ].sort();
+  return Object.freeze({
+    storeHead: input.store.head(),
+    attemptInvocationIds: Object.freeze(attemptInvocationIds),
+    selectedInvocationEventIds: Object.freeze(selectedInvocationEventIds),
+    foreignCreatorAttemptIds: Object.freeze(foreignCreatorAttemptIds),
+    sourceEpochId: input.sourceEpochId,
+    sourceScopeKey: scopeKey,
+  });
+}
+
+/**
+ * Trajectory-P2-D1 §7.3: compare two relevant bases and report the FIRST reason they differ, or null when
+ * they are equal. A difference means a RELEVANT change occurred (a new Invocation, a changed selected
+ * invocation history, or a competing creator claim), so the page must not be admitted.
+ *
+ * §7.4: the store head is used ONLY as a fast path. It is a GLOBAL watermark, so an unrelated project's
+ * append moves it without changing any fact this association rests on — that must NOT be a conflict. When
+ * the head is unchanged nothing relevant can have changed; when it moved, the SEMANTIC facts decide.
+ */
+export function relevantBasisDifference(before: AssociationRelevantBasis, after: AssociationRelevantBasis): string | null {
+  if (after.storeHead === before.storeHead) return null;
+  const sameSet = (a: readonly string[], b: readonly string[]): boolean => a.length === b.length && a.every((value, index) => value === b[index]);
+  if (after.attemptInvocationIds.length !== before.attemptInvocationIds.length || !sameSet(before.attemptInvocationIds, after.attemptInvocationIds)) {
+    return `the Attempt's Invocation set changed (${before.attemptInvocationIds.length} -> ${after.attemptInvocationIds.length})`;
+  }
+  if (!sameSet(before.selectedInvocationEventIds, after.selectedInvocationEventIds)) return "the selected Invocation's durable event set changed";
+  if (after.foreignCreatorAttemptIds.length > before.foreignCreatorAttemptIds.length || !sameSet(before.foreignCreatorAttemptIds, after.foreignCreatorAttemptIds)) {
+    return "a competing source-scoped creator claim for the Session appeared";
+  }
+  return null;
+}
 
 function observedEvents(events: readonly ExecutionAssociationEvent[]): readonly (ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload })[] {
   return events.filter((event): event is ExecutionAssociationEvent & { readonly payload: SessionIdentityObservedPayload } => event.type === "SESSION_IDENTITY_OBSERVED");
@@ -295,6 +397,14 @@ export function makeAssociationQualifier(input: {
     }
 
     const chosen = candidates.find((candidate) => candidate.payload.dshSessionId === sessionId)!;
+    const relevantBasis = associationRelevantBasisOf({
+      store: input.store,
+      projectId: input2.projectId,
+      attemptId: input2.attemptId,
+      invocationId: input2.invocationId,
+      dshSessionId: sessionId,
+      sourceEpochId: epochId,
+    });
     return Object.freeze({
       state: "ASSOCIATION_QUALIFIED" as const,
       projectId: input2.projectId,
@@ -314,6 +424,7 @@ export function makeAssociationQualifier(input: {
         candidateCount: candidates.length,
         currentness: Object.freeze({ storeHead: headAfter, attemptEventCount: eventsAfter.length }),
       }),
+      relevantBasis,
       h1Association: toH1Association({ payload: chosen.payload, durableBindingRef: chosen.eventId }),
       sourceLimit: SOURCE_LIMIT,
     });

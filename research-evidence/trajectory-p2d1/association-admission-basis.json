@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "testFile": "test/trajectory_p2d1_currentness.test.ts",
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_ASSOCIATION_ADMISSION_BASIS",
+  "title": "The complete relevant association basis",
+  "method": "associationRelevantBasisOf() derives, from the durable store only: the Attempt Invocation set, the selected Invocation event set, the source-scoped foreign creator claims, the source epoch and the store head",
+  "observed": "the basis reads ONLY the Attempt own rows plus the one-session creator probe; the store head is a fast path only",
+  "expectedInvariant": "the final admission basis includes every association fact the selection and Session ownership rest on",
+  "verdict": "PASS",
+  "remainingUncertainty": "the source-scope key is the adapter id plus the worker-bin digest, so it cannot distinguish two deployments sharing an adapter id and bin that write to different session roots (a pre-existing, documented limitation)"
+}
