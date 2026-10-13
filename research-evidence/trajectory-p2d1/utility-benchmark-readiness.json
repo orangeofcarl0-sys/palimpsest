@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "kind": "TRAJECTORY_P2D1_UTILITY_BENCHMARK_READINESS",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "note": "§13: D1 PREPARES an executable experimental protocol and runs NO stochastic calibration, NO Treatment trial and NO paid model call. Nothing here is an experimental result.",
+  "evidenceClass": "NOT_ESTABLISHED",
+  "targetEstimand": {
+    "estimand": "the INCREMENTAL effect of source-qualified Trajectory evidence beyond existing Context",
+    "control": "Existing Canonical Work Context + Existing PriorResultContext",
+    "treatment": "the SAME Context + a source-qualified Trajectory Capsule delivered through the attempt-bound Context boundary",
+    "explicitlyNotTheComparison": "no context versus full context"
+  },
+  "deliveryPrecondition": {
+    "mechanism": "the C6 experimental Attempt-bound delivery (install option experimentalTrajectoryContextDelivery, DEFAULT OFF), which materializes the qualified Capsule into compiled.trajectoryCapsule before the first model turn",
+    "requirement": "a Treatment trial with failed delivery must NOT be interpreted as evidence that Trajectory has no utility",
+    "requiredDistinction": [
+      "Capsule qualified",
+      "Capsule selected",
+      "Capsule materialized",
+      "Capsule delivered",
+      "Model Turn started",
+      "Model actions observed",
+      "Outcome independently judged"
+    ],
+    "currentStatus": "Capsule qualified / selected / materialized / delivered are proven by C4-C6 at the controlled and real-cold-recovery levels; Model Turn started and beyond are NOT run in this stage"
+  },
+  "candidateTaskFamilies": [
+    {
+      "id": "FamilyA",
+      "name": "Governed Rework Continuation",
+      "shape": "an Origin Attempt has real execution history and an observed failure or incomplete result; the consumer Attempt is a legitimate governed continuation (a real A0 -> Rework -> A1 lineage)",
+      "measures": [
+        "Known failure recurrence",
+        "Avoidable repeated tool actions",
+        "First useful action",
+        "Correct identification of completed versus incomplete work",
+        "Final Acceptance",
+        "Invalid authority assumptions"
+      ]
+    },
+    {
+      "id": "FamilyB",
+      "name": "Multi-Invocation Reconstruction",
+      "shape": "an Attempt has more than one execution Invocation with different qualification and coverage states (qualified, OBSERVATION_INCOMPLETE, CONFLICT)",
+      "measures": [
+        "Correct identification of observed Invocations",
+        "Distinguishing qualified and incomplete history",
+        "Recognizing missing evidence",
+        "Avoiding first/latest-session assumptions",
+        "Correct task continuation decisions"
+      ],
+      "explicitNonFixture": "a Session containing only startup configuration events is NOT an already-qualified Treatment for failure-avoidance utility"
+    }
+  ],
+  "benchmarkQualificationLaw": {
+    "source": "research-evidence/r2-vr/benchmark-qualification-law.json",
+    "requirements": [
+      "UQ-1 the baseline is neither at the floor nor at the ceiling, with room to move in BOTH directions",
+      "UQ-2 at least two outcome dimensions have variability under repetition of the control",
+      "UQ-3 at least one treatment-relevant failure class varies",
+      "UQ-4 the Capsule's own recorded method mechanically addresses an outcome that actually varies",
+      "UQ-5 success cannot hinge entirely on one unrelated residual case"
+    ],
+    "ifFixtureFailsTheLaw": "BENCHMARK_NOT_QUALIFIED",
+    "doNot": "increase the Treatment trial count to compensate for an invalid fixture",
+    "carriedForward": "R2-VR showed Scenario D was saturated (every trial 13/14 or 14/14) and its remaining variance was one unrelated case (h14); D1 must not reuse Scenario C/D merely because they are easy to run"
+  },
+  "baselineOnlyCalibration": {
+    "required": "D1 begins with baseline-only calibration before ANY Treatment execution",
+    "method": "run the control arm alone across the frozen dimensions and measure the per-dimension distribution",
+    "ifSaturated": "BENCHMARK_NOT_QUALIFIED - NOT a reason to increase the number of Treatment trials",
+    "runInD1": false
+  },
+  "frozenDimensions": [
+    "task family",
+    "initial Git state",
+    "model family and version",
+    "provider",
+    "tool capabilities",
+    "Work Scope",
+    "execution budget",
+    "context budget",
+    "Capsule format and truncation",
+    "Control/Treatment assignment",
+    "pairing and randomization",
+    "independent acceptance oracle",
+    "known failure detector",
+    "usage/cost telemetry",
+    "stop conditions"
+  ],
+  "independentOutcomeMeasures": [
+    "Final Acceptance (independent oracle)",
+    "Known Failure Recurrence (mechanical detector)",
+    "Incorrect Tool Actions",
+    "First Useful Action",
+    "Repeated Unnecessary Exploration",
+    "Historical Fact Reconstruction Accuracy",
+    "Invalid Authority Assumptions",
+    "Execution Cost",
+    "Token/Byte Cost",
+    "Retrieval/Materialization Cost",
+    "Continuation Decision Quality"
+  ],
+  "outcomeVocabulary": [
+    "BENCHMARK_QUALIFIED",
+    "BENCHMARK_NOT_QUALIFIED",
+    "DELIVERY_QUALIFIED",
+    "DELIVERY_PRECONDITION_NOT_MET",
+    "UTILITY_MEASURED",
+    "UTILITY_POSITIVE_SIGNAL",
+    "UTILITY_NEGATIVE_SIGNAL",
+    "UTILITY_INCONCLUSIVE"
+  ],
+  "requiredAuthorizationBeforeAnyTrial": [
+    "provider and model",
+    "budget",
+    "number of trials",
+    "permitted repositories/worlds",
+    "execution privileges",
+    "stop conditions"
+  ],
+  "readinessVerdict": {
+    "benchmarkDesignReady": true,
+    "deliveryMechanismQualified": true,
+    "calibrationNotYetRun": true,
+    "modelTrialsNotYetAuthorized": true,
+    "mayNotConclude": [
+      "Agent utility improved",
+      "Known failures reduced",
+      "Multi-Agent intelligence synthesis demonstrated"
+    ]
+  },
+  "stochasticTrialsRunInD1": 0,
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "primaryEnabled": false
+}

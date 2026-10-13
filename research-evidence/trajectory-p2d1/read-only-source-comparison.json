@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "kind": "TRAJECTORY_P2D1_READ_ONLY_SOURCE_COMPARISON",
+  "title": "The Capsule is read-only and the source is never mutated",
+  "method": "the Capsule builder and the delivery provider are pure reads; the attributed Preview reads through the official reader; no path writes to the DSH session source or to canonical Work",
+  "observed": "buildTrajectoryContextCapsuleChecked reads no owner and writes nothing; the delivery provider calls capsuleForConsumer (a read) and returns a frozen projection; no Session artifact or Work event is appended by any P2-D1 read path",
+  "expectedInvariant": "delivering history changes no authority-bearing state",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0
+}
