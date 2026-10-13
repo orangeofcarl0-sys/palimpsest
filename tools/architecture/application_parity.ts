@@ -411,6 +411,38 @@ export const REVIEWED_CAPABILITY_ADDITIONS: readonly { readonly name: string; re
       "existing face, surface, tool or route changes, and the face is absent where no federation " +
       "service composes.",
   },
+  {
+    name: "trajectory",
+    reason:
+      "Trajectory-P2-C §7.7. The durable execution-association store, its source-verifying qualifier " +
+      "and the official DSH session reader all existed after P2-B, but NOTHING composed them into an " +
+      "ordinary product path: a caller had to build the store, the recorder and the qualifier by hand, " +
+      "so no supported composition could produce or query real execution-association evidence. The " +
+      "packaged read-only Attributed Preview is that one path (admit the canonical Attempt ≺ qualify " +
+      "the durable association ≺ read the official DSH page ≺ validate page integrity and cross-field " +
+      "invariants), and it is INSPECTION DATA: it starts nothing, settles nothing and promotes " +
+      "nothing. Additive: no existing face, surface, tool or route changes, and the face is absent " +
+      "where no durable store composes.",
+  },
+  {
+    name: "executionAssociationRecorder",
+    reason:
+      "Trajectory-P2-C §7.3. The trusted recorder existed after P2-B but was reachable only from a " +
+      "research rig, so a normal deployment could not durably record a Parent-observed Session " +
+      "identity. This face is the SAME recorder, wired by the continuation cluster to the delegation " +
+      "service's Parent-observation boundary. Additive: it is present only when the association store " +
+      "composes, it starts nothing, and a recorder failure cannot change a job's phase or the " +
+      "canonical Work state.",
+  },
+  {
+    name: "executionAssociationQualifier",
+    reason:
+      "Trajectory-P2-C §7.5. The source-verifying qualifier existed after P2-B but was reachable only " +
+      "from a research rig, so a host could not read a qualification through a supported path. This " +
+      "face exposes the SAME read-only qualifier (durable records ≺ trusted source epochs ≺ canonical " +
+      "Work ≺ DSH header ≺ window integrity ≺ currentness). Additive: read-only, present only with the " +
+      "store, and it changes no existing contract.",
+  },
 ]);
 
 /**

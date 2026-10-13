@@ -1,27 +1,24 @@
 /**
- * Trajectory-P2-C §7 — THE EXECUTION-ASSOCIATION PRODUCT COMPOSITION.
+ * Trajectory-P2-C §7 — THE EXECUTION-ASSOCIATION PRODUCT COMPOSITION CLUSTER.
  *
- * One focused module that turns the P2-B domain into a NORMAL product capability. It owns the WIRING and
- * nothing else: the durable store, the trusted recorder, the source-verifying qualifier and the official
- * DSH reader are all the existing modules; this file decides which of them exist, in what order they are
- * created, and who closes them.
+ * ONE composition module that turns the P2-B domain into a NORMAL product capability. It owns the WIRING
+ * and nothing else: the durable store, the trusted recorder, the source-verifying qualifier, the official
+ * DSH reader, the host-derived Work Worker Port and the read-only attributed Preview are all existing
+ * modules; this file decides which of them exist, in what order they are created, and who closes them.
  *
- * WHY A SEPARATE MODULE (§7.8). `install.ts` is already ~530 lines and `install_contract.ts` is at its
- * size ceiling; the ruling asks for a small focused composition module rather than more wiring inside
- * those files. This module is the whole of the new wiring.
+ * WHY A SEPARATE MODULE (§7.8). `install.ts` must stay a COMPOSITION ROOT: bounded fan-out and no direct
+ * capability-family imports (the `SR-1 §25 A03` rule, enforced by `test/architecture/composition_root_rules`).
+ * The whole of P2-C's new wiring therefore lives HERE, and `install.ts` calls this one function.
  *
  * OWNERSHIP (§7.5). The STORE is created here and is therefore `INSTALL_CREATED_AND_MANAGED`: the install
- * closes it through its lifecycle. The RECORDER and QUALIFIER are stateless wrappers over that store, so
- * they are created here and closed by the store's own lifetime — there is nothing to dispose. The READER
- * holds a mounted Cordis persistence fiber, so it exposes `close()` and is registered as an owned
- * resource by the caller. Nothing here closes a caller-supplied store.
+ * closes it through its lifecycle. The RECORDER and QUALIFIER are stateless wrappers over that store.
+ * The READER holds a mounted Cordis fiber and exposes `close()`, registered as an owned resource. Nothing
+ * here closes a caller-supplied store.
  *
  * ABSENCE IS HONEST (§7.2). Every capability is present exactly when its real dependency exists:
- *
- *   · no `databasePath` (or `:memory:` is not requested) ⇒ still a store, because a path is derivable;
- *   · no repository/world ⇒ the WORK WORKER PORT is absent, so Work Delegation is not composed;
- *   · no DSH tree / no sessions root ⇒ the READER is absent, and the preview reports an unavailable source
- *     rather than an empty history.
+ *   · no host executable facts ⇒ no Work Worker Port ⇒ no Work Delegation, never a stub;
+ *   · no derivable durable path ⇒ no association store;
+ *   · no DSH home / sessions root ⇒ the reader is absent and the preview reports an unavailable source.
  *
  * COMPOSING THIS DOES NOT EXECUTE ANYTHING. It starts no worker, claims no attempt, schedules nothing and
  * runs no model. Execution stays with the existing Work/Continuation authority.
@@ -30,6 +27,8 @@
  */
 import { dirname, join } from "node:path";
 
+import type { EventStore } from "../state/index.js";
+import type { ProjectController } from "../tools/controller.js";
 import {
   SqliteExecutionAssociationStore,
   computeTrustedSourceBasis,
@@ -41,9 +40,13 @@ import {
   type ExecutionAssociationStore,
   type SourceKind,
   type TrustedSourceEpoch,
+  type WorkRevalidationPort,
 } from "../execution_association/index.js";
 import type { DshSessionReadPort } from "../trajectory/execution.js";
-import type { WorkRevalidationPort } from "../execution_association/index.js";
+import { dshSubprocessWorkWorkerPort } from "../deployment/work_worker.js";
+import { admitAttempt, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
+import { composeAttributedPreview, type AttributedPreviewService } from "./attributed_preview.js";
+import type { WorkDelegationService, WorkWorkerRunPort } from "../interaction/work_delegation.js";
 import type { OwnedResource } from "./lifecycle.js";
 
 /** §7.6: the official reader module, resolved as a bare specifier in production (the DSH host process has
@@ -52,41 +55,44 @@ import type { OwnedResource } from "./lifecycle.js";
  * (running outside the DSH profile) point at the same implementation by absolute path. */
 const DEFAULT_SESSION_READER_MODULE = "palimpsest-host-deployment/runtime/session_reader.js";
 
-export interface ExecutionAssociationCompositionInput {
+/** Exactly the public options this cluster may read (the `*CompositionOptions` idiom the other clusters use). */
+export interface ExecutionAssociationClusterOptions {
   readonly projectId: string;
-  /** The deployment's durable root; the association store derives its own file beside it. */
   readonly databasePath: string | undefined;
-  /** The DSH home, used to resolve the installed package root for the reader. */
-  readonly dshHomePath: string | undefined;
-  /** The DSH session root, when the deployment knows one. */
-  readonly sessionsRoot: string | undefined;
-  /** §7.1: the host's own account of the executable it configured, from its real launch facts. */
-  readonly sourceBasis: { readonly adapterId: string; readonly workerBin: string; readonly nodeExecPath: string };
+  /** §7.1: the HOST's own executable facts. Absent ⇒ no Work Worker Port, never a stub. */
+  readonly workWorkerBin: string | undefined;
+  readonly workWorkerProfile: string | undefined;
+  readonly workWorkerTimeoutMs: number | undefined;
   /** §6.1: the deployment's own classification of that executable. */
-  readonly sourceKind: SourceKind;
-  /** §6.1: historical epochs, when the deployment has run more than one configuration. */
+  readonly executionAssociationSourceKind: SourceKind | undefined;
+  /** §7.6: the DSH home and session root, when the deployment knows them. */
+  readonly dshHomePath: string | undefined;
+  readonly dshSessionsRoot: string | undefined;
+  readonly sessionReaderModule: string | undefined;
+  /** An explicitly supplied port factory overrides the host-derived one (the pre-P2-C path). */
+  readonly workWorkerPort: ((worldPath: string) => WorkWorkerRunPort) | undefined;
+  /** §6.1: historical trusted epochs, so an upgrade does not invalidate history. */
   readonly historicalEpochs?: readonly TrustedSourceEpoch[] | undefined;
-  /**
-   * §6.5: the Work revalidation port, supplied by the caller because the Work owner is composed in
-   * `install.ts` (the same reuse boundary the continuation cluster uses).
-   */
-  readonly work: WorkRevalidationPort;
-  /**
-   * §7.6: an override for the official reader module specifier. Production uses the bare package name
-   * (the DSH host has it installed); a test process outside the DSH profile points at the same file by
-   * absolute path, so there is still exactly ONE implementation.
-   */
-  readonly sessionReaderModule?: string | undefined;
 }
 
-export interface ExecutionAssociationComposition {
-  /** Absent when no durable path could be derived (a `:memory:` deployment keeps no association history). */
-  readonly store?: ExecutionAssociationStore | undefined;
-  readonly recorder?: ExecutionAssociationRecorder | undefined;
-  readonly qualifier?: AssociationQualifier | undefined;
-  /** §7.6: the official reader, or undefined when the DSH tree/sessions root is unavailable. */
-  readonly sessionReader?: DshSessionReadPort | undefined;
-  /** §7.5: resources this composition created and the install must close. */
+export interface ExecutionAssociationClusterInput {
+  readonly options: ExecutionAssociationClusterOptions;
+  readonly store: EventStore;
+  readonly controller: ProjectController;
+}
+
+export interface ExecutionAssociationCluster {
+  /** §7.1: the Work Worker Port factory for the continuation cluster, or undefined (absent is honest). */
+  readonly workWorkerPortFactory: ((worldPath: string) => WorkWorkerRunPort) | undefined;
+  /** §7.3: the trusted recorder, wired by the continuation cluster to `onCorrelatedSessionIdentity`. */
+  readonly recorder: ExecutionAssociationRecorder | undefined;
+  /** §7.4: the source-qualification label the port records, derived from the deployment's own kind. */
+  readonly sessionSourceQualification: "FIRST_PARTY_DSH_QUALIFIED" | "CONTROLLED_STUB" | "DIRECT_CHILD_IPC";
+  /** §7.5: the qualifier, exposed so a host can read qualifications directly. */
+  readonly qualifier: AssociationQualifier | undefined;
+  /** §7.7: the read-only attributed Preview surface. */
+  readonly trajectory: { readonly attributedPreview: AttributedPreviewService } | undefined;
+  /** §7.5: resources this cluster created and the install must close. */
   readonly ownedResources: readonly OwnedResource[];
 }
 
@@ -97,28 +103,46 @@ export function deriveExecutionAssociationPath(databasePath: string | undefined)
   return join(dirname(databasePath), "execution-associations.sqlite");
 }
 
+/** §7.1: map the deployment's source kind onto the port's observation-qualification label. */
+function qualificationLabelOf(kind: SourceKind): "FIRST_PARTY_DSH_QUALIFIED" | "CONTROLLED_STUB" | "DIRECT_CHILD_IPC" {
+  if (kind === "FIRST_PARTY_DSH_HOST") return "FIRST_PARTY_DSH_QUALIFIED";
+  if (kind === "CONTROLLED_STUB") return "CONTROLLED_STUB";
+  return "DIRECT_CHILD_IPC";
+}
+
 /**
  * §7.1/§7.2: derive the Work Worker Port factory from the HOST's own launch facts.
  *
  * The host already knows its DSH executable and profile name (the same facts `deriveBranchHost` uses), so
- * the port is derived from those rather than from a model-supplied path or a fabricated capability. This
- * function does NOT construct a port itself — it returns the FACTORY, and only when the host supplied real
- * facts. An absent executable or profile means the port is absent, never a stub.
- *
- * `makePort` is injected so this module needs no static dependency on the deployment layer and a test can
- * supply the shipped `dshSubprocessWorkWorkerPort` without a cycle.
+ * the port is derived from those rather than from a model-supplied path. Absent facts ⇒ absent factory.
  */
-export function deriveWorkWorkerPortFactory(input: {
-  readonly dshBin: string | undefined;
-  readonly profile: string | undefined;
-  readonly timeoutMs?: number | undefined;
-  readonly makePort: (config: { readonly dshBin: string; readonly profile: string; readonly timeoutMs?: number | undefined }) => (worldPath: string) => unknown;
-}): ((worldPath: string) => unknown) | undefined {
-  const dshBin = input.dshBin?.trim();
-  const profile = input.profile?.trim();
-  if (dshBin === undefined || dshBin.length === 0) return undefined;
-  if (profile === undefined || profile.length === 0) return undefined;
-  return input.makePort({ dshBin, profile, ...(input.timeoutMs === undefined ? {} : { timeoutMs: input.timeoutMs }) });
+function deriveWorkWorkerPortFactory(options: ExecutionAssociationClusterOptions): ((worldPath: string) => WorkWorkerRunPort) | undefined {
+  if (options.workWorkerPort !== undefined) return options.workWorkerPort;
+  const dshBin = options.workWorkerBin?.trim();
+  const profile = options.workWorkerProfile?.trim();
+  if (dshBin === undefined || dshBin.length === 0 || profile === undefined || profile.length === 0) return undefined;
+  const port = dshSubprocessWorkWorkerPort({
+    dshBin,
+    profile,
+    ...(options.workWorkerTimeoutMs === undefined ? {} : { timeoutMs: options.workWorkerTimeoutMs }),
+  });
+  return () => port;
+}
+
+/** §6.5: the Work revalidation port, reusing the ordinary Preview's exact-`ATTEMPT_CREATED` admission. */
+function makeWorkRevalidation(input: { readonly projectId: string; readonly store: EventStore; readonly controller: ProjectController }): WorkRevalidationPort {
+  return {
+    readAttempt: ({ attemptId }) => {
+      const events = input.store.listEvents(input.projectId);
+      const attemptRecord = input.controller.attemptWorkRecord(attemptId);
+      try {
+        const admitted = admitAttempt({ projectId: input.projectId, attemptId, events, record: attemptRecord });
+        return { ok: true, taskId: attemptRecord?.taskId ?? null, state: attemptRecord?.state ?? null, creationEventId: String(admitted.created.event_id) };
+      } catch (error) {
+        return { ok: false, reason: error instanceof Error ? error.message : String(error) };
+      }
+    },
+  };
 }
 
 /** §7.6: load the shipped official reader, or report absence. */
@@ -136,34 +160,40 @@ async function loadSessionReader(input: {
   }
   if (typeof module.makeRealDshSessionReader !== "function") return undefined;
   try {
-    const reader = await module.makeRealDshSessionReader({ dshHomePath: input.dshHomePath, sessionsRoot: input.sessionsRoot });
-    return reader ?? undefined;
+    return (await module.makeRealDshSessionReader({ dshHomePath: input.dshHomePath, sessionsRoot: input.sessionsRoot })) ?? undefined;
   } catch {
     return undefined;
   }
 }
 
 /**
- * §7: compose the execution-association capability.
+ * §7: compose the whole execution-association cluster.
  *
- * SYNCHRONOUS on purpose: `installPalimpsest` is synchronous, and the reader's backend mount must not make
- * the whole install async. The reader is therefore composed as a LAZY handle: the Cordis persistence
- * backend is mounted on FIRST USE, so a deployment that never reads a session pays nothing, and the
+ * SYNCHRONOUS on purpose: `installPalimpsest` is synchronous, so the reader is a LAZY handle whose Cordis
+ * backend mounts on first use. A deployment that never reads a session mounts nothing, and the
  * capability's PRESENCE is still known synchronously.
  */
-export function composeExecutionAssociationCapability(
-  input: ExecutionAssociationCompositionInput,
-): ExecutionAssociationComposition {
-  const storePath = deriveExecutionAssociationPath(input.databasePath);
+export function composeExecutionAssociationCluster(input: ExecutionAssociationClusterInput): ExecutionAssociationCluster {
+  const { options } = input;
+  const sourceKind: SourceKind = options.executionAssociationSourceKind ?? (options.workWorkerBin === undefined ? "UNKNOWN" : "FIRST_PARTY_DSH_HOST");
+  const workWorkerPortFactory = deriveWorkWorkerPortFactory(options);
+  const sessionSourceQualification = qualificationLabelOf(sourceKind);
+
   const ownedResources: OwnedResource[] = [];
 
-  /**
-   * §7.6: the reader is a lazy handle. `hasReader` is decided synchronously from the deployment's own
-   * facts (a DSH home and a sessions root), and the mount happens inside the first read.
-   */
-  const hasReader = input.dshHomePath !== undefined && input.dshHomePath.length > 0 && input.sessionsRoot !== undefined && input.sessionsRoot.length > 0;
+  /** §7.6: the reader is a lazy handle; its presence is decided synchronously from the deployment's facts. */
+  const hasReader = options.dshHomePath !== undefined && options.dshHomePath.length > 0 && options.dshSessionsRoot !== undefined && options.dshSessionsRoot.length > 0;
   let readerPromise: Promise<DshSessionReadPort | undefined> | undefined;
   let mountedReader: DshSessionReadPort | undefined;
+  const ensureReader = async (): Promise<DshSessionReadPort | undefined> => {
+    if (mountedReader !== undefined) return mountedReader;
+    if (readerPromise === undefined) {
+      readerPromise = loadSessionReader({ dshHomePath: options.dshHomePath, sessionsRoot: options.dshSessionsRoot, moduleSpecifier: options.sessionReaderModule ?? DEFAULT_SESSION_READER_MODULE });
+    }
+    mountedReader = await readerPromise;
+    return mountedReader;
+  };
+
   const readerHandle: DshSessionReadPort | undefined = hasReader
     ? {
         sourceIdentity: "dsh-session-persistence-jsonl",
@@ -196,62 +226,131 @@ export function composeExecutionAssociationCapability(
       }
     : undefined;
 
-  const ensureReader = async (): Promise<DshSessionReadPort | undefined> => {
-    if (mountedReader !== undefined) return mountedReader;
-    if (readerPromise === undefined) {
-      readerPromise = loadSessionReader({ dshHomePath: input.dshHomePath, sessionsRoot: input.sessionsRoot, moduleSpecifier: input.sessionReaderModule ?? DEFAULT_SESSION_READER_MODULE });
-    }
-    mountedReader = await readerPromise;
-    return mountedReader;
-  };
-
   if (readerHandle !== undefined) {
     ownedResources.push({ what: "dshSessionReader", ownership: "INSTALL_CREATED_AND_MANAGED", close: () => { void readerHandle.close?.(); } });
   }
 
-  /**
-   * §7.2: no durable path means no durable association history. This is honest absence, not a stub: the
-   * preview then reports NO_DURABLE_OBSERVATION rather than fabricating one.
-   */
+  const storePath = deriveExecutionAssociationPath(options.databasePath);
+  /** §7.2: no derivable durable path ⇒ no durable association history. Honest absence, not a stub. */
   if (storePath === undefined) {
-    return Object.freeze({ ...(readerHandle === undefined ? {} : { sessionReader: readerHandle }), ownedResources: Object.freeze(ownedResources) });
+    return Object.freeze({
+      workWorkerPortFactory,
+      recorder: undefined,
+      sessionSourceQualification,
+      qualifier: undefined,
+      trajectory: undefined,
+      ownedResources: Object.freeze(ownedResources),
+    });
   }
 
-  const store = new SqliteExecutionAssociationStore(storePath);
-  ownedResources.push({ what: "executionAssociationStore", ownership: "INSTALL_CREATED_AND_MANAGED", close: () => store.close() });
+  const associationStore = new SqliteExecutionAssociationStore(storePath);
+  ownedResources.push({ what: "executionAssociationStore", ownership: "INSTALL_CREATED_AND_MANAGED", close: () => associationStore.close() });
 
-  /**
-   * §6.1: the trusted registry is built from the DEPLOYMENT's own basis and kind — never from a record and
-   * never from a handoff. Historical epochs are added so a legitimate upgrade does not invalidate history.
-   */
-  const basis = computeTrustedSourceBasis(input.sourceBasis);
+  /** §6.1: the trusted registry is built from the DEPLOYMENT's own basis and kind — never a record. */
+  const basis = computeTrustedSourceBasis({ adapterId: `dsh-subprocess-work-worker:${options.workWorkerProfile ?? "unbound"}`, workerBin: options.workWorkerBin ?? "", nodeExecPath: process.execPath });
   const registry = makeTrustedSourceRegistry({
     epochs: [
-      ...(input.historicalEpochs ?? []),
-      { epochId: `current-${basis.workerBinDigest.slice(0, 12)}`, sourceKind: input.sourceKind, sourceBasis: basis },
+      ...(options.historicalEpochs ?? []),
+      { epochId: `current-${basis.workerBinDigest.slice(0, 12)}`, sourceKind, sourceBasis: basis },
     ],
   });
 
-  const recorder = createExecutionAssociationRecorder({ store, projectId: input.projectId, sourceBasis: basis, sourceKind: input.sourceKind });
+  const recorder = createExecutionAssociationRecorder({ store: associationStore, projectId: options.projectId, sourceBasis: basis, sourceKind });
   const qualifier = makeAssociationQualifier({
-    store,
-    work: input.work,
+    store: associationStore,
+    registry,
+    work: makeWorkRevalidation({ projectId: options.projectId, store: input.store, controller: input.controller }),
     dsh: {
       readHeaderIdentity: async (sessionId) => {
-        if (readerHandle === undefined) {
-          return { readState: "READ_CAPABILITY_ABSENT" as const, header: null, detail: "no DSH session reader is composed, so no header could be read" };
-        }
+        if (readerHandle === undefined) return { readState: "READ_CAPABILITY_ABSENT" as const, header: null, detail: "no DSH session reader is composed, so no header could be read" };
         return readerHandle.readHeaderIdentity(sessionId);
       },
     },
-    registry,
   });
 
+  const trajectory = {
+    attributedPreview: composeAttributedPreview({
+      projectId: options.projectId,
+      controller: input.controller as unknown as TrajectoryV0WorkOwner,
+      promotions: input.controller.promotions as unknown as { promotionFactsSync(): readonly { readonly eventId: string; readonly promotionId: string; readonly attemptId: string; readonly sourceCommit: string; readonly expectedHeadCommit: string; readonly resultingHeadCommit: string }[] },
+      qualifier,
+      store: associationStore,
+      sessionReader: readerHandle,
+      projectEvolutionOf: async () =>
+        Object.freeze({
+          projectionRootId: null,
+          projectionSemanticDigest: null,
+          workSequence: null,
+          workEventDigest: null,
+          projectIrRevision: null,
+          selectedRelations: Object.freeze([]),
+          quarantinedRelations: Object.freeze([]),
+          unresolvedReferences: Object.freeze([]),
+          currentnessCaveats: Object.freeze(["the attributed preview does not compose the T0 project-evolution projection, so no cross-owner context is presented"]),
+          basisCompleteness: null,
+          failureOrigin: null,
+          failureKind: null,
+        }),
+    }),
+  };
+
   return Object.freeze({
-    store,
+    workWorkerPortFactory,
     recorder,
+    sessionSourceQualification,
     qualifier,
-    ...(readerHandle === undefined ? {} : { sessionReader: readerHandle }),
+    trajectory,
     ownedResources: Object.freeze(ownedResources),
   });
 }
+
+export type { ExecutionAssociationStore };
+
+/* ------------------------------------------------------------------ *
+ * §7.7 — THE INSTALL CONTRACT
+ * ------------------------------------------------------------------ */
+
+/**
+ * §7.1/§7.2: the install options this stage adds. They are declared HERE, in the cluster module, rather
+ * than in `install_contract.ts` (which sits at its §22 size ceiling) and rather than in a separate
+ * contract file (which would add an extra `install.ts` import and breach the §25 composition-root
+ * fan-out ceiling). `install.ts` widens its own option type with this interface.
+ */
+export interface ExecutionAssociationInstallOptions {
+  /**
+   * §7.1: the HOST's own account of the executable it configured for work workers. Supplying these lets
+   * the install derive a real Work Worker Port; omitting them leaves the port absent (never a stub), so
+   * Work Delegation is not composed and no worker can start.
+   */
+  readonly workWorkerBin?: string | undefined;
+  readonly workWorkerProfile?: string | undefined;
+  /** §7.2: a bounded worker wall clock; absent uses the port's own default. */
+  readonly workWorkerTimeoutMs?: number | undefined;
+  /**
+   * §6.1: how the deployment classifies the executable it configured. Defaults to `FIRST_PARTY_DSH_HOST`
+   * only when a real DSH bin was supplied; a test that drives a stub passes `CONTROLLED_STUB`.
+   */
+  readonly executionAssociationSourceKind?: SourceKind | undefined;
+  /** §7.6: the DSH home and session root, when the deployment knows them, so the reader can be composed. */
+  readonly dshHomePath?: string | undefined;
+  readonly dshSessionsRoot?: string | undefined;
+  /**
+   * §7.6: an override for the official reader module specifier. Production omits it (the bare
+   * `palimpsest-host-deployment/runtime/session_reader.js` resolves inside the DSH host process); a test
+   * process outside the DSH profile points at the same file by absolute path, so there is one reader.
+   */
+  readonly sessionReaderModule?: string | undefined;
+}
+
+/**
+ * §7.7: the install RESULT this stage adds — the read-only attributed Preview surface, the recorder the
+ * host wires, the qualifier, and the composed Work Delegation service (so a host, and the product
+ * cold-preview gate, can start real work through the ordinary product path).
+ */
+export interface ExecutionAssociationInstallResult {
+  readonly trajectory?: { readonly attributedPreview: AttributedPreviewService } | undefined;
+  readonly executionAssociationRecorder?: ExecutionAssociationRecorder | undefined;
+  readonly executionAssociationQualifier?: AssociationQualifier | undefined;
+  readonly workDelegation?: WorkDelegationService | undefined;
+}
+

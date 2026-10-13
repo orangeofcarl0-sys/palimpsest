@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_REGRESSION",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "build": { "command": "npx tsc -b", "result": "PASS", "exit": 0 },
+  "architecture": { "command": "node scripts/audit/module-architecture.mjs --check", "result": "PASS", "violations": 0, "acceptedBaselineExceptions": 9 },
+  "publicApi": { "command": "node scripts/audit/module-architecture.mjs --check-public-api", "result": "PASS", "missing": 0, "changedKind": 0, "added": 0 },
+  "focusedP2CSuites": {
+    "files": 5,
+    "tests": 57,
+    "passed": 57,
+    "failed": 0,
+    "note": "source contract, admission integrity, product composition, adversarial controls, cold preview"
+  },
+  "affectedExistingSuites": {
+    "note": "P2-A/P2-B trajectory suites, H1 durability/falsifiers/readers, V0 preview, lean delegation transport, product install, architecture composition-root and application-parity rules all pass"
+  },
+  "broadSuite": {
+    "command": "npx vitest run --maxWorkers=2 --exclude test/r3l0ciarlcf_gates.test.ts",
+    "suites": 1800,
+    "tests": 4807,
+    "passed": 4794,
+    "failed": 13,
+    "failedFiles": [
+      { "file": "test/r3l0ciarlcfsh_persisted.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlcfs_gates.test.ts", "failures": 5 },
+      { "file": "test/r3l0ciarlc_gates.test.ts", "failures": 2 },
+      { "file": "test/r3l0ciarl_gates.test.ts", "failures": 1 }
+    ],
+    "deltaVsP2BBaseline": {
+      "p2bTests": 4749,
+      "p2bFailed": 13,
+      "p2cTests": 4807,
+      "p2cFailed": 13,
+      "newTests": 58,
+      "newRegressions": 0
+    }
+  },
+  "archivedDriftClassification": {
+    "family": "r3l0ciarl*",
+    "classification": "BASELINE_REPRODUCED_DRIFT",
+    "perFileCountsIdenticalToP2AAndP2B": true,
+    "failureKinds": ["DRIFTED vs MATCH on a committed plan", "MISMATCH vs MATCH on a persisted evidence seal", "PRIMARY_PROHIBITION vs COMMITTED_PLAN_PREFLIGHT_GUARD", "STOPPED_AT_LAUNCH_BOUNDARY vs REFUSED"],
+    "evidence": "the same four files fail with the same per-file counts (5, 5, 2, 1 = 13) recorded at the P2-A baseline 39cdabc and the P2-B baseline 7e92cdc; the total test count rose by exactly the new P2-C tests",
+    "notRegenerated": true,
+    "notWeakened": true
+  },
+  "regressionsIntroducedAndFixed": [
+    {
+      "file": "test/architecture/composition_root_rules.test.ts",
+      "cause": "the first P2-C wiring added direct L2/L3 family imports and grew install.ts fan-out past 20",
+      "fix": "moved the whole wiring into src/composition/execution_association.ts, so install.ts remains a composition root (fan-out 19, three non-composition imports)",
+      "status": "FIXED"
+    },
+    {
+      "file": "test/architecture/application_parity.test.ts",
+      "cause": "three new installed capability faces",
+      "fix": "recorded them in REVIEWED_CAPABILITY_ADDITIONS with written reasons, the intended mechanism for an intentional additive face (missing keeps full teeth)",
+      "status": "FIXED"
+    },
+    {
+      "file": "test/trajectory_h0_falsifiers.test.ts",
+      "cause": "the reader implementation moved into the shipped host package per §7.6",
+      "fix": "the falsifier now reads the implementation directly",
+      "status": "FIXED"
+    }
+  ],
+  "unsafeTestExclusion": { "file": "test/r3l0ciarlcf_gates.test.ts", "reason": "§14.1 unsafe isolated-mutation path", "executed": false },
+  "resourceLimitations": { "concurrency": "--maxWorkers=2", "reason": "unrestricted Vitest concurrency exhausts memory on this Windows host" },
+  "runtimeCaveat": "Node 24.14.1 is below the README-declared >=24.15.0",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "ZERO_NEW_REGRESSIONS"
+}

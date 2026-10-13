@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_OBSERVATION_WINDOW_INTEGRITY",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "module": "src/execution_association/window_integrity.ts",
+  "closedDefects": [
+    {
+      "id": "F4",
+      "defect": "a finalization recorded BEFORE the observation it claims to close was accepted",
+      "correction": "the window is derived from the durable record ORDER: an observation after the finalization is CONTRADICTORY"
+    },
+    {
+      "id": "F5",
+      "defect": "a finalization whose observedCandidateCount disagreed with the actual candidate set was not detected",
+      "correction": "the recorded count is compared to the ACTUAL distinct candidate set derived from the records"
+    },
+    {
+      "id": "F6",
+      "defect": "the delegation collapsed close/exit/timeout/abort into one close reason",
+      "correction": "the finalization vocabulary distinguishes INVOCATION_RETURNED from PARENT_TERMINATED from UNKNOWN, and an UNKNOWN reason leaves the window OPEN rather than CLOSED"
+    }
+  ],
+  "states": ["OPEN", "CLOSED_CONSISTENT", "CONTRADICTORY", "MULTIPLE_FINALIZATIONS"],
+  "reasons": ["OBSERVATION_AFTER_FINALIZATION", "CANDIDATE_COUNT_MISMATCH", "FINALIZATION_BEFORE_FIRST_OBSERVATION", "MULTIPLE_FINALIZATIONS"],
+  "whatItDoesNotClaim": "it does not claim the IPC channel is drained; a finalization written after all observations is the strongest ordering a durable log can show, and that is exactly what is required",
+  "tests": [
+    "P2C C2 §6.6 an observation after the finalization is CONTRADICTORY",
+    "P2C C2 §6.6 a candidate-count mismatch is CONTRADICTORY",
+    "P2C C2 §6.6 a finalization with no observation at all is CONTRADICTORY",
+    "P2C C2 §6.6 a consistent closed window is CLOSED_CONSISTENT",
+    "P2C C1 F4/F5 now REFUSED"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "WINDOW_INTEGRITY_STRUCTURALLY_DERIVED"
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2C_HISTORICAL_PRODUCER_IDENTITY",
+  "stage": "Trajectory-P2-C",
+  "baseline": "7e92cdce852f24d659bd2f986ffb26db2c90231a",
+  "model": {
+    "epochs": "a LIST of trusted source epochs, each { epochId, sourceKind, sourceBasis }",
+    "upgradeBehavior": "a legitimate upgrade ADDS an epoch; existing historical associations are not invalidated",
+    "unknownHistoricalSource": "an association whose basis matches NO trusted epoch is refused, never silently treated as verified"
+  },
+  "sourceVersionChange": {
+    "doesNotRewriteHistory": true,
+    "reason": "the record's stored basis is immutable and compared against the registry; a new deployment epoch does not mutate stored records"
+  },
+  "tests": [
+    "P2C C2 §6.1 a record matching no trusted epoch is refused (NO_TRUSTED_EPOCH_MATCHES)",
+    "P2C C2 §6.1 historical compatibility — a second epoch admits a historical record without invalidating it"
+  ],
+  "evidenceClass": "CONTROLLED_FIXTURE",
+  "modelCallsMade": 0,
+  "privateSessionsAccessed": false,
+  "verdict": "HISTORICAL_IDENTITY_PRESERVED"
+}
