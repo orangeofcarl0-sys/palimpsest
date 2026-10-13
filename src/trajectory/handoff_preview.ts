@@ -670,13 +670,35 @@ export function buildHandoffPreview(input: HandoffPreviewInput): HandoffPreview 
     ...(input.sessionPage === undefined ? {} : { page: input.sessionPage }),
   });
   const invariantsRefused = !admissionInvariants.admissible;
+  /**
+   * P2-D0 §9.1: NOT EVERY REFUSAL IS A BINDING CONTRADICTION.
+   *
+   * `PAGE_SUPPLIED_WITHOUT_ADMISSION` is the ORDINARY "a page was read but no verified binding exists"
+   * case — it is exactly the unattributed read the lifecycle reports as `SESSION_READ_NOT_ATTRIBUTED`, and
+   * suppressing that would destroy a legitimate honest status. The SELF-CONTRADICTORY cases are the others:
+   * a binding whose own fields disagree (admitted without an id, BOUND_VERIFIED without an id, admitted
+   * under an unbound state, or a page naming a different session than the binding establishes).
+   */
+  const bindingContradicted = invariantsRefused && admissionInvariants.reason !== "PAGE_SUPPLIED_WITHOUT_ADMISSION";
 
   const identified = input.binding.claimedSessionId !== null || input.binding.dshSessionId !== null;
-  const sessionLifecycle = sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified, pageRefused);
+  /**
+   * P2-D0 §9.1: AN INVARIANT-REFUSED BINDING IS NOT A READ SESSION AND HAS NO ATTRIBUTED COVERAGE.
+   *
+   * The events are already withheld when the invariants fail, but the derived metadata used to be
+   * computed from the page and the admission flag alone — so a contradictory binding could still report
+   * `SESSION_READ`, `FULL` coverage and `COMPLETE` Handoff while exposing no events (F8). A refused page
+   * is not a trustworthy read: the lifecycle falls back to the claim/binding state, the attributed
+   * coverage becomes `NOT_APPLICABLE`, and completeness can no longer reach COMPLETE through it.
+   */
+  const sessionLifecycle = bindingContradicted
+    ? sessionLifecycleOf(null, input.binding.sessionReadAdmission, identified, pageRefused)
+    : sessionLifecycleOf(input.sessionPage?.readState ?? null, input.binding.sessionReadAdmission, identified, pageRefused);
   const hasCanonicalResult = input.canonical.resultRefs.length > 0;
   const hasProjectContext = input.projectEvolution.projectionRootId !== null;
 
-  const eventPageCoverage = pageIntegrity.coverage;
+  /** §9.1: a contradicted binding contributes no attributed coverage, so it cannot complete a Handoff. */
+  const eventPageCoverage = bindingContradicted ? ("NOT_APPLICABLE" as EventPageCoverage) : pageIntegrity.coverage;
 
   const completeness = previewCompletenessOf({ sessionLifecycle, hasCanonicalResult, hasProjectContext, eventPageCoverage });
   const attribution = attributionOf({

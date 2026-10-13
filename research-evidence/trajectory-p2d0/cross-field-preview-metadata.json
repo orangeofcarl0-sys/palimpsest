@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "cross-field preview metadata",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifiers": ["F8", "F14"],
+  "defects": {
+    "F8": "when cross-field admission invariants failed, the events were refused but sessionLifecycle, eventPageCoverage and completeness were computed from the page and the admission flag alone, so a contradictory binding could still report SESSION_READ + FULL + COMPLETE",
+    "F14": "a Caller Claim that differed from the verified SessionId was recorded but the discrepancy was not reported as a discrepancy"
+  },
+  "correction": {
+    "invariantGating": "src/trajectory/handoff_preview.ts — when invariantsRefused, sessionLifecycle is derived from the claim/binding state (not from the page's read state) and eventPageCoverage becomes NOT_APPLICABLE, so completeness can no longer reach COMPLETE through a refused page",
+    "claimDisagreement": "src/composition/attributed_preview.ts — when the caller's claimed id differs from the verified SessionId, a CALLER_DECLARATION evidence ref is added and the binding detail states the claim DISAGREES and is retained only as a declaration; the verified SessionId remains the only read target",
+    "epistemicNotErasure": "the read attempt, when it occurred, remains visible as non-authoritative diagnostic evidence; only its classification changes"
+  },
+  "evidence": [
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): lifecycle and coverage are now gated on the invariant verdict",
+      "observed": "the lifecycle and coverage lines consult invariantsRefused, and NOT_APPLICABLE is assigned for a refused page"
+    },
+    {
+      "class": "SOURCE_DEMONSTRATED",
+      "test": "test/trajectory_p2d0_source_contract.test.ts > CHANGED ASSERTION (P2D0 C5): a Caller Claim disagreement is now explicitly reported",
+      "observed": "claimDisagrees is computed and the detail states the claim DISAGREES and is retained only as a declaration"
+    }
+  ],
+  "expectedInvariant": "a refused page must not claim attributed FULL coverage or a COMPLETE Handoff; a Caller Claim must never become source authority and its disagreement must be explicit",
+  "verdict": "PASS",
+  "remainingUncertainty": "none material: the invariant validator is pure and its reasons are enumerated",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

@@ -46,7 +46,7 @@ function harness(options: { readonly withMonitor?: boolean; readonly owned?: rea
     owned: (options.owned ?? []).map((name) => ({
       what: name,
       ownership: "INSTALL_CREATED_AND_MANAGED" as const,
-      close: () => events.push(`close:${name}`),
+      close: () => void events.push(`close:${name}`),
     })),
     controller: { close: async () => void events.push("controller.close") },
     store: { close: () => void events.push("store.close") },
