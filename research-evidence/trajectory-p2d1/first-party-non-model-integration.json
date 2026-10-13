@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D1",
+  "baseline": "205b4131453ad369489020e055502ee52b56222f",
+  "evidenceClass": "REAL_FIRST_PARTY_DSH_NO_MODEL",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": true,
+  "governedA0A1PathReal": false,
+  "positiveConsumerApiSucceeded": false,
+  "reachedWorkerContextBoundary": false,
+  "modelTurnRan": false,
+  "privateSessionAccessed": false,
+  "modelCallsMade": 0,
+  "kind": "TRAJECTORY_P2D1_FIRST_PARTY_NON_MODEL_INTEGRATION",
+  "title": "Real first-party DSH cold recovery with the P2-D1 admission contract",
+  "testFile": "test/trajectory_p2d1_real_integration.test.ts",
+  "method": "two independent processes each composing the NORMAL product over a REAL git fixture and the REAL first-party DSH host bundle (via the test-owned capability-refusal probe); Process A records a real Session and exits; Process B recomposes, recovers the association and exercises the P2-D1 admission contract",
+  "observed": "SELECTED_UNIQUE + BOUND_VERIFIED + ADMITTED_TO_ATTEMPT with 3 real DSH events; an arbitrary attempt refuses with NO_LINEAGE; the CHECKED builder over the real recovered Preview yields a 4076-byte bounded read-only Capsule within the 4096-byte budget; the Attempt stays RUNNING (no fabricated settlement)",
+  "expectedInvariant": "real first-party DSH evidence is recovered cold and cannot produce a false complete window or a caller-created permission",
+  "verdict": "PASS",
+  "remainingUncertainty": "the combined real-DSH + real-governed single chain is NOT established: the non-model DSH probe ends in capability refusal, so its Attempt has no completed Result, and §10.5 forbids manufacturing one",
+  "evidenceLevels": {
+    "level1": "ESTABLISHED - real first-party DSH source attribution and cold recovery",
+    "level2": "ESTABLISHED (separate test) - real governed A0->A1 lineage",
+    "level3": "ESTABLISHED (separate test) - controlled positive Capsule delivery",
+    "level4": "NOT_ESTABLISHED - combined real-DSH + real-governed single chain"
+  }
+}

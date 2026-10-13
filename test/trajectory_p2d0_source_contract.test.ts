@@ -352,9 +352,10 @@ describe("P2D0 — source-demonstrated findings (no dynamic path exists without 
     const preview = readRepo("src/composition/attributed_preview.ts")!;
     expect(preview).toMatch(/const page = await readSelectedSession/u);
     const afterRead = preview.slice(preview.indexOf("const page = await readSelectedSession"));
-    // C3 CORRECTION: the store head is re-checked after the read, and a relevant change yields RACED.
-    // (At the C1 baseline there was no such check — the F3 defect.)
-    expect(afterRead.slice(0, afterRead.indexOf("const invariants"))).toMatch(/headAfterRead/u);
+    // P2-D1 C3 CORRECTION: the post-read recheck now covers the COMPLETE relevant basis (the P2-D0
+    // headBeforeRead/invocationEventIds pair was replaced by associationRelevantBasisOf + relevantBasisDifference).
+    expect(afterRead.slice(0, afterRead.indexOf("const invariants"))).toMatch(/basisAfterRead/u);
+    expect(preview).toMatch(/relevantBasisDifference\(basisBeforeRead, basisAfterRead\)/u);
     expect(preview).toMatch(/relevantChangedDuringRead/u);
     expect(preview).toMatch(/qualificationState: "RACED"/u);
   });
