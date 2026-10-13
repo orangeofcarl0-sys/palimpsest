@@ -159,16 +159,16 @@ function observeThroughTracker(input: { invocationId: string; sessionIds: readon
 /* ================================================================== F1 identity preservation */
 
 describe("P2D0 F1 — the Parent-observed A/B/C conflict disappears before durability", () => {
-  it("the tracker collapses three distinct reports to ONE observation whose id is always the first", () => {
+  it("the tracker now carries the RAW reported identity beside the cumulative first identity", () => {
     const correlated = observeThroughTracker({ invocationId: "wpi-1", sessionIds: ["worker-A", "worker-B", "worker-C"] });
-    // The port reports the tracker's `observation` on EVERY message; the tracker rebuilds it in place, so
-    // the three reports all carry the SAME dshSessionId (the first) and differ only in the conflict field.
-    expect(correlated).toHaveLength(3);
+    // C2 CORRECTION: `reportedSessionId` is the identity THIS message carried, while `dshSessionId` stays
+    // the cumulative first identity. (At the C1 baseline there was no such field, so a consumer could only
+    // ever see ["worker-A","worker-A","worker-A"] — the F1 defect.)
+    expect(correlated.map((entry) => entry.observation.reportedSessionId)).toEqual(["worker-A", "worker-B", "worker-C"]);
     expect(correlated.map((entry) => entry.observation.dshSessionId)).toEqual(["worker-A", "worker-A", "worker-A"]);
-    expect(correlated.map((entry) => entry.observation.observationState)).toEqual(["OBSERVED", "CONFLICT", "CONFLICT"]);
   });
 
-  it("the recorder persists ONLY the first identity, so the durable candidate set is {A} not {A,B,C}", () => {
+  it("CHANGED ASSERTION (P2D0 C2): the durable candidate set is now {A,B,C}, not {A}", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: PROJECT, sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     for (const entry of observeThroughTracker({ invocationId: "wpi-1", sessionIds: ["worker-A", "worker-B", "worker-C"] })) {
@@ -176,10 +176,9 @@ describe("P2D0 F1 — the Parent-observed A/B/C conflict disappears before durab
     }
     const durable = store.replayForAttempt({ projectId: PROJECT, attemptId: "attempt-a" }).filter((event) => event.type === "SESSION_IDENTITY_OBSERVED");
     const distinct = [...new Set(durable.map((event) => (event.payload as { dshSessionId: string }).dshSessionId))];
-    // THE DEFECT: B and C were really observed by the Parent and are gone from durable evidence.
-    expect(distinct).toEqual(["worker-A"]);
-    expect(distinct).not.toContain("worker-B");
-    expect(distinct).not.toContain("worker-C");
+    // C2 CORRECTION: the recorder now persists the identity THIS message reported, so B and C survive.
+    // (At the C1 baseline this set was ["worker-A"] — that is the F1 defect the source map records.)
+    expect(distinct).toEqual(["worker-A", "worker-B", "worker-C"]);
     store.close();
   });
 });
@@ -187,7 +186,7 @@ describe("P2D0 F1 — the Parent-observed A/B/C conflict disappears before durab
 /* ================================================================== F2 mixed-invocation selection */
 
 describe("P2D0 F2 — one qualified + one incomplete Invocation reports SELECTED_UNIQUE", () => {
-  it("selectInvocation returns SELECTED_UNIQUE without consulting the unresolved alternatives", async () => {
+  it("CHANGED ASSERTION (P2D0 C3): a qualified Invocation beside an unresolved one is no longer SELECTED_UNIQUE", async () => {
     const { composeAttributedPreview } = await import("../src/composition/attributed_preview.js");
     const stack = makeStack(PROJECT);
     const attemptId = await prepareAttempt(stack.installed, PROJECT, stack.head);
@@ -214,9 +213,11 @@ describe("P2D0 F2 — one qualified + one incomplete Invocation reports SELECTED
       projectEvolutionOf: emptyProjectEvolution,
     });
     const result = await service.previewAttempt({ attemptId });
-    // THE DEFECT: the whole-invocation set has an unresolved member, yet the selection is SELECTED_UNIQUE.
-    expect(result.selection.state).toBe("SELECTED_UNIQUE");
-    expect(result.selection.detail).toContain("no unresolved alternative exists");
+    // C3 CORRECTION: the unresolved second Invocation makes the set ambiguous, so nothing is auto-selected.
+    // (At the C1 baseline this was SELECTED_UNIQUE with "no unresolved alternative exists" — the F2 defect.)
+    expect(result.selection.state).toBe("AMBIGUOUS_REQUIRES_SELECTION");
+    expect(result.selection.invocationId).toBeNull();
+    expect(result.selection.detail).toContain("unresolved");
     store.close();
   });
 });
@@ -241,24 +242,25 @@ describe("P2D0 F6 — one Job's terminal closes every Invocation of the Attempt"
 /* ================================================================== F7 cross-Attempt creator conflict */
 
 describe("P2D0 F7 — two Attempts both qualify the same source-scoped Session identity", () => {
-  it("an incompatible second creator claim for the same SessionId qualifies independently", async () => {
+  it("CHANGED ASSERTION (P2D0 C2): the second incompatible creator claim is now refused as CONFLICT", async () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: PROJECT, sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     for (const [attemptId, invocationId] of [["attempt-a", "wpi-1"], ["attempt-b", "wpi-2"]] as const) {
       recorder.recordIdentity(Object.freeze({ hostLocalJobId: "", attemptId, observation: Object.freeze({ invocationId, dshSessionId: "worker-SHARED", source: "DIRECT_CHILD_IPC_REPORT", sourceQualification: "FIRST_PARTY_DSH_QUALIFIED", directChildPid: 7 }) }));
-      recorder.finalizeInvocation({ attemptId, invocationId, closeReason: "INVOCATION_RETURNED" });
+      recorder.finalizeInvocation({ attemptId, invocationId, closeReason: "CHILD_EXIT_OBSERVED" });
     }
     const qualifier = makeAssociationQualifier({
       store,
       registry: registryFromSingleBasis(BASIS, "FIRST_PARTY_DSH_HOST"),
       work: { readAttempt: () => ({ ok: true, taskId: "t1", state: "RUNNING", creationEventId: "ev-1" }) },
-      dsh: { async readHeaderIdentity(sessionId: string) { return { readState: "READ_OK" as const, header: { sessionId, version: 4, createdAt: 1, cwd: null, parentSession: null, isSeeded: false, origin: null, delegationDepth: null }, detail: "fixture" }; } },
+      dsh: { readHeaderIdentity: headerOk },
     });
+    // C2 CORRECTION: the same source-scoped SessionId claimed by two Attempts no longer qualifies twice.
+    // (At the C1 baseline both were ASSOCIATION_QUALIFIED — the F7 defect.)
     const a = await qualifier.qualifyAttempt({ projectId: PROJECT, attemptId: "attempt-a" });
     const b = await qualifier.qualifyAttempt({ projectId: PROJECT, attemptId: "attempt-b" });
-    // THE DEFECT: both Attempts qualify the SAME SessionId with no cross-Attempt creator conflict check.
-    expect(a.qualifications[0]?.state).toBe("ASSOCIATION_QUALIFIED");
-    expect(b.qualifications[0]?.state).toBe("ASSOCIATION_QUALIFIED");
+    expect(a.qualifications[0]?.state).toBe("CONFLICT");
+    expect(b.qualifications[0]?.state).toBe("CONFLICT");
     store.close();
   });
 });
@@ -292,7 +294,7 @@ describe("P2D0 F9 — an in-memory store yields a durable-looking VERIFIED bindi
 /* ================================================================== F13 canonical/T0 placeholders */
 
 describe("P2D0 F13 — the attributed adapter replaces real Canonical Work facts with placeholders", () => {
-  it("a qualified preview reports empty resultRefs, NOT_OBSERVED_BY_P2C verification and NONE rework", async () => {
+  it("CHANGED ASSERTION (P2D0 C4): the attributed preview now reports the real Canonical Work facts", async () => {
     const { composeAttributedPreview } = await import("../src/composition/attributed_preview.js");
     const stack = makeStack(PROJECT);
     const attemptId = await prepareAttempt(stack.installed, PROJECT, stack.head);
@@ -316,13 +318,12 @@ describe("P2D0 F13 — the attributed adapter replaces real Canonical Work facts
       projectEvolutionOf: emptyProjectEvolution,
     });
     const result = await service.previewAttempt({ attemptId });
-    // THE DEFECT: facts the V0 composition can establish are placeholders here.
-    expect(result.preview.canonical.resultRefs).toEqual([]);
-    expect(result.preview.canonical.verificationState).toBe("NOT_OBSERVED_BY_P2C");
+    // C4 CORRECTION: the adapter reuses `canonicalFactsOf`, so verification uses the V0 value rather than
+    // the P2-C placeholder, and the historical Work basis is read from the real owner.
+    // (At the C1 baseline: verificationState "NOT_OBSERVED_BY_P2C" and a null basisDigest — the F13 defect.)
+    expect(result.preview.canonical.verificationState).toBe("NOT_OBSERVED_BY_V0");
     expect(result.preview.canonical.reworkState).toBe("NONE");
-    // The attributed adapter supplies no historical Work basis, so the authorization block carries nulls
-    // even though the V0 composition reads a real basis for the same attempt.
-    expect(result.preview.attempt.historicalAuthorization.basisDigest).toBeNull();
+    expect(result.preview.canonical.resultRefs).toEqual([]);
     store.close();
   });
 });
@@ -330,30 +331,32 @@ describe("P2D0 F13 — the attributed adapter replaces real Canonical Work facts
 /* ================================================================== F17 historical epoch wiring */
 
 describe("P2D0 F17 — a normal deployment cannot supply trusted historical source epochs", () => {
-  it("the install option surface exposes no historicalEpochs and install.ts never passes them", () => {
+  it("CHANGED ASSERTION (P2D0 C5): the install surface now exposes historicalEpochs and install.ts passes them", () => {
     const cluster = readRepo("src/composition/execution_association.ts");
     const install = readRepo("src/install.ts");
     expect(cluster).not.toBeNull();
     expect(install).not.toBeNull();
-    // The cluster ACCEPTS epochs...
     expect(cluster).toMatch(/historicalEpochs\?: readonly TrustedSourceEpoch\[\]/u);
-    // ...but the install option interface does NOT expose them, and install.ts never passes them.
+    // C5 CORRECTION: the install option interface now exposes them, and install.ts forwards them.
+    // (At the C1 baseline neither held — the F17 defect.)
     const installOptions = cluster!.slice(cluster!.indexOf("export interface ExecutionAssociationInstallOptions"));
-    expect(installOptions).not.toMatch(/historicalEpochs/u);
-    expect(install!).not.toMatch(/historicalEpochs/u);
+    expect(installOptions).toMatch(/historicalEpochs/u);
+    expect(install!).toMatch(/historicalEpochs/u);
   });
 });
 
 /* ================================================================== source-demonstrated findings */
 
 describe("P2D0 — source-demonstrated findings (no dynamic path exists without a DSH runtime)", () => {
-  it("F3 the attributed adapter performs no post-Event-Read relevant-basis recheck", () => {
+  it("CHANGED ASSERTION (P2D0 C3): the adapter now performs a post-Event-Read relevant-basis recheck", () => {
     const preview = readRepo("src/composition/attributed_preview.ts")!;
-    // The qualifier's recheck exists, but the adapter reads the page and builds the binding with no
-    // second store-head comparison after the read.
     expect(preview).toMatch(/const page = await readSelectedSession/u);
     const afterRead = preview.slice(preview.indexOf("const page = await readSelectedSession"));
-    expect(afterRead.slice(0, afterRead.indexOf("const invariants"))).not.toMatch(/store\.head\(\)/u);
+    // C3 CORRECTION: the store head is re-checked after the read, and a relevant change yields RACED.
+    // (At the C1 baseline there was no such check — the F3 defect.)
+    expect(afterRead.slice(0, afterRead.indexOf("const invariants"))).toMatch(/headAfterRead/u);
+    expect(preview).toMatch(/relevantChangedDuringRead/u);
+    expect(preview).toMatch(/qualificationState: "RACED"/u);
   });
 
   it("F4 aggregate qualification captures ONE basis for the whole pass", () => {
@@ -362,42 +365,58 @@ describe("P2D0 — source-demonstrated findings (no dynamic path exists without 
     expect(qualifier).toMatch(/storeHeadAtStart,\s*attemptEventCountAtStart,/u);
   });
 
-  it("F5 the delegation finalizes with the single closeReason INVOCATION_RETURNED", () => {
+  it("CHANGED ASSERTION (P2D0 C3): the delegation now finalizes on an OBSERVED child exit, per Invocation", () => {
     const continuation = readRepo("src/composition/continuation.ts")!;
-    expect(continuation).toMatch(/closeReason: "INVOCATION_RETURNED"/u);
+    // C3 CORRECTION: the product path finalizes on the Port's own DIRECT_CHILD_EXIT_OBSERVED observation,
+    // scoped to the Invocation it names, and never on an Attempt-wide terminal.
+    expect(continuation).toMatch(/DIRECT_CHILD_EXIT_OBSERVED/u);
+    expect(continuation).toMatch(/closeReason: "CHILD_EXIT_OBSERVED"/u);
+    expect(continuation).toMatch(/finalizeInvocation\(/u);
+    expect(continuation).not.toMatch(/finalizeAttempt\(/u);
     const contract = readRepo("src/execution_association/contract.ts")!;
-    // No close reason distinguishes a confirmed child close from a timeout/abort request.
-    expect(contract).toMatch(/INVOCATION_RETURNED/u);
-    expect(contract).not.toMatch(/DIRECT_CHILD_EXIT_OBSERVED/u);
+    // The contract now distinguishes a confirmed child close from a request that was never confirmed.
+    expect(contract).toMatch(/CHILD_EXIT_OBSERVED/u);
   });
 
-  it("F8 lifecycle/coverage/completeness are not gated on the invariant verdict", () => {
+  it("CHANGED ASSERTION (P2D0 C5): lifecycle and coverage are now gated on the invariant verdict", () => {
     const handoff = readRepo("src/trajectory/handoff_preview.ts")!;
-    const lifecycleLine = handoff.split("\n").find((line) => line.includes("const sessionLifecycle = sessionLifecycleOf("))!;
-    expect(lifecycleLine).not.toMatch(/invariantsRefused/u);
-    const completenessLine = handoff.split("\n").find((line) => line.includes("const completeness = previewCompletenessOf("))!;
-    expect(completenessLine).not.toMatch(/invariantsRefused/u);
+    // C5 CORRECTION: a refused page can no longer claim SESSION_READ + FULL coverage.
+    // (At the C1 baseline neither line consulted the invariant verdict — the F8 defect.)
+    const lifecycleLine = handoff.split("\n").find((line) => line.includes("const sessionLifecycle = bindingContradicted"))!;
+    expect(lifecycleLine).toBeDefined();
+    const coverageLine = handoff.split("\n").find((line) => line.includes("const eventPageCoverage = bindingContradicted"))!;
+    expect(coverageLine).toBeDefined();
+    expect(handoff).toMatch(/bindingContradicted \? \("NOT_APPLICABLE" as EventPageCoverage\)/u);
+    // The ordinary "read but unattributed" case stays SESSION_READ_NOT_ATTRIBUTED, not a contradiction.
+    expect(handoff).toMatch(/admissionInvariants\.reason !== "PAGE_SUPPLIED_WITHOUT_ADMISSION"/u);
   });
 
-  it("F10 the OwnedResource close contract is synchronous and the reader's async close is voided", () => {
-    expect(readRepo("src/composition/lifecycle.ts")!).toMatch(/readonly close: \(\) => void;/u);
-    expect(readRepo("src/composition/execution_association.ts")!).toMatch(/void readerHandle\.close\?\.\(\);/u);
+  it("CHANGED ASSERTION (P2D0 C5): the OwnedResource close contract now awaits an async reader close", () => {
+    // C5 CORRECTION: close may return a promise and the lifecycle awaits it.
+    // (At the C1 baseline close was synchronous and the reader's async close was voided — the F10 defect.)
+    expect(readRepo("src/composition/lifecycle.ts")!).toMatch(/readonly close: \(\) => void \| Promise<void>;/u);
+    expect(readRepo("src/composition/lifecycle.ts")!).toMatch(/await resource\.close\(\);/u);
+    expect(readRepo("src/composition/execution_association.ts")!).toMatch(/close: \(\) => readerHandle\.close\?\.\(\)/u);
   });
 
-  it("F11 an expert Worker Port still borrows a first-party basis computed from workWorkerBin", () => {
+  it("CHANGED ASSERTION (P2D0 C5): an expert port no longer borrows a first-party basis by default", () => {
     const cluster = readRepo("src/composition/execution_association.ts")!;
-    expect(cluster).toMatch(/if \(options\.workWorkerPort !== undefined\) return options\.workWorkerPort;/u);
-    expect(cluster).toMatch(/workerBin: options\.workWorkerBin \?\? ""/u);
+    // C5 CORRECTION: an explicit port with no explicit source kind is classified UNKNOWN, not FIRST_PARTY.
+    // (At the C1 baseline the basis and kind still came from workWorkerBin — the F11 defect.)
+    expect(cluster).toMatch(/explicitPortWithoutKind/u);
+    expect(cluster).toMatch(/options\.workWorkerBin === undefined \|\| explicitPortWithoutKind \? "UNKNOWN" : "FIRST_PARTY_DSH_HOST"/u);
   });
 
   it("F12 no reader is composed unless the host supplies DSH_HOME", () => {
     expect(readRepo("host/dsh/lib/index.js")!).toMatch(/process\.env\.DSH_HOME === undefined \? \{\} : \{ dshHomePath: process\.env\.DSH_HOME \}/u);
   });
 
-  it("F14 a Caller Claim disagreement is not explicitly reported", () => {
+  it("CHANGED ASSERTION (P2D0 C5): a Caller Claim disagreement is now explicitly reported", () => {
     const preview = readRepo("src/composition/attributed_preview.ts")!;
-    expect(preview).toMatch(/claimedSessionId: request\.claimedSessionId \?\? null/u);
-    expect(preview).not.toMatch(/disagreement|differs from the verified/u);
+    // C5 CORRECTION: the verified session stays the only read target, and the discrepancy is reported.
+    // (At the C1 baseline the claim was recorded but no discrepancy was reported — the F14 defect.)
+    expect(preview).toMatch(/claimDisagrees/u);
+    expect(preview).toMatch(/DISAGREES and is retained only as a declaration/u);
   });
 
   it("F15 previewAttempt admits any canonical Attempt with no consumer-Attempt binding", () => {
@@ -406,8 +425,10 @@ describe("P2D0 — source-demonstrated findings (no dynamic path exists without 
     expect(preview).not.toMatch(/consumerAttemptId/u);
   });
 
-  it("F18 Deployment.installed is typed InstalledPalimpsest, not the widened trajectory result", () => {
-    expect(readRepo("src/deployment/launch.ts")!).toMatch(/readonly installed: InstalledPalimpsest;/u);
+  it("CHANGED ASSERTION (P2D0 C5): Deployment.installed is now the widened trajectory result", () => {
+    // C5 CORRECTION: the deployment surface names the widened type, so the capability is statically
+    // reachable. (At the C1 baseline it was typed InstalledPalimpsest — the F18 defect.)
+    expect(readRepo("src/deployment/launch.ts")!).toMatch(/readonly installed: InstalledPalimpsestWithTrajectory;/u);
     expect(readRepo("src/install.ts")!).toMatch(/export type InstalledPalimpsestWithTrajectory/u);
   });
 });

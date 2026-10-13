@@ -246,6 +246,16 @@ export interface WorkerSessionIdentityObservation {
   /** The Parent-owned invocation identity this report was received on. */
   readonly invocationId: string;
   readonly dshSessionId: string;
+  /**
+   * Trajectory-P2-D0 §6.3: the SessionId THIS IPC message actually reported, kept distinct from the
+   * tracker's cumulative `dshSessionId`.
+   *
+   * The cumulative field is always the FIRST observed identity, so a consumer that persists only it
+   * silently loses every later, genuinely-observed identity (F1: A/B/C collapse to {A}). This field is
+   * the RAW report of the current message, so the durable ingestion path can preserve every distinct
+   * observation as its own immutable candidate. On the first report the two are equal.
+   */
+  readonly reportedSessionId: string;
   readonly source: WorkerSessionIdentitySource;
   /** §7.3: the direct child that carried the report, as a TRANSPORT anchor — never the session's identity. */
   readonly directChildPid: number | null;
@@ -326,6 +336,11 @@ export function makeWorkerSessionIdentityTracker(input: { readonly invocationId:
   let firstObservedAt = "";
   let firstPid: number | null = null;
   let qualification: WorkerSessionSourceQualification = "DIRECT_CHILD_IPC";
+  /**
+   * §6.3: the SessionId of the CURRENT report, kept beside the cumulative first-observed identity so the
+   * rebuilt observation always carries what THIS message reported.
+   */
+  let reportedSessionId: string | null = null;
 
   /**
    * §7.5: the observation is REBUILT on every state change rather than frozen once, so a consumer that
@@ -342,6 +357,7 @@ export function makeWorkerSessionIdentityTracker(input: { readonly invocationId:
       schemaVersion: WORKER_SESSION_IDENTITY_SCHEMA_VERSION,
       invocationId: input.invocationId,
       dshSessionId: sessionId,
+      reportedSessionId: reportedSessionId ?? sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: firstPid,
       observedAt: firstObservedAt,
@@ -367,8 +383,16 @@ export function makeWorkerSessionIdentityTracker(input: { readonly invocationId:
       return observation;
     },
     observe(report: { readonly sessionId: string; readonly directChildPid: number | null; readonly sourceQualification: WorkerSessionSourceQualification }): WorkerSessionIdentityState {
+      /**
+       * §6.3: the RAW report is recorded FIRST, whatever branch follows. This is what lets a consumer
+       * persist the identity THIS message carried rather than the tracker's cumulative first identity.
+       */
+      reportedSessionId = report.sessionId;
       if (state === "OBSERVED") {
-        if (report.sessionId === sessionId) return state; // idempotent: the same identity again
+        if (report.sessionId === sessionId) {
+          rebuild();
+          return state; // idempotent: the same identity again
+        }
         /**
          * §7.5: a second DIFFERENT identity is a conflict, and the first is not silently kept as
          * authoritative. The first observation is retained as EVIDENCE, but `state` no longer claims a
@@ -383,8 +407,8 @@ export function makeWorkerSessionIdentityTracker(input: { readonly invocationId:
         // A further report cannot resolve the conflict by arriving; it is simply another disagreement.
         if (report.sessionId !== sessionId && report.sessionId !== conflictingSessionId) {
           conflictingSessionId = report.sessionId;
-          rebuild();
         }
+        rebuild();
         return state;
       }
       sessionId = report.sessionId;

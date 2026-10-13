@@ -36,6 +36,7 @@ function correlated(input: { sessionId: string; invocationId?: string }): Correl
       schemaVersion: 1,
       invocationId: input.invocationId ?? INVOCATION,
       dshSessionId: input.sessionId,
+      reportedSessionId: input.sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: 7,
       observedAt: "2026-01-01T00:00:00.000Z",
@@ -78,7 +79,7 @@ function harness(store: SqliteExecutionAssociationStore, options: { work?: unkno
 function seed(store: SqliteExecutionAssociationStore, sessionId = "worker-ok"): void {
   const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
   recorder.recordIdentity(correlated({ sessionId }));
-  recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+  recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
 }
 
 /* ================================================================== §6.1 source qualification */

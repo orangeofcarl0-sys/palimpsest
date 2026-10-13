@@ -56,6 +56,7 @@ function correlated(input: { sessionId: string; invocationId?: string; attemptId
       schemaVersion: 1,
       invocationId: input.invocationId ?? "wpi-00000000-0000-4000-8000-000000000001",
       dshSessionId: input.sessionId,
+      reportedSessionId: input.sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: 7,
       observedAt: "2026-01-01T00:00:00.000Z",
@@ -216,7 +217,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-1" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "p2b", attemptId: `attempt-${"9".repeat(32)}` });
     expect(result.qualifications).toHaveLength(0);
     store.close();
@@ -226,7 +227,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-1" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "someone-else", attemptId: ATTEMPT });
     expect(result.qualifications).toHaveLength(0);
     store.close();
@@ -236,7 +237,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-real" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualifierFor(store, { header: { readState: "READ_OK", sessionId: "worker-other" } }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("SOURCE_REFUSED");
     store.close();
@@ -246,7 +247,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-x" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualifierFor(store, { header: { readState: "SESSION_FORMAT_UNSUPPORTED", sessionId: null } }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("SOURCE_UNAVAILABLE");
     store.close();
@@ -256,7 +257,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-done" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     // The attempt is terminal in Work; §9.1 says that is NOT a reason to refuse historical provenance.
     // (P2C C2: the Work port now returns an explicit admission result.)
     const result = await qualifierFor(store, { work: { ok: true, taskId: "t1", state: "COMPLETED", creationEventId: "ev-1" } }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
@@ -269,7 +270,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const first = new SqliteExecutionAssociationStore(path);
     const recorder = createExecutionAssociationRecorder({ store: first, projectId: "p2b", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     for (const sessionId of ["worker-a", "worker-b", "worker-c"]) recorder.recordIdentity(correlated({ sessionId }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     first.close();
 
     // A FRESH handle, as a new process would open it.
@@ -304,7 +305,7 @@ describe("P2B §11 B2 — cold-recovery adversarial cases (each on a FRESH store
     const foreign = computeTrustedSourceBasis({ adapterId: "stub", workerBin: "/x/dsh.js", nodeExecPath: "/x/node.exe" });
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: foreign, sourceKind: "CONTROLLED_STUB" });
     recorder.recordIdentity(correlated({ sessionId: "worker-claimed", declared: "FIRST_PARTY_DSH_QUALIFIED" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualifierFor(store).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("SOURCE_REFUSED");
     store.close();
