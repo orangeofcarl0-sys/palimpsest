@@ -90,6 +90,12 @@ export interface ExecutionAssociationStore {
   replay(): readonly ExecutionAssociationEvent[];
   /** Every event for ONE attempt, in seq order. */
   replayForAttempt(input: { readonly projectId: string; readonly attemptId: string }): readonly ExecutionAssociationEvent[];
+  /**
+   * P2-D0 §6.5: every SESSION_IDENTITY_OBSERVED record that names ONE SessionId, across ALL attempts of
+   * this project. This is the read side's cross-Attempt creator-conflict probe: it answers "does another
+   * Attempt claim this same session" without scanning the whole history in the caller.
+   */
+  replayForSession(input: { readonly projectId: string; readonly dshSessionId: string }): readonly ExecutionAssociationEvent[];
   head(): number;
   close(): void;
 }
@@ -170,6 +176,7 @@ export class SqliteExecutionAssociationStore implements ExecutionAssociationStor
   readonly #selectAll: ReturnType<DatabaseSync["prepare"]>;
   readonly #selectById: ReturnType<DatabaseSync["prepare"]>;
   readonly #selectByAttempt: ReturnType<DatabaseSync["prepare"]>;
+  readonly #selectBySession: ReturnType<DatabaseSync["prepare"]>;
   readonly #selectHead: ReturnType<DatabaseSync["prepare"]>;
   readonly #insert: ReturnType<DatabaseSync["prepare"]>;
 
@@ -187,10 +194,20 @@ export class SqliteExecutionAssociationStore implements ExecutionAssociationStor
         "payload_json TEXT NOT NULL)",
     );
     this.#database.exec("CREATE INDEX IF NOT EXISTS execution_associations_attempt ON execution_associations (project_id, attempt_id, seq)");
+    this.#database.exec("CREATE INDEX IF NOT EXISTS execution_associations_type ON execution_associations (project_id, type, seq)");
     this.#selectAll = this.#database.prepare("SELECT event_id, seq, project_id, attempt_id, type, payload_json FROM execution_associations ORDER BY seq");
     this.#selectById = this.#database.prepare("SELECT event_id, seq, project_id, attempt_id, type, payload_json FROM execution_associations WHERE event_id = ?");
     this.#selectByAttempt = this.#database.prepare(
       "SELECT event_id, seq, project_id, attempt_id, type, payload_json FROM execution_associations WHERE project_id = ? AND attempt_id = ? ORDER BY seq",
+    );
+    /**
+     * §6.5: a TARGETED cross-Attempt probe. `dshSessionId` lives inside the canonical payload JSON, so the
+     * filter uses SQLite's own `json_extract` rather than replaying every row in the caller — the index on
+     * `(project_id, type, seq)` bounds the scan to the project's observation records.
+     */
+    this.#selectBySession = this.#database.prepare(
+      "SELECT event_id, seq, project_id, attempt_id, type, payload_json FROM execution_associations " +
+        "WHERE project_id = ? AND type = 'SESSION_IDENTITY_OBSERVED' AND json_extract(payload_json, '$.dshSessionId') = ? ORDER BY seq",
     );
     this.#selectHead = this.#database.prepare("SELECT MAX(seq) AS max FROM execution_associations");
     this.#insert = this.#database.prepare(
@@ -294,6 +311,13 @@ export class SqliteExecutionAssociationStore implements ExecutionAssociationStor
   replayForAttempt(input: { readonly projectId: string; readonly attemptId: string }): readonly ExecutionAssociationEvent[] {
     return Object.freeze(
       (this.#selectByAttempt.all(input.projectId, input.attemptId) as unknown as StoredRow[]).map(parseStoredEvent),
+    );
+  }
+
+  /** §6.5: every observation of ONE SessionId across the project, for the cross-Attempt conflict probe. */
+  replayForSession(input: { readonly projectId: string; readonly dshSessionId: string }): readonly ExecutionAssociationEvent[] {
+    return Object.freeze(
+      (this.#selectBySession.all(input.projectId, input.dshSessionId) as unknown as StoredRow[]).map(parseStoredEvent),
     );
   }
 

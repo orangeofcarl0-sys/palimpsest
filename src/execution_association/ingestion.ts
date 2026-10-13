@@ -124,6 +124,16 @@ export function createExecutionAssociationRecorder(input: {
         return Object.freeze({ state: "REJECTED" as const, reason: `untrusted source "${String(identity.source)}"` });
       }
       /**
+       * P2-D0 §6.2: THE IDENTITY THIS MESSAGE ACTUALLY REPORTED.
+       *
+       * The transport reports the tracker's cumulative observation, whose `dshSessionId` is always the
+       * FIRST observed identity. Persisting that field alone is exactly how a second, genuinely observed
+       * identity is lost before durability (F1). `reportedSessionId` is the raw report of the current
+       * message, so the durable candidate set becomes {A, B, C} rather than {A}. A caller that supplies
+       * a single already-raw observation omits it, and `dshSessionId` is then the raw report.
+       */
+      const durableSessionId = identity.reportedSessionId ?? identity.dshSessionId;
+      /**
        * §7.6: the payload is assembled HERE from the deployment's own basis plus the identities the
        * producer and Work already own. The `sourceQualificationDeclared` label is preserved for audit
        * ONLY — the read side never consults it.
@@ -133,7 +143,7 @@ export function createExecutionAssociationRecorder(input: {
         projectId: input.projectId,
         attemptId,
         invocationId: identity.invocationId,
-        dshSessionId: identity.dshSessionId,
+        dshSessionId: durableSessionId,
         sourceBasis: input.sourceBasis,
         sourceKind: input.sourceKind,
         sourceQualificationDeclared: identity.sourceQualification,
@@ -145,11 +155,11 @@ export function createExecutionAssociationRecorder(input: {
         projectId: input.projectId,
         attemptId,
         invocationId: identity.invocationId,
-        dshSessionId: identity.dshSessionId,
+        dshSessionId: durableSessionId,
       });
       const outcome = input.store.append({ eventId, projectId: input.projectId, type: "SESSION_IDENTITY_OBSERVED", payload });
       const seen = candidateCounts.get(identity.invocationId) ?? new Set<string>();
-      seen.add(identity.dshSessionId);
+      seen.add(durableSessionId);
       candidateCounts.set(identity.invocationId, seen);
       const byAttempt = invocationsByAttempt.get(attemptId) ?? new Set<string>();
       byAttempt.add(identity.invocationId);
@@ -196,8 +206,14 @@ export function createExecutionAssociationRecorder(input: {
 
     finalizeAttempt(input2: { readonly attemptId: string; readonly closeReason: ObservationWindowCloseReason }): readonly IngestionOutcome[] {
       /**
-       * §8.1: finalize every invocation the STORE knows for this attempt — derived from committed
-       * evidence, so it covers observations this recorder did not itself ingest.
+       * P2-D0 §7.1/§7.2: THIS METHOD IS NOT AN ATTEMPT-WIDE CLOSE.
+       *
+       * A terminal callback for ONE Job says nothing about the OTHER Invocations of the Attempt, so
+       * closing all of them `CLOSED` would manufacture a boundary the Parent never observed (F6). The
+       * only honest attempt-wide fact is that the PARENT process itself is ending, in which case every
+       * open window becomes UNKNOWN rather than CLOSED — an unresolved boundary, which the window
+       * validator correctly refuses to treat as a closure. The PRODUCT path never calls this; it
+       * finalizes per Invocation from the Port's own observed child exit.
        */
       const invocations = [
         ...new Set(
@@ -207,10 +223,35 @@ export function createExecutionAssociationRecorder(input: {
             .map((event) => event.payload.invocationId),
         ),
       ];
+      const reason: ObservationWindowCloseReason = input2.closeReason === "CHILD_EXIT_OBSERVED" ? "PARENT_TERMINATED" : input2.closeReason;
       return Object.freeze(
-        invocations.map((invocationId) =>
-          this.finalizeInvocation({ attemptId: input2.attemptId, invocationId, closeReason: input2.closeReason }),
-        ),
+        invocations.map((invocationId) => {
+          const candidateCount = input.store
+            .replayForAttempt({ projectId: input.projectId, attemptId: input2.attemptId })
+            .filter((event) => event.type === "SESSION_IDENTITY_OBSERVED" && event.payload.invocationId === invocationId)
+            .reduce((distinct, event) => distinct.add((event.payload as SessionIdentityObservedPayload).dshSessionId), new Set<string>()).size;
+          const eventId = associationEventId({
+            type: "INVOCATION_OBSERVATION_FINALIZED",
+            projectId: input.projectId,
+            attemptId: input2.attemptId,
+            invocationId,
+          });
+          const outcome = input.store.append({
+            eventId,
+            projectId: input.projectId,
+            type: "INVOCATION_OBSERVATION_FINALIZED",
+            payload: Object.freeze({
+              schemaVersion: EXECUTION_ASSOCIATION_SCHEMA_VERSION,
+              projectId: input.projectId,
+              attemptId: input2.attemptId,
+              invocationId,
+              windowState: "UNKNOWN" as const,
+              closeReason: reason,
+              observedCandidateCount: candidateCount,
+            }),
+          });
+          return Object.freeze({ state: outcome.state, eventId }) as IngestionOutcome;
+        }),
       );
     },
   });

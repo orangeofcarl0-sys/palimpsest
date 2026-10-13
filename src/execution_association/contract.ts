@@ -60,7 +60,20 @@ export const OBSERVATION_WINDOW_STATES = ["OPEN", "CLOSED", "UNKNOWN"] as const;
 export type ObservationWindowState = (typeof OBSERVATION_WINDOW_STATES)[number];
 
 export const OBSERVATION_WINDOW_CLOSE_REASONS = [
-  /** The Delegation awaited the Port and it returned; the Parent stopped waiting on the child. */
+  /**
+   * P2-D0 §7.2: the Parent OBSERVED the direct child's exit/close. This is the only reason that
+   * establishes a real terminal boundary for a worker Invocation: the port emits it from its own
+   * `close` handler, so it is a Parent-observed lifecycle fact rather than a request.
+   */
+  "CHILD_EXIT_OBSERVED",
+  /**
+   * The Delegation awaited the Port and it returned; the Parent stopped waiting on the child.
+   *
+   * P2-D0 §7.2: this is NOT proof of closure. The shipped Port resolves its promise from a
+   * timeout/abort/error handler as well as from an observed close, so a returned Port alone cannot
+   * establish that the child ended. Retained for the domain's historical records; the PRODUCT path
+   * finalizes on `CHILD_EXIT_OBSERVED` only.
+   */
   "INVOCATION_RETURNED",
   /** The Parent process itself ended before it could finalize. */
   "PARENT_TERMINATED",
@@ -175,11 +188,38 @@ export interface ObservedIdentityInput {
   readonly observation: {
     readonly invocationId: string;
     readonly dshSessionId: string;
+    /**
+     * Trajectory-P2-D0 §6.3: the SessionId THIS IPC report actually carried, when the producer
+     * distinguishes it from the tracker's cumulative `dshSessionId`.
+     *
+     * The transport path (Parent port → sink → recorder) reports the tracker's cumulative observation,
+     * whose `dshSessionId` is always the FIRST observed identity. Without this field a second, genuinely
+     * observed identity is lost before durability (F1). When present, THIS is the durable candidate;
+     * when absent the caller is supplying a single already-raw observation and `dshSessionId` is used.
+     */
+    readonly reportedSessionId?: string | undefined;
     /** Only `DIRECT_CHILD_IPC_REPORT` is a producer observation; anything else is refused. */
     readonly source: string;
     readonly sourceQualification: string;
     readonly directChildPid: number | null;
   };
+}
+
+/**
+ * Trajectory-P2-D0 §6.5: the SOURCE SCOPE of a fresh-creation claim.
+ *
+ * Two Attempts that claim the SAME SessionId are only in conflict when the claims come from the SAME
+ * DSH persistence source. This key is the deployment's own source identity — the adapter and the
+ * configured worker-bin digest — so two unrelated Session roots that merely happen to contain an
+ * identical SessionId string do not manufacture a conflict.
+ *
+ * WHAT IT IS NOT: it does not identify the sessions ROOT on disk, so it cannot distinguish two
+ * deployments that share an adapter id and worker bin but write to different roots. That limitation is
+ * stated rather than papered over; the alternative (a root path in durable evidence) would put a
+ * personal filesystem location into the association store.
+ */
+export function sourceScopeKeyOf(basis: TrustedSourceBasis): string {
+  return `${basis.adapterId}::${basis.workerBinDigest}`;
 }
 
 /* ------------------------------------------------------------------ *

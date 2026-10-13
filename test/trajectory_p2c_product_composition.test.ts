@@ -94,6 +94,7 @@ function correlated(input: { attemptId: string; sessionId: string; invocationId?
       schemaVersion: 1,
       invocationId: input.invocationId ?? "wpi-00000000-0000-4000-8000-000000000001",
       dshSessionId: input.sessionId,
+      reportedSessionId: input.sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: 7,
       observedAt: "2026-01-01T00:00:00.000Z",
@@ -170,7 +171,7 @@ describe("P2C C5 §8 — attributed event admission", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c-admit", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId, sessionId: "worker-admitted" }));
-    recorder.finalizeAttempt({ attemptId, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
 
     const qualifier = makeAssociationQualifier({
       store,

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "cross-attempt session ownership",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F7",
+  "defect": "two Attempts both qualified the same source-scoped Session identity, because the observation event id is scoped by attemptId and there was no cross-Attempt creator check",
+  "correction": {
+    "scopeKey": "src/execution_association/contract.ts — sourceScopeKeyOf(basis) = adapterId::workerBinDigest, the deployment's own source identity",
+    "storeProbe": "src/execution_association/store.ts — replayForSession uses a targeted SQLite json_extract on the canonical payload, bounded by the (project_id, type, seq) index",
+    "qualifierCheck": "src/execution_association/qualification.ts — before the DSH header read, a DIFFERENT attempt claiming the same SessionId under the same scope refuses as CONFLICT; the same-Attempt duplicate is not a conflict; the probe is repeated after the async read as part of the currentness basis"
+  },
+  "evidence": {
+    "class": "CONTROLLED_FIXTURE",
+    "test": "test/trajectory_p2d0_source_contract.test.ts > P2D0 F7 (CHANGED ASSERTION P2D0 C2)",
+    "method": "record the same SessionId for attempt-a and attempt-b under one basis, finalize each, and qualify both",
+    "observed": { "attemptA": "CONFLICT", "attemptB": "CONFLICT" },
+    "scopeHonesty": "the scope key is the adapter id and worker-bin digest, NOT the sessions root on disk; two deployments that share both but write to different roots would be treated as one scope. Recorded as a limit rather than papered over, because a root path in durable evidence would be a personal filesystem location."
+  },
+  "expectedInvariant": "if two incompatible fresh-creation claims for the same source-scoped SessionId exist, both must not qualify silently",
+  "verdict": "PASS",
+  "remainingUncertainty": "the scope key cannot distinguish two roots that share an adapter id and worker bin",
+  "canonicalWorkRan": false,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

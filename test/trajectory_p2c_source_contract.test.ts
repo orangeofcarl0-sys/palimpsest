@@ -46,6 +46,7 @@ function correlated(input: { sessionId: string; invocationId?: string }): Correl
       schemaVersion: 1,
       invocationId: input.invocationId ?? "wpi-00000000-0000-4000-8000-000000000001",
       dshSessionId: input.sessionId,
+      reportedSessionId: input.sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: 7,
       observedAt: "2026-01-01T00:00:00.000Z",

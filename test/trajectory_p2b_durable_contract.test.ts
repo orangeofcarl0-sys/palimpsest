@@ -47,6 +47,7 @@ function correlated(input: {
     schemaVersion: 1,
     invocationId: input.invocationId ?? "wpi-00000000-0000-4000-8000-000000000001",
     dshSessionId: input.sessionId,
+    reportedSessionId: input.sessionId,
     source: "DIRECT_CHILD_IPC_REPORT" as const,
     directChildPid: 4242,
     observedAt: "2026-01-01T00:00:00.000Z",
@@ -321,7 +322,7 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-ok" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
 
     const result = await qualificationHarness({ store }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.summary.qualifiedCount).toBe(1);
@@ -343,7 +344,7 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const foreignBasis = computeTrustedSourceBasis({ adapterId: "stub", workerBin: "/other/dsh.js", nodeExecPath: "/other/node.exe" });
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2b", sourceBasis: foreignBasis, sourceKind: "CONTROLLED_STUB" });
     recorder.recordIdentity(correlated({ sessionId: "worker-foreign", declared: "FIRST_PARTY_DSH_QUALIFIED" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
 
     /**
      * §5 B0-C3: the record declares FIRST_PARTY_DSH_QUALIFIED, but its BASIS is a controlled stub. The
@@ -359,7 +360,7 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-orphan" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualificationHarness({ store, work: null }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("SOURCE_REFUSED");
     store.close();
@@ -378,7 +379,7 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-a" }));
     recorder.recordIdentity(correlated({ sessionId: "worker-b" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualificationHarness({ store }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.qualifications[0]!.state).toBe("CONFLICT");
     expect(result.summary.conflictCount).toBe(1);
@@ -391,7 +392,7 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-gone" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualificationHarness({ store, header: { readState: "SESSION_MISSING", sessionId: null } }).qualifyAttempt({
       projectId: "p2b",
       attemptId: ATTEMPT,
@@ -413,7 +414,9 @@ describe("P2B B2 §9 — source-verifying qualification", () => {
     const recorder = recorderOn(store);
     recorder.recordIdentity(correlated({ sessionId: "worker-i1", invocationId: "wpi-i1" }));
     recorder.recordIdentity(correlated({ sessionId: "worker-i2", invocationId: "wpi-i2" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    // P2-D0 §7.1: each Invocation is finalized from its OWN observed boundary, not by one attempt-wide call.
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-i1", closeReason: "CHILD_EXIT_OBSERVED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-i2", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await qualificationHarness({ store }).qualifyAttempt({ projectId: "p2b", attemptId: ATTEMPT });
     expect(result.summary.invocationCount).toBe(2);
     expect(result.summary.qualifiedCount).toBe(2);

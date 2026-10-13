@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "stage": "Trajectory-P2-D0",
+  "kind": "ipc candidate preservation",
+  "baseline": "234d040c234f9bfdda0bd210b91b45292588a7b6",
+  "falsifier": "F1",
+  "defect": "the Parent-observed A/B/C conflict disappeared before durability: the tracker rebuilds ONE observation whose dshSessionId is always the first, and the recorder persisted only that field, so the durable candidate set was {A}",
+  "correction": {
+    "trackerField": "src/interaction/work_delegation.ts — WorkWorkerSessionIdentityObservation.reportedSessionId carries the identity THIS IPC message reported, kept beside the cumulative dshSessionId",
+    "recorderField": "src/execution_association/ingestion.ts — recordIdentity persists identity.reportedSessionId ?? identity.dshSessionId",
+    "durableIdentity": "the event id stays EventKind+Project+Attempt+Invocation+DshSessionId, so distinct identities yield distinct records and a repeated identical report stays idempotent"
+  },
+  "evidence": {
+    "class": "REAL_PARENT_IPC",
+    "test": "test/trajectory_p2d0_ipc_preservation.test.ts",
+    "method": "drive the REAL dshSubprocessWorkWorkerPort with a controlled Node ChildProcess that sends A,B,C,A over the REAL identity IPC channel; attach the REAL correlation sink and the REAL trusted recorder; read the REAL durable store",
+    "observed": {
+      "reportsObserved": 4,
+      "reportedSessionIds": ["worker-A", "worker-B", "worker-C", "worker-A"],
+      "durableCandidateSet": ["worker-A", "worker-B", "worker-C"],
+      "duplicateALogicalCount": 1,
+      "qualification": "CONFLICT",
+      "qualifiedCount": 0,
+      "admittedEvents": 0
+    },
+    "alsoProved": [
+      "the REAL makeWorkDelegationService wires the correlation, so a real Job's child identity reaches the recorder with the canonical AttemptId (attempt-wired)",
+      "the window was finalized by the OBSERVED child exit (CHILD_EXIT_OBSERVED), not by a returned port",
+      "a single identity still finalizes normally, so the ordinary path is unbroken"
+    ]
+  },
+  "expectedInvariant": "every valid, distinct Session Identity IPC report must reach durable ingestion as an immutable candidate; repeated identical delivery is idempotent; no arrival order chooses a winner",
+  "verdict": "PASS",
+  "remainingUncertainty": "the port reports on the message callback; a report delivered after the child's close callback cannot be observed by the parent, which is a property of Node IPC rather than of this fix",
+  "canonicalWorkRan": true,
+  "realFirstPartyDshRan": false,
+  "modelCallsMade": 0,
+  "sourceDataChanged": false,
+  "privateSessionsAccessed": false
+}

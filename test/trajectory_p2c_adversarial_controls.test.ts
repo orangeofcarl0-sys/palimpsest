@@ -33,6 +33,7 @@ function correlated(input: { attemptId: string; sessionId: string; invocationId?
       schemaVersion: 1,
       invocationId: input.invocationId ?? "wpi-00000000-0000-4000-8000-000000000001",
       dshSessionId: input.sessionId,
+      reportedSessionId: input.sessionId,
       source: "DIRECT_CHILD_IPC_REPORT" as const,
       directChildPid: 7,
       observedAt: "2026-01-01T00:00:00.000Z",
@@ -128,7 +129,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     // Record with a DIFFERENT basis than the verifier's registry.
     const foreign = computeTrustedSourceBasis({ adapterId: "stub", workerBin: "/other/dsh.js", nodeExecPath: "/other/node.exe" });
     createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: foreign, sourceKind: "FIRST_PARTY_DSH_HOST" }).recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-x" }));
-    createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: foreign, sourceKind: "FIRST_PARTY_DSH_HOST" }).finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: foreign, sourceKind: "FIRST_PARTY_DSH_HOST" }).finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await service({ store }).previewAttempt({ attemptId: ATTEMPT });
     expect(result.preview.execution.dshSessionId).toBeNull();
     expect(result.preview.execution.events).toEqual([]);
@@ -139,7 +140,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-x" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await service({ store, header: { readState: "READ_OK", sessionId: "worker-different" } }).previewAttempt({ attemptId: ATTEMPT });
     expect(result.preview.execution.dshSessionId).toBeNull();
     expect(result.preview.execution.events).toEqual([]);
@@ -150,7 +151,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-x" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const svc = composeAttributedPreview({
       projectId: "p2c",
       controller: controllerFixture() as never,
@@ -172,7 +173,9 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-i1", invocationId: "wpi-i1" }));
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-i2", invocationId: "wpi-i2" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    // P2-D0 §7.1: each Invocation closes from its own observed boundary.
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-i1", closeReason: "CHILD_EXIT_OBSERVED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-i2", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await service({ store }).previewAttempt({ attemptId: ATTEMPT });
     expect(result.selection.state).toBe("AMBIGUOUS_REQUIRES_SELECTION");
     expect(result.preview.execution.dshSessionId).toBeNull();
@@ -184,7 +187,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-a" }));
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-b" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await service({ store }).previewAttempt({ attemptId: ATTEMPT });
     expect(result.selection.state).toBe("NO_DURABLE_EVIDENCE");
     expect(result.preview.execution.dshSessionId).toBeNull();
@@ -195,7 +198,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     const store = new SqliteExecutionAssociationStore(":memory:");
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "FIRST_PARTY_DSH_HOST" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-x" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     // A page that claims 5 events while carrying 1 — RETURNED_COUNT_MISMATCH.
     const badReader = {
       sourceIdentity: "fixture", evidenceClass: "DSH_QUERY_PORT_FIXTURE" as const,
@@ -214,7 +217,7 @@ describe("P2C §11.5 — adversarial attributed-admission controls", () => {
     // A CONTROLLED_STUB record that DECLARES first-party in its label.
     const recorder = createExecutionAssociationRecorder({ store, projectId: "p2c", sourceBasis: BASIS, sourceKind: "CONTROLLED_STUB" });
     recorder.recordIdentity(correlated({ attemptId: ATTEMPT, sessionId: "worker-x", kind: "FIRST_PARTY_DSH_QUALIFIED" }));
-    recorder.finalizeAttempt({ attemptId: ATTEMPT, closeReason: "INVOCATION_RETURNED" });
+    recorder.finalizeInvocation({ attemptId: ATTEMPT, invocationId: "wpi-00000000-0000-4000-8000-000000000001", closeReason: "CHILD_EXIT_OBSERVED" });
     const result = await service({ store }).previewAttempt({ attemptId: ATTEMPT });
     expect(result.preview.execution.dshSessionId).toBeNull();
     store.close();
