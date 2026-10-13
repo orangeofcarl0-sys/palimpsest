@@ -27,6 +27,7 @@ import type { EventStore } from "../state/index.js";
 import {
   AttemptAdmissionRefusal,
   buildHandoffPreview,
+  buildTrajectoryContextCapsule,
   validateAdmissionInvariants,
   type AttemptSessionAssociation,
   type DshSessionEventPage,
@@ -37,6 +38,7 @@ import {
   type PreviewCanonicalFacts,
   type PreviewHostObservationSummary,
   type PreviewProjectEvolutionSummary,
+  type TrajectoryContextCapsule,
 } from "../trajectory/index.js";
 import type { AssociationQualifier, ExecutionAssociationStore, QualifiedAssociation } from "../execution_association/index.js";
 import { admitAttempt, attemptEvents, buildRelationContext, canonicalFactsOf, type TrajectoryV0WorkOwner } from "./trajectory_v0.js";
@@ -86,8 +88,59 @@ export interface AttributedPreviewService {
     readonly hostRecord?: { readonly attemptId: string; readonly hostLocalJobId: string | null; readonly portInvocationId: string | null; readonly eventKinds: readonly string[]; readonly exited: boolean; readonly exitCode: number | null; readonly spawnFailed: boolean; readonly unknownAfterRestart: boolean; readonly detail: string } | undefined;
     readonly maxEvents?: number | undefined;
   }): Promise<AttributedPreviewResult>;
+  /**
+   * P2-D0 §10: build a bounded, read-only Trajectory Context Capsule for ONE permitted historical Attempt.
+   *
+   * The CONSUMER's permission is its own canonical Work/Context lineage, resolved by the injected
+   * authorization port — never a caller-supplied SessionId, AttemptId, binding or epoch. The model supplies
+   * nothing but its own consumer Attempt identity.
+   */
+  capsuleForConsumer(input: {
+    readonly consumerAttemptId: string;
+    /** §10.2: the historical Attempt the consumer believes it is continuing, if it names one. */
+    readonly requestedOriginAttemptId?: string | undefined;
+    readonly maxEvents?: number | undefined;
+  }): Promise<CapsuleForConsumerResult>;
   readonly hasDshReader: boolean;
   readonly hasQualifier: boolean;
+}
+
+/** §10.2/§10.3: the Capsule authorization outcome. A refusal names WHY, and is never a silent absence. */
+export const CAPSULE_AUTHORIZATION_STATES = [
+  /** The consumer's own canonical lineage names exactly one permitted origin Attempt. */
+  "AUTHORIZED",
+  /** The consumer Attempt is not a canonical attempt of this project. */
+  "CONSUMER_NOT_CANONICAL",
+  /** The consumer Attempt has no governed rework lineage, so it may inspect no historical Attempt. */
+  "NO_LINEAGE",
+  /** The requested origin is not the one the consumer's lineage permits. */
+  "ORIGIN_NOT_PERMITTED",
+  /** The permitted origin Attempt produced no qualified execution evidence. */
+  "NO_QUALIFIED_ORIGIN",
+] as const;
+export type CapsuleAuthorizationState = (typeof CAPSULE_AUTHORIZATION_STATES)[number];
+
+export interface CapsuleForConsumerResult {
+  readonly state: CapsuleAuthorizationState;
+  readonly detail: string;
+  /** §10.6: present only when the state is AUTHORIZED. A refused Capsule is NOT fabricated. */
+  readonly capsule: TrajectoryContextCapsule | null;
+  readonly originAttemptId: string | null;
+  /** §10.3: the internal source identity the Context owner bound — never chosen by the model. */
+  readonly permittedOriginAttemptId: string | null;
+}
+
+/**
+ * §10.3: the CONSUMER AUTHORIZATION PORT.
+ *
+ * The source of permission is the current consumer Attempt's canonical Work/Context lineage. The
+ * composition supplies the concrete read (the governed rework lineage the Context owner already resolves);
+ * this module never invents a permission rule. The model can neither supply nor override the origin.
+ */
+export interface CapsuleAuthorizationPort {
+  resolvePermittedOrigin(input: { readonly consumerAttemptId: string }):
+    | { readonly ok: true; readonly originAttemptId: string; readonly basis: string }
+    | { readonly ok: false; readonly reason: "CONSUMER_NOT_CANONICAL" | "NO_LINEAGE"; readonly detail: string };
 }
 
 export interface AttributedPreviewCompositionInput {
@@ -104,6 +157,11 @@ export interface AttributedPreviewCompositionInput {
     /** P2-D0 §8.3: the attempt's own relation context, so the injected builder can select its relations. */
     readonly relationContext: import("../trajectory/index.js").AttemptRelationContext;
   }) => Promise<PreviewProjectEvolutionSummary>;
+  /**
+   * P2-D0 §10.3: the consumer-authorization port, when the deployment composes one. Absent ⇒
+   * `capsuleForConsumer` refuses with NO_LINEAGE rather than fabricating a Capsule.
+   */
+  readonly capsuleAuthorization?: CapsuleAuthorizationPort | undefined;
 }
 
 /** §8.5: a binding that is not verified at all. */
@@ -130,7 +188,7 @@ function unboundBinding(input: { readonly projectId: string; readonly attemptId:
 export function composeAttributedPreview(input: AttributedPreviewCompositionInput): AttributedPreviewService {
   const { projectId, controller } = input;
 
-  return Object.freeze({
+  const service: AttributedPreviewService = {
     hasDshReader: input.sessionReader !== undefined,
     hasQualifier: input.qualifier !== undefined,
 
@@ -334,7 +392,77 @@ export function composeAttributedPreview(input: AttributedPreviewCompositionInpu
         }),
       });
     },
-  });
+
+    async capsuleForConsumer(request: {
+      readonly consumerAttemptId: string;
+      readonly requestedOriginAttemptId?: string | undefined;
+      readonly maxEvents?: number | undefined;
+    }): Promise<CapsuleForConsumerResult> {
+      /**
+       * §10.3 STEP 1: THE CONSUMER'S PERMISSION IS ITS OWN CANONICAL LINEAGE.
+       *
+       * The consumer must be a canonical attempt of this project, and its governed rework lineage must
+       * name exactly one permitted origin Attempt. A caller-supplied `requestedOriginAttemptId` is a
+       * SELECTOR that must AGREE with the lineage — it can never widen the permission.
+       */
+      const consumerRecord = controller.attemptWorkRecord(request.consumerAttemptId);
+      if (consumerRecord === null) {
+        return Object.freeze({ state: "CONSUMER_NOT_CANONICAL" as const, detail: `attempt ${request.consumerAttemptId} is not a canonical attempt of this project`, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+      }
+      if (input.capsuleAuthorization === undefined) {
+        return Object.freeze({ state: "NO_LINEAGE" as const, detail: "this deployment composes no consumer-authorization port, so no historical Attempt may be inspected", capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+      }
+      const permitted = input.capsuleAuthorization.resolvePermittedOrigin({ consumerAttemptId: request.consumerAttemptId });
+      if (!permitted.ok) {
+        return Object.freeze({ state: permitted.reason, detail: permitted.detail, capsule: null, originAttemptId: null, permittedOriginAttemptId: null });
+      }
+      /** §10.3: a named origin that disagrees with the lineage is refused; the lineage is the authority. */
+      if (request.requestedOriginAttemptId !== undefined && request.requestedOriginAttemptId !== permitted.originAttemptId) {
+        return Object.freeze({
+          state: "ORIGIN_NOT_PERMITTED" as const,
+          detail: `the consumer's canonical lineage permits origin attempt ${permitted.originAttemptId}, not the requested ${request.requestedOriginAttemptId}`,
+          capsule: null,
+          originAttemptId: request.requestedOriginAttemptId,
+          permittedOriginAttemptId: permitted.originAttemptId,
+        });
+      }
+
+      /**
+       * §10.4 STEP 2: build the origin Attempt's ATTRIBUTED Preview through the SAME admission path, so a
+       * Capsule can only ever present evidence that already passed qualification and admission.
+       */
+      let origin: AttributedPreviewResult;
+      try {
+        origin = await service.previewAttempt({ attemptId: permitted.originAttemptId, ...(request.maxEvents === undefined ? {} : { maxEvents: request.maxEvents }) });
+      } catch (error) {
+        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt could not be admitted: ${error instanceof Error ? error.message : String(error)}`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+      if (origin.selection.state === "NO_DURABLE_EVIDENCE") {
+        return Object.freeze({ state: "NO_QUALIFIED_ORIGIN" as const, detail: `the permitted origin attempt ${permitted.originAttemptId} produced no qualified execution evidence`, capsule: null, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+      }
+
+      /**
+       * §10.6: the Capsule's uncertainty is fed the admission's OWN provenance, so it cannot be less
+       * complete than the attribution it presents.
+       */
+      const capsule = buildTrajectoryContextCapsule({
+        consumerAttemptId: request.consumerAttemptId,
+        originAttemptId: permitted.originAttemptId,
+        authorizationBasis: permitted.basis,
+        preview: origin.preview,
+        attributionProvenance: {
+          qualificationState: origin.provenance.qualificationState,
+          sourceEpochId: origin.provenance.sourceEpochId,
+          durableBindingRef: origin.provenance.durableBindingRef,
+          invocationSelectionState: origin.selection.state,
+          otherInvocationsUnresolved: [],
+          knownEventCount: origin.provenance.knownEventCount,
+        },
+      });
+      return Object.freeze({ state: "AUTHORIZED" as const, detail: `the consumer's canonical lineage permits inspecting origin attempt ${permitted.originAttemptId}`, capsule, originAttemptId: permitted.originAttemptId, permittedOriginAttemptId: permitted.originAttemptId });
+    },
+  };
+  return Object.freeze(service);
 }
 
 /** §8.6: read the selected session, or report why no page exists. Never reads any other session. */
