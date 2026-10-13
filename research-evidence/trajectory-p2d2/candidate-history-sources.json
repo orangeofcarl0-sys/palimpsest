@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_CANDIDATE_HISTORY_SOURCES",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C8 §12",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "note": "§12: D2 PREPARES candidate histories and their information-sufficiency; it runs NO stochastic trial. Nothing here is an experimental result.",
+  "candidateSources": [
+    {
+      "id": "HS-A",
+      "name": "Governed Rework Origin (Family A source)",
+      "sourceKind": "REAL_DSH_STRUCTURAL_HISTORY",
+      "shape": "an Origin Attempt A0 with real execution history; A1 is a legitimate governed continuation (a real A0 -> Rework -> A1 lineage)",
+      "availability": "the P2-D1 governed-authorization rig builds a real A0->A1 lineage through the ordinary product surface; the association over A0 can be a controlled fixture or, at the strongest level, real cold-recovered DSH evidence",
+      "capsuleVisibleFacts": [
+        "the origin attempt identity and the authorization basis",
+        "which invocations existed and which was selected",
+        "which events were observed (type + seq)",
+        "page coverage (FULL/PARTIAL/UNKNOWN)",
+        "durability of the source",
+        "the canonical Work reality of the origin (state, result refs, verification, promotion)",
+        "honest uncertainty (unread extent, unresolved invocations, caveats)"
+      ],
+      "missingUnderCurrentSanitizer": [
+        "what a tool actually returned",
+        "why a command failed",
+        "what an assistant concluded"
+      ]
+    },
+    {
+      "id": "HS-B",
+      "name": "Multi-Invocation Reconstruction (Family B source)",
+      "sourceKind": "CONTROLLED_HISTORY_FIXTURE",
+      "shape": "an Attempt with MORE THAN ONE invocation carrying different qualification/coverage states (qualified, OBSERVATION_INCOMPLETE, CONFLICT)",
+      "availability": "the P2-D1 ingestion-health and currentness rigs produce OBSERVATION_INCOMPLETE and CONFLICT states through the real Recorder",
+      "capsuleVisibleFacts": [
+        "the set of observed invocations and their states",
+        "which invocation was selected and why",
+        "the unresolved alternative invocations",
+        "partial/unknown observed coverage",
+        "the durable binding reference and source epoch"
+      ],
+      "missingUnderCurrentSanitizer": [
+        "the content of any invocation's events"
+      ]
+    }
+  ],
+  "explicitNonFixture": "a Session containing only startup/configuration events (such as the P2-D1/P2-D2 non-model probe Session) is NOT a qualified Treatment for failure-avoidance utility; it is a DELIVERY fixture only",
+  "expectedInvariant": "every candidate history is source-qualified and its Capsule-visible facts are stated precisely, so a fixture cannot claim relevance it does not have",
+  "verdict": "PASS",
+  "remainingUncertainty": "the strongest real source (real cold-recovered DSH evidence with a governed lineage) is NOT yet combined into one chain; the P2-D1 combined chain remains NOT ESTABLISHED",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

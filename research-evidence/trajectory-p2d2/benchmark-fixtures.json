@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_BENCHMARK_FIXTURES",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C8 §12.2/§12.3",
+  "evidenceClass": "NOT_ESTABLISHED",
+  "note": "§12: fixtures are SPECIFIED, not executed. No fixture has been calibrated against a stochastic baseline, so none is BENCHMARK_QUALIFIED.",
+  "fixtures": [
+    {
+      "id": "FIX-A",
+      "family": "Governed Rework Continuation",
+      "shape": "A0 has genuine relevant historical execution (a real governed rework origin); A1 has legitimate governed rework lineage; PriorResultContext is available in BOTH arms",
+      "control": "Existing Canonical Work Context + Existing PriorResultContext (NO Trajectory section)",
+      "treatment": "the SAME Context + a source-qualified Trajectory Section delivered through the attempt-bound boundary",
+      "trajectoryAdds": "execution evidence about A0 that the Control does NOT already supply (observed invocation set, page coverage, durability, uncertainty, canonical reality of A0)",
+      "visibleInTreatment": "yes — the section is placed in the actual UserMessage (proven at L1/L2)",
+      "candidateOutcomeDimensions": [
+        "known-failure recurrence (a mechanically-detectable repeated action)",
+        "avoidable repeated tool actions (ordered action log)",
+        "first useful action (ordered action log)",
+        "correct continuation choice (which historical facts were relied upon)",
+        "final acceptance (the existing independent evaluator)",
+        "invalid authority assumptions (attempts to act on historical text as a command)"
+      ],
+      "mechanicalFailureDetector": "the ordered action log (tool names in first-use order) plus the existing independent acceptance evaluator; a 'repeated a command the history shows already failed' detector would require the tool/result isError field the sanitizer does NOT read — so that specific dimension is NOT currently measurable"
+    },
+    {
+      "id": "FIX-B",
+      "family": "Multi-Invocation Reconstruction",
+      "shape": "an Attempt with more than one Invocation and explicit qualified/incomplete states, with partial or unknown observed coverage",
+      "control": "Existing Context (NO Trajectory section)",
+      "treatment": "the SAME Context + a Trajectory Section that states the invocation set, the selected invocation and the unresolved alternatives",
+      "trajectoryAdds": "the invocation set and the coverage/qualification states, which the Control does not supply",
+      "visibleInTreatment": "yes",
+      "candidateOutcomeDimensions": [
+        "correct identification of observed invocations",
+        "correct uncertainty handling (does not over-claim unknown history)",
+        "avoiding first/latest-session assumptions",
+        "correct interpretation of partial history",
+        "accurate source attribution"
+      ],
+      "mechanicalFailureDetector": "a mechanical oracle over the model's reported facts compared against the Capsule's own fields (e.g. whether the model names an invocation the Capsule did NOT list, or treats PARTIAL as FULL)"
+    }
+  ],
+  "qualificationLaw": {
+    "source": "research-evidence/r2-vr/benchmark-qualification-law.json",
+    "UQ-1": "baseline is neither at the floor nor the ceiling, with room to move in BOTH directions",
+    "UQ-2": "at least two outcome dimensions have variability under repetition of the control",
+    "UQ-3": "at least one treatment-relevant failure class varies",
+    "UQ-4": "the Capsule's own recorded content mechanically addresses an outcome that actually varies",
+    "UQ-5": "success cannot hinge entirely on one unrelated residual case",
+    "applied": "prepared, NOT yet applied — the law is applied AFTER a baseline-only calibration, which D2 does not run"
+  },
+  "expectedInvariant": "each fixture names a treatment-relevant failure mode with a mechanical detector AND a Capsule-visible connection; a fixture whose claimed failure the Capsule cannot communicate is NOT marked treatment-relevant",
+  "verdict": "NOT_ESTABLISHED",
+  "remainingUncertainty": "no fixture has been calibrated; FIX-A's 'failure recurrence' dimension specifically requires content the current sanitizer does not deliver, so it is flagged as not-currently-measurable",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

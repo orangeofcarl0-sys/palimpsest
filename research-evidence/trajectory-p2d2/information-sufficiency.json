@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_INFORMATION_SUFFICIENCY",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C7 §11",
+  "evidenceClass": "SOURCE_DEMONSTRATED",
+  "sourceReferences": [
+    "src/trajectory/execution.ts (sanitizeDshEvent, RECOGNIZED_DSH_EVENT_TYPES, DSH_PAGE_DOES_NOT_PROVE)",
+    "host/deployment/runtime/session_reader.js (sanitizeEvent)",
+    "src/trajectory/context_capsule.ts (CapsuleEventSummary)"
+  ],
+  "sanitizerRetains": {
+    "eventType": true,
+    "sequence": true,
+    "turnStepStructure": true,
+    "toolName": true,
+    "durability": true,
+    "inheritance": true,
+    "structuralStatus": "turn/end reason.kind, assistant/attempt status, tool/result recorded|unknown"
+  },
+  "sanitizerExcludes": {
+    "toolArguments": true,
+    "toolResultBody": true,
+    "assistantMessageContent": true,
+    "rawPayload": true,
+    "userMessageContent": true
+  },
+  "doesNotReadToolResultAsSuccess": {
+    "observedStatus": "recorded",
+    "meaning": "a tool/result event exists; this is NOT proof the tool succeeded",
+    "sourceEvidence": "DSH exposes `tool/result.message.isError` and `tool/result.error.code` as official STRUCTURAL fields outside model content, but the product's sanitizer does not read them"
+  },
+  "targetA_executionReconstruction": {
+    "supported": true,
+    "capsuleCanEstablish": [
+      "which Invocations existed (from the association, not the sanitizer)",
+      "which events were actually observed (type + seq)",
+      "which pages are PARTIAL (coverage)",
+      "which events were inherited (inherited flag)",
+      "whether synthetic recovery appeared (durability class)",
+      "which historical areas remain unknown (uncertainty block)"
+    ]
+  },
+  "targetB_engineeringFailureAvoidance": {
+    "supported": false,
+    "reason": "the sanitizer excludes what a tool RETURNED, why a command FAILED and what an assistant CONCLUDED, so a sequence of tool/call + tool/result structural events cannot communicate a failure CAUSE",
+    "implication": "a benchmark claiming 'the agent avoids repeating a failed command' would NOT be measuring Capsule content with the current sanitizer"
+  },
+  "eventWindowSufficiency": {
+    "capsuleDefaultsToMaxEvents": 24,
+    "selectionPolicy": "PREFIX from the start of the read page",
+    "assumptionNotMade": "nothing establishes that the task-relevant failure evidence lies within that prefix",
+    "requiredBeforeTrial": "freeze the selection policy (prefix / bounded suffix / explicit historical segment); the model must receive no unrestricted Session-range authority"
+  },
+  "sensitiveContentNotBroadened": {
+    "decision": "the sanitizer is NOT enlarged",
+    "why": "§11.3 forbids replacing the sanitizer with raw JSON and forbids enlarging it merely to manufacture an experimental effect; no narrow new field was added because the current stage does not establish that a specific engineering-failure judgment is both necessary and safely available"
+  },
+  "expectedInvariant": "the information-sufficiency audit honestly states which judgments the current Capsule CAN and CANNOT support, and sensitive raw content is not disclosed merely to improve an experimental effect",
+  "verdict": "PASS",
+  "remainingUncertainty": "Target B (Engineering Failure Avoidance) is NOT supported by the current Capsule content; a future stage would need a source-grounded, narrowly-scoped structural field to support it, which D2 does not add",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}

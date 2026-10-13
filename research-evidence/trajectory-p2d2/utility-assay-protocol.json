@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "TRAJECTORY_P2D2_UTILITY_ASSAY_PROTOCOL",
+  "stage": "Trajectory-P2-D2",
+  "baseline": "d6c366ca909d6719aab46a04bf717c0b3c352a92",
+  "correction": "C8 §12",
+  "evidenceClass": "NOT_ESTABLISHED",
+  "note": "§12: D2 prepares the executable protocol and runs NO stochastic calibration, NO Treatment trial and NO paid model call. Nothing here is an experimental result.",
+  "estimand": {
+    "question": "What is the incremental effect of source-qualified Trajectory history BEYOND existing Canonical Work Context and PriorResultContext?",
+    "control": "Existing Context (Canonical Work Context + PriorResultContext)",
+    "treatment": "the SAME Existing Context + a source-qualified Trajectory Section delivered through the attempt-bound boundary",
+    "explicitlyNotTheComparison": "no context versus full context"
+  },
+  "deliveryPrecondition": {
+    "mechanism": "the C6 experimental Attempt-bound delivery (profile `trajectory` section, DEFAULT OFF), which materializes the qualified Capsule and renders the model-visible section before the first engineering turn",
+    "requiredDistinction": [
+      "Capsule qualified",
+      "Capsule selected",
+      "Capsule materialized",
+      "Section rendered",
+      "Section placed in the UserMessage (L1)",
+      "DSH Session recorded the UserMessage (L2)",
+      "Model Turn started",
+      "Model actions observed",
+      "Outcome independently judged"
+    ],
+    "trialClassification": "a Treatment trial whose delivery-precondition state is NOT `SECTION_RENDERED`/`CONTROL_SECTION_RENDERED` must be classified DELIVERY_PRECONDITION_NOT_MET and NOT counted as a valid delivered Treatment; it must never be interpreted as evidence that Trajectory has no utility",
+    "currentStatus": "qualified / selected / materialized / rendered / placed (L1) / session-recorded (L2) are proven; Model Turn started and beyond are NOT run in this stage"
+  },
+  "frozenTrialIdentity": [
+    "Context Manifest reference (manifestId)",
+    "Capsule Digest (canonical)",
+    "Origin Attempt identity",
+    "Association Basis (relevant basis)",
+    "Section Digest (raw UTF-8)",
+    "Full UserMessage Digest (raw UTF-8)",
+    "Presentation schema version",
+    "Selected experimental arm",
+    "Delivery-precondition state"
+  ],
+  "baselineOnlyCalibration": {
+    "required": "D2 begins with baseline-only calibration BEFORE any Treatment execution",
+    "method": "run the CONTROL arm alone across the frozen dimensions and measure the per-dimension distribution",
+    "ifSaturated": "BENCHMARK_NOT_QUALIFIED — NOT a reason to increase the number of Treatment trials",
+    "runInD2": false
+  },
+  "frozenDimensions": [
+    "task family (FIX-A / FIX-B)",
+    "initial Git state",
+    "model family and version",
+    "provider",
+    "tool capabilities",
+    "Work scope",
+    "Context budget",
+    "token/usage accounting",
+    "acceptance oracle"
+  ],
+  "plannedControlRepetitions": "to be fixed AFTER baseline calibration; D2 specifies the plan, not a count",
+  "randomizationAndPairing": "paired by fixture and initial Git state; the arm is the only difference between paired runs",
+  "stopConditions": [
+    "a saturated baseline (all dimensions invariant) ⇒ BENCHMARK_NOT_QUALIFIED",
+    "a delivery-precondition failure ⇒ the trial is not counted",
+    "a fixture whose claimed failure is not Capsule-visible ⇒ the fixture is not treatment-relevant"
+  ],
+  "r2eR2vrLessonsPreserved": [
+    "voluntary retrieval ≠ host-mediated delivery ≠ model-visible content ≠ model behavior ≠ task success",
+    "lack of voluntary retrieval is NOT evidence that history is useless",
+    "a delivered Section is NOT evidence that a model understood it",
+    "a benchmark with only unrelated residual variation does NOT measure Trajectory utility"
+  ],
+  "requiredFutureAuthorizations": [
+    "explicit authorization to run stochastic model repetitions",
+    "a provider/model selection and a cost ceiling",
+    "an independent outcome oracle for the chosen fixture"
+  ],
+  "permittedFinalStatements": [
+    "the delivery mechanism is qualified",
+    "information-sufficiency candidates are identified",
+    "a fixture/protocol is prepared",
+    "baseline calibration has NOT been run",
+    "utility has NOT been measured"
+  ],
+  "forbiddenFinalStatements": [
+    "Trajectory improved task success",
+    "duplicate failures were reduced",
+    "Agent collaboration improved",
+    "Multi-Agent synthesis was demonstrated"
+  ],
+  "expectedInvariant": "the protocol is executable, frozen and honest about what has NOT been measured; no positive utility conclusion is drawn",
+  "verdict": "NOT_ESTABLISHED",
+  "remainingUncertainty": "everything downstream of 'Model Turn started' is unmeasured; a future stage must run baseline calibration first and may return BENCHMARK_NOT_QUALIFIED",
+  "realFirstPartyDshRan": false,
+  "agentFollowupInvoked": false,
+  "dshUserMessageRead": false,
+  "providerRequestOccurred": false,
+  "externalPaidModelCalled": false,
+  "privateSessionAccessed": false
+}
